@@ -1,8 +1,6 @@
 import { requireAuth } from '@/lib/auth';
-import { SidebarWrapper } from '@/components/layout/sidebar-wrapper';
-import { Header } from '@/components/layout/header';
+import { Sidebar } from '@/components/layout/sidebar';
 import { MobileNav } from '@/components/layout/mobile-nav';
-import {Sidebar} from "@/components/layout/sidebar";
 
 export default async function ProtectedLayout({
   children,

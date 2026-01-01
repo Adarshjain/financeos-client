@@ -2,9 +2,9 @@
 
 import { revalidatePath } from 'next/cache';
 import { gmailApi, ApiError } from '@/lib/api-client';
-import type { ApiResult } from '@/lib/types';
+import type { ApiResult, GmailOAuthStartResponse, GmailFetchResult, GmailFetchRequest } from '@/lib/types';
 
-export async function startGmailOAuth(): Promise<ApiResult<{ url?: string }>> {
+export async function startGmailOAuth(): Promise<ApiResult<GmailOAuthStartResponse>> {
   try {
     const result = await gmailApi.startOAuth();
     return { success: true, data: result };
@@ -23,10 +23,11 @@ export async function startGmailOAuth(): Promise<ApiResult<{ url?: string }>> {
   }
 }
 
-export async function syncGmail(): Promise<ApiResult<{ synced?: number }>> {
+export async function syncGmail(request?: GmailFetchRequest): Promise<ApiResult<GmailFetchResult>> {
   try {
-    const result = await gmailApi.sync();
+    const result = await gmailApi.sync(request);
     revalidatePath('/transactions');
+    revalidatePath('/settings');
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -42,5 +43,3 @@ export async function syncGmail(): Promise<ApiResult<{ synced?: number }>> {
     };
   }
 }
-
-

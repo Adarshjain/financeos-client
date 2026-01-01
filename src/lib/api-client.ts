@@ -16,6 +16,9 @@ import type {
   CreateInvestmentTransactionRequest,
   PagedInvestmentTransactionResponse,
   InvestmentPositionResponse,
+  GmailOAuthStartResponse,
+  GmailFetchRequest,
+  GmailFetchResult,
   DashboardSummary,
   ErrorResponse,
 } from './types';
@@ -218,12 +221,15 @@ export const investmentsApi = {
 
 // Gmail API
 export const gmailApi = {
-  async startOAuth(): Promise<{ url?: string }> {
-    return request<{ url?: string }>('/api/v1/gmail/oauth/start');
+  async startOAuth(): Promise<GmailOAuthStartResponse> {
+    return request<GmailOAuthStartResponse>('/api/v1/gmail/oauth/start');
   },
 
-  async sync(): Promise<{ synced?: number }> {
-    return request<{ synced?: number }>('/api/v1/gmail/sync', { method: 'POST' });
+  async sync(data?: GmailFetchRequest): Promise<GmailFetchResult> {
+    return request<GmailFetchResult>('/api/v1/gmail/sync', {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    });
   },
 };
 

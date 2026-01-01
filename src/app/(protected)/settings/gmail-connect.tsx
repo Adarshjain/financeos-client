@@ -3,78 +3,103 @@
 import { useState } from 'react';
 import { startGmailOAuth, syncGmail } from '@/actions/gmail';
 import { Button } from '@/components/ui/button';
-import { Alert } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Mail, RefreshCw, CheckCircle2, AlertCircle, Loader2, Paperclip } from 'lucide-react';
+import type { GmailFetchResult, GmailFetchMode } from '@/lib/types';
 
 export function GmailConnect() {
   const [loading, setLoading] = useState<'connect' | 'sync' | null>(null);
-  const [result, setResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [lastFetchResult, setLastFetchResult] = useState<GmailFetchResult | null>(null);
 
   const handleConnect = async () => {
     setLoading('connect');
-    setResult(null);
+    setMessage(null);
     
     const response = await startGmailOAuth();
     
-    if (response.success && response.data.url) {
-      // Redirect to OAuth URL
-      window.location.href = response.data.url;
-    } else if (response.success) {
-      setResult({ type: 'success', message: 'Gmail OAuth initiated. This feature is still in development.' });
+    if (response.success && response.data.authorizationUrl) {
+      window.location.href = response.data.authorizationUrl;
+    } else if (!response.success) {
+      setMessage({ type: 'error', text: response.error.message });
+      setLoading(null);
+    }
+  };
+
+  const handleSync = async (mode: GmailFetchMode = 'MANUAL') => {
+    setLoading('sync');
+    setMessage(null);
+    
+    const response = await syncGmail({ mode, maxMessages: 100 });
+    
+    if (response.success) {
+      const count = response.data.messages?.length ?? 0;
+      setLastFetchResult(response.data);
+      setMessage({
+        type: 'success',
+        text: count > 0
+          ? `Fetched ${count} email${count > 1 ? 's' : ''} from Gmail.`
+          : 'Sync completed. No new emails found.',
+      });
     } else {
-      setResult({ type: 'error', message: response.error.message });
+      setMessage({ type: 'error', text: response.error.message });
     }
     
     setLoading(null);
   };
 
-  const handleSync = async () => {
-    setLoading('sync');
-    setResult(null);
-    
-    const response = await syncGmail();
-    
-    if (response.success) {
-      const count = response.data.synced ?? 0;
-      setResult({
-        type: 'success',
-        message: count > 0
-          ? `Successfully synced ${count} transactions from Gmail.`
-          : 'Sync completed. No new transactions found.',
-      });
-    } else {
-      setResult({ type: 'error', message: response.error.message });
-    }
-    
-    setLoading(null);
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
-    <div className="space-y-4">
-      {result && (
-        <Alert variant={result.type === 'success' ? 'success' : 'destructive'}>
-          {result.message}
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
+            <Mail className="h-5 w-5 text-slate-600 dark:text-slate-400" />
+          </div>
+          <div>
+            <span className="font-medium text-slate-900 dark:text-white">Gmail Integration</span>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Connect your Gmail to fetch transaction emails
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {message && (
+        <Alert variant={message.type === 'success' ? 'default' : 'destructive'}>
+          {message.type === 'success' ? (
+            <CheckCircle2 className="h-4 w-4" />
+          ) : (
+            <AlertCircle className="h-4 w-4" />
+          )}
+          <AlertDescription>{message.text}</AlertDescription>
         </Alert>
       )}
 
       <div className="flex flex-wrap gap-3">
         <Button
-          variant="secondary"
+          variant="outline"
           onClick={handleConnect}
           disabled={loading !== null}
         >
           {loading === 'connect' ? (
             <>
-              <svg className="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               Connecting...
             </>
           ) : (
             <>
-              <svg className="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/>
-              </svg>
+              <Mail className="h-4 w-4 mr-2" />
               Connect Gmail
             </>
           )}
@@ -82,31 +107,73 @@ export function GmailConnect() {
 
         <Button
           variant="default"
-          onClick={handleSync}
+          onClick={() => handleSync('MANUAL')}
           disabled={loading !== null}
         >
           {loading === 'sync' ? (
             <>
-              <svg className="w-4 h-4 mr-2 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              Syncing...
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Fetching...
             </>
           ) : (
             <>
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Sync Transactions
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Fetch Emails
             </>
           )}
         </Button>
       </div>
 
-      <p className="text-xs text-slate-500">
-        Note: Gmail integration is a skeleton feature. Full implementation requires OAuth configuration.
-      </p>
+      {lastFetchResult && lastFetchResult.messages.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              Fetched Emails ({lastFetchResult.messages.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {lastFetchResult.messages.slice(0, 5).map((msg) => (
+              <div
+                key={msg.messageId}
+                className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg space-y-1"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-medium text-sm text-slate-900 dark:text-white line-clamp-1">
+                    {msg.subject || '(No subject)'}
+                  </p>
+                  <span className="text-xs text-slate-500 whitespace-nowrap">
+                    {formatDate(msg.internalDate)}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                  From: {msg.from}
+                </p>
+                {msg.attachments && msg.attachments.length > 0 && (
+                  <div className="flex items-center gap-1 mt-1">
+                    <Paperclip className="h-3 w-3 text-slate-400" />
+                    <span className="text-xs text-slate-500">
+                      {msg.attachments.length} attachment{msg.attachments.length > 1 ? 's' : ''}
+                    </span>
+                    {msg.attachments.some(a => a.mimeType === 'application/pdf') && (
+                      <Badge variant="secondary" className="text-xs py-0">PDF</Badge>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+            {lastFetchResult.messages.length > 5 && (
+              <p className="text-xs text-slate-500 text-center">
+                +{lastFetchResult.messages.length - 5} more emails
+              </p>
+            )}
+            {lastFetchResult.nextState && (
+              <p className="text-xs text-slate-500 pt-2 border-t border-slate-200 dark:border-slate-700">
+                Last synced: {formatDate(lastFetchResult.nextState.lastSyncedAt)}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

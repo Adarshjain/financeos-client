@@ -195,6 +195,50 @@ export interface DashboardSummary {
   status?: string;
 }
 
+// Gmail
+export type GmailFetchMode = 'MANUAL' | 'PERIODIC';
+
+export interface GmailOAuthStartResponse {
+  authorizationUrl: string;
+}
+
+export interface GmailOAuthCallbackResponse {
+  status: string;
+  message: string;
+  email?: string;
+}
+
+export interface GmailFetchRequest {
+  mode?: GmailFetchMode;
+  fromTime?: string;
+  maxMessages?: number;
+}
+
+export interface GmailAttachmentDto {
+  attachmentId: string;
+  filename: string;
+  mimeType: string;
+  contentLength: number;
+}
+
+export interface GmailMessageDto {
+  messageId: string;
+  internalDate: string;
+  from: string;
+  subject: string;
+  attachments?: GmailAttachmentDto[];
+}
+
+export interface GmailSyncStateDto {
+  historyId: string;
+  lastSyncedAt: string;
+}
+
+export interface GmailFetchResult {
+  messages: GmailMessageDto[];
+  nextState?: GmailSyncStateDto;
+}
+
 // Error
 export interface ErrorResponse {
   code: string;
