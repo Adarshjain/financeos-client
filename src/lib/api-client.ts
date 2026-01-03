@@ -21,6 +21,7 @@ import type {
   GmailFetchResult,
   DashboardSummary,
   ErrorResponse,
+  GoogleAuthStartResponse,
 } from './types';
 
 const API_BASE = process.env.API_BASE_URL || 'http://localhost:8080';
@@ -45,7 +46,7 @@ async function request<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const sessionCookie = await getSessionCookie();
-  
+
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...options.headers,
@@ -117,7 +118,7 @@ export const authApi = {
 
     const user: UserResponse = await response.json();
     const setCookie = response.headers.get('set-cookie');
-    
+
     // Extract session cookie value
     let sessionCookie: string | undefined;
     if (setCookie) {
@@ -136,6 +137,42 @@ export const authApi = {
 
   async getCurrentUser(): Promise<UserResponse> {
     return request<UserResponse>('/api/v1/auth/me');
+  },
+
+  async startGoogleAuth(): Promise<GoogleAuthStartResponse> {
+    return request<GoogleAuthStartResponse>('/api/v1/auth/google/start');
+  },
+
+  async handleGoogleCallback(params: { code?: string; state?: string; error?: string }): Promise<{ user: UserResponse; sessionCookie?: string }> {
+    const query = new URLSearchParams();
+    if (params.code) query.set('code', params.code);
+    if (params.state) query.set('state', params.state);
+    if (params.error) query.set('error', params.error);
+
+    const response = await fetch(`${API_BASE}/api/v1/auth/google/callback?${query.toString()}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+    });
+
+    if (!response.ok) {
+      const error: ErrorResponse = await response.json();
+      throw new ApiError(response.status, error);
+    }
+
+    const user: UserResponse = await response.json();
+    const setCookie = response.headers.get('set-cookie');
+
+    // Extract session cookie value
+    let sessionCookie: string | undefined;
+    if (setCookie) {
+      const match = setCookie.match(/FINANCEOS_SESSION=([^;]+)/);
+      if (match) {
+        sessionCookie = match[1];
+      }
+    }
+
+    return { user, sessionCookie };
   },
 };
 

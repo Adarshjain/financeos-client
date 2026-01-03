@@ -16,9 +16,15 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface GoogleAuthStartResponse {
+  authorizationUrl: string;
+}
+
 export interface UserResponse {
   id: string;
   email: string;
+  displayName?: string;
+  pictureUrl?: string;
   createdAt: string;
 }
 
@@ -248,7 +254,7 @@ export interface ErrorResponse {
 }
 
 // API Result type for server actions
-export type ApiResult<T> = 
+export type ApiResult<T> =
   | { success: true; data: T }
   | { success: false; error: ErrorResponse };
 

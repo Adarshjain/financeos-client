@@ -17,9 +17,9 @@ export function GmailConnect() {
   const handleConnect = async () => {
     setLoading('connect');
     setMessage(null);
-    
+
     const response = await startGmailOAuth();
-    
+
     if (response.success && response.data.authorizationUrl) {
       window.location.href = response.data.authorizationUrl;
     } else if (!response.success) {
@@ -31,9 +31,9 @@ export function GmailConnect() {
   const handleSync = async (mode: GmailFetchMode = 'MANUAL') => {
     setLoading('sync');
     setMessage(null);
-    
+
     const response = await syncGmail({ mode, maxMessages: 100 });
-    
+
     if (response.success) {
       const count = response.data.messages?.length ?? 0;
       setLastFetchResult(response.data);
@@ -46,7 +46,7 @@ export function GmailConnect() {
     } else {
       setMessage({ type: 'error', text: response.error.message });
     }
-    
+
     setLoading(null);
   };
 
@@ -103,6 +103,19 @@ export function GmailConnect() {
               Connect Gmail
             </>
           )}
+        </Button>
+
+        <Button
+          variant="ghost"
+          onClick={handleConnect}
+          disabled={loading !== null}
+        >
+          {loading === 'connect' ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Mail className="h-4 w-4 mr-2" />
+          )}
+          Connect another Gmail account
         </Button>
 
         <Button

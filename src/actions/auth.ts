@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 import { authApi, ApiError } from '@/lib/api-client';
 import { setSessionCookie, clearSessionCookie } from '@/lib/auth';
-import type { ApiResult, UserResponse } from '@/lib/types';
+import type { ApiResult, UserResponse, GoogleAuthStartResponse } from '@/lib/types';
 
 export async function signup(
   _prevState: ApiResult<UserResponse> | null,
@@ -72,7 +72,7 @@ export async function login(
 
   try {
     const { user, sessionCookie } = await authApi.login({ email, password });
-    
+
     if (sessionCookie) {
       await setSessionCookie(sessionCookie);
     }
@@ -101,6 +101,53 @@ export async function logout(): Promise<void> {
   }
   await clearSessionCookie();
   redirect('/login');
+}
+
+export async function startGoogleSSO(): Promise<ApiResult<GoogleAuthStartResponse>> {
+  try {
+    const result = await authApi.startGoogleAuth();
+    return { success: true, data: result };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.response };
+    }
+    return {
+      success: false,
+      error: {
+        code: 'UNKNOWN_ERROR',
+        message: 'Failed to start Google SSO',
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+}
+
+export async function handleGoogleCallbackAction(
+  code: string | undefined,
+  state: string | undefined,
+  error: string | undefined
+): Promise<ApiResult<UserResponse>> {
+  try {
+    const { user, sessionCookie } = await authApi.handleGoogleCallback({ code, state, error });
+
+    if (sessionCookie) {
+      await setSessionCookie(sessionCookie);
+    }
+
+    return { success: true, data: user };
+  } catch (err) {
+    if (err instanceof ApiError) {
+      return { success: false, error: err.response };
+    }
+    return {
+      success: false,
+      error: {
+        code: 'UNKNOWN_ERROR',
+        message: 'Failed to complete Google SSO',
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
 }
 
 
