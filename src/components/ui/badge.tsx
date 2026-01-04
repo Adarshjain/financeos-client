@@ -25,8 +25,8 @@ const badgeVariants = cva(
       },
     },
     defaultVariants: {
-      variant: 'default' as const,
-    },
+      variant: 'default',
+    } as const,
   }
 );
 
