@@ -1,27 +1,28 @@
 import { cookies } from 'next/headers';
+
 import type {
-  UserResponse,
-  SignupRequest,
-  LoginRequest,
   AccountResponse,
-  CreateAccountRequest,
   BankDetailsRequest,
-  CreditCardDetailsRequest,
-  StockDetailsRequest,
-  MutualFundDetailsRequest,
-  TransactionResponse,
-  CreateTransactionRequest,
-  PagedTransactionResponse,
-  InvestmentTransactionResponse,
+  CreateAccountRequest,
   CreateInvestmentTransactionRequest,
-  PagedInvestmentTransactionResponse,
-  InvestmentPositionResponse,
-  GmailOAuthStartResponse,
-  GmailFetchRequest,
-  GmailFetchResult,
+  CreateTransactionRequest,
+  CreditCardDetailsRequest,
   DashboardSummary,
   ErrorResponse,
+  GmailFetchRequest,
+  GmailFetchResult,
+  GmailOAuthStartResponse,
   GoogleAuthStartResponse,
+  InvestmentPositionResponse,
+  InvestmentTransactionResponse,
+  LoginRequest,
+  MutualFundDetailsRequest,
+  PagedInvestmentTransactionResponse,
+  PagedTransactionResponse,
+  SignupRequest,
+  StockDetailsRequest,
+  TransactionResponse,
+  UserResponse,
 } from './types';
 
 const API_BASE = process.env.API_BASE_URL || 'http://localhost:8080';
@@ -53,7 +54,8 @@ async function request<T>(
   };
 
   if (sessionCookie) {
-    (headers as Record<string, string>)['Cookie'] = `FINANCEOS_SESSION=${sessionCookie}`;
+    (headers as Record<string, string>)['Cookie'] =
+      `FINANCEOS_SESSION=${sessionCookie}`;
   }
 
   const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -103,7 +105,9 @@ export const authApi = {
     return response.json();
   },
 
-  async login(data: LoginRequest): Promise<{ user: UserResponse; sessionCookie?: string }> {
+  async login(
+    data: LoginRequest
+  ): Promise<{ user: UserResponse; sessionCookie?: string }> {
     const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -143,17 +147,24 @@ export const authApi = {
     return request<GoogleAuthStartResponse>('/api/v1/auth/google/start');
   },
 
-  async handleGoogleCallback(params: { code?: string; state?: string; error?: string }): Promise<{ user: UserResponse; sessionCookie?: string }> {
+  async handleGoogleCallback(params: {
+    code?: string;
+    state?: string;
+    error?: string;
+  }): Promise<{ user: UserResponse; sessionCookie?: string }> {
     const query = new URLSearchParams();
     if (params.code) query.set('code', params.code);
     if (params.state) query.set('state', params.state);
     if (params.error) query.set('error', params.error);
 
-    const response = await fetch(`${API_BASE}/api/v1/auth/google/callback?${query.toString()}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-    });
+    const response = await fetch(
+      `${API_BASE}/api/v1/auth/google/callback?${query.toString()}`,
+      {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        cache: 'no-store',
+      }
+    );
 
     if (!response.ok) {
       const error: ErrorResponse = await response.json();
@@ -193,39 +204,65 @@ export const accountsApi = {
     });
   },
 
-  async addBankDetails(id: string, data: BankDetailsRequest): Promise<AccountResponse> {
+  async addBankDetails(
+    id: string,
+    data: BankDetailsRequest
+  ): Promise<AccountResponse> {
     return request<AccountResponse>(`/api/v1/accounts/${id}/bank-details`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
-  async addCreditCardDetails(id: string, data: CreditCardDetailsRequest): Promise<AccountResponse> {
-    return request<AccountResponse>(`/api/v1/accounts/${id}/credit-card-details`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+  async addCreditCardDetails(
+    id: string,
+    data: CreditCardDetailsRequest
+  ): Promise<AccountResponse> {
+    return request<AccountResponse>(
+      `/api/v1/accounts/${id}/credit-card-details`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
   },
 
-  async addStockDetails(id: string, data: StockDetailsRequest): Promise<AccountResponse> {
+  async addStockDetails(
+    id: string,
+    data: StockDetailsRequest
+  ): Promise<AccountResponse> {
     return request<AccountResponse>(`/api/v1/accounts/${id}/stock-details`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
-  async addMutualFundDetails(id: string, data: MutualFundDetailsRequest): Promise<AccountResponse> {
-    return request<AccountResponse>(`/api/v1/accounts/${id}/mutual-fund-details`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+  async addMutualFundDetails(
+    id: string,
+    data: MutualFundDetailsRequest
+  ): Promise<AccountResponse> {
+    return request<AccountResponse>(
+      `/api/v1/accounts/${id}/mutual-fund-details`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
   },
 };
 
 // Transactions API
 export const transactionsApi = {
-  async list(page = 0, size = 50, sort = 'date,desc'): Promise<PagedTransactionResponse> {
-    const params = new URLSearchParams({ page: String(page), size: String(size), sort });
+  async list(
+    page = 0,
+    size = 50,
+    sort = 'date,desc'
+  ): Promise<PagedTransactionResponse> {
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+      sort,
+    });
     return request<PagedTransactionResponse>(`/api/v1/transactions?${params}`);
   },
 
@@ -239,16 +276,29 @@ export const transactionsApi = {
 
 // Investments API
 export const investmentsApi = {
-  async listTransactions(page = 0, size = 50): Promise<PagedInvestmentTransactionResponse> {
-    const params = new URLSearchParams({ page: String(page), size: String(size) });
-    return request<PagedInvestmentTransactionResponse>(`/api/v1/investments/transactions?${params}`);
+  async listTransactions(
+    page = 0,
+    size = 50
+  ): Promise<PagedInvestmentTransactionResponse> {
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+    });
+    return request<PagedInvestmentTransactionResponse>(
+      `/api/v1/investments/transactions?${params}`
+    );
   },
 
-  async createTransaction(data: CreateInvestmentTransactionRequest): Promise<InvestmentTransactionResponse> {
-    return request<InvestmentTransactionResponse>('/api/v1/investments/transactions', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+  async createTransaction(
+    data: CreateInvestmentTransactionRequest
+  ): Promise<InvestmentTransactionResponse> {
+    return request<InvestmentTransactionResponse>(
+      '/api/v1/investments/transactions',
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }
+    );
   },
 
   async getPositions(): Promise<InvestmentPositionResponse> {
@@ -278,4 +328,3 @@ export const dashboardApi = {
 };
 
 export { ApiError };
-

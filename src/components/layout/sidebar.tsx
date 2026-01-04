@@ -1,11 +1,20 @@
 'use client';
 
+import {
+  Home,
+  LogOut,
+  Receipt,
+  Settings,
+  TrendingUp,
+  Wallet,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+
+import { logout } from '@/actions/auth';
+import { Logo } from '@/components/logo';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import {Home, Wallet, Receipt, TrendingUp, Settings, DollarSign, LogOut} from 'lucide-react';
-import {logout} from "@/actions/auth";
-import {Button} from "@/components/ui/button";
 
 interface NavItem {
   href: string;
@@ -41,25 +50,23 @@ const navItems: NavItem[] = [
   },
 ];
 
-export function Sidebar({userEmail}: {userEmail: string}) {
+export function Sidebar({ userEmail }: { userEmail: string }) {
   const pathname = usePathname();
 
   return (
     <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
       {/* Logo */}
       <div className="h-16 flex items-center px-6">
-        <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700">
-            <DollarSign className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-lg font-bold text-slate-900 dark:text-white">FinanceOS</span>
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <Logo size="md" />
         </Link>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          const isActive =
+            pathname === item.href || pathname.startsWith(item.href + '/');
           return (
             <Link
               key={item.href}
@@ -77,18 +84,20 @@ export function Sidebar({userEmail}: {userEmail: string}) {
           );
         })}
       </nav>
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800">
-            <p className="text-xs text-slate-500">Signed in as</p>
-            <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{userEmail}</p>
-        </div>
-        <div className="p-4 border-t border-slate-200 dark:border-slate-800">
-            <form action={logout}>
-                <Button variant="outline" size="sm" type="submit" className="w-full">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign out
-                </Button>
-            </form>
-        </div>
+      <div className="p-4 border-b border-slate-200 dark:border-slate-800">
+        <p className="text-xs text-slate-500">Signed in as</p>
+        <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+          {userEmail}
+        </p>
+      </div>
+      <div className="p-4 border-t border-slate-200 dark:border-slate-800">
+        <form action={logout}>
+          <Button variant="outline" size="sm" type="submit" className="w-full">
+            <LogOut className="h-4 w-4 mr-2" />
+            Sign out
+          </Button>
+        </form>
+      </div>
     </aside>
   );
 }

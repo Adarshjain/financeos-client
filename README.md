@@ -42,8 +42,8 @@ npm run dev
 
 ### Environment Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
+| Variable       | Description          | Default                 |
+| -------------- | -------------------- | ----------------------- |
 | `API_BASE_URL` | Backend API base URL | `http://localhost:8080` |
 
 ## Project Structure
@@ -116,5 +116,3 @@ npm run typecheck # Run TypeScript check
 ## License
 
 MIT
-
-

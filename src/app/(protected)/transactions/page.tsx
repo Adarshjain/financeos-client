@@ -1,11 +1,25 @@
-import { transactionsApi, accountsApi } from '@/lib/api-client';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { DataList, DataListItem, DataListRow, DataListLabel, DataListValue } from '@/components/ui/data-list';
+import { Card, CardContent,CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DataList,
+  DataListItem,
+  DataListLabel,
+  DataListRow,
+  DataListValue,
+} from '@/components/ui/data-list';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { accountsApi,transactionsApi } from '@/lib/api-client';
+import type { AccountResponse,TransactionResponse } from '@/lib/types';
+import { formatDate,formatMoney } from '@/lib/utils';
+
 import { CreateTransactionForm } from './create-transaction-form';
-import { formatMoney, formatDate } from '@/lib/utils';
-import type { TransactionResponse, AccountResponse } from '@/lib/types';
 
 export default async function TransactionsPage() {
   const [transactionsData, accounts] = await Promise.all([
@@ -13,7 +27,8 @@ export default async function TransactionsPage() {
     accountsApi.list(),
   ]);
 
-  const transactions: TransactionResponse[] = transactionsData.content as TransactionResponse[];
+  const transactions: TransactionResponse[] =
+    transactionsData.content as TransactionResponse[];
 
   const getAccountName = (accountId: string | undefined) => {
     if (!accountId) return '—';
@@ -30,8 +45,12 @@ export default async function TransactionsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
-        <p className="text-slate-600 dark:text-slate-400 mt-1">Track your income and expenses</p>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          Transactions
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400 mt-1">
+          Track your income and expenses
+        </p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -43,8 +62,12 @@ export default async function TransactionsPage() {
             <CardContent>
               {transactions.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-slate-600 dark:text-slate-400 mb-2">No transactions yet</p>
-                  <p className="text-sm text-slate-500">Add your first transaction to start tracking!</p>
+                  <p className="text-slate-600 dark:text-slate-400 mb-2">
+                    No transactions yet
+                  </p>
+                  <p className="text-sm text-slate-500">
+                    Add your first transaction to start tracking!
+                  </p>
                 </div>
               ) : (
                 <>
@@ -55,11 +78,15 @@ export default async function TransactionsPage() {
                         <DataListItem key={transaction.id}>
                           <DataListRow>
                             <DataListLabel>Description</DataListLabel>
-                            <DataListValue className="font-medium">{transaction.description}</DataListValue>
+                            <DataListValue className="font-medium">
+                              {transaction.description}
+                            </DataListValue>
                           </DataListRow>
                           <DataListRow>
                             <DataListLabel>Amount</DataListLabel>
-                            <DataListValue className={`font-mono font-medium ${isExpense(transaction.amount) ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                            <DataListValue
+                              className={`font-mono font-medium ${isExpense(transaction.amount) ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}
+                            >
                               {formatMoney(transaction.amount)}
                             </DataListValue>
                           </DataListRow>
@@ -67,13 +94,17 @@ export default async function TransactionsPage() {
                             <DataListRow>
                               <DataListLabel>Category</DataListLabel>
                               <DataListValue>
-                                <Badge variant="secondary">{transaction.category}</Badge>
+                                <Badge variant="secondary">
+                                  {transaction.category}
+                                </Badge>
                               </DataListValue>
                             </DataListRow>
                           )}
                           <DataListRow>
                             <DataListLabel>Account</DataListLabel>
-                            <DataListValue className="text-slate-600 dark:text-slate-400">{getAccountName(transaction.accountId)}</DataListValue>
+                            <DataListValue className="text-slate-600 dark:text-slate-400">
+                              {getAccountName(transaction.accountId)}
+                            </DataListValue>
                           </DataListRow>
                           <DataListRow>
                             <DataListLabel>Date</DataListLabel>
@@ -84,8 +115,16 @@ export default async function TransactionsPage() {
                           <DataListRow>
                             <DataListLabel>Source</DataListLabel>
                             <DataListValue>
-                              <Badge variant={transaction.source === 'gmail' ? 'info' : 'default'}>
-                                {transaction.source === 'gmail' ? 'Gmail' : 'Manual'}
+                              <Badge
+                                variant={
+                                  transaction.source === 'gmail'
+                                    ? 'info'
+                                    : 'default'
+                                }
+                              >
+                                {transaction.source === 'gmail'
+                                  ? 'Gmail'
+                                  : 'Manual'}
                               </Badge>
                             </DataListValue>
                           </DataListRow>
@@ -93,7 +132,7 @@ export default async function TransactionsPage() {
                       ))}
                     </DataList>
                   </div>
-                  
+
                   {/* Desktop View */}
                   <div className="hidden lg:block">
                     <Table>
@@ -113,21 +152,37 @@ export default async function TransactionsPage() {
                             <TableCell className="text-slate-600 dark:text-slate-400">
                               {formatDate(transaction.date)}
                             </TableCell>
-                            <TableCell className="font-medium text-slate-900 dark:text-slate-100">{transaction.description}</TableCell>
+                            <TableCell className="font-medium text-slate-900 dark:text-slate-100">
+                              {transaction.description}
+                            </TableCell>
                             <TableCell>
                               {transaction.category ? (
-                                <Badge variant="secondary">{transaction.category}</Badge>
-                              ) : '—'}
+                                <Badge variant="secondary">
+                                  {transaction.category}
+                                </Badge>
+                              ) : (
+                                '—'
+                              )}
                             </TableCell>
                             <TableCell className="text-slate-600 dark:text-slate-400">
                               {getAccountName(transaction.accountId)}
                             </TableCell>
                             <TableCell>
-                              <Badge variant={transaction.source === 'gmail' ? 'info' : 'default'}>
-                                {transaction.source === 'gmail' ? 'Gmail' : 'Manual'}
+                              <Badge
+                                variant={
+                                  transaction.source === 'gmail'
+                                    ? 'info'
+                                    : 'default'
+                                }
+                              >
+                                {transaction.source === 'gmail'
+                                  ? 'Gmail'
+                                  : 'Manual'}
                               </Badge>
                             </TableCell>
-                            <TableCell className={`text-right font-mono font-medium ${isExpense(transaction.amount) ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                            <TableCell
+                              className={`text-right font-mono font-medium ${isExpense(transaction.amount) ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}
+                            >
                               {formatMoney(transaction.amount)}
                             </TableCell>
                           </TableRow>

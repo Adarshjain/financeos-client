@@ -1,17 +1,18 @@
 'use client';
 
-import { useFormState } from 'react-dom';
-import { 
-  addBankDetails, 
-  addCreditCardDetails, 
-  addStockDetails, 
-  addMutualFundDetails 
-} from '@/actions/accounts';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { FormField } from '@/components/ui/form-field';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { SubmitButton } from '@/components/forms/submit-button';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useFormState } from 'react-dom';
+
+import {
+  addBankDetails,
+  addCreditCardDetails,
+  addMutualFundDetails,
+  addStockDetails,
+} from '@/actions/accounts';
+import { SubmitButton } from '@/components/forms/submit-button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent,CardHeader, CardTitle } from '@/components/ui/card';
+import { FormField } from '@/components/ui/form-field';
 import type { AccountResponse, ApiResult } from '@/lib/types';
 
 interface AccountDetailsFormProps {
@@ -23,11 +24,23 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
   const addCreditCardWithId = addCreditCardDetails.bind(null, account.id);
   const addStockWithId = addStockDetails.bind(null, account.id);
   const addMutualFundWithId = addMutualFundDetails.bind(null, account.id);
-  
-  const [bankState, bankAction] = useFormState(addBankWithId, null as ApiResult<AccountResponse> | null);
-  const [creditCardState, creditCardAction] = useFormState(addCreditCardWithId, null as ApiResult<AccountResponse> | null);
-  const [stockState, stockAction] = useFormState(addStockWithId, null as ApiResult<AccountResponse> | null);
-  const [mutualFundState, mutualFundAction] = useFormState(addMutualFundWithId, null as ApiResult<AccountResponse> | null);
+
+  const [bankState, bankAction] = useFormState(
+    addBankWithId,
+    null as ApiResult<AccountResponse> | null
+  );
+  const [creditCardState, creditCardAction] = useFormState(
+    addCreditCardWithId,
+    null as ApiResult<AccountResponse> | null
+  );
+  const [stockState, stockAction] = useFormState(
+    addStockWithId,
+    null as ApiResult<AccountResponse> | null
+  );
+  const [mutualFundState, mutualFundAction] = useFormState(
+    addMutualFundWithId,
+    null as ApiResult<AccountResponse> | null
+  );
 
   // Show form based on account type and whether details already exist
   if (account.type === 'bank_account' && !account.bankDetails) {
@@ -50,7 +63,7 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
                 <AlertDescription>Bank details added!</AlertDescription>
               </Alert>
             )}
-            
+
             <FormField
               label="Opening Balance (INR)"
               name="openingBalance"
@@ -58,18 +71,16 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
               step="0.01"
               placeholder="50000.00"
             />
-            
+
             <FormField
               label="Account Last 4 Digits"
               name="last4"
               maxLength={4}
               placeholder="1234"
             />
-            
+
             <div className="pt-2">
-              <SubmitButton className="w-full">
-                Save Bank Details
-              </SubmitButton>
+              <SubmitButton className="w-full">Save Bank Details</SubmitButton>
             </div>
           </form>
         </CardContent>
@@ -88,7 +99,9 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
             {creditCardState && !creditCardState.success && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{creditCardState.error.message}</AlertDescription>
+                <AlertDescription>
+                  {creditCardState.error.message}
+                </AlertDescription>
               </Alert>
             )}
             {creditCardState?.success && (
@@ -97,7 +110,7 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
                 <AlertDescription>Credit card details added!</AlertDescription>
               </Alert>
             )}
-            
+
             <FormField
               label="Card Last 4 Digits"
               name="last4"
@@ -105,7 +118,7 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
               placeholder="9876"
               required
             />
-            
+
             <FormField
               label="Credit Limit (INR)"
               name="creditLimit"
@@ -114,7 +127,7 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
               placeholder="200000.00"
               required
             />
-            
+
             <FormField
               label="Payment Due Day (1-31)"
               name="paymentDueDay"
@@ -124,7 +137,7 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
               placeholder="15"
               required
             />
-            
+
             <FormField
               label="Grace Period (Days)"
               name="gracePeriodDays"
@@ -133,14 +146,14 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
               placeholder="20"
               required
             />
-            
+
             <FormField
               label="Statement Password (Optional)"
               name="statementPassword"
               type="password"
               placeholder="For PDF statements"
             />
-            
+
             <div className="pt-2">
               <SubmitButton className="w-full">
                 Save Credit Card Details
@@ -172,14 +185,14 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
                 <AlertDescription>Stock details added!</AlertDescription>
               </Alert>
             )}
-            
+
             <FormField
               label="Instrument Code"
               name="instrumentCode"
               placeholder="RELIANCE"
               required
             />
-            
+
             <FormField
               label="Last Traded Price (INR)"
               name="lastTradedPrice"
@@ -187,11 +200,9 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
               step="0.01"
               placeholder="2500.00"
             />
-            
+
             <div className="pt-2">
-              <SubmitButton className="w-full">
-                Save Stock Details
-              </SubmitButton>
+              <SubmitButton className="w-full">Save Stock Details</SubmitButton>
             </div>
           </form>
         </CardContent>
@@ -210,7 +221,9 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
             {mutualFundState && !mutualFundState.success && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{mutualFundState.error.message}</AlertDescription>
+                <AlertDescription>
+                  {mutualFundState.error.message}
+                </AlertDescription>
               </Alert>
             )}
             {mutualFundState?.success && (
@@ -219,14 +232,14 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
                 <AlertDescription>Mutual fund details added!</AlertDescription>
               </Alert>
             )}
-            
+
             <FormField
               label="Fund Code"
               name="instrumentCode"
               placeholder="HDFC-FLEXICAP"
               required
             />
-            
+
             <FormField
               label="Current NAV (INR)"
               name="lastTradedPrice"
@@ -234,7 +247,7 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
               step="0.0001"
               placeholder="45.5000"
             />
-            
+
             <div className="pt-2">
               <SubmitButton className="w-full">
                 Save Mutual Fund Details

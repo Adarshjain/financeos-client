@@ -1,10 +1,17 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { accountsApi } from '@/lib/api-client';
-import { formatMoney, formatDateTime, getAccountTypeLabel, getPositionLabel } from '@/lib/utils';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent,CardHeader, CardTitle } from '@/components/ui/card';
+import { accountsApi } from '@/lib/api-client';
+import {
+  formatDateTime,
+  formatMoney,
+  getAccountTypeLabel,
+  getPositionLabel,
+} from '@/lib/utils';
+
 import { AccountDetailsForm } from './account-details-form';
 
 interface AccountPageProps {
@@ -13,7 +20,7 @@ interface AccountPageProps {
 
 export default async function AccountDetailPage({ params }: AccountPageProps) {
   const { id } = await params;
-  
+
   let account;
   try {
     account = await accountsApi.getById(id);
@@ -28,8 +35,18 @@ export default async function AccountDetailPage({ params }: AccountPageProps) {
         href="/accounts"
         className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-colors"
       >
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+        <svg
+          className="w-4 h-4"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M15 19l-7-7 7-7"
+          />
         </svg>
         Back to Accounts
       </Link>
@@ -39,13 +56,25 @@ export default async function AccountDetailPage({ params }: AccountPageProps) {
         <CardContent className="pt-6">
           <div className="flex items-start justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{account.name}</h2>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {account.name}
+              </h2>
               {account.description && (
-                <p className="text-slate-600 dark:text-slate-400 mt-1">{account.description}</p>
+                <p className="text-slate-600 dark:text-slate-400 mt-1">
+                  {account.description}
+                </p>
               )}
               <div className="flex items-center gap-2 mt-3">
-                <Badge variant="info">{getAccountTypeLabel(account.type)}</Badge>
-                <Badge variant={account.financialPosition === 'liability' ? 'danger' : 'success'}>
+                <Badge variant="info">
+                  {getAccountTypeLabel(account.type)}
+                </Badge>
+                <Badge
+                  variant={
+                    account.financialPosition === 'liability'
+                      ? 'danger'
+                      : 'success'
+                  }
+                >
                   {getPositionLabel(account.financialPosition)}
                 </Badge>
                 {account.excludeFromNetAsset && (
@@ -55,25 +84,34 @@ export default async function AccountDetailPage({ params }: AccountPageProps) {
             </div>
             <div className="text-right">
               <p className="text-sm text-slate-500">Account ID</p>
-              <p className="text-xs font-mono text-slate-600 dark:text-slate-400 mt-1">{account.id}</p>
+              <p className="text-xs font-mono text-slate-600 dark:text-slate-400 mt-1">
+                {account.id}
+              </p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
             <div>
               <p className="text-sm text-slate-500">Created</p>
-              <p className="text-slate-900 dark:text-slate-200 mt-1">{formatDateTime(account.createdAt)}</p>
+              <p className="text-slate-900 dark:text-slate-200 mt-1">
+                {formatDateTime(account.createdAt)}
+              </p>
             </div>
             <div>
               <p className="text-sm text-slate-500">Last Updated</p>
-              <p className="text-slate-900 dark:text-slate-200 mt-1">{formatDateTime(account.updatedAt)}</p>
+              <p className="text-slate-900 dark:text-slate-200 mt-1">
+                {formatDateTime(account.updatedAt)}
+              </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Current Details */}
-      {(account.bankDetails || account.creditCardDetails || account.stockDetails || account.mutualFundDetails) && (
+      {(account.bankDetails ||
+        account.creditCardDetails ||
+        account.stockDetails ||
+        account.mutualFundDetails) && (
         <Card>
           <CardHeader>
             <CardTitle>Account Details</CardTitle>
@@ -180,8 +218,18 @@ export default async function AccountDetailPage({ params }: AccountPageProps) {
           <div className="flex flex-wrap gap-3">
             <Link href="/transactions">
               <Button variant="secondary">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                  />
                 </svg>
                 Add Transaction
               </Button>
@@ -189,8 +237,18 @@ export default async function AccountDetailPage({ params }: AccountPageProps) {
             {(account.type === 'stock' || account.type === 'mutual_fund') && (
               <Link href="/investments">
                 <Button variant="secondary">
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    />
                   </svg>
                   Trade Investment
                 </Button>

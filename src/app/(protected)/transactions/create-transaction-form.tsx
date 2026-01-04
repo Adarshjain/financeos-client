@@ -1,14 +1,19 @@
 'use client';
 
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useFormState } from 'react-dom';
+
 import { createTransaction } from '@/actions/transactions';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { SubmitButton } from '@/components/forms/submit-button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent,CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/ui/form-field';
 import { NativeSelect } from '@/components/ui/native-select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { SubmitButton } from '@/components/forms/submit-button';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import type { AccountResponse, ApiResult, TransactionResponse } from '@/lib/types';
+import type {
+  AccountResponse,
+  ApiResult,
+  TransactionResponse,
+} from '@/lib/types';
 
 interface CreateTransactionFormProps {
   accounts: AccountResponse[];
@@ -19,8 +24,13 @@ const transactionSources = [
   { value: 'gmail', label: 'Gmail Import' },
 ];
 
-export function CreateTransactionForm({ accounts }: CreateTransactionFormProps) {
-  const [state, formAction] = useFormState(createTransaction, null as ApiResult<TransactionResponse> | null);
+export function CreateTransactionForm({
+  accounts,
+}: CreateTransactionFormProps) {
+  const [state, formAction] = useFormState(
+    createTransaction,
+    null as ApiResult<TransactionResponse> | null
+  );
 
   const accountOptions = [
     { value: '', label: 'Select account (optional)...' },
@@ -46,13 +56,13 @@ export function CreateTransactionForm({ accounts }: CreateTransactionFormProps) 
               <AlertDescription>Transaction added!</AlertDescription>
             </Alert>
           )}
-          
+
           <NativeSelect
             label="Account"
             name="accountId"
             options={accountOptions}
           />
-          
+
           <FormField
             label="Amount (INR)"
             name="amount"
@@ -61,14 +71,14 @@ export function CreateTransactionForm({ accounts }: CreateTransactionFormProps) 
             placeholder="-500.00 for expense, 1000.00 for income"
             required
           />
-          
+
           <FormField
             label="Description"
             name="description"
             placeholder="e.g., Grocery shopping at BigBasket"
             required
           />
-          
+
           <FormField
             label="Date"
             name="date"
@@ -76,7 +86,7 @@ export function CreateTransactionForm({ accounts }: CreateTransactionFormProps) 
             defaultValue={new Date().toISOString().split('T')[0]}
             required
           />
-          
+
           <FormField
             label="Category (Optional)"
             name="category"
@@ -94,18 +104,16 @@ export function CreateTransactionForm({ accounts }: CreateTransactionFormProps) 
             name="spentFor"
             placeholder="e.g., Family, Work"
           />
-          
+
           <NativeSelect
             label="Source"
             name="source"
             options={transactionSources}
             defaultValue="manual"
           />
-          
+
           <div className="pt-2">
-            <SubmitButton className="w-full">
-              Add Transaction
-            </SubmitButton>
+            <SubmitButton className="w-full">Add Transaction</SubmitButton>
           </div>
         </form>
       </CardContent>

@@ -1,14 +1,19 @@
 'use client';
 
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useFormState } from 'react-dom';
+
 import { createInvestmentTransaction } from '@/actions/investments';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { SubmitButton } from '@/components/forms/submit-button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardContent,CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/ui/form-field';
 import { NativeSelect } from '@/components/ui/native-select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { SubmitButton } from '@/components/forms/submit-button';
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import type { AccountResponse, ApiResult, InvestmentTransactionResponse } from '@/lib/types';
+import type {
+  AccountResponse,
+  ApiResult,
+  InvestmentTransactionResponse,
+} from '@/lib/types';
 
 interface CreateInvestmentFormProps {
   accounts: AccountResponse[];
@@ -21,7 +26,10 @@ const transactionTypes = [
 ];
 
 export function CreateInvestmentForm({ accounts }: CreateInvestmentFormProps) {
-  const [state, formAction] = useFormState(createInvestmentTransaction, null as ApiResult<InvestmentTransactionResponse> | null);
+  const [state, formAction] = useFormState(
+    createInvestmentTransaction,
+    null as ApiResult<InvestmentTransactionResponse> | null
+  );
 
   const accountOptions = [
     { value: '', label: 'Select account...' },
@@ -47,21 +55,21 @@ export function CreateInvestmentForm({ accounts }: CreateInvestmentFormProps) {
               <AlertDescription>Trade recorded!</AlertDescription>
             </Alert>
           )}
-          
+
           <NativeSelect
             label="Account"
             name="accountId"
             options={accountOptions}
             required
           />
-          
+
           <NativeSelect
             label="Transaction Type"
             name="type"
             options={transactionTypes}
             required
           />
-          
+
           <FormField
             label="Quantity"
             name="quantity"
@@ -71,7 +79,7 @@ export function CreateInvestmentForm({ accounts }: CreateInvestmentFormProps) {
             placeholder="10"
             required
           />
-          
+
           <FormField
             label="Price per Unit (INR)"
             name="price"
@@ -81,7 +89,7 @@ export function CreateInvestmentForm({ accounts }: CreateInvestmentFormProps) {
             placeholder="2400.00"
             required
           />
-          
+
           <FormField
             label="Trade Date"
             name="date"
@@ -89,11 +97,9 @@ export function CreateInvestmentForm({ accounts }: CreateInvestmentFormProps) {
             defaultValue={new Date().toISOString().split('T')[0]}
             required
           />
-          
+
           <div className="pt-2">
-            <SubmitButton className="w-full">
-              Record Trade
-            </SubmitButton>
+            <SubmitButton className="w-full">Record Trade</SubmitButton>
           </div>
         </form>
       </CardContent>

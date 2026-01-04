@@ -1,8 +1,9 @@
 'use client';
 
-import { useFormStatus } from 'react-dom';
-import { Button, type ButtonProps } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { useFormStatus } from 'react-dom';
+
+import { Button, type ButtonProps } from '@/components/ui/button';
 
 interface SubmitButtonProps extends ButtonProps {
   children: React.ReactNode;

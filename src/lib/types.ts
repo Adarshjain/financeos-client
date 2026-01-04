@@ -1,6 +1,11 @@
 // Types generated from API spec
 
-export type AccountType = 'bank_account' | 'credit_card' | 'stock' | 'mutual_fund' | 'generic';
+export type AccountType =
+  | 'bank_account'
+  | 'credit_card'
+  | 'stock'
+  | 'mutual_fund'
+  | 'generic';
 export type FinancialPosition = 'asset' | 'liability';
 export type TransactionSource = 'gmail' | 'manual';
 export type InvestmentTransactionType = 'buy' | 'sell';
@@ -257,5 +262,3 @@ export interface ErrorResponse {
 export type ApiResult<T> =
   | { success: true; data: T }
   | { success: false; error: ErrorResponse };
-
-

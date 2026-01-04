@@ -1,12 +1,13 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+
 import { accountsApi, ApiError } from '@/lib/api-client';
 import type {
-  ApiResult,
   AccountResponse,
-  CreateAccountRequest,
   AccountType,
+  ApiResult,
+  CreateAccountRequest,
   FinancialPosition,
 } from '@/lib/types';
 
@@ -17,7 +18,9 @@ export async function createAccount(
   const name = formData.get('name') as string;
   const type = formData.get('type') as AccountType;
   const excludeFromNetAsset = formData.get('excludeFromNetAsset') === 'true';
-  const financialPosition = formData.get('financialPosition') as FinancialPosition | undefined;
+  const financialPosition = formData.get('financialPosition') as
+    | FinancialPosition
+    | undefined;
   const description = formData.get('description') as string | undefined;
 
   if (!name || !type) {
@@ -96,10 +99,20 @@ export async function addCreditCardDetails(
   const last4 = formData.get('last4') as string;
   const creditLimit = formData.get('creditLimit') as string;
   const paymentDueDay = parseInt(formData.get('paymentDueDay') as string, 10);
-  const gracePeriodDays = parseInt(formData.get('gracePeriodDays') as string, 10);
-  const statementPassword = formData.get('statementPassword') as string | undefined;
+  const gracePeriodDays = parseInt(
+    formData.get('gracePeriodDays') as string,
+    10
+  );
+  const statementPassword = formData.get('statementPassword') as
+    | string
+    | undefined;
 
-  if (!last4 || !creditLimit || isNaN(paymentDueDay) || isNaN(gracePeriodDays)) {
+  if (
+    !last4 ||
+    !creditLimit ||
+    isNaN(paymentDueDay) ||
+    isNaN(gracePeriodDays)
+  ) {
     return {
       success: false,
       error: {

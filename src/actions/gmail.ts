@@ -1,10 +1,18 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { gmailApi, ApiError } from '@/lib/api-client';
-import type { ApiResult, GmailOAuthStartResponse, GmailFetchResult, GmailFetchRequest } from '@/lib/types';
 
-export async function startGmailOAuth(): Promise<ApiResult<GmailOAuthStartResponse>> {
+import { ApiError,gmailApi } from '@/lib/api-client';
+import type {
+  ApiResult,
+  GmailFetchRequest,
+  GmailFetchResult,
+  GmailOAuthStartResponse,
+} from '@/lib/types';
+
+export async function startGmailOAuth(): Promise<
+  ApiResult<GmailOAuthStartResponse>
+> {
   try {
     const result = await gmailApi.startOAuth();
     return { success: true, data: result };
@@ -23,7 +31,9 @@ export async function startGmailOAuth(): Promise<ApiResult<GmailOAuthStartRespon
   }
 }
 
-export async function syncGmail(request?: GmailFetchRequest): Promise<ApiResult<GmailFetchResult>> {
+export async function syncGmail(
+  request?: GmailFetchRequest
+): Promise<ApiResult<GmailFetchResult>> {
   try {
     const result = await gmailApi.sync(request);
     revalidatePath('/transactions');

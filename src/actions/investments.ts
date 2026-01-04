@@ -1,8 +1,13 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { investmentsApi, ApiError } from '@/lib/api-client';
-import type { ApiResult, InvestmentTransactionResponse, InvestmentTransactionType } from '@/lib/types';
+
+import { ApiError,investmentsApi } from '@/lib/api-client';
+import type {
+  ApiResult,
+  InvestmentTransactionResponse,
+  InvestmentTransactionType,
+} from '@/lib/types';
 
 export async function createInvestmentTransaction(
   _prevState: ApiResult<InvestmentTransactionResponse> | null,
@@ -49,5 +54,3 @@ export async function createInvestmentTransaction(
     };
   }
 }
-
-

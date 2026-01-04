@@ -1,6 +1,13 @@
-import {Card, CardContent, CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
-import {requireAuth} from '@/lib/auth';
-import {GmailConnect} from './gmail-connect';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { requireAuth } from '@/lib/auth';
+
+import { GmailConnect } from './gmail-connect';
 
 export default async function SettingsPage() {
   const user = await requireAuth();
@@ -15,6 +22,7 @@ export default async function SettingsPage() {
         <CardContent>
           <div className="space-x-4 flex items-center">
             {user.pictureUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={user.pictureUrl}
                 alt={user.displayName || 'Profile'}
@@ -34,13 +42,16 @@ export default async function SettingsPage() {
       <Card>
         <CardHeader>
           <CardTitle>Gmail Integration</CardTitle>
-          <CardDescription>Connect Gmail to auto-import transaction emails</CardDescription>
+          <CardDescription>
+            Connect Gmail to auto-import transaction emails
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Connect your Gmail account to automatically import financial notifications and transaction emails.
+            Connect your Gmail account to automatically import financial
+            notifications and transaction emails.
           </p>
-          <GmailConnect/>
+          <GmailConnect />
         </CardContent>
       </Card>
     </div>

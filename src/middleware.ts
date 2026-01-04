@@ -1,14 +1,16 @@
-import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 const publicPaths = ['/login', '/auth/google/callback'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+
   // Check if the path is public
-  const isPublicPath = publicPaths.some(path => pathname === path || pathname.startsWith(path + '/'));
-  
+  const isPublicPath = publicPaths.some(
+    (path) => pathname === path || pathname.startsWith(path + '/')
+  );
+
   // Get the session cookie
   const sessionCookie = request.cookies.get('FINANCEOS_SESSION');
   const hasSession = !!sessionCookie?.value;
@@ -40,4 +42,3 @@ export const config = {
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };
-

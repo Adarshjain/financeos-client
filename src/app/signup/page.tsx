@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation';
+
 import { getSession } from '@/lib/auth';
+
 import { SignupForm } from './signup-form';
 
 export default async function SignupPage() {
@@ -10,4 +12,3 @@ export default async function SignupPage() {
 
   return <SignupForm />;
 }
-

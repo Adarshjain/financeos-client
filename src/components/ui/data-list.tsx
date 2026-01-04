@@ -1,16 +1,11 @@
+import { forwardRef,HTMLAttributes } from 'react';
+
 import { cn } from '@/lib/utils';
-import { HTMLAttributes, forwardRef } from 'react';
 
 // Mobile-friendly data list component (card-based layout)
 const DataList = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn('space-y-3', className)}
-        {...props}
-      />
-    );
+    return <div ref={ref} className={cn('space-y-3', className)} {...props} />;
   }
 );
 
@@ -47,32 +42,37 @@ const DataListRow = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
 
 DataListRow.displayName = 'DataListRow';
 
-const DataListLabel = forwardRef<HTMLSpanElement, HTMLAttributes<HTMLSpanElement>>(
-  ({ className, ...props }, ref) => {
-    return (
-      <span
-        ref={ref}
-        className={cn('text-xs text-slate-500 uppercase tracking-wide', className)}
-        {...props}
-      />
-    );
-  }
-);
+const DataListLabel = forwardRef<
+  HTMLSpanElement,
+  HTMLAttributes<HTMLSpanElement>
+>(({ className, ...props }, ref) => {
+  return (
+    <span
+      ref={ref}
+      className={cn(
+        'text-xs text-slate-500 uppercase tracking-wide',
+        className
+      )}
+      {...props}
+    />
+  );
+});
 
 DataListLabel.displayName = 'DataListLabel';
 
-const DataListValue = forwardRef<HTMLSpanElement, HTMLAttributes<HTMLSpanElement>>(
-  ({ className, ...props }, ref) => {
-    return (
-      <span
-        ref={ref}
-        className={cn('text-sm text-slate-900 dark:text-slate-100', className)}
-        {...props}
-      />
-    );
-  }
-);
+const DataListValue = forwardRef<
+  HTMLSpanElement,
+  HTMLAttributes<HTMLSpanElement>
+>(({ className, ...props }, ref) => {
+  return (
+    <span
+      ref={ref}
+      className={cn('text-sm text-slate-900 dark:text-slate-100', className)}
+      {...props}
+    />
+  );
+});
 
 DataListValue.displayName = 'DataListValue';
 
-export { DataList, DataListItem, DataListRow, DataListLabel, DataListValue };
+export { DataList, DataListItem, DataListLabel, DataListRow, DataListValue };

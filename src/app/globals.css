@@ -25,7 +25,7 @@
     --input: 214 32% 91%;
     --ring: 160 84% 39%; /* emerald-600 */
     --radius: 0.5rem;
-    
+
     /* Chart colors */
     --chart-1: 160 84% 39%;
     --chart-2: 217 91% 60%;
@@ -61,13 +61,20 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold tracking-tight;
   }
 }
@@ -91,13 +98,13 @@
 }
 
 /* Form elements */
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-input[type="number"] {
+input[type='number'] {
   -moz-appearance: textfield;
 }
 
@@ -120,7 +127,8 @@ input[type="number"] {
 @keyframes animate-in {
   from {
     opacity: var(--tw-enter-opacity, 1);
-    transform: scale(var(--tw-enter-scale, 1)) translateY(var(--tw-enter-translate-y, 0));
+    transform: scale(var(--tw-enter-scale, 1))
+      translateY(var(--tw-enter-translate-y, 0));
   }
   to {
     opacity: 1;

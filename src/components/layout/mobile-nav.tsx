@@ -1,13 +1,25 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import {
+  DollarSign,
+  Home,
+  LogOut,
+  Menu,
+  Receipt,
+  Settings,
+  TrendingUp,
+  Wallet,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { useEffect,useState } from 'react';
+
 import { logout } from '@/actions/auth';
-import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/logo';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Home, Wallet, Receipt, TrendingUp, Settings, DollarSign, Menu, X, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 interface NavItem {
   href: string;
@@ -16,11 +28,31 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: <Home className="h-5 w-5" /> },
-  { href: '/accounts', label: 'Accounts', icon: <Wallet className="h-5 w-5" /> },
-  { href: '/transactions', label: 'Transactions', icon: <Receipt className="h-5 w-5" /> },
-  { href: '/investments', label: 'Investments', icon: <TrendingUp className="h-5 w-5" /> },
-  { href: '/settings', label: 'Settings', icon: <Settings className="h-5 w-5" /> },
+  {
+    href: '/dashboard',
+    label: 'Dashboard',
+    icon: <Home className="h-5 w-5" />,
+  },
+  {
+    href: '/accounts',
+    label: 'Accounts',
+    icon: <Wallet className="h-5 w-5" />,
+  },
+  {
+    href: '/transactions',
+    label: 'Transactions',
+    icon: <Receipt className="h-5 w-5" />,
+  },
+  {
+    href: '/investments',
+    label: 'Investments',
+    icon: <TrendingUp className="h-5 w-5" />,
+  },
+  {
+    href: '/settings',
+    label: 'Settings',
+    icon: <Settings className="h-5 w-5" />,
+  },
 ];
 
 interface MobileNavProps {
@@ -51,10 +83,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 dark:bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 z-40 flex items-center justify-between px-4">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700">
-            <DollarSign className="h-4 w-4 text-white" />
-          </div>
-          <span className="font-bold text-slate-900 dark:text-white">FinanceOS</span>
+          <Logo size="sm" />
         </Link>
 
         <div className="flex items-center gap-1">
@@ -88,14 +117,17 @@ export function MobileNav({ userEmail }: MobileNavProps) {
         {userEmail && (
           <div className="p-4 border-b border-slate-200 dark:border-slate-800">
             <p className="text-xs text-slate-500">Signed in as</p>
-            <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{userEmail}</p>
+            <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
+              {userEmail}
+            </p>
           </div>
         )}
 
         {/* Navigation Links */}
         <div className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+            const isActive =
+              pathname === item.href || pathname.startsWith(item.href + '/');
             return (
               <Link
                 key={item.href}
@@ -117,7 +149,12 @@ export function MobileNav({ userEmail }: MobileNavProps) {
         {/* Sign Out */}
         <div className="p-4 border-t border-slate-200 dark:border-slate-800">
           <form action={logout}>
-            <Button variant="outline" size="sm" type="submit" className="w-full">
+            <Button
+              variant="outline"
+              size="sm"
+              type="submit"
+              className="w-full"
+            >
               <LogOut className="h-4 w-4 mr-2" />
               Sign out
             </Button>

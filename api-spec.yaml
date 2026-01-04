@@ -564,7 +564,7 @@ paths:
         Fetches raw emails from connected Gmail account.
         - MANUAL mode: Full fetch with optional time filter
         - PERIODIC mode: Incremental sync using historyId
-        
+
         Returns raw, uninterpreted data only. No business logic, no transaction creation.
       operationId: syncGmail
       security:
@@ -769,7 +769,7 @@ components:
           example: 50000.00
         last4:
           type: string
-          example: "1234"
+          example: '1234'
 
     BankDetailsResponse:
       type: object
@@ -785,7 +785,7 @@ components:
       properties:
         last4:
           type: string
-          example: "9876"
+          example: '9876'
         creditLimit:
           type: number
           format: decimal
@@ -864,7 +864,7 @@ components:
         date:
           type: string
           format: date
-          example: "2024-12-29"
+          example: '2024-12-29'
         amount:
           type: number
           format: decimal
@@ -966,7 +966,7 @@ components:
         date:
           type: string
           format: date
-          example: "2024-11-01"
+          example: '2024-11-01'
         metadata:
           type: object
           additionalProperties: true
@@ -1205,4 +1205,3 @@ components:
           type: string
           format: date-time
           description: Timestamp of this sync
-

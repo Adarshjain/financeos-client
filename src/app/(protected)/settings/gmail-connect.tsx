@@ -1,18 +1,30 @@
 'use client';
 
+import {
+  AlertCircle,
+  CheckCircle2,
+  Loader2,
+  Mail,
+  Paperclip,
+  RefreshCw,
+} from 'lucide-react';
 import { useState } from 'react';
+
 import { startGmailOAuth, syncGmail } from '@/actions/gmail';
-import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, RefreshCw, CheckCircle2, AlertCircle, Loader2, Paperclip } from 'lucide-react';
-import type { GmailFetchResult, GmailFetchMode } from '@/lib/types';
+import type { GmailFetchMode,GmailFetchResult } from '@/lib/types';
 
 export function GmailConnect() {
   const [loading, setLoading] = useState<'connect' | 'sync' | null>(null);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [lastFetchResult, setLastFetchResult] = useState<GmailFetchResult | null>(null);
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
+  const [lastFetchResult, setLastFetchResult] =
+    useState<GmailFetchResult | null>(null);
 
   const handleConnect = async () => {
     setLoading('connect');
@@ -39,9 +51,10 @@ export function GmailConnect() {
       setLastFetchResult(response.data);
       setMessage({
         type: 'success',
-        text: count > 0
-          ? `Fetched ${count} email${count > 1 ? 's' : ''} from Gmail.`
-          : 'Sync completed. No new emails found.',
+        text:
+          count > 0
+            ? `Fetched ${count} email${count > 1 ? 's' : ''} from Gmail.`
+            : 'Sync completed. No new emails found.',
       });
     } else {
       setMessage({ type: 'error', text: response.error.message });
@@ -67,7 +80,9 @@ export function GmailConnect() {
             <Mail className="h-5 w-5 text-slate-600 dark:text-slate-400" />
           </div>
           <div>
-            <span className="font-medium text-slate-900 dark:text-white">Gmail Integration</span>
+            <span className="font-medium text-slate-900 dark:text-white">
+              Gmail Integration
+            </span>
             <p className="text-sm text-slate-500 dark:text-slate-400">
               Connect your Gmail to fetch transaction emails
             </p>
@@ -165,10 +180,15 @@ export function GmailConnect() {
                   <div className="flex items-center gap-1 mt-1">
                     <Paperclip className="h-3 w-3 text-slate-400" />
                     <span className="text-xs text-slate-500">
-                      {msg.attachments.length} attachment{msg.attachments.length > 1 ? 's' : ''}
+                      {msg.attachments.length} attachment
+                      {msg.attachments.length > 1 ? 's' : ''}
                     </span>
-                    {msg.attachments.some(a => a.mimeType === 'application/pdf') && (
-                      <Badge variant="secondary" className="text-xs py-0">PDF</Badge>
+                    {msg.attachments.some(
+                      (a) => a.mimeType === 'application/pdf'
+                    ) && (
+                      <Badge variant="secondary" className="text-xs py-0">
+                        PDF
+                      </Badge>
                     )}
                   </div>
                 )}
@@ -181,7 +201,8 @@ export function GmailConnect() {
             )}
             {lastFetchResult.nextState && (
               <p className="text-xs text-slate-500 pt-2 border-t border-slate-200 dark:border-slate-700">
-                Last synced: {formatDate(lastFetchResult.nextState.lastSyncedAt)}
+                Last synced:{' '}
+                {formatDate(lastFetchResult.nextState.lastSyncedAt)}
               </p>
             )}
           </CardContent>

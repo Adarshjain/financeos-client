@@ -1,9 +1,14 @@
 'use server';
 
 import { redirect } from 'next/navigation';
-import { authApi, ApiError } from '@/lib/api-client';
-import { setSessionCookie, clearSessionCookie } from '@/lib/auth';
-import type { ApiResult, UserResponse, GoogleAuthStartResponse } from '@/lib/types';
+
+import { ApiError,authApi } from '@/lib/api-client';
+import { clearSessionCookie,setSessionCookie } from '@/lib/auth';
+import type {
+  ApiResult,
+  GoogleAuthStartResponse,
+  UserResponse,
+} from '@/lib/types';
 
 export async function signup(
   _prevState: ApiResult<UserResponse> | null,
@@ -103,7 +108,9 @@ export async function logout(): Promise<void> {
   redirect('/login');
 }
 
-export async function startGoogleSSO(): Promise<ApiResult<GoogleAuthStartResponse>> {
+export async function startGoogleSSO(): Promise<
+  ApiResult<GoogleAuthStartResponse>
+> {
   try {
     const result = await authApi.startGoogleAuth();
     return { success: true, data: result };
@@ -128,7 +135,11 @@ export async function handleGoogleCallbackAction(
   error: string | undefined
 ): Promise<ApiResult<UserResponse>> {
   try {
-    const { user, sessionCookie } = await authApi.handleGoogleCallback({ code, state, error });
+    const { user, sessionCookie } = await authApi.handleGoogleCallback({
+      code,
+      state,
+      error,
+    });
 
     if (sessionCookie) {
       await setSessionCookie(sessionCookie);
@@ -149,5 +160,3 @@ export async function handleGoogleCallbackAction(
     };
   }
 }
-
-

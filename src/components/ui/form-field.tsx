@@ -1,7 +1,9 @@
 import * as React from 'react';
+
+import { cn } from '@/lib/utils';
+
 import { Input } from './input';
 import { Label } from './label';
-import { cn } from '@/lib/utils';
 
 interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -9,9 +11,16 @@ interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   hint?: string;
 }
 
-export function FormField({ label, error, hint, id, className, ...props }: FormFieldProps) {
+export function FormField({
+  label,
+  error,
+  hint,
+  id,
+  className,
+  ...props
+}: FormFieldProps) {
   const fieldId = id || props.name;
-  
+
   return (
     <div className={cn('space-y-1.5', className)}>
       <Label htmlFor={fieldId}>{label}</Label>

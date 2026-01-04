@@ -1,17 +1,18 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { authApi, ApiError } from './api-client';
+
+import { ApiError,authApi } from './api-client';
 import type { UserResponse } from './types';
 
 export async function getSession(): Promise<UserResponse | null> {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('FINANCEOS_SESSION');
-  
+
   // No cookie means no session
   if (!sessionCookie?.value) {
     return null;
   }
-  
+
   try {
     const user = await authApi.getCurrentUser();
     return user;
@@ -49,4 +50,3 @@ export async function clearSessionCookie(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete('FINANCEOS_SESSION');
 }
-
