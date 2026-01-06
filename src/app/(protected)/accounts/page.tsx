@@ -2,21 +2,8 @@ import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  DataList,
-  DataListItem,
-  DataListLabel,
-  DataListRow,
-  DataListValue,
-} from '@/components/ui/data-list';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { DataList, DataListItem, DataListLabel, DataListRow, DataListValue } from '@/components/ui/data-list';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { accountsApi } from '@/lib/api-client';
 import { getAccountTypeLabel, getPositionLabel } from '@/lib/utils';
 

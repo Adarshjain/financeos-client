@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 const publicPaths = ['/login', '/auth/google/callback'];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if the path is public
