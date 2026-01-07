@@ -1,12 +1,12 @@
 'use client';
 
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 
 import { createTransaction } from '@/actions/transactions';
 import { SubmitButton } from '@/components/forms/submit-button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent,CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/ui/form-field';
 import { NativeSelect } from '@/components/ui/native-select';
 import type {
@@ -27,7 +27,7 @@ const transactionSources = [
 export function CreateTransactionForm({
   accounts,
 }: CreateTransactionFormProps) {
-  const [state, formAction] = useFormState(
+  const [state, formAction] = useActionState(
     createTransaction,
     null as ApiResult<TransactionResponse> | null
   );

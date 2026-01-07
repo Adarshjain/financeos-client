@@ -1,10 +1,9 @@
 'use client';
 
-import { AlertCircle, CheckCircle2, DollarSign } from 'lucide-react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { useFormState } from 'react-dom';
+import { useActionState, useEffect } from 'react';
 
 import { signup } from '@/actions/auth';
 import { SubmitButton } from '@/components/forms/submit-button';
@@ -15,7 +14,7 @@ import { FormField } from '@/components/ui/form-field';
 import type { ApiResult, UserResponse } from '@/lib/types';
 
 export function SignupForm() {
-  const [state, formAction] = useFormState(
+  const [state, formAction] = useActionState(
     signup,
     null as ApiResult<UserResponse> | null
   );

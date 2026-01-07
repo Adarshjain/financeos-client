@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 
 import {
   addBankDetails,
@@ -11,7 +11,7 @@ import {
 } from '@/actions/accounts';
 import { SubmitButton } from '@/components/forms/submit-button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent,CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/ui/form-field';
 import type { AccountResponse, ApiResult } from '@/lib/types';
 
@@ -25,19 +25,19 @@ export function AccountDetailsForm({ account }: AccountDetailsFormProps) {
   const addStockWithId = addStockDetails.bind(null, account.id);
   const addMutualFundWithId = addMutualFundDetails.bind(null, account.id);
 
-  const [bankState, bankAction] = useFormState(
+  const [bankState, bankAction] = useActionState(
     addBankWithId,
     null as ApiResult<AccountResponse> | null
   );
-  const [creditCardState, creditCardAction] = useFormState(
+  const [creditCardState, creditCardAction] = useActionState(
     addCreditCardWithId,
     null as ApiResult<AccountResponse> | null
   );
-  const [stockState, stockAction] = useFormState(
+  const [stockState, stockAction] = useActionState(
     addStockWithId,
     null as ApiResult<AccountResponse> | null
   );
-  const [mutualFundState, mutualFundAction] = useFormState(
+  const [mutualFundState, mutualFundAction] = useActionState(
     addMutualFundWithId,
     null as ApiResult<AccountResponse> | null
   );

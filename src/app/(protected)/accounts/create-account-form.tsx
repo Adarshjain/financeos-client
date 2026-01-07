@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 
 import { createAccount } from '@/actions/accounts';
 import { SubmitButton } from '@/components/forms/submit-button';
@@ -33,7 +33,7 @@ const financialPositions = [
 ];
 
 export function CreateAccountForm() {
-  const [state, formAction] = useFormState(
+  const [state, formAction] = useActionState(
     createAccount,
     null as ApiResult<AccountResponse> | null
   );

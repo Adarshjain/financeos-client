@@ -1,8 +1,8 @@
 'use client';
 
-import { AlertCircle, DollarSign } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 
 import { login, startGoogleSSO } from '@/actions/auth';
 import { SubmitButton } from '@/components/forms/submit-button';
@@ -14,7 +14,7 @@ import { FormField } from '@/components/ui/form-field';
 import type { ApiResult, UserResponse } from '@/lib/types';
 
 export function LoginForm() {
-  const [state, formAction] = useFormState(
+  const [state, formAction] = useActionState(
     login,
     null as ApiResult<UserResponse> | null
   );
