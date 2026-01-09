@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-const publicPaths = ['/login', '/auth/google/callback'];
+const publicPaths = ['/login','/signup', '/auth/google/callback'];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
