@@ -80,7 +80,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
   return (
     <>
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 dark:bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 z-40 flex items-center justify-between px-4">
+      <header className="lg:hidden fixed bottom-0 left-0 right-0 h-14 bg-white/95 dark:bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 z-40 flex items-center justify-between px-4">
         <Link href="/dashboard" className="flex items-center gap-2" onClick={handleLinkClick}>
           <Logo size="sm" />
         </Link>

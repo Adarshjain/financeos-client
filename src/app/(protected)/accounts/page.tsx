@@ -15,7 +15,7 @@ export default async function AccountsPage() {
 
   const bankAccounts = accounts.filter(a => a.type === 'bank_account') as BankAccount[];
   const creditCards = accounts.filter(a => a.type === 'credit_card') as CreditCard[];
-  const others = accounts.filter(a => !['bank_account', 'credit_card'].includes(a.type));
+  // const others = accounts.filter(a => !['bank_account', 'credit_card'].includes(a.type));
 
   return (
     <div className="space-y-6">
@@ -42,114 +42,64 @@ export default async function AccountsPage() {
           </Card>
         ) : (
           <>
-            {/* Mobile View */}
-            <div className="lg:hidden">
-              <div className="gap-2 flex flex-col">
-                <div className="font-bold">Bank Accounts</div>
-                {bankAccounts.map((account) => (
-                  <Link
-                    href={`/accounts/${account.id}`}
-                    key={account.id}
-                    className="border rounded-md flex w-full border-b p-2 gap-2 bg-white flex-col"
-                  >
-                    <div className="flex justify-between">
-                      <div className="flex gap-2">
-                        <div className="font-semibold text-emerald-600 dark:text-emerald-400">
-                          {account.name}
-                        </div>
-                        <Badge
-                          variant={account.financialPosition === 'liability' ? 'danger' : 'success'}>
-                          {getPositionLabel(account.financialPosition)}
-                        </Badge>
+            <div className="gap-2 flex flex-col">
+              <div className="font-bold">Bank Accounts</div>
+              {bankAccounts.map((account) => (
+                <Link
+                  href={`/accounts/${account.id}`}
+                  key={account.id}
+                  className="border rounded-md flex w-full border-b p-2 gap-2 bg-white flex-col"
+                >
+                  <div className="flex justify-between">
+                    <div className="flex gap-2">
+                      <div className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        {account.name}
                       </div>
-                      <div><span className="text-muted-foreground">••••</span> {account.last4}</div>
+                      <Badge
+                        variant={account.financialPosition === 'liability' ? 'danger' : 'success'}>
+                        {getPositionLabel(account.financialPosition)}
+                      </Badge>
                     </div>
-                    <div className="flex justify-between">
-                      <div>{account.description}</div>
-                      <div>{formatMoney(account.openingBalance)}</div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-              <div className="gap-2 flex flex-col mt-6">
-                <div className="font-bold">Cards</div>
-                {creditCards.map((account) => (
-                  <Link
-                    href={`/accounts/${account.id}`}
-                    key={account.id}
-                    className="border rounded-md flex w-full border-b p-2 gap-2 bg-white flex-col"
-                  >
-                    <div className="flex justify-between">
-                      <div className="flex gap-2">
-                        <div className="font-semibold text-emerald-600 dark:text-emerald-400">
-                          {account.name}
-                        </div>
-                        <Badge
-                          variant={account.financialPosition === 'liability' ? 'danger' : 'success'}>
-                          {getPositionLabel(account.financialPosition)}
-                        </Badge>
-                      </div>
-                      <div><span className="text-muted-foreground">••••</span> {account.last4}</div>
-                    </div>
-                    <div className="flex justify-between">
-                      <div>{account.description}</div>
-                      <div>{formatMoney(account.creditLimit)}</div>
-                    </div>
-                    <div className="h-[1px] w-full bg-gray-300"></div>
-                    <div className="flex justify-between">
-                      <div>Grace Period: {account.gracePeriodDays} days</div>
-                      <div>Payment Date: {account.paymentDueDay}</div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+                    <div><span className="text-muted-foreground">••••</span> {account.last4}</div>
+                  </div>
+                  <div className="flex justify-between">
+                    <div>{account.description}</div>
+                    <div>{formatMoney(account.openingBalance)}</div>
+                  </div>
+                </Link>
+              ))}
             </div>
-
-            {/* Desktop View */}
-            <div className="hidden lg:block">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Position</TableHead>
-                    <TableHead>Description</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {accounts.map((account) => (
-                    <TableRow key={account.id}>
-                      <TableCell>
-                        <Link
-                          href={`/accounts/${account.id}`}
-                          className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
-                        >
-                          {account.name}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary">
-                          {getAccountTypeLabel(account.type)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            account.financialPosition === 'liability'
-                              ? 'danger'
-                              : 'success'
-                          }
-                        >
-                          {getPositionLabel(account.financialPosition)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {account.description || '—'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            <div className="gap-2 flex flex-col">
+              <div className="font-bold">Cards</div>
+              {creditCards.map((account) => (
+                <Link
+                  href={`/accounts/${account.id}`}
+                  key={account.id}
+                  className="border rounded-md flex w-full border-b p-2 gap-2 bg-white flex-col"
+                >
+                  <div className="flex justify-between">
+                    <div className="flex gap-2">
+                      <div className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        {account.name}
+                      </div>
+                      <Badge
+                        variant={account.financialPosition === 'liability' ? 'danger' : 'success'}>
+                        {getPositionLabel(account.financialPosition)}
+                      </Badge>
+                    </div>
+                    <div><span className="text-muted-foreground">••••</span> {account.last4}</div>
+                  </div>
+                  <div className="flex justify-between">
+                    <div>{account.description}</div>
+                    <div>{formatMoney(account.creditLimit)}</div>
+                  </div>
+                  <div className="h-[1px] w-full bg-gray-300"></div>
+                  <div className="flex justify-between">
+                    <div>Grace Period: {account.gracePeriodDays} days</div>
+                    <div>Payment Date: {account.paymentDueDay}</div>
+                  </div>
+                </Link>
+              ))}
             </div>
           </>
         )}
