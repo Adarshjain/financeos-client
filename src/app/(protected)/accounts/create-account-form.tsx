@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 
 import { createAccount } from '@/actions/accounts';
 import { SubmitButton } from '@/components/forms/submit-button';
@@ -16,15 +16,15 @@ import {
 } from '@/components/ui/dialog';
 import { FormField } from '@/components/ui/form-field';
 import { NativeSelect } from '@/components/ui/native-select';
-import type { AccountResponse, ApiResult } from '@/lib/types';
+import { GroupedAccount } from '@/lib/account.types';
+import { AccountType, ApiResult } from '@/lib/types';
 
-const accountTypes = [
-  { value: '', label: 'Select type...' },
+const accountTypes: { value: AccountType; label: string }[] = [
   { value: 'bank_account', label: 'Bank Account' },
   { value: 'credit_card', label: 'Credit Card' },
-  { value: 'stock', label: 'Stock' },
-  { value: 'mutual_fund', label: 'Mutual Fund' },
-  { value: 'generic', label: 'Generic' },
+  // { value: 'stock', label: 'Stock' },
+  // { value: 'mutual_fund', label: 'Mutual Fund' },
+  // { value: 'generic', label: 'Generic' },
 ];
 
 const financialPositions = [
@@ -35,8 +35,10 @@ const financialPositions = [
 export function CreateAccountForm() {
   const [state, formAction] = useActionState(
     createAccount,
-    null as ApiResult<AccountResponse> | null
+    null as ApiResult<GroupedAccount> | null,
   );
+
+  const [accountType, setAccountType] = useState<AccountType>('bank_account');
 
   return (
     <Dialog>
@@ -72,6 +74,8 @@ export function CreateAccountForm() {
             label="Account Type"
             name="type"
             options={accountTypes}
+            value={accountType}
+            onChange={(e) => setAccountType(e.currentTarget.value as AccountType)}
             required
           />
 
@@ -85,7 +89,7 @@ export function CreateAccountForm() {
           <FormField
             label="Description (Optional)"
             name="description"
-            placeholder="Brief description of the account"
+            placeholder="Description"
           />
 
           <div className="flex items-center gap-2">
@@ -104,6 +108,48 @@ export function CreateAccountForm() {
             </label>
           </div>
 
+          {accountType === 'bank_account' ? <>
+            <FormField
+              label="Opening Balance"
+              name="openingBalance"
+            />
+            <FormField
+              label="Last 4"
+              name="last4"
+              type="number"
+            />
+          </>: null}
+
+          {accountType === 'credit_card' ? <>
+            <FormField
+              label="Last 4"
+              name="last4"
+              type="number"
+              required
+            />
+            <FormField
+              label="Credit Limit"
+              name="creditLimit"
+              type="number"
+              required
+            />
+            <FormField
+              label="Payment Due Date"
+              name="paymentDueDay"
+              type="number"
+              required
+            />
+            <FormField
+              label="Grace Period Days"
+              name="gracePeriodDays"
+              type="number"
+              required
+            />
+            <FormField
+              label="Statement Password"
+              name="statementPassword"
+            />
+          </>: null}
           <div className="pt-2">
             <SubmitButton className="w-full">Create Account</SubmitButton>
           </div>

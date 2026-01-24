@@ -22,7 +22,7 @@ export function FormField({
   const fieldId = id || props.name;
 
   return (
-    <div className={cn('space-y-1.5', className)}>
+    <div className={cn('space-y-1', className)}>
       <Label htmlFor={fieldId}>{label}</Label>
       <Input
         id={fieldId}
