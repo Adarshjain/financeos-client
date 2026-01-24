@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent,CardHeader, CardTitle } from '@/components/ui/card';
+import { Account } from '@/lib/account.types';
 import { accountsApi } from '@/lib/apiClient';
 import {
   formatDateTime,
@@ -13,6 +14,7 @@ import {
 } from '@/lib/utils';
 
 import { AccountDetailsForm } from './AccountDetailsForm';
+import { EditAccountForm } from './EditAccountForm';
 
 interface AccountPageProps {
   params: Promise<{ id: string }>;
@@ -21,7 +23,7 @@ interface AccountPageProps {
 export default async function AccountDetailPage({ params }: AccountPageProps) {
   const { id } = await params;
 
-  let account;
+  let account: Account;
   try {
     account = await accountsApi.getById(id);
   } catch {
@@ -207,7 +209,7 @@ export default async function AccountDetailPage({ params }: AccountPageProps) {
       )}
 
       {/* Add/Update Details Form */}
-      <AccountDetailsForm account={account} />
+      {/*<AccountDetailsForm account={account} />*/}
 
       {/* Quick Actions */}
       <Card>

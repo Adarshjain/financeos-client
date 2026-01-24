@@ -205,6 +205,13 @@ export const accountsApi = {
       body: JSON.stringify(data),
     });
   },
+
+  async update(id: string, data: AccountRequest): Promise<Account> {
+    return request<Account>(`/api/v1/accounts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 // Transactions API

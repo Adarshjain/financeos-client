@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { EditAccountForm } from '@/app/(protected)/accounts/[id]/EditAccountForm';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataList, DataListItem, DataListLabel, DataListRow, DataListValue } from '@/components/ui/data-list';
@@ -45,28 +46,33 @@ export default async function AccountsPage() {
             <div className="gap-2 flex flex-col">
               <div className="font-bold">Bank Accounts</div>
               {bankAccounts.map((account) => (
-                <Link
-                  href={`/accounts/${account.id}`}
+                <div
                   key={account.id}
-                  className="border rounded-md flex w-full border-b p-2 gap-2 bg-white flex-col"
                 >
-                  <div className="flex justify-between">
-                    <div className="flex gap-2">
-                      <div className="font-semibold text-emerald-600 dark:text-emerald-400">
-                        {account.name}
+
+                  <Link
+                    href={`/accounts/${account.id}`}
+                    className="border rounded-md flex w-full border-b p-2 gap-2 bg-white flex-col"
+                  >
+                    <div className="flex justify-between">
+                      <div className="flex gap-2">
+                        <div className="font-semibold text-emerald-600 dark:text-emerald-400">
+                          {account.name}
+                        </div>
+                        <Badge
+                          variant={account.financialPosition === 'liability' ? 'danger' : 'success'}>
+                          {getPositionLabel(account.financialPosition)}
+                        </Badge>
                       </div>
-                      <Badge
-                        variant={account.financialPosition === 'liability' ? 'danger' : 'success'}>
-                        {getPositionLabel(account.financialPosition)}
-                      </Badge>
+                      <div><span className="text-muted-foreground">••••</span> {account.last4}</div>
                     </div>
-                    <div><span className="text-muted-foreground">••••</span> {account.last4}</div>
-                  </div>
-                  <div className="flex justify-between">
-                    <div>{account.description}</div>
-                    <div>{formatMoney(account.openingBalance)}</div>
-                  </div>
-                </Link>
+                    <div className="flex justify-between">
+                      <div>{account.description}</div>
+                      <div>{formatMoney(account.openingBalance)}</div>
+                    </div>
+                  </Link>
+                  <EditAccountForm account={account} />
+                </div>
               ))}
             </div>
             <div className="gap-2 flex flex-col">
