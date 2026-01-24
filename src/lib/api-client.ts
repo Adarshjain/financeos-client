@@ -1,12 +1,16 @@
 import { cookies } from 'next/headers';
 
+import {
+  Account, AccountRequest,
+  BankAccountRequest,
+  CreditCardRequest,
+  MutualFundRequest,
+  StockRequest,
+} from '@/lib/account.types';
+
 import type {
-  AccountResponse,
-  BankDetailsRequest,
-  CreateAccountRequest,
   CreateInvestmentTransactionRequest,
   CreateTransactionRequest,
-  CreditCardDetailsRequest,
   DashboardSummary,
   ErrorResponse,
   GmailFetchRequest,
@@ -16,11 +20,9 @@ import type {
   InvestmentPositionResponse,
   InvestmentTransactionResponse,
   LoginRequest,
-  MutualFundDetailsRequest,
   PagedInvestmentTransactionResponse,
   PagedTransactionResponse,
   SignupRequest,
-  StockDetailsRequest,
   TransactionResponse,
   UserResponse,
 } from './types';
@@ -189,65 +191,19 @@ export const authApi = {
 
 // Accounts API
 export const accountsApi = {
-  async list(): Promise<AccountResponse[]> {
-    return request<AccountResponse[]>('/api/v1/accounts');
+  async list(): Promise<Account[]> {
+    return request<Account[]>('/api/v1/accounts');
   },
 
-  async getById(id: string): Promise<AccountResponse> {
-    return request<AccountResponse>(`/api/v1/accounts/${id}`);
+  async getById(id: string): Promise<Account> {
+    return request<Account>(`/api/v1/accounts/${id}`);
   },
 
-  async create(data: CreateAccountRequest): Promise<AccountResponse> {
-    return request<AccountResponse>('/api/v1/accounts', {
+  async create(data: AccountRequest): Promise<Account> {
+    return request<Account>('/api/v1/accounts', {
       method: 'POST',
       body: JSON.stringify(data),
     });
-  },
-
-  async addBankDetails(
-    id: string,
-    data: BankDetailsRequest
-  ): Promise<AccountResponse> {
-    return request<AccountResponse>(`/api/v1/accounts/${id}/bank-details`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async addCreditCardDetails(
-    id: string,
-    data: CreditCardDetailsRequest
-  ): Promise<AccountResponse> {
-    return request<AccountResponse>(
-      `/api/v1/accounts/${id}/credit-card-details`,
-      {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }
-    );
-  },
-
-  async addStockDetails(
-    id: string,
-    data: StockDetailsRequest
-  ): Promise<AccountResponse> {
-    return request<AccountResponse>(`/api/v1/accounts/${id}/stock-details`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async addMutualFundDetails(
-    id: string,
-    data: MutualFundDetailsRequest
-  ): Promise<AccountResponse> {
-    return request<AccountResponse>(
-      `/api/v1/accounts/${id}/mutual-fund-details`,
-      {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }
-    );
   },
 };
 

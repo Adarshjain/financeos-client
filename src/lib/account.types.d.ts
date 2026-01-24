@@ -1,6 +1,6 @@
 import { AccountType, FinancialPosition } from '@/lib/types';
 
-interface Account {
+interface AccountRequestBase {
   name: string;
   type: AccountType;
   excludeFromNetAsset?: boolean;
@@ -8,12 +8,12 @@ interface Account {
   description?: string;
 }
 
-export type BankDetails = Account & {
+export type BankAccountRequest = AccountRequestBase & {
   openingBalance?: string;
   last4?: string;
 }
 
-export type CreditCardDetails = Account & {
+export type CreditCardRequest = AccountRequestBase & {
   last4: string;
   creditLimit: number;
   paymentDueDay: number;
@@ -21,14 +21,49 @@ export type CreditCardDetails = Account & {
   statementPassword?: string;
 }
 
-export type StockDetails = Account & {
+export type StockRequest = AccountRequestBase & {
   instrumentCode: string;
   lastTradedPrice?: string;
 }
 
-export type MutualFundDetails = Account & {
+export type MutualFundRequest = AccountRequestBase & {
   instrumentCode: string;
   lastTradedPrice?: string;
 }
 
-type GroupedAccount = Account | BankDetails | CreditCardDetails | StockDetails | MutualFundDetails;
+export type AccountRequest = AccountRequestBase | BankAccountRequest | CreditCardRequest | StockRequest | MutualFundRequest;
+
+
+interface AccountBase {
+  id: string;
+  name: string;
+  type: AccountType;
+  excludeFromNetAsset?: boolean;
+  financialPosition?: FinancialPosition;
+  description?: string;
+}
+
+export type BankAccount = AccountBase & {
+  openingBalance?: string;
+  last4?: string;
+}
+
+export type CreditCard = AccountBase & {
+  last4: string;
+  creditLimit: number;
+  paymentDueDay: number;
+  gracePeriodDays: number;
+  statementPassword?: string;
+}
+
+export type Stock = AccountBase & {
+  instrumentCode: string;
+  lastTradedPrice?: string;
+}
+
+export type MutualFund = AccountBase & {
+  instrumentCode: string;
+  lastTradedPrice?: string;
+}
+
+export type Account = AccountBase | BankAccount | CreditCard | Stock | MutualFund;
