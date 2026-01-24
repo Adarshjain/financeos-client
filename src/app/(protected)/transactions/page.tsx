@@ -15,11 +15,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { accountsApi,transactionsApi } from '@/lib/api-client';
+import { accountsApi,transactionsApi } from '@/lib/apiClient';
 import type { AccountResponse,TransactionResponse } from '@/lib/types';
 import { formatDate,formatMoney } from '@/lib/utils';
 
-import { CreateTransactionForm } from './create-transaction-form';
+import { CreateTransactionForm } from './CreateTransactionForm';
 
 export default async function TransactionsPage() {
   const [transactionsData, accounts] = await Promise.all([

@@ -2,7 +2,7 @@
 
 import { redirect } from 'next/navigation';
 
-import { ApiError,authApi } from '@/lib/api-client';
+import { ApiError,authApi } from '@/lib/apiClient';
 import { clearSessionCookie,setSessionCookie } from '@/lib/auth';
 import type {
   ApiResult,

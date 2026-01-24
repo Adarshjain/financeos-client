@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent,CardHeader, CardTitle } from '@/components/ui/card';
-import { accountsApi } from '@/lib/api-client';
+import { accountsApi } from '@/lib/apiClient';
 import {
   formatDateTime,
   formatMoney,
@@ -12,7 +12,7 @@ import {
   getPositionLabel,
 } from '@/lib/utils';
 
-import { AccountDetailsForm } from './account-details-form';
+import { AccountDetailsForm } from './AccountDetailsForm';
 
 interface AccountPageProps {
   params: Promise<{ id: string }>;

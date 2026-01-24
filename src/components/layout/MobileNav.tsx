@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 
 import { logout } from '@/actions/auth';
 import { Logo } from '@/components/logo';
-import { ThemeToggle } from '@/components/theme-toggle';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 

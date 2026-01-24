@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/card';
 import { requireAuth } from '@/lib/auth';
 
-import { GmailConnect } from './gmail-connect';
+import { GmailConnect } from './GmailConnect';
 
 export default async function SettingsPage() {
   const user = await requireAuth();

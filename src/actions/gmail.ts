@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { ApiError,gmailApi } from '@/lib/api-client';
+import { ApiError,gmailApi } from '@/lib/apiClient';
 import type {
   ApiResult,
   GmailFetchRequest,

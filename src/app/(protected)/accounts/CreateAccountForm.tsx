@@ -4,7 +4,7 @@ import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useActionState, useState } from 'react';
 
 import { createAccount } from '@/actions/accounts';
-import { SubmitButton } from '@/components/forms/submit-button';
+import { SubmitButton } from '@/components/forms/SubmitButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import {

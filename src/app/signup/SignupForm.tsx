@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useActionState, useEffect } from 'react';
 
 import { signup } from '@/actions/auth';
-import { SubmitButton } from '@/components/forms/submit-button';
+import { SubmitButton } from '@/components/forms/SubmitButton';
 import { Logo } from '@/components/logo';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent } from '@/components/ui/card';

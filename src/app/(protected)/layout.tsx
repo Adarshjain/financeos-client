@@ -1,5 +1,5 @@
-import { MobileNav } from '@/components/layout/mobile-nav';
-import { Sidebar } from '@/components/layout/sidebar';
+import { MobileNav } from '@/components/layout/MobileNav';
+import { Sidebar } from '@/components/layout/Sidebar';
 import { requireAuth } from '@/lib/auth';
 
 export default async function ProtectedLayout({

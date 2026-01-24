@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { ApiError,transactionsApi } from '@/lib/api-client';
+import { ApiError,transactionsApi } from '@/lib/apiClient';
 import type {
   ApiResult,
   TransactionResponse,

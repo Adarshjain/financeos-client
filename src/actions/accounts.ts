@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { Account,BankAccountRequest, CreditCardRequest } from '@/lib/account.types';
-import { accountsApi, ApiError } from '@/lib/api-client';
+import { accountsApi, ApiError } from '@/lib/apiClient';
 import type { AccountType, ApiResult, FinancialPosition } from '@/lib/types';
 
 export async function createAccount(

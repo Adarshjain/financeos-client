@@ -4,7 +4,7 @@ import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useActionState } from 'react';
 
 import { createTransaction } from '@/actions/transactions';
-import { SubmitButton } from '@/components/forms/submit-button';
+import { SubmitButton } from '@/components/forms/SubmitButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/ui/form-field';

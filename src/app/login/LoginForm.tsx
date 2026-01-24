@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useActionState } from 'react';
 
 import { login, startGoogleSSO } from '@/actions/auth';
-import { SubmitButton } from '@/components/forms/submit-button';
+import { SubmitButton } from '@/components/forms/SubmitButton';
 import { Logo } from '@/components/logo';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
