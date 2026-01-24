@@ -3,17 +3,11 @@
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useActionState } from 'react';
 
-import {
-  addBankDetails,
-  addCreditCardDetails,
-  addMutualFundDetails,
-  addStockDetails,
-} from '@/actions/accounts';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/ui/form-field';
-import type { AccountResponse, ApiResult } from '@/lib/types';
+import type { ApiResult } from '@/lib/types';
 
 interface AccountDetailsFormProps {
   account: AccountResponse;
