@@ -212,6 +212,12 @@ export const accountsApi = {
       body: JSON.stringify(data),
     });
   },
+
+  async delete(id: string): Promise<void> {
+    return request<void>(`/api/v1/accounts/${id}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
 // Transactions API

@@ -57,7 +57,7 @@ function buildAccountRequest(
   return { success: true, data };
 }
 
-function handleAccountError(error: unknown, defaultMessage: string): ApiResult<Account> {
+function handleAccountError(error: unknown, defaultMessage: string): { success: false; error: ErrorResponse } {
   if (error instanceof ApiError) {
     return { success: false, error: error.response };
   }
@@ -106,5 +106,17 @@ export async function updateAccount(
     return { success: true, data: account };
   } catch (error) {
     return handleAccountError(error, 'Failed to update account');
+  }
+}
+
+export async function deleteAccount(
+  accountId: string,
+): Promise<ApiResult<void>> {
+  try {
+    await accountsApi.delete(accountId);
+    revalidatePath('/accounts');
+    return { success: true, data: undefined };
+  } catch (error) {
+    return handleAccountError(error, 'Failed to delete account');
   }
 }
