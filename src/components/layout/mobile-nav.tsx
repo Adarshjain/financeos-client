@@ -86,7 +86,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
         </Link>
 
         <div className="flex items-center gap-1">
-          <ThemeToggle />
+          {/*<ThemeToggle />*/}
           <button
             onClick={() => setIsOpen(!isOpen)}
             className="p-2 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"

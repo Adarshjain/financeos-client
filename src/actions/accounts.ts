@@ -2,14 +2,14 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { BankDetails, CreditCardDetails, GroupedAccount } from '@/lib/account.types';
+import { Account,BankAccountRequest, CreditCardRequest } from '@/lib/account.types';
 import { accountsApi, ApiError } from '@/lib/api-client';
 import type { AccountType, ApiResult, FinancialPosition } from '@/lib/types';
 
 export async function createAccount(
-  _prevState: ApiResult<GroupedAccount> | null,
+  _prevState: ApiResult<Account> | null,
   formData: FormData,
-): Promise<ApiResult<GroupedAccount>> {
+): Promise<ApiResult<Account>> {
   const name = formData.get('name') as string;
   const type = formData.get('type') as AccountType;
   const excludeFromNetAsset = formData.get('excludeFromNetAsset') === 'true';
@@ -29,7 +29,7 @@ export async function createAccount(
     };
   }
 
-  let data: GroupedAccount = {
+  let data: Account = {
     name,
     type,
     excludeFromNetAsset,
@@ -42,7 +42,7 @@ export async function createAccount(
       ...data,
       last4: formData.get('last4') as string ?? undefined,
       openingBalance: formData.get('openingBalance') as string ?? undefined,
-    } satisfies BankDetails;
+    } satisfies BankAccountRequest;
   }
 
   if (type === 'credit_card') {
@@ -53,7 +53,7 @@ export async function createAccount(
       paymentDueDay: parseInt(formData.get('paymentDueDay') as string, 10) ?? undefined,
       gracePeriodDays: parseInt(formData.get('gracePeriodDays') as string, 10) ?? undefined,
       statementPassword: formData.get('statementPassword') as string ?? undefined,
-    } satisfies CreditCardDetails;
+    } satisfies CreditCardRequest;
   }
 
   try {
@@ -77,9 +77,9 @@ export async function createAccount(
 
 export async function addBankDetails(
   accountId: string,
-  _prevState: ApiResult<GroupedAccount> | null,
+  _prevState: ApiResult<Account> | null,
   formData: FormData,
-): Promise<ApiResult<GroupedAccount>> {
+): Promise<ApiResult<Account>> {
   const openingBalance = formData.get('openingBalance') as string | undefined;
   const last4 = formData.get('last4') as string | undefined;
 
@@ -107,9 +107,9 @@ export async function addBankDetails(
 
 export async function addCreditCardDetails(
   accountId: string,
-  _prevState: ApiResult<GroupedAccount> | null,
+  _prevState: ApiResult<Account> | null,
   formData: FormData,
-): Promise<ApiResult<GroupedAccount>> {
+): Promise<ApiResult<Account>> {
   const last4 = formData.get('last4') as string;
   const creditLimit = formData.get('creditLimit') as string;
   const paymentDueDay = parseInt(formData.get('paymentDueDay') as string, 10);
@@ -164,9 +164,9 @@ export async function addCreditCardDetails(
 
 export async function addStockDetails(
   accountId: string,
-  _prevState: ApiResult<GroupedAccount> | null,
+  _prevState: ApiResult<Account> | null,
   formData: FormData,
-): Promise<ApiResult<GroupedAccount>> {
+): Promise<ApiResult<Account>> {
   const instrumentCode = formData.get('instrumentCode') as string;
   const lastTradedPrice = formData.get('lastTradedPrice') as string | undefined;
 
@@ -205,9 +205,9 @@ export async function addStockDetails(
 
 export async function addMutualFundDetails(
   accountId: string,
-  _prevState: ApiResult<GroupedAccount> | null,
+  _prevState: ApiResult<Account> | null,
   formData: FormData,
-): Promise<ApiResult<GroupedAccount>> {
+): Promise<ApiResult<Account>> {
   const instrumentCode = formData.get('instrumentCode') as string;
   const lastTradedPrice = formData.get('lastTradedPrice') as string | undefined;
 

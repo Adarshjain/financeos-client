@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { FormField } from '@/components/ui/form-field';
 import { NativeSelect } from '@/components/ui/native-select';
-import { GroupedAccount } from '@/lib/account.types';
+import { Account } from '@/lib/account.types';
 import { AccountType, ApiResult } from '@/lib/types';
 
 const accountTypes: { value: AccountType; label: string }[] = [
@@ -35,7 +35,7 @@ const financialPositions = [
 export function CreateAccountForm() {
   const [state, formAction] = useActionState(
     createAccount,
-    null as ApiResult<GroupedAccount> | null,
+    null as ApiResult<Account> | null,
   );
 
   const [accountType, setAccountType] = useState<AccountType>('bank_account');
