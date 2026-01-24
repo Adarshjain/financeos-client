@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-import { ApiError,authApi } from './api-client';
+import { ApiError,authApi } from './apiClient';
 import type { UserResponse } from './types';
 
 export async function getSession(): Promise<UserResponse | null> {

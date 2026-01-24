@@ -71,7 +71,7 @@ src/
 │   ├── layout/             # Layout components
 │   └── ui/                 # UI primitives
 ├── lib/                    # Utilities
-│   ├── api-client.ts       # Typed API client
+│   ├── apiClient.ts       # Typed API client
 │   ├── auth.ts             # Auth utilities
 │   ├── types.ts            # TypeScript types
 │   └── utils.ts            # Helper functions

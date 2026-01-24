@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 
 import { getSession } from '@/lib/auth';
 
-import { LoginForm } from './login-form';
+import { LoginForm } from './LoginForm';
 
 export default async function LoginPage() {
   // If user already has valid session, redirect to dashboard

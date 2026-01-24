@@ -3,7 +3,7 @@
 import { LogOut } from 'lucide-react';
 
 import { logout } from '@/actions/auth';
-import { ThemeToggle } from '@/components/theme-toggle';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import type { UserResponse } from '@/lib/types';
 

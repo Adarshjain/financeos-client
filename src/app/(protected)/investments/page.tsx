@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { accountsApi,investmentsApi } from '@/lib/api-client';
+import { accountsApi,investmentsApi } from '@/lib/apiClient';
 import type {
   AccountResponse,
   InvestmentTransactionResponse,
@@ -23,7 +23,7 @@ import type {
 } from '@/lib/types';
 import { formatDate,formatMoney } from '@/lib/utils';
 
-import { CreateInvestmentForm } from './create-investment-form';
+import { CreateInvestmentForm } from './CreateInvestmentForm';
 
 export default async function InvestmentsPage() {
   const [investmentData, accounts, positionsData] = await Promise.all([

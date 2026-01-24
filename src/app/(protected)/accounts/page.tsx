@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataList, DataListItem, DataListLabel, DataListRow, DataListValue } from '@/components/ui/data-list';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BankAccount, CreditCard } from '@/lib/account.types';
-import { accountsApi } from '@/lib/api-client';
+import { accountsApi } from '@/lib/apiClient';
 import { formatMoney, getAccountTypeLabel, getPositionLabel } from '@/lib/utils';
 
-import { CreateAccountForm } from './create-account-form';
+import { CreateAccountForm } from './CreateAccountForm';
 
 export default async function AccountsPage() {
   const accounts = await accountsApi.list();
