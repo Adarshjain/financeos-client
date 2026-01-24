@@ -1,17 +1,12 @@
-import Link from 'next/link';
 import { JSX } from 'react';
 
-import { EditAccountForm } from '@/app/(protected)/accounts/EditAccountForm';
+import { AccountFormWrapper } from '@/components/accounts/AccountFormWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DataList, DataListItem, DataListLabel, DataListRow, DataListValue } from '@/components/ui/data-list';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card } from '@/components/ui/card';
 import { Account, BankAccount, CreditCard } from '@/lib/account.types';
 import { accountsApi } from '@/lib/apiClient';
-import { formatMoney, getAccountTypeLabel, getPositionLabel } from '@/lib/utils';
-
-import { CreateAccountForm } from './CreateAccountForm';
+import { formatMoney, getPositionLabel } from '@/lib/utils';
 
 export default async function AccountsPage() {
   const accounts = await accountsApi.list();
@@ -23,7 +18,7 @@ export default async function AccountsPage() {
   const CardWrapper = ({ account, children }: { account: Account; children: JSX.Element[] }) => {
     return <div className="border rounded-md flex w-full border-b p-2 gap-2 bg-white flex-col">
       {children}
-      <EditAccountForm account={account} trigger={<Button variant="secondary">Edit</Button>} />
+      <AccountFormWrapper account={account} trigger={<Button variant="secondary">Edit</Button>} />
     </div>;
   };
 
@@ -31,7 +26,7 @@ export default async function AccountsPage() {
     <div className="space-y-6">
       <div className="flex justify-between">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Accounts</h1>
-        <CreateAccountForm />
+        <AccountFormWrapper trigger={<Button>Create Account</Button>} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

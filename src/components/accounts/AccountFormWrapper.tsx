@@ -15,11 +15,11 @@ import { Account } from '@/lib/account.types';
 import { AccountForm } from './AccountForm';
 
 interface EditAccountFormProps {
-  account: Account;
+  account?: Account;
   trigger: JSX.Element;
 }
 
-export function EditAccountForm({ account, trigger }: EditAccountFormProps) {
+export function AccountFormWrapper({ account, trigger }: EditAccountFormProps) {
   const [open, setOpen] = useState(false);
 
   return (
