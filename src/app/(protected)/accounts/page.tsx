@@ -1,11 +1,13 @@
 import Link from 'next/link';
+import { JSX } from 'react';
 
-import { EditAccountForm } from '@/app/(protected)/accounts/[id]/EditAccountForm';
+import { EditAccountForm } from '@/app/(protected)/accounts/EditAccountForm';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataList, DataListItem, DataListLabel, DataListRow, DataListValue } from '@/components/ui/data-list';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BankAccount, CreditCard } from '@/lib/account.types';
+import { Account, BankAccount, CreditCard } from '@/lib/account.types';
 import { accountsApi } from '@/lib/apiClient';
 import { formatMoney, getAccountTypeLabel, getPositionLabel } from '@/lib/utils';
 
@@ -18,14 +20,17 @@ export default async function AccountsPage() {
   const creditCards = accounts.filter(a => a.type === 'credit_card') as CreditCard[];
   // const others = accounts.filter(a => !['bank_account', 'credit_card'].includes(a.type));
 
+  const CardWrapper = ({ account, children }: { account: Account; children: JSX.Element[] }) => {
+    return <div className="border rounded-md flex w-full border-b p-2 gap-2 bg-white flex-col">
+      {children}
+      <EditAccountForm account={account} trigger={<Button variant="secondary">Edit</Button>} />
+    </div>;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Accounts
-          </h1>
-        </div>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Accounts</h1>
         <CreateAccountForm />
       </div>
 
@@ -46,43 +51,30 @@ export default async function AccountsPage() {
             <div className="gap-2 flex flex-col">
               <div className="font-bold">Bank Accounts</div>
               {bankAccounts.map((account) => (
-                <div
-                  key={account.id}
-                >
-
-                  <Link
-                    href={`/accounts/${account.id}`}
-                    className="border rounded-md flex w-full border-b p-2 gap-2 bg-white flex-col"
-                  >
-                    <div className="flex justify-between">
-                      <div className="flex gap-2">
-                        <div className="font-semibold text-emerald-600 dark:text-emerald-400">
-                          {account.name}
-                        </div>
-                        <Badge
-                          variant={account.financialPosition === 'liability' ? 'danger' : 'success'}>
-                          {getPositionLabel(account.financialPosition)}
-                        </Badge>
+                <CardWrapper account={account} key={account.id}>
+                  <div className="flex justify-between">
+                    <div className="flex gap-2">
+                      <div className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        {account.name}
                       </div>
-                      <div><span className="text-muted-foreground">••••</span> {account.last4}</div>
+                      <Badge
+                        variant={account.financialPosition === 'liability' ? 'danger' : 'success'}>
+                        {getPositionLabel(account.financialPosition)}
+                      </Badge>
                     </div>
-                    <div className="flex justify-between">
-                      <div>{account.description}</div>
-                      <div>{formatMoney(account.openingBalance)}</div>
-                    </div>
-                  </Link>
-                  <EditAccountForm account={account} />
-                </div>
+                    <div><span className="text-muted-foreground">••••</span> {account.last4}</div>
+                  </div>
+                  <div className="flex justify-between">
+                    <div>{account.description}</div>
+                    <div>{formatMoney(account.openingBalance)}</div>
+                  </div>
+                </CardWrapper>
               ))}
             </div>
             <div className="gap-2 flex flex-col">
               <div className="font-bold">Cards</div>
               {creditCards.map((account) => (
-                <Link
-                  href={`/accounts/${account.id}`}
-                  key={account.id}
-                  className="border rounded-md flex w-full border-b p-2 gap-2 bg-white flex-col"
-                >
+                <CardWrapper account={account} key={account.id}>
                   <div className="flex justify-between">
                     <div className="flex gap-2">
                       <div className="font-semibold text-emerald-600 dark:text-emerald-400">
@@ -104,7 +96,7 @@ export default async function AccountsPage() {
                     <div>Grace Period: {account.gracePeriodDays} days</div>
                     <div>Payment Date: {account.paymentDueDay}</div>
                   </div>
-                </Link>
+                </CardWrapper>
               ))}
             </div>
           </>
