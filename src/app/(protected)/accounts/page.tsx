@@ -1,7 +1,7 @@
 import { JSX } from 'react';
 
 import { AccountFormWrapper } from '@/components/accounts/AccountFormWrapper';
-import { Badge } from '@/components/ui/badge';
+import { DeleteAccount } from '@/components/accounts/DeleteAccount';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Account, BankAccount, CreditCard } from '@/lib/account.types';
@@ -16,9 +16,12 @@ export default async function AccountsPage() {
   // const others = accounts.filter(a => !['bank_account', 'credit_card'].includes(a.type));
 
   const CardWrapper = ({ account, children }: { account: Account; children: JSX.Element[] }) => {
-    return <div className="border rounded-md flex w-full border-b p-2 gap-2 bg-white flex-col">
+    return <div className="border rounded-md flex w-full border-b p-3 gap-2 bg-white flex-col">
       {children}
-      <AccountFormWrapper account={account} trigger={<Button variant="secondary">Edit</Button>} />
+      <div className="flex gap-2">
+        <AccountFormWrapper account={account} trigger={<Button className="w-full" size="sm" variant="secondary">Edit</Button>} />
+        <DeleteAccount account={account} trigger={<Button className="w-full" size="sm" variant="secondary">Delete</Button>}/>
+      </div>
     </div>;
   };
 
@@ -48,14 +51,12 @@ export default async function AccountsPage() {
               {bankAccounts.map((account) => (
                 <CardWrapper account={account} key={account.id}>
                   <div className="flex justify-between">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
                       <div className="font-semibold text-emerald-600 dark:text-emerald-400">
                         {account.name}
                       </div>
-                      <Badge
-                        variant={account.financialPosition === 'liability' ? 'danger' : 'success'}>
-                        {getPositionLabel(account.financialPosition)}
-                      </Badge>
+                      <div className="text-xs pl-2">{getPositionLabel(account.financialPosition)}</div>
+                      {account.excludeFromNetAsset ? <div className="text-xs">| &nbsp;Excluded</div> : null}
                     </div>
                     <div><span className="text-muted-foreground">••••</span> {account.last4}</div>
                   </div>
@@ -71,14 +72,12 @@ export default async function AccountsPage() {
               {creditCards.map((account) => (
                 <CardWrapper account={account} key={account.id}>
                   <div className="flex justify-between">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
                       <div className="font-semibold text-emerald-600 dark:text-emerald-400">
                         {account.name}
                       </div>
-                      <Badge
-                        variant={account.financialPosition === 'liability' ? 'danger' : 'success'}>
-                        {getPositionLabel(account.financialPosition)}
-                      </Badge>
+                      <div className="text-xs pl-2">{getPositionLabel(account.financialPosition)}</div>
+                      {account.excludeFromNetAsset ? <div className="text-xs">| &nbsp;Excluded</div> : null}
                     </div>
                     <div><span className="text-muted-foreground">••••</span> {account.last4}</div>
                   </div>

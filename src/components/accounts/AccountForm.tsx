@@ -31,9 +31,9 @@ interface AccountFormProps {
 
 export function AccountForm({ account, onSuccess }: AccountFormProps) {
   const isUpdateMode = !!account;
-  
+
   const updateAction = account ? updateAccount.bind(null, account.id) : null;
-  
+
   const [state, formAction] = useActionState(
     isUpdateMode && updateAction ? updateAction : createAccount,
     null as ApiResult<Account> | null,
@@ -43,14 +43,12 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
     account?.type || 'bank_account'
   );
 
-  // Update accountType when account changes
   useEffect(() => {
     if (account?.type) {
       setAccountType(account.type);
     }
   }, [account]);
 
-  // Handle success callback
   useEffect(() => {
     if (state?.success && onSuccess) {
       onSuccess();
