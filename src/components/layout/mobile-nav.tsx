@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  DollarSign,
   Home,
   LogOut,
   Menu,
@@ -13,7 +12,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect,useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { logout } from '@/actions/auth';
 import { Logo } from '@/components/logo';
@@ -63,9 +62,9 @@ export function MobileNav({ userEmail }: MobileNavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
-  useEffect(() => {
+  const handleLinkClick = () => {
     setIsOpen(false);
-  }, [pathname]);
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -82,7 +81,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
     <>
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 h-14 bg-white/95 dark:bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 z-40 flex items-center justify-between px-4">
-        <Link href="/dashboard" className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2" onClick={handleLinkClick}>
           <Logo size="sm" />
         </Link>
 
@@ -109,7 +108,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
       {/* Mobile Menu */}
       <nav
         className={cn(
-          'lg:hidden fixed top-14 right-0 bottom-0 w-72 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 z-50 transform transition-transform duration-200 ease-out flex flex-col',
+          'lg:hidden fixed top-0 right-0 bottom-0 w-72 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 z-50 transform transition-transform duration-200 ease-out flex flex-col',
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
@@ -132,6 +131,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={handleLinkClick}
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                   isActive
