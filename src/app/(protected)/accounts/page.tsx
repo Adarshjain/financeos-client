@@ -62,7 +62,7 @@ export default async function AccountsPage() {
                   </div>
                   <div className="flex justify-between">
                     <div>{account.description}</div>
-                    <div>{formatMoney(account.openingBalance)}</div>
+                    <div className="font-mono">{formatMoney(account.openingBalance)}</div>
                   </div>
                 </CardWrapper>
               ))}
@@ -83,7 +83,7 @@ export default async function AccountsPage() {
                   </div>
                   <div className="flex justify-between">
                     <div>{account.description}</div>
-                    <div>{formatMoney(account.creditLimit)}</div>
+                    <div className="font-mono">{formatMoney(account.creditLimit)}</div>
                   </div>
                   <div className="h-[1px] w-full bg-gray-300"></div>
                   <div className="flex justify-between">
