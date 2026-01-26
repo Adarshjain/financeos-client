@@ -35,7 +35,7 @@ function buildTransactionRequest(
     date,
     amount,
     description,
-    category,
+    categories: category,
     source,
     notes,
   };
