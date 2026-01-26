@@ -1,14 +1,17 @@
 'use client';
 
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 
 import { createTransaction, updateTransaction } from '@/actions/transactions';
+import { MultiCombobox } from '@/components/Combobox';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { FormFieldTextArea } from '@/components/ui/form-field-textarea';
 import { NativeSelect } from '@/components/ui/native-select';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
 import { Transaction } from '@/lib/transaction.types';
@@ -21,9 +24,11 @@ interface TransactionFormProps {
   onSuccess?: () => void;
 }
 
-export function TransactionForm({ transaction, accounts, onSuccess }: TransactionFormProps) {
+export function TransactionForm({ categories, transaction, accounts, onSuccess }: TransactionFormProps) {
   const isUpdateMode = !!transaction;
   const updateAction = transaction ? updateTransaction.bind(null, transaction.id) : null;
+  const [selectedCategories, setSelectedCategories] = useState(transaction?.category ?? []);
+  const [incomeExpense, setIncomeExpense] = useState<string>(() => !transaction ? 'expense' : transaction.amount < 0 ? 'expense' : 'income');
 
   const [state, formAction] = useActionState(
     isUpdateMode && updateAction ? updateAction : createTransaction,
@@ -41,8 +46,16 @@ export function TransactionForm({ transaction, accounts, onSuccess }: Transactio
     }
   }, [state?.success, onSuccess]);
 
+  const handleFormSubmit = (payload: FormData) => {
+    if (incomeExpense === 'expense') {
+      payload.set('amount', '' + -parseInt(payload.get('amount') as string | undefined ?? '0', 10));
+    }
+    payload.set('category', JSON.stringify(selectedCategories));
+    formAction(payload);
+  };
+
   return (
-    <form action={formAction} className="space-y-4">
+    <form action={handleFormSubmit} className="space-y-4">
       {state && !state.success && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -64,14 +77,27 @@ export function TransactionForm({ transaction, accounts, onSuccess }: Transactio
         defaultValue={transaction?.accountId}
       />
 
+      <Tabs value={incomeExpense} onValueChange={setIncomeExpense}>
+        <TabsList className="w-full">
+          <TabsTrigger
+            value="income"
+            className="w-1/2 data-[state=active]:bg-emerald-400 data-[state=active]:text-white"
+          >Income</TabsTrigger>
+          <TabsTrigger
+            value="expense"
+            className="w-1/2 data-[state=active]:bg-red-500 data-[state=active]:text-white"
+          >Expense</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       <FormField
-        label="Amount (INR)"
+        label="Amount"
         name="amount"
-        type="number"
+        type="text"
         step="0.01"
-        placeholder="-ve for expense, +ve for income"
         required
         defaultValue={transaction?.amount}
+        inputMode="decimal"
       />
 
       <FormField
@@ -86,16 +112,20 @@ export function TransactionForm({ transaction, accounts, onSuccess }: Transactio
         label="Date"
         name="date"
         type="date"
+        className="max-w-full"
         defaultValue={transaction?.date ?? new Date().toISOString().split('T')[0]}
         required
       />
 
-      <FormField
-        label="Category"
-        name="category"
-        placeholder="e.g., Food, Transport"
-        defaultValue={transaction?.category}
-      />
+      <div className="flex items-end gap-3">
+        <MultiCombobox
+          label="Categories"
+          options={categories.map(({ id, name }) => ({ value: id, label: name }))}
+          value={selectedCategories}
+          onChange={setSelectedCategories}
+        />
+        <Button variant="outline">Auto Detect</Button>
+      </div>
 
       <FormFieldTextArea
         label="Notes"

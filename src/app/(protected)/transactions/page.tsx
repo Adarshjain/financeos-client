@@ -4,14 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DataList, DataListItem, DataListLabel, DataListRow, DataListValue } from '@/components/ui/data-list';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { accountsApi, transactionsApi } from '@/lib/apiClient';
+import { accountsApi, categoriesApi, transactionsApi } from '@/lib/apiClient';
 import { Transaction } from '@/lib/transaction.types';
 import { formatDate, formatMoney } from '@/lib/utils';
 
 export default async function TransactionsPage() {
-  const [transactionsData, accounts] = await Promise.all([
+  const [transactionsData, accounts, categories] = await Promise.all([
     transactionsApi.list(),
     accountsApi.list(),
+    categoriesApi.list()
   ]);
 
   const transactions: Transaction[] = transactionsData.content;
@@ -32,7 +33,7 @@ export default async function TransactionsPage() {
     <div className="space-y-6">
       <div className="flex justify-between">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
-        <TransactionFormWrapper accounts={accounts} trigger={<Button>Create</Button>} />
+        <TransactionFormWrapper categories={categories} accounts={accounts} trigger={<Button>Create</Button>} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
