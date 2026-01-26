@@ -313,10 +313,25 @@ export default async function TransactionsPage() {
     return account?.name || 'Unknown';
   };
 
-  const isExpense = (amount: number | string | undefined): boolean => {
-    if (amount === undefined) return false;
-    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-    return num < 0;
+  const TransactionCard = ({ transaction }: { transaction: Transaction }) => {
+    return <div className="flex-1 py-2 flex items-start justify-between border-2 rounded-md relative mb-2 px-2">
+      <div className="flex flex-col gap-1 text-sm">
+        <div className="break-all font-medium">{transaction.description}</div>
+        <div className="min-w-max">{getAccountName(transaction.accountId) ?? 'No Match'}</div>
+        <div>{transaction.categories?.map(
+          category => <Badge variant="outline" className="mr-1 rounded px-1" key={category}>{category}</Badge>,
+        )}</div>
+        <div>{transaction.notes}</div>
+      </div>
+      <div>
+        <div
+          className={cn(
+            'font-bold text-lg whitespace-nowrap text-right min-w-[100px]',
+            transaction.amount >= 0 ? 'text-emerald-500' : 'text-rose-500',
+          )}>{formatMoney(Math.abs(transaction.amount))}</div>
+        <div className="text-right text-sm mt-1 mr-0.5">{formatMoney(transaction.balance)}</div>
+      </div>
+    </div>;
   };
 
   return (
@@ -338,34 +353,13 @@ export default async function TransactionsPage() {
           </div>
         ) : (
           transactions.map(transaction =>
-            <div
+            <TransactionFormWrapper
               key={transaction.id}
-              className="flex-1 py-2 flex items-start justify-between border-2 rounded-md relative mb-2 px-2">
-              <div className="flex flex-col gap-1 text-sm">
-                <div className="break-all font-medium">{transaction.description}</div>
-                <div className="min-w-max">{
-                  getAccountName(transaction.accountId) ?? 'No Match'
-                }</div>
-                <div>{
-                  transaction.categories?.map(
-                    category => <Badge
-                      variant="outline"
-                      className="mr-1 rounded px-1"
-                      key={category}
-                    >{category}</Badge>,
-                  )
-                }</div>
-                <div>{transaction.notes}</div>
-              </div>
-              <div>
-                <div
-                  className={cn(
-                    'font-bold text-lg whitespace-nowrap text-right min-w-[100px]',
-                    transaction.amount >= 0 ? 'text-emerald-500' : 'text-rose-500',
-                  )}>{formatMoney(Math.abs(transaction.amount))}</div>
-                <div className="text-right text-sm mt-1 mr-0.5">{formatMoney(transaction.balance)}</div>
-              </div>
-            </div>,
+              categories={categories}
+              accounts={accounts}
+              transaction={transaction}
+              trigger={<TransactionCard transaction={transaction} />}
+            />,
           )
         )}
       </div>
