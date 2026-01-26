@@ -19,21 +19,23 @@ export function TransactionFormWrapper({ transaction, categories, accounts, trig
   const [open, setOpen] = useState(false);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger}
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{transaction ? 'Edit' : 'New'} Transaction</DialogTitle>
-        </DialogHeader>
-        <TransactionForm
-          accounts={accounts}
-          transaction={transaction}
-          categories={categories}
-          onSuccess={() => setOpen(false)}
-        />
-      </DialogContent>
-    </Dialog>
+    <div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <div>{trigger}</div>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{transaction ? 'Edit' : 'New'} Transaction</DialogTitle>
+          </DialogHeader>
+          <TransactionForm
+            accounts={accounts}
+            transaction={transaction}
+            categories={categories}
+            onSuccess={() => setOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
