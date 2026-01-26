@@ -1,16 +1,10 @@
 import { cookies } from 'next/headers';
 
-import {
-  Account, AccountRequest,
-  BankAccountRequest,
-  CreditCardRequest,
-  MutualFundRequest,
-  StockRequest,
-} from '@/lib/account.types';
+import { Account, AccountRequest } from '@/lib/account.types';
+import { PagedTransaction, Transaction, TransactionRequest } from '@/lib/transaction.types';
 
 import type {
   CreateInvestmentTransactionRequest,
-  CreateTransactionRequest,
   DashboardSummary,
   ErrorResponse,
   GmailFetchRequest,
@@ -21,9 +15,7 @@ import type {
   InvestmentTransactionResponse,
   LoginRequest,
   PagedInvestmentTransactionResponse,
-  PagedTransactionResponse,
   SignupRequest,
-  TransactionResponse,
   UserResponse,
 } from './types';
 
@@ -32,7 +24,7 @@ const API_BASE = process.env.API_BASE_URL || 'http://localhost:8080';
 class ApiError extends Error {
   constructor(
     public status: number,
-    public response: ErrorResponse
+    public response: ErrorResponse,
   ) {
     super(response.message);
     this.name = 'ApiError';
@@ -46,7 +38,7 @@ async function getSessionCookie(): Promise<string | undefined> {
 
 async function request<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const sessionCookie = await getSessionCookie();
 
@@ -108,7 +100,7 @@ export const authApi = {
   },
 
   async login(
-    data: LoginRequest
+    data: LoginRequest,
   ): Promise<{ user: UserResponse; sessionCookie?: string }> {
     const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
       method: 'POST',
@@ -165,7 +157,7 @@ export const authApi = {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         cache: 'no-store',
-      }
+      },
     );
 
     if (!response.ok) {
@@ -225,20 +217,33 @@ export const transactionsApi = {
   async list(
     page = 0,
     size = 50,
-    sort = 'date,desc'
-  ): Promise<PagedTransactionResponse> {
+    sort = 'date,desc',
+  ): Promise<PagedTransaction> {
     const params = new URLSearchParams({
       page: String(page),
       size: String(size),
       sort,
     });
-    return request<PagedTransactionResponse>(`/api/v1/transactions?${params}`);
+    return request<PagedTransaction>(`/api/v1/transactions?${params}`);
   },
 
-  async create(data: CreateTransactionRequest): Promise<TransactionResponse> {
-    return request<TransactionResponse>('/api/v1/transactions', {
+  async create(data: TransactionRequest): Promise<Transaction> {
+    return request<Transaction>('/api/v1/transactions', {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: string, data: TransactionRequest): Promise<Transaction> {
+    return request<Transaction>(`/api/v1/transactions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(id: string): Promise<void> {
+    return request<void>(`/api/v1/transactions/${id}`, {
+      method: 'DELETE',
     });
   },
 };
@@ -247,26 +252,26 @@ export const transactionsApi = {
 export const investmentsApi = {
   async listTransactions(
     page = 0,
-    size = 50
+    size = 50,
   ): Promise<PagedInvestmentTransactionResponse> {
     const params = new URLSearchParams({
       page: String(page),
       size: String(size),
     });
     return request<PagedInvestmentTransactionResponse>(
-      `/api/v1/investments/transactions?${params}`
+      `/api/v1/investments/transactions?${params}`,
     );
   },
 
   async createTransaction(
-    data: CreateInvestmentTransactionRequest
+    data: CreateInvestmentTransactionRequest,
   ): Promise<InvestmentTransactionResponse> {
     return request<InvestmentTransactionResponse>(
       '/api/v1/investments/transactions',
       {
         method: 'POST',
         body: JSON.stringify(data),
-      }
+      },
     );
   },
 

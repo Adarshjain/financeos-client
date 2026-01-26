@@ -1,25 +1,12 @@
+import { TransactionFormWrapper } from '@/components/transactions/TransactionFormWrapper';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent,CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  DataList,
-  DataListItem,
-  DataListLabel,
-  DataListRow,
-  DataListValue,
-} from '@/components/ui/data-list';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { accountsApi,transactionsApi } from '@/lib/apiClient';
-import type { AccountResponse,TransactionResponse } from '@/lib/types';
-import { formatDate,formatMoney } from '@/lib/utils';
-
-import { CreateTransactionForm } from './CreateTransactionForm';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { DataList, DataListItem, DataListLabel, DataListRow, DataListValue } from '@/components/ui/data-list';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { accountsApi, transactionsApi } from '@/lib/apiClient';
+import { Transaction } from '@/lib/transaction.types';
+import { formatDate, formatMoney } from '@/lib/utils';
 
 export default async function TransactionsPage() {
   const [transactionsData, accounts] = await Promise.all([
@@ -27,12 +14,11 @@ export default async function TransactionsPage() {
     accountsApi.list(),
   ]);
 
-  const transactions: TransactionResponse[] =
-    transactionsData.content as TransactionResponse[];
+  const transactions: Transaction[] = transactionsData.content;
 
   const getAccountName = (accountId: string | undefined) => {
     if (!accountId) return '—';
-    const account = accounts.find((a: AccountResponse) => a.id === accountId);
+    const account = accounts.find((a) => a.id === accountId);
     return account?.name || 'Unknown';
   };
 
@@ -44,13 +30,9 @@ export default async function TransactionsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-          Transactions
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400 mt-1">
-          Track your income and expenses
-        </p>
+      <div className="flex justify-between">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
+        <TransactionFormWrapper accounts={accounts} trigger={<Button>Create</Button>} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -194,10 +176,6 @@ export default async function TransactionsPage() {
               )}
             </CardContent>
           </Card>
-        </div>
-
-        <div>
-          <CreateTransactionForm accounts={accounts} />
         </div>
       </div>
     </div>
