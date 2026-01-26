@@ -1,3 +1,5 @@
+import { Fragment } from 'react';
+
 import { TransactionFormWrapper } from '@/components/transactions/TransactionFormWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -356,19 +358,18 @@ export default async function TransactionsPage() {
         ) : (
           transactions.map((transaction, index) => {
             const showDate = index === 0 || transaction.date !== transactions[index - 1].date;
-            return (<>
+            return (
+              <Fragment key={transaction.id}>
                 {showDate && <div
-                  key={transaction.id + 'date'}
                   className="text-lg font-medium pl-2 pb-1 pt-2 sticky top-0 bg-slate-50 z-10"
                 >{formatDate(transaction.date)}</div>}
                 <TransactionFormWrapper
-                  key={transaction.id}
                   categories={categories}
                   accounts={accounts}
                   transaction={transaction}
                   trigger={<TransactionCard transaction={transaction} />}
                 />
-              </>
+              </Fragment>
             );
           })
         )}
