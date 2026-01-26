@@ -23,7 +23,7 @@ export default async function ProtectedLayout({
         {/*<Header user={user} />*/}
 
         {/* Page Content */}
-        <main className="p-4 md:p-6 pb-[4.5rem] lg:pt-6">{children}</main>
+        <main className="p-4 md:p-6 lg:pt-6">{children}</main>
       </div>
     </div>
   );
