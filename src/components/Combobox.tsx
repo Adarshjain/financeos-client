@@ -109,7 +109,13 @@ export function Combobox({
 
         <PopoverContent
           onWheel={e => e.stopPropagation()}
-          className={cn('w-(--radix-popper-anchor-width) p-0', popoverClassName)}
+          onTouchMove={e => e.stopPropagation()}
+          className={cn('min-w-[350px] p-0', popoverClassName)}
+          side="bottom"
+          align="start"
+          sideOffset={60}
+          collisionPadding={8}
+          avoidCollisions={true}
         >
           <Command>
             <CommandInput
