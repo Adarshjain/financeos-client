@@ -3,8 +3,9 @@
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { useActionState, useEffect, useState } from 'react';
 
+import { createCategory as createCategoryAction } from '@/actions/categories';
 import { createTransaction, updateTransaction } from '@/actions/transactions';
-import { MultiCombobox } from '@/components/Combobox';
+import { Combobox } from '@/components/Combobox';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ export function TransactionForm({ categories, transaction, accounts, onSuccess }
   const isUpdateMode = !!transaction;
   const updateAction = transaction ? updateTransaction.bind(null, transaction.id) : null;
   const [selectedCategories, setSelectedCategories] = useState(transaction?.category ?? []);
+  const [localCategories, setLocalCategories] = useState<Category[]>(categories);
   const [incomeExpense, setIncomeExpense] = useState<string>(() => !transaction ? 'expense' : transaction.amount < 0 ? 'expense' : 'income');
 
   const [state, formAction] = useActionState(
@@ -46,12 +48,27 @@ export function TransactionForm({ categories, transaction, accounts, onSuccess }
     }
   }, [state?.success, onSuccess]);
 
+  // Sync local categories when prop changes
+  useEffect(() => {
+    setLocalCategories(categories);
+  }, [categories]);
+
   const handleFormSubmit = (payload: FormData) => {
     if (incomeExpense === 'expense') {
       payload.set('amount', '' + -parseInt(payload.get('amount') as string | undefined ?? '0', 10));
     }
     payload.set('category', JSON.stringify(selectedCategories));
     formAction(payload);
+  };
+
+  const createCategory = async (categoryName: string) => {
+    const result = await createCategoryAction(categoryName);
+    if (result.success) {
+      setLocalCategories((prev) => [...prev, result.data]);
+      setSelectedCategories((prev) => [...prev, result.data.id]);
+    } else {
+      console.error('Failed to create category:', result.error.message);
+    }
   };
 
   return (
@@ -118,11 +135,13 @@ export function TransactionForm({ categories, transaction, accounts, onSuccess }
       />
 
       <div className="flex items-end gap-3">
-        <MultiCombobox
+        <Combobox
           label="Categories"
-          options={categories.map(({ id, name }) => ({ value: id, label: name }))}
+          options={localCategories.map(({ id, name }) => ({ value: id, label: name }))}
           value={selectedCategories}
           onChange={setSelectedCategories}
+          canCreate
+          onCreate={createCategory}
         />
         <Button variant="outline">Auto Detect</Button>
       </div>
