@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 
 import { Account, AccountRequest } from '@/lib/account.types';
+import { Category, CategoryRequest } from '@/lib/categories.types';
 import { PagedTransaction, Transaction, TransactionRequest } from '@/lib/transaction.types';
 
 import type {
@@ -290,6 +291,36 @@ export const gmailApi = {
     return request<GmailFetchResult>('/api/v1/gmail/sync', {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
+    });
+  },
+};
+
+export const categoriesApi = {
+  async list(): Promise<Category[]> {
+    return request<Category[]>('/api/v1/categories');
+  },
+
+  async getById(id: string): Promise<Category> {
+    return request<Category>(`/api/v1/categories/${id}`);
+  },
+
+  async create(data: CategoryRequest): Promise<Category> {
+    return request<Category>('/api/v1/categories', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: string, data: CategoryRequest): Promise<Category> {
+    return request<Category>(`/api/v1/categories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(id: string): Promise<void> {
+    return request<void>(`/api/v1/categories/${id}`, {
+      method: 'DELETE',
     });
   },
 };
