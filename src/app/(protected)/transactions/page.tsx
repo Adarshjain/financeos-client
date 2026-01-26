@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { accountsApi, categoriesApi, transactionsApi } from '@/lib/apiClient';
 import { Transaction } from '@/lib/transaction.types';
-import { cn, formatMoney } from '@/lib/utils';
+import { cn, formatDate, formatMoney } from '@/lib/utils';
 
 export default async function TransactionsPage() {
   const [transactionsData, accounts, categories] = await Promise.all([
@@ -313,25 +313,27 @@ export default async function TransactionsPage() {
     return account?.name || 'Unknown';
   };
 
-  const TransactionCard = ({ transaction }: { transaction: Transaction }) => {
-    return <div className="flex-1 py-2 flex items-start justify-between border-2 rounded-md relative mb-2 px-2">
-      <div className="flex flex-col gap-1 text-sm">
-        <div className="break-all font-medium">{transaction.description}</div>
-        <div className="min-w-max">{getAccountName(transaction.accountId) ?? 'No Match'}</div>
-        <div>{transaction.categories?.map(
-          category => <Badge variant="outline" className="mr-1 rounded px-1" key={category}>{category}</Badge>,
-        )}</div>
-        <div>{transaction.notes}</div>
+  const TransactionCard = ({ transaction }: { transaction: Transaction; }) => {
+    return <>
+      <div className="flex-1 py-2 flex items-start justify-between border-2 rounded-md relative mb-2 px-2">
+        <div className="flex flex-col gap-1 text-sm">
+          <div className="break-all font-medium">{transaction.description}</div>
+          <div className="min-w-max">{getAccountName(transaction.accountId) ?? 'No Match'}</div>
+          <div>{transaction.categories?.map(
+            category => <Badge variant="outline" className="mr-1 rounded px-1" key={category}>{category}</Badge>,
+          )}</div>
+          <div>{transaction.notes}</div>
+        </div>
+        <div>
+          <div
+            className={cn(
+              'font-bold text-lg whitespace-nowrap text-right min-w-[100px]',
+              transaction.amount >= 0 ? 'text-emerald-500' : 'text-rose-500',
+            )}>{formatMoney(Math.abs(transaction.amount))}</div>
+          <div className="text-right text-sm mt-1 mr-0.5">{formatMoney(transaction.balance)}</div>
+        </div>
       </div>
-      <div>
-        <div
-          className={cn(
-            'font-bold text-lg whitespace-nowrap text-right min-w-[100px]',
-            transaction.amount >= 0 ? 'text-emerald-500' : 'text-rose-500',
-          )}>{formatMoney(Math.abs(transaction.amount))}</div>
-        <div className="text-right text-sm mt-1 mr-0.5">{formatMoney(transaction.balance)}</div>
-      </div>
-    </div>;
+    </>;
   };
 
   return (
@@ -352,15 +354,22 @@ export default async function TransactionsPage() {
             </p>
           </div>
         ) : (
-          transactions.map(transaction =>
-            <TransactionFormWrapper
-              key={transaction.id}
-              categories={categories}
-              accounts={accounts}
-              transaction={transaction}
-              trigger={<TransactionCard transaction={transaction} />}
-            />,
-          )
+          transactions.map((transaction, index) => {
+            const showDate = index === 0 || transaction.date !== transactions[index - 1].date;
+            return (<>
+              {showDate && <div
+                className="text-lg font-medium pl-2 pb-1 pt-2 sticky top-0 bg-slate-50 z-10"
+              >{formatDate(transaction.date)}</div>}
+                <TransactionFormWrapper
+                  key={transaction.id}
+                  categories={categories}
+                  accounts={accounts}
+                  transaction={transaction}
+                  trigger={<TransactionCard transaction={transaction} />}
+                />
+              </>
+            );
+          })
         )}
       </div>
     </div>
