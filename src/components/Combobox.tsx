@@ -13,7 +13,7 @@ export type ComboboxOption = {
   label: string;
 };
 
-type MultiComboboxProps = {
+interface MultiComboboxProps {
   label?: string;
   placeholder?: string;
   options: ComboboxOption[];
@@ -21,11 +21,32 @@ type MultiComboboxProps = {
   onChange: (value: string[]) => void;
   className?: string;
   popoverClassName?: string;
+  canCreate?: boolean;
+  onCreate?: (value: string) => void;
 };
 
-export function MultiCombobox({ label, options, value, onChange, className, placeholder, popoverClassName }: MultiComboboxProps) {
+export function Combobox({
+                                label,
+                                options,
+                                value,
+                                onChange,
+                                className,
+                                placeholder,
+                                popoverClassName,
+                                canCreate,
+                                onCreate,
+                              }: MultiComboboxProps) {
   const id = useId();
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const hasExactMatch = options.some(
+    o => o.label.toLowerCase() === search.toLowerCase(),
+  );
+
+  const showCreate =
+    canCreate && search.length > 0 && !hasExactMatch;
+
 
   const toggleSelection = (val: string) => {
     onChange(value.includes(val) ? value.filter(v => v !== val) : [...value, val]);
@@ -91,9 +112,15 @@ export function MultiCombobox({ label, options, value, onChange, className, plac
           className={cn('w-(--radix-popper-anchor-width) p-0', popoverClassName)}
         >
           <Command>
-            <CommandInput placeholder="Search..." />
+            <CommandInput
+              value={search}
+              onValueChange={setSearch}
+              placeholder="Search..."
+            />
             <CommandList className="max-h-60 overflow-y-auto">
-              <CommandEmpty>No results found.</CommandEmpty>
+              {options.length === 0 && (
+                <CommandEmpty>No results.</CommandEmpty>
+              )}
               <CommandGroup>
                 {options.map(option => (
                   <CommandItem
@@ -107,6 +134,18 @@ export function MultiCombobox({ label, options, value, onChange, className, plac
                     )}
                   </CommandItem>
                 ))}
+                {showCreate && (
+                  <CommandItem
+                    value={search}
+                    onSelect={() => {
+                      onCreate?.(search);   // 👈 your handler
+                      setSearch('');
+                    }}
+                    className="text-primary"
+                  >
+                    ➕ Create “{search}”
+                  </CommandItem>
+                )}
               </CommandGroup>
             </CommandList>
           </Command>
