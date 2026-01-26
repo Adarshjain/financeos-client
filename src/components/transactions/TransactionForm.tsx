@@ -31,7 +31,7 @@ interface TransactionFormProps {
 export function TransactionForm({ categories, transaction, accounts, onSuccess }: TransactionFormProps) {
   const isUpdateMode = !!transaction;
   const updateAction = transaction ? updateTransaction.bind(null, transaction.id) : null;
-  const [selectedCategories, setSelectedCategories] = useState(transaction?.category ?? []);
+  const [selectedCategories, setSelectedCategories] = useState(transaction?.categories ?? []);
   const [localCategories, setLocalCategories] = useState<Category[]>(categories);
   const [incomeExpense, setIncomeExpense] = useState<string>(() => !transaction ? 'expense' : transaction.amount < 0 ? 'expense' : 'income');
   const formRef = useRef<HTMLFormElement | null>(null);

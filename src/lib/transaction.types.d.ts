@@ -5,7 +5,7 @@ export interface TransactionRequest {
   date: string;
   amount: number;
   description: string;
-  category?: string[];
+  categories?: string[];
   source: TransactionSource;
   metadata?: Record<string, unknown>;
   notes?: string;
@@ -14,6 +14,7 @@ export interface TransactionRequest {
 export type Transaction = TransactionRequest & {
   id: string;
   createdAt: string;
+  balance: number;
 }
 
 export interface PagedTransaction {
