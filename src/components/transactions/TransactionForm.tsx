@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 
 import { createTransaction, updateTransaction } from '@/actions/transactions';
 import { SubmitButton } from '@/components/forms/SubmitButton';
@@ -10,16 +10,18 @@ import { FormField } from '@/components/ui/form-field';
 import { FormFieldTextArea } from '@/components/ui/form-field-textarea';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Account } from '@/lib/account.types';
+import { Category } from '@/lib/categories.types';
 import { Transaction } from '@/lib/transaction.types';
 import type { ApiResult } from '@/lib/types';
 
 interface TransactionFormProps {
   transaction?: Transaction;
   accounts: Account[];
+  categories: Category[];
   onSuccess?: () => void;
 }
 
-export function TransactionForm({ transaction, accounts }: TransactionFormProps) {
+export function TransactionForm({ transaction, accounts, onSuccess }: TransactionFormProps) {
   const isUpdateMode = !!transaction;
   const updateAction = transaction ? updateTransaction.bind(null, transaction.id) : null;
 
@@ -32,6 +34,12 @@ export function TransactionForm({ transaction, accounts }: TransactionFormProps)
     { value: '', label: 'Select account' },
     ...accounts.map((a) => ({ value: a.id, label: a.name })),
   ];
+
+  useEffect(() => {
+    if (state?.success && onSuccess) {
+      onSuccess();
+    }
+  }, [state?.success, onSuccess]);
 
   return (
     <form action={formAction} className="space-y-4">
@@ -52,6 +60,7 @@ export function TransactionForm({ transaction, accounts }: TransactionFormProps)
         label="Account"
         name="accountId"
         options={accountOptions}
+        required
         defaultValue={transaction?.accountId}
       />
 
