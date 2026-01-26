@@ -43,3 +43,28 @@ export async function createCategory(
     return handleCategoryError(error, 'Failed to create category');
   }
 }
+
+
+export async function categorizeDescription(
+  description: string,
+): Promise<ApiResult<Category[]>> {
+  if (!description || description.trim().length === 0) {
+    return {
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'description is empty',
+        timestamp: new Date().toISOString(),
+      },
+    };
+  }
+
+  try {
+    const category = await categoriesApi.categorizeDescription(description);
+    return { success: true, data: category };
+  } catch (error) {
+    return handleCategoryError(error, 'Failed to categorize');
+  }
+}
+
+

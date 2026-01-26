@@ -1,9 +1,12 @@
 'use client';
 
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 
-import { createCategory as createCategoryAction } from '@/actions/categories';
+import {
+  categorizeDescription as categorizeDescriptionAction,
+  createCategory as createCategoryAction,
+} from '@/actions/categories';
 import { createTransaction, updateTransaction } from '@/actions/transactions';
 import { Combobox } from '@/components/Combobox';
 import { SubmitButton } from '@/components/forms/SubmitButton';
@@ -31,6 +34,7 @@ export function TransactionForm({ categories, transaction, accounts, onSuccess }
   const [selectedCategories, setSelectedCategories] = useState(transaction?.category ?? []);
   const [localCategories, setLocalCategories] = useState<Category[]>(categories);
   const [incomeExpense, setIncomeExpense] = useState<string>(() => !transaction ? 'expense' : transaction.amount < 0 ? 'expense' : 'income');
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   const [state, formAction] = useActionState(
     isUpdateMode && updateAction ? updateAction : createTransaction,
@@ -67,12 +71,21 @@ export function TransactionForm({ categories, transaction, accounts, onSuccess }
       setLocalCategories((prev) => [...prev, result.data]);
       setSelectedCategories((prev) => [...prev, result.data.id]);
     } else {
-      console.error('Failed to create category:', result.error.message);
+      alert('Failed to create category:' + result.error.message);
+    }
+  };
+
+  const categorizeDescription = async () => {
+    const result = await categorizeDescriptionAction(formRef.current?.description.value ?? '');
+    if (result.success) {
+      setSelectedCategories(result.data.map(category => category.id));
+    } else {
+      alert('Failed to match category:' + result.error.message);
     }
   };
 
   return (
-    <form action={handleFormSubmit} className="space-y-4">
+    <form ref={formRef} action={handleFormSubmit} className="space-y-4">
       {state && !state.success && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -143,7 +156,7 @@ export function TransactionForm({ categories, transaction, accounts, onSuccess }
           canCreate
           onCreate={createCategory}
         />
-        <Button variant="outline">Auto Detect</Button>
+        <Button disabled variant="outline" onClick={categorizeDescription}>Auto Detect</Button>
       </div>
 
       <FormFieldTextArea
