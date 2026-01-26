@@ -318,7 +318,7 @@ export default async function TransactionsPage() {
       <div className="flex-1 py-2 flex items-start justify-between border-2 rounded-md relative mb-2 px-2">
         <div className="flex flex-col gap-1 text-sm">
           <div className="break-all font-medium">{transaction.description}</div>
-          <div className="min-w-max">{getAccountName(transaction.accountId) ?? 'No Match'}</div>
+          <div className="min-w-max">{getAccountName(transaction.accountId)}</div>
           <div>{transaction.categories?.map(
             category => <Badge variant="outline" className="mr-1 rounded px-1" key={category}>{category}</Badge>,
           )}</div>
@@ -338,7 +338,7 @@ export default async function TransactionsPage() {
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-between px-4 mt-4">
+      <div className="flex justify-between px-4 pt-4">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
         <TransactionFormWrapper categories={categories} accounts={accounts} trigger={<Button>Create</Button>} />
       </div>
@@ -357,9 +357,10 @@ export default async function TransactionsPage() {
           transactions.map((transaction, index) => {
             const showDate = index === 0 || transaction.date !== transactions[index - 1].date;
             return (<>
-              {showDate && <div
-                className="text-lg font-medium pl-2 pb-1 pt-2 sticky top-0 bg-slate-50 z-10"
-              >{formatDate(transaction.date)}</div>}
+                {showDate && <div
+                  key={transaction.id + 'date'}
+                  className="text-lg font-medium pl-2 pb-1 pt-2 sticky top-0 bg-slate-50 z-10"
+                >{formatDate(transaction.date)}</div>}
                 <TransactionFormWrapper
                   key={transaction.id}
                   categories={categories}
