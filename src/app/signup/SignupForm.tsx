@@ -9,14 +9,13 @@ import { signup } from '@/actions/auth';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import { Logo } from '@/components/logo';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardContent } from '@/components/ui/card';
 import { FormField } from '@/components/ui/form-field';
 import type { ApiResult, UserResponse } from '@/lib/types';
 
 export function SignupForm() {
   const [state, formAction] = useActionState(
     signup,
-    null as ApiResult<UserResponse> | null
+    null as ApiResult<UserResponse> | null,
   );
   const router = useRouter();
 
@@ -44,51 +43,47 @@ export function SignupForm() {
           </div>
         </div>
 
-        <Card>
-          <CardContent className="pt-6">
-            <form action={formAction} className="space-y-4">
-              {state && !state.success && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{state.error.message}</AlertDescription>
-                </Alert>
-              )}
+        <form action={formAction} className="space-y-4">
+          {state && !state.success && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{state.error.message}</AlertDescription>
+            </Alert>
+          )}
 
-              {state?.success && (
-                <Alert>
-                  <CheckCircle2 className="h-4 w-4" />
-                  <AlertDescription>
-                    Account created! Redirecting to login...
-                  </AlertDescription>
-                </Alert>
-              )}
+          {state?.success && (
+            <Alert>
+              <CheckCircle2 className="h-4 w-4" />
+              <AlertDescription>
+                Account created! Redirecting to login...
+              </AlertDescription>
+            </Alert>
+          )}
 
-              <FormField
-                label="Email"
-                name="email"
-                type="email"
-                placeholder="you@example.com"
-                autoComplete="email"
-                required
-                disabled={state?.success}
-              />
+          <FormField
+            label="Email"
+            name="email"
+            type="email"
+            placeholder="you@example.com"
+            autoComplete="email"
+            required
+            disabled={state?.success}
+          />
 
-              <FormField
-                label="Password"
-                name="password"
-                type="password"
-                placeholder="Minimum 8 characters"
-                autoComplete="new-password"
-                required
-                disabled={state?.success}
-              />
+          <FormField
+            label="Password"
+            name="password"
+            type="password"
+            placeholder="Minimum 8 characters"
+            autoComplete="new-password"
+            required
+            disabled={state?.success}
+          />
 
-              <SubmitButton className="w-full" disabled={state?.success}>
-                Create Account
-              </SubmitButton>
-            </form>
-          </CardContent>
-        </Card>
+          <SubmitButton className="w-full" disabled={state?.success}>
+            Create Account
+          </SubmitButton>
+        </form>
 
         <p className="text-center text-sm text-slate-600 dark:text-slate-400">
           Already have an account?{' '}
