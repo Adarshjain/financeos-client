@@ -433,7 +433,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PagedTransactionResponse'
+                $ref: '#/components/schemas/PagedTransaction'
 
   /api/v1/investments/transactions:
     post:
@@ -921,7 +921,7 @@ components:
       type: string
       enum: [gmail, manual]
 
-    PagedTransactionResponse:
+    PagedTransaction:
       type: object
       properties:
         content:

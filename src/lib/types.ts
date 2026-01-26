@@ -7,7 +7,6 @@ export type AccountType =
   | 'mutual_fund'
   | 'generic';
 export type FinancialPosition = 'asset' | 'liability';
-export type TransactionSource = 'gmail' | 'manual';
 export type InvestmentTransactionType = 'buy' | 'sell';
 
 // User & Auth
@@ -33,43 +32,6 @@ export interface UserResponse {
   createdAt: string;
 }
 
-// Transactions
-export interface CreateTransactionRequest {
-  accountId?: string;
-  date: string;
-  amount: string;
-  description: string;
-  category?: string;
-  subcategory?: string;
-  spentFor?: string;
-  source: TransactionSource;
-  metadata?: Record<string, unknown>;
-}
-
-export interface TransactionResponse {
-  id: string;
-  accountId?: string;
-  date: string;
-  amount: string;
-  description: string;
-  category?: string;
-  subcategory?: string;
-  spentFor?: string;
-  source: TransactionSource;
-  metadata?: Record<string, unknown>;
-  createdAt: string;
-}
-
-export interface PagedTransactionResponse {
-  content: TransactionResponse[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
-  empty: boolean;
-}
 
 // Investments
 export interface CreateInvestmentTransactionRequest {
