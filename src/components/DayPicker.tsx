@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { DatePicker } from '@/components/ui/date-picker';
 import { cn, formatMonthYear, getDayShortName, isSameDay, isWithinLastNDays } from '@/lib/utils';
 
-const daysCount = 5;
+const daysCount = 4;
 const days = Array.from({ length: daysCount }, (_, i) => {
   const d = new Date();
   d.setDate(d.getDate() - (daysCount - i - 1));

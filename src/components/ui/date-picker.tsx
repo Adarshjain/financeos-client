@@ -24,6 +24,7 @@ export function DatePicker({ trigger, date, onSelect }: DatePickerProps) {
           selected={date}
           onSelect={onSelect}
           defaultMonth={date}
+          captionLayout="dropdown"
         />
       </PopoverContent>
     </Popover>

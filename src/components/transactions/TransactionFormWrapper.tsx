@@ -33,6 +33,7 @@ export function TransactionFormWrapper({ transaction, categories, accounts, trig
             transaction={transaction}
             categories={categories}
             onSuccess={() => setOpen(false)}
+            onClose={() => setOpen(false)}
           />
           {/*<TransactionForm*/}
           {/*  accounts={accounts}*/}

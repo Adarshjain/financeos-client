@@ -61,7 +61,7 @@ export function Combobox({
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex flex-wrap items-center gap-1 justify-center">
             {value.length > 0 ? (
               value.map(val => {
                 const option = options.find(o => o.value === val);
@@ -80,7 +80,10 @@ export function Combobox({
               <span className="text-muted-foreground">{placeholder}</span>
             )}
             <Badge variant="secondary" className="bg-black text-muted px-6">
-              <PlusIcon className="w-4" data-icon="inline-end" />
+              {value.length > 0
+                ? <PlusIcon className="w-4" data-icon="inline-end" />
+                : <><PlusIcon className="w-4 mr-2" data-icon="inline-end" />Categories</>
+              }
             </Badge>
           </div>
         </PopoverTrigger>
