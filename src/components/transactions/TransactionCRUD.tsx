@@ -14,9 +14,10 @@ interface TransactionCRUDProps {
   accounts: Account[];
   categories: Category[];
   onSuccess?: () => void;
+  onClose?: () => void;
 }
 
-export default function TransactionCRUD({ categories, transaction, accounts, onSuccess }: TransactionCRUDProps) {
+export default function TransactionCRUD({ categories, transaction, accounts, onSuccess, onClose }: TransactionCRUDProps) {
   const [selectedCategories, setSelectedCategories] = useState(transaction?.categories ?? []);
   const [localCategories, setLocalCategories] = useState<Category[]>(categories);
   const [amount, setAmount] = useState<string>('0');
@@ -35,16 +36,18 @@ export default function TransactionCRUD({ categories, transaction, accounts, onS
     }
   };
 
-  return <div className="p-4">
-    <DayPicker />
-    <Combobox
-      options={localCategories.map(({ id, name }) => ({ value: id, label: name }))}
-      value={selectedCategories}
-      onChange={setSelectedCategories}
-      canCreate
-      onCreate={createCategory}
-    />
-    <div className="text-5xl text-center my-6">{amount}</div>
-    <Keypad onChange={setAmount} />
+  return <div className="flex flex-col p-4">
+    <DayPicker date={transaction ? new Date(transaction.date) : undefined} />
+    <div className="my-4">
+      <Combobox
+        options={localCategories.map(({ id, name }) => ({ value: id, label: name }))}
+        value={selectedCategories}
+        onChange={setSelectedCategories}
+        canCreate
+        onCreate={createCategory}
+      />
+    </div>
+    <div className="text-5xl text-center my-6 mt-auto">{amount}</div>
+    <Keypad onChange={setAmount} onClose={onClose} done={onSuccess} />
   </div>;
 }
