@@ -26,7 +26,7 @@ export default async function AccountsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-4">
       <div className="flex justify-between">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Accounts</h1>
         <AccountFormWrapper trigger={<Button>Create</Button>} />
