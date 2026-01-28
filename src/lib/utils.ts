@@ -1,4 +1,4 @@
-import { type ClassValue,clsx } from 'clsx';
+import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
@@ -60,4 +60,61 @@ export function getAccountTypeLabel(type: string | undefined): string {
 export function getPositionLabel(position: string | undefined): string {
   if (!position) return 'Asset';
   return position === 'liability' ? 'Liability' : 'Asset';
+}
+
+export function getMonthShortName(input: number | Date, locale = 'en-IN'): string {
+  let monthIndex;
+
+  if (input instanceof Date) {
+    monthIndex = input.getMonth(); // 0–11
+  } else if (Number.isInteger(input) && input >= 0 && input <= 11) {
+    monthIndex = input;
+  } else {
+    return '-'; // invalid input
+  }
+
+  return new Date(2000, monthIndex, 1)
+    .toLocaleString(locale, { month: 'short' });
+}
+
+export function getDayShortName(input: number | Date, locale = 'en-IN') {
+  let dayIndex;
+
+  if (input instanceof Date) {
+    dayIndex = input.getDay(); // 0–6
+  } else if (Number.isInteger(input) && input >= 0 && input <= 6) {
+    dayIndex = input;
+  } else {
+    return null;
+  }
+
+  return new Date(2000, 0, 2 + dayIndex) // Sunday-based reference
+    .toLocaleString(locale, { weekday: 'short' });
+}
+
+export function formatMonthYear(date: Date, locale = 'en-IN') {
+  const month = date.toLocaleString(locale, { month: 'short' });
+  const year = String(date.getFullYear()).slice(-2);
+
+  return `${month} ${year}`;
+}
+
+export function isSameDay(d1: Date, d2: Date) {
+  return (
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+  );
+}
+
+export function isWithinLastNDays(date: Date, days: number) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const target = new Date(date);
+  target.setHours(0, 0, 0, 0);
+
+  const diffInDays = (+today - +target) / (1000 * 60 * 60 * 24);
+
+  return diffInDays >= 0 && diffInDays < days;
 }

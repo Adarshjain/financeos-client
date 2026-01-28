@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { createCategory as createCategoryAction } from '@/actions/categories';
 import { Combobox } from '@/components/Combobox';
+import DayPicker from '@/components/DayPicker';
 import Keypad from '@/components/ui/Keypad';
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
@@ -35,6 +36,7 @@ export default function TransactionCRUD({ categories, transaction, accounts, onS
   };
 
   return <div className="p-4">
+    <DayPicker />
     <Combobox
       options={localCategories.map(({ id, name }) => ({ value: id, label: name }))}
       value={selectedCategories}
