@@ -2,7 +2,7 @@
 
 import React, { JSX, useState } from 'react';
 
-import { TransactionForm } from '@/components/transactions/TransactionForm';
+import TransactionCRUD from '@/components/transactions/TransactionCRUD';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
@@ -24,16 +24,22 @@ export function TransactionFormWrapper({ transaction, categories, accounts, trig
         <DialogTrigger asChild>
           <div>{trigger}</div>
         </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className="rounded-none top-0 bottom-0 h-[100vh] p-0" hideClose>
+          <DialogHeader className="sr-only">
             <DialogTitle>{transaction ? 'Edit' : 'New'} Transaction</DialogTitle>
           </DialogHeader>
-          <TransactionForm
+          <TransactionCRUD
             accounts={accounts}
             transaction={transaction}
             categories={categories}
             onSuccess={() => setOpen(false)}
           />
+          {/*<TransactionForm*/}
+          {/*  accounts={accounts}*/}
+          {/*  transaction={transaction}*/}
+          {/*  categories={categories}*/}
+          {/*  onSuccess={() => setOpen(false)}*/}
+          {/*/>*/}
         </DialogContent>
       </Dialog>
     </div>

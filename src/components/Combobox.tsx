@@ -1,8 +1,7 @@
-import { CheckIcon, ChevronsUpDownIcon, XIcon } from 'lucide-react';
+import { CheckIcon, PlusIcon } from 'lucide-react';
 import { useId, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -26,16 +25,16 @@ interface MultiComboboxProps {
 };
 
 export function Combobox({
-                                label,
-                                options,
-                                value,
-                                onChange,
-                                className,
-                                placeholder,
-                                popoverClassName,
-                                canCreate,
-                                onCreate,
-                              }: MultiComboboxProps) {
+                           label,
+                           options,
+                           value,
+                           onChange,
+                           className,
+                           placeholder,
+                           popoverClassName,
+                           canCreate,
+                           onCreate,
+                         }: MultiComboboxProps) {
   const id = useId();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -57,54 +56,33 @@ export function Combobox({
   };
 
   return (
-    <div className={className ?? 'w-full max-w-xs space-y-2'}>
+    <div className={className ?? 'w-full space-y-2'}>
       {label && <Label htmlFor={id}>{label}</Label>}
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button
-            id={id}
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="h-auto min-h-8 w-full justify-between hover:bg-transparent"
-          >
-            <div className="flex flex-wrap items-center gap-1 pr-2.5">
-              {value.length > 0 ? (
-                value.map(val => {
-                  const option = options.find(o => o.value === val);
-                  if (!option) return null;
+          <div className="flex flex-wrap items-center gap-1">
+            {value.length > 0 ? (
+              value.map(val => {
+                const option = options.find(o => o.value === val);
+                if (!option) return null;
 
-                  return (
-                    <Badge key={val} variant="outline" className="rounded-sm">
-                      {option.label}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-4"
-                        onClick={e => {
-                          e.stopPropagation();
-                          removeSelection(val);
-                        }}
-                        asChild
-                      >
-                        <span>
-                          <XIcon className="size-3" />
-                        </span>
-                      </Button>
-                    </Badge>
-                  );
-                })
-              ) : (
-                <span className="text-muted-foreground">{placeholder}</span>
-              )}
-            </div>
-
-            <ChevronsUpDownIcon
-              className="shrink-0 text-muted-foreground/80"
-              aria-hidden="true"
-            />
-          </Button>
+                return (
+                  <Badge key={val} variant="secondary" className="bg-black text-white text-base px-4">
+                    <span onClick={e => {
+                      e.stopPropagation();
+                      removeSelection(val);
+                    }}>{option.label}</span>
+                  </Badge>
+                );
+              })
+            ) : (
+              <span className="text-muted-foreground">{placeholder}</span>
+            )}
+            <Badge variant="secondary" className="bg-black text-muted px-6">
+              <PlusIcon className="w-4" data-icon="inline-end" />
+            </Badge>
+          </div>
         </PopoverTrigger>
 
         <PopoverContent
@@ -113,9 +91,6 @@ export function Combobox({
           className={cn('min-w-[350px] p-0', popoverClassName)}
           side="bottom"
           align="start"
-          sideOffset={60}
-          collisionPadding={8}
-          avoidCollisions={true}
         >
           <Command>
             <CommandInput
