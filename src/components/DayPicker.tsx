@@ -2,7 +2,7 @@ import { Calendar } from 'lucide-react';
 import { useState } from 'react';
 
 import { DatePicker } from '@/components/ui/date-picker';
-import { cn, formatMonthYear, getDayShortName, isSameDay, isWithinLastNDays } from '@/lib/utils';
+import { cn, formatMonthYear, isSameDay, isWithinLastNDays } from '@/lib/utils';
 
 const daysCount = 4;
 const days = Array.from({ length: daysCount }, (_, i) => {
@@ -22,13 +22,13 @@ const DateView = ({ date, isSelected, onSelect }: DateViewProps) => {
     onClick={() => onSelect?.(date)}
     className={
       cn(
-        'rounded-xl p-3 text-center w-[60px] h-[74px]',
+        'rounded-xl p-3 text-center w-[60px]',
         isSelected ? 'bg-black text-white' : null,
       )
     }>
     <div className="text-lg font-medium leading-none">{date.getDate()}</div>
     <div className="text-xs">{formatMonthYear(date)}</div>
-    <div className="text-xs">{getDayShortName(date)}</div>
+    {/*<div className="text-xs">{getDayShortName(date)}</div>*/}
   </div>;
 };
 
@@ -46,7 +46,7 @@ export default function DayPicker({ date }: { date?: Date }) {
     <DatePicker
       trigger={
         isWithinLastNDays(internalDate, daysCount)
-          ? <div className="w-[60px] h-[74px] grid place-items-center"><Calendar size={32} /></div>
+          ? <div className="w-[60px] h-[58px] grid place-items-center"><Calendar size={32} /></div>
           : <DateView date={internalDate} isSelected />
       }
       date={internalDate}
