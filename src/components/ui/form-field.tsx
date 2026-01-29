@@ -6,28 +6,28 @@ import { Input } from './input';
 import { Label } from './label';
 
 interface FormFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label: string;
+  label?: string;
   error?: string;
   hint?: string;
 }
 
 export function FormField({
-  label,
-  error,
-  hint,
-  id,
-  className,
-  ...props
-}: FormFieldProps) {
+                            label,
+                            error,
+                            hint,
+                            id,
+                            className,
+                            ...props
+                          }: FormFieldProps) {
   const fieldId = id || props.name;
 
   return (
     <div className={cn('space-y-1', className)}>
-      <Label htmlFor={fieldId}>{label}</Label>
+      {label && <Label htmlFor={fieldId}>{label}</Label>}
       <Input
         id={fieldId}
         className={cn(
-          error && 'border-red-300 dark:border-red-700 focus:ring-red-500'
+          error && 'border-red-300 dark:border-red-700 focus:ring-red-500',
         )}
         {...props}
       />
