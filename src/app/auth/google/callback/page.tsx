@@ -1,12 +1,12 @@
 'use client';
 
 import { Loader2 } from 'lucide-react';
-import { useRouter,useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
 import { handleGoogleCallbackAction } from '@/actions/auth';
 
-export default function GoogleCallbackPage() {
+function GoogleCallbackContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [status, setStatus] = useState<'loading' | 'error' | 'success'>(
@@ -119,5 +119,33 @@ export default function GoogleCallbackPage() {
         )}
       </div>
     </div>
+  );
+}
+
+function CallbackFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+      <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 text-center max-w-md w-full">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 text-emerald-600 animate-spin" />
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+              Authenticating...
+            </h2>
+            <p className="text-slate-500 dark:text-slate-400">
+              Please wait while we verify your Google account.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function GoogleCallbackPage() {
+  return (
+    <Suspense fallback={<CallbackFallback />}>
+      <GoogleCallbackContent />
+    </Suspense>
   );
 }
