@@ -10,13 +10,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/ui/form-field';
 import { NativeSelect } from '@/components/ui/native-select';
 import type {
-  AccountResponse,
   ApiResult,
   InvestmentTransactionResponse,
 } from '@/lib/types';
 
 interface CreateInvestmentFormProps {
-  accounts: AccountResponse[];
+  accounts: any[];
 }
 
 const transactionTypes = [

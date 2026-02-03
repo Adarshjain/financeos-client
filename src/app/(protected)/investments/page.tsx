@@ -17,7 +17,6 @@ import {
 } from '@/components/ui/table';
 import { accountsApi,investmentsApi } from '@/lib/apiClient';
 import type {
-  AccountResponse,
   InvestmentTransactionResponse,
   Position,
 } from '@/lib/types';
@@ -37,12 +36,12 @@ export default async function InvestmentsPage() {
   const positions: Position[] = positionsData.positions || [];
   // Filter for stock and mutual_fund accounts only
   const investmentAccounts = accounts.filter(
-    (a: AccountResponse) => a.type === 'stock' || a.type === 'mutual_fund'
+    (a: any) => a.type === 'stock' || a.type === 'mutual_fund'
   );
 
   const getAccountName = (accountId: string | undefined) => {
     if (!accountId) return '—';
-    const account = accounts.find((a: AccountResponse) => a.id === accountId);
+    const account = accounts.find((a: any) => a.id === accountId);
     return account?.name || 'Unknown';
   };
 
