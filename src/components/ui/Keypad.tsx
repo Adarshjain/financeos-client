@@ -1,5 +1,5 @@
 import { CheckIcon, DeleteIcon, XIcon } from 'lucide-react';
-import { JSX, useState } from 'react';
+import { JSX, useCallback, useEffect, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 
@@ -20,7 +20,7 @@ export interface KeypadProps {
 export default function Keypad({ onChange, onClose, done, amount }: KeypadProps) {
   const [value, setValue] = useState(amount ?? '-0');
 
-  const handlePress = (key: string | number) => {
+  const handlePress = useCallback((key: string | number) => {
     if (key === 'close') {
       onClose?.();
       return;
@@ -56,7 +56,36 @@ export default function Keypad({ onChange, onClose, done, amount }: KeypadProps)
 
     setValue(next);
     onChange?.(next);
-  };
+  }, [done, onChange, onClose, value]);
+
+  useEffect(() => {
+    const listener = (e: KeyboardEvent) => {
+      try {
+        if (e.key === '.') {
+          handlePress(e.key)
+        }
+        if (e.key === 'Backspace') {
+          handlePress('delete')
+        }
+        if (e.key === '-' || e.key === '_') {
+          handlePress('+/-')
+        }
+        const key = parseInt(e.key);
+        if (!isNaN(key)) {
+          handlePress(key)
+        }
+      } catch (e) {
+        // Do nothing
+      }
+    };
+
+    window.addEventListener('keydown', listener);
+
+    return () => {
+      window.removeEventListener('keydown', listener);
+    };
+  }, [handlePress]);
+
 
   return (
     <div className="grid grid-cols-4 h-[220px] gap-2">
