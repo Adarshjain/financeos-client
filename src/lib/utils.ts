@@ -96,7 +96,7 @@ export function formatMonthYear(date: Date, locale = 'en-IN') {
   const month = date.toLocaleString(locale, { month: 'short' });
   const year = String(date.getFullYear()).slice(-2);
 
-  return `${month} ${year}`;
+  return `${month.slice(0,3)} ${year}`;
 }
 
 export function isSameDay(d1: Date, d2: Date) {

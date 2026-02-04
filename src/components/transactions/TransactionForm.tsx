@@ -69,7 +69,7 @@ export function TransactionForm({ categories, transaction, accounts, onSuccess }
     const result = await createCategoryAction(categoryName);
     if (result.success) {
       setLocalCategories((prev) => [...prev, result.data]);
-      setSelectedCategories((prev) => [...prev, result.data.id]);
+      setSelectedCategories((prev) => [...prev, result.data]);
     } else {
       alert('Failed to create category:' + result.error.message);
     }
@@ -78,7 +78,7 @@ export function TransactionForm({ categories, transaction, accounts, onSuccess }
   const categorizeDescription = async () => {
     const result = await categorizeDescriptionAction(formRef.current?.description.value ?? '');
     if (result.success) {
-      setSelectedCategories(result.data.map(category => category.id));
+      setSelectedCategories(result.data);
     } else {
       alert('Failed to match category:' + result.error.message);
     }
@@ -150,7 +150,7 @@ export function TransactionForm({ categories, transaction, accounts, onSuccess }
       <div className="flex items-end gap-3">
         <Combobox
           label="Categories"
-          options={localCategories.map(({ id, name }) => ({ value: id, label: name }))}
+          options={localCategories.map(({ id, name }) => ({ id: id, name: name }))}
           value={selectedCategories}
           onChange={setSelectedCategories}
           canCreate
@@ -158,14 +158,6 @@ export function TransactionForm({ categories, transaction, accounts, onSuccess }
         />
         <Button disabled variant="outline" onClick={categorizeDescription}>Auto Detect</Button>
       </div>
-
-      <FormFieldTextArea
-        label="Notes"
-        name="notes"
-        type="textarea"
-        defaultValue={transaction?.notes}
-      />
-
       <input name="source" hidden defaultValue="manual" />
 
       <div className="pt-2">

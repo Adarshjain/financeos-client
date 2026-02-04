@@ -35,7 +35,14 @@ const config = [
         rules: {
             "simple-import-sort/imports": "error",
             "simple-import-sort/exports": "error",
-            "no-unused-vars": "warn",
+            "no-unused-vars": "off",
+            "@typescript-eslint/no-unused-vars": [
+                "warn",
+                {
+                    argsIgnorePattern: "^_",
+                    varsIgnorePattern: "^_",
+                },
+            ],
             "react/react-in-jsx-scope": "off",
         },
     },

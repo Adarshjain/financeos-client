@@ -1,21 +1,24 @@
 import { CheckIcon, DeleteIcon, XIcon } from 'lucide-react';
 import { JSX, useState } from 'react';
 
+import { cn } from '@/lib/utils';
+
 const keys: (string | number | { el: JSX.Element, value: string })[] = [
   1, 2, 3, { el: <DeleteIcon />, value: 'delete' },
-  4, 5, 6, '',
-  7, 8, 9, { el: <XIcon />, value: 'close' },
-  '+/-', 0, '.', { el: <CheckIcon />, value: 'done' },
+  4, 5, 6, { el: <XIcon />, value: 'close' },
+  7, 8, 9, { el: <CheckIcon />, value: 'done' },
+  '+/-', 0, '.',
 ];
 
 export interface KeypadProps {
   onChange?: (value: string) => void;
   onClose?: () => void;
   done?: () => void;
+  amount?: string;
 }
 
-export default function Keypad({ onChange, onClose, done }: KeypadProps) {
-  const [value, setValue] = useState('0');
+export default function Keypad({ onChange, onClose, done, amount }: KeypadProps) {
+  const [value, setValue] = useState(amount ?? '-0');
 
   const handlePress = (key: string | number) => {
     if (key === 'close') {
@@ -29,19 +32,26 @@ export default function Keypad({ onChange, onClose, done }: KeypadProps) {
 
     let next = value;
 
-    // Toggle sign
+    // Toggle sign (default to -0 for expenses)
     if (key === '+/-') {
       next = value.startsWith('-')
-        ? value.slice(1)
-        : value === '0' ? value : `-${value}`;
+        ? (value.slice(1) || '0')
+        : value === '0' || value === '' ? '-0' : `-${value}`;
     } else if (key === 'delete') {
       next = value.slice(0, -1);
     } else if (key === '.') {
       if (!value.includes('.')) {
-        next = `${value}.`;
+        next = value === '-' || value === '-0' ? '-0.' : `${value}.`;
       }
     } else {
-      next = value === '0' ? String(key) : value + key;
+      // Replace leading 0 or -0 when typing first digit; append otherwise
+      if (value === '0' || value === '') {
+        next = String(key);
+      } else if (value === '-0') {
+        next = `-${key}`;
+      } else {
+        next = value + key;
+      }
     }
 
     setValue(next);
@@ -51,17 +61,25 @@ export default function Keypad({ onChange, onClose, done }: KeypadProps) {
   return (
     <div className="grid grid-cols-4 h-[220px] gap-2">
       {keys.map(key => {
+        const isStringNumber = typeof key === 'string' || typeof key === 'number';
         return <button
-          key={typeof key === 'string' || typeof key === 'number' ? key : key.value}
-          onClick={() => handlePress(typeof key === 'string' || typeof key === 'number' ? key : key.value)}
-          className="flex items-center justify-center text-center text-2xl rounded-full bg-gray-200
-            transition-all duration-100 ease-out
-            active:scale-95
-            active:bg-gray-300
-            active:shadow-inner
-            select-none"
+          type={!isStringNumber && key.value === 'done' ? 'submit' : 'button'}
+          key={isStringNumber ? key : key.value}
+          onClick={
+            !isStringNumber && key.value === 'done'
+              ? undefined
+              : () => handlePress(isStringNumber ? key : key.value)
+          }
+          className={
+            cn(
+              'flex items-center justify-center text-center text-2xl rounded-full bg-gray-200 transition-all duration-100 ease-out active:scale-95 active:bg-gray-300 active:shadow-inner select-none',
+              !isStringNumber && key.value === 'done' ? 'bg-emerald-200 text-emerald-800 row-span-2 rounded-3xl' : null,
+              !isStringNumber && key.value === 'close' ? 'bg-red-200 text-red-800' : null,
+              isStringNumber && key === '' ? 'opacity-0' : null,
+            )
+          }
         >
-          {typeof key === 'string' || typeof key === 'number' ? key : key.el}
+          {isStringNumber ? key : key.el}
         </button>;
       })}
     </div>
