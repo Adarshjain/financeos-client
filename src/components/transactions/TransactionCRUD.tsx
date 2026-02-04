@@ -1,19 +1,18 @@
 import { CheckIcon, SquareIcon, XIcon } from 'lucide-react';
-import { useActionState, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 import { createCategory as createCategoryAction } from '@/actions/categories';
 import { createTransaction, updateTransaction } from '@/actions/transactions';
 import { Combobox } from '@/components/Combobox';
 import DayPicker from '@/components/DayPicker';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { FormFieldTextArea } from '@/components/ui/form-field-textarea';
 import Keypad from '@/components/ui/Keypad';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
-import { Transaction, TransactionRequest } from '@/lib/transaction.types';
-import type { ApiResult } from '@/lib/types';
+import { Transaction, type TransactionRequest } from '@/lib/transaction.types';
 import { cn } from '@/lib/utils';
 
 
@@ -36,19 +35,13 @@ export default function TransactionCRUD({
   const [localCategories, setLocalCategories] = useState<Category[]>(categories);
   const [amount, setAmount] = useState<string>(transaction ? '' + transaction?.amount : '-0');
   const [date, setDate] = useState<Date>(transaction ? new Date(transaction.date) : new Date());
+  const [creatingCategory, setCreatingCategory] = useState(false);
 
   const [isMonitored, setIsMonitored] = useState(false);
   const [isExcluded, setIsExcluded] = useState(false);
 
   const isUpdateMode = !!transaction;
-  const updateAction = transaction ? updateTransaction.bind(null, transaction.id) : null;
   const formRef = useRef<HTMLFormElement | null>(null);
-
-  const [state, formAction] = useActionState(
-    isUpdateMode && updateAction ? updateAction : createTransaction,
-    null as ApiResult<Transaction> | null,
-  );
-
 
   const accountOptions = [
     { value: '', label: 'Select Account' },
@@ -60,62 +53,48 @@ export default function TransactionCRUD({
   }, [categories]);
 
   const createCategory = async (categoryName: string) => {
+    setCreatingCategory(true);
     const result = await createCategoryAction(categoryName);
     if (result.success) {
       setLocalCategories((prev) => [...prev, result.data]);
       setSelectedCategories((prev) => [...prev, result.data]);
     } else {
-      alert('Failed to create category:' + result.error.message);
+      toast.error('Failed to create category: ' + result.error.message);
     }
+    setCreatingCategory(false);
   };
 
-  const onSubmit = () => {
+  const onSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    const form = formRef.current;
+    if (!form) {
+      toast.error('Form not available');
+      return;
+    }
     try {
-      const form = formRef.current;
-      if (!form) throw new Error('Form not available');
-
-      const tempTransaction: TransactionRequest = {
+      const categoryIds = selectedCategories.map(c => c.id);
+      const transactionRequest: TransactionRequest = {
         accountId: form.accountId.value,
-        description: form.description.value,
+        description: form.description.value ?? undefined,
         amount: Number(amount),
-        categoryIds: (transaction?.categories ?? selectedCategories).map(c => c.id),
-        date: date.toISOString(),
-        metadata: undefined,
-        source: transaction?.source ?? 'manual',
-        isTransactionExcluded: isExcluded,
-        isTransactionUnderMonitoring: isMonitored,
+        categoryIds,
+        date: date.toISOString().split('T')[0],
       };
-
-      const formData = new FormData();
-
-      Object.entries(tempTransaction).forEach(([key, value]) => {
-        if (value === undefined || value === null) return;
-
-        // Handle arrays properly
-        if (Array.isArray(value)) {
-          value.forEach(v => formData.append(key, String(v)));
-        } else {
-          formData.set(key, String(value));
-        }
-      });
-
-      formAction(formData);
-      // onSuccess?.();
-    } catch (e) {
-      alert(
-        'Verify if all the mandatory fields are filled.\n' +
-        (e as Error).message
-      );
+      const res = isUpdateMode && transaction
+        ? await updateTransaction(transaction.id, transactionRequest)
+        : await createTransaction(transactionRequest);
+      if (res.success) {
+        toast.success('Transaction saved!');
+        onSuccess?.();
+      } else {
+        toast.error(res.error.message);
+      }
+    } catch (err) {
+      toast.error('Error:\n' + (err as Error).message);
     }
   };
-
 
   return <form ref={formRef} onSubmit={onSubmit} className="flex flex-col p-4 gap-2 justify-center">
-    {state && !state.success && (
-      <Alert variant="destructive">
-        <AlertDescription>{state.error.message}</AlertDescription>
-      </Alert>
-    )}
     <DayPicker date={date} onSelect={setDate} />
     <div className="flex gap-1">
       <NativeSelect
@@ -152,6 +131,7 @@ export default function TransactionCRUD({
       onChange={setSelectedCategories}
       canCreate
       onCreate={createCategory}
+      loading={creatingCategory}
     />
     <FormFieldTextArea
       placeholder="Description"

@@ -7,10 +7,13 @@ import { Button, type ButtonProps } from '@/components/ui/button';
 
 interface SubmitButtonProps extends ButtonProps {
   children: React.ReactNode;
+  /** When using imperative submit (onSubmit + server action), pass loading state here */
+  pending?: boolean;
 }
 
-export function SubmitButton({ children, ...props }: SubmitButtonProps) {
-  const { pending } = useFormStatus();
+export function SubmitButton({ children, pending: pendingProp, ...props }: SubmitButtonProps) {
+  const { pending: formPending } = useFormStatus();
+  const pending = pendingProp ?? formPending;
 
   return (
     <Button type="submit" disabled={pending} {...props}>

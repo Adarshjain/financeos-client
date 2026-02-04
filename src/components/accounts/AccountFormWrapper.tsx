@@ -28,7 +28,7 @@ export function AccountFormWrapper({ account, trigger }: EditAccountFormProps) {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Account</DialogTitle>
+          <DialogTitle className="sr-only">Edit Account</DialogTitle>
         </DialogHeader>
         <AccountForm account={account} onSuccess={() => setOpen(false)} />
       </DialogContent>

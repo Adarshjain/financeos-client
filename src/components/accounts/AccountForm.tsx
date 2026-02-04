@@ -1,19 +1,18 @@
 'use client';
 
-import { AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useActionState, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 
 import { createAccount, updateAccount } from '@/actions/accounts';
 import { SubmitButton } from '@/components/forms/SubmitButton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { FormField } from '@/components/ui/form-field';
 import { NativeSelect } from '@/components/ui/native-select';
-import { Account } from '@/lib/account.types';
-import { AccountType, ApiResult } from '@/lib/types';
+import { Account, AccountRequest } from '@/lib/account.types';
+import { AccountType, FinancialPosition } from '@/lib/types';
 
 const accountTypes: { value: AccountType; label: string }[] = [
-  { value: 'bank_account', label: 'Bank Account' },
-  { value: 'credit_card', label: 'Credit Card' },
+  { value: AccountType.BANK_ACCOUNT, label: 'Bank Account' },
+  { value: AccountType.CREDIT_CARD, label: 'Credit Card' },
   // { value: 'stock', label: 'Stock' },
   // { value: 'mutual_fund', label: 'Mutual Fund' },
   // { value: 'generic', label: 'Generic' },
@@ -31,17 +30,10 @@ interface AccountFormProps {
 
 export function AccountForm({ account, onSuccess }: AccountFormProps) {
   const isUpdateMode = !!account;
-
-  const updateAction = account ? updateAccount.bind(null, account.id) : null;
-
-  const [state, formAction] = useActionState(
-    isUpdateMode && updateAction ? updateAction : createAccount,
-    null as ApiResult<Account> | null,
-  );
-
   const [accountType, setAccountType] = useState<AccountType>(
-    account?.type || 'bank_account'
+    account?.type || AccountType.BANK_ACCOUNT,
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (account?.type) {
@@ -49,31 +41,67 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
     }
   }, [account]);
 
-  useEffect(() => {
-    if (state?.success && onSuccess) {
-      onSuccess();
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    const name = formData.get('name') as string;
+    const accountType = formData.get('type') as AccountType;
+    const excludeFromNetAsset = formData.get('excludeFromNetAsset') === 'true';
+    const financialPosition = formData.get('financialPosition') as FinancialPosition;
+    const description = formData.get('description') as string | undefined;
+
+    let data: AccountRequest | undefined;
+
+    if (accountType === AccountType.BANK_ACCOUNT) {
+      data = {
+        name,
+        excludeFromNetAsset,
+        financialPosition,
+        description,
+        type: AccountType.BANK_ACCOUNT,
+        last4: formData.get('last4') as string ?? undefined,
+        openingBalance: parseInt(formData.get('openingBalance') as string) ?? undefined,
+      };
     }
-  }, [state?.success, onSuccess]);
+
+    if (accountType === AccountType.CREDIT_CARD) {
+      data = {
+        name,
+        excludeFromNetAsset,
+        financialPosition,
+        description,
+        type: AccountType.CREDIT_CARD,
+        last4: formData.get('last4') as string ?? undefined,
+        creditLimit: parseInt(formData.get('creditLimit') as string) ?? undefined,
+        paymentDueDay: parseInt(formData.get('paymentDueDay') as string) ?? undefined,
+        gracePeriodDays: parseInt(formData.get('gracePeriodDays') as string) ?? undefined,
+        statementPassword: formData.get('statementPassword') as string ?? undefined,
+      };
+    }
+    if (!data) {
+      setIsSubmitting(false);
+      return;
+    }
+    try {
+      const res = isUpdateMode && account
+        ? await updateAccount(account.id, data)
+        : await createAccount(data);
+      if (res.success) {
+        toast.success(isUpdateMode ? 'Account updated successfully!' : 'Account created successfully!');
+        onSuccess?.();
+      } else {
+        toast.error(res.error.message);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <form action={formAction} className="space-y-4">
-      {state && !state.success && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{state.error.message}</AlertDescription>
-        </Alert>
-      )}
-      {state?.success && (
-        <Alert>
-          <CheckCircle2 className="h-4 w-4" />
-          <AlertDescription>
-            {isUpdateMode
-              ? 'Account updated successfully!'
-              : 'Account created successfully!'}
-          </AlertDescription>
-        </Alert>
-      )}
-
+    <form onSubmit={handleSubmit} className="space-y-4">
       <FormField
         label="Account Name"
         name="name"
@@ -81,24 +109,24 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
         defaultValue={account?.name}
         required
       />
+      <div className="flex gap-2">
+        <NativeSelect
+          label="Account Type"
+          name="type"
+          options={accountTypes}
+          value={accountType}
+          onChange={(e) => setAccountType(e.currentTarget.value as AccountType)}
+          className={isUpdateMode ? 'pointer-events-none opacity-40' : undefined}
+          required
+        />
 
-      <NativeSelect
-        label="Account Type"
-        name="type"
-        options={accountTypes}
-        value={accountType}
-        onChange={(e) => setAccountType(e.currentTarget.value as AccountType)}
-        className={isUpdateMode ? 'pointer-events-none opacity-40' : undefined}
-        required
-      />
-
-      <NativeSelect
-        label="Financial Position"
-        name="financialPosition"
-        options={financialPositions}
-        defaultValue={account?.financialPosition || 'asset'}
-      />
-
+        <NativeSelect
+          label="Financial Position"
+          name="financialPosition"
+          options={financialPositions}
+          defaultValue={account?.financialPosition || 'asset'}
+        />
+      </div>
       <FormField
         label="Description (Optional)"
         name="description"
@@ -123,7 +151,7 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
         </label>
       </div>
 
-      {accountType === 'bank_account' ? (
+      {accountType === AccountType.BANK_ACCOUNT ? (
         <>
           <FormField
             label="Opening Balance"
@@ -148,7 +176,7 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
         </>
       ) : null}
 
-      {accountType === 'credit_card' ? (
+      {accountType === AccountType.CREDIT_CARD ? (
         <>
           <FormField
             label="Last 4"
@@ -210,7 +238,7 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
         </>
       ) : null}
       <div className="pt-2">
-        <SubmitButton className="w-full">
+        <SubmitButton className="w-full" pending={isSubmitting}>
           {isUpdateMode ? 'Update Account' : 'Create Account'}
         </SubmitButton>
       </div>

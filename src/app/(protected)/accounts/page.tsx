@@ -6,14 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Account, BankAccount, CreditCard } from '@/lib/account.types';
 import { accountsApi } from '@/lib/apiClient';
+import { AccountType } from '@/lib/types';
 import { formatMoney, getPositionLabel } from '@/lib/utils';
 
 export default async function AccountsPage() {
   const accounts = await accountsApi.list();
 
-  const bankAccounts = accounts.filter(a => a.type === 'bank_account') as BankAccount[];
-  const creditCards = accounts.filter(a => a.type === 'credit_card') as CreditCard[];
-  // const others = accounts.filter(a => !['bank_account', 'credit_card'].includes(a.type));
+  const bankAccounts = accounts.filter(a => a.type === AccountType.BANK_ACCOUNT) as BankAccount[];
+  const creditCards = accounts.filter(a => a.type === AccountType.CREDIT_CARD) as CreditCard[];
+  // const others = accounts.filter(a => ![AccountType.BANK_ACCOUNT, AccountType.CREDIT_CARD].includes(a.type));
 
   const AccountWrapper = ({ account, children }: { account: Account; children: JSX.Element[] }) => {
     return <div className="border rounded-md flex w-full border-b p-3 gap-2 bg-white flex-col">
