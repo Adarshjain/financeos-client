@@ -13,8 +13,10 @@ const plusJakarta = Plus_Jakarta_Sans({
   weight: ['400', '500', '600', '700'],
 });
 
+const isDev = process.env.NODE_ENV === 'development';
+
 export const metadata: Metadata = {
-  title: 'FinanceOS',
+  title: isDev ? 'FinanceOS - Dev' : 'FinanceOS',
   description: 'Personal finance management system',
 };
 
