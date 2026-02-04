@@ -60,6 +60,7 @@ export default function Keypad({ onChange, onClose, done, amount }: KeypadProps)
 
   useEffect(() => {
     const listener = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       try {
         if (e.key === '.') {
           handlePress(e.key)
