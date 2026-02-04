@@ -7,14 +7,13 @@ export interface TransactionBase {
   date: string;
   amount: number;
   description?: string;
-  source: TransactionSource;
-  metadata?: Record<string, unknown>;
-  isTransactionExcluded: boolean;
-  isTransactionUnderMonitoring: boolean;
+  isTransactionExcluded?: boolean;
+  isTransactionUnderMonitoring?: boolean;
 }
 
 export type TransactionRequest = TransactionBase & {
   categoryIds: string[];
+  source?: TransactionSource;
 }
 
 export type Transaction = TransactionBase & {
@@ -23,6 +22,7 @@ export type Transaction = TransactionBase & {
   balance: number;
   categories?: Category[];
   sourceDescription: string;
+  source: TransactionSource;
 }
 
 export interface PagedTransaction {

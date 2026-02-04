@@ -22,6 +22,7 @@ interface MultiComboboxProps {
   popoverClassName?: string;
   canCreate?: boolean;
   onCreate?: (value: string) => void;
+  loading?: boolean;
 }
 
 export function Combobox({
@@ -34,6 +35,7 @@ export function Combobox({
                            popoverClassName,
                            canCreate,
                            onCreate,
+                           loading,
                          }: MultiComboboxProps) {
   const id = useId();
   const [open, setOpen] = useState(false);
@@ -71,10 +73,15 @@ export function Combobox({
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <div className="flex flex-wrap items-center gap-1 justify-center">
+          <div className={cn('flex flex-wrap items-center gap-1 justify-center', loading ? 'pointer-events-none' : '')}>
             {value.length > 0 ? (
               value.map(option => (
-                <Badge key={option.id} variant="secondary" className="bg-black text-white text-base px-4">
+                <Badge key={option.id} variant="secondary" className={
+                  cn(
+                    'bg-black text-white text-base px-4',
+                    loading ? 'bg-slate-500 pointer-events-none' : '',
+                  )
+                }>
                   <span onClick={e => {
                     e.stopPropagation();
                     removeSelection(option.id);
@@ -84,7 +91,7 @@ export function Combobox({
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
             )}
-            <Badge variant="secondary" className="bg-black text-muted px-6">
+            <Badge variant="secondary" className={cn('bg-black text-muted px-6', loading ? 'bg-slate-500' : '')}>
               {value.length > 0
                 ? <PlusIcon className="w-4" data-icon="inline-end" />
                 : <><PlusIcon className="w-4 mr-2" data-icon="inline-end" />Categories</>
@@ -115,7 +122,7 @@ export function Combobox({
                   <CommandItem
                     key={option.id}
                     value={option.name}
-                    onSelect={() => toggleSelection(option.id)}
+                    onSelect={() => !loading && toggleSelection(option.id)}
                   >
                     <span className="truncate">{option.name}</span>
                     {isSelected(option.id) && (

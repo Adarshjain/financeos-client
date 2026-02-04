@@ -1,11 +1,12 @@
 // Types generated from API spec
 
-export type AccountType =
-  | 'bank_account'
-  | 'credit_card'
-  | 'stock'
-  | 'mutual_fund'
-  | 'generic';
+export enum AccountType {
+  BANK_ACCOUNT = 'bank_account',
+  CREDIT_CARD = 'credit_card',
+  STOCK = 'stock',
+  MUTUAL_FUND = 'mutual_fund',
+  GENERIC = 'generic',
+}
 export type FinancialPosition = 'asset' | 'liability';
 export type InvestmentTransactionType = 'buy' | 'sell';
 
