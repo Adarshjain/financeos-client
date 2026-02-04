@@ -24,7 +24,11 @@ export function TransactionFormWrapper({ transaction, categories, accounts, trig
         <DialogTrigger asChild>
           <div>{trigger}</div>
         </DialogTrigger>
-        <DialogContent className="rounded-none top-0 bottom-0 h-[100vh] p-0" hideClose>
+        <DialogContent
+          className="rounded-none top-0 bottom-0 h-[100vh] p-0"
+          hideClose
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <DialogHeader className="sr-only">
             <DialogTitle>{transaction ? 'Edit' : 'New'} Transaction</DialogTitle>
           </DialogHeader>

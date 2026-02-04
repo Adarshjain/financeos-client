@@ -8,21 +8,21 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 
 export type ComboboxOption = {
-  value: string;
-  label: string;
+  id: string;
+  name: string;
 };
 
 interface MultiComboboxProps {
   label?: string;
   placeholder?: string;
   options: ComboboxOption[];
-  value: string[];
-  onChange: (value: string[]) => void;
+  value: ComboboxOption[];
+  onChange: (value: ComboboxOption[]) => void;
   className?: string;
   popoverClassName?: string;
   canCreate?: boolean;
   onCreate?: (value: string) => void;
-};
+}
 
 export function Combobox({
                            label,
@@ -40,19 +40,29 @@ export function Combobox({
   const [search, setSearch] = useState('');
 
   const hasExactMatch = options.some(
-    o => o.label.toLowerCase() === search.toLowerCase(),
+    o => o.name.toLowerCase() === search.toLowerCase(),
   );
 
   const showCreate =
     canCreate && search.length > 0 && !hasExactMatch;
 
 
-  const toggleSelection = (val: string) => {
-    onChange(value.includes(val) ? value.filter(v => v !== val) : [...value, val]);
+  const isSelected = (optionValue: string) =>
+    value.some(v => v.id === optionValue);
+
+  const toggleSelection = (optionValue: string) => {
+    if (isSelected(optionValue)) {
+      onChange(value.filter(v => v.id !== optionValue));
+    } else {
+      const option = options.find(o => o.id === optionValue);
+      if (option) {
+        onChange([...value, option]);
+      }
+    }
   };
 
-  const removeSelection = (val: string) => {
-    onChange(value.filter(v => v !== val));
+  const removeSelection = (optionValue: string) => {
+    onChange(value.filter(v => v.id !== optionValue));
   };
 
   return (
@@ -63,19 +73,14 @@ export function Combobox({
         <PopoverTrigger asChild>
           <div className="flex flex-wrap items-center gap-1 justify-center">
             {value.length > 0 ? (
-              value.map(val => {
-                const option = options.find(o => o.value === val);
-                if (!option) return null;
-
-                return (
-                  <Badge key={val} variant="secondary" className="bg-black text-white text-base px-4">
-                    <span onClick={e => {
-                      e.stopPropagation();
-                      removeSelection(val);
-                    }}>{option.label}</span>
-                  </Badge>
-                );
-              })
+              value.map(option => (
+                <Badge key={option.id} variant="secondary" className="bg-black text-white text-base px-4">
+                  <span onClick={e => {
+                    e.stopPropagation();
+                    removeSelection(option.id);
+                  }}>{option.name}</span>
+                </Badge>
+              ))
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
             )}
@@ -108,12 +113,12 @@ export function Combobox({
               <CommandGroup>
                 {options.map(option => (
                   <CommandItem
-                    key={option.value}
-                    value={option.label}
-                    onSelect={() => toggleSelection(option.value)}
+                    key={option.id}
+                    value={option.name}
+                    onSelect={() => toggleSelection(option.id)}
                   >
-                    <span className="truncate">{option.label}</span>
-                    {value.includes(option.value) && (
+                    <span className="truncate">{option.name}</span>
+                    {isSelected(option.id) && (
                       <CheckIcon size={16} className="ml-auto" />
                     )}
                   </CommandItem>

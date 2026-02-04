@@ -1,5 +1,4 @@
 import { Calendar } from 'lucide-react';
-import { useState } from 'react';
 
 import { DatePicker } from '@/components/ui/date-picker';
 import { cn, formatMonthYear, isSameDay, isWithinLastNDays } from '@/lib/utils';
@@ -22,7 +21,7 @@ const DateView = ({ date, isSelected, onSelect }: DateViewProps) => {
     onClick={() => onSelect?.(date)}
     className={
       cn(
-        'rounded-xl p-3 text-center w-[60px]',
+        'rounded-xl p-3 text-center w-[64px]',
         isSelected ? 'bg-black text-white' : null,
       )
     }>
@@ -32,25 +31,23 @@ const DateView = ({ date, isSelected, onSelect }: DateViewProps) => {
   </div>;
 };
 
-export default function DayPicker({ date }: { date?: Date }) {
-  const [internalDate, setInternalDate] = useState(date ?? new Date());
-
+export default function DayPicker({ date, onSelect }: { date: Date; onSelect: (date: Date) => void }) {
   return <div className="flex gap-1 justify-center">
-    {days.map(date => <DateView
-      key={+date}
-      date={date}
-      isSelected={isSameDay(internalDate, date)}
-      onSelect={setInternalDate}
+    {days.map(innerDate => <DateView
+      key={+innerDate}
+      date={innerDate}
+      isSelected={isSameDay(innerDate, date)}
+      onSelect={onSelect}
     />)}
     <div className="w-[1px] h-[40px] mx-2 my-auto bg-black"></div>
     <DatePicker
       trigger={
-        isWithinLastNDays(internalDate, daysCount)
-          ? <div className="w-[60px] h-[58px] grid place-items-center"><Calendar size={32} /></div>
-          : <DateView date={internalDate} isSelected />
+        isWithinLastNDays(date, daysCount)
+          ? <div className="w-[64px] h-[58px] grid place-items-center text-xs"><Calendar size={24} />Custom</div>
+          : <DateView date={date} isSelected />
       }
-      date={internalDate}
-      onSelect={(date: Date | undefined) => date && setInternalDate(date)}
+      date={date}
+      onSelect={(date: Date | undefined) => date && onSelect(date)}
     />
   </div>;
 }

@@ -1,20 +1,28 @@
+import { Category } from '@/lib/categories.types';
+
 export type TransactionSource = 'gmail' | 'manual';
 
-export interface TransactionRequest {
+export interface TransactionBase {
   accountId: string;
   date: string;
   amount: number;
-  description: string;
-  categories?: string[];
+  description?: string;
   source: TransactionSource;
   metadata?: Record<string, unknown>;
-  notes?: string;
+  isTransactionExcluded: boolean;
+  isTransactionUnderMonitoring: boolean;
 }
 
-export type Transaction = TransactionRequest & {
+export type TransactionRequest = TransactionBase & {
+  categoryIds: string[];
+}
+
+export type Transaction = TransactionBase & {
   id: string;
   createdAt: string;
   balance: number;
+  categories?: Category[];
+  sourceDescription: string;
 }
 
 export interface PagedTransaction {
