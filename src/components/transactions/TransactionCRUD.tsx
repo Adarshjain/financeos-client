@@ -32,13 +32,13 @@ export default function TransactionCRUD({
                                           onClose,
                                         }: TransactionCRUDProps) {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>(transaction?.categories ?? []);
-  const [localCategories, setLocalCategories] = useState<Category[]>(categories);
+  const [localCategories, setLocalCategories] = useState<Category[]>(categories ?? []);
   const [amount, setAmount] = useState<string>(transaction ? '' + transaction?.amount : '-0');
   const [date, setDate] = useState<Date>(transaction ? new Date(transaction.date) : new Date());
   const [creatingCategory, setCreatingCategory] = useState(false);
 
-  const [isMonitored, setIsMonitored] = useState(false);
-  const [isExcluded, setIsExcluded] = useState(false);
+  const [isMonitored, setIsMonitored] = useState(transaction?.isTransactionUnderMonitoring ?? false);
+  const [isExcluded, setIsExcluded] = useState(transaction?.isTransactionExcluded ?? false);
 
   const isUpdateMode = !!transaction;
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -79,6 +79,8 @@ export default function TransactionCRUD({
         amount: Number(amount),
         categoryIds,
         date: date.toISOString().split('T')[0],
+        isTransactionExcluded: isExcluded,
+        isTransactionUnderMonitoring: isMonitored,
       };
       const res = isUpdateMode && transaction
         ? await updateTransaction(transaction.id, transactionRequest)
@@ -94,7 +96,7 @@ export default function TransactionCRUD({
     }
   };
 
-  return <form ref={formRef} onSubmit={onSubmit} className="flex flex-col p-4 gap-2 justify-center">
+  return <form ref={formRef} onSubmit={onSubmit} className="flex flex-col p-4 gap-2 justify-center flex-1">
     <DayPicker date={date} onSelect={setDate} />
     <div className="flex gap-1">
       <NativeSelect
@@ -105,7 +107,7 @@ export default function TransactionCRUD({
         defaultValue={transaction?.accountId}
       />
       <Badge
-        variant={isExcluded ? 'warning' : 'default'}
+        variant={isExcluded ? 'info' : 'default'}
         onClick={() => setIsExcluded(prev => !prev)}
         className="text-sm px-2 border"
       >
@@ -115,7 +117,7 @@ export default function TransactionCRUD({
         }
       </Badge>
       <Badge
-        variant={isMonitored ? 'danger' : 'default'}
+        variant={isMonitored ? 'warning' : 'default'}
         onClick={() => setIsMonitored(prev => !prev)}
         className="text-sm px-2 border"
       >

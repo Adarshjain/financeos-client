@@ -66,7 +66,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
 
   return (
     <nav
-      className="lg:hidden fixed bottom-0 left-0 right-0 h-12 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 border-b border-slate-200 dark:border-slate-800 z-40 flex items-center justify-between px-4 border-t">
+      className="lg:hidden fixed bottom-2 left-2 right-2 h-12 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 border rounded-2xl border-slate-200 dark:border-slate-800 z-40 flex items-center justify-between px-2">
       {navItems.map((item) => {
         const isActive =
           pathname === item.href || pathname.startsWith(item.href + '/');
