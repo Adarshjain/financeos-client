@@ -7,13 +7,13 @@ import { createTransaction, updateTransaction } from '@/actions/transactions';
 import { Combobox } from '@/components/Combobox';
 import DayPicker from '@/components/DayPicker';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { FormFieldTextArea } from '@/components/ui/form-field-textarea';
 import Keypad from '@/components/ui/Keypad';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
 import { Transaction, type TransactionRequest } from '@/lib/transaction.types';
-import { cn } from '@/lib/utils';
 
 
 interface TransactionCRUDProps {
@@ -138,15 +138,13 @@ export default function TransactionCRUD({
       name="description"
       defaultValue={transaction?.description}
     />
-    <div className={cn(
-      'text-5xl text-center my-6 mt-auto',
-      parseFloat(amount) !== 0 && (parseFloat(amount) > 0 ? 'text-emerald-400' : 'text-red-400'),
-    )}>{amount}</div>
     <Keypad
       onChange={setAmount}
       amount={transaction != null ? '' + transaction.amount : '-0'}
-      onClose={onClose}
-      done={onSubmit}
     />
+    <div className="flex gap-2">
+      <Button variant="ghost" className="flex-1 rounded-xl" size="lg" type="button" onClick={onClose}>Cancel</Button>
+      <Button className="flex-1 rounded-xl" size="lg" type="submit">Save</Button>
+    </div>
   </form>;
 }
