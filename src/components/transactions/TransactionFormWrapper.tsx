@@ -19,28 +19,24 @@ export function TransactionFormWrapper({ transaction, categories, accounts, trig
   const [open, setOpen] = useState(false);
 
   return (
-    <div>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <div>{trigger}</div>
-        </DialogTrigger>
-        <DialogContent
-          className="rounded-none top-0 bottom-0 p-0 flex flex-col gap-0"
-          hideClose
-          onOpenAutoFocus={(e) => e.preventDefault()}
-        >
-          <DialogHeader className="sr-only">
-            <DialogTitle>{transaction ? 'Edit' : 'New'} Transaction</DialogTitle>
-          </DialogHeader>
-          <TransactionCRUD
-            accounts={accounts}
-            transaction={transaction}
-            categories={categories}
-            onSuccess={() => setOpen(false)}
-            onClose={() => setOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{trigger ?? <div></div>}</DialogTrigger>
+      <DialogContent
+        className="rounded-none top-0 bottom-0 p-0 flex flex-col gap-0"
+        hideClose
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <DialogHeader className="sr-only">
+          <DialogTitle>{transaction ? 'Edit' : 'New'} Transaction</DialogTitle>
+        </DialogHeader>
+        <TransactionCRUD
+          accounts={accounts}
+          transaction={transaction}
+          categories={categories}
+          onSuccess={() => setOpen(false)}
+          onClose={() => setOpen(false)}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }
