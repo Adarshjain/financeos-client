@@ -13,7 +13,6 @@ export interface TransactionBase {
 
 export type TransactionRequest = TransactionBase & {
   categoryIds: string[];
-  source?: TransactionSource;
 }
 
 export type Transaction = TransactionBase & {
@@ -21,7 +20,7 @@ export type Transaction = TransactionBase & {
   createdAt: string;
   balance: number;
   categories?: Category[];
-  sourceDescription: string;
+  sourcedDescription: string;
   source: TransactionSource;
 }
 

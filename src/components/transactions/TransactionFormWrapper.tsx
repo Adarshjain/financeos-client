@@ -25,7 +25,7 @@ export function TransactionFormWrapper({ transaction, categories, accounts, trig
           <div>{trigger}</div>
         </DialogTrigger>
         <DialogContent
-          className="rounded-none top-0 bottom-0 h-[100vh] p-0"
+          className="rounded-none top-0 bottom-0 p-0 flex flex-col gap-0"
           hideClose
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
@@ -39,12 +39,6 @@ export function TransactionFormWrapper({ transaction, categories, accounts, trig
             onSuccess={() => setOpen(false)}
             onClose={() => setOpen(false)}
           />
-          {/*<TransactionForm*/}
-          {/*  accounts={accounts}*/}
-          {/*  transaction={transaction}*/}
-          {/*  categories={categories}*/}
-          {/*  onSuccess={() => setOpen(false)}*/}
-          {/*/>*/}
         </DialogContent>
       </Dialog>
     </div>
