@@ -81,6 +81,7 @@ export default function TransactionCRUD({
         date: date.toISOString().split('T')[0],
         isTransactionExcluded: isExcluded,
         isTransactionUnderMonitoring: isMonitored,
+        source: 'manual'
       };
       const res = isUpdateMode && transaction
         ? await updateTransaction(transaction.id, transactionRequest)
