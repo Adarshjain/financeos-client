@@ -66,18 +66,20 @@ export const TransactionCard = ({ transaction, accounts, className, categories }
   return <div className="bg-gray-200 mb-2 rounded-md">
     <div
       className={cn(
-        'py-2 flex items-start justify-between border-2 rounded-md relative px-2 bg-white',
+        'py-2 flex items-start justify-between border-2 rounded-md relative px-2 bg-white gap-1',
         transaction.isTransactionUnderMonitoring ? 'bg-orange-50 border-orange-200' : '',
         transaction.isTransactionExcluded ? 'opacity-80' : '',
         className,
       )}
       onClick={() => setExpanded(!expanded)}
     >
-      <div className="flex flex-col gap-1 text-sm">
-        <div className="break-all font-medium">{transaction.description ?? transaction.sourcedDescription}</div>
+      <div className="flex flex-col text-sm">
+        <div
+          className={cn('break-all font-medium', transaction.description ? 'mb-1' : '')}>{expanded ? transaction.description : (transaction.description ?? transaction.sourcedDescription)}</div>
         {expanded && transaction.sourcedDescription && (
-          <div className="break-all font-medium">{transaction.sourcedDescription}</div>)}
-        <div className="min-w-max">{getAccountName(transaction.accountId)}</div>
+          <div className={cn('break-all font-medium', transaction.description ? 'my-1' : '')}>{transaction.sourcedDescription}</div>
+        )}
+        <div className="min-w-max mb-1">{getAccountName(transaction.accountId)}</div>
         {!transaction.isTransactionExcluded && <div>{transaction.categories?.map(
           category => <Badge
             variant="outline"
