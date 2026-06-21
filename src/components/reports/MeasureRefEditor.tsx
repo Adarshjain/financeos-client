@@ -4,6 +4,8 @@
 // declared aggregations. Reused by the chart measure and each aggregated-table
 // measure. Emits a partial so callers can detect incomplete selections.
 
+import { useEffect } from 'react';
+
 import { NativeSelect } from '@/components/ui/native-select';
 import type {
   Aggregation,
@@ -34,6 +36,20 @@ export function MeasureRefEditor({
 }: MeasureRefEditorProps) {
   const measures = fieldsFor(catalog, 'measure', type);
   const aggs = aggsFor(catalog, value.field);
+  const soleMeasure = measures.length === 1 ? measures[0] : undefined;
+
+  // When only one choice exists, select it automatically: a sole measure field
+  // (and its first aggregation), or a sole aggregation once a measure is picked.
+  useEffect(() => {
+    if (!value.field && soleMeasure) {
+      onChange({
+        field: soleMeasure.name,
+        aggregation: (soleMeasure.aggregations ?? [])[0],
+      });
+    } else if (value.field && !value.aggregation && aggs.length === 1) {
+      onChange({ field: value.field, aggregation: aggs[0] });
+    }
+  }, [value.field, value.aggregation, soleMeasure, aggs, onChange]);
 
   const measureOptions = [
     { value: '', label: 'Select measure' },

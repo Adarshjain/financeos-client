@@ -6,7 +6,7 @@
 // `${field}_${aggregation}` measure keys) + page size. Sort entries that
 // reference a removed column/measure are pruned automatically.
 
-import { Plus, X } from 'lucide-react';
+import { Plus, Trash, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -99,14 +99,15 @@ export function TableConfig({
   return (
     <div className="space-y-4">
       <Tabs
+        className="w-full"
         value={value.tableMode}
         onValueChange={(v) =>
           onChange({ tableMode: v as 'raw' | 'aggregated' })
         }
       >
-        <TabsList>
-          <TabsTrigger value="raw">Raw rows</TabsTrigger>
-          <TabsTrigger value="aggregated">Aggregated</TabsTrigger>
+        <TabsList className="w-full">
+          <TabsTrigger className="w-full" value="raw">Raw rows</TabsTrigger>
+          <TabsTrigger className="w-full" value="aggregated">Aggregated</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -169,7 +170,7 @@ export function TableConfig({
                     setGroupBy(value.agg.groupBy.filter((_, idx) => idx !== i))
                   }
                 >
-                  <X className="h-4 w-4" />
+                  <Trash className="h-4 w-4" />
                 </Button>
               </div>
             ))}
@@ -177,10 +178,11 @@ export function TableConfig({
               type="button"
               variant="outline"
               size="sm"
+              className="w-full"
               onClick={() => setGroupBy([...value.agg.groupBy, {}])}
             >
               <Plus className="mr-1 h-3.5 w-3.5" />
-              Add group-by
+              Add Group-By
             </Button>
           </div>
 
@@ -208,7 +210,7 @@ export function TableConfig({
                     setMeasures(value.agg.measures.filter((_, idx) => idx !== i))
                   }
                 >
-                  <X className="h-4 w-4" />
+                  <Trash className="h-4 w-4" />
                 </Button>
               </div>
             ))}
@@ -216,10 +218,11 @@ export function TableConfig({
               type="button"
               variant="outline"
               size="sm"
+              className="w-full"
               onClick={() => setMeasures([...value.agg.measures, {}])}
             >
               <Plus className="mr-1 h-3.5 w-3.5" />
-              Add measure
+              Add Measure
             </Button>
           </div>
 
