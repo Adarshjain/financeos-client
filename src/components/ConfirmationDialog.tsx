@@ -36,7 +36,7 @@ export function ConfirmationDialog(props: ConfirmationDialogProps) {
           <DialogTitle>{props.title}</DialogTitle>
           {props.description && <DialogDescription>{props.description}</DialogDescription>}
         </DialogHeader>
-        <DialogFooter>
+        <DialogFooter className="flex gap-2">
           <Button variant="outline" onClick={() => setOpen(false)} disabled={props.loading}>
             Cancel
           </Button>
@@ -44,7 +44,6 @@ export function ConfirmationDialog(props: ConfirmationDialogProps) {
             variant="destructive"
             onClick={async () => {
               try {
-                debugger
                 await props.primaryAction?.();
                 setOpen(false);
               } catch (error) {
