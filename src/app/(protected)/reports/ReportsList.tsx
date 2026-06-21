@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart3, LineChart, type LucideIcon, Pencil, Table2, Trash2 } from 'lucide-react';
+import { Hash, LineChart, type LucideIcon, Table2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -8,7 +8,6 @@ import { toast } from 'sonner';
 import { deleteReport } from '@/actions/reports';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import type { ReportSummaryResponse, ReportType } from '@/lib/reports.types';
 import { cn, formatDate } from '@/lib/utils';
@@ -19,7 +18,7 @@ const TYPE_META: Record<
   ReportType,
   { label: string; variant: BadgeVariant; Icon: LucideIcon }
 > = {
-  KPI: { label: 'KPI', variant: 'success', Icon: BarChart3 },
+  KPI: { label: 'KPI', variant: 'success', Icon: Hash },
   CHART: { label: 'Chart', variant: 'info', Icon: LineChart },
   TABLE: { label: 'Table', variant: 'warning', Icon: Table2 },
 };
@@ -96,36 +95,38 @@ export function ReportsList({ reports, activeType }: ReportsListProps) {
                     <meta.Icon className="h-4 w-4 text-slate-400" />
                     {report.name}
                   </Link>
-                  <Badge variant={meta.variant}>{meta.label}</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={meta.variant}>{meta.label}</Badge>
+                    <ConfirmationDialog
+                      title="Delete report"
+                      description={
+                        <>
+                          Delete <strong>{report.name}</strong>? This cannot be
+                          undone.
+                        </>
+                      }
+                      primaryActionText="Delete"
+                      primaryAction={() => handleDelete(report.id)}
+                      trigger={
+                        // <Button variant="secondary" size="sm" className="flex-1">
+                        <Trash2 className="h-4 w-4" />
+                        // Delete
+                        // </Button>
+                      }
+                    />
+                  </div>
                 </div>
                 <p className="text-xs text-slate-500">
                   Updated {formatDate(report.updatedAt)}
                 </p>
-                <div className="mt-auto flex gap-2">
-                  <Link href={`/reports/${report.id}`} className="flex-1">
-                    <Button variant="secondary" size="sm" className="w-full">
-                      <Pencil className="h-4 w-4" />
-                      Edit
-                    </Button>
-                  </Link>
-                  <ConfirmationDialog
-                    title="Delete report"
-                    description={
-                      <div>
-                        Delete <strong>{report.name}</strong>? This cannot be
-                        undone.
-                      </div>
-                    }
-                    primaryActionText="Delete"
-                    primaryAction={() => handleDelete(report.id)}
-                    trigger={
-                      <Button variant="secondary" size="sm" className="flex-1">
-                        <Trash2 className="h-4 w-4" />
-                        Delete
-                      </Button>
-                    }
-                  />
-                </div>
+                {/*<div className="mt-auto flex gap-2">*/}
+                {/*  <Link href={`/reports/${report.id}`} className="flex-1">*/}
+                {/*    <Button variant="secondary" size="sm" className="w-full">*/}
+                {/*      <Pencil className="h-4 w-4" />*/}
+                {/*      Edit*/}
+                {/*    </Button>*/}
+                {/*  </Link>*/}
+                {/*</div>*/}
               </Card>
             );
           })}
