@@ -2,6 +2,23 @@ import { cookies } from 'next/headers';
 
 import { Account, AccountRequest } from '@/lib/account.types';
 import { Category, CategoryRequest } from '@/lib/categories.types';
+import type {
+  CreateDashboardRequest,
+  DashboardResponse,
+  DashboardSummaryResponse,
+  UpdateDashboardRequest,
+} from '@/lib/dashboards.types';
+import type {
+  CreateReportRequest,
+  DatasourceCatalog,
+  ReportData,
+  ReportResponse,
+  ReportRunOptions,
+  ReportSummaryResponse,
+  ReportType,
+  RunReportRequest,
+  UpdateReportRequest,
+} from '@/lib/reports.types';
 import { PagedTransaction, Transaction, TransactionRequest } from '@/lib/transaction.types';
 
 import type {
@@ -336,6 +353,127 @@ export const categoriesApi = {
 export const dashboardApi = {
   async getSummary(): Promise<DashboardSummary> {
     return request<DashboardSummary>('/api/v1/dashboard/summary');
+  },
+};
+
+function buildPageQuery(options: ReportRunOptions): string {
+  const params = new URLSearchParams();
+  if (options.page !== undefined) params.set('page', String(options.page));
+  if (options.size !== undefined) params.set('size', String(options.size));
+  const query = params.toString();
+  return query ? `?${query}` : '';
+}
+
+// Reports API
+export const reportsApi = {
+  // Field + operator catalog used to build report definitions.
+  async getDatasource(): Promise<DatasourceCatalog> {
+    return request<DatasourceCatalog>('/api/v1/report/datasource');
+  },
+
+  // Create and save a report definition.
+  async create(data: CreateReportRequest): Promise<ReportResponse> {
+    return request<ReportResponse>('/api/v1/reports', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // List the current user's report summaries; optionally filter by type.
+  async list(type?: ReportType): Promise<ReportSummaryResponse[]> {
+    const query = type ? `?${new URLSearchParams({ type })}` : '';
+    return request<ReportSummaryResponse[]>(`/api/v1/reports${query}`);
+  },
+
+  // Get one saved report, including its definition.
+  async getById(id: string): Promise<ReportResponse> {
+    return request<ReportResponse>(`/api/v1/reports/${id}`);
+  },
+
+  // Update a saved report's name + definition (type/datasource immutable).
+  async update(id: string, data: UpdateReportRequest): Promise<ReportResponse> {
+    return request<ReportResponse>(`/api/v1/reports/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Delete a saved report.
+  async delete(id: string): Promise<void> {
+    return request<void>(`/api/v1/reports/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  // Run a SAVED report and return computed data. page/size apply to TABLE
+  // reports only (current page is a runtime param, not part of the definition).
+  async runSaved(
+    id: string,
+    options: ReportRunOptions = {},
+  ): Promise<ReportData> {
+    return request<ReportData>(
+      `/api/v1/reports/${id}/data${buildPageQuery(options)}`,
+      { method: 'POST' },
+    );
+  },
+
+  // Run an AD-HOC (unsaved) definition and return computed data — use for live
+  // preview while the user is building. page/size apply to TABLE reports.
+  async runAdHoc(
+    data: RunReportRequest,
+    options: ReportRunOptions = {},
+  ): Promise<ReportData> {
+    return request<ReportData>(
+      `/api/v1/reports/data${buildPageQuery(options)}`,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+      },
+    );
+  },
+};
+
+// Dashboards API
+// A dashboard arranges report widgets on a 12-column grid. It stores no query
+// logic: to render one, call getById, then run each widget's report via
+// reportsApi.runSaved(widget.reportId, { page, size }) — page/size for TABLE
+// widgets — and render the returned ReportData by its type. Skip widgets whose
+// report.available is false.
+export const dashboardsApi = {
+  // Create a dashboard.
+  async create(data: CreateDashboardRequest): Promise<DashboardResponse> {
+    return request<DashboardResponse>('/api/v1/dashboards', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // List the current user's dashboards (summaries, with a widget count).
+  async list(): Promise<DashboardSummaryResponse[]> {
+    return request<DashboardSummaryResponse[]>('/api/v1/dashboards');
+  },
+
+  // Get one dashboard; widgets are enriched with referenced-report metadata.
+  async getById(id: string): Promise<DashboardResponse> {
+    return request<DashboardResponse>(`/api/v1/dashboards/${id}`);
+  },
+
+  // Update a dashboard — replaces name, description, and the FULL widget set.
+  async update(
+    id: string,
+    data: UpdateDashboardRequest,
+  ): Promise<DashboardResponse> {
+    return request<DashboardResponse>(`/api/v1/dashboards/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Delete a dashboard.
+  async delete(id: string): Promise<void> {
+    return request<void>(`/api/v1/dashboards/${id}`, {
+      method: 'DELETE',
+    });
   },
 };
 
