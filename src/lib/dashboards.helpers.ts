@@ -1,0 +1,81 @@
+// Small, pure helpers for the Dashboards module: minting widgets, narrowing
+// availability, and validating grid placement before save.
+
+import type {
+  DashboardWidget,
+  WidgetLayout,
+  WidgetResponse,
+} from '@/lib/dashboards.types';
+
+/** The dashboard grid is always 12 columns wide. */
+export const DASHBOARD_GRID_COLUMNS = 12;
+
+const DEFAULT_WIDGET_WIDTH = 6;
+const DEFAULT_WIDGET_HEIGHT = 4;
+
+/**
+ * Mint a new widget for a saved report: a fresh client-generated `id` (the grid
+ * key) plus a default layout. Pass `layout` to override any of `{x,y,w,h}`.
+ */
+export function newWidget(
+  reportId: string,
+  layout?: Partial<WidgetLayout>,
+): DashboardWidget {
+  return {
+    id: crypto.randomUUID(),
+    reportId,
+    title: null,
+    layout: {
+      x: 0,
+      y: 0,
+      w: DEFAULT_WIDGET_WIDTH,
+      h: DEFAULT_WIDGET_HEIGHT,
+      ...layout,
+    },
+  };
+}
+
+/**
+ * Whether a widget's referenced report still resolves. Render the report only
+ * when this is true; otherwise show a "report no longer available" placeholder.
+ */
+export function isWidgetAvailable(widget: WidgetResponse): boolean {
+  return widget.report.available;
+}
+
+/** Whether a layout fits the 12-column grid (x 0–11, w 1–12, x+w ≤ 12, y/h ≥ 0/1). */
+export function isLayoutWithinGrid(layout: WidgetLayout): boolean {
+  const { x, y, w, h } = layout;
+  return (
+    Number.isInteger(x) &&
+    Number.isInteger(y) &&
+    Number.isInteger(w) &&
+    Number.isInteger(h) &&
+    x >= 0 &&
+    x <= DASHBOARD_GRID_COLUMNS - 1 &&
+    w >= 1 &&
+    w <= DASHBOARD_GRID_COLUMNS &&
+    x + w <= DASHBOARD_GRID_COLUMNS &&
+    y >= 0 &&
+    h >= 1
+  );
+}
+
+/**
+ * Reasons a widget set can't be saved: out-of-bounds layouts or duplicate ids.
+ * The server enforces the same rules and returns 400; check client-side first.
+ */
+export function validateWidgets(widgets: DashboardWidget[]): string[] {
+  const errors: string[] = [];
+  const seen = new Set<string>();
+  widgets.forEach((widget, i) => {
+    if (seen.has(widget.id)) {
+      errors.push(`Duplicate widget id: ${widget.id}`);
+    }
+    seen.add(widget.id);
+    if (!isLayoutWithinGrid(widget.layout)) {
+      errors.push(`Widget ${i + 1} is outside the 12-column grid.`);
+    }
+  });
+  return errors;
+}

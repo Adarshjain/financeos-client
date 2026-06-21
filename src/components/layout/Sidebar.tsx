@@ -1,7 +1,9 @@
 'use client';
 
 import {
+  BarChart3,
   Home,
+  LayoutDashboard,
   LogOut,
   Receipt,
   Settings,
@@ -42,6 +44,16 @@ const navItems: NavItem[] = [
     href: '/investments',
     label: 'Investments',
     icon: <TrendingUp className="h-5 w-5" />,
+  },
+  {
+    href: '/reports',
+    label: 'Reports',
+    icon: <BarChart3 className="h-5 w-5" />,
+  },
+  {
+    href: '/dashboards',
+    label: 'Dashboards',
+    icon: <LayoutDashboard className="h-5 w-5" />,
   },
   {
     href: '/settings',
