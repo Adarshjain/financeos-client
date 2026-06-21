@@ -39,13 +39,13 @@ export function FilterEditor({
 
   return (
     <div className="space-y-2">
-      <Label>Filters</Label>
+      <Label className="text-xl">Filters</Label>
       {filters.length === 0 ? (
         <p className="text-xs text-slate-500">
           No filters — the report runs over all transactions.
         </p>
       ) : (
-        <div className="space-y-2">
+        <div className="rounded-lg border border-gray-300 dark:border-slate-700 divide-y divide-gray-300 dark:divide-slate-700">
           {filters.map((clause, i) => (
             <FilterRow
               key={i}
@@ -58,7 +58,7 @@ export function FilterEditor({
           ))}
         </div>
       )}
-      <Button type="button" variant="outline" size="sm" onClick={handleAdd}>
+      <Button type="button" variant="outline" size="sm" className="w-full" onClick={handleAdd}>
         <Plus className="mr-1 h-3.5 w-3.5" />
         Add filter
       </Button>

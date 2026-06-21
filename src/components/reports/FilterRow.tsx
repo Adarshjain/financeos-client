@@ -5,7 +5,7 @@
 // the shared helpers so valueless operators omit `value` entirely. Changing the
 // field or operator resets the value to a fresh default for the new shape.
 
-import { X } from 'lucide-react';
+import { Delete, Trash, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -103,7 +103,7 @@ export function FilterRow({
     onChange(buildFilter(value.field, value.operator, v));
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-slate-200 p-2 dark:border-slate-800">
+    <div className="flex flex-wrap items-center gap-2 p-2">
       <NativeSelect
         className="w-auto min-w-[8rem] flex-1"
         options={fieldOptions}
@@ -116,7 +116,10 @@ export function FilterRow({
         value={value.operator}
         onChange={(e) => onOperatorChange(e.currentTarget.value)}
       />
-      <div className="min-w-[10rem] flex-[2]">
+      <Button type="button" variant="ghost" size="icon" onClick={onRemove}>
+        <Trash className="h-4 w-4" />
+      </Button>
+      {!(!fieldDef || kind === 'none') && <div className="min-w-[10rem] flex-[2]">
         <ValueEditor
           kind={kind}
           field={fieldDef}
@@ -124,10 +127,7 @@ export function FilterRow({
           value={value.value}
           onChange={setValue}
         />
-      </div>
-      <Button type="button" variant="ghost" size="icon" onClick={onRemove}>
-        <X className="h-4 w-4" />
-      </Button>
+      </div>}
     </div>
   );
 }
@@ -148,7 +148,7 @@ function ValueEditor({
   onChange,
 }: ValueEditorProps) {
   if (!field || kind === 'none') {
-    return <span className="text-xs text-slate-400">no value needed</span>;
+    return null;
   }
 
   switch (kind) {
@@ -240,7 +240,7 @@ function ValueEditor({
             value={range.from}
             onChange={(e) => onChange(dateBetween(e.currentTarget.value, range.to))}
           />
-          <span className="text-xs text-slate-400">to</span>
+          <span className="text-xs text-slate-400">-</span>
           <Input
             type="date"
             value={range.to}

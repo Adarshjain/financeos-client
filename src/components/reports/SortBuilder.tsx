@@ -3,7 +3,7 @@
 // Manage a list of sort clauses. The available keys are supplied by the caller
 // (column field names, or group-by names + aggregated `${field}_${agg}` keys).
 
-import { ArrowDownUp, X } from 'lucide-react';
+import { ArrowDownUp, Trash, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -66,7 +66,7 @@ export function SortBuilder({
             size="icon"
             onClick={() => remove(i)}
           >
-            <X className="h-4 w-4" />
+            <Trash className="h-4 w-4" />
           </Button>
         </div>
       ))}
@@ -75,10 +75,11 @@ export function SortBuilder({
         variant="outline"
         size="sm"
         onClick={add}
+        className="w-full"
         disabled={availableKeys.length === 0}
       >
         <ArrowDownUp className="mr-1 h-3.5 w-3.5" />
-        Add sort
+        Add Sort
       </Button>
     </div>
   );
