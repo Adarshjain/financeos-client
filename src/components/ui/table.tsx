@@ -4,9 +4,11 @@ import { cn } from '@/lib/utils';
 
 const Table = React.forwardRef<
   HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement>
->(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto">
+  React.HTMLAttributes<HTMLTableElement> & { wrapperClassName?: string }
+>(({ className, wrapperClassName, ...props }, ref) => (
+  // The wrapper is the table's scroll container; expose its className so callers
+  // can constrain its height (enabling a `sticky` thead to pin while rows scroll).
+  <div className={cn('relative w-full overflow-auto', wrapperClassName)}>
     <table
       ref={ref}
       className={cn('w-full caption-bottom text-sm', className)}

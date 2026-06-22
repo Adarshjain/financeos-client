@@ -15,7 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type { TableColumn, TableData } from '@/lib/reports.types';
-import { formatDate, formatMoney } from '@/lib/utils';
+import { cn, formatDate, formatMoney } from '@/lib/utils';
 
 import { TablePagination } from './TablePagination';
 
@@ -34,56 +34,82 @@ function formatCell(value: unknown, column: TableColumn): string {
 
 interface TableViewProps {
   data: TableData;
+  /**
+   * Fill the parent's height: the column header pins to the top, the pagination
+   * bar to the bottom, and only the rows scroll between them. Used by fixed-
+   * height containers like dashboard widgets. In flow layouts (the builder's
+   * preview pane) leave it off so the table grows with its content.
+   */
+  fill?: boolean;
   onPageChange?: (page: number) => void;
   onSizeChange?: (size: number) => void;
 }
 
-export function TableView({ data, onPageChange, onSizeChange }: TableViewProps) {
+export function TableView({
+  data,
+  fill,
+  onPageChange,
+  onSizeChange,
+}: TableViewProps) {
   const { columns, rows, page } = data;
 
   return (
-    <div className="space-y-3">
-      <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
-        <Table>
-          <TableHeader>
+    <div className={fill ? 'flex h-full flex-col' : 'space-y-3'}>
+      <Table
+        wrapperClassName={cn(
+          'rounded-lg border border-slate-200 dark:border-slate-800',
+          fill && 'min-h-0 flex-1 rounded-b-none border-b-0'
+        )}
+      >
+        <TableHeader
+          className={cn(
+            fill && 'sticky top-0 z-10 bg-slate-50 dark:bg-slate-800'
+          )}
+        >
+          <TableRow>
+            {columns.map((c) => (
+              <TableHead key={c.key} className="whitespace-nowrap">
+                {c.label}
+              </TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.length === 0 ? (
             <TableRow>
-              {columns.map((c) => (
-                <TableHead key={c.key} className="whitespace-nowrap">
-                  {c.label}
-                </TableHead>
-              ))}
+              <TableCell
+                colSpan={columns.length || 1}
+                className="py-8 text-center text-slate-500"
+              >
+                No rows for this configuration.
+              </TableCell>
             </TableRow>
-          </TableHeader>
-          <TableBody>
-            {rows.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length || 1}
-                  className="py-8 text-center text-slate-500"
-                >
-                  No rows for this configuration.
-                </TableCell>
+          ) : (
+            rows.map((row, i) => (
+              <TableRow key={(row.id as string) ?? i}>
+                {columns.map((c) => (
+                  <TableCell key={c.key} className="whitespace-nowrap">
+                    {formatCell(row[c.key], c)}
+                  </TableCell>
+                ))}
               </TableRow>
-            ) : (
-              rows.map((row, i) => (
-                <TableRow key={(row.id as string) ?? i}>
-                  {columns.map((c) => (
-                    <TableCell key={c.key} className="whitespace-nowrap">
-                      {formatCell(row[c.key], c)}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+            ))
+          )}
+        </TableBody>
+      </Table>
 
-      <TablePagination
-        page={page}
-        onPageChange={onPageChange}
-        onSizeChange={onSizeChange}
-      />
+      <div
+        className={cn(
+          fill &&
+            'shrink-0 rounded-b-lg border border-t-0 border-slate-200 px-3 py-2 dark:border-slate-800'
+        )}
+      >
+        <TablePagination
+          page={page}
+          onPageChange={onPageChange}
+          onSizeChange={onSizeChange}
+        />
+      </div>
     </div>
   );
 }

@@ -37,7 +37,10 @@ const COLORS = [
 
 type ChartRow = Record<string, string | number | null>;
 
-export function ChartView({ data }: { data: ChartData }) {
+// `fill` makes the chart fill its parent's height (for fixed-height containers
+// like dashboard widgets) instead of the default fixed height used in flow
+// layouts such as the report builder's preview pane.
+export function ChartView({ data, fill }: { data: ChartData; fill?: boolean }) {
   const { chartType, categories, series } = data;
 
   if (categories.length === 0 || series.length === 0) {
@@ -56,7 +59,7 @@ export function ChartView({ data }: { data: ChartData }) {
       value: first.data[i] ?? 0,
     }));
     return (
-      <ChartFrame>
+      <ChartFrame fill={fill}>
         <PieChart>
           <Pie
             data={pieData}
@@ -88,7 +91,10 @@ export function ChartView({ data }: { data: ChartData }) {
 
   const axes = (
     <>
-      <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200 dark:stroke-slate-800" />
+      <CartesianGrid
+        strokeDasharray="3 3"
+        className="stroke-slate-200 dark:stroke-slate-800"
+      />
       <XAxis dataKey="category" tick={{ fontSize: 12 }} />
       <YAxis tick={{ fontSize: 12 }} width={56} />
       <Tooltip />
@@ -98,7 +104,7 @@ export function ChartView({ data }: { data: ChartData }) {
 
   if (chartType === 'line') {
     return (
-      <ChartFrame>
+      <ChartFrame fill={fill}>
         <LineChart data={rows}>
           {axes}
           {series.map((s, i) => (
@@ -118,7 +124,7 @@ export function ChartView({ data }: { data: ChartData }) {
 
   if (chartType === 'area') {
     return (
-      <ChartFrame>
+      <ChartFrame fill={fill}>
         <AreaChart data={rows}>
           {axes}
           {series.map((s, i) => (
@@ -140,7 +146,7 @@ export function ChartView({ data }: { data: ChartData }) {
   // bar + stackedBar
   const stackId = chartType === 'stackedBar' ? 'stack' : undefined;
   return (
-    <ChartFrame>
+    <ChartFrame fill={fill}>
       <BarChart data={rows}>
         {axes}
         {series.map((s, i) => (
@@ -157,9 +163,15 @@ export function ChartView({ data }: { data: ChartData }) {
   );
 }
 
-function ChartFrame({ children }: { children: React.ReactElement }) {
+function ChartFrame({
+  children,
+  fill,
+}: {
+  children: React.ReactElement;
+  fill?: boolean;
+}) {
   return (
-    <div className="h-72 w-full">
+    <div className={fill ? 'h-full min-h-0 w-full' : 'h-72 w-full'}>
       <ResponsiveContainer width="100%" height="100%">
         {children}
       </ResponsiveContainer>

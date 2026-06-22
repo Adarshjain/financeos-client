@@ -30,7 +30,6 @@ export function AddWidgetDialog({ reports, onAdd }: AddWidgetDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
-          <Plus className="h-4 w-4" />
           Add widget
         </Button>
       </DialogTrigger>

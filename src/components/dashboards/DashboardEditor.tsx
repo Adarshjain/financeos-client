@@ -4,17 +4,22 @@
 // runs its report and renders the data) and EDIT (drag/resize/add/remove +
 // title overrides). Saving sends the FULL widget set via create/updateDashboard.
 
-import { ArrowLeft, Loader2, Pencil, Save } from 'lucide-react';
+import { ArrowLeft, Loader2, Pencil } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { Layout } from 'react-grid-layout/legacy';
 import { toast } from 'sonner';
 
 import { createDashboard, updateDashboard } from '@/actions/dashboards';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { newWidget, validateWidgets } from '@/lib/dashboards.helpers';
+import {
+  DASHBOARD_GRID_COLUMNS, HALF_WIDTH,
+  newWidget,
+  validateWidgets,
+} from '@/lib/dashboards.helpers';
 import type {
   DashboardResponse,
   DashboardWidget,
@@ -25,7 +30,24 @@ import type { ReportSummaryResponse } from '@/lib/reports.types';
 import { AddWidgetDialog } from './AddWidgetDialog';
 import { DashboardGrid } from './DashboardGrid';
 import { DashboardWidgetView } from './DashboardWidgetView';
-import { WidgetEditCard } from './WidgetEditCard';
+
+// Serialize the editable parts of a dashboard so unsaved changes can be detected.
+function editSignature(
+  name: string,
+  description: string,
+  widgets: WidgetResponse[]
+): string {
+  return JSON.stringify({
+    name,
+    description,
+    widgets: widgets.map((w) => ({
+      id: w.id,
+      reportId: w.reportId,
+      title: w.title ?? null,
+      layout: w.layout,
+    })),
+  });
+}
 
 interface DashboardEditorProps {
   mode: 'create' | 'edit';
@@ -42,10 +64,22 @@ export function DashboardEditor({
   const [name, setName] = useState(dashboard?.name ?? '');
   const [description, setDescription] = useState(dashboard?.description ?? '');
   const [widgets, setWidgets] = useState<WidgetResponse[]>(
-    dashboard?.widgets ?? [],
+    dashboard?.widgets ?? []
   );
   const [editing, setEditing] = useState(mode === 'create');
   const [saving, setSaving] = useState(false);
+  // Snapshot of the saved state for the current edit session; compared against
+  // live state to know whether exiting would lose changes. Re-captured whenever
+  // an edit session begins or a save lands.
+  const [baseline, setBaseline] = useState(() =>
+    editSignature(
+      dashboard?.name ?? '',
+      dashboard?.description ?? '',
+      dashboard?.widgets ?? []
+    )
+  );
+
+  const isDirty = editSignature(name, description, widgets) !== baseline;
 
   const handleLayoutChange = (layout: Layout) => {
     setWidgets((prev) => {
@@ -71,7 +105,7 @@ export function DashboardEditor({
   const addWidget = (report: ReportSummaryResponse) => {
     const bottomY = widgets.reduce(
       (max, w) => Math.max(max, w.layout.y + w.layout.h),
-      0,
+      0
     );
     const widget = newWidget(report.id, { y: bottomY });
     setWidgets((prev) => [
@@ -92,14 +126,42 @@ export function DashboardEditor({
   const updateTitle = (id: string, title: string | null) =>
     setWidgets((prev) => prev.map((w) => (w.id === id ? { ...w, title } : w)));
 
-  const cancel = () => {
+  // Toggle a widget between half and full grid width. Full width must start at
+  // x=0 so it stays within the grid (x + w ≤ DASHBOARD_GRID_COLUMNS).
+  const toggleWidgetWidth = (id: string) =>
+    setWidgets((prev) =>
+      prev.map((w) => {
+        if (w.id !== id) return w;
+        const isFull = w.layout.w >= DASHBOARD_GRID_COLUMNS;
+        return {
+          ...w,
+          layout: {
+            ...w.layout,
+            w: isFull ? HALF_WIDTH : DASHBOARD_GRID_COLUMNS,
+            x: isFull ? w.layout.x : 0,
+          },
+        };
+      })
+    );
+
+  const startEdit = () => {
+    setBaseline(editSignature(name, description, widgets));
+    setEditing(true);
+  };
+
+  // Discard unsaved edits and leave edit mode (or the page, when creating).
+  const discardAndExit = () => {
     if (mode === 'create') {
       router.push('/dashboards');
       return;
     }
-    setName(dashboard?.name ?? '');
-    setDescription(dashboard?.description ?? '');
-    setWidgets(dashboard?.widgets ?? []);
+    const n = dashboard?.name ?? '';
+    const d = dashboard?.description ?? '';
+    const ws = dashboard?.widgets ?? [];
+    setName(n);
+    setDescription(d);
+    setWidgets(ws);
+    setBaseline(editSignature(n, d, ws));
     setEditing(false);
   };
 
@@ -143,21 +205,38 @@ export function DashboardEditor({
       setWidgets(res.data.widgets);
       setName(res.data.name);
       setDescription(res.data.description ?? '');
+      setBaseline(
+        editSignature(
+          res.data.name,
+          res.data.description ?? '',
+          res.data.widgets
+        )
+      );
       setEditing(false);
       router.refresh();
     }
   };
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => router.push('/dashboards')}
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+    <div className="space-y-2 py-4 pb-20">
+      <div className="flex flex-wrap items-center gap-2 px-4">
+        {editing && isDirty ? (
+          <ConfirmationDialog
+            title="Discard changes?"
+            description="Your unsaved changes to this dashboard will be lost."
+            primaryActionText="Discard"
+            primaryAction={discardAndExit}
+            trigger={
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            }
+          />
+        ) : (
+          <Button variant="ghost" size="icon" onClick={discardAndExit}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        )}
 
         {editing ? (
           <div className="flex flex-1 flex-col gap-2 sm:flex-row sm:items-center">
@@ -166,12 +245,6 @@ export function DashboardEditor({
               placeholder="Dashboard name"
               value={name}
               onChange={(e) => setName(e.currentTarget.value)}
-            />
-            <Input
-              className="max-w-sm"
-              placeholder="Description (optional)"
-              value={description}
-              onChange={(e) => setDescription(e.currentTarget.value)}
             />
           </div>
         ) : (
@@ -189,20 +262,13 @@ export function DashboardEditor({
           {editing ? (
             <>
               <AddWidgetDialog reports={reports} onAdd={addWidget} />
-              <Button variant="outline" onClick={cancel}>
-                Cancel
-              </Button>
-              <Button onClick={save} disabled={saving}>
-                {saving ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4" />
-                )}
-                {mode === 'edit' ? 'Save changes' : 'Create dashboard'}
+              <Button onClick={save} disabled={saving} className="flex-1">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                {mode === 'edit' ? 'Save' : 'Create'}
               </Button>
             </>
           ) : (
-            <Button onClick={() => setEditing(true)}>
+            <Button onClick={startEdit}>
               <Pencil className="h-4 w-4" />
               Edit
             </Button>
@@ -228,17 +294,15 @@ export function DashboardEditor({
           widgets={widgets}
           editing={editing}
           onLayoutChange={handleLayoutChange}
-          renderWidget={(w) =>
-            editing ? (
-              <WidgetEditCard
-                widget={w}
-                onTitleChange={(t) => updateTitle(w.id, t)}
-                onRemove={() => removeWidget(w.id)}
-              />
-            ) : (
-              <DashboardWidgetView widget={w} />
-            )
-          }
+          renderWidget={(w) => (
+            <DashboardWidgetView
+              widget={w}
+              editing={editing}
+              onTitleChange={(t) => updateTitle(w.id, t)}
+              onRemove={() => removeWidget(w.id)}
+              onToggleWidth={() => toggleWidgetWidth(w.id)}
+            />
+          )}
         />
       )}
     </div>
