@@ -45,10 +45,6 @@ export function DashboardGrid({
       layout={layout}
       cols={DASHBOARD_GRID_COLUMNS}
       rowHeight={1}
-      // Horizontal margin must stay small: column width is
-      // (containerWidth - marginX·(cols+1)) / cols, which goes negative for a
-      // 100-column grid with a large gutter. Keep the vertical margin for row
-      // rhythm (and so widget heights are unchanged).
       margin={[6, 12]}
       isDraggable={editing}
       isResizable={editing}

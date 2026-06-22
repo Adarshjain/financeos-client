@@ -449,8 +449,8 @@ export const dashboardsApi = {
   },
 
   // List the current user's dashboards (summaries, with a widget count).
-  async list(): Promise<DashboardSummaryResponse[]> {
-    return request<DashboardSummaryResponse[]>('/api/v1/dashboards');
+  async list(): Promise<DashboardResponse[]> {
+    return request<DashboardResponse[]>('/api/v1/dashboards');
   },
 
   // Get the current user's default dashboard (no id). Throws ApiError with
