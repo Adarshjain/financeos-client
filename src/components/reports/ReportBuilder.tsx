@@ -119,6 +119,7 @@ export function ReportBuilder({
             <Tabs
               className="w-full"
               value={state.type}
+              aria-disabled={mode === 'edit'}
               onValueChange={(v) =>
                 dispatch({
                   type: 'SET_TYPE',
@@ -127,13 +128,13 @@ export function ReportBuilder({
               }
             >
               <TabsList className="w-full">
-                <TabsTrigger className="w-full gap-1" value="KPI">
+                <TabsTrigger disabled={mode === 'edit'} className="w-full gap-1" value="KPI">
                   <Hash className="h-3 w-3" />KPI
                 </TabsTrigger>
-                <TabsTrigger className="w-full gap-1" value="CHART">
+                <TabsTrigger disabled={mode === 'edit'} className="w-full gap-1" value="CHART">
                   <LineChart className="h-3 w-3" />Chart
                 </TabsTrigger>
-                <TabsTrigger className="w-full gap-1" value="TABLE">
+                <TabsTrigger disabled={mode === 'edit'} className="w-full gap-1" value="TABLE">
                   <Table2 className="h-3 w-3" />Table
                 </TabsTrigger>
               </TabsList>

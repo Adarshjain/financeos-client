@@ -54,13 +54,23 @@ export interface WidgetResponse {
 export interface CreateDashboardRequest {
   name: string;
   description?: string | null;
+  /**
+   * Make this the user's single default dashboard. Setting true clears any
+   * previous default server-side; false leaves the user with no default.
+   */
+  isDefault: boolean;
   widgets: DashboardWidget[];
 }
 
-/** Update replaces name + description + the FULL widget set (not a delta). */
+/**
+ * Update replaces name + description + isDefault + the FULL widget set (not a
+ * delta). Always include `isDefault` — omitting it serializes as false and
+ * would silently unset an existing default.
+ */
 export interface UpdateDashboardRequest {
   name: string;
   description?: string | null;
+  isDefault: boolean;
   widgets: DashboardWidget[];
 }
 
@@ -68,6 +78,8 @@ export interface DashboardResponse {
   id: string;
   name: string;
   description: string | null;
+  /** Exactly one dashboard per user may be the default. */
+  isDefault: boolean;
   widgets: WidgetResponse[];
   createdAt: string;
   updatedAt: string;
@@ -78,6 +90,7 @@ export interface DashboardSummaryResponse {
   id: string;
   name: string;
   description: string | null;
+  isDefault: boolean;
   widgetCount: number;
   createdAt: string;
   updatedAt: string;

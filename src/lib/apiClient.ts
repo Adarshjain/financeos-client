@@ -453,6 +453,12 @@ export const dashboardsApi = {
     return request<DashboardSummaryResponse[]>('/api/v1/dashboards');
   },
 
+  // Get the current user's default dashboard (no id). Throws ApiError with
+  // status 404 when no default is set — callers should handle that gracefully.
+  async getDefault(): Promise<DashboardResponse> {
+    return request<DashboardResponse>('/api/v1/dashboards/default');
+  },
+
   // Get one dashboard; widgets are enriched with referenced-report metadata.
   async getById(id: string): Promise<DashboardResponse> {
     return request<DashboardResponse>(`/api/v1/dashboards/${id}`);

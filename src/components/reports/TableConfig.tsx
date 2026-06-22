@@ -23,6 +23,7 @@ import type {
   TableDraft,
 } from './builderReducer';
 import { columnsFor, fieldByName } from './catalog';
+import { ColumnOrderEditor } from './ColumnOrderEditor';
 import { DimensionRefEditor } from './DimensionRefEditor';
 import { AGGREGATION_LABELS } from './labels';
 import { MeasureRefEditor } from './MeasureRefEditor';
@@ -132,12 +133,19 @@ export function TableConfig({
       {value.tableMode === 'raw' ? (
         <>
           <div>
-            <Label>Columns (selection order = column order)</Label>
+            <Label>Columns (drag to reorder)</Label>
             <MultiSelect
               options={columnOptions}
               value={value.raw.columns}
               onChange={setRawColumns}
               placeholder="Select columns…"
+            />
+            <ColumnOrderEditor
+              items={value.raw.columns.map((c) => ({
+                key: c,
+                label: labelFor(c),
+              }))}
+              onReorder={setRawColumns}
             />
           </div>
           <div>

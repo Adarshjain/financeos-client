@@ -66,6 +66,10 @@ export function DashboardEditor({
   const [widgets, setWidgets] = useState<WidgetResponse[]>(
     dashboard?.widgets ?? []
   );
+  // Carried through unchanged: the "set as default" control lives on the
+  // dashboard list, not here. We must still echo it back on save because the
+  // update endpoint replaces the full meta (omitting it would unset a default).
+  const [isDefault, setIsDefault] = useState(dashboard?.isDefault ?? false);
   const [editing, setEditing] = useState(mode === 'create');
   const [saving, setSaving] = useState(false);
   // Snapshot of the saved state for the current edit session; compared against
@@ -149,9 +153,11 @@ export function DashboardEditor({
     setEditing(true);
   };
 
-  // Discard unsaved edits and leave edit mode (or the page, when creating).
+  // Back button. When not in an active edit session (creating, or just viewing
+  // a saved dashboard) it leaves for the list. While editing an existing
+  // dashboard it discards unsaved edits and returns to view mode.
   const discardAndExit = () => {
-    if (mode === 'create') {
+    if (mode === 'create' || !editing) {
       router.push('/dashboards');
       return;
     }
@@ -184,6 +190,7 @@ export function DashboardEditor({
     const body = {
       name: name.trim(),
       description: description.trim() || null,
+      isDefault,
       widgets: requestWidgets,
     };
 
@@ -205,6 +212,7 @@ export function DashboardEditor({
       setWidgets(res.data.widgets);
       setName(res.data.name);
       setDescription(res.data.description ?? '');
+      setIsDefault(res.data.isDefault);
       setBaseline(
         editSignature(
           res.data.name,
