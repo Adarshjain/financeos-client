@@ -1,8 +1,10 @@
 // Serialize builder state into the exact wire shapes. Correctness rules are
-// enforced HERE (not just in the UI) so they cannot leak: includeExcluded is
-// always sent; granularity is attached iff the field is a date; pie/donut omit
-// series; KPI comparison is omitted when on and { enabled: false } when off;
-// aggregated sort keys follow `${field}_${aggregation}`.
+// enforced HERE (not just in the UI) so they cannot leak: granularity is
+// attached iff the field is a date; pie/donut omit series; KPI comparison is
+// omitted when on with no preference, and carries { enabled: false } /
+// { higherIsBetter } only when set; aggregated sort keys follow
+// `${field}_${aggregation}`. Hiding excluded transactions is just an
+// `isExcluded is false` clause in `filters` like any other filter.
 
 import type {
   Aggregation,
@@ -82,7 +84,6 @@ export function serializeDefinition(
   state: BuilderState,
   catalog: DatasourceCatalog,
 ): ReportDefinition {
-  const includeExcluded = state.includeExcluded;
   const filters = cleanFilters(catalog, state.filters);
 
   if (state.type === 'KPI') {
@@ -90,13 +91,14 @@ export function serializeDefinition(
     const def: KpiDefinition = {
       measure: k.measure ?? '',
       aggregation: k.aggregation ?? 'sum',
-      includeExcluded,
       filters,
     };
-    // On by default server-side: only send the block to turn it OFF.
-    if (!k.comparisonEnabled) {
-      def.comparison = { enabled: false };
-    }
+    // Comparison is on by default server-side. Only send the block to turn it
+    // OFF or to express a higher-is-better preference (drives the sentiment).
+    const comparison: NonNullable<KpiDefinition['comparison']> = {};
+    if (!k.comparisonEnabled) comparison.enabled = false;
+    if (k.higherIsBetter !== undefined) comparison.higherIsBetter = k.higherIsBetter;
+    if (Object.keys(comparison).length > 0) def.comparison = comparison;
     return def;
   }
 
@@ -110,7 +112,6 @@ export function serializeDefinition(
         field: c.measureField ?? '',
         aggregation: c.measureAggregation ?? 'sum',
       },
-      includeExcluded,
       filters,
     };
     if (!isPieDonut && c.seriesField) {
@@ -125,18 +126,19 @@ export function serializeDefinition(
     const def: TableDefinitionRaw = {
       mode: 'raw',
       columns: t.raw.columns,
-      includeExcluded,
       filters,
     };
     if (t.raw.sort.length) def.sort = t.raw.sort;
-    if (t.raw.pageSize) def.pageSize = t.raw.pageSize;
     return def;
   }
 
-  // Drop incomplete group-by / measure drafts before serializing.
-  const groupBy: DimensionRef[] = t.agg.groupBy
-    .filter((g) => g.field)
-    .map((g) => dimRef(catalog, g.field as string, g.granularity));
+  // Aggregated → pivot. Drop incomplete row/column/measure drafts first.
+  const toDimRefs = (drafts: { field?: string; granularity?: Granularity }[]) =>
+    drafts
+      .filter((g) => g.field)
+      .map((g) => dimRef(catalog, g.field as string, g.granularity));
+  const rows: DimensionRef[] = toDimRefs(t.agg.rows);
+  const columns: DimensionRef[] = toDimRefs(t.agg.columns);
   const measures: MeasureRef[] = t.agg.measures
     .filter((m) => m.field && m.aggregation)
     .map((m) => ({
@@ -146,13 +148,12 @@ export function serializeDefinition(
 
   const def: TableDefinitionAggregated = {
     mode: 'aggregated',
-    groupBy,
+    rows,
+    columns,
     measures,
-    includeExcluded,
     filters,
   };
   if (t.agg.sort.length) def.sort = t.agg.sort;
-  if (t.agg.pageSize) def.pageSize = t.agg.pageSize;
   return def;
 }
 
@@ -173,6 +174,7 @@ export function buildCreateRequest(
 ): CreateReportRequest {
   return {
     name: state.name.trim(),
+    description: state.description.trim() || null,
     type: state.type,
     datasource: state.datasource,
     definition: serializeDefinition(state, catalog),
@@ -185,6 +187,7 @@ export function buildUpdateRequest(
 ): UpdateReportRequest {
   return {
     name: state.name.trim(),
+    description: state.description.trim() || null,
     definition: serializeDefinition(state, catalog),
   };
 }
@@ -229,19 +232,24 @@ export function validationErrors(
     if (t.tableMode === 'raw') {
       if (t.raw.columns.length === 0) errors.push('Add at least one column.');
     } else {
-      const completeGroupBy = t.agg.groupBy.filter((g) => g.field);
+      const completeRows = t.agg.rows.filter((g) => g.field);
+      const completeColumns = t.agg.columns.filter((g) => g.field);
       const completeMeasures = t.agg.measures.filter(
         (m) => m.field && m.aggregation,
       );
-      if (completeGroupBy.length === 0) {
-        errors.push('Add at least one group-by dimension.');
+      if (completeRows.length === 0) {
+        errors.push('Add at least one row dimension.');
       }
       if (completeMeasures.length === 0) errors.push('Add at least one measure.');
-      const dateMissingGran = completeGroupBy.some(
+      const dateMissingGran = [...completeRows, ...completeColumns].some(
         (g) => isDateFieldName(catalog, g.field) && !g.granularity,
       );
       if (dateMissingGran) {
-        errors.push('Select a granularity for each date group-by.');
+        errors.push('Select a granularity for each date dimension.');
+      }
+      const rowFields = new Set(completeRows.map((g) => g.field));
+      if (completeColumns.some((g) => rowFields.has(g.field))) {
+        errors.push('A field cannot be used in both rows and columns.');
       }
     }
   }

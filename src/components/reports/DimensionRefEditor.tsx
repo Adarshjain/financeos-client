@@ -25,6 +25,8 @@ interface DimensionRefEditorProps {
   value: Partial<DimensionRef>;
   onChange: (value: Partial<DimensionRef>) => void;
   placeholder?: string;
+  /** Field names to hide (e.g. already used in the other pivot bucket). */
+  exclude?: string[];
 }
 
 export function DimensionRefEditor({
@@ -33,13 +35,17 @@ export function DimensionRefEditor({
   value,
   onChange,
   placeholder = 'Select field',
+  exclude = [],
 }: DimensionRefEditorProps) {
   const dimensions = fieldsFor(catalog, 'dimension', type);
   const isDate = isDateFieldName(catalog, value.field);
 
+  // Hide excluded fields, but never the one this editor currently holds.
   const fieldOptions = [
     { value: '', label: placeholder },
-    ...dimensions.map((d) => ({ value: d.name, label: d.label })),
+    ...dimensions
+      .filter((d) => d.name === value.field || !exclude.includes(d.name))
+      .map((d) => ({ value: d.name, label: d.label })),
   ];
 
   return (

@@ -8,11 +8,19 @@ import type {
   DatasourceCatalog,
   FieldDefinition,
   FieldRole,
+  FilterClause,
   ReportType,
 } from '@/lib/reports.types';
 
 /** Options for dynamic enum fields (category, account), keyed by field name. */
 export type DynamicOptions = Record<string, ComboboxOption[]>;
+
+/**
+ * The boolean filter field flagging transactions excluded from reports. It is a
+ * normal filter field like any other; new reports just default to filtering it
+ * out (see `defaultExcludedFilter`).
+ */
+export const EXCLUDED_FIELD = 'isExcluded';
 
 export function fieldByName(
   catalog: DatasourceCatalog,
@@ -50,6 +58,22 @@ export function columnsFor(catalog: DatasourceCatalog): FieldDefinition[] {
 /** Any field can be filtered, regardless of role / allowedInReports. */
 export function filterableFields(catalog: DatasourceCatalog): FieldDefinition[] {
   return catalog.fields;
+}
+
+/**
+ * The default `isExcluded is false` clause new reports start with so excluded
+ * transactions are hidden by default. It is a regular filter the user can edit
+ * or delete (deleting it includes excluded transactions). Returns null if the
+ * catalog has no `isExcluded` field.
+ */
+export function defaultExcludedFilter(
+  catalog: DatasourceCatalog,
+): FilterClause | null {
+  const field = catalog.fields.find((f) => f.name === EXCLUDED_FIELD);
+  if (!field) return null;
+  const ops = operatorsForField(catalog, field);
+  const operator = ops.includes('is') ? 'is' : (ops[0] ?? 'is');
+  return { field: EXCLUDED_FIELD, operator, value: false };
 }
 
 /** Aggregations a measure field supports — only the ones it lists. */

@@ -125,15 +125,19 @@ export interface KpiDefinition {
   /** A measure field (e.g. `amount`). */
   measure: string;
   aggregation: Aggregation;
-  /** REQUIRED — the backend applies no default. Default the UI toggle to false. */
-  includeExcluded: boolean;
   filters: FilterClause[];
   /**
    * Period-over-period comparison. On by default server-side; send
-   * `{ enabled: false }` to turn it off. Null in the response when the range
-   * is unbounded / `all_time`.
+   * `{ enabled: false }` to turn it off. `higherIsBetter` drives the response
+   * `sentiment`: an increase reads `good` when true and `bad` when false; when
+   * unset the change is `neutral`. Null in the response when the range is
+   * unbounded / `all_time`.
    */
-  comparison?: { enabled: boolean; period?: 'previous_period' };
+  comparison?: {
+    enabled?: boolean;
+    higherIsBetter?: boolean;
+    period?: 'previous_period';
+  };
 }
 
 /** CHART: one measure over a dimension, optionally split into series. */
@@ -145,8 +149,6 @@ export interface ChartDefinition {
   series?: DimensionRef;
   /** Single measure (v1). */
   measure: MeasureRef;
-  /** REQUIRED. */
-  includeExcluded: boolean;
   filters: FilterClause[];
   // No sort, no limit — charts are not sorted server-side; cap points/series
   // client-side if needed.
@@ -157,29 +159,27 @@ export interface TableDefinitionRaw {
   mode: 'raw';
   /** Field names; array order = column order. */
   columns: string[];
-  /** REQUIRED. */
-  includeExcluded: boolean;
   filters: FilterClause[];
-  /** Default sort; keys are column (field) names. */
+  /** Default sort; keys are column (field) names. Page size is a runtime param. */
   sort?: SortClause[];
-  /** Default page size. The current page is a runtime param, not part of this. */
-  pageSize?: number;
 }
 
-/** TABLE (aggregated): grouped rows with one or more aggregated measures. */
+/** TABLE (aggregated): a pivot — row dimensions × column dimensions × measures. */
 export interface TableDefinitionAggregated {
   mode: 'aggregated';
-  /** 1+ dimensions to group by. */
-  groupBy: DimensionRef[];
+  /** 1+ dimensions grouped down the left of the pivot. */
+  rows: DimensionRef[];
+  /** 0+ dimensions grouped across the top; omit/empty = flat rows × measures. */
+  columns: DimensionRef[];
   /** 1+ measures. */
   measures: MeasureRef[];
-  /** REQUIRED. */
-  includeExcluded: boolean;
   filters: FilterClause[];
-  /** Keys: a groupBy field name OR an aggregated column key `${field}_${aggregation}`. */
+  /**
+   * Keys: a row dimension field, or a measure key `${field}_${aggregation}`
+   * (a measure key is only valid when `columns` is empty). Page size is a
+   * runtime param.
+   */
   sort?: SortClause[];
-  /** Default page size. The current page is a runtime param, not part of this. */
-  pageSize?: number;
 }
 
 /** A table definition is raw OR aggregated, discriminated by `mode`. */
@@ -200,6 +200,8 @@ export type ReportDefinition =
 
 export interface CreateReportRequest {
   name: string;
+  /** Optional free-text description. */
+  description?: string | null;
   type: ReportType;
   datasource: string;
   definition: ReportDefinition;
@@ -208,6 +210,8 @@ export interface CreateReportRequest {
 /** Update name + definition only; `type` and `datasource` are immutable. */
 export interface UpdateReportRequest {
   name: string;
+  /** Optional free-text description. */
+  description?: string | null;
   definition: ReportDefinition;
 }
 
@@ -222,6 +226,7 @@ export interface RunReportRequest {
 export interface ReportResponse {
   id: string;
   name: string;
+  description?: string | null;
   type: ReportType;
   datasource: string;
   definition: ReportDefinition;
@@ -233,6 +238,7 @@ export interface ReportResponse {
 export interface ReportSummaryResponse {
   id: string;
   name: string;
+  description?: string | null;
   type: ReportType;
   datasource: string;
   createdAt: string;
@@ -253,11 +259,19 @@ export interface ReportRunOptions {
 /** Period-over-period comparison block on KPI data. */
 export interface KpiComparison {
   previousValue: number;
+  /** The window `previousValue` was computed over; null when the range is unbounded. */
+  previousDateRange: { from: string; to: string } | null;
   change: number;
   /** Null when the previous value is 0 (percentage undefined). */
   changePercent: number | null;
   /** Computed on the SIGNED value — a spend KPI growing more negative is `down`. */
   direction: 'up' | 'down' | 'flat';
+  /**
+   * The business read of the change, driven by `comparison.higherIsBetter`:
+   * `good` (color positive/green), `bad` (negative/red), or `neutral` (muted).
+   * Use this — not `direction` — to color the delta.
+   */
+  sentiment: 'good' | 'bad' | 'neutral';
 }
 
 /** Resolved metadata echoed back with computed data. */
@@ -306,13 +320,62 @@ export interface TablePage {
   totalPages: number;
 }
 
+/** Raw (per-transaction) table data. Aggregated tables return `PivotTableData`. */
 export interface TableData {
   type: 'TABLE';
-  mode: 'raw' | 'aggregated';
+  mode: 'raw';
   columns: TableColumn[];
   rows: TableRow[];
   page: TablePage;
 }
 
-/** Computed report data; concrete shape discriminated by `type`. */
-export type ReportData = KpiData | ChartData | TableData;
+// ---------------------------------------------------------------------------
+// 5a. Pivot (aggregated) table DATA — row dims × column dims × measures
+// ---------------------------------------------------------------------------
+
+/** A pivot row or column dimension descriptor. */
+export interface PivotDimensionInfo {
+  field: string;
+  label: string;
+}
+
+/** A pivot measure descriptor; `key` is `${field}_${aggregation}`. */
+export interface PivotMeasureInfo {
+  key: string;
+  field: string;
+  aggregation: string;
+  label: string;
+}
+
+/** A distinct column-value combination; `key` is "" when there are no column dims. */
+export interface PivotColumn {
+  key: string;
+  /** columnDimensionField -> formatted value (date values are pre-formatted). */
+  values: Record<string, string>;
+}
+
+/** A pivot row group. */
+export interface PivotRow {
+  key: string;
+  /** rowDimensionField -> formatted value (date values are pre-formatted). */
+  values: Record<string, string>;
+  /** columnKey -> (measureKey -> value); missing combinations are absent. */
+  cells: Record<string, Record<string, number>>;
+}
+
+/** Aggregated (pivot) table data; `mode: 'aggregated'` discriminates it from `TableData`. */
+export interface PivotTableData {
+  type: 'TABLE';
+  mode: 'aggregated';
+  rowDimensions: PivotDimensionInfo[];
+  columnDimensions: PivotDimensionInfo[];
+  measures: PivotMeasureInfo[];
+  /** Distinct column combos (ordered); a single column with key "" when no column dims. */
+  columns: PivotColumn[];
+  /** The requested page of row groups; `page` paginates row groups. */
+  rows: PivotRow[];
+  page: TablePage;
+}
+
+/** Computed report data; concrete shape discriminated by `type` (and `mode` for tables). */
+export type ReportData = KpiData | ChartData | TableData | PivotTableData;

@@ -6,6 +6,7 @@ import type {
   FilterClause,
   FilterValue,
   KpiData,
+  PivotTableData,
   ReportData,
   TableData,
   TableDefinition,
@@ -23,9 +24,15 @@ export function isChartData(data: ReportData): data is ChartData {
   return data.type === 'CHART';
 }
 
-// Narrow ReportData to table data.
-export function isTableData(data: ReportData): data is TableData {
-  return data.type === 'TABLE';
+// Narrow ReportData to RAW table data. Both raw tables and pivots carry
+// `type: 'TABLE'`, so the `mode` discriminator is what tells them apart.
+export function isRawTableData(data: ReportData): data is TableData {
+  return data.type === 'TABLE' && data.mode === 'raw';
+}
+
+// Narrow ReportData to PIVOT (aggregated) table data.
+export function isPivotTableData(data: ReportData): data is PivotTableData {
+  return data.type === 'TABLE' && data.mode === 'aggregated';
 }
 
 // Narrow a table definition to its raw variant.

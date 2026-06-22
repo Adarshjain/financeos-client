@@ -1,13 +1,11 @@
 'use client';
 
-// Presentational table renderer. Columns come from the API (the hidden raw-row
-// `id` is not among them — it stays available as the React key for drill-through
-// later). Paging is driven by the parent via `onPageChange`; page/size are a
-// runtime concern, never part of the saved definition.
+// Presentational RAW table renderer. Columns come from the API (the hidden
+// raw-row `id` is not among them — it stays available as the React key for
+// drill-through later). Paging/size are driven by the parent via `onPageChange`
+// / `onSizeChange`; both are a runtime concern, never part of the saved
+// definition. Aggregated (pivot) tables render via PivotTableView instead.
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -18,6 +16,8 @@ import {
 } from '@/components/ui/table';
 import type { TableColumn, TableData } from '@/lib/reports.types';
 import { formatDate, formatMoney } from '@/lib/utils';
+
+import { TablePagination } from './TablePagination';
 
 function formatCell(value: unknown, column: TableColumn): string {
   if (value === null || value === undefined || value === '') return '—';
@@ -35,9 +35,10 @@ function formatCell(value: unknown, column: TableColumn): string {
 interface TableViewProps {
   data: TableData;
   onPageChange?: (page: number) => void;
+  onSizeChange?: (size: number) => void;
 }
 
-export function TableView({ data, onPageChange }: TableViewProps) {
+export function TableView({ data, onPageChange, onSizeChange }: TableViewProps) {
   const { columns, rows, page } = data;
 
   return (
@@ -78,35 +79,11 @@ export function TableView({ data, onPageChange }: TableViewProps) {
         </Table>
       </div>
 
-      {page.totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-slate-500">
-          <span>
-            {page.totalElements.toLocaleString('en-IN')} row
-            {page.totalElements === 1 ? '' : 's'}
-          </span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page.number <= 0}
-              onClick={() => onPageChange?.(page.number - 1)}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="tabular-nums">
-              {page.number + 1} / {page.totalPages}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page.number >= page.totalPages - 1}
-              onClick={() => onPageChange?.(page.number + 1)}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      <TablePagination
+        page={page}
+        onPageChange={onPageChange}
+        onSizeChange={onSizeChange}
+      />
     </div>
   );
 }

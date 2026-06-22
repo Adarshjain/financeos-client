@@ -12,7 +12,12 @@ import { useRef, useState } from 'react';
 import { runAdHocReport } from '@/actions/reports';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { isChartData, isKpiData, isTableData } from '@/lib/reports.helpers';
+import {
+  isChartData,
+  isKpiData,
+  isPivotTableData,
+  isRawTableData,
+} from '@/lib/reports.helpers';
 import type {
   DatasourceCatalog,
   ReportData,
@@ -24,6 +29,8 @@ import type { BuilderState } from './builderReducer';
 import { buildRunRequest, isMinimalValid, validationErrors } from './serialize';
 import { ChartView } from './views/ChartView';
 import { KpiView } from './views/KpiView';
+import { PivotTableView } from './views/PivotTableView';
+import { DEFAULT_TABLE_PAGE_SIZE } from './views/TablePagination';
 import { TableView } from './views/TableView';
 
 interface PreviewPaneProps {
@@ -37,16 +44,14 @@ export function PreviewPane({ state, catalog }: PreviewPaneProps) {
   const defSignature = JSON.stringify(buildRunRequest(state, catalog));
 
   const isTable = state.type === 'TABLE';
-  const size = isTable
-    ? state.table.tableMode === 'raw'
-      ? state.table.raw.pageSize
-      : state.table.agg.pageSize
-    : undefined;
 
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  // Page size is a runtime concern (not part of the definition); preview drives
+  // it from the table footer's page-size control.
+  const [size, setSize] = useState(DEFAULT_TABLE_PAGE_SIZE);
   // Signature the currently-shown data was fetched for; null until first load.
   const [loadedSignature, setLoadedSignature] = useState<string | null>(null);
   const runIdRef = useRef(0);
@@ -63,7 +68,7 @@ export function PreviewPane({ state, catalog }: PreviewPaneProps) {
   // Worth (re)loading: valid, not already loading, and nothing fresh on screen.
   const canPreview = valid && !loading && (data === null || isStale);
 
-  const runPreview = async (pageToLoad = page) => {
+  const runPreview = async (pageToLoad = page, sizeToLoad = size) => {
     if (!valid) return;
     const myId = ++runIdRef.current;
     const signature = defSignature;
@@ -71,7 +76,7 @@ export function PreviewPane({ state, catalog }: PreviewPaneProps) {
     const req = JSON.parse(signature) as RunReportRequest;
     const res = await runAdHocReport(
       req,
-      isTable ? { page: pageToLoad, size } : {},
+      isTable ? { page: pageToLoad, size: sizeToLoad } : {},
     );
     if (myId !== runIdRef.current) return; // superseded by a newer run
     setLoading(false);
@@ -89,6 +94,12 @@ export function PreviewPane({ state, catalog }: PreviewPaneProps) {
   const handlePageChange = (p: number) => {
     setPage(p);
     void runPreview(p);
+  };
+
+  const handleSizeChange = (s: number) => {
+    setSize(s);
+    setPage(0);
+    void runPreview(0, s);
   };
 
   return (
@@ -144,8 +155,19 @@ export function PreviewPane({ state, catalog }: PreviewPaneProps) {
           <div className={cn(loading && 'opacity-60 transition-opacity')}>
             {isKpiData(data) && <KpiView data={data} />}
             {isChartData(data) && <ChartView data={data} />}
-            {isTableData(data) && (
-              <TableView data={data} onPageChange={handlePageChange} />
+            {isRawTableData(data) && (
+              <TableView
+                data={data}
+                onPageChange={handlePageChange}
+                onSizeChange={handleSizeChange}
+              />
+            )}
+            {isPivotTableData(data) && (
+              <PivotTableView
+                data={data}
+                onPageChange={handlePageChange}
+                onSizeChange={handleSizeChange}
+              />
             )}
           </div>
 
