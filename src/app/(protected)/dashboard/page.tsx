@@ -1,7 +1,7 @@
-import { LayoutDashboard, Pencil, Plus } from 'lucide-react';
+import { LayoutDashboard, Plus } from 'lucide-react';
 import Link from 'next/link';
 
-import { DashboardView } from '@/components/dashboards/DashboardView';
+import { DashboardHome } from '@/components/dashboards/DashboardHome';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ApiError, dashboardsApi } from '@/lib/apiClient';
@@ -10,9 +10,9 @@ import type { DashboardResponse } from '@/lib/dashboards.types';
 // Landing view: show the user's default dashboard. There's no default-dashboard
 // endpoint failure mode other than "none set" (404) that we handle inline; any
 // other error propagates to the route error boundary.
-async function loadDefaultDashboard(): Promise<DashboardResponse | null> {
+async function loadDashboards(): Promise<DashboardResponse[] | null> {
   try {
-    return await dashboardsApi.getDefault();
+    return await dashboardsApi.list();
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
       return null;
@@ -22,9 +22,10 @@ async function loadDefaultDashboard(): Promise<DashboardResponse | null> {
 }
 
 export default async function DashboardPage() {
-  const dashboard = await loadDefaultDashboard();
+  const dashboards = await loadDashboards();
+  const defaultDashboard = dashboards?.find(d => d.isDefault) ?? dashboards?.[0];
 
-  if (!dashboard) {
+  if (!defaultDashboard) {
     return (
       <div className="space-y-6 p-4">
         <div>
@@ -65,30 +66,9 @@ export default async function DashboardPage() {
     );
   }
 
-  return (
-    <div className="space-y-4 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            {dashboard.name}
-          </h1>
-          {dashboard.description ? (
-            <p className="text-sm text-slate-500">{dashboard.description}</p>
-          ) : (
-            <p className="text-slate-600 dark:text-slate-400">
-              Your default dashboard
-            </p>
-          )}
-        </div>
-        <Link href={`/dashboards/${dashboard.id}`}>
-          <Button variant="secondary">
-            <Pencil className="h-4 w-4" />
-            Open
-          </Button>
-        </Link>
-      </div>
+  const fullDashboard = await dashboardsApi.getById(defaultDashboard.id);
 
-      <DashboardView dashboard={dashboard} />
-    </div>
+  return (
+    <DashboardHome dashboards={dashboards ?? []} />
   );
 }
