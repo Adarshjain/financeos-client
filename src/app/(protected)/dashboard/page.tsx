@@ -1,128 +1,94 @@
-import { ArrowRight,Receipt, TrendingUp, Wallet } from 'lucide-react';
+import { LayoutDashboard, Pencil, Plus } from 'lucide-react';
 import Link from 'next/link';
 
+import { DashboardView } from '@/components/dashboards/DashboardView';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import { ApiError, dashboardsApi } from '@/lib/apiClient';
+import type { DashboardResponse } from '@/lib/dashboards.types';
 
-export default function DashboardPage() {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-          Dashboard
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          Welcome back to your finance overview
-        </p>
-      </div>
+// Landing view: show the user's default dashboard. There's no default-dashboard
+// endpoint failure mode other than "none set" (404) that we handle inline; any
+// other error propagates to the route error boundary.
+async function loadDefaultDashboard(): Promise<DashboardResponse | null> {
+  try {
+    return await dashboardsApi.getDefault();
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+    throw error;
+  }
+}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-3 md:p-6">
-            <div className="flex items-center justify-between">
-              <p className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">
-                Accounts
-              </p>
-              <div className="p-1.5 md:p-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                <Wallet className="h-4 w-4 md:h-5 md:w-5 text-slate-600 dark:text-slate-400" />
-              </div>
-            </div>
-            <p className="mt-1 md:mt-2 text-lg md:text-2xl font-bold text-slate-900 dark:text-white">
-              —
-            </p>
-            <p className="text-xs text-slate-500 mt-1">Active accounts</p>
-          </CardContent>
-        </Card>
+export default async function DashboardPage() {
+  const dashboard = await loadDefaultDashboard();
+
+  if (!dashboard) {
+    return (
+      <div className="space-y-6 p-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            Dashboard
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400">
+            Welcome back to your finance overview
+          </p>
+        </div>
 
         <Card>
-          <CardContent className="p-3 md:p-6">
-            <div className="flex items-center justify-between">
-              <p className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">
-                Transactions
-              </p>
-              <div className="p-1.5 md:p-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                <Receipt className="h-4 w-4 md:h-5 md:w-5 text-slate-600 dark:text-slate-400" />
-              </div>
+          <div className="flex flex-col items-center gap-3 py-16 text-center">
+            <div className="rounded-full bg-slate-100 p-3 dark:bg-slate-800">
+              <LayoutDashboard className="h-6 w-6 text-slate-400" />
             </div>
-            <p className="mt-1 md:mt-2 text-lg md:text-2xl font-bold text-slate-900 dark:text-white">
-              —
+            <p className="text-slate-600 dark:text-slate-400">
+              You don&apos;t have a default dashboard yet
             </p>
-            <p className="text-xs text-slate-500 mt-1">This month</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-3 md:p-6">
-            <div className="flex items-center justify-between">
-              <p className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400">
-                Investments
-              </p>
-              <div className="p-1.5 md:p-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                <TrendingUp className="h-4 w-4 md:h-5 md:w-5 text-slate-600 dark:text-slate-400" />
-              </div>
+            <p className="max-w-md text-sm text-slate-500">
+              Create a dashboard and mark it as default to see it here, or pick
+              one from your existing dashboards.
+            </p>
+            <div className="mt-2 flex flex-wrap justify-center gap-2">
+              <Link href="/dashboards/new">
+                <Button>
+                  <Plus className="h-4 w-4" />
+                  Create dashboard
+                </Button>
+              </Link>
+              <Link href="/dashboards">
+                <Button variant="secondary">View dashboards</Button>
+              </Link>
             </div>
-            <p className="mt-1 md:mt-2 text-lg md:text-2xl font-bold text-slate-900 dark:text-white">
-              —
-            </p>
-            <p className="text-xs text-slate-500 mt-1">Portfolio value</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>
-            Common tasks to manage your finances
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Link href="/accounts">
-              <Button
-                variant="outline"
-                className="w-full justify-between h-auto py-3"
-              >
-                <div className="flex items-center gap-3">
-                  <Wallet className="h-4 w-4" />
-                  <span>Manage Accounts</span>
-                </div>
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/transactions">
-              <Button
-                variant="outline"
-                className="w-full justify-between h-auto py-3"
-              >
-                <div className="flex items-center gap-3">
-                  <Receipt className="h-4 w-4" />
-                  <span>Add Transaction</span>
-                </div>
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link href="/investments">
-              <Button
-                variant="outline"
-                className="w-full justify-between h-auto py-3"
-              >
-                <div className="flex items-center gap-3">
-                  <TrendingUp className="h-4 w-4" />
-                  <span>Record Trade</span>
-                </div>
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
           </div>
-        </CardContent>
-      </Card>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 p-4">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            {dashboard.name}
+          </h1>
+          {dashboard.description ? (
+            <p className="text-sm text-slate-500">{dashboard.description}</p>
+          ) : (
+            <p className="text-slate-600 dark:text-slate-400">
+              Your default dashboard
+            </p>
+          )}
+        </div>
+        <Link href={`/dashboards/${dashboard.id}`}>
+          <Button variant="secondary">
+            <Pencil className="h-4 w-4" />
+            Open
+          </Button>
+        </Link>
+      </div>
+
+      <DashboardView dashboard={dashboard} />
     </div>
   );
 }
