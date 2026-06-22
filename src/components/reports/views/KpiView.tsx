@@ -23,7 +23,7 @@ const sentimentColors = {
   neutral: 'text-slate-500',
 } as const;
 
-export function KpiView({ data }: { data: KpiData }) {
+export function KpiView({ data, className }: { data: KpiData, className?: string }) {
   const fmt = (n: number) => {
     if (data.aggregation === 'count') {
       return new Intl.NumberFormat('en-IN').format(n);
@@ -48,8 +48,8 @@ export function KpiView({ data }: { data: KpiData }) {
     : undefined;
 
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white tabular-nums">
+    <div className={cn("flex flex-col gap-2", className)}>
+      <p className="text-xl text-slate-900 dark:text-white tabular-nums">
         {data.value === null ? '—' : fmt(data.value)}
       </p>
 

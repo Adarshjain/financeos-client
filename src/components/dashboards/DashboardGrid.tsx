@@ -1,8 +1,9 @@
 'use client';
 
 // Thin wrapper over react-grid-layout (legacy/v1-compatible API). Maps widgets
-// onto the 12-column grid; drag/resize are enabled only in edit mode. The
-// header of each edit card (`.dashboard-drag-handle`) is the drag handle.
+// onto the DASHBOARD_GRID_COLUMNS-wide grid; drag/resize are enabled only in
+// edit mode. The header of each edit card (`.dashboard-drag-handle`) is the
+// drag handle.
 
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -10,6 +11,7 @@ import 'react-resizable/css/styles.css';
 import type { ReactNode } from 'react';
 import RGL, { type Layout, WidthProvider } from 'react-grid-layout/legacy';
 
+import { DASHBOARD_GRID_COLUMNS } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 
 const GridLayout = WidthProvider(RGL);
@@ -34,16 +36,20 @@ export function DashboardGrid({
     w: w.layout.w,
     h: w.layout.h,
     minW: 2,
-    minH: 2,
+    minH: 1,
   }));
 
   return (
     <GridLayout
       className="layout"
       layout={layout}
-      cols={12}
-      rowHeight={64}
-      margin={[12, 12]}
+      cols={DASHBOARD_GRID_COLUMNS}
+      rowHeight={1}
+      // Horizontal margin must stay small: column width is
+      // (containerWidth - marginX·(cols+1)) / cols, which goes negative for a
+      // 100-column grid with a large gutter. Keep the vertical margin for row
+      // rhythm (and so widget heights are unchanged).
+      margin={[6, 12]}
       isDraggable={editing}
       isResizable={editing}
       draggableHandle=".dashboard-drag-handle"

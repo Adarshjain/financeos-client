@@ -7,11 +7,14 @@ import type {
   WidgetResponse,
 } from '@/lib/dashboards.types';
 
-/** The dashboard grid is always 12 columns wide. */
-export const DASHBOARD_GRID_COLUMNS = 12;
+/** The dashboard grid is always 100 columns wide. */
+export const DASHBOARD_GRID_COLUMNS = 100;
 
-const DEFAULT_WIDGET_WIDTH = 6;
-const DEFAULT_WIDGET_HEIGHT = 4;
+// Half the grid — a new widget defaults to half width.
+export const HALF_WIDTH = Math.round(DASHBOARD_GRID_COLUMNS / 2);
+// Rows are 12px tall (see DashboardGrid); 24 rows ≈ 290px — tall enough for a
+// chart or a few table rows to render without cramping.
+const DEFAULT_WIDGET_HEIGHT = 24;
 
 /**
  * Mint a new widget for a saved report: a fresh client-generated `id` (the grid
@@ -19,7 +22,7 @@ const DEFAULT_WIDGET_HEIGHT = 4;
  */
 export function newWidget(
   reportId: string,
-  layout?: Partial<WidgetLayout>,
+  layout?: Partial<WidgetLayout>
 ): DashboardWidget {
   return {
     id: crypto.randomUUID(),
@@ -28,7 +31,7 @@ export function newWidget(
     layout: {
       x: 0,
       y: 0,
-      w: DEFAULT_WIDGET_WIDTH,
+      w: HALF_WIDTH,
       h: DEFAULT_WIDGET_HEIGHT,
       ...layout,
     },
@@ -43,7 +46,7 @@ export function isWidgetAvailable(widget: WidgetResponse): boolean {
   return widget.report.available;
 }
 
-/** Whether a layout fits the 12-column grid (x 0–11, w 1–12, x+w ≤ 12, y/h ≥ 0/1). */
+/** Whether a layout fits the grid: x 0..C-1, w 1..C, x+w ≤ C (C = column count), y/h ≥ 0/1. */
 export function isLayoutWithinGrid(layout: WidgetLayout): boolean {
   const { x, y, w, h } = layout;
   return (
