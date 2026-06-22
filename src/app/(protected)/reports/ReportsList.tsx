@@ -116,6 +116,11 @@ export function ReportsList({ reports, activeType }: ReportsListProps) {
                     />
                   </div>
                 </div>
+                {report.description && (
+                  <p className="line-clamp-2 text-sm text-slate-600 dark:text-slate-400">
+                    {report.description}
+                  </p>
+                )}
                 <p className="text-xs text-slate-500">
                   Updated {formatDate(report.updatedAt)}
                 </p>

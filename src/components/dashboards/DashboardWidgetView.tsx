@@ -10,11 +10,18 @@ import { useEffect, useRef, useState } from 'react';
 import { runSavedReport } from '@/actions/reports';
 import { ChartView } from '@/components/reports/views/ChartView';
 import { KpiView } from '@/components/reports/views/KpiView';
+import { PivotTableView } from '@/components/reports/views/PivotTableView';
+import { DEFAULT_TABLE_PAGE_SIZE } from '@/components/reports/views/TablePagination';
 import { TableView } from '@/components/reports/views/TableView';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import type { WidgetResponse } from '@/lib/dashboards.types';
-import { isChartData, isKpiData, isTableData } from '@/lib/reports.helpers';
+import {
+  isChartData,
+  isKpiData,
+  isPivotTableData,
+  isRawTableData,
+} from '@/lib/reports.helpers';
 import type { ReportData } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
@@ -30,7 +37,14 @@ export function DashboardWidgetView({ widget }: { widget: WidgetResponse }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
+  // Page size is a runtime concern, driven by the table footer's control.
+  const [size, setSize] = useState(DEFAULT_TABLE_PAGE_SIZE);
   const runIdRef = useRef(0);
+
+  const handleSizeChange = (s: number) => {
+    setSize(s);
+    setPage(0);
+  };
 
   useEffect(() => {
     if (!available) return;
@@ -39,7 +53,7 @@ export function DashboardWidgetView({ widget }: { widget: WidgetResponse }) {
       setLoading(true);
       const res = await runSavedReport(
         widget.reportId,
-        isTable ? { page } : {},
+        isTable ? { page, size } : {},
       );
       if (myId !== runIdRef.current) return;
       setLoading(false);
@@ -52,7 +66,7 @@ export function DashboardWidgetView({ widget }: { widget: WidgetResponse }) {
       }
     }, 0);
     return () => clearTimeout(timer);
-  }, [widget.reportId, available, isTable, page]);
+  }, [widget.reportId, available, isTable, page, size]);
 
   return (
     <Card className="flex h-full flex-col overflow-hidden">
@@ -85,8 +99,18 @@ export function DashboardWidgetView({ widget }: { widget: WidgetResponse }) {
           <KpiView data={data} />
         ) : isChartData(data) ? (
           <ChartView data={data} />
-        ) : isTableData(data) ? (
-          <TableView data={data} onPageChange={setPage} />
+        ) : isRawTableData(data) ? (
+          <TableView
+            data={data}
+            onPageChange={setPage}
+            onSizeChange={handleSizeChange}
+          />
+        ) : isPivotTableData(data) ? (
+          <PivotTableView
+            data={data}
+            onPageChange={setPage}
+            onSizeChange={handleSizeChange}
+          />
         ) : null}
       </div>
     </Card>

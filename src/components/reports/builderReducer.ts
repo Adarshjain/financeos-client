@@ -1,10 +1,11 @@
 // Central state for the report builder. One reducer holds the shared bits
-// (name, filters, includeExcluded) at the top level plus an independent draft
-// per report type, so switching `type` never discards work on the other types.
+// (name, description, filters) at the top level plus an independent draft per
+// report type, so switching `type` never discards work on the other types.
 
 import type {
   Aggregation,
   ChartDefinition,
+  DatasourceCatalog,
   FilterClause,
   Granularity,
   KpiDefinition,
@@ -14,15 +15,17 @@ import type {
   TableDefinition,
 } from '@/lib/reports.types';
 
+import { defaultExcludedFilter } from './catalog';
+
 /** The single datasource exposed by the catalog today. */
 export const DATASOURCE = 'transactions';
-
-const DEFAULT_PAGE_SIZE = 25;
 
 export interface KpiDraft {
   measure?: string;
   aggregation?: Aggregation;
   comparisonEnabled: boolean; // on by default; serialized to { enabled: false } when off
+  /** undefined = no preference (neutral); true/false drive the delta sentiment. */
+  higherIsBetter?: boolean;
 }
 
 export interface ChartDraft {
@@ -38,7 +41,6 @@ export interface ChartDraft {
 export interface RawTableDraft {
   columns: string[];
   sort: SortClause[];
-  pageSize: number;
 }
 
 // Drafts allow incomplete selections while the user is building; serialize.ts
@@ -54,10 +56,10 @@ export interface MeasureDraft {
 }
 
 export interface AggTableDraft {
-  groupBy: DimensionDraft[];
+  rows: DimensionDraft[];
+  columns: DimensionDraft[];
   measures: MeasureDraft[];
   sort: SortClause[];
-  pageSize: number;
 }
 
 export interface TableDraft {
@@ -70,10 +72,10 @@ export interface BuilderState {
   mode: 'create' | 'edit';
   reportId?: string;
   name: string;
+  description: string;
   datasource: string;
   type: ReportType;
   // Shared across types — survive a type switch:
-  includeExcluded: boolean;
   filters: FilterClause[];
   // Independent per-type drafts:
   kpi: KpiDraft;
@@ -83,8 +85,8 @@ export interface BuilderState {
 
 export type BuilderAction =
   | { type: 'SET_NAME'; value: string }
+  | { type: 'SET_DESCRIPTION'; value: string }
   | { type: 'SET_TYPE'; value: ReportType }
-  | { type: 'SET_INCLUDE_EXCLUDED'; value: boolean }
   | { type: 'ADD_FILTER'; value: FilterClause }
   | { type: 'UPDATE_FILTER'; index: number; value: FilterClause }
   | { type: 'REMOVE_FILTER'; index: number }
@@ -94,20 +96,27 @@ export type BuilderAction =
   | { type: 'TABLE_SET_RAW'; value: Partial<RawTableDraft> }
   | { type: 'TABLE_SET_AGG'; value: Partial<AggTableDraft> };
 
-export function initialBuilderState(type: ReportType = 'KPI'): BuilderState {
+export function initialBuilderState(
+  type: ReportType = 'KPI',
+  catalog?: DatasourceCatalog,
+): BuilderState {
+  // New reports default to hiding excluded transactions via a regular filter
+  // clause the user can edit or remove. Edit mode passes no catalog and loads
+  // the saved filters instead.
+  const seedFilter = catalog ? defaultExcludedFilter(catalog) : null;
   return {
     mode: 'create',
     name: '',
+    description: '',
     datasource: DATASOURCE,
     type,
-    includeExcluded: false,
-    filters: [],
+    filters: seedFilter ? [seedFilter] : [],
     kpi: { comparisonEnabled: true },
     chart: { chartType: 'bar' },
     table: {
       tableMode: 'raw',
-      raw: { columns: [], sort: [], pageSize: DEFAULT_PAGE_SIZE },
-      agg: { groupBy: [], measures: [], sort: [], pageSize: DEFAULT_PAGE_SIZE },
+      raw: { columns: [], sort: [] },
+      agg: { rows: [], columns: [], measures: [], sort: [] },
     },
   };
 }
@@ -119,10 +128,10 @@ export function builderReducer(
   switch (action.type) {
     case 'SET_NAME':
       return { ...state, name: action.value };
+    case 'SET_DESCRIPTION':
+      return { ...state, description: action.value };
     case 'SET_TYPE':
       return { ...state, type: action.value };
-    case 'SET_INCLUDE_EXCLUDED':
-      return { ...state, includeExcluded: action.value };
     case 'ADD_FILTER':
       return { ...state, filters: [...state.filters, action.value] };
     case 'UPDATE_FILTER':
@@ -164,12 +173,11 @@ export function hydrateState(report: ReportResponse): BuilderState {
   state.mode = 'edit';
   state.reportId = report.id;
   state.name = report.name;
+  state.description = report.description ?? '';
   state.datasource = report.datasource;
   state.type = report.type;
 
   const def = report.definition;
-  // includeExcluded + filters are common to every definition variant.
-  state.includeExcluded = def.includeExcluded;
   state.filters = def.filters ?? [];
 
   if (report.type === 'KPI') {
@@ -178,6 +186,7 @@ export function hydrateState(report: ReportResponse): BuilderState {
       measure: d.measure,
       aggregation: d.aggregation,
       comparisonEnabled: d.comparison?.enabled !== false,
+      higherIsBetter: d.comparison?.higherIsBetter,
     };
   } else if (report.type === 'CHART') {
     const d = def as ChartDefinition;
@@ -197,15 +206,14 @@ export function hydrateState(report: ReportResponse): BuilderState {
       state.table.raw = {
         columns: d.columns ?? [],
         sort: d.sort ?? [],
-        pageSize: d.pageSize ?? DEFAULT_PAGE_SIZE,
       };
     } else {
       state.table.tableMode = 'aggregated';
       state.table.agg = {
-        groupBy: d.groupBy ?? [],
+        rows: d.rows ?? [],
+        columns: d.columns ?? [],
         measures: d.measures ?? [],
         sort: d.sort ?? [],
-        pageSize: d.pageSize ?? DEFAULT_PAGE_SIZE,
       };
     }
   }

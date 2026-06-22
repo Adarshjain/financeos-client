@@ -1,16 +1,26 @@
 // Presentational KPI renderer. Pure — takes only KpiData, no fetching. Reused
-// by the live preview now and by the dashboard later. Values are displayed
-// exactly as the API returns them (amount is signed — no client recomputation).
+// by the live preview and by the dashboard. Values are displayed exactly as the
+// API returns them (amount is signed — no client recomputation).
+//
+// The delta's ARROW comes from `direction` (up/down/flat); its COLOR comes from
+// `sentiment` (good = green, bad = red, neutral = muted), which is the server's
+// value judgement driven by the definition's `comparison.higherIsBetter`.
 
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 
 import type { KpiData } from '@/lib/reports.types';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 
-const directionStyles = {
-  up: { Icon: ArrowUp, className: 'text-emerald-600 dark:text-emerald-400' },
-  down: { Icon: ArrowDown, className: 'text-red-600 dark:text-red-400' },
-  flat: { Icon: Minus, className: 'text-slate-500' },
+const directionIcons = {
+  up: ArrowUp,
+  down: ArrowDown,
+  flat: Minus,
+} as const;
+
+const sentimentColors = {
+  good: 'text-emerald-600 dark:text-emerald-400',
+  bad: 'text-red-600 dark:text-red-400',
+  neutral: 'text-slate-500',
 } as const;
 
 export function KpiView({ data }: { data: KpiData }) {
@@ -21,9 +31,21 @@ export function KpiView({ data }: { data: KpiData }) {
     if (data.measure === 'amount') return formatMoney(n);
     return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(n);
   };
+  // Signed absolute change — negatives already carry a minus from fmt().
+  const signedChange = (n: number) => `${n > 0 ? '+' : ''}${fmt(n)}`;
+  const signedPercent = (p: number) => `${p > 0 ? '+' : ''}${p.toFixed(1)}%`;
 
   const comparison = data.comparison;
-  const dir = comparison ? directionStyles[comparison.direction] : null;
+  const Icon = comparison ? directionIcons[comparison.direction] : null;
+  const prevRange = comparison?.previousDateRange ?? null;
+  // Label the compared window when known; otherwise the generic phrase.
+  const comparedLabel = prevRange
+    ? ` vs ${formatDate(prevRange.from)} – ${formatDate(prevRange.to)}`
+    : 'vs previous period';
+  // Surface the actual previous value on hover (e.g. "vs 1 May – 31 May: ₹-38,900").
+  const comparedTitle = comparison
+    ? `${comparedLabel}: ${fmt(comparison.previousValue)}`
+    : undefined;
 
   return (
     <div className="flex flex-col gap-2">
@@ -31,30 +53,29 @@ export function KpiView({ data }: { data: KpiData }) {
         {data.value === null ? '—' : fmt(data.value)}
       </p>
 
-      {comparison && dir && (
+      {comparison && Icon && (
         <div
           className={cn(
             'flex items-center gap-1 text-sm font-medium',
-            dir.className,
+            sentimentColors[comparison.sentiment],
           )}
+          title={comparedTitle}
         >
-          <dir.Icon className="h-4 w-4" />
+          <Icon className="h-4 w-4" />
           <span className="tabular-nums">
-            {comparison.changePercent === null
-              ? fmt(comparison.change)
-              : `${comparison.changePercent > 0 ? '+' : ''}${comparison.changePercent.toFixed(1)}%`}
-          </span>
-          <span className="font-normal text-slate-500 dark:text-slate-400">
-            vs previous period
+            {signedChange(comparison.change)}
+            {comparison.changePercent !== null &&
+              ` (${signedPercent(comparison.changePercent)})`}
           </span>
         </div>
       )}
-
       {data.meta.dateRange && (
         <p className="text-xs text-slate-500">
           {formatDate(data.meta.dateRange.from)} – {formatDate(data.meta.dateRange.to)}
+            {comparedLabel}
         </p>
       )}
+
     </div>
   );
 }
