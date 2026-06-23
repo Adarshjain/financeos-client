@@ -66,8 +66,6 @@ export default async function DashboardPage() {
     );
   }
 
-  const fullDashboard = await dashboardsApi.getById(defaultDashboard.id);
-
   return (
     <DashboardHome dashboards={dashboards ?? []} />
   );

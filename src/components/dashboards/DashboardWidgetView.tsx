@@ -167,7 +167,7 @@ export function DashboardWidgetView({
             <Loader2 className="h-4 w-4 animate-spin" />
           </div>
         ) : isKpiData(data) ? (
-          <KpiView className="h-full overflow-auto p-3" data={data} />
+          <KpiView className="h-full overflow-auto px-3" data={data} />
         ) : isChartData(data) ? (
           <div className="h-full p-2">
             <ChartView data={data} fill />
