@@ -3,7 +3,12 @@
 import { Check, ChevronDown, Eye } from 'lucide-react';
 import Link from 'next/link';
 
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 
 
@@ -25,18 +30,20 @@ export function DashboardSelector({ dashboards, onSelectDashboard, currentDashbo
         </DropdownMenuTrigger>
         <DropdownMenuContent className="min-w-[90vw]" align="start">
           <div className="w-full">
-            {dashboards?.map(d => <div
+            {dashboards?.map(d => <DropdownMenuItem
               key={d.id}
               className="flex items-center gap-2 py-2 px-3"
               onClick={() => onSelectDashboard(d)}
             >
               {currentDashboard.id === d.id ? <Check className="w-4 h-4" /> : <div className="w-4"></div>}
               {d.name}
-            </div>)}
+            </DropdownMenuItem>)}
           </div>
           <div className="border-b h-[1px] border-gray-300 w-full"></div>
           <Link href="/dashboards">
-            <div className="flex items-center gap-2 py-2 px-3"><Eye className="w-4 h-4" />View All Dashboards</div>
+            <DropdownMenuItem className="flex items-center gap-2 py-2 px-3">
+              <Eye className="w-4 h-4" />View All Dashboards
+            </DropdownMenuItem>
           </Link>
         </DropdownMenuContent>
       </DropdownMenu>
