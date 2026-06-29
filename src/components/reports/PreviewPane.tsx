@@ -12,12 +12,6 @@ import { useRef, useState } from 'react';
 import { runAdHocReport } from '@/actions/reports';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import {
-  isChartData,
-  isKpiData,
-  isPivotTableData,
-  isRawTableData,
-} from '@/lib/reports.helpers';
 import type {
   DatasourceCatalog,
   ReportData,
@@ -27,11 +21,8 @@ import { cn } from '@/lib/utils';
 
 import type { BuilderState } from './builderReducer';
 import { buildRunRequest, isMinimalValid, validationErrors } from './serialize';
-import { ChartView } from './views/ChartView';
-import { KpiView } from './views/KpiView';
-import { PivotTableView } from './views/PivotTableView';
+import { ReportDataView } from './views/ReportDataView';
 import { DEFAULT_TABLE_PAGE_SIZE } from './views/TablePagination';
-import { TableView } from './views/TableView';
 
 interface PreviewPaneProps {
   state: BuilderState;
@@ -153,22 +144,11 @@ export function PreviewPane({ state, catalog }: PreviewPaneProps) {
       ) : (
         <div className="relative">
           <div className={cn(loading && 'opacity-60 transition-opacity')}>
-            {isKpiData(data) && <KpiView data={data} />}
-            {isChartData(data) && <ChartView data={data} />}
-            {isRawTableData(data) && (
-              <TableView
-                data={data}
-                onPageChange={handlePageChange}
-                onSizeChange={handleSizeChange}
-              />
-            )}
-            {isPivotTableData(data) && (
-              <PivotTableView
-                data={data}
-                onPageChange={handlePageChange}
-                onSizeChange={handleSizeChange}
-              />
-            )}
+            <ReportDataView
+              data={data}
+              onPageChange={handlePageChange}
+              onSizeChange={handleSizeChange}
+            />
           </div>
 
           {isStale && !loading && (

@@ -11,11 +11,11 @@ import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import type { DashboardSummaryResponse } from '@/lib/dashboards.types';
+import type { DashboardResponse } from '@/lib/dashboards.types';
 import { cn, formatDate } from '@/lib/utils';
 
 interface DashboardsListProps {
-  dashboards: DashboardSummaryResponse[];
+  dashboards: DashboardResponse[];
 }
 
 export function DashboardsList({ dashboards }: DashboardsListProps) {
@@ -92,7 +92,7 @@ export function DashboardsList({ dashboards }: DashboardsListProps) {
                       'h-4 w-4',
                       d.isDefault
                         ? 'fill-amber-400 text-amber-400'
-                        : 'text-slate-400'
+                        : 'text-slate-400',
                     )}
                   />
                 )}
@@ -104,7 +104,7 @@ export function DashboardsList({ dashboards }: DashboardsListProps) {
               </p>
             )}
             <p className="text-xs text-slate-500">
-              {d.widgetCount} widget{d.widgetCount === 1 ? '' : 's'} · Updated{' '}
+              {d.widgets.length} widget{d.widgets.length === 1 ? '' : 's'} · Updated{' '}
               {formatDate(d.updatedAt)}
             </p>
             <div className="mt-auto flex gap-2">
