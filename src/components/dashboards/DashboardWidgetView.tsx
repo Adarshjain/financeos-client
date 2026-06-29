@@ -8,26 +8,58 @@
 // In edit mode the same component renders the real report but swaps its header
 // for the grid drag handle, gaining a title-override input and a remove button.
 
-import { AlertTriangle, ChevronsRightLeft, GripVertical, Loader2, SeparatorVertical, Trash2 } from 'lucide-react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { AlertTriangle, ChevronsRightLeft, GripVertical, Loader2, Maximize2, SeparatorVertical, Trash2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { runSavedReport } from '@/actions/reports';
-import { ChartView } from '@/components/reports/views/ChartView';
-import { KpiView } from '@/components/reports/views/KpiView';
-import { PivotTableView } from '@/components/reports/views/PivotTableView';
+import { ReportDataView } from '@/components/reports/views/ReportDataView';
 import { DEFAULT_TABLE_PAGE_SIZE } from '@/components/reports/views/TablePagination';
-import { TableView } from '@/components/reports/views/TableView';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { DASHBOARD_GRID_COLUMNS } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
-import { isChartData, isKpiData, isPivotTableData, isRawTableData } from '@/lib/reports.helpers';
 import type { ReportData } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 function widgetTitle(widget: WidgetResponse): string {
   return widget.title ?? widget.report.name ?? 'Untitled report';
+}
+
+interface WidgetReportContentProps {
+  available: boolean;
+  data: ReportData | null;
+  error: string | null;
+  onPageChange: (page: number) => void;
+  onSizeChange: (size: number) => void;
+}
+
+function WidgetReportContent({ available, data, error, onPageChange, onSizeChange }: WidgetReportContentProps) {
+  if (!available) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-sm text-slate-500">
+        <AlertTriangle className="h-5 w-5 text-amber-500" />
+        This report is no longer available.
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="flex h-full items-center justify-center text-center text-sm text-red-600 dark:text-red-400">
+        {error}
+      </div>
+    );
+  }
+  if (!data) {
+    return (
+      <div className="flex h-full items-center justify-center text-slate-400">
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </div>
+    );
+  }
+  return <ReportDataView data={data} fill onPageChange={onPageChange} onSizeChange={onSizeChange} />;
 }
 
 interface DashboardWidgetViewProps {
@@ -51,6 +83,7 @@ export function DashboardWidgetView({
   const isTable = widget.report.type === 'TABLE';
   const isFullWidth = widget.layout.w >= DASHBOARD_GRID_COLUMNS;
 
+  const [isFullPage, setIsFullPage] = useState(false);
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,104 +123,109 @@ export function DashboardWidgetView({
   const stopDrag = (e: React.MouseEvent | React.TouchEvent) =>
     e.stopPropagation();
 
-  return (
-    <Card
-      className={cn(
-        'flex h-full flex-col overflow-hidden rounded-md',
-        editing && 'ring-2 ring-emerald-500/20',
-      )}
-    >
-      {editing ? (
-        <div
-          className="dashboard-drag-handle flex cursor-move items-center gap-1 border-b border-slate-100 bg-slate-50 px-2 py-[3px] dark:border-slate-800 dark:bg-slate-800/50">
-          <GripVertical className="h-4 w-4 shrink-0 text-slate-400" />
-          <Input
-            className="h-7 border-0 bg-transparent px-1 text-sm font-medium shadow-none focus-visible:ring-0"
-            placeholder={widget.report.name ?? 'Report'}
-            value={widget.title ?? ''}
-            onChange={(e) => onTitleChange?.(e.currentTarget.value || null)}
-            onMouseDown={stopDrag}
-            onTouchStart={stopDrag}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 shrink-0"
-            onClick={onToggleWidth}
-            onMouseDown={stopDrag}
-            onTouchStart={stopDrag}
-            title={
-              isFullWidth ? 'Collapse to half width' : 'Expand to full width'
-            }
-          >
-            {isFullWidth ? (
-              <ChevronsRightLeft className="h-4 w-4" />
-            ) : (
-              <SeparatorVertical className="h-4 w-4" />
-            )}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 shrink-0"
-            onClick={onRemove}
-            onMouseDown={stopDrag}
-            onTouchStart={stopDrag}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      ) : (
-        <div className="flex items-center justify-between gap-2 px-3 py-2">
-          <span className="truncate text-sm font-semibold text-slate-900 dark:text-white">
-            {widgetTitle(widget)}
-          </span>
-        </div>
-      )}
+  const sharedContentProps: WidgetReportContentProps = {
+    available,
+    data,
+    error,
+    onPageChange: setPage,
+    onSizeChange: handleSizeChange,
+  };
 
-      <div
+  return (
+    <>
+      <Card
         className={cn(
-          'min-h-0 flex-1 overflow-hidden',
-          loading && 'opacity-60',
+          'flex h-full flex-col overflow-hidden rounded-md',
+          editing && 'ring-2 ring-emerald-500/20',
         )}
       >
-        {!available ? (
-          <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-sm text-slate-500">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
-            This report is no longer available.
+        {editing ? (
+          <div
+            className="dashboard-drag-handle flex cursor-move items-center gap-1 border-b border-slate-100 bg-slate-50 px-2 py-[3px] dark:border-slate-800 dark:bg-slate-800/50">
+            <GripVertical className="h-4 w-4 shrink-0 text-slate-400" />
+            <Input
+              className="h-7 border-0 bg-transparent px-1 text-sm font-medium shadow-none focus-visible:ring-0"
+              placeholder={widget.report.name ?? 'Report'}
+              value={widget.title ?? ''}
+              onChange={(e) => onTitleChange?.(e.currentTarget.value || null)}
+              onMouseDown={stopDrag}
+              onTouchStart={stopDrag}
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 shrink-0"
+              onClick={onToggleWidth}
+              onMouseDown={stopDrag}
+              onTouchStart={stopDrag}
+              title={isFullWidth ? 'Collapse to half width' : 'Expand to full width'}
+            >
+              {isFullWidth ? (
+                <ChevronsRightLeft className="h-4 w-4" />
+              ) : (
+                <SeparatorVertical className="h-4 w-4" />
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 shrink-0"
+              onClick={onRemove}
+              onMouseDown={stopDrag}
+              onTouchStart={stopDrag}
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
-        ) : error ? (
-          <div className="flex h-full items-center justify-center text-center text-sm text-red-600 dark:text-red-400">
-            {error}
+        ) : (
+          <div className="group flex items-center justify-between gap-2 px-3 py-2">
+            <span className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+              {widgetTitle(widget)}
+            </span>
+            {available && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0 opacity-50"
+                onClick={() => setIsFullPage(true)}
+                title="View full page"
+              >
+                <Maximize2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
           </div>
-        ) : !data ? (
-          <div className="flex h-full items-center justify-center text-slate-400">
-            <Loader2 className="h-4 w-4 animate-spin" />
-          </div>
-        ) : isKpiData(data) ? (
-          <KpiView className="h-full overflow-auto px-3" data={data} />
-        ) : isChartData(data) ? (
-          <div className="h-full p-2">
-            <ChartView data={data} fill />
-          </div>
-        ) : isRawTableData(data) ? (
-          <TableView
-            data={data}
-            fill
-            onPageChange={setPage}
-            onSizeChange={handleSizeChange}
-          />
-        ) : isPivotTableData(data) ? (
-          <PivotTableView
-            data={data}
-            fill
-            onPageChange={setPage}
-            onSizeChange={handleSizeChange}
-          />
-        ) : null}
-      </div>
-    </Card>
+        )}
+
+        <div className={cn('min-h-0 flex-1 overflow-hidden', loading && 'opacity-60')}>
+          <WidgetReportContent {...sharedContentProps} />
+        </div>
+      </Card>
+
+      <Dialog open={isFullPage} onOpenChange={setIsFullPage}>
+        <DialogPortal>
+          <DialogOverlay />
+          <DialogPrimitive.Content className="fixed inset-0 z-50 flex flex-col bg-background focus:outline-none data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-150">
+            <div className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3">
+              <DialogTitle className="text-base font-semibold">{widgetTitle(widget)}</DialogTitle>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 shrink-0"
+                onClick={() => setIsFullPage(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className={cn('min-h-0 flex-1 overflow-hidden', loading && 'opacity-60')}>
+              <WidgetReportContent {...sharedContentProps} />
+            </div>
+          </DialogPrimitive.Content>
+        </DialogPortal>
+      </Dialog>
+    </>
   );
 }
