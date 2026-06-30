@@ -1,6 +1,8 @@
 import { Category } from '@/lib/categories.types';
 
-export type TransactionSource = 'gmail' | 'manual';
+export type TransactionSource = 'gmail_transaction_alert' | 'gmail_statement' | 'manual';
+
+export type ReviewType = 'NEEDS_REVIEW' | 'AUTO_REVIEWED' | 'MANUALLY_REVIEWED';
 
 export interface TransactionBase {
   accountId: string;
@@ -10,6 +12,7 @@ export interface TransactionBase {
   isTransactionExcluded?: boolean;
   isTransactionUnderMonitoring?: boolean;
   source: TransactionSource;
+  reviewType?: ReviewType;
 }
 
 export type TransactionRequest = TransactionBase & {
