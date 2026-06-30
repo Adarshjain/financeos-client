@@ -57,3 +57,12 @@ export async function deleteAccount(
     return handleAccountError(error, 'Failed to delete account');
   }
 }
+
+export async function listAccounts(): Promise<ApiResult<Account[]>> {
+  try {
+    const list = await accountsApi.list();
+    return { success: true, data: list };
+  } catch (error) {
+    return handleAccountError(error, 'Failed to list accounts');
+  }
+}

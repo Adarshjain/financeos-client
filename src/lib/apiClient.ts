@@ -25,9 +25,11 @@ import type {
   CreateInvestmentTransactionRequest,
   DashboardSummary,
   ErrorResponse,
-  GmailFetchRequest,
-  GmailFetchResult,
   GmailOAuthStartResponse,
+  GmailSenderRequest,
+  GmailSenderResponse,
+  GmailConnectionResponse,
+  SyncSummary,
   GoogleAuthStartResponse,
   InvestmentPositionResponse,
   InvestmentTransactionResponse,
@@ -304,10 +306,43 @@ export const gmailApi = {
     return request<GmailOAuthStartResponse>('/api/v1/gmail/oauth/start');
   },
 
-  async sync(data?: GmailFetchRequest): Promise<GmailFetchResult> {
-    return request<GmailFetchResult>('/api/v1/gmail/sync', {
+  async sync(): Promise<SyncSummary> {
+    return request<SyncSummary>('/api/v1/gmail/sync', {
       method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
+    });
+  },
+
+  async listSenders(): Promise<GmailSenderResponse[]> {
+    return request<GmailSenderResponse[]>('/api/v1/gmail/senders');
+  },
+
+  async createSender(data: GmailSenderRequest): Promise<GmailSenderResponse> {
+    return request<GmailSenderResponse>('/api/v1/gmail/senders', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateSender(id: string, data: GmailSenderRequest): Promise<GmailSenderResponse> {
+    return request<GmailSenderResponse>(`/api/v1/gmail/senders/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteSender(id: string): Promise<void> {
+    return request<void>(`/api/v1/gmail/senders/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async listConnections(): Promise<GmailConnectionResponse[]> {
+    return request<GmailConnectionResponse[]>('/api/v1/gmail/connections');
+  },
+
+  async disconnectConnection(id: string): Promise<void> {
+    return request<void>(`/api/v1/gmail/connections/${id}`, {
+      method: 'DELETE',
     });
   },
 };
