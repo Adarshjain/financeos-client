@@ -251,7 +251,7 @@ export function GmailConnect() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="text-red-500 hover:text-red-750 hover:bg-red-50 dark:hover:bg-red-950/20"
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
                     onClick={() => handleDisconnect(conn.id)}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -312,7 +312,7 @@ export function GmailConnect() {
                     <div className="text-[10px] text-slate-500 uppercase">Skipped</div>
                   </div>
                   <div className="p-2 bg-white dark:bg-slate-900 rounded border text-center">
-                    <div className="font-bold text-red-650 text-base">{syncResult.failed}</div>
+                    <div className="font-bold text-red-600 text-base">{syncResult.failed}</div>
                     <div className="text-[10px] text-slate-500 uppercase">Failed</div>
                   </div>
                 </div>
@@ -446,7 +446,7 @@ export function GmailConnect() {
                 id="senderEnabled"
                 checked={senderEnabled}
                 onChange={(e) => setSenderEnabled(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-350 text-emerald-650 focus:ring-emerald-500"
+                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
               />
               <label htmlFor="senderEnabled"
                      className="text-sm font-medium text-slate-700 dark:text-slate-300 select-none">

@@ -56,6 +56,7 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
     const ingestFromDate = ingestFromDateVal ? ingestFromDateVal : null;
 
     let data: AccountRequest | undefined;
+    const statementPasswordVal = formData.get('statementPassword') as string;
 
     if (accountType === AccountType.BANK_ACCOUNT) {
       data = {
@@ -67,7 +68,7 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
         type: AccountType.BANK_ACCOUNT,
         last4: formData.get('last4') as string ?? undefined,
         openingBalance: parseInt(formData.get('openingBalance') as string) ?? undefined,
-        statementPassword: formData.get('statementPassword') as string ?? undefined,
+        ...(statementPasswordVal ? { statementPassword: statementPasswordVal } : {}),
       };
     }
 
@@ -83,7 +84,7 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
         creditLimit: parseInt(formData.get('creditLimit') as string) ?? undefined,
         paymentDueDay: parseInt(formData.get('paymentDueDay') as string) ?? undefined,
         gracePeriodDays: parseInt(formData.get('gracePeriodDays') as string) ?? undefined,
-        statementPassword: formData.get('statementPassword') as string ?? undefined,
+        ...(statementPasswordVal ? { statementPassword: statementPasswordVal } : {}),
       };
     }
     if (!data) {
@@ -193,9 +194,9 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
             label="Statement Password"
             name="statementPassword"
             type="password"
-            defaultValue={
-              account && 'statementPassword' in account
-                ? account.statementPassword
+            placeholder={
+              account && 'statementPassword' in account && account.statementPassword
+                ? '••••••••'
                 : undefined
             }
           />
@@ -255,9 +256,9 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
             label="Statement Password"
             name="statementPassword"
             type="password"
-            defaultValue={
-              account && 'statementPassword' in account
-                ? account.statementPassword
+            placeholder={
+              account && 'statementPassword' in account && account.statementPassword
+                ? '••••••••'
                 : undefined
             }
           />
