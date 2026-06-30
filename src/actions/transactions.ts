@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, transactionsApi } from '@/lib/apiClient';
-import type { Transaction, TransactionRequest, TransactionSource } from '@/lib/transaction.types';
+import type { PagedTransaction, Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 import type { ApiResult, ErrorResponse } from '@/lib/types';
 
 function handleTransactionError(error: unknown, defaultMessage: string): { success: false; error: ErrorResponse } {
@@ -54,5 +54,19 @@ export async function deleteTransaction(
     return { success: true, data: undefined };
   } catch (error) {
     return handleTransactionError(error, 'Failed to delete transaction');
+  }
+}
+
+export async function searchTransactions(
+  body: TransactionSearchRequest,
+  page = 0,
+  size = 50,
+  sort = 'date,desc',
+): Promise<ApiResult<PagedTransaction>> {
+  try {
+    const transactions = await transactionsApi.search(body, page, size, sort);
+    return { success: true, data: transactions };
+  } catch (error) {
+    return handleTransactionError(error, 'Failed to search transactions');
   }
 }

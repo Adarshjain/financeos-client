@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
+import tsPlugin from "@typescript-eslint/eslint-plugin";
 import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import globals from "globals";
@@ -31,6 +32,7 @@ const config = [
         },
         plugins: {
             "simple-import-sort": simpleImportSort,
+            "@typescript-eslint": tsPlugin,
         },
         rules: {
             "simple-import-sort/imports": "error",

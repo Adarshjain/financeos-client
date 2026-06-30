@@ -19,23 +19,23 @@ import type {
   RunReportRequest,
   UpdateReportRequest,
 } from '@/lib/reports.types';
-import { PagedTransaction, Transaction, TransactionRequest } from '@/lib/transaction.types';
+import { PagedTransaction, Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 
 import type {
   CreateInvestmentTransactionRequest,
   DashboardSummary,
   ErrorResponse,
+  GmailConnectionResponse,
   GmailOAuthStartResponse,
   GmailSenderRequest,
   GmailSenderResponse,
-  GmailConnectionResponse,
-  SyncSummary,
   GoogleAuthStartResponse,
   InvestmentPositionResponse,
   InvestmentTransactionResponse,
   LoginRequest,
   PagedInvestmentTransactionResponse,
   SignupRequest,
+  SyncSummary,
   UserResponse,
 } from './types';
 
@@ -245,6 +245,23 @@ export const transactionsApi = {
       sort,
     });
     return request<PagedTransaction>(`/api/v1/transactions?${params}`);
+  },
+
+  async search(
+    body: TransactionSearchRequest,
+    page = 0,
+    size = 50,
+    sort = 'date,desc',
+  ): Promise<PagedTransaction> {
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+      sort,
+    });
+    return request<PagedTransaction>(`/api/v1/transactions/search?${params}`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
   },
 
   async create(data: TransactionRequest): Promise<Transaction> {

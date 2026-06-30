@@ -13,9 +13,10 @@ interface EditAccountFormProps {
   categories: Category[];
   transaction?: Transaction;
   trigger: JSX.Element;
+  onSuccess?: () => void;
 }
 
-export function TransactionFormWrapper({ transaction, categories, accounts, trigger }: EditAccountFormProps) {
+export function TransactionFormWrapper({ transaction, categories, accounts, trigger, onSuccess }: EditAccountFormProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -33,7 +34,10 @@ export function TransactionFormWrapper({ transaction, categories, accounts, trig
           accounts={accounts}
           transaction={transaction}
           categories={categories}
-          onSuccess={() => setOpen(false)}
+          onSuccess={() => {
+            setOpen(false);
+            onSuccess?.();
+          }}
           onClose={() => setOpen(false)}
         />
       </DialogContent>
