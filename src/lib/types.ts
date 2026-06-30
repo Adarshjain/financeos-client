@@ -107,16 +107,34 @@ export interface GmailOAuthStartResponse {
   authorizationUrl: string;
 }
 
-export interface GmailOAuthCallbackResponse {
-  status: string;
-  message: string;
-  email?: string;
+export interface GmailSenderRequest {
+  name?: string;
+  senderAddress: string;
+  enabled?: boolean;
 }
 
-export interface GmailFetchRequest {
-  mode?: GmailFetchMode;
-  fromTime?: string;
-  maxMessages?: number;
+export interface GmailSenderResponse {
+  id: string;
+  name?: string;
+  senderAddress: string;
+  enabled: boolean;
+}
+
+export interface GmailConnectionResponse {
+  id: string;
+  email: string;
+  isConnected: boolean;
+  isPrimary: boolean;
+  connectedAt: string;
+  lastSyncedAt?: string | null;
+}
+
+export interface SyncSummary {
+  fetched: number;
+  created: number;
+  skipped: number;
+  failed: number;
+  reconciled: number;
 }
 
 export interface GmailAttachmentDto {

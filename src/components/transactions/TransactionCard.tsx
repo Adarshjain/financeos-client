@@ -80,13 +80,50 @@ export const TransactionCard = ({ transaction, accounts, className, categories }
           <div className={cn('break-all font-medium', transaction.description ? 'my-1' : '')}>{transaction.sourcedDescription}</div>
         )}
         <div className="min-w-max mb-1">{getAccountName(transaction.accountId)}</div>
-        {!transaction.isTransactionExcluded && <div>{transaction.categories?.map(
-          category => <Badge
-            variant="outline"
-            className="mr-1 rounded px-1"
-            key={category.id}
-          >{category.name}</Badge>,
-        )}</div>}
+        <div className="flex flex-wrap gap-1 items-center mt-1">
+          {/* Source badge */}
+          {transaction.source === 'gmail_transaction_alert' && (
+            <Badge variant="info" className="text-[10px] py-0 px-1.5 uppercase font-semibold">
+              Gmail Alert
+            </Badge>
+          )}
+          {transaction.source === 'gmail_statement' && (
+            <Badge variant="warning" className="text-[10px] py-0 px-1.5 uppercase font-semibold">
+              Gmail Statement
+            </Badge>
+          )}
+          {transaction.source === 'manual' && (
+            <Badge variant="secondary" className="text-[10px] py-0 px-1.5 uppercase font-semibold text-slate-500">
+              Manual
+            </Badge>
+          )}
+
+          {/* Review status badge */}
+          {transaction.reviewType === 'NEEDS_REVIEW' && (
+            <Badge variant="danger" className="text-[10px] py-0 px-1.5 uppercase font-semibold">
+              Needs Review
+            </Badge>
+          )}
+          {transaction.reviewType === 'AUTO_REVIEWED' && (
+            <Badge variant="success" className="text-[10px] py-0 px-1.5 uppercase font-semibold">
+              Auto Reviewed
+            </Badge>
+          )}
+          {transaction.reviewType === 'MANUALLY_REVIEWED' && (
+            <Badge variant="default" className="text-[10px] py-0 px-1.5 uppercase font-semibold text-slate-500">
+              Reviewed
+            </Badge>
+          )}
+
+          {/* Categories */}
+          {!transaction.isTransactionExcluded && transaction.categories?.map(
+            category => <Badge
+              variant="outline"
+              className="rounded px-1 text-[10px]"
+              key={category.id}
+            >{category.name}</Badge>,
+          )}
+        </div>
       </div>
       <div className="flex flex-col">
         <div
