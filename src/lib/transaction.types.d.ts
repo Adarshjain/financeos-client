@@ -1,4 +1,10 @@
 import { Category } from '@/lib/categories.types';
+import { FilterClause } from '@/lib/reports.types';
+
+export interface TransactionSearchRequest {
+  filters: FilterClause[];
+  search?: string | null;
+}
 
 export type TransactionSource = 'gmail_transaction_alert' | 'gmail_statement' | 'manual';
 

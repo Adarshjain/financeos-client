@@ -1,41 +1,26 @@
 'use client';
 
-import {
-  AlertCircle,
-  CheckCircle2,
-  Loader2,
-  Mail,
-  RefreshCw,
-  Trash2,
-  Plus,
-  Pencil,
-  ShieldCheck,
-} from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Pencil, Plus, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import {
+  createGmailSender,
+  deleteGmailSender,
+  disconnectGmailConnection,
+  listGmailConnections,
+  listGmailSenders,
   startGmailOAuth,
   syncGmail,
-  listGmailSenders,
-  createGmailSender,
   updateGmailSender,
-  deleteGmailSender,
-  listGmailConnections,
-  disconnectGmailConnection,
 } from '@/actions/gmail';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FormField } from '@/components/ui/form-field';
-import type {
-  GmailConnectionResponse,
-  GmailSenderRequest,
-  GmailSenderResponse,
-  SyncSummary,
-} from '@/lib/types';
+import type { GmailConnectionResponse, GmailSenderRequest, GmailSenderResponse, SyncSummary } from '@/lib/types';
 
 export function GmailConnect() {
   const [loading, setLoading] = useState<'connect' | 'sync' | 'connections' | 'senders' | null>(null);

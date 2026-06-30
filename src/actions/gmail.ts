@@ -5,12 +5,12 @@ import { revalidatePath } from 'next/cache';
 import { ApiError, gmailApi } from '@/lib/apiClient';
 import type {
   ApiResult,
+  ErrorResponse,
+  GmailConnectionResponse,
   GmailOAuthStartResponse,
   GmailSenderRequest,
   GmailSenderResponse,
-  GmailConnectionResponse,
   SyncSummary,
-  ErrorResponse,
 } from '@/lib/types';
 
 function handleError(error: unknown, defaultMessage: string): { success: false; error: ErrorResponse } {
