@@ -56,7 +56,7 @@ function GoogleCallbackContent() {
             );
           }, 3000);
         }
-      } catch (err) {
+      } catch {
         setStatus('error');
         setErrorMessage('An unexpected error occurred');
         setTimeout(() => {

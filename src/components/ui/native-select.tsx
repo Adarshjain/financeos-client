@@ -10,7 +10,7 @@ export interface NativeSelectProps extends React.SelectHTMLAttributes<HTMLSelect
 }
 
 const NativeSelect = React.forwardRef<HTMLSelectElement, NativeSelectProps>(
-  ({ className, label, error, hint, id, options, ...props }, ref) => {
+  ({ className, label: _label, error, hint: _hint, id, options, ...props }, ref) => {
     const selectId = id || props.name;
 
     return (

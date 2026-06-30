@@ -45,20 +45,26 @@ export function GmailConnect() {
 
   // Load data on mount
   useEffect(() => {
+    let active = true;
+    const fetchInitialData = async () => {
+      await Promise.resolve();
+      if (!active) return;
+      setLoading('connections');
+      const [connRes, sendersRes] = await Promise.all([
+        listGmailConnections(),
+        listGmailSenders(),
+      ]);
+
+      if (!active) return;
+      if (connRes.success) setConnections(connRes.data);
+      if (sendersRes.success) setSenders(sendersRes.data);
+      setLoading(null);
+    };
     fetchInitialData();
+    return () => {
+      active = false;
+    };
   }, []);
-
-  const fetchInitialData = async () => {
-    setLoading('connections');
-    const [connRes, sendersRes] = await Promise.all([
-      listGmailConnections(),
-      listGmailSenders(),
-    ]);
-
-    if (connRes.success) setConnections(connRes.data);
-    if (sendersRes.success) setSenders(sendersRes.data);
-    setLoading(null);
-  };
 
   const handleConnect = async () => {
     setLoading('connect');
