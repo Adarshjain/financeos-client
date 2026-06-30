@@ -52,8 +52,11 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
     const excludeFromNetAsset = formData.get('excludeFromNetAsset') === 'true';
     const financialPosition = formData.get('financialPosition') as FinancialPosition;
     const description = formData.get('description') as string | undefined;
+    const ingestFromDateVal = formData.get('ingestFromDate') as string | null;
+    const ingestFromDate = ingestFromDateVal ? ingestFromDateVal : null;
 
     let data: AccountRequest | undefined;
+    const statementPasswordVal = formData.get('statementPassword') as string;
 
     if (accountType === AccountType.BANK_ACCOUNT) {
       data = {
@@ -61,9 +64,11 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
         excludeFromNetAsset,
         financialPosition,
         description,
+        ingestFromDate,
         type: AccountType.BANK_ACCOUNT,
         last4: formData.get('last4') as string ?? undefined,
         openingBalance: parseInt(formData.get('openingBalance') as string) ?? undefined,
+        ...(statementPasswordVal ? { statementPassword: statementPasswordVal } : {}),
       };
     }
 
@@ -73,12 +78,13 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
         excludeFromNetAsset,
         financialPosition,
         description,
+        ingestFromDate,
         type: AccountType.CREDIT_CARD,
         last4: formData.get('last4') as string ?? undefined,
         creditLimit: parseInt(formData.get('creditLimit') as string) ?? undefined,
         paymentDueDay: parseInt(formData.get('paymentDueDay') as string) ?? undefined,
         gracePeriodDays: parseInt(formData.get('gracePeriodDays') as string) ?? undefined,
-        statementPassword: formData.get('statementPassword') as string ?? undefined,
+        ...(statementPasswordVal ? { statementPassword: statementPasswordVal } : {}),
       };
     }
     if (!data) {
@@ -133,6 +139,17 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
         placeholder="Description"
         defaultValue={account?.description}
       />
+      <FormField
+        label="Ingest From Date (Optional)"
+        name="ingestFromDate"
+        type="date"
+        defaultValue={
+          account?.ingestFromDate
+            ? account.ingestFromDate.split('T')[0]
+            : undefined
+        }
+        hint="Gmail ingestion watermark. Null/empty to ingest everything."
+      />
 
       <div className="flex items-center gap-2">
         <input
@@ -171,6 +188,16 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
             maxLength={4}
             defaultValue={
               account && 'last4' in account ? account.last4 : undefined
+            }
+          />
+          <FormField
+            label="Statement Password"
+            name="statementPassword"
+            type="password"
+            placeholder={
+              account && 'statementPassword' in account && account.statementPassword
+                ? '••••••••'
+                : undefined
             }
           />
         </>
@@ -229,9 +256,9 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
             label="Statement Password"
             name="statementPassword"
             type="password"
-            defaultValue={
-              account && 'statementPassword' in account
-                ? account.statementPassword
+            placeholder={
+              account && 'statementPassword' in account && account.statementPassword
+                ? '••••••••'
                 : undefined
             }
           />

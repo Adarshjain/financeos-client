@@ -5,12 +5,14 @@ export interface AccountRequestBase {
   excludeFromNetAsset?: boolean;
   financialPosition?: FinancialPosition;
   description?: string;
+  ingestFromDate?: string | null;
 }
 
 export type BankAccountRequest = AccountRequestBase & {
   type: AccountType.BANK_ACCOUNT;
   openingBalance?: number;
   last4?: string;
+  statementPassword?: string;
 }
 
 export type CreditCardRequest = AccountRequestBase & {
@@ -48,11 +50,13 @@ interface AccountBase {
   excludeFromNetAsset?: boolean;
   financialPosition?: FinancialPosition;
   description?: string;
+  ingestFromDate?: string | null;
 }
 
 export type BankAccount = AccountBase & {
   openingBalance?: string;
   last4?: string;
+  statementPassword?: string;
 }
 
 export type CreditCard = AccountBase & {

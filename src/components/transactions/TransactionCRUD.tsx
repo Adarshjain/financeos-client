@@ -13,7 +13,7 @@ import Keypad from '@/components/ui/Keypad';
 import { NativeSelect } from '@/components/ui/native-select';
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
-import { Transaction, type TransactionRequest } from '@/lib/transaction.types';
+import { Transaction, type TransactionRequest, ReviewType } from '@/lib/transaction.types';
 
 
 interface TransactionCRUDProps {
@@ -39,6 +39,7 @@ export default function TransactionCRUD({
 
   const [isMonitored, setIsMonitored] = useState(transaction?.isTransactionUnderMonitoring ?? false);
   const [isExcluded, setIsExcluded] = useState(transaction?.isTransactionExcluded ?? false);
+  const [reviewType, setReviewType] = useState<ReviewType>(transaction?.reviewType ?? 'MANUALLY_REVIEWED');
 
   const isUpdateMode = !!transaction;
   const formRef = useRef<HTMLFormElement | null>(null);
@@ -81,7 +82,8 @@ export default function TransactionCRUD({
         date: date.toISOString().split('T')[0],
         isTransactionExcluded: isExcluded,
         isTransactionUnderMonitoring: isMonitored,
-        source: 'manual'
+        source: transaction?.source ?? 'manual',
+        reviewType: reviewType
       };
       const res = isUpdateMode && transaction
         ? await updateTransaction(transaction.id, transactionRequest)
@@ -99,13 +101,24 @@ export default function TransactionCRUD({
 
   return <form ref={formRef} onSubmit={onSubmit} className="flex flex-col p-4 gap-2 justify-center flex-1">
     <DayPicker date={date} onSelect={setDate} />
-    <div className="flex gap-1">
+    <div className="flex flex-wrap gap-1">
       <NativeSelect
         name="accountId"
         options={accountOptions}
         required
         className="inline-flex items-center py-0.5 rounded-full font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm px-2 border"
         defaultValue={transaction?.accountId}
+      />
+      <NativeSelect
+        name="reviewType"
+        options={[
+          { value: 'NEEDS_REVIEW', label: 'Needs Review' },
+          { value: 'AUTO_REVIEWED', label: 'Auto Reviewed' },
+          { value: 'MANUALLY_REVIEWED', label: 'Reviewed' },
+        ]}
+        className="inline-flex items-center py-0.5 rounded-full font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm px-2 border"
+        value={reviewType}
+        onChange={(e) => setReviewType(e.target.value as ReviewType)}
       />
       <Badge
         variant={isExcluded ? 'info' : 'default'}
