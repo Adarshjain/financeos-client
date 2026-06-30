@@ -3,7 +3,7 @@
 // Manage a list of sort clauses. The available keys are supplied by the caller
 // (column field names, or group-by names + aggregated `${field}_${agg}` keys).
 
-import { ArrowDownUp, Trash, X } from 'lucide-react';
+import { ArrowDownUp, Trash } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { NativeSelect } from '@/components/ui/native-select';
