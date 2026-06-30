@@ -18,9 +18,10 @@ interface TransactionCardProps {
   accounts: Account[];
   categories: Category[];
   className?: string;
+  onMutate?: () => void;
 }
 
-const DeleteTransaction = ({ transaction }: { transaction: Transaction }) => {
+const DeleteTransaction = ({ transaction, onSuccess }: { transaction: Transaction; onSuccess?: () => void }) => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
@@ -29,6 +30,7 @@ const DeleteTransaction = ({ transaction }: { transaction: Transaction }) => {
     try {
       await deleteTransaction(transaction.id);
       toast.success('Transaction deleted!');
+      onSuccess?.();
     } catch (error) {
       toast.error((error as Error).message);
     } finally {
@@ -55,7 +57,7 @@ const DeleteTransaction = ({ transaction }: { transaction: Transaction }) => {
   />;
 };
 
-export const TransactionCard = ({ transaction, accounts, className, categories }: TransactionCardProps) => {
+export const TransactionCard = ({ transaction, accounts, className, categories, onMutate }: TransactionCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const getAccountName = (accountId: string | undefined) => {
     if (!accountId) return '—';
@@ -143,11 +145,12 @@ export const TransactionCard = ({ transaction, accounts, className, categories }
       </div>
     </div>
     {expanded && (<div className="flex gap-2 p-2">
-      <DeleteTransaction transaction={transaction} />
+      <DeleteTransaction transaction={transaction} onSuccess={onMutate} />
       <TransactionFormWrapper
         categories={categories}
         accounts={accounts}
         transaction={transaction}
+        onSuccess={onMutate}
         trigger={<Button variant="outline" size="sm" className="flex-1">
           <PencilIcon className="h-4 w-4" />
           Edit

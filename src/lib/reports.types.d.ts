@@ -46,6 +46,11 @@ export interface FieldDefinition {
    * filtering — any field can be filtered regardless of this list.
    */
   allowedInReports: ReportType[];
+  /**
+   * For dynamic enum fields: specifies whether to use the ID (UUID) or Name
+   * as the filter's serialize value. Defaults to 'name' if not provided.
+   */
+  valueKey?: 'id' | 'name';
 }
 
 /** Operators available per field type. Date operators split absolute vs relative. */
