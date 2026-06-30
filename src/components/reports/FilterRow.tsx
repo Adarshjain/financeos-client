@@ -5,7 +5,7 @@
 // the shared helpers so valueless operators omit `value` entirely. Changing the
 // field or operator resets the value to a fresh default for the new shape.
 
-import { Delete, Trash, X } from 'lucide-react';
+import { Trash } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -173,7 +173,7 @@ function ValueEditor({
       const options = [
         { value: '', label: 'Select…' },
         ...enumOptionsFor(field, dynamicOptions).map((o) => ({
-          value: o.name,
+          value: field.valueKey === 'id' ? (o.id ?? o.name) : o.name,
           label: o.name,
         })),
       ];
@@ -190,7 +190,7 @@ function ValueEditor({
       const selected = Array.isArray(value) ? (value as string[]) : [];
       if (field.type === 'enum') {
         const options = enumOptionsFor(field, dynamicOptions).map((o) => ({
-          value: o.name,
+          value: field.valueKey === 'id' ? (o.id ?? o.name) : o.name,
           label: o.name,
         }));
         return (
