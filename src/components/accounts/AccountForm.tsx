@@ -55,7 +55,6 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
     const formData = new FormData(form);
 
     const name = formData.get('name') as string;
-    const accountType = formData.get('type') as AccountType;
     const excludeFromNetAsset = formData.get('excludeFromNetAsset') === 'true';
     const financialPosition = formData.get('financialPosition') as FinancialPosition;
     const description = formData.get('description') as string | undefined;

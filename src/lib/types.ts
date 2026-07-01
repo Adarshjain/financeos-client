@@ -170,6 +170,21 @@ export interface ErrorResponse {
   timestamp: string;
 }
 
+// Ingestion
+export interface FileSummary {
+  filename: string;
+  status: 'SUCCESS' | 'FAILED';
+  linesParsed: number;
+  errorMessage: string | null;
+}
+
+export interface FileIngestionResult {
+  filesProcessed: number;
+  totalCreated: number;
+  totalDuplicatesFound: number;
+  fileDetails: FileSummary[];
+}
+
 // API Result type for server actions
 export type ApiResult<T> =
   | { success: true; data: T }
