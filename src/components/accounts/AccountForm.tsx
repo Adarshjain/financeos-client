@@ -131,7 +131,7 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
             disabled={isUpdateMode}
             required
           >
-            <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-750 dark:text-slate-200 shadow-none">
+            <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none">
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
@@ -150,7 +150,7 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
             name="financialPosition"
             defaultValue={account?.financialPosition || 'asset'}
           >
-            <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-750 dark:text-slate-200 shadow-none">
+            <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none">
               <SelectValue placeholder="Select position" />
             </SelectTrigger>
             <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
