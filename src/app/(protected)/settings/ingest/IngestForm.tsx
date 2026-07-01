@@ -193,7 +193,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                 onClick={() => handleSubmit()}
                 disabled={isUploading}
                 variant="outline"
-                className="shrink-0 rounded-xl bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/40 text-red-800 dark:text-red-200 hover:bg-red-105 dark:hover:bg-red-950/40 font-semibold"
+                className="shrink-0 rounded-xl bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/40 text-red-800 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-950/40 font-semibold"
               >
                 Retry Upload
               </Button>
@@ -269,7 +269,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                   <TableBody>
                     {result.fileDetails.map((file: FileSummary, idx) => (
                       <TableRow key={idx} className="border-b border-slate-100 dark:border-slate-900">
-                        <TableCell className="font-medium text-sm text-slate-700 dark:text-slate-350 max-w-[200px] truncate">
+                        <TableCell className="font-medium text-sm text-slate-700 dark:text-slate-300 max-w-[200px] truncate">
                           {file.filename}
                         </TableCell>
                         <TableCell>
@@ -284,7 +284,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                           {file.errorMessage ? (
                             <span className="text-red-500 dark:text-red-400">{file.errorMessage}</span>
                           ) : (
-                            <span className="text-slate-400 dark:text-slate-550">—</span>
+                            <span className="text-slate-400 dark:text-slate-500">—</span>
                           )}
                         </TableCell>
                       </TableRow>
@@ -342,7 +342,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                   className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all duration-200 cursor-pointer group ${
                     isDragActive
                       ? 'border-emerald-500 bg-emerald-50/10 dark:bg-emerald-950/10 scale-[0.99]'
-                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-450 dark:hover:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-950/20'
+                      : 'border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 hover:bg-slate-50/50 dark:hover:bg-slate-950/20'
                   }`}
                   onClick={() => document.getElementById('file-upload')?.click()}
                 >
@@ -355,8 +355,8 @@ export function IngestForm({ accounts }: IngestFormProps) {
                     onChange={handleFileChange}
                     disabled={isUploading}
                   />
-                  <div className="h-12 w-12 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-sm">
-                    <Upload className="h-5 w-5 text-slate-500 dark:text-slate-455" />
+                  <div className="h-12 w-12 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-200 shadow-sm">
+                    <Upload className="h-5 w-5 text-slate-500 dark:text-slate-400" />
                   </div>
                   <p className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-200">
                     Drag and drop your files here
@@ -371,7 +371,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
               {files.length > 0 && (
                 <div className="space-y-2 pt-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">
+                    <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                       Selected Files ({files.length})
                     </span>
                     <Button
@@ -380,12 +380,12 @@ export function IngestForm({ accounts }: IngestFormProps) {
                       size="sm"
                       onClick={() => setFiles([])}
                       disabled={isUploading}
-                      className="text-xs text-red-500 hover:text-red-650 hover:bg-red-50 dark:hover:bg-red-950/25 h-7 px-2 rounded-lg"
+                      className="text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/25 h-7 px-2 rounded-lg"
                     >
                       Clear All
                     </Button>
                   </div>
-                  <div className="space-y-2 border border-slate-150 dark:border-slate-800/80 rounded-xl p-3 bg-slate-50/30 dark:bg-slate-950/10 max-h-60 overflow-y-auto">
+                  <div className="space-y-2 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3 bg-slate-50/30 dark:bg-slate-950/10 max-h-60 overflow-y-auto">
                     {files.map((file, index) => (
                       <div
                         key={index}
@@ -408,7 +408,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                           size="icon"
                           onClick={() => removeFile(index)}
                           disabled={isUploading}
-                          className="h-8 w-8 rounded-lg text-slate-400 hover:text-red-550 hover:bg-slate-50 dark:hover:bg-slate-850"
+                          className="h-8 w-8 rounded-lg text-slate-400 hover:text-red-500 hover:bg-slate-50 dark:hover:bg-slate-850"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

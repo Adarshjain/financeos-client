@@ -66,7 +66,7 @@ export const TransactionCard = ({ transaction, accounts, className, categories, 
   };
 
   return (
-    <div className="mb-2 rounded-xl border border-slate-250/30 dark:border-slate-800/40 bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/60 hover:shadow-md hover:shadow-slate-100/5 dark:hover:shadow-none">
+    <div className="mb-2 rounded-xl border border-slate-200/30 dark:border-slate-800/40 bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/60 hover:shadow-md hover:shadow-slate-100/5 dark:hover:shadow-none">
       <div
         className={cn(
           'py-3 px-3 flex items-start justify-between relative gap-2 cursor-pointer transition-colors',
@@ -120,7 +120,7 @@ export const TransactionCard = ({ transaction, accounts, className, categories, 
               category => (
                 <Badge
                   variant="outline"
-                  className="rounded-full px-2 text-[9px] py-0 border-slate-200 dark:border-slate-800 text-slate-550 dark:text-slate-400"
+                  className="rounded-full px-2 text-[9px] py-0 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400"
                   key={category.id}
                 >
                   {category.name}
