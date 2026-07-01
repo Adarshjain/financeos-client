@@ -215,7 +215,7 @@ export function TransactionsBrowser({ accounts, categories }: TransactionsBrowse
           variant={showFilters ? 'secondary' : 'outline'}
           className={`gap-2 rounded-xl transition-all ${
             showFilters
-              ? 'bg-slate-100 dark:bg-slate-850 border-slate-350 dark:border-slate-750 text-slate-900 dark:text-white'
+              ? 'bg-slate-100 dark:bg-slate-850 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white'
               : 'hover:bg-slate-50 dark:hover:bg-slate-900'
           }`}
           onClick={toggleFilters}
@@ -252,7 +252,7 @@ export function TransactionsBrowser({ accounts, categories }: TransactionsBrowse
 
           {draftFilters.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-6 px-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-white/40 dark:bg-slate-950/20">
-              <SlidersHorizontal className="h-6 w-6 text-slate-350 dark:text-slate-650 mb-1.5" />
+              <SlidersHorizontal className="h-6 w-6 text-slate-400 dark:text-slate-500 mb-1.5" />
               <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">No filter rules configured</p>
               <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 text-center">Click &quot;Add filter&quot; to define rules and search transactions.</p>
             </div>
@@ -263,7 +263,7 @@ export function TransactionsBrowser({ accounts, categories }: TransactionsBrowse
                   {i > 0 && (
                     <div className="relative flex justify-center items-center my-1">
                       <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                        <div className="w-full border-t border-slate-150 dark:border-slate-850" />
+                        <div className="w-full border-t border-slate-200 dark:border-slate-850" />
                       </div>
                       <span className="relative z-10 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200/40 dark:border-slate-700/40 font-mono tracking-wider uppercase">
                         and

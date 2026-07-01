@@ -73,7 +73,7 @@ export function TablePagination({
               disabled={page.number <= 0}
               onClick={() => onPageChange?.(page.number - 1)}
             >
-              <ChevronLeft className="h-4 w-4 text-slate-550" />
+              <ChevronLeft className="h-4 w-4 text-slate-500" />
             </Button>
             <span className="tabular-nums text-xs font-semibold px-2 text-slate-700 dark:text-slate-300">
               {page.number + 1} / {page.totalPages}
@@ -85,7 +85,7 @@ export function TablePagination({
               disabled={page.number >= page.totalPages - 1}
               onClick={() => onPageChange?.(page.number + 1)}
             >
-              <ChevronRight className="h-4 w-4 text-slate-550" />
+              <ChevronRight className="h-4 w-4 text-slate-500" />
             </Button>
           </div>
         )}

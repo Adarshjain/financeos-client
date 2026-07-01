@@ -113,7 +113,7 @@ export default function TransactionCRUD({
         onValueChange={setAccountId}
         required
       >
-        <SelectTrigger className="w-[140px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-350 text-xs px-2.5 h-7 border border-slate-200 dark:border-slate-700 rounded-full font-semibold shadow-none hover:bg-slate-200/50 dark:hover:bg-slate-700 transition-colors">
+        <SelectTrigger className="w-[140px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs px-2.5 h-7 border border-slate-200 dark:border-slate-700 rounded-full font-semibold shadow-none hover:bg-slate-200/50 dark:hover:bg-slate-700 transition-colors">
           <SelectValue placeholder="Select Account" />
         </SelectTrigger>
         <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
@@ -130,7 +130,7 @@ export default function TransactionCRUD({
         value={reviewType}
         onValueChange={(val) => setReviewType(val as ReviewType)}
       >
-        <SelectTrigger className="w-[130px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-355 text-xs px-2.5 h-7 border border-slate-200 dark:border-slate-700 rounded-full font-semibold shadow-none hover:bg-slate-200/50 dark:hover:bg-slate-700 transition-colors">
+        <SelectTrigger className="w-[130px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs px-2.5 h-7 border border-slate-200 dark:border-slate-700 rounded-full font-semibold shadow-none hover:bg-slate-200/50 dark:hover:bg-slate-700 transition-colors">
           <SelectValue placeholder="Review Type" />
         </SelectTrigger>
         <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">

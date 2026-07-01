@@ -46,7 +46,7 @@ export function ThemeSettingsCard() {
 
   return (
     <Card className="rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-      <CardHeader className="px-6 py-4 border-b border-slate-105 dark:border-slate-800">
+      <CardHeader className="px-6 py-4 border-b border-slate-200/60 dark:border-slate-800">
         <CardTitle className="text-base font-bold text-slate-900 dark:text-white">Appearance</CardTitle>
         <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
           Customize how FinanceOS looks on your device
