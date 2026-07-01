@@ -10,6 +10,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -87,10 +88,10 @@ export function MobileNav({ userEmail }: MobileNavProps) {
             key={item.href}
             href={item.href}
             className={cn(
-              'flex flex-col items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+              'flex flex-col items-center px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200',
               isActive
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800',
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm'
+                : 'text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900',
             )}
           >
             {/*{item.icon}*/}
@@ -100,53 +101,59 @@ export function MobileNav({ userEmail }: MobileNavProps) {
       })}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <div
+          <button
             className={cn(
-              'flex flex-col items-center gap-1 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
-              'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800',
+              'flex flex-col items-center justify-center p-2 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors focus:outline-none',
             )}
           >
             <Menu className="h-5 w-5" />
-            {/*You*/}
-          </div>
+          </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <div className="min-w-[200px] w-[200px] !text-lg">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <div className="px-2">{userEmail}</div>
+        <DropdownMenuContent
+          className="w-[calc(100vw-24px)] md:w-[320px] max-w-[400px] bg-white dark:bg-slate-950 rounded-2xl border border-slate-200/60 dark:border-slate-800 p-3 shadow-xl"
+          align="end"
+          sideOffset={8}
+        >
+          <div className="w-full space-y-2">
+            <DropdownMenuGroup className="px-3 py-2 bg-slate-50 dark:bg-slate-900/35 rounded-xl border border-slate-100 dark:border-slate-800/40">
+              <DropdownMenuLabel className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500 p-0 leading-none">Signed in as</DropdownMenuLabel>
+              <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-1.5 truncate">{userEmail}</div>
             </DropdownMenuGroup>
-            <DropdownMenuGroup>
-              <DropdownMenuSeparator className="my-1" />
+            <DropdownMenuGroup className="space-y-1">
               {[accountRoute, reportsRoute, dashboardsRoute, settingsRoute].map((item) => {
                 const isActive =
                   pathname === item.href || pathname.startsWith(item.href + '/');
                 return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      'flex items-center gap-1 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 mb-1 w-[200px]',
-                      isActive
-                        ? 'bg-emerald-600 text-white shadow-sm'
-                        : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800',
-                    )}
-                  >
-                    {item.icon}
-                    {item.label}
-                  </Link>
+                  <DropdownMenuItem key={item.href} asChild>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        'flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-205 w-full cursor-pointer focus:outline-none outline-none select-none',
+                        isActive
+                          ? 'bg-gradient-to-r from-emerald-600 to-teal-650 text-white shadow-sm'
+                          : 'text-slate-655 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900',
+                      )}
+                    >
+                      <span className={isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500'}>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </Link>
+                  </DropdownMenuItem>
                 );
               })}
             </DropdownMenuGroup>
+            <DropdownMenuSeparator className="bg-slate-100 dark:bg-slate-800/80 my-1" />
             <form action={logout}>
-              <Button
-                variant="ghost"
-                size="sm"
-                type="submit"
-              >
-                <LogOut className="h-4 w-4 mr-1" />
-                Sign out
-              </Button>
+              <DropdownMenuItem asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  type="submit"
+                  className="w-full justify-start rounded-xl hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-450 gap-2 h-9 px-3 transition-colors text-xs font-semibold cursor-pointer focus:outline-none outline-none"
+                >
+                  <LogOut className="h-4 w-4 text-slate-500" />
+                  Sign out
+                </Button>
+              </DropdownMenuItem>
             </form>
           </div>
         </DropdownMenuContent>

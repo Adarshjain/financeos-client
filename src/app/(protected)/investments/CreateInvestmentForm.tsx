@@ -7,25 +7,21 @@ import { createInvestmentTransaction } from '@/actions/investments';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormField } from '@/components/ui/form-field';
-import { NativeSelect } from '@/components/ui/native-select';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface CreateInvestmentFormProps {
   accounts: any[];
 }
 
-const transactionTypes = [
-  { value: '', label: 'Select type...' },
-  { value: 'buy', label: 'Buy' },
-  { value: 'sell', label: 'Sell' },
-];
-
 export function CreateInvestmentForm({ accounts }: CreateInvestmentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const accountOptions = [
-    { value: '', label: 'Select account...' },
-    ...accounts.map((a) => ({ value: a.id, label: a.name })),
-  ];
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -50,19 +46,34 @@ export function CreateInvestmentForm({ accounts }: CreateInvestmentFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <NativeSelect
-            label="Account"
-            name="accountId"
-            options={accountOptions}
-            required
-          />
+          <div className="space-y-1.5">
+            <Label>Account</Label>
+            <Select name="accountId" required>
+              <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200">
+                <SelectValue placeholder="Select account..." />
+              </SelectTrigger>
+              <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+                {accounts.map((a) => (
+                  <SelectItem key={a.id} value={a.id} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                    {a.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          <NativeSelect
-            label="Transaction Type"
-            name="type"
-            options={transactionTypes}
-            required
-          />
+          <div className="space-y-1.5">
+            <Label>Transaction Type</Label>
+            <Select name="type" required>
+              <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200">
+                <SelectValue placeholder="Select type..." />
+              </SelectTrigger>
+              <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+                <SelectItem value="buy" className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">Buy</SelectItem>
+                <SelectItem value="sell" className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">Sell</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <FormField
             label="Quantity"

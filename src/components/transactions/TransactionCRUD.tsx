@@ -10,11 +10,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FormFieldTextArea } from '@/components/ui/form-field-textarea';
 import Keypad from '@/components/ui/Keypad';
-import { NativeSelect } from '@/components/ui/native-select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
-import { ReviewType,Transaction, type TransactionRequest } from '@/lib/transaction.types';
-
+import { ReviewType, Transaction, type TransactionRequest } from '@/lib/transaction.types';
 
 interface TransactionCRUDProps {
   transaction?: Transaction;
@@ -25,29 +30,25 @@ interface TransactionCRUDProps {
 }
 
 export default function TransactionCRUD({
-                                          categories,
-                                          transaction,
-                                          accounts,
-                                          onSuccess,
-                                          onClose,
-                                        }: TransactionCRUDProps) {
+  categories,
+  transaction,
+  accounts,
+  onSuccess,
+  onClose,
+}: TransactionCRUDProps) {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>(transaction?.categories ?? []);
   const [localCategories, setLocalCategories] = useState<Category[]>(categories ?? []);
   const [amount, setAmount] = useState<string>(transaction ? '' + transaction?.amount : '-0');
   const [date, setDate] = useState<Date>(transaction ? new Date(transaction.date) : new Date());
   const [creatingCategory, setCreatingCategory] = useState(false);
 
+  const [accountId, setAccountId] = useState<string>(transaction?.accountId ?? '');
   const [isMonitored, setIsMonitored] = useState(transaction?.isTransactionUnderMonitoring ?? false);
   const [isExcluded, setIsExcluded] = useState(transaction?.isTransactionExcluded ?? false);
   const [reviewType, setReviewType] = useState<ReviewType>(transaction?.reviewType ?? 'MANUALLY_REVIEWED');
 
   const isUpdateMode = !!transaction;
   const formRef = useRef<HTMLFormElement | null>(null);
-
-  const accountOptions = [
-    { value: '', label: 'Select Account' },
-    ...accounts.map((a) => ({ value: a.id, label: a.name })),
-  ];
 
   useEffect(() => {
     setLocalCategories(categories);
@@ -72,10 +73,14 @@ export default function TransactionCRUD({
       toast.error('Form not available');
       return;
     }
+    if (!accountId) {
+      toast.error('Please select an account');
+      return;
+    }
     try {
       const categoryIds = selectedCategories.map(c => c.id);
       const transactionRequest: TransactionRequest = {
-        accountId: form.accountId.value,
+        accountId,
         description: form.description.value ?? undefined,
         amount: Number(amount),
         categoryIds,
@@ -101,43 +106,58 @@ export default function TransactionCRUD({
 
   return <form ref={formRef} onSubmit={onSubmit} className="flex flex-col p-4 gap-2 justify-center flex-1">
     <DayPicker date={date} onSelect={setDate} />
-    <div className="flex flex-wrap gap-1">
-      <NativeSelect
+    <div className="flex flex-wrap items-center gap-2">
+      <Select
         name="accountId"
-        options={accountOptions}
+        value={accountId}
+        onValueChange={setAccountId}
         required
-        className="inline-flex items-center py-0.5 rounded-full font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm px-2 border"
-        defaultValue={transaction?.accountId}
-      />
-      <NativeSelect
+      >
+        <SelectTrigger className="w-[140px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-350 text-xs px-2.5 h-7 border border-slate-200 dark:border-slate-700 rounded-full font-semibold shadow-none hover:bg-slate-200/50 dark:hover:bg-slate-700 transition-colors">
+          <SelectValue placeholder="Select Account" />
+        </SelectTrigger>
+        <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+          {accounts.map((a) => (
+            <SelectItem key={a.id} value={a.id} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+              {a.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select
         name="reviewType"
-        options={[
-          { value: 'NEEDS_REVIEW', label: 'Needs Review' },
-          { value: 'AUTO_REVIEWED', label: 'Auto Reviewed' },
-          { value: 'MANUALLY_REVIEWED', label: 'Reviewed' },
-        ]}
-        className="inline-flex items-center py-0.5 rounded-full font-medium bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm px-2 border"
         value={reviewType}
-        onChange={(e) => setReviewType(e.target.value as ReviewType)}
-      />
+        onValueChange={(val) => setReviewType(val as ReviewType)}
+      >
+        <SelectTrigger className="w-[130px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-355 text-xs px-2.5 h-7 border border-slate-200 dark:border-slate-700 rounded-full font-semibold shadow-none hover:bg-slate-200/50 dark:hover:bg-slate-700 transition-colors">
+          <SelectValue placeholder="Review Type" />
+        </SelectTrigger>
+        <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+          <SelectItem value="NEEDS_REVIEW" className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">Needs Review</SelectItem>
+          <SelectItem value="AUTO_REVIEWED" className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">Auto Reviewed</SelectItem>
+          <SelectItem value="MANUALLY_REVIEWED" className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">Reviewed</SelectItem>
+        </SelectContent>
+      </Select>
+
       <Badge
         variant={isExcluded ? 'info' : 'default'}
         onClick={() => setIsExcluded(prev => !prev)}
-        className="text-sm px-2 border"
+        className="text-xs px-2.5 h-7 rounded-full border border-slate-200 dark:border-slate-700 cursor-pointer select-none"
       >
         {isExcluded
-          ? <><XIcon className="w-4 h-4 mr-1" />Excluded</>
-          : <><SquareIcon className="w-4 h-4 mr-1" />Exclude</>
+          ? <><XIcon className="w-3.5 h-3.5 mr-1" />Excluded</>
+          : <><SquareIcon className="w-3.5 h-3.5 mr-1" />Exclude</>
         }
       </Badge>
       <Badge
         variant={isMonitored ? 'warning' : 'default'}
         onClick={() => setIsMonitored(prev => !prev)}
-        className="text-sm px-2 border"
+        className="text-xs px-2.5 h-7 rounded-full border border-slate-200 dark:border-slate-700 cursor-pointer select-none"
       >
         {isMonitored
-          ? <><CheckIcon className="w-4 h-4 mr-1" />Monitoring</>
-          : <><SquareIcon className="w-4 h-4 mr-1" />Monitor</>
+          ? <><CheckIcon className="w-3.5 h-3.5 mr-1" />Monitoring</>
+          : <><SquareIcon className="w-3.5 h-3.5 mr-1" />Monitor</>
         }
       </Badge>
     </div>
