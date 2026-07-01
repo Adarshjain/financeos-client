@@ -48,20 +48,20 @@ export function KpiView({ data, className }: { data: KpiData, className?: string
     : undefined;
 
   return (
-    <div className={cn("flex flex-col gap-2", className)}>
-      <p className="text-xl text-slate-900 dark:text-white tabular-nums">
+    <div className={cn("flex flex-col gap-1 pt-1", className)}>
+      <p className="text-lg text-slate-900 dark:text-white tabular-nums">
         {data.value === null ? '—' : fmt(data.value)}
       </p>
 
       {comparison && Icon && (
         <div
           className={cn(
-            'flex items-center gap-1 text-sm font-medium',
+            'flex items-center gap-0.5 text-xs font-medium',
             sentimentColors[comparison.sentiment],
           )}
           title={comparedTitle}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className="h-3 w-3" />
           <span className="tabular-nums">
             {signedChange(comparison.change)}
             {comparison.changePercent !== null &&
