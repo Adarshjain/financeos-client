@@ -6,7 +6,14 @@ import { toast } from 'sonner';
 import { createAccount, updateAccount } from '@/actions/accounts';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import { FormField } from '@/components/ui/form-field';
-import { NativeSelect } from '@/components/ui/native-select';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Account, AccountRequest } from '@/lib/account.types';
 import { AccountType, FinancialPosition } from '@/lib/types';
 
@@ -115,23 +122,47 @@ export function AccountForm({ account, onSuccess }: AccountFormProps) {
         defaultValue={account?.name}
         required
       />
-      <div className="flex gap-2">
-        <NativeSelect
-          label="Account Type"
-          name="type"
-          options={accountTypes}
-          value={accountType}
-          onChange={(e) => setAccountType(e.currentTarget.value as AccountType)}
-          className={isUpdateMode ? 'pointer-events-none opacity-40' : undefined}
-          required
-        />
+      <div className="flex gap-4">
+        <div className="space-y-1.5 flex-1">
+          <Label>Account Type</Label>
+          <Select
+            name="type"
+            value={accountType}
+            onValueChange={(val) => setAccountType(val as AccountType)}
+            disabled={isUpdateMode}
+            required
+          >
+            <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-750 dark:text-slate-200 shadow-none">
+              <SelectValue placeholder="Select type" />
+            </SelectTrigger>
+            <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              {accountTypes.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <NativeSelect
-          label="Financial Position"
-          name="financialPosition"
-          options={financialPositions}
-          defaultValue={account?.financialPosition || 'asset'}
-        />
+        <div className="space-y-1.5 flex-1">
+          <Label>Financial Position</Label>
+          <Select
+            name="financialPosition"
+            defaultValue={account?.financialPosition || 'asset'}
+          >
+            <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-750 dark:text-slate-200 shadow-none">
+              <SelectValue placeholder="Select position" />
+            </SelectTrigger>
+            <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              {financialPositions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       <FormField
         label="Description (Optional)"
