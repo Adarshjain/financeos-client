@@ -91,7 +91,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
               'flex flex-col items-center px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200',
               isActive
                 ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm'
-                : 'text-slate-650 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900',
+                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900',
             )}
           >
             {/*{item.icon}*/}
@@ -130,8 +130,8 @@ export function MobileNav({ userEmail }: MobileNavProps) {
                       className={cn(
                         'flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-205 w-full cursor-pointer focus:outline-none outline-none select-none',
                         isActive
-                          ? 'bg-gradient-to-r from-emerald-600 to-teal-650 text-white shadow-sm'
-                          : 'text-slate-655 dark:text-slate-350 hover:bg-slate-50 dark:hover:bg-slate-900',
+                          ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-sm'
+                          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900',
                       )}
                     >
                       <span className={isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500'}>{item.icon}</span>
@@ -148,7 +148,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
                   variant="ghost"
                   size="sm"
                   type="submit"
-                  className="w-full justify-start rounded-xl hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-450 gap-2 h-9 px-3 transition-colors text-xs font-semibold cursor-pointer focus:outline-none outline-none"
+                  className="w-full justify-start rounded-xl hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 gap-2 h-9 px-3 transition-colors text-xs font-semibold cursor-pointer focus:outline-none outline-none"
                 >
                   <LogOut className="h-4 w-4 text-slate-500" />
                   Sign out

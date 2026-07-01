@@ -141,7 +141,7 @@ export function DashboardWidgetView({
       >
         {editing ? (
           <div
-            className="dashboard-drag-handle flex cursor-move items-center gap-1 border-b border-slate-150 bg-slate-50/50 px-2 py-[3px] dark:border-slate-850 dark:bg-slate-800/40">
+            className="dashboard-drag-handle flex cursor-move items-center gap-1 border-b border-slate-200 bg-slate-50/50 px-2 py-[3px] dark:border-slate-850 dark:bg-slate-800/40">
             <GripVertical className="h-4 w-4 shrink-0 text-slate-400 cursor-grab active:cursor-grabbing" />
             <Input
               className="h-7 border-0 bg-transparent px-1 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-none focus-visible:ring-0"

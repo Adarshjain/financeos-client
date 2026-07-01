@@ -14,7 +14,7 @@ export default async function SettingsPage() {
         <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-slate-900 dark:text-white">Settings</h1>
       </div>
 
-      <div className="flex items-center gap-4 p-4 rounded-2xl border border-slate-150 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
+      <div className="flex items-center gap-4 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
         {user.pictureUrl && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
