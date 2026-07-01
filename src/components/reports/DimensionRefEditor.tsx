@@ -4,7 +4,13 @@
 // field is a date (and is required there). Reused by the chart dimension/series
 // and each aggregated-table group-by.
 
-import { NativeSelect } from '@/components/ui/native-select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type {
   DatasourceCatalog,
   DimensionRef,
@@ -41,20 +47,16 @@ export function DimensionRefEditor({
   const isDate = isDateFieldName(catalog, value.field);
 
   // Hide excluded fields, but never the one this editor currently holds.
-  const fieldOptions = [
-    { value: '', label: placeholder },
-    ...dimensions
-      .filter((d) => d.name === value.field || !exclude.includes(d.name))
-      .map((d) => ({ value: d.name, label: d.label })),
-  ];
+  const fieldOpts = dimensions.filter(
+    (d) => d.name === value.field || !exclude.includes(d.name)
+  );
 
   return (
     <div className="flex gap-2">
-      <NativeSelect
-        options={fieldOptions}
-        value={value.field ?? ''}
-        onChange={(e) => {
-          const field = e.currentTarget.value || undefined;
+      <Select
+        value={value.field ?? 'none'}
+        onValueChange={(val) => {
+          const field = val === 'none' ? undefined : val;
           const date = isDateFieldName(catalog, field);
           // Default a date dimension to a sensible granularity; clear it otherwise.
           onChange({
@@ -62,18 +64,41 @@ export function DimensionRefEditor({
             granularity: date ? (value.granularity ?? 'month') : undefined,
           });
         }}
-      />
+      >
+        <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+          <SelectItem value="none" className="text-xs text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-900">{placeholder}</SelectItem>
+          {fieldOpts.map((d) => (
+            <SelectItem key={d.name} value={d.name} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+              {d.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
       {isDate && (
-        <NativeSelect
-          options={GRANULARITY_OPTIONS}
+        <Select
           value={value.granularity ?? 'month'}
-          onChange={(e) =>
+          onValueChange={(val) =>
             onChange({
               field: value.field,
-              granularity: e.currentTarget.value as Granularity,
+              granularity: val as Granularity,
             })
           }
-        />
+        >
+          <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none">
+            <SelectValue placeholder="Select granularity" />
+          </SelectTrigger>
+          <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+            {GRANULARITY_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
     </div>
   );

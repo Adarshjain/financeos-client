@@ -135,16 +135,16 @@ export function DashboardWidgetView({
     <>
       <Card
         className={cn(
-          'flex h-full flex-col overflow-hidden rounded-md',
-          editing && 'ring-2 ring-emerald-500/20',
+          'flex h-full flex-col overflow-hidden rounded-md border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 hover:shadow-md hover:border-slate-300 dark:hover:border-slate-700/60',
+          editing && 'ring-2 ring-emerald-500/20 border-emerald-500/30',
         )}
       >
         {editing ? (
           <div
-            className="dashboard-drag-handle flex cursor-move items-center gap-1 border-b border-slate-100 bg-slate-50 px-2 py-[3px] dark:border-slate-800 dark:bg-slate-800/50">
-            <GripVertical className="h-4 w-4 shrink-0 text-slate-400" />
+            className="dashboard-drag-handle flex cursor-move items-center gap-1 border-b border-slate-150 bg-slate-50/50 px-2 py-[3px] dark:border-slate-850 dark:bg-slate-800/40">
+            <GripVertical className="h-4 w-4 shrink-0 text-slate-400 cursor-grab active:cursor-grabbing" />
             <Input
-              className="h-7 border-0 bg-transparent px-1 text-sm font-medium shadow-none focus-visible:ring-0"
+              className="h-7 border-0 bg-transparent px-1 text-xs font-semibold text-slate-800 dark:text-slate-200 shadow-none focus-visible:ring-0"
               placeholder={widget.report.name ?? 'Report'}
               value={widget.title ?? ''}
               onChange={(e) => onTitleChange?.(e.currentTarget.value || null)}
@@ -155,23 +155,23 @@ export function DashboardWidgetView({
               type="button"
               variant="ghost"
               size="icon"
-              className="h-7 w-7 shrink-0"
+              className="h-7 w-7 shrink-0 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               onClick={onToggleWidth}
               onMouseDown={stopDrag}
               onTouchStart={stopDrag}
               title={isFullWidth ? 'Collapse to half width' : 'Expand to full width'}
             >
               {isFullWidth ? (
-                <ChevronsRightLeft className="h-4 w-4" />
+                <ChevronsRightLeft className="h-4 w-4 text-slate-500" />
               ) : (
-                <SeparatorVertical className="h-4 w-4" />
+                <SeparatorVertical className="h-4 w-4 text-slate-500" />
               )}
             </Button>
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="h-7 w-7 shrink-0"
+              className="h-7 w-7 shrink-0 rounded-lg hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 transition-colors"
               onClick={onRemove}
               onMouseDown={stopDrag}
               onTouchStart={stopDrag}
@@ -180,8 +180,8 @@ export function DashboardWidgetView({
             </Button>
           </div>
         ) : (
-          <div className="group flex items-center justify-between gap-2 px-3 py-2">
-            <span className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+          <div className="group flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-100 dark:border-slate-850">
+            <span className="truncate text-xs font-black uppercase  text-slate-800 dark:text-slate-200">
               {widgetTitle(widget)}
             </span>
             {available && (
@@ -189,11 +189,11 @@ export function DashboardWidgetView({
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 shrink-0 opacity-50"
+                className="h-4 w-4 shrink-0 opacity-50"
                 onClick={() => setIsFullPage(true)}
                 title="View full page"
               >
-                <Maximize2 className="h-3.5 w-3.5" />
+                <Maximize2 className="h-3.5 w-3.5 text-slate-500" />
               </Button>
             )}
           </div>

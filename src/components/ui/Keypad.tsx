@@ -118,13 +118,15 @@ export default function Keypad({ onChange, onClose, done, amount }: KeypadProps)
     if (!pending) onChange?.(current);
   }, [current, pending, onChange]);
 
-  useEffect(() => {
-    if (amount != null && amount !== current) {
+  const [prevAmount, setPrevAmount] = useState(amount);
+  if (amount !== prevAmount) {
+    setPrevAmount(amount);
+    if (amount != null) {
       setCurrent(amount);
       setPending(null);
       setJustComputed(false);
     }
-  }, [amount]);
+  }
 
   useEffect(() => {
     const listener = (e: KeyboardEvent) => {

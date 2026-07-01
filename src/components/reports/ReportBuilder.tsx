@@ -22,15 +22,9 @@ import type { DynamicOptions } from './catalog';
 import { ChartConfig } from './ChartConfig';
 import { FilterEditor } from './FilterEditor';
 import { KpiConfig } from './KpiConfig';
-import { REPORT_TYPE_LABELS } from './labels';
 import { PreviewPane } from './PreviewPane';
 import { buildCreateRequest, buildUpdateRequest, isMinimalValid } from './serialize';
 import { TableConfig } from './TableConfig';
-
-const TYPE_OPTIONS = (Object.keys(REPORT_TYPE_LABELS) as ReportType[]).map(
-  (t) => ({ value: t, label: REPORT_TYPE_LABELS[t] }),
-);
-
 interface ReportBuilderProps {
   mode: 'create' | 'edit';
   catalog: DatasourceCatalog;

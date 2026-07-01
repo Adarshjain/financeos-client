@@ -5,7 +5,6 @@ import { Category, CategoryRequest } from '@/lib/categories.types';
 import type {
   CreateDashboardRequest,
   DashboardResponse,
-  DashboardSummaryResponse,
   UpdateDashboardRequest,
 } from '@/lib/dashboards.types';
 import type {
