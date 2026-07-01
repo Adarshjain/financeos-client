@@ -24,6 +24,7 @@ import type {
   CreateInvestmentTransactionRequest,
   DashboardSummary,
   ErrorResponse,
+  FileIngestionResult,
   GmailConnectionResponse,
   GmailOAuthStartResponse,
   GmailSenderRequest,
@@ -61,10 +62,11 @@ async function request<T>(
 ): Promise<T> {
   const sessionCookie = await getSessionCookie();
 
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  };
+  const headers: HeadersInit = {};
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+  Object.assign(headers, options.headers);
 
   if (sessionCookie) {
     (headers as Record<string, string>)['Cookie'] =
@@ -530,6 +532,16 @@ export const dashboardsApi = {
   async delete(id: string): Promise<void> {
     return request<void>(`/api/v1/dashboards/${id}`, {
       method: 'DELETE',
+    });
+  },
+};
+
+// Ingestion API
+export const ingestionApi = {
+  async ingest(accountId: string, formData: FormData): Promise<FileIngestionResult> {
+    return request<FileIngestionResult>(`/api/v1/accounts/${accountId}/ingest`, {
+      method: 'POST',
+      body: formData,
     });
   },
 };

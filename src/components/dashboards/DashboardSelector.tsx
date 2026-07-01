@@ -21,7 +21,7 @@ interface DashboardViewProps {
 
 export function DashboardSelector({ dashboards, onSelectDashboard, currentDashboard }: DashboardViewProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 px-4 mb-4">
+    <div className="flex flex-wrap items-center justify-between gap-2 px-4">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="flex items-center gap-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white hover:text-slate-700 dark:hover:text-slate-200 transition-colors focus:outline-none select-none">
