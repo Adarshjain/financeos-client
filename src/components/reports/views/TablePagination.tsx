@@ -7,7 +7,13 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { NativeSelect } from '@/components/ui/native-select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { TablePage } from '@/lib/reports.types';
 
 /** Server default is 50, max 1000. */
@@ -42,35 +48,46 @@ export function TablePagination({
       </span>
       <div className="flex items-center gap-2">
         {onSizeChange && (
-          <NativeSelect
-            className="w-auto py-1"
-            options={sizeOptions}
+          <Select
             value={String(page.size)}
-            onChange={(e) => onSizeChange(Number(e.currentTarget.value))}
-          />
+            onValueChange={(val) => onSizeChange(Number(val))}
+          >
+            <SelectTrigger className="w-[110px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              {sizeOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         )}
         {page.totalPages > 1 && (
-          <>
+          <div className="flex items-center gap-1.5">
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
+              className="h-8 w-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-800 transition-colors"
               disabled={page.number <= 0}
               onClick={() => onPageChange?.(page.number - 1)}
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-4 w-4 text-slate-550" />
             </Button>
-            <span className="tabular-nums">
+            <span className="tabular-nums text-xs font-semibold px-2 text-slate-700 dark:text-slate-300">
               {page.number + 1} / {page.totalPages}
             </span>
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
+              className="h-8 w-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-800 transition-colors"
               disabled={page.number >= page.totalPages - 1}
               onClick={() => onPageChange?.(page.number + 1)}
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-4 w-4 text-slate-550" />
             </Button>
-          </>
+          </div>
         )}
       </div>
     </div>

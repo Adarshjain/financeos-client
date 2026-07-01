@@ -6,7 +6,13 @@
 
 import { useEffect } from 'react';
 
-import { NativeSelect } from '@/components/ui/native-select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type {
   Aggregation,
   DatasourceCatalog,
@@ -51,19 +57,14 @@ export function MeasureRefEditor({
     }
   }, [value.field, value.aggregation, soleMeasure, aggs, onChange]);
 
-  const measureOptions = [
-    { value: '', label: 'Select measure' },
-    ...measures.map((m) => ({ value: m.name, label: m.label })),
-  ];
   const aggOptions = aggs.map((a) => ({ value: a, label: AGGREGATION_LABELS[a] }));
 
   return (
     <div className="flex gap-2">
-      <NativeSelect
-        options={measureOptions}
-        value={value.field ?? ''}
-        onChange={(e) => {
-          const field = e.currentTarget.value || undefined;
+      <Select
+        value={value.field ?? 'none'}
+        onValueChange={(val) => {
+          const field = val === 'none' ? undefined : val;
           const nextAggs = aggsFor(catalog, field);
           const aggregation =
             value.aggregation && nextAggs.includes(value.aggregation)
@@ -71,18 +72,41 @@ export function MeasureRefEditor({
               : nextAggs[0];
           onChange({ field, aggregation });
         }}
-      />
-      <NativeSelect
-        options={aggOptions}
-        value={value.aggregation ?? ''}
+      >
+        <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none">
+          <SelectValue placeholder="Select measure" />
+        </SelectTrigger>
+        <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+          <SelectItem value="none" className="text-xs text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-900">Select deselect</SelectItem>
+          {measures.map((m) => (
+            <SelectItem key={m.name} value={m.name} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+              {m.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
+      <Select
+        value={value.aggregation ?? 'none'}
         disabled={!value.field}
-        onChange={(e) =>
+        onValueChange={(val) =>
           onChange({
             field: value.field,
-            aggregation: e.currentTarget.value as Aggregation,
+            aggregation: (val === 'none' ? undefined : val) as Aggregation,
           })
         }
-      />
+      >
+        <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none">
+          <SelectValue placeholder="Select aggregation" />
+        </SelectTrigger>
+        <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+          {aggOptions.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

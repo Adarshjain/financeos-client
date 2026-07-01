@@ -3,10 +3,16 @@
 // Manage a list of sort clauses. The available keys are supplied by the caller
 // (column field names, or group-by names + aggregated `${field}_${agg}` keys).
 
-import { ArrowDownUp, Trash, X } from 'lucide-react';
+import { ArrowDownUp, Trash } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { NativeSelect } from '@/components/ui/native-select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { SortClause } from '@/lib/reports.types';
 
 export interface SortKey {
@@ -48,23 +54,44 @@ export function SortBuilder({
     <div className="space-y-2">
       {value.map((clause, i) => (
         <div key={i} className="flex items-center gap-2">
-          <NativeSelect
-            options={keyOptions}
+          <Select
             value={clause.key}
-            onChange={(e) => update(i, { key: e.currentTarget.value })}
-          />
-          <NativeSelect
-            options={DIRECTION_OPTIONS}
+            onValueChange={(val) => update(i, { key: val })}
+          >
+            <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none">
+              <SelectValue placeholder="Sort by field" />
+            </SelectTrigger>
+            <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              {keyOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
             value={clause.direction}
-            onChange={(e) =>
-              update(i, { direction: e.currentTarget.value as 'asc' | 'desc' })
-            }
-          />
+            onValueChange={(val) => update(i, { direction: val as 'asc' | 'desc' })}
+          >
+            <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none">
+              <SelectValue placeholder="Direction" />
+            </SelectTrigger>
+            <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              {DIRECTION_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Button
             type="button"
             variant="ghost"
             size="icon"
             onClick={() => remove(i)}
+            className="h-9 w-9 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-400 hover:text-rose-500 transition-colors shrink-0"
           >
             <Trash className="h-4 w-4" />
           </Button>

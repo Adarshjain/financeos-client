@@ -186,8 +186,8 @@ export function TransactionsBrowser({ accounts, categories }: TransactionsBrowse
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex justify-between px-4 pt-4">
+    <div className="space-y-1">
+      <div className="flex justify-between px-4 pt-4 pb-1">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
         <TransactionFormWrapper
           categories={categories}
@@ -208,18 +208,22 @@ export function TransactionsBrowser({ accounts, categories }: TransactionsBrowse
               setSearch(e.target.value);
               setPage(0);
             }}
-            className="pl-9 pr-4 rounded-xl bg-white dark:bg-slate-950"
+            className="pl-9 pr-4 rounded-xl bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 focus-visible:ring-emerald-500 focus-visible:border-transparent transition-all"
           />
         </div>
         <Button
           variant={showFilters ? 'secondary' : 'outline'}
-          className="gap-2 rounded-xl"
+          className={`gap-2 rounded-xl transition-all ${
+            showFilters
+              ? 'bg-slate-100 dark:bg-slate-850 border-slate-350 dark:border-slate-750 text-slate-900 dark:text-white'
+              : 'hover:bg-slate-50 dark:hover:bg-slate-900'
+          }`}
           onClick={toggleFilters}
         >
           <SlidersHorizontal className="h-4 w-4" />
-          Filters
+          <span>Filters</span>
           {appliedFilters.length > 0 && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white">
+            <span className="flex h-4.5 w-4.5 min-w-[1.125rem] px-1 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white transition-all scale-100">
               {appliedFilters.length}
             </span>
           )}
@@ -228,14 +232,17 @@ export function TransactionsBrowser({ accounts, categories }: TransactionsBrowse
 
       {/* Collapsible Filter Panel */}
       {showFilters && (
-        <div className="mx-4 p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg space-y-3">
+        <div className="mx-4 p-4 bg-slate-50/80 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-2xl space-y-4 shadow-sm shadow-slate-100/10 dark:shadow-none transition-all duration-300">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-slate-700 dark:text-slate-300">Filters Draft</h3>
+            <div className="flex items-center gap-1.5">
+              <SlidersHorizontal className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
+              <h3 className="text-xs font-semibold text-slate-700 dark:text-slate-300">Filters Draft</h3>
+            </div>
             {(draftFilters.length > 0 || appliedFilters.length > 0) && (
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs text-rose-500 hover:text-rose-600 h-8"
+                className="text-xs text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 h-8 hover:bg-rose-50 dark:hover:bg-rose-950/20 px-2.5 rounded-lg"
                 onClick={handleClearAll}
               >
                 Clear all
@@ -244,40 +251,53 @@ export function TransactionsBrowser({ accounts, categories }: TransactionsBrowse
           </div>
 
           {draftFilters.length === 0 ? (
-            <p className="text-xs text-slate-500">
-              No filters defined.
-            </p>
+            <div className="flex flex-col items-center justify-center py-6 px-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-white/40 dark:bg-slate-950/20">
+              <SlidersHorizontal className="h-6 w-6 text-slate-350 dark:text-slate-650 mb-1.5" />
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">No filter rules configured</p>
+              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 text-center">Click &quot;Add filter&quot; to define rules and search transactions.</p>
+            </div>
           ) : (
-            <div className="rounded-lg border border-slate-200 dark:border-slate-800 divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950">
+            <div className="relative flex flex-col gap-3">
               {draftFilters.map((clause, i) => (
-                <FilterRow
-                  key={i}
-                  catalog={TRANSACTIONS_CATALOG}
-                  dynamicOptions={dynamicOptions}
-                  value={clause}
-                  onChange={(c) => updateFilter(i, c)}
-                  onRemove={() => removeFilter(i)}
-                />
+                <Fragment key={i}>
+                  {i > 0 && (
+                    <div className="relative flex justify-center items-center my-1">
+                      <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                        <div className="w-full border-t border-slate-150 dark:border-slate-850" />
+                      </div>
+                      <span className="relative z-10 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200/40 dark:border-slate-700/40 font-mono tracking-wider uppercase">
+                        and
+                      </span>
+                    </div>
+                  )}
+                  <FilterRow
+                    catalog={TRANSACTIONS_CATALOG}
+                    dynamicOptions={dynamicOptions}
+                    value={clause}
+                    onChange={(c) => updateFilter(i, c)}
+                    onRemove={() => removeFilter(i)}
+                  />
+                </Fragment>
               ))}
             </div>
           )}
 
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="flex-1 h-9 rounded-md"
+              className="flex-1 h-9.5 rounded-xl border-dashed bg-white dark:bg-slate-950 font-medium gap-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border-slate-300 hover:border-slate-400 dark:border-slate-800 dark:hover:border-slate-700 shadow-none transition-colors"
               onClick={addFilter}
             >
-              <Plus className="mr-1 h-3.5 w-3.5" />
+              <Plus className="mr-1 h-4 w-4" />
               Add filter
             </Button>
             <Button
               type="button"
               variant="default"
               size="sm"
-              className="flex-1 h-9 rounded-md bg-slate-900 text-white dark:bg-slate-50 dark:text-slate-900"
+              className="flex-1 h-9.5 rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500/20 shadow-sm transition-colors"
               onClick={handleApplyFilters}
             >
               Apply Filters

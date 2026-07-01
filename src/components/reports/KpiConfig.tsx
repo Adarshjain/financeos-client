@@ -5,7 +5,13 @@
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { NativeSelect } from '@/components/ui/native-select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { DatasourceCatalog } from '@/lib/reports.types';
 
 import type { KpiDraft } from './builderReducer';
@@ -62,13 +68,23 @@ export function KpiConfig({ catalog, value, onChange }: KpiConfigProps) {
       {value.comparisonEnabled && (
         <div>
           <Label>Change Perception</Label>
-          <NativeSelect
-            options={SENTIMENT_OPTIONS}
+          <Select
             value={sentimentToValue(value.higherIsBetter)}
-            onChange={(e) =>
-              onChange({ higherIsBetter: valueToSentiment(e.currentTarget.value) })
+            onValueChange={(val) =>
+              onChange({ higherIsBetter: valueToSentiment(val) })
             }
-          />
+          >
+            <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none">
+              <SelectValue placeholder="Select sentiment preference" />
+            </SelectTrigger>
+            <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+              {SENTIMENT_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       )}
     </div>

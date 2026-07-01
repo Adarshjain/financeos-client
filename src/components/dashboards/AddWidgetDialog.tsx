@@ -3,7 +3,6 @@
 // Edit-mode picker: choose a saved report to add as a widget. Only existing
 // reports are offered (widgets reference reports by id).
 
-import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 

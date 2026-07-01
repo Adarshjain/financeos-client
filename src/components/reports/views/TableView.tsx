@@ -57,7 +57,6 @@ export function TableView({
     <div className={fill ? 'flex h-full flex-col' : 'space-y-3'}>
       <Table
         wrapperClassName={cn(
-          'rounded-lg border border-slate-200 dark:border-slate-800',
           fill && 'min-h-0 flex-1 rounded-b-none border-b-0'
         )}
       >
