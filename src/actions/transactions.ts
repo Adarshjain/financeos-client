@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, transactionsApi } from '@/lib/apiClient';
-import type { PagedTransaction, Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
+import type { PagedTransaction, ReviewType,Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 import type { ApiResult, ErrorResponse } from '@/lib/types';
 
 function handleTransactionError(error: unknown, defaultMessage: string): { success: false; error: ErrorResponse } {
@@ -26,6 +26,7 @@ export async function createTransaction(
   try {
     const transaction = await transactionsApi.create(transactionRequest);
     revalidatePath('/transactions');
+    revalidatePath('/transactions/review');
     return { success: true, data: transaction };
   } catch (error) {
     return handleTransactionError(error, 'Failed to create transaction');
@@ -39,6 +40,7 @@ export async function updateTransaction(
   try {
     const transaction = await transactionsApi.update(transactionId, transactionRequest);
     revalidatePath('/transactions');
+    revalidatePath('/transactions/review');
     return { success: true, data: transaction };
   } catch (error) {
     return handleTransactionError(error, 'Failed to update transaction');
@@ -51,6 +53,7 @@ export async function deleteTransaction(
   try {
     await transactionsApi.delete(transactionId);
     revalidatePath('/transactions');
+    revalidatePath('/transactions/review');
     return { success: true, data: undefined };
   } catch (error) {
     return handleTransactionError(error, 'Failed to delete transaction');
@@ -68,5 +71,32 @@ export async function searchTransactions(
     return { success: true, data: transactions };
   } catch (error) {
     return handleTransactionError(error, 'Failed to search transactions');
+  }
+}
+
+export async function batchReviewTransactions(
+  transactionIds: string[],
+  reviewType: ReviewType,
+): Promise<ApiResult<{ updated: number }>> {
+  try {
+    const data = await transactionsApi.batchReview({ transactionIds, reviewType });
+    revalidatePath('/transactions');
+    revalidatePath('/transactions/review');
+    return { success: true, data };
+  } catch (error) {
+    return handleTransactionError(error, 'Failed to batch review transactions');
+  }
+}
+
+export async function batchDeleteTransactions(
+  transactionIds: string[],
+): Promise<ApiResult<{ deleted: number }>> {
+  try {
+    const data = await transactionsApi.batchDelete({ transactionIds });
+    revalidatePath('/transactions');
+    revalidatePath('/transactions/review');
+    return { success: true, data };
+  } catch (error) {
+    return handleTransactionError(error, 'Failed to batch delete transactions');
   }
 }

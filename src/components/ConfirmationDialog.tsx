@@ -21,6 +21,7 @@ interface ConfirmationDialogProps {
   primaryAction?: () => void | Promise<void>;
   trigger: JSX.Element;
   loading?: boolean;
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 }
 
 export function ConfirmationDialog(props: ConfirmationDialogProps) {
@@ -41,7 +42,7 @@ export function ConfirmationDialog(props: ConfirmationDialogProps) {
             Cancel
           </Button>
           <Button
-            variant="destructive"
+            variant={props.variant ?? 'destructive'}
             onClick={async () => {
               try {
                 await props.primaryAction?.();
