@@ -43,3 +43,20 @@ export interface PagedTransaction {
   last: boolean;
   empty: boolean;
 }
+
+export interface BatchReviewRequest {
+  transactionIds: string[];
+  reviewType: ReviewType;
+}
+
+export interface BatchReviewResponse {
+  updated: number;
+}
+
+export interface BatchDeleteRequest {
+  transactionIds: string[];
+}
+
+export interface BatchDeleteResponse {
+  deleted: number;
+}

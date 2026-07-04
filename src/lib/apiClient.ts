@@ -18,7 +18,7 @@ import type {
   RunReportRequest,
   UpdateReportRequest,
 } from '@/lib/reports.types';
-import { PagedTransaction, Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
+import { PagedTransaction, ReviewType,Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 
 import type {
   CreateInvestmentTransactionRequest,
@@ -39,7 +39,7 @@ import type {
   UserResponse,
 } from './types';
 
-const API_BASE = process.env.API_BASE_URL || 'http://localhost:8080';
+const API_BASE = process.env.API_BASE_URL || 'http://localhost:6969';
 
 class ApiError extends Error {
   constructor(
@@ -282,6 +282,20 @@ export const transactionsApi = {
   async delete(id: string): Promise<void> {
     return request<void>(`/api/v1/transactions/${id}`, {
       method: 'DELETE',
+    });
+  },
+
+  async batchReview(data: { transactionIds: string[]; reviewType: ReviewType }): Promise<{ updated: number }> {
+    return request<{ updated: number }>('/api/v1/transactions/batch-review', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async batchDelete(data: { transactionIds: string[] }): Promise<{ deleted: number }> {
+    return request<{ deleted: number }>('/api/v1/transactions/batch-delete', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
   },
 };
