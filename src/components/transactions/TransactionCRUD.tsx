@@ -112,6 +112,7 @@ export default function TransactionCRUD({
         value={accountId}
         onValueChange={setAccountId}
         required
+        disabled={isUpdateMode}
       >
         <SelectTrigger className="w-[140px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs px-2.5 h-7 border border-slate-200 dark:border-slate-700 rounded-full font-semibold shadow-none hover:bg-slate-200/50 dark:hover:bg-slate-700 transition-colors">
           <SelectValue placeholder="Select Account" />

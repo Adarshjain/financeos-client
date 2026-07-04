@@ -8,6 +8,7 @@ import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { TransactionFormWrapper } from '@/components/transactions/TransactionFormWrapper';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
 import { Transaction } from '@/lib/transaction.types';
@@ -19,6 +20,10 @@ interface TransactionCardProps {
   categories: Category[];
   className?: string;
   onMutate?: () => void;
+  selectable?: boolean;
+  selected?: boolean;
+  onToggleSelect?: () => void;
+  showSource?: boolean;
 }
 
 const DeleteTransaction = ({ transaction, onSuccess }: { transaction: Transaction; onSuccess?: () => void }) => {
@@ -28,9 +33,13 @@ const DeleteTransaction = ({ transaction, onSuccess }: { transaction: Transactio
     setIsDeleting(true);
 
     try {
-      await deleteTransaction(transaction.id);
-      toast.success('Transaction deleted!');
-      onSuccess?.();
+      const res = await deleteTransaction(transaction.id);
+      if (res.success) {
+        toast.success('Transaction deleted!');
+        onSuccess?.();
+      } else {
+        toast.error(res.error.message);
+      }
     } catch (error) {
       toast.error((error as Error).message);
     } finally {
@@ -57,7 +66,17 @@ const DeleteTransaction = ({ transaction, onSuccess }: { transaction: Transactio
   />;
 };
 
-export const TransactionCard = ({ transaction, accounts, className, categories, onMutate }: TransactionCardProps) => {
+export const TransactionCard = ({
+  transaction,
+  accounts,
+  className,
+  categories,
+  onMutate,
+  selectable,
+  selected,
+  onToggleSelect,
+  showSource,
+}: TransactionCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const getAccountName = (accountId: string | undefined) => {
     if (!accountId) return '—';
@@ -76,6 +95,21 @@ export const TransactionCard = ({ transaction, accounts, className, categories, 
         )}
         onClick={() => setExpanded(!expanded)}
       >
+        {selectable && (
+          <div
+            className="flex items-center justify-center pr-2 self-center shrink-0 cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleSelect?.();
+            }}
+          >
+            <Checkbox
+              checked={selected}
+              className="pointer-events-none"
+              id={`select-${transaction.id}`}
+            />
+          </div>
+        )}
         <div className="flex flex-col text-sm flex-1 min-w-0">
           <div
             className={cn('break-words text-slate-800 dark:text-slate-200 font-semibold leading-snug', transaction.description ? 'mb-1' : '')}
@@ -92,17 +126,17 @@ export const TransactionCard = ({ transaction, accounts, className, categories, 
           </div>
           <div className="flex flex-wrap gap-1.5 items-center mt-2.5">
             {/* Source badge */}
-            {expanded && transaction.source === 'gmail_transaction_alert' && (
+            {(expanded || showSource) && transaction.source === 'gmail_transaction_alert' && (
               <Badge variant="info" className="text-[9px] py-0.5 px-2 font-bold tracking-wider rounded-md uppercase">
                 Gmail Alert
               </Badge>
             )}
-            {expanded && transaction.source === 'gmail_statement' && (
+            {(expanded || showSource) && transaction.source === 'gmail_statement' && (
               <Badge variant="warning" className="text-[9px] py-0.5 px-2 font-bold tracking-wider rounded-md uppercase">
                 Gmail Statement
               </Badge>
             )}
-            {expanded && transaction.source === 'manual' && (
+            {(expanded || showSource) && transaction.source === 'manual' && (
               <Badge variant="secondary" className="text-[9px] py-0.5 px-2 font-bold tracking-wider rounded-md uppercase">
                 Manual
               </Badge>
