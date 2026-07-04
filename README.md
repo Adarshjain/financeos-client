@@ -25,7 +25,7 @@ A production-grade personal finance management frontend built with Next.js 14, T
 
 - Node.js 18+
 - npm or yarn
-- FinanceOS backend running on `http://localhost:8080`
+- FinanceOS backend running on `http://localhost:6969`
 
 ### Installation
 
@@ -44,7 +44,7 @@ npm run dev
 
 | Variable       | Description          | Default                 |
 | -------------- | -------------------- | ----------------------- |
-| `API_BASE_URL` | Backend API base URL | `http://localhost:8080` |
+| `API_BASE_URL` | Backend API base URL | `http://localhost:6969` |
 
 ## Project Structure
 

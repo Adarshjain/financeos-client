@@ -57,6 +57,7 @@ export type BankAccount = AccountBase & {
   openingBalance?: string;
   last4?: string;
   statementPassword?: string;
+  lastStatementDate?: string | null;
 }
 
 export type CreditCard = AccountBase & {
@@ -65,6 +66,7 @@ export type CreditCard = AccountBase & {
   paymentDueDay: number;
   gracePeriodDays: number;
   statementPassword?: string;
+  lastStatementDate?: string | null;
 }
 
 export type Stock = AccountBase & {

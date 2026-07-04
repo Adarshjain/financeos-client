@@ -40,5 +40,6 @@ export const TRANSACTIONS_CATALOG: DatasourceCatalog = {
     { name: 'description', label: 'Description', type: 'string', role: 'filter', allowedInReports: [] },
     { name: 'isUnderMonitoring', label: 'Under Monitoring', type: 'boolean', role: 'filter', allowedInReports: [] },
     { name: 'isExcluded', label: 'Excluded', type: 'boolean', role: 'filter', allowedInReports: [] },
+    { name: 'coveredByStatement', label: 'Covered by Statement', type: 'boolean', role: 'filter', allowedInReports: [] },
   ],
 };

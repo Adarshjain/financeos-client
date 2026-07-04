@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowDown, ArrowUp, Loader2, Plus, Search, SlidersHorizontal } from 'lucide-react';
+import Link from 'next/link';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -23,9 +24,10 @@ import { TransactionFormWrapper } from './TransactionFormWrapper';
 interface TransactionsBrowserProps {
   accounts: Account[];
   categories: Category[];
+  needsReviewCount?: number;
 }
 
-export function TransactionsBrowser({ accounts, categories }: TransactionsBrowserProps) {
+export function TransactionsBrowser({ accounts, categories, needsReviewCount }: TransactionsBrowserProps) {
   const [appliedFilters, setAppliedFilters] = useState<FilterClause[]>([]);
   const [draftFilters, setDraftFilters] = useState<FilterClause[]>([]);
   const [search, setSearch] = useState('');
@@ -187,14 +189,26 @@ export function TransactionsBrowser({ accounts, categories }: TransactionsBrowse
 
   return (
     <div className="space-y-1">
-      <div className="flex justify-between px-4 pt-4 pb-1">
+      <div className="flex justify-between items-center px-4 pt-4 pb-1">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
-        <TransactionFormWrapper
-          categories={categories}
-          accounts={accounts}
-          onSuccess={handleReload}
-          trigger={<Button>Create</Button>}
-        />
+        <div className="flex items-center gap-2">
+          <Link href="/transactions/review">
+            <Button variant="outline" className="relative gap-2 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all">
+              <span>Review</span>
+              {needsReviewCount !== undefined && needsReviewCount > 0 && (
+                <span className="flex h-5 w-5 min-w-[1.25rem] px-1 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">
+                  {needsReviewCount}
+                </span>
+              )}
+            </Button>
+          </Link>
+          <TransactionFormWrapper
+            categories={categories}
+            accounts={accounts}
+            onSuccess={handleReload}
+            trigger={<Button className="rounded-xl">Create</Button>}
+          />
+        </div>
       </div>
 
       {/* Search and Filters Toggle */}
