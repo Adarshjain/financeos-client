@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, categoriesApi } from '@/lib/apiClient';
-import { Category, CategoryRequest } from '@/lib/categories.types';
+import { CategorizeResponse, Category, CategoryRequest } from '@/lib/categories.types';
 import type { ApiResult, ErrorResponse } from '@/lib/types';
 
 function handleCategoryError(error: unknown, defaultMessage: string): { success: false; error: ErrorResponse } {
@@ -44,27 +44,13 @@ export async function createCategory(
   }
 }
 
-
 export async function categorizeDescription(
   description: string,
-): Promise<ApiResult<Category[]>> {
-  if (!description || description.trim().length === 0) {
-    return {
-      success: false,
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: 'description is empty',
-        timestamp: new Date().toISOString(),
-      },
-    };
-  }
-
+): Promise<ApiResult<CategorizeResponse>> {
   try {
-    const category = await categoriesApi.categorizeDescription(description);
-    return { success: true, data: category };
+    const result = await categoriesApi.categorizeDescription(description);
+    return { success: true, data: result };
   } catch (error) {
-    return handleCategoryError(error, 'Failed to categorize');
+    return handleCategoryError(error, 'Failed to categorize description');
   }
 }
-
-

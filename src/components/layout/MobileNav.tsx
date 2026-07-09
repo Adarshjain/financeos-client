@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart3, Home, LayoutDashboard, LogOut, Menu, Receipt, Settings, TrendingUp, Wallet } from 'lucide-react';
+import { BarChart3, Home, LayoutDashboard, LogOut, Menu, Receipt, Settings, Tags, TrendingUp, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -64,6 +64,12 @@ const settingsRoute: NavItem = {
   icon: <Settings className="h-5 w-5" />,
 };
 
+const rulesRoute: NavItem = {
+  href: '/rules',
+  label: 'Rules',
+  icon: <Tags className="h-5 w-5" />,
+};
+
 const navItems: NavItem[] = [
   dashboardRoute,
   transactionRoute,
@@ -120,7 +126,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
               <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-1.5 truncate">{userEmail}</div>
             </DropdownMenuGroup>
             <DropdownMenuGroup className="space-y-1">
-              {[accountRoute, reportsRoute, dashboardsRoute, settingsRoute].map((item) => {
+              {[accountRoute, rulesRoute, reportsRoute, dashboardsRoute, settingsRoute].map((item) => {
                 const isActive =
                   pathname === item.href || pathname.startsWith(item.href + '/');
                 return (

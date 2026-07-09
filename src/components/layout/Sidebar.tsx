@@ -7,6 +7,7 @@ import {
   LogOut,
   Receipt,
   Settings,
+  Tags,
   TrendingUp,
   Wallet,
 } from 'lucide-react';
@@ -39,6 +40,11 @@ const navItems: NavItem[] = [
     href: '/transactions',
     label: 'Transactions',
     icon: <Receipt className="h-5 w-5" />,
+  },
+  {
+    href: '/rules',
+    label: 'Rules',
+    icon: <Tags className="h-5 w-5" />,
   },
   {
     href: '/investments',
