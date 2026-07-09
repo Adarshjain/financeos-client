@@ -48,6 +48,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [batchActionLoading, setBatchActionLoading] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [activeReasonFilter, setActiveReasonFilter] = useState<string>('ALL');
   const runIdRef = useRef(0);
 
   const accountOptions = accounts.map((a) => ({
@@ -78,6 +79,14 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
     const filters: FilterClause[] = [
       { field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' },
     ];
+
+    if (activeReasonFilter !== 'ALL') {
+      filters.push({
+        field: 'reviewReason',
+        operator: 'is',
+        value: activeReasonFilter,
+      });
+    }
 
     if (appliedAccountIds.length < accounts.length) {
       filters.push({
@@ -115,7 +124,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
       toast.error(res.error.message);
     }
     setLoading(false);
-  }, [accounts.length, appliedAccountIds, appliedOnlyUpToLastStatement, size]);
+  }, [accounts.length, appliedAccountIds, appliedOnlyUpToLastStatement, activeReasonFilter, size]);
 
   useEffect(() => {
     const runId = ++runIdRef.current;
@@ -123,7 +132,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
       fetchTransactions(page, runId);
     }, 0);
     return () => clearTimeout(timer);
-  }, [page, fetchTransactions]);
+  }, [page, activeReasonFilter, fetchTransactions]);
 
   const handleReload = () => {
     const runId = ++runIdRef.current;
@@ -298,6 +307,40 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
           )}
         </div>
       )}
+
+      {/* Reason Filter Chips */}
+      <div className="px-4 py-2 flex flex-wrap gap-2 items-center">
+        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Filter reasons:</span>
+        <div className="flex flex-wrap gap-1.5">
+          {[
+            { id: 'ALL', label: 'All' },
+            { id: 'UNRECONCILED', label: 'Unreconciled' },
+            { id: 'CATEGORY_UNVERIFIED', label: 'Category' },
+            { id: 'DUPLICATE_SUSPECT', label: 'Duplicate' },
+          ].map((chip) => {
+            const isActive = activeReasonFilter === chip.id;
+            return (
+              <button
+                key={chip.id}
+                type="button"
+                onClick={() => {
+                  setActiveReasonFilter(chip.id);
+                  setPage(0);
+                  setSelectedIds([]);
+                }}
+                className={cn(
+                  'px-3 py-1 text-xs font-semibold rounded-full border transition-all duration-200',
+                  isActive
+                    ? 'bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900 dark:border-slate-100 shadow-sm'
+                    : 'bg-white text-slate-650 border-slate-200 hover:bg-slate-50 dark:bg-slate-950 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-900'
+                )}
+              >
+                {chip.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* List Container */}
       <div className="px-2 pb-24">
