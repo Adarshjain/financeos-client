@@ -14,6 +14,8 @@ import { Category } from '@/lib/categories.types';
 import { Transaction } from '@/lib/transaction.types';
 import { cn, formatMoney } from '@/lib/utils';
 
+import { ReviewReasonBadges } from './ReviewReasonBadges';
+
 interface TransactionCardProps {
   transaction: Transaction;
   accounts: Account[];
@@ -143,11 +145,7 @@ export const TransactionCard = ({
             )}
 
             {/* Review status badge */}
-            {transaction.reviewType === 'NEEDS_REVIEW' && (
-              <Badge variant="warning" className="text-[9px] py-0 px-2 font-bold rounded-md">
-                Needs Review
-              </Badge>
-            )}
+            <ReviewReasonBadges reviewType={transaction.reviewType} reviewReasons={transaction.reviewReasons} />
 
             {/* Categories */}
             {!transaction.isTransactionExcluded && transaction.categories?.map(

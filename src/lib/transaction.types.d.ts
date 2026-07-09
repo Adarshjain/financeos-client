@@ -6,9 +6,11 @@ export interface TransactionSearchRequest {
   search?: string | null;
 }
 
-export type TransactionSource = 'gmail_transaction_alert' | 'gmail_statement' | 'manual';
+export type TransactionSource = 'gmail_transaction_alert' | 'gmail_statement' | 'manual' | 'file_upload';
 
 export type ReviewType = 'NEEDS_REVIEW' | 'AUTO_REVIEWED' | 'MANUALLY_REVIEWED';
+
+export type ReviewReason = 'UNRECONCILED' | 'CATEGORY_UNVERIFIED' | 'DUPLICATE_SUSPECT' | 'OTHER';
 
 export interface TransactionBase {
   accountId: string;
@@ -31,6 +33,8 @@ export type Transaction = TransactionBase & {
   balance: number;
   categories?: Category[];
   sourcedDescription: string;
+  reviewReasons?: ReviewReason[];
+  appliedRuleId?: string | null;
 }
 
 export interface PagedTransaction {

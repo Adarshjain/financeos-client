@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 
 import { Account, AccountRequest } from '@/lib/account.types';
-import { Category, CategoryRequest } from '@/lib/categories.types';
+import { CategorizeResponse, Category, CategoryRequest } from '@/lib/categories.types';
 import type {
   CreateDashboardRequest,
   DashboardResponse,
@@ -18,6 +18,7 @@ import type {
   RunReportRequest,
   UpdateReportRequest,
 } from '@/lib/reports.types';
+import type { CategoryRule, CreateRuleRequest, PagedRules,UpdateRuleRequest } from '@/lib/rules.types';
 import { PagedTransaction, ReviewType,Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 
 import type {
@@ -408,10 +409,10 @@ export const categoriesApi = {
     });
   },
 
-  async categorizeDescription(description: string): Promise<Category[]> {
-    return request<Category[]>('/api/v1/categorize', {
+  async categorizeDescription(description: string): Promise<CategorizeResponse> {
+    return request<CategorizeResponse>('/api/v1/categorize', {
       method: 'POST',
-      body: JSON.stringify(description),
+      body: JSON.stringify({ description }),
     });
   },
 };
@@ -556,6 +557,51 @@ export const ingestionApi = {
     return request<FileIngestionResult>(`/api/v1/accounts/${accountId}/ingest`, {
       method: 'POST',
       body: formData,
+    });
+  },
+};
+
+// Rules API
+export const rulesApi = {
+  async list(params: {
+    page?: number;
+    size?: number;
+    sort?: string;
+    verified?: boolean;
+    search?: string;
+  } = {}): Promise<PagedRules> {
+    const query = new URLSearchParams();
+    if (params.page !== undefined) query.set('page', String(params.page));
+    if (params.size !== undefined) query.set('size', String(params.size));
+    if (params.sort !== undefined) query.set('sort', params.sort);
+    if (params.verified !== undefined) query.set('verified', String(params.verified));
+    if (params.search !== undefined && params.search !== '') query.set('search', params.search);
+    return request<PagedRules>(`/api/v1/rules?${query}`);
+  },
+
+  async create(body: CreateRuleRequest): Promise<CategoryRule> {
+    return request<CategoryRule>('/api/v1/rules', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async update(id: string, body: UpdateRuleRequest): Promise<CategoryRule> {
+    return request<CategoryRule>(`/api/v1/rules/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async verify(id: string): Promise<CategoryRule> {
+    return request<CategoryRule>(`/api/v1/rules/${id}/verify`, {
+      method: 'POST',
+    });
+  },
+
+  async remove(id: string): Promise<void> {
+    return request<void>(`/api/v1/rules/${id}`, {
+      method: 'DELETE',
     });
   },
 };
