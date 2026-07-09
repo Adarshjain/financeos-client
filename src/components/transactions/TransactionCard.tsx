@@ -50,7 +50,8 @@ const DeleteTransaction = ({ transaction, onSuccess }: { transaction: Transactio
   };
 
   const trigger = (
-    <Button variant="outline" size="sm" className="flex-1 rounded-lg hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-900/30 gap-1.5 transition-colors text-xs font-semibold">
+    <Button variant="outline" size="sm"
+            className="flex-1 rounded-lg hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-900/30 gap-1.5 transition-colors text-xs font-semibold">
       <Trash2 className="h-3.5 w-3.5" />
       Delete
     </Button>
@@ -69,16 +70,16 @@ const DeleteTransaction = ({ transaction, onSuccess }: { transaction: Transactio
 };
 
 export const TransactionCard = ({
-  transaction,
-  accounts,
-  className,
-  categories,
-  onMutate,
-  selectable,
-  selected,
-  onToggleSelect,
-  showSource,
-}: TransactionCardProps) => {
+                                  transaction,
+                                  accounts,
+                                  className,
+                                  categories,
+                                  onMutate,
+                                  selectable,
+                                  selected,
+                                  onToggleSelect,
+                                  showSource,
+                                }: TransactionCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const getAccountName = (accountId: string | undefined) => {
     if (!accountId) return '—';
@@ -87,7 +88,8 @@ export const TransactionCard = ({
   };
 
   return (
-    <div className="mb-2 rounded-xl border border-slate-200/30 dark:border-slate-800/40 bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/60 hover:shadow-md hover:shadow-slate-100/5 dark:hover:shadow-none">
+    <div
+      className="mb-2 rounded-xl border border-slate-200/30 dark:border-slate-800/40 bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/60 hover:shadow-md hover:shadow-slate-100/5 dark:hover:shadow-none">
       <div
         className={cn(
           'py-3 px-3 flex items-start justify-between relative gap-2 cursor-pointer transition-colors',
@@ -120,7 +122,7 @@ export const TransactionCard = ({
           </div>
           {expanded && transaction.sourcedDescription && (
             <div className="break-words text-xs text-slate-500 dark:text-slate-400 italic my-1">
-              Sourced: {transaction.sourcedDescription}
+              {transaction.sourcedDescription}
             </div>
           )}
           <div className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">
@@ -139,7 +141,10 @@ export const TransactionCard = ({
               </Badge>
             )}
             {(expanded || showSource) && transaction.source === 'manual' && (
-              <Badge variant="secondary" className="text-[9px] py-0.5 px-2 font-bold tracking-wider rounded-md uppercase">
+              <Badge
+                variant="secondary"
+                className="text-[9px] py-0.5 px-2 font-bold tracking-wider rounded-md uppercase"
+              >
                 Manual
               </Badge>
             )}
@@ -157,7 +162,7 @@ export const TransactionCard = ({
                 >
                   {category.name}
                 </Badge>
-              )
+              ),
             )}
           </div>
         </div>
@@ -176,13 +181,17 @@ export const TransactionCard = ({
             </div>
           )}
           {expanded && transaction.isTransactionExcluded ? (
-            <div className="text-[10px] justify-end items-center gap-1 mt-1.5 flex text-rose-500 font-semibold bg-rose-50 dark:bg-rose-950/20 px-1.5 py-0.5 rounded">
+            <div
+              className="text-[10px] justify-end items-center gap-1 mt-1.5 flex text-rose-500 font-semibold bg-rose-50 dark:bg-rose-950/20 px-1.5 py-0.5 rounded"
+            >
               <TriangleAlert size={10} />
               Excluded
             </div>
           ) : null}
           {expanded && transaction.isTransactionUnderMonitoring ? (
-            <div className="text-[10px] justify-end items-center gap-1 mt-1.5 flex text-amber-600 dark:text-amber-500 font-semibold bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded">
+            <div
+              className="text-[10px] justify-end items-center gap-1 mt-1.5 flex text-amber-600 dark:text-amber-500 font-semibold bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded"
+            >
               <TriangleAlert size={10} />
               Monitoring
             </div>
@@ -190,7 +199,9 @@ export const TransactionCard = ({
         </div>
       </div>
       {expanded && (
-        <div className="flex gap-2 p-2 bg-slate-50 dark:bg-slate-900/30 rounded-b-xl border-t border-slate-100 dark:border-slate-800/40">
+        <div
+          className="flex gap-2 p-2 bg-slate-50 dark:bg-slate-900/30 rounded-b-xl border-t border-slate-100 dark:border-slate-800/40"
+        >
           <DeleteTransaction transaction={transaction} onSuccess={onMutate} />
           <TransactionFormWrapper
             categories={categories}
@@ -198,13 +209,21 @@ export const TransactionCard = ({
             transaction={transaction}
             onSuccess={onMutate}
             trigger={
-              <Button variant="outline" size="sm" className="flex-1 rounded-lg gap-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 rounded-lg gap-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
                 <PencilIcon className="h-3.5 w-3.5" />
                 Edit
               </Button>
             }
           />
-          <Button variant="outline" size="sm" className="flex-1 rounded-lg gap-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 rounded-lg gap-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          >
             <LinkIcon className="h-3.5 w-3.5" />
             Link
           </Button>
