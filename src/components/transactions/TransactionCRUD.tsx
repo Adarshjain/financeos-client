@@ -2,7 +2,7 @@ import { CheckIcon, SquareIcon, XIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { createCategory as createCategoryAction } from '@/actions/categories';
+import { categorizeDescription, createCategory as createCategoryAction } from '@/actions/categories';
 import { createTransaction, updateTransaction } from '@/actions/transactions';
 import { Combobox } from '@/components/Combobox';
 import DayPicker from '@/components/DayPicker';
@@ -41,6 +41,8 @@ export default function TransactionCRUD({
   const [amount, setAmount] = useState<string>(transaction ? '' + transaction?.amount : '-0');
   const [date, setDate] = useState<Date>(transaction ? new Date(transaction.date) : new Date());
   const [creatingCategory, setCreatingCategory] = useState(false);
+  const [suggestingCategories, setSuggestingCategories] = useState(false);
+  const suggestedDescriptionRef = useRef<string | null>(null);
 
   const [accountId, setAccountId] = useState<string>(transaction?.accountId ?? '');
   const [isMonitored, setIsMonitored] = useState(transaction?.isTransactionUnderMonitoring ?? false);
@@ -64,6 +66,33 @@ export default function TransactionCRUD({
       toast.error('Failed to create category: ' + result.error.message);
     }
     setCreatingCategory(false);
+  };
+
+  const handleDescriptionBlur = async (e: React.FocusEvent<HTMLTextAreaElement>) => {
+    if (isUpdateMode) return;
+    const description = e.target.value.trim();
+    if (
+      description.length < 3 ||
+      selectedCategories.length > 0 ||
+      suggestedDescriptionRef.current === description
+    ) {
+      return;
+    }
+    suggestedDescriptionRef.current = description;
+    setSuggestingCategories(true);
+    try {
+      const result = await categorizeDescription(description);
+      if (result.success && result.data.categories.length > 0) {
+        const suggested = result.data.categories.map(
+          (c) => categories.find((existing) => existing.id === c.id) ?? c,
+        );
+        setSelectedCategories((prev) => (prev.length === 0 ? suggested : prev));
+      }
+    } catch {
+      // Silent: auto-categorization is a best-effort suggestion.
+    } finally {
+      setSuggestingCategories(false);
+    }
   };
 
   const onSubmit = async (e?: React.FormEvent) => {
@@ -174,6 +203,8 @@ export default function TransactionCRUD({
       placeholder="Description"
       name="description"
       defaultValue={transaction?.description}
+      onBlur={handleDescriptionBlur}
+      hint={suggestingCategories ? 'Suggesting categories…' : undefined}
     />
     <Keypad
       onChange={setAmount}
