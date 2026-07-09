@@ -25,12 +25,12 @@ interface TransactionCRUDProps {
 }
 
 export default function TransactionCRUD({
-  categories,
-  transaction,
-  accounts,
-  onSuccess,
-  onClose,
-}: TransactionCRUDProps) {
+                                          categories,
+                                          transaction,
+                                          accounts,
+                                          onSuccess,
+                                          onClose,
+                                        }: TransactionCRUDProps) {
   const [selectedCategories, setSelectedCategories] = useState<Category[]>(transaction?.categories ?? []);
   const [localCategories, setLocalCategories] = useState<Category[]>(categories ?? []);
   const [amount, setAmount] = useState<string>(transaction ? '' + transaction?.amount.toFixed(2) : '-0');
@@ -136,7 +136,7 @@ export default function TransactionCRUD({
     >
       {/* Scrollable Form Fields container */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2 pr-2 scrollbar-thin">
-        
+
         {/* Hero Section: Amount Input & Sign Toggle */}
         <div className="flex items-center justify-between gap-3 pl-2">
           <Label className="flex items-center mb-0 text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -153,8 +153,8 @@ export default function TransactionCRUD({
           </button>
           <div className="relative flex-1">
             <span className={cn(
-              "absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold transition-colors pointer-events-none",
-              amount.startsWith('-') ? "text-red-500" : "text-emerald-600 dark:text-emerald-400"
+              'absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold transition-colors pointer-events-none',
+              amount.startsWith('-') ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400',
             )}>
               ₹
             </span>
@@ -178,20 +178,22 @@ export default function TransactionCRUD({
                 setAmount(newValue);
               }}
               className={cn(
-                "pl-9 pr-3 h-12 text-2xl font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-inner transition-all focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 w-full",
-                amount.startsWith('-') ? "text-red-500" : "text-emerald-600 dark:text-emerald-400"
+                'pl-9 pr-3 h-12 text-2xl font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-inner transition-all focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 w-full',
+                amount.startsWith('-') ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400',
               )}
             />
           </div>
         </div>
 
         {/* Date Selector Row */}
-        <div className="bg-white dark:bg-slate-900/60 rounded-xl p-2.5 border border-slate-100 dark:border-slate-800/80 shadow-sm">
+        <div
+          className="bg-white dark:bg-slate-900/60 rounded-xl p-2.5 border border-slate-100 dark:border-slate-800/80 shadow-sm">
           <DayPicker date={date} onSelect={setDate} />
         </div>
 
         {/* Description & Source Details */}
-        <div className="bg-white dark:bg-slate-900/60 rounded-xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-sm flex flex-col gap-2">
+        <div
+          className="bg-white dark:bg-slate-900/60 rounded-xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-sm flex flex-col gap-2">
           <Label className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
             <FileText className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
             Description
@@ -202,18 +204,24 @@ export default function TransactionCRUD({
               name="description"
               defaultValue={transaction?.description}
               onBlur={handleDescriptionBlur}
+              autoResize
               hint={suggestingCategories ? 'Suggesting categories…' : undefined}
             />
             {transaction?.sourcedDescription && (
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 bg-slate-100/60 dark:bg-slate-900/40 px-2.5 py-1.5 rounded-lg border border-slate-200/40 dark:border-slate-800/40">
-                <span className="font-semibold text-slate-600 dark:text-slate-350">Source Description:</span> {transaction.sourcedDescription}
+              <div
+                className="text-[11px] text-slate-500 dark:text-slate-400 bg-slate-100/60 dark:bg-slate-900/40 px-2.5 py-1.5 rounded-lg border border-slate-200/40 dark:border-slate-800/40"
+              >
+                <span className="font-semibold text-slate-600 dark:text-slate-350">Source Description:</span>
+                {transaction.sourcedDescription}
               </div>
             )}
           </div>
         </div>
 
         {/* Group 1: Transaction Details Card */}
-        <div className="bg-white dark:bg-slate-900/60 rounded-xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-sm flex flex-col gap-3">
+        <div
+          className="bg-white dark:bg-slate-900/60 rounded-xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-sm flex flex-col gap-3"
+        >
           {/* Account Selector */}
           <div className="flex gap-2">
             <Label className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -259,8 +267,9 @@ export default function TransactionCRUD({
         </div>
 
         {/* Group 2: Status & Flags Card */}
-        <div className="bg-white dark:bg-slate-900/60 rounded-xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-sm flex flex-col gap-3.5">
-          
+        <div
+          className="bg-white dark:bg-slate-900/60 rounded-xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-sm flex flex-col gap-3.5"
+        >
           {/* Dropdown for Review Status */}
           <div className="flex flex-col gap-1">
             <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Review Status</Label>
@@ -294,43 +303,47 @@ export default function TransactionCRUD({
             <div className="flex items-center justify-between py-0.5">
               <div className="flex flex-col gap-0.5">
                 <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Exclude Transaction</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500">Do not include in reporting and budgets</span>
+                <span
+                  className="text-[10px] text-slate-400 dark:text-slate-500"
+                >Do not include in reporting and budgets</span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsExcluded(prev => !prev)}
                 className={cn(
-                  "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                  isExcluded ? "bg-red-500" : "bg-slate-200 dark:bg-slate-800"
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
+                  isExcluded ? 'bg-red-500' : 'bg-slate-200 dark:bg-slate-800',
                 )}
               >
                 <span
                   className={cn(
-                    "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ease-in-out",
-                    isExcluded ? "translate-x-4" : "translate-x-0"
+                    'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ease-in-out',
+                    isExcluded ? 'translate-x-4' : 'translate-x-0',
                   )}
                 />
               </button>
             </div>
 
             {/* Monitor Toggle */}
-            <div className="flex items-center justify-between py-0.5 border-t border-slate-100 dark:border-slate-800/50 pt-2.5">
+            <div
+              className="flex items-center justify-between py-0.5 border-t border-slate-100 dark:border-slate-800/50 pt-2.5">
               <div className="flex flex-col gap-0.5">
                 <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Monitor Transaction</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500">Track changes and alert on activity</span>
+                <span
+                  className="text-[10px] text-slate-400 dark:text-slate-500">Track changes and alert on activity</span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsMonitored(prev => !prev)}
                 className={cn(
-                  "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                  isMonitored ? "bg-amber-500" : "bg-slate-200 dark:bg-slate-800"
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
+                  isMonitored ? 'bg-amber-500' : 'bg-slate-200 dark:bg-slate-800',
                 )}
               >
                 <span
                   className={cn(
-                    "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ease-in-out",
-                    isMonitored ? "translate-x-4" : "translate-x-0"
+                    'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ease-in-out',
+                    isMonitored ? 'translate-x-4' : 'translate-x-0',
                   )}
                 />
               </button>
@@ -340,7 +353,8 @@ export default function TransactionCRUD({
       </div>
 
       {/* Sticky/Fixed Footer Action Buttons */}
-      <div className="flex gap-3 p-2 border-t border-slate-100 dark:border-slate-800/60 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md">
+      <div
+        className="flex gap-3 p-2 border-t border-slate-100 dark:border-slate-800/60 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md">
         <Button
           variant="ghost"
           className="flex-1 rounded-xl h-9 text-xs text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
