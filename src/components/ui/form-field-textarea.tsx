@@ -1,14 +1,15 @@
 import * as React from 'react';
 
-import { Textarea } from '@/components/ui/textarea';
+import { Textarea, type TextareaProps } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 
 import { Label } from './label';
 
-interface FormFieldProps extends React.InputHTMLAttributes<HTMLTextAreaElement> {
+interface FormFieldProps extends TextareaProps {
   label?: string;
   error?: string;
   hint?: string;
+  inputClassName?: string;
 }
 
 export function FormFieldTextArea({
@@ -17,6 +18,7 @@ export function FormFieldTextArea({
                                     hint,
                                     id,
                                     className,
+                                    inputClassName,
                                     ...props
                                   }: FormFieldProps) {
   const fieldId = id || props.name;
@@ -27,6 +29,7 @@ export function FormFieldTextArea({
       <Textarea
         id={fieldId}
         className={cn(
+          inputClassName,
           error && 'border-red-300 dark:border-red-700 focus:ring-red-500',
         )}
         {...props}
