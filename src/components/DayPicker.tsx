@@ -21,13 +21,12 @@ const DateView = ({ date, isSelected, onSelect }: DateViewProps) => {
     onClick={() => onSelect?.(date)}
     className={
       cn(
-        'rounded-xl p-3 text-center w-[64px]',
-        isSelected ? 'bg-black text-white' : null,
+        'border border-transparent rounded-xl p-3 text-center w-[64px]',
+        isSelected ? 'border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950' : null,
       )
     }>
     <div className="text-lg font-medium leading-none">{date.getDate()}</div>
-    <div className="text-xs">{formatMonthYear(date)}</div>
-    {/*<div className="text-xs">{getDayShortName(date)}</div>*/}
+    <div className="text-xs whitespace-nowrap">{formatMonthYear(date)}</div>
   </div>;
 };
 

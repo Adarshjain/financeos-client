@@ -73,12 +73,12 @@ export function Combobox({
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <div className={cn('flex flex-wrap items-center gap-1 justify-center', loading ? 'pointer-events-none' : '')}>
+          <div className={cn('flex flex-wrap items-center gap-1', loading ? 'pointer-events-none' : '')}>
             {value.length > 0 ? (
               value.map(option => (
                 <Badge key={option.id} variant="secondary" className={
                   cn(
-                    'bg-black text-white text-base px-4',
+                    'border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-base px-4',
                     loading ? 'bg-slate-500 pointer-events-none' : '',
                   )
                 }>
@@ -91,7 +91,7 @@ export function Combobox({
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
             )}
-            <Badge variant="secondary" className={cn('bg-black text-muted px-6', loading ? 'bg-slate-500' : '')}>
+            <Badge variant="secondary" className={cn('border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-6', loading ? 'bg-slate-500' : '')}>
               {value.length > 0
                 ? <PlusIcon className="w-4" data-icon="inline-end" />
                 : <><PlusIcon className="w-4 mr-2" data-icon="inline-end" />Categories</>
