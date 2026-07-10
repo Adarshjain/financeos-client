@@ -38,7 +38,7 @@ export default function DayPicker({ date, onSelect }: { date: Date; onSelect: (d
       isSelected={isSameDay(innerDate, date)}
       onSelect={onSelect}
     />)}
-    <div className="w-[1px] h-[40px] mx-2 my-auto bg-black"></div>
+    <div className="min-w-[1px] h-[40px] mx-2 my-auto bg-black"></div>
     <DatePicker
       trigger={
         isWithinLastNDays(date, daysCount)

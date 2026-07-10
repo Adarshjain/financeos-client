@@ -41,7 +41,7 @@ export function DeleteAccount({ account, trigger }: DeleteAccountProps) {
       <ConfirmationDialog
         title="Delete Account"
         description={
-          <div>Are you sure you want to delete <strong>{account.name}</strong>? This action cannot be undone.</div>
+          <>Are you sure you want to delete <strong>{account.name}</strong>? This action cannot be undone.</>
         }
         primaryActionText={isDeleting ? 'Deleting...' : 'Delete'}
         trigger={trigger || defaultTrigger}
