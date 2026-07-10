@@ -1,5 +1,6 @@
 import { CreditCard, FileText, Tag } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import * as React from 'react';
 import { toast } from 'sonner';
 
 import { categorizeDescription, createCategory as createCategoryAction } from '@/actions/categories';
@@ -209,13 +210,14 @@ export default function TransactionCRUD({
               autoResize
               hint={suggestingCategories ? 'Suggesting categories…' : undefined}
             />
-            {transaction?.sourcedDescription && (
-              <div
-                className="text-[11px] text-slate-500 dark:text-slate-400 bg-slate-100/60 dark:bg-slate-900/40 px-2.5 py-1.5 rounded-lg border border-slate-200/40 dark:border-slate-800/40"
-              >
-                <span className="font-semibold text-slate-600 dark:text-slate-350">Source Description:</span>
-                {transaction.sourcedDescription}
-              </div>
+            {transaction?.sourcedDescription && (<>
+                <Label className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  Original Description
+                </Label>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                  {transaction.sourcedDescription}
+                </div>
+              </>
             )}
           </div>
         </div>
@@ -235,7 +237,7 @@ export default function TransactionCRUD({
               value={accountId}
               onValueChange={setAccountId}
               required
-              disabled={isUpdateMode}
+              disabled={isUpdateMode && !!transaction?.accountId}
             >
               <SelectTrigger
                 className="w-full bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 text-xs px-3 h-9 border border-slate-200 dark:border-slate-800 rounded-lg font-semibold shadow-none hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">
@@ -371,13 +373,13 @@ export default function TransactionCRUD({
       <div
         className="flex gap-3 p-2 border-t border-slate-100 dark:border-slate-800/60 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md">
         <Button
-          variant="ghost"
+          variant="outline"
           className="flex-1 rounded-xl h-9 text-xs text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
           size="lg"
           type="button"
           onClick={onClose}
         >
-          Cancel
+          {isUpdateMode ? 'Back' : 'Close'}
         </Button>
         <Button
           className="flex-1 rounded-xl h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm transition-all"
