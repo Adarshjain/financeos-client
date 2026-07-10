@@ -189,11 +189,18 @@ export const TransactionCard = ({
             </div>
           ) : null}
           {expanded && transaction.isTransactionUnderMonitoring ? (
-            <div
-              className="text-[10px] justify-end items-center gap-1 mt-1.5 flex text-amber-600 dark:text-amber-500 font-semibold bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded"
-            >
-              <TriangleAlert size={10} />
-              Monitoring
+            <div className="flex flex-col items-end mt-1.5">
+              <div
+                className="text-[10px] justify-end items-center gap-1 flex text-amber-600 dark:text-amber-500 font-semibold bg-amber-50 dark:bg-amber-950/20 px-1.5 py-0.5 rounded"
+              >
+                <TriangleAlert size={10} />
+                Monitoring
+              </div>
+              {transaction.monitoringReason && (
+                <div className="text-[10px] text-amber-600 dark:text-amber-500 max-w-[200px] text-right mt-1 break-words italic font-medium">
+                  {transaction.monitoringReason}
+                </div>
+              )}
             </div>
           ) : null}
         </div>

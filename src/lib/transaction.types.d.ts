@@ -19,6 +19,7 @@ export interface TransactionBase {
   description?: string;
   isTransactionExcluded?: boolean;
   isTransactionUnderMonitoring?: boolean;
+  monitoringReason?: string;
   source: TransactionSource;
   reviewType?: ReviewType;
 }
