@@ -41,6 +41,7 @@ export default function TransactionCRUD({
 
   const [accountId, setAccountId] = useState<string>(transaction?.accountId ?? '');
   const [isMonitored, setIsMonitored] = useState(transaction?.isTransactionUnderMonitoring ?? false);
+  const [monitoringReason, setMonitoringReason] = useState<string>(transaction?.monitoringReason ?? '');
   const [isExcluded, setIsExcluded] = useState(transaction?.isTransactionExcluded ?? false);
   const [reviewType, setReviewType] = useState<ReviewType>(transaction?.reviewType ?? 'MANUALLY_REVIEWED');
 
@@ -111,6 +112,7 @@ export default function TransactionCRUD({
         date: date.toISOString().split('T')[0],
         isTransactionExcluded: isExcluded,
         isTransactionUnderMonitoring: isMonitored,
+        monitoringReason: isMonitored ? monitoringReason : undefined,
         source: transaction?.source ?? 'manual',
         reviewType: reviewType,
       };
@@ -348,6 +350,19 @@ export default function TransactionCRUD({
                 />
               </button>
             </div>
+
+            {/* Monitoring Reason Input */}
+            {isMonitored && (
+              <div className="flex flex-col gap-1 pt-2 border-t border-slate-100 dark:border-slate-800/50">
+                <Input
+                  id="monitoring-reason-input"
+                  placeholder="Explain why this transaction is being monitored...(Optional)"
+                  value={monitoringReason}
+                  onChange={(e) => setMonitoringReason(e.target.value)}
+                  className="text-xs h-9 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-lg shadow-none focus-visible:ring-1 focus-visible:ring-amber-500/20 focus-visible:border-amber-500"
+                />
+              </div>
+            )}
           </div>
         </div>
       </div>
