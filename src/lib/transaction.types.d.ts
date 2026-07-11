@@ -54,10 +54,18 @@ export interface PagedTransaction {
 export interface BatchReviewRequest {
   transactionIds: string[];
   reviewType: ReviewType;
+  reviewReasons?: ReviewReason[];
+}
+
+export interface BatchFailure {
+  id: string;
+  reason: string;
 }
 
 export interface BatchReviewResponse {
-  updated: number;
+  succeededIds: string[];
+  skippedIds: string[];
+  failures: BatchFailure[];
 }
 
 export interface BatchDeleteRequest {
@@ -65,5 +73,6 @@ export interface BatchDeleteRequest {
 }
 
 export interface BatchDeleteResponse {
-  deleted: number;
+  succeededIds: string[];
+  failures: BatchFailure[];
 }

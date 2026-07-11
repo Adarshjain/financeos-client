@@ -12,10 +12,11 @@ import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { FilterClause } from '@/lib/reports.types';
-import type { PagedTransaction } from '@/lib/transaction.types';
+import type { PagedTransaction, ReviewReason, ReviewType } from '@/lib/transaction.types';
 import { cn, formatDate } from '@/lib/utils';
 
 import { TransactionCard } from './TransactionCard';
@@ -50,6 +51,26 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [activeReasonFilter, setActiveReasonFilter] = useState<string>('ALL');
   const runIdRef = useRef(0);
+
+  const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
+  const [reasonsToApprove, setReasonsToApprove] = useState<ReviewReason[]>([]);
+  const [summaryData, setSummaryData] = useState<{
+    succeededCount: number;
+    skippedCount: number;
+    failures: { description: string; reason: string }[];
+    skips: string[];
+  } | null>(null);
+
+  const selectedTxns = pagedData?.content.filter(t => selectedIds.includes(t.id)) || [];
+  const presentReasons = Array.from(new Set(
+    selectedTxns.flatMap(t => t.reviewReasons || [])
+  )) as ReviewReason[];
+
+  useEffect(() => {
+    if (isApproveDialogOpen) {
+      setReasonsToApprove(presentReasons);
+    }
+  }, [isApproveDialogOpen, selectedIds.length]);
 
   const accountOptions = accounts.map((a) => ({
     value: a.id,
@@ -160,11 +181,34 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
   const handleBatchApprove = async () => {
     setBatchActionLoading(true);
     try {
-      const res = await batchReviewTransactions(selectedIds, 'MANUALLY_REVIEWED');
+      const res = await batchReviewTransactions(selectedIds, 'MANUALLY_REVIEWED', reasonsToApprove);
       if (res.success) {
-        toast.success(`Successfully approved ${res.data.updated} transaction(s)!`);
+        const { succeededIds, skippedIds, failures } = res.data;
+
+        const mappedFailures = failures.map(f => {
+          const txn = pagedData?.content.find(t => t.id === f.id);
+          const desc = txn ? (txn.description || txn.sourcedDescription) : `Transaction ID: ${f.id}`;
+          return { description: desc, reason: f.reason };
+        });
+
+        const mappedSkips = skippedIds.map(id => {
+          const txn = pagedData?.content.find(t => t.id === id);
+          return txn ? (txn.description || txn.sourcedDescription) : `Transaction ID: ${id}`;
+        });
+
+        if (failures.length > 0 || skippedIds.length > 0) {
+          setSummaryData({
+            succeededCount: succeededIds.length,
+            skippedCount: skippedIds.length,
+            failures: mappedFailures,
+            skips: mappedSkips
+          });
+        } else {
+          toast.success(`Successfully approved ${succeededIds.length} transaction(s)!`);
+        }
         setSelectedIds([]);
         handleReload();
+        setIsApproveDialogOpen(false);
       } else {
         toast.error(res.error.message);
       }
@@ -180,7 +224,24 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
     try {
       const res = await batchDeleteTransactions(selectedIds);
       if (res.success) {
-        toast.success(`Successfully deleted ${res.data.deleted} transaction(s)!`);
+        const { succeededIds, failures } = res.data;
+
+        const mappedFailures = failures.map(f => {
+          const txn = pagedData?.content.find(t => t.id === f.id);
+          const desc = txn ? (txn.description || txn.sourcedDescription) : `Transaction ID: ${f.id}`;
+          return { description: desc, reason: f.reason };
+        });
+
+        if (failures.length > 0) {
+          setSummaryData({
+            succeededCount: succeededIds.length,
+            skippedCount: 0,
+            failures: mappedFailures,
+            skips: []
+          });
+        } else {
+          toast.success(`Successfully deleted ${succeededIds.length} transaction(s)!`);
+        }
         setSelectedIds([]);
         handleReload();
       } else {
@@ -418,25 +479,16 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
             {selectedIds.length} selected
           </span>
           <div className="flex items-center gap-3">
-            <ConfirmationDialog
-              title="Approve Transactions?"
-              description={`Are you sure you want to approve these ${selectedIds.length} transaction${selectedIds.length === 1 ? '' : 's'}? They will be marked as manually reviewed.`}
-              primaryActionText={batchActionLoading ? 'Approving...' : 'Approve'}
-              primaryAction={handleBatchApprove}
-              loading={batchActionLoading}
-              variant="default"
-              trigger={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={batchActionLoading}
-                  className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-350 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors h-auto shadow-none gap-1.5 flex items-center"
-                >
-                  <Check className="h-3.5 w-3.5" />
-                  <span>Approve</span>
-                </Button>
-              }
-            />
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={batchActionLoading}
+              onClick={() => setIsApproveDialogOpen(true)}
+              className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-350 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors h-auto shadow-none gap-1.5 flex items-center"
+            >
+              <Check className="h-3.5 w-3.5" />
+              <span>Approve</span>
+            </Button>
             <ConfirmationDialog
               title="Delete Transactions?"
               description={`Are you sure you want to permanently delete these ${selectedIds.length} transaction${selectedIds.length === 1 ? '' : 's'}? This action is permanent and cannot be undone.`}
@@ -458,6 +510,144 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
           </div>
         </div>
       )}
+
+      {/* Approve Dialog */}
+      <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
+        <DialogContent className="sm:max-w-[425px] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 dark:text-white">Approve Transactions</DialogTitle>
+            <DialogDescription className="text-slate-500 dark:text-slate-400 text-xs mt-1">
+              Select which review reasons you want to clear from the {selectedIds.length} selected transaction(s).
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            {presentReasons.length === 0 ? (
+              <p className="text-xs text-slate-500 italic">No specific review reasons found on selected transactions.</p>
+            ) : (
+              presentReasons.map((reason) => {
+                let label: string = reason;
+                if (reason === 'UNRECONCILED') label = 'Unreconciled';
+                else if (reason === 'CATEGORY_UNVERIFIED') label = 'Category unverified';
+                else if (reason === 'DUPLICATE_SUSPECT') label = 'Possible duplicate';
+
+                const isChecked = reasonsToApprove.includes(reason);
+                return (
+                  <div key={reason} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`reason-${reason}`}
+                      checked={isChecked}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setReasonsToApprove([...reasonsToApprove, reason]);
+                        } else {
+                          setReasonsToApprove(reasonsToApprove.filter(r => r !== reason));
+                        }
+                      }}
+                    />
+                    <label
+                      htmlFor={`reason-${reason}`}
+                      className="text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer select-none"
+                    >
+                      {label}
+                    </label>
+                  </div>
+                );
+              })
+            )}
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" size="sm" className="text-xs rounded-xl" onClick={() => setIsApproveDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-xl"
+              size="sm"
+              disabled={reasonsToApprove.length === 0 || batchActionLoading}
+              onClick={handleBatchApprove}
+            >
+              {batchActionLoading ? 'Approving...' : 'Approve'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Batch Summary Dialog */}
+      <Dialog open={summaryData !== null} onOpenChange={(open) => { if (!open) setSummaryData(null); }}>
+        <DialogContent className="sm:max-w-[480px] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+          <DialogHeader>
+            <DialogTitle className="text-slate-900 dark:text-white">Batch Action Summary</DialogTitle>
+            <DialogDescription className="text-slate-500 dark:text-slate-400 text-xs mt-1">
+              The batch operation completed with the following results:
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            {/* Counts */}
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="bg-emerald-50 dark:bg-emerald-950/20 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
+                <span className="block text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                  {summaryData?.succeededCount || 0}
+                </span>
+                <span className="text-[10px] text-emerald-700 dark:text-emerald-500 font-bold uppercase tracking-wider">
+                  Succeeded
+                </span>
+              </div>
+              <div className="bg-amber-50 dark:bg-amber-950/20 p-2.5 rounded-xl border border-amber-100 dark:border-amber-900/30">
+                <span className="block text-xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">
+                  {summaryData?.skippedCount || 0}
+                </span>
+                <span className="text-[10px] text-amber-700 dark:text-amber-500 font-bold uppercase tracking-wider">
+                  Skipped
+                </span>
+              </div>
+              <div className="bg-rose-55 dark:bg-rose-950/20 p-2.5 rounded-xl border border-rose-100 dark:border-rose-900/30">
+                <span className="block text-xl font-bold text-rose-600 dark:text-rose-400 tabular-nums">
+                  {summaryData?.failures?.length || 0}
+                </span>
+                <span className="text-[10px] text-rose-700 dark:text-rose-500 font-bold uppercase tracking-wider">
+                  Failed
+                </span>
+              </div>
+            </div>
+
+            {/* Skips list */}
+            {summaryData && summaryData.skips && summaryData.skips.length > 0 && (
+              <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Skipped Rows (no reasons matched):</span>
+                <ul className="text-xs space-y-1 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+                  {summaryData.skips.map((desc, idx) => (
+                    <li key={idx} className="truncate text-slate-600 dark:text-slate-400">
+                      • {desc}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Failures list */}
+            {summaryData && summaryData.failures && summaryData.failures.length > 0 && (
+              <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Failed Rows:</span>
+                <ul className="text-xs space-y-2 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+                  {summaryData.failures.map((f, idx) => (
+                    <li key={idx} className="text-slate-700 dark:text-slate-300">
+                      <span className="font-semibold block truncate text-rose-600 dark:text-rose-400">• {f.description}</span>
+                      <span className="text-[10px] text-slate-400 pl-3">Reason: {f.reason}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs rounded-xl"
+              onClick={() => setSummaryData(null)}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

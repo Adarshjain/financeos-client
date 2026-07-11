@@ -19,7 +19,7 @@ import type {
   UpdateReportRequest,
 } from '@/lib/reports.types';
 import type { CategoryRule, CreateRuleRequest, PagedRules,UpdateRuleRequest } from '@/lib/rules.types';
-import { PagedTransaction, ReviewType,Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
+import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, PagedTransaction, ReviewType,Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 
 import type {
   CreateInvestmentTransactionRequest,
@@ -286,15 +286,15 @@ export const transactionsApi = {
     });
   },
 
-  async batchReview(data: { transactionIds: string[]; reviewType: ReviewType }): Promise<{ updated: number }> {
-    return request<{ updated: number }>('/api/v1/transactions/batch-review', {
+  async batchReview(data: BatchReviewRequest): Promise<BatchReviewResponse> {
+    return request<BatchReviewResponse>('/api/v1/transactions/batch-review', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
-  async batchDelete(data: { transactionIds: string[] }): Promise<{ deleted: number }> {
-    return request<{ deleted: number }>('/api/v1/transactions/batch-delete', {
+  async batchDelete(data: BatchDeleteRequest): Promise<BatchDeleteResponse> {
+    return request<BatchDeleteResponse>('/api/v1/transactions/batch-delete', {
       method: 'POST',
       body: JSON.stringify(data),
     });
