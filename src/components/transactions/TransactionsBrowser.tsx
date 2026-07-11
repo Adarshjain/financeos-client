@@ -65,6 +65,24 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
     return () => clearTimeout(handler);
   }, [search]);
 
+  const fetchReviewCount = useCallback(async (runId: number) => {
+    try {
+      const reviewRes = await searchTransactions(
+        {
+          filters: [{ field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' }],
+          search: null,
+        },
+        0,
+        1,
+      );
+      if (runId === runIdRef.current && reviewRes.success) {
+        setLocalReviewCount(reviewRes.data.totalElements);
+      }
+    } catch {
+      // Ignore background refresh errors
+    }
+  }, []);
+
   const fetchTransactions = useCallback(async (currentPage: number, runId: number) => {
     setLoading(true);
     try {
@@ -136,18 +154,6 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
           setPage(currentPage - 1);
           return;
         }
-
-        const reviewRes = await searchTransactions(
-          {
-            filters: [{ field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' }],
-            search: null,
-          },
-          0,
-          1,
-        );
-        if (reviewRes.success) {
-          setLocalReviewCount(reviewRes.data.totalElements);
-        }
       } else {
         toast.error(res.error.message);
       }
@@ -168,9 +174,15 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
     return () => clearTimeout(timer);
   }, [page, fetchTransactions]);
 
+  useEffect(() => {
+    const runId = runIdRef.current;
+    fetchReviewCount(runId);
+  }, [fetchReviewCount]);
+
   const handleReload = () => {
     const runId = ++runIdRef.current;
     fetchTransactions(page, runId);
+    fetchReviewCount(runId);
   };
 
   const handleSort = (field: string) => {
