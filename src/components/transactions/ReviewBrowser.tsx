@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Check, ChevronDown, Loader2, SlidersHorizontal, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { batchDeleteTransactions, batchReviewTransactions, searchTransactions } from '@/actions/transactions';
@@ -13,10 +13,12 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { FilterClause } from '@/lib/reports.types';
-import type { PagedTransaction, ReviewReason, ReviewType } from '@/lib/transaction.types';
+import type { PagedTransaction, ReviewReason } from '@/lib/transaction.types';
 import { cn, formatDate } from '@/lib/utils';
 
 import { TransactionCard } from './TransactionCard';
@@ -74,16 +76,18 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
     skips: string[];
   } | null>(null);
 
-  const selectedTxns = pagedData?.content.filter(t => selectedIds.includes(t.id)) || [];
-  const presentReasons = Array.from(new Set(
-    selectedTxns.flatMap(t => t.reviewReasons || [])
-  )) as ReviewReason[];
+  const presentReasons = useMemo(() => {
+    const txns = pagedData?.content.filter(t => selectedIds.includes(t.id)) || [];
+    return Array.from(new Set(
+      txns.flatMap(t => t.reviewReasons || [])
+    )) as ReviewReason[];
+  }, [pagedData, selectedIds]);
 
   useEffect(() => {
     if (isApproveDialogOpen) {
       setReasonsToApprove(presentReasons);
     }
-  }, [isApproveDialogOpen, selectedIds.length]);
+  }, [isApproveDialogOpen, presentReasons]);
 
   const accountOptions = accounts.map((a) => ({
     value: a.id,
@@ -451,12 +455,13 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
       <div className="px-4 py-2 flex flex-col sm:flex-row gap-3">
         {/* Search Input */}
         <div className="relative flex-1">
-          <input
+          <Input
             type="text"
             placeholder="Search by description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-700 transition-shadow shadow-sm"
+            className="w-full h-9 rounded-xl text-xs"
+            aria-label="Search transactions by description"
           />
           {searchTerm && (
             <button
@@ -471,19 +476,23 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         {/* Sort select */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">Sort:</span>
-          <select
+          <Select
             value={sortBy}
-            onChange={(e) => {
-              setSortBy(e.target.value);
+            onValueChange={(val) => {
+              setSortBy(val);
               setPage(0);
             }}
-            className="bg-white dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-700 shadow-sm font-semibold"
           >
-            <option value="date,desc">Newest first</option>
-            <option value="date,asc">Oldest first</option>
-            <option value="amount,desc">Highest amount</option>
-            <option value="amount,asc">Lowest amount</option>
-          </select>
+            <SelectTrigger aria-label="Sort transactions" className="w-[140px] h-9 rounded-xl text-xs font-semibold">
+              <SelectValue placeholder="Sort order" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date,desc">Newest first</SelectItem>
+              <SelectItem value="date,asc">Oldest first</SelectItem>
+              <SelectItem value="amount,desc">Highest amount</SelectItem>
+              <SelectItem value="amount,asc">Lowest amount</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -586,7 +595,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
               />
               <label
                 htmlFor="select-all-page"
-                className="text-xs font-semibold text-slate-705 dark:text-slate-200 cursor-pointer select-none"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer select-none"
               >
                 Select All on Page
               </label>
@@ -768,7 +777,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
                   Skipped
                 </span>
               </div>
-              <div className="bg-rose-55 dark:bg-rose-950/20 p-2.5 rounded-xl border border-rose-100 dark:border-rose-900/30">
+              <div className="bg-rose-50 dark:bg-rose-950/20 p-2.5 rounded-xl border border-rose-100 dark:border-rose-900/30">
                 <span className="block text-xl font-bold text-rose-600 dark:text-rose-400 tabular-nums">
                   {summaryData?.failures?.length || 0}
                 </span>
