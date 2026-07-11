@@ -114,9 +114,11 @@ export default function TransactionCRUD({
         isTransactionExcluded: isExcluded,
         isTransactionUnderMonitoring: isMonitored,
         monitoringReason: isMonitored ? monitoringReason : undefined,
-        source: transaction?.source ?? 'manual',
-        reviewType: reviewType,
       };
+      if (isUpdateMode) {
+        transactionRequest.source = transaction?.source ?? 'manual';
+        transactionRequest.reviewType = reviewType;
+      }
       const res = isUpdateMode && transaction
         ? await updateTransaction(transaction.id, transactionRequest)
         : await createTransaction(transactionRequest);
@@ -274,32 +276,37 @@ export default function TransactionCRUD({
         <div
           className="bg-white dark:bg-slate-900/60 rounded-xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-sm flex flex-col gap-3.5"
         >
-          {/* Dropdown for Review Status */}
-          <div className="flex flex-col gap-1">
-            <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Review Status</Label>
-            <Select
-              name="reviewType"
-              value={reviewType}
-              onValueChange={(val) => setReviewType(val as ReviewType)}
-            >
-              <SelectTrigger
-                className="w-full bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 text-xs px-3 h-9 border border-slate-200 dark:border-slate-800 rounded-lg font-semibold shadow-none hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+          {/* Dropdown for Review Status (Only in edit mode) */}
+          {isUpdateMode && (
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Review Status</Label>
+              <Select
+                name="reviewType"
+                value={reviewType}
+                onValueChange={(val) => setReviewType(val as ReviewType)}
               >
-                <SelectValue placeholder="Review Status" />
-              </SelectTrigger>
-              <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-                <SelectItem value="NEEDS_REVIEW" className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
-                  Needs Review
-                </SelectItem>
-                <SelectItem value="AUTO_REVIEWED" className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
-                  Auto Reviewed
-                </SelectItem>
-                <SelectItem value="MANUALLY_REVIEWED" className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
-                  Reviewed
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+                <SelectTrigger
+                  className="w-full bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 text-xs px-3 h-9 border border-slate-200 dark:border-slate-800 rounded-lg font-semibold shadow-none hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+                >
+                  <SelectValue placeholder="Review Status" />
+                </SelectTrigger>
+                <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+                  <SelectItem value="NEEDS_REVIEW" className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                    Needs Review
+                  </SelectItem>
+                  <SelectItem value="AUTO_REVIEWED" className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                    Auto Reviewed
+                  </SelectItem>
+                  <SelectItem value="MANUALLY_REVIEWED" className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                    Reviewed
+                  </SelectItem>
+                  <SelectItem value="NA" className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                    Not applicable
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Custom switches for Exclude and Monitor */}
           <div className="flex flex-col gap-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/50">
