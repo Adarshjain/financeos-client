@@ -8,7 +8,7 @@ export interface TransactionSearchRequest {
 
 export type TransactionSource = 'gmail_transaction_alert' | 'gmail_statement' | 'manual' | 'file_upload';
 
-export type ReviewType = 'NEEDS_REVIEW' | 'AUTO_REVIEWED' | 'MANUALLY_REVIEWED';
+export type ReviewType = 'NEEDS_REVIEW' | 'AUTO_REVIEWED' | 'MANUALLY_REVIEWED' | 'NA';
 
 export type ReviewReason = 'UNRECONCILED' | 'CATEGORY_UNVERIFIED' | 'DUPLICATE_SUSPECT' | 'OTHER';
 
@@ -24,8 +24,10 @@ export interface TransactionBase {
   reviewType?: ReviewType;
 }
 
-export type TransactionRequest = TransactionBase & {
+export type TransactionRequest = Omit<TransactionBase, 'source' | 'reviewType'> & {
   categoryIds: string[];
+  source?: TransactionSource;
+  reviewType?: ReviewType;
 }
 
 export type Transaction = TransactionBase & {
