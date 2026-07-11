@@ -19,7 +19,7 @@ import type {
   UpdateReportRequest,
 } from '@/lib/reports.types';
 import type { CategoryRule, CreateRuleRequest, PagedRules,UpdateRuleRequest } from '@/lib/rules.types';
-import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, PagedTransaction, ReviewType,Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
+import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, PagedTransaction, Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 
 import type {
   CreateInvestmentTransactionRequest,
