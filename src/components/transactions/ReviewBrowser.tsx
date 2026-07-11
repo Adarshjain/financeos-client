@@ -55,6 +55,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sortBy, setSortBy] = useState('date,desc');
+  const [hiddenCount, setHiddenCount] = useState(0);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -156,6 +157,46 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         }
         const visibleIds = new Set(res.data.content.map((t) => t.id));
         setSelectedIds((prev) => prev.filter((id) => visibleIds.has(id)));
+
+        let unfilteredTotal = res.data.totalElements;
+        if (appliedOnlyUpToLastStatement) {
+          const unfilteredFilters: FilterClause[] = [
+            { field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' },
+          ];
+
+          if (activeReasonFilter !== 'ALL') {
+            unfilteredFilters.push({
+              field: 'reviewReason',
+              operator: 'is',
+              value: activeReasonFilter,
+            });
+          }
+
+          if (appliedAccountIds.length < accounts.length) {
+            unfilteredFilters.push({
+              field: 'accountId',
+              operator: 'in',
+              value: appliedAccountIds,
+            });
+          }
+
+          const unfilteredRes = await searchTransactions(
+            {
+              filters: unfilteredFilters,
+              search: debouncedSearch || null,
+            },
+            0,
+            1,
+            sortBy,
+          );
+
+          if (runId !== runIdRef.current) return;
+
+          if (unfilteredRes.success) {
+            unfilteredTotal = unfilteredRes.data.totalElements;
+          }
+        }
+        setHiddenCount(Math.max(0, unfilteredTotal - res.data.totalElements));
       } else {
         toast.error(res.error.message);
       }
@@ -447,11 +488,11 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
       </div>
 
       {/* Statement cutoff warning note */}
-      {appliedOnlyUpToLastStatement && (
+      {appliedOnlyUpToLastStatement && hiddenCount > 0 && (
         <div className="mx-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl flex items-center justify-between gap-3 text-xs text-amber-800 dark:text-amber-300 animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
             <span className="font-semibold">Filter Active:</span>
-            <span>Only showing transactions up to your last statement date.</span>
+            <span>{hiddenCount} {hiddenCount === 1 ? 'transaction is' : 'transactions are'} hidden by the statement filter</span>
           </div>
           <button
             type="button"
