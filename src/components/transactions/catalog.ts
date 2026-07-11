@@ -37,7 +37,7 @@ export const TRANSACTIONS_CATALOG: DatasourceCatalog = {
     { name: 'accountType', label: 'Account Type', type: 'enum', role: 'filter', values: ['bank_account', 'credit_card', 'stock', 'mutual_fund', 'generic'], allowedInReports: [] },
     { name: 'category', label: 'Category', type: 'enum', role: 'filter', dynamic: true, allowedInReports: [] },
     { name: 'reviewType', label: 'Review Type', type: 'enum', role: 'filter', values: ['NEEDS_REVIEW', 'AUTO_REVIEWED', 'MANUALLY_REVIEWED', 'NA'], allowedInReports: [] },
-    { name: 'reviewReason', label: 'Review Reason', type: 'enum', role: 'filter', values: ['UNRECONCILED', 'CATEGORY_UNVERIFIED', 'DUPLICATE_SUSPECT', 'OTHER'], allowedInReports: [] },
+    { name: 'reviewReason', label: 'Review Reason', type: 'enum', role: 'filter', values: ['UNRECONCILED', 'CATEGORY_UNVERIFIED', 'DUPLICATE_SUSPECT'], allowedInReports: [] },
     { name: 'description', label: 'Description', type: 'string', role: 'filter', allowedInReports: [] },
     { name: 'isUnderMonitoring', label: 'Under Monitoring', type: 'boolean', role: 'filter', allowedInReports: [] },
     { name: 'isExcluded', label: 'Excluded', type: 'boolean', role: 'filter', allowedInReports: [] },
