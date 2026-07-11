@@ -209,7 +209,15 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         const mappedFailures = failures.map(f => {
           const txn = pagedData?.content.find(t => t.id === f.id);
           const desc = txn ? (txn.description || txn.sourcedDescription) : `Transaction ID: ${f.id}`;
-          return { description: desc, reason: f.reason };
+          let friendlyReason = f.reason;
+          if (f.reason === 'NOT_FOUND') {
+            friendlyReason = 'Transaction not found';
+          } else if (f.reason === 'NOT_OWNED') {
+            friendlyReason = 'Access denied (not owned)';
+          } else if (f.reason === 'ERROR') {
+            friendlyReason = 'System error occurred';
+          }
+          return { description: desc, reason: friendlyReason };
         });
 
         const mappedSkips = skippedIds.map(id => {
@@ -250,7 +258,15 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         const mappedFailures = failures.map(f => {
           const txn = pagedData?.content.find(t => t.id === f.id);
           const desc = txn ? (txn.description || txn.sourcedDescription) : `Transaction ID: ${f.id}`;
-          return { description: desc, reason: f.reason };
+          let friendlyReason = f.reason;
+          if (f.reason === 'NOT_FOUND') {
+            friendlyReason = 'Transaction not found';
+          } else if (f.reason === 'NOT_OWNED') {
+            friendlyReason = 'Access denied (not owned)';
+          } else if (f.reason === 'ERROR') {
+            friendlyReason = 'System error occurred';
+          }
+          return { description: desc, reason: friendlyReason };
         });
 
         if (failures.length > 0) {
