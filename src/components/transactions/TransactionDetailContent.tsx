@@ -100,7 +100,7 @@ export const TransactionDetailContent = ({
           {transaction.amount >= 0 ? '' : '-'}{formatMoney(Math.abs(transaction.amount))}
         </div>
 
-        {!transaction.balance && (
+        {transaction.balance !== null && transaction.balance !== undefined && (
           <div
             className="text-xs font-semibold text-slate-400 dark:text-slate-500 mt-2 tabular-nums bg-slate-50 dark:bg-slate-900/50 inline-block px-2.5 py-1 rounded-full border border-slate-100 dark:border-slate-800/40">
             Balance: {formatMoney(transaction.balance)}
