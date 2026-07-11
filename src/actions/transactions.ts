@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { ApiError, transactionsApi } from '@/lib/apiClient';
-import type { PagedTransaction, ReviewType,Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
+import type { BatchDeleteResponse, BatchReviewResponse, PagedTransaction, ReviewReason, ReviewType, Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 import type { ApiResult, ErrorResponse } from '@/lib/types';
 
 function handleTransactionError(error: unknown, defaultMessage: string): { success: false; error: ErrorResponse } {
@@ -77,9 +77,10 @@ export async function searchTransactions(
 export async function batchReviewTransactions(
   transactionIds: string[],
   reviewType: ReviewType,
-): Promise<ApiResult<{ updated: number }>> {
+  reviewReasons?: ReviewReason[],
+): Promise<ApiResult<BatchReviewResponse>> {
   try {
-    const data = await transactionsApi.batchReview({ transactionIds, reviewType });
+    const data = await transactionsApi.batchReview({ transactionIds, reviewType, reviewReasons });
     revalidatePath('/transactions');
     revalidatePath('/transactions/review');
     return { success: true, data };
@@ -90,7 +91,7 @@ export async function batchReviewTransactions(
 
 export async function batchDeleteTransactions(
   transactionIds: string[],
-): Promise<ApiResult<{ deleted: number }>> {
+): Promise<ApiResult<BatchDeleteResponse>> {
   try {
     const data = await transactionsApi.batchDelete({ transactionIds });
     revalidatePath('/transactions');
