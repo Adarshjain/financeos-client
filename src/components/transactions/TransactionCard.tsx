@@ -132,7 +132,7 @@ export const TransactionCard = ({
           >
             {transaction.amount >= 0 ? '+' : '-'} {formatMoney(Math.abs(transaction.amount))}
           </div>
-          {!transaction.isTransactionExcluded && (
+          {!transaction.isTransactionExcluded && transaction.balance !== null && transaction.balance !== undefined && (
             <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 tabular-nums">
               Bal: {formatMoney(transaction.balance)}
             </div>

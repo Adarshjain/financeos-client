@@ -33,7 +33,7 @@ export type TransactionRequest = Omit<TransactionBase, 'source' | 'reviewType'> 
 export type Transaction = TransactionBase & {
   id: string;
   createdAt: string;
-  balance: number;
+  balance: number | null;
   categories?: Category[];
   sourcedDescription: string;
   reviewReasons?: ReviewReason[];
