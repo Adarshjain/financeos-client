@@ -52,6 +52,18 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
   const [activeReasonFilter, setActiveReasonFilter] = useState<string>('ALL');
   const runIdRef = useRef(0);
 
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [sortBy, setSortBy] = useState('date,desc');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setPage(0);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
   const [reasonsToApprove, setReasonsToApprove] = useState<ReviewReason[]>([]);
   const [summaryData, setSummaryData] = useState<{
@@ -94,58 +106,67 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
       }
       return;
     }
-
     setLoading(true);
+    try {
+      const filters: FilterClause[] = [
+        { field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' },
+      ];
 
-    const filters: FilterClause[] = [
-      { field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' },
-    ];
+      if (activeReasonFilter !== 'ALL') {
+        filters.push({
+          field: 'reviewReason',
+          operator: 'is',
+          value: activeReasonFilter,
+        });
+      }
 
-    if (activeReasonFilter !== 'ALL') {
-      filters.push({
-        field: 'reviewReason',
-        operator: 'is',
-        value: activeReasonFilter,
-      });
+      if (appliedAccountIds.length < accounts.length) {
+        filters.push({
+          field: 'accountId',
+          operator: 'in',
+          value: appliedAccountIds,
+        });
+      }
+
+      if (appliedOnlyUpToLastStatement) {
+        filters.push({
+          field: 'coveredByStatement',
+          operator: 'is',
+          value: true,
+        });
+      }
+
+      const res = await searchTransactions(
+        {
+          filters,
+          search: debouncedSearch || null,
+        },
+        currentPage,
+        size,
+        sortBy,
+      );
+
+      if (runId !== runIdRef.current) return;
+
+      if (res.success) {
+        setPagedData(res.data);
+        if (res.data.content.length === 0 && res.data.totalElements > 0 && currentPage > 0) {
+          setPage(currentPage - 1);
+          return;
+        }
+        const visibleIds = new Set(res.data.content.map((t) => t.id));
+        setSelectedIds((prev) => prev.filter((id) => visibleIds.has(id)));
+      } else {
+        toast.error(res.error.message);
+      }
+    } catch {
+      toast.error('Failed to load transactions');
+    } finally {
+      if (runId === runIdRef.current) {
+        setLoading(false);
+      }
     }
-
-    if (appliedAccountIds.length < accounts.length) {
-      filters.push({
-        field: 'accountId',
-        operator: 'in',
-        value: appliedAccountIds,
-      });
-    }
-
-    if (appliedOnlyUpToLastStatement) {
-      filters.push({
-        field: 'coveredByStatement',
-        operator: 'is',
-        value: true,
-      });
-    }
-
-    const res = await searchTransactions(
-      {
-        filters,
-        search: null,
-      },
-      currentPage,
-      size,
-      'date,desc',
-    );
-
-    if (runId !== runIdRef.current) return;
-
-    if (res.success) {
-      setPagedData(res.data);
-      const visibleIds = new Set(res.data.content.map((t) => t.id));
-      setSelectedIds((prev) => prev.filter((id) => visibleIds.has(id)));
-    } else {
-      toast.error(res.error.message);
-    }
-    setLoading(false);
-  }, [accounts.length, appliedAccountIds, appliedOnlyUpToLastStatement, activeReasonFilter, size]);
+  }, [accounts.length, appliedAccountIds, appliedOnlyUpToLastStatement, activeReasonFilter, size, debouncedSearch, sortBy]);
 
   useEffect(() => {
     const runId = ++runIdRef.current;
@@ -369,6 +390,67 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         </div>
       )}
 
+      {/* Search & Sort controls */}
+      <div className="px-4 py-2 flex flex-col sm:flex-row gap-3">
+        {/* Search Input */}
+        <div className="relative flex-1">
+          <input
+            type="text"
+            placeholder="Search by description..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-700 transition-shadow shadow-sm"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-650 dark:hover:text-slate-200 text-xs"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+
+        {/* Sort select */}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">Sort:</span>
+          <select
+            value={sortBy}
+            onChange={(e) => {
+              setSortBy(e.target.value);
+              setPage(0);
+            }}
+            className="bg-white dark:bg-slate-950 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-slate-400 dark:focus:ring-slate-700 shadow-sm font-semibold"
+          >
+            <option value="date,desc">Newest first</option>
+            <option value="date,asc">Oldest first</option>
+            <option value="amount,desc">Highest amount</option>
+            <option value="amount,asc">Lowest amount</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Statement cutoff warning note */}
+      {appliedOnlyUpToLastStatement && (
+        <div className="mx-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl flex items-center justify-between gap-3 text-xs text-amber-800 dark:text-amber-300 animate-in fade-in duration-200">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">Filter Active:</span>
+            <span>Only showing transactions up to your last statement date.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setAppliedOnlyUpToLastStatement(false);
+              setDraftOnlyUpToLastStatement(false);
+              setPage(0);
+            }}
+            className="text-[10px] font-bold uppercase tracking-wider bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/40 dark:hover:bg-amber-900/60 px-2.5 py-1 rounded-lg transition-colors text-amber-900 dark:text-amber-200"
+          >
+            Show All
+          </button>
+        </div>
+      )}
+
       {/* Reason Filter Chips */}
       <div className="px-4 py-2 flex flex-wrap gap-2 items-center">
         <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Filter reasons:</span>
@@ -423,6 +505,35 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
           </div>
         ) : (
           <div className="space-y-1">
+            {/* Master Checkbox Header */}
+            <div className="flex items-center px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl mb-2 gap-3.5 shadow-sm">
+              <Checkbox
+                id="select-all-page"
+                checked={
+                  pagedData.content.length > 0 &&
+                  pagedData.content.every((t) => selectedIds.includes(t.id))
+                    ? true
+                    : pagedData.content.some((t) => selectedIds.includes(t.id))
+                    ? 'indeterminate'
+                    : false
+                }
+                onCheckedChange={(checked) => {
+                  if (checked === true) {
+                    const pageIds = pagedData.content.map((t) => t.id);
+                    setSelectedIds(Array.from(new Set([...selectedIds, ...pageIds])));
+                  } else {
+                    const pageIds = pagedData.content.map((t) => t.id);
+                    setSelectedIds(selectedIds.filter((id) => !pageIds.includes(id)));
+                  }
+                }}
+              />
+              <label
+                htmlFor="select-all-page"
+                className="text-xs font-semibold text-slate-705 dark:text-slate-200 cursor-pointer select-none"
+              >
+                Select All on Page
+              </label>
+            </div>
             {pagedData.content.map((transaction, index) => {
               const showDate =
                 index === 0 || transaction.date !== pagedData.content[index - 1].date;
@@ -464,6 +575,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
                   setSelectedIds([]);
                 }}
                 unit="transaction"
+                loading={loading}
               />
             </div>
           </div>

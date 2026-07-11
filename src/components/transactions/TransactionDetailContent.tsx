@@ -6,7 +6,6 @@ import {
   ArrowUpRight,
   Calendar,
   CreditCard,
-  LinkIcon,
   PencilIcon,
   Scale,
   Tag,
@@ -221,14 +220,6 @@ export const TransactionDetailContent = ({
           Edit
         </Button>
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="flex-1 h-9 rounded-lg gap-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-850 border-slate-200 dark:border-slate-850 transition-colors"
-        >
-          <LinkIcon className="h-3.5 w-3.5" />
-          Link
-        </Button>
       </div>
     </div>
   );

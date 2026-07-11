@@ -46,6 +46,7 @@ export default function TransactionCRUD({
   const [isExcluded, setIsExcluded] = useState(transaction?.isTransactionExcluded ?? false);
   const [reviewType, setReviewType] = useState<ReviewType>(transaction?.reviewType ?? 'MANUALLY_REVIEWED');
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const isUpdateMode = !!transaction;
   const formRef = useRef<HTMLFormElement | null>(null);
 
@@ -103,6 +104,7 @@ export default function TransactionCRUD({
       toast.error('Please select an account');
       return;
     }
+    setIsSubmitting(true);
     try {
       const categoryIds = selectedCategories.map(c => c.id);
       const transactionRequest: TransactionRequest = {
@@ -130,6 +132,8 @@ export default function TransactionCRUD({
       }
     } catch (err) {
       toast.error('Error:\n' + (err as Error).message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -392,8 +396,9 @@ export default function TransactionCRUD({
           className="flex-1 rounded-xl h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm transition-all"
           size="lg"
           type="submit"
+          disabled={isSubmitting}
         >
-          Save
+          {isSubmitting ? 'Saving...' : 'Save'}
         </Button>
       </div>
     </form>

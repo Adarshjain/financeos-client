@@ -33,6 +33,11 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sort, setSort] = useState('date,desc');
+  const [localReviewCount, setLocalReviewCount] = useState(needsReviewCount ?? 0);
+
+  useEffect(() => {
+    setLocalReviewCount(needsReviewCount ?? 0);
+  }, [needsReviewCount]);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(50);
   const [loading, setLoading] = useState(false);
@@ -62,75 +67,97 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
 
   const fetchTransactions = useCallback(async (currentPage: number, runId: number) => {
     setLoading(true);
+    try {
+      const cleanFiltersList = appliedFilters.filter((clause) => {
+        const fieldDef = TRANSACTIONS_CATALOG.fields.find((f) => f.name === clause.field);
+        if (!fieldDef || !clause.operator) return false;
+        const v = clause.value;
 
-    const cleanFiltersList = appliedFilters.filter((clause) => {
-      const fieldDef = TRANSACTIONS_CATALOG.fields.find((f) => f.name === clause.field);
-      if (!fieldDef || !clause.operator) return false;
-      const v = clause.value;
+        const op = clause.operator;
+        const isRelativeValueless = [
+          'this_month',
+          'this_week',
+          'this_year',
+          'previous_month',
+          'previous_week',
+          'previous_year',
+          'today',
+          'yesterday',
+          'current_fy',
+          'prev_fy',
+          'all_time',
+        ].includes(op);
 
-      const op = clause.operator;
-      const isRelativeValueless = [
-        'this_month',
-        'this_week',
-        'this_year',
-        'previous_month',
-        'previous_week',
-        'previous_year',
-        'today',
-        'yesterday',
-        'current_fy',
-        'prev_fy',
-        'all_time',
-      ].includes(op);
+        if (isRelativeValueless) return true;
 
-      if (isRelativeValueless) return true;
-
-      if (op === 'between') {
-        if (!v || typeof v !== 'object') return false;
-        if (fieldDef.type === 'number') {
-          const r = v as { from: number; to: number };
-          return Number.isFinite(r.from) && Number.isFinite(r.to);
-        } else if (fieldDef.type === 'date') {
-          const r = v as { from: string; to: string };
-          return r.from !== '' && r.to !== '';
+        if (op === 'between') {
+          if (!v || typeof v !== 'object') return false;
+          if (fieldDef.type === 'number') {
+            const r = v as { from: number; to: number };
+            return Number.isFinite(r.from) && Number.isFinite(r.to);
+          } else if (fieldDef.type === 'date') {
+            const r = v as { from: string; to: string };
+            return r.from !== '' && r.to !== '';
+          }
+          return false;
         }
-        return false;
+
+        if (['last_x_days', 'last_x_months', 'last_x_years'].includes(op)) {
+          if (!v || typeof v !== 'object' || !('amount' in v)) return false;
+          return Number.isFinite((v as { amount: number }).amount);
+        }
+
+        if (fieldDef.type === 'boolean') {
+          return typeof v === 'boolean';
+        }
+
+        if (Array.isArray(v)) {
+          return v.length > 0;
+        }
+
+        return v !== undefined && v !== null && v !== '';
+      });
+
+      const res = await searchTransactions(
+        {
+          filters: cleanFiltersList,
+          search: debouncedSearch.trim() || null,
+        },
+        currentPage,
+        size,
+        sort,
+      );
+
+      if (runId !== runIdRef.current) return;
+
+      if (res.success) {
+        setPagedData(res.data);
+        if (res.data.content.length === 0 && res.data.totalElements > 0 && currentPage > 0) {
+          setPage(currentPage - 1);
+          return;
+        }
+
+        const reviewRes = await searchTransactions(
+          {
+            filters: [{ field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' }],
+            search: null,
+          },
+          0,
+          1,
+        );
+        if (reviewRes.success) {
+          setLocalReviewCount(reviewRes.data.totalElements);
+        }
+      } else {
+        toast.error(res.error.message);
       }
-
-      if (['last_x_days', 'last_x_months', 'last_x_years'].includes(op)) {
-        if (!v || typeof v !== 'object' || !('amount' in v)) return false;
-        return Number.isFinite((v as { amount: number }).amount);
+    } catch {
+      toast.error('Failed to load transactions');
+    } finally {
+      if (runId === runIdRef.current) {
+        setLoading(false);
       }
-
-      if (fieldDef.type === 'boolean') {
-        return typeof v === 'boolean';
-      }
-
-      if (Array.isArray(v)) {
-        return v.length > 0;
-      }
-
-      return v !== undefined && v !== null && v !== '';
-    });
-
-    const res = await searchTransactions(
-      {
-        filters: cleanFiltersList,
-        search: debouncedSearch.trim() || null,
-      },
-      currentPage,
-      size,
-      sort,
-    );
-
-    if (runId !== runIdRef.current) return;
-
-    if (res.success) {
-      setPagedData(res.data);
-    } else {
-      toast.error(res.error.message);
     }
-    setLoading(false);
   }, [appliedFilters, debouncedSearch, size, sort]);
 
   useEffect(() => {
@@ -195,9 +222,9 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
           <Link href="/transactions/review">
             <Button variant="outline" className="relative gap-2 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all">
               <span>Review</span>
-              {needsReviewCount !== undefined && needsReviewCount > 0 && (
+              {localReviewCount !== undefined && localReviewCount > 0 && (
                 <span className="flex h-5 w-5 min-w-[1.25rem] px-1 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">
-                  {needsReviewCount}
+                  {localReviewCount}
                 </span>
               )}
             </Button>
@@ -410,6 +437,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
                   setSize(newSize);
                   setPage(0);
                 }}
+                loading={loading}
                 unit="transaction"
               />
             </div>

@@ -26,6 +26,7 @@ interface TablePaginationProps {
   onSizeChange?: (size: number) => void;
   /** Noun for the total count (singular); pluralized with a trailing "s". */
   unit?: string;
+  loading?: boolean;
 }
 
 export function TablePagination({
@@ -33,6 +34,7 @@ export function TablePagination({
   onPageChange,
   onSizeChange,
   unit = 'row',
+  loading = false,
 }: TablePaginationProps) {
   // Always offer the current size, even if it isn't one of the presets.
   const sizes = PAGE_SIZE_OPTIONS.includes(page.size)
@@ -51,6 +53,7 @@ export function TablePagination({
           <Select
             value={String(page.size)}
             onValueChange={(val) => onSizeChange(Number(val))}
+            disabled={loading}
           >
             <SelectTrigger className="w-[110px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none h-8">
               <SelectValue />
@@ -70,7 +73,7 @@ export function TablePagination({
               variant="outline"
               size="icon"
               className="h-8 w-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-800 transition-colors"
-              disabled={page.number <= 0}
+              disabled={page.number <= 0 || loading}
               onClick={() => onPageChange?.(page.number - 1)}
             >
               <ChevronLeft className="h-4 w-4 text-slate-500" />
@@ -82,7 +85,7 @@ export function TablePagination({
               variant="outline"
               size="icon"
               className="h-8 w-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-800 transition-colors"
-              disabled={page.number >= page.totalPages - 1}
+              disabled={page.number >= page.totalPages - 1 || loading}
               onClick={() => onPageChange?.(page.number + 1)}
             >
               <ChevronRight className="h-4 w-4 text-slate-500" />
