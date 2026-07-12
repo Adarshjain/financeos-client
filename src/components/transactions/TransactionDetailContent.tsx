@@ -160,11 +160,11 @@ export const TransactionDetailContent = ({
           </div>
 
           {/* Categories */}
-          <div className="flex items-start flex-col justify-between py-3 px-4 text-sm gap-4">
+          <div className="flex items-start justify-between py-3 px-4 text-sm gap-4">
             <span className="text-slate-400 dark:text-slate-500 flex items-center gap-2 font-medium mt-0.5">
               <Tag className="h-4 w-4 text-slate-400" /> Categories
             </span>
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1 flex-end">
               {(transaction.categories ?? []).length > 0 ? (
                 transaction.categories?.map((category) => (
                   <Badge
@@ -202,24 +202,16 @@ export const TransactionDetailContent = ({
             </div>
           </div>
         </div>
-        <DeleteTransaction transaction={transaction} onSuccess={onDeleteSuccess} />
-      </div>
-
-      {/* Modal Actions Footer */}
-      <div
-        className="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/40 flex gap-2 shrink-0">
-
-
         <Button
           variant="outline"
           size="sm"
           onClick={onEditClick}
-          className="flex-1 h-9 rounded-lg gap-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-850 border-slate-200 dark:border-slate-850 transition-colors"
+          className="w-full h-9 rounded-lg gap-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-850 border-slate-200 dark:border-slate-850 transition-colors"
         >
           <PencilIcon className="h-3.5 w-3.5" />
           Edit
         </Button>
-
+        <DeleteTransaction transaction={transaction} onSuccess={onDeleteSuccess} />
       </div>
     </div>
   );

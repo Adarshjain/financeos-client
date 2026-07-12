@@ -12,7 +12,14 @@ import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Account } from '@/lib/account.types';
@@ -79,7 +86,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
   const presentReasons = useMemo(() => {
     const txns = pagedData?.content.filter(t => selectedIds.includes(t.id)) || [];
     return Array.from(new Set(
-      txns.flatMap(t => t.reviewReasons || [])
+      txns.flatMap(t => t.reviewReasons || []),
     )) as ReviewReason[];
   }, [pagedData, selectedIds]);
 
@@ -275,7 +282,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
             succeededCount: succeededIds.length,
             skippedCount: skippedIds.length,
             failures: mappedFailures,
-            skips: mappedSkips
+            skips: mappedSkips,
           });
         } else {
           toast.success(`Successfully approved ${succeededIds.length} transaction(s)!`);
@@ -319,7 +326,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
             succeededCount: succeededIds.length,
             skippedCount: 0,
             failures: mappedFailures,
-            skips: []
+            skips: [],
           });
         } else {
           toast.success(`Successfully deleted ${succeededIds.length} transaction(s)!`);
@@ -452,7 +459,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
       )}
 
       {/* Search & Sort controls */}
-      <div className="px-4 py-2 flex flex-col sm:flex-row gap-3">
+      <div className="px-4 flex flex-col sm:flex-row gap-3">
         {/* Search Input */}
         <div className="relative flex-1">
           <Input
@@ -473,9 +480,8 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
           )}
         </div>
 
-        {/* Sort select */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 whitespace-nowrap">Sort:</span>
+          {/* Sort select */}
           <Select
             value={sortBy}
             onValueChange={(val) => {
@@ -483,7 +489,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
               setPage(0);
             }}
           >
-            <SelectTrigger aria-label="Sort transactions" className="w-[140px] h-9 rounded-xl text-xs font-semibold">
+            <SelectTrigger aria-label="Sort transactions" className="flex-1 h-9 rounded-xl text-xs font-semibold">
               <SelectValue placeholder="Sort order" />
             </SelectTrigger>
             <SelectContent>
@@ -493,12 +499,34 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
               <SelectItem value="amount,asc">Lowest amount</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* Reason select */}
+          <Select
+            value={activeReasonFilter}
+            onValueChange={(val) => {
+              setActiveReasonFilter(val);
+              setPage(0);
+              setSelectedIds([]);
+            }}
+          >
+            <SelectTrigger aria-label="Filter transactions by reason"
+                           className="flex-1 h-9 rounded-xl text-xs font-semibold">
+              <SelectValue placeholder="Reason filter" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All</SelectItem>
+              <SelectItem value="UNRECONCILED">Unreconciled</SelectItem>
+              <SelectItem value="CATEGORY_UNVERIFIED">Category</SelectItem>
+              <SelectItem value="DUPLICATE_SUSPECT">Duplicate</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       {/* Statement cutoff warning note */}
       {appliedOnlyUpToLastStatement && hiddenCount > 0 && (
-        <div className="mx-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl flex items-center justify-between gap-3 text-xs text-amber-800 dark:text-amber-300 animate-in fade-in duration-200">
+        <div
+          className="mx-4 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 rounded-xl flex items-center justify-between gap-3 text-xs text-amber-800 dark:text-amber-300 animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
             <span className="font-semibold">Filter Active:</span>
             <span>{hiddenCount} {hiddenCount === 1 ? 'transaction is' : 'transactions are'} hidden by the statement filter</span>
@@ -517,42 +545,8 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         </div>
       )}
 
-      {/* Reason Filter Chips */}
-      <div className="px-4 py-2 flex flex-wrap gap-2 items-center">
-        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Filter reasons:</span>
-        <div className="flex flex-wrap gap-1.5">
-          {[
-            { id: 'ALL', label: 'All' },
-            { id: 'UNRECONCILED', label: 'Unreconciled' },
-            { id: 'CATEGORY_UNVERIFIED', label: 'Category' },
-            { id: 'DUPLICATE_SUSPECT', label: 'Duplicate' },
-          ].map((chip) => {
-            const isActive = activeReasonFilter === chip.id;
-            return (
-              <button
-                key={chip.id}
-                type="button"
-                onClick={() => {
-                  setActiveReasonFilter(chip.id);
-                  setPage(0);
-                  setSelectedIds([]);
-                }}
-                className={cn(
-                  'px-3 py-1 text-xs font-semibold rounded-full border transition-all duration-200',
-                  isActive
-                    ? 'bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900 dark:border-slate-100 shadow-sm'
-                    : 'bg-white text-slate-650 border-slate-200 hover:bg-slate-50 dark:bg-slate-950 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-900'
-                )}
-              >
-                {chip.label}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
       {/* List Container */}
-      <div className="px-2 pb-24">
+      <div className="px-2">
         {loading && !pagedData ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-400">
             <Loader2 className="h-8 w-8 animate-spin mb-2" />
@@ -572,7 +566,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         ) : (
           <div className="space-y-1">
             {/* Master Checkbox Header */}
-            <div className="flex items-center px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl mb-2 gap-3.5 shadow-sm">
+            <div className="flex items-center mb-2 gap-3.5 px-3 shadow-sm pt-1">
               <Checkbox
                 id="select-all-page"
                 checked={
@@ -580,8 +574,8 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
                   pagedData.content.every((t) => selectedIds.includes(t.id))
                     ? true
                     : pagedData.content.some((t) => selectedIds.includes(t.id))
-                    ? 'indeterminate'
-                    : false
+                      ? 'indeterminate'
+                      : false
                 }
                 onCheckedChange={(checked) => {
                   if (checked === true) {
@@ -626,7 +620,9 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
             })}
 
             {/* Pagination */}
-            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+            <div
+              className="fixed bottom-2 left-3 right-3 lg:left-[calc(50%+8rem)] lg:right-auto lg:-translate-x-1/2 lg:w-auto z-50 flex items-center justify-between lg:justify-start gap-4 px-5 py-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300">
+              {/*<div className="px-3 py-2 border-t border-slate-100 dark:border-slate-800 sticky bottom-0 bg-white z-10">*/}
               <TablePagination
                 page={{
                   number: pagedData.number,
@@ -651,7 +647,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
       {/* Sticky Bulk Action Toolbar */}
       {selectedIds.length > 0 && (
         <div
-          className="fixed bottom-16 left-3 right-3 lg:left-[calc(50%+8rem)] lg:right-auto lg:-translate-x-1/2 lg:w-auto z-50 flex items-center justify-between lg:justify-start gap-4 px-5 py-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300"
+          className="fixed bottom-[100px] left-3 right-3 lg:left-[calc(50%+8rem)] lg:right-auto lg:-translate-x-1/2 lg:w-auto z-50 flex items-center justify-between lg:justify-start gap-4 px-5 py-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300"
         >
           <span className="text-xs font-semibold whitespace-nowrap pl-1">
             {selectedIds.length} selected
@@ -700,7 +696,8 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
           </DialogHeader>
           <div className="py-4 space-y-3">
             {presentReasons.length === 0 ? (
-              <p className="text-xs text-slate-500 italic">No specific review reasons found on selected transactions.</p>
+              <p className="text-xs text-slate-500 italic">No specific review reasons found on selected
+                transactions.</p>
             ) : (
               presentReasons.map((reason) => {
                 let label: string = reason;
@@ -734,7 +731,8 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
             )}
           </div>
           <DialogFooter className="flex gap-2">
-            <Button variant="outline" size="sm" className="text-xs rounded-xl" onClick={() => setIsApproveDialogOpen(false)}>
+            <Button variant="outline" size="sm" className="text-xs rounded-xl"
+                    onClick={() => setIsApproveDialogOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -750,7 +748,9 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
       </Dialog>
 
       {/* Batch Summary Dialog */}
-      <Dialog open={summaryData !== null} onOpenChange={(open) => { if (!open) setSummaryData(null); }}>
+      <Dialog open={summaryData !== null} onOpenChange={(open) => {
+        if (!open) setSummaryData(null);
+      }}>
         <DialogContent className="sm:max-w-[480px] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
           <DialogHeader>
             <DialogTitle className="text-slate-900 dark:text-white">Batch Action Summary</DialogTitle>
@@ -761,7 +761,8 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
           <div className="py-4 space-y-4">
             {/* Counts */}
             <div className="grid grid-cols-3 gap-2 text-center">
-              <div className="bg-emerald-50 dark:bg-emerald-950/20 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
+              <div
+                className="bg-emerald-50 dark:bg-emerald-950/20 p-2.5 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
                 <span className="block text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
                   {summaryData?.succeededCount || 0}
                 </span>
@@ -769,7 +770,8 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
                   Succeeded
                 </span>
               </div>
-              <div className="bg-amber-50 dark:bg-amber-950/20 p-2.5 rounded-xl border border-amber-100 dark:border-amber-900/30">
+              <div
+                className="bg-amber-50 dark:bg-amber-950/20 p-2.5 rounded-xl border border-amber-100 dark:border-amber-900/30">
                 <span className="block text-xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">
                   {summaryData?.skippedCount || 0}
                 </span>
@@ -777,7 +779,8 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
                   Skipped
                 </span>
               </div>
-              <div className="bg-rose-50 dark:bg-rose-950/20 p-2.5 rounded-xl border border-rose-100 dark:border-rose-900/30">
+              <div
+                className="bg-rose-50 dark:bg-rose-950/20 p-2.5 rounded-xl border border-rose-100 dark:border-rose-900/30">
                 <span className="block text-xl font-bold text-rose-600 dark:text-rose-400 tabular-nums">
                   {summaryData?.failures?.length || 0}
                 </span>
@@ -791,7 +794,8 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
             {summaryData && summaryData.skips && summaryData.skips.length > 0 && (
               <div className="space-y-1.5 max-h-[120px] overflow-y-auto pr-1">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Skipped Rows (no reasons matched):</span>
-                <ul className="text-xs space-y-1 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+                <ul
+                  className="text-xs space-y-1 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
                   {summaryData.skips.map((desc, idx) => (
                     <li key={idx} className="truncate text-slate-600 dark:text-slate-400">
                       • {desc}
@@ -805,10 +809,12 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
             {summaryData && summaryData.failures && summaryData.failures.length > 0 && (
               <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1">
                 <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Failed Rows:</span>
-                <ul className="text-xs space-y-2 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
+                <ul
+                  className="text-xs space-y-2 bg-slate-50 dark:bg-slate-900 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800">
                   {summaryData.failures.map((f, idx) => (
                     <li key={idx} className="text-slate-700 dark:text-slate-300">
-                      <span className="font-semibold block truncate text-rose-600 dark:text-rose-400">• {f.description}</span>
+                      <span
+                        className="font-semibold block truncate text-rose-600 dark:text-rose-400">• {f.description}</span>
                       <span className="text-[10px] text-slate-400 pl-3">Reason: {f.reason}</span>
                     </li>
                   ))}

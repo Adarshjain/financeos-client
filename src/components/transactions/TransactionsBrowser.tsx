@@ -235,7 +235,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
             <Button variant="outline" className="relative gap-2 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all">
               <span>Review</span>
               {localReviewCount !== undefined && localReviewCount > 0 && (
-                <span className="flex h-5 w-5 min-w-[1.25rem] px-1 items-center justify-center rounded-full bg-amber-500 text-[10px] font-bold text-white">
+                <span className="flex h-5 min-w-[1.25rem] px-1 items-center justify-center rounded-md bg-amber-500 text-[10px] font-bold text-white">
                   {localReviewCount}
                 </span>
               )}

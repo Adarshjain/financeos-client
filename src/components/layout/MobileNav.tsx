@@ -70,6 +70,8 @@ const rulesRoute: NavItem = {
   icon: <Tags className="h-5 w-5" />,
 };
 
+const HIDE_ON_MOBILE: string[] = ['/transactions/review'];
+
 const navItems: NavItem[] = [
   dashboardRoute,
   transactionRoute,
@@ -82,6 +84,10 @@ interface MobileNavProps {
 
 export function MobileNav({ userEmail }: MobileNavProps) {
   const pathname = usePathname();
+
+  if (HIDE_ON_MOBILE.includes(pathname)) {
+    return;
+  }
 
   return (
     <nav
