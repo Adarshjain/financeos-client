@@ -10,4 +10,5 @@ export interface CategorizeResponse {
   categories: Category[];
   ruleId: string | null;
   fromRule: boolean;
+  mcc?: string | null;
 }

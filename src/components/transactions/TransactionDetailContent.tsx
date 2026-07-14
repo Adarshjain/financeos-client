@@ -181,6 +181,18 @@ export const TransactionDetailContent = ({
             </div>
           </div>
 
+          {/* MCC Code */}
+          {transaction.mcc && (
+            <div className="flex items-center justify-between py-3 px-4 text-sm">
+              <span className="text-slate-400 dark:text-slate-500 flex items-center gap-2 font-medium">
+                <Tag className="h-4 w-4 text-slate-400" /> MCC Code
+              </span>
+              <span className="font-semibold font-mono text-slate-800 dark:text-slate-200">
+                {transaction.mcc}
+              </span>
+            </div>
+          )}
+
           {/* Source */}
           <div className="flex items-center justify-between py-3 px-4 text-sm">
             <span className="text-slate-400 dark:text-slate-500 flex items-center gap-2 font-medium">

@@ -20,6 +20,7 @@ export interface TransactionBase {
   isTransactionExcluded?: boolean;
   isTransactionUnderMonitoring?: boolean;
   monitoringReason?: string;
+  mcc?: string | null;
   source: TransactionSource;
   reviewType?: ReviewType;
 }
