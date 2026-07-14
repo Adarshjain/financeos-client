@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { FormFieldTextArea } from '@/components/ui/form-field-textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { MccInput, isValidMcc } from '@/components/forms/MccInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
@@ -45,6 +46,7 @@ export default function TransactionCRUD({
   const [monitoringReason, setMonitoringReason] = useState<string>(transaction?.monitoringReason ?? '');
   const [isExcluded, setIsExcluded] = useState(transaction?.isTransactionExcluded ?? false);
   const [reviewType, setReviewType] = useState<ReviewType>(transaction?.reviewType ?? 'MANUALLY_REVIEWED');
+  const [mcc, setMcc] = useState<string>(transaction?.mcc ?? '');
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isUpdateMode = !!transaction;
@@ -71,7 +73,6 @@ export default function TransactionCRUD({
     const description = e.target.value.trim();
     if (
       description.length < 3 ||
-      selectedCategories.length > 0 ||
       suggestedDescriptionRef.current === description
     ) {
       return;
@@ -85,6 +86,9 @@ export default function TransactionCRUD({
           (c) => categories.find((existing) => existing.id === c.id) ?? c,
         );
         setSelectedCategories((prev) => (prev.length === 0 ? suggested : prev));
+      }
+      if (result.success && result.data.mcc) {
+        setMcc((prev) => (!prev ? result.data.mcc! : prev));
       }
     } catch {
       // Silent: auto-categorization is a best-effort suggestion.
@@ -104,6 +108,11 @@ export default function TransactionCRUD({
       toast.error('Please select an account');
       return;
     }
+    const rawMcc = mcc.trim();
+    if (!isValidMcc(rawMcc)) {
+      toast.error('MCC code must be exactly 4 digits (or left empty).');
+      return;
+    }
     setIsSubmitting(true);
     try {
       const categoryIds = selectedCategories.map(c => c.id);
@@ -116,6 +125,7 @@ export default function TransactionCRUD({
         isTransactionExcluded: isExcluded,
         isTransactionUnderMonitoring: isMonitored,
         monitoringReason: isMonitored ? monitoringReason : undefined,
+        mcc: rawMcc || (isUpdateMode ? '' : undefined),
       };
       if (isUpdateMode) {
         transactionRequest.source = transaction?.source ?? 'manual';
@@ -274,6 +284,14 @@ export default function TransactionCRUD({
               loading={creatingCategory}
             />
           </div>
+
+          {/* MCC Code Input */}
+          <MccInput
+            name="mcc"
+            value={mcc}
+            onChange={setMcc}
+            showHelperText={false}
+          />
         </div>
 
         {/* Group 2: Status & Flags Card */}

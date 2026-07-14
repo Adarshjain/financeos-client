@@ -10,18 +10,21 @@ export interface CategoryRule {
   appliedCount: number;
   lastAppliedAt: string | null;
   createdAt: string;
+  mcc?: string | null;
 }
 
 export interface CreateRuleRequest {
   merchantKey: string;
   displayName?: string;
   categoryIds: string[];
+  mcc?: string | null;
 }
 
 export interface UpdateRuleRequest {
   merchantKey?: string;
   displayName?: string;
   categoryIds?: string[];
+  mcc?: string | null;
 }
 
 export interface PagedRules {

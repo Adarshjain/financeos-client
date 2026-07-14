@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { MccInput, isValidMcc } from '@/components/forms/MccInput';
 import { Category } from '@/lib/categories.types';
 import { CategoryRule, PagedRules } from '@/lib/rules.types';
 import { cn } from '@/lib/utils';
@@ -49,6 +50,7 @@ export function RulesBrowser({
   // Form States
   const [merchantKey, setMerchantKey] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [mcc, setMcc] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
   const [creatingCategory, setCreatingCategory] = useState(false);
   const [formSubmitting, setFormSubmitting] = useState(false);
@@ -141,6 +143,7 @@ export function RulesBrowser({
   const openCreateDialog = () => {
     setMerchantKey('');
     setDisplayName('');
+    setMcc('');
     setSelectedCategories([]);
     setIsCreateOpen(true);
   };
@@ -149,6 +152,7 @@ export function RulesBrowser({
   const openEditDialog = (rule: CategoryRule) => {
     setEditingRule(rule);
     setDisplayName(rule.displayName || '');
+    setMcc(rule.mcc || '');
     setSelectedCategories(rule.categories);
   };
 
@@ -176,6 +180,11 @@ export function RulesBrowser({
       return;
     }
 
+    if (!isValidMcc(mcc)) {
+      toast.error('MCC code must be exactly 4 digits (or left empty).');
+      return;
+    }
+
     setFormSubmitting(true);
     const categoryIds = selectedCategories.map((c) => c.id);
 
@@ -184,6 +193,7 @@ export function RulesBrowser({
         const res = await updateRule(editingRule.id, {
           displayName: displayName.trim() || undefined,
           categoryIds,
+          mcc: mcc.trim() === '' ? '' : mcc.trim(),
         });
 
         if (res.success) {
@@ -198,6 +208,7 @@ export function RulesBrowser({
           merchantKey: merchantKey.trim(),
           displayName: displayName.trim() || undefined,
           categoryIds,
+          mcc: mcc.trim() || undefined,
         });
 
         if (res.success) {
@@ -350,6 +361,11 @@ export function RulesBrowser({
                       >
                         {rule.source}
                       </Badge>
+                      {rule.mcc && (
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                          MCC: {rule.mcc}
+                        </span>
+                      )}
                     </div>
                   </div>
 
@@ -489,6 +505,12 @@ export function RulesBrowser({
                   onChange={(e) => setDisplayName(e.target.value)}
                 />
               </div>
+
+              {/* MCC Code Input */}
+              <MccInput
+                value={mcc}
+                onChange={setMcc}
+              />
 
               {/* Category Combobox */}
               <div className="space-y-1">
