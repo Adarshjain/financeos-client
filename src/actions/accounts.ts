@@ -4,7 +4,6 @@ import { revalidatePath } from 'next/cache';
 
 import { Account, AccountRequest } from '@/lib/account.types';
 import { accountsApi, ApiError } from '@/lib/apiClient';
-import { CardCycleSummary } from '@/lib/statement.types';
 import { ApiResult, ErrorResponse } from '@/lib/types';
 
 function handleAccountError(error: unknown, defaultMessage: string): { success: false; error: ErrorResponse } {
@@ -65,14 +64,5 @@ export async function listAccounts(): Promise<ApiResult<Account[]>> {
     return { success: true, data: list };
   } catch (error) {
     return handleAccountError(error, 'Failed to list accounts');
-  }
-}
-
-export async function getAccountCardSummary(accountId: string): Promise<ApiResult<CardCycleSummary>> {
-  try {
-    const summary = await accountsApi.getCardSummary(accountId);
-    return { success: true, data: summary };
-  } catch (error) {
-    return handleAccountError(error, 'Failed to fetch card cycle summary');
   }
 }

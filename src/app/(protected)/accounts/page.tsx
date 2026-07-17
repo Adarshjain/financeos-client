@@ -11,8 +11,6 @@ import {
 import { JSX } from 'react';
 
 import { AccountFormWrapper } from '@/components/accounts/AccountFormWrapper';
-import { BalanceProvenance } from '@/components/accounts/BalanceProvenance';
-import { CardCycleWidget } from '@/components/accounts/CardCycleWidget';
 import { DeleteAccount } from '@/components/accounts/DeleteAccount';
 import { StatementsDialog } from '@/components/accounts/StatementsDialog';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +18,6 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Account, BankAccount, CreditCard } from '@/lib/account.types';
 import { accountsApi } from '@/lib/apiClient';
-import { CardCycleSummary } from '@/lib/statement.types';
 import { AccountType } from '@/lib/types';
 import { formatMoney, getPositionLabel } from '@/lib/utils';
 import { cn } from '@/lib/utils';
@@ -46,18 +43,6 @@ export default async function AccountsPage() {
 
   const bankAccounts = accounts.filter(a => a.type === AccountType.BANK_ACCOUNT) as BankAccount[];
   const creditCards = accounts.filter(a => a.type === AccountType.CREDIT_CARD) as CreditCard[];
-
-  const cardSummaries = await Promise.all(
-    creditCards.map(async (cc) => {
-      try {
-        const summary = await accountsApi.getCardSummary(cc.id);
-        return { id: cc.id, summary };
-      } catch {
-        return { id: cc.id, summary: null };
-      }
-    }),
-  );
-  const summaryMap = new Map<string, CardCycleSummary | null>(cardSummaries.map(({ id, summary }) => [id, summary]));
 
   const totalCreditLimit = creditCards.reduce(
     (sum, a) => sum + (a.creditLimit || 0),
@@ -220,7 +205,13 @@ export default async function AccountsPage() {
                       ) : null}
                     </div>
 
-                    <BalanceProvenance account={account} />
+                    <div
+                      className="pt-2 flex justify-between items-baseline border-t border-dashed border-slate-100 dark:border-slate-800/40">
+                      <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Balance</span>
+                      <span className="text-lg font-extrabold text-slate-900 dark:text-white font-mono tracking-tight">
+                        {formatMoney(account.openingBalance)}
+                      </span>
+                    </div>
 
                     {account.ingestFromDate ? (
                       <div className="text-[9px] text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-1">
@@ -298,9 +289,14 @@ export default async function AccountsPage() {
                       ) : null}
                     </div>
 
-                    <BalanceProvenance account={account} />
-
-                    <CardCycleWidget summary={summaryMap.get(account.id)} fallbackCreditLimit={account.creditLimit} />
+                    {/* Stats & Credit Limits */}
+                    <div
+                      className="pt-2 flex justify-between items-baseline border-t border-dashed border-slate-100 dark:border-slate-800/40">
+                      <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Credit Limit</span>
+                      <span className="text-lg font-bold text-slate-900 dark:text-white font-mono tracking-tight">
+                        {formatMoney(account.creditLimit)}
+                      </span>
+                    </div>
 
                     <div
                       className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-50 dark:border-slate-800/30 text-[10px] text-slate-500 dark:text-slate-400">
