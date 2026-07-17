@@ -234,6 +234,18 @@ export const accountsApi = {
   },
 };
 
+// Statements API
+export const statementsApi = {
+  async listByAccount(accountId: string): Promise<import('@/lib/statement.types').StatementSummary[]> {
+    return request<import('@/lib/statement.types').StatementSummary[]>(`/api/v1/accounts/${accountId}/statements`);
+  },
+
+  async getById(statementId: string): Promise<import('@/lib/statement.types').StatementDetail> {
+    return request<import('@/lib/statement.types').StatementDetail>(`/api/v1/statements/${statementId}`);
+  },
+};
+
+
 // Transactions API
 export const transactionsApi = {
   async list(
