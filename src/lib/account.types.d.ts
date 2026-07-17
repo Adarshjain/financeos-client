@@ -51,10 +51,6 @@ interface AccountBase {
   financialPosition?: FinancialPosition;
   description?: string;
   ingestFromDate?: string | null;
-  anchoredBalance?: number | string | null;
-  anchorStatementId?: string | null;
-  anchorDate?: string | null;
-  unreconciledTransactionCount?: number;
 }
 
 export type BankAccount = AccountBase & {
