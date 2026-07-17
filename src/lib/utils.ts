@@ -5,7 +5,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatMoney(amount: string | number | undefined): string {
+export function formatMoney(amount: string | number | null | undefined): string {
   if (amount === undefined || amount === null) return '₹0.00';
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
   if (isNaN(num)) return '₹0.00';
@@ -20,7 +20,8 @@ export function formatMoney(amount: string | number | undefined): string {
   return formatter.format(num);
 }
 
-export function formatDate(date: string | Date): string {
+export function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return '—';
   const d = typeof date === 'string' ? new Date(date) : date;
   return d.toLocaleDateString('en-IN', {
     year: '2-digit',
