@@ -256,41 +256,69 @@ export function IngestForm({ accounts }: IngestFormProps) {
                 </Alert>
               )}
 
-              <div className="border border-slate-100 dark:border-slate-800/80 rounded-xl overflow-hidden bg-white dark:bg-slate-950">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-slate-50/50 dark:bg-slate-900/50">
-                      <TableHead className="font-semibold text-xs text-slate-500 dark:text-slate-400">Filename</TableHead>
-                      <TableHead className="font-semibold text-xs text-slate-500 dark:text-slate-400 w-32">Status</TableHead>
-                      <TableHead className="font-semibold text-xs text-slate-500 dark:text-slate-400 w-32 text-right">Transactions</TableHead>
-                      <TableHead className="font-semibold text-xs text-slate-500 dark:text-slate-400">Details</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {result.fileDetails.map((file: FileSummary, idx) => (
-                      <TableRow key={idx} className="border-b border-slate-100 dark:border-slate-900">
-                        <TableCell className="font-medium text-sm text-slate-700 dark:text-slate-300 max-w-[200px] truncate">
+              <div className="space-y-3">
+                {/* Mobile Cards View */}
+                <div className="md:hidden space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
+                  {result.fileDetails.map((file: FileSummary, idx) => (
+                    <div key={idx} className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-2 text-xs">
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 break-all">
                           {file.filename}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={file.status === 'SUCCESS' ? 'success' : 'danger'}>
-                            {file.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="font-mono text-sm text-right pr-6">
-                          {file.linesParsed}
-                        </TableCell>
-                        <TableCell className="text-xs text-slate-500 dark:text-slate-400">
-                          {file.errorMessage ? (
-                            <span className="text-red-500 dark:text-red-400">{file.errorMessage}</span>
-                          ) : (
-                            <span className="text-slate-400 dark:text-slate-500">—</span>
-                          )}
-                        </TableCell>
+                        </span>
+                        <Badge variant={file.status === 'SUCCESS' ? 'success' : 'danger'} className="shrink-0">
+                          {file.status}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-900 font-mono">
+                        <span>Transactions parsed:</span>
+                        <span className="font-bold text-slate-800 dark:text-slate-200">{file.linesParsed}</span>
+                      </div>
+                      {file.errorMessage && (
+                        <div className="text-red-500 dark:text-red-400 pt-1 border-t border-red-100 dark:border-red-950/50">
+                          {file.errorMessage}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block border border-slate-100 dark:border-slate-800/80 rounded-xl overflow-hidden bg-white dark:bg-slate-950">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-slate-50/50 dark:bg-slate-900/50">
+                        <TableHead className="font-semibold text-xs text-slate-500 dark:text-slate-400">Filename</TableHead>
+                        <TableHead className="font-semibold text-xs text-slate-500 dark:text-slate-400 w-32">Status</TableHead>
+                        <TableHead className="font-semibold text-xs text-slate-500 dark:text-slate-400 w-32 text-right">Transactions</TableHead>
+                        <TableHead className="font-semibold text-xs text-slate-500 dark:text-slate-400">Details</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {result.fileDetails.map((file: FileSummary, idx) => (
+                        <TableRow key={idx} className="border-b border-slate-100 dark:border-slate-900">
+                          <TableCell className="font-medium text-sm text-slate-700 dark:text-slate-300 max-w-[200px] truncate">
+                            {file.filename}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={file.status === 'SUCCESS' ? 'success' : 'danger'}>
+                              {file.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="font-mono text-sm text-right pr-6">
+                            {file.linesParsed}
+                          </TableCell>
+                          <TableCell className="text-xs text-slate-500 dark:text-slate-400">
+                            {file.errorMessage ? (
+                              <span className="text-red-500 dark:text-red-400">{file.errorMessage}</span>
+                            ) : (
+                              <span className="text-slate-400 dark:text-slate-500">—</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             </CardContent>
           </Card>
