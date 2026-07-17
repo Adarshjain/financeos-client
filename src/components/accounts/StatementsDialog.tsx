@@ -14,7 +14,9 @@ import {
 } from 'lucide-react';
 import React, { JSX, useEffect, useState } from 'react';
 
+import { getAccountCardSummary } from '@/actions/accounts';
 import { getStatementDetail, listStatementsByAccount } from '@/actions/statements';
+import { CardCycleWidget } from '@/components/accounts/CardCycleWidget';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -51,6 +53,7 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
   const [selectedDetail, setSelectedDetail] = useState<StatementDetail | null>(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
+  const [cardSummary, setCardSummary] = useState<import('@/lib/statement.types').CardCycleSummary | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -58,6 +61,7 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
     } else {
       setSelectedStatementId(null);
       setSelectedDetail(null);
+      setCardSummary(null);
     }
   }, [open, account.id]);
 
@@ -69,6 +73,14 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
       setStatements(res.data);
     } else if (!res.success) {
       setError(res.error.message || 'Failed to load statements');
+    }
+    if (account.type === 'credit_card') {
+      const summaryRes = await getAccountCardSummary(account.id);
+      if (summaryRes.success && summaryRes.data) {
+        setCardSummary(summaryRes.data);
+      } else {
+        setCardSummary(null);
+      }
     }
     setIsLoading(false);
   };
@@ -142,21 +154,35 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
             <span>{error}</span>
           </div>
         ) : statements.length === 0 ? (
-          <div className="text-center py-12 px-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-3">
-            <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto text-slate-400">
-              <Upload className="w-6 h-6" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-slate-900 dark:text-white">
-                No statement history found
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                Statements accumulate automatically when ingested via file upload or Gmail automatic sync. Upload your statements in settings or verify your sync rules.
-              </p>
+          <div className="space-y-4">
+            {account.type === 'credit_card' && (
+              <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">Current Billing Cycle Summary</div>
+                <CardCycleWidget summary={cardSummary} fallbackCreditLimit={(account as any).creditLimit || 0} />
+              </div>
+            )}
+            <div className="text-center py-12 px-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-3">
+              <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto text-slate-400">
+                <Upload className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                  No statement history found
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                  Statements accumulate automatically when ingested via file upload or Gmail automatic sync. Upload your statements in settings or verify your sync rules.
+                </p>
+              </div>
             </div>
           </div>
         ) : (
           <div className="space-y-6">
+            {account.type === 'credit_card' && (
+              <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase mb-2">Current Billing Cycle Summary</div>
+                <CardCycleWidget summary={cardSummary} fallbackCreditLimit={(account as any).creditLimit || 0} />
+              </div>
+            )}
             {/* Summary Banner */}
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 text-xs">
               <div className="flex items-center gap-6">
