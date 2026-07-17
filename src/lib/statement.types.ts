@@ -56,3 +56,27 @@ export interface StatementDetail extends StatementSummary {
   cardDetails: StatementCardDetails | null;
   lines: StatementLine[];
 }
+
+export interface CardCycleHistoryItem {
+  periodEnd: string | null;
+  totalPurchases: number | null;
+  paymentsReceived: number | null;
+  financeCharges: number | null;
+  feesAndCharges: number | null;
+  rewardPointsBalance: number | null;
+}
+
+export interface CardCycleSummary {
+  statementId: string | null;
+  periodStart: string | null;
+  periodEnd: string | null;
+  totalAmountDue: number | null;
+  minimumAmountDue: number | null;
+  paymentDueDate: string | null;
+  daysUntilDue: number | null;
+  creditLimit: number | null;
+  availableCreditLimit: number | null;
+  utilizationPct: number | null;
+  rewardPointsBalance: number | null;
+  history: CardCycleHistoryItem[];
+}

@@ -232,6 +232,10 @@ export const accountsApi = {
       method: 'DELETE',
     });
   },
+
+  async getCardCycleSummary(id: string): Promise<import('@/lib/statement.types').CardCycleSummary> {
+    return request<import('@/lib/statement.types').CardCycleSummary>(`/api/v1/accounts/${id}/card-summary`);
+  },
 };
 
 // Statements API

@@ -12,8 +12,9 @@ import {
   Upload,
   XCircle,
 } from 'lucide-react';
-import React, { JSX, useEffect, useState } from 'react';
+import React, { JSX, useCallback, useEffect, useState } from 'react';
 
+import { getCardCycleSummary } from '@/actions/accounts';
 import { getStatementDetail, listStatementsByAccount } from '@/actions/statements';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -34,7 +35,8 @@ import {
 } from '@/components/ui/table';
 import { Account } from '@/lib/account.types';
 import { StatementDetail, StatementSummary, StatementVerdict, ReviewType } from '@/lib/statement.types';
-import { formatDate, formatMoney } from '@/lib/utils';
+import { AccountType } from '@/lib/types';
+import { cn, formatDate, formatMoney, formatNullableMoney } from '@/lib/utils';
 
 interface StatementsDialogProps {
   account: Account;
@@ -52,16 +54,10 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
   const [detailError, setDetailError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open) {
-      loadStatements();
-    } else {
-      setSelectedStatementId(null);
-      setSelectedDetail(null);
-    }
-  }, [open, account.id]);
+  const [cardSummary, setCardSummary] = useState<import('@/lib/statement.types').CardCycleSummary | null>(null);
+  const [isLoadingCardSummary, setIsLoadingCardSummary] = useState(false);
 
-  const loadStatements = async () => {
+  const loadStatements = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     const res = await listStatementsByAccount(account.id);
@@ -71,7 +67,27 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
       setError(res.error.message || 'Failed to load statements');
     }
     setIsLoading(false);
-  };
+
+    if (account.type === AccountType.CREDIT_CARD) {
+      setIsLoadingCardSummary(true);
+      const sumRes = await getCardCycleSummary(account.id);
+      if (sumRes.success && sumRes.data) {
+        setCardSummary(sumRes.data);
+      } else {
+        setCardSummary(null);
+      }
+      setIsLoadingCardSummary(false);
+    }
+  }, [account.id, account.type]);
+
+  useEffect(() => {
+    if (open) {
+      loadStatements();
+    } else {
+      setSelectedStatementId(null);
+      setSelectedDetail(null);
+    }
+  }, [open, loadStatements]);
 
   const handleSelectStatement = async (statementId: string) => {
     setSelectedStatementId(statementId);
@@ -97,11 +113,23 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
   const getVerdictBadge = (verdict: StatementVerdict) => {
     switch (verdict) {
       case 'AUTO_INGEST':
-        return <Badge variant="success">Auto Ingested</Badge>;
+        return (
+          <span title="Statement parsed clean with 100% chain continuity and valid checksums. Automatically accepted.">
+            <Badge variant="success" className="cursor-help">Auto Ingested</Badge>
+          </span>
+        );
       case 'NEEDS_REVIEW':
-        return <Badge variant="warning">Needs Review</Badge>;
+        return (
+          <span title="Statement parsed with minor issues or chain validation gaps (< 99%). Review required before final reconciliation.">
+            <Badge variant="warning" className="cursor-help">Needs Review</Badge>
+          </span>
+        );
       case 'REJECTED':
-        return <Badge variant="danger">Rejected</Badge>;
+        return (
+          <span title="Statement failed critical validation (broken checksum, missing opening/closing balances, or unparseable format).">
+            <Badge variant="danger" className="cursor-help">Rejected</Badge>
+          </span>
+        );
       default:
         return <Badge variant="secondary">{verdict}</Badge>;
     }
@@ -126,10 +154,149 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
       <DialogContent className="sm:max-w-5xl sm:max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-            <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-450" />
+            <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             Statements Archive — {account.name}
           </DialogTitle>
         </DialogHeader>
+
+        {/* Card Cycle Summary Card for Credit Cards */}
+        {account.type === AccountType.CREDIT_CARD && (
+          <div className="border border-slate-200 dark:border-slate-800 rounded-2xl p-5 bg-white dark:bg-slate-900/60 space-y-5 shadow-sm mb-2">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <FileText className="w-4 h-4 text-amber-500" />
+                <h3 className="font-bold text-sm text-slate-900 dark:text-white">Card Cycle Summary</h3>
+              </div>
+              {cardSummary?.periodEnd && (
+                <span className="text-xs font-mono text-slate-500">
+                  Statement Date: {formatDate(cardSummary.periodEnd)}
+                </span>
+              )}
+            </div>
+
+            {isLoadingCardSummary ? (
+              <div className="flex items-center justify-center py-6 text-slate-400 gap-2">
+                <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
+                <span className="text-xs">Loading card cycle summary...</span>
+              </div>
+            ) : !cardSummary || !cardSummary.statementId ? (
+              <div className="text-center py-4 text-xs text-slate-400">
+                No active statement summary available for this credit card.
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Hero Metric & Secondary Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center bg-slate-50/70 dark:bg-slate-950/40 p-4 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                  <div className="md:col-span-1 space-y-1 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 pb-3 md:pb-0 md:pr-4">
+                    <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase">Total Amount Due</span>
+                    <div className="text-2xl font-extrabold font-mono text-slate-900 dark:text-white tabular-nums">
+                      {formatNullableMoney(cardSummary.totalAmountDue)}
+                    </div>
+                    {cardSummary.daysUntilDue !== null && cardSummary.daysUntilDue !== undefined ? (
+                      <div className="pt-1">
+                        {cardSummary.daysUntilDue > 0 ? (
+                          <Badge variant={cardSummary.daysUntilDue <= 3 ? 'warning' : 'secondary'} className="text-[10px]">
+                            Due in {cardSummary.daysUntilDue} days
+                          </Badge>
+                        ) : cardSummary.daysUntilDue === 0 ? (
+                          <Badge variant="warning" className="text-[10px] bg-amber-500 text-white">
+                            Due today
+                          </Badge>
+                        ) : (
+                          <Badge variant="danger" className="text-[10px]">
+                            {Math.abs(cardSummary.daysUntilDue)} days overdue
+                          </Badge>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  <div className="md:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                    <div>
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500 block">Minimum Due</span>
+                      <span className="font-bold font-mono text-slate-900 dark:text-white mt-1 block tabular-nums">
+                        {formatNullableMoney(cardSummary.minimumAmountDue)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500 block">Payment Due Date</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 mt-1 block">
+                        {formatDate(cardSummary.paymentDueDate)}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500 block">Reward Points</span>
+                      <span className="font-bold font-mono text-amber-600 dark:text-amber-400 mt-1 block tabular-nums">
+                        {cardSummary.rewardPointsBalance !== null && cardSummary.rewardPointsBalance !== undefined
+                          ? cardSummary.rewardPointsBalance.toLocaleString()
+                          : '—'}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center text-[11px] text-slate-400 dark:text-slate-500">
+                        <span>Utilization</span>
+                        <span className={cn('font-bold font-mono', cardSummary.utilizationPct !== null && cardSummary.utilizationPct !== undefined ? (cardSummary.utilizationPct < 30 ? 'text-emerald-600 dark:text-emerald-400' : cardSummary.utilizationPct < 70 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400') : 'text-slate-700 dark:text-slate-300')}>
+                          {cardSummary.utilizationPct !== null && cardSummary.utilizationPct !== undefined ? `${cardSummary.utilizationPct}%` : '—'}
+                        </span>
+                      </div>
+                      {cardSummary.utilizationPct !== null && cardSummary.utilizationPct !== undefined ? (
+                        <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mt-1.5">
+                          <div
+                            className={cn('h-full rounded-full transition-all duration-300', cardSummary.utilizationPct < 30 ? 'bg-emerald-500' : cardSummary.utilizationPct < 70 ? 'bg-amber-500' : 'bg-red-500')}
+                            style={{ width: `${Math.min(100, Math.max(0, Number(cardSummary.utilizationPct)))}%` }}
+                          />
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cycle History Table */}
+                {cardSummary.history && cardSummary.history.length > 0 && (
+                  <div className="space-y-2">
+                    <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                      Past Cycle History ({cardSummary.history.length})
+                    </h4>
+                    <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden max-h-[220px] overflow-y-auto">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-slate-50/50 dark:bg-slate-900/40 text-[11px]">
+                            <TableHead>Period End</TableHead>
+                            <TableHead className="text-right">Total Purchases</TableHead>
+                            <TableHead className="text-right">Payments Received</TableHead>
+                            <TableHead className="text-right">Finance Charges</TableHead>
+                            <TableHead className="text-right">Fees & Charges</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {cardSummary.history.map((h, i) => (
+                            <TableRow key={i} className="text-xs">
+                              <TableCell className="font-medium font-mono">
+                                {formatDate(h.periodEnd)}
+                              </TableCell>
+                              <TableCell className="text-right font-mono tabular-nums font-medium">
+                                {formatNullableMoney(h.totalPurchases)}
+                              </TableCell>
+                              <TableCell className="text-right font-mono tabular-nums text-emerald-600 dark:text-emerald-400 font-semibold">
+                                {h.paymentsReceived !== null && h.paymentsReceived !== undefined ? `+${formatMoney(h.paymentsReceived)}` : '—'}
+                              </TableCell>
+                              <TableCell className="text-right font-mono tabular-nums text-red-600 dark:text-red-400">
+                                {formatNullableMoney(h.financeCharges)}
+                              </TableCell>
+                              <TableCell className="text-right font-mono tabular-nums">
+                                {formatNullableMoney(h.feesAndCharges)}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-3">
@@ -188,14 +355,18 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                     <TableHead className="text-right">Opening</TableHead>
                     <TableHead className="text-right">Closing</TableHead>
                     <TableHead className="text-right">Net Flow</TableHead>
+                    <TableHead>Source</TableHead>
+                    <TableHead className="text-right">Txns</TableHead>
                     <TableHead>Verdict</TableHead>
                     <TableHead className="text-right">Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {statements.map((s) => {
-                    const netFlow = (s.totalCredits ?? 0) - (s.totalDebits ?? 0);
-                    const isNetPositive = netFlow >= 0;
+                    const hasCredits = s.totalCredits !== null && s.totalCredits !== undefined;
+                    const hasDebits = s.totalDebits !== null && s.totalDebits !== undefined;
+                    const netFlow = hasCredits || hasDebits ? (s.totalCredits ?? 0) - (s.totalDebits ?? 0) : null;
+                    const isNetPositive = netFlow !== null && netFlow >= 0;
                     return (
                       <TableRow key={s.id}>
                         <TableCell className="font-medium whitespace-nowrap">
@@ -213,9 +384,17 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                           {s.closingBalance !== null ? formatMoney(s.closingBalance) : '—'}
                         </TableCell>
                         <TableCell className="text-right font-mono tabular-nums">
-                          <span className={isNetPositive ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-red-600 dark:text-red-400 font-semibold'}>
+                          {netFlow === null ? '—' : <span className={isNetPositive ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-red-600 dark:text-red-400 font-semibold'}>
                             {isNetPositive ? `+${formatMoney(netFlow)}` : formatMoney(netFlow)}
+                          </span>}
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-xs font-mono uppercase bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-400">
+                            {s.source === 'file_upload' ? 'Upload' : s.source === 'gmail' ? 'Email' : s.source}
                           </span>
+                        </TableCell>
+                        <TableCell className="text-right font-mono tabular-nums text-slate-600 dark:text-slate-400 text-xs">
+                          {s.transactionCount !== null && s.transactionCount !== undefined ? s.transactionCount : '—'}
                         </TableCell>
                         <TableCell>{getVerdictBadge(s.verdict)}</TableCell>
                         <TableCell className="text-right">
@@ -271,9 +450,9 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                       <span className="text-slate-400 dark:text-slate-500 block">Checksum Status</span>
                       <div className="flex items-center gap-1.5 mt-1">
                         {selectedDetail.checksumOk ? (
-                          <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-450" />
+                          <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                         ) : (
-                          <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-450" />
+                          <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                         )}
                         <span className="font-semibold text-slate-800 dark:text-slate-200">
                           {selectedDetail.checksumOk ? 'SHA-256 Validated' : 'Checksum Warning'}
@@ -312,13 +491,13 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                         <div>
                           <span className="text-slate-400 block text-[11px]">Total Due</span>
                           <span className="font-bold font-mono text-slate-900 dark:text-white">
-                            {formatMoney(selectedDetail.cardDetails.totalAmountDue)}
+                            {formatNullableMoney(selectedDetail.cardDetails.totalAmountDue)}
                           </span>
                         </div>
                         <div>
                           <span className="text-slate-400 block text-[11px]">Min Due</span>
                           <span className="font-bold font-mono text-slate-900 dark:text-white">
-                            {formatMoney(selectedDetail.cardDetails.minimumAmountDue)}
+                            {formatNullableMoney(selectedDetail.cardDetails.minimumAmountDue)}
                           </span>
                         </div>
                         <div>
@@ -330,43 +509,43 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                         <div>
                           <span className="text-slate-400 block text-[11px]">Credit Limit</span>
                           <span className="font-bold font-mono text-slate-900 dark:text-white">
-                            {formatMoney(selectedDetail.cardDetails.creditLimit)}
+                            {formatNullableMoney(selectedDetail.cardDetails.creditLimit)}
                           </span>
                         </div>
                         <div>
                           <span className="text-slate-400 block text-[11px]">Available Credit</span>
                           <span className="font-bold font-mono text-slate-900 dark:text-white">
-                            {formatMoney(selectedDetail.cardDetails.availableCreditLimit)}
+                            {formatNullableMoney(selectedDetail.cardDetails.availableCreditLimit)}
                           </span>
                         </div>
                         <div>
                           <span className="text-slate-400 block text-[11px]">Finance Charges</span>
                           <span className="font-bold font-mono text-red-600 dark:text-red-400">
-                            {formatMoney(selectedDetail.cardDetails.financeCharges)}
+                            {formatNullableMoney(selectedDetail.cardDetails.financeCharges)}
                           </span>
                         </div>
                         <div>
                           <span className="text-slate-400 block text-[11px]">Fees & Charges</span>
                           <span className="font-bold font-mono text-slate-900 dark:text-white">
-                            {formatMoney(selectedDetail.cardDetails.feesAndCharges)}
+                            {formatNullableMoney(selectedDetail.cardDetails.feesAndCharges)}
                           </span>
                         </div>
                         <div>
                           <span className="text-slate-400 block text-[11px]">Previous Balance</span>
                           <span className="font-bold font-mono text-slate-900 dark:text-white">
-                            {formatMoney(selectedDetail.cardDetails.previousBalance)}
+                            {formatNullableMoney(selectedDetail.cardDetails.previousBalance)}
                           </span>
                         </div>
                         <div>
                           <span className="text-slate-400 block text-[11px]">Payments Received</span>
                           <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400">
-                            {formatMoney(selectedDetail.cardDetails.paymentsReceived)}
+                            {formatNullableMoney(selectedDetail.cardDetails.paymentsReceived)}
                           </span>
                         </div>
                         <div>
                           <span className="text-slate-400 block text-[11px]">Total Purchases</span>
                           <span className="font-bold font-mono text-slate-900 dark:text-white">
-                            {formatMoney(selectedDetail.cardDetails.totalPurchases)}
+                            {formatNullableMoney(selectedDetail.cardDetails.totalPurchases)}
                           </span>
                         </div>
                         <div>
@@ -441,14 +620,14 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                                   </TableCell>
                                   <TableCell className="text-center">
                                     {line.chainValid === null ? (
-                                      <span className="text-slate-350 dark:text-slate-600">—</span>
+                                      <span className="text-slate-400 dark:text-slate-600">—</span>
                                     ) : line.chainValid ? (
                                       <span title="Chain continuity valid">
-                                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-450 inline-block" />
+                                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 inline-block" />
                                       </span>
                                     ) : (
                                       <span title="Chain continuity broken">
-                                        <XCircle className="w-4 h-4 text-amber-600 dark:text-amber-450 inline-block" />
+                                        <XCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 inline-block" />
                                       </span>
                                     )}
                                   </TableCell>

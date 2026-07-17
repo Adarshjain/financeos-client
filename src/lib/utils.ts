@@ -20,6 +20,13 @@ export function formatMoney(amount: string | number | null | undefined): string 
   return formatter.format(num);
 }
 
+export function formatNullableMoney(amount: string | number | null | undefined): string {
+  if (amount === undefined || amount === null) return '—';
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(num)) return '—';
+  return formatMoney(num);
+}
+
 export function formatDate(date: string | Date | null | undefined): string {
   if (!date) return '—';
   const d = typeof date === 'string' ? new Date(date) : date;
