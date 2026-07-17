@@ -66,3 +66,14 @@ export async function listAccounts(): Promise<ApiResult<Account[]>> {
     return handleAccountError(error, 'Failed to list accounts');
   }
 }
+
+export async function getCardCycleSummary(
+  accountId: string,
+): Promise<ApiResult<import('@/lib/statement.types').CardCycleSummary>> {
+  try {
+    const summary = await accountsApi.getCardCycleSummary(accountId);
+    return { success: true, data: summary };
+  } catch (error) {
+    return handleAccountError(error, 'Failed to fetch card cycle summary');
+  }
+}
