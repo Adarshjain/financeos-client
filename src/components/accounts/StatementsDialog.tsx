@@ -80,13 +80,27 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
     }
   }, [account.id, account.type]);
 
-  useEffect(() => {
-    if (open) {
-      loadStatements();
-    } else {
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (!newOpen) {
       setSelectedStatementId(null);
       setSelectedDetail(null);
     }
+  };
+
+  useEffect(() => {
+    if (!open) return;
+
+    let isMounted = true;
+    queueMicrotask(() => {
+      if (isMounted) {
+        loadStatements();
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
   }, [open, loadStatements]);
 
   const handleSelectStatement = async (statementId: string) => {
@@ -149,7 +163,7 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-5xl sm:max-h-[85vh] overflow-y-auto">
         <DialogHeader>
