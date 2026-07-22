@@ -1,16 +1,13 @@
 'use client';
 
-import { ArrowDown, ArrowUp, Loader2, Plus, Search, SlidersHorizontal } from 'lucide-react';
+import { ArrowDown, ArrowUp, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { searchTransactions } from '@/actions/transactions';
-import type { DynamicOptions } from '@/components/reports/catalog';
-import { defaultFilterClause, FilterRow } from '@/components/reports/FilterRow';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { FilterClause } from '@/lib/reports.types';
@@ -19,6 +16,7 @@ import { formatDate } from '@/lib/utils';
 
 import { TRANSACTIONS_CATALOG } from './catalog';
 import { TransactionCard } from './TransactionCard';
+import { TransactionFilterBar } from './TransactionFilterBar';
 import { TransactionFormWrapper } from './TransactionFormWrapper';
 
 interface TransactionsBrowserProps {
@@ -29,7 +27,6 @@ interface TransactionsBrowserProps {
 
 export function TransactionsBrowser({ accounts, categories, needsReviewCount }: TransactionsBrowserProps) {
   const [appliedFilters, setAppliedFilters] = useState<FilterClause[]>([]);
-  const [draftFilters, setDraftFilters] = useState<FilterClause[]>([]);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sort, setSort] = useState('date,desc');
@@ -42,20 +39,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
   const [size, setSize] = useState(50);
   const [loading, setLoading] = useState(false);
   const [pagedData, setPagedData] = useState<PagedTransaction | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
   const runIdRef = useRef(0);
-
-  const toggleFilters = () => {
-    if (!showFilters) {
-      setDraftFilters(appliedFilters);
-    }
-    setShowFilters(!showFilters);
-  };
-
-  const dynamicOptions: DynamicOptions = {
-    category: categories.map((c) => ({ id: c.name, name: c.name })),
-    accountId: accounts.map((a) => ({ id: a.id, name: a.name })),
-  };
 
   // Debounce search
   useEffect(() => {
@@ -196,46 +180,16 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
     setPage(0);
   };
 
-  const addFilter = () => {
-    const field = TRANSACTIONS_CATALOG.fields.find((f) => f.name === 'amount');
-    if (!field) return;
-    const operator = TRANSACTIONS_CATALOG.operators.number[0] ?? 'equals';
-    setDraftFilters((prev) => [...prev, defaultFilterClause(TRANSACTIONS_CATALOG, field, operator)]);
-  };
-
-  const updateFilter = (index: number, clause: FilterClause) => {
-    setDraftFilters((prev) => {
-      const next = [...prev];
-      next[index] = clause;
-      return next;
-    });
-  };
-
-  const removeFilter = (index: number) => {
-    setDraftFilters((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleApplyFilters = () => {
-    setAppliedFilters(draftFilters);
-    setPage(0);
-  };
-
-  const handleClearAll = () => {
-    setDraftFilters([]);
-    setAppliedFilters([]);
-    setPage(0);
-  };
-
   return (
-    <div className="space-y-1">
-      <div className="flex justify-between items-center px-4 pt-4 pb-1">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
+    <div className="space-y-0.5">
+      <div className="flex justify-between items-center px-4 pt-2.5 pb-0.5">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
         <div className="flex items-center gap-2">
           <Link href="/transactions/review">
-            <Button variant="outline" className="relative gap-2 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all">
+            <Button variant="outline" size="sm" className="relative gap-1.5 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all h-8 text-xs">
               <span>Review</span>
               {localReviewCount !== undefined && localReviewCount > 0 && (
-                <span className="flex h-5 min-w-[1.25rem] px-1 items-center justify-center rounded-md bg-amber-500 text-[10px] font-bold text-white">
+                <span className="flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-md bg-amber-500 text-[10px] font-bold text-white">
                   {localReviewCount}
                 </span>
               )}
@@ -245,143 +199,50 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
             categories={categories}
             accounts={accounts}
             onSuccess={handleReload}
-            trigger={<Button className="rounded-xl">Create</Button>}
+            trigger={<Button size="sm" className="rounded-xl h-8 text-xs">Create</Button>}
           />
         </div>
       </div>
 
-      {/* Search and Filters Toggle */}
-      <div className="flex flex-wrap items-center gap-2 px-4">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Search descriptions, accounts, categories..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(0);
-            }}
-            className="pl-9 pr-4 rounded-xl bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 focus-visible:ring-emerald-500 focus-visible:border-transparent transition-all"
-          />
-        </div>
-        <Button
-          variant={showFilters ? 'secondary' : 'outline'}
-          className={`gap-2 rounded-xl transition-all ${
-            showFilters
-              ? 'bg-slate-100 dark:bg-slate-850 border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white'
-              : 'hover:bg-slate-50 dark:hover:bg-slate-900'
-          }`}
-          onClick={toggleFilters}
-        >
-          <SlidersHorizontal className="h-4 w-4" />
-          <span>Filters</span>
-          {appliedFilters.length > 0 && (
-            <span className="flex h-4.5 w-4.5 min-w-[1.125rem] px-1 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white transition-all scale-100">
-              {appliedFilters.length}
-            </span>
-          )}
-        </Button>
-      </div>
-
-      {/* Collapsible Filter Panel */}
-      {showFilters && (
-        <div className="mx-4 p-4 bg-slate-50/80 dark:bg-slate-900/60 backdrop-blur-md border border-slate-200/60 dark:border-slate-800/80 rounded-2xl space-y-4 shadow-sm shadow-slate-100/10 dark:shadow-none transition-all duration-300">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <SlidersHorizontal className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
-              <h3 className="text-xs font-semibold text-slate-700 dark:text-slate-300">Filters Draft</h3>
-            </div>
-            {(draftFilters.length > 0 || appliedFilters.length > 0) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs text-rose-500 hover:text-rose-600 dark:hover:text-rose-400 h-8 hover:bg-rose-50 dark:hover:bg-rose-950/20 px-2.5 rounded-lg"
-                onClick={handleClearAll}
-              >
-                Clear all
-              </Button>
-            )}
-          </div>
-
-          {draftFilters.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 px-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-white/40 dark:bg-slate-950/20">
-              <SlidersHorizontal className="h-6 w-6 text-slate-400 dark:text-slate-500 mb-1.5" />
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">No filter rules configured</p>
-              <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 text-center">Click &quot;Add filter&quot; to define rules and search transactions.</p>
-            </div>
-          ) : (
-            <div className="relative flex flex-col gap-3">
-              {draftFilters.map((clause, i) => (
-                <Fragment key={i}>
-                  {i > 0 && (
-                    <div className="relative flex justify-center items-center my-1">
-                      <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                        <div className="w-full border-t border-slate-200 dark:border-slate-850" />
-                      </div>
-                      <span className="relative z-10 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200/40 dark:border-slate-700/40 tracking-wider uppercase">
-                        and
-                      </span>
-                    </div>
-                  )}
-                  <FilterRow
-                    catalog={TRANSACTIONS_CATALOG}
-                    dynamicOptions={dynamicOptions}
-                    value={clause}
-                    onChange={(c) => updateFilter(i, c)}
-                    onRemove={() => removeFilter(i)}
-                  />
-                </Fragment>
-              ))}
-            </div>
-          )}
-
-          <div className="flex gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="flex-1 h-9.5 rounded-xl border-dashed bg-white dark:bg-slate-950 font-medium gap-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border-slate-300 hover:border-slate-400 dark:border-slate-800 dark:hover:border-slate-700 shadow-none transition-colors"
-              onClick={addFilter}
-            >
-              <Plus className="mr-1 h-4 w-4" />
-              Add filter
-            </Button>
-            <Button
-              type="button"
-              variant="default"
-              size="sm"
-              className="flex-1 h-9.5 rounded-xl font-semibold bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-500/20 shadow-sm transition-colors"
-              onClick={handleApplyFilters}
-            >
-              Apply Filters
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Mobile-First Transaction Filter Bar */}
+      <TransactionFilterBar
+        accounts={accounts}
+        categories={categories}
+        appliedFilters={appliedFilters}
+        onFiltersChange={(nextFilters) => {
+          setAppliedFilters(nextFilters);
+          setPage(0);
+        }}
+        search={search}
+        onSearchChange={(nextSearch) => {
+          setSearch(nextSearch);
+          setPage(0);
+        }}
+      />
 
       {/* Sort Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2 border-b border-slate-100 dark:border-slate-800">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-500">Sort:</span>
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-1 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-medium text-slate-500">Sort:</span>
           <Button
             variant={sort.startsWith('date') ? 'secondary' : 'outline'}
             size="sm"
             onClick={() => handleSort('date')}
-            className="gap-1 h-8 rounded-full text-xs"
+            className="gap-1 h-7 rounded-full text-[11px] px-2.5"
           >
             Date
-            {sort === 'date,desc' && <ArrowDown className="h-3.5 w-3.5" />}
-            {sort === 'date,asc' && <ArrowUp className="h-3.5 w-3.5" />}
+            {sort === 'date,desc' && <ArrowDown className="h-3 w-3" />}
+            {sort === 'date,asc' && <ArrowUp className="h-3 w-3" />}
           </Button>
           <Button
             variant={sort.startsWith('amount') ? 'secondary' : 'outline'}
             size="sm"
             onClick={() => handleSort('amount')}
-            className="gap-1 h-8 rounded-full text-xs"
+            className="gap-1 h-7 rounded-full text-[11px] px-2.5"
           >
             Amount
-            {sort === 'amount,desc' && <ArrowDown className="h-3.5 w-3.5" />}
-            {sort === 'amount,asc' && <ArrowUp className="h-3.5 w-3.5" />}
+            {sort === 'amount,desc' && <ArrowDown className="h-3 w-3" />}
+            {sort === 'amount,asc' && <ArrowUp className="h-3 w-3" />}
           </Button>
         </div>
 
@@ -421,7 +282,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
               return (
                 <Fragment key={transaction.id}>
                   {showDate && (
-                    <div className="text-lg font-medium pl-2 pb-1 pt-2 sticky top-0 bg-slate-50 dark:bg-slate-900 dark:text-slate-300 z-10">
+                    <div className="text-sm font-medium pl-2 pt-2 sticky top-0 bg-slate-50 dark:bg-slate-900 dark:text-slate-300 z-10">
                       {formatDate(transaction.date)}
                     </div>
                   )}
