@@ -269,7 +269,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                           {file.status}
                         </Badge>
                       </div>
-                      <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-900 font-mono">
+                      <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-900 tabular-nums">
                         <span>Transactions parsed:</span>
                         <span className="font-bold text-slate-800 dark:text-slate-200">{file.linesParsed}</span>
                       </div>
@@ -304,7 +304,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                               {file.status}
                             </Badge>
                           </TableCell>
-                          <TableCell className="font-mono text-sm text-right pr-6">
+                          <TableCell className="tabular-nums text-sm text-right pr-6">
                             {file.linesParsed}
                           </TableCell>
                           <TableCell className="text-xs text-slate-500 dark:text-slate-400">
@@ -425,7 +425,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                             <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[280px]">
                               {file.name}
                             </span>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 tabular-nums">
                               {(file.size / 1024).toFixed(1)} KB
                             </span>
                           </div>

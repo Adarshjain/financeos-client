@@ -115,26 +115,26 @@ export default async function InvestmentsPage() {
                     </DataListRow>
                     <DataListRow>
                       <DataListLabel>Quantity</DataListLabel>
-                      <DataListValue className="font-mono">
+                      <DataListValue className="tabular-nums">
                         {position.quantity}
                       </DataListValue>
                     </DataListRow>
                     <DataListRow>
                       <DataListLabel>Avg Cost</DataListLabel>
-                      <DataListValue className="font-mono">
+                      <DataListValue className="tabular-nums">
                         {formatMoney(position.averageCost)}
                       </DataListValue>
                     </DataListRow>
                     <DataListRow>
                       <DataListLabel>Current Value</DataListLabel>
-                      <DataListValue className="font-mono font-medium">
+                      <DataListValue className="tabular-nums font-medium">
                         {formatMoney(position.currentValue)}
                       </DataListValue>
                     </DataListRow>
                     <DataListRow>
                       <DataListLabel>Gain/Loss</DataListLabel>
                       <DataListValue
-                        className={`font-mono font-medium ${parseNumber(position.unrealizedGainLoss) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}
+                        className={`tabular-nums font-medium ${parseNumber(position.unrealizedGainLoss) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}
                       >
                         {parseNumber(position.unrealizedGainLoss) >= 0
                           ? '+'
@@ -173,17 +173,17 @@ export default async function InvestmentsPage() {
                         {position.accountName ||
                           getAccountName(position.accountId)}
                       </TableCell>
-                      <TableCell className="text-right font-mono text-slate-900 dark:text-slate-100">
+                      <TableCell className="text-right tabular-nums text-slate-900 dark:text-slate-100">
                         {position.quantity}
                       </TableCell>
-                      <TableCell className="text-right font-mono text-slate-900 dark:text-slate-100">
+                      <TableCell className="text-right tabular-nums text-slate-900 dark:text-slate-100">
                         {formatMoney(position.averageCost)}
                       </TableCell>
-                      <TableCell className="text-right font-mono text-slate-900 dark:text-slate-100">
+                      <TableCell className="text-right tabular-nums text-slate-900 dark:text-slate-100">
                         {formatMoney(position.currentValue)}
                       </TableCell>
                       <TableCell
-                        className={`text-right font-mono font-medium ${parseNumber(position.unrealizedGainLoss) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}
+                        className={`text-right tabular-nums font-medium ${parseNumber(position.unrealizedGainLoss) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}
                       >
                         {parseNumber(position.unrealizedGainLoss) >= 0
                           ? '+'
@@ -238,13 +238,13 @@ export default async function InvestmentsPage() {
                           </DataListRow>
                           <DataListRow>
                             <DataListLabel>Qty × Price</DataListLabel>
-                            <DataListValue className="font-mono">
+                            <DataListValue className="tabular-nums">
                               {tx.quantity} × {formatMoney(tx.price)}
                             </DataListValue>
                           </DataListRow>
                           <DataListRow>
                             <DataListLabel>Total</DataListLabel>
-                            <DataListValue className="font-mono font-medium">
+                            <DataListValue className="tabular-nums font-medium">
                               {formatMoney(
                                 calculateTotal(tx.quantity, tx.price)
                               )}
@@ -284,13 +284,13 @@ export default async function InvestmentsPage() {
                               {getAccountName(tx.accountId)}
                             </TableCell>
                             <TableCell>{getTypeBadge(tx.type)}</TableCell>
-                            <TableCell className="text-right font-mono text-slate-900 dark:text-slate-100">
+                            <TableCell className="text-right tabular-nums text-slate-900 dark:text-slate-100">
                               {tx.quantity}
                             </TableCell>
-                            <TableCell className="text-right font-mono text-slate-900 dark:text-slate-100">
+                            <TableCell className="text-right tabular-nums text-slate-900 dark:text-slate-100">
                               {formatMoney(tx.price)}
                             </TableCell>
-                            <TableCell className="text-right font-mono font-medium text-slate-900 dark:text-slate-100">
+                            <TableCell className="text-right tabular-nums font-medium text-slate-900 dark:text-slate-100">
                               {formatMoney(
                                 calculateTotal(tx.quantity, tx.price)
                               )}

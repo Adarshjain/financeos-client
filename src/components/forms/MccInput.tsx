@@ -55,7 +55,7 @@ export function MccInput({
         maxLength={4}
         value={currentVal}
         onChange={handleChange}
-        className="font-mono text-xs"
+        className="tabular-nums text-xs"
       />
       {showHelperText && (
         <p className="text-[10px] text-slate-400 dark:text-slate-500">

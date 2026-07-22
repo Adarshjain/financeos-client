@@ -363,7 +363,7 @@ export function GmailConnect() {
                         <h4 className="font-semibold text-slate-900 dark:text-white text-sm line-clamp-1">
                           {sender.name || '(Unnamed Sender)'}
                         </h4>
-                        <p className="text-xs text-slate-500 font-mono mt-0.5 select-all">
+                        <p className="text-xs text-slate-500 mt-0.5 select-all">
                           {sender.senderAddress}
                         </p>
                       </div>

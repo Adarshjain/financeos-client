@@ -343,9 +343,9 @@ export function RulesBrowser({
                         {rule.displayName || rule.merchantKey}
                       </h3>
                       {rule.displayName && (
-                        <code className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 mt-1 block w-fit">
+                        <span className="text-[10px] tabular-nums px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 mt-1 block w-fit font-medium">
                           Key: {rule.merchantKey}
-                        </code>
+                        </span>
                       )}
                     </div>
                     <div className="flex gap-1.5 shrink-0">
@@ -362,7 +362,7 @@ export function RulesBrowser({
                         {rule.source}
                       </Badge>
                       {rule.mcc && (
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                        <span className="text-[10px] tabular-nums px-2 py-0.5 rounded-md font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
                           MCC: {rule.mcc}
                         </span>
                       )}
