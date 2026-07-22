@@ -19,7 +19,7 @@ import type {
   UpdateReportRequest,
 } from '@/lib/reports.types';
 import type { CategoryRule, CreateRuleRequest, PagedRules,UpdateRuleRequest } from '@/lib/rules.types';
-import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, PagedTransaction, Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
+import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, CreateTransactionLinkRequest, PagedTransaction, Transaction, TransactionLinkResponse, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 
 import type {
   CreateInvestmentTransactionRequest,
@@ -617,6 +617,30 @@ export const rulesApi = {
 
   async remove(id: string): Promise<void> {
     return request<void>(`/api/v1/rules/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// Transaction Links API
+export const transactionLinksApi = {
+  async create(data: CreateTransactionLinkRequest): Promise<TransactionLinkResponse> {
+    return request<TransactionLinkResponse>('/api/v1/transaction-links', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async getById(id: string): Promise<TransactionLinkResponse> {
+    return request<TransactionLinkResponse>(`/api/v1/transaction-links/${id}`);
+  },
+
+  async getByTransactionId(transactionId: string): Promise<TransactionLinkResponse[]> {
+    return request<TransactionLinkResponse[]>(`/api/v1/transaction-links?transactionId=${encodeURIComponent(transactionId)}`);
+  },
+
+  async delete(id: string): Promise<void> {
+    return request<void>(`/api/v1/transaction-links/${id}`, {
       method: 'DELETE',
     });
   },

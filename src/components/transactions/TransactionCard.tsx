@@ -1,5 +1,6 @@
 'use client';
 
+import { CornerDownRight, Link2, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Account } from '@/lib/account.types';
@@ -103,6 +104,39 @@ export const TransactionCard = ({
                 Manual
               </Badge>
             )}
+
+            {/* Link badges */}
+            {transaction.links?.map((link) => {
+              const isParentRole = [
+                'Transfer out',
+                'Card bill payment',
+                'Refunded purchase',
+                'Reversed',
+                'Parent charge',
+                'Purchase (EMI)',
+              ].includes(link.roleLabel);
+
+              return (
+                <Badge
+                  key={link.linkId}
+                  variant="secondary"
+                  className={cn(
+                    'text-[9px] py-0.5 px-2 font-bold tracking-tight rounded-md inline-flex items-center gap-1 border',
+                    isParentRole
+                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
+                      : 'bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border-amber-200 dark:border-amber-900/60',
+                  )}
+                >
+                  {isParentRole ? (
+                    <ShieldCheck className="h-2.5 w-2.5 text-indigo-600 dark:text-indigo-400" />
+                  ) : (
+                    <CornerDownRight className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400" />
+                  )}
+                  <span>{isParentRole ? `Parent • ${link.roleLabel}` : link.roleLabel}</span>
+                  {link.memberCount > 2 && <span className="opacity-70">({link.memberCount})</span>}
+                </Badge>
+              );
+            })}
 
             {/* Review status badge */}
             <ReviewReasonBadges
