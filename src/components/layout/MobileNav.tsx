@@ -124,7 +124,8 @@ export function MobileNav({ userEmail }: MobileNavProps) {
         <DropdownMenuContent
           className="w-[calc(100vw-24px)] md:w-[320px] max-w-[400px] bg-white dark:bg-slate-950 rounded-2xl border border-slate-200/60 dark:border-slate-800 p-3 shadow-xl"
           align="end"
-          sideOffset={8}
+          alignOffset={-10}
+          sideOffset={12}
         >
           <div className="w-full space-y-2">
             <DropdownMenuGroup className="px-3 py-2 bg-slate-50 dark:bg-slate-900/35 rounded-xl border border-slate-100 dark:border-slate-800/40">
