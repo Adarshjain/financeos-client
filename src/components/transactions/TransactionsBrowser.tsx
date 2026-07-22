@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowDown, ArrowUp, Loader2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, Link2, Loader2, X } from 'lucide-react';
 import Link from 'next/link';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -11,13 +11,14 @@ import { Button } from '@/components/ui/button';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { FilterClause } from '@/lib/reports.types';
-import type { PagedTransaction } from '@/lib/transaction.types';
+import type { PagedTransaction, Transaction } from '@/lib/transaction.types';
 import { formatDate } from '@/lib/utils';
 
 import { TRANSACTIONS_CATALOG } from './catalog';
 import { TransactionCard } from './TransactionCard';
 import { TransactionFilterBar } from './TransactionFilterBar';
 import { TransactionFormWrapper } from './TransactionFormWrapper';
+import { TransactionLinkDialog } from './TransactionLinkDialog';
 
 interface TransactionsBrowserProps {
   accounts: Account[];
@@ -32,6 +33,10 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
   const [sort, setSort] = useState('date,desc');
   const [localReviewCount, setLocalReviewCount] = useState(needsReviewCount ?? 0);
 
+  const [selectedTxnIds, setSelectedTxnIds] = useState<Set<string>>(new Set());
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [bulkLinkOpen, setBulkLinkOpen] = useState(false);
+
   useEffect(() => {
     setLocalReviewCount(needsReviewCount ?? 0);
   }, [needsReviewCount]);
@@ -40,6 +45,20 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
   const [loading, setLoading] = useState(false);
   const [pagedData, setPagedData] = useState<PagedTransaction | null>(null);
   const runIdRef = useRef(0);
+
+  const toggleSelect = (id: string) => {
+    setSelectedTxnIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const selectedTransactions = (pagedData?.content || []).filter((t) => selectedTxnIds.has(t.id));
 
   // Debounce search
   useEffect(() => {
@@ -63,7 +82,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
         setLocalReviewCount(reviewRes.data.totalElements);
       }
     } catch {
-      // Ignore background refresh errors
+      // Ignore background errors
     }
   }, []);
 
@@ -185,6 +204,17 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
       <div className="flex justify-between items-center px-4 pt-2.5 pb-0.5">
         <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
         <div className="flex items-center gap-2">
+          {selectedTxnIds.size > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBulkLinkOpen(true)}
+              className="gap-1.5 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 rounded-xl h-8 text-xs font-semibold"
+            >
+              <Link2 className="h-3.5 w-3.5" />
+              <span>Link ({selectedTxnIds.size})</span>
+            </Button>
+          )}
           <Link href="/transactions/review">
             <Button variant="outline" size="sm" className="relative gap-1.5 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all h-8 text-xs">
               <span>Review</span>
@@ -244,6 +274,33 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
             {sort === 'amount,desc' && <ArrowDown className="h-3 w-3" />}
             {sort === 'amount,asc' && <ArrowUp className="h-3 w-3" />}
           </Button>
+          <Button
+            variant={isSelectionMode || selectedTxnIds.size > 0 ? 'secondary' : 'outline'}
+            size="sm"
+            onClick={() => {
+              if (isSelectionMode && selectedTxnIds.size === 0) {
+                setIsSelectionMode(false);
+              } else {
+                setIsSelectionMode(!isSelectionMode);
+              }
+            }}
+            className="gap-1 h-7 rounded-full text-[11px] px-2.5"
+          >
+            Select
+          </Button>
+          {selectedTxnIds.size > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSelectedTxnIds(new Set());
+                setIsSelectionMode(false);
+              }}
+              className="h-7 text-[11px] text-slate-500 hover:text-slate-900 gap-1 px-2"
+            >
+              <X className="h-3 w-3" /> Clear selection ({selectedTxnIds.size})
+            </Button>
+          )}
         </div>
 
         <div className="flex items-center text-xs text-slate-500">
@@ -291,6 +348,9 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
                     accounts={accounts}
                     transaction={transaction}
                     onMutate={handleReload}
+                    selectable={isSelectionMode || selectedTxnIds.size > 0}
+                    selected={selectedTxnIds.has(transaction.id)}
+                    onToggleSelect={() => toggleSelect(transaction.id)}
                   />
                 </Fragment>
               );
@@ -317,6 +377,17 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
           </div>
         )}
       </div>
+
+      <TransactionLinkDialog
+        initialSelectedTransactions={selectedTransactions}
+        accounts={accounts}
+        open={bulkLinkOpen}
+        onOpenChange={setBulkLinkOpen}
+        onSuccess={() => {
+          setSelectedTxnIds(new Set());
+          handleReload();
+        }}
+      />
     </div>
   );
 }
