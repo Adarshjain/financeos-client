@@ -168,7 +168,7 @@ export default async function AccountsPage() {
 
                       {account.last4 ? (
                         <span
-                          className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded shrink-0">
+                          className="text-[10px] tabular-nums bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded shrink-0">
                           •••• {account.last4}
                         </span>
                       ) : null}
@@ -212,7 +212,7 @@ export default async function AccountsPage() {
                             </span>
                           ) : null}
                         </div>
-                        <span className="text-lg font-extrabold text-slate-900 dark:text-white font-mono tracking-tight tabular-nums">
+                        <span className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight tabular-nums">
                           {formatMoney(account.balance ?? account.openingBalance)}
                         </span>
                       </div>
@@ -246,7 +246,7 @@ export default async function AccountsPage() {
                   {creditCards.length}
                 </span>
               </div>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold font-mono">
+              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold tabular-nums">
                 Total Limit: {formatMoney(totalCreditLimit)}
               </span>
             </div>
@@ -269,7 +269,7 @@ export default async function AccountsPage() {
                       </div>
 
                       <span
-                        className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded shrink-0">
+                        className="text-[10px] tabular-nums bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded shrink-0">
                         •••• {account.last4}
                       </span>
                     </div>
@@ -305,14 +305,14 @@ export default async function AccountsPage() {
                             </span>
                           ) : null}
                         </div>
-                        <span className="text-lg font-bold text-slate-900 dark:text-white font-mono tracking-tight tabular-nums">
+                        <span className="text-lg font-bold text-slate-900 dark:text-white tracking-tight tabular-nums">
                           {formatNullableMoney(account.balance)}
                         </span>
                       </div>
 
                       <div className="flex justify-between items-baseline">
                         <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Credit Limit</span>
-                        <span className="text-sm font-bold text-slate-900 dark:text-white font-mono tracking-tight tabular-nums">
+                        <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight tabular-nums">
                           {formatMoney(account.creditLimit)}
                         </span>
                       </div>
@@ -340,7 +340,7 @@ export default async function AccountsPage() {
                             <div className="space-y-1 pt-1">
                               <div className="flex justify-between text-[10px] font-medium">
                                 <span className="text-slate-400 dark:text-slate-500">Utilization</span>
-                                <span className={cn('font-mono font-bold', labelColor)}>
+                                <span className={cn('tabular-nums font-bold', labelColor)}>
                                   {utilizationPct}%
                                 </span>
                               </div>

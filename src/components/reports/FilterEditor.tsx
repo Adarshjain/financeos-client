@@ -63,7 +63,7 @@ export function FilterEditor({
                   <div className="absolute inset-0 flex items-center" aria-hidden="true">
                     <div className="w-full border-t border-slate-100 dark:border-slate-850" />
                   </div>
-                  <span className="relative z-10 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200/40 dark:border-slate-700/40 font-mono tracking-wider uppercase shadow-none">
+                  <span className="relative z-10 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200/40 dark:border-slate-700/40 tracking-wider uppercase shadow-none">
                     and
                   </span>
                 </div>

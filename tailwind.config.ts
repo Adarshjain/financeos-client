@@ -76,7 +76,13 @@ const config: Config = {
           'BlinkMacSystemFont',
           'sans-serif',
         ],
-        mono: ['ui-monospace', 'SFMono-Regular', 'monospace'],
+        mono: [
+          'var(--font-sans)',
+          'system-ui',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'sans-serif',
+        ],
       },
       borderRadius: {
         lg: 'var(--radius)',

@@ -187,7 +187,7 @@ export const TransactionDetailContent = ({
               <span className="text-slate-400 dark:text-slate-500 flex items-center gap-2 font-medium">
                 <Tag className="h-4 w-4 text-slate-400" /> MCC Code
               </span>
-              <span className="font-semibold font-mono text-slate-800 dark:text-slate-200">
+              <span className="font-semibold tabular-nums text-slate-800 dark:text-slate-200">
                 {transaction.mcc}
               </span>
             </div>

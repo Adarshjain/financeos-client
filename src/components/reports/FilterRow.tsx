@@ -181,7 +181,7 @@ export function FilterRow({
           <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
             {operatorOptions.map((opt) => (
               <SelectItem key={opt.value} value={opt.value} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
-                <span className="font-mono text-[11px] font-semibold">{opt.label}</span>
+                <span className="text-[11px] font-semibold">{opt.label}</span>
               </SelectItem>
             ))}
           </SelectContent>
