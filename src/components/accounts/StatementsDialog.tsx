@@ -2,7 +2,6 @@
 
 import {
   AlertCircle,
-  Calendar,
   CheckCircle2,
   ChevronRight,
   FileText,
@@ -18,23 +17,10 @@ import { getCardCycleSummary } from '@/actions/accounts';
 import { getStatementDetail, listStatementsByAccount } from '@/actions/statements';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Account } from '@/lib/account.types';
-import { ReviewType,StatementDetail, StatementSummary, StatementVerdict } from '@/lib/statement.types';
+import { ReviewType, StatementDetail, StatementSummary, StatementVerdict } from '@/lib/statement.types';
 import { AccountType } from '@/lib/types';
 import { cn, formatDate, formatMoney, formatNullableMoney } from '@/lib/utils';
 
@@ -119,9 +105,9 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
 
   const lastIngestionDate = statements.length > 0
     ? statements.reduce((max, s) => {
-        const d = new Date(s.createdAt).getTime();
-        return d > max ? d : max;
-      }, 0)
+      const d = new Date(s.createdAt).getTime();
+      return d > max ? d : max;
+    }, 0)
     : null;
 
   const getVerdictBadge = (verdict: StatementVerdict) => {
@@ -134,13 +120,15 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
         );
       case 'NEEDS_REVIEW':
         return (
-          <span title="Statement parsed with minor issues or chain validation gaps (< 99%). Review required before final reconciliation.">
+          <span
+            title="Statement parsed with minor issues or chain validation gaps (< 99%). Review required before final reconciliation.">
             <Badge variant="warning" className="cursor-help">Needs Review</Badge>
           </span>
         );
       case 'REJECTED':
         return (
-          <span title="Statement failed critical validation (broken checksum, missing opening/closing balances, or unparseable format).">
+          <span
+            title="Statement failed critical validation (broken checksum, missing opening/closing balances, or unparseable format).">
             <Badge variant="danger" className="cursor-help">Rejected</Badge>
           </span>
         );
@@ -165,9 +153,10 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-5xl sm:max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-5xl sm:max-h-[85vh] overflow-y-auto space-y-1 p-4">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-4">
+          <DialogTitle
+            className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-4">
             <FileText className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             <div className="flex flex-col items-start">
               <div className="text-slate-400 dark:text-slate-500 text-sm">Statements Archive</div>
@@ -178,8 +167,8 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
 
         {/* Card Cycle Summary Card for Credit Cards */}
         {account.type === AccountType.CREDIT_CARD && (
-          <div className="space-y-3 mb-2">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="space-y-1 mb-2">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-amber-500" />
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white">Card Cycle Summary</h3>
@@ -201,144 +190,74 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                 No active statement summary available for this credit card.
               </div>
             ) : (
-              <div className="space-y-6">
-                {/* Hero Metric & Secondary Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center bg-slate-50/70 dark:bg-slate-950/40">
-                  <div className="md:col-span-1 space-y-1 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 pb-3 md:pb-0 md:pr-4">
-                    <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase">Total Amount Due</span>
-                    <div className="text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums">
-                      {formatNullableMoney(cardSummary.totalAmountDue)}
+              /* Hero Metric & Secondary Grid */
+              <div
+                className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center bg-slate-50/70 dark:bg-slate-950/40 rounded-xl p-4 border border-slate-100 dark:border-slate-800">
+                <div
+                  className="md:col-span-1 space-y-1 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 pb-3 md:pb-0 md:pr-4">
+                  <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase">Total Amount Due</span>
+                  <div className="text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums">
+                    {formatNullableMoney(cardSummary.totalAmountDue)}
+                  </div>
+                  {cardSummary.daysUntilDue !== null && cardSummary.daysUntilDue !== undefined ? (
+                    <div className="pt-1">
+                      {cardSummary.daysUntilDue > 0 ? (
+                        <Badge variant={cardSummary.daysUntilDue <= 3 ? 'warning' : 'secondary'}
+                               className="text-[10px]">
+                          Due in {cardSummary.daysUntilDue} days
+                        </Badge>
+                      ) : cardSummary.daysUntilDue === 0 ? (
+                        <Badge variant="warning" className="text-[10px] bg-amber-500 text-white">
+                          Due today
+                        </Badge>
+                      ) : (
+                        <Badge variant="danger" className="text-[10px]">
+                          {Math.abs(cardSummary.daysUntilDue)} days overdue
+                        </Badge>
+                      )}
                     </div>
-                    {cardSummary.daysUntilDue !== null && cardSummary.daysUntilDue !== undefined ? (
-                      <div className="pt-1">
-                        {cardSummary.daysUntilDue > 0 ? (
-                          <Badge variant={cardSummary.daysUntilDue <= 3 ? 'warning' : 'secondary'} className="text-[10px]">
-                            Due in {cardSummary.daysUntilDue} days
-                          </Badge>
-                        ) : cardSummary.daysUntilDue === 0 ? (
-                          <Badge variant="warning" className="text-[10px] bg-amber-500 text-white">
-                            Due today
-                          </Badge>
-                        ) : (
-                          <Badge variant="danger" className="text-[10px]">
-                            {Math.abs(cardSummary.daysUntilDue)} days overdue
-                          </Badge>
-                        )}
+                  ) : null}
+                </div>
+
+                <div className="md:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                  <div>
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 block">Minimum Due</span>
+                    <span className="font-bold text-slate-900 dark:text-white mt-1 block tabular-nums">
+                      {formatNullableMoney(cardSummary.minimumAmountDue)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 block">Payment Due Date</span>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200 mt-1 block">
+                      {formatDate(cardSummary.paymentDueDate)}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[11px] text-slate-400 dark:text-slate-500 block">Reward Points</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400 mt-1 block tabular-nums">
+                      {cardSummary.rewardPointsBalance !== null && cardSummary.rewardPointsBalance !== undefined
+                        ? cardSummary.rewardPointsBalance.toLocaleString()
+                        : '—'}
+                    </span>
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center text-[11px] text-slate-400 dark:text-slate-500">
+                      <span>Utilization</span>
+                      <span
+                        className={cn('font-bold tabular-nums', cardSummary.utilizationPct !== null && cardSummary.utilizationPct !== undefined ? (cardSummary.utilizationPct < 30 ? 'text-emerald-600 dark:text-emerald-400' : cardSummary.utilizationPct < 70 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400') : 'text-slate-700 dark:text-slate-300')}>
+                        {cardSummary.utilizationPct !== null && cardSummary.utilizationPct !== undefined ? `${cardSummary.utilizationPct}%` : '—'}
+                      </span>
+                    </div>
+                    {cardSummary.utilizationPct !== null && cardSummary.utilizationPct !== undefined ? (
+                      <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mt-1.5">
+                        <div
+                          className={cn('h-full rounded-full transition-all duration-300', cardSummary.utilizationPct < 30 ? 'bg-emerald-500' : cardSummary.utilizationPct < 70 ? 'bg-amber-500' : 'bg-red-500')}
+                          style={{ width: `${Math.min(100, Math.max(0, Number(cardSummary.utilizationPct)))}%` }}
+                        />
                       </div>
                     ) : null}
                   </div>
-
-                  <div className="md:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-                    <div>
-                      <span className="text-[11px] text-slate-400 dark:text-slate-500 block">Minimum Due</span>
-                      <span className="font-bold text-slate-900 dark:text-white mt-1 block tabular-nums">
-                        {formatNullableMoney(cardSummary.minimumAmountDue)}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[11px] text-slate-400 dark:text-slate-500 block">Payment Due Date</span>
-                      <span className="font-semibold text-slate-800 dark:text-slate-200 mt-1 block">
-                        {formatDate(cardSummary.paymentDueDate)}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[11px] text-slate-400 dark:text-slate-500 block">Reward Points</span>
-                      <span className="font-bold text-amber-600 dark:text-amber-400 mt-1 block tabular-nums">
-                        {cardSummary.rewardPointsBalance !== null && cardSummary.rewardPointsBalance !== undefined
-                          ? cardSummary.rewardPointsBalance.toLocaleString()
-                          : '—'}
-                      </span>
-                    </div>
-                    <div>
-                      <div className="flex justify-between items-center text-[11px] text-slate-400 dark:text-slate-500">
-                        <span>Utilization</span>
-                        <span className={cn('font-bold tabular-nums', cardSummary.utilizationPct !== null && cardSummary.utilizationPct !== undefined ? (cardSummary.utilizationPct < 30 ? 'text-emerald-600 dark:text-emerald-400' : cardSummary.utilizationPct < 70 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400') : 'text-slate-700 dark:text-slate-300')}>
-                          {cardSummary.utilizationPct !== null && cardSummary.utilizationPct !== undefined ? `${cardSummary.utilizationPct}%` : '—'}
-                        </span>
-                      </div>
-                      {cardSummary.utilizationPct !== null && cardSummary.utilizationPct !== undefined ? (
-                        <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mt-1.5">
-                          <div
-                            className={cn('h-full rounded-full transition-all duration-300', cardSummary.utilizationPct < 30 ? 'bg-emerald-500' : cardSummary.utilizationPct < 70 ? 'bg-amber-500' : 'bg-red-500')}
-                            style={{ width: `${Math.min(100, Math.max(0, Number(cardSummary.utilizationPct)))}%` }}
-                          />
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
                 </div>
-
-                {/* Cycle History Table */}
-                {cardSummary.history && cardSummary.history.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                      Past Cycle History ({cardSummary.history.length})
-                    </h4>
-                    {/* Mobile Card List View */}
-                    <div className="md:hidden space-y-2 max-h-[260px] overflow-y-auto pr-1">
-                      {cardSummary.history.map((h, i) => (
-                        <div key={i} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 text-xs space-y-2 shadow-2xs">
-                          <div className="flex justify-between items-center font-semibold pb-1.5 border-b border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white">
-                            <span>Period End: {formatDate(h.periodEnd)}</span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-[11px]">
-                            <div>
-                              <span className="text-slate-400 block">Purchases</span>
-                              <span className="tabular-nums font-medium text-slate-800 dark:text-slate-200">{formatNullableMoney(h.totalPurchases)}</span>
-                            </div>
-                            <div>
-                              <span className="text-slate-400 block">Payments</span>
-                              <span className="tabular-nums font-semibold text-emerald-600 dark:text-emerald-400">{h.paymentsReceived !== null && h.paymentsReceived !== undefined ? `+${formatMoney(h.paymentsReceived)}` : '—'}</span>
-                            </div>
-                            <div>
-                              <span className="text-slate-400 block">Finance Chg.</span>
-                              <span className="tabular-nums text-red-600 dark:text-red-400">{formatNullableMoney(h.financeCharges)}</span>
-                            </div>
-                            <div>
-                              <span className="text-slate-400 block">Fees & Chg.</span>
-                              <span className="tabular-nums text-slate-700 dark:text-slate-300">{formatNullableMoney(h.feesAndCharges)}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    {/* Desktop Table View */}
-                    <div className="hidden md:block border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden max-h-[220px] overflow-y-auto">
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="bg-slate-50/50 dark:bg-slate-900/40 text-[11px]">
-                            <TableHead>Period End</TableHead>
-                            <TableHead className="text-right">Total Purchases</TableHead>
-                            <TableHead className="text-right">Payments Received</TableHead>
-                            <TableHead className="text-right">Finance Charges</TableHead>
-                            <TableHead className="text-right">Fees & Charges</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {cardSummary.history.map((h, i) => (
-                            <TableRow key={i} className="text-xs">
-                              <TableCell className="font-medium tabular-nums">
-                                {formatDate(h.periodEnd)}
-                              </TableCell>
-                              <TableCell className="text-right tabular-nums font-medium">
-                                {formatNullableMoney(h.totalPurchases)}
-                              </TableCell>
-                              <TableCell className="text-right tabular-nums text-emerald-600 dark:text-emerald-400 font-semibold">
-                                {h.paymentsReceived !== null && h.paymentsReceived !== undefined ? `+${formatMoney(h.paymentsReceived)}` : '—'}
-                              </TableCell>
-                              <TableCell className="text-right tabular-nums text-red-600 dark:text-red-400">
-                                {formatNullableMoney(h.financeCharges)}
-                              </TableCell>
-                              <TableCell className="text-right tabular-nums">
-                                {formatNullableMoney(h.feesAndCharges)}
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -350,13 +269,16 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
             <span className="text-sm">Loading statements...</span>
           </div>
         ) : error ? (
-          <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 flex items-center gap-2 text-sm">
+          <div
+            className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 flex items-center gap-2 text-sm">
             <AlertCircle className="w-5 h-5 shrink-0" />
             <span>{error}</span>
           </div>
         ) : statements.length === 0 ? (
-          <div className="text-center py-12 px-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-3">
-            <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto text-slate-400">
+          <div
+            className="text-center py-12 px-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl space-y-3">
+            <div
+              className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-900 flex items-center justify-center mx-auto text-slate-400">
               <Upload className="w-6 h-6" />
             </div>
             <div className="space-y-1">
@@ -364,42 +286,38 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                 No statement history found
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-                Statements accumulate automatically when ingested via file upload or Gmail automatic sync. Upload your statements in settings or verify your sync rules.
+                Statements accumulate automatically when ingested via file upload or Gmail automatic sync. Upload your
+                statements in settings or verify your sync rules.
               </p>
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-3">
             {/* Summary Banner */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 text-xs">
-              <div className="flex flex-wrap items-center gap-4 sm:gap-6 w-full sm:w-auto">
-                {lastIngestionDate && (
-                  <div>
-                    <span className="text-slate-400 dark:text-slate-500 block">Last Ingested</span>
-                    <span className="text-base font-bold text-slate-900 dark:text-white">
-                      {formatDate(new Date(lastIngestionDate))}
-                    </span>
-                  </div>
-                )}
+            {lastIngestionDate && (
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 w-full sm:w-auto text-sm">
+                <span className="text-slate-400 dark:text-slate-500 block">Last Ingested</span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {formatDate(new Date(lastIngestionDate))}
+                </span>
               </div>
-            </div>
+            )}
 
             {/* Mobile Cards View */}
-            <div className="md:hidden space-y-3 max-h-[420px] overflow-y-auto pr-1">
+            <div className="md:hidden space-y-3 pr-1">
               {statements.map((s) => {
-                const hasCredits = s.totalCredits !== null && s.totalCredits !== undefined;
-                const hasDebits = s.totalDebits !== null && s.totalDebits !== undefined;
-                const netFlow = hasCredits || hasDebits ? (s.totalCredits ?? 0) - (s.totalDebits ?? 0) : null;
-                const isNetPositive = netFlow !== null && netFlow >= 0;
                 return (
-                  <div key={s.id} className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 space-y-3 shadow-2xs">
-                    <div className="flex items-start justify-between gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-2.5">
+                  <div key={s.id}
+                       className="p-3.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 space-y-3 shadow-2xs">
+                    <div
+                      className="flex items-start justify-between gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-2.5">
                       <div>
                         <div className="font-bold text-sm text-slate-900 dark:text-white tabular-nums">
                           {formatDate(s.periodStart)} – {formatDate(s.periodEnd)}
                         </div>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[10px] uppercase bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500 dark:text-slate-400">
+                          <span
+                            className="text-[10px] uppercase bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500 dark:text-slate-400">
                             {s.source === 'file_upload' ? 'Upload' : s.source === 'gmail' ? 'Email' : s.source}
                           </span>
                         </div>
@@ -422,12 +340,12 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                           {s.closingBalance !== null ? formatMoney(s.closingBalance) : '—'}
                         </span>
                       </div>
-                      <div className="text-right">
-                        <span className="text-[10px] text-slate-400 block">Net Flow</span>
-                        <span className={cn('tabular-nums font-semibold', isNetPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400')}>
-                          {netFlow === null ? '—' : isNetPositive ? `+${formatMoney(netFlow)}` : formatMoney(netFlow)}
-                        </span>
-                      </div>
+                      {/*<div className="text-right">*/}
+                      {/*  <span className="text-[10px] text-slate-400 block">Net Flow</span>*/}
+                      {/*  <span className={cn('tabular-nums font-semibold', isNetPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400')}>*/}
+                      {/*    {netFlow === null ? '—' : isNetPositive ? `+${formatMoney(netFlow)}` : formatMoney(netFlow)}*/}
+                      {/*  </span>*/}
+                      {/*</div>*/}
                     </div>
 
                     <div className="pt-1 flex items-center justify-between text-[11px] text-slate-500">
@@ -456,7 +374,6 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                     <TableHead>Type</TableHead>
                     <TableHead className="text-right">Opening</TableHead>
                     <TableHead className="text-right">Closing</TableHead>
-                    <TableHead className="text-right">Net Flow</TableHead>
                     <TableHead>Source</TableHead>
                     <TableHead className="text-right">Txns</TableHead>
                     <TableHead>Verdict</TableHead>
@@ -465,17 +382,14 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                 </TableHeader>
                 <TableBody>
                   {statements.map((s) => {
-                    const hasCredits = s.totalCredits !== null && s.totalCredits !== undefined;
-                    const hasDebits = s.totalDebits !== null && s.totalDebits !== undefined;
-                    const netFlow = hasCredits || hasDebits ? (s.totalCredits ?? 0) - (s.totalDebits ?? 0) : null;
-                    const isNetPositive = netFlow !== null && netFlow >= 0;
                     return (
                       <TableRow key={s.id}>
                         <TableCell className="font-medium whitespace-nowrap">
                           {formatDate(s.periodStart)} – {formatDate(s.periodEnd)}
                         </TableCell>
                         <TableCell>
-                          <span className="text-xs uppercase bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-400">
+                          <span
+                            className="text-xs uppercase bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-400">
                             {s.statementType === 'credit_card' ? 'Credit Card' : 'Bank Account'}
                           </span>
                         </TableCell>
@@ -485,13 +399,9 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                         <TableCell className="text-right tabular-nums font-semibold">
                           {s.closingBalance !== null ? formatMoney(s.closingBalance) : '—'}
                         </TableCell>
-                        <TableCell className="text-right tabular-nums">
-                          {netFlow === null ? '—' : <span className={isNetPositive ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-red-600 dark:text-red-400 font-semibold'}>
-                            {isNetPositive ? `+${formatMoney(netFlow)}` : formatMoney(netFlow)}
-                          </span>}
-                        </TableCell>
                         <TableCell>
-                          <span className="text-xs uppercase bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-400">
+                          <span
+                            className="text-xs uppercase bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-400">
                             {s.source === 'file_upload' ? 'Upload' : s.source === 'gmail' ? 'Email' : s.source}
                           </span>
                         </TableCell>
@@ -522,9 +432,11 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
         {/* Drill-down Dialog */}
         {selectedStatementId && (
           <Dialog open={!!selectedStatementId} onOpenChange={(val) => !val && setSelectedStatementId(null)}>
-            <DialogContent className="sm:max-w-4xl sm:max-h-[85vh] max-h-[90vh] overflow-y-auto overflow-x-hidden w-full sm:w-full p-4 sm:p-6">
+            <DialogContent
+              className="sm:max-w-4xl sm:max-h-[85vh] max-h-[90vh] overflow-y-auto overflow-x-hidden w-full sm:w-full p-4 sm:p-6">
               <DialogHeader>
-                <DialogTitle className="text-lg font-bold tracking-tight text-slate-900 dark:text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 pr-6 w-full min-w-0">
+                <DialogTitle
+                  className="text-lg font-bold tracking-tight text-slate-900 dark:text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 pr-6 w-full min-w-0">
                   <span className="truncate max-w-full">Statement Details</span>
                   {selectedDetail && (
                     <span className="text-xs tabular-nums font-normal text-slate-500 dark:text-slate-400 shrink-0">
@@ -540,14 +452,16 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                   <span className="text-sm">Loading statement details and linked transactions...</span>
                 </div>
               ) : detailError ? (
-                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 flex items-center gap-2 text-sm">
+                <div
+                  className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 flex items-center gap-2 text-sm">
                   <AlertCircle className="w-5 h-5 shrink-0" />
                   <span>{detailError}</span>
                 </div>
               ) : selectedDetail ? (
-                <div className="space-y-6 pt-2 w-full max-w-full min-w-0">
+                <div className="space-y-3 pt-2 w-full max-w-full min-w-0">
                   {/* Metadata Header Box */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 text-xs w-full min-w-0">
+                  <div
+                    className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 text-xs w-full min-w-0">
                     <div className="min-w-0">
                       <span className="text-slate-400 dark:text-slate-500 block">Checksum Status</span>
                       <div className="flex items-center gap-1.5 mt-1 min-w-0">
@@ -570,7 +484,8 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                     <div className="min-w-0">
                       <span className="text-slate-400 dark:text-slate-500 block">Chain Validation</span>
                       <div className="mt-1">
-                        <Badge variant={selectedDetail.chainValidationPct !== null && selectedDetail.chainValidationPct >= 99 ? 'success' : 'warning'}>
+                        <Badge
+                          variant={selectedDetail.chainValidationPct !== null && selectedDetail.chainValidationPct >= 99 ? 'success' : 'warning'}>
                           {selectedDetail.chainValidationPct !== null ? `${selectedDetail.chainValidationPct.toFixed(1)}% Valid` : 'N/A'}
                         </Badge>
                       </div>
@@ -589,7 +504,8 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                       <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                         Credit Card Summary
                       </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/30 text-xs w-full min-w-0">
+                      <div
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/30 text-xs w-full min-w-0">
                         <div className="min-w-0">
                           <span className="text-slate-400 block text-[11px] truncate">Total Due</span>
                           <span className="font-bold tabular-nums text-slate-900 dark:text-white truncate block">
@@ -640,7 +556,8 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                         </div>
                         <div className="min-w-0">
                           <span className="text-slate-400 block text-[11px] truncate">Payments Received</span>
-                          <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400 truncate block">
+                          <span
+                            className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400 truncate block">
                             {formatNullableMoney(selectedDetail.cardDetails.paymentsReceived)}
                           </span>
                         </div>
@@ -658,7 +575,8 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                         </div>
                         <div className="min-w-0">
                           <span className="text-slate-400 block text-[11px] truncate">Points Earned</span>
-                          <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400 truncate block">
+                          <span
+                            className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400 truncate block">
                             {selectedDetail.cardDetails.rewardPointsEarned !== null ? `+${selectedDetail.cardDetails.rewardPointsEarned.toLocaleString()}` : '—'}
                           </span>
                         </div>
@@ -690,22 +608,29 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                           {selectedDetail.lines.map((line) => {
                             const isCredit = line.type === 'CREDIT';
                             return (
-                              <div key={line.transactionId} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/30 space-y-2 text-xs shadow-2xs w-full min-w-0">
+                              <div key={line.transactionId}
+                                   className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/30 space-y-2 text-xs shadow-2xs w-full min-w-0">
                                 <div className="flex items-start justify-between gap-2 w-full min-w-0">
                                   <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                    <span className="tabular-nums text-slate-400 text-[10px] shrink-0 font-semibold">#{line.lineIndex + 1}</span>
-                                    <span className="font-medium text-slate-900 dark:text-white break-words text-sm min-w-0" title={line.description}>
+                                    <span
+                                      className="tabular-nums text-slate-400 text-[10px] shrink-0 font-semibold">#{line.lineIndex + 1}</span>
+                                    <span
+                                      className="font-medium text-slate-900 dark:text-white break-words text-sm min-w-0"
+                                      title={line.description}>
                                       {line.description}
                                     </span>
                                   </div>
-                                  <span className={cn('tabular-nums font-bold shrink-0 text-sm ml-2', isCredit ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400')}>
+                                  <span
+                                    className={cn('tabular-nums font-bold shrink-0 text-sm ml-2', isCredit ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400')}>
                                     {isCredit ? `+${formatMoney(line.amount)}` : `-${formatMoney(line.amount)}`}
                                   </span>
                                 </div>
 
-                                <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-slate-100 dark:border-slate-800/60 text-[11px] w-full min-w-0">
+                                <div
+                                  className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-slate-100 dark:border-slate-800/60 text-[11px] w-full min-w-0">
                                   <div className="flex items-center gap-2 min-w-0">
-                                    <span className="text-slate-400 tabular-nums shrink-0">{formatDate(line.date)}</span>
+                                    <span
+                                      className="text-slate-400 tabular-nums shrink-0">{formatDate(line.date)}</span>
                                     <div className="shrink-0">{getReviewTypeBadge(line.reviewType)}</div>
                                   </div>
                                   <div className="flex items-center gap-1.5 tabular-nums shrink-0">
@@ -717,11 +642,13 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                                       <span className="text-slate-400 dark:text-slate-600">—</span>
                                     ) : line.chainValid ? (
                                       <span title="Chain continuity valid">
-                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 inline-block" />
+                                        <CheckCircle2
+                                          className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 inline-block" />
                                       </span>
                                     ) : (
                                       <span title="Chain continuity broken">
-                                        <XCircle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 inline-block" />
+                                        <XCircle
+                                          className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 inline-block" />
                                       </span>
                                     )}
                                   </div>
@@ -732,7 +659,8 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                         </div>
 
                         {/* Desktop Table View - No inner max-height so entire popup scrolls */}
-                        <div className="hidden md:block border border-slate-200 dark:border-slate-800 rounded-xl overflow-x-auto w-full">
+                        <div
+                          className="hidden md:block border border-slate-200 dark:border-slate-800 rounded-xl overflow-x-auto w-full">
                           <Table>
                             <TableHeader>
                               <TableRow>
@@ -756,11 +684,13 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                                     <TableCell className="whitespace-nowrap text-xs">
                                       {formatDate(line.date)}
                                     </TableCell>
-                                    <TableCell className="text-xs font-medium max-w-xs truncate" title={line.description}>
+                                    <TableCell className="text-xs font-medium max-w-xs truncate"
+                                               title={line.description}>
                                       {line.description}
                                     </TableCell>
                                     <TableCell className="text-right tabular-nums text-xs">
-                                      <span className={isCredit ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-red-600 dark:text-red-400 font-semibold'}>
+                                      <span
+                                        className={isCredit ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-red-600 dark:text-red-400 font-semibold'}>
                                         {isCredit ? `+${formatMoney(line.amount)}` : `-${formatMoney(line.amount)}`}
                                       </span>
                                     </TableCell>
@@ -773,11 +703,13 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                                         <span className="text-slate-400 dark:text-slate-600">—</span>
                                       ) : line.chainValid ? (
                                         <span title="Chain continuity valid">
-                                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 inline-block" />
+                                          <CheckCircle2
+                                            className="w-4 h-4 text-emerald-600 dark:text-emerald-400 inline-block" />
                                         </span>
                                       ) : (
                                         <span title="Chain continuity broken">
-                                          <XCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 inline-block" />
+                                          <XCircle
+                                            className="w-4 h-4 text-amber-600 dark:text-amber-400 inline-block" />
                                         </span>
                                       )}
                                     </TableCell>
