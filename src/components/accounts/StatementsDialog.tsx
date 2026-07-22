@@ -178,7 +178,7 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
 
         {/* Card Cycle Summary Card for Credit Cards */}
         {account.type === AccountType.CREDIT_CARD && (
-          <div className="border border-slate-200 dark:border-slate-800 rounded-2xl p-5 bg-white dark:bg-slate-900/60 space-y-5 shadow-sm mb-2">
+          <div className="space-y-3 mb-2">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-amber-500" />
@@ -203,7 +203,7 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
             ) : (
               <div className="space-y-6">
                 {/* Hero Metric & Secondary Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center bg-slate-50/70 dark:bg-slate-950/40 p-4 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center bg-slate-50/70 dark:bg-slate-950/40">
                   <div className="md:col-span-1 space-y-1 border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-800 pb-3 md:pb-0 md:pr-4">
                     <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase">Total Amount Due</span>
                     <div className="text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums">
@@ -373,10 +373,6 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
             {/* Summary Banner */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 text-xs">
               <div className="flex flex-wrap items-center gap-4 sm:gap-6 w-full sm:w-auto">
-                <div>
-                  <span className="text-slate-400 dark:text-slate-500 block">Total Statements</span>
-                  <span className="text-base font-bold text-slate-900 dark:text-white">{statements.length}</span>
-                </div>
                 {lastIngestionDate && (
                   <div>
                     <span className="text-slate-400 dark:text-slate-500 block">Last Ingested</span>
@@ -385,9 +381,6 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                     </span>
                   </div>
                 )}
-              </div>
-              <div className="text-left sm:text-right text-slate-400 dark:text-slate-500 text-[11px] sm:text-xs">
-                Sorted by period end date
               </div>
             </div>
 
