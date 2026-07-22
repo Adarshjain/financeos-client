@@ -46,7 +46,7 @@ const AccountWrapper = ({ account, children }: { account: Account; children: Rea
         account.type === AccountType.BANK_ACCOUNT ? 'bg-emerald-500' : 'bg-amber-500',
       )}></div>
 
-      <div className="p-4 flex-1 flex flex-col justify-between gap-3">
+      <div className="p-3 flex-1 flex flex-col justify-between gap-2">
         {children}
       </div>
 
@@ -152,7 +152,7 @@ export default async function AccountsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
               {bankAccounts.map((account) => (
                 <AccountWrapper account={account} key={account.id}>
-                  <div className="space-y-2.5">
+                  <div className="space-y-1">
                     <div className="flex justify-between items-start gap-2">
                       <div className="space-y-0.5">
                         <div
@@ -251,10 +251,10 @@ export default async function AccountsPage() {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-2">
               {creditCards.map((account) => (
                 <AccountWrapper account={account} key={account.id}>
-                  <div className="space-y-2.5">
+                  <div className="space-y-1">
                     <div className="flex justify-between items-start gap-2">
                       <div className="space-y-0.5">
                         <div
