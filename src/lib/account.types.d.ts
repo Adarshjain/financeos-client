@@ -83,4 +83,6 @@ export type MutualFund = AccountBase & {
   lastTradedPrice?: string;
 }
 
-export type Account = AccountBase | BankAccount | CreditCard | Stock | MutualFund;
+export type GenericAccount = AccountBase;
+
+export type Account = AccountBase | BankAccount | CreditCard | Stock | MutualFund | GenericAccount;
