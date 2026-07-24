@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, CreditCard, Eye, EyeOff, FileText, Landmark, Shield, TrendingUp } from 'lucide-react';
+import { Calendar, CreditCard, Eye, EyeOff, FileText, Landmark, Shield, TrendingUp, Wallet } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -95,6 +95,17 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
       };
     }
 
+    if (accountType === AccountType.GENERIC) {
+      data = {
+        name,
+        excludeFromNetAsset,
+        financialPosition,
+        description,
+        ingestFromDate,
+        type: AccountType.GENERIC,
+      };
+    }
+
     if (!data) {
       setIsSubmitting(false);
       return;
@@ -127,8 +138,10 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
         <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
           {accountType === AccountType.BANK_ACCOUNT ? (
             <Landmark className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          ) : accountType === AccountType.CREDIT_CARD ? (
+            <CreditCard className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           ) : (
-            <CreditCard className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            <Wallet className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           )}
           {isUpdateMode ? 'Edit Account' : 'Create Account'}
         </h2>
@@ -148,7 +161,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
               disabled={isUpdateMode}
               onClick={() => setAccountType(AccountType.BANK_ACCOUNT)}
               className={cn(
-                "flex-1 flex flex-col items-center gap-2 py-3 px-4 rounded-xl border-2 text-center transition-all shadow-sm",
+                "flex-1 flex flex-col items-center gap-2 py-3 px-3 rounded-xl border-2 text-center transition-all shadow-sm",
                 accountType === AccountType.BANK_ACCOUNT
                   ? "bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-500 text-emerald-700 dark:text-emerald-400 font-semibold"
                   : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850",
@@ -163,15 +176,30 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
               disabled={isUpdateMode}
               onClick={() => setAccountType(AccountType.CREDIT_CARD)}
               className={cn(
-                "flex-1 flex flex-col items-center gap-2 py-3 px-4 rounded-xl border-2 text-center transition-all shadow-sm",
+                "flex-1 flex flex-col items-center gap-2 py-3 px-3 rounded-xl border-2 text-center transition-all shadow-sm",
                 accountType === AccountType.CREDIT_CARD
-                  ? "bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-500 text-emerald-700 dark:text-emerald-400 font-semibold"
+                  ? "bg-amber-50/60 dark:bg-amber-950/20 border-amber-500 text-amber-700 dark:text-amber-400 font-semibold"
                   : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850",
                 isUpdateMode && "opacity-60 cursor-not-allowed border-dashed"
               )}
             >
               <CreditCard className="w-5 h-5" />
               <span className="text-xs">Credit Card</span>
+            </button>
+            <button
+              type="button"
+              disabled={isUpdateMode}
+              onClick={() => setAccountType(AccountType.GENERIC)}
+              className={cn(
+                "flex-1 flex flex-col items-center gap-2 py-3 px-3 rounded-xl border-2 text-center transition-all shadow-sm",
+                accountType === AccountType.GENERIC
+                  ? "bg-purple-50/60 dark:bg-purple-950/20 border-purple-500 text-purple-700 dark:text-purple-400 font-semibold"
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850",
+                isUpdateMode && "opacity-60 cursor-not-allowed border-dashed"
+              )}
+            >
+              <Wallet className="w-5 h-5" />
+              <span className="text-xs">Wallet / Cash</span>
             </button>
           </div>
         </div>
@@ -208,161 +236,173 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
         </div>
 
         {/* Card 2: Account Details */}
-        <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-4">
-          <div className="flex items-center gap-1.5 border-b border-slate-55 dark:border-slate-800/40 pb-2">
-            {accountType === AccountType.BANK_ACCOUNT ? (
-              <Landmark className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-            ) : (
-              <CreditCard className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-            )}
-            <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-              {accountType === AccountType.BANK_ACCOUNT ? 'Bank Details' : 'Card Details'}
-            </h3>
+        {accountType === AccountType.GENERIC ? (
+          <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-2">
+            <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/40 pb-2">
+              <Wallet className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+              <h3 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Account Information</h3>
+            </div>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Generic accounts track cash, petty cash, manual wallets, or custom assets/liabilities without requiring bank statement password rules or credit limit settings.
+            </p>
           </div>
+        ) : (
+          <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-4">
+            <div className="flex items-center gap-1.5 border-b border-slate-55 dark:border-slate-800/40 pb-2">
+              {accountType === AccountType.BANK_ACCOUNT ? (
+                <Landmark className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+              ) : (
+                <CreditCard className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+              )}
+              <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                {accountType === AccountType.BANK_ACCOUNT ? 'Bank Details' : 'Card Details'}
+              </h3>
+            </div>
 
-          {accountType === AccountType.BANK_ACCOUNT ? (
-            <>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="openingBalance" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Opening Balance</Label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">₹</span>
+            {accountType === AccountType.BANK_ACCOUNT ? (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="openingBalance" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Opening Balance</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">₹</span>
+                      <Input
+                        id="openingBalance"
+                        name="openingBalance"
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        defaultValue={account && 'openingBalance' in account ? account.openingBalance : undefined}
+                        className="pl-6 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="last4" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Last 4 Digits</Label>
                     <Input
-                      id="openingBalance"
-                      name="openingBalance"
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      defaultValue={account && 'openingBalance' in account ? account.openingBalance : undefined}
-                      className="pl-6 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                      id="last4"
+                      name="last4"
+                      type="text"
+                      pattern="[0-9]{4}"
+                      maxLength={4}
+                      placeholder="1234"
+                      defaultValue={account && 'last4' in account ? account.last4 : undefined}
+                      className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="last4" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Last 4 Digits</Label>
-                  <Input
-                    id="last4"
-                    name="last4"
-                    type="text"
-                    pattern="[0-9]{4}"
-                    maxLength={4}
-                    placeholder="1234"
-                    defaultValue={account && 'last4' in account ? account.last4 : undefined}
-                    className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="statementPassword" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Statement Password (Optional)</Label>
-                <div className="relative">
-                  <Input
-                    id="statementPassword"
-                    name="statementPassword"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder={account && 'statementPassword' in account && account.statementPassword ? '••••••••' : 'Enter password if PDF statement is protected'}
-                    className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(prev => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="last4" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Last 4 Digits</Label>
-                  <Input
-                    id="last4"
-                    name="last4"
-                    type="text"
-                    pattern="[0-9]{4}"
-                    maxLength={4}
-                    placeholder="1234"
-                    defaultValue={account && 'last4' in account ? account.last4 : undefined}
-                    required
-                    className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="creditLimit" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Credit Limit</Label>
+                  <Label htmlFor="statementPassword" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Statement Password (Optional)</Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">₹</span>
                     <Input
-                      id="creditLimit"
-                      name="creditLimit"
-                      type="number"
-                      step="0.01"
-                      placeholder="50,000"
-                      defaultValue={account && 'creditLimit' in account ? account.creditLimit : undefined}
+                      id="statementPassword"
+                      name="statementPassword"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder={account && 'statementPassword' in account && account.statementPassword ? '••••••••' : 'Enter password if PDF statement is protected'}
+                      className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(prev => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="last4" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Last 4 Digits</Label>
+                    <Input
+                      id="last4"
+                      name="last4"
+                      type="text"
+                      pattern="[0-9]{4}"
+                      maxLength={4}
+                      placeholder="1234"
+                      defaultValue={account && 'last4' in account ? account.last4 : undefined}
                       required
-                      className="pl-6 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                      className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="creditLimit" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Credit Limit</Label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">₹</span>
+                      <Input
+                        id="creditLimit"
+                        name="creditLimit"
+                        type="number"
+                        step="0.01"
+                        placeholder="50,000"
+                        defaultValue={account && 'creditLimit' in account ? account.creditLimit : undefined}
+                        required
+                        className="pl-6 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="paymentDueDay" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Payment Due Day</Label>
+                    <Input
+                      id="paymentDueDay"
+                      name="paymentDueDay"
+                      type="number"
+                      min={1}
+                      max={31}
+                      placeholder="15"
+                      defaultValue={account && 'paymentDueDay' in account ? account.paymentDueDay : undefined}
+                      required
+                      className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="gracePeriodDays" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Grace Period (Days)</Label>
+                    <Input
+                      id="gracePeriodDays"
+                      name="gracePeriodDays"
+                      type="number"
+                      min={0}
+                      placeholder="20"
+                      defaultValue={account && 'gracePeriodDays' in account ? account.gracePeriodDays : undefined}
+                      required
+                      className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                     />
                   </div>
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="paymentDueDay" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Payment Due Day</Label>
-                  <Input
-                    id="paymentDueDay"
-                    name="paymentDueDay"
-                    type="number"
-                    min={1}
-                    max={31}
-                    placeholder="15"
-                    defaultValue={account && 'paymentDueDay' in account ? account.paymentDueDay : undefined}
-                    required
-                    className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
-                  />
-                </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="gracePeriodDays" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Grace Period (Days)</Label>
-                  <Input
-                    id="gracePeriodDays"
-                    name="gracePeriodDays"
-                    type="number"
-                    min={0}
-                    placeholder="20"
-                    defaultValue={account && 'gracePeriodDays' in account ? account.gracePeriodDays : undefined}
-                    required
-                    className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
-                  />
+                  <Label htmlFor="statementPassword" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Statement Password (Optional)</Label>
+                  <div className="relative">
+                    <Input
+                      id="statementPassword"
+                      name="statementPassword"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder={account && 'statementPassword' in account && account.statementPassword ? '••••••••' : 'Enter password if PDF statement is protected'}
+                      className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(prev => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
                 </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="statementPassword" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Statement Password (Optional)</Label>
-                <div className="relative">
-                  <Input
-                    id="statementPassword"
-                    name="statementPassword"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder={account && 'statementPassword' in account && account.statementPassword ? '••••••••' : 'Enter password if PDF statement is protected'}
-                    className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(prev => !prev)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Card 3: Configurations & Sync */}
         <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-4">

@@ -6,6 +6,7 @@ import {
   Landmark,
   Plus,
   RefreshCw,
+  Wallet,
 } from 'lucide-react';
 
 import { AccountFormWrapper } from '@/components/accounts/AccountFormWrapper';
@@ -14,7 +15,7 @@ import { StatementsDialog } from '@/components/accounts/StatementsDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Account, BankAccount, CreditCard } from '@/lib/account.types';
+import { Account, BankAccount, CreditCard, GenericAccount } from '@/lib/account.types';
 import { accountsApi } from '@/lib/apiClient';
 import { AccountType } from '@/lib/types';
 import { formatDate, formatMoney, formatNullableMoney, getPositionLabel } from '@/lib/utils';
@@ -43,7 +44,11 @@ const AccountWrapper = ({ account, children }: { account: Account; children: Rea
       {/* Top visual accent line */}
       <div className={cn(
         'h-1 w-full',
-        account.type === AccountType.BANK_ACCOUNT ? 'bg-emerald-500' : 'bg-amber-500',
+        account.type === AccountType.BANK_ACCOUNT
+          ? 'bg-emerald-500'
+          : account.type === AccountType.CREDIT_CARD
+            ? 'bg-amber-500'
+            : 'bg-purple-500',
       )}></div>
 
       <div className="p-3 flex-1 flex flex-col justify-between gap-2">
@@ -84,6 +89,7 @@ export default async function AccountsPage() {
 
   const bankAccounts = accounts.filter(a => a.type === AccountType.BANK_ACCOUNT) as BankAccount[];
   const creditCards = accounts.filter(a => a.type === AccountType.CREDIT_CARD) as CreditCard[];
+  const genericAccounts = accounts.filter(a => a.type === AccountType.GENERIC) as GenericAccount[];
 
   const totalCreditLimit = creditCards.reduce(
     (sum, a) => sum + (a.creditLimit || 0),
@@ -121,7 +127,7 @@ export default async function AccountsPage() {
                 No accounts connected yet
               </p>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Add your first bank account or credit card to monitor transactions and track net assets.
+                Add your first bank account, credit card, or cash wallet to monitor transactions and track net assets.
               </p>
             </div>
             <AccountFormWrapper
@@ -135,7 +141,7 @@ export default async function AccountsPage() {
           </div>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Bank Accounts Section */}
           <div className="space-y-4">
             <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800/60">
@@ -251,7 +257,7 @@ export default async function AccountsPage() {
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
               {creditCards.map((account) => (
                 <AccountWrapper account={account} key={account.id}>
                   <div className="space-y-1">
@@ -383,6 +389,84 @@ export default async function AccountsPage() {
               {creditCards.length === 0 && (
                 <div className="text-center py-6 text-xs text-slate-400 border border-dashed rounded-xl">
                   No credit cards added.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Generic / Other Accounts Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800/60">
+              <div className="flex items-center gap-2">
+                <Wallet className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">Other Accounts</h2>
+                <span
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400">
+                  {genericAccounts.length}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+              {genericAccounts.map((account) => (
+                <AccountWrapper account={account} key={account.id}>
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="space-y-0.5">
+                        <div
+                          className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                          {account.name}
+                        </div>
+                        {account.description ? (
+                          <div className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">
+                            {account.description}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    {/* Metadata Badges */}
+                    <div className="flex flex-wrap gap-1.5 items-center">
+                      <Badge variant={account.financialPosition === 'liability' ? 'warning' : 'success'}
+                             className="text-[9px] py-0 px-2 font-semibold uppercase">
+                        {getPositionLabel(account.financialPosition)}
+                      </Badge>
+                      {account.excludeFromNetAsset ? (
+                        <Badge variant="destructive" className="text-[9px] py-0 px-2 font-semibold uppercase">
+                          Excluded
+                        </Badge>
+                      ) : null}
+                      {account.ingestFromDate ? (
+                        <Badge variant="info"
+                               className="text-[9px] py-0 px-2 font-semibold uppercase flex items-center gap-1">
+                          <RefreshCw className="w-2.5 h-2.5 animate-spin-slow" />
+                          Sync Active
+                        </Badge>
+                      ) : null}
+                    </div>
+
+                    <div
+                      className="pt-2 flex flex-col gap-1 border-t border-dashed border-slate-100 dark:border-slate-800/40">
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Balance</span>
+                        <span className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight tabular-nums">
+                          {formatMoney(account.balance ?? 0)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {account.ingestFromDate ? (
+                      <div className="text-[9px] text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-1">
+                        <Calendar className="w-3 h-3 text-slate-400 dark:text-slate-600" />
+                        <span>Gmail Sync Watermark: {new Date(account.ingestFromDate).toLocaleDateString('en-IN', { dateStyle: 'medium' })}</span>
+                      </div>
+                    ) : null}
+                  </div>
+                </AccountWrapper>
+              ))}
+              {genericAccounts.length === 0 && (
+                <div className="text-center py-6 text-xs text-slate-400 border border-dashed rounded-xl">
+                  No other accounts added.
                 </div>
               )}
             </div>
