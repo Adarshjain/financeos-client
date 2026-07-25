@@ -15,7 +15,9 @@ import {
   Hash,
   HelpCircle,
   Landmark,
+  List,
   Mail,
+  ToggleLeft,
   Trash,
   Type,
   Wallet,
@@ -39,6 +41,7 @@ import {
 import type {
   DatasourceCatalog,
   FieldDefinition,
+  FieldType,
   FilterClause,
   FilterValue,
 } from '@/lib/reports.types';
@@ -54,33 +57,47 @@ import {
 import { humanizeToken } from './labels';
 import { MultiSelect } from './MultiSelect';
 
-export function getFieldIcon(fieldName: string) {
-  switch (fieldName) {
-    case 'amount':
-      return <Hash className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />;
-    case 'date':
-      return <Calendar className="h-3.5 w-3.5 text-blue-500 dark:text-blue-400" />;
-    case 'type':
-      return <ArrowLeftRight className="h-3.5 w-3.5 text-purple-500 dark:text-purple-400" />;
-    case 'source':
-      return <Mail className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400" />;
-    case 'accountId':
-      return <Wallet className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />;
-    case 'accountType':
-      return <Landmark className="h-3.5 w-3.5 text-sky-500 dark:text-sky-400" />;
-    case 'category':
-      return <FolderOpen className="h-3.5 w-3.5 text-teal-500 dark:text-teal-400" />;
-    case 'reviewType':
-      return <CheckSquare className="h-3.5 w-3.5 text-pink-500 dark:text-pink-400" />;
-    case 'description':
-      return <Type className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />;
-    case 'isUnderMonitoring':
-      return <Eye className="h-3.5 w-3.5 text-violet-500 dark:text-violet-400" />;
-    case 'isExcluded':
-      return <Ban className="h-3.5 w-3.5 text-rose-500 dark:text-rose-400" />;
-    default:
-      return <HelpCircle className="h-3.5 w-3.5 text-slate-400" />;
-  }
+/**
+ * Icons for the transactions datasource's fields, by name.
+ *
+ * Named-keyed and therefore datasource-specific, which is why it lives beside
+ * the field list rather than pretending to be generic. It used to be a 12-branch
+ * switch whose `default` returned a question mark, so every field of any second
+ * datasource would have rendered as "unknown".
+ */
+const FIELD_ICONS: Record<string, React.ReactNode> = {
+  amount: <Hash className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />,
+  date: <Calendar className="h-3.5 w-3.5 text-blue-500 dark:text-blue-400" />,
+  type: <ArrowLeftRight className="h-3.5 w-3.5 text-purple-500 dark:text-purple-400" />,
+  source: <Mail className="h-3.5 w-3.5 text-amber-500 dark:text-amber-400" />,
+  accountId: <Wallet className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />,
+  accountType: <Landmark className="h-3.5 w-3.5 text-sky-500 dark:text-sky-400" />,
+  category: <FolderOpen className="h-3.5 w-3.5 text-teal-500 dark:text-teal-400" />,
+  reviewType: <CheckSquare className="h-3.5 w-3.5 text-pink-500 dark:text-pink-400" />,
+  description: <Type className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />,
+  isUnderMonitoring: <Eye className="h-3.5 w-3.5 text-violet-500 dark:text-violet-400" />,
+  isExcluded: <Ban className="h-3.5 w-3.5 text-rose-500 dark:text-rose-400" />,
+};
+
+/**
+ * Fallback by the field's declared `type`, so a field this module has never
+ * heard of still gets a meaningful icon from catalog data alone instead of a
+ * question mark.
+ */
+const FIELD_TYPE_ICONS: Record<FieldType, React.ReactNode> = {
+  number: <Hash className="h-3.5 w-3.5 text-slate-400" />,
+  date: <Calendar className="h-3.5 w-3.5 text-slate-400" />,
+  string: <Type className="h-3.5 w-3.5 text-slate-400" />,
+  enum: <List className="h-3.5 w-3.5 text-slate-400" />,
+  boolean: <ToggleLeft className="h-3.5 w-3.5 text-slate-400" />,
+};
+
+export function getFieldIcon(fieldName: string, type?: FieldType) {
+  return (
+    FIELD_ICONS[fieldName] ??
+    (type ? FIELD_TYPE_ICONS[type] : undefined) ??
+    <HelpCircle className="h-3.5 w-3.5 text-slate-400" />
+  );
 }
 
 /** A fresh clause for (field, operator) with an empty default value per kind. */
@@ -163,7 +180,7 @@ export function FilterRow({
             {fieldOptions.map((opt) => (
               <SelectItem key={opt.value} value={opt.value} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
                 <div className="flex items-center gap-2">
-                  {getFieldIcon(opt.value)}
+                  {getFieldIcon(opt.value, fieldByName(catalog, opt.value)?.type)}
                   <span>{opt.label}</span>
                 </div>
               </SelectItem>

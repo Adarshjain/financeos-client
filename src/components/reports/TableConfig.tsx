@@ -22,6 +22,7 @@ import type {
   RawTableDraft,
   TableDraft,
 } from './builderReducer';
+import { newDraftId } from './builderReducer';
 import { columnsFor, fieldByName } from './catalog';
 import { ColumnOrderEditor } from './ColumnOrderEditor';
 import { DimensionRefEditor } from './DimensionRefEditor';
@@ -180,15 +181,19 @@ export function TableConfig({
           <div className="space-y-2">
             <Label>Measures</Label>
             {value.agg.measures.map((m, i) => (
-              <div key={i} className="flex items-center gap-2">
+              <div key={m.id} className="flex items-center gap-2">
                 <div className="flex-1">
                   <MeasureRefEditor
                     catalog={catalog}
                     type="TABLE"
                     value={m}
+                    // The editor is identity-agnostic (field/aggregation only),
+                    // so the list re-attaches the row's stable id.
                     onChange={(next) =>
                       setMeasures(
-                        value.agg.measures.map((x, idx) => (idx === i ? next : x)),
+                        value.agg.measures.map((x, idx) =>
+                          idx === i ? { ...next, id: x.id } : x,
+                        ),
                       )
                     }
                   />
@@ -210,7 +215,7 @@ export function TableConfig({
               variant="outline"
               size="sm"
               className="w-full"
-              onClick={() => setMeasures([...value.agg.measures, {}])}
+              onClick={() => setMeasures([...value.agg.measures, { id: newDraftId() }])}
             >
               <Plus className="mr-1 h-3.5 w-3.5" />
               Add Measure
@@ -257,15 +262,26 @@ function DimensionList({
     <div className="space-y-2">
       <Label>{label}</Label>
       {drafts.map((g, i) => (
-        <div key={i} className="flex items-center gap-2">
+        <div key={g.id} className="flex items-center gap-2">
           <div className="flex-1">
             <DimensionRefEditor
               catalog={catalog}
               type="TABLE"
               value={g}
-              exclude={exclude}
+              // Also exclude fields already chosen elsewhere in THIS list. Only
+              // the cross-list exclusion was applied before, so the same
+              // dimension could be added to Rows twice — a nonsensical
+              // group-by that validation let through to the backend.
+              exclude={[
+                ...exclude,
+                ...drafts
+                  .filter((x, idx) => idx !== i && x.field)
+                  .map((x) => x.field as string),
+              ]}
               onChange={(next) =>
-                onChange(drafts.map((x, idx) => (idx === i ? next : x)))
+                onChange(
+                  drafts.map((x, idx) => (idx === i ? { ...next, id: x.id } : x)),
+                )
               }
             />
           </div>
@@ -284,7 +300,7 @@ function DimensionList({
         variant="outline"
         size="sm"
         className="w-full"
-        onClick={() => onChange([...drafts, {}])}
+        onClick={() => onChange([...drafts, { id: newDraftId() }])}
       >
         <Plus className="mr-1 h-3.5 w-3.5" />
         {addLabel}

@@ -3,9 +3,11 @@
 
 import type {
   ChartData,
+  ChartDefinition,
   FilterClause,
   FilterValue,
   KpiData,
+  KpiDefinition,
   PivotTableData,
   ReportData,
   TableData,
@@ -45,6 +47,45 @@ export function formatMeasureValue(
   }
   if (options.field && isMoneyField(options.field)) return formatMoney(value);
   return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(value);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+/**
+ * Runtime guards for a saved report's `definition`.
+ *
+ * `ReportDefinition` is discriminated only by the *outer* `report.type` — the
+ * union members share no internal tag — so loading a saved report meant casting
+ * `definition` to the shape `type` implied. If the two ever disagreed (a bad
+ * migration, a stale cache, a backend bug) the cast silently produced an object
+ * of `undefined` fields and the builder opened blank rather than failing, which
+ * is the worst outcome for the one path where a user's saved work is restored.
+ *
+ * Each guard checks the fields that member declares as required, which is enough
+ * to tell the three shapes apart: KPI's `measure` is a string where CHART's is an
+ * object, and TABLE carries an explicit `mode`.
+ */
+export function isKpiDefinition(def: unknown): def is KpiDefinition {
+  return (
+    isRecord(def) &&
+    typeof def.measure === 'string' &&
+    typeof def.aggregation === 'string'
+  );
+}
+
+export function isChartDefinition(def: unknown): def is ChartDefinition {
+  return (
+    isRecord(def) &&
+    typeof def.chartType === 'string' &&
+    isRecord(def.dimension) &&
+    isRecord(def.measure)
+  );
+}
+
+export function isTableDefinition(def: unknown): def is TableDefinition {
+  return isRecord(def) && (def.mode === 'raw' || def.mode === 'aggregated');
 }
 
 // Narrow ReportData to KPI data.

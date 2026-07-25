@@ -2,17 +2,20 @@
 // (name, description, filters) at the top level plus an independent draft per
 // report type, so switching `type` never discards work on the other types.
 
+import {
+  isChartDefinition,
+  isKpiDefinition,
+  isTableDefinition,
+} from '@/lib/reports.helpers';
 import type {
   Aggregation,
   ChartDefinition,
   DatasourceCatalog,
   FilterClause,
   Granularity,
-  KpiDefinition,
   ReportResponse,
   ReportType,
   SortClause,
-  TableDefinition,
 } from '@/lib/reports.types';
 
 import { defaultExcludedFilter } from './catalog';
@@ -45,14 +48,29 @@ export interface RawTableDraft {
 
 // Drafts allow incomplete selections while the user is building; serialize.ts
 // drops the incomplete ones before producing the wire shape.
+//
+// `id` is a client-only handle so the editor lists can be keyed by identity
+// rather than array index. With index keys, deleting a row mid-list made React
+// reuse the row below's Radix Select instance, which could visibly carry an open
+// dropdown or focus onto different data. Safe to keep in state because
+// serializeDefinition rebuilds every dimension/measure via dimRef and explicit
+// literals, so `id` never reaches the wire. (Filters and sort clauses are NOT
+// given ids: those arrays are passed through to the payload as-is.)
 export interface DimensionDraft {
+  id: string;
   field?: string;
   granularity?: Granularity;
 }
 
 export interface MeasureDraft {
+  id: string;
   field?: string;
   aggregation?: Aggregation;
+}
+
+/** A fresh client id for a new draft row. */
+export function newDraftId(): string {
+  return crypto.randomUUID();
 }
 
 export interface AggTableDraft {
@@ -181,7 +199,17 @@ export function hydrateState(report: ReportResponse): BuilderState {
   state.filters = def.filters ?? [];
 
   if (report.type === 'KPI') {
-    const d = def as KpiDefinition;
+    // Validated rather than cast: see the guards in reports.helpers. A
+    // type/definition mismatch used to load an object of `undefined` fields, so
+    // the builder silently opened blank instead of reporting that the saved
+    // report could not be read. Throwing surfaces it in the route error
+    // boundary with a retry.
+    if (!isKpiDefinition(def)) {
+      throw new Error(
+        `Report ${report.id} is typed KPI but its definition does not match a KPI report.`,
+      );
+    }
+    const d = def;
     state.kpi = {
       measure: d.measure,
       aggregation: d.aggregation,
@@ -189,7 +217,12 @@ export function hydrateState(report: ReportResponse): BuilderState {
       higherIsBetter: d.comparison?.higherIsBetter,
     };
   } else if (report.type === 'CHART') {
-    const d = def as ChartDefinition;
+    if (!isChartDefinition(def)) {
+      throw new Error(
+        `Report ${report.id} is typed CHART but its definition does not match a CHART report.`,
+      );
+    }
+    const d = def;
     state.chart = {
       chartType: d.chartType,
       dimensionField: d.dimension?.field,
@@ -200,7 +233,12 @@ export function hydrateState(report: ReportResponse): BuilderState {
       measureAggregation: d.measure?.aggregation,
     };
   } else {
-    const d = def as TableDefinition;
+    if (!isTableDefinition(def)) {
+      throw new Error(
+        `Report ${report.id} is typed TABLE but its definition declares no raw/aggregated mode.`,
+      );
+    }
+    const d = def;
     if (d.mode === 'raw') {
       state.table.tableMode = 'raw';
       state.table.raw = {
@@ -210,9 +248,10 @@ export function hydrateState(report: ReportResponse): BuilderState {
     } else {
       state.table.tableMode = 'aggregated';
       state.table.agg = {
-        rows: d.rows ?? [],
-        columns: d.columns ?? [],
-        measures: d.measures ?? [],
+        // Saved definitions carry no client id, so mint one per loaded row.
+        rows: (d.rows ?? []).map((r) => ({ ...r, id: newDraftId() })),
+        columns: (d.columns ?? []).map((c) => ({ ...c, id: newDraftId() })),
+        measures: (d.measures ?? []).map((m) => ({ ...m, id: newDraftId() })),
         sort: d.sort ?? [],
       };
     }

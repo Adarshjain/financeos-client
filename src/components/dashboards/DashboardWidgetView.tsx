@@ -72,6 +72,18 @@ interface DashboardWidgetViewProps {
   onRemove?: () => void;
   /** Toggle the widget between half and full grid width (edit mode only). */
   onToggleWidth?: () => void;
+  /**
+   * Report data already fetched on the server for this widget's first page.
+   *
+   * Without it, every widget mounted empty and fetched its own data from a
+   * useEffect, so a dashboard cost SSR shell -> hydrate -> mount -> N
+   * client-to-server round trips before showing anything. When present the
+   * widget renders immediately and only fetches again if the user pages or
+   * changes page size.
+   */
+  initialData?: ReportData | null;
+  /** Server-side fetch error for this widget, isolated from its siblings. */
+  initialError?: string | null;
 }
 
 export function DashboardWidgetView({
@@ -80,19 +92,30 @@ export function DashboardWidgetView({
                                       onTitleChange,
                                       onRemove,
                                       onToggleWidth,
+                                      initialData = null,
+                                      initialError = null,
                                     }: DashboardWidgetViewProps) {
   const available = widget.report.available;
   const isTable = widget.report.type === 'TABLE';
   const isFullWidth = widget.layout.w >= DASHBOARD_GRID_COLUMNS;
 
   const [isFullPage, setIsFullPage] = useState(false);
-  const [data, setData] = useState<ReportData | null>(null);
+  const [data, setData] = useState<ReportData | null>(initialData);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError);
   const [page, setPage] = useState(0);
   // Page size is a runtime concern, driven by the table footer's control.
   const [size, setSize] = useState(DEFAULT_TABLE_PAGE_SIZE);
   const runIdRef = useRef(0);
+
+  // Which (report, page, size) the currently-held data belongs to. Seeded when
+  // the server already fetched this widget's first page so the effect below
+  // doesn't immediately re-request identical data on mount.
+  const dataSignature = (p: number, sz: number) =>
+    isTable ? `${widget.reportId}|${p}|${sz}` : widget.reportId;
+  const loadedSignatureRef = useRef<string | null>(
+    initialData || initialError ? dataSignature(0, DEFAULT_TABLE_PAGE_SIZE) : null,
+  );
 
   const handleSizeChange = (s: number) => {
     setSize(s);
@@ -101,6 +124,10 @@ export function DashboardWidgetView({
 
   useEffect(() => {
     if (!available) return;
+    const signature = dataSignature(page, size);
+    // Already holding exactly this data (server-seeded, or fetched earlier).
+    if (loadedSignatureRef.current === signature) return;
+
     const myId = ++runIdRef.current;
     const timer = setTimeout(async () => {
       setLoading(true);
@@ -110,6 +137,7 @@ export function DashboardWidgetView({
       );
       if (myId !== runIdRef.current) return;
       setLoading(false);
+      loadedSignatureRef.current = signature;
       if (res.success) {
         setData(res.data);
         setError(null);
@@ -119,6 +147,7 @@ export function DashboardWidgetView({
       }
     }, 0);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [widget.reportId, available, isTable, page, size]);
 
   // Keep header controls from starting a grid drag/resize.

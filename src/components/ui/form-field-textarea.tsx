@@ -42,7 +42,7 @@ export function FormFieldTextArea({
         {...props}
       />
       {showHint && (
-        <p id={hintId} className="text-sm text-slate-500 dark:text-slate-400">
+        <p id={hintId} className="text-sm text-muted-foreground">
           {hint}
         </p>
       )}

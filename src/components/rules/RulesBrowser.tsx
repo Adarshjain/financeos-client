@@ -1,6 +1,5 @@
 'use client';
 
-import { formatDistanceToNow } from 'date-fns';
 import { Check, Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { usePathname,useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState, useTransition } from 'react';
@@ -19,7 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Category } from '@/lib/categories.types';
 import { CategoryRule, PagedRules } from '@/lib/rules.types';
-import { cn } from '@/lib/utils';
+import { cn, formatRelativeTime } from '@/lib/utils';
 
 interface RulesBrowserProps {
   initialRules: PagedRules;
@@ -247,16 +246,6 @@ export function RulesBrowser({
       }
     } catch {
       toast.error('Failed to verify rule.');
-    }
-  };
-
-  const formatRelativeTime = (dateStr: string | null): string => {
-    if (!dateStr) return 'never';
-    try {
-      const date = new Date(dateStr);
-      return formatDistanceToNow(date, { addSuffix: true });
-    } catch {
-      return 'never';
     }
   };
 

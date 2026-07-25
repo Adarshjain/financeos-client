@@ -77,7 +77,7 @@ export function MeasureRefEditor({
           <SelectValue placeholder="Select measure" />
         </SelectTrigger>
         <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-          <SelectItem value="none" className="text-xs text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-900">Select deselect</SelectItem>
+          <SelectItem value="none" className="text-xs text-muted-foreground hover:bg-slate-50 dark:hover:bg-slate-900">None</SelectItem>
           {measures.map((m) => (
             <SelectItem key={m.name} value={m.name} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
               {m.label}
