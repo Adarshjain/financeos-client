@@ -15,12 +15,16 @@ import React, { JSX, useCallback, useEffect, useRef, useState } from 'react';
 
 import { getCardCycleSummary } from '@/actions/accounts';
 import { getStatementDetail, listStatementsByAccount } from '@/actions/statements';
+import {
+  ReviewTypeBadge,
+  StatementVerdictBadge,
+} from '@/components/statements/StatementBadges';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Account } from '@/lib/account.types';
-import { ReviewType, StatementDetail, StatementSummary, StatementVerdict } from '@/lib/statement.types';
+import { StatementDetail, StatementSummary } from '@/lib/statement.types';
 import { AccountType } from '@/lib/types';
 import { cn, formatDate, formatMoney, formatNullableMoney } from '@/lib/utils';
 
@@ -132,46 +136,6 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
       return d > max ? d : max;
     }, 0)
     : null;
-
-  const getVerdictBadge = (verdict: StatementVerdict) => {
-    switch (verdict) {
-      case 'AUTO_INGEST':
-        return (
-          <span title="Statement parsed clean with 100% chain continuity and valid checksums. Automatically accepted.">
-            <Badge variant="success" className="cursor-help">Auto Ingested</Badge>
-          </span>
-        );
-      case 'NEEDS_REVIEW':
-        return (
-          <span
-            title="Statement parsed with minor issues or chain validation gaps (< 99%). Review required before final reconciliation.">
-            <Badge variant="warning" className="cursor-help">Needs Review</Badge>
-          </span>
-        );
-      case 'REJECTED':
-        return (
-          <span
-            title="Statement failed critical validation (broken checksum, missing opening/closing balances, or unparseable format).">
-            <Badge variant="danger" className="cursor-help">Rejected</Badge>
-          </span>
-        );
-      default:
-        return <Badge variant="secondary">{verdict}</Badge>;
-    }
-  };
-
-  const getReviewTypeBadge = (reviewType: ReviewType) => {
-    switch (reviewType) {
-      case 'AUTO_REVIEWED':
-        return <Badge variant="success">Auto Reviewed</Badge>;
-      case 'NEEDS_REVIEW':
-        return <Badge variant="warning">Needs Review</Badge>;
-      case 'MANUALLY_REVIEWED':
-        return <Badge variant="info">Manually Reviewed</Badge>;
-      default:
-        return <Badge variant="secondary">{reviewType}</Badge>;
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -359,7 +323,7 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                         </div>
                       </div>
                       <div className="shrink-0">
-                        {getVerdictBadge(s.verdict)}
+                        <StatementVerdictBadge verdict={s.verdict} />
                       </div>
                     </div>
 
@@ -444,7 +408,7 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                         <TableCell className="text-right tabular-nums text-slate-600 dark:text-slate-400 text-xs">
                           {s.transactionCount !== null && s.transactionCount !== undefined ? s.transactionCount : '—'}
                         </TableCell>
-                        <TableCell>{getVerdictBadge(s.verdict)}</TableCell>
+                        <TableCell><StatementVerdictBadge verdict={s.verdict} /></TableCell>
                         <TableCell className="text-right">
                           <Button
                             size="sm"
@@ -667,7 +631,7 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                                   <div className="flex items-center gap-2 min-w-0">
                                     <span
                                       className="text-slate-400 tabular-nums shrink-0">{formatDate(line.date)}</span>
-                                    <div className="shrink-0">{getReviewTypeBadge(line.reviewType)}</div>
+                                    <div className="shrink-0"><ReviewTypeBadge reviewType={line.reviewType} /></div>
                                   </div>
                                   <div className="flex items-center gap-1.5 tabular-nums shrink-0">
                                     <span className="text-slate-400">Bal:</span>
@@ -730,7 +694,7 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                                         {isCredit ? `+${formatMoney(line.amount)}` : `-${formatMoney(line.amount)}`}
                                       </span>
                                     </TableCell>
-                                    <TableCell>{getReviewTypeBadge(line.reviewType)}</TableCell>
+                                    <TableCell><ReviewTypeBadge reviewType={line.reviewType} /></TableCell>
                                     <TableCell className="text-right tabular-nums text-xs">
                                       {line.balanceAfter !== null ? formatMoney(line.balanceAfter) : '—'}
                                     </TableCell>
