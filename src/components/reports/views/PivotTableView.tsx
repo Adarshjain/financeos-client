@@ -17,28 +17,26 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { formatMeasureValue } from '@/lib/reports.helpers';
 import type {
   PivotColumn,
   PivotMeasureInfo,
   PivotTableData,
 } from '@/lib/reports.types';
-import { cn, formatMoney } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 import { TablePagination } from './TablePagination';
 
-// Format a measure cell the same way the KPI/raw-table views do.
+// Format a measure cell the same way the KPI/raw-table views do — now
+// literally the same code rather than a third hand-rolled copy.
 function formatMeasure(
   value: number | undefined,
   measure: PivotMeasureInfo
 ): string {
-  if (value === undefined || value === null) return '—';
-  if (measure.aggregation === 'count') {
-    return new Intl.NumberFormat('en-IN').format(value);
-  }
-  if (measure.field === 'amount') return formatMoney(value);
-  return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(
-    value
-  );
+  return formatMeasureValue(value, {
+    field: measure.field,
+    aggregation: measure.aggregation,
+  });
 }
 
 interface PivotTableViewProps {
@@ -52,6 +50,8 @@ interface PivotTableViewProps {
   fill?: boolean;
   onPageChange?: (page: number) => void;
   onSizeChange?: (size: number) => void;
+  /** Disables the paging controls while a page fetch is in flight. */
+  loading?: boolean;
 }
 
 export function PivotTableView({
@@ -59,6 +59,7 @@ export function PivotTableView({
   fill,
   onPageChange,
   onSizeChange,
+  loading,
 }: PivotTableViewProps) {
   const { rowDimensions, columnDimensions, measures, columns, rows, page } =
     data;
@@ -182,6 +183,7 @@ export function PivotTableView({
         <TablePagination
           page={page}
           unit="row group"
+          loading={loading}
           onPageChange={onPageChange}
           onSizeChange={onSizeChange}
         />

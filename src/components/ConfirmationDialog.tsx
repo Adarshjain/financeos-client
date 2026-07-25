@@ -26,9 +26,34 @@ interface ConfirmationDialogProps {
 
 export function ConfirmationDialog(props: ConfirmationDialogProps) {
   const [open, setOpen] = useState(false);
+  // Derived from the awaited action rather than trusting the caller's optional
+  // `loading` prop. The primary action is usually destructive, and any caller
+  // that omitted `loading` previously had no protection against repeated
+  // clicks firing it concurrently.
+  const [running, setRunning] = useState(false);
+  const busy = running || props.loading;
+
+  const handlePrimary = async () => {
+    if (running) return;
+    setRunning(true);
+    try {
+      await props.primaryAction?.();
+      setOpen(false);
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setRunning(false);
+    }
+  };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      // Don't let an outside click or Escape dismiss mid-flight.
+      onOpenChange={(next) => {
+        if (!busy) setOpen(next);
+      }}
+    >
       <DialogTrigger asChild>
         {props.trigger}
       </DialogTrigger>
@@ -38,19 +63,14 @@ export function ConfirmationDialog(props: ConfirmationDialogProps) {
           {props.description && <DialogDescription>{props.description}</DialogDescription>}
         </DialogHeader>
         <DialogFooter className="flex gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={props.loading}>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
             Cancel
           </Button>
           <Button
             variant={props.variant ?? 'destructive'}
-            onClick={async () => {
-              try {
-                await props.primaryAction?.();
-                setOpen(false);
-              } catch (error) {
-                toast.error((error as Error).message);
-              }
-            }} disabled={props.loading}>
+            onClick={handlePrimary}
+            disabled={busy}
+          >
             {props.primaryActionText}
           </Button>
         </DialogFooter>

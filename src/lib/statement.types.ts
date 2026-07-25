@@ -1,7 +1,15 @@
+// Imported and re-exported rather than redeclared: this union was previously
+// written out verbatim here as well, with no import linking the two. Because
+// TypeScript compares them structurally, the copies could have drifted apart
+// without any compile error. Re-exported so existing importers of
+// `statement.types` keep working.
+import type { ReviewType } from '@/lib/transaction.types';
+
+export type { ReviewType };
+
 export type StatementSource = 'gmail' | 'file_upload';
 export type StatementVerdict = 'AUTO_INGEST' | 'NEEDS_REVIEW' | 'REJECTED';
 export type TransactionType = 'DEBIT' | 'CREDIT';
-export type ReviewType = 'NEEDS_REVIEW' | 'AUTO_REVIEWED' | 'MANUALLY_REVIEWED' | 'NA';
 
 export interface StatementSummary {
   id: string;

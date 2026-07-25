@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Link2, Loader2, Search, X } from 'lucide-react';
+import { Link2, Loader2, Search, X } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -88,12 +88,24 @@ export function TransactionLinkDialog({
     prevOpenRef.current = open;
   }, [open, initialTransaction, initialSelectedTransactions]);
 
-  const getAccount = (accountId: string) => accounts.find((a) => a.id === accountId);
+  // Memoised so the candidate-filter useMemo below can depend on it honestly
+  // instead of omitting it and capturing a stale `accounts`.
+  const getAccount = React.useCallback(
+    (accountId: string) => accounts.find((a) => a.id === accountId),
+    [accounts],
+  );
 
   const anchorTx = selectedTransactions.find((t) => t.id === anchorId);
 
+  /** Monotonic id so only the newest candidate search is applied. */
+  const candidateRequestIdRef = React.useRef(0);
+
   // Fetch candidate transactions for linking
   const fetchCandidates = React.useCallback(async (query: string, type: LinkType, anchor?: Transaction) => {
+    // Same request-ordering guard the sibling browsers use: the 300ms debounce
+    // below narrows the window but doesn't close it, so a slower earlier search
+    // could otherwise overwrite the results of a newer one.
+    const requestId = ++candidateRequestIdRef.current;
     setLoadingCandidates(true);
     try {
       const filters: import('@/lib/reports.types').FilterClause[] = [];
@@ -120,13 +132,16 @@ export function TransactionLinkDialog({
         0,
         50,
       );
+      if (requestId !== candidateRequestIdRef.current) return;
       if (res.success) {
         setCandidateResults(res.data.content);
       }
     } catch {
       // Ignore background errors
     } finally {
-      setLoadingCandidates(false);
+      if (requestId === candidateRequestIdRef.current) {
+        setLoadingCandidates(false);
+      }
     }
   }, []);
 
@@ -158,10 +173,11 @@ export function TransactionLinkDialog({
         case 'TRANSFER':
           // 1 counterpart CREDIT on a different account
           return isCredit && t.accountId !== anchorTx.accountId;
-        case 'CC_PAYMENT':
+        case 'CC_PAYMENT': {
           // 1 counterpart CREDIT on a credit card account
           const acc = getAccount(t.accountId);
           return isCredit && acc?.type === 'credit_card';
+        }
         case 'REVERSAL':
           // Opposite direction, same account
           return isDebit !== anchorDebit && t.accountId === anchorTx.accountId;
@@ -178,7 +194,7 @@ export function TransactionLinkDialog({
           return true;
       }
     });
-  }, [candidateResults, selectedTransactions, anchorId, linkType, accounts]);
+  }, [candidateResults, selectedTransactions, anchorId, linkType, getAccount]);
 
   const toggleSelectTransaction = (t: Transaction) => {
     if (selectedTransactions.some((s) => s.id === t.id)) {

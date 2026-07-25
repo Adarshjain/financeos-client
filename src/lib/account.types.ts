@@ -43,10 +43,20 @@ export type GenericAccountRequest = AccountRequestBase & {
 export type AccountRequest = BankAccountRequest | CreditCardRequest | StockRequest | MutualFundRequest | GenericAccountRequest;
 
 
+/**
+ * Fields common to every account. Deliberately NOT a member of the `Account`
+ * union and deliberately without a `type` field.
+ *
+ * It used to be both: `Account = AccountBase | BankAccount | ...` where
+ * `AccountBase.type` was the whole `AccountType` enum. That made the union
+ * undiscriminable — `AccountBase` structurally absorbed every variant and its
+ * wide `type` meant `account.type === AccountType.CREDIT_CARD` narrowed
+ * nothing. Call sites compensated with `as CreditCard[]` casts and
+ * `'field' in account` probes, none of which the compiler could verify.
+ */
 interface AccountBase {
   id: string;
   name: string;
-  type: AccountType;
   excludeFromNetAsset?: boolean;
   financialPosition?: FinancialPosition;
   description?: string;
@@ -58,6 +68,7 @@ interface AccountBase {
 }
 
 export type BankAccount = AccountBase & {
+  type: AccountType.BANK_ACCOUNT;
   openingBalance?: string;
   last4?: string;
   statementPassword?: string;
@@ -65,6 +76,7 @@ export type BankAccount = AccountBase & {
 }
 
 export type CreditCard = AccountBase & {
+  type: AccountType.CREDIT_CARD;
   last4: string;
   creditLimit: number;
   paymentDueDay: number;
@@ -74,15 +86,34 @@ export type CreditCard = AccountBase & {
 }
 
 export type Stock = AccountBase & {
+  type: AccountType.STOCK;
   instrumentCode: string;
   lastTradedPrice?: string;
 }
 
 export type MutualFund = AccountBase & {
+  type: AccountType.MUTUAL_FUND;
   instrumentCode: string;
   lastTradedPrice?: string;
 }
 
-export type GenericAccount = AccountBase;
+export type GenericAccount = AccountBase & {
+  type: AccountType.GENERIC;
+}
 
-export type Account = AccountBase | BankAccount | CreditCard | Stock | MutualFund | GenericAccount;
+export type Account = BankAccount | CreditCard | Stock | MutualFund | GenericAccount;
+
+/**
+ * Type guard for filtering a mixed `Account[]` down to one variant.
+ *
+ * `Array.prototype.filter` does not narrow from a plain boolean predicate, so
+ * `accounts.filter(a => a.type === X)` still yields `Account[]` and previously
+ * needed an unchecked `as BankAccount[]` cast. This restores the narrowing the
+ * compiler can actually verify:
+ *
+ *   accounts.filter(isAccountOfType(AccountType.CREDIT_CARD)) // CreditCard[]
+ */
+export function isAccountOfType<T extends AccountType>(type: T) {
+  return (account: Account): account is Extract<Account, { type: T }> =>
+    account.type === type;
+}

@@ -8,8 +8,9 @@
 
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 
+import { formatMeasureValue } from '@/lib/reports.helpers';
 import type { KpiData } from '@/lib/reports.types';
-import { cn, formatDate, formatMoney } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 
 const directionIcons = {
   up: ArrowUp,
@@ -24,13 +25,11 @@ const sentimentColors = {
 } as const;
 
 export function KpiView({ data, className }: { data: KpiData, className?: string }) {
-  const fmt = (n: number) => {
-    if (data.aggregation === 'count') {
-      return new Intl.NumberFormat('en-IN').format(n);
-    }
-    if (data.measure === 'amount') return formatMoney(n);
-    return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(n);
-  };
+  const fmt = (n: number) =>
+    formatMeasureValue(n, {
+      field: data.measure,
+      aggregation: data.aggregation,
+    });
   // Signed absolute change — negatives already carry a minus from fmt().
   const signedChange = (n: number) => `${n > 0 ? '+' : ''}${fmt(n)}`;
   const signedPercent = (p: number) => `${p > 0 ? '+' : ''}${p.toFixed(1)}%`;

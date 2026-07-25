@@ -1,72 +1,14 @@
 'use client';
 
-import {
-  BarChart3,
-  Home,
-  LayoutDashboard,
-  LogOut,
-  Receipt,
-  Settings,
-  Tags,
-  TrendingUp,
-  Wallet,
-} from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { logout } from '@/actions/auth';
+import { isNavItemActive, SIDEBAR_NAV } from '@/components/layout/navigation';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-
-interface NavItem {
-  href: string;
-  label: string;
-  icon: React.ReactNode;
-}
-
-const navItems: NavItem[] = [
-  {
-    href: '/dashboard',
-    label: 'Dashboard',
-    icon: <Home className="h-5 w-5" />,
-  },
-  {
-    href: '/accounts',
-    label: 'Accounts',
-    icon: <Wallet className="h-5 w-5" />,
-  },
-  {
-    href: '/transactions',
-    label: 'Transactions',
-    icon: <Receipt className="h-5 w-5" />,
-  },
-  {
-    href: '/rules',
-    label: 'Rules',
-    icon: <Tags className="h-5 w-5" />,
-  },
-  {
-    href: '/investments',
-    label: 'Investments',
-    icon: <TrendingUp className="h-5 w-5" />,
-  },
-  {
-    href: '/reports',
-    label: 'Reports',
-    icon: <BarChart3 className="h-5 w-5" />,
-  },
-  {
-    href: '/dashboards',
-    label: 'Dashboards',
-    icon: <LayoutDashboard className="h-5 w-5" />,
-  },
-  {
-    href: '/settings',
-    label: 'Settings',
-    icon: <Settings className="h-5 w-5" />,
-  },
-];
 
 export function Sidebar({ userEmail }: { userEmail: string }) {
   const pathname = usePathname();
@@ -82,9 +24,8 @@ export function Sidebar({ userEmail }: { userEmail: string }) {
 
       {/* Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive =
-            pathname === item.href || pathname.startsWith(item.href + '/');
+        {SIDEBAR_NAV.map((item) => {
+          const isActive = isNavItemActive(pathname, item.href);
           return (
             <Link
               key={item.href}

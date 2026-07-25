@@ -34,9 +34,11 @@ interface WidgetReportContentProps {
   error: string | null;
   onPageChange: (page: number) => void;
   onSizeChange: (size: number) => void;
+  /** Disables the table/pivot paging controls while a page fetch is in flight. */
+  loading?: boolean;
 }
 
-function WidgetReportContent({ available, data, error, onPageChange, onSizeChange }: WidgetReportContentProps) {
+function WidgetReportContent({ available, data, error, onPageChange, onSizeChange, loading }: WidgetReportContentProps) {
   if (!available) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-sm text-slate-500">
@@ -59,7 +61,7 @@ function WidgetReportContent({ available, data, error, onPageChange, onSizeChang
       </div>
     );
   }
-  return <ReportDataView data={data} fill onPageChange={onPageChange} onSizeChange={onSizeChange} />;
+  return <ReportDataView data={data} fill loading={loading} onPageChange={onPageChange} onSizeChange={onSizeChange} />;
 }
 
 interface DashboardWidgetViewProps {
@@ -127,6 +129,7 @@ export function DashboardWidgetView({
     available,
     data,
     error,
+    loading,
     onPageChange: setPage,
     onSizeChange: handleSizeChange,
   };

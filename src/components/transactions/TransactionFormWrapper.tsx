@@ -8,7 +8,7 @@ import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
 import { Transaction } from '@/lib/transaction.types';
 
-interface EditAccountFormProps {
+interface TransactionFormWrapperProps {
   accounts: Account[];
   categories: Category[];
   transaction?: Transaction;
@@ -16,7 +16,7 @@ interface EditAccountFormProps {
   onSuccess?: () => void;
 }
 
-export function TransactionFormWrapper({ transaction, categories, accounts, trigger, onSuccess }: EditAccountFormProps) {
+export function TransactionFormWrapper({ transaction, categories, accounts, trigger, onSuccess }: TransactionFormWrapperProps) {
   const [open, setOpen] = useState(false);
 
   return (

@@ -1,4 +1,5 @@
 import { Category } from '@/lib/categories.types';
+import type { Page } from '@/lib/pagination';
 import { FilterClause } from '@/lib/reports.types';
 
 export interface TransactionSearchRequest {
@@ -10,7 +11,7 @@ export type TransactionSource = 'gmail_transaction_alert' | 'gmail_statement' | 
 
 export type ReviewType = 'NEEDS_REVIEW' | 'AUTO_REVIEWED' | 'MANUALLY_REVIEWED' | 'NA';
 
-export type ReviewReason = 'UNRECONCILED' | 'CATEGORY_UNVERIFIED' | 'DUPLICATE_SUSPECT';
+export type ReviewReason = 'UNRECONCILED' | 'CATEGORY_UNVERIFIED' | 'DUPLICATE_SUSPECT' | 'OTHER';
 
 export interface TransactionBase {
   accountId: string;
@@ -86,16 +87,7 @@ export type Transaction = TransactionBase & {
   links?: TransactionLinkSummary[];
 }
 
-export interface PagedTransaction {
-  content: Transaction[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
-  empty: boolean;
-}
+export type PagedTransaction = Page<Transaction>;
 
 export interface BatchReviewRequest {
   transactionIds: string[];

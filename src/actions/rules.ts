@@ -2,77 +2,57 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { ApiError, rulesApi } from '@/lib/apiClient';
+import { rulesApi } from '@/lib/apiClient';
+import { apiResult } from '@/lib/apiResult';
 import type { CategoryRule, CreateRuleRequest, UpdateRuleRequest } from '@/lib/rules.types';
-import type { ApiResult, ErrorResponse } from '@/lib/types';
+import type { ApiResult } from '@/lib/types';
 
-function handleRuleError(error: unknown, defaultMessage: string): { success: false; error: ErrorResponse } {
-  if (error instanceof ApiError) {
-    return { success: false, error: error.response };
-  }
-  return {
-    success: false,
-    error: {
-      code: 'UNKNOWN_ERROR',
-      message: defaultMessage,
-      timestamp: new Date().toISOString(),
-    },
-  };
+/**
+ * Rules drive auto-categorisation, so any change also invalidates the
+ * transaction views that display the resulting categories.
+ */
+function revalidateRuleViews(): void {
+  revalidatePath('/rules');
+  revalidatePath('/transactions');
+  revalidatePath('/transactions/review');
 }
 
 export async function createRule(
   body: CreateRuleRequest,
 ): Promise<ApiResult<CategoryRule>> {
-  try {
+  return apiResult('Failed to create rule', async () => {
     const rule = await rulesApi.create(body);
-    revalidatePath('/rules');
-    revalidatePath('/transactions');
-    revalidatePath('/transactions/review');
-    return { success: true, data: rule };
-  } catch (error) {
-    return handleRuleError(error, 'Failed to create rule');
-  }
+    revalidateRuleViews();
+    return rule;
+  });
 }
 
 export async function updateRule(
   id: string,
   body: UpdateRuleRequest,
 ): Promise<ApiResult<CategoryRule>> {
-  try {
+  return apiResult('Failed to update rule', async () => {
     const rule = await rulesApi.update(id, body);
-    revalidatePath('/rules');
-    revalidatePath('/transactions');
-    revalidatePath('/transactions/review');
-    return { success: true, data: rule };
-  } catch (error) {
-    return handleRuleError(error, 'Failed to update rule');
-  }
+    revalidateRuleViews();
+    return rule;
+  });
 }
 
 export async function verifyRule(
   id: string,
 ): Promise<ApiResult<CategoryRule>> {
-  try {
+  return apiResult('Failed to verify rule', async () => {
     const rule = await rulesApi.verify(id);
-    revalidatePath('/rules');
-    revalidatePath('/transactions');
-    revalidatePath('/transactions/review');
-    return { success: true, data: rule };
-  } catch (error) {
-    return handleRuleError(error, 'Failed to verify rule');
-  }
+    revalidateRuleViews();
+    return rule;
+  });
 }
 
 export async function deleteRule(
   id: string,
 ): Promise<ApiResult<void>> {
-  try {
+  return apiResult('Failed to delete rule', async () => {
     await rulesApi.remove(id);
-    revalidatePath('/rules');
-    revalidatePath('/transactions');
-    revalidatePath('/transactions/review');
-    return { success: true, data: undefined };
-  } catch (error) {
-    return handleRuleError(error, 'Failed to delete rule');
-  }
+    revalidateRuleViews();
+  });
 }

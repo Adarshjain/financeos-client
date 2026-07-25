@@ -13,6 +13,39 @@ import type {
   TableDefinitionAggregated,
   TableDefinitionRaw,
 } from '@/lib/reports.types';
+import { formatMoney } from '@/lib/utils';
+
+/**
+ * Whether a field's numeric values are monetary.
+ *
+ * A naming heuristic, because the datasource catalog exposes no "currency"
+ * flag — replacing this with a real catalog flag is the proper fix. It exists
+ * so the rule lives in ONE place: the three report views each had their own,
+ * and they had already diverged (the raw table used `key.includes('amount')`
+ * while KPI and pivot used exact equality, so a field like `refundAmount`
+ * would have rendered as currency in one view and as a plain number in the
+ * other two).
+ */
+export function isMoneyField(field: string): boolean {
+  return field.toLowerCase().endsWith('amount');
+}
+
+/**
+ * Renders a measure value consistently across the KPI, raw-table and pivot
+ * views: counts as plain integers, money as currency, everything else to two
+ * decimal places.
+ */
+export function formatMeasureValue(
+  value: number | null | undefined,
+  options: { field?: string; aggregation?: string },
+): string {
+  if (value === null || value === undefined) return '—';
+  if (options.aggregation === 'count') {
+    return new Intl.NumberFormat('en-IN').format(value);
+  }
+  if (options.field && isMoneyField(options.field)) return formatMoney(value);
+  return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(value);
+}
 
 // Narrow ReportData to KPI data.
 export function isKpiData(data: ReportData): data is KpiData {

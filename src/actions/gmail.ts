@@ -2,10 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { ApiError, gmailApi } from '@/lib/apiClient';
+import { gmailApi } from '@/lib/apiClient';
+import { apiResult } from '@/lib/apiResult';
 import type {
   ApiResult,
-  ErrorResponse,
   GmailConnectionResponse,
   GmailOAuthStartResponse,
   GmailSenderRequest,
@@ -13,101 +13,62 @@ import type {
   SyncSummary,
 } from '@/lib/types';
 
-function handleError(error: unknown, defaultMessage: string): { success: false; error: ErrorResponse } {
-  if (error instanceof ApiError) {
-    return { success: false, error: error.response };
-  }
-  return {
-    success: false,
-    error: {
-      code: 'UNKNOWN_ERROR',
-      message: defaultMessage,
-      timestamp: new Date().toISOString(),
-    },
-  };
-}
-
 export async function startGmailOAuth(): Promise<
   ApiResult<GmailOAuthStartResponse>
 > {
-  try {
-    const result = await gmailApi.startOAuth();
-    return { success: true, data: result };
-  } catch (error) {
-    return handleError(error, 'Failed to start Gmail OAuth');
-  }
+  return apiResult('Failed to start Gmail OAuth', () => gmailApi.startOAuth());
 }
 
 export async function syncGmail(): Promise<ApiResult<SyncSummary>> {
-  try {
+  return apiResult('Failed to sync Gmail', async () => {
     const result = await gmailApi.sync();
     revalidatePath('/transactions');
     revalidatePath('/settings');
-    return { success: true, data: result };
-  } catch (error) {
-    return handleError(error, 'Failed to sync Gmail');
-  }
+    return result;
+  });
 }
 
 export async function listGmailSenders(): Promise<ApiResult<GmailSenderResponse[]>> {
-  try {
-    const result = await gmailApi.listSenders();
-    return { success: true, data: result };
-  } catch (error) {
-    return handleError(error, 'Failed to list Gmail senders');
-  }
+  return apiResult('Failed to list Gmail senders', () => gmailApi.listSenders());
 }
 
 export async function createGmailSender(
   data: GmailSenderRequest
 ): Promise<ApiResult<GmailSenderResponse>> {
-  try {
+  return apiResult('Failed to create Gmail sender', async () => {
     const result = await gmailApi.createSender(data);
     revalidatePath('/settings');
-    return { success: true, data: result };
-  } catch (error) {
-    return handleError(error, 'Failed to create Gmail sender');
-  }
+    return result;
+  });
 }
 
 export async function updateGmailSender(
   id: string,
   data: GmailSenderRequest
 ): Promise<ApiResult<GmailSenderResponse>> {
-  try {
+  return apiResult('Failed to update Gmail sender', async () => {
     const result = await gmailApi.updateSender(id, data);
     revalidatePath('/settings');
-    return { success: true, data: result };
-  } catch (error) {
-    return handleError(error, 'Failed to update Gmail sender');
-  }
+    return result;
+  });
 }
 
 export async function deleteGmailSender(id: string): Promise<ApiResult<void>> {
-  try {
+  return apiResult('Failed to delete Gmail sender', async () => {
     await gmailApi.deleteSender(id);
     revalidatePath('/settings');
-    return { success: true, data: undefined as any };
-  } catch (error) {
-    return handleError(error, 'Failed to delete Gmail sender');
-  }
+  });
 }
 
 export async function listGmailConnections(): Promise<ApiResult<GmailConnectionResponse[]>> {
-  try {
-    const result = await gmailApi.listConnections();
-    return { success: true, data: result };
-  } catch (error) {
-    return handleError(error, 'Failed to list Gmail connections');
-  }
+  return apiResult('Failed to list Gmail connections', () =>
+    gmailApi.listConnections(),
+  );
 }
 
 export async function disconnectGmailConnection(id: string): Promise<ApiResult<void>> {
-  try {
+  return apiResult('Failed to disconnect Gmail connection', async () => {
     await gmailApi.disconnectConnection(id);
     revalidatePath('/settings');
-    return { success: true, data: undefined as any };
-  } catch (error) {
-    return handleError(error, 'Failed to disconnect Gmail connection');
-  }
+  });
 }

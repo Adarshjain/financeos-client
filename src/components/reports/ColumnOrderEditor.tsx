@@ -6,7 +6,7 @@
 // the whole row is draggable, with a grip handle as the affordance. Adding /
 // removing columns stays with the MultiSelect; this only reorders.
 
-import { GripVertical } from 'lucide-react';
+import { ChevronDown, ChevronUp, GripVertical } from 'lucide-react';
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -33,12 +33,17 @@ export function ColumnOrderEditor({ items, onReorder }: ColumnOrderEditorProps) 
     setOverIndex(null);
   };
 
-  const moveTo = (target: number) => {
-    if (dragIndex === null || dragIndex === target) return;
+  const move = (from: number, to: number) => {
+    if (from === to || to < 0 || to >= items.length) return;
     const next = [...items];
-    const [moved] = next.splice(dragIndex, 1);
-    next.splice(target, 0, moved);
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
     onReorder(next.map((i) => i.key));
+  };
+
+  const moveTo = (target: number) => {
+    if (dragIndex === null) return;
+    move(dragIndex, target);
   };
 
   return (
@@ -64,10 +69,35 @@ export function ColumnOrderEditor({ items, onReorder }: ColumnOrderEditorProps) 
               'border-emerald-400 ring-1 ring-emerald-400'
           )}
         >
-          <GripVertical className="h-4 w-4 shrink-0 text-slate-400" />
+          <GripVertical className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />
           <span className="truncate text-slate-700 dark:text-slate-200">
             {item.label}
           </span>
+          {/*
+            Reordering was drag-only, so keyboard and screen-reader users could
+            add and remove columns but never reorder them. These buttons give the
+            same capability without needing pointer gestures.
+          */}
+          <div className="ml-auto flex shrink-0 items-center gap-0.5">
+            <button
+              type="button"
+              onClick={() => move(index, index - 1)}
+              disabled={index === 0}
+              aria-label={`Move ${item.label} up`}
+              className="rounded p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring dark:hover:text-slate-200"
+            >
+              <ChevronUp className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => move(index, index + 1)}
+              disabled={index === items.length - 1}
+              aria-label={`Move ${item.label} down`}
+              className="rounded p-1 text-slate-400 hover:text-slate-700 disabled:opacity-30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring dark:hover:text-slate-200"
+            >
+              <ChevronDown className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </li>
       ))}
     </ul>

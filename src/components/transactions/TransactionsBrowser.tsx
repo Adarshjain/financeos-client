@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { FilterClause } from '@/lib/reports.types';
-import type { PagedTransaction, Transaction } from '@/lib/transaction.types';
+import type { PagedTransaction } from '@/lib/transaction.types';
 import { formatDate } from '@/lib/utils';
 
 import { TRANSACTIONS_CATALOG } from './catalog';
@@ -23,7 +23,8 @@ import { TransactionLinkDialog } from './TransactionLinkDialog';
 interface TransactionsBrowserProps {
   accounts: Account[];
   categories: Category[];
-  needsReviewCount?: number;
+  /** `null`/absent means the count could not be determined, not zero. */
+  needsReviewCount?: number | null;
 }
 
 export function TransactionsBrowser({ accounts, categories, needsReviewCount }: TransactionsBrowserProps) {
@@ -31,14 +32,16 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sort, setSort] = useState('date,desc');
-  const [localReviewCount, setLocalReviewCount] = useState(needsReviewCount ?? 0);
+  const [localReviewCount, setLocalReviewCount] = useState<number | null>(
+    needsReviewCount ?? null,
+  );
 
   const [selectedTxnIds, setSelectedTxnIds] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [bulkLinkOpen, setBulkLinkOpen] = useState(false);
 
   useEffect(() => {
-    setLocalReviewCount(needsReviewCount ?? 0);
+    setLocalReviewCount(needsReviewCount ?? null);
   }, [needsReviewCount]);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(50);
@@ -204,7 +207,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
       <div className="flex justify-between items-center px-4 pt-2.5 pb-0.5">
         <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
         <div className="flex items-center gap-2">
-          {selectedTxnIds.size > 0 && (
+          {selectedTxnIds.size > 0 ? (
             <Button
               variant="outline"
               size="sm"
@@ -214,23 +217,27 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
               <Link2 className="h-3.5 w-3.5" />
               <span>Link ({selectedTxnIds.size})</span>
             </Button>
-          )}
-          <Link href="/transactions/review">
-            <Button variant="outline" size="sm" className="relative gap-1.5 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all h-8 text-xs">
-              <span>Review</span>
-              {localReviewCount !== undefined && localReviewCount > 0 && (
-                <span className="flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-md bg-amber-500 text-[10px] font-bold text-white">
+          ) : (<>
+              <Link href="/transactions/review">
+                <Button variant="outline" size="sm"
+                        className="relative gap-1.5 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all h-8 text-xs">
+                  <span>Review</span>
+                  {localReviewCount !== null && localReviewCount > 0 && (
+                    <span
+                      className="flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-md bg-amber-500 text-[10px] font-bold text-white">
                   {localReviewCount}
                 </span>
-              )}
-            </Button>
-          </Link>
-          <TransactionFormWrapper
-            categories={categories}
-            accounts={accounts}
-            onSuccess={handleReload}
-            trigger={<Button size="sm" className="rounded-xl h-8 text-xs">Create</Button>}
-          />
+                  )}
+                </Button>
+              </Link>
+              <TransactionFormWrapper
+                categories={categories}
+                accounts={accounts}
+                onSuccess={handleReload}
+                trigger={<Button size="sm" className="rounded-xl h-8 text-xs">Create</Button>}
+              />
+            </>
+          )}
         </div>
       </div>
 
@@ -251,7 +258,8 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
       />
 
       {/* Sort Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-1 border-b border-slate-100 dark:border-slate-800">
+      <div
+        className="flex flex-wrap items-center justify-between gap-2 px-4 py-1 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-slate-500">Sort:</span>
           <Button
@@ -274,6 +282,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
             {sort === 'amount,desc' && <ArrowDown className="h-3 w-3" />}
             {sort === 'amount,asc' && <ArrowUp className="h-3 w-3" />}
           </Button>
+          <div className="w-[1px] h-4 bg-slate-400"></div>
           <Button
             variant={isSelectionMode || selectedTxnIds.size > 0 ? 'secondary' : 'outline'}
             size="sm"
@@ -286,7 +295,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
             }}
             className="gap-1 h-7 rounded-full text-[11px] px-2.5"
           >
-            Select
+            Link
           </Button>
           {selectedTxnIds.size > 0 && (
             <Button
@@ -339,7 +348,8 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
               return (
                 <Fragment key={transaction.id}>
                   {showDate && (
-                    <div className="text-sm font-medium pl-2 pt-2 sticky top-0 bg-slate-50 dark:bg-slate-900 dark:text-slate-300 z-10">
+                    <div
+                      className="text-sm font-medium pl-2 pt-2 sticky top-0 bg-slate-50 dark:bg-slate-900 dark:text-slate-300 z-10">
                       {formatDate(transaction.date)}
                     </div>
                   )}

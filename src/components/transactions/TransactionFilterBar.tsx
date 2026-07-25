@@ -13,12 +13,12 @@ import {
 } from 'lucide-react';
 import React, { useCallback, useMemo, useState } from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { RemovableBadge } from '@/components/ui/removable-badge';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { FilterClause } from '@/lib/reports.types';
@@ -738,26 +738,23 @@ export function TransactionFilterBar({
           </span>
 
           {search.trim() !== '' && (
-            <Badge
+            <RemovableBadge
               variant="secondary"
-              onClick={() => onSearchChange('')}
+              label={`Search: "${search}"`}
+              removeLabel="Clear search"
+              onRemove={() => onSearchChange('')}
               className="h-6 gap-1 px-2.5 text-[10px] font-medium rounded-full bg-slate-100 dark:bg-slate-850 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition-colors touch-manipulation"
-            >
-              <span>Search: &quot;{search}&quot;</span>
-              <X className="h-3 w-3 opacity-60" />
-            </Badge>
+            />
           )}
 
           {activeBadges.map((badge) => (
-            <Badge
+            <RemovableBadge
               key={badge.key}
               variant="secondary"
-              onClick={badge.onRemove}
+              label={badge.label}
+              onRemove={badge.onRemove}
               className="h-6 gap-1 px-2.5 text-[10px] font-medium rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 cursor-pointer hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 dark:hover:border-rose-800 transition-colors touch-manipulation"
-            >
-              <span>{badge.label}</span>
-              <X className="h-3 w-3 opacity-60" />
-            </Badge>
+            />
           ))}
 
           <Button
