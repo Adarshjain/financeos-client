@@ -518,7 +518,8 @@ export const reportsApi = {
 };
 
 // Dashboards API
-// A dashboard arranges report widgets on a 12-column grid. It stores no query
+// A dashboard arranges report widgets on a grid DASHBOARD_GRID_COLUMNS wide. It
+// stores no query
 // logic: to render one, call getById, then run each widget's report via
 // reportsApi.runSaved(widget.reportId, { page, size }) — page/size for TABLE
 // widgets — and render the returned ReportData by its type. Skip widgets whose
