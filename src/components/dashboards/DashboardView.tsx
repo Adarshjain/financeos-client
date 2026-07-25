@@ -6,6 +6,7 @@
 // to render the user's default dashboard.
 
 import { Card } from '@/components/ui/card';
+import type { WidgetPrefetchMap } from '@/lib/dashboards.server';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 
 import { DashboardGrid } from './DashboardGrid';
@@ -13,9 +14,15 @@ import { DashboardWidgetView } from './DashboardWidgetView';
 
 interface DashboardViewProps {
   dashboard: DashboardResponse;
+  /**
+   * Widget data already fetched on the server. Present for the dashboard shown
+   * on first paint; absent when the user switches dashboards client-side, where
+   * the widgets fetch their own data as before.
+   */
+  prefetched?: WidgetPrefetchMap;
 }
 
-export function DashboardView({ dashboard }: DashboardViewProps) {
+export function DashboardView({ dashboard, prefetched }: DashboardViewProps) {
   if (dashboard.widgets.length === 0) {
     return (
       <Card>
@@ -36,7 +43,13 @@ export function DashboardView({ dashboard }: DashboardViewProps) {
       widgets={dashboard.widgets}
       editing={false}
       onLayoutChange={() => {}}
-      renderWidget={(w) => <DashboardWidgetView widget={w} />}
+      renderWidget={(w) => (
+        <DashboardWidgetView
+          widget={w}
+          initialData={prefetched?.[w.id]?.data ?? null}
+          initialError={prefetched?.[w.id]?.error ?? null}
+        />
+      )}
     />
   );
 }
