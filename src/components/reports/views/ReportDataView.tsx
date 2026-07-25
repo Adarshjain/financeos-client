@@ -1,3 +1,5 @@
+'use client';
+
 // Dispatches a ReportData onto the matching presentational view (KPI / chart /
 // raw table / pivot table). The single source of truth for "which view renders
 // which report type", shared by the builder's live preview and the dashboard
@@ -7,6 +9,9 @@
 // fills its parent's height (fixed-height containers like dashboard widgets);
 // off, they grow with their content (flow layouts like the preview pane).
 
+import { Loader2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
 import {
   isChartData,
   isKpiData,
@@ -15,10 +20,31 @@ import {
 } from '@/lib/reports.helpers';
 import type { ReportData } from '@/lib/reports.types';
 
-import { ChartView } from './ChartView';
 import { KpiView } from './KpiView';
 import { PivotTableView } from './PivotTableView';
 import { TableView } from './TableView';
+
+/**
+ * recharts is by far the heaviest dependency in the tree — it lands in its own
+ * ~390 KB client chunk. Importing ChartView statically here put that chunk on
+ * every route that can render a report, so a KPI-only report or a
+ * table-only dashboard downloaded and parsed the whole charting library for
+ * nothing.
+ *
+ * `ssr: false` because recharts sizes itself from measured DOM and has no
+ * meaningful server render anyway.
+ */
+const ChartView = dynamic(
+  () => import('./ChartView').then((m) => m.ChartView),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full min-h-[8rem] items-center justify-center text-slate-400">
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </div>
+    ),
+  },
+);
 
 interface ReportDataViewProps {
   data: ReportData;
