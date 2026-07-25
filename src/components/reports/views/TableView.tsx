@@ -14,8 +14,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { formatMeasureValue } from '@/lib/reports.helpers';
 import type { TableColumn, TableData } from '@/lib/reports.types';
-import { cn, formatDate, formatMoney } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 
 import { TablePagination } from './TablePagination';
 
@@ -24,9 +25,8 @@ function formatCell(value: unknown, column: TableColumn): string {
   if (column.type === 'number') {
     const n = typeof value === 'number' ? value : Number(value);
     if (Number.isNaN(n)) return String(value);
-    return column.key.includes('amount')
-      ? formatMoney(n)
-      : new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(n);
+    // Raw rows carry no aggregation, so money-ness comes from the field alone.
+    return formatMeasureValue(n, { field: column.key });
   }
   if (column.type === 'date') return formatDate(String(value));
   return String(value);

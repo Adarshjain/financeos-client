@@ -1,10 +1,16 @@
 'use client';
 
-import { BarChart3, Home, LayoutDashboard, LogOut, Menu, Receipt, Settings, Tags, TrendingUp, Wallet } from 'lucide-react';
+import { LogOut, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { logout } from '@/actions/auth';
+import {
+  HIDE_MOBILE_NAV_ON,
+  isNavItemActive,
+  MOBILE_BAR_NAV,
+  MOBILE_MENU_NAV,
+} from '@/components/layout/navigation';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,67 +23,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
-interface NavItem {
-  href: string;
-  label: string;
-  icon: React.ReactNode;
-}
-
-const dashboardRoute: NavItem = {
-  href: '/dashboard',
-  label: 'Home',
-  icon: <Home className="h-5 w-5" />,
-};
-
-const accountRoute: NavItem = {
-  href: '/accounts',
-  label: 'Accounts',
-  icon: <Wallet className="h-5 w-5" />,
-};
-
-const transactionRoute: NavItem = {
-  href: '/transactions',
-  label: 'Transactions',
-  icon: <Receipt className="h-5 w-5" />,
-};
-const investmentRoute: NavItem = {
-  href: '/investments',
-  label: 'Stocks & MF',
-  icon: <TrendingUp className="h-5 w-5" />,
-};
-
-const reportsRoute: NavItem = {
-  href: '/reports',
-  label: 'Reports',
-  icon: <BarChart3 className="h-5 w-5" />,
-};
-
-const dashboardsRoute: NavItem = {
-  href: '/dashboards',
-  label: 'Dashboards',
-  icon: <LayoutDashboard className="h-5 w-5" />,
-};
-
-const settingsRoute: NavItem = {
-  href: '/settings',
-  label: 'Settings',
-  icon: <Settings className="h-5 w-5" />,
-};
-
-const rulesRoute: NavItem = {
-  href: '/rules',
-  label: 'Rules',
-  icon: <Tags className="h-5 w-5" />,
-};
-
-const HIDE_ON_MOBILE: string[] = ['/transactions/review'];
-
-const navItems: NavItem[] = [
-  dashboardRoute,
-  transactionRoute,
-  investmentRoute,
-];
-
 interface MobileNavProps {
   userEmail?: string;
 }
@@ -85,16 +30,15 @@ interface MobileNavProps {
 export function MobileNav({ userEmail }: MobileNavProps) {
   const pathname = usePathname();
 
-  if (HIDE_ON_MOBILE.includes(pathname)) {
+  if (HIDE_MOBILE_NAV_ON.includes(pathname)) {
     return;
   }
 
   return (
     <nav
       className="lg:hidden fixed bottom-2 left-3 right-3 h-12 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 border rounded-2xl border-slate-200 dark:border-slate-800 z-40 flex items-center justify-between px-2">
-      {navItems.map((item) => {
-        const isActive =
-          pathname === item.href || pathname.startsWith(item.href + '/');
+      {MOBILE_BAR_NAV.map((item) => {
+        const isActive = isNavItemActive(pathname, item.href);
         return (
           <Link
             key={item.href}
@@ -106,8 +50,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900',
             )}
           >
-            {/*{item.icon}*/}
-            {item.label}
+            {item.shortLabel ?? item.label}
           </Link>
         );
       })}
@@ -133,9 +76,8 @@ export function MobileNav({ userEmail }: MobileNavProps) {
               <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 mt-1.5 truncate">{userEmail}</div>
             </DropdownMenuGroup>
             <DropdownMenuGroup className="space-y-1">
-              {[accountRoute, rulesRoute, reportsRoute, dashboardsRoute, settingsRoute].map((item) => {
-                const isActive =
-                  pathname === item.href || pathname.startsWith(item.href + '/');
+              {MOBILE_MENU_NAV.map((item) => {
+                const isActive = isNavItemActive(pathname, item.href);
                 return (
                   <DropdownMenuItem key={item.href} asChild>
                     <Link

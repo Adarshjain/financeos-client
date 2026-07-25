@@ -25,6 +25,23 @@ export function reviewReasonLabel(reason: ReviewReason): string {
   return REVIEW_REASON_META[reason]?.label ?? reason;
 }
 
+/**
+ * Human-readable text for a batch-operation failure reason.
+ *
+ * The same if/else chain was written out twice in ReviewBrowser — once for
+ * batch approve and once for batch delete. Unrecognised codes fall through to
+ * the raw value rather than being hidden.
+ */
+const BATCH_FAILURE_LABELS: Record<string, string> = {
+  NOT_FOUND: 'Transaction not found',
+  NOT_OWNED: 'Access denied (not owned)',
+  ERROR: 'System error occurred',
+};
+
+export function batchFailureLabel(reason: string): string {
+  return BATCH_FAILURE_LABELS[reason] ?? reason;
+}
+
 export const TRANSACTIONS_OPERATORS = {
   number: ['equals', 'greater_than', 'less_than', 'between'],
   string: ['exact', 'starts_with', 'ends_with', 'contains', 'in'],
