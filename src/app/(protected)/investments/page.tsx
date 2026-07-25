@@ -54,7 +54,7 @@ export default async function InvestmentsPage() {
           </Badge>
         );
       case 'sell':
-        return <Badge variant="danger">Sell</Badge>;
+        return <Badge variant="destructive">Sell</Badge>;
       default:
         return <Badge variant="secondary">{type || 'Unknown'}</Badge>;
     }

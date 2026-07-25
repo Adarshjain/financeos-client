@@ -33,9 +33,15 @@ export function DashboardsList({ dashboards }: DashboardsListProps) {
     }
   };
 
-  const handleToggleDefault = async (id: string, makeDefault: boolean) => {
+  // Passes the updatedAt this list was rendered with, so the action can refuse
+  // rather than clobber a dashboard that changed in the meantime.
+  const handleToggleDefault = async (
+    id: string,
+    makeDefault: boolean,
+    updatedAt: string,
+  ) => {
     setDefaultPendingId(id);
-    const res = await setDefaultDashboard(id, makeDefault);
+    const res = await setDefaultDashboard(id, makeDefault, updatedAt);
     setDefaultPendingId(null);
     if (res.success) {
       toast.success(makeDefault ? 'Set as default' : 'Default cleared');
@@ -82,7 +88,7 @@ export function DashboardsList({ dashboards }: DashboardsListProps) {
                 disabled={pending}
                 title={d.isDefault ? 'Clear default' : 'Set as default'}
                 aria-pressed={d.isDefault}
-                onClick={() => handleToggleDefault(d.id, !d.isDefault)}
+                onClick={() => handleToggleDefault(d.id, !d.isDefault, d.updatedAt)}
               >
                 {pending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

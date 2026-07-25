@@ -251,6 +251,22 @@ export function validationErrors(
       if (completeColumns.some((g) => rowFields.has(g.field))) {
         errors.push('A field cannot be used in both rows and columns.');
       }
+      // Within-list duplicates were never checked, so the same dimension could
+      // be grouped on twice in one axis, or the same field aggregated twice the
+      // same way.
+      if (rowFields.size !== completeRows.length) {
+        errors.push('Each row dimension must be a different field.');
+      }
+      const columnFieldSet = new Set(completeColumns.map((g) => g.field));
+      if (columnFieldSet.size !== completeColumns.length) {
+        errors.push('Each column dimension must be a different field.');
+      }
+      const measureKeys = new Set(
+        completeMeasures.map((m) => `${m.field}:${m.aggregation}`),
+      );
+      if (measureKeys.size !== completeMeasures.length) {
+        errors.push('Each measure must be a different field/aggregation pair.');
+      }
     }
   }
 

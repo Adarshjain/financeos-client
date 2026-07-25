@@ -7,20 +7,16 @@
 // guard ensures a stale in-flight response can't overwrite a newer one.
 
 import { Loader2, RefreshCw } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 
 import { runAdHocReport } from '@/actions/reports';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import type {
-  DatasourceCatalog,
-  ReportData,
-  RunReportRequest,
-} from '@/lib/reports.types';
+import type { DatasourceCatalog, ReportData } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 import type { BuilderState } from './builderReducer';
-import { buildRunRequest, isMinimalValid, validationErrors } from './serialize';
+import { buildRunRequest, validationErrors } from './serialize';
 import { ReportDataView } from './views/ReportDataView';
 import { DEFAULT_TABLE_PAGE_SIZE } from './views/TablePagination';
 
@@ -30,9 +26,24 @@ interface PreviewPaneProps {
 }
 
 export function PreviewPane({ state, catalog }: PreviewPaneProps) {
-  const valid = isMinimalValid(state, catalog);
-  const errors = validationErrors(state, catalog);
-  const defSignature = JSON.stringify(buildRunRequest(state, catalog));
+  // `ReportBuilder` holds one reducer for the whole page, so typing in the Name
+  // or Description field re-renders this component even though neither is part
+  // of the definition. Without memoisation that re-ran validation and a full
+  // definition serialisation on every keystroke.
+  //
+  // Keeping the request object alongside its signature also removes a
+  // JSON.parse of the string this just produced — runPreview used to
+  // round-trip through text to recover the object it already had.
+  const { request, defSignature } = useMemo(() => {
+    const req = buildRunRequest(state, catalog);
+    return { request: req, defSignature: JSON.stringify(req) };
+  }, [state, catalog]);
+
+  const errors = useMemo(
+    () => validationErrors(state, catalog),
+    [state, catalog],
+  );
+  const valid = errors.length === 0;
 
   const isTable = state.type === 'TABLE';
 
@@ -64,9 +75,8 @@ export function PreviewPane({ state, catalog }: PreviewPaneProps) {
     const myId = ++runIdRef.current;
     const signature = defSignature;
     setLoading(true);
-    const req = JSON.parse(signature) as RunReportRequest;
     const res = await runAdHocReport(
-      req,
+      request,
       isTable ? { page: pageToLoad, size: sizeToLoad } : {},
     );
     if (myId !== runIdRef.current) return; // superseded by a newer run
