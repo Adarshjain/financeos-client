@@ -77,7 +77,9 @@ export function validateWidgets(widgets: DashboardWidget[]): string[] {
     }
     seen.add(widget.id);
     if (!isLayoutWithinGrid(widget.layout)) {
-      errors.push(`Widget ${i + 1} is outside the 12-column grid.`);
+      errors.push(
+        `Widget ${i + 1} is outside the ${DASHBOARD_GRID_COLUMNS}-column grid.`,
+      );
     }
   });
   return errors;

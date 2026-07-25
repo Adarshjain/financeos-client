@@ -1,7 +1,8 @@
 // Types generated from API spec — Dashboards module
 // See api-spec.yaml (tags: Dashboards) for the wire contract.
 //
-// A dashboard is a named canvas arranging report widgets on a 12-column grid.
+// A dashboard is a named canvas arranging report widgets on a grid whose width
+// is DASHBOARD_GRID_COLUMNS (see dashboards.helpers).
 // Each widget references a SAVED report by id and carries its grid placement —
 // it stores no query logic. To render a dashboard, fetch it and run each
 // widget's report through the reports client (`reportsApi.runSaved` /
@@ -9,7 +10,7 @@
 
 import type { ReportType } from '@/lib/reports.types';
 
-/** Widget placement on the 12-column dashboard grid. */
+/** Widget placement on the dashboard grid; see DASHBOARD_GRID_COLUMNS. */
 export interface WidgetLayout {
   x: number;
   y: number;

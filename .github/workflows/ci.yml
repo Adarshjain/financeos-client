@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A superseded run on the same branch has no value once a newer commit exists.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Next 16 declares engines.node >= 20.9. The README used to claim 18,
+          # which cannot build this project.
+          node-version-file: .nvmrc
+          cache: npm
+
+      # `npm ci` installs strictly from the lockfile and fails on drift, which
+      # is what catches a dependency that is imported but never declared — the
+      # class of problem that let four eslint packages resolve only via npm's
+      # flat hoisting.
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      - run: npm run lint
+
+      - run: npm test
+
+      # Last, because it is the slowest and the cheaper checks above localise a
+      # failure better.
+      - run: npm run build
+        env:
+          API_BASE_URL: http://localhost:6969
