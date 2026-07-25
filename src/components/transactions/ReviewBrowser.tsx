@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { batchDeleteTransactions, batchReviewTransactions, searchTransactions } from '@/actions/transactions';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { TablePagination } from '@/components/reports/views/TablePagination';
-import { reviewReasonLabel } from '@/components/transactions/catalog';
+import { batchFailureLabel, reviewReasonLabel } from '@/components/transactions/catalog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -238,15 +238,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         const mappedFailures = failures.map(f => {
           const txn = pagedData?.content.find(t => t.id === f.id);
           const desc = txn ? (txn.description || txn.sourcedDescription) : `Transaction ID: ${f.id}`;
-          let friendlyReason = f.reason;
-          if (f.reason === 'NOT_FOUND') {
-            friendlyReason = 'Transaction not found';
-          } else if (f.reason === 'NOT_OWNED') {
-            friendlyReason = 'Access denied (not owned)';
-          } else if (f.reason === 'ERROR') {
-            friendlyReason = 'System error occurred';
-          }
-          return { description: desc, reason: friendlyReason };
+          return { description: desc, reason: batchFailureLabel(f.reason) };
         });
 
         const mappedSkips = skippedIds.map(id => {
@@ -287,15 +279,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         const mappedFailures = failures.map(f => {
           const txn = pagedData?.content.find(t => t.id === f.id);
           const desc = txn ? (txn.description || txn.sourcedDescription) : `Transaction ID: ${f.id}`;
-          let friendlyReason = f.reason;
-          if (f.reason === 'NOT_FOUND') {
-            friendlyReason = 'Transaction not found';
-          } else if (f.reason === 'NOT_OWNED') {
-            friendlyReason = 'Access denied (not owned)';
-          } else if (f.reason === 'ERROR') {
-            friendlyReason = 'System error occurred';
-          }
-          return { description: desc, reason: friendlyReason };
+          return { description: desc, reason: batchFailureLabel(f.reason) };
         });
 
         if (failures.length > 0) {

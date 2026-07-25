@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Account } from '@/lib/account.types';
 import { Transaction, TransactionLinkResponse } from '@/lib/transaction.types';
-import { cn, formatDate, formatMoney } from '@/lib/utils';
+import { cn, formatDate, formatMoney, getAccountName } from '@/lib/utils';
 
 import { DeleteTransaction } from './DeleteTransaction';
 import { ReviewReasonBadges } from './ReviewReasonBadges';
@@ -98,11 +98,8 @@ export const TransactionDetailContent = ({
     }
   };
 
-  const getAccountName = (accountId: string | undefined) => {
-    if (!accountId) return '—';
-    const account = accounts.find((a) => a.id === accountId);
-    return account?.name || 'Unknown';
-  };
+  const accountName = (accountId: string | undefined) =>
+    getAccountName(accounts, accountId);
 
   const getSource = () => {
     switch (transaction.source) {
@@ -201,7 +198,7 @@ export const TransactionDetailContent = ({
               <CreditCard className="h-4 w-4 text-slate-400" /> Account
             </span>
             <span className="font-semibold text-slate-800 dark:text-slate-200">
-              {getAccountName(transaction.accountId)}
+              {accountName(transaction.accountId)}
             </span>
           </div>
 
@@ -365,7 +362,7 @@ export const TransactionDetailContent = ({
                             <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
                               <span>{formatDate(parentMember.date)}</span>
                               <span>•</span>
-                              <span>{getAccountName(parentMember.accountId)}</span>
+                              <span>{accountName(parentMember.accountId)}</span>
                             </div>
                           </div>
                           <span
@@ -402,7 +399,7 @@ export const TransactionDetailContent = ({
                                 <span>•</span>
                                 <span>{formatDate(m.date)}</span>
                                 <span>•</span>
-                                <span>{getAccountName(m.accountId)}</span>
+                                <span>{accountName(m.accountId)}</span>
                               </div>
                             </div>
 

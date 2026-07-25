@@ -1,4 +1,5 @@
 import { Category } from '@/lib/categories.types';
+import type { Page } from '@/lib/pagination';
 
 export interface CategoryRule {
   id: string;
@@ -27,13 +28,4 @@ export interface UpdateRuleRequest {
   mcc?: string | null;
 }
 
-export interface PagedRules {
-  content: CategoryRule[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
-  empty: boolean;
-}
+export type PagedRules = Page<CategoryRule>;

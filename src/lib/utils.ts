@@ -93,6 +93,22 @@ export function getAccountTypeLabel(type: string | undefined): string {
   return labels[type.toLowerCase()] || type;
 }
 
+/**
+ * Resolve an account id to its display name.
+ *
+ * Was copy-pasted verbatim into three transaction components, so any change to
+ * the fallback behaviour meant finding all of them.
+ */
+export function getAccountName(
+  accounts: { id: string; name: string }[],
+  accountId: string | undefined,
+): string {
+  // Matches the behaviour of the copies it replaces: em dash when there is no
+  // id at all, 'Unknown' when the id doesn't resolve to a loaded account.
+  if (!accountId) return '—';
+  return accounts.find((a) => a.id === accountId)?.name || 'Unknown';
+}
+
 export function getPositionLabel(position: string | undefined): string {
   if (!position) return 'Asset';
   return position === 'liability' ? 'Liability' : 'Asset';

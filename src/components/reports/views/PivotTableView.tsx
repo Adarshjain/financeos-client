@@ -17,28 +17,26 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { formatMeasureValue } from '@/lib/reports.helpers';
 import type {
   PivotColumn,
   PivotMeasureInfo,
   PivotTableData,
 } from '@/lib/reports.types';
-import { cn, formatMoney } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 import { TablePagination } from './TablePagination';
 
-// Format a measure cell the same way the KPI/raw-table views do.
+// Format a measure cell the same way the KPI/raw-table views do — now
+// literally the same code rather than a third hand-rolled copy.
 function formatMeasure(
   value: number | undefined,
   measure: PivotMeasureInfo
 ): string {
-  if (value === undefined || value === null) return '—';
-  if (measure.aggregation === 'count') {
-    return new Intl.NumberFormat('en-IN').format(value);
-  }
-  if (measure.field === 'amount') return formatMoney(value);
-  return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(
-    value
-  );
+  return formatMeasureValue(value, {
+    field: measure.field,
+    aggregation: measure.aggregation,
+  });
 }
 
 interface PivotTableViewProps {
