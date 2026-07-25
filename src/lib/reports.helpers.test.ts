@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatMeasureValue, isMoneyField } from './reports.helpers';
+import {
+  formatMeasureValue,
+  isChartDefinition,
+  isKpiDefinition,
+  isMoneyField,
+  isTableDefinition,
+} from './reports.helpers';
 
 // The three report views each had their own copy of this logic and had already
 // diverged: the raw table used `key.includes('amount')` while KPI and pivot used
@@ -58,5 +64,51 @@ describe('formatMeasureValue', () => {
 
   it('falls back to a plain number when no field is supplied', () => {
     expect(formatMeasureValue(42, {})).toBe('42');
+  });
+});
+
+// Guards for the saved-report `definition`. ReportDefinition is discriminated
+// only by the outer report.type, so hydrateState used to cast blindly; a
+// mismatch produced an object of undefined fields and the builder opened blank
+// instead of reporting that the report could not be read.
+describe('definition guards', () => {
+  const kpi = { measure: 'amount', aggregation: 'sum', filters: [] };
+  const chart = {
+    chartType: 'bar',
+    dimension: { field: 'date' },
+    measure: { field: 'amount', aggregation: 'sum' },
+    filters: [],
+  };
+  const rawTable = { mode: 'raw', columns: ['amount'], filters: [] };
+  const aggTable = { mode: 'aggregated', rows: [], measures: [], filters: [] };
+
+  it('accepts each shape as itself', () => {
+    expect(isKpiDefinition(kpi)).toBe(true);
+    expect(isChartDefinition(chart)).toBe(true);
+    expect(isTableDefinition(rawTable)).toBe(true);
+    expect(isTableDefinition(aggTable)).toBe(true);
+  });
+
+  it('tells KPI and CHART apart — measure is a string vs an object', () => {
+    expect(isKpiDefinition(chart)).toBe(false);
+    expect(isChartDefinition(kpi)).toBe(false);
+  });
+
+  it('rejects a TABLE definition offered as KPI or CHART', () => {
+    expect(isKpiDefinition(rawTable)).toBe(false);
+    expect(isChartDefinition(rawTable)).toBe(false);
+  });
+
+  it('rejects a TABLE definition with no recognised mode', () => {
+    expect(isTableDefinition({ columns: [], filters: [] })).toBe(false);
+    expect(isTableDefinition({ mode: 'pivot', filters: [] })).toBe(false);
+  });
+
+  it('rejects non-objects rather than throwing', () => {
+    for (const bad of [null, undefined, 'kpi', 42, true]) {
+      expect(isKpiDefinition(bad)).toBe(false);
+      expect(isChartDefinition(bad)).toBe(false);
+      expect(isTableDefinition(bad)).toBe(false);
+    }
   });
 });
