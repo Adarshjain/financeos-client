@@ -1,12 +1,13 @@
 'use client';
 
-import { CornerDownRight, Link2, ShieldCheck } from 'lucide-react';
+import { CornerDownRight, ShieldCheck } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
 import { Transaction } from '@/lib/transaction.types';
-import { cn, formatMoney } from '@/lib/utils';
+import { cn, formatMoney, getAccountName } from '@/lib/utils';
 
 import { ReviewReasonBadges } from './ReviewReasonBadges';
 import { TransactionDetailDialog } from './TransactionDetailDialog';
@@ -34,11 +35,8 @@ export const TransactionCard = ({
   onToggleSelect,
   showSource,
 }: TransactionCardProps) => {
-  const getAccountName = (accountId: string | undefined) => {
-    if (!accountId) return '—';
-    const account = accounts.find((a) => a.id === accountId);
-    return account?.name || 'Unknown';
-  };
+  const accountName = (accountId: string | undefined) =>
+    getAccountName(accounts, accountId);
 
   const trigger = (
     <div className="mb-2 rounded-xl border border-slate-200/30 dark:border-slate-800/40 bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/60 hover:shadow-md hover:shadow-slate-100/5 dark:hover:shadow-none">
@@ -77,7 +75,7 @@ export const TransactionCard = ({
             {transaction.description ?? transaction.sourcedDescription}
           </div>
           <div className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">
-            {getAccountName(transaction.accountId)}
+            {accountName(transaction.accountId)}
           </div>
           <div className="flex flex-wrap gap-1.5 items-center mt-2.5">
             {showSource && transaction.source === 'gmail_transaction_alert' && (

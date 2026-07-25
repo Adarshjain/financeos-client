@@ -34,4 +34,11 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# editors
+.idea/
+.vscode/
+
+# agent / tooling scratch output
+graphify-out/
+.agents/
 

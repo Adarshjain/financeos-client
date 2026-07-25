@@ -28,9 +28,16 @@ export function DeleteAccount({ account }: DeleteAccountProps) {
     setIsDeleting(true);
 
     try {
-      await deleteAccount(account.id);
-      toast.success('Account deleted!');
-      setOpen(false);
+      // deleteAccount never throws — it returns an ApiResult. This previously
+      // toasted success and closed the dialog unconditionally, so a 4xx/5xx
+      // left the account intact while the UI claimed it was deleted.
+      const res = await deleteAccount(account.id);
+      if (res.success) {
+        toast.success('Account deleted!');
+        setOpen(false);
+      } else {
+        toast.error(res.error.message);
+      }
     } catch (error) {
       toast.error((error as Error).message);
     } finally {

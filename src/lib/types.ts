@@ -1,3 +1,5 @@
+import type { Page } from '@/lib/pagination';
+
 // Types generated from API spec
 
 export enum AccountType {
@@ -55,16 +57,8 @@ export interface InvestmentTransactionResponse {
   createdAt: string;
 }
 
-export interface PagedInvestmentTransactionResponse {
-  content: InvestmentTransactionResponse[];
-  totalElements: number;
-  totalPages: number;
-  size: number;
-  number: number;
-  first: boolean;
-  last: boolean;
-  empty: boolean;
-}
+export type PagedInvestmentTransactionResponse =
+  Page<InvestmentTransactionResponse>;
 
 export interface Position {
   accountId: string;

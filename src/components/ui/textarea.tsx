@@ -12,7 +12,9 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 
     React.useImperativeHandle(ref, () => innerRef.current!)
 
-    const adjustHeight = () => {
+    // Memoised so both effects below can list it as a dependency. Previously it
+    // was reallocated every render and omitted from both dep arrays.
+    const adjustHeight = React.useCallback(() => {
       const textarea = innerRef.current
       if (textarea && autoResize) {
         textarea.style.height = "auto"
@@ -20,13 +22,13 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         const borderHeight = textarea.offsetHeight - textarea.clientHeight
         textarea.style.height = `${textarea.scrollHeight + borderHeight}px`
       }
-    }
+    }, [autoResize])
 
     React.useEffect(() => {
       if (autoResize) {
         adjustHeight()
       }
-    }, [value, defaultValue, autoResize])
+    }, [value, defaultValue, autoResize, adjustHeight])
 
     React.useEffect(() => {
       if (!autoResize) return
@@ -34,7 +36,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       return () => {
         window.removeEventListener("resize", adjustHeight)
       }
-    }, [autoResize])
+    }, [autoResize, adjustHeight])
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       if (autoResize) {

@@ -3,77 +3,51 @@
 import { revalidatePath } from 'next/cache';
 
 import { Account, AccountRequest } from '@/lib/account.types';
-import { accountsApi, ApiError } from '@/lib/apiClient';
-import { ApiResult, ErrorResponse } from '@/lib/types';
-
-function handleAccountError(error: unknown, defaultMessage: string): { success: false; error: ErrorResponse } {
-  if (error instanceof ApiError) {
-    return { success: false, error: error.response };
-  }
-  return {
-    success: false,
-    error: {
-      code: 'UNKNOWN_ERROR',
-      message: defaultMessage,
-      timestamp: new Date().toISOString(),
-    },
-  };
-}
+import { accountsApi } from '@/lib/apiClient';
+import { apiResult } from '@/lib/apiResult';
+import type { CardCycleSummary } from '@/lib/statement.types';
+import { ApiResult } from '@/lib/types';
 
 export async function createAccount(
   accountRequest: AccountRequest,
 ): Promise<ApiResult<Account>> {
-  try {
+  return apiResult('Failed to create account', async () => {
     const account = await accountsApi.create(accountRequest);
     revalidatePath('/accounts');
-    return { success: true, data: account };
-  } catch (error) {
-    return handleAccountError(error, 'Failed to create account');
-  }
+    return account;
+  });
 }
 
 export async function updateAccount(
   accountId: string,
   accountRequest: AccountRequest,
 ): Promise<ApiResult<Account>> {
-  try {
+  return apiResult('Failed to update account', async () => {
     const account = await accountsApi.update(accountId, accountRequest);
+    // Dropped a second revalidatePath(`/accounts/${accountId}`): there is no
+    // such route (accounts has no [id] segment), so the call was a no-op.
     revalidatePath('/accounts');
-    revalidatePath(`/accounts/${accountId}`);
-    return { success: true, data: account };
-  } catch (error) {
-    return handleAccountError(error, 'Failed to update account');
-  }
+    return account;
+  });
 }
 
 export async function deleteAccount(
   accountId: string,
 ): Promise<ApiResult<void>> {
-  try {
+  return apiResult('Failed to delete account', async () => {
     await accountsApi.delete(accountId);
     revalidatePath('/accounts');
-    return { success: true, data: undefined };
-  } catch (error) {
-    return handleAccountError(error, 'Failed to delete account');
-  }
+  });
 }
 
 export async function listAccounts(): Promise<ApiResult<Account[]>> {
-  try {
-    const list = await accountsApi.list();
-    return { success: true, data: list };
-  } catch (error) {
-    return handleAccountError(error, 'Failed to list accounts');
-  }
+  return apiResult('Failed to list accounts', () => accountsApi.list());
 }
 
 export async function getCardCycleSummary(
   accountId: string,
-): Promise<ApiResult<import('@/lib/statement.types').CardCycleSummary>> {
-  try {
-    const summary = await accountsApi.getCardCycleSummary(accountId);
-    return { success: true, data: summary };
-  } catch (error) {
-    return handleAccountError(error, 'Failed to fetch card cycle summary');
-  }
+): Promise<ApiResult<CardCycleSummary>> {
+  return apiResult('Failed to fetch card cycle summary', () =>
+    accountsApi.getCardCycleSummary(accountId),
+  );
 }

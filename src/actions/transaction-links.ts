@@ -2,32 +2,30 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { ApiError, transactionLinksApi } from '@/lib/apiClient';
+import { transactionLinksApi } from '@/lib/apiClient';
+import { apiResult } from '@/lib/apiResult';
 import type { CreateTransactionLinkRequest, TransactionLinkResponse } from '@/lib/transaction.types';
-import type { ApiResult, ErrorResponse } from '@/lib/types';
+import type { ApiResult } from '@/lib/types';
 
-function handleLinkError(error: unknown, defaultMessage: string): { success: false; error: ErrorResponse } {
-  if (error instanceof ApiError) {
-    return { success: false, error: error.response };
-  }
-  return {
-    success: false,
-    error: {
-      code: 'UNKNOWN_ERROR',
-      message: defaultMessage,
-      timestamp: new Date().toISOString(),
-    },
-  };
+function revalidateTransactionViews(): void {
+  revalidatePath('/transactions');
+  revalidatePath('/transactions/review');
 }
 
 export async function createTransactionLink(
   request: CreateTransactionLinkRequest,
 ): Promise<ApiResult<TransactionLinkResponse>> {
-  try {
+  return apiResult('Failed to create transaction link', async () => {
     const cleanRequest: CreateTransactionLinkRequest = {
       type: request.type,
       members: request.members,
     };
+    // FIXME: the `'$undefined'` comparison guards against React's RSC
+    // serialisation sentinel arriving as a literal string. No current caller can
+    // produce it (TransactionLinkDialog either omits `note` or sends a trimmed
+    // non-empty string), so this is either dead or masking a serialisation bug
+    // elsewhere. Preserved as-is rather than removed blind — see the follow-up
+    // task before deleting.
     if (request.note && (request.note as unknown) !== '$undefined') {
       cleanRequest.note = request.note.trim();
     }
@@ -36,34 +34,24 @@ export async function createTransactionLink(
     }
 
     const data = await transactionLinksApi.create(cleanRequest);
-    revalidatePath('/transactions');
-    revalidatePath('/transactions/review');
-    return { success: true, data };
-  } catch (error) {
-    return handleLinkError(error, 'Failed to create transaction link');
-  }
+    revalidateTransactionViews();
+    return data;
+  });
 }
 
 export async function deleteTransactionLink(
   linkId: string,
 ): Promise<ApiResult<void>> {
-  try {
+  return apiResult('Failed to delete transaction link', async () => {
     await transactionLinksApi.delete(linkId);
-    revalidatePath('/transactions');
-    revalidatePath('/transactions/review');
-    return { success: true, data: undefined };
-  } catch (error) {
-    return handleLinkError(error, 'Failed to delete transaction link');
-  }
+    revalidateTransactionViews();
+  });
 }
 
 export async function getTransactionLinks(
   transactionId: string,
 ): Promise<ApiResult<TransactionLinkResponse[]>> {
-  try {
-    const data = await transactionLinksApi.getByTransactionId(transactionId);
-    return { success: true, data };
-  } catch (error) {
-    return handleLinkError(error, 'Failed to fetch transaction links');
-  }
+  return apiResult('Failed to fetch transaction links', () =>
+    transactionLinksApi.getByTransactionId(transactionId),
+  );
 }

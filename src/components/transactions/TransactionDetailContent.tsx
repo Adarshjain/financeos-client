@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button';
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Account } from '@/lib/account.types';
 import { Transaction, TransactionLinkResponse } from '@/lib/transaction.types';
-import { cn, formatDate, formatMoney } from '@/lib/utils';
+import { cn, formatDate, formatMoney, getAccountName } from '@/lib/utils';
 
 import { DeleteTransaction } from './DeleteTransaction';
 import { ReviewReasonBadges } from './ReviewReasonBadges';
@@ -46,6 +46,7 @@ export const TransactionDetailContent = ({
                                          }: TransactionDetailContentProps) => {
   const [links, setLinks] = React.useState<TransactionLinkResponse[]>([]);
   const [loadingLinks, setLoadingLinks] = React.useState(false);
+  const [linksError, setLinksError] = React.useState<string | null>(null);
   const [linkDialogOpen, setLinkDialogOpen] = React.useState(false);
   const [unlinkingId, setUnlinkingId] = React.useState<string | null>(null);
 
@@ -57,13 +58,19 @@ export const TransactionDetailContent = ({
       return;
     }
     setLoadingLinks(true);
+    setLinksError(null);
     try {
       const res = await getTransactionLinks(transaction.id);
       if (res.success) {
         setLinks(res.data);
+      } else {
+        // Previously swallowed. Because the section below is gated on
+        // `links.length > 0`, a failed fetch made existing links disappear
+        // indistinguishably from "this transaction has none".
+        setLinksError(res.error.message);
       }
-    } catch {
-      // Ignore background errors
+    } catch (error) {
+      setLinksError((error as Error).message);
     } finally {
       setLoadingLinks(false);
     }
@@ -91,11 +98,8 @@ export const TransactionDetailContent = ({
     }
   };
 
-  const getAccountName = (accountId: string | undefined) => {
-    if (!accountId) return '—';
-    const account = accounts.find((a) => a.id === accountId);
-    return account?.name || 'Unknown';
-  };
+  const accountName = (accountId: string | undefined) =>
+    getAccountName(accounts, accountId);
 
   const getSource = () => {
     switch (transaction.source) {
@@ -194,7 +198,7 @@ export const TransactionDetailContent = ({
               <CreditCard className="h-4 w-4 text-slate-400" /> Account
             </span>
             <span className="font-semibold text-slate-800 dark:text-slate-200">
-              {getAccountName(transaction.accountId)}
+              {accountName(transaction.accountId)}
             </span>
           </div>
 
@@ -269,8 +273,9 @@ export const TransactionDetailContent = ({
           </div>
         </div>
 
-        {/* Linked Transactions Section */}
-        {links.length > 0 && (
+        {/* Linked Transactions Section — also shown when the fetch failed, so a
+            transient error reads as an error rather than as "no links". */}
+        {(links.length > 0 || linksError) && (
           <div className="space-y-2 pt-1">
             <div className="flex items-center justify-between px-1">
               <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
@@ -281,6 +286,19 @@ export const TransactionDetailContent = ({
             {loadingLinks ? (
               <div className="flex justify-center py-4">
                 <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+              </div>
+            ) : linksError ? (
+              <div className="flex items-center justify-between gap-2 rounded-lg bg-destructive/10 px-3 py-2">
+                <span className="text-xs text-destructive">
+                  Couldn&apos;t load links: {linksError}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => fetchLinks()}
+                  className="text-xs font-semibold text-destructive underline underline-offset-2"
+                >
+                  Retry
+                </button>
               </div>
             ) : (
               links.map((link) => {
@@ -344,7 +362,7 @@ export const TransactionDetailContent = ({
                             <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
                               <span>{formatDate(parentMember.date)}</span>
                               <span>•</span>
-                              <span>{getAccountName(parentMember.accountId)}</span>
+                              <span>{accountName(parentMember.accountId)}</span>
                             </div>
                           </div>
                           <span
@@ -381,7 +399,7 @@ export const TransactionDetailContent = ({
                                 <span>•</span>
                                 <span>{formatDate(m.date)}</span>
                                 <span>•</span>
-                                <span>{getAccountName(m.accountId)}</span>
+                                <span>{accountName(m.accountId)}</span>
                               </div>
                             </div>
 

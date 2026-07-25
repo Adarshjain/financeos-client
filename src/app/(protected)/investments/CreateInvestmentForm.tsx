@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { toCalendarDate } from '@/lib/utils';
 
 interface CreateInvestmentFormProps {
   accounts: any[];
@@ -22,6 +23,11 @@ interface CreateInvestmentFormProps {
 
 export function CreateInvestmentForm({ accounts }: CreateInvestmentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Bumped on success to remount the form, clearing every field. Preferred over
+  // form.reset() because the account/type pickers are Radix Selects whose reset
+  // behaviour we'd otherwise be depending on; remounting also refreshes the
+  // trade-date default to today.
+  const [formKey, setFormKey] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,6 +37,9 @@ export function CreateInvestmentForm({ accounts }: CreateInvestmentFormProps) {
       const res = await createInvestmentTransaction(null, formData);
       if (res.success) {
         toast.success('Trade recorded!');
+        // Without this the previous trade's values stay on screen, and
+        // recording several in a row easily double-submits the same one.
+        setFormKey((k) => k + 1);
       } else {
         toast.error(res.error.message);
       }
@@ -45,7 +54,7 @@ export function CreateInvestmentForm({ accounts }: CreateInvestmentFormProps) {
         <CardTitle>Record Trade</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form key={formKey} onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <Label>Account</Label>
             <Select name="accountId" required>
@@ -99,7 +108,7 @@ export function CreateInvestmentForm({ accounts }: CreateInvestmentFormProps) {
             label="Trade Date"
             name="date"
             type="date"
-            defaultValue={new Date().toISOString().split('T')[0]}
+            defaultValue={toCalendarDate(new Date())}
             required
           />
 

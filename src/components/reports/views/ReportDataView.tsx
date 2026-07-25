@@ -26,6 +26,8 @@ interface ReportDataViewProps {
   /** Table/pivot paging — a runtime concern, never part of the definition. */
   onPageChange?: (page: number) => void;
   onSizeChange?: (size: number) => void;
+  /** Disables table/pivot paging controls while a page fetch is in flight. */
+  loading?: boolean;
 }
 
 export function ReportDataView({
@@ -33,6 +35,7 @@ export function ReportDataView({
   fill,
   onPageChange,
   onSizeChange,
+  loading,
 }: ReportDataViewProps) {
   if (isKpiData(data)) {
     return <KpiView data={data} className={fill ? 'h-full overflow-auto px-3' : undefined} />;
@@ -47,10 +50,10 @@ export function ReportDataView({
     );
   }
   if (isRawTableData(data)) {
-    return <TableView data={data} fill={fill} onPageChange={onPageChange} onSizeChange={onSizeChange} />;
+    return <TableView data={data} fill={fill} loading={loading} onPageChange={onPageChange} onSizeChange={onSizeChange} />;
   }
   if (isPivotTableData(data)) {
-    return <PivotTableView data={data} fill={fill} onPageChange={onPageChange} onSizeChange={onSizeChange} />;
+    return <PivotTableView data={data} fill={fill} loading={loading} onPageChange={onPageChange} onSizeChange={onSizeChange} />;
   }
   return null;
 }

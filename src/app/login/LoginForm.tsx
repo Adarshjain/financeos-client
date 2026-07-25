@@ -2,7 +2,8 @@
 
 import { AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
+import { toast } from 'sonner';
 
 import { login, startGoogleSSO } from '@/actions/auth';
 import { SubmitButton } from '@/components/forms/SubmitButton';
@@ -17,6 +18,7 @@ export function LoginForm() {
     login,
     null as ApiResult<UserResponse> | null,
   );
+  const [ssoPending, setSsoPending] = useState(false);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900">
@@ -39,10 +41,19 @@ export function LoginForm() {
           variant="outline"
           className="w-full"
           type="button"
+          disabled={ssoPending}
           onClick={async () => {
+            // Without this guard a double-click fired concurrent SSO-start
+            // requests with no visual sign the first had registered.
+            if (ssoPending) return;
+            setSsoPending(true);
             const result = await startGoogleSSO();
             if (result.success) {
               window.location.href = result.data.authorizationUrl;
+              // Leave pending set: the navigation is in flight.
+            } else {
+              toast.error(result.error.message);
+              setSsoPending(false);
             }
           }}
         >
