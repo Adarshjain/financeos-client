@@ -11,7 +11,7 @@ import {
   Upload,
   XCircle,
 } from 'lucide-react';
-import React, { JSX, useCallback, useEffect, useState } from 'react';
+import React, { JSX, useCallback, useEffect, useRef, useState } from 'react';
 
 import { getCardCycleSummary } from '@/actions/accounts';
 import { getStatementDetail, listStatementsByAccount } from '@/actions/statements';
@@ -43,6 +43,8 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
   const [cardSummary, setCardSummary] = useState<import('@/lib/statement.types').CardCycleSummary | null>(null);
   const [isLoadingCardSummary, setIsLoadingCardSummary] = useState(false);
   const [cardSummaryError, setCardSummaryError] = useState<string | null>(null);
+  /** Monotonic id so only the newest statement-detail response is applied. */
+  const detailRequestIdRef = useRef(0);
 
   const loadStatements = useCallback(async () => {
     setIsLoading(true);
@@ -108,7 +110,14 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
     setSelectedDetail(null);
     setIsLoadingDetail(true);
     setDetailError(null);
+
+    // Guard against out-of-order responses: clicking row A then row B could
+    // otherwise let A's slower response land last and render A's detail while
+    // the header still shows B as selected.
+    const requestId = ++detailRequestIdRef.current;
     const res = await getStatementDetail(statementId);
+    if (requestId !== detailRequestIdRef.current) return;
+
     if (res.success && res.data) {
       setSelectedDetail(res.data);
     } else if (!res.success) {

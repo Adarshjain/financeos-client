@@ -97,8 +97,15 @@ export function TransactionLinkDialog({
 
   const anchorTx = selectedTransactions.find((t) => t.id === anchorId);
 
+  /** Monotonic id so only the newest candidate search is applied. */
+  const candidateRequestIdRef = React.useRef(0);
+
   // Fetch candidate transactions for linking
   const fetchCandidates = React.useCallback(async (query: string, type: LinkType, anchor?: Transaction) => {
+    // Same request-ordering guard the sibling browsers use: the 300ms debounce
+    // below narrows the window but doesn't close it, so a slower earlier search
+    // could otherwise overwrite the results of a newer one.
+    const requestId = ++candidateRequestIdRef.current;
     setLoadingCandidates(true);
     try {
       const filters: import('@/lib/reports.types').FilterClause[] = [];
@@ -125,13 +132,16 @@ export function TransactionLinkDialog({
         0,
         50,
       );
+      if (requestId !== candidateRequestIdRef.current) return;
       if (res.success) {
         setCandidateResults(res.data.content);
       }
     } catch {
       // Ignore background errors
     } finally {
-      setLoadingCandidates(false);
+      if (requestId === candidateRequestIdRef.current) {
+        setLoadingCandidates(false);
+      }
     }
   }, []);
 

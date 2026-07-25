@@ -52,6 +52,8 @@ interface PivotTableViewProps {
   fill?: boolean;
   onPageChange?: (page: number) => void;
   onSizeChange?: (size: number) => void;
+  /** Disables the paging controls while a page fetch is in flight. */
+  loading?: boolean;
 }
 
 export function PivotTableView({
@@ -59,6 +61,7 @@ export function PivotTableView({
   fill,
   onPageChange,
   onSizeChange,
+  loading,
 }: PivotTableViewProps) {
   const { rowDimensions, columnDimensions, measures, columns, rows, page } =
     data;
@@ -182,6 +185,7 @@ export function PivotTableView({
         <TablePagination
           page={page}
           unit="row group"
+          loading={loading}
           onPageChange={onPageChange}
           onSizeChange={onSizeChange}
         />
