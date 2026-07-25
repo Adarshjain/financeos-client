@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { dashboardsApi } from '@/lib/apiClient';
-import { apiResult } from '@/lib/apiResult';
+import { apiResult,AppError } from '@/lib/apiResult';
 import type {
   CreateDashboardRequest,
   DashboardResponse,
@@ -42,20 +42,37 @@ export async function updateDashboard(
   });
 }
 
-// Set (or clear) a dashboard as the user's default. The update endpoint
-// replaces the full meta, so we re-send the dashboard's current name,
-// description, and widget set with only `isDefault` changed. The backend
-// clears any previous default automatically when `makeDefault` is true.
+// Set (or clear) a dashboard as the user's default.
 //
-// NOTE: this is a read-modify-write with no concurrency guard — an edit saved
-// between the GET and the PUT is silently overwritten by this snapshot. Needs a
-// backend PATCH { isDefault } to fix properly.
+// There is no PATCH endpoint, and PUT replaces the entire dashboard, so this has
+// to read the current state and write it back with only `isDefault` changed —
+// which risks clobbering an edit made in the meantime.
+//
+// `expectedUpdatedAt` narrows that: the caller passes the `updatedAt` of the
+// dashboard it rendered, and if the server's copy has moved on we refuse instead
+// of overwriting. That covers the realistic case — a list left open while the
+// dashboard was edited elsewhere.
+//
+// It does NOT close the window between this GET and this PUT. Closing that
+// properly needs the backend to accept either `PATCH { isDefault }` or an
+// If-Match precondition; until then the exposure is a few hundred milliseconds
+// rather than however long the page was open.
 export async function setDefaultDashboard(
   dashboardId: string,
   makeDefault: boolean,
+  expectedUpdatedAt?: string,
 ): Promise<ApiResult<DashboardResponse>> {
   return apiResult('Failed to update default dashboard', async () => {
     const current = await dashboardsApi.getById(dashboardId);
+
+    if (expectedUpdatedAt && current.updatedAt !== expectedUpdatedAt) {
+      throw new AppError(
+        'This dashboard changed since the page was loaded. Reload and try again — ' +
+          'setting the default would otherwise discard those changes.',
+        'CONFLICT',
+      );
+    }
+
     const widgets: DashboardWidget[] = current.widgets.map((w) => ({
       id: w.id,
       reportId: w.reportId,

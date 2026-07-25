@@ -2,6 +2,24 @@ import { ApiError } from '@/lib/apiClient';
 import type { ApiResult, ErrorResponse } from '@/lib/types';
 
 /**
+ * An error raised by our own code, rather than relayed from the backend, whose
+ * message is written for the user.
+ *
+ * `toErrorResult` would otherwise discard the message and substitute the generic
+ * per-action fallback, which is right for unexpected throws but wrong when we
+ * deliberately refused to do something and can explain why.
+ */
+export class AppError extends Error {
+  constructor(
+    message: string,
+    public code: string = 'APP_ERROR',
+  ) {
+    super(message);
+    this.name = 'AppError';
+  }
+}
+
+/**
  * Maps a thrown error onto the `ApiResult` failure shape, preserving the
  * backend's structured `ErrorResponse` when there is one.
  *
@@ -14,6 +32,16 @@ export function toErrorResult(
 ): { success: false; error: ErrorResponse } {
   if (error instanceof ApiError) {
     return { success: false, error: error.response };
+  }
+  if (error instanceof AppError) {
+    return {
+      success: false,
+      error: {
+        code: error.code,
+        message: error.message,
+        timestamp: new Date().toISOString(),
+      },
+    };
   }
   return {
     success: false,
