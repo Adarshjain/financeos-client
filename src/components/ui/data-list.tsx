@@ -17,7 +17,7 @@ const DataListItem = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
       <div
         ref={ref}
         className={cn(
-          'bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-lg p-4 space-y-3 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800',
+          'bg-muted/50 border border-border rounded-lg p-4 space-y-3 transition-colors hover:bg-muted',
           className
         )}
         {...props}
@@ -50,7 +50,7 @@ const DataListLabel = forwardRef<
     <span
       ref={ref}
       className={cn(
-        'text-xs text-slate-500 uppercase tracking-wide',
+        'text-xs text-muted-foreground uppercase tracking-wide',
         className
       )}
       {...props}
@@ -67,7 +67,7 @@ const DataListValue = forwardRef<
   return (
     <span
       ref={ref}
-      className={cn('text-sm text-slate-900 dark:text-slate-100', className)}
+      className={cn('text-sm text-foreground', className)}
       {...props}
     />
   );
