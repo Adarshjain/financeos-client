@@ -1,6 +1,7 @@
 'use client';
 
-import { CornerDownRight, Link2, ShieldCheck } from 'lucide-react';
+import { CornerDownRight, ShieldCheck } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Account } from '@/lib/account.types';

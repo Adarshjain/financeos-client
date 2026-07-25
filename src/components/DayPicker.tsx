@@ -4,11 +4,17 @@ import { DatePicker } from '@/components/ui/date-picker';
 import { cn, formatMonthYear, isSameDay, isWithinLastNDays } from '@/lib/utils';
 
 const daysCount = 4;
-const days = Array.from({ length: daysCount }, (_, i) => {
-  const d = new Date();
-  d.setDate(d.getDate() - (daysCount - i - 1));
-  return d;
-});
+
+// Computed per render, not at module scope: a module-level `new Date()` freezes
+// the strip at first import, so a session left open overnight keeps offering
+// yesterday's dates as "today".
+function recentDays(): Date[] {
+  return Array.from({ length: daysCount }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (daysCount - i - 1));
+    return d;
+  });
+}
 
 interface DateViewProps {
   date: Date;
@@ -31,6 +37,8 @@ const DateView = ({ date, isSelected, onSelect }: DateViewProps) => {
 };
 
 export default function DayPicker({ date, onSelect }: { date: Date; onSelect: (date: Date) => void }) {
+  const days = recentDays();
+
   return <div className="flex gap-1 justify-center">
     {days.map(innerDate => <DateView
       key={+innerDate}

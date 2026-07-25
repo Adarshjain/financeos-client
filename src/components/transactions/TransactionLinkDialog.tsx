@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Link2, Loader2, Search, X } from 'lucide-react';
+import { Link2, Loader2, Search, X } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -88,7 +88,12 @@ export function TransactionLinkDialog({
     prevOpenRef.current = open;
   }, [open, initialTransaction, initialSelectedTransactions]);
 
-  const getAccount = (accountId: string) => accounts.find((a) => a.id === accountId);
+  // Memoised so the candidate-filter useMemo below can depend on it honestly
+  // instead of omitting it and capturing a stale `accounts`.
+  const getAccount = React.useCallback(
+    (accountId: string) => accounts.find((a) => a.id === accountId),
+    [accounts],
+  );
 
   const anchorTx = selectedTransactions.find((t) => t.id === anchorId);
 
@@ -158,10 +163,11 @@ export function TransactionLinkDialog({
         case 'TRANSFER':
           // 1 counterpart CREDIT on a different account
           return isCredit && t.accountId !== anchorTx.accountId;
-        case 'CC_PAYMENT':
+        case 'CC_PAYMENT': {
           // 1 counterpart CREDIT on a credit card account
           const acc = getAccount(t.accountId);
           return isCredit && acc?.type === 'credit_card';
+        }
         case 'REVERSAL':
           // Opposite direction, same account
           return isDebit !== anchorDebit && t.accountId === anchorTx.accountId;
@@ -178,7 +184,7 @@ export function TransactionLinkDialog({
           return true;
       }
     });
-  }, [candidateResults, selectedTransactions, anchorId, linkType, accounts]);
+  }, [candidateResults, selectedTransactions, anchorId, linkType, getAccount]);
 
   const toggleSelectTransaction = (t: Transaction) => {
     if (selectedTransactions.some((s) => s.id === t.id)) {

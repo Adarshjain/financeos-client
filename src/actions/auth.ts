@@ -2,8 +2,10 @@
 
 import { redirect } from 'next/navigation';
 
-import { ApiError,authApi } from '@/lib/apiClient';
+import { authApi } from '@/lib/apiClient';
+import { apiResult, validationError } from '@/lib/apiResult';
 import { clearSessionCookie,setSessionCookie } from '@/lib/auth';
+import { optionalString } from '@/lib/forms';
 import type {
   ApiResult,
   GoogleAuthStartResponse,
@@ -14,119 +16,60 @@ export async function signup(
   _prevState: ApiResult<UserResponse> | null,
   formData: FormData
 ): Promise<ApiResult<UserResponse>> {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+  const email = optionalString(formData, 'email');
+  const password = formData.get('password');
 
-  if (!email || !password) {
-    return {
-      success: false,
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: 'Email and password are required',
-        timestamp: new Date().toISOString(),
-      },
-    };
+  if (!email || typeof password !== 'string' || password === '') {
+    return validationError('Email and password are required');
   }
 
   if (password.length < 8) {
-    return {
-      success: false,
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: 'Password must be at least 8 characters',
-        timestamp: new Date().toISOString(),
-      },
-    };
+    return validationError('Password must be at least 8 characters');
   }
 
-  try {
-    const user = await authApi.signup({ email, password });
-    return { success: true, data: user };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.response };
-    }
-    return {
-      success: false,
-      error: {
-        code: 'UNKNOWN_ERROR',
-        message: 'An unexpected error occurred',
-        timestamp: new Date().toISOString(),
-      },
-    };
-  }
+  return apiResult('An unexpected error occurred', () =>
+    authApi.signup({ email, password }),
+  );
 }
 
 export async function login(
   _prevState: ApiResult<UserResponse> | null,
   formData: FormData
 ): Promise<ApiResult<UserResponse>> {
-  const email = formData.get('email') as string;
-  const password = formData.get('password') as string;
+  const email = optionalString(formData, 'email');
+  const password = formData.get('password');
 
-  if (!email || !password) {
-    return {
-      success: false,
-      error: {
-        code: 'VALIDATION_ERROR',
-        message: 'Email and password are required',
-        timestamp: new Date().toISOString(),
-      },
-    };
+  if (!email || typeof password !== 'string' || password === '') {
+    return validationError('Email and password are required');
   }
 
-  try {
+  return apiResult('An unexpected error occurred', async () => {
     const { user, sessionCookie } = await authApi.login({ email, password });
-
     if (sessionCookie) {
       await setSessionCookie(sessionCookie);
     }
-
-    return { success: true, data: user };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.response };
-    }
-    return {
-      success: false,
-      error: {
-        code: 'UNKNOWN_ERROR',
-        message: 'An unexpected error occurred',
-        timestamp: new Date().toISOString(),
-      },
-    };
-  }
+    return user;
+  });
 }
 
 export async function logout(): Promise<void> {
   try {
     await authApi.logout();
   } catch {
-    // Ignore logout errors
+    // Ignore logout errors — the local cookie is cleared regardless.
   }
   await clearSessionCookie();
+  // Deliberately outside any try/catch: `redirect` signals by throwing, so
+  // wrapping it would swallow the navigation.
   redirect('/login');
 }
 
 export async function startGoogleSSO(): Promise<
   ApiResult<GoogleAuthStartResponse>
 > {
-  try {
-    const result = await authApi.startGoogleAuth();
-    return { success: true, data: result };
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return { success: false, error: error.response };
-    }
-    return {
-      success: false,
-      error: {
-        code: 'UNKNOWN_ERROR',
-        message: 'Failed to start Google SSO',
-        timestamp: new Date().toISOString(),
-      },
-    };
-  }
+  return apiResult('Failed to start Google SSO', () =>
+    authApi.startGoogleAuth(),
+  );
 }
 
 export async function handleGoogleCallbackAction(
@@ -134,29 +77,15 @@ export async function handleGoogleCallbackAction(
   state: string | undefined,
   error: string | undefined
 ): Promise<ApiResult<UserResponse>> {
-  try {
+  return apiResult('Failed to complete Google SSO', async () => {
     const { user, sessionCookie } = await authApi.handleGoogleCallback({
       code,
       state,
       error,
     });
-
     if (sessionCookie) {
       await setSessionCookie(sessionCookie);
     }
-
-    return { success: true, data: user };
-  } catch (err) {
-    if (err instanceof ApiError) {
-      return { success: false, error: err.response };
-    }
-    return {
-      success: false,
-      error: {
-        code: 'UNKNOWN_ERROR',
-        message: 'Failed to complete Google SSO',
-        timestamp: new Date().toISOString(),
-      },
-    };
-  }
+    return user;
+  });
 }

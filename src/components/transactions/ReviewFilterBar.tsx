@@ -1,11 +1,9 @@
 'use client';
 
 import {
-  CalendarCheck,
   Check,
   ChevronDown,
   FileCheck,
-  Filter,
   Search,
   SlidersHorizontal,
   Wallet,
@@ -13,6 +11,7 @@ import {
 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
+import { REVIEW_REASON_META, REVIEW_REASONS } from '@/components/transactions/catalog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -47,11 +46,13 @@ interface ReviewFilterBarProps {
   onSortByChange: (sort: string) => void;
 }
 
-const REASON_OPTIONS = [
-  { label: 'All Reasons', value: 'ALL' },
-  { label: 'Unreconciled', value: 'UNRECONCILED' },
-  { label: 'Category Unverified', value: 'CATEGORY_UNVERIFIED' },
-  { label: 'Duplicate Suspect', value: 'DUPLICATE_SUSPECT' },
+const REASON_OPTIONS: { label: string; shortLabel: string; value: string }[] = [
+  { label: 'All Reasons', shortLabel: 'All', value: 'ALL' },
+  ...REVIEW_REASONS.map((reason) => ({
+    label: REVIEW_REASON_META[reason].label,
+    shortLabel: REVIEW_REASON_META[reason].shortLabel,
+    value: reason as string,
+  })),
 ];
 
 const SORT_OPTIONS = [
@@ -76,7 +77,6 @@ export function ReviewFilterBar({
 }: ReviewFilterBarProps) {
   const [accountOpen, setAccountOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
-  const [showCutoffs, setShowCutoffs] = useState(false);
 
   const isAllAccountsSelected = appliedAccountIds.length === accounts.length;
 
@@ -100,12 +100,6 @@ export function ReviewFilterBar({
     onSearchChange('');
   };
 
-  // Selected accounts for cutoff preview
-  const selectedAccounts = useMemo(
-    () => accounts.filter((a) => appliedAccountIds.includes(a.id)),
-    [accounts, appliedAccountIds]
-  );
-
   // Compute active badge items
   const activeBadges = useMemo(() => {
     const list: { key: string; label: string; onRemove: () => void }[] = [];
@@ -126,7 +120,12 @@ export function ReviewFilterBar({
       list.push({
         key: 'account',
         label: `Accounts: ${names}`,
-        onRemove: handleSelectAllAccounts,
+        // Inlined rather than referencing `handleSelectAllAccounts`: that
+        // identity changes every render, so depending on it made the memo's
+        // inferred and declared deps disagree — which cost this whole component
+        // React Compiler optimisation, and left `onAccountIdsChange` captured
+        // stale since it was never listed.
+        onRemove: () => onAccountIdsChange(accounts.map((a) => a.id)),
       });
     }
 
@@ -145,6 +144,7 @@ export function ReviewFilterBar({
     appliedAccountIds,
     onlyUpToLastStatement,
     accounts,
+    onAccountIdsChange,
     onReasonFilterChange,
     onOnlyUpToLastStatementChange,
   ]);
@@ -191,13 +191,7 @@ export function ReviewFilterBar({
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               )}
             >
-              {opt.value === 'ALL'
-                ? 'All'
-                : opt.value === 'UNRECONCILED'
-                ? 'Unreconciled'
-                : opt.value === 'CATEGORY_UNVERIFIED'
-                ? 'Category'
-                : 'Duplicate'}
+              {opt.value === 'ALL' ? 'All' : opt.shortLabel}
             </button>
           ))}
         </div>
@@ -242,7 +236,7 @@ export function ReviewFilterBar({
                   {accounts.map((acc) => {
                     const isSelected = appliedAccountIds.includes(acc.id);
                     const lastStatementDate =
-                      'lastStatementDate' in acc && (acc as any).lastStatementDate
+                      'lastStatementDate' in acc && acc.lastStatementDate
                         ? formatDate((acc as any).lastStatementDate)
                         : null;
                     return (

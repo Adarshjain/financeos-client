@@ -1,3 +1,4 @@
+import { REVIEW_REASON_META } from '@/components/transactions/catalog';
 import { Badge } from '@/components/ui/badge';
 import { ReviewReason, ReviewType } from '@/lib/transaction.types';
 
@@ -20,19 +21,10 @@ export function ReviewReasonBadges({ reviewType, reviewReasons }: ReviewReasonBa
   return (
     <>
       {reviewReasons.map((reason) => {
-        let label = 'Needs review';
-        let variant: 'warning' | 'info' | 'outline' = 'outline';
-
-        if (reason === 'UNRECONCILED') {
-          label = 'Unreconciled';
-          variant = 'warning';
-        } else if (reason === 'CATEGORY_UNVERIFIED') {
-          label = 'Category unverified';
-          variant = 'info';
-        } else if (reason === 'DUPLICATE_SUSPECT') {
-          label = 'Possible duplicate';
-          variant = 'warning';
-        }
+        const { label, variant } = REVIEW_REASON_META[reason] ?? {
+          label: reason,
+          variant: 'outline' as const,
+        };
 
         return (
           <Badge

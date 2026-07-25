@@ -16,8 +16,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Account, AccountRequest } from '@/lib/account.types';
+import { optionalDecimal, optionalInteger, optionalString } from '@/lib/forms';
 import { AccountType, FinancialPosition } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, getAccountTypeLabel } from '@/lib/utils';
 
 const financialPositions = [
   { value: 'asset', label: 'Asset' },
@@ -50,6 +51,12 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     }
   }, [account]);
 
+  // Narrowed views of the account under edit. Now that `Account` is a real
+  // discriminated union these replace the `'field' in account` probes that the
+  // old undiscriminable union forced onto every single field below.
+  const bankAccount = account?.type === AccountType.BANK_ACCOUNT ? account : undefined;
+  const creditCard = account?.type === AccountType.CREDIT_CARD ? account : undefined;
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -63,6 +70,8 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     const ingestFromDate = ingestFromDateVal ? ingestFromDateVal : null;
 
     let data: AccountRequest | undefined;
+    // Deliberately not `optionalString`: that trims, and a statement password
+    // may legitimately contain leading or trailing whitespace.
     const statementPasswordVal = formData.get('statementPassword') as string;
 
     if (accountType === AccountType.BANK_ACCOUNT) {
@@ -73,13 +82,57 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
         description,
         ingestFromDate,
         type: AccountType.BANK_ACCOUNT,
+        // Intentionally NOT optionalString: last4 is optional for a bank
+        // account, so a blank field must send '' to clear a previously-saved
+        // value. Omitting the key would leave the old value in place on PUT.
         last4: formData.get('last4') as string ?? undefined,
-        openingBalance: parseInt(formData.get('openingBalance') as string) ?? undefined,
+        openingBalance: optionalDecimal(formData, 'openingBalance'),
         ...(statementPasswordVal ? { statementPassword: statementPasswordVal } : {}),
       };
     }
 
     if (accountType === AccountType.CREDIT_CARD) {
+      // creditLimit is money (paise matter); the other two are whole-number day
+      // counts per the API contract.
+      const last4 = optionalString(formData, 'last4');
+      const creditLimit = optionalDecimal(formData, 'creditLimit');
+      const paymentDueDay = optionalInteger(formData, 'paymentDueDay');
+      const gracePeriodDays = optionalInteger(formData, 'gracePeriodDays');
+
+      // All four are required by the API (CreditCardDetailsRequest.required),
+      // but none of the inputs carry a `required` attribute. Validate here
+      // rather than posting an incomplete payload for an opaque 400 — which is
+      // what used to happen, since a blank numeric field became NaN and
+      // serialised to `null`.
+      // Branch on the explicit checks rather than `missing.length` so the
+      // narrowing carries into the payload below.
+      if (
+        last4 === undefined ||
+        creditLimit === undefined ||
+        paymentDueDay === undefined ||
+        gracePeriodDays === undefined
+      ) {
+        const missing = [
+          last4 === undefined ? 'last 4 digits' : null,
+          creditLimit === undefined ? 'credit limit' : null,
+          paymentDueDay === undefined ? 'payment due day' : null,
+          gracePeriodDays === undefined ? 'grace period' : null,
+        ].filter((field): field is string => field !== null);
+        toast.error(`Credit card needs ${missing.join(', ')}.`);
+        setIsSubmitting(false);
+        return;
+      }
+      if (paymentDueDay < 1 || paymentDueDay > 31) {
+        toast.error('Payment due day must be between 1 and 31.');
+        setIsSubmitting(false);
+        return;
+      }
+      if (gracePeriodDays < 0) {
+        toast.error('Grace period cannot be negative.');
+        setIsSubmitting(false);
+        return;
+      }
+
       data = {
         name,
         excludeFromNetAsset,
@@ -87,10 +140,10 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
         description,
         ingestFromDate,
         type: AccountType.CREDIT_CARD,
-        last4: formData.get('last4') as string ?? undefined,
-        creditLimit: parseInt(formData.get('creditLimit') as string) ?? undefined,
-        paymentDueDay: parseInt(formData.get('paymentDueDay') as string) ?? undefined,
-        gracePeriodDays: parseInt(formData.get('gracePeriodDays') as string) ?? undefined,
+        last4,
+        creditLimit,
+        paymentDueDay,
+        gracePeriodDays,
         ...(statementPasswordVal ? { statementPassword: statementPasswordVal } : {}),
       };
     }
@@ -107,6 +160,13 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     }
 
     if (!data) {
+      // Reachable: the type picker offers only bank/card/generic, but
+      // `accountType` is seeded from `account.type`, so editing an existing
+      // stock or mutual-fund account lands here. Previously this returned
+      // silently and the Save button appeared to do nothing.
+      toast.error(
+        `Editing ${getAccountTypeLabel(accountType)} accounts isn't supported yet.`,
+      );
       setIsSubmitting(false);
       return;
     }
@@ -272,7 +332,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                         type="number"
                         step="0.01"
                         placeholder="0.00"
-                        defaultValue={account && 'openingBalance' in account ? account.openingBalance : undefined}
+                        defaultValue={bankAccount?.openingBalance}
                         className="pl-6 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                       />
                     </div>
@@ -287,7 +347,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                       pattern="[0-9]{4}"
                       maxLength={4}
                       placeholder="1234"
-                      defaultValue={account && 'last4' in account ? account.last4 : undefined}
+                      defaultValue={bankAccount?.last4}
                       className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                     />
                   </div>
@@ -300,7 +360,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                       id="statementPassword"
                       name="statementPassword"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder={account && 'statementPassword' in account && account.statementPassword ? '••••••••' : 'Enter password if PDF statement is protected'}
+                      placeholder={bankAccount?.statementPassword ? '••••••••' : 'Enter password if PDF statement is protected'}
                       className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                     />
                     <button
@@ -325,7 +385,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                       pattern="[0-9]{4}"
                       maxLength={4}
                       placeholder="1234"
-                      defaultValue={account && 'last4' in account ? account.last4 : undefined}
+                      defaultValue={creditCard?.last4}
                       required
                       className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                     />
@@ -341,7 +401,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                         type="number"
                         step="0.01"
                         placeholder="50,000"
-                        defaultValue={account && 'creditLimit' in account ? account.creditLimit : undefined}
+                        defaultValue={creditCard?.creditLimit}
                         required
                         className="pl-6 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                       />
@@ -359,7 +419,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                       min={1}
                       max={31}
                       placeholder="15"
-                      defaultValue={account && 'paymentDueDay' in account ? account.paymentDueDay : undefined}
+                      defaultValue={creditCard?.paymentDueDay}
                       required
                       className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                     />
@@ -373,7 +433,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                       type="number"
                       min={0}
                       placeholder="20"
-                      defaultValue={account && 'gracePeriodDays' in account ? account.gracePeriodDays : undefined}
+                      defaultValue={creditCard?.gracePeriodDays}
                       required
                       className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                     />
@@ -387,7 +447,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                       id="statementPassword"
                       name="statementPassword"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder={account && 'statementPassword' in account && account.statementPassword ? '••••••••' : 'Enter password if PDF statement is protected'}
+                      placeholder={creditCard?.statementPassword ? '••••••••' : 'Enter password if PDF statement is protected'}
                       className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                     />
                     <button

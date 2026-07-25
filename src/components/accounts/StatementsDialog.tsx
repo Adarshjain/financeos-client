@@ -42,25 +42,39 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
 
   const [cardSummary, setCardSummary] = useState<import('@/lib/statement.types').CardCycleSummary | null>(null);
   const [isLoadingCardSummary, setIsLoadingCardSummary] = useState(false);
+  const [cardSummaryError, setCardSummaryError] = useState<string | null>(null);
 
   const loadStatements = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    const res = await listStatementsByAccount(account.id);
-    if (res.success && res.data) {
-      setStatements(res.data);
-    } else if (!res.success) {
-      setError(res.error.message || 'Failed to load statements');
+    setCardSummaryError(null);
+
+    const isCard = account.type === AccountType.CREDIT_CARD;
+    if (isCard) setIsLoadingCardSummary(true);
+
+    // These two requests are independent (both keyed only on the account) but
+    // were previously awaited in sequence, roughly doubling dialog-open latency
+    // for credit cards.
+    const [statementsRes, summaryRes] = await Promise.all([
+      listStatementsByAccount(account.id),
+      isCard ? getCardCycleSummary(account.id) : Promise.resolve(null),
+    ]);
+
+    if (statementsRes.success && statementsRes.data) {
+      setStatements(statementsRes.data);
+    } else if (!statementsRes.success) {
+      setError(statementsRes.error.message || 'Failed to load statements');
     }
     setIsLoading(false);
 
-    if (account.type === AccountType.CREDIT_CARD) {
-      setIsLoadingCardSummary(true);
-      const sumRes = await getCardCycleSummary(account.id);
-      if (sumRes.success && sumRes.data) {
-        setCardSummary(sumRes.data);
+    if (isCard && summaryRes) {
+      if (summaryRes.success && summaryRes.data) {
+        setCardSummary(summaryRes.data);
       } else {
         setCardSummary(null);
+        // Previously swallowed, so a failed request rendered as "No active
+        // statement summary available" — absence of data rather than an error.
+        if (!summaryRes.success) setCardSummaryError(summaryRes.error.message);
       }
       setIsLoadingCardSummary(false);
     }
@@ -184,6 +198,19 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
               <div className="flex items-center justify-center py-6 text-slate-400 gap-2">
                 <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
                 <span className="text-xs">Loading card cycle summary...</span>
+              </div>
+            ) : cardSummaryError ? (
+              <div className="flex items-center justify-center gap-2 py-4 text-xs">
+                <span className="text-destructive">
+                  Couldn&apos;t load the card cycle summary: {cardSummaryError}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => loadStatements()}
+                  className="font-semibold text-destructive underline underline-offset-2"
+                >
+                  Retry
+                </button>
               </div>
             ) : !cardSummary || !cardSummary.statementId ? (
               <div className="text-center py-4 text-xs text-slate-400">
