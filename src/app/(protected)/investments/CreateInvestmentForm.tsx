@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { toCalendarDate } from '@/lib/utils';
 
 interface CreateInvestmentFormProps {
   accounts: any[];
@@ -99,7 +100,7 @@ export function CreateInvestmentForm({ accounts }: CreateInvestmentFormProps) {
             label="Trade Date"
             name="date"
             type="date"
-            defaultValue={new Date().toISOString().split('T')[0]}
+            defaultValue={toCalendarDate(new Date())}
             required
           />
 

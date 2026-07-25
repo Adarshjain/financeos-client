@@ -7,16 +7,16 @@ import { categorizeDescription, createCategory as createCategoryAction } from '@
 import { createTransaction, updateTransaction } from '@/actions/transactions';
 import { Combobox } from '@/components/Combobox';
 import DayPicker from '@/components/DayPicker';
+import { isValidMcc,MccInput } from '@/components/forms/MccInput';
 import { Button } from '@/components/ui/button';
 import { FormFieldTextArea } from '@/components/ui/form-field-textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MccInput, isValidMcc } from '@/components/forms/MccInput';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
 import { ReviewType, Transaction, type TransactionRequest } from '@/lib/transaction.types';
-import { cn } from '@/lib/utils';
+import { cn, parseCalendarDate, toCalendarDate } from '@/lib/utils';
 
 interface TransactionCRUDProps {
   transaction?: Transaction;
@@ -36,7 +36,9 @@ export default function TransactionCRUD({
   const [selectedCategories, setSelectedCategories] = useState<Category[]>(transaction?.categories ?? []);
   const [localCategories, setLocalCategories] = useState<Category[]>(categories ?? []);
   const [amount, setAmount] = useState<string>(transaction ? '' + transaction?.amount.toFixed(2) : '-0');
-  const [date, setDate] = useState<Date>(transaction ? new Date(transaction.date) : new Date());
+  const [date, setDate] = useState<Date>(
+    transaction ? parseCalendarDate(transaction.date) : new Date(),
+  );
   const [creatingCategory, setCreatingCategory] = useState(false);
   const [suggestingCategories, setSuggestingCategories] = useState(false);
   const suggestedDescriptionRef = useRef<string | null>(null);
@@ -121,7 +123,7 @@ export default function TransactionCRUD({
         description: form.description.value ?? undefined,
         amount: Number(amount),
         categoryIds,
-        date: date.toISOString().split('T')[0],
+        date: toCalendarDate(date),
         isTransactionExcluded: isExcluded,
         isTransactionUnderMonitoring: isMonitored,
         monitoringReason: isMonitored ? monitoringReason : undefined,

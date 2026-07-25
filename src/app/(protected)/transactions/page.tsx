@@ -10,7 +10,12 @@ export default async function TransactionsPage() {
     }, 0, 1).catch(() => null),
   ]);
 
-  const needsReviewCount = reviewPagedData?.totalElements ?? 0;
+  // `null` means "couldn't determine", which is distinct from a genuine zero.
+  // Coercing the failure to 0 made a backend hiccup look like "nothing to
+  // review". The badge is suppressed when unknown; the Review link itself stays
+  // reachable either way. The count is only decorative, so a failure here must
+  // not fail the whole page.
+  const needsReviewCount = reviewPagedData?.totalElements ?? null;
 
   return (
     <TransactionsBrowser

@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { batchDeleteTransactions, batchReviewTransactions, searchTransactions } from '@/actions/transactions';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { TablePagination } from '@/components/reports/views/TablePagination';
+import { reviewReasonLabel } from '@/components/transactions/catalog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -541,11 +542,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
                 transactions.</p>
             ) : (
               presentReasons.map((reason) => {
-                let label: string = reason;
-                if (reason === 'UNRECONCILED') label = 'Unreconciled';
-                else if (reason === 'CATEGORY_UNVERIFIED') label = 'Category unverified';
-                else if (reason === 'DUPLICATE_SUSPECT') label = 'Possible duplicate';
-
+                const label = reviewReasonLabel(reason);
                 const isChecked = reasonsToApprove.includes(reason);
                 return (
                   <div key={reason} className="flex items-center space-x-2">

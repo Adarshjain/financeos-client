@@ -23,7 +23,8 @@ import { TransactionLinkDialog } from './TransactionLinkDialog';
 interface TransactionsBrowserProps {
   accounts: Account[];
   categories: Category[];
-  needsReviewCount?: number;
+  /** `null`/absent means the count could not be determined, not zero. */
+  needsReviewCount?: number | null;
 }
 
 export function TransactionsBrowser({ accounts, categories, needsReviewCount }: TransactionsBrowserProps) {
@@ -31,14 +32,16 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sort, setSort] = useState('date,desc');
-  const [localReviewCount, setLocalReviewCount] = useState(needsReviewCount ?? 0);
+  const [localReviewCount, setLocalReviewCount] = useState<number | null>(
+    needsReviewCount ?? null,
+  );
 
   const [selectedTxnIds, setSelectedTxnIds] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [bulkLinkOpen, setBulkLinkOpen] = useState(false);
 
   useEffect(() => {
-    setLocalReviewCount(needsReviewCount ?? 0);
+    setLocalReviewCount(needsReviewCount ?? null);
   }, [needsReviewCount]);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(50);
@@ -219,7 +222,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
                 <Button variant="outline" size="sm"
                         className="relative gap-1.5 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all h-8 text-xs">
                   <span>Review</span>
-                  {localReviewCount !== undefined && localReviewCount > 0 && (
+                  {localReviewCount !== null && localReviewCount > 0 && (
                     <span
                       className="flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-md bg-amber-500 text-[10px] font-bold text-white">
                   {localReviewCount}

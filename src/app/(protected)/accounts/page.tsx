@@ -15,7 +15,7 @@ import { StatementsDialog } from '@/components/accounts/StatementsDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Account, BankAccount, CreditCard, GenericAccount } from '@/lib/account.types';
+import { Account, isAccountOfType } from '@/lib/account.types';
 import { accountsApi } from '@/lib/apiClient';
 import { AccountType } from '@/lib/types';
 import { formatDate, formatMoney, formatNullableMoney, getPositionLabel } from '@/lib/utils';
@@ -87,9 +87,9 @@ const AccountWrapper = ({ account, children }: { account: Account; children: Rea
 export default async function AccountsPage() {
   const accounts = await accountsApi.list();
 
-  const bankAccounts = accounts.filter(a => a.type === AccountType.BANK_ACCOUNT) as BankAccount[];
-  const creditCards = accounts.filter(a => a.type === AccountType.CREDIT_CARD) as CreditCard[];
-  const genericAccounts = accounts.filter(a => a.type === AccountType.GENERIC) as GenericAccount[];
+  const bankAccounts = accounts.filter(isAccountOfType(AccountType.BANK_ACCOUNT));
+  const creditCards = accounts.filter(isAccountOfType(AccountType.CREDIT_CARD));
+  const genericAccounts = accounts.filter(isAccountOfType(AccountType.GENERIC));
 
   const totalCreditLimit = creditCards.reduce(
     (sum, a) => sum + (a.creditLimit || 0),
