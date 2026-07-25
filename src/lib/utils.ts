@@ -109,6 +109,44 @@ export function getAccountName(
   return accounts.find((a) => a.id === accountId)?.name || 'Unknown';
 }
 
+/** Largest-first, so the first unit the elapsed time reaches is the one used. */
+const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ['year', 365 * 24 * 60 * 60 * 1000],
+  ['month', 30 * 24 * 60 * 60 * 1000],
+  ['day', 24 * 60 * 60 * 1000],
+  ['hour', 60 * 60 * 1000],
+  ['minute', 60 * 1000],
+];
+
+/**
+ * A timestamp as elapsed time — "3 days ago", "yesterday", "in 2 hours".
+ *
+ * Replaces the single `date-fns/formatDistanceToNow` call that was the only use
+ * of that dependency in the whole app, while `Intl.RelativeTimeFormat` does the
+ * job natively (and every other date helper here is already native).
+ *
+ * `numeric: 'auto'` is what yields "yesterday" rather than "1 day ago".
+ */
+export function formatRelativeTime(
+  date: string | Date | null | undefined,
+  locale = 'en-IN',
+): string {
+  if (!date) return 'never';
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return 'never';
+
+  const elapsed = d.getTime() - Date.now();
+  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+
+  for (const [unit, ms] of RELATIVE_UNITS) {
+    if (Math.abs(elapsed) >= ms) {
+      return formatter.format(Math.round(elapsed / ms), unit);
+    }
+  }
+  // Under a minute: "now" reads better than "in 0 seconds".
+  return formatter.format(Math.round(elapsed / 1000), 'second');
+}
+
 export function getPositionLabel(position: string | undefined): string {
   if (!position) return 'Asset';
   return position === 'liability' ? 'Liability' : 'Asset';

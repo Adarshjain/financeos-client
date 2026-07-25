@@ -211,7 +211,7 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                           Due today
                         </Badge>
                       ) : (
-                        <Badge variant="danger" className="text-[10px]">
+                        <Badge variant="destructive" className="text-[10px]">
                           {Math.abs(cardSummary.daysUntilDue)} days overdue
                         </Badge>
                       )}

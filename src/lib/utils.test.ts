@@ -4,6 +4,7 @@ import {
   formatDate,
   formatMoney,
   formatNullableMoney,
+  formatRelativeTime,
   getAccountName,
   getAccountTypeLabel,
   isWithinLastNDays,
@@ -172,5 +173,49 @@ describe('isWithinLastNDays', () => {
     const future = new Date();
     future.setDate(future.getDate() + 1);
     expect(isWithinLastNDays(future, 4)).toBe(false);
+  });
+});
+
+// Replaces the app's single date-fns call. Times are built relative to now so the
+// assertions don't depend on a frozen clock.
+describe('formatRelativeTime', () => {
+  const ago = (ms: number) => new Date(Date.now() - ms);
+  const MIN = 60 * 1000;
+  const HOUR = 60 * MIN;
+  const DAY = 24 * HOUR;
+
+  it('reports "never" for absent or unparseable input', () => {
+    expect(formatRelativeTime(null)).toBe('never');
+    expect(formatRelativeTime(undefined)).toBe('never');
+    expect(formatRelativeTime('')).toBe('never');
+    expect(formatRelativeTime('not-a-date')).toBe('never');
+  });
+
+  it('uses seconds under a minute', () => {
+    expect(formatRelativeTime(ago(5 * 1000))).toMatch(/second/);
+  });
+
+  it('uses minutes, hours and days at the right thresholds', () => {
+    expect(formatRelativeTime(ago(5 * MIN))).toBe('5 minutes ago');
+    expect(formatRelativeTime(ago(3 * HOUR))).toBe('3 hours ago');
+    expect(formatRelativeTime(ago(5 * DAY))).toBe('5 days ago');
+  });
+
+  it("says 'yesterday' rather than '1 day ago'", () => {
+    // This is why numeric:'auto' is used.
+    expect(formatRelativeTime(ago(DAY))).toBe('yesterday');
+  });
+
+  it('escalates to months and years', () => {
+    expect(formatRelativeTime(ago(60 * DAY))).toMatch(/month/);
+    expect(formatRelativeTime(ago(800 * DAY))).toMatch(/year/);
+  });
+
+  it('handles future timestamps', () => {
+    expect(formatRelativeTime(new Date(Date.now() + 3 * HOUR))).toBe('in 3 hours');
+  });
+
+  it('accepts an ISO string as well as a Date', () => {
+    expect(formatRelativeTime(ago(5 * MIN).toISOString())).toBe('5 minutes ago');
   });
 });

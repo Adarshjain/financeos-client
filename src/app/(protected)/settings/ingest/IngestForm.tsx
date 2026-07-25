@@ -303,7 +303,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                         <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 break-all">
                           {file.filename}
                         </span>
-                        <Badge variant={file.status === 'SUCCESS' ? 'success' : 'danger'} className="shrink-0">
+                        <Badge variant={file.status === 'SUCCESS' ? 'success' : 'destructive'} className="shrink-0">
                           {file.status}
                         </Badge>
                       </div>
@@ -338,7 +338,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                             {file.filename}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={file.status === 'SUCCESS' ? 'success' : 'danger'}>
+                            <Badge variant={file.status === 'SUCCESS' ? 'success' : 'destructive'}>
                               {file.status}
                             </Badge>
                           </TableCell>
