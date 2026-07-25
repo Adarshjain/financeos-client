@@ -20,22 +20,35 @@ export function FormField({
                             ...props
                           }: FormFieldProps) {
   const fieldId = id || props.name;
+  // The error/hint text was previously rendered with no programmatic link to
+  // the input, so a screen reader announced neither that the field was invalid
+  // nor why. Used by login, signup, CreateInvestmentForm, GmailConnect and
+  // TransactionCRUD, so the fix applies across all of them.
+  const errorId = fieldId ? `${fieldId}-error` : undefined;
+  const hintId = fieldId ? `${fieldId}-hint` : undefined;
+  const showHint = Boolean(hint) && !error;
 
   return (
     <div className={cn('space-y-1', className)}>
       {label && <Label htmlFor={fieldId}>{label}</Label>}
       <Input
         id={fieldId}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : showHint ? hintId : undefined}
         className={cn(
           error && 'border-red-300 dark:border-red-700 focus:ring-red-500',
         )}
         {...props}
       />
-      {hint && !error && (
-        <p className="text-sm text-slate-500 dark:text-slate-400">{hint}</p>
+      {showHint && (
+        <p id={hintId} className="text-sm text-slate-500 dark:text-slate-400">
+          {hint}
+        </p>
       )}
       {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+        <p id={errorId} role="alert" className="text-sm text-red-600 dark:text-red-400">
+          {error}
+        </p>
       )}
     </div>
   );

@@ -73,7 +73,9 @@ export function Combobox({
 
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <div className={cn('flex flex-wrap items-center gap-1', loading ? 'pointer-events-none' : '')}>
+          {/* `id` lands here so the Label's htmlFor actually resolves — it
+              previously referenced an id applied to no element at all. */}
+          <div id={id} className={cn('flex flex-wrap items-center gap-1', loading ? 'pointer-events-none' : '')}>
             {value.length > 0 ? (
               value.map(option => (
                 <Badge key={option.id} variant="secondary" className={
@@ -82,10 +84,20 @@ export function Combobox({
                     loading ? 'bg-slate-500 pointer-events-none' : '',
                   )
                 }>
-                  <span onClick={e => {
-                    e.stopPropagation();
-                    removeSelection(option.id);
-                  }}>{option.name}</span>
+                  {/* A real button, not a click-only span: keyboard users
+                      previously had no way to deselect an option. */}
+                  <button
+                    type="button"
+                    aria-label={`Remove ${option.name}`}
+                    className="focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded"
+                    onClick={e => {
+                      e.stopPropagation();
+                      removeSelection(option.id);
+                    }}
+                    onKeyDown={e => e.stopPropagation()}
+                  >
+                    {option.name}
+                  </button>
                 </Badge>
               ))
             ) : (

@@ -59,7 +59,7 @@ export function ChartView({ data, fill }: { data: ChartData; fill?: boolean }) {
       value: first.data[i] ?? 0,
     }));
     return (
-      <ChartFrame fill={fill}>
+      <ChartFrame fill={fill} data={data}>
         <PieChart>
           <Pie
             data={pieData}
@@ -104,7 +104,7 @@ export function ChartView({ data, fill }: { data: ChartData; fill?: boolean }) {
 
   if (chartType === 'line') {
     return (
-      <ChartFrame fill={fill}>
+      <ChartFrame fill={fill} data={data}>
         <LineChart data={rows}>
           {axes}
           {series.map((s, i) => (
@@ -124,7 +124,7 @@ export function ChartView({ data, fill }: { data: ChartData; fill?: boolean }) {
 
   if (chartType === 'area') {
     return (
-      <ChartFrame fill={fill}>
+      <ChartFrame fill={fill} data={data}>
         <AreaChart data={rows}>
           {axes}
           {series.map((s, i) => (
@@ -146,7 +146,7 @@ export function ChartView({ data, fill }: { data: ChartData; fill?: boolean }) {
   // bar + stackedBar
   const stackId = chartType === 'stackedBar' ? 'stack' : undefined;
   return (
-    <ChartFrame fill={fill}>
+    <ChartFrame fill={fill} data={data}>
       <BarChart data={rows}>
         {axes}
         {series.map((s, i) => (
@@ -166,15 +166,56 @@ export function ChartView({ data, fill }: { data: ChartData; fill?: boolean }) {
 function ChartFrame({
   children,
   fill,
+  data,
 }: {
   children: React.ReactElement;
   fill?: boolean;
+  /** Rendered as a screen-reader-only table so the chart isn't content-free. */
+  data?: ChartData;
 }) {
   return (
     <div className={fill ? 'h-full min-h-0 w-full' : 'h-72 w-full'}>
+      {/*
+        A chart is inert to assistive tech: Recharts emits SVG with no
+        accessible name and no textual content, so a screen-reader user
+        previously got nothing at all from a CHART report. The categories and
+        series needed to express the same information are already in hand, so
+        mirror them into a visually-hidden table. Marked aria-hidden on the SVG
+        side is not needed — the table is additive.
+      */}
+      {data && <ChartDataTable data={data} />}
       <ResponsiveContainer width="100%" height="100%">
         {children}
       </ResponsiveContainer>
     </div>
+  );
+}
+
+function ChartDataTable({ data }: { data: ChartData }) {
+  const { categories, series } = data;
+  return (
+    <table className="sr-only">
+      <caption>Chart data</caption>
+      <thead>
+        <tr>
+          <th scope="col">Category</th>
+          {series.map((s) => (
+            <th key={s.name} scope="col">
+              {s.name}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {categories.map((category, i) => (
+          <tr key={category}>
+            <th scope="row">{category}</th>
+            {series.map((s) => (
+              <td key={s.name}>{s.data[i] ?? '—'}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
