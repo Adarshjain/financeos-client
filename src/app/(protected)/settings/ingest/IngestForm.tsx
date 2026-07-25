@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   FileSpreadsheet,
   FileText,
-  Info,
   Loader2,
   Trash2,
   Upload,
@@ -73,7 +72,6 @@ export function IngestForm({ accounts }: IngestFormProps) {
     (acc) => acc.type === 'bank_account' || acc.type === 'credit_card',
   );
 
-  const selectedAccount = accounts.find((acc) => acc.id === selectedAccountId);
 
   // Drag and drop handlers
   const handleDragOver = (e: React.DragEvent) => {
@@ -390,12 +388,6 @@ export function IngestForm({ accounts }: IngestFormProps) {
                     ))}
                   </SelectContent>
                 </Select>
-                {selectedAccount && 'statementPassword' in selectedAccount && selectedAccount.statementPassword && (
-                  <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium pt-1">
-                    <Info className="h-3.5 w-3.5" />
-                    <span>Statement decryption password configured for this account.</span>
-                  </div>
-                )}
               </div>
 
               {/* File Dropzone */}

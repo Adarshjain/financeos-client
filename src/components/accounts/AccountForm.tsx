@@ -360,7 +360,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                       id="statementPassword"
                       name="statementPassword"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder={bankAccount?.statementPassword ? '••••••••' : 'Enter password if PDF statement is protected'}
+                      placeholder="Enter password if PDF statement is protected"
                       className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                     />
                     <button
@@ -447,7 +447,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                       id="statementPassword"
                       name="statementPassword"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder={creditCard?.statementPassword ? '••••••••' : 'Enter password if PDF statement is protected'}
+                      placeholder="Enter password if PDF statement is protected"
                       className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                     />
                     <button
