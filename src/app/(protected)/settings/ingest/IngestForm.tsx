@@ -40,6 +40,22 @@ import {
 import type { Account } from '@/lib/account.types';
 import type { FileIngestionResult, FileSummary } from '@/lib/types';
 
+/**
+ * Upload limits, read from next.config.mjs via `env` so the form validates
+ * against the value the Next runtime actually enforces and cannot drift from
+ * it — the previous hardcoded "10MB per file" copy contradicted a 2mb config.
+ */
+const MAX_FILE_MB = Number(process.env.NEXT_PUBLIC_MAX_FILE_MB ?? 10);
+const MAX_REQUEST_MB = Number(process.env.NEXT_PUBLIC_MAX_REQUEST_MB ?? 30);
+const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
+const MAX_REQUEST_BYTES = MAX_REQUEST_MB * 1024 * 1024;
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 interface IngestFormProps {
   accounts: Account[];
 }
@@ -90,17 +106,31 @@ export function IngestForm({ accounts }: IngestFormProps) {
     const validFiles: File[] = [];
     const invalidFiles: string[] = [];
 
+    const oversizedFiles: string[] = [];
+
     newFiles.forEach((file) => {
       const ext = file.name.split('.').pop()?.toLowerCase();
-      if (ext === 'pdf' || ext === 'xlsx' || ext === 'xls') {
-        validFiles.push(file);
-      } else {
+      if (ext !== 'pdf' && ext !== 'xlsx' && ext !== 'xls') {
         invalidFiles.push(file.name);
+        return;
       }
+      // Size was never checked before, so an oversized file was only rejected
+      // by the Next runtime — past the point where we could explain why.
+      if (file.size > MAX_FILE_BYTES) {
+        oversizedFiles.push(`${file.name} (${formatFileSize(file.size)})`);
+        return;
+      }
+      validFiles.push(file);
     });
 
     if (invalidFiles.length > 0) {
       toast.error(`Invalid file format: ${invalidFiles.join(', ')}. Only PDF and Excel are allowed.`);
+    }
+
+    if (oversizedFiles.length > 0) {
+      toast.error(
+        `Too large (max ${MAX_FILE_MB}MB per file): ${oversizedFiles.join(', ')}.`,
+      );
     }
 
     if (validFiles.length > 0) {
@@ -121,6 +151,16 @@ export function IngestForm({ accounts }: IngestFormProps) {
     }
     if (files.length === 0) {
       toast.error('Please select at least one file to upload.');
+      return;
+    }
+    // All queued files go up as a single server-action request, so the total is
+    // what the runtime limit applies to. Checked here so the user gets a
+    // specific message instead of an opaque framework error.
+    const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
+    if (totalBytes > MAX_REQUEST_BYTES) {
+      toast.error(
+        `Upload is ${formatFileSize(totalBytes)}; the limit is ${MAX_REQUEST_MB}MB per upload. Remove some files and try again.`,
+      );
       return;
     }
 
@@ -390,7 +430,8 @@ export function IngestForm({ accounts }: IngestFormProps) {
                     Drag and drop your files here
                   </p>
                   <p className="mt-1 text-xs text-slate-400 dark:text-slate-500 font-medium">
-                    Supports PDF, XLSX, and XLS format (up to 10MB per file)
+                    Supports PDF, XLSX, and XLS format (up to {MAX_FILE_MB}MB per file,
+                    {MAX_REQUEST_MB}MB per upload)
                   </p>
                 </div>
               </div>
@@ -426,7 +467,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                               {file.name}
                             </span>
                             <span className="text-[10px] text-slate-400 dark:text-slate-500 tabular-nums">
-                              {(file.size / 1024).toFixed(1)} KB
+                              {formatFileSize(file.size)}
                             </span>
                           </div>
                         </div>
