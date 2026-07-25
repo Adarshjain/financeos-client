@@ -12,6 +12,17 @@ export type BankAccountRequest = AccountRequestBase & {
   type: AccountType.BANK_ACCOUNT;
   openingBalance?: number;
   last4?: string;
+  /**
+   * Write-only. Verified against the running backend: the value is accepted on
+   * create/update but never appears in any account response (list, single GET,
+   * or the create response body), so it is deliberately absent from the
+   * `BankAccount`/`CreditCard` response types. Declaring it there previously
+   * implied the secret was served to the browser, and made the UI's
+   * "password is set" indicators unreachable.
+   *
+   * Surfacing whether one is set would need a `hasStatementPassword` boolean
+   * from the backend.
+   */
   statementPassword?: string;
 }
 
@@ -71,7 +82,6 @@ export type BankAccount = AccountBase & {
   type: AccountType.BANK_ACCOUNT;
   openingBalance?: string;
   last4?: string;
-  statementPassword?: string;
   lastStatementDate?: string | null;
 }
 
@@ -81,7 +91,6 @@ export type CreditCard = AccountBase & {
   creditLimit: number;
   paymentDueDay: number;
   gracePeriodDays: number;
-  statementPassword?: string;
   lastStatementDate?: string | null;
 }
 
