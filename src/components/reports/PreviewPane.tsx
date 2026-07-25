@@ -146,6 +146,7 @@ export function PreviewPane({ state, catalog }: PreviewPaneProps) {
           <div className={cn(loading && 'opacity-60 transition-opacity')}>
             <ReportDataView
               data={data}
+              loading={loading}
               onPageChange={handlePageChange}
               onSizeChange={handleSizeChange}
             />

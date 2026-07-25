@@ -461,6 +461,7 @@ export function RulesBrowser({
                 totalElements: initialRules.totalElements,
                 totalPages: initialRules.totalPages,
               }}
+              loading={isPending}
               onPageChange={handlePageChange}
               onSizeChange={handleSizeChange}
               unit="rule"

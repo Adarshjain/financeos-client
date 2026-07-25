@@ -43,6 +43,8 @@ interface TableViewProps {
   fill?: boolean;
   onPageChange?: (page: number) => void;
   onSizeChange?: (size: number) => void;
+  /** Disables the paging controls while a page fetch is in flight. */
+  loading?: boolean;
 }
 
 export function TableView({
@@ -50,6 +52,7 @@ export function TableView({
   fill,
   onPageChange,
   onSizeChange,
+  loading,
 }: TableViewProps) {
   const { columns, rows, page } = data;
 
@@ -105,6 +108,7 @@ export function TableView({
       >
         <TablePagination
           page={page}
+          loading={loading}
           onPageChange={onPageChange}
           onSizeChange={onSizeChange}
         />

@@ -2,7 +2,7 @@
 
 import { Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 import { handleGoogleCallbackAction } from '@/actions/auth';
 
@@ -13,8 +13,18 @@ function GoogleCallbackContent() {
     'loading'
   );
   const [errorMessage, setErrorMessage] = useState<string>('');
+  // An OAuth authorization code is single-use. This effect keys on
+  // [searchParams, router], so a re-run (StrictMode's double-invoke in dev, or
+  // either reference changing before the exchange settles) would post the same
+  // code twice — the second attempt fails and flips the page to
+  // "Authentication Failed" even though the first exchange already set the
+  // session cookie.
+  const exchangeStartedRef = useRef(false);
 
   useEffect(() => {
+    if (exchangeStartedRef.current) return;
+    exchangeStartedRef.current = true;
+
     const processCallback = async () => {
       const code = searchParams.get('code') || undefined;
       const state = searchParams.get('state') || undefined;
