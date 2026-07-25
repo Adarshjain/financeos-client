@@ -27,7 +27,7 @@ export function StatementVerdictBadge({ verdict }: { verdict: StatementVerdict }
     case 'REJECTED':
       return (
         <span title="Statement failed critical validation (broken checksum, missing opening/closing balances, or unparseable format).">
-          <Badge variant="danger" className="cursor-help">Rejected</Badge>
+          <Badge variant="destructive" className="cursor-help">Rejected</Badge>
         </span>
       );
     default:
