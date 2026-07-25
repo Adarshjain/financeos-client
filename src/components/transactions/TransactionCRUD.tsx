@@ -342,11 +342,16 @@ export default function TransactionCRUD({
                   className="text-[10px] text-slate-400 dark:text-slate-500"
                 >Do not include in reporting and budgets</span>
               </div>
+              {/* role/aria-checked so assistive tech announces this as a
+                  switch with an on/off state rather than a bare button. */}
               <button
                 type="button"
+                role="switch"
+                aria-checked={isExcluded}
+                aria-label="Exclude transaction"
                 onClick={() => setIsExcluded(prev => !prev)}
                 className={cn(
-                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                   isExcluded ? 'bg-red-500' : 'bg-slate-200 dark:bg-slate-800',
                 )}
               >
@@ -369,9 +374,12 @@ export default function TransactionCRUD({
               </div>
               <button
                 type="button"
+                role="switch"
+                aria-checked={isMonitored}
+                aria-label="Monitor transaction"
                 onClick={() => setIsMonitored(prev => !prev)}
                 className={cn(
-                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
+                  'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
                   isMonitored ? 'bg-amber-500' : 'bg-slate-200 dark:bg-slate-800',
                 )}
               >
