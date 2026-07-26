@@ -30,20 +30,22 @@ import { cn, formatDate, formatMoney, getAccountName } from '@/lib/utils';
 
 import { DeleteTransaction } from './DeleteTransaction';
 import { ReviewReasonBadges } from './ReviewReasonBadges';
+import { ReviewTransaction } from './ReviewTransaction';
 import { TransactionLinkDialog } from './TransactionLinkDialog';
 
 interface TransactionDetailContentProps {
   transaction: Transaction;
   accounts: Account[];
   onEditClick: () => void;
-  onDeleteSuccess: () => void;
+  /** Dismisses the dialog and refreshes the parent list. */
+  onCloseAndRefresh: () => void;
 }
 
 export const TransactionDetailContent = ({
                                            transaction,
                                            accounts,
                                            onEditClick,
-                                           onDeleteSuccess,
+                                           onCloseAndRefresh,
                                          }: TransactionDetailContentProps) => {
   const [links, setLinks] = React.useState<TransactionLinkResponse[]>([]);
   const [loadingLinks, setLoadingLinks] = React.useState(false);
@@ -88,7 +90,7 @@ export const TransactionDetailContent = ({
       if (res.success) {
         toast.success('Link removed successfully');
         fetchLinks();
-        onDeleteSuccess(); // Triggers parent reload
+        onCloseAndRefresh(); // Triggers parent reload
       } else {
         toast.error(res.error.message || 'Failed to unlink');
       }
@@ -423,6 +425,8 @@ export const TransactionDetailContent = ({
           </div>
         )}
 
+        <ReviewTransaction transaction={transaction} onSuccess={onCloseAndRefresh} />
+
         <div className="grid grid-cols-2 gap-2 pt-1">
           <Button
             variant="outline"
@@ -444,7 +448,7 @@ export const TransactionDetailContent = ({
           </Button>
         </div>
 
-        <DeleteTransaction transaction={transaction} onSuccess={onDeleteSuccess} />
+        <DeleteTransaction transaction={transaction} onSuccess={onCloseAndRefresh} />
       </div>
 
       <TransactionLinkDialog
@@ -454,7 +458,7 @@ export const TransactionDetailContent = ({
         onOpenChange={setLinkDialogOpen}
         onSuccess={() => {
           fetchLinks();
-          onDeleteSuccess(); // Refreshes parent browser
+          onCloseAndRefresh(); // Refreshes parent browser
         }}
       />
     </div>

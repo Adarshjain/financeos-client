@@ -123,7 +123,7 @@ export const TransactionDetailDialog = ({
             transaction={transaction}
             accounts={accounts}
             onEditClick={() => setIsEditing(true)}
-            onDeleteSuccess={() => {
+            onCloseAndRefresh={() => {
               setShowDetails(false);
               onMutate?.();
             }}
