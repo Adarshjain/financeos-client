@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Account } from '@/lib/account.types';
+import { getDerivedRoleLabel, type LinkType } from '@/lib/transaction.helpers';
 import { Transaction, TransactionLinkResponse } from '@/lib/transaction.types';
 import { cn, formatDate, formatMoney, getAccountName } from '@/lib/utils';
 
@@ -351,7 +352,7 @@ export const TransactionDetailContent = ({
                             <ShieldCheck className="h-3.5 w-3.5" /> Parent Transaction
                           </span>
                           <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 text-[9px] font-bold">
-                            {parentMember.roleLabel}
+                            {parentMember.roleLabel || getDerivedRoleLabel(link.type as LinkType, true)}
                           </Badge>
                         </div>
                         <div className="flex items-center justify-between text-xs">
@@ -394,7 +395,7 @@ export const TransactionDetailContent = ({
                               </span>
                               <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
                                 <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-0.5">
-                                  <CornerDownRight className="h-2.5 w-2.5 inline" /> {m.roleLabel}
+                                  <CornerDownRight className="h-2.5 w-2.5 inline" /> {m.roleLabel || getDerivedRoleLabel(link.type as LinkType, m.isAnchor)}
                                 </span>
                                 <span>•</span>
                                 <span>{formatDate(m.date)}</span>
