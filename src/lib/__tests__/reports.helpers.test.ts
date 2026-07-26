@@ -1,12 +1,22 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  buildFilter,
+  dateBetween,
   formatMeasureValue,
+  isAggregatedTable,
+  isChartData,
   isChartDefinition,
+  isKpiData,
   isKpiDefinition,
   isMoneyField,
+  isPivotTableData,
+  isRawTable,
+  isRawTableData,
   isTableDefinition,
-} from './reports.helpers';
+  numberBetween,
+  relativeAmount,
+} from '../reports.helpers';
 
 // The three report views each had their own copy of this logic and had already
 // diverged: the raw table used `key.includes('amount')` while KPI and pivot used
@@ -112,3 +122,53 @@ describe('definition guards', () => {
     }
   });
 });
+
+describe('report data & definition narrowing guards (CD-13)', () => {
+  it('narrows ReportData variants correctly', () => {
+    const kpiData = { type: 'KPI', value: 100 } as any;
+    const chartData = { type: 'CHART', series: [] } as any;
+    const rawTableData = { type: 'TABLE', mode: 'raw', rows: [] } as any;
+    const pivotTableData = { type: 'TABLE', mode: 'aggregated', rows: [] } as any;
+
+    expect(isKpiData(kpiData)).toBe(true);
+    expect(isKpiData(chartData)).toBe(false);
+
+    expect(isChartData(chartData)).toBe(true);
+    expect(isChartData(kpiData)).toBe(false);
+
+    expect(isRawTableData(rawTableData)).toBe(true);
+    expect(isRawTableData(pivotTableData)).toBe(false);
+
+    expect(isPivotTableData(pivotTableData)).toBe(true);
+    expect(isPivotTableData(rawTableData)).toBe(false);
+  });
+
+  it('narrows TableDefinition variants correctly', () => {
+    const rawTableDef = { mode: 'raw', columns: ['amount'] } as any;
+    const aggTableDef = { mode: 'aggregated', rows: [] } as any;
+
+    expect(isRawTable(rawTableDef)).toBe(true);
+    expect(isRawTable(aggTableDef)).toBe(false);
+
+    expect(isAggregatedTable(aggTableDef)).toBe(true);
+    expect(isAggregatedTable(rawTableDef)).toBe(false);
+  });
+});
+
+describe('filter construction helpers (CD-13)', () => {
+  it('builds FilterClause with and without value', () => {
+    expect(buildFilter('date', 'this_month')).toEqual({ field: 'date', operator: 'this_month' });
+    expect(buildFilter('amount', 'greater_than', 100)).toEqual({
+      field: 'amount',
+      operator: 'greater_than',
+      value: 100,
+    });
+  });
+
+  it('constructs value helpers: dateBetween, numberBetween, relativeAmount', () => {
+    expect(dateBetween('2026-01-01', '2026-01-31')).toEqual({ from: '2026-01-01', to: '2026-01-31' });
+    expect(numberBetween(10, 50)).toEqual({ from: 10, to: 50 });
+    expect(relativeAmount(7)).toEqual({ amount: 7 });
+  });
+});
+

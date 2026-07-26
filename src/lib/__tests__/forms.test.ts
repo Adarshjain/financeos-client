@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { optionalDecimal, optionalInteger, optionalString } from './forms';
+import { optionalDecimal, optionalInteger, optionalString } from '../forms';
 
 function form(entries: Record<string, string>): FormData {
   const fd = new FormData();

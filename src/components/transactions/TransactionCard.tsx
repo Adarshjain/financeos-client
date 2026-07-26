@@ -11,6 +11,7 @@ import { cn, formatMoney, getAccountName } from '@/lib/utils';
 
 import { ReviewReasonBadges } from './ReviewReasonBadges';
 import { TransactionDetailDialog } from './TransactionDetailDialog';
+import { getDerivedRoleLabel, type LinkType } from '@/lib/transaction.helpers';
 
 interface TransactionCardProps {
   transaction: Transaction;
@@ -105,6 +106,7 @@ export const TransactionCard = ({
 
             {/* Link badges */}
             {transaction.links?.map((link) => {
+              const label = link.roleLabel || getDerivedRoleLabel(link.type as LinkType, false);
               const isParentRole = [
                 'Transfer out',
                 'Card bill payment',
@@ -112,7 +114,7 @@ export const TransactionCard = ({
                 'Reversed',
                 'Parent charge',
                 'Purchase (EMI)',
-              ].includes(link.roleLabel);
+              ].includes(label);
 
               return (
                 <Badge
@@ -130,7 +132,7 @@ export const TransactionCard = ({
                   ) : (
                     <CornerDownRight className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400" />
                   )}
-                  <span>{isParentRole ? `Parent • ${link.roleLabel}` : link.roleLabel}</span>
+                  <span>{isParentRole ? `Parent • ${label}` : label}</span>
                   {link.memberCount > 2 && <span className="opacity-70">({link.memberCount})</span>}
                 </Badge>
               );
