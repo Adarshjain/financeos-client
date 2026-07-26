@@ -94,7 +94,7 @@ export const TransactionDetailDialog = ({
 
       <DialogContent
         className={cn(
-          'sm:max-w-lg p-0 overflow-hidden flex flex-col bg-slate-50 dark:bg-slate-950',
+          'sm:max-w-lg !p-0 overflow-hidden flex flex-col bg-slate-50 dark:bg-slate-950',
           isEditing ? 'h-[90vh] sm:h-auto sm:max-h-[85vh]' : '',
         )}
         onTouchStart={handleTouchStart}

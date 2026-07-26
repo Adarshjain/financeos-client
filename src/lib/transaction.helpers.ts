@@ -37,6 +37,16 @@ export function sanitizeCreateLinkRequest(
 
 export type LinkType = 'TRANSFER' | 'CC_PAYMENT' | 'REFUND' | 'REVERSAL' | 'FEE' | 'EMI';
 
+/** Runtime companion to `LinkType`, for callers that need to enumerate the union. */
+export const LINK_TYPES: LinkType[] = [
+  'TRANSFER',
+  'CC_PAYMENT',
+  'REFUND',
+  'REVERSAL',
+  'FEE',
+  'EMI',
+];
+
 /**
  * Derive the human-facing role label for a transaction link member
  * based on the link type and whether the member is the anchor.

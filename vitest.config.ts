@@ -37,7 +37,15 @@ export default defineConfig({
         'src/lib/apiResult.ts': { lines: 95, branches: 95 },
         'src/components/transactions/catalog.ts': { lines: 95, branches: 95 },
         'src/components/transactions/ReviewReasonBadges.tsx': { lines: 95, branches: 95 },
+        // TransactionCard and the presentational pieces split out of it. They
+        // are listed individually so moving markup between them cannot quietly
+        // drop the card's coverage guarantee.
         'src/components/transactions/TransactionCard.tsx': { lines: 95, branches: 95 },
+        'src/components/transactions/TransactionAmount.tsx': { lines: 95, branches: 95 },
+        'src/components/transactions/TransactionCategoryBadges.tsx': { lines: 95, branches: 95 },
+        'src/components/transactions/TransactionLinkBadges.tsx': { lines: 95, branches: 95 },
+        'src/components/transactions/TransactionSelectCheckbox.tsx': { lines: 95, branches: 95 },
+        'src/components/transactions/TransactionSourceBadge.tsx': { lines: 95, branches: 95 },
         'src/app/(protected)/transactions/page.tsx': { lines: 95, branches: 95 },
         'src/components/reports/builderReducer.ts': { lines: 95, branches: 95 },
       },
