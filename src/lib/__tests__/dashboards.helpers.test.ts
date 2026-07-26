@@ -4,8 +4,8 @@ import {
   DASHBOARD_GRID_COLUMNS,
   isLayoutWithinGrid,
   validateWidgets,
-} from './dashboards.helpers';
-import type { DashboardWidget, WidgetLayout } from './dashboards.types';
+} from '../dashboards.helpers';
+import type { DashboardWidget, WidgetLayout } from '../dashboards.types';
 
 const layout = (over: Partial<WidgetLayout> = {}): WidgetLayout =>
   ({ x: 0, y: 0, w: 10, h: 24, ...over }) as WidgetLayout;
