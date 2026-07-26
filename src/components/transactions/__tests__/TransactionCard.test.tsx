@@ -146,4 +146,52 @@ describe('TransactionCard (CD-8, CD-2c)', () => {
 
     expect(screen.getByText('Manual')).toBeInTheDocument();
   });
+
+  it('renders no source, link, or category badges when there is nothing to show', () => {
+    const bareTxn: Transaction = {
+      ...mockTxn,
+      source: 'file_upload',
+      reviewType: 'NA',
+      links: [],
+      categories: [],
+    };
+
+    render(
+      <TransactionCard
+        transaction={bareTxn}
+        accounts={mockAccounts}
+        categories={mockCategories}
+        showSource={true}
+      />,
+    );
+
+    // `file_upload` has no badge of its own, so the row stays empty.
+    expect(screen.queryByText('Shopping')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Parent •/)).not.toBeInTheDocument();
+    expect(screen.getByText('Amazon Purchase')).toBeInTheDocument();
+  });
+
+  it('derives the link role label when the link carries none', () => {
+    const unlabelledTxn: Transaction = {
+      ...mockTxn,
+      links: [
+        {
+          linkId: 'link-3',
+          type: 'TRANSFER',
+          roleLabel: '',
+          memberCount: 2,
+        },
+      ],
+    };
+
+    render(
+      <TransactionCard
+        transaction={unlabelledTxn}
+        accounts={mockAccounts}
+        categories={mockCategories}
+      />,
+    );
+
+    expect(screen.getByText('Transfer in')).toBeInTheDocument();
+  });
 });

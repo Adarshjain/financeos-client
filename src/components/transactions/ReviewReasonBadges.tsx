@@ -1,18 +1,20 @@
 import { REVIEW_REASON_META } from '@/components/transactions/catalog';
 import { Badge } from '@/components/ui/badge';
 import { ReviewReason, ReviewType } from '@/lib/transaction.types';
+import { cn } from '@/lib/utils';
 
 interface ReviewReasonBadgesProps {
   reviewType?: ReviewType;
   reviewReasons?: ReviewReason[];
+  className?: string;
 }
 
-export function ReviewReasonBadges({ reviewType, reviewReasons }: ReviewReasonBadgesProps) {
+export function ReviewReasonBadges({ reviewType, reviewReasons, className }: ReviewReasonBadgesProps) {
   if (reviewType !== 'NEEDS_REVIEW') return null;
 
   if (!reviewReasons || reviewReasons.length === 0) {
     return (
-      <Badge variant="warning" className="text-[9px] py-0 px-2 font-bold rounded-md">
+      <Badge variant="warning" className={cn("text-[9px] py-0.5 px-1 font-bold rounded-md", className)}>
         Needs Review
       </Badge>
     );
@@ -30,7 +32,7 @@ export function ReviewReasonBadges({ reviewType, reviewReasons }: ReviewReasonBa
           <Badge
             key={reason}
             variant={variant}
-            className="text-[9px] py-0 px-2 font-bold rounded-md"
+            className={cn("text-[9px] py-0.5 px-2 font-bold rounded-md", className)}
           >
             {label}
           </Badge>
