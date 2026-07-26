@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import * as linkActions from '@/actions/transaction-links';
+import * as transactionsActions from '@/actions/transactions';
 import { TransactionDetailContent } from '@/components/transactions/TransactionDetailContent';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import type { Account } from '@/lib/account.types';
@@ -46,7 +47,7 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
             transaction={mockTxnWithZeroBalance}
             accounts={mockAccounts}
             onEditClick={vi.fn()}
-            onDeleteSuccess={vi.fn()}
+            onCloseAndRefresh={vi.fn()}
           />
         </DialogContent>
       </Dialog>,
@@ -63,7 +64,7 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
             transaction={mockTxnWithNullBalance}
             accounts={mockAccounts}
             onEditClick={vi.fn()}
-            onDeleteSuccess={vi.fn()}
+            onCloseAndRefresh={vi.fn()}
           />
         </DialogContent>
       </Dialog>,
@@ -117,7 +118,7 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
             transaction={txnWithLink}
             accounts={mockAccounts}
             onEditClick={vi.fn()}
-            onDeleteSuccess={vi.fn()}
+            onCloseAndRefresh={vi.fn()}
           />
         </DialogContent>
       </Dialog>,
@@ -147,7 +148,7 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
             transaction={txnWithLink}
             accounts={mockAccounts}
             onEditClick={vi.fn()}
-            onDeleteSuccess={vi.fn()}
+            onCloseAndRefresh={vi.fn()}
           />
         </DialogContent>
       </Dialog>,
@@ -203,7 +204,7 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
       links: [{ linkId: 'link1', type: 'TRANSFER', roleLabel: 'Transfer out', memberCount: 2 }],
     };
 
-    const onDeleteSuccess = vi.fn();
+    const onCloseAndRefresh = vi.fn();
 
     render(
       <Dialog open={true}>
@@ -212,7 +213,7 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
             transaction={txnWithLink}
             accounts={mockAccounts}
             onEditClick={vi.fn()}
-            onDeleteSuccess={onDeleteSuccess}
+            onCloseAndRefresh={onCloseAndRefresh}
           />
         </DialogContent>
       </Dialog>,
@@ -226,10 +227,74 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
 
     await waitFor(() => {
       expect(unlinkSpy).toHaveBeenCalledWith('link1');
-      expect(onDeleteSuccess).toHaveBeenCalled();
+      expect(onCloseAndRefresh).toHaveBeenCalled();
     });
 
     expect(screen.getByText('File Upload')).toBeInTheDocument();
     expect(screen.getByText('5812')).toBeInTheDocument();
+  });
+});
+
+describe('TransactionDetailContent review action', () => {
+  const needsReviewTxn: Transaction = {
+    ...mockTxnWithZeroBalance,
+    id: 't-needs-review',
+    reviewType: 'NEEDS_REVIEW',
+    reviewReasons: ['UNRECONCILED'],
+  };
+
+  const renderDetail = (transaction: Transaction, onCloseAndRefresh = vi.fn()) => {
+    render(
+      <Dialog open={true}>
+        <DialogContent>
+          <TransactionDetailContent
+            transaction={transaction}
+            accounts={mockAccounts}
+            onEditClick={vi.fn()}
+            onCloseAndRefresh={onCloseAndRefresh}
+          />
+        </DialogContent>
+      </Dialog>,
+    );
+    return onCloseAndRefresh;
+  };
+
+  it('offers the review action for a transaction that needs review', () => {
+    renderDetail(needsReviewTxn);
+
+    expect(screen.getByRole('button', { name: /Review/i })).toBeInTheDocument();
+  });
+
+  it('hides the review action for an already-reviewed transaction', () => {
+    renderDetail(mockTxnWithZeroBalance);
+
+    expect(screen.queryByRole('button', { name: /Review/i })).not.toBeInTheDocument();
+    // The read-only status row stays regardless.
+    expect(screen.getByText('Review Status')).toBeInTheDocument();
+  });
+
+  it('closes the dialog and refreshes the parent after approving from the detail view', async () => {
+    const reviewSpy = vi.spyOn(transactionsActions, 'batchReviewTransactions').mockResolvedValue({
+      success: true,
+      data: { succeededIds: ['t-needs-review'], skippedIds: [], failures: [] },
+    });
+    const onCloseAndRefresh = renderDetail(needsReviewTxn);
+
+    fireEvent.click(screen.getByRole('button', { name: /Review/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Approve Transaction' })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /^Approv/i }));
+
+    await waitFor(() => {
+      expect(reviewSpy).toHaveBeenCalledWith(
+        ['t-needs-review'],
+        'MANUALLY_REVIEWED',
+        ['UNRECONCILED'],
+      );
+      expect(onCloseAndRefresh).toHaveBeenCalledTimes(1);
+    });
   });
 });
