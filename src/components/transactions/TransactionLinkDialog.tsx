@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { Account } from '@/lib/account.types';
+import { getDerivedRoleLabel } from '@/lib/transaction.helpers';
 import type { CreateTransactionLinkRequest, LinkType, MemberRef, Transaction } from '@/lib/transaction.types';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 
@@ -380,11 +381,11 @@ export function TransactionLinkDialog({
                           <span>{acc?.name || 'Unknown Account'}</span>
                           {isAnchor ? (
                             <Badge className="text-[9px] py-0 px-1.5 h-4 bg-indigo-100 text-indigo-800 font-bold dark:bg-indigo-900/80 dark:text-indigo-200">
-                              Parent (Anchor)
+                              Parent • {getDerivedRoleLabel(linkType, true)}
                             </Badge>
                           ) : (
                             <Badge variant="outline" className="text-[9px] py-0 px-1.5 h-4 text-slate-500 dark:text-slate-400">
-                              Child
+                              {getDerivedRoleLabel(linkType, false)}
                             </Badge>
                           )}
                         </div>

@@ -3,14 +3,20 @@ import { describe, expect, it } from 'vitest';
 import {
   formatDate,
   formatMoney,
+  formatMonthYear,
   formatNullableMoney,
   formatRelativeTime,
   getAccountName,
   getAccountTypeLabel,
+  getDayShortName,
+  getMonthShortName,
+  getPositionLabel,
+  isSameDay,
   isWithinLastNDays,
   parseCalendarDate,
   toCalendarDate,
-} from './utils';
+  truncatedDescription,
+} from '../utils';
 
 // These cover the calendar-date corruption that shipped for a long time:
 // `toISOString().split('T')[0]` on the write path and `new Date('YYYY-MM-DD')`
@@ -219,3 +225,76 @@ describe('formatRelativeTime', () => {
     expect(formatRelativeTime(ago(5 * MIN).toISOString())).toBe('5 minutes ago');
   });
 });
+
+describe('getPositionLabel (CD-15)', () => {
+  it('defaults to Asset for undefined/empty', () => {
+    expect(getPositionLabel(undefined)).toBe('Asset');
+    expect(getPositionLabel('')).toBe('Asset');
+  });
+
+  it('maps liability and asset', () => {
+    expect(getPositionLabel('liability')).toBe('Liability');
+    expect(getPositionLabel('asset')).toBe('Asset');
+  });
+});
+
+describe('getMonthShortName (CD-15)', () => {
+  it('returns short name for Date instance', () => {
+    expect(getMonthShortName(new Date(2026, 0, 15))).toBe('Jan');
+    expect(getMonthShortName(new Date(2026, 11, 25))).toBe('Dec');
+  });
+
+  it('returns short name for integer month indices (0–11)', () => {
+    expect(getMonthShortName(0)).toBe('Jan');
+    expect(getMonthShortName(6)).toBe('Jul');
+    expect(getMonthShortName(11)).toBe('Dec');
+  });
+
+  it('returns invalid fallback "-" for out-of-range or bad inputs', () => {
+    expect(getMonthShortName(-1)).toBe('-');
+    expect(getMonthShortName(12)).toBe('-');
+    expect(getMonthShortName(1.5)).toBe('-');
+    expect(getMonthShortName('invalid' as any)).toBe('-');
+  });
+});
+
+describe('getDayShortName (CD-15)', () => {
+  it('returns short weekday for Date instance', () => {
+    // 2026-07-25 is a Saturday (day index 6)
+    const sat = new Date(2026, 6, 25);
+    expect(getDayShortName(sat)).toBe('Sat');
+  });
+
+  it('returns short weekday for integer day indices (0–6)', () => {
+    expect(getDayShortName(0)).toBe('Sun');
+    expect(getDayShortName(6)).toBe('Sat');
+  });
+
+  it('returns null for invalid inputs', () => {
+    expect(getDayShortName(-1)).toBeNull();
+    expect(getDayShortName(7)).toBeNull();
+    expect(getDayShortName('invalid' as any)).toBeNull();
+  });
+});
+
+describe('formatMonthYear (CD-15)', () => {
+  it('formats month and 2-digit year correctly in Asia/Kolkata timezone', () => {
+    const d = new Date(2026, 6, 25); // July 2026
+    expect(formatMonthYear(d)).toBe('Jul 26');
+  });
+});
+
+describe('isSameDay (CD-15)', () => {
+  it('returns true for same calendar date', () => {
+    const d1 = new Date(2026, 6, 25, 10, 0);
+    const d2 = new Date(2026, 6, 25, 22, 30);
+    expect(isSameDay(d1, d2)).toBe(true);
+  });
+
+  it('returns false for different calendar dates', () => {
+    const d1 = new Date(2026, 6, 25);
+    const d2 = new Date(2026, 6, 26);
+    expect(isSameDay(d1, d2)).toBe(false);
+  });
+});
+
