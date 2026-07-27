@@ -90,6 +90,7 @@ export function CreateInstrumentDialog({
         isin: isin.trim() || undefined,
         amfiCode: amfiCode.trim() || undefined,
         yahooSymbol: yahooSymbol.trim() || undefined,
+        currency: currency.trim() || undefined,
       });
 
       if (res.success) {

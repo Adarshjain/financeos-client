@@ -268,7 +268,7 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
                   <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
                     {brokerAccounts.map((b) => (
                       <SelectItem key={b.id} value={b.id} className="text-xs">
-                        {b.name} ({b.brokerDetails?.provider || 'Broker'})
+                        {b.name} ({b.provider || 'Broker'})
                       </SelectItem>
                     ))}
                   </SelectContent>

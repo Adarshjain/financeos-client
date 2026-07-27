@@ -378,8 +378,8 @@ export const instrumentsApi = {
     instrumentId: string,
     priceId: string,
     data: { price: number | string },
-  ): Promise<PriceHistoryPoint> {
-    return request<PriceHistoryPoint>(
+  ): Promise<Instrument> {
+    return request<Instrument>(
       `/api/v1/instruments/${instrumentId}/prices/${priceId}`,
       {
         method: 'PUT',
@@ -403,7 +403,7 @@ export const investmentsApi = {
   async listTransactions(
     page = 0,
     size = 50,
-    filters?: { brokerAccountId?: string; instrumentId?: string; type?: string },
+    filters?: { brokerAccountId?: string; instrumentId?: string },
   ): Promise<PagedInvestmentTransactionResponse> {
     const params = new URLSearchParams({
       page: String(page),
@@ -411,7 +411,6 @@ export const investmentsApi = {
     });
     if (filters?.brokerAccountId) params.set('brokerAccountId', filters.brokerAccountId);
     if (filters?.instrumentId) params.set('instrumentId', filters.instrumentId);
-    if (filters?.type) params.set('type', filters.type);
     return request<PagedInvestmentTransactionResponse>(
       `/api/v1/investments/transactions?${params}`,
     );
@@ -551,10 +550,8 @@ export const importsApi = {
 // SIPs API (Phase 5)
 export const sipsApi = {
   async list(): Promise<Sip[]> {
-    const res = await request<Sip[] | { content: Sip[] }>('/api/v1/investments/sips');
-    if (Array.isArray(res)) return res;
-    if (res && Array.isArray(res.content)) return res.content;
-    return [];
+    // Server returns all SIPs as a plain array (unpaged).
+    return request<Sip[]>('/api/v1/investments/sips');
   },
 
   async get(id: string): Promise<Sip> {

@@ -24,7 +24,7 @@ export default async function InvestmentsPage() {
     (transactionsData.content as InvestmentTransactionResponse[]) || [];
   const positions: Position[] = positionsData.positions || [];
   const dividends: Dividend[] = dividendsData.content || [];
-  const sips: Sip[] = Array.isArray(sipsData) ? sipsData : [];
+  const sips: Sip[] = sipsData || [];
   const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
 
   return (

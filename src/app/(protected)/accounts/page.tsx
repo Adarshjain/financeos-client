@@ -426,7 +426,7 @@ export default async function AccountsPage() {
                           {account.name}
                         </div>
                         <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                          {account.brokerDetails?.provider || 'Broker'} {account.brokerDetails?.clientId ? `• ${account.brokerDetails.clientId}` : ''}
+                          {account.provider || 'Broker'} {account.clientId ? `• ${account.clientId}` : ''}
                         </div>
                         {account.description ? (
                           <div className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">
@@ -453,13 +453,13 @@ export default async function AccountsPage() {
                       <div className="flex justify-between items-baseline">
                         <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Portfolio Value</span>
                         <span className="text-lg font-extrabold text-slate-900 dark:text-white tracking-tight tabular-nums">
-                          {formatMoney(account.calculatedBalance ?? account.balance ?? 0)}
+                          {formatMoney(account.balance ?? 0)}
                         </span>
                       </div>
-                      {account.brokerDetails?.cashBalance !== undefined && (
+                      {account.cashBalance !== undefined && (
                         <div className="flex justify-between items-baseline text-xs text-slate-500 dark:text-slate-400">
                           <span>Cash Balance</span>
-                          <span className="tabular-nums font-semibold">{formatMoney(account.brokerDetails.cashBalance)}</span>
+                          <span className="tabular-nums font-semibold">{formatMoney(account.cashBalance)}</span>
                         </div>
                       )}
                     </div>

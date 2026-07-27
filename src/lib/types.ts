@@ -82,6 +82,7 @@ export interface CreateInstrumentRequest {
   isin?: string;
   amfiCode?: string;
   yahooSymbol?: string;
+  currency?: string;
 }
 
 export interface SetPriceRequest {
@@ -111,13 +112,14 @@ export interface CreateInvestmentTransactionRequest {
   notes?: string;
 }
 
+// A trade's broker+instrument are its identity and are NOT editable (the
+// server ignores brokerAccountId/instrumentId on update). To change them,
+// delete + recreate.
 export interface UpdateInvestmentTransactionRequest {
-  brokerAccountId?: string;
-  instrumentId?: string;
-  type?: InvestmentTransactionType;
-  quantity?: string | number;
-  price?: string | number;
-  tradeDate?: string;
+  type: InvestmentTransactionType;
+  quantity: string | number;
+  price: string | number;
+  tradeDate: string;
   charges?: Charges;
   notes?: string;
 }
@@ -125,13 +127,10 @@ export interface UpdateInvestmentTransactionRequest {
 export interface InvestmentTransactionResponse {
   id: string;
   brokerAccountId: string;
-  broker?: {
-    id: string;
-    name: string;
-    provider: string;
-  };
+  brokerName: string;
+  provider: string;
   instrumentId: string;
-  instrument?: {
+  instrument: {
     id: string;
     type: InstrumentType;
     name: string;
@@ -150,6 +149,8 @@ export interface InvestmentTransactionResponse {
   dpCharges?: string;
   otherCharges?: string;
   totalCharges?: string;
+  source?: string;
+  externalRef?: string;
   notes?: string;
   createdAt?: string;
 }
@@ -200,10 +201,13 @@ export interface BrokerSummary {
   currentValue: string;
   unrealized: string;
   realized: string;
+  cashBalance?: string;
+  totalCharges?: string;
 }
 
 export interface InstrumentTypeSummary {
   type: InstrumentType;
+  invested?: string;
   currentValue: string;
   percentage: string;
 }
@@ -240,6 +244,7 @@ export interface Dividend {
   tds?: string;
   exDate?: string;
   payDate: string;
+  source?: string;
   notes?: string;
   createdAt?: string;
 }
@@ -259,16 +264,16 @@ export interface CreateDividendRequest {
   notes?: string;
 }
 
+// A dividend's broker+instrument (and holding) are its identity and are NOT
+// editable (the server ignores holdingId/brokerAccountId/instrumentId on
+// update). To change them, delete + recreate.
 export interface UpdateDividendRequest {
-  holdingId?: string;
-  brokerAccountId?: string;
-  instrumentId?: string;
-  type?: DividendType;
-  amount?: string | number;
+  type: DividendType;
+  amount: string | number;
+  payDate: string;
   perUnit?: string | number;
   tds?: string | number;
   exDate?: string;
-  payDate?: string;
   notes?: string;
 }
 
@@ -424,12 +429,12 @@ export interface CreateSipRequest {
 // Note: a SIP's brokerAccountId/instrumentId are its identity and are NOT editable
 // (the server's UpdateSipRequest does not accept them). To change them, delete + recreate.
 export interface UpdateSipRequest {
-  amount?: number;
-  frequency?: SipFrequency;
+  amount: number;
+  frequency: SipFrequency;
   dayOfMonth?: number;
-  startDate?: string;
+  startDate: string;
   endDate?: string;
-  active?: boolean;
+  active: boolean;
   notes?: string;
 }
 

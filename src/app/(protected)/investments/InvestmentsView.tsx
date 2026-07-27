@@ -79,6 +79,11 @@ export function InvestmentsView({
     return acc?.name || 'Broker';
   };
 
+  const getInstrumentDisplayName = (tx: InvestmentTransactionResponse) => {
+    const { name, symbol } = tx.instrument;
+    return symbol ? `${name} (${symbol})` : name;
+  };
+
   const totalPnlNum = parseNumber(summary?.totalPnl);
   const totalUnrealizedNum = parseNumber(summary?.totalUnrealized);
   const absReturnNum = parseNumber(summary?.absoluteReturnPercent);
@@ -632,31 +637,30 @@ export function InvestmentsView({
                         <Table>
                           <TableHeader>
                             <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
-                              <TableHead className="text-xs font-semibold">Date</TableHead>
-                              <TableHead className="text-xs font-semibold">Broker</TableHead>
-                              <TableHead className="text-xs font-semibold">Type</TableHead>
-                              <TableHead className="text-xs font-semibold">Instrument</TableHead>
-                              <TableHead className="text-right text-xs font-semibold">Qty</TableHead>
-                              <TableHead className="text-right text-xs font-semibold">Price</TableHead>
-                              <TableHead className="text-right text-xs font-semibold">Actions</TableHead>
+                              <TableHead className="text-xs font-semibold whitespace-nowrap">Date</TableHead>
+                              <TableHead className="text-xs font-semibold whitespace-nowrap">Broker</TableHead>
+                              <TableHead className="text-xs font-semibold whitespace-nowrap">Type</TableHead>
+                              <TableHead className="text-xs font-semibold whitespace-nowrap">Instrument</TableHead>
+                              <TableHead className="text-right text-xs font-semibold whitespace-nowrap">Qty</TableHead>
+                              <TableHead className="text-right text-xs font-semibold whitespace-nowrap">Price</TableHead>
+                              <TableHead className="text-right text-xs font-semibold whitespace-nowrap">Actions</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {investmentTransactions.map((tx) => (
-                                <TableRow key={tx.id} className="border-slate-100 dark:border-slate-800/60">
-                                  <TableCell
-                                      className="py-2.5 text-xs text-slate-600 dark:text-slate-400 tabular-nums">
-                                    {formatDate(tx.tradeDate)}
-                                  </TableCell>
-                                  <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400">
-                                    {getAccountName(tx.brokerAccountId)}
-                                  </TableCell>
-                                  <TableCell className="py-2.5">
-                                    {getTypeBadge(tx.type)}
-                                  </TableCell>
-                                  <TableCell className="py-2.5 font-bold text-xs text-slate-900 dark:text-slate-100">
-                                    {tx.instrument?.name || tx.instrument?.symbol || 'Instrument'}
-                                  </TableCell>
+                              <TableRow key={tx.id} className="border-slate-100 dark:border-slate-800/60">
+                                <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400 tabular-nums whitespace-nowrap">
+                                  {formatDate(tx.tradeDate)}
+                                </TableCell>
+                                <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap">
+                                  {tx.brokerName}
+                                </TableCell>
+                                <TableCell className="py-2.5">
+                                  {getTypeBadge(tx.type)}
+                                </TableCell>
+                                <TableCell className="py-2.5 font-bold text-xs text-slate-900 dark:text-slate-100">
+                                  {getInstrumentDisplayName(tx)}
+                                </TableCell>
                                   <TableCell className="py-2.5 text-right font-semibold text-xs tabular-nums">
                                     {tx.quantity}
                                   </TableCell>
@@ -664,7 +668,7 @@ export function InvestmentsView({
                                     {formatMoney(tx.price)}
                                   </TableCell>
                                   <TableCell className="py-2.5 text-right">
-                                    <EditTransactionDialog transaction={tx} brokerAccounts={brokerAccounts}/>
+                                    <EditTransactionDialog transaction={tx}/>
                                   </TableCell>
                                 </TableRow>
                             ))}
