@@ -56,8 +56,7 @@ const SOURCE_OPTIONS = [
 const ACCOUNT_TYPE_OPTIONS = [
   { label: 'Bank Account', value: 'bank_account' },
   { label: 'Credit Card', value: 'credit_card' },
-  { label: 'Stock', value: 'stock' },
-  { label: 'Mutual Fund', value: 'mutual_fund' },
+  { label: 'Broker', value: 'broker' },
   { label: 'Generic', value: 'generic' },
 ];
 

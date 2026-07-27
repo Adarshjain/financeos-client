@@ -48,6 +48,8 @@ export function DeleteAccount({ account }: DeleteAccountProps) {
   return (
     <>
       <button
+        type="button"
+        suppressHydrationWarning
         onClick={(e) => {
           e.preventDefault();
           setOpen(true);

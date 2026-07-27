@@ -18,7 +18,7 @@ import {
  *
  * `shortLabel` exists because the mobile labels are deliberately different, not
  * accidentally divergent: the bottom bar is horizontally cramped, so /dashboard
- * reads "Home" and /investments reads "Stocks & MF" there while the sidebar uses
+ * reads "Home" and /investments reads "Investments" there while the sidebar uses
  * the full names. Keeping both in one place preserves that intent while removing
  * the duplication.
  */
@@ -55,7 +55,7 @@ export const NAV: Record<string, NavItem> = {
   investments: {
     href: '/investments',
     label: 'Investments',
-    shortLabel: 'Stocks & MF',
+    shortLabel: 'Investments',
     icon: <TrendingUp className="h-5 w-5" />,
   },
   reports: {

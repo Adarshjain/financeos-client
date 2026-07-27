@@ -67,7 +67,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
   const [result, setResult] = useState<FileIngestionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Filter out stock/mutual fund accounts if they aren't standard bank/credit cards (optional, but keep it open)
+  // Filter accounts to standard bank/credit cards for transaction statement upload
   const uploadableAccounts = accounts.filter(
     (acc) => acc.type === 'bank_account' || acc.type === 'credit_card',
   );

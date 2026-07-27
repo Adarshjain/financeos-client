@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import '@/test/next-mocks';
+
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createRule, deleteRule, updateRule, verifyRule } from '@/actions/rules';
 import { rulesApi } from '@/lib/apiClient';

@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import '@/test/next-mocks';
+
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   accountsApi,
@@ -215,16 +215,25 @@ describe('apiClient (CD-14 & API wrapper coverage)', () => {
   });
 
   describe('investmentsApi', () => {
-    it('listTransactions, createTransaction, getPositions', async () => {
+    it('listTransactions, createTransaction, updateTransaction, deleteTransaction, getPositions, getSummary', async () => {
       const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, { content: [] }));
 
       expect(await investmentsApi.listTransactions()).toEqual({ content: [] });
 
       fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 201, { id: 'i1' }));
-      expect(await investmentsApi.createTransaction({ securityName: 'Stock' } as any)).toEqual({ id: 'i1' });
+      expect(await investmentsApi.createTransaction({ brokerAccountId: 'b1', instrumentId: 'inst1', type: 'buy', quantity: 10, price: 100, tradeDate: '2026-07-25' })).toEqual({ id: 'i1' });
+
+      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'i1' }));
+      expect(await investmentsApi.updateTransaction('i1', { quantity: 12 })).toEqual({ id: 'i1' });
+
+      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 204, ''));
+      await investmentsApi.deleteTransaction('i1');
 
       fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { positions: [] }));
       expect(await investmentsApi.getPositions()).toEqual({ positions: [] });
+
+      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { totalInvested: '0' }));
+      expect(await investmentsApi.getSummary()).toEqual({ totalInvested: '0' });
     });
   });
 
