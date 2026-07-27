@@ -359,7 +359,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                 name="provider"
                 list="broker-providers"
                 placeholder="Select or type provider (e.g. Zerodha, Groww)"
-                defaultValue={brokerAccount?.brokerDetails?.provider || brokerAccount?.provider}
+                defaultValue={brokerAccount?.provider}
                 required
                 className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
               />
@@ -372,7 +372,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                   id="clientId"
                   name="clientId"
                   placeholder="e.g. AB1234"
-                  defaultValue={brokerAccount?.brokerDetails?.clientId || brokerAccount?.clientId}
+                  defaultValue={brokerAccount?.clientId}
                   className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                 />
               </div>
@@ -387,7 +387,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                     type="number"
                     step="0.01"
                     placeholder="0.00"
-                    defaultValue={brokerAccount?.brokerDetails?.cashBalance ?? brokerAccount?.cashBalance ?? 0}
+                    defaultValue={brokerAccount?.cashBalance ?? 0}
                     className="pl-6 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                   />
                 </div>

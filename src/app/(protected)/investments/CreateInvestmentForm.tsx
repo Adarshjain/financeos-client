@@ -255,7 +255,7 @@ export function CreateInvestmentForm({ brokerAccounts }: CreateInvestmentFormPro
               <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
                 {brokerAccounts.map((b) => (
                   <SelectItem key={b.id} value={b.id} className="text-xs font-medium">
-                    {b.name} ({b.brokerDetails?.provider || b.provider || 'Broker'})
+                    {b.name} ({b.provider || 'Broker'})
                   </SelectItem>
                 ))}
               </SelectContent>

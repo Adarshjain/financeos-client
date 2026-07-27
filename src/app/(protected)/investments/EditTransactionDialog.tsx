@@ -1,7 +1,7 @@
 'use client';
 
 import { Edit, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { deleteInvestmentTransaction, updateInvestmentTransaction } from '@/actions/investments';
@@ -24,21 +24,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Broker } from '@/lib/account.types';
-import { Charges, Instrument, InvestmentTransactionResponse, InvestmentTransactionType } from '@/lib/types';
-
-import { InstrumentTypeahead } from './InstrumentTypeahead';
+import { Charges, InvestmentTransactionResponse, InvestmentTransactionType } from '@/lib/types';
 
 interface EditTransactionDialogProps {
   transaction: InvestmentTransactionResponse;
-  brokerAccounts: Broker[];
   trigger?: React.ReactNode;
   onSuccess?: () => void;
 }
 
 export function EditTransactionDialog({
   transaction,
-  brokerAccounts,
   trigger,
   onSuccess,
 }: EditTransactionDialogProps) {
@@ -46,18 +41,6 @@ export function EditTransactionDialog({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [brokerAccountId, setBrokerAccountId] = useState(transaction.brokerAccountId);
-  const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(
-    transaction.instrument
-      ? {
-          id: transaction.instrumentId,
-          name: transaction.instrument.name,
-          symbol: transaction.instrument.symbol,
-          type: transaction.instrument.type,
-          currency: 'INR',
-        }
-      : null
-  );
   const [type, setType] = useState<InvestmentTransactionType>(transaction.type);
   const [quantity, setQuantity] = useState(transaction.quantity);
   const [price, setPrice] = useState(transaction.price);
@@ -73,6 +56,24 @@ export function EditTransactionDialog({
   const [gst, setGst] = useState(transaction.gst || '');
   const [dpCharges, setDpCharges] = useState(transaction.dpCharges || '');
   const [otherCharges, setOtherCharges] = useState(transaction.otherCharges || '');
+
+  useEffect(() => {
+    if (open) {
+      setType(transaction.type);
+      setQuantity(transaction.quantity);
+      setPrice(transaction.price);
+      setTradeDate(transaction.tradeDate?.split('T')[0] || '');
+      setNotes(transaction.notes || '');
+      setBrokerage(transaction.brokerage || '');
+      setStt(transaction.stt || '');
+      setExchangeTxnCharges(transaction.exchangeTxnCharges || '');
+      setSebiCharges(transaction.sebiCharges || '');
+      setStampDuty(transaction.stampDuty || '');
+      setGst(transaction.gst || '');
+      setDpCharges(transaction.dpCharges || '');
+      setOtherCharges(transaction.otherCharges || '');
+    }
+  }, [open, transaction]);
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this trade transaction?')) return;
@@ -109,8 +110,6 @@ export function EditTransactionDialog({
 
     try {
       const res = await updateInvestmentTransaction(transaction.id, {
-        brokerAccountId,
-        instrumentId: selectedInstrument?.id || transaction.instrumentId,
         type,
         quantity: Number(quantity),
         price: Number(price),
@@ -133,7 +132,7 @@ export function EditTransactionDialog({
     }
   };
 
-  const instrumentName = selectedInstrument?.name || transaction.instrument?.name || 'Instrument';
+  const instrumentName = transaction.instrument.name;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -166,28 +165,20 @@ export function EditTransactionDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
+          {/* Broker + Instrument are the trade's identity and can't be changed on edit. */}
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Broker Account</Label>
-            <Select value={brokerAccountId} onValueChange={setBrokerAccountId}>
-              <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
-                <SelectValue placeholder="Select broker..." />
-              </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                {brokerAccounts.map((b) => (
-                  <SelectItem key={b.id} value={b.id} className="text-xs">
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
+              {transaction.brokerName} {transaction.provider ? `(${transaction.provider})` : ''}
+            </div>
           </div>
 
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Instrument</Label>
-            <InstrumentTypeahead
-              selectedInstrument={selectedInstrument}
-              onSelect={(inst) => setSelectedInstrument(inst)}
-            />
+            <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
+              {transaction.instrument.name}
+              {transaction.instrument.symbol ? ` (${transaction.instrument.symbol})` : ''}
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

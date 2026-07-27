@@ -289,7 +289,7 @@ export async function updateInstrumentPrice(
   instrumentId: string,
   priceId: string,
   price: number | string
-): Promise<ApiResult<PriceHistoryPoint>> {
+): Promise<ApiResult<Instrument>> {
   return apiResult('Failed to update price point', async () => {
     const res = await instrumentsApi.updatePrice(instrumentId, priceId, { price });
     revalidatePath('/investments');

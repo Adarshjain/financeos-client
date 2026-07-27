@@ -35,12 +35,6 @@ export type CreditCardRequest = AccountRequestBase & {
   statementPassword?: string;
 }
 
-export interface BrokerDetails {
-  provider: string;
-  clientId?: string;
-  cashBalance?: number;
-}
-
 export type BrokerRequest = AccountRequestBase & {
   type: AccountType.BROKER;
   provider: string;
@@ -97,11 +91,9 @@ export type CreditCard = AccountBase & {
 
 export type Broker = AccountBase & {
   type: AccountType.BROKER;
-  brokerDetails?: BrokerDetails;
   provider?: string;
   clientId?: string;
   cashBalance?: number;
-  calculatedBalance?: number;
 }
 
 export type GenericAccount = AccountBase & {
