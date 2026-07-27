@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import '@/test/next-mocks';
+
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { handleGoogleCallbackAction, login, logout, signup, startGoogleSSO } from '@/actions/auth';
 import { authApi } from '@/lib/apiClient';

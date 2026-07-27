@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import '@/test/next-mocks';
+
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createReport, deleteReport, runAdHocReport, runSavedReport, updateReport } from '@/actions/reports';
 import { reportsApi } from '@/lib/apiClient';

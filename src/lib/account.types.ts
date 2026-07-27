@@ -35,23 +35,24 @@ export type CreditCardRequest = AccountRequestBase & {
   statementPassword?: string;
 }
 
-export type StockRequest = AccountRequestBase & {
-  type: AccountType.STOCK;
-  instrumentCode: string;
-  lastTradedPrice?: string;
+export interface BrokerDetails {
+  provider: string;
+  clientId?: string;
+  cashBalance?: number;
 }
 
-export type MutualFundRequest = AccountRequestBase & {
-  type: AccountType.MUTUAL_FUND;
-  instrumentCode: string;
-  lastTradedPrice?: string;
+export type BrokerRequest = AccountRequestBase & {
+  type: AccountType.BROKER;
+  provider: string;
+  clientId?: string;
+  cashBalance?: number;
 }
 
 export type GenericAccountRequest = AccountRequestBase & {
   type: AccountType.GENERIC;
 }
 
-export type AccountRequest = BankAccountRequest | CreditCardRequest | StockRequest | MutualFundRequest | GenericAccountRequest;
+export type AccountRequest = BankAccountRequest | CreditCardRequest | BrokerRequest | GenericAccountRequest;
 
 
 /**
@@ -94,23 +95,20 @@ export type CreditCard = AccountBase & {
   lastStatementDate?: string | null;
 }
 
-export type Stock = AccountBase & {
-  type: AccountType.STOCK;
-  instrumentCode: string;
-  lastTradedPrice?: string;
-}
-
-export type MutualFund = AccountBase & {
-  type: AccountType.MUTUAL_FUND;
-  instrumentCode: string;
-  lastTradedPrice?: string;
+export type Broker = AccountBase & {
+  type: AccountType.BROKER;
+  brokerDetails?: BrokerDetails;
+  provider?: string;
+  clientId?: string;
+  cashBalance?: number;
+  calculatedBalance?: number;
 }
 
 export type GenericAccount = AccountBase & {
   type: AccountType.GENERIC;
 }
 
-export type Account = BankAccount | CreditCard | Stock | MutualFund | GenericAccount;
+export type Account = BankAccount | CreditCard | Broker | GenericAccount;
 
 /**
  * Type guard for filtering a mixed `Account[]` down to one variant.

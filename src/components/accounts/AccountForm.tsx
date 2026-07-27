@@ -25,6 +25,19 @@ const financialPositions = [
   { value: 'liability', label: 'Liability' },
 ];
 
+const COMMON_BROKERS = [
+  'Zerodha',
+  'Groww',
+  'SBI MF',
+  'Upstox',
+  'Angel One',
+  'ICICI Direct',
+  'HDFC Securities',
+  'Kuvera',
+  'Coin',
+  'Paytm Money',
+];
+
 interface AccountFormProps {
   account?: Account;
   onSuccess?: () => void;
@@ -51,11 +64,9 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     }
   }, [account]);
 
-  // Narrowed views of the account under edit. Now that `Account` is a real
-  // discriminated union these replace the `'field' in account` probes that the
-  // old undiscriminable union forced onto every single field below.
   const bankAccount = account?.type === AccountType.BANK_ACCOUNT ? account : undefined;
   const creditCard = account?.type === AccountType.CREDIT_CARD ? account : undefined;
+  const brokerAccount = account?.type === AccountType.BROKER ? account : undefined;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -64,14 +75,12 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     const formData = new FormData(form);
 
     const name = formData.get('name') as string;
-    const financialPosition = formData.get('financialPosition') as FinancialPosition;
+    const financialPosition = (formData.get('financialPosition') as FinancialPosition) || 'asset';
     const description = formData.get('description') as string | undefined;
     const ingestFromDateVal = formData.get('ingestFromDate') as string | null;
     const ingestFromDate = ingestFromDateVal ? ingestFromDateVal : null;
 
     let data: AccountRequest | undefined;
-    // Deliberately not `optionalString`: that trims, and a statement password
-    // may legitimately contain leading or trailing whitespace.
     const statementPasswordVal = formData.get('statementPassword') as string;
 
     if (accountType === AccountType.BANK_ACCOUNT) {
@@ -82,30 +91,18 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
         description,
         ingestFromDate,
         type: AccountType.BANK_ACCOUNT,
-        // Intentionally NOT optionalString: last4 is optional for a bank
-        // account, so a blank field must send '' to clear a previously-saved
-        // value. Omitting the key would leave the old value in place on PUT.
-        last4: formData.get('last4') as string ?? undefined,
+        last4: (formData.get('last4') as string) ?? undefined,
         openingBalance: optionalDecimal(formData, 'openingBalance'),
         ...(statementPasswordVal ? { statementPassword: statementPasswordVal } : {}),
       };
     }
 
     if (accountType === AccountType.CREDIT_CARD) {
-      // creditLimit is money (paise matter); the other two are whole-number day
-      // counts per the API contract.
       const last4 = optionalString(formData, 'last4');
       const creditLimit = optionalDecimal(formData, 'creditLimit');
       const paymentDueDay = optionalInteger(formData, 'paymentDueDay');
       const gracePeriodDays = optionalInteger(formData, 'gracePeriodDays');
 
-      // All four are required by the API (CreditCardDetailsRequest.required),
-      // but none of the inputs carry a `required` attribute. Validate here
-      // rather than posting an incomplete payload for an opaque 400 — which is
-      // what used to happen, since a blank numeric field became NaN and
-      // serialised to `null`.
-      // Branch on the explicit checks rather than `missing.length` so the
-      // narrowing carries into the payload below.
       if (
         last4 === undefined ||
         creditLimit === undefined ||
@@ -148,6 +145,29 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
       };
     }
 
+    if (accountType === AccountType.BROKER) {
+      const provider = optionalString(formData, 'provider');
+      if (!provider) {
+        toast.error('Broker provider is required.');
+        setIsSubmitting(false);
+        return;
+      }
+      const clientId = optionalString(formData, 'clientId');
+      const cashBalance = optionalDecimal(formData, 'cashBalance') ?? 0;
+
+      data = {
+        name,
+        excludeFromNetAsset,
+        financialPosition,
+        description,
+        ingestFromDate,
+        type: AccountType.BROKER,
+        provider,
+        clientId,
+        cashBalance,
+      };
+    }
+
     if (accountType === AccountType.GENERIC) {
       data = {
         name,
@@ -160,10 +180,6 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     }
 
     if (!data) {
-      // Reachable: the type picker offers only bank/card/generic, but
-      // `accountType` is seeded from `account.type`, so editing an existing
-      // stock or mutual-fund account lands here. Previously this returned
-      // silently and the Save button appeared to do nothing.
       toast.error(
         `Editing ${getAccountTypeLabel(accountType)} accounts isn't supported yet.`,
       );
@@ -193,6 +209,12 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
       onSubmit={handleSubmit}
       className="flex flex-col h-full max-h-screen sm:max-h-[85vh] bg-slate-50/40 dark:bg-slate-950/20 overflow-hidden"
     >
+      <datalist id="broker-providers">
+        {COMMON_BROKERS.map((b) => (
+          <option key={b} value={b} />
+        ))}
+      </datalist>
+
       {/* Header */}
       <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-950">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -200,6 +222,8 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             <Landmark className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           ) : accountType === AccountType.CREDIT_CARD ? (
             <CreditCard className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+          ) : accountType === AccountType.BROKER ? (
+            <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           ) : (
             <Wallet className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           )}
@@ -215,58 +239,73 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             <Shield className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
             Account Type
           </Label>
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button
               type="button"
               disabled={isUpdateMode}
               onClick={() => setAccountType(AccountType.BANK_ACCOUNT)}
               className={cn(
-                "flex-1 flex flex-col items-center gap-2 py-3 px-3 rounded-xl border-2 text-center transition-all shadow-sm",
+                "flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-xl border-2 text-center transition-all shadow-sm",
                 accountType === AccountType.BANK_ACCOUNT
                   ? "bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-500 text-emerald-700 dark:text-emerald-400 font-semibold"
                   : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850",
                 isUpdateMode && "opacity-60 cursor-not-allowed border-dashed"
               )}
             >
-              <Landmark className="w-5 h-5" />
-              <span className="text-xs">Bank Account</span>
+              <Landmark className="w-4 h-4" />
+              <span className="text-xs">Bank</span>
             </button>
             <button
               type="button"
               disabled={isUpdateMode}
               onClick={() => setAccountType(AccountType.CREDIT_CARD)}
               className={cn(
-                "flex-1 flex flex-col items-center gap-2 py-3 px-3 rounded-xl border-2 text-center transition-all shadow-sm",
+                "flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-xl border-2 text-center transition-all shadow-sm",
                 accountType === AccountType.CREDIT_CARD
                   ? "bg-amber-50/60 dark:bg-amber-950/20 border-amber-500 text-amber-700 dark:text-amber-400 font-semibold"
                   : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850",
                 isUpdateMode && "opacity-60 cursor-not-allowed border-dashed"
               )}
             >
-              <CreditCard className="w-5 h-5" />
+              <CreditCard className="w-4 h-4" />
               <span className="text-xs">Credit Card</span>
+            </button>
+            <button
+              type="button"
+              disabled={isUpdateMode}
+              onClick={() => setAccountType(AccountType.BROKER)}
+              className={cn(
+                "flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-xl border-2 text-center transition-all shadow-sm",
+                accountType === AccountType.BROKER
+                  ? "bg-blue-50/60 dark:bg-blue-950/20 border-blue-500 text-blue-700 dark:text-blue-400 font-semibold"
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850",
+                isUpdateMode && "opacity-60 cursor-not-allowed border-dashed"
+              )}
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span className="text-xs">Broker</span>
             </button>
             <button
               type="button"
               disabled={isUpdateMode}
               onClick={() => setAccountType(AccountType.GENERIC)}
               className={cn(
-                "flex-1 flex flex-col items-center gap-2 py-3 px-3 rounded-xl border-2 text-center transition-all shadow-sm",
+                "flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-xl border-2 text-center transition-all shadow-sm",
                 accountType === AccountType.GENERIC
                   ? "bg-purple-50/60 dark:bg-purple-950/20 border-purple-500 text-purple-700 dark:text-purple-400 font-semibold"
                   : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850",
                 isUpdateMode && "opacity-60 cursor-not-allowed border-dashed"
               )}
             >
-              <Wallet className="w-5 h-5" />
-              <span className="text-xs">Wallet / Cash</span>
+              <Wallet className="w-4 h-4" />
+              <span className="text-xs">Wallet/Cash</span>
             </button>
           </div>
         </div>
 
         {/* Card 1: General Info */}
         <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-4">
-          <div className="flex items-center gap-1.5 border-b border-slate-55 dark:border-slate-800/40 pb-2">
+          <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/40 pb-2">
             <FileText className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
             <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">General Information</h3>
           </div>
@@ -276,7 +315,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             <Input
               id="name"
               name="name"
-              placeholder="e.g., HDFC Savings"
+              placeholder={accountType === AccountType.BROKER ? "e.g., Zerodha Demat" : "e.g., HDFC Savings"}
               defaultValue={account?.name}
               required
               className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
@@ -288,7 +327,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             <Input
               id="description"
               name="description"
-              placeholder="e.g., Primary Salary Account"
+              placeholder="e.g., Primary Broking & Mutual Fund Account"
               defaultValue={account?.description}
               className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
             />
@@ -303,12 +342,61 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
               <h3 className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider">Account Information</h3>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Generic accounts track cash, petty cash, manual wallets, or custom assets/liabilities without requiring bank statement password rules or credit limit settings.
+              Generic accounts track cash, petty cash, manual wallets, or custom assets/liabilities.
             </p>
+          </div>
+        ) : accountType === AccountType.BROKER ? (
+          <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-4">
+            <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/40 pb-2">
+              <TrendingUp className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <h3 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Broker Details</h3>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="provider" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Broker Provider</Label>
+              <Input
+                id="provider"
+                name="provider"
+                list="broker-providers"
+                placeholder="Select or type provider (e.g. Zerodha, Groww)"
+                defaultValue={brokerAccount?.brokerDetails?.provider || brokerAccount?.provider}
+                required
+                className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="clientId" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Client ID (Optional)</Label>
+                <Input
+                  id="clientId"
+                  name="clientId"
+                  placeholder="e.g. AB1234"
+                  defaultValue={brokerAccount?.brokerDetails?.clientId || brokerAccount?.clientId}
+                  className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="cashBalance" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Uninvested Cash Balance</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">₹</span>
+                  <Input
+                    id="cashBalance"
+                    name="cashBalance"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    defaultValue={brokerAccount?.brokerDetails?.cashBalance ?? brokerAccount?.cashBalance ?? 0}
+                    className="pl-6 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-4">
-            <div className="flex items-center gap-1.5 border-b border-slate-55 dark:border-slate-800/40 pb-2">
+            <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/40 pb-2">
               {accountType === AccountType.BANK_ACCOUNT ? (
                 <Landmark className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
               ) : (
@@ -466,7 +554,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
 
         {/* Card 3: Configurations & Sync */}
         <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-4">
-          <div className="flex items-center gap-1.5 border-b border-slate-55 dark:border-slate-800/40 pb-2">
+          <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/40 pb-2">
             <TrendingUp className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
             <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Configurations & Sync</h3>
           </div>
@@ -508,9 +596,6 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                 className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs h-9 [color-scheme:light] dark:[color-scheme:dark]"
               />
             </div>
-          </div>
-          <div className="text-[10px] text-slate-400 dark:text-slate-500 -mt-2 leading-normal">
-            Gmail ingestion watermark date. Empty to ingest everything.
           </div>
 
           <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800/40 my-1"></div>

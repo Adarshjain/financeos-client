@@ -5,12 +5,12 @@ import type { Page } from '@/lib/pagination';
 export enum AccountType {
   BANK_ACCOUNT = 'bank_account',
   CREDIT_CARD = 'credit_card',
-  STOCK = 'stock',
-  MUTUAL_FUND = 'mutual_fund',
+  BROKER = 'broker',
   GENERIC = 'generic',
 }
 export type FinancialPosition = 'asset' | 'liability';
 export type InvestmentTransactionType = 'buy' | 'sell';
+export type InstrumentType = 'stock' | 'mutual_fund' | 'etf';
 
 // User & Auth
 export interface SignupRequest {
@@ -36,45 +36,401 @@ export interface UserResponse {
 }
 
 
-// Investments
+// Investments & Instruments
+export type PriceSource = 'AMFI' | 'YAHOO' | 'MANUAL';
+
+export interface Instrument {
+  id: string;
+  type: InstrumentType;
+  name: string;
+  symbol?: string;
+  exchange?: string;
+  isin?: string;
+  amfiCode?: string;
+  yahooSymbol?: string;
+  currency: string;
+  lastPrice?: string;
+  lastPriceAsOf?: string;
+  lastPriceSource?: PriceSource;
+}
+
+export interface PriceHistoryPoint {
+  id?: string;
+  asOf: string;
+  close: string;
+  source: string;
+}
+
+export interface PriceRefreshFailure {
+  instrumentId: string;
+  instrumentName?: string;
+  reason: string;
+}
+
+export interface PriceRefreshResult {
+  refreshed: number;
+  skipped: number;
+  failed: PriceRefreshFailure[];
+  asOf: string;
+}
+
+export interface CreateInstrumentRequest {
+  type: InstrumentType;
+  name: string;
+  symbol?: string;
+  exchange?: string;
+  isin?: string;
+  amfiCode?: string;
+  yahooSymbol?: string;
+}
+
+export interface SetPriceRequest {
+  price: string | number;
+  asOf?: string;
+}
+
+export interface Charges {
+  brokerage?: number | string;
+  stt?: number | string;
+  exchangeTxnCharges?: number | string;
+  sebiCharges?: number | string;
+  stampDuty?: number | string;
+  gst?: number | string;
+  dpCharges?: number | string;
+  otherCharges?: number | string;
+}
+
 export interface CreateInvestmentTransactionRequest {
-  accountId: string;
+  brokerAccountId: string;
+  instrumentId: string;
   type: InvestmentTransactionType;
-  quantity: string;
-  price: string;
-  date: string;
-  metadata?: Record<string, unknown>;
+  quantity: string | number;
+  price: string | number;
+  tradeDate: string;
+  charges?: Charges;
+  notes?: string;
+}
+
+export interface UpdateInvestmentTransactionRequest {
+  brokerAccountId?: string;
+  instrumentId?: string;
+  type?: InvestmentTransactionType;
+  quantity?: string | number;
+  price?: string | number;
+  tradeDate?: string;
+  charges?: Charges;
+  notes?: string;
 }
 
 export interface InvestmentTransactionResponse {
   id: string;
-  accountId: string;
+  brokerAccountId: string;
+  broker?: {
+    id: string;
+    name: string;
+    provider: string;
+  };
+  instrumentId: string;
+  instrument?: {
+    id: string;
+    type: InstrumentType;
+    name: string;
+    symbol?: string;
+  };
   type: InvestmentTransactionType;
   quantity: string;
   price: string;
-  date: string;
-  metadata?: Record<string, unknown>;
-  createdAt: string;
+  tradeDate: string;
+  brokerage?: string;
+  stt?: string;
+  exchangeTxnCharges?: string;
+  sebiCharges?: string;
+  stampDuty?: string;
+  gst?: string;
+  dpCharges?: string;
+  otherCharges?: string;
+  totalCharges?: string;
+  notes?: string;
+  createdAt?: string;
 }
 
 export type PagedInvestmentTransactionResponse =
   Page<InvestmentTransactionResponse>;
 
 export interface Position {
-  accountId: string;
-  instrumentCode: string;
-  accountName: string;
+  holdingId: string;
+  brokerAccountId: string;
+  brokerName: string;
+  provider: string;
+  instrument: {
+    id: string;
+    type: InstrumentType;
+    name: string;
+    symbol?: string;
+    isin?: string;
+    amfiCode?: string;
+    yahooSymbol?: string;
+    lastPriceSource?: PriceSource;
+  };
   quantity: string;
-  averageCost: string;
-  totalCost: string;
-  lastTradedPrice: string;
-  currentValue: string;
-  unrealizedGainLoss: string;
-  unrealizedGainLossPercent: string;
+  avgCost: string;
+  invested: string;
+  lastPrice?: string;
+  lastPriceAsOf?: string;
+  lastPriceSource?: PriceSource;
+  currentValue?: string;
+  unrealizedGainLoss?: string;
+  unrealizedGainLossPercent?: string;
+  realizedGainLoss: string;
+  totalCharges: string;
+  dividends?: string;
+  xirr?: string;
+  absoluteReturnPercent?: string;
 }
 
 export interface InvestmentPositionResponse {
   positions: Position[];
+}
+
+export interface BrokerSummary {
+  brokerAccountId: string;
+  brokerName: string;
+  provider: string;
+  invested: string;
+  currentValue: string;
+  unrealized: string;
+  realized: string;
+}
+
+export interface InstrumentTypeSummary {
+  type: InstrumentType;
+  currentValue: string;
+  percentage: string;
+}
+
+export interface InvestmentSummary {
+  totalInvested: string;
+  totalCurrentValue: string;
+  totalUnrealized: string;
+  totalUnrealizedPercent: string;
+  totalRealized: string;
+  totalDividends: string;
+  totalCharges: string;
+  totalPnl: string;
+  xirr?: string;
+  absoluteReturnPercent?: string;
+  byBroker: BrokerSummary[];
+  byInstrumentType: InstrumentTypeSummary[];
+}
+
+// Dividends
+export type DividendType = 'dividend' | 'interest' | 'other';
+
+export interface Dividend {
+  id: string;
+  holdingId?: string;
+  brokerAccountId: string;
+  instrumentId: string;
+  brokerName?: string;
+  instrumentName?: string;
+  symbol?: string;
+  type: DividendType;
+  amount: string;
+  perUnit?: string;
+  tds?: string;
+  exDate?: string;
+  payDate: string;
+  notes?: string;
+  createdAt?: string;
+}
+
+export type PagedDividendResponse = Page<Dividend>;
+
+export interface CreateDividendRequest {
+  holdingId?: string;
+  brokerAccountId: string;
+  instrumentId: string;
+  type: DividendType;
+  amount: string | number;
+  perUnit?: string | number;
+  tds?: string | number;
+  exDate?: string;
+  payDate: string;
+  notes?: string;
+}
+
+export interface UpdateDividendRequest {
+  holdingId?: string;
+  brokerAccountId?: string;
+  instrumentId?: string;
+  type?: DividendType;
+  amount?: string | number;
+  perUnit?: string | number;
+  tds?: string | number;
+  exDate?: string;
+  payDate?: string;
+  notes?: string;
+}
+
+// Corporate Actions
+export type CorporateActionType = 'split' | 'bonus';
+
+export interface CorporateAction {
+  id: string;
+  instrumentId: string;
+  type: CorporateActionType;
+  ratioFrom: number;
+  ratioTo: number;
+  exDate: string;
+  notes?: string;
+  createdAt?: string;
+}
+
+export interface CreateCorporateActionRequest {
+  type: CorporateActionType;
+  ratioFrom: number;
+  ratioTo: number;
+  exDate: string;
+  notes?: string;
+}
+
+export interface UpdateCorporateActionRequest {
+  type?: CorporateActionType;
+  ratioFrom?: number;
+  ratioTo?: number;
+  exDate?: string;
+  notes?: string;
+}
+
+// Imports (Phase 4a / 4b / 4c)
+export type ImportSource = 'zerodha_tradebook' | 'mf_cas' | 'groww';
+export type ImportMatchStatus = 'matched' | 'unmatched';
+
+export interface ParsedImportRow {
+  rowIndex?: number;
+  kind: 'trade' | 'dividend';
+  type?: InvestmentTransactionType;
+  parsedSymbol?: string;
+  parsedIsin?: string;
+  parsedName?: string;
+  exchange?: string;
+  quantity?: string | number;
+  price?: string | number;
+  amount?: string | number;
+  tradeDate: string;
+  charges?: Charges;
+  externalRef?: string;
+  rawData?: Record<string, any>;
+  error?: string;
+}
+
+export interface ImportRow {
+  rowIndex: number;
+  parsedRow: ParsedImportRow;
+  matchStatus: ImportMatchStatus;
+  matchedInstrument?: {
+    id: string;
+    name: string;
+    symbol?: string;
+    type?: InstrumentType;
+    exchange?: string;
+    isin?: string;
+  };
+  duplicate: boolean;
+}
+
+export interface ImportSummary {
+  total: number;
+  matched: number;
+  unmatched: number;
+  duplicates: number;
+  errors: number;
+  note?: string;
+}
+
+export interface ImportPreview {
+  rows: ImportRow[];
+  summary: ImportSummary;
+}
+
+export interface ImportCommitRow {
+  rowIndex: number;
+  row: ParsedImportRow;
+  instrumentId?: string;
+  newInstrument?: CreateInstrumentRequest;
+  skip?: boolean;
+}
+
+export interface ImportCommitRequest {
+  source: ImportSource;
+  brokerAccountId: string;
+  rows: ImportCommitRow[];
+}
+
+export interface ImportCommitFailure {
+  rowIndex: number;
+  reason: string;
+}
+
+export interface ImportCommitResult {
+  committed: number;
+  skipped: number;
+  failed: ImportCommitFailure[];
+}
+
+// SIPs (Phase 5)
+export type SipFrequency = 'weekly' | 'monthly';
+
+export interface SipProgress {
+  expectedInstallments: number;
+  executedInstallments: number;
+  investedSoFar: string | number;
+  unitsAccumulated: string | number;
+  avgCost: string | number;
+  nextDueDate?: string;
+  missedInstallments: number;
+}
+
+export interface Sip {
+  id: string;
+  brokerAccountId: string;
+  brokerName?: string;
+  instrumentId: string;
+  instrumentName?: string;
+  symbol?: string;
+  amount: string | number;
+  frequency: SipFrequency;
+  dayOfMonth?: number;
+  startDate: string;
+  endDate?: string;
+  active: boolean;
+  notes?: string;
+  progress?: SipProgress;
+  createdAt?: string;
+}
+
+export interface CreateSipRequest {
+  brokerAccountId: string;
+  instrumentId: string;
+  amount: number;
+  frequency: SipFrequency;
+  dayOfMonth?: number;
+  startDate: string;
+  endDate?: string;
+  active?: boolean;
+  notes?: string;
+}
+
+// Note: a SIP's brokerAccountId/instrumentId are its identity and are NOT editable
+// (the server's UpdateSipRequest does not accept them). To change them, delete + recreate.
+export interface UpdateSipRequest {
+  amount?: number;
+  frequency?: SipFrequency;
+  dayOfMonth?: number;
+  startDate?: string;
+  endDate?: string;
+  active?: boolean;
+  notes?: string;
 }
 
 // Dashboard

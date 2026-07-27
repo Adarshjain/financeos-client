@@ -81,8 +81,7 @@ export function getAccountTypeLabel(type: string | undefined): string {
   const labels: Record<string, string> = {
     bank_account: 'Bank Account',
     credit_card: 'Credit Card',
-    stock: 'Stock',
-    mutual_fund: 'Mutual Fund',
+    broker: 'Broker',
     generic: 'Generic',
     checking: 'Checking',
     savings: 'Savings',

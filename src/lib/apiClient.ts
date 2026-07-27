@@ -22,8 +22,14 @@ import type { CategoryRule, CreateRuleRequest, PagedRules,UpdateRuleRequest } fr
 import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, CreateTransactionLinkRequest, PagedTransaction, Transaction, TransactionLinkResponse, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 
 import type {
+  CorporateAction,
+  CreateCorporateActionRequest,
+  CreateDividendRequest,
+  CreateInstrumentRequest,
   CreateInvestmentTransactionRequest,
+  CreateSipRequest,
   DashboardSummary,
+  Dividend,
   ErrorResponse,
   FileIngestionResult,
   GmailConnectionResponse,
@@ -31,12 +37,26 @@ import type {
   GmailSenderRequest,
   GmailSenderResponse,
   GoogleAuthStartResponse,
+  ImportCommitRequest,
+  ImportCommitResult,
+  ImportPreview,
+  Instrument,
   InvestmentPositionResponse,
+  InvestmentSummary,
   InvestmentTransactionResponse,
   LoginRequest,
+  PagedDividendResponse,
   PagedInvestmentTransactionResponse,
+  PriceHistoryPoint,
+  PriceRefreshResult,
+  SetPriceRequest,
   SignupRequest,
+  Sip,
   SyncSummary,
+  UpdateCorporateActionRequest,
+  UpdateDividendRequest,
+  UpdateInvestmentTransactionRequest,
+  UpdateSipRequest,
   UserResponse,
 } from './types';
 
@@ -317,16 +337,81 @@ export const transactionsApi = {
   },
 };
 
+// Instruments API
+export const instrumentsApi = {
+  async search(search?: string, type?: string): Promise<Instrument[]> {
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (type) params.set('type', type);
+    const query = params.toString();
+    return request<Instrument[]>(`/api/v1/instruments${query ? `?${query}` : ''}`);
+  },
+
+  async create(data: CreateInstrumentRequest): Promise<Instrument> {
+    return request<Instrument>('/api/v1/instruments', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async setPrice(id: string, data: SetPriceRequest): Promise<Instrument> {
+    return request<Instrument>(`/api/v1/instruments/${id}/price`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async getPriceHistory(
+    id: string,
+    options?: { from?: string; to?: string },
+  ): Promise<PriceHistoryPoint[]> {
+    const params = new URLSearchParams();
+    if (options?.from) params.set('from', options.from);
+    if (options?.to) params.set('to', options.to);
+    const query = params.toString();
+    return request<PriceHistoryPoint[]>(
+      `/api/v1/instruments/${id}/prices${query ? `?${query}` : ''}`,
+    );
+  },
+
+  async updatePrice(
+    instrumentId: string,
+    priceId: string,
+    data: { price: number | string },
+  ): Promise<PriceHistoryPoint> {
+    return request<PriceHistoryPoint>(
+      `/api/v1/instruments/${instrumentId}/prices/${priceId}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      },
+    );
+  },
+
+  async deletePrice(instrumentId: string, priceId: string): Promise<void> {
+    return request<void>(
+      `/api/v1/instruments/${instrumentId}/prices/${priceId}`,
+      {
+        method: 'DELETE',
+      },
+    );
+  },
+};
+
 // Investments API
 export const investmentsApi = {
   async listTransactions(
     page = 0,
     size = 50,
+    filters?: { brokerAccountId?: string; instrumentId?: string; type?: string },
   ): Promise<PagedInvestmentTransactionResponse> {
     const params = new URLSearchParams({
       page: String(page),
       size: String(size),
     });
+    if (filters?.brokerAccountId) params.set('brokerAccountId', filters.brokerAccountId);
+    if (filters?.instrumentId) params.set('instrumentId', filters.instrumentId);
+    if (filters?.type) params.set('type', filters.type);
     return request<PagedInvestmentTransactionResponse>(
       `/api/v1/investments/transactions?${params}`,
     );
@@ -344,8 +429,156 @@ export const investmentsApi = {
     );
   },
 
+  async updateTransaction(
+    id: string,
+    data: UpdateInvestmentTransactionRequest,
+  ): Promise<InvestmentTransactionResponse> {
+    return request<InvestmentTransactionResponse>(
+      `/api/v1/investments/transactions/${id}`,
+      {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      },
+    );
+  },
+
+  async deleteTransaction(id: string): Promise<void> {
+    return request<void>(`/api/v1/investments/transactions/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
   async getPositions(): Promise<InvestmentPositionResponse> {
-    return request<InvestmentPositionResponse>('/api/v1/investments/position');
+    return request<InvestmentPositionResponse>('/api/v1/investments/positions');
+  },
+
+  async getSummary(): Promise<InvestmentSummary> {
+    return request<InvestmentSummary>('/api/v1/investments/summary');
+  },
+
+  async refreshPrices(instrumentId?: string): Promise<PriceRefreshResult> {
+    const query = instrumentId ? `?instrumentId=${encodeURIComponent(instrumentId)}` : '';
+    return request<PriceRefreshResult>(`/api/v1/investments/prices/refresh${query}`, {
+      method: 'POST',
+    });
+  },
+};
+
+// Dividends API
+export const dividendsApi = {
+  async list(filters?: {
+    holdingId?: string;
+    brokerAccountId?: string;
+    instrumentId?: string;
+    page?: number;
+    size?: number;
+  }): Promise<PagedDividendResponse> {
+    const params = new URLSearchParams({
+      page: String(filters?.page ?? 0),
+      size: String(filters?.size ?? 100),
+    });
+    if (filters?.holdingId) params.set('holdingId', filters.holdingId);
+    if (filters?.brokerAccountId) params.set('brokerAccountId', filters.brokerAccountId);
+    if (filters?.instrumentId) params.set('instrumentId', filters.instrumentId);
+    return request<PagedDividendResponse>(`/api/v1/investments/dividends?${params}`);
+  },
+
+  async create(data: CreateDividendRequest): Promise<Dividend> {
+    return request<Dividend>('/api/v1/investments/dividends', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: string, data: UpdateDividendRequest): Promise<Dividend> {
+    return request<Dividend>(`/api/v1/investments/dividends/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(id: string): Promise<void> {
+    return request<void>(`/api/v1/investments/dividends/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// Corporate Actions API
+export const corporateActionsApi = {
+  async list(instrumentId: string): Promise<CorporateAction[]> {
+    return request<CorporateAction[]>(`/api/v1/instruments/${instrumentId}/corporate-actions`);
+  },
+
+  async create(instrumentId: string, data: CreateCorporateActionRequest): Promise<CorporateAction> {
+    return request<CorporateAction>(`/api/v1/instruments/${instrumentId}/corporate-actions`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(instrumentId: string, id: string, data: UpdateCorporateActionRequest): Promise<CorporateAction> {
+    return request<CorporateAction>(`/api/v1/instruments/${instrumentId}/corporate-actions/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(instrumentId: string, id: string): Promise<void> {
+    return request<void>(`/api/v1/instruments/${instrumentId}/corporate-actions/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// Imports API (Phase 4a)
+export const importsApi = {
+  async preview(formData: FormData): Promise<ImportPreview> {
+    return request<ImportPreview>('/api/v1/investments/imports/preview', {
+      method: 'POST',
+      body: formData,
+    });
+  },
+
+  async commit(data: ImportCommitRequest): Promise<ImportCommitResult> {
+    return request<ImportCommitResult>('/api/v1/investments/imports/commit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+// SIPs API (Phase 5)
+export const sipsApi = {
+  async list(): Promise<Sip[]> {
+    const res = await request<Sip[] | { content: Sip[] }>('/api/v1/investments/sips');
+    if (Array.isArray(res)) return res;
+    if (res && Array.isArray(res.content)) return res.content;
+    return [];
+  },
+
+  async get(id: string): Promise<Sip> {
+    return request<Sip>(`/api/v1/investments/sips/${id}`);
+  },
+
+  async create(data: CreateSipRequest): Promise<Sip> {
+    return request<Sip>('/api/v1/investments/sips', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: string, data: UpdateSipRequest): Promise<Sip> {
+    return request<Sip>(`/api/v1/investments/sips/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(id: string): Promise<void> {
+    return request<void>(`/api/v1/investments/sips/${id}`, {
+      method: 'DELETE',
+    });
   },
 };
 

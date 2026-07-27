@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import '@/test/next-mocks';
+
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { categorizeDescription, createCategory } from '@/actions/categories';
 import { categoriesApi } from '@/lib/apiClient';

@@ -1,6 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-
 import '@/test/next-mocks';
+
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createDashboard, deleteDashboard, setDefaultDashboard, updateDashboard } from '@/actions/dashboards';
 import { dashboardsApi } from '@/lib/apiClient';
