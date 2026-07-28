@@ -135,7 +135,7 @@ export function EditTransactionDialog({
     }
   };
 
-  const instrumentName = transaction.instrument.name;
+  const instrumentName = transaction.instrument?.name || 'Instrument';
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
