@@ -43,7 +43,8 @@ export function RefreshPricesButton() {
       type="button"
       onClick={handleRefresh}
       disabled={isPending}
-      className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold px-3 py-2 flex items-center gap-1.5 shadow-sm"
+      variant="outline"
+      className="h-8 text-xs flex items-center gap-1"
     >
       <RefreshCw className={`w-3.5 h-3.5 ${isPending ? 'animate-spin' : ''}`} />
       <span>{isPending ? 'Refreshing...' : 'Refresh Prices'}</span>

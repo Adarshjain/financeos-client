@@ -194,7 +194,7 @@ export function PriceHistoryDialog({ instrument, trigger }: PriceHistoryDialogPr
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <div className="space-y-2 py-2">
           {isLoading ? (
             <div className="text-xs text-slate-400 py-12 text-center">Loading price history...</div>
           ) : chartData.length === 0 ? (

@@ -213,8 +213,8 @@ export function CreateInvestmentForm({ brokerAccounts, onSuccess }: CreateInvest
         </div>
       </div>
 
-      <CardContent className="p-4 sm:p-5 space-y-4">
-        <form key={formKey} onSubmit={handleSubmit} className="space-y-4">
+      <CardContent className="p-4 sm:p-5 space-y-2">
+        <form key={formKey} onSubmit={handleSubmit} className="space-y-2">
           {/* Order Side Segmented Switch */}
           <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-950 rounded-lg border border-slate-200/80 dark:border-slate-800">
             <button

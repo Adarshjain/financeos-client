@@ -156,7 +156,7 @@ export function EditTransactionDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+        <form onSubmit={handleSubmit} className="space-y-2 py-2">
           {/* Broker + Instrument are the trade's identity and can't be changed on edit. */}
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Broker Account</Label>

@@ -251,7 +251,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
         </div>
 
         {/* Add / Edit Action Form */}
-        <form onSubmit={handleSubmit} className="space-y-4 border-t border-slate-100 dark:border-slate-800 pt-3">
+        <form onSubmit={handleSubmit} className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
               {editingActionId ? (

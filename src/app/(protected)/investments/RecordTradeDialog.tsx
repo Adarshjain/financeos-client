@@ -1,6 +1,6 @@
 'use client';
 
-import { TrendingUp } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,7 @@ export function RecordTradeDialog({ brokerAccounts, trigger }: RecordTradeDialog
       <DialogTrigger asChild>
         {trigger || (
           <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm h-8 px-3">
-            <TrendingUp className="w-3.5 h-3.5 mr-1.5" />
+            <Plus className="w-3.5 h-3.5" />
             Record Trade
           </Button>
         )}
