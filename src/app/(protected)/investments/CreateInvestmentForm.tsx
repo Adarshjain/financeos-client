@@ -28,9 +28,10 @@ import { InstrumentTypeahead } from './InstrumentTypeahead';
 
 interface CreateInvestmentFormProps {
   brokerAccounts: Broker[];
+  onSuccess?: () => void;
 }
 
-export function CreateInvestmentForm({ brokerAccounts }: CreateInvestmentFormProps) {
+export function CreateInvestmentForm({ brokerAccounts, onSuccess }: CreateInvestmentFormProps) {
   const [selectedBrokerId, setSelectedBrokerId] = useState<string>(
     brokerAccounts[0]?.id || '',
   );
@@ -133,6 +134,7 @@ export function CreateInvestmentForm({ brokerAccounts }: CreateInvestmentFormPro
         setOtherCharges('');
         setShowCharges(false);
         setFormKey((k) => k + 1);
+        onSuccess?.();
       } else {
         toast.error(res.error.message);
       }
@@ -183,35 +185,31 @@ export function CreateInvestmentForm({ brokerAccounts }: CreateInvestmentFormPro
 
   return (
     <Card className="bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 shadow-md rounded-xl overflow-hidden transition-all">
-      {/* Zerodha-Style Order Ticket Header Banner */}
-      <div className={`p-4 text-white transition-colors flex items-center justify-between ${
-        type === 'buy'
-          ? 'bg-gradient-to-r from-emerald-600 to-teal-600'
-          : 'bg-gradient-to-r from-rose-600 to-red-600'
-      }`}>
+      {/* Order Ticket Header Banner */}
+      <div className="p-4 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-white/20 backdrop-blur-sm">
-            {type === 'buy' ? <ArrowDownLeft className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
+          <div className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xs">
+            {type === 'buy' ? <ArrowDownLeft className="w-5 h-5 text-emerald-600 dark:text-emerald-400" /> : <ArrowUpRight className="w-5 h-5 text-rose-600 dark:text-rose-400" />}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded text-white">
+              <span className="text-xs font-black uppercase tracking-wider bg-slate-200/80 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-700 dark:text-slate-300">
                 {type.toUpperCase()} ORDER
               </span>
               {selectedInstrument && (
-                <span className="text-xs font-bold bg-black/20 px-2 py-0.5 rounded text-white">
+                <span className="text-xs font-bold bg-slate-200/80 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-400">
                   {selectedInstrument.exchange || 'NSE'}
                 </span>
               )}
             </div>
-            <h2 className="text-sm font-extrabold mt-0.5 text-white truncate max-w-[220px]">
+            <h2 className="text-sm font-extrabold mt-0.5 text-slate-900 dark:text-slate-100 truncate max-w-[220px]">
               {selectedInstrument ? selectedInstrument.name : 'Select Instrument'}
             </h2>
           </div>
         </div>
-        <div className="text-right">
-          <div className="text-[10px] uppercase font-bold text-white/80">Est. Order Total</div>
-          <div className="text-sm font-black tabular-nums">{formatMoney(estNetTotal)}</div>
+        <div className="text-right pr-10">
+          <div className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">Est. Order Total</div>
+          <div className="text-sm font-black text-slate-900 dark:text-slate-100 tabular-nums">{formatMoney(estNetTotal)}</div>
         </div>
       </div>
 
