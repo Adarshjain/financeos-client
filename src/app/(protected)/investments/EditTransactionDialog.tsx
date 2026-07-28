@@ -24,16 +24,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Broker } from '@/lib/account.types';
 import { Charges, InvestmentTransactionResponse, InvestmentTransactionType } from '@/lib/types';
 
 interface EditTransactionDialogProps {
   transaction: InvestmentTransactionResponse;
+  brokerAccounts?: Broker[];
   trigger?: React.ReactNode;
   onSuccess?: () => void;
 }
 
 export function EditTransactionDialog({
   transaction,
+  brokerAccounts: _brokerAccounts = [],
   trigger,
   onSuccess,
 }: EditTransactionDialogProps) {
@@ -144,20 +147,9 @@ export function EditTransactionDialog({
         )}
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-        <DialogHeader>
-          <DialogTitle className="text-base font-bold flex items-center justify-between">
-            <span>Edit Trade ({instrumentName})</span>
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="h-7 text-xs px-2 bg-red-600 hover:bg-red-700"
-            >
-              <Trash2 className="w-3.5 h-3.5 mr-1" />
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </Button>
+        <DialogHeader className="pr-8">
+          <DialogTitle className="text-base font-bold">
+            Edit Trade ({instrumentName})
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
             Modify transaction details for {instrumentName}.
@@ -324,24 +316,37 @@ export function EditTransactionDialog({
             placeholder="Optional notes"
           />
 
-          <DialogFooter className="pt-3 gap-2">
+          <DialogFooter className="pt-3 flex flex-row items-center justify-between sm:justify-between gap-2 border-t border-slate-100 dark:border-slate-800">
             <Button
               type="button"
-              variant="outline"
+              variant="destructive"
               size="sm"
-              onClick={() => setOpen(false)}
-              className="text-xs"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="h-8 text-xs px-3 bg-red-600 hover:bg-red-700"
             >
-              Cancel
+              <Trash2 className="w-3.5 h-3.5 mr-1" />
+              {isDeleting ? 'Deleting...' : 'Delete Trade'}
             </Button>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={isSubmitting}
-              className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
-            >
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setOpen(false)}
+                className="h-8 text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={isSubmitting}
+                className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+              >
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

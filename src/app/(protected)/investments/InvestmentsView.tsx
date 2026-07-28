@@ -35,12 +35,12 @@ import {formatDate, formatMoney} from '@/lib/utils';
 import {AllocationCharts} from './AllocationCharts';
 import {CorporateActionsDialog} from './CorporateActionsDialog';
 import {CreateDividendDialog} from './CreateDividendDialog';
-import {CreateInvestmentForm} from './CreateInvestmentForm';
 import {EditDividendDialog} from './EditDividendDialog';
 import {EditPriceDialog} from './EditPriceDialog';
 import {EditTransactionDialog} from './EditTransactionDialog';
 import {ImportWizardDialog} from './ImportWizardDialog';
 import {PriceHistoryDialog} from './PriceHistoryDialog';
+import {RecordTradeDialog} from './RecordTradeDialog';
 import {RefreshPricesButton} from './RefreshPricesButton';
 import {SipsSection} from './SipsSection';
 
@@ -73,15 +73,31 @@ export function InvestmentsView({
     return typeof val === 'string' ? parseFloat(val) : val;
   };
 
-  const getAccountName = (accountId: string | undefined) => {
+  const getAccountName = (accountId: string | undefined, fallbackName?: string) => {
+    if (fallbackName) return fallbackName;
     if (!accountId) return '—';
-    const acc = accounts.find((a) => a.id === accountId);
+    const acc = accounts.find((a) => a.id === accountId) || brokerAccounts.find((a) => a.id === accountId);
     return acc?.name || 'Broker';
   };
 
+  const getBrokerName = (tx: InvestmentTransactionResponse) => {
+    const t = tx as any;
+    const id = tx.brokerAccountId || t.broker?.id || t.brokerAccount?.id || t.accountId;
+    if (id) {
+      const acc = accounts.find((a) => a.id === id) || brokerAccounts.find((a) => a.id === id);
+      if (acc?.name) return acc.name;
+    }
+    return t.broker?.name || t.brokerName || t.brokerAccountName || '—';
+  };
+
   const getInstrumentDisplayName = (tx: InvestmentTransactionResponse) => {
-    const { name, symbol } = tx.instrument;
-    return symbol ? `${name} (${symbol})` : name;
+    const t = tx as any;
+    const name = tx.instrument?.name || t.instrumentName;
+    const symbol = tx.instrument?.symbol || t.symbol || t.instrumentSymbol;
+    if (name && symbol) return `${name} (${symbol})`;
+    if (name) return name;
+    if (symbol) return symbol;
+    return 'Instrument';
   };
 
   const totalPnlNum = parseNumber(summary?.totalPnl);
@@ -93,20 +109,22 @@ export function InvestmentsView({
     switch (type?.toLowerCase()) {
       case 'buy':
         return (
-            <Badge
-                className="bg-emerald-100 text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-400 border-0 font-bold text-[10px]">
-              BUY
-            </Badge>
+          <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-bold border-0 text-[10px]">
+            BUY
+          </Badge>
         );
       case 'sell':
         return (
-            <Badge
-                className="bg-rose-100 text-rose-800 dark:bg-rose-500/10 dark:text-rose-400 border-0 font-bold text-[10px]">
-              SELL
-            </Badge>
+          <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 font-bold border-0 text-[10px]">
+            SELL
+          </Badge>
         );
       default:
-        return <Badge variant="secondary" className="text-[10px]">{type || 'Unknown'}</Badge>;
+        return (
+          <Badge variant="outline" className="font-bold text-[10px]">
+            {type?.toUpperCase() || 'TRADE'}
+          </Badge>
+        );
     }
   };
 
@@ -160,12 +178,19 @@ export function InvestmentsView({
   return (
       <div className="pb-20 p-3 sm:p-6 space-y-2 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden">
         {/* Top Header */}
-        <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-          Portfolio
-          <Badge variant="outline" className="text-xs font-bold font-mono">
-            {positions.length} Holdings
-          </Badge>
-        </h1>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+              Portfolio
+              <Badge variant="outline" className="text-xs font-bold font-mono">
+                {positions.length} Holdings
+              </Badge>
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <RecordTradeDialog brokerAccounts={brokerAccounts} />
+          </div>
+        </div>
 
         {/* Main Tabs Bar using existing @/components/ui/tabs */}
         <Tabs
@@ -175,7 +200,7 @@ export function InvestmentsView({
         >
           <TabsList className="grid w-full grid-cols-3 max-w-md bg-slate-100 dark:bg-slate-900">
             <TabsTrigger value="overview" className="text-xs font-bold">
-              Overview & Reports
+              Overview
             </TabsTrigger>
             <TabsTrigger value="holdings" className="text-xs font-bold gap-1 px-0 whitespace-normal">
               Holdings
@@ -600,40 +625,80 @@ export function InvestmentsView({
           {/* TAB 3: ACTIONS & TRADEBOOK */}
           <TabsContent value="actions" className="mt-0 space-y-6 animate-in fade-in-50 duration-200">
             {/* Actions Quick Toolbar */}
-            <div
-                className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 dark:text-white">Portfolio Actions & Sync</h3>
-                <p className="text-xs text-slate-500">Import tradebooks, record dividend income, or refresh live
-                  instrument prices.</p>
+                <p className="text-xs text-slate-500">
+                  Record trades, import tradebooks, log dividend income, or refresh live prices.
+                </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <ImportWizardDialog brokerAccounts={brokerAccounts}/>
-                <CreateDividendDialog brokerAccounts={brokerAccounts} positions={positions}/>
-                <RefreshPricesButton/>
+                <RecordTradeDialog brokerAccounts={brokerAccounts} />
+                <ImportWizardDialog brokerAccounts={brokerAccounts} />
+                <CreateDividendDialog brokerAccounts={brokerAccounts} positions={positions} />
+                <RefreshPricesButton />
               </div>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left 2-Cols: Tradebook & SIPs */}
-              <div className="lg:col-span-2 space-y-6">
-                {/* SIPs Progress Section */}
-                <SipsSection sips={sips} brokerAccounts={brokerAccounts} positions={positions}/>
 
-                {/* Tradebook / Executed Orders Table */}
-                <Card
-                    className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden">
-                  <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-                    <CardTitle className="text-base font-bold flex items-center gap-2">
-                      <History className="w-4 h-4 text-blue-600 dark:text-blue-400"/>
-                      Tradebook / Executed Trades ({investmentTransactions.length})
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0">
-                    {investmentTransactions.length === 0 ? (
-                        <div className="text-center py-10 text-xs text-slate-500">
-                          No trades recorded yet.
-                        </div>
-                    ) : (
+            <div className="w-full space-y-6">
+              {/* SIPs Progress Section */}
+              <SipsSection sips={sips} brokerAccounts={brokerAccounts} positions={positions} />
+
+              {/* Tradebook / Executed Orders */}
+              <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden">
+                <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+                  <CardTitle className="text-base font-bold flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <History className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                      <span>Tradebook / Executed Trades ({investmentTransactions.length})</span>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {investmentTransactions.length === 0 ? (
+                    <div className="text-center py-10 text-xs text-slate-500">
+                      No trades recorded yet.
+                    </div>
+                  ) : (
+                    <>
+                      {/* Mobile View: Clean Card List */}
+                      <div className="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800/80">
+                        {investmentTransactions.map((tx) => (
+                          <div key={tx.id} className="p-3.5 space-y-2">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-slate-500 dark:text-slate-400 font-mono">
+                                {formatDate(tx.tradeDate)}
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                {getTypeBadge(tx.type)}
+                                <EditTransactionDialog transaction={tx} brokerAccounts={brokerAccounts} />
+                              </div>
+                            </div>
+
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <div className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                                  {getInstrumentDisplayName(tx)}
+                                </div>
+                                <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
+                                  Broker: {getBrokerName(tx)}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="font-bold text-xs text-slate-900 dark:text-slate-100 tabular-nums">
+                                  {formatMoney(tx.price)}
+                                </div>
+                                <div className="text-[11px] text-slate-500 dark:text-slate-400 tabular-nums font-semibold">
+                                  Qty: {tx.quantity}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Desktop View: Table */}
+                      <div className="hidden sm:block">
                         <Table>
                           <TableHeader>
                             <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
@@ -653,7 +718,7 @@ export function InvestmentsView({
                                   {formatDate(tx.tradeDate)}
                                 </TableCell>
                                 <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap">
-                                  {tx.brokerName}
+                                  {getBrokerName(tx)}
                                 </TableCell>
                                 <TableCell className="py-2.5">
                                   {getTypeBadge(tx.type)}
@@ -661,28 +726,24 @@ export function InvestmentsView({
                                 <TableCell className="py-2.5 font-bold text-xs text-slate-900 dark:text-slate-100">
                                   {getInstrumentDisplayName(tx)}
                                 </TableCell>
-                                  <TableCell className="py-2.5 text-right font-semibold text-xs tabular-nums">
-                                    {tx.quantity}
-                                  </TableCell>
-                                  <TableCell className="py-2.5 text-right font-bold text-xs tabular-nums">
-                                    {formatMoney(tx.price)}
-                                  </TableCell>
-                                  <TableCell className="py-2.5 text-right">
-                                    <EditTransactionDialog transaction={tx}/>
-                                  </TableCell>
-                                </TableRow>
+                                <TableCell className="py-2.5 text-right font-semibold text-xs tabular-nums">
+                                  {tx.quantity}
+                                </TableCell>
+                                <TableCell className="py-2.5 text-right font-bold text-xs tabular-nums">
+                                  {formatMoney(tx.price)}
+                                </TableCell>
+                                <TableCell className="py-2.5 text-right">
+                                  <EditTransactionDialog transaction={tx} brokerAccounts={brokerAccounts} />
+                                </TableCell>
+                              </TableRow>
                             ))}
                           </TableBody>
                         </Table>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Right 1-Col: Record Trade Form */}
-              <div>
-                <CreateInvestmentForm brokerAccounts={brokerAccounts}/>
-              </div>
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </TabsContent>
         </Tabs>
