@@ -114,7 +114,7 @@ export function EditDividendDialog({ dividend, trigger, onSuccess }: EditDividen
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
+        <form onSubmit={handleSubmit} className="space-y-2 py-2">
           {/* Broker + Instrument are the payout's identity and can't be changed on edit. */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
