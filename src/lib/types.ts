@@ -311,7 +311,7 @@ export interface UpdateDividendRequest {
 }
 
 // Corporate Actions
-export type CorporateActionType = 'split' | 'bonus';
+export type CorporateActionType = 'split' | 'bonus' | 'demerger';
 
 export interface CorporateAction {
   id: string;
@@ -321,6 +321,10 @@ export interface CorporateAction {
   ratioTo: number;
   exDate: string;
   notes?: string;
+  targetInstrumentId?: string;
+  targetInstrumentName?: string;
+  targetInstrumentSymbol?: string;
+  costAllocationPct?: string | number;
   createdAt?: string;
 }
 
@@ -330,6 +334,8 @@ export interface CreateCorporateActionRequest {
   ratioTo: number;
   exDate: string;
   notes?: string;
+  targetInstrumentId?: string;
+  costAllocationPct?: number;
 }
 
 export interface UpdateCorporateActionRequest {
@@ -338,6 +344,8 @@ export interface UpdateCorporateActionRequest {
   ratioTo?: number;
   exDate?: string;
   notes?: string;
+  targetInstrumentId?: string;
+  costAllocationPct?: number;
 }
 
 // Imports (Phase 4a / 4b / 4c)

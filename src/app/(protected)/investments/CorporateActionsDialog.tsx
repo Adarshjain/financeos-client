@@ -29,8 +29,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CorporateAction, CorporateActionType } from '@/lib/types';
+import { CorporateAction, CorporateActionType, Instrument } from '@/lib/types';
 import { formatDate, toCalendarDate } from '@/lib/utils';
+
+import { InstrumentTypeahead } from './InstrumentTypeahead';
 
 interface CorporateActionsDialogProps {
   instrument: {
@@ -56,6 +58,8 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
   const [ratioTo, setRatioTo] = useState('2');
   const [exDate, setExDate] = useState(toCalendarDate(new Date()));
   const [notes, setNotes] = useState('');
+  const [targetInstrument, setTargetInstrument] = useState<Instrument | null>(null);
+  const [costAllocationPct, setCostAllocationPct] = useState('20');
 
   const fetchActions = useCallback(async () => {
     setIsLoading(true);
@@ -84,6 +88,8 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
     setRatioTo('2');
     setExDate(toCalendarDate(new Date()));
     setNotes('');
+    setTargetInstrument(null);
+    setCostAllocationPct('20');
   };
 
   const handleEditClick = (act: CorporateAction) => {
@@ -93,6 +99,17 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
     setRatioTo(String(act.ratioTo));
     setExDate(act.exDate?.split('T')[0] || toCalendarDate(new Date()));
     setNotes(act.notes || '');
+    if (act.targetInstrumentId) {
+      setTargetInstrument({
+        id: act.targetInstrumentId,
+        type: 'stock',
+        name: act.targetInstrumentName || 'Target Instrument',
+        symbol: act.targetInstrumentSymbol,
+      });
+    } else {
+      setTargetInstrument(null);
+    }
+    setCostAllocationPct(act.costAllocationPct ? String(act.costAllocationPct) : '20');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -109,16 +126,36 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
       return;
     }
 
+    if (type === 'demerger') {
+      if (!targetInstrument?.id) {
+        toast.error('Target child instrument is required for a demerger.');
+        return;
+      }
+      if (targetInstrument.id === instrument.id) {
+        toast.error('Target instrument must be different from parent instrument.');
+        return;
+      }
+      const costPctNum = Number(costAllocationPct);
+      if (!costPctNum || costPctNum <= 0 || costPctNum > 100) {
+        toast.error('Cost allocation % must be between 0 and 100.');
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     try {
+      const payload = {
+        type,
+        ratioFrom: fromNum,
+        ratioTo: toNum,
+        exDate,
+        notes: notes || undefined,
+        targetInstrumentId: type === 'demerger' ? targetInstrument?.id : undefined,
+        costAllocationPct: type === 'demerger' ? Number(costAllocationPct) : undefined,
+      };
+
       if (editingActionId) {
-        const res = await updateCorporateAction(instrument.id, editingActionId, {
-          type,
-          ratioFrom: fromNum,
-          ratioTo: toNum,
-          exDate,
-          notes: notes || undefined,
-        });
+        const res = await updateCorporateAction(instrument.id, editingActionId, payload);
 
         if (res.success) {
           toast.success(`Updated ${type} (${ratioFrom}:${ratioTo})`);
@@ -129,13 +166,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
           toast.error(res.error.message);
         }
       } else {
-        const res = await createCorporateAction(instrument.id, {
-          type,
-          ratioFrom: fromNum,
-          ratioTo: toNum,
-          exDate,
-          notes: notes || undefined,
-        });
+        const res = await createCorporateAction(instrument.id, payload);
 
         if (res.success) {
           toast.success(`Recorded ${type} (${ratioFrom}:${ratioTo}) for ${instrument.name}`);
@@ -190,7 +221,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
             Corporate Actions — {instrument.name}
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
-            Manage stock splits and bonus share distributions.
+            Manage stock splits, bonus share distributions, and demergers.
           </DialogDescription>
         </DialogHeader>
 
@@ -217,8 +248,15 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
                       <Badge variant="outline" className="text-[9px] uppercase px-1 py-0 font-bold bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800">
                         {act.type}
                       </Badge>
-                      <span>Ratio: {act.ratioFrom} → {act.ratioTo}</span>
+                      <span>
+                        Ratio: {act.ratioFrom} → {act.ratioTo}
+                      </span>
                     </div>
+                    {act.type === 'demerger' && (
+                      <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300">
+                        Child: {act.targetInstrumentName || 'Target'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc: {act.costAllocationPct}%
+                      </div>
+                    )}
                     <div className="text-[10px] text-slate-500">
                       Ex-Date: {formatDate(act.exDate)} {act.notes ? `• ${act.notes}` : ''}
                     </div>
@@ -251,7 +289,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
         </div>
 
         {/* Add / Edit Action Form */}
-        <form onSubmit={handleSubmit} className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+        <form onSubmit={handleSubmit} className="space-y-3 border-t border-slate-100 dark:border-slate-800 pt-3">
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
               {editingActionId ? (
@@ -290,6 +328,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
                 <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
                   <SelectItem value="split" className="text-xs">Stock Split</SelectItem>
                   <SelectItem value="bonus" className="text-xs">Bonus Issue</SelectItem>
+                  <SelectItem value="demerger" className="text-xs">Demerger / Spin-off</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -304,13 +343,42 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
             />
           </div>
 
+          {type === 'demerger' && (
+            <div className="space-y-3 p-3 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-900/40">
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Target (Child) Instrument *
+                </Label>
+                <InstrumentTypeahead
+                  selectedInstrument={targetInstrument}
+                  onSelect={setTargetInstrument}
+                />
+              </div>
+
+              <FormField
+                label="Cost Allocation % (Sec 49(2C)) *"
+                name="costAllocationPct"
+                type="number"
+                step="0.01"
+                min="0.01"
+                max="100"
+                value={costAllocationPct}
+                onChange={(e) => setCostAllocationPct(e.target.value)}
+                placeholder="e.g. 20.0"
+                required
+              />
+            </div>
+          )}
+
           <div className="space-y-1">
             <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Ratio (units before → units after)
+              {type === 'demerger'
+                ? 'Share Entitlement Ratio (parent held → child received)'
+                : 'Ratio (units before → units after)'}
             </Label>
             <div className="grid grid-cols-2 gap-4 items-center">
               <FormField
-                label="Ratio From (Held)"
+                label={type === 'demerger' ? 'Parent Shares Held' : 'Ratio From (Held)'}
                 name="ratioFrom"
                 type="number"
                 step="1"
@@ -320,7 +388,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
                 required
               />
               <FormField
-                label="Ratio To (Resulting)"
+                label={type === 'demerger' ? 'Child Shares Received' : 'Ratio To (Resulting)'}
                 name="ratioTo"
                 type="number"
                 step="1"
@@ -331,7 +399,9 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
               />
             </div>
             <p className="text-[10px] text-slate-500 italic">
-              Example: For a 2-for-1 split, enter 1 → 2. For a 1:1 bonus issue, enter 1 → 2.
+              {type === 'demerger'
+                ? 'Example: For 1 child share per 2 parent shares held, enter 2 → 1.'
+                : 'Example: For a 2-for-1 split, enter 1 → 2. For a 1:1 bonus issue, enter 1 → 2.'}
             </p>
           </div>
 
