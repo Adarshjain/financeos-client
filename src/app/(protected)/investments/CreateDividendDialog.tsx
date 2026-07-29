@@ -31,6 +31,8 @@ import { toCalendarDate } from '@/lib/utils';
 interface CreateDividendDialogProps {
   brokerAccounts: Broker[];
   positions?: Position[];
+  initialBrokerAccountId?: string;
+  initialInstrumentId?: string;
   trigger?: React.ReactNode;
   onSuccess?: () => void;
 }
@@ -38,14 +40,18 @@ interface CreateDividendDialogProps {
 export function CreateDividendDialog({
   brokerAccounts,
   positions = [],
+  initialBrokerAccountId,
+  initialInstrumentId,
   trigger,
   onSuccess,
 }: CreateDividendDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [brokerAccountId, setBrokerAccountId] = useState(brokerAccounts[0]?.id || '');
-  const [instrumentId, setInstrumentId] = useState('');
+  const [brokerAccountId, setBrokerAccountId] = useState(
+    initialBrokerAccountId || brokerAccounts[0]?.id || '',
+  );
+  const [instrumentId, setInstrumentId] = useState(initialInstrumentId || '');
   const [type, setType] = useState<DividendType>('dividend');
   const [amount, setAmount] = useState('');
   const [perUnit, setPerUnit] = useState('');

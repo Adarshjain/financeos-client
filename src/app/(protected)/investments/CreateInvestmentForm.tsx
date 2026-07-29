@@ -28,14 +28,23 @@ import { InstrumentTypeahead } from './InstrumentTypeahead';
 
 interface CreateInvestmentFormProps {
   brokerAccounts: Broker[];
+  initialBrokerAccountId?: string;
+  initialInstrument?: Instrument | null;
   onSuccess?: () => void;
 }
 
-export function CreateInvestmentForm({ brokerAccounts, onSuccess }: CreateInvestmentFormProps) {
+export function CreateInvestmentForm({
+  brokerAccounts,
+  initialBrokerAccountId,
+  initialInstrument,
+  onSuccess,
+}: CreateInvestmentFormProps) {
   const [selectedBrokerId, setSelectedBrokerId] = useState<string>(
-    brokerAccounts[0]?.id || '',
+    initialBrokerAccountId || brokerAccounts[0]?.id || '',
   );
-  const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(null);
+  const [selectedInstrument, setSelectedInstrument] = useState<Instrument | null>(
+    initialInstrument || null,
+  );
   const [type, setType] = useState<InvestmentTransactionType>('buy');
 
   const [showCharges, setShowCharges] = useState(false);

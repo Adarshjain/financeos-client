@@ -84,7 +84,12 @@ export function InvestmentsView({
 
           {/* TAB 2: HOLDINGS VIEW */}
           <TabsContent value="holdings" className="mt-0 space-y-2 animate-in fade-in-50 duration-200">
-            <HoldingsTab summary={summary} positions={positions} brokerAccounts={brokerAccounts}/>
+            <HoldingsTab
+              summary={summary}
+              positions={positions}
+              investmentTransactions={investmentTransactions}
+              brokerAccounts={brokerAccounts}
+            />
           </TabsContent>
 
           {/* TAB 3: ACTIONS & TRADEBOOK */}
