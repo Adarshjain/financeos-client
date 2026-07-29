@@ -1,7 +1,9 @@
 'use client';
 
-import { Coins, Edit } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Coins, Edit } from 'lucide-react';
+import { useMemo, useState } from 'react';
 
+import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +17,13 @@ interface InstrumentsSectionProps {
   instruments: Instrument[];
 }
 
+type SortOrder = 'none' | 'asc' | 'desc';
+
 export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
+  const [page, setPage] = useState<number>(0);
+  const [pageSize, setPageSize] = useState<number>(25);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('none');
+
   const getTypeBadge = (type: string) => {
     const formatted = type ? type.replace('_', ' ').toUpperCase() : 'OTHER';
     let colorClass = 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300';
@@ -37,13 +45,70 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
     return inst.yahooSymbol ? `Yahoo: ${inst.yahooSymbol}` : '—';
   };
 
+  const toggleSort = () => {
+    setSortOrder((prev) => {
+      if (prev === 'none') return 'asc';
+      if (prev === 'asc') return 'desc';
+      return 'none';
+    });
+    setPage(0);
+  };
+
+  const sortedInstruments = useMemo(() => {
+    if (sortOrder === 'none') return instruments;
+
+    return [...instruments].sort((a, b) => {
+      const nameA = (a.name || '').toLowerCase();
+      const nameB = (b.name || '').toLowerCase();
+      const cmp = nameA.localeCompare(nameB);
+      return sortOrder === 'asc' ? cmp : -cmp;
+    });
+  }, [instruments, sortOrder]);
+
+  const totalElements = sortedInstruments.length;
+  const totalPages = Math.ceil(totalElements / pageSize) || 1;
+  const currentPage = Math.min(page, Math.max(0, totalPages - 1));
+
+  const pagedInstruments = useMemo(() => {
+    const start = currentPage * pageSize;
+    return sortedInstruments.slice(start, start + pageSize);
+  }, [sortedInstruments, currentPage, pageSize]);
+
   return (
     <Card className="bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden">
-      <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
-        <CardTitle className="text-base font-bold flex items-center gap-2">
-          <Coins className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+      <CardHeader className="py-2 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between gap-2">
+        <CardTitle className="text-base font-bold flex items-center">
           Instruments ({instruments.length})
         </CardTitle>
+
+        {instruments.length > 0 && (
+          <Button
+            variant={sortOrder === 'none' ? 'outline' : 'secondary'}
+            size="sm"
+            onClick={toggleSort}
+            className="h-8 text-xs font-semibold flex items-center rounded-lg border-slate-200 dark:border-slate-800"
+            title="Sort by Name (Click to cycle: A-Z -> Z-A -> Default)"
+          >
+            {sortOrder === 'asc' && (
+              <>
+                <ArrowUp className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <span>Asc</span>
+              </>
+            )}
+            {sortOrder === 'desc' && (
+              <>
+                <ArrowDown className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                <span>Desc</span>
+              </>
+            )}
+            {sortOrder === 'none' && (
+              <>
+                <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
+                <span>Sort</span>
+              </>
+            )}
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="p-0">
         {instruments.length === 0 ? (
@@ -59,7 +124,7 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
           <>
             {/* Mobile View */}
             <div className="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800/80">
-              {instruments.map((inst) => (
+              {pagedInstruments.map((inst) => (
                 <div key={inst.id} className="p-3.5 space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1.5">
@@ -120,7 +185,17 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
                 <TableHeader>
                   <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
                     <TableHead className="text-xs font-semibold whitespace-nowrap">Type</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap">Name</TableHead>
+                    <TableHead
+                      className="text-xs font-semibold whitespace-nowrap cursor-pointer select-none hover:text-blue-600 dark:hover:text-blue-400"
+                      onClick={toggleSort}
+                    >
+                      <div className="flex items-center gap-1">
+                        <span>Name</span>
+                        {sortOrder === 'asc' && <ArrowUp className="w-3 h-3 text-blue-600 dark:text-blue-400" />}
+                        {sortOrder === 'desc' && <ArrowDown className="w-3 h-3 text-blue-600 dark:text-blue-400" />}
+                        {sortOrder === 'none' && <ArrowUpDown className="w-3 h-3 text-slate-400 opacity-60" />}
+                      </div>
+                    </TableHead>
                     <TableHead className="text-xs font-semibold whitespace-nowrap">Symbol / Exchange</TableHead>
                     <TableHead className="text-xs font-semibold whitespace-nowrap">Ticker / AMFI Code</TableHead>
                     <TableHead className="text-right text-xs font-semibold whitespace-nowrap">Last Price</TableHead>
@@ -128,7 +203,7 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {instruments.map((inst) => (
+                  {pagedInstruments.map((inst) => (
                     <TableRow key={inst.id} className="border-slate-100 dark:border-slate-800/60">
                       <TableCell className="py-2.5">{getTypeBadge(inst.type)}</TableCell>
                       <TableCell className="py-2.5 font-bold text-xs text-slate-900 dark:text-slate-100">
@@ -175,6 +250,24 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+
+            {/* Pagination Footer */}
+            <div className="p-3.5 border-t border-slate-100 dark:border-slate-800">
+              <TablePagination
+                page={{
+                  number: currentPage,
+                  size: pageSize,
+                  totalElements,
+                  totalPages,
+                }}
+                onPageChange={(newPage) => setPage(newPage)}
+                onSizeChange={(newSize) => {
+                  setPageSize(newSize);
+                  setPage(0);
+                }}
+                unit="instrument"
+              />
             </div>
           </>
         )}

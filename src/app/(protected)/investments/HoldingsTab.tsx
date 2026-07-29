@@ -1,9 +1,10 @@
 'use client';
 
-import { Search } from 'lucide-react';
+import { ArrowDown, ArrowUp, Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -20,6 +21,9 @@ interface HoldingsTabProps {
   brokerAccounts: Broker[];
 }
 
+type SortByOption = 'none' | 'alphabetical' | 'percentage' | 'absolute';
+type SortOrderOption = 'asc' | 'desc';
+
 const parseNumber = (val: string | number | null | undefined): number => {
   if (val === null || val === undefined) return 0;
   return typeof val === 'string' ? parseFloat(val) : val;
@@ -33,6 +37,8 @@ export function HoldingsTab({
   const [holdingSearch, setHoldingSearch] = useState('');
   const [selectedAssetType, setSelectedAssetType] = useState<string>('all');
   const [selectedBrokerFilter, setSelectedBrokerFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<SortByOption>('none');
+  const [sortOrder, setSortOrder] = useState<SortOrderOption>('asc');
 
   const filteredPositions = useMemo(() => {
     return positions.filter((pos) => {
@@ -49,6 +55,46 @@ export function HoldingsTab({
       return matchSearch && matchType && matchBroker;
     });
   }, [positions, holdingSearch, selectedAssetType, selectedBrokerFilter]);
+
+  const handleSortByChange = (val: SortByOption) => {
+    setSortBy(val);
+    if (val === 'alphabetical') {
+      setSortOrder('asc');
+    } else if (val === 'percentage' || val === 'absolute') {
+      setSortOrder('desc');
+    }
+  };
+
+  const clearSort = () => {
+    setSortBy('none');
+    setSortOrder('asc');
+  };
+
+  const sortedPositions = useMemo(() => {
+    if (sortBy === 'none') {
+      return filteredPositions;
+    }
+
+    return [...filteredPositions].sort((a, b) => {
+      let comparison = 0;
+
+      if (sortBy === 'alphabetical') {
+        const nameA = (a.instrument.symbol || a.instrument.name || '').toLowerCase();
+        const nameB = (b.instrument.symbol || b.instrument.name || '').toLowerCase();
+        comparison = nameA.localeCompare(nameB);
+      } else if (sortBy === 'percentage') {
+        const pctA = parseNumber(a.unrealizedGainLossPercent ?? a.absoluteReturnPercent);
+        const pctB = parseNumber(b.unrealizedGainLossPercent ?? b.absoluteReturnPercent);
+        comparison = pctA - pctB;
+      } else if (sortBy === 'absolute') {
+        const absA = parseNumber(a.unrealizedGainLoss);
+        const absB = parseNumber(b.unrealizedGainLoss);
+        comparison = absA - absB;
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+  }, [filteredPositions, sortBy, sortOrder]);
 
   const filteredSummary = useMemo(() => {
     let invested = 0;
@@ -75,7 +121,7 @@ export function HoldingsTab({
     <div className="space-y-2">
       {/* 1. Zerodha Filters Bar (Reordered First) */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1 pb-1">
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative flex-1 min-w-[180px]">
           <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <Input
             type="text"
@@ -86,9 +132,9 @@ export function HoldingsTab({
           />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
           <Select value={selectedAssetType} onValueChange={setSelectedAssetType}>
-            <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold w-[130px]">
+            <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold w-[120px]">
               <SelectValue placeholder="Asset Type" />
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
@@ -108,7 +154,7 @@ export function HoldingsTab({
           </Select>
 
           <Select value={selectedBrokerFilter} onValueChange={setSelectedBrokerFilter}>
-            <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold w-[140px]">
+            <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold w-[130px]">
               <SelectValue placeholder="Broker Account" />
             </SelectTrigger>
             <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
@@ -122,6 +168,62 @@ export function HoldingsTab({
               ))}
             </SelectContent>
           </Select>
+
+          <div className="flex items-center gap-1">
+            <Select value={sortBy} onValueChange={(val) => handleSortByChange(val as SortByOption)}>
+              <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold w-[145px]">
+                <SelectValue placeholder="Sort By" />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                <SelectItem value="none" className="text-xs">
+                  Sort: Default
+                </SelectItem>
+                <SelectItem value="alphabetical" className="text-xs">
+                  Alphabetically
+                </SelectItem>
+                <SelectItem value="percentage" className="text-xs">
+                  Percentage Return
+                </SelectItem>
+                <SelectItem value="absolute" className="text-xs">
+                  Absolute Returns
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            {sortBy !== 'none' && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
+                  className="h-8 px-2 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-medium flex items-center gap-1 shrink-0"
+                  title={`Order: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
+                >
+                  {sortOrder === 'asc' ? (
+                    <>
+                      <ArrowUp className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                      <span className="text-[11px] font-bold">ASC</span>
+                    </>
+                  ) : (
+                    <>
+                      <ArrowDown className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                      <span className="text-[11px] font-bold">DESC</span>
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearSort}
+                  className="h-8 px-1.5 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-lg shrink-0"
+                  title="Clear Sort"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -174,13 +276,13 @@ export function HoldingsTab({
       </Card>
 
       {/* 3. Holdings Items List */}
-      {filteredPositions.length === 0 ? (
+      {sortedPositions.length === 0 ? (
         <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs text-slate-500">
           No holdings found matching filters.
         </div>
       ) : (
         <div className="space-y-2">
-          {filteredPositions.map((pos) => {
+          {sortedPositions.map((pos) => {
             const holdingTrades = investmentTransactions
               .filter(
                 (tx) => tx.brokerAccountId === pos.brokerAccountId && tx.instrumentId === pos.instrument.id,
