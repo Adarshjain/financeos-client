@@ -41,6 +41,8 @@ import type {
   ImportCommitResult,
   ImportPreview,
   Instrument,
+  InstrumentCandidate,
+  InstrumentType,
   InvestmentPositionResponse,
   InvestmentSummary,
   InvestmentTransactionResponse,
@@ -49,6 +51,7 @@ import type {
   PagedInvestmentTransactionResponse,
   PriceHistoryPoint,
   PriceRefreshResult,
+  ResolveInstrumentRequest,
   SetPriceRequest,
   SignupRequest,
   Sip,
@@ -345,6 +348,23 @@ export const instrumentsApi = {
     if (type) params.set('type', type);
     const query = params.toString();
     return request<Instrument[]>(`/api/v1/instruments${query ? `?${query}` : ''}`);
+  },
+
+  async catalogSearch(q: string, type?: InstrumentType): Promise<InstrumentCandidate[]> {
+    const params = new URLSearchParams();
+    if (q) params.set('q', q);
+    if (type) params.set('type', type);
+    const query = params.toString();
+    return request<InstrumentCandidate[]>(
+      `/api/v1/instruments/catalog-search${query ? `?${query}` : ''}`,
+    );
+  },
+
+  async resolveInstrument(req: ResolveInstrumentRequest): Promise<Instrument> {
+    return request<Instrument>('/api/v1/instruments/resolve', {
+      method: 'POST',
+      body: JSON.stringify(req),
+    });
   },
 
   async create(data: CreateInstrumentRequest): Promise<Instrument> {
