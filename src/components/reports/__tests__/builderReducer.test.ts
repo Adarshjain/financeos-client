@@ -61,7 +61,7 @@ describe('builderReducer (CD-12)', () => {
 
     state = builderReducer(state, {
       type: 'KPI_SET',
-      value: { measure: 'amount', aggregation: 'SUM', higherIsBetter: true },
+      value: { measure: 'amount', aggregation: 'sum', higherIsBetter: true },
     });
     expect(state.kpi.measure).toBe('amount');
     expect(state.kpi.higherIsBetter).toBe(true);
@@ -87,9 +87,9 @@ describe('builderReducer (CD-12)', () => {
 
     state = builderReducer(state, {
       type: 'TABLE_SET_AGG',
-      value: { sort: [{ field: 'amount', direction: 'desc' }] },
+      value: { sort: [{ key: 'amount', direction: 'desc' }] },
     });
-    expect(state.table.agg.sort).toEqual([{ field: 'amount', direction: 'desc' }]);
+    expect(state.table.agg.sort).toEqual([{ key: 'amount', direction: 'desc' }]);
   });
 
   it('preserves independent drafts across type switches (KPI -> TABLE -> CHART -> KPI)', () => {
@@ -98,7 +98,7 @@ describe('builderReducer (CD-12)', () => {
     // 1. Configure KPI draft
     state = builderReducer(state, {
       type: 'KPI_SET',
-      value: { measure: 'amount', aggregation: 'SUM', higherIsBetter: true },
+      value: { measure: 'amount', aggregation: 'sum', higherIsBetter: true },
     });
 
     // 2. Switch to TABLE and configure TABLE draft
@@ -118,7 +118,7 @@ describe('builderReducer (CD-12)', () => {
     // 4. Switch back to KPI and assert KPI draft survived intact!
     state = builderReducer(state, { type: 'SET_TYPE', value: 'KPI' });
     expect(state.kpi.measure).toBe('amount');
-    expect(state.kpi.aggregation).toBe('SUM');
+    expect(state.kpi.aggregation).toBe('sum');
     expect(state.kpi.higherIsBetter).toBe(true);
 
     // Verify other drafts survived in background state
@@ -275,7 +275,7 @@ describe('builderReducer (CD-12)', () => {
         rows: [{ field: 'category' }],
         columns: [{ field: 'type' }],
         measures: [{ field: 'amount', aggregation: 'SUM' }],
-        sort: [{ field: 'amount', direction: 'desc' }],
+        sort: [{ key: 'amount', direction: 'desc' }],
       },
     };
     const hydratedFull = hydrateState(aggFull);

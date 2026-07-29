@@ -7,9 +7,10 @@ import TransactionCRUD from '@/components/transactions/TransactionCRUD';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { AccountType } from '@/lib/types';
 
 const mockAccounts: Account[] = [
-  { id: 'acc1', name: 'HDFC Savings', type: 'bank_account' },
+  { id: 'acc1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT },
 ];
 
 const mockCategories: Category[] = [
@@ -125,6 +126,8 @@ describe('TransactionCRUD (CD-2d, CD-4)', () => {
       success: true,
       data: {
         categories: [mockCategories[0]],
+        ruleId: null,
+        fromRule: false,
         mcc: '5411',
       },
     });

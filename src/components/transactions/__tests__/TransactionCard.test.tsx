@@ -5,9 +5,10 @@ import { TransactionCard } from '@/components/transactions/TransactionCard';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { AccountType } from '@/lib/types';
 
 const mockAccounts: Account[] = [
-  { id: 'acc1', name: 'HDFC Bank', type: 'bank_account' },
+  { id: 'acc1', name: 'HDFC Bank', type: AccountType.BANK_ACCOUNT },
 ];
 
 const mockCategories: Category[] = [

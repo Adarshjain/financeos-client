@@ -17,13 +17,18 @@ describe('ingestion server actions (WP-3)', () => {
   });
 
   it('ingestStatementFiles calls ingestionApi.ingest', async () => {
-    vi.mocked(ingestionApi.ingest).mockResolvedValue({ count: 12 } as any);
+    vi.mocked(ingestionApi.ingest).mockResolvedValue({
+      filesProcessed: 1,
+      totalCreated: 12,
+      totalDuplicatesFound: 0,
+      fileDetails: [],
+    });
 
     const form = new FormData();
     const res = await ingestStatementFiles('acc1', form);
     expect(res.success).toBe(true);
     if (res.success) {
-      expect(res.data.count).toBe(12);
+      expect(res.data.totalCreated).toBe(12);
     }
   });
 });

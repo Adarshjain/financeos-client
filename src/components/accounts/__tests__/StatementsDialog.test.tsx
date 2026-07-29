@@ -59,6 +59,10 @@ const mockCardAccount: Account = {
   id: 'card-1',
   name: 'Amex Credit Card',
   type: AccountType.CREDIT_CARD,
+  last4: '0001',
+  creditLimit: 100000,
+  paymentDueDay: 10,
+  gracePeriodDays: 20,
 };
 
 describe('StatementsDialog & Balance Anchoring Math (CD-11)', () => {
@@ -106,8 +110,10 @@ describe('StatementsDialog & Balance Anchoring Math (CD-11)', () => {
       success: true,
       data: {
         id: 'stmt-1',
-        accountId: 'card-1',
         source: 'file_upload',
+        sourceRef: 'stmt-ref-1',
+        bankName: 'Amex',
+        accountNumberMasked: 'XXXX0001',
         statementType: 'credit_card',
         periodStart: '2026-06-01',
         periodEnd: '2026-06-30',
