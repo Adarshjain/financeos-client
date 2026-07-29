@@ -128,10 +128,10 @@ export function InstrumentTypeahead({
         type="button"
         disabled={isResolving}
         onClick={() => handleSelectCandidate(candidate)}
-        className="w-full text-left p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-900 flex items-center justify-between transition-colors text-xs"
+        className="w-full flex-col text-left p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-900 flex transition-colors text-xs"
       >
-        <div className="space-y-0.5 truncate pr-2">
-          <div className="font-semibold text-slate-900 dark:text-slate-100 truncate">
+        <div className="space-y-0.5 pr-2">
+          <div className="font-semibold text-slate-900 dark:text-slate-100">
             {candidate.name}
           </div>
           <div className="text-[10px] text-slate-400 flex items-center gap-1">
