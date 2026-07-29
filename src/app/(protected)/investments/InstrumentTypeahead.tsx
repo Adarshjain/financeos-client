@@ -14,7 +14,7 @@ import { CreateInstrumentDialog } from './CreateInstrumentDialog';
 
 interface InstrumentTypeaheadProps {
   selectedInstrument: Instrument | null;
-  onSelect: (instrument: Instrument) => void;
+  onSelect: (instrument: Instrument | null) => void;
   name?: string;
   required?: boolean;
   type?: InstrumentType;
@@ -34,6 +34,16 @@ export function InstrumentTypeahead({
   const [isOpen, setIsOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleChangeClick = () => {
+    onSelect(null);
+    setQuery('');
+    setIsOpen(true);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0);
+  };
 
   useEffect(() => {
     if (query.trim().length < 2) {
@@ -189,7 +199,7 @@ export function InstrumentTypeahead({
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => setIsOpen(true)}
+            onClick={handleChangeClick}
             className="h-6 text-[11px] text-slate-500 hover:text-slate-900 shrink-0"
           >
             Change
@@ -199,6 +209,7 @@ export function InstrumentTypeahead({
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
           <Input
+            ref={inputRef}
             type="text"
             placeholder="Search instrument by name or symbol..."
             value={query}
