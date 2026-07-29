@@ -13,15 +13,23 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Broker } from '@/lib/account.types';
+import { Instrument } from '@/lib/types';
 
 import { CreateInvestmentForm } from './CreateInvestmentForm';
 
 interface RecordTradeDialogProps {
   brokerAccounts: Broker[];
+  initialBrokerAccountId?: string;
+  initialInstrument?: Instrument;
   trigger?: React.ReactNode;
 }
 
-export function RecordTradeDialog({ brokerAccounts, trigger }: RecordTradeDialogProps) {
+export function RecordTradeDialog({
+  brokerAccounts,
+  initialBrokerAccountId,
+  initialInstrument,
+  trigger,
+}: RecordTradeDialogProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -39,7 +47,12 @@ export function RecordTradeDialog({ brokerAccounts, trigger }: RecordTradeDialog
           <DialogTitle>Record Trade</DialogTitle>
           <DialogDescription>Record a new Buy or Sell trade transaction</DialogDescription>
         </DialogHeader>
-        <CreateInvestmentForm brokerAccounts={brokerAccounts} onSuccess={() => setOpen(false)} />
+        <CreateInvestmentForm
+          brokerAccounts={brokerAccounts}
+          initialBrokerAccountId={initialBrokerAccountId}
+          initialInstrument={initialInstrument}
+          onSuccess={() => setOpen(false)}
+        />
       </DialogContent>
     </Dialog>
   );
