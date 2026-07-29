@@ -1,8 +1,9 @@
 import { Account, isAccountOfType } from '@/lib/account.types';
-import { accountsApi, dividendsApi, investmentsApi, sipsApi } from '@/lib/apiClient';
+import { accountsApi, dividendsApi, instrumentsApi, investmentsApi, sipsApi } from '@/lib/apiClient';
 import {
   AccountType,
   Dividend,
+  Instrument,
   InvestmentTransactionResponse,
   Position,
   Sip,
@@ -11,12 +12,13 @@ import {
 import { InvestmentsView } from './InvestmentsView';
 
 export default async function InvestmentsPage() {
-  const [summary, positionsData, transactionsData, dividendsData, sipsData, accounts] = await Promise.all([
+  const [summary, positionsData, transactionsData, dividendsData, sipsData, instrumentsData, accounts] = await Promise.all([
     investmentsApi.getSummary().catch(() => null),
     investmentsApi.getPositions().catch(() => ({ positions: [] })),
     investmentsApi.listTransactions(0, 100).catch(() => ({ content: [] as InvestmentTransactionResponse[], totalElements: 0, page: 0, size: 50, totalPages: 0 })),
     dividendsApi.list().catch(() => ({ content: [] as Dividend[], totalElements: 0, page: 0, size: 50, totalPages: 0 })),
     sipsApi.list().catch(() => [] as Sip[]),
+    instrumentsApi.search().catch(() => [] as Instrument[]),
     accountsApi.list().catch(() => [] as Account[]),
   ]);
 
@@ -25,6 +27,7 @@ export default async function InvestmentsPage() {
   const positions: Position[] = positionsData.positions || [];
   const dividends: Dividend[] = dividendsData.content || [];
   const sips: Sip[] = sipsData || [];
+  const instruments: Instrument[] = instrumentsData || [];
   const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
 
   return (
@@ -34,6 +37,7 @@ export default async function InvestmentsPage() {
       investmentTransactions={investmentTransactions}
       dividends={dividends}
       sips={sips}
+      instruments={instruments}
       brokerAccounts={brokerAccounts}
       accounts={accounts}
     />
