@@ -5,7 +5,7 @@ import {useState} from 'react';
 import {Badge} from '@/components/ui/badge';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Account, Broker} from '@/lib/account.types';
-import {Dividend, InvestmentSummary, InvestmentTransactionResponse, Position, Sip} from '@/lib/types';
+import {Dividend, Instrument, InvestmentSummary, InvestmentTransactionResponse, Position, Sip} from '@/lib/types';
 
 import {AllocationCharts} from './AllocationCharts';
 import {CreateDividendDialog} from './CreateDividendDialog';
@@ -13,6 +13,7 @@ import {CreateInstrumentDialog} from './CreateInstrumentDialog';
 import {DividendsTable} from './DividendsTable';
 import {HoldingsTab} from './HoldingsTab';
 import {ImportWizardDialog} from './ImportWizardDialog';
+import {InstrumentsSection} from './InstrumentsSection';
 import {PortfolioSummaryCards} from './PortfolioSummaryCards';
 import {RecordTradeDialog} from './RecordTradeDialog';
 import {RefreshPricesButton} from './RefreshPricesButton';
@@ -25,6 +26,7 @@ interface InvestmentsViewProps {
   investmentTransactions: InvestmentTransactionResponse[];
   dividends: Dividend[];
   sips: Sip[];
+  instruments: Instrument[];
   brokerAccounts: Broker[];
   accounts: Account[];
 }
@@ -35,6 +37,7 @@ export function InvestmentsView({
                                   investmentTransactions,
                                   dividends,
                                   sips,
+                                  instruments,
                                   brokerAccounts,
                                   accounts,
                                 }: InvestmentsViewProps) {
@@ -117,6 +120,7 @@ export function InvestmentsView({
                   brokerAccounts={brokerAccounts}
                   accounts={accounts}
               />
+              <InstrumentsSection instruments={instruments} />
               <SipsSection sips={sips} brokerAccounts={brokerAccounts} positions={positions}/>
             </div>
           </TabsContent>

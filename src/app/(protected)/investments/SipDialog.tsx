@@ -208,7 +208,7 @@ export function SipDialog({
                 selectedInstrument={selectedInstrument}
                 onSelect={(inst) => {
                   setSelectedInstrument(inst);
-                  setInstrumentId(inst.id);
+                  setInstrumentId(inst ? inst.id : '');
                 }}
               />
             )}

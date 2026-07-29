@@ -374,6 +374,13 @@ export const instrumentsApi = {
     });
   },
 
+  async update(id: string, data: CreateInstrumentRequest): Promise<Instrument> {
+    return request<Instrument>(`/api/v1/instruments/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
   async setPrice(id: string, data: SetPriceRequest): Promise<Instrument> {
     return request<Instrument>(`/api/v1/instruments/${id}/price`, {
       method: 'POST',

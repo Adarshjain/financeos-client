@@ -157,6 +157,17 @@ export async function createInstrument(
   });
 }
 
+export async function updateInstrument(
+  id: string,
+  data: CreateInstrumentRequest
+): Promise<ApiResult<Instrument>> {
+  return apiResult('Failed to update instrument', async () => {
+    const instrument = await instrumentsApi.update(id, data);
+    revalidatePath('/investments');
+    return instrument;
+  });
+}
+
 export async function setInstrumentPrice(
   id: string,
   data: SetPriceRequest

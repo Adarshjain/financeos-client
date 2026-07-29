@@ -1,6 +1,7 @@
 'use client';
 
 import { AlertTriangle, CheckCircle2, ChevronRight, FileSpreadsheet, KeyRound, Upload } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -55,6 +56,7 @@ interface ImportWizardDialogProps {
 }
 
 export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: ImportWizardDialogProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
@@ -184,6 +186,9 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
         setCommitResult(res.data);
         setStep(3);
         onSuccess?.();
+        // Re-run the server component so imported holdings + freshly auto-fetched prices show
+        // without a manual reload.
+        router.refresh();
       } else {
         toast.error(res.error.message);
       }
@@ -230,8 +235,8 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto p-3 sm:p-6">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col p-3 sm:p-6 overflow-hidden">
+        <DialogHeader className="shrink-0 pb-1">
           <DialogTitle className="text-base font-bold flex items-center gap-2">
             <FileSpreadsheet className="w-4.5 h-4.5 text-purple-600 dark:text-purple-400" />
             Import Investments Wizard
@@ -243,85 +248,87 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
 
         {/* STEP 1: Upload */}
         {step === 1 && (
-          <form onSubmit={handlePreviewSubmit} className="space-y-2 py-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Import Source Format</Label>
-                <Select value={source} onValueChange={(val) => setSource(val as ImportSource)}>
-                  <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
-                    <SelectValue placeholder="Select import format..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                    <SelectItem value="zerodha_tradebook" className="text-xs">Zerodha Tradebook (CSV)</SelectItem>
-                    <SelectItem value="groww" className="text-xs">Groww Stocks (CSV/XLSX)</SelectItem>
-                    <SelectItem value="mf_cas" className="text-xs">MF CAS (CAMS / KFintech PDF)</SelectItem>
-                  </SelectContent>
-                </Select>
+          <form onSubmit={handlePreviewSubmit} className="flex-1 flex flex-col justify-between overflow-y-auto min-h-0 space-y-3 py-1 pr-0.5">
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Import Source Format</Label>
+                  <Select value={source} onValueChange={(val) => setSource(val as ImportSource)}>
+                    <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
+                      <SelectValue placeholder="Select import format..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                      <SelectItem value="zerodha_tradebook" className="text-xs">Zerodha Tradebook (CSV)</SelectItem>
+                      <SelectItem value="groww" className="text-xs">Groww Stocks (CSV/XLSX)</SelectItem>
+                      <SelectItem value="mf_cas" className="text-xs">MF CAS (CAMS / KFintech PDF)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Target Broker Account</Label>
+                  <Select value={brokerAccountId} onValueChange={setBrokerAccountId}>
+                    <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
+                      <SelectValue placeholder="Select target broker..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                      {brokerAccounts.map((b) => (
+                        <SelectItem key={b.id} value={b.id} className="text-xs">
+                          {b.name} ({b.provider || 'Broker'})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
+              {source === 'groww' && (
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 italic bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-md border border-slate-100 dark:border-slate-800">
+                  Groww stocks order/transaction export (CSV or XLSX). Mutual funds come from the CAS import, not here.
+                </p>
+              )}
+
+              {source === 'mf_cas' && (
+                <div className="space-y-1.5 p-3 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30">
+                  <Label className="text-xs font-semibold text-purple-900 dark:text-purple-300 flex items-center gap-1.5">
+                    <KeyRound className="w-3.5 h-3.5 text-purple-600" />
+                    CAS PDF Password
+                  </Label>
+                  <Input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter CAS PDF password"
+                    className="h-8 text-xs bg-white dark:bg-slate-900 border-purple-200 dark:border-purple-800"
+                  />
+                  <p className="text-[10px] text-purple-700 dark:text-purple-400">
+                    Usually your PAN (in uppercase) or password set during download from CAMS/KFintech. A single CAS covers transactions across all your AMCs.
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Target Broker Account</Label>
-                <Select value={brokerAccountId} onValueChange={setBrokerAccountId}>
-                  <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
-                    <SelectValue placeholder="Select target broker..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                    {brokerAccounts.map((b) => (
-                      <SelectItem key={b.id} value={b.id} className="text-xs">
-                        {b.name} ({b.provider || 'Broker'})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Upload Statement File</Label>
+                <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-lg p-6 text-center bg-slate-50/50 dark:bg-slate-950/30 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
+                  <Upload className="w-8 h-8 text-purple-500 mx-auto mb-2 opacity-80" />
+                  <input
+                    type="file"
+                    accept={source === 'mf_cas' ? '.pdf,.csv' : source === 'groww' ? '.csv,.xlsx' : '.csv'}
+                    onChange={(e) => setFile(e.target.files?.[0] || null)}
+                    className="hidden"
+                    id="import-csv-input"
+                  />
+                  <label htmlFor="import-csv-input" className="cursor-pointer text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline">
+                    {file ? file.name : source === 'mf_cas' ? 'Choose MF CAS PDF/CSV file' : source === 'groww' ? 'Choose Groww Stocks CSV/XLSX file' : 'Choose Zerodha Tradebook CSV file'}
+                  </label>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    {file ? `${(file.size / 1024).toFixed(1)} KB` : source === 'mf_cas' ? 'Supports CAMS / KFintech Consolidated Account Statements (.pdf)' : source === 'groww' ? 'Supports Groww stocks order/transaction exports (.csv, .xlsx)' : 'Supports Zerodha equity tradebook exports (.csv)'}
+                  </p>
+                </div>
               </div>
             </div>
 
-            {source === 'groww' && (
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 italic bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-md border border-slate-100 dark:border-slate-800">
-                Groww stocks order/transaction export (CSV or XLSX). Mutual funds come from the CAS import, not here.
-              </p>
-            )}
-
-            {source === 'mf_cas' && (
-              <div className="space-y-1.5 p-3 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30">
-                <Label className="text-xs font-semibold text-purple-900 dark:text-purple-300 flex items-center gap-1.5">
-                  <KeyRound className="w-3.5 h-3.5 text-purple-600" />
-                  CAS PDF Password
-                </Label>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter CAS PDF password"
-                  className="h-8 text-xs bg-white dark:bg-slate-900 border-purple-200 dark:border-purple-800"
-                />
-                <p className="text-[10px] text-purple-700 dark:text-purple-400">
-                  Usually your PAN (in uppercase) or password set during download from CAMS/KFintech. A single CAS covers transactions across all your AMCs.
-                </p>
-              </div>
-            )}
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Upload Statement File</Label>
-              <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-lg p-6 text-center bg-slate-50/50 dark:bg-slate-950/30 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
-                <Upload className="w-8 h-8 text-purple-500 mx-auto mb-2 opacity-80" />
-                <input
-                  type="file"
-                  accept={source === 'mf_cas' ? '.pdf,.csv' : source === 'groww' ? '.csv,.xlsx' : '.csv'}
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  className="hidden"
-                  id="import-csv-input"
-                />
-                <label htmlFor="import-csv-input" className="cursor-pointer text-xs font-semibold text-purple-600 dark:text-purple-400 hover:underline">
-                  {file ? file.name : source === 'mf_cas' ? 'Choose MF CAS PDF/CSV file' : source === 'groww' ? 'Choose Groww Stocks CSV/XLSX file' : 'Choose Zerodha Tradebook CSV file'}
-                </label>
-                <p className="text-[10px] text-slate-400 mt-1">
-                  {file ? `${(file.size / 1024).toFixed(1)} KB` : source === 'mf_cas' ? 'Supports CAMS / KFintech Consolidated Account Statements (.pdf)' : source === 'groww' ? 'Supports Groww stocks order/transaction exports (.csv, .xlsx)' : 'Supports Zerodha equity tradebook exports (.csv)'}
-                </p>
-              </div>
-            </div>
-
-            <DialogFooter className="pt-3">
+            <DialogFooter className="pt-3 shrink-0">
               <Button
                 type="submit"
                 size="sm"
@@ -337,9 +344,9 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
 
         {/* STEP 2: Review */}
         {step === 2 && previewData && (
-          <div className="space-y-2 py-2">
+          <div className="flex-1 flex flex-col min-h-0 space-y-3 py-1">
             {/* Summary Counters */}
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
+            <div className="shrink-0 grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2 text-center text-xs">
               <div className="p-2 rounded bg-slate-100 dark:bg-slate-900">
                 <div className="text-[10px] text-slate-500">Total Rows</div>
                 <div className="font-bold text-slate-900 dark:text-white text-sm">{previewData.summary.total}</div>
@@ -364,35 +371,32 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
 
             {/* Note banner */}
             {previewData.summary.note && (
-              <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 flex items-center gap-2">
+              <div className="shrink-0 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>{previewData.summary.note}</span>
               </div>
             )}
 
-            {/* Review Table */}
-            <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-x-auto max-h-[50vh]">
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent bg-slate-50 dark:bg-slate-900 text-xs">
-                    <TableHead className="w-10 text-center">Import</TableHead>
-                    <TableHead>Date & Type</TableHead>
-                    <TableHead>Parsed Instrument</TableHead>
-                    <TableHead className="text-right">Qty × Price / Amount</TableHead>
-                    <TableHead>Status & Instrument Match</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {previewData.rows.map((row) => {
-                    const state = rowStates[row.rowIndex] || { skip: false };
-                    const isDup = row.duplicate;
-                    const isUnmatched = row.matchStatus === 'unmatched';
-                    const pr = row.parsedRow || {};
-                    const isDividend = pr.kind === 'dividend';
+            {/* Single Scrollable Area for Rows */}
+            <div className="flex-1 overflow-y-auto min-h-0 pr-1 space-y-3 border border-slate-200 dark:border-slate-800 rounded-lg p-2 bg-slate-50/30 dark:bg-slate-950/20">
+              {/* Mobile View: Card List (Visible on < 640px) */}
+              <div className="block sm:hidden space-y-3">
+                {previewData.rows.map((row) => {
+                  const state = rowStates[row.rowIndex] || { skip: false };
+                  const isDup = row.duplicate;
+                  const isUnmatched = row.matchStatus === 'unmatched';
+                  const pr = row.parsedRow || {};
+                  const isDividend = pr.kind === 'dividend';
 
-                    return (
-                      <TableRow key={row.rowIndex} className={`text-xs border-slate-100 dark:border-slate-800 ${state.skip ? 'opacity-50 bg-slate-50/50 dark:bg-slate-950/20' : ''}`}>
-                        <TableCell className="text-center">
+                  return (
+                    <div
+                      key={row.rowIndex}
+                      className={`p-3 rounded-lg border border-slate-200 dark:border-slate-800 space-y-2.5 bg-white dark:bg-slate-900 text-xs transition-opacity ${
+                        state.skip ? 'opacity-50 bg-slate-50/50 dark:bg-slate-950/20' : ''
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
+                        <div className="flex items-center gap-2">
                           <Checkbox
                             checked={!state.skip}
                             onCheckedChange={(checked) => {
@@ -402,122 +406,262 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
                               }));
                             }}
                           />
-                        </TableCell>
-                        <TableCell className="tabular-nums">
-                          <div>{formatDate(pr.tradeDate)}</div>
+                          <span className="text-[11px] font-mono text-slate-400">Row #{row.rowIndex}</span>
+                          <span className="text-[11px] font-medium text-slate-600 dark:text-slate-400">{formatDate(pr.tradeDate)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 flex-wrap justify-end">
                           {isDividend ? (
-                            <Badge className="bg-purple-100 text-purple-800 text-[8px] px-1 py-0">
-                              DIVIDEND
-                            </Badge>
+                            <Badge className="bg-purple-100 text-purple-800 text-[9px] px-1.5 py-0.5">DIVIDEND</Badge>
                           ) : (
-                            <Badge className={`text-[8px] px-1 py-0 ${pr.type === 'buy' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                            <Badge className={`text-[9px] px-1.5 py-0.5 ${pr.type === 'buy' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
                               {pr.type?.toUpperCase() || pr.kind?.toUpperCase() || 'TRADE'}
                             </Badge>
                           )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-semibold text-slate-900 dark:text-white">{pr.parsedName || pr.parsedSymbol || '—'}</div>
-                          <div className="text-[10px] text-slate-400">
+                          {row.matchStatus === 'matched' ? (
+                            <Badge className="bg-emerald-100 text-emerald-800 text-[9px] font-semibold">
+                              {row.matchedInstrument?.name || 'Matched'}
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-amber-100 text-amber-800 text-[9px]">Unmatched</Badge>
+                          )}
+                          {isDup && <Badge variant="outline" className="text-purple-600 border-purple-300 text-[9px]">Duplicate</Badge>}
+                          {pr.error && <Badge className="bg-red-100 text-red-800 text-[9px]">{pr.error}</Badge>}
+                        </div>
+                      </div>
+
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="space-y-0.5">
+                          <div className="font-bold text-slate-900 dark:text-white text-xs">{pr.parsedName || pr.parsedSymbol || '—'}</div>
+                          <div className="text-[10px] text-slate-500">
                             {pr.parsedSymbol ? `Ticker: ${pr.parsedSymbol}` : ''} {pr.parsedIsin ? `• ISIN: ${pr.parsedIsin}` : ''} {pr.exchange ? `• Exch: ${pr.exchange}` : ''}
                           </div>
-                        </TableCell>
-                        <TableCell className="text-right tabular-nums">
+                        </div>
+                        <div className="text-right tabular-nums">
                           {isDividend ? (
-                            <div className="font-bold text-emerald-600 dark:text-emerald-400">
-                              {formatMoney(pr.amount || pr.price)}
-                            </div>
+                            <div className="font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(pr.amount || pr.price)}</div>
                           ) : (
                             <div>
-                              {pr.quantity} × {formatMoney(pr.price)}
+                              <div className="font-semibold text-slate-900 dark:text-slate-100">{pr.quantity} × {formatMoney(pr.price)}</div>
+                              <div className="text-[10px] text-slate-400 font-medium">Total: {formatMoney(Number(pr.quantity || 0) * Number(pr.price || 0))}</div>
                             </div>
                           )}
-                        </TableCell>
-                        <TableCell className="space-y-1">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            {row.matchStatus === 'matched' ? (
-                              <Badge className="bg-emerald-100 text-emerald-800 text-[9px]">
-                                {row.matchedInstrument?.name || 'Matched'}
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-amber-100 text-amber-800 text-[9px]">Unmatched</Badge>
-                            )}
-                            {isDup && <Badge variant="outline" className="text-purple-600 border-purple-300 text-[9px]">Duplicate</Badge>}
-                            {pr.error && <Badge className="bg-red-100 text-red-800 text-[9px]">{pr.error}</Badge>}
+                        </div>
+                      </div>
+
+                      {/* Resolution Section for Unmatched Mobile Rows */}
+                      {isUnmatched && !state.skip && (
+                        <div className="space-y-2 p-2.5 rounded-md bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
+                          <div className="flex items-center gap-3 text-[11px]">
+                            <label className="flex items-center gap-1.5 cursor-pointer font-semibold">
+                              <input
+                                type="radio"
+                                name={`m-mode-${row.rowIndex}`}
+                                checked={!state.createNew}
+                                onChange={() => setRowStates((prev) => ({ ...prev, [row.rowIndex]: { ...prev[row.rowIndex], createNew: false } }))}
+                              />
+                              Map Existing
+                            </label>
+                            <label className="flex items-center gap-1.5 cursor-pointer font-semibold">
+                              <input
+                                type="radio"
+                                name={`m-mode-${row.rowIndex}`}
+                                checked={state.createNew}
+                                onChange={() => setRowStates((prev) => ({ ...prev, [row.rowIndex]: { ...prev[row.rowIndex], createNew: true } }))}
+                              />
+                              Create New
+                            </label>
                           </div>
 
-                          {/* Instrument Resolution for Unmatched */}
-                          {isUnmatched && !state.skip && (
-                            <div className="mt-1.5 space-y-1.5 p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px]">
-                              <div className="flex items-center gap-2 text-[10px]">
-                                <label className="flex items-center gap-1 cursor-pointer font-semibold">
-                                  <input
-                                    type="radio"
-                                    name={`mode-${row.rowIndex}`}
-                                    checked={!state.createNew}
-                                    onChange={() => setRowStates((prev) => ({ ...prev, [row.rowIndex]: { ...prev[row.rowIndex], createNew: false } }))}
-                                  />
-                                  Map Existing
-                                </label>
-                                <label className="flex items-center gap-1 cursor-pointer font-semibold">
-                                  <input
-                                    type="radio"
-                                    name={`mode-${row.rowIndex}`}
-                                    checked={state.createNew}
-                                    onChange={() => setRowStates((prev) => ({ ...prev, [row.rowIndex]: { ...prev[row.rowIndex], createNew: true } }))}
-                                  />
-                                  Create New
-                                </label>
-                              </div>
-
-                              {!state.createNew ? (
-                                <InstrumentTypeahead
-                                  selectedInstrument={state.selectedInstrumentId ? ({ id: state.selectedInstrumentId, name: 'Mapped Instrument' } as Instrument) : null}
-                                  onSelect={(inst) => setRowStates((prev) => ({ ...prev, [row.rowIndex]: { ...prev[row.rowIndex], selectedInstrumentId: inst.id } }))}
+                          {!state.createNew ? (
+                            <InstrumentTypeahead
+                              selectedInstrument={state.selectedInstrumentId ? ({ id: state.selectedInstrumentId, name: 'Mapped Instrument' } as Instrument) : null}
+                              onSelect={(inst) => setRowStates((prev) => ({ ...prev, [row.rowIndex]: { ...prev[row.rowIndex], selectedInstrumentId: inst?.id } }))}
+                            />
+                          ) : (
+                            <div className="space-y-1.5 text-[11px]">
+                              <Input
+                                value={state.newInstrument?.name || ''}
+                                onChange={(e) => updateRowNewInstrument(row.rowIndex, { name: e.target.value })}
+                                placeholder="Instrument Name"
+                                className="h-7 text-xs"
+                              />
+                              <div className="grid grid-cols-2 gap-1.5">
+                                <Input
+                                  value={state.newInstrument?.symbol || ''}
+                                  onChange={(e) =>
+                                    updateRowNewInstrument(row.rowIndex, {
+                                      symbol: e.target.value,
+                                      yahooSymbol: `${e.target.value.toUpperCase()}.NS`,
+                                    })
+                                  }
+                                  placeholder="Symbol (e.g. INFY)"
+                                  className="h-7 text-xs"
                                 />
-                              ) : (
-                                <div className="space-y-1 text-[10px]">
-                                  <Input
-                                    value={state.newInstrument?.name || ''}
-                                    onChange={(e) => updateRowNewInstrument(row.rowIndex, { name: e.target.value })}
-                                    placeholder="Name"
-                                    className="h-6 text-[10px]"
-                                  />
-                                  <div className="grid grid-cols-2 gap-1">
-                                    <Input
-                                      value={state.newInstrument?.symbol || ''}
-                                      onChange={(e) =>
-                                        updateRowNewInstrument(row.rowIndex, {
-                                          symbol: e.target.value,
-                                          yahooSymbol: `${e.target.value.toUpperCase()}.NS`,
-                                        })
-                                      }
-                                      placeholder="Symbol"
-                                      className="h-6 text-[10px]"
-                                    />
-                                    <Input
-                                      value={state.newInstrument?.yahooSymbol || ''}
-                                      onChange={(e) => updateRowNewInstrument(row.rowIndex, { yahooSymbol: e.target.value })}
-                                      placeholder="Yahoo Symbol"
-                                      className="h-6 text-[10px]"
-                                    />
-                                  </div>
-                                </div>
-                              )}
+                                <Input
+                                  value={state.newInstrument?.yahooSymbol || ''}
+                                  onChange={(e) => updateRowNewInstrument(row.rowIndex, { yahooSymbol: e.target.value })}
+                                  placeholder="Yahoo Ticker"
+                                  className="h-7 text-xs"
+                                />
+                              </div>
                             </div>
                           )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop View: Table (Visible on >= 640px) */}
+              <div className="hidden sm:block overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent bg-slate-50 dark:bg-slate-900 text-xs">
+                      <TableHead className="w-10 text-center">Import</TableHead>
+                      <TableHead>Date & Type</TableHead>
+                      <TableHead>Parsed Instrument</TableHead>
+                      <TableHead className="text-right">Qty × Price / Amount</TableHead>
+                      <TableHead>Status & Instrument Match</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {previewData.rows.map((row) => {
+                      const state = rowStates[row.rowIndex] || { skip: false };
+                      const isDup = row.duplicate;
+                      const isUnmatched = row.matchStatus === 'unmatched';
+                      const pr = row.parsedRow || {};
+                      const isDividend = pr.kind === 'dividend';
+
+                      return (
+                        <TableRow key={row.rowIndex} className={`text-xs border-slate-100 dark:border-slate-800 ${state.skip ? 'opacity-50 bg-slate-50/50 dark:bg-slate-950/20' : ''}`}>
+                          <TableCell className="text-center">
+                            <Checkbox
+                              checked={!state.skip}
+                              onCheckedChange={(checked) => {
+                                setRowStates((prev) => ({
+                                  ...prev,
+                                  [row.rowIndex]: { ...prev[row.rowIndex], skip: !checked },
+                                }));
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell className="tabular-nums">
+                            <div>{formatDate(pr.tradeDate)}</div>
+                            {isDividend ? (
+                              <Badge className="bg-purple-100 text-purple-800 text-[8px] px-1 py-0">
+                                DIVIDEND
+                              </Badge>
+                            ) : (
+                              <Badge className={`text-[8px] px-1 py-0 ${pr.type === 'buy' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}>
+                                {pr.type?.toUpperCase() || pr.kind?.toUpperCase() || 'TRADE'}
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-semibold text-slate-900 dark:text-white">{pr.parsedName || pr.parsedSymbol || '—'}</div>
+                            <div className="text-[10px] text-slate-400">
+                              {pr.parsedSymbol ? `Ticker: ${pr.parsedSymbol}` : ''} {pr.parsedIsin ? `• ISIN: ${pr.parsedIsin}` : ''} {pr.exchange ? `• Exch: ${pr.exchange}` : ''}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {isDividend ? (
+                              <div className="font-bold text-emerald-600 dark:text-emerald-400">
+                                {formatMoney(pr.amount || pr.price)}
+                              </div>
+                            ) : (
+                              <div>
+                                {pr.quantity} × {formatMoney(pr.price)}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="space-y-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {row.matchStatus === 'matched' ? (
+                                <Badge className="bg-emerald-100 text-emerald-800 text-[9px]">
+                                  {row.matchedInstrument?.name || 'Matched'}
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-amber-100 text-amber-800 text-[9px]">Unmatched</Badge>
+                              )}
+                              {isDup && <Badge variant="outline" className="text-purple-600 border-purple-300 text-[9px]">Duplicate</Badge>}
+                              {pr.error && <Badge className="bg-red-100 text-red-800 text-[9px]">{pr.error}</Badge>}
+                            </div>
+
+                            {/* Instrument Resolution for Unmatched */}
+                            {isUnmatched && !state.skip && (
+                              <div className="mt-1.5 space-y-1.5 p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px]">
+                                <div className="flex items-center gap-2 text-[10px]">
+                                  <label className="flex items-center gap-1 cursor-pointer font-semibold">
+                                    <input
+                                      type="radio"
+                                      name={`mode-${row.rowIndex}`}
+                                      checked={!state.createNew}
+                                      onChange={() => setRowStates((prev) => ({ ...prev, [row.rowIndex]: { ...prev[row.rowIndex], createNew: false } }))}
+                                    />
+                                    Map Existing
+                                  </label>
+                                  <label className="flex items-center gap-1 cursor-pointer font-semibold">
+                                    <input
+                                      type="radio"
+                                      name={`mode-${row.rowIndex}`}
+                                      checked={state.createNew}
+                                      onChange={() => setRowStates((prev) => ({ ...prev, [row.rowIndex]: { ...prev[row.rowIndex], createNew: true } }))}
+                                    />
+                                    Create New
+                                  </label>
+                                </div>
+
+                                {!state.createNew ? (
+                                  <InstrumentTypeahead
+                                    selectedInstrument={state.selectedInstrumentId ? ({ id: state.selectedInstrumentId, name: 'Mapped Instrument' } as Instrument) : null}
+                                    onSelect={(inst) => setRowStates((prev) => ({ ...prev, [row.rowIndex]: { ...prev[row.rowIndex], selectedInstrumentId: inst?.id } }))}
+                                  />
+                                ) : (
+                                  <div className="space-y-1 text-[10px]">
+                                    <Input
+                                      value={state.newInstrument?.name || ''}
+                                      onChange={(e) => updateRowNewInstrument(row.rowIndex, { name: e.target.value })}
+                                      placeholder="Name"
+                                      className="h-6 text-[10px]"
+                                    />
+                                    <div className="grid grid-cols-2 gap-1">
+                                      <Input
+                                        value={state.newInstrument?.symbol || ''}
+                                        onChange={(e) =>
+                                          updateRowNewInstrument(row.rowIndex, {
+                                            symbol: e.target.value,
+                                            yahooSymbol: `${e.target.value.toUpperCase()}.NS`,
+                                          })
+                                        }
+                                        placeholder="Symbol"
+                                        className="h-6 text-[10px]"
+                                      />
+                                      <Input
+                                        value={state.newInstrument?.yahooSymbol || ''}
+                                        onChange={(e) => updateRowNewInstrument(row.rowIndex, { yahooSymbol: e.target.value })}
+                                        placeholder="Yahoo Symbol"
+                                        className="h-6 text-[10px]"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
 
-            <DialogFooter className="pt-2 gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => setStep(1)} className="text-xs">
+            <DialogFooter className="pt-2 gap-2 shrink-0 flex-col-reverse sm:flex-row sm:justify-end">
+              <Button type="button" variant="outline" size="sm" onClick={() => setStep(1)} className="text-xs w-full sm:w-auto">
                 Back
               </Button>
-              <Button type="button" size="sm" onClick={handleCommitSubmit} disabled={isCommitting} className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white">
+              <Button type="button" size="sm" onClick={handleCommitSubmit} disabled={isCommitting} className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto">
                 {isCommitting ? 'Importing Statements...' : `Import Confirmed Rows (${Object.values(rowStates).filter((s) => !s.skip).length})`}
               </Button>
             </DialogFooter>

@@ -1,6 +1,7 @@
 'use client';
 
 import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -31,6 +32,7 @@ export function RecordTradeDialog({
   trigger,
 }: RecordTradeDialogProps) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -51,7 +53,12 @@ export function RecordTradeDialog({
           brokerAccounts={brokerAccounts}
           initialBrokerAccountId={initialBrokerAccountId}
           initialInstrument={initialInstrument}
-          onSuccess={() => setOpen(false)}
+          onSuccess={() => {
+            setOpen(false);
+            // Re-run the server component so new positions + freshly auto-fetched prices show
+            // without a manual reload.
+            router.refresh();
+          }}
         />
       </DialogContent>
     </Dialog>
