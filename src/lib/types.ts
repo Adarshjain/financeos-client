@@ -85,6 +85,39 @@ export interface CreateInstrumentRequest {
   currency?: string;
 }
 
+export interface InstrumentPricePreview {
+  value: string;
+  asOf: string;
+}
+
+export interface InstrumentCandidate {
+  source: 'LOCAL' | 'AMFI' | 'YAHOO';
+  type: InstrumentType;
+  name: string;
+  symbol?: string;
+  exchange?: string;
+  isin?: string;
+  amfiCode?: string;
+  yahooSymbol?: string;
+  currency?: string;
+  pricePreview?: InstrumentPricePreview;
+  existingInstrumentId?: string;
+}
+
+export interface ResolveInstrumentRequest {
+  type: InstrumentType;
+  name: string;
+  symbol?: string;
+  exchange?: string;
+  isin?: string;
+  amfiCode?: string;
+  yahooSymbol?: string;
+  currency?: string;
+  // Set for LOCAL candidates so the server reuses that exact instrument instead of
+  // creating a duplicate when it lacks dedup keys (isin/amfiCode/yahooSymbol/symbol+exchange).
+  existingInstrumentId?: string;
+}
+
 export interface SetPriceRequest {
   price: string | number;
   asOf?: string;

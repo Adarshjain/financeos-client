@@ -19,10 +19,13 @@ import type {
   ImportCommitResult,
   ImportPreview,
   Instrument,
+  InstrumentCandidate,
+  InstrumentType,
   InvestmentTransactionResponse,
   InvestmentTransactionType,
   PriceHistoryPoint,
   PriceRefreshResult,
+  ResolveInstrumentRequest,
   SetPriceRequest,
   Sip,
   UpdateCorporateActionRequest,
@@ -122,6 +125,25 @@ export async function searchInstruments(
 ): Promise<ApiResult<Instrument[]>> {
   return apiResult('Failed to search instruments', async () => {
     return await instrumentsApi.search(query, type);
+  });
+}
+
+export async function catalogSearch(
+  query: string,
+  type?: InstrumentType
+): Promise<ApiResult<InstrumentCandidate[]>> {
+  return apiResult('Failed to search instrument catalog', async () => {
+    return await instrumentsApi.catalogSearch(query, type);
+  });
+}
+
+export async function resolveInstrument(
+  req: ResolveInstrumentRequest
+): Promise<ApiResult<Instrument>> {
+  return apiResult('Failed to resolve instrument', async () => {
+    const instrument = await instrumentsApi.resolveInstrument(req);
+    revalidatePath('/investments');
+    return instrument;
   });
 }
 

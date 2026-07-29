@@ -78,7 +78,7 @@ export function HoldingCard({ pos }: HoldingCardProps) {
     <div className="p-3.5 sm:p-4 bg-white dark:bg-slate-900 hover:bg-slate-50/80 dark:hover:bg-slate-850 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all space-y-2">
       {/* Row 1: Top Metadata (Qty & Avg Cost Left | P&L % Right) */}
       <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <span>
             Qty. <strong className="text-slate-800 dark:text-slate-200 font-bold">{pos.quantity}</strong>
           </span>
@@ -86,6 +86,10 @@ export function HoldingCard({ pos }: HoldingCardProps) {
           <span>
             Avg. <strong className="text-slate-800 dark:text-slate-200 font-bold">{formatMoney(pos.avgCost)}</strong>
           </span>
+          <span>•</span>
+          <Badge variant="secondary" className="text-[9px] uppercase px-1.5 py-0 font-bold">
+            {pos.instrument.type}
+          </Badge>
         </div>
         <div
           className={`font-bold tabular-nums ${
@@ -102,9 +106,6 @@ export function HoldingCard({ pos }: HoldingCardProps) {
         <div>
           <div className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5">
             <span>{pos.instrument.symbol || pos.instrument.name}</span>
-            <Badge variant="secondary" className="text-[9px] uppercase px-1.5 py-0 font-bold">
-              {pos.instrument.type}
-            </Badge>
             {manualOnly && (
               <Badge
                 variant="outline"

@@ -9,6 +9,7 @@ import {Dividend, InvestmentSummary, InvestmentTransactionResponse, Position, Si
 
 import {AllocationCharts} from './AllocationCharts';
 import {CreateDividendDialog} from './CreateDividendDialog';
+import {CreateInstrumentDialog} from './CreateInstrumentDialog';
 import {DividendsTable} from './DividendsTable';
 import {HoldingsTab} from './HoldingsTab';
 import {ImportWizardDialog} from './ImportWizardDialog';
@@ -46,7 +47,10 @@ export function InvestmentsView({
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             Portfolio
           </h1>
-          <RecordTradeDialog brokerAccounts={brokerAccounts}/>
+          <div className="flex items-center gap-2">
+            <CreateInstrumentDialog/>
+            <RecordTradeDialog brokerAccounts={brokerAccounts}/>
+          </div>
         </div>
 
         {/* Main Tabs Bar */}
