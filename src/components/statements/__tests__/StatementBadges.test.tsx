@@ -17,7 +17,7 @@ describe('StatementBadges', () => {
     rerender(<StatementVerdictBadge verdict="REJECTED" />);
     expect(screen.getByText('Rejected')).toBeInTheDocument();
 
-    rerender(<StatementVerdictBadge verdict="FAILED" />);
+    rerender(<StatementVerdictBadge verdict={'FAILED' as any} />);
     expect(screen.getByText('FAILED')).toBeInTheDocument();
 
     rerender(<StatementVerdictBadge verdict={'UNKNOWN' as any} />);

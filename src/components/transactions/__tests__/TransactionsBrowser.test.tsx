@@ -7,9 +7,10 @@ import { TransactionsBrowser } from '@/components/transactions/TransactionsBrows
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { AccountType } from '@/lib/types';
 
 const mockAccounts: Account[] = [
-  { id: 'acc1', name: 'HDFC Savings', type: 'bank_account' },
+  { id: 'acc1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT },
 ];
 
 const mockCategories: Category[] = [
@@ -53,10 +54,13 @@ describe('TransactionsBrowser (CD-2a, CD-6)', () => {
       success: true,
       data: {
         content: [mockTxn],
-        page: 0,
+        number: 0,
         size: 50,
         totalElements: 1,
         totalPages: 1,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 
@@ -79,10 +83,13 @@ describe('TransactionsBrowser (CD-2a, CD-6)', () => {
       success: true,
       data: {
         content: [mockTxn],
-        page: 0,
+        number: 0,
         size: 50,
         totalElements: 1,
         totalPages: 1,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 
@@ -118,10 +125,13 @@ describe('TransactionsBrowser (CD-2a, CD-6)', () => {
       success: true,
       data: {
         content: [mockTxn],
-        page: 0,
+        number: 0,
         size: 50,
         totalElements: 1,
         totalPages: 1,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 

@@ -15,7 +15,6 @@ import {
   isWithinLastNDays,
   parseCalendarDate,
   toCalendarDate,
-  truncatedDescription,
 } from '../utils';
 
 // These cover the calendar-date corruption that shipped for a long time:

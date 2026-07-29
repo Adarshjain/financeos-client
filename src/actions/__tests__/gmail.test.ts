@@ -26,7 +26,7 @@ describe('gmail server actions (WP-3)', () => {
   });
 
   it('handles OAuth, sync, senders, and connections API calls', async () => {
-    vi.mocked(gmailApi.startOAuth).mockResolvedValue({ authUrl: 'http://auth' });
+    vi.mocked(gmailApi.startOAuth).mockResolvedValue({ authorizationUrl: 'http://auth' });
     vi.mocked(gmailApi.sync).mockResolvedValue({ syncedCount: 5 } as any);
     vi.mocked(gmailApi.listSenders).mockResolvedValue([]);
     vi.mocked(gmailApi.createSender).mockResolvedValue({ id: 's1' } as any);

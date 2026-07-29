@@ -21,22 +21,22 @@ const mockCatalog: DatasourceCatalog = {
       label: 'Date',
       type: 'date',
       role: 'dimension',
-      allowedInReports: ['TABLE', 'AGGREGATED'],
+      allowedInReports: ['TABLE'],
     },
     {
       name: 'amount',
       label: 'Amount',
       type: 'number',
       role: 'measure',
-      allowedInReports: ['TABLE', 'AGGREGATED'],
-      aggregations: ['SUM', 'AVG'],
+      allowedInReports: ['TABLE'],
+      aggregations: ['sum', 'avg'],
     },
     {
       name: 'category',
       label: 'Category',
       type: 'enum',
       role: 'dimension',
-      allowedInReports: ['TABLE', 'AGGREGATED'],
+      allowedInReports: ['TABLE'],
       dynamic: true,
     },
     {
@@ -52,7 +52,7 @@ const mockCatalog: DatasourceCatalog = {
       label: 'Excluded',
       type: 'boolean',
       role: 'filter',
-      allowedInReports: ['TABLE', 'AGGREGATED'],
+      allowedInReports: ['TABLE'],
     },
     {
       name: 'description',
@@ -72,7 +72,6 @@ const mockCatalog: DatasourceCatalog = {
       relative: ['this_month', 'last_x_days'],
     },
   },
-  reportTypes: ['TABLE', 'AGGREGATED'],
 };
 
 describe('reports catalog selectors', () => {

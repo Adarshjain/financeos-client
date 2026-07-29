@@ -6,10 +6,20 @@ import { ReviewBrowser } from '@/components/transactions/ReviewBrowser';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { AccountType } from '@/lib/types';
 
 const mockAccounts: Account[] = [
-  { id: 'acc1', name: 'HDFC Savings', type: 'bank_account', lastStatementDate: '2026-06-30' },
-  { id: 'acc2', name: 'ICICI Card', type: 'credit_card', lastStatementDate: null },
+  { id: 'acc1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT, lastStatementDate: '2026-06-30' },
+  {
+    id: 'acc2',
+    name: 'ICICI Card',
+    type: AccountType.CREDIT_CARD,
+    last4: '0002',
+    creditLimit: 100000,
+    paymentDueDay: 10,
+    gracePeriodDays: 20,
+    lastStatementDate: null,
+  },
 ];
 
 const mockCategories: Category[] = [
@@ -36,10 +46,13 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
       success: true,
       data: {
         content: [mockReviewTxn],
-        page: 0,
+        number: 0,
         size: 50,
         totalElements: 1,
         totalPages: 1,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 
@@ -82,10 +95,13 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
       success: true,
       data: {
         content: [mockReviewTxn],
-        page: 1,
+        number: 1,
         size: 50,
         totalElements: 51,
         totalPages: 2,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 
@@ -94,10 +110,13 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
       success: true,
       data: {
         content: [],
-        page: 1,
+        number: 1,
         size: 50,
         totalElements: 50,
         totalPages: 1,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 
@@ -106,10 +125,13 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
       success: true,
       data: {
         content: [mockReviewTxn],
-        page: 0,
+        number: 0,
         size: 50,
         totalElements: 50,
         totalPages: 1,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 
@@ -125,10 +147,13 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
       success: true,
       data: {
         content: [mockReviewTxn],
-        page: 0,
+        number: 0,
         size: 50,
         totalElements: 1,
         totalPages: 1,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 
@@ -154,10 +179,13 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
       success: true,
       data: {
         content: [mockReviewTxn],
-        page: 0,
+        number: 0,
         size: 50,
         totalElements: 1,
         totalPages: 1,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 
@@ -203,10 +231,13 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
       success: true,
       data: {
         content: [mockReviewTxn],
-        page: 0,
+        number: 0,
         size: 50,
         totalElements: 1,
         totalPages: 1,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 

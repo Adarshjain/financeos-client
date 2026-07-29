@@ -11,7 +11,6 @@ import {
   buildUpdateRequest,
   isMinimalValid,
   serializeDefinition,
-  validateReportState,
   validationErrors,
 } from '../serialize';
 
@@ -179,19 +178,19 @@ describe('serializeDefinition and request builders (CD-13)', () => {
     stateRaw.table.tableMode = 'raw';
     stateRaw.table.raw = {
       columns: ['amount', 'date'],
-      sort: [{ field: 'date', direction: 'desc' }],
+      sort: [{ key: 'date', direction: 'desc' }],
     };
 
     const defRaw = serializeDefinition(stateRaw, catalog) as any;
     expect(defRaw.mode).toBe('raw');
     expect(defRaw.columns).toEqual(['amount', 'date']);
-    expect(defRaw.sort).toEqual([{ field: 'date', direction: 'desc' }]);
+    expect(defRaw.sort).toEqual([{ key: 'date', direction: 'desc' }]);
 
     const stateAgg = pivotState({
       rows: [{ id: '1', field: 'date', granularity: 'year' }],
       columns: [{ id: '2', field: 'category' }],
       measures: [{ id: '3', field: 'amount', aggregation: 'SUM' as any }],
-      sort: [{ field: 'amount_SUM', direction: 'asc' }],
+      sort: [{ key: 'amount_SUM', direction: 'asc' }],
     });
 
     const defAgg = serializeDefinition(stateAgg, catalog) as any;

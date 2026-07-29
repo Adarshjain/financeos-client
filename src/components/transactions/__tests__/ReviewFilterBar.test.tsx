@@ -3,10 +3,20 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ReviewFilterBar } from '@/components/transactions/ReviewFilterBar';
 import type { Account } from '@/lib/account.types';
+import { AccountType } from '@/lib/types';
 
 const mockAccounts: Account[] = [
-  { id: 'acc1', name: 'HDFC Bank', type: 'bank_account', lastStatementDate: '2026-06-30' },
-  { id: 'acc2', name: 'ICICI Card', type: 'credit_card', lastStatementDate: null },
+  { id: 'acc1', name: 'HDFC Bank', type: AccountType.BANK_ACCOUNT, lastStatementDate: '2026-06-30' },
+  {
+    id: 'acc2',
+    name: 'ICICI Card',
+    type: AccountType.CREDIT_CARD,
+    last4: '0002',
+    creditLimit: 100000,
+    paymentDueDay: 10,
+    gracePeriodDays: 20,
+    lastStatementDate: null,
+  },
 ];
 
 describe('ReviewFilterBar (CD-1, CD-5)', () => {

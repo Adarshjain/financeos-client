@@ -84,13 +84,13 @@ describe('apiClient (CD-14 & API wrapper coverage)', () => {
         mockFetchResponse(true, 200, { id: 'u1', email: 'test@example.com' }),
       );
 
-      const res = await authApi.signup({ email: 'test@example.com', password: 'pass', name: 'User' });
+      const res = await authApi.signup({ email: 'test@example.com', password: 'pass' });
       expect(res.id).toBe('u1');
 
       fetchSpy.mockImplementationOnce(() =>
         mockFetchResponse(false, 400, { code: 'EMAIL_TAKEN', message: 'Email taken', timestamp: '' }),
       );
-      await expect(authApi.signup({ email: 'test@example.com', password: 'pass', name: 'User' })).rejects.toThrow('Email taken');
+      await expect(authApi.signup({ email: 'test@example.com', password: 'pass' })).rejects.toThrow('Email taken');
     });
 
     it('login returns user and sessionCookie when present', async () => {
@@ -126,9 +126,9 @@ describe('apiClient (CD-14 & API wrapper coverage)', () => {
       const user = await authApi.getCurrentUser();
       expect(user.id).toBe('u1');
 
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { authUrl: 'http://auth' }));
+      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { authorizationUrl: 'http://auth' }));
       const google = await authApi.startGoogleAuth();
-      expect(google.authUrl).toBe('http://auth');
+      expect(google.authorizationUrl).toBe('http://auth');
     });
 
     it('handleGoogleCallback success and error', async () => {
@@ -188,7 +188,7 @@ describe('apiClient (CD-14 & API wrapper coverage)', () => {
       expect(await transactionsApi.list(0, 10, 'date,desc')).toEqual({ content: [] });
 
       fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { content: [] }));
-      expect(await transactionsApi.search({ filterClauses: [] }, 0, 10)).toEqual({ content: [] });
+      expect(await transactionsApi.search({ filters: [] }, 0, 10)).toEqual({ content: [] });
 
       fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 201, { id: 't1' }));
       expect(await transactionsApi.create({ accountId: 'a1', amount: 100 } as any)).toEqual({ id: 't1' });
@@ -224,7 +224,7 @@ describe('apiClient (CD-14 & API wrapper coverage)', () => {
       expect(await investmentsApi.createTransaction({ brokerAccountId: 'b1', instrumentId: 'inst1', type: 'buy', quantity: 10, price: 100, tradeDate: '2026-07-25' })).toEqual({ id: 'i1' });
 
       fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'i1' }));
-      expect(await investmentsApi.updateTransaction('i1', { quantity: 12 })).toEqual({ id: 'i1' });
+      expect(await investmentsApi.updateTransaction('i1', { type: 'buy', quantity: 12, price: 100, tradeDate: '2026-07-25' })).toEqual({ id: 'i1' });
 
       fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 204, ''));
       await investmentsApi.deleteTransaction('i1');

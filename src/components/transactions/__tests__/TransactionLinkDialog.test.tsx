@@ -6,10 +6,19 @@ import * as transactionsActions from '@/actions/transactions';
 import { TransactionLinkDialog } from '@/components/transactions/TransactionLinkDialog';
 import type { Account } from '@/lib/account.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { AccountType } from '@/lib/types';
 
 const mockAccounts: Account[] = [
-  { id: 'acc-bank', name: 'HDFC Savings', type: 'bank_account' },
-  { id: 'acc-card', name: 'Amex Credit Card', type: 'credit_card' },
+  { id: 'acc-bank', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT },
+  {
+    id: 'acc-card',
+    name: 'Amex Credit Card',
+    type: AccountType.CREDIT_CARD,
+    last4: '0001',
+    creditLimit: 100000,
+    paymentDueDay: 10,
+    gracePeriodDays: 20,
+  },
 ];
 
 const mockAnchorDebit: Transaction = {
@@ -58,10 +67,13 @@ describe('TransactionLinkDialog (CD-7, CD-9)', () => {
       success: true,
       data: {
         content: [mockCandidateCreditDiffAccount, mockAlreadyLinkedCandidate],
-        page: 0,
+        number: 0,
         size: 50,
         totalElements: 2,
         totalPages: 1,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 
@@ -85,7 +97,7 @@ describe('TransactionLinkDialog (CD-7, CD-9)', () => {
   it('renders align refund categories checkbox ONLY for REFUND linkType (CD-9)', async () => {
     vi.spyOn(transactionsActions, 'searchTransactions').mockResolvedValue({
       success: true,
-      data: { content: [], page: 0, size: 50, totalElements: 0, totalPages: 0 },
+      data: { content: [], number: 0, size: 50, totalElements: 0, totalPages: 0, first: true, last: true, empty: false },
     });
 
     const { rerender } = render(
@@ -127,10 +139,13 @@ describe('TransactionLinkDialog (CD-7, CD-9)', () => {
       data: {
         // Mismatched amount + date candidate
         content: [{ ...mockCandidateCreditDiffAccount, amount: 2000, date: '2026-07-20' }],
-        page: 0,
+        number: 0,
         size: 50,
         totalElements: 1,
         totalPages: 1,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 
@@ -184,10 +199,13 @@ describe('TransactionLinkDialog (CD-7, CD-9)', () => {
       success: true,
       data: {
         content: [mockCandidateCreditDiffAccount],
-        page: 0,
+        number: 0,
         size: 50,
         totalElements: 1,
         totalPages: 1,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 
@@ -219,10 +237,13 @@ describe('TransactionLinkDialog (CD-7, CD-9)', () => {
       success: true,
       data: {
         content: [mockCandidateCreditDiffAccount],
-        page: 0,
+        number: 0,
         size: 50,
         totalElements: 1,
         totalPages: 1,
+        first: true,
+        last: true,
+        empty: false,
       },
     });
 

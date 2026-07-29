@@ -7,9 +7,10 @@ import { TransactionDetailContent } from '@/components/transactions/TransactionD
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import type { Account } from '@/lib/account.types';
 import type { Transaction } from '@/lib/transaction.types';
+import { AccountType } from '@/lib/types';
 
 const mockAccounts: Account[] = [
-  { id: 'acc1', name: 'HDFC Savings', type: 'bank_account' },
+  { id: 'acc1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT },
 ];
 
 const mockTxnWithZeroBalance: Transaction = {
