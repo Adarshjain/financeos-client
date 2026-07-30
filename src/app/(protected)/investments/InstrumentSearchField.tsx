@@ -11,7 +11,13 @@ import { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
 
 interface InstrumentSearchFieldProps {
   type?: InstrumentType;
-  onResolved: (instrument: Instrument) => void;
+  // Default mode: resolve the picked candidate to a persisted instrument (dedup-or-create) and
+  // emit it. Used by the Add-Instrument flow.
+  onResolved?: (instrument: Instrument) => void;
+  // "Fill fields" mode: instead of persisting, hand the raw candidate back so the caller can
+  // populate an existing form (e.g. Edit Instrument, where the row must keep its id + holdings).
+  // When provided, selecting a result does NOT hit resolveInstrument.
+  onPick?: (candidate: InstrumentCandidate) => void;
   autoFocus?: boolean;
   placeholder?: string;
 }
@@ -27,6 +33,7 @@ const candidateKey = (c: InstrumentCandidate) =>
 export function InstrumentSearchField({
   type,
   onResolved,
+  onPick,
   autoFocus,
   placeholder,
 }: InstrumentSearchFieldProps) {
@@ -58,6 +65,14 @@ export function InstrumentSearchField({
   }, [query, type]);
 
   const handleSelect = async (candidate: InstrumentCandidate) => {
+    // Fill-fields mode: hand the candidate to the caller without persisting anything.
+    if (onPick) {
+      onPick(candidate);
+      setQuery('');
+      setResults([]);
+      return;
+    }
+
     const rowKey = candidateKey(candidate);
     setResolvingKey(rowKey);
     try {
@@ -74,7 +89,7 @@ export function InstrumentSearchField({
       });
 
       if (res.success) {
-        onResolved(res.data);
+        onResolved?.(res.data);
         toast.success(`Added ${res.data.name}`);
         setQuery('');
         setResults([]);
@@ -173,7 +188,7 @@ export function InstrumentSearchField({
           </div>
         ) : query.trim().length >= 2 ? (
           <div className="p-3 text-center text-xs text-slate-400">
-            No matches. Use “Enter manually (advanced)” below.
+            No matches — enter the details below manually.
           </div>
         ) : (
           <div className="p-3 text-center text-xs text-slate-400">
