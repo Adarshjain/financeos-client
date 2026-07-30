@@ -112,9 +112,9 @@ export function TradebookSection({ investmentTransactions, brokerAccounts, accou
             {/* Mobile View: Clean Card List */}
             <div className="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800/80">
               {pagedTransactions.map((tx) => (
-                <div key={tx.id} className="p-3.5 space-y-2">
+                <div key={tx.id} className="p-3.5 space-y-0.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500 dark:text-slate-400 font-mono">{formatDate(tx.tradeDate)}</span>
+                    <span className="text-slate-500 dark:text-slate-500">{formatDate(tx.tradeDate)}</span>
                     <div className="flex items-center gap-1.5">
                       {getTypeBadge(tx.type)}
                       <EditTransactionDialog transaction={tx} brokerAccounts={brokerAccounts} />
@@ -127,7 +127,7 @@ export function TradebookSection({ investmentTransactions, brokerAccounts, accou
                         {getInstrumentDisplayName(tx)}
                       </div>
                       <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
-                        Broker: {getBrokerName(tx)}
+                        {getBrokerName(tx)}
                       </div>
                     </div>
                     <div className="text-right">
