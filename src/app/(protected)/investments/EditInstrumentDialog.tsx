@@ -24,7 +24,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Instrument, InstrumentType } from '@/lib/types';
+import { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
+
+import { InstrumentSearchField } from './InstrumentSearchField';
 
 interface EditInstrumentDialogProps {
   instrument: Instrument;
@@ -56,6 +58,21 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
       setCurrency(instrument.currency || 'INR');
     }
   }, [open, instrument]);
+
+  // Search-fill: pick a live AMFI/Yahoo candidate to overwrite this instrument's identifiers
+  // (name/symbol/exchange/isin/amfiCode/yahooSymbol) so pricing wires up. The instrument keeps
+  // its id + holdings — nothing is persisted until the user reviews and clicks Save.
+  const handlePicked = (c: InstrumentCandidate) => {
+    setType(c.type);
+    setName(c.name);
+    setSymbol(c.symbol || '');
+    setExchange(c.exchange || '');
+    setIsin(c.isin || '');
+    setAmfiCode(c.amfiCode || '');
+    setYahooSymbol(c.yahooSymbol || '');
+    if (c.currency) setCurrency(c.currency);
+    toast.success(`Filled from “${c.name}” — review and save`);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,11 +120,23 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
         <DialogHeader>
           <DialogTitle className="text-base font-bold">Edit Instrument</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
-            Update metadata, ticker symbols, or pricing identifiers for this instrument.
+            Search the live AMFI / Yahoo catalog to auto-fill pricing identifiers, or edit the
+            fields below by hand. Saving keeps this instrument and its holdings.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-2 py-2">
+        <div className="space-y-2 py-1">
+          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            Search catalog to auto-fill
+          </Label>
+          <InstrumentSearchField
+            type={type}
+            onPick={handlePicked}
+            placeholder="Search AMFI / Yahoo to fix or fill identifiers…"
+          />
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-2 py-2 border-t border-slate-100 dark:border-slate-800">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type</Label>
