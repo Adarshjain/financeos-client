@@ -151,9 +151,6 @@ export function EditTransactionDialog({
           <DialogTitle className="text-base font-bold">
             Edit Trade ({instrumentName})
           </DialogTitle>
-          <DialogDescription className="text-xs text-slate-500">
-            Modify transaction details for {instrumentName}.
-          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-2 py-2">
