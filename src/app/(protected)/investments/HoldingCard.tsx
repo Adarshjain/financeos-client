@@ -83,9 +83,9 @@ export function HoldingCard({pos, brokerAccounts, allPositions}: HoldingCardProp
                     </Badge>
                 )}
               </div>
-              <div className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">{pos.instrument.symbol}</div>
               <span
-                  className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{pos.instrument.name || pos.instrument.symbol}</span>
+                  className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{pos.instrument.symbol || pos.instrument.name}</span>
+              <div className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">{pos.instrument.name}</div>
             </div>
 
             <div className="text-right shrink-0">

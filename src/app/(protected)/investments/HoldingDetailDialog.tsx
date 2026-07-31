@@ -7,7 +7,6 @@ import {listInvestmentTransactions} from '@/actions/investments';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from '@/components/ui/dialog';
-import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Broker} from '@/lib/account.types';
 import {InvestmentTransactionResponse, Position} from '@/lib/types';
 import {formatDate, formatMoney} from '@/lib/utils';
@@ -107,12 +106,12 @@ export function HoldingDetailDialog({
     setIsLoadingTrades(true);
     try {
       const filters = pos.holdingId
-        ? { holdingId: pos.holdingId }
-        : { brokerAccountId: pos.brokerAccountId, instrumentId: pos.instrument.id };
+          ? {holdingId: pos.holdingId}
+          : {brokerAccountId: pos.brokerAccountId, instrumentId: pos.instrument.id};
       const res = await listInvestmentTransactions(0, HOLDING_TRADES_PAGE_SIZE, filters);
       if (res.success) {
         const rows = [...(res.data.content || [])].sort(
-          (a, b) => new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime(),
+            (a, b) => new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime(),
         );
         setHoldingTrades(rows);
       }
@@ -129,33 +128,32 @@ export function HoldingDetailDialog({
 
   return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6 gap-2">
           {/* Header */}
           <DialogHeader>
             <div
-                className="flex flex-wrap items-start justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-              <div>
-                <DialogTitle className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                  <span>{pos.instrument.name}</span>
-                  {pos.instrument.symbol && (
-                      <span className="text-xs font-semibold text-slate-400">({pos.instrument.symbol})</span>
-                  )}
-                </DialogTitle>
-                <DialogDescription className="text-xs text-slate-500 flex items-center gap-2 mt-1">
-                  <span>Broker: <strong
-                      className="text-slate-700 dark:text-slate-300 font-bold">{pos.brokerName}</strong></span>
-                  <span>•</span>
-                  <Badge variant="secondary" className="text-[9px] uppercase px-1.5 py-0 font-bold">
-                    {pos.instrument.type}
-                  </Badge>
-                  {getSourceBadge(pos.lastPriceSource)}
-                </DialogDescription>
-              </div>
+                className="flex flex-wrap items-start justify-between gap-2 border-b border-slate-100 dark:border-slate-800">
+              <DialogTitle className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <span>{pos.instrument.name}</span>
+                {pos.instrument.symbol && (
+                    <span className="text-xs font-semibold text-slate-400">({pos.instrument.symbol})</span>
+                )}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-slate-500 flex items-center gap-2 mt-1">
+              </DialogDescription>
             </div>
           </DialogHeader>
 
+          <div className="text-xs text-slate-500 flex items-center gap-1">
+            <span className="text-slate-700 dark:text-slate-300 font-bold">{pos.brokerName}</span>
+            <span>•</span>
+            <Badge variant="secondary" className="text-[9px] uppercase px-1.5 py-0 font-bold">
+              {pos.instrument.type}
+            </Badge>
+            {getSourceBadge(pos.lastPriceSource)}
+          </div>
           {/* Quick Actions Row */}
-          <div className="flex flex-wrap items-center gap-2 py-1">
+          <div className="flex flex-wrap items-center gap-2">
             <RecordTradeDialog
                 brokerAccounts={brokerAccounts}
                 initialBrokerAccountId={pos.brokerAccountId}
@@ -206,165 +204,142 @@ export function HoldingDetailDialog({
             />
           </div>
 
-          {/* Tabs */}
-          <Tabs defaultValue="summary" className="w-full space-y-3 pt-2">
-            <TabsList className="grid w-full grid-cols-3 bg-slate-100 dark:bg-slate-900 text-xs">
-              <TabsTrigger value="summary" className="text-xs font-bold">
-                Summary
-              </TabsTrigger>
-              <TabsTrigger value="tradebook" className="text-xs font-bold gap-1">
-                Tradebook
-                <span
-                    className="text-[10px] font-extrabold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 px-1.5 py-0.5 rounded-full">
-                {holdingTrades.length}
-              </span>
-              </TabsTrigger>
-              <TabsTrigger value="history" className="text-xs font-bold">
-                Price History
-              </TabsTrigger>
-            </TabsList>
+          <span className="text-slate-700 dark:text-slate-300 font-bold mt-2">Summary</span>
 
-            {/* TAB 1: SUMMARY */}
-            <TabsContent value="summary" className="space-y-3 mt-0">
-              <div
-                  className="p-3.5 sm:p-4 bg-white dark:bg-slate-900 hover:bg-slate-50/80 dark:hover:bg-slate-850 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all grid grid-cols-2 sm:grid-cols-3 gap-2">
-                <MetricItem label="Quantity" value={pos.quantity}/>
-                <MetricItem label="Avg Cost" value={formatMoney(pos.avgCost)}/>
-                <MetricItem label="Invested" value={formatMoney(pos.invested)}/>
-                <MetricItem label="Current Value" value={formatMoney(pos.currentValue)}/>
-                <MetricItem
-                    label="Last Price (LTP)"
-                    value={formatMoney(pos.lastPrice)}
-                    subValue={
-                      pos.lastPriceAsOf ? (
-                          <div className="text-[9px] text-slate-400">As of {formatDate(pos.lastPriceAsOf)}</div>
-                      ) : undefined
-                    }
-                />
-                <MetricItem
-                    label="Unrealized P&L"
-                    value={`${unrl >= 0 ? '+' : ''}${formatMoney(pos.unrealizedGainLoss)}`}
-                    valueClassName={unrl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}
-                    subValue={
-                      <div
-                          className={`text-[10px] font-bold ${
-                              unrlPct >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-                          }`}
-                      >
-                        {unrlPct >= 0 ? '+' : ''}
-                        {pos.unrealizedGainLossPercent}%
-                      </div>
-                    }
-                />
-                <MetricItem
-                    label="Realized P&L"
-                    value={`${rlz >= 0 ? '+' : ''}${formatMoney(pos.realizedGainLoss)}`}
-                    valueClassName={rlz >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}
-                />
-                <MetricItem
-                    label="Dividends"
-                    value={formatMoney(pos.dividends || '0')}
-                    valueClassName="text-emerald-600 dark:text-emerald-400"
-                />
-                <MetricItem label="Total Charges" value={formatMoney(pos.totalCharges)}/>
-                <MetricItem
-                    label="XIRR"
-                    value={pos.xirr ? `${pos.xirr}%` : 'N/A'}
-                    valueClassName="text-blue-600 dark:text-blue-400"
-                />
-                <MetricItem
-                    label="Abs Return"
-                    value={pos.absoluteReturnPercent ? `${pos.absoluteReturnPercent}%` : 'N/A'}
-                    valueClassName="text-blue-600 dark:text-blue-400"
-                />
+          <div
+              className="p-3.5 sm:p-4 bg-white dark:bg-slate-900 hover:bg-slate-50/80 dark:hover:bg-slate-850 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <MetricItem label="Quantity" value={pos.quantity}/>
+            <MetricItem label="Avg Cost" value={formatMoney(pos.avgCost)}/>
+            <MetricItem label="Invested" value={formatMoney(pos.invested)}/>
+            <MetricItem label="Current Value" value={formatMoney(pos.currentValue)}/>
+            <MetricItem
+                label="Last Price (LTP)"
+                value={formatMoney(pos.lastPrice)}
+                subValue={
+                  pos.lastPriceAsOf ? (
+                      <div className="text-[9px] text-slate-400">As of {formatDate(pos.lastPriceAsOf)}</div>
+                  ) : undefined
+                }
+            />
+            <MetricItem
+                label="Unrealized P&L"
+                value={`${unrl >= 0 ? '+' : ''}${formatMoney(pos.unrealizedGainLoss)}`}
+                valueClassName={unrl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}
+                subValue={
+                  <div
+                      className={`text-[10px] font-bold ${
+                          unrlPct >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                      }`}
+                  >
+                    {unrlPct >= 0 ? '+' : ''}
+                    {pos.unrealizedGainLossPercent}%
+                  </div>
+                }
+            />
+            <MetricItem
+                label="Realized P&L"
+                value={`${rlz >= 0 ? '+' : ''}${formatMoney(pos.realizedGainLoss)}`}
+                valueClassName={rlz >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}
+            />
+            <MetricItem
+                label="Dividends"
+                value={formatMoney(pos.dividends || '0')}
+                valueClassName="text-emerald-600 dark:text-emerald-400"
+            />
+            <MetricItem label="Total Charges" value={formatMoney(pos.totalCharges)}/>
+            <MetricItem
+                label="XIRR"
+                value={pos.xirr ? `${pos.xirr}%` : 'N/A'}
+                valueClassName="text-blue-600 dark:text-blue-400"
+            />
+            <MetricItem
+                label="Abs Return"
+                value={pos.absoluteReturnPercent ? `${pos.absoluteReturnPercent}%` : 'N/A'}
+                valueClassName="text-blue-600 dark:text-blue-400"
+            />
+          </div>
+
+          <span className="text-slate-700 dark:text-slate-300 font-bold mt-2">Trade History</span>
+          {isLoadingTrades && holdingTrades.length === 0 ? (
+              <div className="flex items-center justify-center gap-2 py-10 text-xs text-slate-400">
+                <Loader2 className="w-4 h-4 animate-spin"/>
+                Loading trades...
               </div>
-            </TabsContent>
+          ) : holdingTrades.length === 0 ? (
+              <div
+                  className="text-center py-10 bg-slate-50 dark:bg-slate-900/40 rounded-lg border border-slate-200/60 dark:border-slate-800 text-xs text-slate-400 italic">
+                No trades recorded for this holding yet.
+              </div>
+          ) : (
+              <div
+                  className="divide-y divide-slate-100 dark:divide-slate-800/80 border border-slate-200/80 dark:border-slate-800 rounded-lg overflow-hidden max-h-72 overflow-y-auto">
+                {holdingTrades.map((tx) => {
+                  const isBuy = tx.type === 'buy';
+                  const totalAmt = parseNumber(tx.quantity) * parseNumber(tx.price);
 
-            {/* TAB 2: TRADEBOOK */}
-            <TabsContent value="tradebook" className="space-y-2 mt-0">
-              {isLoadingTrades && holdingTrades.length === 0 ? (
-                  <div className="flex items-center justify-center gap-2 py-10 text-xs text-slate-400">
-                    <Loader2 className="w-4 h-4 animate-spin"/>
-                    Loading trades...
-                  </div>
-              ) : holdingTrades.length === 0 ? (
-                  <div
-                      className="text-center py-10 bg-slate-50 dark:bg-slate-900/40 rounded-lg border border-slate-200/60 dark:border-slate-800 text-xs text-slate-400 italic">
-                    No trades recorded for this holding yet.
-                  </div>
-              ) : (
-                  <div
-                      className="divide-y divide-slate-100 dark:divide-slate-800/80 border border-slate-200/80 dark:border-slate-800 rounded-lg overflow-hidden max-h-72 overflow-y-auto">
-                    {holdingTrades.map((tx) => {
-                      const isBuy = tx.type === 'buy';
-                      const totalAmt = parseNumber(tx.quantity) * parseNumber(tx.price);
-
-                      return (
-                          <div
-                              key={tx.id}
-                              className="p-3 bg-white dark:bg-slate-900 flex items-center justify-between gap-3 text-xs"
-                          >
-                            <div className="space-y-0.5">
-                              <div className="flex items-center gap-2">
-                                <Badge
-                                    className={`text-[9px] uppercase px-1.5 py-0 font-extrabold border-0 ${
-                                        isBuy
-                                            ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                                            : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
-                                    }`}
-                                >
-                                  {tx.type}
-                                </Badge>
-                                <span className="font-bold text-slate-900 dark:text-white tabular-nums">
+                  return (
+                      <div
+                          key={tx.id}
+                          className="p-3 bg-white dark:bg-slate-900 flex items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <Badge
+                                className={`text-[9px] uppercase px-1.5 py-0 font-extrabold border-0 ${
+                                    isBuy
+                                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                        : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
+                                }`}
+                            >
+                              {tx.type}
+                            </Badge>
+                            <span className="font-bold text-slate-900 dark:text-white tabular-nums">
                             {tx.quantity} units @ {formatMoney(tx.price)}
                           </span>
-                              </div>
-                              <div className="text-[10px] text-slate-400 flex items-center gap-1">
-                                <span>{formatDate(tx.tradeDate)}</span>
-                                <span>•</span>
-                                <span>{tx.brokerName}</span>
-                                {tx.notes && (
-                                    <>
-                                      <span>•</span>
-                                      <span className="italic truncate max-w-[150px]">{tx.notes}</span>
-                                    </>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-3 shrink-0">
-                              <div className="text-right">
-                                <div className="font-extrabold text-slate-900 dark:text-white tabular-nums">
-                                  {formatMoney(totalAmt)}
-                                </div>
-                                {tx.totalCharges && parseNumber(tx.totalCharges) > 0 && (
-                                    <div className="text-[9px] text-slate-400">
-                                      Charges: {formatMoney(tx.totalCharges)}
-                                    </div>
-                                )}
-                              </div>
-
-                              <EditTransactionDialog transaction={tx} brokerAccounts={brokerAccounts} onSuccess={fetchHoldingTrades}/>
-                            </div>
                           </div>
-                      );
-                    })}
-                  </div>
-              )}
-            </TabsContent>
+                          <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                            <span>{formatDate(tx.tradeDate)}</span>
+                            <span>•</span>
+                            <span>{tx.brokerName}</span>
+                            {tx.notes && (
+                                <>
+                                  <span>•</span>
+                                  <span className="italic truncate max-w-[150px]">{tx.notes}</span>
+                                </>
+                            )}
+                          </div>
+                        </div>
 
-            {/* TAB 3: PRICE HISTORY */}
-            <TabsContent value="history" className="mt-0">
-              <PriceHistoryPanel
-                  instrument={{
-                    id: pos.instrument.id,
-                    name: pos.instrument.name,
-                    symbol: pos.instrument.symbol,
-                    lastPrice: pos.lastPrice,
-                  }}
-              />
-            </TabsContent>
-          </Tabs>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="text-right">
+                            <div className="font-extrabold text-slate-900 dark:text-white tabular-nums">
+                              {formatMoney(totalAmt)}
+                            </div>
+                            {tx.totalCharges && parseNumber(tx.totalCharges) > 0 && (
+                                <div className="text-[9px] text-slate-400">
+                                  Charges: {formatMoney(tx.totalCharges)}
+                                </div>
+                            )}
+                          </div>
+
+                          <EditTransactionDialog transaction={tx} brokerAccounts={brokerAccounts}
+                                                 onSuccess={fetchHoldingTrades}/>
+                        </div>
+                      </div>
+                  );
+                })}
+              </div>
+          )}
+          
+          <span className="text-slate-700 dark:text-slate-300 font-bold mt-2">Price History</span>
+          <PriceHistoryPanel
+              instrument={{
+                id: pos.instrument.id,
+                name: pos.instrument.name,
+                symbol: pos.instrument.symbol,
+                lastPrice: pos.lastPrice,
+              }}
+          />
         </DialogContent>
       </Dialog>
   );
