@@ -1,7 +1,9 @@
 'use client';
 
-import {DollarSign, Edit, Plus, Zap} from 'lucide-react';
+import {DollarSign, Edit, Loader2, Plus, Zap} from 'lucide-react';
+import {useCallback, useEffect, useState} from 'react';
 
+import {listInvestmentTransactions} from '@/actions/investments';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,} from '@/components/ui/dialog';
@@ -17,9 +19,12 @@ import {EditTransactionDialog} from './EditTransactionDialog';
 import {PriceHistoryPanel} from './PriceHistoryPanel';
 import {RecordTradeDialog} from './RecordTradeDialog';
 
+// A single holding will not have a huge number of trades; fetch them all in one
+// request rather than paginating inside the dialog's scrollable list.
+const HOLDING_TRADES_PAGE_SIZE = 500;
+
 interface HoldingDetailDialogProps {
   pos: Position;
-  holdingTrades: InvestmentTransactionResponse[];
   brokerAccounts: Broker[];
   allPositions: Position[];
   open: boolean;
@@ -86,7 +91,6 @@ const getSourceBadge = (source?: string) => {
 
 export function HoldingDetailDialog({
                                       pos,
-                                      holdingTrades,
                                       brokerAccounts,
                                       allPositions,
                                       open,
@@ -95,6 +99,33 @@ export function HoldingDetailDialog({
   const unrl = parseNumber(pos.unrealizedGainLoss);
   const unrlPct = pos.unrealizedGainLossPercent ? parseNumber(pos.unrealizedGainLossPercent) : 0;
   const rlz = parseNumber(pos.realizedGainLoss);
+
+  const [holdingTrades, setHoldingTrades] = useState<InvestmentTransactionResponse[]>([]);
+  const [isLoadingTrades, setIsLoadingTrades] = useState(false);
+
+  const fetchHoldingTrades = useCallback(async () => {
+    setIsLoadingTrades(true);
+    try {
+      const filters = pos.holdingId
+        ? { holdingId: pos.holdingId }
+        : { brokerAccountId: pos.brokerAccountId, instrumentId: pos.instrument.id };
+      const res = await listInvestmentTransactions(0, HOLDING_TRADES_PAGE_SIZE, filters);
+      if (res.success) {
+        const rows = [...(res.data.content || [])].sort(
+          (a, b) => new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime(),
+        );
+        setHoldingTrades(rows);
+      }
+    } finally {
+      setIsLoadingTrades(false);
+    }
+  }, [pos.holdingId, pos.brokerAccountId, pos.instrument.id]);
+
+  // Load this holding's trades only when the dialog is open (lazy — the holdings
+  // list no longer carries every transaction just to feed this panel).
+  useEffect(() => {
+    if (open) fetchHoldingTrades();
+  }, [open, fetchHoldingTrades]);
 
   return (
       <Dialog open={open} onOpenChange={onOpenChange}>
@@ -129,6 +160,7 @@ export function HoldingDetailDialog({
                 brokerAccounts={brokerAccounts}
                 initialBrokerAccountId={pos.brokerAccountId}
                 initialInstrument={{currency: 'INR', ...pos.instrument}}
+                onSuccess={fetchHoldingTrades}
                 trigger={
                   <Button variant="outline" size="sm" className="h-8 text-xs font-semibold">
                     <Plus className="w-3.5 h-3.5"/>
@@ -250,7 +282,12 @@ export function HoldingDetailDialog({
 
             {/* TAB 2: TRADEBOOK */}
             <TabsContent value="tradebook" className="space-y-2 mt-0">
-              {holdingTrades.length === 0 ? (
+              {isLoadingTrades && holdingTrades.length === 0 ? (
+                  <div className="flex items-center justify-center gap-2 py-10 text-xs text-slate-400">
+                    <Loader2 className="w-4 h-4 animate-spin"/>
+                    Loading trades...
+                  </div>
+              ) : holdingTrades.length === 0 ? (
                   <div
                       className="text-center py-10 bg-slate-50 dark:bg-slate-900/40 rounded-lg border border-slate-200/60 dark:border-slate-800 text-xs text-slate-400 italic">
                     No trades recorded for this holding yet.
@@ -307,7 +344,7 @@ export function HoldingDetailDialog({
                                 )}
                               </div>
 
-                              <EditTransactionDialog transaction={tx} brokerAccounts={brokerAccounts}/>
+                              <EditTransactionDialog transaction={tx} brokerAccounts={brokerAccounts} onSuccess={fetchHoldingTrades}/>
                             </div>
                           </div>
                       );

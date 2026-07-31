@@ -5,7 +5,7 @@ import {useState} from 'react';
 import {Badge} from '@/components/ui/badge';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Account, Broker} from '@/lib/account.types';
-import {Dividend, Instrument, InvestmentSummary, InvestmentTransactionResponse, Position, Sip} from '@/lib/types';
+import {Dividend, Instrument, InvestmentSummary, PagedInvestmentTransactionResponse, Position, Sip} from '@/lib/types';
 
 import {AllocationCharts} from './AllocationCharts';
 import {CreateDividendDialog} from './CreateDividendDialog';
@@ -23,7 +23,7 @@ import {TradebookSection} from './TradebookSection';
 interface InvestmentsViewProps {
   summary: InvestmentSummary | null;
   positions: Position[];
-  investmentTransactions: InvestmentTransactionResponse[];
+  initialTransactions: PagedInvestmentTransactionResponse;
   dividends: Dividend[];
   sips: Sip[];
   instruments: Instrument[];
@@ -34,7 +34,7 @@ interface InvestmentsViewProps {
 export function InvestmentsView({
                                   summary,
                                   positions,
-                                  investmentTransactions,
+                                  initialTransactions,
                                   dividends,
                                   sips,
                                   instruments,
@@ -90,7 +90,6 @@ export function InvestmentsView({
             <HoldingsTab
               summary={summary}
               positions={positions}
-              investmentTransactions={investmentTransactions}
               brokerAccounts={brokerAccounts}
             />
           </TabsContent>
@@ -116,7 +115,7 @@ export function InvestmentsView({
 
             <div className="w-full space-y-2">
               <TradebookSection
-                  investmentTransactions={investmentTransactions}
+                  initialData={initialTransactions}
                   brokerAccounts={brokerAccounts}
                   accounts={accounts}
               />

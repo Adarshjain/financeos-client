@@ -9,7 +9,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Broker } from '@/lib/account.types';
-import { InvestmentSummary, InvestmentTransactionResponse, Position } from '@/lib/types';
+import { InvestmentSummary, Position } from '@/lib/types';
 import { formatMoney } from '@/lib/utils';
 
 import { HoldingCard } from './HoldingCard';
@@ -17,7 +17,6 @@ import { HoldingCard } from './HoldingCard';
 interface HoldingsTabProps {
   summary: InvestmentSummary | null;
   positions: Position[];
-  investmentTransactions?: InvestmentTransactionResponse[];
   brokerAccounts: Broker[];
 }
 
@@ -31,21 +30,23 @@ const parseNumber = (val: string | number | null | undefined): number => {
 
 export function HoldingsTab({
   positions,
-  investmentTransactions = [],
   brokerAccounts,
 }: HoldingsTabProps) {
   const [holdingSearch, setHoldingSearch] = useState('');
   const [selectedAssetType, setSelectedAssetType] = useState<string>('all');
   const [selectedBrokerFilter, setSelectedBrokerFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<SortByOption>('none');
+  const [sortBy, setSortBy] = useState<SortByOption>('alphabetical');
   const [sortOrder, setSortOrder] = useState<SortOrderOption>('asc');
 
   const filteredPositions = useMemo(() => {
+    const query = holdingSearch.trim().toLowerCase();
     return positions.filter((pos) => {
       const matchSearch =
-        !holdingSearch ||
-        pos.instrument.name.toLowerCase().includes(holdingSearch.toLowerCase()) ||
-        (pos.instrument.symbol && pos.instrument.symbol.toLowerCase().includes(holdingSearch.toLowerCase()));
+        !query ||
+        !!pos.instrument.name?.toLowerCase().includes(query) ||
+        !!pos.instrument.symbol?.toLowerCase().includes(query) ||
+        !!pos.instrument.yahooSymbol?.toLowerCase().includes(query) ||
+        !!pos.instrument.isin?.toLowerCase().includes(query);
 
       const matchType =
         selectedAssetType === 'all' || pos.instrument.type?.toLowerCase() === selectedAssetType.toLowerCase();
@@ -282,23 +283,14 @@ export function HoldingsTab({
         </div>
       ) : (
         <div className="space-y-2">
-          {sortedPositions.map((pos) => {
-            const holdingTrades = investmentTransactions
-              .filter(
-                (tx) => tx.brokerAccountId === pos.brokerAccountId && tx.instrumentId === pos.instrument.id,
-              )
-              .sort((a, b) => new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime());
-
-            return (
-              <HoldingCard
-                key={pos.holdingId || `${pos.brokerAccountId}-${pos.instrument.id}`}
-                pos={pos}
-                holdingTrades={holdingTrades}
-                brokerAccounts={brokerAccounts}
-                allPositions={positions}
-              />
-            );
-          })}
+          {sortedPositions.map((pos) => (
+            <HoldingCard
+              key={pos.holdingId || `${pos.brokerAccountId}-${pos.instrument.id}`}
+              pos={pos}
+              brokerAccounts={brokerAccounts}
+              allPositions={positions}
+            />
+          ))}
         </div>
       )}
     </div>

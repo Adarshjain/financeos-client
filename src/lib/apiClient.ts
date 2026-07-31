@@ -430,7 +430,7 @@ export const investmentsApi = {
   async listTransactions(
     page = 0,
     size = 50,
-    filters?: { brokerAccountId?: string; instrumentId?: string },
+    filters?: { brokerAccountId?: string; instrumentId?: string; holdingId?: string; search?: string },
   ): Promise<PagedInvestmentTransactionResponse> {
     const params = new URLSearchParams({
       page: String(page),
@@ -438,6 +438,8 @@ export const investmentsApi = {
     });
     if (filters?.brokerAccountId) params.set('brokerAccountId', filters.brokerAccountId);
     if (filters?.instrumentId) params.set('instrumentId', filters.instrumentId);
+    if (filters?.holdingId) params.set('holdingId', filters.holdingId);
+    if (filters?.search) params.set('search', filters.search);
     return request<PagedInvestmentTransactionResponse>(
       `/api/v1/investments/transactions?${params}`,
     );

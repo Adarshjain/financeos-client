@@ -1,12 +1,13 @@
 'use client';
 
-import { ArrowDown, ArrowUp, ArrowUpDown, Coins, Edit } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Edit, Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Instrument } from '@/lib/types';
 import { formatDate, formatMoney } from '@/lib/utils';
@@ -23,6 +24,14 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
   const [page, setPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(25);
   const [sortOrder, setSortOrder] = useState<SortOrder>('none');
+  const [search, setSearch] = useState<string>('');
+
+  // Reset to the first page whenever the search changes, so the user never lands
+  // on an out-of-range page once the list narrows.
+  const handleSearchChange = (val: string) => {
+    setSearch(val);
+    setPage(0);
+  };
 
   const getTypeBadge = (type: string) => {
     const formatted = type ? type.replace('_', ' ').toUpperCase() : 'OTHER';
@@ -54,16 +63,29 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
     setPage(0);
   };
 
-  const sortedInstruments = useMemo(() => {
-    if (sortOrder === 'none') return instruments;
+  const filteredInstruments = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    if (!query) return instruments;
+    return instruments.filter(
+      (inst) =>
+        !!inst.name?.toLowerCase().includes(query) ||
+        !!inst.symbol?.toLowerCase().includes(query) ||
+        !!inst.yahooSymbol?.toLowerCase().includes(query) ||
+        !!inst.amfiCode?.toLowerCase().includes(query) ||
+        !!inst.isin?.toLowerCase().includes(query),
+    );
+  }, [instruments, search]);
 
-    return [...instruments].sort((a, b) => {
+  const sortedInstruments = useMemo(() => {
+    if (sortOrder === 'none') return filteredInstruments;
+
+    return [...filteredInstruments].sort((a, b) => {
       const nameA = (a.name || '').toLowerCase();
       const nameB = (b.name || '').toLowerCase();
       const cmp = nameA.localeCompare(nameB);
       return sortOrder === 'asc' ? cmp : -cmp;
     });
-  }, [instruments, sortOrder]);
+  }, [filteredInstruments, sortOrder]);
 
   const totalElements = sortedInstruments.length;
   const totalPages = Math.ceil(totalElements / pageSize) || 1;
@@ -76,12 +98,33 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
 
   return (
     <Card className="bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden">
-      <CardHeader className="py-2 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between gap-2">
+      <CardHeader className="py-2 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row flex-wrap items-center justify-between gap-2">
         <CardTitle className="text-base font-bold flex items-center">
           Instruments ({instruments.length})
         </CardTitle>
 
         {instruments.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative">
+            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <Input
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              placeholder="Search by ticker or name..."
+              className="h-8 w-[190px] pl-8 pr-7 text-xs font-medium bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg"
+            />
+            {search && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => handleSearchChange('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
           <Button
             variant={sortOrder === 'none' ? 'outline' : 'secondary'}
             size="sm"
@@ -108,6 +151,7 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
               </>
             )}
           </Button>
+        </div>
         )}
       </CardHeader>
       <CardContent className="p-0">
@@ -119,6 +163,10 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
             <p className="text-xs text-slate-500">
               Add instruments to track stocks, mutual funds, and ETFs.
             </p>
+          </div>
+        ) : sortedInstruments.length === 0 ? (
+          <div className="text-center py-8 px-4 text-xs text-slate-500">
+            No instruments match your search.
           </div>
         ) : (
           <>
