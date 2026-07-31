@@ -4,14 +4,13 @@ import {useState} from 'react';
 
 import {Badge} from '@/components/ui/badge';
 import {Broker} from '@/lib/account.types';
-import {InvestmentTransactionResponse, Position} from '@/lib/types';
+import {Position} from '@/lib/types';
 import {formatMoney} from '@/lib/utils';
 
 import {HoldingDetailDialog} from './HoldingDetailDialog';
 
 interface HoldingCardProps {
   pos: Position;
-  holdingTrades: InvestmentTransactionResponse[];
   brokerAccounts: Broker[];
   allPositions: Position[];
 }
@@ -32,7 +31,7 @@ const isManualOnly = (pos: Position): boolean => {
   return false;
 };
 
-export function HoldingCard({pos, holdingTrades, brokerAccounts, allPositions}: HoldingCardProps) {
+export function HoldingCard({pos, brokerAccounts, allPositions}: HoldingCardProps) {
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const unrl = parseNumber(pos.unrealizedGainLoss);
@@ -127,7 +126,6 @@ export function HoldingCard({pos, holdingTrades, brokerAccounts, allPositions}: 
 
         <HoldingDetailDialog
             pos={pos}
-            holdingTrades={holdingTrades}
             brokerAccounts={brokerAccounts}
             allPositions={allPositions}
             open={isDetailOpen}

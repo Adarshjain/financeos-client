@@ -23,6 +23,7 @@ interface RecordTradeDialogProps {
   initialBrokerAccountId?: string;
   initialInstrument?: Instrument;
   trigger?: React.ReactNode;
+  onSuccess?: () => void;
 }
 
 export function RecordTradeDialog({
@@ -30,6 +31,7 @@ export function RecordTradeDialog({
   initialBrokerAccountId,
   initialInstrument,
   trigger,
+  onSuccess,
 }: RecordTradeDialogProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -58,6 +60,7 @@ export function RecordTradeDialog({
             // Re-run the server component so new positions + freshly auto-fetched prices show
             // without a manual reload.
             router.refresh();
+            onSuccess?.();
           }}
         />
       </DialogContent>

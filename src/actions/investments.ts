@@ -23,6 +23,7 @@ import type {
   InstrumentType,
   InvestmentTransactionResponse,
   InvestmentTransactionType,
+  PagedInvestmentTransactionResponse,
   PriceHistoryPoint,
   PriceRefreshResult,
   ResolveInstrumentRequest,
@@ -96,6 +97,16 @@ export async function createInvestmentTransaction(
     const transaction = await investmentsApi.createTransaction(req);
     revalidatePath('/investments');
     return transaction;
+  });
+}
+
+export async function listInvestmentTransactions(
+  page: number,
+  size: number,
+  filters?: { brokerAccountId?: string; instrumentId?: string; holdingId?: string; search?: string }
+): Promise<ApiResult<PagedInvestmentTransactionResponse>> {
+  return apiResult('Failed to load transactions', async () => {
+    return await investmentsApi.listTransactions(page, size, filters);
   });
 }
 

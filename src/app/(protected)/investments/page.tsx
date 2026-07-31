@@ -4,26 +4,40 @@ import {
   AccountType,
   Dividend,
   Instrument,
-  InvestmentTransactionResponse,
+  PagedInvestmentTransactionResponse,
   Position,
   Sip,
 } from '@/lib/types';
 
 import { InvestmentsView } from './InvestmentsView';
 
+// The tradebook is paginated on the server: this page only fetches the first
+// page for a fast initial paint. TradebookSection fetches subsequent pages
+// (and applies the broker filter) on demand, so we never load the whole table.
+const TRANSACTIONS_INITIAL_PAGE_SIZE = 10;
+
+const EMPTY_TRANSACTIONS_PAGE: PagedInvestmentTransactionResponse = {
+  content: [],
+  totalElements: 0,
+  totalPages: 0,
+  size: TRANSACTIONS_INITIAL_PAGE_SIZE,
+  number: 0,
+  first: true,
+  last: true,
+  empty: true,
+};
+
 export default async function InvestmentsPage() {
-  const [summary, positionsData, transactionsData, dividendsData, sipsData, instrumentsData, accounts] = await Promise.all([
+  const [summary, positionsData, initialTransactions, dividendsData, sipsData, instrumentsData, accounts] = await Promise.all([
     investmentsApi.getSummary().catch(() => null),
     investmentsApi.getPositions().catch(() => ({ positions: [] })),
-    investmentsApi.listTransactions(0, 100).catch(() => ({ content: [] as InvestmentTransactionResponse[], totalElements: 0, page: 0, size: 50, totalPages: 0 })),
+    investmentsApi.listTransactions(0, TRANSACTIONS_INITIAL_PAGE_SIZE).catch(() => EMPTY_TRANSACTIONS_PAGE),
     dividendsApi.list().catch(() => ({ content: [] as Dividend[], totalElements: 0, page: 0, size: 50, totalPages: 0 })),
     sipsApi.list().catch(() => [] as Sip[]),
     instrumentsApi.search().catch(() => [] as Instrument[]),
     accountsApi.list().catch(() => [] as Account[]),
   ]);
 
-  const investmentTransactions: InvestmentTransactionResponse[] =
-    (transactionsData.content as InvestmentTransactionResponse[]) || [];
   const positions: Position[] = positionsData.positions || [];
   const dividends: Dividend[] = dividendsData.content || [];
   const sips: Sip[] = sipsData || [];
@@ -34,7 +48,7 @@ export default async function InvestmentsPage() {
     <InvestmentsView
       summary={summary}
       positions={positions}
-      investmentTransactions={investmentTransactions}
+      initialTransactions={initialTransactions}
       dividends={dividends}
       sips={sips}
       instruments={instruments}
