@@ -330,7 +330,7 @@ export function HoldingDetailDialog({
                 })}
               </div>
           )}
-          
+
           <span className="text-slate-700 dark:text-slate-300 font-bold mt-2">Price History</span>
           <PriceHistoryPanel
               instrument={{
