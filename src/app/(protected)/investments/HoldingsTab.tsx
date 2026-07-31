@@ -1,10 +1,9 @@
 'use client';
 
-import { ArrowDown, ArrowUp, Search, X } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -20,8 +19,14 @@ interface HoldingsTabProps {
   brokerAccounts: Broker[];
 }
 
-type SortByOption = 'none' | 'alphabetical' | 'percentage' | 'absolute';
-type SortOrderOption = 'asc' | 'desc';
+type SortOption =
+  | 'none'
+  | 'alphabetical-asc'
+  | 'alphabetical-desc'
+  | 'percentage-desc'
+  | 'percentage-asc'
+  | 'absolute-desc'
+  | 'absolute-asc';
 
 const parseNumber = (val: string | number | null | undefined): number => {
   if (val === null || val === undefined) return 0;
@@ -35,8 +40,7 @@ export function HoldingsTab({
   const [holdingSearch, setHoldingSearch] = useState('');
   const [selectedAssetType, setSelectedAssetType] = useState<string>('all');
   const [selectedBrokerFilter, setSelectedBrokerFilter] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<SortByOption>('alphabetical');
-  const [sortOrder, setSortOrder] = useState<SortOrderOption>('asc');
+  const [sortBy, setSortBy] = useState<SortOption>('alphabetical-asc');
 
   const filteredPositions = useMemo(() => {
     const query = holdingSearch.trim().toLowerCase();
@@ -57,45 +61,48 @@ export function HoldingsTab({
     });
   }, [positions, holdingSearch, selectedAssetType, selectedBrokerFilter]);
 
-  const handleSortByChange = (val: SortByOption) => {
-    setSortBy(val);
-    if (val === 'alphabetical') {
-      setSortOrder('asc');
-    } else if (val === 'percentage' || val === 'absolute') {
-      setSortOrder('desc');
-    }
-  };
-
-  const clearSort = () => {
-    setSortBy('none');
-    setSortOrder('asc');
-  };
-
   const sortedPositions = useMemo(() => {
     if (sortBy === 'none') {
       return filteredPositions;
     }
 
     return [...filteredPositions].sort((a, b) => {
-      let comparison = 0;
-
-      if (sortBy === 'alphabetical') {
-        const nameA = (a.instrument.symbol || a.instrument.name || '').toLowerCase();
-        const nameB = (b.instrument.symbol || b.instrument.name || '').toLowerCase();
-        comparison = nameA.localeCompare(nameB);
-      } else if (sortBy === 'percentage') {
-        const pctA = parseNumber(a.unrealizedGainLossPercent ?? a.absoluteReturnPercent);
-        const pctB = parseNumber(b.unrealizedGainLossPercent ?? b.absoluteReturnPercent);
-        comparison = pctA - pctB;
-      } else if (sortBy === 'absolute') {
-        const absA = parseNumber(a.unrealizedGainLoss);
-        const absB = parseNumber(b.unrealizedGainLoss);
-        comparison = absA - absB;
+      switch (sortBy) {
+        case 'alphabetical-asc': {
+          const nameA = (a.instrument.symbol || a.instrument.name || '').toLowerCase();
+          const nameB = (b.instrument.symbol || b.instrument.name || '').toLowerCase();
+          return nameA.localeCompare(nameB);
+        }
+        case 'alphabetical-desc': {
+          const nameA = (a.instrument.symbol || a.instrument.name || '').toLowerCase();
+          const nameB = (b.instrument.symbol || b.instrument.name || '').toLowerCase();
+          return nameB.localeCompare(nameA);
+        }
+        case 'percentage-desc': {
+          const pctA = parseNumber(a.unrealizedGainLossPercent ?? a.absoluteReturnPercent);
+          const pctB = parseNumber(b.unrealizedGainLossPercent ?? b.absoluteReturnPercent);
+          return pctB - pctA;
+        }
+        case 'percentage-asc': {
+          const pctA = parseNumber(a.unrealizedGainLossPercent ?? a.absoluteReturnPercent);
+          const pctB = parseNumber(b.unrealizedGainLossPercent ?? b.absoluteReturnPercent);
+          return pctA - pctB;
+        }
+        case 'absolute-desc': {
+          const absA = parseNumber(a.unrealizedGainLoss);
+          const absB = parseNumber(b.unrealizedGainLoss);
+          return absB - absA;
+        }
+        case 'absolute-asc': {
+          const absA = parseNumber(a.unrealizedGainLoss);
+          const absB = parseNumber(b.unrealizedGainLoss);
+          return absA - absB;
+        }
+        default:
+          return 0;
       }
-
-      return sortOrder === 'asc' ? comparison : -comparison;
     });
-  }, [filteredPositions, sortBy, sortOrder]);
+  }, [filteredPositions, sortBy]);
 
   const filteredSummary = useMemo(() => {
     let invested = 0;
@@ -170,61 +177,34 @@ export function HoldingsTab({
             </SelectContent>
           </Select>
 
-          <div className="flex items-center gap-1">
-            <Select value={sortBy} onValueChange={(val) => handleSortByChange(val as SortByOption)}>
-              <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold w-[145px]">
-                <SelectValue placeholder="Sort By" />
-              </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                <SelectItem value="none" className="text-xs">
-                  Sort: Default
-                </SelectItem>
-                <SelectItem value="alphabetical" className="text-xs">
-                  Alphabetically
-                </SelectItem>
-                <SelectItem value="percentage" className="text-xs">
-                  Percentage Return
-                </SelectItem>
-                <SelectItem value="absolute" className="text-xs">
-                  Absolute Returns
-                </SelectItem>
-              </SelectContent>
-            </Select>
-
-            {sortBy !== 'none' && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'))}
-                  className="h-8 px-2 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-medium flex items-center gap-1 shrink-0"
-                  title={`Order: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
-                >
-                  {sortOrder === 'asc' ? (
-                    <>
-                      <ArrowUp className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                      <span className="text-[11px] font-bold">ASC</span>
-                    </>
-                  ) : (
-                    <>
-                      <ArrowDown className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                      <span className="text-[11px] font-bold">DESC</span>
-                    </>
-                  )}
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearSort}
-                  className="h-8 px-1.5 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white rounded-lg shrink-0"
-                  title="Clear Sort"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </Button>
-              </>
-            )}
-          </div>
+          <Select value={sortBy} onValueChange={(val) => setSortBy(val as SortOption)}>
+            <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold w-[185px]">
+              <SelectValue placeholder="Sort By" />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+              <SelectItem value="none" className="text-xs">
+                Sort: Default
+              </SelectItem>
+              <SelectItem value="alphabetical-asc" className="text-xs">
+                Name (A to Z)
+              </SelectItem>
+              <SelectItem value="alphabetical-desc" className="text-xs">
+                Name (Z to A)
+              </SelectItem>
+              <SelectItem value="percentage-desc" className="text-xs">
+                % Return (High to Low)
+              </SelectItem>
+              <SelectItem value="percentage-asc" className="text-xs">
+                % Return (Low to High)
+              </SelectItem>
+              <SelectItem value="absolute-desc" className="text-xs">
+                Absolute Return (High to Low)
+              </SelectItem>
+              <SelectItem value="absolute-asc" className="text-xs">
+                Absolute Return (Low to High)
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
