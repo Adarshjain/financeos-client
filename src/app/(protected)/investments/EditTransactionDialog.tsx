@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Broker } from '@/lib/account.types';
-import { Charges, InvestmentTransactionResponse, InvestmentTransactionType } from '@/lib/types';
+import { Charges, InvestmentTransactionResponse, InvestmentTransactionType, SettlementType } from '@/lib/types';
 
 interface EditTransactionDialogProps {
   transaction: InvestmentTransactionResponse;
@@ -45,6 +45,7 @@ export function EditTransactionDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [type, setType] = useState<InvestmentTransactionType>(transaction.type);
+  const [settlementType, setSettlementType] = useState<SettlementType>(transaction.settlementType || 'delivery');
   const [quantity, setQuantity] = useState(transaction.quantity);
   const [price, setPrice] = useState(transaction.price);
   const [tradeDate, setTradeDate] = useState(transaction.tradeDate?.split('T')[0] || '');
@@ -63,6 +64,7 @@ export function EditTransactionDialog({
   useEffect(() => {
     if (open) {
       setType(transaction.type);
+      setSettlementType(transaction.settlementType || 'delivery');
       setQuantity(transaction.quantity);
       setPrice(transaction.price);
       setTradeDate(transaction.tradeDate?.split('T')[0] || '');
@@ -114,6 +116,7 @@ export function EditTransactionDialog({
     try {
       const res = await updateInvestmentTransaction(transaction.id, {
         type,
+        settlementType,
         quantity: Number(quantity),
         price: Number(price),
         tradeDate,
@@ -192,6 +195,21 @@ export function EditTransactionDialog({
               onChange={(e) => setTradeDate(e.target.value)}
               required
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Settlement (CNC/MIS)</Label>
+              <Select value={settlementType} onValueChange={(val) => setSettlementType(val as SettlementType)}>
+                <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
+                  <SelectValue placeholder="Select settlement" />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                  <SelectItem value="delivery" className="text-xs">Delivery (CNC)</SelectItem>
+                  <SelectItem value="intraday" className="text-xs">Intraday (MIS)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

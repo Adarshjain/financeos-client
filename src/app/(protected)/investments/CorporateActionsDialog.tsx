@@ -105,6 +105,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
         type: 'stock',
         name: act.targetInstrumentName || 'Target Instrument',
         symbol: act.targetInstrumentSymbol,
+        currency: 'INR',
       });
     } else {
       setTargetInstrument(null);

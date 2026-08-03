@@ -18,6 +18,8 @@ import type {
   ImportCommitRequest,
   ImportCommitResult,
   ImportPreview,
+  ReconcileCommitRequest,
+  ReconcilePreview,
   Instrument,
   InstrumentCandidate,
   InstrumentType,
@@ -273,7 +275,7 @@ export async function deleteCorporateAction(
   });
 }
 
-// Imports actions (Phase 4a)
+// Imports actions (Phase 4a & Reconciliation)
 export async function previewImport(
   formData: FormData
 ): Promise<ApiResult<ImportPreview>> {
@@ -287,6 +289,24 @@ export async function commitImport(
 ): Promise<ApiResult<ImportCommitResult>> {
   return apiResult('Failed to commit import rows', async () => {
     const res = await importsApi.commit(data);
+    revalidatePath('/investments');
+    return res;
+  });
+}
+
+export async function previewReconcileImport(
+  formData: FormData
+): Promise<ApiResult<ReconcilePreview>> {
+  return apiResult('Failed to preview broker reconciliation files', async () => {
+    return await importsApi.previewReconcile(formData);
+  });
+}
+
+export async function commitReconcileImport(
+  data: ReconcileCommitRequest
+): Promise<ApiResult<ImportCommitResult>> {
+  return apiResult('Failed to commit reconciled executions', async () => {
+    const res = await importsApi.commitReconcile(data);
     revalidatePath('/investments');
     return res;
   });
