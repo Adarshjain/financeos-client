@@ -31,6 +31,8 @@ import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue,} from '@/components/ui/select';
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow,} from '@/components/ui/table';
+import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
+import {InstrumentSearchField} from './InstrumentSearchField';
 import {Broker as BrokerAccount} from '@/lib/account.types';
 import {
   CreateInstrumentRequest,
@@ -39,9 +41,13 @@ import {
   ImportPreview,
   ReconcileCommitRequest,
   ReconcilePreview,
+  ReconciledExecution,
   ReconciliationBroker,
 } from '@/lib/types';
 import {formatDate, formatMoney} from '@/lib/utils';
+
+const isRowResolved = (state: any, exec: ReconciledExecution) =>
+  !!(state?.selectedInstrumentId || (!state?.createNew && exec.matchedInstrument));
 
 interface ImportWizardDialogProps {
   brokerAccounts: BrokerAccount[];
@@ -81,6 +87,7 @@ export function ImportWizardDialog({brokerAccounts, trigger, onSuccess}: ImportW
           {
             skip: boolean;
             selectedInstrumentId?: string;
+            selectedInstrumentName?: string;
             createNew?: boolean;
             newInstrument?: CreateInstrumentRequest;
           }
@@ -333,7 +340,7 @@ export function ImportWizardDialog({brokerAccounts, trigger, onSuccess}: ImportW
               </Button>
           )}
         </DialogTrigger>
-        <DialogContent className="sm:max-w-5xl max-h-[92vh] flex flex-col p-3 sm:p-6 overflow-hidden">
+        <DialogContent className="sm:max-w-5xl max-h-[99vh] flex flex-col p-2 sm:p-6 overflow-hidden">
           <DialogHeader className="shrink-0 pb-2 border-b border-slate-100 dark:border-slate-800">
             <DialogTitle className="text-base font-bold flex items-center gap-2">
               <FileSpreadsheet className="w-5 h-5 text-purple-600 dark:text-purple-400"/>
@@ -549,12 +556,35 @@ export function ImportWizardDialog({brokerAccounts, trigger, onSuccess}: ImportW
           )}
 
           {/* STEP 2: Reconciliation Review */}
-          {step === 2 && (reconcilePreview || casPreview) && (
-              <div className="flex-1 flex flex-col min-h-0 space-y-3 py-1">
+          {step === 2 && (reconcilePreview || casPreview) && (() => {
+            const unresolvedRows = reconcilePreview
+                ? reconcilePreview.executions.filter((e) => {
+                  const s = rowStates[e.rowIndex];
+                  return !s?.skip && !isRowResolved(s, e);
+                })
+                : [];
+            const unresolvedScrips = Array.from(new Set(unresolvedRows.map((e) => e.symbol)));
+
+            const confirmableCount = reconcilePreview
+                ? reconcilePreview.executions.filter((e) => {
+                  const s = rowStates[e.rowIndex] || {};
+                  return !s.skip && isRowResolved(s, e);
+                }).length
+                : 0;
+
+            const casConfirmableCount = casPreview
+                ? casPreview.rows.filter((r) => {
+                  const s = rowStates[r.rowIndex] || {};
+                  return !s.skip && (s.selectedInstrumentId || r.matchedInstrument);
+                }).length
+                : 0;
+
+            return (
+              <div className="flex-1 flex flex-col min-h-0 space-y-2">
                 {reconcilePreview && (
                     <>
                       {/* Summary counters */}
-                      <div className="shrink-0 grid grid-cols-2 sm:grid-cols-5 gap-2 text-center text-xs">
+                      <div className="shrink-0 grid grid-cols-3 sm:grid-cols-5 gap-2 text-center text-xs">
                         <div className="p-2 rounded bg-slate-100 dark:bg-slate-900">
                           <div className="text-[10px] text-slate-500">Executions</div>
                           <div
@@ -582,43 +612,39 @@ export function ImportWizardDialog({brokerAccounts, trigger, onSuccess}: ImportW
                         </div>
                       </div>
 
-                      {/* Realized Cross-Check Card */}
-                      <div
-                          className="shrink-0 p-2.5 rounded-lg bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div
-                            className="flex items-center justify-between p-2 rounded bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                          <div>
-                            <div className="text-[10px] font-semibold text-slate-500">Delivery Realized P&L</div>
-                            <div
-                                className="font-bold text-slate-900 dark:text-white">{formatMoney(reconcilePreview.realizedSummary.deliveryRealized)}</div>
-                          </div>
-                          <div className="text-right text-[10px]">
-                            <div className="text-slate-400">Tax
-                              P&L: {formatMoney(reconcilePreview.realizedSummary.classifierDeliveryRealized)}</div>
-                            <div
-                                className={`font-semibold ${Number(reconcilePreview.realizedSummary.deliveryDiff) === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                              Diff: {Number(reconcilePreview.realizedSummary.deliveryDiff) >= 0 ? '+' : ''}{formatMoney(reconcilePreview.realizedSummary.deliveryDiff)}
+                      {/* Unresolved Instruments Red Banner */}
+                      {unresolvedRows.length > 0 && (
+                        <div className="shrink-0 p-2.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-[11px] text-red-900 dark:text-red-300">
+                          <div className="font-bold flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 text-red-800 dark:text-red-200">
+                              <ShieldAlert className="w-4 h-4 text-red-600 shrink-0" />
+                              <span>⛔ {unresolvedRows.length} execution{unresolvedRows.length > 1 ? 's have' : ' has'} no instrument mapped and will NOT be imported. Map each below, or exclude them.</span>
                             </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setRowStates((prev) => {
+                                  const next = { ...prev };
+                                  unresolvedRows.forEach((r) => {
+                                    next[r.rowIndex] = { ...(next[r.rowIndex] || {}), skip: true };
+                                  });
+                                  return next;
+                                });
+                              }}
+                              className="text-[10px] h-6 px-2 border-red-300 text-red-700 hover:bg-red-100 dark:hover:bg-red-900/50 shrink-0"
+                            >
+                              Skip unmapped rows
+                            </Button>
                           </div>
-                        </div>
-
-                        <div
-                            className="flex items-center justify-between p-2 rounded bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800">
-                          <div>
-                            <div className="text-[10px] font-semibold text-slate-500">Intraday Realized P&L</div>
-                            <div
-                                className="font-bold text-slate-900 dark:text-white">{formatMoney(reconcilePreview.realizedSummary.intradayRealized)}</div>
-                          </div>
-                          <div className="text-right text-[10px]">
-                            <div className="text-slate-400">Tax
-                              P&L: {formatMoney(reconcilePreview.realizedSummary.classifierIntradayRealized)}</div>
-                            <div
-                                className={`font-semibold ${Number(reconcilePreview.realizedSummary.intradayDiff) === 0 ? 'text-emerald-600' : 'text-amber-600'}`}>
-                              Diff: {Number(reconcilePreview.realizedSummary.intradayDiff) >= 0 ? '+' : ''}{formatMoney(reconcilePreview.realizedSummary.intradayDiff)}
+                          {unresolvedScrips.length > 0 && (
+                            <div className="mt-1 text-[10px] text-red-700 dark:text-red-400 font-mono">
+                              Unmapped scrips: {unresolvedScrips.join(', ')}
                             </div>
-                          </div>
+                          )}
                         </div>
-                      </div>
+                      )}
 
                       {/* Warnings / Data Gaps Banner */}
                       {reconcilePreview.warnings.length > 0 && (
@@ -694,7 +720,14 @@ export function ImportWizardDialog({brokerAccounts, trigger, onSuccess}: ImportW
                             </TableHeader>
                             <TableBody>
                               {[...reconcilePreview.executions]
-                                  .sort((a, b) => a.tradeDate.localeCompare(b.tradeDate))
+                                  .sort((a, b) => {
+                                    // Rows needing attention (unmatched or duplicate) float to the
+                                    // top; everything else falls back to trade-date order.
+                                    const aAttention = !a.matchedInstrument || a.isDuplicate;
+                                    const bAttention = !b.matchedInstrument || b.isDuplicate;
+                                    if (aAttention !== bAttention) return aAttention ? -1 : 1;
+                                    return a.tradeDate.localeCompare(b.tradeDate);
+                                  })
                                   .map((exec) => {
                                 const state = rowStates[exec.rowIndex] || {skip: false};
                                 return (
@@ -735,18 +768,85 @@ export function ImportWizardDialog({brokerAccounts, trigger, onSuccess}: ImportW
                                         <div className="text-[9px] text-slate-400">{formatMoney(exec.totalValue)}</div>
                                       </TableCell>
                                       <TableCell className="py-1 px-2">
-                                        {exec.matchedInstrument ? (
-                                            <div
-                                                className="text-emerald-800">{exec.matchedInstrument.name}</div>
-                                        ) : (
-                                            <Badge className="text-amber-800">Unmatched</Badge>
-                                        )}
-                                        {exec.isDuplicate && <Badge variant="outline"
-                                                                    className="text-purple-600 border-purple-300 ml-1">Duplicate</Badge>}
+                                        <div className="flex items-center gap-1 flex-wrap">
+                                          {state?.selectedInstrumentId ? (
+                                            <div className="flex items-center gap-1">
+                                              <span className="text-emerald-700 dark:text-emerald-400 font-medium text-[11px]">
+                                                ✓ {state.selectedInstrumentName || 'Mapped'}
+                                              </span>
+                                              <Popover>
+                                                <PopoverTrigger asChild>
+                                                  <button
+                                                    type="button"
+                                                    className="text-[10px] text-slate-400 underline hover:text-slate-600"
+                                                  >
+                                                    change
+                                                  </button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-80 p-3" align="start">
+                                                  <div className="text-xs font-semibold mb-2">Map instrument for {exec.symbol}</div>
+                                                  <InstrumentSearchField
+                                                    type="stock"
+                                                    placeholder={`Search for ${exec.symbol}…`}
+                                                    onResolved={(inst) => {
+                                                      setRowStates((prev) => ({
+                                                        ...prev,
+                                                        [exec.rowIndex]: {
+                                                          ...prev[exec.rowIndex],
+                                                          selectedInstrumentId: inst.id,
+                                                          selectedInstrumentName: inst.name,
+                                                          createNew: false,
+                                                        },
+                                                      }));
+                                                    }}
+                                                  />
+                                                </PopoverContent>
+                                              </Popover>
+                                            </div>
+                                          ) : exec.matchedInstrument ? (
+                                            <div className="text-emerald-800 dark:text-emerald-300 font-medium">{exec.matchedInstrument.name}</div>
+                                          ) : (
+                                            <div className="flex items-center gap-1">
+                                              <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 border-amber-300">
+                                                Unmatched
+                                              </Badge>
+                                              <Popover>
+                                                <PopoverTrigger asChild>
+                                                  <Button type="button" variant="outline" size="sm" className="h-5 px-1.5 text-[10px]">
+                                                    Map instrument
+                                                  </Button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-80 p-3" align="start">
+                                                  <div className="text-xs font-semibold mb-2">Search & map instrument for {exec.symbol}</div>
+                                                  <InstrumentSearchField
+                                                    type="stock"
+                                                    placeholder={`Search for ${exec.symbol}…`}
+                                                    onResolved={(inst) => {
+                                                      setRowStates((prev) => ({
+                                                        ...prev,
+                                                        [exec.rowIndex]: {
+                                                          ...prev[exec.rowIndex],
+                                                          selectedInstrumentId: inst.id,
+                                                          selectedInstrumentName: inst.name,
+                                                          createNew: false,
+                                                        },
+                                                      }));
+                                                    }}
+                                                  />
+                                                </PopoverContent>
+                                              </Popover>
+                                            </div>
+                                          )}
+                                          {exec.isDuplicate && (
+                                            <Badge variant="outline" className="text-purple-600 border-purple-300 ml-1">
+                                              Duplicate
+                                            </Badge>
+                                          )}
+                                        </div>
                                       </TableCell>
                                     </TableRow>
                                 );
-                              })}
+                               })}
                             </TableBody>
                           </Table>
                         </div>
@@ -754,22 +854,28 @@ export function ImportWizardDialog({brokerAccounts, trigger, onSuccess}: ImportW
                     </>
                 )}
 
-                <DialogFooter className="pt-2 gap-2 shrink-0 flex-col-reverse sm:flex-row sm:justify-end">
+                <DialogFooter className="pt-2 gap-2 shrink-0 flex-col-reverse sm:flex-row sm:justify-end sm:items-center">
+                  {unresolvedRows.length > 0 && (
+                    <span className="text-[11px] text-red-600 dark:text-red-400 font-medium mr-auto">
+                      ⛔ {unresolvedRows.length} row{unresolvedRows.length > 1 ? 's need' : ' needs'} an instrument — map or skip them
+                    </span>
+                  )}
                   <Button type="button" variant="outline" size="sm" onClick={() => setStep(1)}
                           className="text-xs w-full sm:w-auto">
                     Back
                   </Button>
-                  <Button type="button" size="sm" onClick={handleCommitSubmit} disabled={isCommitting}
-                          className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto">
-                    {isCommitting ? 'Importing Reconciled Executions...' : `Import Confirmed Trades (${Object.values(rowStates).filter((s) => !s.skip).length})`}
+                  <Button type="button" size="sm" onClick={handleCommitSubmit} disabled={isCommitting || unresolvedRows.length > 0}
+                          className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto disabled:opacity-50">
+                    {isCommitting ? 'Importing Reconciled Executions...' : `Import Confirmed Trades (${mode === 'mf_cas' ? casConfirmableCount : confirmableCount})`}
                   </Button>
                 </DialogFooter>
               </div>
-          )}
+            );
+          })()}
 
           {/* STEP 3: Result */}
           {step === 3 && commitResult && (
-              <div className="space-y-3 py-6 text-center">
+              <div className="space-y-2 pb-6 text-center mx-4">
                 <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto"/>
                 <div className="space-y-1">
                   <h3 className="text-base font-bold text-slate-900 dark:text-white">Broker Import Reconciliation
@@ -780,7 +886,7 @@ export function ImportWizardDialog({brokerAccounts, trigger, onSuccess}: ImportW
                   </p>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3 text-xs max-w-md mx-auto">
+                <div className="grid grid-cols-3 gap-3 text-xs">
                   <div
                       className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-300">
                     <div className="text-[10px] text-emerald-600 dark:text-emerald-400">Committed</div>
@@ -798,7 +904,39 @@ export function ImportWizardDialog({brokerAccounts, trigger, onSuccess}: ImportW
                   </div>
                 </div>
 
-                <DialogFooter className="justify-center pt-4">
+                {/* Failed Details List */}
+                {commitResult.failed && commitResult.failed.length > 0 && (
+                  <div className="text-left p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-xs">
+                    <div className="font-bold text-red-800 dark:text-red-300 mb-1 flex items-center gap-1.5">
+                      <span>Failed Executions ({commitResult.failed.length})</span>
+                    </div>
+                    <div className="max-h-40 overflow-y-auto space-y-1 text-[11px] font-mono text-red-700 dark:text-red-400 pr-1">
+                      {commitResult.failed.map((f, i) => (
+                        <div key={i} className="truncate">
+                          #{f.rowIndex} {f.scrip ? `${f.scrip} — ` : ''}{f.reason}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Skipped Details List */}
+                {commitResult.skippedItems && commitResult.skippedItems.length > 0 && (
+                  <div className="text-left p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs">
+                    <div className="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+                      <span>Skipped Executions ({commitResult.skippedItems.length})</span>
+                    </div>
+                    <div className="max-h-40 overflow-y-auto space-y-1 text-[11px] font-mono text-slate-600 dark:text-slate-400 pr-1">
+                      {commitResult.skippedItems.map((s, i) => (
+                        <div key={i} className="truncate">
+                          #{s.rowIndex} {s.scrip ? `${s.scrip} — ` : ''}{s.reason}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <DialogFooter className="justify-center pt-2">
                   <Button type="button" size="sm" onClick={() => handleOpenChange(false)}
                           className="text-xs bg-purple-600 hover:bg-purple-700 text-white">
                     Done & View Portfolio
