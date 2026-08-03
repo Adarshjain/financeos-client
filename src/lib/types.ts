@@ -419,6 +419,13 @@ export interface ImportCommitRequest {
 
 export interface ImportCommitFailure {
   rowIndex: number;
+  scrip?: string | null;
+  reason: string;
+}
+
+export interface ImportCommitSkipped {
+  rowIndex: number;
+  scrip?: string | null;
   reason: string;
 }
 
@@ -426,6 +433,7 @@ export interface ImportCommitResult {
   committed: number;
   skipped: number;
   failed: ImportCommitFailure[];
+  skippedItems: ImportCommitSkipped[];
 }
 
 // Broker Reconciliation Types
