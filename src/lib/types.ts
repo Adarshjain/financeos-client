@@ -10,6 +10,7 @@ export enum AccountType {
 }
 export type FinancialPosition = 'asset' | 'liability';
 export type InvestmentTransactionType = 'buy' | 'sell';
+export type SettlementType = 'delivery' | 'intraday';
 export type InstrumentType = 'stock' | 'mutual_fund' | 'etf';
 
 // User & Auth
@@ -138,6 +139,7 @@ export interface CreateInvestmentTransactionRequest {
   brokerAccountId: string;
   instrumentId: string;
   type: InvestmentTransactionType;
+  settlementType?: SettlementType;
   quantity: string | number;
   price: string | number;
   tradeDate: string;
@@ -150,6 +152,7 @@ export interface CreateInvestmentTransactionRequest {
 // delete + recreate.
 export interface UpdateInvestmentTransactionRequest {
   type: InvestmentTransactionType;
+  settlementType?: SettlementType;
   quantity: string | number;
   price: string | number;
   tradeDate: string;
@@ -170,6 +173,7 @@ export interface InvestmentTransactionResponse {
     symbol?: string;
   };
   type: InvestmentTransactionType;
+  settlementType?: SettlementType;
   quantity: string;
   price: string;
   tradeDate: string;
@@ -422,6 +426,114 @@ export interface ImportCommitResult {
   committed: number;
   skipped: number;
   failed: ImportCommitFailure[];
+}
+
+// Broker Reconciliation Types
+export type ReconciliationBroker = 'zerodha' | 'groww';
+
+export interface ReconciledExecution {
+  rowIndex: number;
+  tradeDate: string;
+  type: InvestmentTransactionType;
+  settlementType: 'delivery' | 'intraday';
+  symbol: string;
+  isin?: string;
+  exchange: string;
+  quantity: number | string;
+  price: number | string;
+  totalValue: number | string;
+  charges?: Charges;
+  externalRef?: string;
+  matchedInstrument?: {
+    id: string;
+    type: InstrumentType;
+    name: string;
+    symbol?: string;
+    exchange?: string;
+    isin?: string;
+  };
+  isDuplicate: boolean;
+  note?: string;
+}
+
+export interface DerivedHolding {
+  instrumentId?: string;
+  symbol: string;
+  isin?: string;
+  name: string;
+  quantity: number | string;
+  avgCost: number | string;
+  costValue: number | string;
+}
+
+export interface RealizedSummary {
+  deliveryRealized: number | string;
+  intradayRealized: number | string;
+  totalCharges: number | string;
+  classifierDeliveryRealized: number | string;
+  classifierIntradayRealized: number | string;
+  deliveryDiff: number | string;
+  intradayDiff: number | string;
+}
+
+export interface ReconcileWarning {
+  type: 'DATA_GAP' | 'BUYBACK_EXIT' | 'UNRESOLVED_INSTRUMENT';
+  severity: 'WARNING' | 'INFO';
+  isin?: string;
+  symbol?: string;
+  message: string;
+}
+
+export interface SummaryStats {
+  totalExecutions: number;
+  deliveryExecutions: number;
+  intradayExecutions: number;
+  matchedInstruments: number;
+  unresolvedInstruments: number;
+  duplicates: number;
+  warningsCount: number;
+}
+
+export interface TradeSettlementClassification {
+  isin?: string;
+  symbol?: string;
+  tradeDate: string;
+  intradayQty: number | string;
+  intradayBuyValue: number | string;
+  intradaySellValue: number | string;
+}
+
+export interface ReconcilePreview {
+  executions: ReconciledExecution[];
+  derivedHoldings: DerivedHolding[];
+  realizedSummary: RealizedSummary;
+  warnings: ReconcileWarning[];
+  summaryStats: SummaryStats;
+  classifications?: TradeSettlementClassification[];
+}
+
+export interface CommitExecutionDto {
+  rowIndex: number;
+  tradeDate: string;
+  type: InvestmentTransactionType;
+  settlementType: 'delivery' | 'intraday';
+  symbol: string;
+  isin?: string;
+  exchange: string;
+  quantity: number | string;
+  price: number | string;
+  charges?: Charges;
+  externalRef?: string;
+  instrumentId?: string;
+  newInstrument?: CreateInstrumentRequest;
+  skip?: boolean;
+}
+
+export interface ReconcileCommitRequest {
+  broker: ReconciliationBroker;
+  brokerAccountId: string;
+  executions: CommitExecutionDto[];
+  classifications?: TradeSettlementClassification[];
 }
 
 // SIPs (Phase 5)

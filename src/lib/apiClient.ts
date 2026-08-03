@@ -40,6 +40,8 @@ import type {
   ImportCommitRequest,
   ImportCommitResult,
   ImportPreview,
+  ReconcileCommitRequest,
+  ReconcilePreview,
   Instrument,
   InstrumentCandidate,
   InstrumentType,
@@ -559,7 +561,7 @@ export const corporateActionsApi = {
   },
 };
 
-// Imports API (Phase 4a)
+// Imports API (Phase 4a & Reconciliation)
 export const importsApi = {
   async preview(formData: FormData): Promise<ImportPreview> {
     return request<ImportPreview>('/api/v1/investments/imports/preview', {
@@ -570,6 +572,20 @@ export const importsApi = {
 
   async commit(data: ImportCommitRequest): Promise<ImportCommitResult> {
     return request<ImportCommitResult>('/api/v1/investments/imports/commit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async previewReconcile(formData: FormData): Promise<ReconcilePreview> {
+    return request<ReconcilePreview>('/api/v1/investments/imports/reconcile/preview', {
+      method: 'POST',
+      body: formData,
+    });
+  },
+
+  async commitReconcile(data: ReconcileCommitRequest): Promise<ImportCommitResult> {
+    return request<ImportCommitResult>('/api/v1/investments/imports/reconcile/commit', {
       method: 'POST',
       body: JSON.stringify(data),
     });

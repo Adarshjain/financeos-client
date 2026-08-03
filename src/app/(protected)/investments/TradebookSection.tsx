@@ -113,6 +113,21 @@ export function TradebookSection({ initialData, brokerAccounts, accounts }: Trad
     }
   };
 
+  const getSettlementBadge = (settlementType: string | undefined) => {
+    if (settlementType?.toLowerCase() === 'intraday') {
+      return (
+        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-bold border-0 text-[10px]" title="Intraday (MIS)">
+          MIS
+        </Badge>
+      );
+    }
+    return (
+      <Badge className="bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 font-bold border-0 text-[10px]" title="Delivery (CNC)">
+        CNC
+      </Badge>
+    );
+  };
+
   const isEmpty = totalElements === 0;
 
   const handleBrokerFilterChange = (val: string) => {
@@ -189,6 +204,7 @@ export function TradebookSection({ initialData, brokerAccounts, accounts }: Trad
                     <span className="text-slate-500 dark:text-slate-500">{formatDate(tx.tradeDate)}</span>
                     <div className="flex items-center gap-1.5">
                       {getTypeBadge(tx.type)}
+                      {getSettlementBadge(tx.settlementType)}
                       <EditTransactionDialog transaction={tx} brokerAccounts={brokerAccounts} onSuccess={fetchPage} />
                     </div>
                   </div>
@@ -223,6 +239,7 @@ export function TradebookSection({ initialData, brokerAccounts, accounts }: Trad
                     <TableHead className="text-xs font-semibold whitespace-nowrap">Date</TableHead>
                     <TableHead className="text-xs font-semibold whitespace-nowrap">Broker</TableHead>
                     <TableHead className="text-xs font-semibold whitespace-nowrap">Type</TableHead>
+                    <TableHead className="text-xs font-semibold whitespace-nowrap">CNC/MIS</TableHead>
                     <TableHead className="text-xs font-semibold whitespace-nowrap">Instrument</TableHead>
                     <TableHead className="text-right text-xs font-semibold whitespace-nowrap">Qty</TableHead>
                     <TableHead className="text-right text-xs font-semibold whitespace-nowrap">Price</TableHead>
@@ -239,6 +256,7 @@ export function TradebookSection({ initialData, brokerAccounts, accounts }: Trad
                         {getBrokerName(tx)}
                       </TableCell>
                       <TableCell className="py-2.5">{getTypeBadge(tx.type)}</TableCell>
+                      <TableCell className="py-2.5">{getSettlementBadge(tx.settlementType)}</TableCell>
                       <TableCell className="py-2.5 font-bold text-xs text-slate-900 dark:text-slate-100">
                         {getInstrumentDisplayName(tx)}
                       </TableCell>
