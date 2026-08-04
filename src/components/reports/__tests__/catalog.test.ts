@@ -12,7 +12,7 @@ import {
   operatorsForField,
   valueKind,
 } from '@/components/reports/catalog';
-import type { DatasourceCatalog, FieldDefinition } from '@/lib/reports.types';
+import type { DatasourceCatalog } from '@/lib/reports.types';
 
 const mockCatalog: DatasourceCatalog = {
   fields: [

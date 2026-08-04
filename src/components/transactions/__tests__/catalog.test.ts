@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
   batchFailureLabel,
   REVIEW_REASON_META,
-  REVIEW_REASONS,
   reviewReasonLabel,
   TRANSACTIONS_CATALOG,
 } from '@/components/transactions/catalog';

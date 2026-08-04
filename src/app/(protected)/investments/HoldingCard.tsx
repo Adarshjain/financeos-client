@@ -36,7 +36,6 @@ export function HoldingCard({pos, brokerAccounts, allPositions}: HoldingCardProp
 
   const unrl = parseNumber(pos.unrealizedGainLoss);
   const unrlPct = pos.unrealizedGainLossPercent ? parseNumber(pos.unrealizedGainLossPercent) : 0;
-  const source = pos.lastPriceSource;
   const manualOnly = isManualOnly(pos);
 
   return (

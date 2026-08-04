@@ -2,7 +2,6 @@
 
 import {useState} from 'react';
 
-import {Badge} from '@/components/ui/badge';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Account, Broker} from '@/lib/account.types';
 import {CorporateAction, Dividend, Instrument, InvestmentSummary, PagedInvestmentTransactionResponse, Position, Sip} from '@/lib/types';
