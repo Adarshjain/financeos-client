@@ -5,9 +5,8 @@ import {useState} from 'react';
 import {Badge} from '@/components/ui/badge';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Account, Broker} from '@/lib/account.types';
-import {Dividend, Instrument, InvestmentSummary, PagedInvestmentTransactionResponse, Position, Sip} from '@/lib/types';
-
 import {AllocationCharts} from './AllocationCharts';
+import {CorporateActionsSection} from './CorporateActionsSection';
 import {CreateDividendDialog} from './CreateDividendDialog';
 import {CreateInstrumentDialog} from './CreateInstrumentDialog';
 import {DividendsTable} from './DividendsTable';
@@ -19,12 +18,14 @@ import {RecordTradeDialog} from './RecordTradeDialog';
 import {RefreshPricesButton} from './RefreshPricesButton';
 import {SipsSection} from './SipsSection';
 import {TradebookSection} from './TradebookSection';
+import {CorporateAction, Dividend, Instrument, InvestmentSummary, PagedInvestmentTransactionResponse, Position, Sip} from '@/lib/types';
 
 interface InvestmentsViewProps {
   summary: InvestmentSummary | null;
   positions: Position[];
   initialTransactions: PagedInvestmentTransactionResponse;
   dividends: Dividend[];
+  corporateActions: CorporateAction[];
   sips: Sip[];
   instruments: Instrument[];
   brokerAccounts: Broker[];
@@ -36,6 +37,7 @@ export function InvestmentsView({
                                   positions,
                                   initialTransactions,
                                   dividends,
+                                  corporateActions = [],
                                   sips,
                                   instruments,
                                   brokerAccounts,
@@ -120,6 +122,7 @@ export function InvestmentsView({
                   accounts={accounts}
               />
               <InstrumentsSection instruments={instruments} />
+              <CorporateActionsSection corporateActions={corporateActions} instruments={instruments} />
               <SipsSection sips={sips} brokerAccounts={brokerAccounts} positions={positions}/>
             </div>
           </TabsContent>

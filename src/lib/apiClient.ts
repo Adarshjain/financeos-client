@@ -536,6 +536,10 @@ export const dividendsApi = {
 
 // Corporate Actions API
 export const corporateActionsApi = {
+  async listAll(): Promise<CorporateAction[]> {
+    return request<CorporateAction[]>('/api/v1/corporate-actions');
+  },
+
   async list(instrumentId: string): Promise<CorporateAction[]> {
     return request<CorporateAction[]>(`/api/v1/instruments/${instrumentId}/corporate-actions`);
   },

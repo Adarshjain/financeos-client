@@ -84,6 +84,17 @@ export function ImportStep2Review({
     }));
   };
 
+  const handleCreateNew = (rowIndex: number, createNew: boolean) => {
+    setRowStates((prev) => ({
+      ...prev,
+      [rowIndex]: {
+        ...prev[rowIndex],
+        createNew,
+        ...(createNew ? { selectedInstrumentId: undefined, selectedInstrumentName: undefined } : {}),
+      },
+    }));
+  };
+
   return (
     <div className="flex-1 flex flex-col min-h-0 space-y-2">
       {reconcilePreview && (
@@ -103,6 +114,7 @@ export function ImportStep2Review({
               rowStates={rowStates}
               onToggleSkip={handleToggleSkip}
               onMapInstrument={handleMapInstrument}
+              onCreateNew={handleCreateNew}
             />
           </div>
         </>

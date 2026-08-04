@@ -234,6 +234,12 @@ export async function deleteDividend(
 }
 
 // Corporate Actions actions
+export async function getAllCorporateActions(): Promise<ApiResult<CorporateAction[]>> {
+  return apiResult('Failed to fetch corporate actions', async () => {
+    return await corporateActionsApi.listAll();
+  });
+}
+
 export async function getCorporateActions(
   instrumentId: string
 ): Promise<ApiResult<CorporateAction[]>> {

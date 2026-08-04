@@ -322,6 +322,8 @@ export type CorporateActionType = 'split' | 'bonus' | 'demerger' | 'merger';
 export interface CorporateAction {
   id: string;
   instrumentId: string;
+  instrumentName?: string;
+  instrumentSymbol?: string;
   type: CorporateActionType;
   ratioFrom: number;
   ratioTo: number;

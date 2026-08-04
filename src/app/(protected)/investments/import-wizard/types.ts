@@ -11,4 +11,8 @@ export interface RowState {
 }
 
 export const isRowResolved = (state: RowState | undefined, exec: ReconciledExecution) =>
-  !!(state?.selectedInstrumentId || (!state?.createNew && exec.matchedInstrument));
+  !!(
+    state?.selectedInstrumentId ||
+    (state?.createNew && state?.newInstrument) ||
+    (!state?.createNew && exec.matchedInstrument)
+  );

@@ -16,6 +16,7 @@ interface ClassifiedExecutionsTableProps {
   rowStates: Record<number, RowState>;
   onToggleSkip: (rowIndex: number, currentSkip: boolean) => void;
   onMapInstrument: (rowIndex: number, inst: { id: string; name: string }) => void;
+  onCreateNew: (rowIndex: number, createNew: boolean) => void;
 }
 
 export function ClassifiedExecutionsTable({
@@ -23,6 +24,7 @@ export function ClassifiedExecutionsTable({
   rowStates,
   onToggleSkip,
   onMapInstrument,
+  onCreateNew,
 }: ClassifiedExecutionsTableProps) {
   const sortedExecutions = React.useMemo(() => {
     return [...executions].sort((a, b) => {
@@ -117,6 +119,20 @@ export function ClassifiedExecutionsTable({
                           </PopoverContent>
                         </Popover>
                       </div>
+                    ) : state?.createNew ? (
+                      <div className="flex items-center gap-1">
+                        <span className="text-blue-700 dark:text-blue-400 font-medium text-[11px]">
+                          ✦ New: {exec.symbol}
+                        </span>
+                        <span className="text-[9px] text-slate-400">no live price</span>
+                        <button
+                          type="button"
+                          onClick={() => onCreateNew(exec.rowIndex, false)}
+                          className="text-[10px] text-slate-400 underline hover:text-slate-600"
+                        >
+                          undo
+                        </button>
+                      </div>
                     ) : exec.matchedInstrument ? (
                       <div className="text-emerald-800 dark:text-emerald-300 font-medium">
                         {exec.matchedInstrument.name}
@@ -141,6 +157,15 @@ export function ClassifiedExecutionsTable({
                             />
                           </PopoverContent>
                         </Popover>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-5 px-1.5 text-[10px] text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900"
+                          onClick={() => onCreateNew(exec.rowIndex, true)}
+                        >
+                          Create new
+                        </Button>
                       </div>
                     )}
                     {exec.isDuplicate && (
