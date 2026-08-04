@@ -118,9 +118,19 @@ export function HoldingCard({pos, brokerAccounts, allPositions}: HoldingCardProp
             </div>
             <div className="flex flex-col items-center text-slate-500">
               Current
-              <strong className="text-slate-700 dark:text-slate-300 font-bold tabular-nums">
-                {formatMoney(pos.currentValue)}
-              </strong>
+              <div className="flex items-center gap-1">
+                <strong className="text-slate-700 dark:text-slate-300 font-bold tabular-nums">
+                  {formatMoney(pos.currentValue)}
+                </strong>
+                {parseNumber(pos.quantity) > 0 && !pos.lastPrice && pos.currentValue && (
+                  <Badge
+                    variant="outline"
+                    className="text-[8px] px-1 py-0 font-normal text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30"
+                  >
+                    at cost
+                  </Badge>
+                )}
+              </div>
             </div>
             <div className="flex flex-col items-end text-slate-500">
               LTP

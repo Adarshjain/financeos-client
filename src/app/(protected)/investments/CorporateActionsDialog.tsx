@@ -43,9 +43,10 @@ interface CorporateActionsDialogProps {
   };
   trigger?: React.ReactNode;
   onSuccess?: () => void;
+  initialType?: CorporateActionType;
 }
 
-export function CorporateActionsDialog({ instrument, trigger, onSuccess }: CorporateActionsDialogProps) {
+export function CorporateActionsDialog({ instrument, trigger, onSuccess, initialType }: CorporateActionsDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [actions, setActions] = useState<CorporateAction[]>([]);
@@ -55,7 +56,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
   const [editingActionId, setEditingActionId] = useState<string | null>(null);
 
   // Form state
-  const [type, setType] = useState<CorporateActionType>('split');
+  const [type, setType] = useState<CorporateActionType>(initialType || 'split');
   const [ratioFrom, setRatioFrom] = useState('1');
   const [ratioTo, setRatioTo] = useState('2');
   const [exDate, setExDate] = useState(toCalendarDate(new Date()));
@@ -79,13 +80,16 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
 
   useEffect(() => {
     if (open) {
+      if (!editingActionId && initialType) {
+        setType(initialType);
+      }
       fetchActions();
     }
-  }, [open, fetchActions]);
+  }, [open, fetchActions, initialType, editingActionId]);
 
   const resetForm = () => {
     setEditingActionId(null);
-    setType('split');
+    setType(initialType || 'split');
     setRatioFrom('1');
     setRatioTo('2');
     setExDate(toCalendarDate(new Date()));

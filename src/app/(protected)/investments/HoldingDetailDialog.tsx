@@ -1,6 +1,6 @@
 'use client';
 
-import {DollarSign, Edit, Loader2, Plus, Zap} from 'lucide-react';
+import {DollarSign, Edit, Info, Loader2, Plus, Zap} from 'lucide-react';
 import {useCallback, useEffect, useState} from 'react';
 
 import {listInvestmentTransactions} from '@/actions/investments';
@@ -55,6 +55,17 @@ const parseNumber = (val: string | number | null | undefined): number => {
   return typeof val === 'string' ? parseFloat(val) : val;
 };
 
+const isManualOnly = (pos: Position): boolean => {
+  const type = pos.instrument?.type?.toLowerCase();
+  if (type === 'stock' || type === 'etf') {
+    return !pos.instrument.yahooSymbol;
+  }
+  if (type === 'mutual_fund') {
+    return !pos.instrument.amfiCode;
+  }
+  return false;
+};
+
 const getSourceBadge = (source?: string) => {
   if (!source) return null;
   switch (source.toUpperCase()) {
@@ -98,6 +109,7 @@ export function HoldingDetailDialog({
   const unrl = parseNumber(pos.unrealizedGainLoss);
   const unrlPct = pos.unrealizedGainLossPercent ? parseNumber(pos.unrealizedGainLossPercent) : 0;
   const rlz = parseNumber(pos.realizedGainLoss);
+  const showMergerNudge = isManualOnly(pos) && parseNumber(pos.quantity) > 0 && !pos.lastPrice && !pos.mergedIntoName;
 
   const [holdingTrades, setHoldingTrades] = useState<InvestmentTransactionResponse[]>([]);
   const [isLoadingTrades, setIsLoadingTrades] = useState(false);
@@ -203,6 +215,7 @@ export function HoldingDetailDialog({
             />
             <CorporateActionsDialog
                 instrument={pos.instrument}
+                initialType={showMergerNudge ? 'merger' : undefined}
                 trigger={
                   <Button variant="outline" size="sm" className="h-8 text-xs font-semibold">
                     <Zap className="w-3.5 h-3.5"/>
@@ -212,6 +225,15 @@ export function HoldingDetailDialog({
             />
           </div>
 
+          {showMergerNudge && (
+            <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2">
+              <Info className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                No live price for this holding. If the company merged or delisted, record a <strong className="font-semibold">Merger</strong> corporate action to migrate it into the surviving stock.
+              </div>
+            </div>
+          )}
+
           <span className="text-slate-700 dark:text-slate-300 font-bold mt-2">Summary</span>
 
           <div
@@ -219,7 +241,20 @@ export function HoldingDetailDialog({
             <MetricItem label="Quantity" value={pos.quantity}/>
             <MetricItem label="Avg Cost" value={formatMoney(pos.avgCost)}/>
             <MetricItem label="Invested" value={formatMoney(pos.invested)}/>
-            <MetricItem label="Current Value" value={formatMoney(pos.currentValue)}/>
+            <MetricItem
+                label="Current Value"
+                value={formatMoney(pos.currentValue)}
+                subValue={
+                  parseNumber(pos.quantity) > 0 && !pos.lastPrice && pos.currentValue ? (
+                    <Badge
+                      variant="outline"
+                      className="text-[8px] px-1 py-0 font-normal text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30"
+                    >
+                      at cost
+                    </Badge>
+                  ) : undefined
+                }
+            />
             <MetricItem
                 label="Last Price (LTP)"
                 value={formatMoney(pos.lastPrice)}
