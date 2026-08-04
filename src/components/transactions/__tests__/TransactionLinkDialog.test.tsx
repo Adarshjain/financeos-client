@@ -100,7 +100,7 @@ describe('TransactionLinkDialog (CD-7, CD-9)', () => {
       data: { content: [], number: 0, size: 50, totalElements: 0, totalPages: 0, first: true, last: true, empty: false },
     });
 
-    const { rerender } = render(
+    render(
       <TransactionLinkDialog
         initialTransaction={mockAnchorDebit}
         accounts={mockAccounts}

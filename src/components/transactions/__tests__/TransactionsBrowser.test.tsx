@@ -1,7 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import * as transactionLinksActions from '@/actions/transaction-links';
 import * as transactionsActions from '@/actions/transactions';
 import { TransactionsBrowser } from '@/components/transactions/TransactionsBrowser';
 import type { Account } from '@/lib/account.types';

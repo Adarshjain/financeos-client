@@ -1,8 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { getCardCycleSummary } from '@/actions/accounts';
-import { getStatementDetail, listStatementsByAccount } from '@/actions/statements';
+import { getStatementDetail } from '@/actions/statements';
 import { StatementsDialog } from '@/components/accounts/StatementsDialog';
 import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
