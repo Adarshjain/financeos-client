@@ -266,20 +266,23 @@ export function CorporateActionsDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:p-6 max-w-full sm:max-w-lg overflow-x-hidden gap-0">
         <DialogHeader>
-          <DialogTitle className="text-base font-bold flex items-center gap-2">
-            <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-            Corporate Actions — {instrument.name}
+          <DialogTitle className="text-base font-bold flex items-start sm:items-start gap-2 min-w-0">
+            <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5 sm:mt-0" />
+            <div className="min-w-0 break-words items-start">
+              <div>Corporate Actions</div>
+              <div>{instrument.name}</div>
+            </div>
           </DialogTitle>
-          <DialogDescription className="text-xs text-slate-500">
-            Manage stock splits, bonus share distributions, demergers, and mergers.
+          <DialogDescription className="text-xs text-slate-500 pb-2">
+            Manage stock splits, bonus, demergers, and mergers.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
+        <div className="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2 min-w-0">
           <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <div>
+          <div className="min-w-0 break-words">
             <span className="font-semibold">Note:</span> Position quantities and cost bases auto-adjust when corporate actions are added or updated.
           </div>
         </div>
@@ -294,31 +297,31 @@ export function CorporateActionsDialog({
           ) : (
             <div className="space-y-2">
               {actions.map((act) => (
-                <div key={act.id} className={`p-2.5 rounded-md border flex items-center justify-between text-xs ${editingActionId === act.id ? 'bg-purple-50/50 dark:bg-purple-950/30 border-purple-300 dark:border-purple-800' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
-                  <div className="space-y-0.5">
-                    <div className="font-semibold flex items-center gap-1.5">
-                      <Badge variant="outline" className="text-[9px] uppercase px-1 py-0 font-bold bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800">
+                <div key={act.id} className={`p-2.5 rounded-md border flex items-center justify-between text-xs gap-2 ${editingActionId === act.id ? 'bg-purple-50/50 dark:bg-purple-950/30 border-purple-300 dark:border-purple-800' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
+                  <div className="space-y-0.5 min-w-0 flex-1">
+                    <div className="font-semibold flex items-center gap-1.5 flex-wrap">
+                      <Badge variant="outline" className="text-[9px] uppercase px-1 py-0 font-bold bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 shrink-0">
                         {act.type}
                       </Badge>
-                      <span>
+                      <span className="break-words">
                         Ratio: {act.ratioFrom} → {act.ratioTo}
                       </span>
                     </div>
                     {act.type === 'demerger' && (
-                      <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300">
+                      <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300 break-words">
                         Child: {act.targetInstrumentName || 'Target'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc: {act.costAllocationPct}%{act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? ` • cash-in-lieu ₹${act.fractionalCashInLieu}` : ''}
                       </div>
                     )}
                     {act.type === 'merger' && (
-                      <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300">
+                      <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300 break-words">
                         Merged into {act.targetInstrumentName || 'Acquirer'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • swap {act.ratioFrom}:{act.ratioTo}{act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? ` • cash-in-lieu ₹${act.fractionalCashInLieu}` : ''}
                       </div>
                     )}
-                    <div className="text-[10px] text-slate-500">
+                    <div className="text-[10px] text-slate-500 break-words">
                       Ex-Date: {formatDate(act.exDate)} {act.notes ? `• ${act.notes}` : ''}
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     <Button
                       type="button"
                       variant="ghost"
@@ -375,8 +378,8 @@ export function CorporateActionsDialog({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-1.5 min-w-0">
               <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Action Type</Label>
               <Select value={type} onValueChange={(val) => setType(val as CorporateActionType)}>
                 <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
@@ -402,9 +405,9 @@ export function CorporateActionsDialog({
           </div>
 
           {(type === 'demerger' || type === 'merger') && (
-            <div className="space-y-3 p-3 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-900/40">
-              <div className="space-y-1">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <div className="space-y-3 p-3 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-900/40 min-w-0">
+              <div className="space-y-1 min-w-0">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-words">
                   {type === 'merger' ? 'Surviving (Acquirer) Instrument *' : 'Target (Child) Instrument *'}
                 </Label>
                 <InstrumentTypeahead
@@ -430,15 +433,15 @@ export function CorporateActionsDialog({
             </div>
           )}
 
-          <div className="space-y-1">
-            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <div className="space-y-1 min-w-0">
+            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-words">
               {type === 'merger'
                 ? 'Swap Ratio (transferor held → acquirer received)'
                 : type === 'demerger'
                 ? 'Share Entitlement Ratio (parent held → child received)'
                 : 'Ratio (units before → units after)'}
             </Label>
-            <div className="grid grid-cols-2 gap-4 items-center">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4 items-start">
               <FormField
                 label={type === 'merger' ? 'Transferor Shares Held' : type === 'demerger' ? 'Parent Shares Held' : 'Ratio From (Held)'}
                 name="ratioFrom"
@@ -460,7 +463,7 @@ export function CorporateActionsDialog({
                 required
               />
             </div>
-            <p className="text-[10px] text-slate-500 italic">
+            <p className="text-[10px] text-slate-500 italic break-words">
               {type === 'merger'
                 ? 'Example: HDFC → HDFC Bank was 25 → 42.'
                 : type === 'demerger'
@@ -470,9 +473,9 @@ export function CorporateActionsDialog({
           </div>
 
           {(type === 'demerger' || type === 'merger') && (
-            <div className="space-y-3 pt-1">
+            <div className="space-y-3 pt-1 min-w-0">
               {heldQuantity !== undefined && heldQuantity > 0 && hasValidRatio && fracShares > 0 && (
-                <div className="p-2.5 rounded-md bg-purple-100/60 dark:bg-purple-950/40 text-xs text-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-800">
+                <div className="p-2.5 rounded-md bg-purple-100/60 dark:bg-purple-950/40 text-xs text-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-800 break-words">
                   You&apos;ll receive <strong className="font-semibold">{wholeShares}</strong> whole shares + cash-in-lieu for <strong className="font-semibold">{fracShares}</strong> fractional shares.
                 </div>
               )}
@@ -507,7 +510,7 @@ export function CorporateActionsDialog({
               type="submit"
               size="sm"
               disabled={isSubmitting}
-              className="text-xs bg-purple-600 hover:bg-purple-700 text-white"
+              className="w-full sm:w-auto text-xs bg-purple-600 hover:bg-purple-700 text-white"
             >
               {isSubmitting ? 'Saving Action...' : editingActionId ? 'Update Corporate Action' : 'Save Corporate Action'}
             </Button>
