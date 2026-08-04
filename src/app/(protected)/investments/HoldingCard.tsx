@@ -43,7 +43,7 @@ export function HoldingCard({pos, brokerAccounts, allPositions}: HoldingCardProp
       <>
         <div
             onClick={() => setIsDetailOpen(true)}
-            className="p-3.5 sm:p-4 bg-white dark:bg-slate-900 hover:bg-slate-50/80 dark:hover:bg-slate-850 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all space-y-2 cursor-pointer group"
+            className="p-3.5 sm:p-4 bg-white dark:bg-slate-900 hover:bg-slate-50/80 dark:hover:bg-slate-850 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all space-y-1 cursor-pointer group"
         >
           {/* Row 1: Top Metadata (Qty & Avg Cost Left | P&L % Right) */}
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
@@ -101,8 +101,7 @@ export function HoldingCard({pos, brokerAccounts, allPositions}: HoldingCardProp
           </div>
 
           {/* Row 3: Bottom Row (Invested Left | LTP, As-Of & Source Right) */}
-          <div
-              className="pt-2 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between gap-2 text-xs">
+          <div className="flex items-center justify-between gap-2 text-xs">
             <div className="flex flex-col text-slate-500">
               Invested
               <strong className="text-slate-700 dark:text-slate-300 font-bold tabular-nums">
