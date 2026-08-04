@@ -41,18 +41,22 @@ interface CorporateActionsDialogProps {
     name: string;
     symbol?: string;
   };
+  heldQuantity?: number;
   trigger?: React.ReactNode;
   onSuccess?: () => void;
   initialType?: CorporateActionType;
+  editAction?: CorporateAction;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
 export function CorporateActionsDialog({
   instrument,
+  heldQuantity,
   trigger,
   onSuccess,
   initialType,
+  editAction,
   open: controlledOpen,
   onOpenChange: setControlledOpen,
 }: CorporateActionsDialogProps) {
@@ -74,6 +78,7 @@ export function CorporateActionsDialog({
   const [notes, setNotes] = useState('');
   const [targetInstrument, setTargetInstrument] = useState<Instrument | null>(null);
   const [costAllocationPct, setCostAllocationPct] = useState('20');
+  const [fractionalCashInLieu, setFractionalCashInLieu] = useState('');
 
   const fetchActions = useCallback(async () => {
     setIsLoading(true);
@@ -107,6 +112,7 @@ export function CorporateActionsDialog({
     setNotes('');
     setTargetInstrument(null);
     setCostAllocationPct('20');
+    setFractionalCashInLieu('');
   };
 
   const handleEditClick = (act: CorporateAction) => {
@@ -128,7 +134,17 @@ export function CorporateActionsDialog({
       setTargetInstrument(null);
     }
     setCostAllocationPct(act.costAllocationPct ? String(act.costAllocationPct) : '20');
+    setFractionalCashInLieu(act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? String(act.fractionalCashInLieu) : '');
   };
+
+  // When opened in "edit" mode (e.g. from the global Corporate Actions section),
+  // pre-fill the form for the action being edited rather than showing "add new".
+  useEffect(() => {
+    if (open && editAction) {
+      handleEditClick(editAction);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, editAction?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,6 +188,7 @@ export function CorporateActionsDialog({
         notes: notes || undefined,
         targetInstrumentId: (type === 'demerger' || type === 'merger') ? targetInstrument?.id : undefined,
         costAllocationPct: type === 'demerger' ? Number(costAllocationPct) : undefined,
+        fractionalCashInLieu: (type === 'demerger' || type === 'merger') ? (fractionalCashInLieu ? Number(fractionalCashInLieu) : 0) : undefined,
       };
 
       if (editingActionId) {
@@ -227,6 +244,18 @@ export function CorporateActionsDialog({
     }
   };
 
+  const fromNum = Number(ratioFrom);
+  const toNum = Number(ratioTo);
+  const hasValidRatio = fromNum > 0 && toNum > 0;
+  const entitlement = (heldQuantity !== undefined && heldQuantity > 0 && hasValidRatio)
+    ? (heldQuantity * toNum) / fromNum
+    : 0;
+  const wholeShares = Math.floor(entitlement);
+  const fracShares = entitlement > 0 ? Number((entitlement - wholeShares).toFixed(4)) : 0;
+  const showCashInLieuField = (type === 'demerger' || type === 'merger') && (
+    heldQuantity === undefined || fracShares > 0 || (editingActionId !== null && Boolean(fractionalCashInLieu))
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -277,12 +306,12 @@ export function CorporateActionsDialog({
                     </div>
                     {act.type === 'demerger' && (
                       <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300">
-                        Child: {act.targetInstrumentName || 'Target'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc: {act.costAllocationPct}%
+                        Child: {act.targetInstrumentName || 'Target'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc: {act.costAllocationPct}%{act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? ` • cash-in-lieu ₹${act.fractionalCashInLieu}` : ''}
                       </div>
                     )}
                     {act.type === 'merger' && (
                       <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300">
-                        Merged into {act.targetInstrumentName || 'Acquirer'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • swap {act.ratioFrom}:{act.ratioTo}
+                        Merged into {act.targetInstrumentName || 'Acquirer'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • swap {act.ratioFrom}:{act.ratioTo}{act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? ` • cash-in-lieu ₹${act.fractionalCashInLieu}` : ''}
                       </div>
                     )}
                     <div className="text-[10px] text-slate-500">
@@ -439,6 +468,30 @@ export function CorporateActionsDialog({
                 : 'Example: For a 2-for-1 split, enter 1 → 2. For a 1:1 bonus issue, enter 1 → 2.'}
             </p>
           </div>
+
+          {(type === 'demerger' || type === 'merger') && (
+            <div className="space-y-3 pt-1">
+              {heldQuantity !== undefined && heldQuantity > 0 && hasValidRatio && fracShares > 0 && (
+                <div className="p-2.5 rounded-md bg-purple-100/60 dark:bg-purple-950/40 text-xs text-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-800">
+                  You&apos;ll receive <strong className="font-semibold">{wholeShares}</strong> whole shares + cash-in-lieu for <strong className="font-semibold">{fracShares}</strong> fractional shares.
+                </div>
+              )}
+
+              {showCashInLieuField && (
+                <FormField
+                  label="Cash-in-lieu received (₹)"
+                  name="fractionalCashInLieu"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={fractionalCashInLieu}
+                  onChange={(e) => setFractionalCashInLieu(e.target.value)}
+                  placeholder="0.00"
+                  hint="Leave 0 if not yet known — you can edit this action later."
+                />
+              )}
+            </div>
+          )}
 
           <FormField
             label="Notes"

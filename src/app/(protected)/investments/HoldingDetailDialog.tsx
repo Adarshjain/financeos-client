@@ -215,6 +215,7 @@ export function HoldingDetailDialog({
             />
             <CorporateActionsDialog
                 instrument={pos.instrument}
+                heldQuantity={parseNumber(pos.quantity)}
                 initialType={showMergerNudge ? 'merger' : undefined}
                 trigger={
                   <Button variant="outline" size="sm" className="h-8 text-xs font-semibold">

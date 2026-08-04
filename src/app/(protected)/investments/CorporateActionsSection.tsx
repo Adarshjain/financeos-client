@@ -39,6 +39,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
 
   // Dialog state for adding/editing via global section
   const [activeDialogInstrument, setActiveDialogInstrument] = useState<Instrument | null>(null);
+  const [activeEditAction, setActiveEditAction] = useState<CorporateAction | null>(null);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
   const handleSearchChange = (val: string) => {
@@ -145,6 +146,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
       currency: 'INR',
     };
     setActiveDialogInstrument(inst);
+    setActiveEditAction(act);
     setDialogOpen(true);
   };
 
@@ -401,13 +403,20 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
       {activeDialogInstrument && (
         <CorporateActionsDialog
           instrument={activeDialogInstrument}
+          editAction={activeEditAction ?? undefined}
           open={dialogOpen}
           onOpenChange={(val) => {
             setDialogOpen(val);
-            if (!val) setActiveDialogInstrument(null);
+            if (!val) {
+              setActiveDialogInstrument(null);
+              setActiveEditAction(null);
+            }
           }}
           onSuccess={() => {
             router.refresh();
+            setDialogOpen(false);
+            setActiveDialogInstrument(null);
+            setActiveEditAction(null);
           }}
         />
       )}
