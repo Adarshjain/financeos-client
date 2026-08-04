@@ -1,7 +1,8 @@
 import { Account, isAccountOfType } from '@/lib/account.types';
-import { accountsApi, dividendsApi, instrumentsApi, investmentsApi, sipsApi } from '@/lib/apiClient';
+import { accountsApi, corporateActionsApi, dividendsApi, instrumentsApi, investmentsApi, sipsApi } from '@/lib/apiClient';
 import {
   AccountType,
+  CorporateAction,
   Dividend,
   Instrument,
   PagedInvestmentTransactionResponse,
@@ -28,11 +29,12 @@ const EMPTY_TRANSACTIONS_PAGE: PagedInvestmentTransactionResponse = {
 };
 
 export default async function InvestmentsPage() {
-  const [summary, positionsData, initialTransactions, dividendsData, sipsData, instrumentsData, accounts] = await Promise.all([
+  const [summary, positionsData, initialTransactions, dividendsData, corporateActionsData, sipsData, instrumentsData, accounts] = await Promise.all([
     investmentsApi.getSummary().catch(() => null),
     investmentsApi.getPositions().catch(() => ({ positions: [] })),
     investmentsApi.listTransactions(0, TRANSACTIONS_INITIAL_PAGE_SIZE).catch(() => EMPTY_TRANSACTIONS_PAGE),
     dividendsApi.list().catch(() => ({ content: [] as Dividend[], totalElements: 0, page: 0, size: 50, totalPages: 0 })),
+    corporateActionsApi.listAll().catch(() => [] as CorporateAction[]),
     sipsApi.list().catch(() => [] as Sip[]),
     instrumentsApi.search().catch(() => [] as Instrument[]),
     accountsApi.list().catch(() => [] as Account[]),
@@ -40,6 +42,7 @@ export default async function InvestmentsPage() {
 
   const positions: Position[] = positionsData.positions || [];
   const dividends: Dividend[] = dividendsData.content || [];
+  const corporateActions: CorporateAction[] = corporateActionsData || [];
   const sips: Sip[] = sipsData || [];
   const instruments: Instrument[] = instrumentsData || [];
   const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
@@ -50,6 +53,7 @@ export default async function InvestmentsPage() {
       positions={positions}
       initialTransactions={initialTransactions}
       dividends={dividends}
+      corporateActions={corporateActions}
       sips={sips}
       instruments={instruments}
       brokerAccounts={brokerAccounts}

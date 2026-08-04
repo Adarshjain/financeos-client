@@ -44,11 +44,22 @@ interface CorporateActionsDialogProps {
   trigger?: React.ReactNode;
   onSuccess?: () => void;
   initialType?: CorporateActionType;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function CorporateActionsDialog({ instrument, trigger, onSuccess, initialType }: CorporateActionsDialogProps) {
+export function CorporateActionsDialog({
+  instrument,
+  trigger,
+  onSuccess,
+  initialType,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen,
+}: CorporateActionsDialogProps) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = setControlledOpen || setInternalOpen;
   const [actions, setActions] = useState<CorporateAction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

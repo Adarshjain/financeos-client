@@ -132,7 +132,10 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
                 symbol: exec.symbol || '',
                 exchange: exec.exchange || 'NSE',
                 isin: exec.isin || undefined,
-                yahooSymbol: exec.symbol ? `${exec.symbol.toUpperCase()}.${exec.exchange === 'BSE' ? 'BO' : 'NS'}` : '',
+                // No yahooSymbol: "Create new" is used when external search can't
+                // resolve the scrip (delisted/merged), so the instrument is
+                // manual-price-only rather than chasing a dead or reused ticker.
+                yahooSymbol: undefined,
               },
             };
           }
