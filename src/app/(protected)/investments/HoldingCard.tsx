@@ -5,7 +5,7 @@ import {useState} from 'react';
 import {Badge} from '@/components/ui/badge';
 import {Broker} from '@/lib/account.types';
 import {Position} from '@/lib/types';
-import {formatMoney} from '@/lib/utils';
+import {formatDate, formatMoney} from '@/lib/utils';
 
 import {HoldingDetailDialog} from './HoldingDetailDialog';
 
@@ -73,13 +73,21 @@ export function HoldingCard({pos, brokerAccounts, allPositions}: HoldingCardProp
           {/* Row 2: Middle Main Row (Symbol/Name Left | Total P&L Right) */}
           <div className="flex items-start justify-between gap-3">
             <div>
-              <div>
+              <div className="flex items-center gap-1 flex-wrap">
                 {manualOnly && (
                     <Badge
                         variant="outline"
                         className="text-[8px] px-1 py-0 font-normal text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800"
                     >
                       manual price only
+                    </Badge>
+                )}
+                {parseNumber(pos.quantity) === 0 && pos.mergedIntoName && (
+                    <Badge
+                        variant="outline"
+                        className="text-[10px] px-1.5 py-0 font-medium text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/40"
+                    >
+                      ⤳ Merged into {pos.mergedIntoName} {pos.mergedIntoDate ? `(${formatDate(pos.mergedIntoDate)})` : ''}
                     </Badge>
                 )}
               </div>
