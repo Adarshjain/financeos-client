@@ -333,6 +333,7 @@ export interface CorporateAction {
   targetInstrumentName?: string;
   targetInstrumentSymbol?: string;
   costAllocationPct?: string | number;
+  fractionalCashInLieu?: string | number;
   createdAt?: string;
 }
 
@@ -344,6 +345,7 @@ export interface CreateCorporateActionRequest {
   notes?: string;
   targetInstrumentId?: string;
   costAllocationPct?: number;
+  fractionalCashInLieu?: number;
 }
 
 export interface UpdateCorporateActionRequest {
@@ -354,6 +356,7 @@ export interface UpdateCorporateActionRequest {
   notes?: string;
   targetInstrumentId?: string;
   costAllocationPct?: number;
+  fractionalCashInLieu?: number;
 }
 
 // Imports (Phase 4a / 4b / 4c)
