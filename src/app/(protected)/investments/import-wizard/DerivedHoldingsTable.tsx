@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
 import { Layers } from 'lucide-react';
+import React from 'react';
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DerivedHolding } from '@/lib/types';
 import { formatMoney } from '@/lib/utils';

@@ -5,6 +5,8 @@ import {useState} from 'react';
 import {Badge} from '@/components/ui/badge';
 import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Account, Broker} from '@/lib/account.types';
+import {CorporateAction, Dividend, Instrument, InvestmentSummary, PagedInvestmentTransactionResponse, Position, Sip} from '@/lib/types';
+
 import {AllocationCharts} from './AllocationCharts';
 import {CorporateActionsSection} from './CorporateActionsSection';
 import {CreateDividendDialog} from './CreateDividendDialog';
@@ -18,7 +20,6 @@ import {RecordTradeDialog} from './RecordTradeDialog';
 import {RefreshPricesButton} from './RefreshPricesButton';
 import {SipsSection} from './SipsSection';
 import {TradebookSection} from './TradebookSection';
-import {CorporateAction, Dividend, Instrument, InvestmentSummary, PagedInvestmentTransactionResponse, Position, Sip} from '@/lib/types';
 
 interface InvestmentsViewProps {
   summary: InvestmentSummary | null;
