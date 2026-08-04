@@ -144,13 +144,21 @@ export function HoldingDetailDialog({
             </div>
           </DialogHeader>
 
-          <div className="text-xs text-slate-500 flex items-center gap-1">
+          <div className="text-xs text-slate-500 flex items-center gap-1 flex-wrap">
             <span className="text-slate-700 dark:text-slate-300 font-bold">{pos.brokerName}</span>
             <span>•</span>
             <Badge variant="secondary" className="text-[9px] uppercase px-1.5 py-0 font-bold">
               {pos.instrument.type}
             </Badge>
             {getSourceBadge(pos.lastPriceSource)}
+            {parseNumber(pos.quantity) === 0 && pos.mergedIntoName && (
+                <Badge
+                    variant="outline"
+                    className="text-[10px] px-1.5 py-0 font-medium text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/40"
+                >
+                  ⤳ Merged into {pos.mergedIntoName} {pos.mergedIntoDate ? `(${formatDate(pos.mergedIntoDate)})` : ''}
+                </Badge>
+            )}
           </div>
           {/* Quick Actions Row */}
           <div className="flex flex-wrap items-center gap-2">

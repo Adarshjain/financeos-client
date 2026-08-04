@@ -1,6 +1,7 @@
 'use client';
 
 import { Edit, Info, Layers, Plus, Trash2, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -45,6 +46,7 @@ interface CorporateActionsDialogProps {
 }
 
 export function CorporateActionsDialog({ instrument, trigger, onSuccess }: CorporateActionsDialogProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [actions, setActions] = useState<CorporateAction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -127,19 +129,21 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
       return;
     }
 
-    if (type === 'demerger') {
+    if (type === 'demerger' || type === 'merger') {
       if (!targetInstrument?.id) {
-        toast.error('Target child instrument is required for a demerger.');
+        toast.error(`Target ${type === 'merger' ? 'acquirer' : 'child'} instrument is required.`);
         return;
       }
       if (targetInstrument.id === instrument.id) {
         toast.error('Target instrument must be different from parent instrument.');
         return;
       }
-      const costPctNum = Number(costAllocationPct);
-      if (!costPctNum || costPctNum <= 0 || costPctNum > 100) {
-        toast.error('Cost allocation % must be between 0 and 100.');
-        return;
+      if (type === 'demerger') {
+        const costPctNum = Number(costAllocationPct);
+        if (!costPctNum || costPctNum <= 0 || costPctNum > 100) {
+          toast.error('Cost allocation % must be between 0 and 100.');
+          return;
+        }
       }
     }
 
@@ -151,7 +155,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
         ratioTo: toNum,
         exDate,
         notes: notes || undefined,
-        targetInstrumentId: type === 'demerger' ? targetInstrument?.id : undefined,
+        targetInstrumentId: (type === 'demerger' || type === 'merger') ? targetInstrument?.id : undefined,
         costAllocationPct: type === 'demerger' ? Number(costAllocationPct) : undefined,
       };
 
@@ -162,6 +166,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
           toast.success(`Updated ${type} (${ratioFrom}:${ratioTo})`);
           resetForm();
           fetchActions();
+          router.refresh();
           onSuccess?.();
         } else {
           toast.error(res.error.message);
@@ -173,6 +178,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
           toast.success(`Recorded ${type} (${ratioFrom}:${ratioTo}) for ${instrument.name}`);
           resetForm();
           fetchActions();
+          router.refresh();
           onSuccess?.();
         } else {
           toast.error(res.error.message);
@@ -194,6 +200,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
         toast.success('Corporate action deleted');
         if (editingActionId === actionId) resetForm();
         fetchActions();
+        router.refresh();
         onSuccess?.();
       } else {
         toast.error(res.error.message);
@@ -222,7 +229,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
             Corporate Actions — {instrument.name}
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
-            Manage stock splits, bonus share distributions, and demergers.
+            Manage stock splits, bonus share distributions, demergers, and mergers.
           </DialogDescription>
         </DialogHeader>
 
@@ -256,6 +263,11 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
                     {act.type === 'demerger' && (
                       <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300">
                         Child: {act.targetInstrumentName || 'Target'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc: {act.costAllocationPct}%
+                      </div>
+                    )}
+                    {act.type === 'merger' && (
+                      <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300">
+                        Merged into {act.targetInstrumentName || 'Acquirer'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • swap {act.ratioFrom}:{act.ratioTo}
                       </div>
                     )}
                     <div className="text-[10px] text-slate-500">
@@ -330,6 +342,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
                   <SelectItem value="split" className="text-xs">Stock Split</SelectItem>
                   <SelectItem value="bonus" className="text-xs">Bonus Issue</SelectItem>
                   <SelectItem value="demerger" className="text-xs">Demerger / Spin-off</SelectItem>
+                  <SelectItem value="merger" className="text-xs">Merger / Amalgamation</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -344,11 +357,11 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
             />
           </div>
 
-          {type === 'demerger' && (
+          {(type === 'demerger' || type === 'merger') && (
             <div className="space-y-3 p-3 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-900/40">
               <div className="space-y-1">
                 <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Target (Child) Instrument *
+                  {type === 'merger' ? 'Surviving (Acquirer) Instrument *' : 'Target (Child) Instrument *'}
                 </Label>
                 <InstrumentTypeahead
                   selectedInstrument={targetInstrument}
@@ -356,30 +369,34 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
                 />
               </div>
 
-              <FormField
-                label="Cost Allocation % (Sec 49(2C)) *"
-                name="costAllocationPct"
-                type="number"
-                step="0.01"
-                min="0.01"
-                max="100"
-                value={costAllocationPct}
-                onChange={(e) => setCostAllocationPct(e.target.value)}
-                placeholder="e.g. 20.0"
-                required
-              />
+              {type === 'demerger' && (
+                <FormField
+                  label="Cost Allocation % (Sec 49(2C)) *"
+                  name="costAllocationPct"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  max="100"
+                  value={costAllocationPct}
+                  onChange={(e) => setCostAllocationPct(e.target.value)}
+                  placeholder="e.g. 20.0"
+                  required
+                />
+              )}
             </div>
           )}
 
           <div className="space-y-1">
             <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              {type === 'demerger'
+              {type === 'merger'
+                ? 'Swap Ratio (transferor held → acquirer received)'
+                : type === 'demerger'
                 ? 'Share Entitlement Ratio (parent held → child received)'
                 : 'Ratio (units before → units after)'}
             </Label>
             <div className="grid grid-cols-2 gap-4 items-center">
               <FormField
-                label={type === 'demerger' ? 'Parent Shares Held' : 'Ratio From (Held)'}
+                label={type === 'merger' ? 'Transferor Shares Held' : type === 'demerger' ? 'Parent Shares Held' : 'Ratio From (Held)'}
                 name="ratioFrom"
                 type="number"
                 step="1"
@@ -389,7 +406,7 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
                 required
               />
               <FormField
-                label={type === 'demerger' ? 'Child Shares Received' : 'Ratio To (Resulting)'}
+                label={type === 'merger' ? 'Acquirer Shares Received' : type === 'demerger' ? 'Child Shares Received' : 'Ratio To (Resulting)'}
                 name="ratioTo"
                 type="number"
                 step="1"
@@ -400,7 +417,9 @@ export function CorporateActionsDialog({ instrument, trigger, onSuccess }: Corpo
               />
             </div>
             <p className="text-[10px] text-slate-500 italic">
-              {type === 'demerger'
+              {type === 'merger'
+                ? 'Example: HDFC → HDFC Bank was 25 → 42.'
+                : type === 'demerger'
                 ? 'Example: For 1 child share per 2 parent shares held, enter 2 → 1.'
                 : 'Example: For a 2-for-1 split, enter 1 → 2. For a 1:1 bonus issue, enter 1 → 2.'}
             </p>

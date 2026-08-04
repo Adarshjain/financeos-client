@@ -224,6 +224,8 @@ export interface Position {
   dividends?: string;
   xirr?: string;
   absoluteReturnPercent?: string;
+  mergedIntoName?: string;
+  mergedIntoDate?: string;
 }
 
 export interface InvestmentPositionResponse {
@@ -315,7 +317,7 @@ export interface UpdateDividendRequest {
 }
 
 // Corporate Actions
-export type CorporateActionType = 'split' | 'bonus' | 'demerger';
+export type CorporateActionType = 'split' | 'bonus' | 'demerger' | 'merger';
 
 export interface CorporateAction {
   id: string;
