@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
 import { CheckCircle2 } from 'lucide-react';
+import React from 'react';
+
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { ImportCommitResult } from '@/lib/types';

@@ -1,14 +1,16 @@
 'use client';
 
 import React from 'react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { InstrumentSearchField } from '../InstrumentSearchField';
 import { ReconciledExecution } from '@/lib/types';
 import { formatDate, formatMoney } from '@/lib/utils';
+
+import { InstrumentSearchField } from '../InstrumentSearchField';
 import { RowState } from './types';
 
 interface ClassifiedExecutionsTableProps {
