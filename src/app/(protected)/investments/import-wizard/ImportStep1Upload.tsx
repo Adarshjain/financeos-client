@@ -10,12 +10,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Broker as BrokerAccount } from '@/lib/account.types';
 
-import { ImportMode } from './types';
+import { ImportAssetScope, ImportMode } from './types';
 
 interface ImportStep1UploadProps {
   brokerAccounts: BrokerAccount[];
   mode: ImportMode;
   setMode: (mode: ImportMode) => void;
+  assetScope: ImportAssetScope;
+  setAssetScope: (scope: ImportAssetScope) => void;
   brokerAccountId: string;
   setBrokerAccountId: (id: string) => void;
   password: string;
@@ -36,6 +38,8 @@ export function ImportStep1Upload({
   brokerAccounts,
   mode,
   setMode,
+  assetScope,
+  setAssetScope,
   brokerAccountId,
   setBrokerAccountId,
   password,
@@ -54,7 +58,7 @@ export function ImportStep1Upload({
   return (
     <form onSubmit={onSubmit} className="flex-1 flex flex-col justify-between overflow-y-auto min-h-0 space-y-4 py-2">
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={`grid grid-cols-1 ${mode === 'reconcile_zerodha' ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4`}>
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Broker / Import Type</Label>
             <Select value={mode} onValueChange={(val) => setMode(val as ImportMode)}>
@@ -90,6 +94,28 @@ export function ImportStep1Upload({
               </SelectContent>
             </Select>
           </div>
+
+          {mode === 'reconcile_zerodha' && (
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Asset Scope</Label>
+              <Select value={assetScope} onValueChange={(val) => setAssetScope(val as ImportAssetScope)}>
+                <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
+                  <SelectValue placeholder="Select asset scope..." />
+                </SelectTrigger>
+                <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                  <SelectItem value="all" className="text-xs">
+                    Stocks &amp; F&amp;O (Both)
+                  </SelectItem>
+                  <SelectItem value="equity" className="text-xs">
+                    Stocks only
+                  </SelectItem>
+                  <SelectItem value="fno" className="text-xs">
+                    F&amp;O only
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
         {/* RECONCILIATION MULTI-FILE DROPZONES */}
@@ -137,7 +163,9 @@ export function ImportStep1Upload({
               <div className="space-y-2 p-3 rounded-lg border border-blue-200 dark:border-blue-900/40 bg-blue-50/20 dark:bg-blue-950/10">
                 <Label className="text-xs font-bold text-blue-900 dark:text-blue-300 flex items-center justify-between">
                   <span>2. {mode === 'reconcile_zerodha' ? 'Zerodha Tradebook' : 'Groww Order History'}</span>
-                  <span className="text-[10px] text-blue-600 font-normal">Full history CSV/XLSX</span>
+                  <span className="text-[10px] text-blue-600 font-normal">
+                    {mode === 'reconcile_zerodha' && assetScope === 'fno' ? 'Optional for F&O only' : 'Full history CSV/XLSX'}
+                  </span>
                 </Label>
                 <div className="border-2 border-dashed border-blue-200 dark:border-blue-900/50 rounded-md p-4 text-center hover:bg-blue-50/40 transition-colors">
                   <Upload className="w-6 h-6 text-blue-500 mx-auto mb-1 opacity-80" />

@@ -1,6 +1,7 @@
 import { CreateInstrumentRequest, ReconciledExecution } from '@/lib/types';
 
 export type ImportMode = 'reconcile_zerodha' | 'reconcile_groww' | 'mf_cas';
+export type ImportAssetScope = 'all' | 'equity' | 'fno';
 
 export interface RowState {
   skip: boolean;

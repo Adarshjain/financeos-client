@@ -134,6 +134,17 @@ export function PortfolioSummaryCards({ summary, positionsCount }: PortfolioSumm
               </div>
             </div>
             <div>
+              <div className="text-[11px] text-slate-500">F&O Realized P&L</div>
+              <div
+                className={`text-xs font-extrabold tabular-nums ${
+                  parseNumber(summary?.totalFnoRealized) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                }`}
+              >
+                {parseNumber(summary?.totalFnoRealized) >= 0 ? '+' : ''}
+                {formatMoney(summary?.totalFnoRealized)}
+              </div>
+            </div>
+            <div>
               <div className="text-[11px] text-slate-500">Total Charges Paid</div>
               <div className="text-xs font-extrabold tabular-nums text-slate-700 dark:text-slate-300">
                 {formatMoney(summary?.totalCharges)}
