@@ -28,7 +28,7 @@ import {
 import { ImportStep1Upload } from './import-wizard/ImportStep1Upload';
 import { ImportStep2Review } from './import-wizard/ImportStep2Review';
 import { ImportStep3Result } from './import-wizard/ImportStep3Result';
-import { ImportMode, RowState } from './import-wizard/types';
+import { ImportAssetScope, ImportMode, RowState } from './import-wizard/types';
 
 interface ImportWizardDialogProps {
   brokerAccounts: BrokerAccount[];
@@ -43,6 +43,7 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
 
   // Step 1 Form State
   const [mode, setMode] = useState<ImportMode>('reconcile_zerodha');
+  const [assetScope, setAssetScope] = useState<ImportAssetScope>('all');
   const [brokerAccountId, setBrokerAccountId] = useState(brokerAccounts[0]?.id || '');
   const [password, setPassword] = useState('');
 
@@ -67,6 +68,7 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
 
   const resetWizard = () => {
     setStep(1);
+    setAssetScope('all');
     setTaxpnlFiles([]);
     setTradebookFiles([]);
     setHoldingsFile(null);
@@ -96,7 +98,8 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
     setIsPreviewing(true);
     try {
       if (mode === 'reconcile_zerodha' || mode === 'reconcile_groww') {
-        if (tradebookFiles.length === 0) {
+        const isFnoOnly = mode === 'reconcile_zerodha' && assetScope === 'fno';
+        if (!isFnoOnly && tradebookFiles.length === 0) {
           toast.error('Please upload at least one Tradebook / Order History file.');
           setIsPreviewing(false);
           return;
@@ -111,6 +114,9 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
         const brokerName: ReconciliationBroker = mode === 'reconcile_zerodha' ? 'zerodha' : 'groww';
         formData.append('broker', brokerName);
         formData.append('brokerAccountId', brokerAccountId);
+        if (mode === 'reconcile_zerodha') {
+          formData.append('assetScope', assetScope);
+        }
 
         tradebookFiles.forEach((f) => formData.append('tradebookFiles', f));
         taxpnlFiles.forEach((f) => formData.append('taxpnlFiles', f));
@@ -123,21 +129,34 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
           setReconcilePreview(res.data);
           const initialStates: Record<number, RowState> = {};
           for (const exec of res.data.executions) {
+            const isFno = exec.suggestedType === 'future' || exec.suggestedType === 'option';
             initialStates[exec.rowIndex] = {
               skip: exec.isDuplicate,
               selectedInstrumentId: exec.matchedInstrument?.id,
-              createNew: false,
-              newInstrument: {
-                type: 'stock',
-                name: exec.symbol || 'New Instrument',
-                symbol: exec.symbol || '',
-                exchange: exec.exchange || 'NSE',
-                isin: exec.isin || undefined,
-                // No yahooSymbol: "Create new" is used when external search can't
-                // resolve the scrip (delisted/merged), so the instrument is
-                // manual-price-only rather than chasing a dead or reused ticker.
-                yahooSymbol: undefined,
-              },
+              createNew: isFno ? !exec.matchedInstrument : false,
+              newInstrument: isFno
+                ? {
+                    type: exec.suggestedType!,
+                    name: exec.tradingSymbol || exec.symbol || 'New Contract',
+                    symbol: exec.symbol || '',
+                    exchange: exec.exchange || 'NSE',
+                    tradingSymbol: exec.tradingSymbol || exec.symbol,
+                    underlyingSymbol: exec.underlyingSymbol,
+                    expiryDate: exec.expiryDate,
+                    optionType: exec.optionType,
+                    strikePrice: exec.strikePrice !== undefined && exec.strikePrice !== null ? String(exec.strikePrice) : undefined,
+                    lotSize: exec.lotSize,
+                    isin: undefined,
+                    yahooSymbol: undefined,
+                  }
+                : {
+                    type: 'stock',
+                    name: exec.symbol || 'New Instrument',
+                    symbol: exec.symbol || '',
+                    exchange: exec.exchange || 'NSE',
+                    isin: exec.isin || undefined,
+                    yahooSymbol: undefined,
+                  },
             };
           }
           setRowStates(initialStates);
@@ -306,6 +325,8 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
             brokerAccounts={brokerAccounts}
             mode={mode}
             setMode={setMode}
+            assetScope={assetScope}
+            setAssetScope={setAssetScope}
             brokerAccountId={brokerAccountId}
             setBrokerAccountId={setBrokerAccountId}
             password={password}

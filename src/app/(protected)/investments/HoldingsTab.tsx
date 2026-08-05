@@ -49,11 +49,16 @@ export function HoldingsTab({
         !query ||
         !!pos.instrument.name?.toLowerCase().includes(query) ||
         !!pos.instrument.symbol?.toLowerCase().includes(query) ||
+        !!pos.instrument.tradingSymbol?.toLowerCase().includes(query) ||
+        !!pos.instrument.underlyingSymbol?.toLowerCase().includes(query) ||
         !!pos.instrument.yahooSymbol?.toLowerCase().includes(query) ||
         !!pos.instrument.isin?.toLowerCase().includes(query);
 
       const matchType =
-        selectedAssetType === 'all' || pos.instrument.type?.toLowerCase() === selectedAssetType.toLowerCase();
+        selectedAssetType === 'all' ||
+        (selectedAssetType === 'fno'
+          ? pos.instrument.type === 'future' || pos.instrument.type === 'option'
+          : pos.instrument.type?.toLowerCase() === selectedAssetType.toLowerCase());
 
       const matchBroker = selectedBrokerFilter === 'all' || pos.brokerAccountId === selectedBrokerFilter;
 
@@ -157,6 +162,9 @@ export function HoldingsTab({
               </SelectItem>
               <SelectItem value="etf" className="text-xs">
                 ETFs
+              </SelectItem>
+              <SelectItem value="fno" className="text-xs">
+                Futures & Options
               </SelectItem>
             </SelectContent>
           </Select>

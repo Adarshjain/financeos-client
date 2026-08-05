@@ -11,7 +11,8 @@ export enum AccountType {
 export type FinancialPosition = 'asset' | 'liability';
 export type InvestmentTransactionType = 'buy' | 'sell';
 export type SettlementType = 'delivery' | 'intraday';
-export type InstrumentType = 'stock' | 'mutual_fund' | 'etf';
+export type OptionType = 'CE' | 'PE';
+export type InstrumentType = 'stock' | 'mutual_fund' | 'etf' | 'future' | 'option';
 
 // User & Auth
 export interface SignupRequest {
@@ -53,6 +54,13 @@ export interface Instrument {
   lastPrice?: string;
   lastPriceAsOf?: string;
   lastPriceSource?: PriceSource;
+  underlyingSymbol?: string;
+  underlyingInstrumentId?: string;
+  expiryDate?: string;
+  optionType?: OptionType;
+  strikePrice?: string;
+  lotSize?: number;
+  tradingSymbol?: string;
 }
 
 export interface PriceHistoryPoint {
@@ -84,6 +92,13 @@ export interface CreateInstrumentRequest {
   amfiCode?: string;
   yahooSymbol?: string;
   currency?: string;
+  underlyingSymbol?: string;
+  underlyingInstrumentId?: string;
+  expiryDate?: string;
+  optionType?: OptionType;
+  strikePrice?: string;
+  lotSize?: number;
+  tradingSymbol?: string;
 }
 
 export interface InstrumentPricePreview {
@@ -209,6 +224,13 @@ export interface Position {
     amfiCode?: string;
     yahooSymbol?: string;
     lastPriceSource?: PriceSource;
+    underlyingSymbol?: string;
+    underlyingInstrumentId?: string;
+    expiryDate?: string;
+    optionType?: OptionType;
+    strikePrice?: string;
+    lotSize?: number;
+    tradingSymbol?: string;
   };
   quantity: string;
   avgCost: string;
@@ -226,6 +248,14 @@ export interface Position {
   absoluteReturnPercent?: string;
   mergedIntoName?: string;
   mergedIntoDate?: string;
+  buyQty?: string;
+  buyValue?: string;
+  avgBuy?: string;
+  sellQty?: string;
+  sellValue?: string;
+  avgSell?: string;
+  netQty?: string;
+  unclosed?: boolean;
 }
 
 export interface InvestmentPositionResponse {
@@ -260,6 +290,7 @@ export interface InvestmentSummary {
   totalDividends: string;
   totalCharges: string;
   totalPnl: string;
+  totalFnoRealized?: string;
   xirr?: string;
   absoluteReturnPercent?: string;
   byBroker: BrokerSummary[];
@@ -469,6 +500,13 @@ export interface ReconciledExecution {
   };
   isDuplicate: boolean;
   note?: string;
+  suggestedType?: InstrumentType;
+  underlyingSymbol?: string;
+  expiryDate?: string;
+  optionType?: OptionType;
+  strikePrice?: string;
+  lotSize?: number;
+  tradingSymbol?: string;
 }
 
 export interface DerivedHolding {
@@ -521,7 +559,7 @@ export interface TradeSettlementClassification {
 export interface ReconcilePreview {
   executions: ReconciledExecution[];
   derivedHoldings: DerivedHolding[];
-  realizedSummary: RealizedSummary;
+  realizedSummary?: RealizedSummary | null;
   warnings: ReconcileWarning[];
   summaryStats: SummaryStats;
   classifications?: TradeSettlementClassification[];

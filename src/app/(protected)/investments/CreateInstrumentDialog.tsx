@@ -74,6 +74,14 @@ export function CreateInstrumentDialog({
   const [userEditedYahoo, setUserEditedYahoo] = useState(false);
   const [currency, setCurrency] = useState('INR');
 
+  // F&O Contract fields
+  const [tradingSymbol, setTradingSymbol] = useState('');
+  const [underlyingSymbol, setUnderlyingSymbol] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+  const [lotSize, setLotSize] = useState('');
+  const [optionType, setOptionType] = useState<'CE' | 'PE'>('CE');
+  const [strikePrice, setStrikePrice] = useState('');
+
   // Reset the manual/advanced disclosure to the requested mode whenever the dialog reopens.
   useEffect(() => {
     if (open) {
@@ -88,6 +96,12 @@ export function CreateInstrumentDialog({
     setAmfiCode('');
     setYahooSymbol('');
     setUserEditedYahoo(false);
+    setTradingSymbol('');
+    setUnderlyingSymbol('');
+    setExpiryDate('');
+    setLotSize('');
+    setOptionType('CE');
+    setStrikePrice('');
   };
 
   const handleResolved = (instrument: Instrument) => {
@@ -115,6 +129,7 @@ export function CreateInstrumentDialog({
     }
 
     setIsSubmitting(true);
+    const isFno = type === 'future' || type === 'option';
     try {
       const res = await createInstrument({
         type,
@@ -125,6 +140,12 @@ export function CreateInstrumentDialog({
         amfiCode: amfiCode.trim() || undefined,
         yahooSymbol: yahooSymbol.trim() || undefined,
         currency: currency.trim() || undefined,
+        tradingSymbol: isFno && tradingSymbol.trim() ? tradingSymbol.trim() : undefined,
+        underlyingSymbol: isFno && underlyingSymbol.trim() ? underlyingSymbol.trim() : undefined,
+        expiryDate: isFno && expiryDate.trim() ? expiryDate.trim() : undefined,
+        lotSize: isFno && lotSize.trim() ? parseInt(lotSize.trim()) : undefined,
+        optionType: type === 'option' ? optionType : undefined,
+        strikePrice: type === 'option' && strikePrice.trim() ? strikePrice.trim() : undefined,
       });
 
       if (res.success) {
@@ -220,6 +241,8 @@ export function CreateInstrumentDialog({
                       <SelectItem value="stock" className="text-xs">Stock</SelectItem>
                       <SelectItem value="mutual_fund" className="text-xs">Mutual Fund</SelectItem>
                       <SelectItem value="etf" className="text-xs">ETF</SelectItem>
+                      <SelectItem value="future" className="text-xs">Future</SelectItem>
+                      <SelectItem value="option" className="text-xs">Option</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -284,14 +307,83 @@ export function CreateInstrumentDialog({
                 />
               </div>
 
-              <FormField
-                label="Yahoo Symbol (For Stocks/ETFs)"
-                name="yahooSymbol"
-                type="text"
-                value={yahooSymbol}
-                onChange={(e) => handleYahooChange(e.target.value)}
-                placeholder="e.g. RELIANCE.NS"
-              />
+              {type !== 'future' && type !== 'option' && (
+                <FormField
+                  label="Yahoo Symbol (For Stocks/ETFs)"
+                  name="yahooSymbol"
+                  type="text"
+                  value={yahooSymbol}
+                  onChange={(e) => handleYahooChange(e.target.value)}
+                  placeholder="e.g. RELIANCE.NS"
+                />
+              )}
+
+              {(type === 'future' || type === 'option') && (
+                <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-2">
+                  <div className="text-xs font-semibold text-purple-700 dark:text-purple-400">
+                    F&O Contract Details
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      label="Trading Symbol"
+                      name="tradingSymbol"
+                      type="text"
+                      value={tradingSymbol}
+                      onChange={(e) => setTradingSymbol(e.target.value)}
+                      placeholder="e.g. NIFTY24AUG24500CE"
+                    />
+                    <FormField
+                      label="Underlying Symbol"
+                      name="underlyingSymbol"
+                      type="text"
+                      value={underlyingSymbol}
+                      onChange={(e) => setUnderlyingSymbol(e.target.value)}
+                      placeholder="e.g. NIFTY"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      label="Expiry Date"
+                      name="expiryDate"
+                      type="date"
+                      value={expiryDate}
+                      onChange={(e) => setExpiryDate(e.target.value)}
+                    />
+                    <FormField
+                      label="Lot Size"
+                      name="lotSize"
+                      type="number"
+                      value={lotSize}
+                      onChange={(e) => setLotSize(e.target.value)}
+                      placeholder="e.g. 50"
+                    />
+                  </div>
+                  {type === 'option' && (
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Option Type</Label>
+                        <Select value={optionType} onValueChange={(val) => setOptionType(val as 'CE' | 'PE')}>
+                          <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
+                            <SelectValue placeholder="Option Type" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                            <SelectItem value="CE" className="text-xs">CE (Call Option)</SelectItem>
+                            <SelectItem value="PE" className="text-xs">PE (Put Option)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <FormField
+                        label="Strike Price"
+                        name="strikePrice"
+                        type="number"
+                        value={strikePrice}
+                        onChange={(e) => setStrikePrice(e.target.value)}
+                        placeholder="e.g. 24500"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
               <DialogFooter className="pt-3 gap-2">
                 <Button

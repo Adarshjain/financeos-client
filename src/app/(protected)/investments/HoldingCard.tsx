@@ -38,6 +38,97 @@ export function HoldingCard({pos, brokerAccounts, allPositions}: HoldingCardProp
   const unrlPct = pos.unrealizedGainLossPercent ? parseNumber(pos.unrealizedGainLossPercent) : 0;
   const manualOnly = isManualOnly(pos);
 
+  const isFno = pos.instrument.type === 'future' || pos.instrument.type === 'option';
+  const realizedPnl = parseNumber(pos.realizedGainLoss);
+  const absReturn = pos.absoluteReturnPercent ? parseNumber(pos.absoluteReturnPercent) : 0;
+
+  if (isFno) {
+    return (
+      <>
+        <div
+          onClick={() => setIsDetailOpen(true)}
+          className="p-3.5 sm:p-4 bg-white dark:bg-slate-900 hover:bg-slate-50/80 dark:hover:bg-slate-850 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-sm transition-all space-y-2 cursor-pointer group"
+        >
+          {/* Row 1: Top Metadata */}
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <Badge variant="secondary" className="text-[9px] uppercase px-1.5 py-0 font-bold bg-purple-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300">
+                {pos.instrument.type}
+              </Badge>
+              {pos.unclosed ? (
+                <Badge variant="outline" className="text-[9px] uppercase px-1.5 py-0 font-bold text-amber-600 border-amber-300 bg-amber-50 dark:bg-amber-950/50">
+                  Unclosed (Net {pos.netQty || pos.quantity})
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-[9px] uppercase px-1.5 py-0 font-bold text-emerald-600 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/50">
+                  Closed Position
+                </Badge>
+              )}
+              {pos.instrument.optionType && (
+                <Badge variant="outline" className="text-[9px] uppercase px-1.5 py-0 font-bold text-blue-600 border-blue-300">
+                  {pos.instrument.optionType} {pos.instrument.strikePrice ? `@ ${pos.instrument.strikePrice}` : ''}
+                </Badge>
+              )}
+            </div>
+            <div className={`font-bold tabular-nums ${realizedPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+              {absReturn >= 0 ? '+' : ''}{absReturn.toFixed(2)}%
+            </div>
+          </div>
+
+          {/* Row 2: Symbol & Realized P&L */}
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <span className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                {pos.instrument.tradingSymbol || pos.instrument.symbol || pos.instrument.name}
+              </span>
+              <div className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
+                Underlying: {pos.instrument.underlyingSymbol || pos.instrument.name}
+                {pos.instrument.expiryDate ? ` • Expiry: ${formatDate(pos.instrument.expiryDate)}` : ''}
+              </div>
+            </div>
+
+            <div className="text-right shrink-0">
+              <div className="text-[10px] uppercase font-bold text-slate-400">Realized P&L</div>
+              <div className={`text-base font-black tabular-nums ${realizedPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                {realizedPnl >= 0 ? '+' : ''}{formatMoney(pos.realizedGainLoss)}
+              </div>
+            </div>
+          </div>
+
+          {/* Row 3: Buy Value | Sell Value | Charges */}
+          <div className="flex items-center justify-between gap-2 text-xs pt-1 border-t border-slate-100 dark:border-slate-800/80">
+            <div className="flex flex-col text-slate-500">
+              Buy Value
+              <strong className="text-slate-700 dark:text-slate-300 font-bold tabular-nums">
+                {formatMoney(pos.buyValue || parseNumber(pos.avgCost) * parseNumber(pos.quantity))}
+              </strong>
+            </div>
+            <div className="flex flex-col items-center text-slate-500">
+              Sell Value
+              <strong className="text-slate-700 dark:text-slate-300 font-bold tabular-nums">
+                {formatMoney(pos.sellValue || '0')}
+              </strong>
+            </div>
+            <div className="flex flex-col items-end text-slate-500">
+              Charges
+              <strong className="text-slate-700 dark:text-slate-300 font-bold tabular-nums">
+                {formatMoney(pos.totalCharges)}
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        <HoldingDetailDialog
+          pos={pos}
+          brokerAccounts={brokerAccounts}
+          allPositions={allPositions}
+          open={isDetailOpen}
+          onOpenChange={setIsDetailOpen}
+        />
+      </>
+    );
+  }
+
   return (
       <>
         <div
