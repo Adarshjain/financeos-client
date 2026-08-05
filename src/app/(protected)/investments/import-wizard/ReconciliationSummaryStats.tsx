@@ -22,7 +22,7 @@ export function ReconciliationSummaryStats({
   return (
     <>
       {/* Summary counters */}
-      <div className="shrink-0 grid grid-cols-3 sm:grid-cols-5 gap-2 text-center text-xs">
+      <div className="shrink-0 grid grid-cols-4 sm:grid-cols-4 gap-2 text-center text-xs">
         <div className="p-2 rounded bg-slate-100 dark:bg-slate-900">
           <div className="text-[10px] text-slate-500">Executions</div>
           <div className="font-bold text-slate-900 dark:text-white text-sm">
@@ -30,17 +30,13 @@ export function ReconciliationSummaryStats({
           </div>
         </div>
         <div className="p-2 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
-          <div className="text-[10px]">Delivery / Intraday</div>
+          <div className="text-[10px]">CNC / MIS</div>
           <div className="font-bold text-sm">
             {reconcilePreview.summaryStats.deliveryExecutions} / {reconcilePreview.summaryStats.intradayExecutions}
           </div>
         </div>
-        <div className="p-2 rounded bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300">
-          <div className="text-[10px]">Open Holdings</div>
-          <div className="font-bold text-sm">{reconcilePreview.derivedHoldings.length} scrips</div>
-        </div>
         <div className="p-2 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300">
-          <div className="text-[10px]">Warnings / Gaps</div>
+          <div className="text-[10px]">Warns / Gaps</div>
           <div className="font-bold text-sm">{reconcilePreview.summaryStats.warningsCount}</div>
         </div>
         <div className="p-2 rounded bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300">
@@ -56,7 +52,7 @@ export function ReconciliationSummaryStats({
             <div className="flex items-center gap-1.5 text-red-800 dark:text-red-200">
               <ShieldAlert className="w-4 h-4 text-red-600 shrink-0" />
               <span>
-                ⛔ {unresolvedRows.length} execution{unresolvedRows.length > 1 ? 's have' : ' has'} no instrument mapped and will NOT be imported. Map each below, or exclude them.
+                {unresolvedRows.length} execution{unresolvedRows.length > 1 ? 's have' : ' has'} no instrument mapped and will NOT be imported. Map each below, or exclude them.
               </span>
             </div>
             <Button
