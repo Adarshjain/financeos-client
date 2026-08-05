@@ -12,7 +12,7 @@ export type FinancialPosition = 'asset' | 'liability';
 export type InvestmentTransactionType = 'buy' | 'sell';
 export type SettlementType = 'delivery' | 'intraday';
 export type OptionType = 'CE' | 'PE';
-export type InstrumentType = 'stock' | 'mutual_fund' | 'etf' | 'future' | 'option';
+export type InstrumentType = 'stock' | 'mutual_fund' | 'etf';
 
 // User & Auth
 export interface SignupRequest {
@@ -54,13 +54,6 @@ export interface Instrument {
   lastPrice?: string;
   lastPriceAsOf?: string;
   lastPriceSource?: PriceSource;
-  underlyingSymbol?: string;
-  underlyingInstrumentId?: string;
-  expiryDate?: string;
-  optionType?: OptionType;
-  strikePrice?: string;
-  lotSize?: number;
-  tradingSymbol?: string;
 }
 
 export interface PriceHistoryPoint {
@@ -92,13 +85,6 @@ export interface CreateInstrumentRequest {
   amfiCode?: string;
   yahooSymbol?: string;
   currency?: string;
-  underlyingSymbol?: string;
-  underlyingInstrumentId?: string;
-  expiryDate?: string;
-  optionType?: OptionType;
-  strikePrice?: string;
-  lotSize?: number;
-  tradingSymbol?: string;
 }
 
 export interface InstrumentPricePreview {
@@ -224,13 +210,6 @@ export interface Position {
     amfiCode?: string;
     yahooSymbol?: string;
     lastPriceSource?: PriceSource;
-    underlyingSymbol?: string;
-    underlyingInstrumentId?: string;
-    expiryDate?: string;
-    optionType?: OptionType;
-    strikePrice?: string;
-    lotSize?: number;
-    tradingSymbol?: string;
   };
   quantity: string;
   avgCost: string;
@@ -547,6 +526,71 @@ export interface SummaryStats {
   warningsCount: number;
 }
 
+export type FnoContractType = 'future' | 'option';
+
+export interface FnoTradePreview {
+  tradingSymbol: string;
+  underlyingSymbol?: string;
+  contractType: FnoContractType;
+  optionType?: OptionType;
+  strikePrice?: number;
+  expiryDate?: string;
+  quantity: number;
+  buyValue: number;
+  sellValue: number;
+  totalCharges: number;
+  realizedPnl: number;
+  entryDate?: string;
+  exitDate?: string;
+  externalRef: string;
+  isDuplicate: boolean;
+}
+
+export interface CommitFnoTradeDto {
+  tradingSymbol: string;
+  underlyingSymbol?: string;
+  contractType: FnoContractType;
+  optionType?: OptionType;
+  strikePrice?: number;
+  expiryDate?: string;
+  quantity: number;
+  buyValue: number;
+  sellValue: number;
+  totalCharges: number;
+  entryDate?: string;
+  exitDate?: string;
+  externalRef: string;
+  skip: boolean;
+}
+
+export interface FnoTradeResponse {
+  id: string;
+  brokerAccountId: string;
+  brokerAccountName?: string;
+  tradingSymbol: string;
+  underlyingSymbol?: string;
+  contractType: FnoContractType;
+  optionType?: OptionType;
+  strikePrice?: number;
+  expiryDate?: string;
+  quantity: number;
+  buyValue: number;
+  sellValue: number;
+  totalCharges: number;
+  realizedPnl: number;
+  entryDate?: string;
+  exitDate?: string;
+  source: string;
+  externalRef?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface FnoTradeListResponse {
+  trades: FnoTradeResponse[];
+  totalRealizedPnl: number;
+}
+
 export interface TradeSettlementClassification {
   isin?: string;
   symbol?: string;
@@ -563,6 +607,7 @@ export interface ReconcilePreview {
   warnings: ReconcileWarning[];
   summaryStats: SummaryStats;
   classifications?: TradeSettlementClassification[];
+  fnoTrades?: FnoTradePreview[];
 }
 
 export interface CommitExecutionDto {
@@ -587,6 +632,7 @@ export interface ReconcileCommitRequest {
   brokerAccountId: string;
   executions: CommitExecutionDto[];
   classifications?: TradeSettlementClassification[];
+  fnoTrades?: CommitFnoTradeDto[];
 }
 
 // SIPs (Phase 5)

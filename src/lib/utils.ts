@@ -20,6 +20,17 @@ export function formatMoney(amount: string | number | null | undefined): string 
   return formatter.format(num);
 }
 
+export function formatCurrency(amount: string | number | null | undefined): string {
+  return formatMoney(amount);
+}
+
+export function formatNumber(val: string | number | null | undefined): string {
+  if (val === undefined || val === null) return '0';
+  const num = typeof val === 'string' ? parseFloat(val) : val;
+  if (isNaN(num)) return '0';
+  return num.toLocaleString('en-IN');
+}
+
 export function formatNullableMoney(amount: string | number | null | undefined): string {
   if (amount === undefined || amount === null) return '—';
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;

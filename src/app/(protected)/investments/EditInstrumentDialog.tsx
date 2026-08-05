@@ -151,8 +151,6 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
                   <SelectItem value="stock" className="text-xs">Stock</SelectItem>
                   <SelectItem value="mutual_fund" className="text-xs">Mutual Fund</SelectItem>
                   <SelectItem value="etf" className="text-xs">ETF</SelectItem>
-                  <SelectItem value="future" className="text-xs">Future</SelectItem>
-                  <SelectItem value="option" className="text-xs">Option</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -7,7 +7,7 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { ImportPreview, ReconcilePreview } from '@/lib/types';
 
 import { ClassifiedExecutionsTable } from './ClassifiedExecutionsTable';
-import { DerivedHoldingsTable } from './DerivedHoldingsTable';
+import { FnoTradesTable } from './FnoTradesTable';
 import { ReconciliationSummaryStats } from './ReconciliationSummaryStats';
 import { ImportMode, isRowResolved, RowState } from './types';
 
@@ -17,6 +17,8 @@ interface ImportStep2ReviewProps {
   casPreview: ImportPreview | null;
   rowStates: Record<number, RowState>;
   setRowStates: React.Dispatch<React.SetStateAction<Record<number, RowState>>>;
+  fnoRowStates: Record<number, { skip: boolean }>;
+  setFnoRowStates: React.Dispatch<React.SetStateAction<Record<number, { skip: boolean }>>>;
   isCommitting: boolean;
   onBack: () => void;
   onCommit: () => void;
@@ -28,6 +30,8 @@ export function ImportStep2Review({
   casPreview,
   rowStates,
   setRowStates,
+  fnoRowStates,
+  setFnoRowStates,
   isCommitting,
   onBack,
   onCommit,
@@ -44,10 +48,11 @@ export function ImportStep2Review({
   const unresolvedScrips = Array.from(new Set(unresolvedRows.map((e) => e.symbol)));
 
   const confirmableCount = reconcilePreview
-    ? reconcilePreview.executions.filter((e) => {
+    ? (reconcilePreview.executions.filter((e) => {
         const s = rowStates[e.rowIndex] || {};
         return !s.skip && isRowResolved(s, e);
-      }).length
+      }).length +
+      (reconcilePreview.fnoTrades || []).filter((_, idx) => !fnoRowStates[idx]?.skip).length)
     : 0;
 
   const casConfirmableCount = casPreview
@@ -74,6 +79,13 @@ export function ImportStep2Review({
     }));
   };
 
+  const handleToggleFnoSkip = (tradeIndex: number, currentSkip: boolean) => {
+    setFnoRowStates((prev) => ({
+      ...prev,
+      [tradeIndex]: { skip: !currentSkip },
+    }));
+  };
+
   const handleMapInstrument = (rowIndex: number, inst: { id: string; name: string }) => {
     setRowStates((prev) => ({
       ...prev,
@@ -97,6 +109,9 @@ export function ImportStep2Review({
     }));
   };
 
+  const hasExecutions = reconcilePreview && reconcilePreview.executions.length > 0;
+  const hasFnoTrades = reconcilePreview && reconcilePreview.fnoTrades && reconcilePreview.fnoTrades.length > 0;
+
   return (
     <div className="flex-1 flex flex-col min-h-0 space-y-2">
       {reconcilePreview && (
@@ -108,26 +123,37 @@ export function ImportStep2Review({
             onSkipUnmappedRows={handleSkipUnmappedRows}
           />
 
-          {/* Scrollable Holdings & Executions Area */}
-          <div className="flex-1 overflow-y-auto min-h-0 space-y-3 pr-1">
-            <DerivedHoldingsTable holdings={reconcilePreview.derivedHoldings} />
-            <ClassifiedExecutionsTable
-              executions={reconcilePreview.executions}
-              rowStates={rowStates}
-              onToggleSkip={handleToggleSkip}
-              onMapInstrument={handleMapInstrument}
-              onCreateNew={handleCreateNew}
-            />
+          {/* Two-section Scrollable Review Area */}
+          <div className="flex-1 overflow-y-auto min-h-0 space-y-4 pr-1">
+            {hasExecutions && (
+              <div className="space-y-1.5">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">
+                  Stocks & Delivery Executions
+                </h3>
+                <ClassifiedExecutionsTable
+                  executions={reconcilePreview.executions}
+                  rowStates={rowStates}
+                  onToggleSkip={handleToggleSkip}
+                  onMapInstrument={handleMapInstrument}
+                  onCreateNew={handleCreateNew}
+                />
+              </div>
+            )}
+
+            {hasFnoTrades && (
+              <div className="space-y-1.5">
+                <FnoTradesTable
+                  trades={reconcilePreview.fnoTrades!}
+                  fnoRowStates={fnoRowStates}
+                  onToggleSkip={handleToggleFnoSkip}
+                />
+              </div>
+            )}
           </div>
         </>
       )}
 
-      <DialogFooter className="pt-2 gap-2 shrink-0 flex-col-reverse sm:flex-row sm:justify-end sm:items-center">
-        {unresolvedRows.length > 0 && (
-          <span className="text-[11px] text-red-600 dark:text-red-400 font-medium mr-auto">
-            ⛔ {unresolvedRows.length} row{unresolvedRows.length > 1 ? 's need' : ' needs'} an instrument — map or skip them
-          </span>
-        )}
+      <DialogFooter className="pt-2 gap-2 shrink-0 flex-row sm:flex-row sm:justify-end sm:items-center">
         <Button
           type="button"
           variant="outline"

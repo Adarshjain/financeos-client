@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Broker as BrokerAccount } from '@/lib/account.types';
 import {
+  CommitFnoTradeDto,
   ImportCommitRequest,
   ImportCommitResult,
   ImportPreview,
@@ -44,7 +45,7 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
   // Step 1 Form State
   const [mode, setMode] = useState<ImportMode>('reconcile_zerodha');
   const [assetScope, setAssetScope] = useState<ImportAssetScope>('all');
-  const [brokerAccountId, setBrokerAccountId] = useState(brokerAccounts[0]?.id || '');
+  const [brokerAccountId, setBrokerAccountId] = useState<string>('');
   const [password, setPassword] = useState('');
 
   // Reconcile Files
@@ -61,6 +62,7 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
   const [reconcilePreview, setReconcilePreview] = useState<ReconcilePreview | null>(null);
   const [casPreview, setCasPreview] = useState<ImportPreview | null>(null);
   const [rowStates, setRowStates] = useState<Record<number, RowState>>({});
+  const [fnoRowStates, setFnoRowStates] = useState<Record<number, { skip: boolean }>>({});
   const [isCommitting, setIsCommitting] = useState(false);
 
   // Step 3 Result State
@@ -77,6 +79,7 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
     setReconcilePreview(null);
     setCasPreview(null);
     setRowStates({});
+    setFnoRowStates({});
     setCommitResult(null);
   };
 
@@ -129,37 +132,30 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
           setReconcilePreview(res.data);
           const initialStates: Record<number, RowState> = {};
           for (const exec of res.data.executions) {
-            const isFno = exec.suggestedType === 'future' || exec.suggestedType === 'option';
             initialStates[exec.rowIndex] = {
               skip: exec.isDuplicate,
               selectedInstrumentId: exec.matchedInstrument?.id,
-              createNew: isFno ? !exec.matchedInstrument : false,
-              newInstrument: isFno
-                ? {
-                    type: exec.suggestedType!,
-                    name: exec.tradingSymbol || exec.symbol || 'New Contract',
-                    symbol: exec.symbol || '',
-                    exchange: exec.exchange || 'NSE',
-                    tradingSymbol: exec.tradingSymbol || exec.symbol,
-                    underlyingSymbol: exec.underlyingSymbol,
-                    expiryDate: exec.expiryDate,
-                    optionType: exec.optionType,
-                    strikePrice: exec.strikePrice !== undefined && exec.strikePrice !== null ? String(exec.strikePrice) : undefined,
-                    lotSize: exec.lotSize,
-                    isin: undefined,
-                    yahooSymbol: undefined,
-                  }
-                : {
-                    type: 'stock',
-                    name: exec.symbol || 'New Instrument',
-                    symbol: exec.symbol || '',
-                    exchange: exec.exchange || 'NSE',
-                    isin: exec.isin || undefined,
-                    yahooSymbol: undefined,
-                  },
+              createNew: false,
+              newInstrument: {
+                type: 'stock',
+                name: exec.symbol || 'New Instrument',
+                symbol: exec.symbol || '',
+                exchange: exec.exchange || 'NSE',
+                isin: exec.isin || undefined,
+                yahooSymbol: undefined,
+              },
             };
           }
           setRowStates(initialStates);
+
+          const initialFnoStates: Record<number, { skip: boolean }> = {};
+          if (res.data.fnoTrades) {
+            res.data.fnoTrades.forEach((trade, idx) => {
+              initialFnoStates[idx] = { skip: trade.isDuplicate };
+            });
+          }
+          setFnoRowStates(initialFnoStates);
+
           setStep(2);
         } else {
           toast.error(res.error.message);
@@ -239,11 +235,32 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
           };
         });
 
+        const commitFnoTrades: CommitFnoTradeDto[] = (reconcilePreview.fnoTrades || []).map((trade, idx) => {
+          const state = fnoRowStates[idx] || { skip: trade.isDuplicate };
+          return {
+            tradingSymbol: trade.tradingSymbol,
+            underlyingSymbol: trade.underlyingSymbol,
+            contractType: trade.contractType,
+            optionType: trade.optionType,
+            strikePrice: trade.strikePrice,
+            expiryDate: trade.expiryDate,
+            quantity: trade.quantity,
+            buyValue: trade.buyValue,
+            sellValue: trade.sellValue,
+            totalCharges: trade.totalCharges,
+            entryDate: trade.entryDate,
+            exitDate: trade.exitDate,
+            externalRef: trade.externalRef,
+            skip: state.skip,
+          };
+        });
+
         const req: ReconcileCommitRequest = {
           broker: brokerName,
           brokerAccountId,
           executions: commitExecutions,
           classifications: reconcilePreview.classifications,
+          fnoTrades: commitFnoTrades,
         };
 
         const res = await commitReconcileImport(req);
@@ -292,31 +309,28 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
     }
   };
 
-  const selectedBrokerName = brokerAccounts.find((b) => b.id === brokerAccountId)?.name || 'Broker';
+  const selectedBroker = brokerAccounts.find((a) => a.id === brokerAccountId);
+  const selectedBrokerName = selectedBroker ? `${selectedBroker.name} (${selectedBroker.provider})` : 'Broker';
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="sm" className="h-8 text-xs flex items-center">
+          <Button size="sm" className="gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white">
             <Upload className="w-3.5 h-3.5" />
-            Import Broker Trades
+            Bulk Import / Reconcile
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-5xl max-h-[99vh] flex flex-col p-2 sm:p-6 overflow-hidden">
-        <DialogHeader className="shrink-0 pb-2 border-b border-slate-100 dark:border-slate-800">
-          <DialogTitle className="text-base font-bold flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-            Broker Import Reconciliation
+
+      <DialogContent className="max-w-4xl max-h-[97vh] flex flex-col p-4 sm:p-6 overflow-hidden">
+        <DialogHeader className="pb-2 border-b shrink-0">
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+            Investment Import & Reconciliation Wizard
           </DialogTitle>
-          <DialogDescription className="text-xs text-slate-500">
-            Step {step} of 3:{' '}
-            {step === 1
-              ? 'Select Broker & Upload Files'
-              : step === 2
-                ? 'Reconciliation Review & Open Holdings'
-                : 'Import Complete'}
+          <DialogDescription className="text-xs sr-only">
+            Steps
           </DialogDescription>
         </DialogHeader>
 
@@ -351,6 +365,8 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
             casPreview={casPreview}
             rowStates={rowStates}
             setRowStates={setRowStates}
+            fnoRowStates={fnoRowStates}
+            setFnoRowStates={setFnoRowStates}
             isCommitting={isCommitting}
             onBack={() => setStep(1)}
             onCommit={handleCommitSubmit}

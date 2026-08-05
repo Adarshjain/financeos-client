@@ -49,16 +49,12 @@ export function HoldingsTab({
         !query ||
         !!pos.instrument.name?.toLowerCase().includes(query) ||
         !!pos.instrument.symbol?.toLowerCase().includes(query) ||
-        !!pos.instrument.tradingSymbol?.toLowerCase().includes(query) ||
-        !!pos.instrument.underlyingSymbol?.toLowerCase().includes(query) ||
         !!pos.instrument.yahooSymbol?.toLowerCase().includes(query) ||
         !!pos.instrument.isin?.toLowerCase().includes(query);
 
       const matchType =
         selectedAssetType === 'all' ||
-        (selectedAssetType === 'fno'
-          ? pos.instrument.type === 'future' || pos.instrument.type === 'option'
-          : pos.instrument.type?.toLowerCase() === selectedAssetType.toLowerCase());
+        pos.instrument.type?.toLowerCase() === selectedAssetType.toLowerCase();
 
       const matchBroker = selectedBrokerFilter === 'all' || pos.brokerAccountId === selectedBrokerFilter;
 
@@ -163,9 +159,6 @@ export function HoldingsTab({
               <SelectItem value="etf" className="text-xs">
                 ETFs
               </SelectItem>
-              <SelectItem value="fno" className="text-xs">
-                Futures & Options
-              </SelectItem>
             </SelectContent>
           </Select>
 
@@ -219,7 +212,7 @@ export function HoldingsTab({
       {/* 2. Holdings Overview Top Card (Recalculated from filteredPositions) */}
       <Card className="bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden">
         <div className="p-4 sm:p-5 space-y-2">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div className="flex items-center justify-between">
             <div>
               <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Total Invested
