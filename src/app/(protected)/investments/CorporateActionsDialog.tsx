@@ -36,7 +36,7 @@ import { formatDate, toCalendarDate } from '@/lib/utils';
 import { InstrumentTypeahead } from './InstrumentTypeahead';
 
 interface CorporateActionsDialogProps {
-  instrument: {
+  instrument?: {
     id: string;
     name: string;
     symbol?: string;
@@ -71,6 +71,7 @@ export function CorporateActionsDialog({
   const [editingActionId, setEditingActionId] = useState<string | null>(null);
 
   // Form state
+  const [selectedParentInstrument, setSelectedParentInstrument] = useState<Instrument | null>(null);
   const [type, setType] = useState<CorporateActionType>(initialType || 'split');
   const [ratioFrom, setRatioFrom] = useState('1');
   const [ratioTo, setRatioTo] = useState('2');
@@ -80,10 +81,17 @@ export function CorporateActionsDialog({
   const [costAllocationPct, setCostAllocationPct] = useState('20');
   const [fractionalCashInLieu, setFractionalCashInLieu] = useState('');
 
+  const activeInstrument = instrument || (selectedParentInstrument ? {
+    id: selectedParentInstrument.id,
+    name: selectedParentInstrument.name,
+    symbol: selectedParentInstrument.symbol,
+  } : null);
+
   const fetchActions = useCallback(async () => {
+    if (!activeInstrument?.id) return;
     setIsLoading(true);
     try {
-      const res = await getCorporateActions(instrument.id);
+      const res = await getCorporateActions(activeInstrument.id);
       if (res.success) {
         setActions(res.data || []);
       }
@@ -92,7 +100,7 @@ export function CorporateActionsDialog({
     } finally {
       setIsLoading(false);
     }
-  }, [instrument.id]);
+  }, [activeInstrument?.id]);
 
   useEffect(() => {
     if (open) {
@@ -105,6 +113,7 @@ export function CorporateActionsDialog({
 
   const resetForm = () => {
     setEditingActionId(null);
+    setSelectedParentInstrument(null);
     setType(initialType || 'split');
     setRatioFrom('1');
     setRatioTo('2');
@@ -117,6 +126,15 @@ export function CorporateActionsDialog({
 
   const handleEditClick = (act: CorporateAction) => {
     setEditingActionId(act.id);
+    if (!instrument && act.instrumentId) {
+      setSelectedParentInstrument({
+        id: act.instrumentId,
+        type: 'stock',
+        name: act.instrumentName || 'Instrument',
+        symbol: act.instrumentSymbol,
+        currency: 'INR',
+      });
+    }
     setType(act.type);
     setRatioFrom(String(act.ratioFrom));
     setRatioTo(String(act.ratioTo));
@@ -148,6 +166,10 @@ export function CorporateActionsDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!activeInstrument?.id) {
+      toast.error('Please select an instrument.');
+      return;
+    }
     const fromNum = Number(ratioFrom);
     const toNum = Number(ratioTo);
 
@@ -165,7 +187,7 @@ export function CorporateActionsDialog({
         toast.error(`Target ${type === 'merger' ? 'acquirer' : 'child'} instrument is required.`);
         return;
       }
-      if (targetInstrument.id === instrument.id) {
+      if (targetInstrument.id === activeInstrument.id) {
         toast.error('Target instrument must be different from parent instrument.');
         return;
       }
@@ -192,7 +214,7 @@ export function CorporateActionsDialog({
       };
 
       if (editingActionId) {
-        const res = await updateCorporateAction(instrument.id, editingActionId, payload);
+        const res = await updateCorporateAction(activeInstrument.id, editingActionId, payload);
 
         if (res.success) {
           toast.success(`Updated ${type} (${ratioFrom}:${ratioTo})`);
@@ -204,10 +226,10 @@ export function CorporateActionsDialog({
           toast.error(res.error.message);
         }
       } else {
-        const res = await createCorporateAction(instrument.id, payload);
+        const res = await createCorporateAction(activeInstrument.id, payload);
 
         if (res.success) {
-          toast.success(`Recorded ${type} (${ratioFrom}:${ratioTo}) for ${instrument.name}`);
+          toast.success(`Recorded ${type} (${ratioFrom}:${ratioTo}) for ${activeInstrument.name}`);
           resetForm();
           fetchActions();
           router.refresh();
@@ -224,10 +246,11 @@ export function CorporateActionsDialog({
   };
 
   const handleDelete = async (actionId: string) => {
+    if (!activeInstrument?.id) return;
     if (!confirm('Are you sure you want to delete this corporate action?')) return;
     setDeletingId(actionId);
     try {
-      const res = await deleteCorporateAction(instrument.id, actionId);
+      const res = await deleteCorporateAction(activeInstrument.id, actionId);
       if (res.success) {
         toast.success('Corporate action deleted');
         if (editingActionId === actionId) resetForm();
@@ -272,7 +295,7 @@ export function CorporateActionsDialog({
             <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5 sm:mt-0" />
             <div className="min-w-0 break-words items-start">
               <div>Corporate Actions</div>
-              <div>{instrument.name}</div>
+              {activeInstrument && <div>{activeInstrument.name}</div>}
             </div>
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500 pb-2">
@@ -377,6 +400,18 @@ export function CorporateActionsDialog({
               </Button>
             )}
           </div>
+
+          {!instrument && !editingActionId && (
+            <div className="space-y-1 min-w-0">
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-words">
+                Parent Instrument *
+              </Label>
+              <InstrumentTypeahead
+                selectedInstrument={selectedParentInstrument}
+                onSelect={setSelectedParentInstrument}
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-1.5 min-w-0">

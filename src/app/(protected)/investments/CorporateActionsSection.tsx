@@ -1,14 +1,15 @@
 'use client';
 
-import { ArrowDown, ArrowUp, ArrowUpDown, Edit, Layers, Search, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Edit, Layers, Plus, Search, Trash2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { deleteCorporateAction } from '@/actions/investments';
+import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -17,9 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CorporateAction, CorporateActionType, Instrument } from '@/lib/types';
-import { formatDate } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 
 import { CorporateActionsDialog } from './CorporateActionsDialog';
 
@@ -37,7 +37,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
   const [sortOrder, setSortOrder] = useState<SortOrder>('none');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // Dialog state for adding/editing via global section
+  // Dialog state for adding/editing corporate actions
   const [activeDialogInstrument, setActiveDialogInstrument] = useState<Instrument | null>(null);
   const [activeEditAction, setActiveEditAction] = useState<CorporateAction | null>(null);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -137,6 +137,12 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
     });
   }, [filteredActions, sortOrder]);
 
+  const openCreateDialog = () => {
+    setActiveDialogInstrument(null);
+    setActiveEditAction(null);
+    setDialogOpen(true);
+  };
+
   const openEditDialog = (act: CorporateAction) => {
     const inst = instrumentMap.get(act.instrumentId) || {
       id: act.instrumentId,
@@ -150,276 +156,208 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
     setDialogOpen(true);
   };
 
-  return (
-    <Card className="bg-white dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden">
-      <CardHeader className="py-2.5 px-4 border-b border-slate-100 dark:border-slate-800 flex flex-row flex-wrap items-center justify-between gap-2">
-        <CardTitle className="text-base font-bold flex items-center gap-2">
-          <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-          Corporate Actions ({corporateActions.length})
-        </CardTitle>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Search Input */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            <Input
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Search actions..."
-              className="h-8 w-[160px] sm:w-[190px] pl-8 pr-7 text-xs font-medium bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg"
-            />
-            {search && (
-              <button
-                type="button"
-                aria-label="Clear search"
-                onClick={() => handleSearchChange('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          {/* Type Filter */}
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="h-8 text-xs w-[120px] bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold">
-              <SelectValue placeholder="All Types" />
-            </SelectTrigger>
-            <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs">
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="split">Split</SelectItem>
-              <SelectItem value="bonus">Bonus</SelectItem>
-              <SelectItem value="demerger">Demerger</SelectItem>
-              <SelectItem value="merger">Merger</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {/* Sort Button */}
-          <Button
-            variant={sortOrder === 'none' ? 'outline' : 'secondary'}
-            size="sm"
-            onClick={toggleSort}
-            className="h-8 text-xs font-semibold flex items-center rounded-lg border-slate-200 dark:border-slate-800"
-            title="Sort by Ex-Date"
+  const renderActionBar = (isMobile = false) => (
+    <div className={cn('flex items-center gap-2 w-full', isMobile ? 'flex-col sm:flex-row text-xs' : 'flex-wrap')}>
+      {/* Search Input */}
+      <div className="relative flex-1 min-w-[180px] w-full">
+        <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+        <Input
+          value={search}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          placeholder="Search actions..."
+          className="h-8 pl-8 pr-7 text-xs font-medium bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg w-full"
+        />
+        {search && (
+          <button
+            type="button"
+            aria-label="Clear search"
+            onClick={() => handleSearchChange('')}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
           >
-            {sortOrder === 'asc' && (
-              <>
-                <ArrowUp className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 mr-1" />
-                <span>Ex-Date</span>
-              </>
-            )}
-            {sortOrder === 'desc' && (
-              <>
-                <ArrowDown className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 mr-1" />
-                <span>Ex-Date</span>
-              </>
-            )}
-            {sortOrder === 'none' && (
-              <>
-                <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 mr-1" />
-                <span>Sort</span>
-              </>
-            )}
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="p-0">
-        {corporateActions.length === 0 ? (
-          <div className="text-center py-8 px-4 space-y-2">
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              No corporate actions recorded yet
-            </p>
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+
+      {/* Filter & Action Controls */}
+      <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
+        {/* Type Filter */}
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="h-8 text-xs w-[120px] bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold">
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs">
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="split">Split</SelectItem>
+            <SelectItem value="bonus">Bonus</SelectItem>
+            <SelectItem value="demerger">Demerger</SelectItem>
+            <SelectItem value="merger">Merger</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Sort Button */}
+        <Button
+          variant={sortOrder === 'none' ? 'outline' : 'secondary'}
+          size="sm"
+          onClick={toggleSort}
+          className="h-8 text-xs font-semibold flex items-center rounded-lg border-slate-200 dark:border-slate-800"
+          title="Sort by Ex-Date"
+        >
+          {sortOrder === 'asc' && (
+            <>
+              <ArrowUp className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 mr-1" />
+              <span>Ex-Date</span>
+            </>
+          )}
+          {sortOrder === 'desc' && (
+            <>
+              <ArrowDown className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 mr-1" />
+              <span>Ex-Date</span>
+            </>
+          )}
+          {sortOrder === 'none' && (
+            <>
+              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 mr-1" />
+              <span>Sort</span>
+            </>
+          )}
+        </Button>
+
+        {/* Record Action Button */}
+        <Button
+          size="sm"
+          onClick={openCreateDialog}
+          className="h-8 text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-lg gap-1 px-3 shadow-sm"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>Record Action</span>
+        </Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-2 pb-32">
+      {/* Desktop Action Bar Container */}
+      <Card className="hidden lg:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-3">
+        {renderActionBar(false)}
+      </Card>
+
+      {/* Mobile PageActionBar Integration */}
+      <PageActionBar hideOnScroll>
+        {renderActionBar(true)}
+      </PageActionBar>
+
+      {/* Main Corporate Action Cards Display */}
+      {corporateActions.length === 0 ? (
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center space-y-3">
+          <div className="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-950/50 flex items-center justify-center mx-auto text-purple-600 dark:text-purple-400">
+            <Layers className="w-6 h-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">No corporate actions recorded yet</h3>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
               Record stock splits, bonus share issues, demergers, and mergers to automatically adjust holding positions and cost bases.
             </p>
           </div>
-        ) : sortedActions.length === 0 ? (
-          <div className="text-center py-8 px-4 text-xs text-slate-500">
-            No corporate actions match your filters.
-          </div>
-        ) : (
-          <>
-            {/* Mobile View */}
-            <div className="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800/80">
-              {sortedActions.map((act) => {
-                const inst = instrumentMap.get(act.instrumentId);
-                const instName = act.instrumentName || inst?.name || 'Instrument';
-                const instSymbol = act.instrumentSymbol || inst?.symbol;
+          <Button
+            size="sm"
+            onClick={openCreateDialog}
+            className="h-8 text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-lg gap-1 px-4 mt-2 shadow-sm"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Record First Action</span>
+          </Button>
+        </Card>
+      ) : sortedActions.length === 0 ? (
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center text-xs text-slate-500">
+          No corporate actions match your filters.
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+          {sortedActions.map((act) => {
+            const inst = instrumentMap.get(act.instrumentId);
+            const instName = act.instrumentName || inst?.name || 'Instrument';
+            const instSymbol = act.instrumentSymbol || inst?.symbol;
 
-                return (
-                  <div key={act.id} className="p-3.5 space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-1.5">
-                        {getActionBadge(act.type)}
-                        <span className="text-[11px] font-bold text-slate-900 dark:text-slate-100">
-                          Ratio: {act.ratioFrom} → {act.ratioTo}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditDialog(act)}
-                          className="h-6 w-6 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
-                        >
-                          <Edit className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(act.instrumentId, act.id)}
-                          disabled={deletingId === act.id}
-                          className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </Button>
-                      </div>
-                    </div>
+            return (
+              <Card
+                key={act.id}
+                className="p-3.5 space-y-2 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-purple-200 dark:hover:border-purple-900/60 transition-all duration-200"
+              >
+                {/* Header Row: Badge + Ratio Left | Edit + Delete Buttons Right */}
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5">
+                    {getActionBadge(act.type)}
+                    <span className="text-[11px] font-bold text-slate-900 dark:text-slate-100">
+                      Ratio: {act.ratioFrom} → {act.ratioTo}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openEditDialog(act)}
+                      className="h-6 w-6 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                      title="Edit Corporate Action"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDelete(act.instrumentId, act.id)}
+                      disabled={deletingId === act.id}
+                      className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40"
+                      title="Delete Corporate Action"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
 
-                    <div>
-                      <div className="font-bold text-xs text-slate-900 dark:text-slate-100">
-                        {instName} {instSymbol ? `(${instSymbol})` : ''}
-                      </div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">
-                        Ex-Date: <span className="font-semibold text-slate-700 dark:text-slate-300 tabular-nums">{formatDate(act.exDate)}</span>
-                      </div>
-                    </div>
+                {/* Instrument Info Row */}
+                <div>
+                  <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
+                    {instName} {instSymbol ? `(${instSymbol})` : ''}
+                  </div>
+                  <div className="text-[11px] text-slate-500 mt-0.5">
+                    Ex-Date:{' '}
+                    <span className="font-semibold text-slate-700 dark:text-slate-300 tabular-nums">
+                      {formatDate(act.exDate)}
+                    </span>
+                  </div>
+                </div>
 
-                    {(act.type === 'demerger' || act.type === 'merger') && (
-                      <div className="p-2 rounded bg-purple-50/50 dark:bg-purple-950/20 text-[11px] font-medium text-purple-700 dark:text-purple-300">
-                        {act.type === 'demerger' ? (
-                          <>
-                            Child: <span className="font-bold">{act.targetInstrumentName || 'Child Instrument'}</span> {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc: {act.costAllocationPct}%
-                          </>
-                        ) : (
-                          <>
-                            Merged into: <span className="font-bold">{act.targetInstrumentName || 'Acquirer Instrument'}</span> {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''}
-                          </>
-                        )}
-                      </div>
-                    )}
-
-                    {act.notes && (
-                      <p className="text-[10px] text-slate-500 italic">
-                        {act.notes}
-                      </p>
+                {/* Demerger / Merger Banner */}
+                {(act.type === 'demerger' || act.type === 'merger') && (
+                  <div className="text-[11px] font-medium">
+                    {act.type === 'demerger' ? (
+                      <>
+                        Child: <span className="font-bold">{act.targetInstrumentName || 'Child Instrument'}</span>{' '}
+                        {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc:{' '}
+                        {act.costAllocationPct}%
+                      </>
+                    ) : (
+                      <>
+                        Merged into: <span className="font-bold">{act.targetInstrumentName || 'Acquirer Instrument'}</span>{' '}
+                        {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''}
+                      </>
                     )}
                   </div>
-                );
-              })}
-            </div>
+                )}
 
-            {/* Desktop View */}
-            <div className="hidden sm:block">
-              <Table>
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
-                    <TableHead className="text-xs font-semibold whitespace-nowrap">Instrument</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap">Action Type</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap">Ratio</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap">Ex-Date</TableHead>
-                    <TableHead className="text-xs font-semibold whitespace-nowrap">Target / Details</TableHead>
-                    <TableHead className="text-right text-xs font-semibold whitespace-nowrap">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedActions.map((act) => {
-                    const inst = instrumentMap.get(act.instrumentId);
-                    const instName = act.instrumentName || inst?.name || 'Instrument';
-                    const instSymbol = act.instrumentSymbol || inst?.symbol;
-
-                    return (
-                      <TableRow key={act.id} className="border-slate-100 dark:border-slate-800/60">
-                        <TableCell className="py-2.5">
-                          <div className="font-bold text-xs text-slate-900 dark:text-slate-100">
-                            {instName}
-                          </div>
-                          {instSymbol && (
-                            <div className="text-[10px] text-slate-400 font-mono">
-                              {instSymbol}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-2.5 whitespace-nowrap">
-                          {getActionBadge(act.type)}
-                        </TableCell>
-                        <TableCell className="py-2.5 text-xs font-bold text-slate-800 dark:text-slate-200 font-mono whitespace-nowrap">
-                          {act.ratioFrom} : {act.ratioTo}
-                        </TableCell>
-                        <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap tabular-nums">
-                          {formatDate(act.exDate)}
-                        </TableCell>
-                        <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400">
-                          {act.type === 'demerger' && (
-                            <span className="font-medium text-purple-700 dark:text-purple-300">
-                              Child: {act.targetInstrumentName || 'Child'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Alloc: {act.costAllocationPct}%
-                            </span>
-                          )}
-                          {act.type === 'merger' && (
-                            <span className="font-medium text-purple-700 dark:text-purple-300">
-                              Merged into: {act.targetInstrumentName || 'Acquirer'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''}
-                            </span>
-                          )}
-                          {act.notes && (
-                            <div className="text-[11px] text-slate-500 italic mt-0.5">
-                              {act.notes}
-                            </div>
-                          )}
-                          {act.type !== 'demerger' && act.type !== 'merger' && !act.notes && '—'}
-                        </TableCell>
-                        <TableCell className="py-2.5 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => openEditDialog(act)}
-                              className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
-                              title="Edit Corporate Action"
-                            >
-                              <Edit className="w-3.5 h-3.5" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDelete(act.instrumentId, act.id)}
-                              disabled={deletingId === act.id}
-                              className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40"
-                              title="Delete Corporate Action"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          </>
-        )}
-      </CardContent>
-
-      {activeDialogInstrument && (
-        <CorporateActionsDialog
-          instrument={activeDialogInstrument}
-          editAction={activeEditAction ?? undefined}
-          open={dialogOpen}
-          onOpenChange={(val) => {
-            setDialogOpen(val);
-            if (!val) {
-              setActiveDialogInstrument(null);
-              setActiveEditAction(null);
-            }
-          }}
-          onSuccess={() => {
-            router.refresh();
-            setDialogOpen(false);
-            setActiveDialogInstrument(null);
-            setActiveEditAction(null);
-          }}
-        />
+                {/* Notes Row */}
+                {act.notes && (
+                  <p className="text-[10px] text-slate-500 italic">
+                    &quot;{act.notes}&quot;
+                  </p>
+                )}
+              </Card>
+            );
+          })}
+        </div>
       )}
-    </Card>
+    </div>
   );
 }
