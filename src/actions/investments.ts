@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { corporateActionsApi, dividendsApi, importsApi, instrumentsApi, investmentsApi, sipsApi } from '@/lib/apiClient';
+import { corporateActionsApi, dividendsApi, fnoApi, importsApi, instrumentsApi, investmentsApi, sipsApi } from '@/lib/apiClient';
 import { apiResult, validationError } from '@/lib/apiResult';
 import { optionalDecimal, optionalString } from '@/lib/forms';
 import type {
@@ -11,10 +11,13 @@ import type {
   CorporateAction,
   CreateCorporateActionRequest,
   CreateDividendRequest,
+  CreateFnoTradeRequest,
   CreateInstrumentRequest,
   CreateInvestmentTransactionRequest,
   CreateSipRequest,
   Dividend,
+  FnoTradeListResponse,
+  FnoTradeResponse,
   ImportCommitRequest,
   ImportCommitResult,
   ImportPreview,
@@ -33,6 +36,7 @@ import type {
   Sip,
   UpdateCorporateActionRequest,
   UpdateDividendRequest,
+  UpdateFnoTradeRequest,
   UpdateInvestmentTransactionRequest,
   UpdateSipRequest,
 } from '@/lib/types';
@@ -373,6 +377,39 @@ export async function deleteInstrumentPrice(
 ): Promise<ApiResult<void>> {
   return apiResult('Failed to delete price point', async () => {
     await instrumentsApi.deletePrice(instrumentId, priceId);
+    revalidatePath('/investments');
+  });
+}
+
+// Futures & Options (FnO) Actions
+export async function listFnoTrades(): Promise<ApiResult<FnoTradeListResponse>> {
+  return apiResult('Failed to load FnO trades', async () => {
+    return await fnoApi.listTrades();
+  });
+}
+
+export async function createFnoTrade(data: CreateFnoTradeRequest): Promise<ApiResult<FnoTradeResponse>> {
+  return apiResult('Failed to create FnO trade', async () => {
+    const res = await fnoApi.createTrade(data);
+    revalidatePath('/investments/fno');
+    revalidatePath('/investments');
+    return res;
+  });
+}
+
+export async function updateFnoTrade(id: string, data: UpdateFnoTradeRequest): Promise<ApiResult<FnoTradeResponse>> {
+  return apiResult('Failed to update FnO trade', async () => {
+    const res = await fnoApi.updateTrade(id, data);
+    revalidatePath('/investments/fno');
+    revalidatePath('/investments');
+    return res;
+  });
+}
+
+export async function deleteFnoTrade(id: string): Promise<ApiResult<void>> {
+  return apiResult('Failed to delete FnO trade', async () => {
+    await fnoApi.deleteTrade(id);
+    revalidatePath('/investments/fno');
     revalidatePath('/investments');
   });
 }

@@ -25,6 +25,7 @@ import type {
   CorporateAction,
   CreateCorporateActionRequest,
   CreateDividendRequest,
+  CreateFnoTradeRequest,
   CreateInstrumentRequest,
   CreateInvestmentTransactionRequest,
   CreateSipRequest,
@@ -32,6 +33,8 @@ import type {
   Dividend,
   ErrorResponse,
   FileIngestionResult,
+  FnoTradeListResponse,
+  FnoTradeResponse,
   GmailConnectionResponse,
   GmailOAuthStartResponse,
   GmailSenderRequest,
@@ -60,6 +63,7 @@ import type {
   SyncSummary,
   UpdateCorporateActionRequest,
   UpdateDividendRequest,
+  UpdateFnoTradeRequest,
   UpdateInvestmentTransactionRequest,
   UpdateSipRequest,
   UserResponse,
@@ -529,6 +533,33 @@ export const dividendsApi = {
 
   async delete(id: string): Promise<void> {
     return request<void>(`/api/v1/investments/dividends/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// Futures & Options (FnO) API
+export const fnoApi = {
+  async listTrades(): Promise<FnoTradeListResponse> {
+    return request<FnoTradeListResponse>('/api/v1/investments/fno');
+  },
+
+  async createTrade(data: CreateFnoTradeRequest): Promise<FnoTradeResponse> {
+    return request<FnoTradeResponse>('/api/v1/investments/fno', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async updateTrade(id: string, data: UpdateFnoTradeRequest): Promise<FnoTradeResponse> {
+    return request<FnoTradeResponse>(`/api/v1/investments/fno/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteTrade(id: string): Promise<void> {
+    return request<void>(`/api/v1/investments/fno/${id}`, {
       method: 'DELETE',
     });
   },
