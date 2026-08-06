@@ -62,12 +62,14 @@ export function PageActionBarSlot() {
   const { config } = useContext(PageActionBarContext);
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(0);
+  const [prevHideOnScroll, setPrevHideOnScroll] = useState(config?.hideOnScroll);
+  if (config?.hideOnScroll !== prevHideOnScroll) {
+    setPrevHideOnScroll(config?.hideOnScroll);
+    setIsVisible(true);
+  }
 
   useEffect(() => {
-    if (!config?.hideOnScroll) {
-      setIsVisible(true);
-      return;
-    }
+    if (!config?.hideOnScroll) return;
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
