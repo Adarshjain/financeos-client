@@ -11,7 +11,7 @@
  */
 export default function ProtectedLoading() {
   return (
-    <div className="space-y-4 p-4" aria-busy="true" aria-live="polite">
+    <div className="space-y-2 p-4" aria-busy="true" aria-live="polite">
       <span className="sr-only">Loading…</span>
 
       <div className="h-8 w-48 animate-pulse rounded-md bg-muted" />

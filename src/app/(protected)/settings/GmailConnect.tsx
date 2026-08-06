@@ -167,7 +167,7 @@ export function GmailConnect() {
   };
 
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-2 pb-20">
       {/* Status Alerts */}
       {message && (
         <Alert variant={message.type === 'success' ? 'default' : 'destructive'}>
@@ -412,7 +412,7 @@ export function GmailConnect() {
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSenderSubmit} className="space-y-4 pt-2">
+          <form onSubmit={handleSenderSubmit} className="space-y-2 pt-2">
             <FormField
               label="Sender Name (Optional)"
               name="name"

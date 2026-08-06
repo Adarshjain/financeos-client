@@ -291,7 +291,7 @@ export function TransactionLinkDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="p-4 space-y-4 overflow-y-auto flex-1 scrollbar-thin">
+        <div className="p-4 space-y-2 overflow-y-auto flex-1 scrollbar-thin">
           {/* Link Type & Settings */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">

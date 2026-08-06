@@ -108,7 +108,7 @@ export function ReportBuilder({
         }
       />
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,420px)_1fr]">
-        <div className="space-y-4">
+        <div className="space-y-2">
           <div className="flex items-center gap-1">
             <Tabs
               className="w-full"

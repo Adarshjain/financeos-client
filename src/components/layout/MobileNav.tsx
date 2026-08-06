@@ -5,8 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { logout } from '@/actions/auth';
-import { NavTree } from '@/components/layout/NavTree';
 import { getMobileNavContext, isNavItemActive } from '@/components/layout/navigation';
+import { NavTree } from '@/components/layout/NavTree';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -41,7 +41,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
       )}
 
       {/* Middle: Horizontally Scrollable Text-Only Nav Items */}
-      <div className="flex-1 flex items-center gap-1 overflow-x-auto no-scrollbar scroll-smooth py-1 px-1">
+      <div className="flex-1 flex items-center overflow-x-auto no-scrollbar scroll-smooth py-1">
         {items.map((item) => {
           const isActive = isNavItemActive(pathname, item.href);
           return (

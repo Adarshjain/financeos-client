@@ -58,8 +58,8 @@ export function ImportStep1Upload({
   const isFnoOnly = mode === 'reconcile_zerodha' && assetScope === 'fno';
 
   return (
-    <form onSubmit={onSubmit} className="flex-1 flex flex-col justify-between overflow-y-auto min-h-0 space-y-4 py-2">
-      <div className="space-y-4">
+    <form onSubmit={onSubmit} className="flex-1 flex flex-col justify-between overflow-y-auto min-h-0 space-y-2 py-2">
+      <div className="space-y-2">
         <div className={`grid grid-cols-1 ${mode === 'reconcile_zerodha' ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4`}>
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Broker / Import Type</Label>

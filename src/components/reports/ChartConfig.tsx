@@ -33,7 +33,7 @@ export function ChartConfig({ catalog, value, onChange }: ChartConfigProps) {
   const isPieDonut = value.chartType === 'pie' || value.chartType === 'donut';
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <div>
         <Label>Chart type</Label>
         <Select

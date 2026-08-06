@@ -1,8 +1,9 @@
-import { CreateDividendDialog } from '../CreateDividendDialog';
-import { DividendsTable } from '../DividendsTable';
 import { Account, isAccountOfType } from '@/lib/account.types';
 import { accountsApi, dividendsApi, investmentsApi } from '@/lib/apiClient';
 import { AccountType, Dividend, Position } from '@/lib/types';
+
+import { CreateDividendDialog } from '../CreateDividendDialog';
+import { DividendsTable } from '../DividendsTable';
 
 export default async function DividendsPage() {
   const [dividendsData, positionsData, accounts] = await Promise.all([
@@ -16,7 +17,7 @@ export default async function DividendsPage() {
   const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
 
   return (
-    <div className="pb-20 p-3 sm:p-6 space-y-4 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden">
+    <div className="pb-20 p-3 sm:p-6 space-y-2 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
         <div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">

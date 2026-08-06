@@ -1,11 +1,12 @@
+import { Account, isAccountOfType } from '@/lib/account.types';
+import { accountsApi, investmentsApi } from '@/lib/apiClient';
+import { AccountType, PagedInvestmentTransactionResponse, Position } from '@/lib/types';
+
 import { CreateDividendDialog } from '../CreateDividendDialog';
 import { ImportWizardDialog } from '../ImportWizardDialog';
 import { RecordTradeDialog } from '../RecordTradeDialog';
 import { RefreshPricesButton } from '../RefreshPricesButton';
 import { TradebookSection } from '../TradebookSection';
-import { Account, isAccountOfType } from '@/lib/account.types';
-import { accountsApi, investmentsApi } from '@/lib/apiClient';
-import { AccountType, PagedInvestmentTransactionResponse, Position } from '@/lib/types';
 
 const TRANSACTIONS_INITIAL_PAGE_SIZE = 10;
 
@@ -31,7 +32,7 @@ export default async function TradebookPage() {
   const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
 
   return (
-    <div className="pb-20 p-3 sm:p-6 space-y-4 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden">
+    <div className="pb-20 p-3 sm:p-6 space-y-2 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
         <div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">

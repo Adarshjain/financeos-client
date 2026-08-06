@@ -28,7 +28,7 @@ export default async function DashboardPage() {
 
   if (!defaultDashboard) {
     return (
-      <div className="space-y-6 p-4">
+      <div className="space-y-2 p-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             Dashboard

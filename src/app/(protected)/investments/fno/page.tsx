@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export default function FnoPage() {
   return (
-    <div className="p-4 sm:p-6 pb-24 space-y-6 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-6 pb-24 space-y-2 max-w-5xl mx-auto">
       <div className="flex items-center gap-3">
         <Link href="/investments">
           <Button variant="ghost" size="sm" className="rounded-xl h-8 w-8 p-0">
@@ -24,7 +24,7 @@ export default function FnoPage() {
       </div>
 
       <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl p-8 text-center shadow-sm">
-        <CardContent className="space-y-4 pt-4">
+        <CardContent className="space-y-2 pt-4">
           <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto shadow-sm">
             <Activity className="w-7 h-7" />
           </div>

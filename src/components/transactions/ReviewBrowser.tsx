@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 import { batchDeleteTransactions, batchReviewTransactions, searchTransactions } from '@/actions/transactions';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
+import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { batchFailureLabel, reviewReasonLabel } from '@/components/transactions/catalog';
 import { Button } from '@/components/ui/button';
@@ -308,15 +309,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
     <div className="space-y-1 pb-20">
       {/* Header */}
       <div className="flex justify-between items-center px-4 pt-2.5 pb-0.5">
-        <div className="flex items-center gap-2">
-          <Link href="/transactions">
-            <Button variant="ghost" size="icon"
-                    className="h-8 w-8 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">
-              <ArrowLeft className="h-4 w-4 text-slate-500" />
-            </Button>
-          </Link>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Review Txns</h1>
-        </div>
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Review Transactions</h1>
       </div>
 
       {/* Mobile-First Review Filter Bar */}
@@ -447,9 +440,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
           })}
 
           {/* Pagination */}
-          <div
-            className="fixed bottom-2 left-3 right-3 lg:left-[calc(50%+8rem)] lg:right-auto lg:-translate-x-1/2 lg:w-auto z-50 flex items-center justify-between lg:justify-start gap-4 px-5 py-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300">
-            {/*<div className="px-3 py-2 border-t border-slate-100 dark:border-slate-800 sticky bottom-0 bg-white z-10">*/}
+          <PageActionBar>
             <TablePagination
               page={{
                 number: pagedData.number,
@@ -466,7 +457,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
               unit="transaction"
               loading={loading}
             />
-          </div>
+          </PageActionBar>
         </div>
       )}
 
@@ -580,7 +571,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
               The batch operation completed with the following results:
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 space-y-4">
+          <div className="py-4 space-y-2">
             {/* Counts */}
             <div className="grid grid-cols-3 gap-2 text-center">
               <div

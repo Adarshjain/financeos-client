@@ -20,7 +20,7 @@ function GmailSettingsContent() {
   const isError = gmailStatus === 'error';
 
   return (
-    <div className="space-y-6 p-4">
+    <div className="space-y-2 p-4">
       {/* Page Title & Back Button */}
       <div className="flex items-center gap-3">
         <Button asChild variant="ghost" size="icon" className="h-8 w-8 p-0 rounded-lg">
@@ -64,7 +64,7 @@ function GmailSettingsContent() {
 export default function GmailSettingsPage() {
   return (
     <Suspense fallback={
-      <div className="space-y-4">
+      <div className="space-y-2">
         <p className="text-slate-500">Loading Gmail integration dashboard...</p>
       </div>
     }>

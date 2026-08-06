@@ -197,6 +197,7 @@ export function getMobileNavContext(pathname: string): {
       mode: 'transactions',
       items: [
         NAV_ITEMS.transactions,
+        NAV_ITEMS.needsReview,
         NAV_ITEMS.dashboards,
         NAV_ITEMS.reports,
         NAV_ITEMS.rules,
