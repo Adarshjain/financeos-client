@@ -30,6 +30,7 @@ interface InvestmentsViewProps {
   instruments: Instrument[];
   brokerAccounts: Broker[];
   accounts: Account[];
+  defaultTab?: 'overview' | 'holdings' | 'actions';
 }
 
 export function InvestmentsView({
@@ -42,8 +43,9 @@ export function InvestmentsView({
                                   instruments,
                                   brokerAccounts,
                                   accounts,
+                                  defaultTab = 'overview',
                                 }: InvestmentsViewProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'holdings' | 'actions'>('holdings');
+  const [activeTab, setActiveTab] = useState<'overview' | 'holdings' | 'actions'>(defaultTab);
 
   return (
       <div className="pb-20 p-3 sm:p-6 space-y-2 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden">

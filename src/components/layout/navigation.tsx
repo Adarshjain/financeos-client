@@ -1,111 +1,241 @@
 import {
+  Activity,
   BarChart3,
+  BookOpen,
+  Briefcase,
+  CheckSquare,
+  DollarSign,
+  FolderTree,
   Home,
+  Layers,
   LayoutDashboard,
+  PieChart,
   Receipt,
-  Settings,
+  Settings as SettingsIcon,
+  Sparkles,
   Tags,
-  TrendingUp,
   Wallet,
 } from 'lucide-react';
 
-/**
- * Single registry for the app's navigation destinations.
- *
- * Sidebar and MobileNav previously declared these routes independently — the
- * same eight hrefs and icons written out twice, so adding a route or changing an
- * icon meant editing both.
- *
- * `shortLabel` exists because the mobile labels are deliberately different, not
- * accidentally divergent: the bottom bar is horizontally cramped, so /dashboard
- * reads "Home" and /investments reads "Investments" there while the sidebar uses
- * the full names. Keeping both in one place preserves that intent while removing
- * the duplication.
- */
 export interface NavItem {
   href: string;
   label: string;
-  /** Used where horizontal space is tight (the mobile bottom bar). */
   shortLabel?: string;
   icon: React.ReactNode;
 }
 
-export const NAV: Record<string, NavItem> = {
-  dashboard: {
+export interface NavModule {
+  key: string;
+  label: string;
+  icon: React.ReactNode;
+  items: NavItem[];
+}
+
+export const NAV_ITEMS = {
+  home: {
     href: '/dashboard',
-    label: 'Dashboard',
+    label: 'Home',
     shortLabel: 'Home',
     icon: <Home className="h-5 w-5" />,
   },
   accounts: {
     href: '/accounts',
     label: 'Accounts',
+    shortLabel: 'Accounts',
     icon: <Wallet className="h-5 w-5" />,
   },
+
+  // Transactions module items
   transactions: {
     href: '/transactions',
     label: 'Transactions',
+    shortLabel: 'Transactions',
     icon: <Receipt className="h-5 w-5" />,
   },
-  rules: {
-    href: '/rules',
-    label: 'Rules',
-    icon: <Tags className="h-5 w-5" />,
-  },
-  investments: {
-    href: '/investments',
-    label: 'Investments',
-    shortLabel: 'Investments',
-    icon: <TrendingUp className="h-5 w-5" />,
-  },
-  reports: {
-    href: '/reports',
-    label: 'Reports',
-    icon: <BarChart3 className="h-5 w-5" />,
+  needsReview: {
+    href: '/transactions/review',
+    label: 'Needs Review',
+    shortLabel: 'Review',
+    icon: <CheckSquare className="h-5 w-5" />,
   },
   dashboards: {
     href: '/dashboards',
     label: 'Dashboards',
+    shortLabel: 'Dashboards',
     icon: <LayoutDashboard className="h-5 w-5" />,
   },
+  reports: {
+    href: '/reports',
+    label: 'Reports',
+    shortLabel: 'Reports',
+    icon: <BarChart3 className="h-5 w-5" />,
+  },
+  rules: {
+    href: '/rules',
+    label: 'Rules',
+    shortLabel: 'Rules',
+    icon: <Tags className="h-5 w-5" />,
+  },
+  categories: {
+    href: '/rules/categories',
+    label: 'Category Manager',
+    shortLabel: 'Categories',
+    icon: <FolderTree className="h-5 w-5" />,
+  },
+
+  // Investments module items
+  investmentsOverview: {
+    href: '/investments',
+    label: 'Overview',
+    shortLabel: 'Overview',
+    icon: <PieChart className="h-5 w-5" />,
+  },
+  investmentsHoldings: {
+    href: '/investments/holdings',
+    label: 'Holdings',
+    shortLabel: 'Holdings',
+    icon: <Briefcase className="h-5 w-5" />,
+  },
+  investmentsTradebook: {
+    href: '/investments/tradebook',
+    label: 'Tradebook',
+    shortLabel: 'Tradebook',
+    icon: <BookOpen className="h-5 w-5" />,
+  },
+  investmentsDividends: {
+    href: '/investments/dividends',
+    label: 'Dividends',
+    shortLabel: 'Dividends',
+    icon: <DollarSign className="h-5 w-5" />,
+  },
+  investmentsInstruments: {
+    href: '/investments/instruments',
+    label: 'Instruments',
+    shortLabel: 'Instruments',
+    icon: <Layers className="h-5 w-5" />,
+  },
+  investmentsCorpActions: {
+    href: '/investments/corporate-actions',
+    label: 'Corporate Actions',
+    shortLabel: 'Corporate Actions',
+    icon: <Sparkles className="h-5 w-5" />,
+  },
+  investmentsFno: {
+    href: '/investments/fno',
+    label: 'FnO',
+    shortLabel: 'FnO',
+    icon: <Activity className="h-5 w-5" />,
+  },
+
+  // Settings
   settings: {
     href: '/settings',
     label: 'Settings',
-    icon: <Settings className="h-5 w-5" />,
+    shortLabel: 'Settings',
+    icon: <SettingsIcon className="h-5 w-5" />,
   },
 };
 
-/** Desktop sidebar: every destination, in order. */
-export const SIDEBAR_NAV: NavItem[] = [
-  NAV.dashboard,
-  NAV.accounts,
-  NAV.transactions,
-  NAV.rules,
-  NAV.investments,
-  NAV.reports,
-  NAV.dashboards,
-  NAV.settings,
-];
+export const TRANSACTIONS_MODULE: NavModule = {
+  key: 'transactions',
+  label: 'Transactions & Analytics',
+  icon: <Receipt className="h-5 w-5" />,
+  items: [
+    NAV_ITEMS.transactions,
+    NAV_ITEMS.needsReview,
+    NAV_ITEMS.dashboards,
+    NAV_ITEMS.reports,
+    NAV_ITEMS.rules,
+    NAV_ITEMS.categories,
+  ],
+};
 
-/** Mobile bottom bar: the three most-used destinations. */
-export const MOBILE_BAR_NAV: NavItem[] = [
-  NAV.dashboard,
-  NAV.transactions,
-  NAV.investments,
-];
+export const INVESTMENTS_MODULE: NavModule = {
+  key: 'investments',
+  label: 'Investments & Portfolio',
+  icon: <PieChart className="h-5 w-5" />,
+  items: [
+    NAV_ITEMS.investmentsOverview,
+    NAV_ITEMS.investmentsHoldings,
+    NAV_ITEMS.investmentsTradebook,
+    NAV_ITEMS.investmentsDividends,
+    NAV_ITEMS.investmentsInstruments,
+    NAV_ITEMS.investmentsCorpActions,
+    NAV_ITEMS.investmentsFno,
+  ],
+};
 
-/** Mobile overflow menu: everything the bottom bar doesn't show. */
-export const MOBILE_MENU_NAV: NavItem[] = [
-  NAV.accounts,
-  NAV.rules,
-  NAV.reports,
-  NAV.dashboards,
-  NAV.settings,
-];
+export type MobileNavContextMode = 'default' | 'transactions' | 'investments';
 
-/** Routes where the mobile bottom bar is suppressed. */
-export const HIDE_MOBILE_NAV_ON: string[] = ['/transactions/review'];
+export function getMobileNavContext(pathname: string): {
+  mode: MobileNavContextMode;
+  items: NavItem[];
+} {
+  if (pathname.startsWith('/investments')) {
+    return {
+      mode: 'investments',
+      items: [
+        NAV_ITEMS.investmentsOverview,
+        NAV_ITEMS.investmentsHoldings,
+        NAV_ITEMS.investmentsTradebook,
+        NAV_ITEMS.investmentsDividends,
+        NAV_ITEMS.investmentsInstruments,
+        NAV_ITEMS.investmentsCorpActions,
+        NAV_ITEMS.investmentsFno,
+      ],
+    };
+  }
+
+  if (
+    pathname.startsWith('/transactions') ||
+    pathname.startsWith('/dashboards') ||
+    pathname.startsWith('/reports') ||
+    pathname.startsWith('/rules') ||
+    pathname.startsWith('/categories')
+  ) {
+    return {
+      mode: 'transactions',
+      items: [
+        NAV_ITEMS.transactions,
+        NAV_ITEMS.dashboards,
+        NAV_ITEMS.reports,
+        NAV_ITEMS.rules,
+        NAV_ITEMS.categories,
+      ],
+    };
+  }
+
+  return {
+    mode: 'default',
+    items: [
+      NAV_ITEMS.home,
+      NAV_ITEMS.transactions,
+      {
+        href: '/investments',
+        label: 'Investments',
+        shortLabel: 'Investments',
+        icon: NAV_ITEMS.investmentsOverview.icon,
+      },
+      NAV_ITEMS.accounts,
+    ],
+  };
+}
 
 export function isNavItemActive(pathname: string, href: string): boolean {
-  return pathname === href || pathname.startsWith(href + '/');
+  if (pathname === href) {
+    return true;
+  }
+  // For sub-routes / detail pages (e.g. /transactions/123),
+  // match prefix ONLY if no other registered route has a longer, more specific match.
+  if (pathname.startsWith(href + '/')) {
+    const allHrefs = Object.values(NAV_ITEMS).map((item) => item.href);
+    const matchesMoreSpecific = allHrefs.some(
+      (otherHref) =>
+        otherHref !== href &&
+        otherHref.length > href.length &&
+        (pathname === otherHref || pathname.startsWith(otherHref + '/')),
+    );
+    return !matchesMoreSpecific;
+  }
+  return false;
 }
