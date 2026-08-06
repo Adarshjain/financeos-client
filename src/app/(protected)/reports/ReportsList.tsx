@@ -49,7 +49,7 @@ export function ReportsList({ reports, activeType }: ReportsListProps) {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
         {FILTERS.map((f) => {
           const active = f.value === activeType;

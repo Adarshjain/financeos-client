@@ -44,7 +44,7 @@ function valueToSentiment(v: string): boolean | undefined {
 
 export function KpiConfig({ catalog, value, onChange }: KpiConfigProps) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <div>
         <Label>Measure</Label>
         <MeasureRefEditor

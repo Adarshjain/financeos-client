@@ -22,7 +22,7 @@ export function LoginForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-900">
-      <div className="w-full max-w-sm space-y-6">
+      <div className="w-full max-w-sm space-y-2">
         {/* Logo and Header */}
         <div className="text-center space-y-3">
           <Logo size="lg" showText={false} className="justify-center" />
@@ -84,7 +84,7 @@ export function LoginForm() {
                 </span>
           </div>
         </div>
-        <form action={formAction} className="space-y-4">
+        <form action={formAction} className="space-y-2">
           {state && !state.success && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />

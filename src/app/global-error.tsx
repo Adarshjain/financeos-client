@@ -18,7 +18,7 @@ export default function GlobalError({
     <html lang="en">
       <body className="bg-background text-foreground antialiased">
         <div className="flex min-h-screen items-center justify-center p-4">
-          <div className="w-full max-w-md space-y-4 text-center">
+          <div className="w-full max-w-md space-y-2 text-center">
             <h1 className="text-lg font-semibold">FinanceOS failed to start</h1>
             <p className="text-sm text-muted-foreground">
               A problem occurred outside the application shell. Reloading usually

@@ -21,7 +21,7 @@ export default async function ReportsPage({
   const reports = await reportsApi.list(activeType);
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-2 p-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           Reports

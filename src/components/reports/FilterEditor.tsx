@@ -39,7 +39,7 @@ export function FilterEditor({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
         <Label className="text-base font-semibold text-slate-800 dark:text-slate-100">Filters</Label>
       </div>

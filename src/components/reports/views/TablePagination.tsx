@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { TablePage } from '@/lib/reports.types';
+import { cn } from '@/lib/utils';
 
 /** Server default is 50, max 1000. */
 export const DEFAULT_TABLE_PAGE_SIZE = 50;
@@ -27,6 +28,7 @@ interface TablePaginationProps {
   /** Noun for the total count (singular); pluralized with a trailing "s". */
   unit?: string;
   loading?: boolean;
+  className?: string;
 }
 
 export function TablePagination({
@@ -35,6 +37,7 @@ export function TablePagination({
   onSizeChange,
   unit = 'row',
   loading = false,
+    className
 }: TablePaginationProps) {
   // Always offer the current size, even if it isn't one of the presets.
   const sizes = PAGE_SIZE_OPTIONS.includes(page.size)
@@ -43,7 +46,7 @@ export function TablePagination({
   const sizeOptions = sizes.map((s) => ({ value: String(s), label: `${s} / page` }));
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-500">
+    <div className={cn("flex flex-wrap items-center justify-between gap-2 text-sm text-slate-500", className)}>
       <span>
         {page.totalElements.toLocaleString('en-IN')} {unit}
         {page.totalElements === 1 ? '' : 's'}

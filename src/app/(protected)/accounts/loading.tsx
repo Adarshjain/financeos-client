@@ -10,7 +10,7 @@ export default function AccountsLoading() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         {Array.from({ length: 4 }).map((_, colIdx) => (
-          <div key={colIdx} className="space-y-4">
+          <div key={colIdx} className="space-y-2">
             <Skeleton className="h-6 w-32" />
             <Skeleton className="h-32 w-full rounded-2xl" />
             <Skeleton className="h-32 w-full rounded-2xl" />

@@ -232,7 +232,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
       </div>
 
       {/* Scrollable Body */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-5">
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
         {/* Account Type Selection (Only for Create Mode) */}
         <div className="space-y-2">
           <Label className="text-xs text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1">
@@ -304,7 +304,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
         </div>
 
         {/* Card 1: General Info */}
-        <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-4">
+        <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-2">
           <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/40 pb-2">
             <FileText className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
             <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">General Information</h3>
@@ -346,7 +346,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             </p>
           </div>
         ) : accountType === AccountType.BROKER ? (
-          <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-2">
             <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/40 pb-2">
               <TrendingUp className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
               <h3 className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Broker Details</h3>
@@ -395,7 +395,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             </div>
           </div>
         ) : (
-          <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-4">
+          <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-2">
             <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/40 pb-2">
               {accountType === AccountType.BANK_ACCOUNT ? (
                 <Landmark className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
@@ -553,7 +553,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
         )}
 
         {/* Card 3: Configurations & Sync */}
-        <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-4">
+        <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-2">
           <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/40 pb-2">
             <TrendingUp className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
             <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Configurations & Sync</h3>

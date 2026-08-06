@@ -125,7 +125,7 @@ export default async function AccountsPage() {
 
       {accounts.length === 0 ? (
         <Card className="border-dashed border-slate-200 dark:border-slate-800 max-w-md mx-auto">
-          <div className="text-center py-12 px-6 space-y-4">
+          <div className="text-center py-12 px-6 space-y-2">
             <div
               className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-950 flex items-center justify-center mx-auto text-slate-400">
               <Landmark className="w-6 h-6" />
@@ -151,7 +151,7 @@ export default async function AccountsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           {/* Bank Accounts Section */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800/60">
               <div className="flex items-center gap-2">
                 <Landmark className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -250,7 +250,7 @@ export default async function AccountsPage() {
           </div>
 
           {/* Credit Cards Section */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800/60">
               <div className="flex items-center gap-2">
                 <CardIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
@@ -403,7 +403,7 @@ export default async function AccountsPage() {
           </div>
 
           {/* Broker Accounts Section */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800/60">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
@@ -475,7 +475,7 @@ export default async function AccountsPage() {
           </div>
 
           {/* Generic / Other Accounts Section */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800/60">
               <div className="flex items-center gap-2">
                 <Wallet className="w-4 h-4 text-purple-600 dark:text-purple-400" />

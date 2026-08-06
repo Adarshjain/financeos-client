@@ -117,7 +117,7 @@ export function TableConfig({
   const columnFields = fieldNames(value.agg.columns);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <Tabs
         className="w-full"
         value={value.tableMode}

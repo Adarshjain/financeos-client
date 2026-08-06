@@ -10,6 +10,7 @@ import { createRule, deleteRule, updateRule, verifyRule } from '@/actions/rules'
 import { Combobox } from '@/components/Combobox';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { isValidMcc,MccInput } from '@/components/forms/MccInput';
+import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -250,57 +251,18 @@ export function RulesBrowser({
   };
 
   return (
-    <div className="space-y-4 p-4 pb-20">
+    <div className="space-y-2 p-4 pb-32">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Categorization Rules</h1>
-          <p className="text-sm text-slate-500 mt-1">Map merchant names to categories automatically.</p>
         </div>
-        <Button onClick={openCreateDialog} className="rounded-xl flex items-center gap-1.5 font-semibold bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
+        <Button onClick={openCreateDialog} className="rounded-xl h-8 text-xs">
           <Plus className="h-4 w-4" />
           <span>New Rule</span>
         </Button>
       </div>
 
-      {/* Tabs and Search Filters */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-        {/* Toggle Chips/Tabs */}
-        <div className="flex bg-slate-100 dark:bg-slate-800/60 p-1 rounded-xl w-fit">
-          {[
-            { id: 'false', label: 'Unverified' },
-            { id: 'true', label: 'Verified' },
-            { id: 'all', label: 'All' },
-          ].map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => handleTabChange(tab.id)}
-                className={cn(
-                  'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200',
-                  isActive
-                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-350'
-                )}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Search Box */}
-        <div className="relative min-w-[240px] flex-1 max-w-md">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Search merchant keys or display names..."
-            value={searchVal}
-            onChange={(e) => setSearchVal(e.target.value)}
-            className="pl-9 pr-4 rounded-xl bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 focus-visible:ring-emerald-500 focus-visible:border-transparent transition-all"
-          />
-        </div>
-      </div>
 
       {/* Rules list content */}
       {isPending && (
@@ -317,12 +279,12 @@ export function RulesBrowser({
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {initialRules.content.map((rule) => (
               <div
                 key={rule.id}
-                className="relative rounded-2xl border border-slate-200/50 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-5 shadow-sm hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300 flex flex-col justify-between gap-4"
+                className="relative rounded-2xl border border-slate-200/50 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-3 shadow-sm hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300 flex flex-col justify-between"
               >
                 {/* Header Info */}
                 <div className="space-y-2">
@@ -377,7 +339,7 @@ export function RulesBrowser({
                 </div>
 
                 {/* Footer and Actions */}
-                <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-850 text-xs">
+                <div className="flex items-center justify-between pt-3 text-xs">
                   <div className="text-slate-400 dark:text-slate-500 space-y-0.5">
                     <div>Used {rule.appliedCount}×</div>
                     <div className="text-[10px]">
@@ -442,27 +404,68 @@ export function RulesBrowser({
           </div>
 
           {/* Pagination */}
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-            <TablePagination
-              page={{
-                number: initialRules.number,
-                size: initialRules.size,
-                totalElements: initialRules.totalElements,
-                totalPages: initialRules.totalPages,
-              }}
-              loading={isPending}
-              onPageChange={handlePageChange}
-              onSizeChange={handleSizeChange}
-              unit="rule"
-            />
-          </div>
-        </div>
+          <PageActionBar hideOnScroll>
+            {/*<div className="flex flex-col gap-1">*/}
+              {/* Tabs and Search Filters */}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                {/* Toggle Chips/Tabs */}
+                <div className="flex bg-slate-100 dark:bg-slate-800/60 p-1 rounded-xl w-fit">
+                  {[
+                    { id: 'false', label: 'Unverified' },
+                    { id: 'true', label: 'Verified' },
+                    { id: 'all', label: 'All' },
+                  ].map((tab) => {
+                    const isActive = activeTab === tab.id;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => handleTabChange(tab.id)}
+                            className={cn(
+                                'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200',
+                                isActive
+                                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white'
+                                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-350'
+                            )}
+                        >
+                          {tab.label}
+                        </button>
+                    );
+                  })}
+                </div>
+
+                {/* Search Box */}
+                <div className="relative min-w-[240px] flex-1 max-w-md">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                  <Input
+                      placeholder="Search merchant keys or display names..."
+                      value={searchVal}
+                      onChange={(e) => setSearchVal(e.target.value)}
+                      className="pl-9 pr-4 rounded-xl bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 focus-visible:ring-emerald-500 focus-visible:border-transparent transition-all"
+                  />
+                </div>
+              {/*</div>*/}
+              <TablePagination
+                  page={{
+                    number: initialRules.number,
+                    size: initialRules.size,
+                    totalElements: initialRules.totalElements,
+                    totalPages: initialRules.totalPages,
+                  }}
+                  loading={isPending}
+                  onPageChange={handlePageChange}
+                  onSizeChange={handleSizeChange}
+                  unit="rule"
+                  className="w-full px-1"
+              />
+            </div>
+          </PageActionBar>
+        </>
       )}
 
       {/* Create / Edit Dialog */}
       <Dialog open={isCreateOpen || !!editingRule} onOpenChange={closeDialogs}>
-        <DialogContent className="sm:max-w-[450px]">
-          <form onSubmit={handleSubmitRule} className="space-y-4">
+        <DialogContent className="sm:max-w-[450px] p-4">
+          <form onSubmit={handleSubmitRule} className="space-y-2">
             <DialogHeader>
               <DialogTitle>{editingRule ? 'Edit Rule' : 'Create Categorization Rule'}</DialogTitle>
             </DialogHeader>
@@ -521,11 +524,11 @@ export function RulesBrowser({
               </div>
             </div>
 
-            <DialogFooter className="flex gap-2">
-              <Button type="button" variant="outline" onClick={closeDialogs} disabled={formSubmitting}>
+            <DialogFooter className="flex gap-2 flex-row">
+              <Button type="button" variant="outline" onClick={closeDialogs} disabled={formSubmitting}  className="flex-1">
                 Cancel
               </Button>
-              <Button type="submit" disabled={formSubmitting || creatingCategory} className="bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
+              <Button type="submit" disabled={formSubmitting || creatingCategory} className="flex-1">
                 {formSubmitting ? 'Saving...' : 'Save'}
               </Button>
             </DialogFooter>

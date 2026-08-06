@@ -24,7 +24,7 @@ interface ErrorStateProps {
 export function ErrorState({ error, reset, title = 'Something went wrong' }: ErrorStateProps) {
   return (
     <div className="flex min-h-[60vh] items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-4 text-center">
+      <div className="w-full max-w-md space-y-2 text-center">
         <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-destructive/10">
           <AlertTriangle className="h-6 w-6 text-destructive" />
         </div>

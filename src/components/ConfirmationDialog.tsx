@@ -57,19 +57,20 @@ export function ConfirmationDialog(props: ConfirmationDialogProps) {
       <DialogTrigger asChild>
         {props.trigger}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="p-4">
         <DialogHeader>
           <DialogTitle>{props.title}</DialogTitle>
           {props.description && <DialogDescription>{props.description}</DialogDescription>}
         </DialogHeader>
-        <DialogFooter className="flex gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+        <DialogFooter className="flex gap-2 flex-row">
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={busy} className="flex-1">
             Cancel
           </Button>
           <Button
             variant={props.variant ?? 'destructive'}
             onClick={handlePrimary}
             disabled={busy}
+            className="flex-1"
           >
             {props.primaryActionText}
           </Button>

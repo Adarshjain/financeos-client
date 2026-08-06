@@ -124,7 +124,7 @@ export function ImportStep2Review({
           />
 
           {/* Two-section Scrollable Review Area */}
-          <div className="flex-1 overflow-y-auto min-h-0 space-y-4 pr-1">
+          <div className="flex-1 overflow-y-auto min-h-0 space-y-2 pr-1">
             {hasExecutions && (
               <div className="space-y-1.5">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">

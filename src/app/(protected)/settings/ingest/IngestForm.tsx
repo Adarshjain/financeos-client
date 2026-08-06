@@ -198,7 +198,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
   };
 
   return (
-    <div className="space-y-6 p-4 max-w-4xl pb-20">
+    <div className="space-y-2 p-4 max-w-4xl pb-20">
       {/* Header & Navigation */}
       <div className="flex items-center gap-3">
         <Button asChild variant="ghost" size="icon" className="h-8 w-8 p-0 rounded-lg">
@@ -252,7 +252,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                 Summary of the transaction extraction process
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-6 space-y-6">
+            <CardContent className="p-6 space-y-2">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col justify-center">
                   <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
@@ -365,7 +365,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
         {/* Upload Form */}
         <Card className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
           <CardContent className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-2">
               {/* Account Dropdown */}
               <div className="space-y-2">
                 <Label htmlFor="account-select" className="text-sm font-bold text-slate-700 dark:text-slate-300">
