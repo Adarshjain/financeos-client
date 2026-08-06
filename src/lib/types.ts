@@ -591,6 +591,25 @@ export interface FnoTradeListResponse {
   totalRealizedPnl: number;
 }
 
+export interface CreateFnoTradeRequest {
+  brokerAccountId: string;
+  tradingSymbol: string;
+  underlyingSymbol?: string;
+  contractType?: FnoContractType;
+  optionType?: OptionType;
+  strikePrice?: number;
+  expiryDate?: string;
+  quantity: number;
+  buyValue: number;
+  sellValue: number;
+  totalCharges?: number;
+  entryDate?: string;
+  exitDate?: string;
+  notes?: string;
+}
+
+export type UpdateFnoTradeRequest = CreateFnoTradeRequest;
+
 export interface TradeSettlementClassification {
   isin?: string;
   symbol?: string;
