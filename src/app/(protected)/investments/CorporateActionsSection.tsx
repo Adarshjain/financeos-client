@@ -10,6 +10,7 @@ import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -274,91 +275,190 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
           No corporate actions match your filters.
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
-          {sortedActions.map((act) => {
-            const inst = instrumentMap.get(act.instrumentId);
-            const instName = act.instrumentName || inst?.name || 'Instrument';
-            const instSymbol = act.instrumentSymbol || inst?.symbol;
+        <>
+          {/* Mobile View: Card-based Layout */}
+          <div className="block md:hidden grid grid-cols-1 gap-2 sm:gap-4">
+            {sortedActions.map((act) => {
+              const inst = instrumentMap.get(act.instrumentId);
+              const instName = act.instrumentName || inst?.name || 'Instrument';
+              const instSymbol = act.instrumentSymbol || inst?.symbol;
 
-            return (
-              <Card
-                key={act.id}
-                className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-purple-200 dark:hover:border-purple-900/60 transition-all duration-200 overflow-hidden"
-              >
-                {/* Header Row: Badge + Ratio Left | Edit + Delete Buttons Right */}
-                <CardHeader className="p-3 sm:p-3.5 pb-2 flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800/60 space-y-0">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    {getActionBadge(act.type)}
-                    <span className="text-[11px] font-bold text-slate-900 dark:text-slate-100 truncate">
-                      Ratio: {act.ratioFrom} → {act.ratioTo}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEditDialog(act)}
-                      className="h-6 w-6 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
-                      title="Edit Corporate Action"
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(act.instrumentId, act.id)}
-                      disabled={deletingId === act.id}
-                      className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40"
-                      title="Delete Corporate Action"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="p-3 sm:p-3.5 space-y-2">
-                  {/* Instrument Info Row */}
-                  <div>
-                    <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
-                      {instName} {instSymbol ? `(${instSymbol})` : ''}
-                    </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
-                      Ex-Date:{' '}
-                      <span className="font-semibold text-slate-700 dark:text-slate-300 tabular-nums">
-                        {formatDate(act.exDate)}
+              return (
+                <Card
+                  key={act.id}
+                  className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-purple-200 dark:hover:border-purple-900/60 transition-all duration-200 overflow-hidden"
+                >
+                  {/* Header Row: Badge + Ratio Left | Edit + Delete Buttons Right */}
+                  <CardHeader className="p-3 sm:p-3.5 pb-2 flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800/60 space-y-0">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      {getActionBadge(act.type)}
+                      <span className="text-[11px] font-bold text-slate-900 dark:text-slate-100 truncate">
+                        Ratio: {act.ratioFrom} → {act.ratioTo}
                       </span>
                     </div>
-                  </div>
-
-                  {/* Demerger / Merger Banner */}
-                  {(act.type === 'demerger' || act.type === 'merger') && (
-                    <div className="text-[11px] font-medium bg-slate-50 dark:bg-slate-950/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800/50">
-                      {act.type === 'demerger' ? (
-                        <>
-                          Child: <span className="font-bold text-slate-800 dark:text-slate-200">{act.targetInstrumentName || 'Child Instrument'}</span>{' '}
-                          {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc:{' '}
-                          <span className="font-bold text-slate-800 dark:text-slate-200">{act.costAllocationPct}%</span>
-                        </>
-                      ) : (
-                        <>
-                          Merged into: <span className="font-bold text-slate-800 dark:text-slate-200">{act.targetInstrumentName || 'Acquirer Instrument'}</span>{' '}
-                          {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''}
-                        </>
-                      )}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEditDialog(act)}
+                        className="h-6 w-6 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                        title="Edit Corporate Action"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDelete(act.instrumentId, act.id)}
+                        disabled={deletingId === act.id}
+                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40"
+                        title="Delete Corporate Action"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
-                  )}
+                  </CardHeader>
 
-                  {/* Notes Row */}
-                  {act.notes && (
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 italic">
-                      &quot;{act.notes}&quot;
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                  <CardContent className="p-3 sm:p-3.5 space-y-2">
+                    {/* Instrument Info Row */}
+                    <div>
+                      <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
+                        {instName} {instSymbol ? `(${instSymbol})` : ''}
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">
+                        Ex-Date:{' '}
+                        <span className="font-semibold text-slate-700 dark:text-slate-300 tabular-nums">
+                          {formatDate(act.exDate)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Demerger / Merger Banner */}
+                    {(act.type === 'demerger' || act.type === 'merger') && (
+                      <div className="text-[11px] font-medium bg-slate-50 dark:bg-slate-950/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800/50">
+                        {act.type === 'demerger' ? (
+                          <>
+                            Child: <span className="font-bold text-slate-800 dark:text-slate-200">{act.targetInstrumentName || 'Child Instrument'}</span>{' '}
+                            {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc:{' '}
+                            <span className="font-bold text-slate-800 dark:text-slate-200">{act.costAllocationPct}%</span>
+                          </>
+                        ) : (
+                          <>
+                            Merged into: <span className="font-bold text-slate-800 dark:text-slate-200">{act.targetInstrumentName || 'Acquirer Instrument'}</span>{' '}
+                            {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''}
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Notes Row */}
+                    {act.notes && (
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic">
+                        &quot;{act.notes}&quot;
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Desktop View: Full Table Layout */}
+          <Card className="hidden md:block bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden">
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
+                      <TableHead className="text-xs font-medium">Instrument</TableHead>
+                      <TableHead className="text-xs font-medium">Action Type</TableHead>
+                      <TableHead className="text-xs font-medium">Ratio</TableHead>
+                      <TableHead className="text-xs font-medium whitespace-nowrap">Ex-Date</TableHead>
+                      <TableHead className="text-xs font-medium">Notes</TableHead>
+                      <TableHead className="text-right text-xs font-medium"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedActions.map((act) => {
+                      const inst = instrumentMap.get(act.instrumentId);
+                      const instName = act.instrumentName || inst?.name || 'Instrument';
+                      const instSymbol = act.instrumentSymbol || inst?.symbol;
+
+                      return (
+                        <TableRow key={act.id} className="border-slate-100 dark:border-slate-800/60">
+                          <TableCell className="py-2.5">
+                            <div className="font-medium text-xs text-slate-900 dark:text-slate-100">
+                              {instName}
+                            </div>
+                            {instSymbol && (
+                              <div className="text-[10px] text-slate-400 font-mono">{instSymbol}</div>
+                            )}
+                          </TableCell>
+                          <TableCell className="py-2.5 text-xs whitespace-nowrap">
+                            {getActionBadge(act.type)}
+                          </TableCell>
+                          <TableCell className="py-2.5 text-xs font-normal text-slate-900 dark:text-slate-100 tabular-nums whitespace-nowrap">
+                            {act.ratioFrom} → {act.ratioTo}
+                          </TableCell>
+                          <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400 tabular-nums whitespace-nowrap">
+                            {formatDate(act.exDate)}
+                          </TableCell>
+                          <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400">
+                            {(act.type === 'demerger' || act.type === 'merger') && (
+                              <div className="text-[11px] font-normal text-slate-700 dark:text-slate-300">
+                                {act.type === 'demerger' ? (
+                                  <>
+                                    Child: <span className="font-medium">{act.targetInstrumentName || 'Child Instrument'}</span>{' '}
+                                    {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Alloc:{' '}
+                                    <span className="font-medium">{act.costAllocationPct}%</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    Merged into: <span className="font-medium">{act.targetInstrumentName || 'Acquirer Instrument'}</span>{' '}
+                                    {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''}
+                                  </>
+                                )}
+                              </div>
+                            )}
+                            {act.notes && (
+                              <div className="text-[10px] text-slate-500 dark:text-slate-400 italic">
+                                &quot;{act.notes}&quot;
+                              </div>
+                            )}
+                            {!act.notes && act.type !== 'demerger' && act.type !== 'merger' && '—'}
+                          </TableCell>
+                          <TableCell className="py-2.5 text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openEditDialog(act)}
+                                className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                                title="Edit Corporate Action"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(act.instrumentId, act.id)}
+                                disabled={deletingId === act.id}
+                                className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40"
+                                title="Delete Corporate Action"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </>
       )}
 
       {/*

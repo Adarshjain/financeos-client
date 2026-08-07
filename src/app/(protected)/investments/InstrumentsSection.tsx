@@ -8,6 +8,7 @@ import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -257,7 +258,8 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4">
+          {/* Mobile View: Card-based Layout */}
+          <div className="block md:hidden grid grid-cols-1 gap-2 sm:gap-4">
             {pagedInstruments.map((inst) => (
               <Card
                 key={inst.id}
@@ -328,6 +330,90 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
               </Card>
             ))}
           </div>
+
+          {/* Desktop View: Full Table Layout */}
+          <Card className="hidden md:block bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden">
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
+                      <TableHead className="text-xs font-medium">Instrument Name / Symbol</TableHead>
+                      <TableHead className="text-xs font-medium">Type</TableHead>
+                      <TableHead className="text-xs font-medium">Exchange</TableHead>
+                      <TableHead className="text-xs font-medium">Identifiers</TableHead>
+                      <TableHead className="text-right text-xs font-medium whitespace-nowrap">Last Price (LTP)</TableHead>
+                      <TableHead className="text-right text-xs font-medium"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {pagedInstruments.map((inst) => (
+                      <TableRow key={inst.id} className="border-slate-100 dark:border-slate-800/60">
+                        <TableCell className="py-2.5">
+                          <div className="font-medium text-xs text-slate-900 dark:text-slate-100" title={inst.name}>
+                            {inst.name}
+                          </div>
+                          {inst.symbol && (
+                            <div className="text-[10px] text-slate-400 font-mono">{inst.symbol}</div>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-2.5 text-xs whitespace-nowrap">
+                          {getTypeBadge(inst.type)}
+                        </TableCell>
+                        <TableCell className="py-2.5 text-xs whitespace-nowrap">
+                          {inst.exchange ? (
+                            <Badge variant="secondary" className="text-[10px] font-medium text-slate-600 dark:text-slate-400 px-1.5 py-0 border border-slate-200 dark:border-slate-800">
+                              {inst.exchange}
+                            </Badge>
+                          ) : (
+                            <span className="text-slate-400">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400 font-mono">
+                          <div className="flex flex-col gap-0.5">
+                            {getIdentifier(inst) !== '—' && <span>{getIdentifier(inst)}</span>}
+                            {inst.isin && <span className="text-[10px] text-slate-400">ISIN: {inst.isin}</span>}
+                            {getIdentifier(inst) === '—' && !inst.isin && <span>—</span>}
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2.5 text-right text-xs tabular-nums whitespace-nowrap">
+                          {inst.lastPrice != null ? (
+                            <div>
+                              <span className="font-medium text-xs text-slate-900 dark:text-slate-100">
+                                {formatMoney(inst.lastPrice)}
+                              </span>
+                              {inst.lastPriceAsOf && (
+                                <span className="text-[10px] text-slate-400 block whitespace-nowrap">
+                                  {formatDate(inst.lastPriceAsOf)}
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-slate-400 italic">No price</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="py-2.5 text-right">
+                          <EditInstrumentDialog
+                            instrument={inst}
+                            trigger={
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                                title="Edit Instrument"
+                              >
+                                <Edit className="w-3.5 h-3.5" />
+                              </Button>
+                            }
+                          />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </>
       )}
     </div>

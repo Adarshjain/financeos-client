@@ -207,16 +207,16 @@ export function DividendsTable({
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
-                    <TableHead className="text-xs font-semibold">Instrument / Symbol</TableHead>
-                    <TableHead className="text-xs font-semibold">Broker Account</TableHead>
-                    <TableHead className="text-xs font-semibold">Type / Source</TableHead>
-                    <TableHead className="text-xs font-semibold">Ex-Date</TableHead>
-                    <TableHead className="text-xs font-semibold">Pay Date</TableHead>
-                    <TableHead className="text-right text-xs font-semibold">Per Unit</TableHead>
-                    <TableHead className="text-right text-xs font-semibold">Gross Amount</TableHead>
-                    <TableHead className="text-right text-xs font-semibold">TDS</TableHead>
-                    <TableHead className="text-right text-xs font-semibold">Net Amount</TableHead>
-                    <TableHead className="text-right text-xs font-semibold">Actions</TableHead>
+                    <TableHead className="text-xs font-medium">Instrument</TableHead>
+                    <TableHead className="text-xs font-medium">Account</TableHead>
+                    <TableHead className="text-xs font-medium">Type/Source</TableHead>
+                    <TableHead className="text-xs font-medium whitespace-nowrap">Ex-Date</TableHead>
+                    <TableHead className="text-xs font-medium whitespace-nowrap">Pay Date</TableHead>
+                    <TableHead className="text-right text-xs font-medium whitespace-nowrap">Per Unit</TableHead>
+                    <TableHead className="text-right text-xs font-medium whitespace-nowrap">Gross</TableHead>
+                    <TableHead className="text-right text-xs font-medium whitespace-nowrap">TDS</TableHead>
+                    <TableHead className="text-right text-xs font-medium whitespace-nowrap">Net</TableHead>
+                    <TableHead className="text-right text-xs font-medium"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -227,8 +227,8 @@ export function DividendsTable({
 
                     return (
                       <TableRow key={div.id} className="border-slate-100 dark:border-slate-800/60">
-                        <TableCell className="py-2.5">
-                          <div className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                        <TableCell className="py-1.5">
+                          <div className="font-medium text-xs text-slate-900 dark:text-slate-100">
                             {div.symbol || div.instrumentName}
                           </div>
                           {div.instrumentName && div.symbol && (
@@ -238,16 +238,16 @@ export function DividendsTable({
                         <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400">
                           {getAccountName(div.brokerAccountId, div.brokerName)}
                         </TableCell>
-                        <TableCell className="py-2.5 text-xs">
+                        <TableCell className="py-2.5 text-xs whitespace-nowrap">
                           <div className="flex items-center gap-1">
                             {getTypeBadge(div.type)}
                             {getSourceBadge(div.source)}
                           </div>
                         </TableCell>
-                        <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400 tabular-nums">
+                        <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400 tabular-nums whitespace-nowrap">
                           {div.exDate ? formatDate(div.exDate) : '—'}
                         </TableCell>
-                        <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400 tabular-nums">
+                        <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400 tabular-nums whitespace-nowrap">
                           {formatDate(div.payDate)}
                         </TableCell>
                         <TableCell className="py-2.5 text-right text-xs text-slate-600 dark:text-slate-400 tabular-nums">
@@ -259,7 +259,7 @@ export function DividendsTable({
                         <TableCell className="py-2.5 text-right text-xs text-rose-600 dark:text-rose-400 tabular-nums font-medium">
                           {div.tds ? formatMoney(div.tds) : '—'}
                         </TableCell>
-                        <TableCell className="py-2.5 text-right font-black text-xs text-emerald-600 dark:text-emerald-400 tabular-nums">
+                        <TableCell className="py-2.5 text-right font-medium text-xs text-emerald-600 dark:text-emerald-400 tabular-nums">
                           {formatMoney(net)}
                         </TableCell>
                         <TableCell className="py-2.5 text-right">
