@@ -9,7 +9,7 @@ import { deleteCorporateAction } from '@/actions/investments';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -250,7 +250,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
 
       {/* Main Corporate Action Cards Display */}
       {corporateActions.length === 0 ? (
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center space-y-3">
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center space-y-2">
           <div className="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-950/50 flex items-center justify-center mx-auto text-purple-600 dark:text-purple-400">
             <Layers className="w-6 h-6" />
           </div>
@@ -283,17 +283,17 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
             return (
               <Card
                 key={act.id}
-                className="p-3.5 space-y-2 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-purple-200 dark:hover:border-purple-900/60 transition-all duration-200"
+                className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-purple-200 dark:hover:border-purple-900/60 transition-all duration-200 overflow-hidden"
               >
                 {/* Header Row: Badge + Ratio Left | Edit + Delete Buttons Right */}
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5">
+                <CardHeader className="p-3 sm:p-3.5 pb-2 flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800/60 space-y-0">
+                  <div className="flex items-center gap-1.5 min-w-0">
                     {getActionBadge(act.type)}
-                    <span className="text-[11px] font-bold text-slate-900 dark:text-slate-100">
+                    <span className="text-[11px] font-bold text-slate-900 dark:text-slate-100 truncate">
                       Ratio: {act.ratioFrom} → {act.ratioTo}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 shrink-0">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -314,45 +314,47 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
                   </div>
-                </div>
+                </CardHeader>
 
-                {/* Instrument Info Row */}
-                <div>
-                  <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
-                    {instName} {instSymbol ? `(${instSymbol})` : ''}
+                <CardContent className="p-3 sm:p-3.5 space-y-2">
+                  {/* Instrument Info Row */}
+                  <div>
+                    <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
+                      {instName} {instSymbol ? `(${instSymbol})` : ''}
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">
+                      Ex-Date:{' '}
+                      <span className="font-semibold text-slate-700 dark:text-slate-300 tabular-nums">
+                        {formatDate(act.exDate)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-[11px] text-slate-500 mt-0.5">
-                    Ex-Date:{' '}
-                    <span className="font-semibold text-slate-700 dark:text-slate-300 tabular-nums">
-                      {formatDate(act.exDate)}
-                    </span>
-                  </div>
-                </div>
 
-                {/* Demerger / Merger Banner */}
-                {(act.type === 'demerger' || act.type === 'merger') && (
-                  <div className="text-[11px] font-medium">
-                    {act.type === 'demerger' ? (
-                      <>
-                        Child: <span className="font-bold">{act.targetInstrumentName || 'Child Instrument'}</span>{' '}
-                        {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc:{' '}
-                        {act.costAllocationPct}%
-                      </>
-                    ) : (
-                      <>
-                        Merged into: <span className="font-bold">{act.targetInstrumentName || 'Acquirer Instrument'}</span>{' '}
-                        {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''}
-                      </>
-                    )}
-                  </div>
-                )}
+                  {/* Demerger / Merger Banner */}
+                  {(act.type === 'demerger' || act.type === 'merger') && (
+                    <div className="text-[11px] font-medium bg-slate-50 dark:bg-slate-950/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800/50">
+                      {act.type === 'demerger' ? (
+                        <>
+                          Child: <span className="font-bold text-slate-800 dark:text-slate-200">{act.targetInstrumentName || 'Child Instrument'}</span>{' '}
+                          {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc:{' '}
+                          <span className="font-bold text-slate-800 dark:text-slate-200">{act.costAllocationPct}%</span>
+                        </>
+                      ) : (
+                        <>
+                          Merged into: <span className="font-bold text-slate-800 dark:text-slate-200">{act.targetInstrumentName || 'Acquirer Instrument'}</span>{' '}
+                          {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''}
+                        </>
+                      )}
+                    </div>
+                  )}
 
-                {/* Notes Row */}
-                {act.notes && (
-                  <p className="text-[10px] text-slate-500 italic">
-                    &quot;{act.notes}&quot;
-                  </p>
-                )}
+                  {/* Notes Row */}
+                  {act.notes && (
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 italic">
+                      &quot;{act.notes}&quot;
+                    </p>
+                  )}
+                </CardContent>
               </Card>
             );
           })}
@@ -361,3 +363,4 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
     </div>
   );
 }
+
