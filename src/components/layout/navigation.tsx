@@ -84,14 +84,8 @@ export const NAV_ITEMS = {
   },
 
   // Investments module items
-  investmentsOverview: {
-    href: '/investments',
-    label: 'Overview',
-    shortLabel: 'Overview',
-    icon: <PieChart className="h-5 w-5" />,
-  },
   investmentsHoldings: {
-    href: '/investments/holdings',
+    href: '/investments',
     label: 'Holdings',
     shortLabel: 'Holdings',
     icon: <Briefcase className="h-5 w-5" />,
@@ -153,9 +147,8 @@ export const TRANSACTIONS_MODULE: NavModule = {
 export const INVESTMENTS_MODULE: NavModule = {
   key: 'investments',
   label: 'Investments & Portfolio',
-  icon: <PieChart className="h-5 w-5" />,
+  icon: <Briefcase className="h-5 w-5" />,
   items: [
-    NAV_ITEMS.investmentsOverview,
     NAV_ITEMS.investmentsHoldings,
     NAV_ITEMS.investmentsTradebook,
     NAV_ITEMS.investmentsDividends,
@@ -175,7 +168,6 @@ export function getMobileNavContext(pathname: string): {
     return {
       mode: 'investments',
       items: [
-        NAV_ITEMS.investmentsOverview,
         NAV_ITEMS.investmentsHoldings,
         NAV_ITEMS.investmentsTradebook,
         NAV_ITEMS.investmentsDividends,
@@ -215,7 +207,7 @@ export function getMobileNavContext(pathname: string): {
         href: '/investments',
         label: 'Investments',
         shortLabel: 'Investments',
-        icon: NAV_ITEMS.investmentsOverview.icon,
+        icon: NAV_ITEMS.investmentsHoldings.icon,
       },
       NAV_ITEMS.accounts,
     ],
