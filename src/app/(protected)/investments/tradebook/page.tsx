@@ -1,8 +1,7 @@
 import { Account, isAccountOfType } from '@/lib/account.types';
 import { accountsApi, investmentsApi } from '@/lib/apiClient';
-import { AccountType, PagedInvestmentTransactionResponse, Position } from '@/lib/types';
+import { AccountType, PagedInvestmentTransactionResponse } from '@/lib/types';
 
-import { CreateDividendDialog } from '../CreateDividendDialog';
 import { ImportWizardDialog } from '../ImportWizardDialog';
 import { RecordTradeDialog } from '../RecordTradeDialog';
 import { RefreshPricesButton } from '../RefreshPricesButton';
@@ -22,9 +21,8 @@ const EMPTY_TRANSACTIONS_PAGE: PagedInvestmentTransactionResponse = {
 };
 
 export default async function TradebookPage() {
-  const [initialTransactions, positionsData, accounts] = await Promise.all([
+  const [initialTransactions, accounts] = await Promise.all([
     investmentsApi.listTransactions(0, TRANSACTIONS_INITIAL_PAGE_SIZE).catch(() => EMPTY_TRANSACTIONS_PAGE),
-    investmentsApi.getPositions().catch(() => ({ positions: [] })),
     accountsApi.list().catch(() => [] as Account[]),
   ]);
 

@@ -1,7 +1,6 @@
 import { instrumentsApi } from '@/lib/apiClient';
 import { Instrument } from '@/lib/types';
 
-import { CreateInstrumentDialog } from '../CreateInstrumentDialog';
 import { InstrumentsSection } from '../InstrumentsSection';
 
 export default async function InstrumentsPage() {
