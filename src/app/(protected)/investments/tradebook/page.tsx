@@ -28,7 +28,6 @@ export default async function TradebookPage() {
     accountsApi.list().catch(() => [] as Account[]),
   ]);
 
-  const positions: Position[] = positionsData.positions || [];
   const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
 
   return (
@@ -45,7 +44,6 @@ export default async function TradebookPage() {
         <div className="flex flex-wrap items-center gap-2">
           <RecordTradeDialog brokerAccounts={brokerAccounts} />
           <ImportWizardDialog brokerAccounts={brokerAccounts} />
-          <CreateDividendDialog brokerAccounts={brokerAccounts} positions={positions} />
           <RefreshPricesButton />
         </div>
       </div>

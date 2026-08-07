@@ -235,7 +235,7 @@ export function EditTransactionDialog({
             />
           </div>
 
-          <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-3">
+          <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-2">
             <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Itemized Charges</h4>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <div>
