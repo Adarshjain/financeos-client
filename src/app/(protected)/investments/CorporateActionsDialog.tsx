@@ -279,16 +279,23 @@ export function CorporateActionsDialog({
     heldQuantity === undefined || fracShares > 0 || (editingActionId !== null && Boolean(fractionalCashInLieu))
   );
 
+  // A caller that drives `open` itself already owns the affordance that opens
+  // the dialog, so rendering the fallback trigger there would put a stray
+  // second button on the page. Uncontrolled callers still get one.
+  const showTrigger = trigger !== undefined || controlledOpen === undefined;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px] text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40">
-            <Layers className="w-3 h-3 mr-1" />
-            Corporate Actions
-          </Button>
-        )}
-      </DialogTrigger>
+      {showTrigger && (
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px] text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40">
+              <Layers className="w-3 h-3 mr-1" />
+              Corporate Actions
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:p-6 max-w-full sm:max-w-lg overflow-x-hidden gap-0">
         <DialogHeader>
           <DialogTitle className="text-base font-bold flex items-start sm:items-start gap-2 min-w-0">

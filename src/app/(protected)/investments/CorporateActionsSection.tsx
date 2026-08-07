@@ -21,6 +21,8 @@ import {
 import { CorporateAction, CorporateActionType, Instrument } from '@/lib/types';
 import { cn, formatDate } from '@/lib/utils';
 
+import { CorporateActionsDialog } from './CorporateActionsDialog';
+
 interface CorporateActionsSectionProps {
   corporateActions: CorporateAction[];
   instruments: Instrument[];
@@ -358,6 +360,21 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
           })}
         </div>
       )}
+
+      {/*
+        Driven entirely by the buttons above (Record Action / per-card Edit), so
+        it renders no trigger of its own. The `key` remounts it whenever the
+        target changes, which is what clears the previous action's form state
+        when switching between editing and recording.
+      */}
+      <CorporateActionsDialog
+        key={activeEditAction?.id ?? 'create'}
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        instrument={activeDialogInstrument ?? undefined}
+        editAction={activeEditAction ?? undefined}
+        onSuccess={() => router.refresh()}
+      />
     </div>
   );
 }
