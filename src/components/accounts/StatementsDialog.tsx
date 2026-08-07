@@ -11,7 +11,7 @@ import {
   Upload,
   XCircle,
 } from 'lucide-react';
-import React, { JSX, useCallback, useEffect, useRef, useState } from 'react';
+import { JSX, useCallback, useEffect, useRef, useState } from 'react';
 
 import { getCardCycleSummary } from '@/actions/accounts';
 import { getStatementDetail, listStatementsByAccount } from '@/actions/statements';

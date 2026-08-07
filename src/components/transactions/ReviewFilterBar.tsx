@@ -9,7 +9,7 @@ import {
   Wallet,
   X,
 } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { REVIEW_REASON_META, REVIEW_REASONS } from '@/components/transactions/catalog';
 import { Button } from '@/components/ui/button';

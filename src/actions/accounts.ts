@@ -40,10 +40,6 @@ export async function deleteAccount(
   });
 }
 
-export async function listAccounts(): Promise<ApiResult<Account[]>> {
-  return apiResult('Failed to list accounts', () => accountsApi.list());
-}
-
 export async function getCardCycleSummary(
   accountId: string,
 ): Promise<ApiResult<CardCycleSummary>> {

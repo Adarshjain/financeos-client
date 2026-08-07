@@ -7,7 +7,6 @@ import {
   ApiError,
   authApi,
   categoriesApi,
-  dashboardApi,
   dashboardsApi,
   gmailApi,
   ingestionApi,
@@ -148,13 +147,10 @@ describe('apiClient (CD-14 & API wrapper coverage)', () => {
   });
 
   describe('accountsApi', () => {
-    it('list, getById, create, update, delete, getCardCycleSummary', async () => {
+    it('list, create, update, delete, getCardCycleSummary', async () => {
       const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, [{ id: 'a1' }]));
 
       expect(await accountsApi.list()).toEqual([{ id: 'a1' }]);
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'a1' }));
-      expect(await accountsApi.getById('a1')).toEqual({ id: 'a1' });
 
       fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 201, { id: 'a1' }));
       expect(await accountsApi.create({ name: 'Acc', type: 'bank_account' } as any)).toEqual({ id: 'a1' });
@@ -182,12 +178,9 @@ describe('apiClient (CD-14 & API wrapper coverage)', () => {
   });
 
   describe('transactionsApi', () => {
-    it('list, search, create, update, delete, batchReview, batchDelete', async () => {
+    it('search, create, update, delete, batchReview, batchDelete', async () => {
       const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, { content: [] }));
 
-      expect(await transactionsApi.list(0, 10, 'date,desc')).toEqual({ content: [] });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { content: [] }));
       expect(await transactionsApi.search({ filters: [] }, 0, 10)).toEqual({ content: [] });
 
       fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 201, { id: 't1' }));
@@ -267,32 +260,16 @@ describe('apiClient (CD-14 & API wrapper coverage)', () => {
   });
 
   describe('categoriesApi', () => {
-    it('list, getById, create, update, delete, categorizeDescription', async () => {
+    it('list, create, categorizeDescription', async () => {
       const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, [{ id: 'c1' }]));
 
       expect(await categoriesApi.list()).toEqual([{ id: 'c1' }]);
 
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'c1' }));
-      expect(await categoriesApi.getById('c1')).toEqual({ id: 'c1' });
-
       fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 201, { id: 'c1' }));
       expect(await categoriesApi.create({ name: 'Food' } as any)).toEqual({ id: 'c1' });
 
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'c1' }));
-      expect(await categoriesApi.update('c1', { name: 'Dining' } as any)).toEqual({ id: 'c1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 204, ''));
-      await categoriesApi.delete('c1');
-
       fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { categoryId: 'c1' }));
       expect(await categoriesApi.categorizeDescription('Uber')).toEqual({ categoryId: 'c1' });
-    });
-  });
-
-  describe('dashboardApi', () => {
-    it('getSummary', async () => {
-      vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, { totalNetWorth: 1000 }));
-      expect(await dashboardApi.getSummary()).toEqual({ totalNetWorth: 1000 });
     });
   });
 
@@ -335,9 +312,6 @@ describe('apiClient (CD-14 & API wrapper coverage)', () => {
       expect(await dashboardsApi.list()).toEqual([{ id: 'd1' }]);
 
       fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'd1' }));
-      expect(await dashboardsApi.getDefault()).toEqual({ id: 'd1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'd1' }));
       expect(await dashboardsApi.getById('d1')).toEqual({ id: 'd1' });
 
       fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'd1' }));
@@ -373,13 +347,10 @@ describe('apiClient (CD-14 & API wrapper coverage)', () => {
       await rulesApi.remove('ru1');
     });
 
-    it('transactionLinksApi create, getById, getByTransactionId, delete', async () => {
+    it('transactionLinksApi create, getByTransactionId, delete', async () => {
       const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 201, { id: 'tl1' }));
 
       expect(await transactionLinksApi.create({ type: 'TRANSFER', members: [] } as any)).toEqual({ id: 'tl1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'tl1' }));
-      expect(await transactionLinksApi.getById('tl1')).toEqual({ id: 'tl1' });
 
       fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, [{ id: 'tl1' }]));
       expect(await transactionLinksApi.getByTransactionId('t1')).toEqual([{ id: 'tl1' }]);

@@ -4,14 +4,7 @@ import type {
   Aggregation,
   ChartDefinition,
   Granularity,
-  ReportType,
 } from '@/lib/reports.types';
-
-export const REPORT_TYPE_LABELS: Record<ReportType, string> = {
-  KPI: 'KPI',
-  CHART: 'Chart',
-  TABLE: 'Table',
-};
 
 export const AGGREGATION_LABELS: Record<Aggregation, string> = {
   sum: 'Sum',

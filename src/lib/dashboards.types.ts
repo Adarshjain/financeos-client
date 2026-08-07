@@ -85,14 +85,3 @@ export interface DashboardResponse {
   createdAt: string;
   updatedAt: string;
 }
-
-/** List-view dashboard metadata (no widgets, just a count). */
-export interface DashboardSummaryResponse {
-  id: string;
-  name: string;
-  description: string | null;
-  isDefault: boolean;
-  widgetCount: number;
-  createdAt: string;
-  updatedAt: string;
-}

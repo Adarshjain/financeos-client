@@ -22,15 +22,18 @@ import type { CategoryRule, CreateRuleRequest, PagedRules,UpdateRuleRequest } fr
 import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, CreateTransactionLinkRequest, PagedTransaction, Transaction, TransactionLinkResponse, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 
 import type {
+  AcceptSuggestionsRequest,
+  AcceptSuggestionsResponse,
   CorporateAction,
   CreateCorporateActionRequest,
   CreateDividendRequest,
   CreateFnoTradeRequest,
   CreateInstrumentRequest,
   CreateInvestmentTransactionRequest,
-  CreateSipRequest,
-  DashboardSummary,
   Dividend,
+  DividendSuggestionsResponse,
+  DividendSummary,
+  DividendType,
   ErrorResponse,
   FileIngestionResult,
   FnoTradeListResponse,
@@ -59,13 +62,11 @@ import type {
   ResolveInstrumentRequest,
   SetPriceRequest,
   SignupRequest,
-  Sip,
   SyncSummary,
   UpdateCorporateActionRequest,
   UpdateDividendRequest,
   UpdateFnoTradeRequest,
   UpdateInvestmentTransactionRequest,
-  UpdateSipRequest,
   UserResponse,
 } from './types';
 
@@ -238,10 +239,6 @@ export const accountsApi = {
     return request<Account[]>('/api/v1/accounts');
   },
 
-  async getById(id: string): Promise<Account> {
-    return request<Account>(`/api/v1/accounts/${id}`);
-  },
-
   async create(data: AccountRequest): Promise<Account> {
     return request<Account>('/api/v1/accounts', {
       method: 'POST',
@@ -278,21 +275,8 @@ export const statementsApi = {
   },
 };
 
-
 // Transactions API
 export const transactionsApi = {
-  async list(
-    page = 0,
-    size = 50,
-    sort = 'date,desc',
-  ): Promise<PagedTransaction> {
-    const params = new URLSearchParams({
-      page: String(page),
-      size: String(size),
-      sort,
-    });
-    return request<PagedTransaction>(`/api/v1/transactions?${params}`);
-  },
 
   async search(
     body: TransactionSearchRequest,
@@ -504,17 +488,52 @@ export const dividendsApi = {
     holdingId?: string;
     brokerAccountId?: string;
     instrumentId?: string;
+    type?: DividendType;
+    from?: string;
+    to?: string;
     page?: number;
     size?: number;
   }): Promise<PagedDividendResponse> {
     const params = new URLSearchParams({
       page: String(filters?.page ?? 0),
-      size: String(filters?.size ?? 100),
+      size: String(filters?.size ?? 25),
     });
     if (filters?.holdingId) params.set('holdingId', filters.holdingId);
     if (filters?.brokerAccountId) params.set('brokerAccountId', filters.brokerAccountId);
     if (filters?.instrumentId) params.set('instrumentId', filters.instrumentId);
+    if (filters?.type) params.set('type', filters.type);
+    if (filters?.from) params.set('from', filters.from);
+    if (filters?.to) params.set('to', filters.to);
     return request<PagedDividendResponse>(`/api/v1/investments/dividends?${params}`);
+  },
+
+  async summary(filters?: {
+    holdingId?: string;
+    brokerAccountId?: string;
+    instrumentId?: string;
+    type?: DividendType;
+  }): Promise<DividendSummary> {
+    const params = new URLSearchParams();
+    if (filters?.holdingId) params.set('holdingId', filters.holdingId);
+    if (filters?.brokerAccountId) params.set('brokerAccountId', filters.brokerAccountId);
+    if (filters?.instrumentId) params.set('instrumentId', filters.instrumentId);
+    if (filters?.type) params.set('type', filters.type);
+    const query = params.toString() ? `?${params}` : '';
+    return request<DividendSummary>(`/api/v1/investments/dividends/summary${query}`);
+  },
+
+  async suggestions(brokerAccountId?: string): Promise<DividendSuggestionsResponse> {
+    const params = new URLSearchParams();
+    if (brokerAccountId) params.set('brokerAccountId', brokerAccountId);
+    const query = params.toString() ? `?${params}` : '';
+    return request<DividendSuggestionsResponse>(`/api/v1/investments/dividends/suggestions${query}`);
+  },
+
+  async acceptSuggestions(data: AcceptSuggestionsRequest): Promise<AcceptSuggestionsResponse> {
+    return request<AcceptSuggestionsResponse>('/api/v1/investments/dividends/suggestions/accept', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   },
 
   async create(data: CreateDividendRequest): Promise<Dividend> {
@@ -627,38 +646,6 @@ export const importsApi = {
   },
 };
 
-// SIPs API (Phase 5)
-export const sipsApi = {
-  async list(): Promise<Sip[]> {
-    // Server returns all SIPs as a plain array (unpaged).
-    return request<Sip[]>('/api/v1/investments/sips');
-  },
-
-  async get(id: string): Promise<Sip> {
-    return request<Sip>(`/api/v1/investments/sips/${id}`);
-  },
-
-  async create(data: CreateSipRequest): Promise<Sip> {
-    return request<Sip>('/api/v1/investments/sips', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async update(id: string, data: UpdateSipRequest): Promise<Sip> {
-    return request<Sip>(`/api/v1/investments/sips/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async delete(id: string): Promise<void> {
-    return request<void>(`/api/v1/investments/sips/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
 // Gmail API
 export const gmailApi = {
   async startOAuth(): Promise<GmailOAuthStartResponse> {
@@ -711,27 +698,10 @@ export const categoriesApi = {
     return request<Category[]>('/api/v1/categories');
   },
 
-  async getById(id: string): Promise<Category> {
-    return request<Category>(`/api/v1/categories/${id}`);
-  },
-
   async create(data: CategoryRequest): Promise<Category> {
     return request<Category>('/api/v1/categories', {
       method: 'POST',
       body: JSON.stringify(data),
-    });
-  },
-
-  async update(id: string, data: CategoryRequest): Promise<Category> {
-    return request<Category>(`/api/v1/categories/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async delete(id: string): Promise<void> {
-    return request<void>(`/api/v1/categories/${id}`, {
-      method: 'DELETE',
     });
   },
 
@@ -740,13 +710,6 @@ export const categoriesApi = {
       method: 'POST',
       body: JSON.stringify({ description }),
     });
-  },
-};
-
-// Dashboard API
-export const dashboardApi = {
-  async getSummary(): Promise<DashboardSummary> {
-    return request<DashboardSummary>('/api/v1/dashboard/summary');
   },
 };
 
@@ -848,12 +811,6 @@ export const dashboardsApi = {
     return request<DashboardResponse[]>('/api/v1/dashboards');
   },
 
-  // Get the current user's default dashboard (no id). Throws ApiError with
-  // status 404 when no default is set — callers should handle that gracefully.
-  async getDefault(): Promise<DashboardResponse> {
-    return request<DashboardResponse>('/api/v1/dashboards/default');
-  },
-
   // Get one dashboard; widgets are enriched with referenced-report metadata.
   async getById(id: string): Promise<DashboardResponse> {
     return request<DashboardResponse>(`/api/v1/dashboards/${id}`);
@@ -940,10 +897,6 @@ export const transactionLinksApi = {
       method: 'POST',
       body: JSON.stringify(data),
     });
-  },
-
-  async getById(id: string): Promise<TransactionLinkResponse> {
-    return request<TransactionLinkResponse>(`/api/v1/transaction-links/${id}`);
   },
 
   async getByTransactionId(transactionId: string): Promise<TransactionLinkResponse[]> {

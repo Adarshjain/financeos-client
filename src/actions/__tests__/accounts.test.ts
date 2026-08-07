@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { mockRevalidatePath } from '@/test/next-mocks';
-import { createAccount, deleteAccount, getCardCycleSummary, listAccounts, updateAccount } from '@/actions/accounts';
+import { createAccount, deleteAccount, getCardCycleSummary, updateAccount } from '@/actions/accounts';
 import { accountsApi } from '@/lib/apiClient';
 
 vi.mock('@/lib/apiClient', () => ({
@@ -10,7 +10,6 @@ vi.mock('@/lib/apiClient', () => ({
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
-    list: vi.fn(),
     getCardCycleSummary: vi.fn(),
   },
 }));
@@ -45,11 +44,9 @@ describe('accounts server actions (WP-3)', () => {
     expect(mockRevalidatePath).toHaveBeenCalledWith('/accounts');
   });
 
-  it('listAccounts and getCardCycleSummary call API wrappers', async () => {
-    vi.mocked(accountsApi.list).mockResolvedValue([{ id: 'acc1' }] as any);
+  it('getCardCycleSummary calls API wrapper', async () => {
     vi.mocked(accountsApi.getCardCycleSummary).mockResolvedValue({ totalAmountDue: 100 } as any);
 
-    expect((await listAccounts()).success).toBe(true);
     expect((await getCardCycleSummary('acc1')).success).toBe(true);
   });
 });

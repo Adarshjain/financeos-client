@@ -12,8 +12,6 @@ import type {
   ReportData,
   TableData,
   TableDefinition,
-  TableDefinitionAggregated,
-  TableDefinitionRaw,
 } from '@/lib/reports.types';
 import { formatMoney } from '@/lib/utils';
 
@@ -107,20 +105,6 @@ export function isRawTableData(data: ReportData): data is TableData {
 // Narrow ReportData to PIVOT (aggregated) table data.
 export function isPivotTableData(data: ReportData): data is PivotTableData {
   return data.type === 'TABLE' && data.mode === 'aggregated';
-}
-
-// Narrow a table definition to its raw variant.
-export function isRawTable(
-  definition: TableDefinition,
-): definition is TableDefinitionRaw {
-  return definition.mode === 'raw';
-}
-
-// Narrow a table definition to its aggregated variant.
-export function isAggregatedTable(
-  definition: TableDefinition,
-): definition is TableDefinitionAggregated {
-  return definition.mode === 'aggregated';
 }
 
 // Build a FilterClause. Pass no `value` for valueless operators (e.g.
