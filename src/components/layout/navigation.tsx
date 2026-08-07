@@ -9,7 +9,6 @@ import {
   Home,
   Layers,
   LayoutDashboard,
-  PieChart,
   Receipt,
   Settings as SettingsIcon,
   Sparkles,

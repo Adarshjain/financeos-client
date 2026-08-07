@@ -7,8 +7,7 @@ import { HoldingsTab } from './HoldingsTab';
 import { RecordTradeDialog } from './RecordTradeDialog';
 
 export default async function InvestmentsPage() {
-  const [summary, positionsData, accounts] = await Promise.all([
-    investmentsApi.getSummary().catch(() => null),
+  const [positionsData, accounts] = await Promise.all([
     investmentsApi.getPositions().catch(() => ({ positions: [] })),
     accountsApi.list().catch(() => [] as Account[]),
   ]);
@@ -34,7 +33,6 @@ export default async function InvestmentsPage() {
       </div>
 
       <HoldingsTab
-        summary={summary}
         positions={positions}
         brokerAccounts={brokerAccounts}
       />

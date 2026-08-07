@@ -9,13 +9,12 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Broker } from '@/lib/account.types';
-import { InvestmentSummary, Position } from '@/lib/types';
+import { Position } from '@/lib/types';
 import { cn, formatMoney } from '@/lib/utils';
 
 import { HoldingCard } from './HoldingCard';
 
 interface HoldingsTabProps {
-  summary: InvestmentSummary | null;
   positions: Position[];
   brokerAccounts: Broker[];
 }
