@@ -1,15 +1,16 @@
 'use client';
 
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Broker } from '@/lib/account.types';
 import { InvestmentSummary, Position } from '@/lib/types';
-import { formatMoney } from '@/lib/utils';
+import { cn, formatMoney } from '@/lib/utils';
 
 import { HoldingCard } from './HoldingCard';
 
@@ -126,88 +127,90 @@ export function HoldingsTab({
     };
   }, [filteredPositions]);
 
-  return (
-    <div className="space-y-2">
-      {/* 1. Zerodha Filters Bar (Reordered First) */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1 pb-1">
-        <div className="relative flex-1 min-w-[180px]">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <Input
-            type="text"
-            placeholder="Search holdings by symbol or name..."
-            value={holdingSearch}
-            onChange={(e) => setHoldingSearch(e.target.value)}
-            className="pl-8 h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <Select value={selectedAssetType} onValueChange={setSelectedAssetType}>
-            <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold w-[120px]">
-              <SelectValue placeholder="Asset Type" />
-            </SelectTrigger>
-            <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-              <SelectItem value="all" className="text-xs">
-                All Assets
-              </SelectItem>
-              <SelectItem value="stock" className="text-xs">
-                Equity / Stocks
-              </SelectItem>
-              <SelectItem value="mutual_fund" className="text-xs">
-                Mutual Funds
-              </SelectItem>
-              <SelectItem value="etf" className="text-xs">
-                ETFs
-              </SelectItem>
-            </SelectContent>
-          </Select>
-
-          <Select value={selectedBrokerFilter} onValueChange={setSelectedBrokerFilter}>
-            <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold w-[130px]">
-              <SelectValue placeholder="Broker Account" />
-            </SelectTrigger>
-            <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-              <SelectItem value="all" className="text-xs">
-                All Brokers
-              </SelectItem>
-              {brokerAccounts.map((b) => (
-                <SelectItem key={b.id} value={b.id} className="text-xs">
-                  {b.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select value={sortBy} onValueChange={(val) => setSortBy(val as SortOption)}>
-            <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold w-[185px]">
-              <SelectValue placeholder="Sort By" />
-            </SelectTrigger>
-            <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-              <SelectItem value="none" className="text-xs">
-                Sort: Default
-              </SelectItem>
-              <SelectItem value="alphabetical-asc" className="text-xs">
-                Name (A to Z)
-              </SelectItem>
-              <SelectItem value="alphabetical-desc" className="text-xs">
-                Name (Z to A)
-              </SelectItem>
-              <SelectItem value="percentage-desc" className="text-xs">
-                % Return (High to Low)
-              </SelectItem>
-              <SelectItem value="percentage-asc" className="text-xs">
-                % Return (Low to High)
-              </SelectItem>
-              <SelectItem value="absolute-desc" className="text-xs">
-                Absolute Return (High to Low)
-              </SelectItem>
-              <SelectItem value="absolute-asc" className="text-xs">
-                Absolute Return (Low to High)
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+  const renderActionBar = (isMobile = false) => (
+    <div className={cn('flex items-center gap-2 w-full', isMobile ? 'flex-col sm:flex-row text-xs' : 'flex-wrap')}>
+      {/* Search Input */}
+      <div className="relative flex-1 min-w-[180px] w-full">
+        <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+        <Input
+          type="text"
+          placeholder="Search holdings by symbol or name..."
+          value={holdingSearch}
+          onChange={(e) => setHoldingSearch(e.target.value)}
+          className="h-8 pl-8 pr-7 text-xs font-medium bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg w-full"
+        />
+        {holdingSearch && (
+          <button
+            type="button"
+            aria-label="Clear search"
+            onClick={() => setHoldingSearch('')}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
+
+      {/* Filter Select Controls */}
+      <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap flex-1 w-full min-w-0 justify-between sm:justify-end">
+        {/* Asset Type Select */}
+        <Select value={selectedAssetType} onValueChange={setSelectedAssetType}>
+          <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold flex-1">
+            <SelectValue placeholder="Asset Type" />
+          </SelectTrigger>
+          <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs">
+            <SelectItem value="all">All Assets</SelectItem>
+            <SelectItem value="stock">Equity / Stocks</SelectItem>
+            <SelectItem value="mutual_fund">Mutual Funds</SelectItem>
+            <SelectItem value="etf">ETFs</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Broker Account Select */}
+        <Select value={selectedBrokerFilter} onValueChange={setSelectedBrokerFilter}>
+          <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold flex-1">
+            <SelectValue placeholder="Broker Account" />
+          </SelectTrigger>
+          <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs">
+            <SelectItem value="all">All Brokers</SelectItem>
+            {brokerAccounts.map((b) => (
+              <SelectItem key={b.id} value={b.id}>
+                {b.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Sort By Select */}
+        <Select value={sortBy} onValueChange={(val) => setSortBy(val as SortOption)}>
+          <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold flex-1">
+            <SelectValue placeholder="Sort By" />
+          </SelectTrigger>
+          <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs">
+            <SelectItem value="none">Sort: Default</SelectItem>
+            <SelectItem value="alphabetical-asc">Name (A to Z)</SelectItem>
+            <SelectItem value="alphabetical-desc">Name (Z to A)</SelectItem>
+            <SelectItem value="percentage-desc">% Return (High to Low)</SelectItem>
+            <SelectItem value="percentage-asc">% Return (Low to High)</SelectItem>
+            <SelectItem value="absolute-desc">Absolute Return (High to Low)</SelectItem>
+            <SelectItem value="absolute-asc">Absolute Return (Low to High)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-2 pb-32">
+      {/* Desktop Action Bar Container */}
+      <Card className="hidden lg:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-3">
+        {renderActionBar(false)}
+      </Card>
+
+      {/* Mobile PageActionBar Integration */}
+      <PageActionBar hideOnScroll>
+        {renderActionBar(true)}
+      </PageActionBar>
 
       {/* 2. Holdings Overview Top Card (Recalculated from filteredPositions) */}
       <Card className="bg-white dark:bg-slate-900 border-slate-200/80 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden">
