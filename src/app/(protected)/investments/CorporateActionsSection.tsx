@@ -10,7 +10,6 @@ import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -19,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { CorporateAction, CorporateActionType, Instrument } from '@/lib/types';
 import { cn, formatDate } from '@/lib/utils';
 
