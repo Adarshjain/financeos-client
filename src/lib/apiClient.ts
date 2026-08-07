@@ -28,6 +28,7 @@ import type {
   CreateFnoTradeRequest,
   CreateInstrumentRequest,
   CreateInvestmentTransactionRequest,
+  CreateSipRequest,
   DashboardSummary,
   Dividend,
   ErrorResponse,
@@ -58,11 +59,13 @@ import type {
   ResolveInstrumentRequest,
   SetPriceRequest,
   SignupRequest,
+  Sip,
   SyncSummary,
   UpdateCorporateActionRequest,
   UpdateDividendRequest,
   UpdateFnoTradeRequest,
   UpdateInvestmentTransactionRequest,
+  UpdateSipRequest,
   UserResponse,
 } from './types';
 
@@ -624,6 +627,37 @@ export const importsApi = {
   },
 };
 
+// SIPs API (Phase 5)
+export const sipsApi = {
+  async list(): Promise<Sip[]> {
+    // Server returns all SIPs as a plain array (unpaged).
+    return request<Sip[]>('/api/v1/investments/sips');
+  },
+
+  async get(id: string): Promise<Sip> {
+    return request<Sip>(`/api/v1/investments/sips/${id}`);
+  },
+
+  async create(data: CreateSipRequest): Promise<Sip> {
+    return request<Sip>('/api/v1/investments/sips', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: string, data: UpdateSipRequest): Promise<Sip> {
+    return request<Sip>(`/api/v1/investments/sips/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(id: string): Promise<void> {
+    return request<void>(`/api/v1/investments/sips/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
 
 // Gmail API
 export const gmailApi = {

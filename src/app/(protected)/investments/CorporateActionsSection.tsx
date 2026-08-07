@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowDown, ArrowUp, ArrowUpDown, Layers, Search, Trash2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowUpDown, Edit, Layers, Plus, Search, Trash2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -21,6 +21,8 @@ import {
 import { CorporateAction, CorporateActionType, Instrument } from '@/lib/types';
 import { cn, formatDate } from '@/lib/utils';
 
+import { CorporateActionsDialog } from './CorporateActionsDialog';
+
 interface CorporateActionsSectionProps {
   corporateActions: CorporateAction[];
   instruments: Instrument[];
@@ -34,6 +36,11 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('none');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Dialog state for adding/editing corporate actions
+  const [activeDialogInstrument, setActiveDialogInstrument] = useState<Instrument | null>(null);
+  const [activeEditAction, setActiveEditAction] = useState<CorporateAction | null>(null);
+  const [dialogOpen, setDialogOpen] = useState<boolean>(false);
 
   const handleSearchChange = (val: string) => {
     setSearch(val);
@@ -130,6 +137,25 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
     });
   }, [filteredActions, sortOrder]);
 
+  const openCreateDialog = () => {
+    setActiveDialogInstrument(null);
+    setActiveEditAction(null);
+    setDialogOpen(true);
+  };
+
+  const openEditDialog = (act: CorporateAction) => {
+    const inst = instrumentMap.get(act.instrumentId) || {
+      id: act.instrumentId,
+      name: act.instrumentName || 'Instrument',
+      symbol: act.instrumentSymbol,
+      type: 'stock',
+      currency: 'INR',
+    };
+    setActiveDialogInstrument(inst);
+    setActiveEditAction(act);
+    setDialogOpen(true);
+  };
+
   const renderActionBar = (isMobile = false) => (
     <div className={cn('flex items-center gap-2 w-full', isMobile ? 'flex-col sm:flex-row text-xs' : 'flex-wrap')}>
       {/* Search Input */}
@@ -197,6 +223,15 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
           )}
         </Button>
 
+        {/* Record Action Button */}
+        <Button
+          size="sm"
+          onClick={openCreateDialog}
+          className="h-8 text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-lg gap-1 px-3 shadow-sm"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          <span>Record Action</span>
+        </Button>
       </div>
     </div>
   );
@@ -222,9 +257,17 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
           <div className="space-y-1">
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">No corporate actions recorded yet</h3>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Stock splits, bonus share issues, demergers, and mergers to automatically adjust holding positions and cost bases.
+              Record stock splits, bonus share issues, demergers, and mergers to automatically adjust holding positions and cost bases.
             </p>
           </div>
+          <Button
+            size="sm"
+            onClick={openCreateDialog}
+            className="h-8 text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-lg gap-1 px-4 mt-2 shadow-sm"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Record First Action</span>
+          </Button>
         </Card>
       ) : sortedActions.length === 0 ? (
         <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center text-xs text-slate-500">
@@ -242,7 +285,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
                 key={act.id}
                 className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-purple-200 dark:hover:border-purple-900/60 transition-all duration-200 overflow-hidden"
               >
-                {/* Header Row: Badge + Ratio Left | Delete Button Right */}
+                {/* Header Row: Badge + Ratio Left | Edit + Delete Buttons Right */}
                 <CardHeader className="p-3 sm:p-3.5 pb-2 flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800/60 space-y-0">
                   <div className="flex items-center gap-1.5 min-w-0">
                     {getActionBadge(act.type)}
@@ -251,6 +294,15 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
                     </span>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openEditDialog(act)}
+                      className="h-6 w-6 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                      title="Edit Corporate Action"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
