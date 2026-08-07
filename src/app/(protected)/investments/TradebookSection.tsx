@@ -8,6 +8,7 @@ import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Account, Broker } from '@/lib/account.types';
@@ -223,7 +224,8 @@ export function TradebookSection({ initialData, brokerAccounts, accounts }: Trad
             </div>
           )}
 
-          <div className={cn('grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4', isLoading && 'opacity-60 transition-opacity')}>
+          {/* Mobile View: Card-based Layout */}
+          <div className={cn('block md:hidden space-y-2', isLoading && 'opacity-60 transition-opacity')}>
             {transactions.map((tx) => (
               <Card
                 key={tx.id}
@@ -270,6 +272,68 @@ export function TradebookSection({ initialData, brokerAccounts, accounts }: Trad
               </Card>
             ))}
           </div>
+
+          {/* Desktop View: Full Table Layout */}
+          <Card className={cn('hidden md:block bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl overflow-hidden', isLoading && 'opacity-60 transition-opacity')}>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
+                      <TableHead className="text-xs font-medium whitespace-nowrap">Trade Date</TableHead>
+                      <TableHead className="text-xs font-medium">Instrument</TableHead>
+                      <TableHead className="text-xs font-medium">Broker</TableHead>
+                      <TableHead className="text-xs font-medium whitespace-nowrap">Type</TableHead>
+                      <TableHead className="text-xs font-medium whitespace-nowrap">Type</TableHead>
+                      <TableHead className="text-right text-xs font-medium whitespace-nowrap">Qty</TableHead>
+                      <TableHead className="text-right text-xs font-medium whitespace-nowrap">Price/Unit</TableHead>
+                      <TableHead className="text-right text-xs font-medium whitespace-nowrap">Total Value</TableHead>
+                      <TableHead className="text-right text-xs font-medium"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {transactions.map((tx) => {
+                      const totalValue = Number(tx.quantity || 0) * Number(tx.price || 0);
+
+                      return (
+                        <TableRow key={tx.id} className="border-slate-100 dark:border-slate-800/60">
+                          <TableCell className="py-1.5 text-xs text-slate-600 dark:text-slate-400 tabular-nums font-medium whitespace-nowrap">
+                            {formatDate(tx.tradeDate)}
+                          </TableCell>
+                          <TableCell className="py-1.5">
+                            <div className="font-medium text-xs text-slate-900 dark:text-slate-100" title={getInstrumentDisplayName(tx)}>
+                              {getInstrumentDisplayName(tx)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="py-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium">
+                            {getBrokerName(tx)}
+                          </TableCell>
+                          <TableCell className="py-1.5 text-xs">
+                            {getTypeBadge(tx.type)}
+                          </TableCell>
+                          <TableCell className="py-1.5 text-xs">
+                            {getSettlementBadge(tx.settlementType)}
+                          </TableCell>
+                          <TableCell className="py-1.5 text-right font-medium text-xs text-slate-900 dark:text-slate-100 tabular-nums">
+                            {tx.quantity}
+                          </TableCell>
+                          <TableCell className="py-1.5 text-right text-xs text-slate-700 dark:text-slate-300 tabular-nums font-medium">
+                            {formatMoney(tx.price)}
+                          </TableCell>
+                          <TableCell className="py-1.5 text-right font-medium text-xs text-slate-900 dark:text-slate-100 tabular-nums">
+                            {formatMoney(totalValue)}
+                          </TableCell>
+                          <TableCell className="py-1.5 text-right">
+                            <EditTransactionDialog transaction={tx} brokerAccounts={brokerAccounts} onSuccess={fetchPage} />
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

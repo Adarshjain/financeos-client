@@ -84,7 +84,7 @@ export function formatDate(date: string | Date | null | undefined): string {
     year: '2-digit',
     month: 'short',
     day: 'numeric',
-  });
+  }).replace(/\s+/g, '\u00A0');
 }
 
 export function getAccountTypeLabel(type: string | undefined): string {

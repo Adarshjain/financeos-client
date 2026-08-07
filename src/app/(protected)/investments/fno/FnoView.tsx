@@ -634,8 +634,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                             </button>
                           </TableHead>
                           <TableHead className="text-xs font-bold text-slate-700 dark:text-slate-300">Broker</TableHead>
-                          <TableHead className="text-xs font-bold text-slate-700 dark:text-slate-300">Strike /
-                            Expiry</TableHead>
+                          <TableHead className="text-xs font-bold text-slate-700 dark:text-slate-300">Strike</TableHead>
                           <TableHead className="text-xs font-bold text-slate-700 dark:text-slate-300">
                             <button
                                 onClick={() => toggleSort('exitDate')}
@@ -723,8 +722,6 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                                       <div>
                                         {trade.strikePrice && <div
                                             className="font-semibold text-slate-800 dark:text-slate-200">₹{Number(trade.strikePrice).toLocaleString('en-IN')}</div>}
-                                        {trade.expiryDate && <div
-                                            className="text-[10px] text-slate-400">{formatDate(trade.expiryDate)}</div>}
                                       </div>
                                   ) : (
                                       <span className="text-slate-400 text-xs">—</span>
