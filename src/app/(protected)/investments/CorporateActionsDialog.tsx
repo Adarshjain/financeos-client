@@ -372,7 +372,7 @@ export function CorporateActionsDialog({
         </div>
 
         {/* Add / Edit Action Form */}
-        <form onSubmit={handleSubmit} className="space-y-3 border-t border-slate-100 dark:border-slate-800 pt-3">
+        <form onSubmit={handleSubmit} className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
               {editingActionId ? (
@@ -440,7 +440,7 @@ export function CorporateActionsDialog({
           </div>
 
           {(type === 'demerger' || type === 'merger') && (
-            <div className="space-y-3 p-3 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-900/40 min-w-0">
+            <div className="space-y-2 p-3 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-900/40 min-w-0">
               <div className="space-y-1 min-w-0">
                 <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-words">
                   {type === 'merger' ? 'Surviving (Acquirer) Instrument *' : 'Target (Child) Instrument *'}
@@ -508,7 +508,7 @@ export function CorporateActionsDialog({
           </div>
 
           {(type === 'demerger' || type === 'merger') && (
-            <div className="space-y-3 pt-1 min-w-0">
+            <div className="space-y-2 pt-1 min-w-0">
               {heldQuantity !== undefined && heldQuantity > 0 && hasValidRatio && fracShares > 0 && (
                 <div className="p-2.5 rounded-md bg-purple-100/60 dark:bg-purple-950/40 text-xs text-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-800 break-words">
                   You&apos;ll receive <strong className="font-semibold">{wholeShares}</strong> whole shares + cash-in-lieu for <strong className="font-semibold">{fracShares}</strong> fractional shares.
