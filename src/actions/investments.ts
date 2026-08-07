@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { corporateActionsApi, dividendsApi, fnoApi, importsApi, instrumentsApi, investmentsApi } from '@/lib/apiClient';
+import { corporateActionsApi, dividendsApi, fnoApi, importsApi, instrumentsApi, investmentsApi, sipsApi } from '@/lib/apiClient';
 import { apiResult, validationError } from '@/lib/apiResult';
 import { optionalDecimal, optionalString } from '@/lib/forms';
 import type {
@@ -14,7 +14,9 @@ import type {
   CreateFnoTradeRequest,
   CreateInstrumentRequest,
   CreateInvestmentTransactionRequest,
+  CreateSipRequest,
   Dividend,
+  FnoTradeListResponse,
   FnoTradeResponse,
   ImportCommitRequest,
   ImportCommitResult,
@@ -31,10 +33,12 @@ import type {
   ReconcilePreview,
   ResolveInstrumentRequest,
   SetPriceRequest,
+  Sip,
   UpdateCorporateActionRequest,
   UpdateDividendRequest,
   UpdateFnoTradeRequest,
   UpdateInvestmentTransactionRequest,
+  UpdateSipRequest,
 } from '@/lib/types';
 
 function extractChargesFromFormData(formData: FormData): Charges | undefined {
@@ -132,6 +136,14 @@ export async function deleteInvestmentTransaction(
   });
 }
 
+export async function searchInstruments(
+  query: string,
+  type?: string
+): Promise<ApiResult<Instrument[]>> {
+  return apiResult('Failed to search instruments', async () => {
+    return await instrumentsApi.search(query, type);
+  });
+}
 
 export async function catalogSearch(
   query: string,
@@ -226,6 +238,11 @@ export async function deleteDividend(
 }
 
 // Corporate Actions actions
+export async function getAllCorporateActions(): Promise<ApiResult<CorporateAction[]>> {
+  return apiResult('Failed to fetch corporate actions', async () => {
+    return await corporateActionsApi.listAll();
+  });
+}
 
 export async function getCorporateActions(
   instrumentId: string
@@ -306,6 +323,33 @@ export async function commitReconcileImport(
 }
 
 // SIP actions (Phase 5)
+export async function createSip(
+  data: CreateSipRequest
+): Promise<ApiResult<Sip>> {
+  return apiResult('Failed to create SIP', async () => {
+    const sip = await sipsApi.create(data);
+    revalidatePath('/investments');
+    return sip;
+  });
+}
+
+export async function updateSip(
+  id: string,
+  data: UpdateSipRequest
+): Promise<ApiResult<Sip>> {
+  return apiResult('Failed to update SIP', async () => {
+    const sip = await sipsApi.update(id, data);
+    revalidatePath('/investments');
+    return sip;
+  });
+}
+
+export async function deleteSip(id: string): Promise<ApiResult<void>> {
+  return apiResult('Failed to delete SIP', async () => {
+    await sipsApi.delete(id);
+    revalidatePath('/investments');
+  });
+}
 
 export async function getPriceHistory(
   instrumentId: string
@@ -338,6 +382,11 @@ export async function deleteInstrumentPrice(
 }
 
 // Futures & Options (FnO) Actions
+export async function listFnoTrades(): Promise<ApiResult<FnoTradeListResponse>> {
+  return apiResult('Failed to load FnO trades', async () => {
+    return await fnoApi.listTrades();
+  });
+}
 
 export async function createFnoTrade(data: CreateFnoTradeRequest): Promise<ApiResult<FnoTradeResponse>> {
   return apiResult('Failed to create FnO trade', async () => {
