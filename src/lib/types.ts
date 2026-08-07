@@ -326,6 +326,61 @@ export interface UpdateDividendRequest {
   notes?: string;
 }
 
+export interface FyBucket {
+  label: string;
+  fromDate: string;
+  toDate: string;
+  amount: string;
+  tds: string;
+  net: string;
+  count: number;
+}
+
+export interface DividendSummary {
+  buckets: FyBucket[];
+  totalAmount: string;
+  totalTds: string;
+  totalNet: string;
+  totalCount: number;
+}
+
+export interface DividendSuggestion {
+  holdingId: string;
+  brokerAccountId: string;
+  brokerName?: string;
+  instrumentId: string;
+  instrumentName?: string;
+  symbol: string;
+  exDate: string;
+  perUnit: string;
+  qtyHeld: string;
+  estimatedAmount: string;
+}
+
+export interface DividendSuggestionsResponse {
+  suggestions: DividendSuggestion[];
+  scannedSymbols: number;
+  skippedSymbols: string[];
+}
+
+export interface AcceptSuggestionItem {
+  holdingId: string;
+  exDate: string;
+  payDate: string;
+  amount: string | number;
+  perUnit?: string | number;
+  notes?: string;
+}
+
+export interface AcceptSuggestionsRequest {
+  items: AcceptSuggestionItem[];
+}
+
+export interface AcceptSuggestionsResponse {
+  created: Dividend[];
+  skippedCount: number;
+}
+
 // Corporate Actions
 export type CorporateActionType = 'split' | 'bonus' | 'demerger' | 'merger';
 
@@ -654,81 +709,6 @@ export interface ReconcileCommitRequest {
   fnoTrades?: CommitFnoTradeDto[];
 }
 
-// SIPs (Phase 5)
-export type SipFrequency = 'weekly' | 'monthly';
-
-export interface SipProgress {
-  expectedInstallments: number;
-  executedInstallments: number;
-  investedSoFar: string | number;
-  unitsAccumulated: string | number;
-  avgCost: string | number;
-  nextDueDate?: string;
-  missedInstallments: number;
-}
-
-export interface Sip {
-  id: string;
-  brokerAccountId: string;
-  brokerName?: string;
-  instrumentId: string;
-  instrumentName?: string;
-  symbol?: string;
-  amount: string | number;
-  frequency: SipFrequency;
-  dayOfMonth?: number;
-  startDate: string;
-  endDate?: string;
-  active: boolean;
-  notes?: string;
-  progress?: SipProgress;
-  createdAt?: string;
-}
-
-export interface CreateSipRequest {
-  brokerAccountId: string;
-  instrumentId: string;
-  amount: number;
-  frequency: SipFrequency;
-  dayOfMonth?: number;
-  startDate: string;
-  endDate?: string;
-  active?: boolean;
-  notes?: string;
-}
-
-// Note: a SIP's brokerAccountId/instrumentId are its identity and are NOT editable
-// (the server's UpdateSipRequest does not accept them). To change them, delete + recreate.
-export interface UpdateSipRequest {
-  amount: number;
-  frequency: SipFrequency;
-  dayOfMonth?: number;
-  startDate: string;
-  endDate?: string;
-  active: boolean;
-  notes?: string;
-}
-
-// Dashboard
-export interface CategoryBreakdown {
-  category: string;
-  amount: string;
-  percentage: string;
-}
-
-export interface DashboardSummary {
-  netWorth: string;
-  totalAssets: string;
-  totalLiabilities: string;
-  monthlyIncome: string;
-  monthlyExpenses: string;
-  categoryBreakdown: CategoryBreakdown[];
-  status?: string;
-}
-
-// Gmail
-export type GmailFetchMode = 'MANUAL' | 'PERIODIC';
-
 export interface GmailOAuthStartResponse {
   authorizationUrl: string;
 }
@@ -761,31 +741,6 @@ export interface SyncSummary {
   skipped: number;
   failed: number;
   reconciled: number;
-}
-
-export interface GmailAttachmentDto {
-  attachmentId: string;
-  filename: string;
-  mimeType: string;
-  contentLength: number;
-}
-
-export interface GmailMessageDto {
-  messageId: string;
-  internalDate: string;
-  from: string;
-  subject: string;
-  attachments?: GmailAttachmentDto[];
-}
-
-export interface GmailSyncStateDto {
-  historyId: string;
-  lastSyncedAt: string;
-}
-
-export interface GmailFetchResult {
-  messages: GmailMessageDto[];
-  nextState?: GmailSyncStateDto;
 }
 
 // Error

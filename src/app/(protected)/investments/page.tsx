@@ -1,23 +1,20 @@
 import { Account, isAccountOfType } from '@/lib/account.types';
-import { accountsApi, dividendsApi, investmentsApi } from '@/lib/apiClient';
-import { AccountType, Dividend, Position } from '@/lib/types';
+import { accountsApi, investmentsApi } from '@/lib/apiClient';
+import { AccountType, Position } from '@/lib/types';
 
 import { AllocationCharts } from './AllocationCharts';
 import { CreateInstrumentDialog } from './CreateInstrumentDialog';
-import { DividendsTable } from './DividendsTable';
 import { PortfolioSummaryCards } from './PortfolioSummaryCards';
 import { RecordTradeDialog } from './RecordTradeDialog';
 
 export default async function PortfolioOverviewPage() {
-  const [summary, positionsData, dividendsData, accounts] = await Promise.all([
+  const [summary, positionsData, accounts] = await Promise.all([
     investmentsApi.getSummary().catch(() => null),
     investmentsApi.getPositions().catch(() => ({ positions: [] })),
-    dividendsApi.list().catch(() => ({ content: [] as Dividend[], totalElements: 0, page: 0, size: 50, totalPages: 0 })),
     accountsApi.list().catch(() => [] as Account[]),
   ]);
 
   const positions: Position[] = positionsData.positions || [];
-  const dividends: Dividend[] = dividendsData.content || [];
   const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
 
   return (
@@ -42,7 +39,6 @@ export default async function PortfolioOverviewPage() {
       <div className="space-y-2 animate-in fade-in-50 duration-200">
         <PortfolioSummaryCards summary={summary} positionsCount={positions.length} />
         <AllocationCharts summary={summary} positions={positions} />
-        <DividendsTable dividends={dividends} accounts={accounts} brokerAccounts={brokerAccounts} />
       </div>
     </div>
   );

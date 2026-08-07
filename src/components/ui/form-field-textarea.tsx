@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 import { Textarea, type TextareaProps } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 

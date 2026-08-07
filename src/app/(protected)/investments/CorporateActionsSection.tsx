@@ -21,8 +21,6 @@ import {
 import { CorporateAction, CorporateActionType, Instrument } from '@/lib/types';
 import { cn, formatDate } from '@/lib/utils';
 
-import { CorporateActionsDialog } from './CorporateActionsDialog';
-
 interface CorporateActionsSectionProps {
   corporateActions: CorporateAction[];
   instruments: Instrument[];

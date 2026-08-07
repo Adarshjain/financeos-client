@@ -1,6 +1,4 @@
 'use client';
-
-import * as React from 'react';
 import { JSX, useState } from 'react';
 
 import { Calendar } from '@/components/ui/calendar';

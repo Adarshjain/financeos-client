@@ -1,7 +1,6 @@
 'use client';
 
 import { ShieldAlert } from 'lucide-react';
-import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { ReconciledExecution,ReconcilePreview } from '@/lib/types';

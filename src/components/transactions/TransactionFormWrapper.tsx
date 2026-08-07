@@ -1,6 +1,6 @@
 'use client';
 
-import React, { JSX, useState } from 'react';
+import { JSX, useState } from 'react';
 
 import TransactionCRUD from '@/components/transactions/TransactionCRUD';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';

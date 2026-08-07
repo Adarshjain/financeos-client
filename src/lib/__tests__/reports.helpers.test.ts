@@ -4,14 +4,12 @@ import {
   buildFilter,
   dateBetween,
   formatMeasureValue,
-  isAggregatedTable,
   isChartData,
   isChartDefinition,
   isKpiData,
   isKpiDefinition,
   isMoneyField,
   isPivotTableData,
-  isRawTable,
   isRawTableData,
   isTableDefinition,
   numberBetween,
@@ -141,17 +139,6 @@ describe('report data & definition narrowing guards (CD-13)', () => {
 
     expect(isPivotTableData(pivotTableData)).toBe(true);
     expect(isPivotTableData(rawTableData)).toBe(false);
-  });
-
-  it('narrows TableDefinition variants correctly', () => {
-    const rawTableDef = { mode: 'raw', columns: ['amount'] } as any;
-    const aggTableDef = { mode: 'aggregated', rows: [] } as any;
-
-    expect(isRawTable(rawTableDef)).toBe(true);
-    expect(isRawTable(aggTableDef)).toBe(false);
-
-    expect(isAggregatedTable(aggTableDef)).toBe(true);
-    expect(isAggregatedTable(rawTableDef)).toBe(false);
   });
 });
 

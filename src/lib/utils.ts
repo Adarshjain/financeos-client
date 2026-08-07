@@ -162,36 +162,6 @@ export function getPositionLabel(position: string | undefined): string {
   return position === 'liability' ? 'Liability' : 'Asset';
 }
 
-export function getMonthShortName(input: number | Date, locale = 'en-IN'): string {
-  let monthIndex;
-
-  if (input instanceof Date) {
-    monthIndex = input.getMonth(); // 0–11
-  } else if (Number.isInteger(input) && input >= 0 && input <= 11) {
-    monthIndex = input;
-  } else {
-    return '-'; // invalid input
-  }
-
-  return new Date(2000, monthIndex, 1)
-    .toLocaleString(locale, { month: 'short' });
-}
-
-export function getDayShortName(input: number | Date, locale = 'en-IN') {
-  let dayIndex;
-
-  if (input instanceof Date) {
-    dayIndex = input.getDay(); // 0–6
-  } else if (Number.isInteger(input) && input >= 0 && input <= 6) {
-    dayIndex = input;
-  } else {
-    return null;
-  }
-
-  return new Date(2000, 0, 2 + dayIndex) // Sunday-based reference
-    .toLocaleString(locale, { weekday: 'short' });
-}
-
 export function formatMonthYear(date: Date, locale = 'en-IN') {
   const month = date.toLocaleString(locale, { month: 'short' });
   const year = String(date.getFullYear()).slice(-2);
