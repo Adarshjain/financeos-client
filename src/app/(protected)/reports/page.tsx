@@ -18,7 +18,17 @@ export default async function ReportsPage({
   const activeType = TYPES.includes(type as ReportType)
     ? (type as ReportType)
     : undefined;
-  const reports = await reportsApi.list(activeType);
+  const [reports, catalog] = await Promise.all([
+    reportsApi.list(activeType),
+    reportsApi.getDatasource(),
+  ]);
+
+  const datasourceLabels: Record<string, string> = {};
+  if (catalog && catalog.datasources) {
+    for (const ds of catalog.datasources) {
+      datasourceLabels[ds.name] = ds.label;
+    }
+  }
 
   return (
     <div className="space-y-2 p-4">
@@ -33,7 +43,7 @@ export default async function ReportsPage({
           </Button>
         </Link>
       </div>
-      <ReportsList reports={reports} activeType={activeType} />
+      <ReportsList reports={reports} activeType={activeType} datasourceLabels={datasourceLabels} />
     </div>
   );
 }

@@ -20,8 +20,7 @@ import type {
 
 import { defaultExcludedFilter } from './catalog';
 
-/** The single datasource exposed by the catalog today. */
-export const DATASOURCE = 'transactions';
+
 
 export interface KpiDraft {
   measure?: string;
@@ -105,6 +104,7 @@ export type BuilderAction =
   | { type: 'SET_NAME'; value: string }
   | { type: 'SET_DESCRIPTION'; value: string }
   | { type: 'SET_TYPE'; value: ReportType }
+  | { type: 'SET_DATASOURCE'; value: string; catalog?: DatasourceCatalog }
   | { type: 'ADD_FILTER'; value: FilterClause }
   | { type: 'UPDATE_FILTER'; index: number; value: FilterClause }
   | { type: 'REMOVE_FILTER'; index: number }
@@ -117,16 +117,16 @@ export type BuilderAction =
 export function initialBuilderState(
   type: ReportType = 'KPI',
   catalog?: DatasourceCatalog,
+  datasource = 'transactions',
 ): BuilderState {
-  // New reports default to hiding excluded transactions via a regular filter
-  // clause the user can edit or remove. Edit mode passes no catalog and loads
-  // the saved filters instead.
-  const seedFilter = catalog ? defaultExcludedFilter(catalog) : null;
+  // New reports on transactions default to hiding excluded transactions.
+  // Other datasources start with no filters. Edit mode passes no catalog.
+  const seedFilter = catalog && datasource === 'transactions' ? defaultExcludedFilter(catalog) : null;
   return {
     mode: 'create',
     name: '',
     description: '',
-    datasource: DATASOURCE,
+    datasource,
     type,
     filters: seedFilter ? [seedFilter] : [],
     kpi: { comparisonEnabled: true },
@@ -150,6 +150,23 @@ export function builderReducer(
       return { ...state, description: action.value };
     case 'SET_TYPE':
       return { ...state, type: action.value };
+    case 'SET_DATASOURCE': {
+      if (state.mode === 'edit') return state;
+      const newDs = action.value;
+      const seedFilter = newDs === 'transactions' && action.catalog ? defaultExcludedFilter(action.catalog) : null;
+      return {
+        ...state,
+        datasource: newDs,
+        filters: seedFilter ? [seedFilter] : [],
+        kpi: { comparisonEnabled: true },
+        chart: { chartType: 'bar' },
+        table: {
+          tableMode: 'raw',
+          raw: { columns: [], sort: [] },
+          agg: { rows: [], columns: [], measures: [], sort: [] },
+        },
+      };
+    }
     case 'ADD_FILTER':
       return { ...state, filters: [...state.filters, action.value] };
     case 'UPDATE_FILTER':

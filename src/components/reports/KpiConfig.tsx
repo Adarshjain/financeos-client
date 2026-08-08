@@ -56,15 +56,21 @@ export function KpiConfig({ catalog, value, onChange }: KpiConfigProps) {
           }
         />
       </div>
-      <label className="flex cursor-pointer items-center gap-2">
-        <Checkbox
-          checked={value.comparisonEnabled}
-          onCheckedChange={(c) => onChange({ comparisonEnabled: c === true })}
-        />
-        <span className="text-sm text-slate-700 dark:text-slate-300">
-          Compare to previous period
-        </span>
-      </label>
+      {(() => {
+        const hasDateField = catalog.fields.some((f) => f.type === 'date');
+        return (
+          <label className="flex cursor-pointer items-center gap-2">
+            <Checkbox
+              checked={hasDateField && value.comparisonEnabled}
+              disabled={!hasDateField}
+              onCheckedChange={(c) => onChange({ comparisonEnabled: c === true })}
+            />
+            <span className="text-sm text-slate-700 dark:text-slate-300">
+              Compare to previous period {!hasDateField && <span className="text-xs text-slate-400 font-normal">(needs a date field)</span>}
+            </span>
+          </label>
+        );
+      })()}
       {value.comparisonEnabled && (
         <div>
           <Label>Change Perception</Label>

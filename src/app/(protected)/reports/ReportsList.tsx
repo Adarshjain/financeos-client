@@ -33,9 +33,10 @@ const FILTERS: { value?: ReportType; label: string }[] = [
 interface ReportsListProps {
   reports: ReportSummaryResponse[];
   activeType?: ReportType;
+  datasourceLabels?: Record<string, string>;
 }
 
-export function ReportsList({ reports, activeType }: ReportsListProps) {
+export function ReportsList({ reports, activeType, datasourceLabels }: ReportsListProps) {
   const router = useRouter();
 
   const handleDelete = async (id: string) => {
@@ -95,8 +96,11 @@ export function ReportsList({ reports, activeType }: ReportsListProps) {
                     <meta.Icon className="h-4 w-4 text-slate-400" />
                     {report.name}
                   </Link>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <Badge variant={meta.variant}>{meta.label}</Badge>
+                    <Badge variant="outline" className="text-[10px] font-medium">
+                      {(datasourceLabels && datasourceLabels[report.datasource]) ?? report.datasource}
+                    </Badge>
                     <ConfirmationDialog
                       title="Delete report"
                       description={

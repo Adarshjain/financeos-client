@@ -36,6 +36,7 @@ function formatMeasure(
   return formatMeasureValue(value, {
     field: measure.field,
     aggregation: measure.aggregation,
+    format: measure.format ?? undefined,
   });
 }
 

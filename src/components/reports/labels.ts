@@ -20,6 +20,7 @@ export const GRANULARITY_LABELS: Record<Granularity, string> = {
   month: 'Month',
   quarter: 'Quarter',
   year: 'Year',
+  fy: 'Financial year',
 };
 
 export const CHART_TYPE_LABELS: Record<ChartDefinition['chartType'], string> = {

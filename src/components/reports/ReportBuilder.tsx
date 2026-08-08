@@ -13,9 +13,16 @@ import { createReport, updateReport } from '@/actions/reports';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import type { DatasourceCatalog, ReportResponse, ReportType } from '@/lib/reports.types';
+import type { DatasourceCatalog, ReportCatalog, ReportResponse, ReportType } from '@/lib/reports.types';
 
 import { builderReducer, hydrateState, initialBuilderState } from './builderReducer';
 import type { DynamicOptions } from './catalog';
@@ -25,25 +32,39 @@ import { KpiConfig } from './KpiConfig';
 import { PreviewPane } from './PreviewPane';
 import { buildCreateRequest, buildUpdateRequest, isMinimalValid } from './serialize';
 import { TableConfig } from './TableConfig';
+
 interface ReportBuilderProps {
   mode: 'create' | 'edit';
-  catalog: DatasourceCatalog;
+  catalog: ReportCatalog;
   dynamicOptions: DynamicOptions;
   report?: ReportResponse;
 }
 
 export function ReportBuilder({
-                                mode,
-                                catalog,
-                                dynamicOptions,
-                                report,
-                              }: ReportBuilderProps) {
+  mode,
+  catalog,
+  dynamicOptions,
+  report,
+}: ReportBuilderProps) {
   const router = useRouter();
-  const [state, dispatch] = useReducer(builderReducer, undefined, () =>
-    mode === 'edit' && report
-      ? hydrateState(report)
-      : initialBuilderState('KPI', catalog),
-  );
+
+  const getWorkingCatalog = (dsName: string): DatasourceCatalog => {
+    const dsDef = catalog.datasources.find((d) => d.name === dsName) ?? catalog.datasources[0];
+    return {
+      fields: dsDef ? dsDef.fields : [],
+      operators: catalog.operators,
+    };
+  };
+
+  const [state, dispatch] = useReducer(builderReducer, undefined, () => {
+    if (mode === 'edit' && report) {
+      return hydrateState(report);
+    }
+    const initialDs = catalog.datasources[0]?.name ?? 'transactions';
+    return initialBuilderState('KPI', getWorkingCatalog(initialDs), initialDs);
+  });
+
+  const activeCatalog = getWorkingCatalog(state.datasource);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -51,15 +72,15 @@ export function ReportBuilder({
       toast.error('Give the report a name.');
       return;
     }
-    if (!isMinimalValid(state, catalog)) {
+    if (!isMinimalValid(state, activeCatalog)) {
       toast.error('Finish configuring the report before saving.');
       return;
     }
     setSaving(true);
     const res =
       mode === 'edit' && state.reportId
-        ? await updateReport(state.reportId, buildUpdateRequest(state, catalog))
-        : await createReport(buildCreateRequest(state, catalog));
+        ? await updateReport(state.reportId, buildUpdateRequest(state, activeCatalog))
+        : await createReport(buildCreateRequest(state, activeCatalog));
     setSaving(false);
     if (res.success) {
       toast.success(mode === 'edit' ? 'Report updated' : 'Report created');
@@ -109,7 +130,31 @@ export function ReportBuilder({
       />
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,420px)_1fr]">
         <div className="space-y-2">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-2">
+            <div className="w-44 shrink-0">
+              <Select
+                value={state.datasource}
+                disabled={mode === 'edit'}
+                onValueChange={(dsName) => {
+                  dispatch({
+                    type: 'SET_DATASOURCE',
+                    value: dsName,
+                    catalog: getWorkingCatalog(dsName),
+                  });
+                }}
+              >
+                <SelectTrigger className="w-full h-9 text-xs font-semibold">
+                  <SelectValue placeholder="Select datasource" />
+                </SelectTrigger>
+                <SelectContent>
+                  {catalog.datasources.map((ds) => (
+                    <SelectItem key={ds.name} value={ds.name} className="text-xs">
+                      {ds.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Tabs
               className="w-full"
               value={state.type}
@@ -135,24 +180,23 @@ export function ReportBuilder({
             </Tabs>
           </div>
 
-
           {state.type === 'KPI' && (
             <KpiConfig
-              catalog={catalog}
+              catalog={activeCatalog}
               value={state.kpi}
               onChange={(v) => dispatch({ type: 'KPI_SET', value: v })}
             />
           )}
           {state.type === 'CHART' && (
             <ChartConfig
-              catalog={catalog}
+              catalog={activeCatalog}
               value={state.chart}
               onChange={(v) => dispatch({ type: 'CHART_SET', value: v })}
             />
           )}
           {state.type === 'TABLE' && (
             <TableConfig
-              catalog={catalog}
+              catalog={activeCatalog}
               value={state.table}
               onChange={(v) => dispatch({ type: 'TABLE_SET', value: v })}
               onChangeRaw={(v) => dispatch({ type: 'TABLE_SET_RAW', value: v })}
@@ -161,7 +205,7 @@ export function ReportBuilder({
           )}
 
           <FilterEditor
-            catalog={catalog}
+            catalog={activeCatalog}
             dynamicOptions={dynamicOptions}
             filters={state.filters}
             onAdd={(c) => dispatch({ type: 'ADD_FILTER', value: c })}
@@ -174,7 +218,7 @@ export function ReportBuilder({
 
         <Card className="self-start lg:sticky lg:top-6">
           <CardContent className="p-4">
-            <PreviewPane state={state} catalog={catalog} />
+            <PreviewPane state={state} catalog={activeCatalog} />
           </CardContent>
         </Card>
       </div>
