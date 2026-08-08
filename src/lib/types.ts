@@ -770,3 +770,7 @@ export interface FileIngestionResult {
 export type ApiResult<T> =
   | { success: true; data: T }
   | { success: false; error: ErrorResponse };
+
+export * from './lending.types';
+export * from './loan.types';
+

@@ -8,6 +8,7 @@ import { useState } from 'react';
 import {
   INVESTMENTS_MODULE,
   isNavItemActive,
+  LOANS_MODULE,
   NAV_ITEMS,
   NavItem,
   NavModule,
@@ -32,6 +33,9 @@ export function NavTree({ onItemClick, renderItemWrapper }: NavTreeProps) {
   );
   const [openInvestments, setOpenInvestments] = useState(
     pathname.startsWith('/investments'),
+  );
+  const [openLoans, setOpenLoans] = useState(
+    pathname.startsWith('/loans'),
   );
 
   const renderLink = (item: NavItem, isTopLevel = false) => {
@@ -108,6 +112,9 @@ export function NavTree({ onItemClick, renderItemWrapper }: NavTreeProps) {
       )}
       {renderModule(INVESTMENTS_MODULE, openInvestments, () =>
         setOpenInvestments(!openInvestments),
+      )}
+      {renderModule(LOANS_MODULE, openLoans, () =>
+        setOpenLoans(!openLoans),
       )}
 
       {renderLink(NAV_ITEMS.settings, true)}

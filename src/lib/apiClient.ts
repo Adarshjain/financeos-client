@@ -8,6 +8,36 @@ import type {
   UpdateDashboardRequest,
 } from '@/lib/dashboards.types';
 import type {
+  CounterpartyResponse,
+  CreateCounterpartyRequest,
+  CreateLendingRepaymentRequest,
+  CreateLendingRequest,
+  LendingRepaymentResponse,
+  LendingResponse,
+  LendingStatus,
+  ObligationsResponse,
+  UpdateCounterpartyRequest,
+  UpdateLendingRequest,
+} from '@/lib/lending.types';
+import type {
+  BatchLoanPaymentRequest,
+  CreateLoanChargeRequest,
+  CreateLoanEventRequest,
+  CreateLoanPaymentRequest,
+  CreateLoanRequest,
+  InstallmentDto,
+  LoanChargeResponse,
+  LoanDetailResponse,
+  LoanEventResponse,
+  LoanPaymentResponse,
+  LoanResponse,
+  LoansSummaryResponse,
+  LoanStatus,
+  MatchSuggestionsResponse,
+  UpdateLoanRequest,
+} from '@/lib/loan.types';
+import type { Page } from '@/lib/pagination';
+import type {
   CreateReportRequest,
   DatasourceCatalog,
   ReportCatalog,
@@ -891,6 +921,203 @@ export const rulesApi = {
   },
 };
 
+// Loans API
+export const loansApi = {
+  async list(status?: LoanStatus, page = 0, size = 50): Promise<Page<LoanResponse>> {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (status) params.append('status', status);
+    return request<Page<LoanResponse>>(`/api/v1/loans?${params.toString()}`);
+  },
+
+  async getSummary(): Promise<LoansSummaryResponse> {
+    return request<LoansSummaryResponse>('/api/v1/loans/summary');
+  },
+
+  async getDetail(id: string): Promise<LoanDetailResponse> {
+    return request<LoanDetailResponse>(`/api/v1/loans/${id}`);
+  },
+
+  async getSchedule(id: string): Promise<{ installments: InstallmentDto[] }> {
+    return request<{ installments: InstallmentDto[] }>(`/api/v1/loans/${id}/schedule`);
+  },
+
+  async create(data: CreateLoanRequest): Promise<LoanResponse> {
+    return request<LoanResponse>('/api/v1/loans', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: string, data: UpdateLoanRequest): Promise<LoanResponse> {
+    return request<LoanResponse>(`/api/v1/loans/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async remove(id: string): Promise<void> {
+    return request<void>(`/api/v1/loans/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async close(id: string): Promise<void> {
+    return request<void>(`/api/v1/loans/${id}/close`, {
+      method: 'POST',
+    });
+  },
+
+  async reopen(id: string): Promise<void> {
+    return request<void>(`/api/v1/loans/${id}/reopen`, {
+      method: 'POST',
+    });
+  },
+
+  async addEvent(id: string, data: CreateLoanEventRequest): Promise<LoanEventResponse> {
+    return request<LoanEventResponse>(`/api/v1/loans/${id}/events`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteEvent(id: string, eventId: string): Promise<void> {
+    return request<void>(`/api/v1/loans/${id}/events/${eventId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async addPayment(id: string, data: CreateLoanPaymentRequest): Promise<LoanPaymentResponse> {
+    return request<LoanPaymentResponse>(`/api/v1/loans/${id}/payments`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async addPaymentsBatch(id: string, data: BatchLoanPaymentRequest): Promise<{ created: number }> {
+    return request<{ created: number }>(`/api/v1/loans/${id}/payments/batch`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deletePayment(id: string, paymentId: string): Promise<void> {
+    return request<void>(`/api/v1/loans/${id}/payments/${paymentId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async addCharge(id: string, data: CreateLoanChargeRequest): Promise<LoanChargeResponse> {
+    return request<LoanChargeResponse>(`/api/v1/loans/${id}/charges`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteCharge(id: string, chargeId: string): Promise<void> {
+    return request<void>(`/api/v1/loans/${id}/charges/${chargeId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async getMatchSuggestions(id: string): Promise<MatchSuggestionsResponse> {
+    return request<MatchSuggestionsResponse>(`/api/v1/loans/${id}/match-suggestions`);
+  },
+};
+
+// Counterparties API
+export const counterpartiesApi = {
+  async list(page = 0, size = 50): Promise<Page<CounterpartyResponse>> {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    return request<Page<CounterpartyResponse>>(`/api/v1/counterparties?${params.toString()}`);
+  },
+
+  async create(data: CreateCounterpartyRequest): Promise<CounterpartyResponse> {
+    return request<CounterpartyResponse>('/api/v1/counterparties', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: string, data: UpdateCounterpartyRequest): Promise<CounterpartyResponse> {
+    return request<CounterpartyResponse>(`/api/v1/counterparties/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async remove(id: string): Promise<void> {
+    return request<void>(`/api/v1/counterparties/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// Lendings API
+export const lendingsApi = {
+  async list(counterpartyId?: string, status?: LendingStatus, page = 0, size = 50): Promise<Page<LendingResponse>> {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (counterpartyId) params.append('counterpartyId', counterpartyId);
+    if (status) params.append('status', status);
+    return request<Page<LendingResponse>>(`/api/v1/lendings?${params.toString()}`);
+  },
+
+  async getDetail(id: string): Promise<LendingResponse> {
+    return request<LendingResponse>(`/api/v1/lendings/${id}`);
+  },
+
+  async create(data: CreateLendingRequest): Promise<LendingResponse> {
+    return request<LendingResponse>('/api/v1/lendings', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(id: string, data: UpdateLendingRequest): Promise<LendingResponse> {
+    return request<LendingResponse>(`/api/v1/lendings/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async remove(id: string): Promise<void> {
+    return request<void>(`/api/v1/lendings/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async addRepayment(id: string, data: CreateLendingRepaymentRequest): Promise<LendingRepaymentResponse> {
+    return request<LendingRepaymentResponse>(`/api/v1/lendings/${id}/repayments`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async deleteRepayment(id: string, repaymentId: string): Promise<void> {
+    return request<void>(`/api/v1/lendings/${id}/repayments/${repaymentId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async writeOff(id: string): Promise<void> {
+    return request<void>(`/api/v1/lendings/${id}/write-off`, {
+      method: 'POST',
+    });
+  },
+
+  async reopen(id: string): Promise<void> {
+    return request<void>(`/api/v1/lendings/${id}/reopen`, {
+      method: 'POST',
+    });
+  },
+};
+
+// Obligations API
+export const obligationsApi = {
+  async getUpcoming(months = 3): Promise<ObligationsResponse> {
+    return request<ObligationsResponse>(`/api/v1/obligations/upcoming?months=${months}`);
+  },
+};
+
 // Transaction Links API
 export const transactionLinksApi = {
   async create(data: CreateTransactionLinkRequest): Promise<TransactionLinkResponse> {
@@ -912,3 +1139,4 @@ export const transactionLinksApi = {
 };
 
 export { ApiError };
+
