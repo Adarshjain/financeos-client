@@ -130,8 +130,8 @@ export function ReportBuilder({
       />
       <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,420px)_1fr]">
         <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="w-44 shrink-0">
+          <div className="flex items-center flex-col gap-2">
+            {/*<div className="w-44 shrink-0">*/}
               <Select
                 value={state.datasource}
                 disabled={mode === 'edit'}
@@ -154,7 +154,7 @@ export function ReportBuilder({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            {/*</div>*/}
             <Tabs
               className="w-full"
               value={state.type}
