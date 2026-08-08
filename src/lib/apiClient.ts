@@ -10,11 +10,8 @@ import type {
 import type {
   CounterpartyResponse,
   CreateCounterpartyRequest,
-  CreateLendingRepaymentRequest,
   CreateLendingRequest,
-  LendingRepaymentResponse,
   LendingResponse,
-  LendingStatus,
   ObligationsResponse,
   UpdateCounterpartyRequest,
   UpdateLendingRequest,
@@ -1054,10 +1051,9 @@ export const counterpartiesApi = {
 
 // Lendings API
 export const lendingsApi = {
-  async list(counterpartyId?: string, status?: LendingStatus, page = 0, size = 50): Promise<Page<LendingResponse>> {
+  async list(counterpartyId?: string, page = 0, size = 50): Promise<Page<LendingResponse>> {
     const params = new URLSearchParams({ page: String(page), size: String(size) });
     if (counterpartyId) params.append('counterpartyId', counterpartyId);
-    if (status) params.append('status', status);
     return request<Page<LendingResponse>>(`/api/v1/lendings?${params.toString()}`);
   },
 
@@ -1082,31 +1078,6 @@ export const lendingsApi = {
   async remove(id: string): Promise<void> {
     return request<void>(`/api/v1/lendings/${id}`, {
       method: 'DELETE',
-    });
-  },
-
-  async addRepayment(id: string, data: CreateLendingRepaymentRequest): Promise<LendingRepaymentResponse> {
-    return request<LendingRepaymentResponse>(`/api/v1/lendings/${id}/repayments`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async deleteRepayment(id: string, repaymentId: string): Promise<void> {
-    return request<void>(`/api/v1/lendings/${id}/repayments/${repaymentId}`, {
-      method: 'DELETE',
-    });
-  },
-
-  async writeOff(id: string): Promise<void> {
-    return request<void>(`/api/v1/lendings/${id}/write-off`, {
-      method: 'POST',
-    });
-  },
-
-  async reopen(id: string): Promise<void> {
-    return request<void>(`/api/v1/lendings/${id}/reopen`, {
-      method: 'POST',
     });
   },
 };

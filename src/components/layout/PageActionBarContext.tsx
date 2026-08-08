@@ -44,7 +44,7 @@ interface PageActionBarProps {
 /**
  * Component used inside ANY page or feature view to declare its mobile bottom action bar.
  */
-export function PageActionBar({ children, hideOnScroll = false }: PageActionBarProps) {
+export function PageActionBar({ children, hideOnScroll = true }: PageActionBarProps) {
   const { setConfig } = useContext(PageActionBarContext);
 
   useEffect(() => {

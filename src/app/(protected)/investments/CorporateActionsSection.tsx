@@ -245,7 +245,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
       </Card>
 
       {/* Mobile PageActionBar Integration */}
-      <PageActionBar hideOnScroll>
+      <PageActionBar>
         {renderActionBar(true)}
       </PageActionBar>
 

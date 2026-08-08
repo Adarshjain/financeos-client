@@ -2,12 +2,9 @@
 
 import {
   ArrowLeft,
-  Calendar,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
-  CreditCard,
-  DollarSign,
   Edit2,
   Lock,
   Plus,
@@ -333,11 +330,11 @@ export function LoanDetail({
       : 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2 p-3 pb-32">
       {/* Top Header Action Bar */}
       <PageActionBar>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)} className="h-8 text-xs gap-1.5">
+        <div className="flex items-center gap-2 w-full">
+          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)} className="h-8 text-xs gap-1.5 flex-1">
             <Edit2 className="h-3.5 w-3.5" /> Edit
           </Button>
 
@@ -357,7 +354,7 @@ export function LoanDetail({
               primaryActionText="Close Loan"
               variant="default"
               trigger={
-                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 flex-1">
                   <Lock className="h-3.5 w-3.5" /> Close
                 </Button>
               }
@@ -378,7 +375,7 @@ export function LoanDetail({
               primaryActionText="Reopen Loan"
               variant="default"
               trigger={
-                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5">
+                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 flex-1">
                   <Unlock className="h-3.5 w-3.5" /> Reopen
                 </Button>
               }
@@ -400,7 +397,7 @@ export function LoanDetail({
             primaryActionText="Delete Loan"
             variant="destructive"
             trigger={
-              <Button variant="destructive" size="sm" className="h-8 text-xs gap-1.5">
+              <Button variant="destructive" size="sm" className="h-8 text-xs gap-1.5 flex-1">
                 <Trash2 className="h-3.5 w-3.5" /> Delete
               </Button>
             }

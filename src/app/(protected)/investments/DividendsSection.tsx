@@ -265,7 +265,7 @@ export function DividendsSection({
         </Card>
 
         {/* Mobile PageActionBar Integration */}
-        <PageActionBar hideOnScroll>
+        <PageActionBar>
           {renderActionBar(true)}
         </PageActionBar>
 
