@@ -29,6 +29,7 @@ export function KpiView({ data, className }: { data: KpiData, className?: string
     formatMeasureValue(n, {
       field: data.measure,
       aggregation: data.aggregation,
+      format: data.format ?? undefined,
     });
   // Signed absolute change — negatives already carry a minus from fmt().
   const signedChange = (n: number) => `${n > 0 ? '+' : ''}${fmt(n)}`;

@@ -10,6 +10,7 @@ import type {
 import type {
   CreateReportRequest,
   DatasourceCatalog,
+  ReportCatalog,
   ReportData,
   ReportResponse,
   ReportRunOptions,
@@ -724,8 +725,8 @@ function buildPageQuery(options: ReportRunOptions): string {
 // Reports API
 export const reportsApi = {
   // Field + operator catalog used to build report definitions.
-  async getDatasource(): Promise<DatasourceCatalog> {
-    return request<DatasourceCatalog>('/api/v1/report/datasource');
+  async getDatasource(): Promise<ReportCatalog> {
+    return request<ReportCatalog>('/api/v1/report/datasource');
   },
 
   // Create and save a report definition.

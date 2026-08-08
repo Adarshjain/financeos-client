@@ -13,6 +13,7 @@ describe('builderReducer (CD-12)', () => {
     const state = initialBuilderState();
     expect(state.mode).toBe('create');
     expect(state.type).toBe('KPI');
+    expect(state.datasource).toBe('transactions');
     expect(state.filters).toEqual([]);
     expect(state.kpi.comparisonEnabled).toBe(true);
     expect(state.chart.chartType).toBe('bar');
@@ -36,6 +37,69 @@ describe('builderReducer (CD-12)', () => {
 
     state = builderReducer(state, { type: 'SET_TYPE', value: 'CHART' });
     expect(state.type).toBe('CHART');
+  });
+
+  it('handles SET_DATASOURCE action in create mode', () => {
+    let state = initialBuilderState();
+    state = builderReducer(state, { type: 'SET_NAME', value: 'My Investment Report' });
+    state = builderReducer(state, {
+      type: 'KPI_SET',
+      value: { measure: 'amount', aggregation: 'sum' },
+    });
+    state = builderReducer(state, {
+      type: 'ADD_FILTER',
+      value: { field: 'amount', operator: 'greater_than', value: 100 },
+    });
+
+    const mockCatalog: any = {
+      fields: [{ name: 'isExcluded', type: 'boolean' }],
+      operators: { boolean: ['is'] },
+    };
+
+    // Switch to investment_trades
+    state = builderReducer(state, {
+      type: 'SET_DATASOURCE',
+      value: 'investment_trades',
+      catalog: mockCatalog,
+    });
+
+    expect(state.datasource).toBe('investment_trades');
+    expect(state.name).toBe('My Investment Report'); // name preserved
+    expect(state.filters).toEqual([]); // filters reset
+    expect(state.kpi.measure).toBeUndefined(); // KPI draft reset
+
+    // Switch back to transactions -> seeds default excluded filter
+    state = builderReducer(state, {
+      type: 'SET_DATASOURCE',
+      value: 'transactions',
+      catalog: mockCatalog,
+    });
+    expect(state.datasource).toBe('transactions');
+    expect(state.filters).toHaveLength(1);
+    expect(state.filters[0].field).toBe('isExcluded');
+  });
+
+  it('ignores SET_DATASOURCE action in edit mode', () => {
+    const savedKpi: ReportResponse = {
+      id: 'rep-kpi-1',
+      name: 'Total Income',
+      datasource: 'transactions',
+      type: 'KPI',
+      definition: {
+        type: 'KPI',
+        measure: 'amount',
+        aggregation: 'SUM',
+      },
+    } as any;
+
+    let state = hydrateState(savedKpi);
+    expect(state.mode).toBe('edit');
+
+    state = builderReducer(state, {
+      type: 'SET_DATASOURCE',
+      value: 'investment_trades',
+    });
+    expect(state.datasource).toBe('transactions'); // unchanged
   });
 
   it('handles filter actions: ADD_FILTER, UPDATE_FILTER, REMOVE_FILTER', () => {

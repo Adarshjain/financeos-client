@@ -37,11 +37,18 @@ export function isMoneyField(field: string): boolean {
  */
 export function formatMeasureValue(
   value: number | null | undefined,
-  options: { field?: string; aggregation?: string },
+  options: { field?: string; aggregation?: string; format?: 'currency' | 'number' | 'percent' },
 ): string {
   if (value === null || value === undefined) return '—';
   if (options.aggregation === 'count') {
     return new Intl.NumberFormat('en-IN').format(value);
+  }
+  if (options.format === 'currency') return formatMoney(value);
+  if (options.format === 'percent') {
+    return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(value) + '%';
+  }
+  if (options.format === 'number') {
+    return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(value);
   }
   if (options.field && isMoneyField(options.field)) return formatMoney(value);
   return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(value);

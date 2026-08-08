@@ -19,7 +19,7 @@ export type FieldRole = 'measure' | 'dimension' | 'filter';
 export type Aggregation = 'sum' | 'avg' | 'count' | 'min' | 'max';
 
 /** Time bucketing applied to a date dimension. */
-export type Granularity = 'day' | 'week' | 'month' | 'quarter' | 'year';
+export type Granularity = 'day' | 'week' | 'month' | 'quarter' | 'year' | 'fy';
 
 // ---------------------------------------------------------------------------
 // 1. Datasource catalog — GET /api/v1/report/datasource
@@ -42,6 +42,10 @@ export interface FieldDefinition {
    */
   dynamic?: boolean;
   /**
+   * Optional display format hint for measure values.
+   */
+  format?: 'currency' | 'number' | 'percent';
+  /**
    * Which report types may DISPLAY / GROUP-BY this field. Does not restrict
    * filtering — any field can be filtered regardless of this list.
    */
@@ -62,9 +66,24 @@ export interface OperatorCatalog {
   boolean: string[];
 }
 
+/** A single reportable datasource definition. */
+export interface DatasourceDef {
+  name: string;
+  label: string;
+  fields: FieldDefinition[];
+}
+
 /**
- * The reportable field and operator catalog used to build report definitions.
- * Wire schema: `DatasourceView`.
+ * Multi-datasource catalog returned by GET /api/v1/report/datasource.
+ */
+export interface ReportCatalog {
+  datasources: DatasourceDef[];
+  operators: OperatorCatalog;
+}
+
+/**
+ * The reportable field and operator catalog used to build report definitions for a single datasource.
+ * Internal working shape consumed by builder components.
  */
 export interface DatasourceCatalog {
   fields: FieldDefinition[];
@@ -292,6 +311,8 @@ export interface KpiData {
   value: number | null;
   measure: string;
   aggregation: Aggregation;
+  /** Display format hint from the datasource catalog. */
+  format?: 'currency' | 'number' | 'percent' | null;
   /** Null when the range is unbounded / `all_time`. */
   comparison: KpiComparison | null;
   meta: ReportDataMeta;
@@ -313,6 +334,8 @@ export interface TableColumn {
   key: string;
   label: string;
   type: string;
+  /** Display format hint from the datasource catalog. */
+  format?: 'currency' | 'number' | 'percent' | null;
 }
 
 /** A table row keyed by `column.key`; raw rows also include a hidden `id`. */
@@ -350,6 +373,8 @@ export interface PivotMeasureInfo {
   field: string;
   aggregation: string;
   label: string;
+  /** Display format hint from the datasource catalog. */
+  format?: 'currency' | 'number' | 'percent' | null;
 }
 
 /** A distinct column-value combination; `key` is "" when there are no column dims. */

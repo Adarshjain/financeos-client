@@ -25,8 +25,8 @@ function formatCell(value: unknown, column: TableColumn): string {
   if (column.type === 'number') {
     const n = typeof value === 'number' ? value : Number(value);
     if (Number.isNaN(n)) return String(value);
-    // Raw rows carry no aggregation, so money-ness comes from the field alone.
-    return formatMeasureValue(n, { field: column.key });
+    // Raw rows carry no aggregation; the catalog format hint wins over the name heuristic.
+    return formatMeasureValue(n, { field: column.key, format: column.format ?? undefined });
   }
   if (column.type === 'date') return formatDate(String(value));
   return String(value);
