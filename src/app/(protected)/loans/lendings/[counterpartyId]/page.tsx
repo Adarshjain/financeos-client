@@ -22,7 +22,7 @@ export default async function PersonDetailPage({ params }: PersonDetailPageProps
 
   const [cpRes, lendingsRes] = await Promise.all([
     fetchCounterpartiesAction(0, 100),
-    fetchLendingsAction(counterpartyId, undefined, 0, 100),
+    fetchLendingsAction(counterpartyId, 0, 100),
   ]);
 
   const cp = cpRes.success ? cpRes.data.content.find((c) => c.id === counterpartyId) : null;

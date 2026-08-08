@@ -2,12 +2,6 @@ import type { Page } from './pagination';
 
 export type LendingDirection = 'lent' | 'borrowed';
 
-export type LendingStatus =
-  | 'outstanding'
-  | 'partially_repaid'
-  | 'settled'
-  | 'written_off';
-
 export interface CreateCounterpartyRequest {
   name: string;
   notes?: string;
@@ -22,10 +16,10 @@ export interface CounterpartyResponse {
   id: string;
   name: string;
   notes?: string;
-  lentOutstanding: number;
-  borrowedOutstanding: number;
+  totalLent: number;
+  totalBorrowed: number;
   netPosition: number;
-  openLendingCount: number;
+  entryCount: number;
 }
 
 export interface CreateLendingRequest {
@@ -33,7 +27,7 @@ export interface CreateLendingRequest {
   newCounterpartyName?: string;
   direction: LendingDirection;
   amount: number;
-  lendDate: string;
+  entryDate: string;
   expectedReturnDate?: string;
   transactionId?: string;
   notes?: string;
@@ -42,18 +36,9 @@ export interface CreateLendingRequest {
 export interface UpdateLendingRequest {
   direction?: LendingDirection;
   amount?: number;
-  lendDate?: string;
+  entryDate?: string;
   expectedReturnDate?: string;
   notes?: string;
-}
-
-export interface LendingRepaymentResponse {
-  id: string;
-  lendingId: string;
-  amount: number;
-  date: string;
-  transactionId?: string;
-  createdAt: string;
 }
 
 export interface LendingResponse {
@@ -62,22 +47,11 @@ export interface LendingResponse {
   counterpartyName: string;
   direction: LendingDirection;
   amount: number;
-  lendDate: string;
+  entryDate: string;
   expectedReturnDate?: string;
-  status: LendingStatus;
   transactionId?: string;
   notes?: string;
-  repaidTotal: number;
-  outstanding: number;
-  repayments: LendingRepaymentResponse[];
   createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateLendingRepaymentRequest {
-  amount: number;
-  date: string;
-  transactionId?: string;
 }
 
 export interface ObligationItemDto {

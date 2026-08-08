@@ -207,7 +207,7 @@ export function HoldingsTab({
       </Card>
 
       {/* Mobile PageActionBar Integration */}
-      <PageActionBar hideOnScroll>
+      <PageActionBar>
         {renderActionBar(true)}
       </PageActionBar>
 

@@ -404,7 +404,7 @@ export function RulesBrowser({
           </div>
 
           {/* Pagination */}
-          <PageActionBar hideOnScroll>
+          <PageActionBar>
             {/*<div className="flex flex-col gap-1">*/}
               {/* Tabs and Search Filters */}
               <div className="flex flex-wrap items-center justify-between gap-2">

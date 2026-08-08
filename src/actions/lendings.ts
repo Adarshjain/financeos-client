@@ -9,11 +9,8 @@ import type {
   ApiResult,
   CounterpartyResponse,
   CreateCounterpartyRequest,
-  CreateLendingRepaymentRequest,
   CreateLendingRequest,
-  LendingRepaymentResponse,
   LendingResponse,
-  LendingStatus,
   ObligationsResponse,
   UpdateCounterpartyRequest,
   UpdateLendingRequest,
@@ -57,12 +54,11 @@ export async function deleteCounterpartyAction(id: string): Promise<ApiResult<vo
 
 export async function fetchLendingsAction(
   counterpartyId?: string,
-  status?: LendingStatus,
   page = 0,
   size = 50,
 ): Promise<ApiResult<Page<LendingResponse>>> {
   return apiResult('Failed to fetch lendings', () =>
-    lendingsApi.list(counterpartyId, status, page, size),
+    lendingsApi.list(counterpartyId, page, size),
   );
 }
 
@@ -106,61 +102,6 @@ export async function deleteLendingAction(
 ): Promise<ApiResult<void>> {
   return apiResult('Failed to delete lending', async () => {
     await lendingsApi.remove(id);
-    revalidatePath('/loans/lendings');
-    if (counterpartyId) {
-      revalidatePath(`/loans/lendings/${counterpartyId}`);
-    }
-  });
-}
-
-export async function addLendingRepaymentAction(
-  id: string,
-  data: CreateLendingRepaymentRequest,
-  counterpartyId?: string,
-): Promise<ApiResult<LendingRepaymentResponse>> {
-  return apiResult('Failed to add repayment', async () => {
-    const res = await lendingsApi.addRepayment(id, data);
-    revalidatePath('/loans/lendings');
-    if (counterpartyId) {
-      revalidatePath(`/loans/lendings/${counterpartyId}`);
-    }
-    return res;
-  });
-}
-
-export async function deleteLendingRepaymentAction(
-  id: string,
-  repaymentId: string,
-  counterpartyId?: string,
-): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete repayment', async () => {
-    await lendingsApi.deleteRepayment(id, repaymentId);
-    revalidatePath('/loans/lendings');
-    if (counterpartyId) {
-      revalidatePath(`/loans/lendings/${counterpartyId}`);
-    }
-  });
-}
-
-export async function writeOffLendingAction(
-  id: string,
-  counterpartyId?: string,
-): Promise<ApiResult<void>> {
-  return apiResult('Failed to write off lending', async () => {
-    await lendingsApi.writeOff(id);
-    revalidatePath('/loans/lendings');
-    if (counterpartyId) {
-      revalidatePath(`/loans/lendings/${counterpartyId}`);
-    }
-  });
-}
-
-export async function reopenLendingAction(
-  id: string,
-  counterpartyId?: string,
-): Promise<ApiResult<void>> {
-  return apiResult('Failed to reopen lending', async () => {
-    await lendingsApi.reopen(id);
     revalidatePath('/loans/lendings');
     if (counterpartyId) {
       revalidatePath(`/loans/lendings/${counterpartyId}`);

@@ -368,7 +368,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
         </Card>
 
         {/* Mobile PageActionBar Slot Integration */}
-        <PageActionBar hideOnScroll>
+        <PageActionBar>
           <div className="flex flex-col gap-1.5 w-full text-xs">
             {/* Row 1: Search & Contract Type */}
             <div className="relative flex-1">

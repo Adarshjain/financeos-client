@@ -195,7 +195,7 @@ export function TradebookSection({ initialData, brokerAccounts, accounts }: Trad
       </Card>
 
       {/* Mobile PageActionBar Integration */}
-      <PageActionBar hideOnScroll>
+      <PageActionBar>
         {renderActionBar(true)}
       </PageActionBar>
 
