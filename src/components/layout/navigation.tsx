@@ -120,6 +120,26 @@ export const NAV_ITEMS = {
     icon: <Activity className="h-5 w-5" />,
   },
 
+  // Loans module items
+  loansOverview: {
+    href: '/loans',
+    label: 'Loans',
+    shortLabel: 'Loans',
+    icon: <Wallet className="h-5 w-5" />,
+  },
+  loansLendings: {
+    href: '/loans/lendings',
+    label: 'Lendings',
+    shortLabel: 'Lendings',
+    icon: <DollarSign className="h-5 w-5" />,
+  },
+  loansCalendar: {
+    href: '/loans/calendar',
+    label: 'Obligations Calendar',
+    shortLabel: 'Calendar',
+    icon: <Activity className="h-5 w-5" />,
+  },
+
   // Settings
   settings: {
     href: '/settings',
@@ -157,12 +177,33 @@ export const INVESTMENTS_MODULE: NavModule = {
   ],
 };
 
-export type MobileNavContextMode = 'default' | 'transactions' | 'investments';
+export const LOANS_MODULE: NavModule = {
+  key: 'loans',
+  label: 'Loans & Lendings',
+  icon: <Wallet className="h-5 w-5" />,
+  items: [
+    NAV_ITEMS.loansOverview,
+    NAV_ITEMS.loansLendings,
+    NAV_ITEMS.loansCalendar,
+  ],
+};
+
+export type MobileNavContextMode = 'default' | 'transactions' | 'investments' | 'loans';
 
 export function getMobileNavContext(pathname: string): {
   mode: MobileNavContextMode;
   items: NavItem[];
 } {
+  if (pathname.startsWith('/loans')) {
+    return {
+      mode: 'loans',
+      items: [
+        NAV_ITEMS.loansOverview,
+        NAV_ITEMS.loansLendings,
+        NAV_ITEMS.loansCalendar,
+      ],
+    };
+  }
   if (pathname.startsWith('/investments')) {
     return {
       mode: 'investments',
@@ -208,7 +249,7 @@ export function getMobileNavContext(pathname: string): {
         shortLabel: 'Investments',
         icon: NAV_ITEMS.investmentsHoldings.icon,
       },
-      NAV_ITEMS.accounts,
+      NAV_ITEMS.loansOverview,
     ],
   };
 }
