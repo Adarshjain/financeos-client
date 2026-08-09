@@ -151,15 +151,23 @@ export const NAV_ITEMS = {
 
 export const TRANSACTIONS_MODULE: NavModule = {
   key: 'transactions',
-  label: 'Transactions & Analytics',
+  label: 'Transactions',
   icon: <Receipt className="h-5 w-5" />,
   items: [
     NAV_ITEMS.transactions,
     NAV_ITEMS.needsReview,
-    NAV_ITEMS.dashboards,
-    NAV_ITEMS.reports,
     NAV_ITEMS.rules,
     NAV_ITEMS.categories,
+  ],
+};
+
+export const REPORTS_MODULE: NavModule = {
+  key: 'reports',
+  label: 'Reports',
+  icon: <BarChart3 className="h-5 w-5" />,
+  items: [
+    NAV_ITEMS.dashboards,
+    NAV_ITEMS.reports,
   ],
 };
 
@@ -188,7 +196,12 @@ export const LOANS_MODULE: NavModule = {
   ],
 };
 
-export type MobileNavContextMode = 'default' | 'transactions' | 'investments' | 'loans';
+export type MobileNavContextMode =
+  | 'default'
+  | 'transactions'
+  | 'reports'
+  | 'investments'
+  | 'loans';
 
 export function getMobileNavContext(pathname: string): {
   mode: MobileNavContextMode;
@@ -219,9 +232,20 @@ export function getMobileNavContext(pathname: string): {
   }
 
   if (
-    pathname.startsWith('/transactions') ||
-    pathname.startsWith('/dashboards') ||
     pathname.startsWith('/reports') ||
+    pathname.startsWith('/dashboards')
+  ) {
+    return {
+      mode: 'reports',
+      items: [
+        NAV_ITEMS.dashboards,
+        NAV_ITEMS.reports,
+      ],
+    };
+  }
+
+  if (
+    pathname.startsWith('/transactions') ||
     pathname.startsWith('/rules') ||
     pathname.startsWith('/categories')
   ) {
@@ -230,8 +254,6 @@ export function getMobileNavContext(pathname: string): {
       items: [
         NAV_ITEMS.transactions,
         NAV_ITEMS.needsReview,
-        NAV_ITEMS.dashboards,
-        NAV_ITEMS.reports,
         NAV_ITEMS.rules,
         NAV_ITEMS.categories,
       ],
@@ -250,6 +272,12 @@ export function getMobileNavContext(pathname: string): {
         icon: NAV_ITEMS.investmentsHoldings.icon,
       },
       NAV_ITEMS.loansOverview,
+      {
+        href: '/dashboards',
+        label: 'Reports',
+        shortLabel: 'Reports',
+        icon: NAV_ITEMS.reports.icon,
+      },
     ],
   };
 }
