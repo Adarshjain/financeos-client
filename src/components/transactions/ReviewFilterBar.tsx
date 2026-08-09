@@ -30,6 +30,7 @@ import {
 } from '@/components/ui/popover';
 import { RemovableBadge } from '@/components/ui/removable-badge';
 import type { Account } from '@/lib/account.types';
+import { AccountType } from '@/lib/types';
 import { cn, formatDate } from '@/lib/utils';
 
 interface ReviewFilterBarProps {
@@ -78,7 +79,14 @@ export function ReviewFilterBar({
   const [accountOpen, setAccountOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
 
-  const isAllAccountsSelected = appliedAccountIds.length === accounts.length;
+  // Investment (broker) accounts don't post manual transactions here; keep
+  // them out of the picker unless one is already selected via an existing filter.
+  const selectableAccounts = useMemo(
+    () => accounts.filter((a) => a.type !== AccountType.BROKER || appliedAccountIds.includes(a.id)),
+    [accounts, appliedAccountIds],
+  );
+
+  const isAllAccountsSelected = appliedAccountIds.length === selectableAccounts.length;
 
   const handleAccountToggle = (id: string) => {
     if (appliedAccountIds.includes(id)) {
@@ -90,11 +98,11 @@ export function ReviewFilterBar({
   };
 
   const handleSelectAllAccounts = () => {
-    onAccountIdsChange(accounts.map((a) => a.id));
+    onAccountIdsChange(selectableAccounts.map((a) => a.id));
   };
 
   const handleResetFilters = () => {
-    onAccountIdsChange(accounts.map((a) => a.id));
+    onAccountIdsChange(selectableAccounts.map((a) => a.id));
     onOnlyUpToLastStatementChange(true);
     onReasonFilterChange('ALL');
     onSearchChange('');
@@ -125,7 +133,7 @@ export function ReviewFilterBar({
         // inferred and declared deps disagree — which cost this whole component
         // React Compiler optimisation, and left `onAccountIdsChange` captured
         // stale since it was never listed.
-        onRemove: () => onAccountIdsChange(accounts.map((a) => a.id)),
+        onRemove: () => onAccountIdsChange(selectableAccounts.map((a) => a.id)),
       });
     }
 
@@ -144,6 +152,7 @@ export function ReviewFilterBar({
     appliedAccountIds,
     onlyUpToLastStatement,
     accounts,
+    selectableAccounts,
     onAccountIdsChange,
     onReasonFilterChange,
     onOnlyUpToLastStatementChange,
@@ -233,7 +242,7 @@ export function ReviewFilterBar({
                     <span>Select All Accounts</span>
                     {isAllAccountsSelected && <Check className="h-3.5 w-3.5 text-emerald-600" />}
                   </CommandItem>
-                  {accounts.map((acc) => {
+                  {selectableAccounts.map((acc) => {
                     const isSelected = appliedAccountIds.includes(acc.id);
                     const lastStatementDate =
                       'lastStatementDate' in acc && acc.lastStatementDate

@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
 import { ReviewType, Transaction, type TransactionRequest } from '@/lib/transaction.types';
+import { AccountType } from '@/lib/types';
 import { cn, parseCalendarDate, toCalendarDate } from '@/lib/utils';
 
 interface TransactionCRUDProps {
@@ -44,6 +45,12 @@ export default function TransactionCRUD({
   const suggestedDescriptionRef = useRef<string | null>(null);
 
   const [accountId, setAccountId] = useState<string>(transaction?.accountId ?? '');
+  // Investment (broker) accounts are managed via the investments module, not
+  // manual transaction entry. Keep the current transaction's account selectable
+  // even if it's a broker account, so editing a legacy record doesn't blank out.
+  const selectableAccounts = accounts.filter(
+    (a) => a.type !== AccountType.BROKER || a.id === transaction?.accountId,
+  );
   const [isMonitored, setIsMonitored] = useState(transaction?.isTransactionUnderMonitoring ?? false);
   const [monitoringReason, setMonitoringReason] = useState<string>(transaction?.monitoringReason ?? '');
   const [isExcluded, setIsExcluded] = useState(transaction?.isTransactionExcluded ?? false);
@@ -262,7 +269,7 @@ export default function TransactionCRUD({
                 <SelectValue placeholder="Select Account" />
               </SelectTrigger>
               <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-                {accounts.map((a) => (
+                {selectableAccounts.map((a) => (
                   <SelectItem key={a.id} value={a.id} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
                     {a.name}
                   </SelectItem>
