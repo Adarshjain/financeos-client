@@ -22,6 +22,7 @@ import { RemovableBadge } from '@/components/ui/removable-badge';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { FilterClause } from '@/lib/reports.types';
+import { AccountType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 interface TransactionFilterBarProps {
@@ -122,6 +123,13 @@ export function TransactionFilterBar({
     if (Array.isArray(clause.value)) return clause.value as string[];
     return [String(clause.value)];
   }, [getFilter]);
+
+  // Investment (broker) accounts don't post manual transactions here; keep
+  // them out of the picker unless one is already selected via an existing filter.
+  const selectableAccounts = useMemo(
+    () => accounts.filter((a) => a.type !== AccountType.BROKER || activeAccountIds.includes(a.id)),
+    [accounts, activeAccountIds],
+  );
 
   // Active Category Names
   const activeCategories = useMemo(() => {
@@ -479,7 +487,7 @@ export function TransactionFilterBar({
               <CommandList className="max-h-56 p-1">
                 <CommandEmpty className="py-4 text-xs text-center text-slate-500">No account found.</CommandEmpty>
                 <CommandGroup>
-                  {accounts.map((acc) => {
+                  {selectableAccounts.map((acc) => {
                     const isSelected = activeAccountIds.includes(acc.id);
                     return (
                       <CommandItem

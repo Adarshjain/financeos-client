@@ -23,6 +23,7 @@ import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { FilterClause } from '@/lib/reports.types';
 import type { PagedTransaction, ReviewReason } from '@/lib/transaction.types';
+import { AccountType } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
 import { ReviewFilterBar } from './ReviewFilterBar';
@@ -34,9 +35,17 @@ interface ReviewBrowserProps {
 }
 
 export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
+  // Investment (broker) accounts don't post manual transactions here, so they're
+  // excluded from the default "all accounts" selection and its size comparisons
+  // below — kept in sync with the same filter in ReviewFilterBar.
+  const selectableAccounts = useMemo(
+    () => accounts.filter((a) => a.type !== AccountType.BROKER),
+    [accounts],
+  );
+
   // Applied states (trigger fetching)
   const [appliedAccountIds, setAppliedAccountIds] = useState<string[]>(
-    accounts.map((a) => a.id),
+    selectableAccounts.map((a) => a.id),
   );
   const [appliedOnlyUpToLastStatement, setAppliedOnlyUpToLastStatement] = useState(true);
 
@@ -116,7 +125,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         });
       }
 
-      if (appliedAccountIds.length < accounts.length) {
+      if (appliedAccountIds.length < selectableAccounts.length) {
         filters.push({
           field: 'accountId',
           operator: 'in',
@@ -167,7 +176,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
             });
           }
 
-          if (appliedAccountIds.length < accounts.length) {
+          if (appliedAccountIds.length < selectableAccounts.length) {
             unfilteredFilters.push({
               field: 'accountId',
               operator: 'in',
@@ -202,7 +211,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         setLoading(false);
       }
     }
-  }, [accounts.length, appliedAccountIds, appliedOnlyUpToLastStatement, activeReasonFilter, size, debouncedSearch, sortBy]);
+  }, [selectableAccounts.length, appliedAccountIds, appliedOnlyUpToLastStatement, activeReasonFilter, size, debouncedSearch, sortBy]);
 
   useEffect(() => {
     const runId = ++runIdRef.current;
@@ -377,7 +386,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
             No transactions need review
           </p>
           <p className="text-sm text-slate-400 max-w-sm mx-auto">
-            {appliedAccountIds.length < accounts.length
+            {appliedAccountIds.length < selectableAccounts.length
               ? 'Try adjusting your account selection to find pending transactions.'
               : 'All transactions for the selected periods have been verified!'}
           </p>
