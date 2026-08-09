@@ -46,7 +46,7 @@ import type {
   RunReportRequest,
   UpdateReportRequest,
 } from '@/lib/reports.types';
-import type { CategoryRule, CreateRuleRequest, PagedRules,UpdateRuleRequest } from '@/lib/rules.types';
+import type { ApplyRuleRequest, ApplyRuleResult, CategoryRule, CreateRuleRequest, PagedRuleMatches, PagedRules, PreviewMatchesRequest, UpdateRuleRequest } from '@/lib/rules.types';
 import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, CreateTransactionLinkRequest, PagedTransaction, Transaction, TransactionLinkResponse, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 
 import type {
@@ -914,6 +914,26 @@ export const rulesApi = {
   async remove(id: string): Promise<void> {
     return request<void>(`/api/v1/rules/${id}`, {
       method: 'DELETE',
+    });
+  },
+
+  async previewMatches(
+    body: PreviewMatchesRequest,
+    params: { page?: number; size?: number } = {},
+  ): Promise<PagedRuleMatches> {
+    const query = new URLSearchParams();
+    if (params.page !== undefined) query.set('page', String(params.page));
+    if (params.size !== undefined) query.set('size', String(params.size));
+    return request<PagedRuleMatches>(`/api/v1/rules/preview-matches?${query}`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async apply(id: string, body: ApplyRuleRequest): Promise<ApplyRuleResult> {
+    return request<ApplyRuleResult>(`/api/v1/rules/${id}/apply`, {
+      method: 'POST',
+      body: JSON.stringify(body),
     });
   },
 };
