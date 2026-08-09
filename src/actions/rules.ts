@@ -4,7 +4,15 @@ import { revalidatePath } from 'next/cache';
 
 import { rulesApi } from '@/lib/apiClient';
 import { apiResult } from '@/lib/apiResult';
-import type { CategoryRule, CreateRuleRequest, UpdateRuleRequest } from '@/lib/rules.types';
+import type {
+  ApplyRuleRequest,
+  ApplyRuleResult,
+  CategoryRule,
+  CreateRuleRequest,
+  PagedRuleMatches,
+  PreviewMatchesRequest,
+  UpdateRuleRequest,
+} from '@/lib/rules.types';
 import type { ApiResult } from '@/lib/types';
 
 /**
@@ -54,5 +62,26 @@ export async function deleteRule(
   return apiResult('Failed to delete rule', async () => {
     await rulesApi.remove(id);
     revalidateRuleViews();
+  });
+}
+
+/** Read-only preview of what a (possibly unsaved) rule definition would match. */
+export async function previewRuleMatches(
+  body: PreviewMatchesRequest,
+  params: { page?: number; size?: number } = {},
+): Promise<ApiResult<PagedRuleMatches>> {
+  return apiResult('Failed to find matching transactions', async () =>
+    rulesApi.previewMatches(body, params),
+  );
+}
+
+export async function applyRule(
+  id: string,
+  body: ApplyRuleRequest,
+): Promise<ApiResult<ApplyRuleResult>> {
+  return apiResult('Failed to apply rule', async () => {
+    const result = await rulesApi.apply(id, body);
+    revalidateRuleViews();
+    return result;
   });
 }

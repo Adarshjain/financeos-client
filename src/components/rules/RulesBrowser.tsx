@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Edit, Plus, Search, Trash2 } from 'lucide-react';
+import { Check, Edit, ListChecks, Plus, Search, Trash2 } from 'lucide-react';
 import { usePathname,useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
@@ -12,14 +12,72 @@ import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { isValidMcc,MccInput } from '@/components/forms/MccInput';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
+import { RuleMatchesDialog } from '@/components/rules/RuleMatchesDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Category } from '@/lib/categories.types';
-import { CategoryRule, PagedRules } from '@/lib/rules.types';
+import { CategoryRule, MatchType, PagedRules } from '@/lib/rules.types';
 import { cn, formatRelativeTime } from '@/lib/utils';
+
+const MATCH_TYPE_META: Record<MatchType, { label: string; chip: string; placeholder: string; help: string }> = {
+  MERCHANT_KEY: {
+    label: 'Merchant key (smart contains)',
+    chip: 'Key',
+    placeholder: 'e.g. STARBUCKS',
+    help: 'Matches descriptions containing this text after cleanup — numbers, punctuation, and noise words (UPI, POS…) are ignored. At least 3 letters.',
+  },
+  CONTAINS: {
+    label: 'Contains text',
+    chip: 'Contains',
+    placeholder: 'e.g. UPI-AUTOPAY/042',
+    help: 'Matches descriptions containing this exact text anywhere, case-insensitively. Numbers and punctuation count.',
+  },
+  STARTS_WITH: {
+    label: 'Starts with',
+    chip: 'Starts with',
+    placeholder: 'e.g. ACH/',
+    help: 'Matches descriptions beginning with this exact text, case-insensitively.',
+  },
+  EXACT: {
+    label: 'Exact match',
+    chip: 'Exact',
+    placeholder: 'e.g. NEFT SALARY CREDIT',
+    help: 'Matches only descriptions that are exactly this text, case-insensitively.',
+  },
+  REGEX: {
+    label: 'Regex',
+    chip: 'Regex',
+    placeholder: 'e.g. NEFT.*(HDFC|ICICI)',
+    help: 'Matches descriptions where this regular expression finds a match, case-insensitively. Max 200 characters.',
+  },
+};
+
+function validatePattern(matchType: MatchType, pattern: string): string | null {
+  const trimmed = pattern.trim();
+  if (matchType === 'MERCHANT_KEY') {
+    if (trimmed.replace(/[^a-zA-Z]/g, '').length < 3) {
+      return 'Merchant key must contain at least 3 letters (ignoring numbers, spaces, and punctuation).';
+    }
+  } else if (matchType === 'CONTAINS' || matchType === 'STARTS_WITH') {
+    if (trimmed.length < 3) return 'Pattern must be at least 3 characters.';
+  } else if (matchType === 'EXACT') {
+    if (trimmed.length === 0) return 'Pattern must not be empty.';
+  } else if (matchType === 'REGEX') {
+    if (trimmed.length === 0) return 'Pattern must not be empty.';
+    if (trimmed.length > 200) return 'Regex pattern must be at most 200 characters.';
+    try {
+      new RegExp(trimmed, 'i');
+    } catch {
+      return 'Invalid regular expression.';
+    }
+  }
+  if (trimmed.length > 255) return 'Pattern must be at most 255 characters.';
+  return null;
+}
 
 interface RulesBrowserProps {
   initialRules: PagedRules;
@@ -46,9 +104,11 @@ export function RulesBrowser({
   // Dialog States
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<CategoryRule | null>(null);
+  const [matchesRule, setMatchesRule] = useState<CategoryRule | null>(null);
 
   // Form States
   const [merchantKey, setMerchantKey] = useState('');
+  const [matchType, setMatchType] = useState<MatchType>('MERCHANT_KEY');
   const [displayName, setDisplayName] = useState('');
   const [mcc, setMcc] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
@@ -142,6 +202,7 @@ export function RulesBrowser({
   // Open Create Dialog
   const openCreateDialog = () => {
     setMerchantKey('');
+    setMatchType('MERCHANT_KEY');
     setDisplayName('');
     setMcc('');
     setSelectedCategories([]);
@@ -151,6 +212,8 @@ export function RulesBrowser({
   // Open Edit Dialog
   const openEditDialog = (rule: CategoryRule) => {
     setEditingRule(rule);
+    setMerchantKey(rule.merchantKey);
+    setMatchType(rule.matchType || 'MERCHANT_KEY');
     setDisplayName(rule.displayName || '');
     setMcc(rule.mcc || '');
     setSelectedCategories(rule.categories);
@@ -166,13 +229,11 @@ export function RulesBrowser({
   const handleSubmitRule = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Client-side validations
-    if (!editingRule) {
-      const normalizedKey = merchantKey.replace(/[^a-zA-Z]/g, '');
-      if (normalizedKey.length < 3) {
-        toast.error('Merchant key must contain at least 3 letters (ignoring numbers, spaces, and punctuation).');
-        return;
-      }
+    // Client-side validations (server re-validates authoritatively)
+    const patternError = validatePattern(matchType, merchantKey);
+    if (patternError) {
+      toast.error(patternError);
+      return;
     }
 
     if (selectedCategories.length === 0) {
@@ -191,6 +252,8 @@ export function RulesBrowser({
     try {
       if (editingRule) {
         const res = await updateRule(editingRule.id, {
+          merchantKey: merchantKey.trim(),
+          matchType,
           displayName: displayName.trim() || undefined,
           categoryIds,
           mcc: mcc.trim() === '' ? '' : mcc.trim(),
@@ -206,6 +269,7 @@ export function RulesBrowser({
       } else {
         const res = await createRule({
           merchantKey: merchantKey.trim(),
+          matchType,
           displayName: displayName.trim() || undefined,
           categoryIds,
           mcc: mcc.trim() || undefined,
@@ -293,9 +357,9 @@ export function RulesBrowser({
                       <h3 className="font-bold text-slate-900 dark:text-white truncate">
                         {rule.displayName || rule.merchantKey}
                       </h3>
-                      {rule.displayName && (
+                      {(rule.displayName || rule.matchType !== 'MERCHANT_KEY') && (
                         <span className="text-[10px] tabular-nums px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 mt-1 block w-fit font-medium">
-                          Key: {rule.merchantKey}
+                          {(MATCH_TYPE_META[rule.matchType] || MATCH_TYPE_META.MERCHANT_KEY).chip}: {rule.merchantKey}
                         </span>
                       )}
                     </div>
@@ -348,6 +412,17 @@ export function RulesBrowser({
                   </div>
 
                   <div className="flex items-center gap-1.5">
+                    {/* Find Matching Transactions Action */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setMatchesRule(rule)}
+                      className="h-8 w-8 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 rounded-lg"
+                      title="Find matching transactions"
+                    >
+                      <ListChecks className="h-4 w-4" />
+                    </Button>
+
                     {/* Verify Action */}
                     {!rule.verified && (
                       <Button
@@ -404,63 +479,63 @@ export function RulesBrowser({
           </div>
 
           {/* Pagination */}
-          <PageActionBar>
-            {/*<div className="flex flex-col gap-1">*/}
-              {/* Tabs and Search Filters */}
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                {/* Toggle Chips/Tabs */}
-                <div className="flex bg-slate-100 dark:bg-slate-800/60 p-1 rounded-xl w-fit">
-                  {[
-                    { id: 'false', label: 'Unverified' },
-                    { id: 'true', label: 'Verified' },
-                    { id: 'all', label: 'All' },
-                  ].map((tab) => {
-                    const isActive = activeTab === tab.id;
-                    return (
-                        <button
-                            key={tab.id}
-                            onClick={() => handleTabChange(tab.id)}
-                            className={cn(
-                                'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200',
-                                isActive
-                                    ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white'
-                                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-350'
-                            )}
-                        >
-                          {tab.label}
-                        </button>
-                    );
-                  })}
-                </div>
-
-                {/* Search Box */}
-                <div className="relative min-w-[240px] flex-1 max-w-md">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                  <Input
-                      placeholder="Search merchant keys or display names..."
-                      value={searchVal}
-                      onChange={(e) => setSearchVal(e.target.value)}
-                      className="pl-9 pr-4 rounded-xl bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 focus-visible:ring-emerald-500 focus-visible:border-transparent transition-all"
-                  />
-                </div>
-              {/*</div>*/}
-              <TablePagination
-                  page={{
-                    number: initialRules.number,
-                    size: initialRules.size,
-                    totalElements: initialRules.totalElements,
-                    totalPages: initialRules.totalPages,
-                  }}
-                  loading={isPending}
-                  onPageChange={handlePageChange}
-                  onSizeChange={handleSizeChange}
-                  unit="rule"
-                  className="w-full px-1"
-              />
-            </div>
-          </PageActionBar>
         </>
       )}
+      <PageActionBar>
+        {/*<div className="flex flex-col gap-1">*/}
+        {/* Tabs and Search Filters */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          {/* Toggle Chips/Tabs */}
+          <div className="flex bg-slate-100 dark:bg-slate-800/60 p-1 rounded-xl w-fit">
+            {[
+              { id: 'false', label: 'Unverified' },
+              { id: 'true', label: 'Verified' },
+              { id: 'all', label: 'All' },
+            ].map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                  <button
+                      key={tab.id}
+                      onClick={() => handleTabChange(tab.id)}
+                      className={cn(
+                          'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200',
+                          isActive
+                              ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-900 dark:text-white'
+                              : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-350'
+                      )}
+                  >
+                    {tab.label}
+                  </button>
+              );
+            })}
+          </div>
+
+          {/* Search Box */}
+          <div className="relative min-w-[240px] flex-1 max-w-md">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <Input
+                placeholder="Search merchant keys or display names..."
+                value={searchVal}
+                onChange={(e) => setSearchVal(e.target.value)}
+                className="pl-9 pr-4 rounded-xl bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 focus-visible:ring-emerald-500 focus-visible:border-transparent transition-all"
+            />
+          </div>
+          {/*</div>*/}
+          <TablePagination
+              page={{
+                number: initialRules.number,
+                size: initialRules.size,
+                totalElements: initialRules.totalElements,
+                totalPages: initialRules.totalPages,
+              }}
+              loading={isPending}
+              onPageChange={handlePageChange}
+              onSizeChange={handleSizeChange}
+              unit="rule"
+              className="w-full px-1"
+          />
+        </div>
+      </PageActionBar>
 
       {/* Create / Edit Dialog */}
       <Dialog open={isCreateOpen || !!editingRule} onOpenChange={closeDialogs}>
@@ -471,22 +546,36 @@ export function RulesBrowser({
             </DialogHeader>
 
             <div className="space-y-3">
-              {/* Merchant Key Input (Create only) */}
-              {!editingRule && (
-                <div className="space-y-1">
-                  <Label htmlFor="merchantKey">Merchant Key</Label>
-                  <Input
-                    id="merchantKey"
-                    placeholder="e.g. STARBUCKS"
-                    value={merchantKey}
-                    onChange={(e) => setMerchantKey(e.target.value)}
-                    required
-                  />
-                  <p className="text-[10px] text-slate-400 dark:text-slate-500">
-                    Matches any transaction whose description contains this text — numbers and punctuation are ignored. Must contain at least 3 letters.
-                  </p>
-                </div>
-              )}
+              {/* Match Type + Pattern */}
+              <div className="space-y-1">
+                <Label htmlFor="matchType">Match Type</Label>
+                <Select value={matchType} onValueChange={(value) => setMatchType(value as MatchType)}>
+                  <SelectTrigger id="matchType">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(MATCH_TYPE_META) as MatchType[]).map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {MATCH_TYPE_META[type].label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="merchantKey">Pattern</Label>
+                <Input
+                  id="merchantKey"
+                  placeholder={MATCH_TYPE_META[matchType].placeholder}
+                  value={merchantKey}
+                  onChange={(e) => setMerchantKey(e.target.value)}
+                  required
+                />
+                <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                  {MATCH_TYPE_META[matchType].help} Matches run against the original imported description only.
+                </p>
+              </div>
 
               {/* Display Name Input */}
               <div className="space-y-1">
@@ -535,6 +624,17 @@ export function RulesBrowser({
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Matching Transactions Dialog */}
+      {matchesRule && (
+        <RuleMatchesDialog
+          rule={matchesRule}
+          open={!!matchesRule}
+          onOpenChange={(open) => {
+            if (!open) setMatchesRule(null);
+          }}
+        />
+      )}
     </div>
   );
 }
