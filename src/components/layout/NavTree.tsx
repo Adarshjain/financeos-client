@@ -12,6 +12,7 @@ import {
   NAV_ITEMS,
   NavItem,
   NavModule,
+  REPORTS_MODULE,
   TRANSACTIONS_MODULE,
 } from '@/components/layout/navigation';
 import { cn } from '@/lib/utils';
@@ -26,10 +27,11 @@ export function NavTree({ onItemClick, renderItemWrapper }: NavTreeProps) {
 
   const [openTransactions, setOpenTransactions] = useState(
     pathname.startsWith('/transactions') ||
-      pathname.startsWith('/dashboards') ||
-      pathname.startsWith('/reports') ||
       pathname.startsWith('/rules') ||
       pathname.startsWith('/categories'),
+  );
+  const [openReports, setOpenReports] = useState(
+    pathname.startsWith('/reports') || pathname.startsWith('/dashboards'),
   );
   const [openInvestments, setOpenInvestments] = useState(
     pathname.startsWith('/investments'),
@@ -115,6 +117,9 @@ export function NavTree({ onItemClick, renderItemWrapper }: NavTreeProps) {
       )}
       {renderModule(LOANS_MODULE, openLoans, () =>
         setOpenLoans(!openLoans),
+      )}
+      {renderModule(REPORTS_MODULE, openReports, () =>
+        setOpenReports(!openReports),
       )}
 
       {renderLink(NAV_ITEMS.settings, true)}
