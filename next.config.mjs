@@ -24,6 +24,11 @@ const MAX_REQUEST_MB = 30;
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   devIndicators: false,
+  // Next 16 blocks cross-origin requests to dev-server internals (/_next/*) by
+  // default, which breaks hydration and server actions when the app is opened
+  // via a LAN IP. A bare '*' is rejected by Next's matcher; '*.*.*.*' matches
+  // any IPv4 host, '**.local' covers mDNS hostnames. Dev-only, ignored in prod.
+  allowedDevOrigins: ['*.*.*.*', '**.local'],
   experimental: {
     serverActions: {
       bodySizeLimit: `${MAX_REQUEST_MB}mb`,
