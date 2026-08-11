@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import type { GmailConnectionResponse, GmailSenderRequest, GmailSenderResponse, SyncSummary } from '@/lib/types';
 
@@ -336,16 +337,15 @@ export function GmailConnect() {
         </CardHeader>
         <CardContent>
           {senders.length === 0 ? (
-            <div className="text-center py-8 border border-dashed rounded-lg">
-              <p className="text-slate-500 text-sm mb-2">No allowed senders configured yet.</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={openAddSenderDialog}
-              >
-                Configure Sender
-              </Button>
-            </div>
+            <EmptyState
+              title="No allowed senders configured yet"
+              description="Add banks, credit cards, or service alerts to the allowlist."
+              action={
+                <Button variant="outline" size="sm" onClick={openAddSenderDialog}>
+                  Configure Sender
+                </Button>
+              }
+            />
           ) : (
             <div className="grid gap-3 sm:grid-cols-2">
               {senders.map((sender) => (

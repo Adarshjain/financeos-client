@@ -4,43 +4,55 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+  'inline-flex items-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
   {
     variants: {
       variant: {
         default:
           'bg-secondary text-secondary-foreground',
         success:
-          'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400',
+          'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400',
+        emerald:
+          'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400',
         warning:
-          'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
-        info: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400',
+          'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400',
+        amber:
+          'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400',
+        info: 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400',
+        blue: 'bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400',
+        violet:
+          'bg-violet-100 dark:bg-violet-950 text-violet-600 dark:text-violet-400',
+        slate:
+          'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400',
         secondary:
           'bg-muted text-muted-foreground',
-        // `danger` was a byte-identical duplicate of this and both were in use,
-        // so a restyle of one would silently have missed the other's call sites.
-        // `destructive` is the survivor because Button and Alert already use that
-        // name, making one shared vocabulary across the primitives.
         destructive:
-          'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
+          'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400',
         outline:
           'border border-border text-foreground',
+      },
+      size: {
+        default: 'px-2.5 py-0.5 rounded-full text-xs font-medium',
+        sm: 'px-2 py-0.5 rounded text-[10px] font-semibold',
+        xs: 'px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide',
       },
     },
     defaultVariants: {
       variant: 'default',
-    } as const,
+      size: 'default',
+    },
   }
 );
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
-  VariantProps<typeof badgeVariants> { }
+    VariantProps<typeof badgeVariants> {}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
+function Badge({ className, variant, size, ...props }: BadgeProps) {
   return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+    <div className={cn(badgeVariants({ variant, size }), className)} {...props} />
   );
 }
 
 export { Badge, badgeVariants };
+

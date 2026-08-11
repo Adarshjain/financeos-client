@@ -11,6 +11,7 @@ import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 import { cn, formatDate } from '@/lib/utils';
 
@@ -53,16 +54,11 @@ export function DashboardsList({ dashboards }: DashboardsListProps) {
 
   if (dashboards.length === 0) {
     return (
-      <Card>
-        <div className="py-12 text-center">
-          <p className="mb-2 text-slate-600 dark:text-slate-400">
-            No dashboards yet
-          </p>
-          <p className="text-sm text-slate-500">
-            Create a dashboard and add your saved reports as widgets.
-          </p>
-        </div>
-      </Card>
+      <EmptyState
+        icon={LayoutDashboard}
+        title="No dashboards yet"
+        description="Create a dashboard and add your saved reports as widgets."
+      />
     );
   }
 
@@ -83,8 +79,7 @@ export function DashboardsList({ dashboards }: DashboardsListProps) {
               {d.isDefault && <Badge variant="success">Default</Badge>}
               <Button
                 variant="ghost"
-                size="icon"
-                className="h-7 w-7 shrink-0"
+                size="icon-xs"
                 disabled={pending}
                 title={d.isDefault ? 'Clear default' : 'Set as default'}
                 aria-pressed={d.isDefault}
@@ -130,7 +125,7 @@ export function DashboardsList({ dashboards }: DashboardsListProps) {
                 primaryActionText="Delete"
                 primaryAction={() => handleDelete(d.id)}
                 trigger={
-                  <Button variant="secondary" size="sm" className="flex-1">
+                  <Button variant="destructive-outline" size="sm" className="flex-1">
                     <Trash2 className="h-4 w-4" />
                     Delete
                   </Button>

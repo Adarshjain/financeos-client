@@ -390,14 +390,8 @@ export function TransactionFilterBar({
         <Popover open={dateOpen} onOpenChange={setDateOpen}>
           <PopoverTrigger asChild>
             <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                'h-8 rounded-full px-3 text-[11px] font-medium gap-1 border shrink-0 transition-all touch-manipulation',
-                activeDate.operator !== 'all_time'
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 font-semibold'
-                  : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300',
-              )}
+              variant={activeDate.operator !== 'all_time' ? 'filter-active' : 'filter'}
+              size="pill"
             >
               <CalendarIcon className="h-3 w-3 opacity-70" />
               <span>{activeDate.label}</span>
@@ -461,14 +455,8 @@ export function TransactionFilterBar({
         <Popover open={accountOpen} onOpenChange={setAccountOpen}>
           <PopoverTrigger asChild>
             <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                'h-8 rounded-full px-3 text-[11px] font-medium gap-1 border shrink-0 transition-all touch-manipulation',
-                activeAccountIds.length > 0
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 font-semibold'
-                  : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300',
-              )}
+              variant={activeAccountIds.length > 0 ? 'filter-active' : 'filter'}
+              size="pill"
             >
               <Wallet className="h-3 w-3 opacity-70" />
               <span>
@@ -515,14 +503,8 @@ export function TransactionFilterBar({
         <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
           <PopoverTrigger asChild>
             <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                'h-8 rounded-full px-3 text-[11px] font-medium gap-1 border shrink-0 transition-all touch-manipulation',
-                activeCategories.length > 0
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 font-semibold'
-                  : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300',
-              )}
+              variant={activeCategories.length > 0 ? 'filter-active' : 'filter'}
+              size="pill"
             >
               <Tag className="h-3 w-3 opacity-70" />
               <span>
@@ -562,15 +544,9 @@ export function TransactionFilterBar({
 
         {/* Surfaced Under Monitoring Quick Filter Pill */}
         <Button
-          variant="outline"
-          size="sm"
+          variant={isMonitoringActive ? 'filter-active' : 'filter'}
+          size="pill"
           onClick={toggleMonitoring}
-          className={cn(
-            'h-8 rounded-full px-3 text-[11px] font-medium gap-1.5 border shrink-0 transition-all touch-manipulation',
-            isMonitoringActive
-              ? 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400 font-semibold'
-              : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300',
-          )}
         >
           <Eye className="h-3 w-3 opacity-70" />
           <span>Monitoring</span>

@@ -6,8 +6,8 @@ import { toast } from 'sonner';
 
 import { createCategory } from '@/actions/categories';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Category } from '@/lib/categories.types';
@@ -64,7 +64,7 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
         </div>
         <Button
           onClick={() => setIsCreateOpen(true)}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold px-4 py-2 flex items-center gap-1.5 shadow-sm self-start sm:self-auto"
+          className="self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           Add Category
@@ -84,17 +84,11 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
 
       {/* Categories Grid */}
       {filteredCategories.length === 0 ? (
-        <Card className="border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-8 text-center bg-white dark:bg-slate-900/40">
-          <CardContent className="space-y-3 pt-2">
-            <Tag className="w-8 h-8 text-slate-400 mx-auto" />
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-              No categories found
-            </p>
-            <p className="text-xs text-slate-400">
-              {search ? 'Try adjusting your search query.' : 'Get started by creating your first category.'}
-            </p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Tag}
+          title="No categories found"
+          description={search ? 'Try adjusting your search query.' : 'Get started by creating your first category.'}
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {filteredCategories.map((cat) => (
@@ -118,44 +112,34 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
 
       {/* Create Category Modal */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
-          <form onSubmit={handleCreate}>
-            <DialogHeader>
-              <DialogTitle className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <Plus className="w-4 h-4 text-emerald-600" />
-                Create New Category
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="py-4 space-y-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="catName" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Category Name
-                </Label>
-                <Input
-                  id="catName"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  placeholder="e.g. Dining & Restaurants, Subscriptions..."
-                  className="bg-slate-50 dark:bg-slate-950 text-xs rounded-xl border-slate-200 dark:border-slate-800"
-                  autoFocus
-                />
-              </div>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Category</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreate} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="category-name">Category Name</Label>
+              <Input
+                id="category-name"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                placeholder="e.g., Subscriptions"
+                disabled={isSubmitting}
+                autoFocus
+              />
             </div>
-
-            <DialogFooter className="gap-2">
+            <DialogFooter className="gap-2 sm:gap-0">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setIsCreateOpen(false)}
-                className="rounded-xl text-xs"
+                disabled={isSubmitting}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting || !newCategoryName.trim()}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold"
               >
                 {isSubmitting ? 'Creating...' : 'Create Category'}
               </Button>

@@ -1,12 +1,14 @@
 'use client';
 
-import { Pencil, Plus, Trash2, Trophy } from 'lucide-react';
+import { MoreVertical, Pencil, Plus, Trash2, Trophy } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { deleteRewardMilestone, listRewardMilestones } from '@/actions/rewards';
 import RewardMilestoneForm from '@/components/rewards/RewardMilestoneForm';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { EmptyState } from '@/components/ui/empty-state';
 import type { Category } from '@/lib/categories.types';
 import type { RewardMilestone, RewardType } from '@/lib/rewards.types';
 import { formatMoney } from '@/lib/utils';
@@ -86,17 +88,18 @@ export default function RewardMilestonesManager({ accountId, categories, default
           <Trophy className="w-3.5 h-3.5 text-amber-500" /> Milestones
         </h2>
         <div className="flex-1" />
-        <Button onClick={() => setIsCreateOpen(true)} disabled={!accountId} variant="outline"
-                className="rounded-lg h-8 text-xs font-semibold">
+        <Button onClick={() => setIsCreateOpen(true)} disabled={!accountId} variant="outline" size="sm">
           <Plus className="w-3.5 h-3.5 mr-1" /> New Milestone
         </Button>
       </div>
 
       {milestones.length === 0 ? (
-        <p className="text-[11px] text-slate-400 dark:text-slate-500">
-          No milestones yet. Use them for spend targets (“₹1L/quarter → ₹1,000 voucher”), transaction-count
-          bonuses (“4 txns of ₹1,500+ → 1,000 pts value”), or annual-fee-waiver trackers.
-        </p>
+        <EmptyState
+          compact
+          icon={Trophy}
+          title="No milestones yet"
+          description="Use them for spend targets (“₹1L/quarter → ₹1,000 voucher”), transaction-count bonuses (“4 txns of ₹1,500+ → 1,000 pts value”), or annual-fee-waiver trackers."
+        />
       ) : (
         <div className="flex flex-col gap-2">
           {milestones.map((milestone) => (
@@ -115,17 +118,27 @@ export default function RewardMilestonesManager({ accountId, categories, default
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <Button variant="outline" size="icon" aria-label="Edit milestone" title="Edit"
-                        onClick={() => setEditing(milestone)} className="h-7 w-7 rounded-lg">
-                  <Pencil className="w-3.5 h-3.5" />
-                </Button>
-                <Button variant="outline" size="icon" aria-label="Delete milestone" title="Delete"
-                        onClick={() => void remove(milestone)}
-                        className="h-7 w-7 rounded-lg text-red-500 hover:text-red-600">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
-              </div>
+
+              {/* Actions 3-dot dropdown menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon-xs" aria-label="Milestone actions">
+                    <MoreVertical className="w-4 h-4 text-slate-500" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem onClick={() => setEditing(milestone)}>
+                    <Pencil className="w-3.5 h-3.5 mr-2" /> Edit Milestone
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => void remove(milestone)}
+                    className="text-rose-600 dark:text-rose-400 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950/30"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 mr-2 text-rose-600 dark:text-rose-400" /> Delete Milestone
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ))}
         </div>
