@@ -24,12 +24,6 @@ export default async function RewardRulesPage() {
     <div className="p-4 sm:p-6 pb-24 space-y-4 max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Reward Rules</h1>
-        <Link
-          href="/rewards"
-          className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
-        >
-          ← Back to Rewards
-        </Link>
       </div>
       <RewardRulesManager
         accounts={orderedAccounts}

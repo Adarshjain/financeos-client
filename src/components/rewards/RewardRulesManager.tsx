@@ -250,7 +250,7 @@ export default function RewardRulesManager({
   const today = toCalendarDate(new Date());
 
   const renderActionBar = (isMobile = false) => (
-    <div className={cn('flex items-center gap-2 w-full', !isMobile && 'flex-wrap')}>
+    <div className={cn('flex items-center gap-1 w-full', !isMobile && 'flex-wrap')}>
       <Select
         value={accountId}
         onValueChange={(v) => {
@@ -272,8 +272,8 @@ export default function RewardRulesManager({
       </Select>
       {loading && <Loader2 className="w-4 h-4 animate-spin text-slate-400 shrink-0" />}
       {!isMobile && <div className="flex-1" />}
-      <Button onClick={() => setIsCreateOpen(true)} disabled={!accountId}
-              className="rounded-xl h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shrink-0">
+      <Button onClick={() => setIsCreateOpen(true)} disabled={!accountId} variant="outline"
+              className="rounded-lg h-8 text-xs font-semibold">
         <Plus className="w-3.5 h-3.5 mr-1" /> New Rule
       </Button>
     </div>
@@ -282,10 +282,10 @@ export default function RewardRulesManager({
   return (
     <div className="flex flex-col gap-3">
       {/* Desktop action bar */}
-      <div className="hidden lg:block">{renderActionBar(false)}</div>
+      <div className="">{renderActionBar(false)}</div>
 
       {/* Mobile: controls live in the bottom PageActionBar */}
-      <PageActionBar>{renderActionBar(true)}</PageActionBar>
+      {/*<PageActionBar>{renderActionBar(true)}</PageActionBar>*/}
 
       {/* Anniversary anchor — owned by the account (credit-card details), shown read-only */}
       <div className="flex items-center gap-2 flex-wrap rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900/60 px-3 py-2">
@@ -294,10 +294,10 @@ export default function RewardRulesManager({
         <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
           {anniversaryDate ? formatDate(anniversaryDate) : 'Not set'}
         </span>
-        <span className="text-[10px] text-slate-400 dark:text-slate-500">
-          Anchors “Per anniversary year” windows and the Rewards overview — set it by editing the card on the{' '}
-          <Link href="/accounts" className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">Accounts</Link> page.
-        </span>
+        {/*<span className="text-[10px] text-slate-400 dark:text-slate-500">*/}
+        {/*  Anchors “Per anniversary year” windows and the Rewards overview — set it by editing the card on the{' '}*/}
+        {/*  <Link href="/accounts" className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">Accounts</Link> page.*/}
+        {/*</span>*/}
       </div>
 
       {/* Card-level default reward currency — preselected on every new rule */}
@@ -387,13 +387,6 @@ export default function RewardRulesManager({
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 shrink-0">
-                  <Button variant="outline" size="icon" aria-label="End-date and clone"
-                          title={ended ? 'Already ended — use Clone' : 'End today & clone (devaluation)'}
-                          onClick={() => void endDateAndClone(rule)}
-                          disabled={ended}
-                          className="h-7 w-7 rounded-lg">
-                    <CalendarOff className="w-3.5 h-3.5" />
-                  </Button>
                   <Button variant="outline" size="icon" aria-label="Clone rule" title="Clone"
                           onClick={() => setCloneSource(rule)}
                           className="h-7 w-7 rounded-lg">

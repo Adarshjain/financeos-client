@@ -87,7 +87,7 @@ export default function RewardMilestonesManager({ accountId, categories, default
         </h2>
         <div className="flex-1" />
         <Button onClick={() => setIsCreateOpen(true)} disabled={!accountId} variant="outline"
-                className="rounded-xl h-8 text-xs font-semibold">
+                className="rounded-lg h-8 text-xs font-semibold">
           <Plus className="w-3.5 h-3.5 mr-1" /> New Milestone
         </Button>
       </div>
