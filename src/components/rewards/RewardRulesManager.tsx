@@ -1,16 +1,17 @@
 'use client';
 
-import { ArrowDown, ArrowUp, CalendarClock, CalendarOff, Coins, Copy, Loader2, Pencil, Plus, Trash2 } from 'lucide-react';
-import Link from 'next/link';
+import { ArrowDown, ArrowUp, CalendarClock, CalendarOff, Coins, Copy, Loader2, MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { deleteRewardRule, getRewardAccountConfig, listRewardCapBuckets, listRewardRules, reorderRewardRules, updateRewardAccountConfig, updateRewardRule } from '@/actions/rewards';
-import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import RewardCapBucketsManager from '@/components/rewards/RewardCapBucketsManager';
 import RewardMilestonesManager from '@/components/rewards/RewardMilestonesManager';
 import RewardRuleForm from '@/components/rewards/RewardRuleForm';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
@@ -314,9 +315,6 @@ export default function RewardRulesManager({
             <SelectItem value="POINTS" className="text-xs font-medium">Reward points</SelectItem>
           </SelectContent>
         </Select>
-        <span className="text-[10px] text-slate-400 dark:text-slate-500">
-          The card’s default — each rule can still override it.
-        </span>
       </div>
 
       <p className="text-[11px] text-slate-400 dark:text-slate-500">
@@ -327,10 +325,11 @@ export default function RewardRulesManager({
 
       {/* Rule cards, evaluation order */}
       {rules.length === 0 && !loading ? (
-        <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 p-8 text-center text-xs text-slate-400 dark:text-slate-500">
-          No reward rules on this account yet. Start with a base rule (e.g. “1% on everything”), then add
-          category bonuses and exclusions above it.
-        </div>
+        <EmptyState
+          icon={Coins}
+          title="No reward rules on this account yet"
+          description="Start with a base rule (e.g. “1% on everything”), then add category bonuses and exclusions above it."
+        />
       ) : (
         <div className="flex flex-col gap-2">
           {rules.map((rule, index) => {
@@ -359,18 +358,13 @@ export default function RewardRulesManager({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{rule.name}</span>
-                    <span className={cn(
-                      'text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide',
-                      rule.stacking === 'EXCLUSIVE'
-                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
-                        : 'bg-violet-100 dark:bg-violet-950 text-violet-600 dark:text-violet-400',
-                    )}>
+                    <Badge size="xs" variant={rule.stacking === 'EXCLUSIVE' ? 'slate' : 'violet'}>
                       {rule.stacking === 'EXCLUSIVE' ? 'excl' : 'add'}
-                    </span>
+                    </Badge>
                     {ended && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-500">
+                      <Badge size="xs" variant="amber">
                         ended
-                      </span>
+                      </Badge>
                     )}
                   </div>
                   <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold mt-0.5">
@@ -385,24 +379,34 @@ export default function RewardRulesManager({
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-1 shrink-0">
-                  <Button variant="outline" size="icon" aria-label="Clone rule" title="Clone"
-                          onClick={() => setCloneSource(rule)}
-                          className="h-7 w-7 rounded-lg">
-                    <Copy className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button variant="outline" size="icon" aria-label="Edit rule" title="Edit"
-                          onClick={() => setEditingRule(rule)}
-                          className="h-7 w-7 rounded-lg">
-                    <Pencil className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button variant="outline" size="icon" aria-label="Delete rule" title="Delete"
-                          onClick={() => void remove(rule)}
-                          className="h-7 w-7 rounded-lg text-red-500 hover:text-red-600">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
+                {/* Actions 3-dot dropdown menu */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon-xs" aria-label="Rule actions">
+                      <MoreVertical className="w-4 h-4 text-slate-500" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuItem onClick={() => setEditingRule(rule)}>
+                      <Pencil className="w-3.5 h-3.5 mr-2" /> Edit Rule
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setCloneSource(rule)}>
+                      <Copy className="w-3.5 h-3.5 mr-2" /> Clone Rule
+                    </DropdownMenuItem>
+                    {!ended && (
+                      <DropdownMenuItem onClick={() => void endDateAndClone(rule)}>
+                        <CalendarOff className="w-3.5 h-3.5 mr-2" /> End & Clone
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => void remove(rule)}
+                      className="text-rose-600 dark:text-rose-400 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950/30"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 mr-2 text-rose-600 dark:text-rose-400" /> Delete Rule
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             );
           })}

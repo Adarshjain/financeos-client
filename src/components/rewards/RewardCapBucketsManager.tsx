@@ -1,12 +1,14 @@
 'use client';
 
-import { Layers, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Layers, MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { createRewardCapBucket, deleteRewardCapBucket, updateRewardCapBucket } from '@/actions/rewards';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -104,16 +106,18 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
           <Layers className="w-3.5 h-3.5 text-sky-500" /> Shared Cap Buckets
         </h2>
         <div className="flex-1" />
-        <Button onClick={openCreate} disabled={!accountId} variant="outline" className="rounded-lg h-8 text-xs font-semibold">
+        <Button onClick={openCreate} disabled={!accountId} variant="outline" size="sm">
           <Plus className="w-3.5 h-3.5 mr-1" /> New Bucket
         </Button>
       </div>
 
       {buckets.length === 0 ? (
-        <p className="text-[11px] text-slate-400 dark:text-slate-500">
-          No shared buckets. Use one when several rules must share a single ceiling (e.g. Axis ACE’s 5% and 4%
-          categories together capped at ₹500/cycle) — then pick the bucket in each rule’s Limits.
-        </p>
+        <EmptyState
+          compact
+          icon={Layers}
+          title="No shared buckets"
+          description="Use one when several rules must share a single ceiling (e.g. Axis ACE’s 5% and 4% categories together capped at ₹500/cycle) — then pick the bucket in each rule’s Limits."
+        />
       ) : (
         <div className="flex flex-col gap-2">
           {buckets.map((bucket) => (
@@ -126,17 +130,27 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
                   <span className="text-slate-400 dark:text-slate-500 font-medium"> · {bucket.ruleCount} rule{bucket.ruleCount === 1 ? '' : 's'}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-1 shrink-0">
-                <Button variant="outline" size="icon" aria-label="Edit bucket" title="Edit"
-                        onClick={() => openEdit(bucket)} className="h-7 w-7 rounded-lg">
-                  <Pencil className="w-3.5 h-3.5" />
-                </Button>
-                <Button variant="outline" size="icon" aria-label="Delete bucket" title="Delete"
-                        onClick={() => void remove(bucket)}
-                        className="h-7 w-7 rounded-lg text-red-500 hover:text-red-600">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
-              </div>
+
+              {/* Actions 3-dot dropdown menu */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon-xs" aria-label="Bucket actions">
+                    <MoreVertical className="w-4 h-4 text-slate-500" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-36">
+                  <DropdownMenuItem onClick={() => openEdit(bucket)}>
+                    <Pencil className="w-3.5 h-3.5 mr-2" /> Edit Bucket
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => void remove(bucket)}
+                    className="text-rose-600 dark:text-rose-400 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950/30"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 mr-2 text-rose-600 dark:text-rose-400" /> Delete Bucket
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           ))}
         </div>
