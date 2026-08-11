@@ -188,3 +188,13 @@ export function isWithinLastNDays(date: Date, days: number) {
 
   return diffInDays >= 0 && diffInDays < days;
 }
+
+/**
+ * Sanitizes a decimal text input: keeps digits and at most one dot, drops sign
+ * and other characters. Shared by the amount/rate/cap inputs across forms.
+ */
+export function sanitizeDecimalInput(value: string): string {
+  const cleaned = value.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  return parts.length > 1 ? parts[0] + '.' + parts.slice(1).join('') : cleaned;
+}

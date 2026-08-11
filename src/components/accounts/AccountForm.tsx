@@ -102,18 +102,21 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
       const creditLimit = optionalDecimal(formData, 'creditLimit');
       const paymentDueDay = optionalInteger(formData, 'paymentDueDay');
       const gracePeriodDays = optionalInteger(formData, 'gracePeriodDays');
+      const anniversaryDate = optionalString(formData, 'anniversaryDate');
 
       if (
         last4 === undefined ||
         creditLimit === undefined ||
         paymentDueDay === undefined ||
-        gracePeriodDays === undefined
+        gracePeriodDays === undefined ||
+        anniversaryDate === undefined
       ) {
         const missing = [
           last4 === undefined ? 'last 4 digits' : null,
           creditLimit === undefined ? 'credit limit' : null,
           paymentDueDay === undefined ? 'payment due day' : null,
           gracePeriodDays === undefined ? 'grace period' : null,
+          anniversaryDate === undefined ? 'anniversary date' : null,
         ].filter((field): field is string => field !== null);
         toast.error(`Credit card needs ${missing.join(', ')}.`);
         setIsSubmitting(false);
@@ -141,6 +144,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
         creditLimit,
         paymentDueDay,
         gracePeriodDays,
+        anniversaryDate,
         ...(statementPasswordVal ? { statementPassword: statementPasswordVal } : {}),
       };
     }
@@ -526,6 +530,21 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                       className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                     />
                   </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="anniversaryDate" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Card Anniversary Date</Label>
+                  <Input
+                    id="anniversaryDate"
+                    name="anniversaryDate"
+                    type="date"
+                    defaultValue={creditCard?.anniversaryDate ?? ''}
+                    required
+                    className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                  />
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                    Membership anniversary — anchors “per anniversary year” reward windows and the Rewards overview.
+                  </p>
                 </div>
 
                 <div className="space-y-1.5">

@@ -1,4 +1,4 @@
-import { CreditCard, FileText, Tag } from 'lucide-react';
+import { CalendarDays, ChevronDown, CreditCard, FileText, Gift, Tag } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import * as React from 'react';
 import { toast } from 'sonner';
@@ -9,15 +9,24 @@ import { Combobox } from '@/components/Combobox';
 import DayPicker from '@/components/DayPicker';
 import { isValidMcc,MccInput } from '@/components/forms/MccInput';
 import { Button } from '@/components/ui/button';
+import { DatePicker } from '@/components/ui/date-picker';
 import { FormFieldTextArea } from '@/components/ui/form-field-textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
-import { ReviewType, Transaction, type TransactionRequest } from '@/lib/transaction.types';
+import { ReviewType, Transaction, type TransactionChannel, type TransactionRequest } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
-import { cn, parseCalendarDate, toCalendarDate } from '@/lib/utils';
+import { cn, formatDate, parseCalendarDate, sanitizeDecimalInput, toCalendarDate } from '@/lib/utils';
+
+const CHANNEL_LABELS: Record<TransactionChannel, string> = {
+  ONLINE: 'Online',
+  POS: 'POS / In-store',
+  UPI: 'UPI',
+  CONTACTLESS: 'Contactless / Tap',
+  OTHER: 'Other',
+};
 
 interface TransactionCRUDProps {
   transaction?: Transaction;
@@ -56,6 +65,29 @@ export default function TransactionCRUD({
   const [isExcluded, setIsExcluded] = useState(transaction?.isTransactionExcluded ?? false);
   const [reviewType, setReviewType] = useState<ReviewType>(transaction?.reviewType ?? 'MANUALLY_REVIEWED');
   const [mcc, setMcc] = useState<string>(transaction?.mcc ?? '');
+
+  // Rewards details (all optional) — section auto-expands when any value exists.
+  // != null (not truthiness): a stored 0 discount/fee is still a value.
+  const hasRewardDetails =
+    transaction?.settlementDate != null
+    || transaction?.instantDiscount != null
+    || transaction?.convenienceFee != null
+    || transaction?.channel != null
+    || !!transaction?.isEmi
+    || !!transaction?.isInternational;
+  const [showRewardDetails, setShowRewardDetails] = useState(hasRewardDetails);
+  const [settlementDate, setSettlementDate] = useState<Date | undefined>(
+    transaction?.settlementDate ? parseCalendarDate(transaction.settlementDate) : undefined,
+  );
+  const [instantDiscount, setInstantDiscount] = useState<string>(
+    transaction?.instantDiscount != null ? String(transaction.instantDiscount) : '',
+  );
+  const [convenienceFee, setConvenienceFee] = useState<string>(
+    transaction?.convenienceFee != null ? String(transaction.convenienceFee) : '',
+  );
+  const [channel, setChannel] = useState<TransactionChannel | 'NONE'>(transaction?.channel ?? 'NONE');
+  const [isEmi, setIsEmi] = useState(transaction?.isEmi ?? false);
+  const [isInternational, setIsInternational] = useState(transaction?.isInternational ?? false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isUpdateMode = !!transaction;
@@ -122,6 +154,16 @@ export default function TransactionCRUD({
       toast.error('MCC code must be exactly 4 digits (or left empty).');
       return;
     }
+    const discountValue = instantDiscount.trim() ? Number(instantDiscount) : null;
+    const feeValue = convenienceFee.trim() ? Number(convenienceFee) : null;
+    if (discountValue != null && (Number.isNaN(discountValue) || discountValue < 0)) {
+      toast.error('Instant discount must be a non-negative number.');
+      return;
+    }
+    if (feeValue != null && (Number.isNaN(feeValue) || feeValue < 0)) {
+      toast.error('Convenience fee must be a non-negative number.');
+      return;
+    }
     setIsSubmitting(true);
     try {
       const categoryIds = selectedCategories.map(c => c.id);
@@ -135,6 +177,16 @@ export default function TransactionCRUD({
         isTransactionUnderMonitoring: isMonitored,
         monitoringReason: isMonitored ? monitoringReason : undefined,
         mcc: rawMcc || (isUpdateMode ? '' : undefined),
+        // Always sent: the form owns all six fields, so a present object with
+        // nulls is how values get cleared (absent = server leaves untouched).
+        rewardDetails: {
+          settlementDate: settlementDate ? toCalendarDate(settlementDate) : null,
+          instantDiscount: discountValue,
+          convenienceFee: feeValue,
+          channel: channel === 'NONE' ? null : channel,
+          isEmi: isEmi || null,
+          isInternational: isInternational || null,
+        },
       };
       if (isUpdateMode) {
         transactionRequest.source = transaction?.source ?? 'manual';
@@ -301,6 +353,172 @@ export default function TransactionCRUD({
             onChange={setMcc}
             showHelperText={false}
           />
+        </div>
+
+        {/* Rewards Details Card (collapsible) */}
+        <div
+          className="bg-white dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-800/80 shadow-sm"
+        >
+          <button
+            type="button"
+            onClick={() => setShowRewardDetails(prev => !prev)}
+            aria-expanded={showRewardDetails}
+            className="w-full flex items-center justify-between p-3.5"
+          >
+            <Label className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium pointer-events-none">
+              <Gift className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+              Rewards Details
+              {!showRewardDetails && hasRewardDetails && (
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">• has values</span>
+              )}
+            </Label>
+            <ChevronDown
+              className={cn(
+                'w-3.5 h-3.5 text-slate-400 dark:text-slate-500 transition-transform',
+                showRewardDetails && 'rotate-180',
+              )}
+            />
+          </button>
+          {showRewardDetails && (
+            <div className="px-3.5 pb-3.5 flex flex-col gap-3">
+              {/* Settlement Date */}
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium shrink-0">
+                  Settlement Date
+                </Label>
+                <div className="flex items-center gap-1.5">
+                  <DatePicker
+                    date={settlementDate}
+                    onSelect={setSettlementDate}
+                    trigger={
+                      <button
+                        type="button"
+                        className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 text-xs px-3 h-9 border border-slate-200 dark:border-slate-800 rounded-lg font-semibold hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+                      >
+                        <CalendarDays className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                        {settlementDate ? formatDate(toCalendarDate(settlementDate)) : 'Not set'}
+                      </button>
+                    }
+                  />
+                  {settlementDate && (
+                    <button
+                      type="button"
+                      aria-label="Clear settlement date"
+                      onClick={() => setSettlementDate(undefined)}
+                      className="text-[10px] text-slate-400 dark:text-slate-500 hover:text-red-500 font-semibold px-1"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Instant Discount + Convenience Fee */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Instant Discount</Label>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="₹ 0.00"
+                    value={instantDiscount}
+                    onChange={(e) => setInstantDiscount(sanitizeDecimalInput(e.target.value))}
+                    className="text-xs h-9 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-lg shadow-none"
+                  />
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">Checkout discount, never charged</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Convenience Fee</Label>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="₹ 0.00"
+                    value={convenienceFee}
+                    onChange={(e) => setConvenienceFee(sanitizeDecimalInput(e.target.value))}
+                    className="text-xs h-9 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-lg shadow-none"
+                  />
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">Fee portion of the amount</span>
+                </div>
+              </div>
+
+              {/* Channel */}
+              <div className="flex items-center justify-between gap-2">
+                <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium shrink-0">Channel</Label>
+                <Select
+                  name="channel"
+                  value={channel}
+                  onValueChange={(val) => setChannel(val as TransactionChannel | 'NONE')}
+                >
+                  <SelectTrigger
+                    className="w-44 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 text-xs px-3 h-9 border border-slate-200 dark:border-slate-800 rounded-lg font-semibold shadow-none hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors">
+                    <SelectValue placeholder="Not set" />
+                  </SelectTrigger>
+                  <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+                    <SelectItem value="NONE" className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                      Not set
+                    </SelectItem>
+                    {(Object.keys(CHANNEL_LABELS) as TransactionChannel[]).map((c) => (
+                      <SelectItem key={c} value={c} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                        {CHANNEL_LABELS[c]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* EMI Toggle */}
+              <div className="flex items-center justify-between py-0.5 border-t border-slate-100 dark:border-slate-800/50 pt-2.5">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">EMI Transaction</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">Converted to or made as EMI</span>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isEmi}
+                  aria-label="EMI transaction"
+                  onClick={() => setIsEmi(prev => !prev)}
+                  className={cn(
+                    'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+                    isEmi ? 'bg-violet-500' : 'bg-slate-200 dark:bg-slate-800',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ease-in-out',
+                      isEmi ? 'translate-x-4' : 'translate-x-0',
+                    )}
+                  />
+                </button>
+              </div>
+
+              {/* International Toggle */}
+              <div className="flex items-center justify-between py-0.5 border-t border-slate-100 dark:border-slate-800/50 pt-2.5">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">International</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500">Foreign-currency / overseas spend</span>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isInternational}
+                  aria-label="International transaction"
+                  onClick={() => setIsInternational(prev => !prev)}
+                  className={cn(
+                    'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
+                    isInternational ? 'bg-sky-500' : 'bg-slate-200 dark:bg-slate-800',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow transition duration-200 ease-in-out',
+                      isInternational ? 'translate-x-4' : 'translate-x-0',
+                    )}
+                  />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Group 2: Status & Flags Card */}

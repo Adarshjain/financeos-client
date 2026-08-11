@@ -13,6 +13,22 @@ export type ReviewType = 'NEEDS_REVIEW' | 'AUTO_REVIEWED' | 'MANUALLY_REVIEWED' 
 
 export type ReviewReason = 'UNRECONCILED' | 'CATEGORY_UNVERIFIED' | 'DUPLICATE_SUSPECT' | 'OTHER';
 
+export type TransactionChannel = 'ONLINE' | 'POS' | 'UPI' | 'CONTACTLESS' | 'OTHER';
+
+/**
+ * Reward-relevant transaction details. Overwrite semantics on save: when this
+ * object is present on a create/update request ALL six fields are applied
+ * (nulls clear); when absent the stored values are left untouched.
+ */
+export interface RewardDetails {
+  settlementDate?: string | null;
+  instantDiscount?: number | null;
+  convenienceFee?: number | null;
+  channel?: TransactionChannel | null;
+  isEmi?: boolean | null;
+  isInternational?: boolean | null;
+}
+
 export interface TransactionBase {
   accountId: string;
   date: string;
@@ -30,6 +46,7 @@ export type TransactionRequest = Omit<TransactionBase, 'source' | 'reviewType'> 
   categoryIds: string[];
   source?: TransactionSource;
   reviewType?: ReviewType;
+  rewardDetails?: RewardDetails;
 }
 
 export type LinkType = 'TRANSFER' | 'CC_PAYMENT' | 'REFUND' | 'REVERSAL' | 'FEE' | 'EMI';
@@ -85,6 +102,13 @@ export type Transaction = TransactionBase & {
   reviewReasons?: ReviewReason[];
   appliedRuleId?: string | null;
   links?: TransactionLinkSummary[];
+  // Reward details come back flat on the response (requests nest them in rewardDetails)
+  settlementDate?: string | null;
+  instantDiscount?: number | null;
+  convenienceFee?: number | null;
+  channel?: TransactionChannel | null;
+  isEmi?: boolean | null;
+  isInternational?: boolean | null;
 }
 
 export type PagedTransaction = Page<Transaction>;

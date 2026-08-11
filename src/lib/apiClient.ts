@@ -46,6 +46,7 @@ import type {
   RunReportRequest,
   UpdateReportRequest,
 } from '@/lib/reports.types';
+import type { PagedRewardLines, ReorderRewardRulesRequest, RewardAccountConfig, RewardAccountConfigRequest, RewardCapBucket, RewardCapBucketRequest, RewardMilestone, RewardMilestoneRequest, RewardReport, RewardRule, RewardRuleRequest } from '@/lib/rewards.types';
 import type { ApplyRuleRequest, ApplyRuleResult, CategoryRule, CreateRuleRequest, PagedRuleMatches, PagedRules, PreviewMatchesRequest, UpdateRuleRequest } from '@/lib/rules.types';
 import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, CreateTransactionLinkRequest, PagedTransaction, Transaction, TransactionLinkResponse, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 
@@ -1126,6 +1127,126 @@ export const transactionLinksApi = {
     return request<void>(`/api/v1/transaction-links/${id}`, {
       method: 'DELETE',
     });
+  },
+};
+
+export const rewardsApi = {
+  async listRules(accountId: string): Promise<RewardRule[]> {
+    return request<RewardRule[]>(`/api/v1/reward-rules?accountId=${accountId}`);
+  },
+
+  async createRule(body: RewardRuleRequest): Promise<RewardRule> {
+    return request<RewardRule>('/api/v1/reward-rules', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async updateRule(id: string, body: RewardRuleRequest): Promise<RewardRule> {
+    return request<RewardRule>(`/api/v1/reward-rules/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async deleteRule(id: string): Promise<void> {
+    return request<void>(`/api/v1/reward-rules/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async reorderRules(body: ReorderRewardRulesRequest): Promise<RewardRule[]> {
+    return request<RewardRule[]>('/api/v1/reward-rules/reorder', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async listMilestones(accountId: string): Promise<RewardMilestone[]> {
+    return request<RewardMilestone[]>(`/api/v1/reward-milestones?accountId=${accountId}`);
+  },
+
+  async createMilestone(body: RewardMilestoneRequest): Promise<RewardMilestone> {
+    return request<RewardMilestone>('/api/v1/reward-milestones', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async updateMilestone(id: string, body: RewardMilestoneRequest): Promise<RewardMilestone> {
+    return request<RewardMilestone>(`/api/v1/reward-milestones/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async deleteMilestone(id: string): Promise<void> {
+    return request<void>(`/api/v1/reward-milestones/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async listCapBuckets(accountId: string): Promise<RewardCapBucket[]> {
+    return request<RewardCapBucket[]>(`/api/v1/reward-cap-buckets?accountId=${accountId}`);
+  },
+
+  async createCapBucket(body: RewardCapBucketRequest): Promise<RewardCapBucket> {
+    return request<RewardCapBucket>('/api/v1/reward-cap-buckets', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async updateCapBucket(id: string, body: RewardCapBucketRequest): Promise<RewardCapBucket> {
+    return request<RewardCapBucket>(`/api/v1/reward-cap-buckets/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async deleteCapBucket(id: string): Promise<void> {
+    return request<void>(`/api/v1/reward-cap-buckets/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async getAccountConfig(accountId: string): Promise<RewardAccountConfig> {
+    return request<RewardAccountConfig>(`/api/v1/reward-config?accountId=${accountId}`);
+  },
+
+  async updateAccountConfig(body: RewardAccountConfigRequest): Promise<RewardAccountConfig> {
+    return request<RewardAccountConfig>('/api/v1/reward-config', {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async report(params: { accountId: string; from: string; to: string }): Promise<RewardReport> {
+    const query = new URLSearchParams({
+      accountId: params.accountId,
+      from: params.from,
+      to: params.to,
+    });
+    return request<RewardReport>(`/api/v1/rewards/report?${query}`);
+  },
+
+  async lines(params: {
+    accountId: string;
+    from: string;
+    to: string;
+    ruleId?: string;
+    page?: number;
+    size?: number;
+  }): Promise<PagedRewardLines> {
+    const query = new URLSearchParams({
+      accountId: params.accountId,
+      from: params.from,
+      to: params.to,
+    });
+    if (params.ruleId) query.set('ruleId', params.ruleId);
+    if (params.page !== undefined) query.set('page', String(params.page));
+    if (params.size !== undefined) query.set('size', String(params.size));
+    return request<PagedRewardLines>(`/api/v1/rewards/lines?${query}`);
   },
 };
 

@@ -6,6 +6,7 @@ import {
   CheckSquare,
   DollarSign,
   FolderTree,
+  Gift,
   Home,
   Layers,
   LayoutDashboard,
@@ -80,6 +81,19 @@ export const NAV_ITEMS = {
     label: 'Category Manager',
     shortLabel: 'Categories',
     icon: <FolderTree className="h-5 w-5" />,
+  },
+  // Rewards module items
+  rewardsOverview: {
+    href: '/rewards',
+    label: 'Overview',
+    shortLabel: 'Overview',
+    icon: <Gift className="h-5 w-5" />,
+  },
+  rewardsRules: {
+    href: '/rewards/rules',
+    label: 'Rules',
+    shortLabel: 'Rules',
+    icon: <Tags className="h-5 w-5" />,
   },
 
   // Investments module items
@@ -161,6 +175,16 @@ export const TRANSACTIONS_MODULE: NavModule = {
   ],
 };
 
+export const REWARDS_MODULE: NavModule = {
+  key: 'rewards',
+  label: 'Rewards',
+  icon: <Gift className="h-5 w-5" />,
+  items: [
+    NAV_ITEMS.rewardsOverview,
+    NAV_ITEMS.rewardsRules,
+  ],
+};
+
 export const REPORTS_MODULE: NavModule = {
   key: 'reports',
   label: 'Reports',
@@ -199,6 +223,7 @@ export const LOANS_MODULE: NavModule = {
 export type MobileNavContextMode =
   | 'default'
   | 'transactions'
+  | 'rewards'
   | 'reports'
   | 'investments'
   | 'loans';
@@ -240,6 +265,16 @@ export function getMobileNavContext(pathname: string): {
       items: [
         NAV_ITEMS.dashboards,
         NAV_ITEMS.reports,
+      ],
+    };
+  }
+
+  if (pathname.startsWith('/rewards')) {
+    return {
+      mode: 'rewards',
+      items: [
+        NAV_ITEMS.rewardsOverview,
+        NAV_ITEMS.rewardsRules,
       ],
     };
   }
