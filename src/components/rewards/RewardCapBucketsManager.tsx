@@ -104,7 +104,7 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
           <Layers className="w-3.5 h-3.5 text-sky-500" /> Shared Cap Buckets
         </h2>
         <div className="flex-1" />
-        <Button onClick={openCreate} disabled={!accountId} variant="outline" className="rounded-xl h-8 text-xs font-semibold">
+        <Button onClick={openCreate} disabled={!accountId} variant="outline" className="rounded-lg h-8 text-xs font-semibold">
           <Plus className="w-3.5 h-3.5 mr-1" /> New Bucket
         </Button>
       </div>

@@ -313,6 +313,12 @@ export function getMobileNavContext(pathname: string): {
         shortLabel: 'Reports',
         icon: NAV_ITEMS.reports.icon,
       },
+      {
+        href: '/rewards',
+        label: 'Rewards',
+        shortLabel: 'Rewards',
+        icon: NAV_ITEMS.rewardsOverview.icon,
+      },
     ],
   };
 }
