@@ -341,3 +341,26 @@ export function isNavItemActive(pathname: string, href: string): boolean {
   }
   return false;
 }
+
+export function getNavigationTree(needsReviewCount?: number | null): NavItem[] {
+  return [
+    NAV_ITEMS.home,
+    NAV_ITEMS.accounts,
+    {
+      ...NAV_ITEMS.transactions,
+    },
+    {
+      ...NAV_ITEMS.needsReview,
+      label: needsReviewCount ? `Needs Review (${needsReviewCount})` : 'Needs Review',
+    },
+    NAV_ITEMS.rules,
+    NAV_ITEMS.categories,
+    NAV_ITEMS.investmentsHoldings,
+    NAV_ITEMS.loansOverview,
+    NAV_ITEMS.dashboards,
+    NAV_ITEMS.reports,
+    NAV_ITEMS.rewardsOverview,
+    NAV_ITEMS.settings,
+  ];
+}
+

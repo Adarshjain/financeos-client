@@ -87,20 +87,17 @@ export function ReportsList({ reports, activeType, datasourceLabels }: ReportsLi
           {reports.map((report) => {
             const meta = TYPE_META[report.type];
             return (
-              <Card key={report.id} className="flex flex-col gap-3 p-4">
-                <div className="flex items-start justify-between gap-2">
+              <Card key={report.id} className="flex flex-col gap-2 p-4">
+                <div className="flex items-start justify-between flex-col gap-2">
                   <Link
                     href={`/reports/${report.id}`}
-                    className="flex items-center gap-2 font-semibold text-slate-900 hover:underline dark:text-white"
+                    className="flex items-center gap-2 font-semibold text-slate-900 text-sm hover:underline dark:text-white"
                   >
-                    <meta.Icon className="h-4 w-4 text-slate-400" />
+                    <meta.Icon className="h-5 w-5 text-slate-400" />
                     {report.name}
                   </Link>
                   <div className="flex items-center gap-1.5">
-                    <Badge variant={meta.variant}>{meta.label}</Badge>
-                    <Badge variant="outline" className="text-[10px] font-medium">
-                      {(datasourceLabels && datasourceLabels[report.datasource]) ?? report.datasource}
-                    </Badge>
+
                     <ConfirmationDialog
                       title="Delete report"
                       description={
@@ -121,21 +118,16 @@ export function ReportsList({ reports, activeType, datasourceLabels }: ReportsLi
                   </div>
                 </div>
                 {report.description && (
-                  <p className="line-clamp-2 text-sm text-slate-600 dark:text-slate-400">
+                  <p className="line-clamp-2 text-xs text-slate-600 dark:text-slate-400">
                     {report.description}
                   </p>
                 )}
                 <p className="text-xs text-slate-500">
                   Updated {formatDate(report.updatedAt)}
                 </p>
-                {/*<div className="mt-auto flex gap-2">*/}
-                {/*  <Link href={`/reports/${report.id}`} className="flex-1">*/}
-                {/*    <Button variant="secondary" size="sm" className="w-full">*/}
-                {/*      <Pencil className="h-4 w-4" />*/}
-                {/*      Edit*/}
-                {/*    </Button>*/}
-                {/*  </Link>*/}
-                {/*</div>*/}
+                <Badge variant="outline" className="text-[10px] font-medium">
+                  {(datasourceLabels && datasourceLabels[report.datasource]) ?? report.datasource}
+                </Badge>
               </Card>
             );
           })}

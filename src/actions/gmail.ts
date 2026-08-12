@@ -1,74 +1,49 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { gmailApi } from '@/lib/apiClient';
-import { apiResult } from '@/lib/apiResult';
+import { createDomainAction } from '@/lib/domainApi';
 import type {
-  ApiResult,
-  GmailConnectionResponse,
-  GmailOAuthStartResponse,
   GmailSenderRequest,
-  GmailSenderResponse,
-  SyncSummary,
 } from '@/lib/types';
 
-export async function startGmailOAuth(): Promise<
-  ApiResult<GmailOAuthStartResponse>
-> {
-  return apiResult('Failed to start Gmail OAuth', () => gmailApi.startOAuth());
-}
+const SETTINGS_PATHS = ['/settings', '/transactions'];
 
-export async function syncGmail(): Promise<ApiResult<SyncSummary>> {
-  return apiResult('Failed to sync Gmail', async () => {
-    const result = await gmailApi.sync();
-    revalidatePath('/transactions');
-    revalidatePath('/settings');
-    return result;
-  });
-}
+export const startGmailOAuth = createDomainAction(
+  { fallbackError: 'Failed to start Gmail OAuth' },
+  () => gmailApi.startOAuth()
+);
 
-export async function listGmailSenders(): Promise<ApiResult<GmailSenderResponse[]>> {
-  return apiResult('Failed to list Gmail senders', () => gmailApi.listSenders());
-}
+export const syncGmail = createDomainAction(
+  { fallbackError: 'Failed to sync Gmail', revalidatePaths: SETTINGS_PATHS },
+  () => gmailApi.sync()
+);
 
-export async function createGmailSender(
-  data: GmailSenderRequest
-): Promise<ApiResult<GmailSenderResponse>> {
-  return apiResult('Failed to create Gmail sender', async () => {
-    const result = await gmailApi.createSender(data);
-    revalidatePath('/settings');
-    return result;
-  });
-}
+export const listGmailSenders = createDomainAction(
+  { fallbackError: 'Failed to list Gmail senders' },
+  () => gmailApi.listSenders()
+);
 
-export async function updateGmailSender(
-  id: string,
-  data: GmailSenderRequest
-): Promise<ApiResult<GmailSenderResponse>> {
-  return apiResult('Failed to update Gmail sender', async () => {
-    const result = await gmailApi.updateSender(id, data);
-    revalidatePath('/settings');
-    return result;
-  });
-}
+export const createGmailSender = createDomainAction(
+  { fallbackError: 'Failed to create Gmail sender', revalidatePaths: ['/settings'] },
+  (data: GmailSenderRequest) => gmailApi.createSender(data)
+);
 
-export async function deleteGmailSender(id: string): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete Gmail sender', async () => {
-    await gmailApi.deleteSender(id);
-    revalidatePath('/settings');
-  });
-}
+export const updateGmailSender = createDomainAction(
+  { fallbackError: 'Failed to update Gmail sender', revalidatePaths: ['/settings'] },
+  (id: string, data: GmailSenderRequest) => gmailApi.updateSender(id, data)
+);
 
-export async function listGmailConnections(): Promise<ApiResult<GmailConnectionResponse[]>> {
-  return apiResult('Failed to list Gmail connections', () =>
-    gmailApi.listConnections(),
-  );
-}
+export const deleteGmailSender = createDomainAction(
+  { fallbackError: 'Failed to delete Gmail sender', revalidatePaths: ['/settings'] },
+  (id: string) => gmailApi.deleteSender(id)
+);
 
-export async function disconnectGmailConnection(id: string): Promise<ApiResult<void>> {
-  return apiResult('Failed to disconnect Gmail connection', async () => {
-    await gmailApi.disconnectConnection(id);
-    revalidatePath('/settings');
-  });
-}
+export const listGmailConnections = createDomainAction(
+  { fallbackError: 'Failed to list Gmail connections' },
+  () => gmailApi.listConnections()
+);
+
+export const disconnectGmailConnection = createDomainAction(
+  { fallbackError: 'Failed to disconnect Gmail connection', revalidatePaths: ['/settings'] },
+  (id: string) => gmailApi.disconnectConnection(id)
+);

@@ -1,77 +1,39 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { transactionsApi } from '@/lib/apiClient';
-import { apiResult } from '@/lib/apiResult';
-import type { BatchDeleteResponse, BatchReviewResponse, PagedTransaction, ReviewReason, ReviewType, Transaction, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
-import type { ApiResult } from '@/lib/types';
+import { createDomainAction } from '@/lib/domainApi';
+import type { ReviewReason, ReviewType, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 
-/** Routes whose data depends on the transaction list. */
-function revalidateTransactionViews(): void {
-  revalidatePath('/transactions');
-  revalidatePath('/transactions/review');
-}
+const TRANSACTION_PATHS = ['/transactions', '/transactions/review'];
 
-export async function createTransaction(
-  transactionRequest: TransactionRequest,
-): Promise<ApiResult<Transaction>> {
-  return apiResult('Failed to create transaction', async () => {
-    const transaction = await transactionsApi.create(transactionRequest);
-    revalidateTransactionViews();
-    return transaction;
-  });
-}
+export const createTransaction = createDomainAction(
+  { fallbackError: 'Failed to create transaction', revalidatePaths: TRANSACTION_PATHS },
+  (transactionRequest: TransactionRequest) => transactionsApi.create(transactionRequest)
+);
 
-export async function updateTransaction(
-  transactionId: string,
-  transactionRequest: TransactionRequest,
-): Promise<ApiResult<Transaction>> {
-  return apiResult('Failed to update transaction', async () => {
-    const transaction = await transactionsApi.update(transactionId, transactionRequest);
-    revalidateTransactionViews();
-    return transaction;
-  });
-}
+export const updateTransaction = createDomainAction(
+  { fallbackError: 'Failed to update transaction', revalidatePaths: TRANSACTION_PATHS },
+  (transactionId: string, transactionRequest: TransactionRequest) => transactionsApi.update(transactionId, transactionRequest)
+);
 
-export async function deleteTransaction(
-  transactionId: string,
-): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete transaction', async () => {
-    await transactionsApi.delete(transactionId);
-    revalidateTransactionViews();
-  });
-}
+export const deleteTransaction = createDomainAction(
+  { fallbackError: 'Failed to delete transaction', revalidatePaths: TRANSACTION_PATHS },
+  (transactionId: string) => transactionsApi.delete(transactionId)
+);
 
-export async function searchTransactions(
-  body: TransactionSearchRequest,
-  page = 0,
-  size = 50,
-  sort = 'date,desc',
-): Promise<ApiResult<PagedTransaction>> {
-  return apiResult('Failed to search transactions', () =>
-    transactionsApi.search(body, page, size, sort),
-  );
-}
+export const searchTransactions = createDomainAction(
+  { fallbackError: 'Failed to search transactions' },
+  (body: TransactionSearchRequest, page = 0, size = 50, sort = 'date,desc') =>
+    transactionsApi.search(body, page, size, sort)
+);
 
-export async function batchReviewTransactions(
-  transactionIds: string[],
-  reviewType: ReviewType,
-  reviewReasons?: ReviewReason[],
-): Promise<ApiResult<BatchReviewResponse>> {
-  return apiResult('Failed to batch review transactions', async () => {
-    const data = await transactionsApi.batchReview({ transactionIds, reviewType, reviewReasons });
-    revalidateTransactionViews();
-    return data;
-  });
-}
+export const batchReviewTransactions = createDomainAction(
+  { fallbackError: 'Failed to batch review transactions', revalidatePaths: TRANSACTION_PATHS },
+  (transactionIds: string[], reviewType: ReviewType, reviewReasons?: ReviewReason[]) =>
+    transactionsApi.batchReview({ transactionIds, reviewType, reviewReasons })
+);
 
-export async function batchDeleteTransactions(
-  transactionIds: string[],
-): Promise<ApiResult<BatchDeleteResponse>> {
-  return apiResult('Failed to batch delete transactions', async () => {
-    const data = await transactionsApi.batchDelete({ transactionIds });
-    revalidateTransactionViews();
-    return data;
-  });
-}
+export const batchDeleteTransactions = createDomainAction(
+  { fallbackError: 'Failed to batch delete transactions', revalidatePaths: TRANSACTION_PATHS },
+  (transactionIds: string[]) => transactionsApi.batchDelete({ transactionIds })
+);

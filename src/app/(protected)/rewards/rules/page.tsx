@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 import RewardRulesManager from '@/components/rewards/RewardRulesManager';
 import { accountsApi, categoriesApi, rewardsApi } from '@/lib/apiClient';
 import { rewardEligibleAccounts } from '@/lib/rewards.types';

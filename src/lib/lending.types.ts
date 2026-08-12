@@ -1,5 +1,3 @@
-import type { Page } from './pagination';
-
 export type LendingDirection = 'lent' | 'borrowed';
 
 export interface CreateCounterpartyRequest {

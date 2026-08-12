@@ -1,118 +1,62 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { counterpartiesApi, lendingsApi, obligationsApi } from '@/lib/apiClient';
-import { apiResult } from '@/lib/apiResult';
-import type { Page } from '@/lib/pagination';
+import { createDomainAction } from '@/lib/domainApi';
 import type {
-  ApiResult,
-  CounterpartyResponse,
   CreateCounterpartyRequest,
   CreateLendingRequest,
-  LendingResponse,
-  ObligationsResponse,
   UpdateCounterpartyRequest,
   UpdateLendingRequest,
 } from '@/lib/types';
 
-export async function fetchCounterpartiesAction(
-  page = 0,
-  size = 50,
-): Promise<ApiResult<Page<CounterpartyResponse>>> {
-  return apiResult('Failed to fetch counterparties', () => counterpartiesApi.list(page, size));
-}
+const LENDINGS_PATHS = ['/loans/lendings'];
 
-export async function createCounterpartyAction(
-  data: CreateCounterpartyRequest,
-): Promise<ApiResult<CounterpartyResponse>> {
-  return apiResult('Failed to create counterparty', async () => {
-    const res = await counterpartiesApi.create(data);
-    revalidatePath('/loans/lendings');
-    return res;
-  });
-}
+export const fetchCounterpartiesAction = createDomainAction(
+  { fallbackError: 'Failed to fetch counterparties' },
+  (page = 0, size = 50) => counterpartiesApi.list(page, size)
+);
 
-export async function updateCounterpartyAction(
-  id: string,
-  data: UpdateCounterpartyRequest,
-): Promise<ApiResult<CounterpartyResponse>> {
-  return apiResult('Failed to update counterparty', async () => {
-    const res = await counterpartiesApi.update(id, data);
-    revalidatePath('/loans/lendings');
-    revalidatePath(`/loans/lendings/${id}`);
-    return res;
-  });
-}
+export const createCounterpartyAction = createDomainAction(
+  { fallbackError: 'Failed to create counterparty', revalidatePaths: LENDINGS_PATHS },
+  (data: CreateCounterpartyRequest) => counterpartiesApi.create(data)
+);
 
-export async function deleteCounterpartyAction(id: string): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete counterparty', async () => {
-    await counterpartiesApi.remove(id);
-    revalidatePath('/loans/lendings');
-  });
-}
+export const updateCounterpartyAction = createDomainAction(
+  { fallbackError: 'Failed to update counterparty', revalidatePaths: LENDINGS_PATHS },
+  (id: string, data: UpdateCounterpartyRequest) => counterpartiesApi.update(id, data)
+);
 
-export async function fetchLendingsAction(
-  counterpartyId?: string,
-  page = 0,
-  size = 50,
-): Promise<ApiResult<Page<LendingResponse>>> {
-  return apiResult('Failed to fetch lendings', () =>
-    lendingsApi.list(counterpartyId, page, size),
-  );
-}
+export const deleteCounterpartyAction = createDomainAction(
+  { fallbackError: 'Failed to delete counterparty', revalidatePaths: LENDINGS_PATHS },
+  (id: string) => counterpartiesApi.remove(id)
+);
 
-export async function fetchLendingDetailAction(
-  id: string,
-): Promise<ApiResult<LendingResponse>> {
-  return apiResult('Failed to fetch lending detail', () => lendingsApi.getDetail(id));
-}
+export const fetchLendingsAction = createDomainAction(
+  { fallbackError: 'Failed to fetch lendings' },
+  (counterpartyId?: string, page = 0, size = 50) => lendingsApi.list(counterpartyId, page, size)
+);
 
-export async function createLendingAction(
-  data: CreateLendingRequest,
-): Promise<ApiResult<LendingResponse>> {
-  return apiResult('Failed to create lending', async () => {
-    const res = await lendingsApi.create(data);
-    revalidatePath('/loans/lendings');
-    if (data.counterpartyId) {
-      revalidatePath(`/loans/lendings/${data.counterpartyId}`);
-    }
-    return res;
-  });
-}
+export const fetchLendingDetailAction = createDomainAction(
+  { fallbackError: 'Failed to fetch lending detail' },
+  (id: string) => lendingsApi.getDetail(id)
+);
 
-export async function updateLendingAction(
-  id: string,
-  data: UpdateLendingRequest,
-  counterpartyId?: string,
-): Promise<ApiResult<LendingResponse>> {
-  return apiResult('Failed to update lending', async () => {
-    const res = await lendingsApi.update(id, data);
-    revalidatePath('/loans/lendings');
-    if (counterpartyId) {
-      revalidatePath(`/loans/lendings/${counterpartyId}`);
-    }
-    return res;
-  });
-}
+export const createLendingAction = createDomainAction(
+  { fallbackError: 'Failed to create lending', revalidatePaths: LENDINGS_PATHS },
+  (data: CreateLendingRequest) => lendingsApi.create(data)
+);
 
-export async function deleteLendingAction(
-  id: string,
-  counterpartyId?: string,
-): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete lending', async () => {
-    await lendingsApi.remove(id);
-    revalidatePath('/loans/lendings');
-    if (counterpartyId) {
-      revalidatePath(`/loans/lendings/${counterpartyId}`);
-    }
-  });
-}
+export const updateLendingAction = createDomainAction(
+  { fallbackError: 'Failed to update lending', revalidatePaths: LENDINGS_PATHS },
+  (id: string, data: UpdateLendingRequest, _counterpartyId?: string) => lendingsApi.update(id, data)
+);
 
-export async function fetchUpcomingObligationsAction(
-  months = 3,
-): Promise<ApiResult<ObligationsResponse>> {
-  return apiResult('Failed to fetch upcoming obligations', () =>
-    obligationsApi.getUpcoming(months),
-  );
-}
+export const deleteLendingAction = createDomainAction(
+  { fallbackError: 'Failed to delete lending', revalidatePaths: LENDINGS_PATHS },
+  (id: string, _counterpartyId?: string) => lendingsApi.remove(id)
+);
+
+export const fetchUpcomingObligationsAction = createDomainAction(
+  { fallbackError: 'Failed to fetch upcoming obligations' },
+  (months = 3) => obligationsApi.getUpcoming(months)
+);

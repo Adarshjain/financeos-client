@@ -1,14 +1,9 @@
 'use server';
 
 import { ingestionApi } from '@/lib/apiClient';
-import { apiResult } from '@/lib/apiResult';
-import type { ApiResult, FileIngestionResult } from '@/lib/types';
+import { createDomainAction } from '@/lib/domainApi';
 
-export async function ingestStatementFiles(
-  accountId: string,
-  formData: FormData,
-): Promise<ApiResult<FileIngestionResult>> {
-  return apiResult('Failed to ingest files', () =>
-    ingestionApi.ingest(accountId, formData),
-  );
-}
+export const ingestStatementFiles = createDomainAction(
+  { fallbackError: 'Failed to ingest files' },
+  (accountId: string, formData: FormData) => ingestionApi.ingest(accountId, formData)
+);

@@ -36,7 +36,6 @@ import type {
 import type { Page } from '@/lib/pagination';
 import type {
   CreateReportRequest,
-  DatasourceCatalog,
   ReportCatalog,
   ReportData,
   ReportResponse,
