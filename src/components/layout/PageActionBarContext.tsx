@@ -123,7 +123,8 @@ export function PageActionBarSlot() {
   return (
     <div
       className={cn(
-        'lg:hidden fixed bottom-16 left-3 right-3 z-30 flex flex-col items-end transition-all duration-300 ease-in-out',
+        'lg:hidden fixed left-3 right-3 z-30 flex flex-col items-end transition-all duration-300 ease-in-out',
+        isCollapsed ? 'bottom-[53px]' : 'bottom-16',
         config.hideOnScroll && !isVisible && !isCollapsed
           ? 'translate-y-36 opacity-0 pointer-events-none'
           : 'translate-y-0 opacity-100',
@@ -136,12 +137,9 @@ export function PageActionBarSlot() {
         title={isCollapsed ? 'Expand' : 'Collapse'}
         className={cn(
           'mr-4 z-10 flex items-center justify-center transition-all duration-300 ease-in-out',
-          'bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100',
-          'border border-slate-200 dark:border-slate-800 rounded-t-xl',
+          'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-slate-900/70 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100',
+          'border border-slate-200 dark:border-slate-800 border-b-0 -mb-px rounded-t-xl pt-0.5 shadow-none h-[30px]',
           config.trigger ? 'px-3 gap-1.5 min-w-[2.5rem]' : 'w-10',
-          isCollapsed
-            ? 'h-[34px] pt-0.5 shadow-md'
-            : 'h-[30px] border-b-0 -mb-px pt-0.5 shadow-none',
         )}
       >
         {config.trigger}
