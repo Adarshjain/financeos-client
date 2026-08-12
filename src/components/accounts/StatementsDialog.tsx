@@ -20,7 +20,6 @@ import {
   StatementVerdictBadge,
 } from '@/components/statements/StatementBadges';
 import { StatementDetailDialog } from '@/components/statements/StatementDetailDialog';
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
