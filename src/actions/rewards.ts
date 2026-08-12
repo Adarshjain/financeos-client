@@ -7,10 +7,12 @@ import type {
   RewardAccountConfigRequest,
   RewardCapBucketRequest,
   RewardMilestoneRequest,
+  RewardRecommendationRequest,
   RewardRuleRequest,
 } from '@/lib/rewards.types';
 
 const REWARD_PATHS = ['/rewards', '/rewards/rules'];
+
 
 export const listRewardRules = createDomainAction(
   { fallbackError: 'Failed to load reward rules' },
@@ -97,3 +99,9 @@ export const listRewardLines = createDomainAction(
   (params: { accountId: string; from: string; to: string; ruleId?: string; page?: number; size?: number }) =>
     rewardsApi.lines(params)
 );
+
+export const recommendCards = createDomainAction(
+  { fallbackError: 'Failed to generate card recommendations' },
+  (body: RewardRecommendationRequest) => rewardsApi.recommend(body)
+);
+

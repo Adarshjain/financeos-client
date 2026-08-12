@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/ui/empty-state';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
@@ -26,7 +27,9 @@ interface RewardRulesManagerProps {
   initialCapBuckets: RewardCapBucket[];
   initialAnniversaryDate: string | null;
   initialDefaultRewardType: RewardType;
+  initialPointValueInr?: number | null;
 }
+
 
 function accrualSummary(rule: RewardRule): string {
   const points = rule.rewardType === 'POINTS';
@@ -89,6 +92,7 @@ export default function RewardRulesManager({
   initialCapBuckets,
   initialAnniversaryDate,
   initialDefaultRewardType,
+  initialPointValueInr,
 }: RewardRulesManagerProps) {
   // Accounts arrive credit-cards-first from the server page.
   const orderedAccounts = accounts;
@@ -97,6 +101,7 @@ export default function RewardRulesManager({
   const [capBuckets, setCapBuckets] = useState<RewardCapBucket[]>(initialCapBuckets);
   const [anniversaryDate, setAnniversaryDate] = useState<string | null>(initialAnniversaryDate);
   const [defaultRewardType, setDefaultRewardType] = useState<RewardType>(initialDefaultRewardType);
+  const [pointValueInr, setPointValueInr] = useState<string>(initialPointValueInr != null ? String(initialPointValueInr) : '');
   const [loading, setLoading] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<RewardRule | undefined>();
@@ -124,13 +129,15 @@ export default function RewardRulesManager({
     if (configRes.success) {
       setAnniversaryDate(configRes.data.rewardAnniversaryDate ?? null);
       setDefaultRewardType(configRes.data.defaultRewardType ?? 'CASH');
+      setPointValueInr(configRes.data.pointValueInr != null ? String(configRes.data.pointValueInr) : '');
     }
     setLoading(false);
   }, []);
 
   const saveDefaultRewardType = async (type: RewardType) => {
     setDefaultRewardType(type);
-    const res = await updateRewardAccountConfig({ accountId, defaultRewardType: type });
+    const num = pointValueInr.trim() ? parseFloat(pointValueInr) : null;
+    const res = await updateRewardAccountConfig({ accountId, defaultRewardType: type, pointValueInr: num });
     if (res.success) {
       toast.success(type === 'POINTS' ? 'Card now defaults to reward points' : 'Card now defaults to cash');
     } else {
@@ -138,6 +145,22 @@ export default function RewardRulesManager({
       void refresh(accountId);
     }
   };
+
+  const savePointValueInr = async (valStr: string) => {
+    const num = valStr.trim() ? parseFloat(valStr) : null;
+    if (num != null && (isNaN(num) || num <= 0)) {
+      toast.error('Point value must be greater than ₹0');
+      return;
+    }
+    const res = await updateRewardAccountConfig({ accountId, defaultRewardType, pointValueInr: num });
+    if (res.success) {
+      toast.success(num != null ? `Point value set to ₹${num}/pt` : 'Point value reset to default (₹0.25/pt)');
+      setPointValueInr(res.data.pointValueInr != null ? String(res.data.pointValueInr) : '');
+    } else {
+      toast.error(res.error.message);
+    }
+  };
+
 
   const refreshBuckets = useCallback(async () => {
     const res = await listRewardCapBuckets(accountId);
@@ -288,34 +311,46 @@ export default function RewardRulesManager({
       {/* Mobile: controls live in the bottom PageActionBar */}
       {/*<PageActionBar>{renderActionBar(true)}</PageActionBar>*/}
 
-      {/* Anniversary anchor — owned by the account (credit-card details), shown read-only */}
-      <div className="flex items-center gap-2 flex-wrap rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900/60 px-3 py-2">
-        <CalendarClock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Anniversary date</span>
-        <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-          {anniversaryDate ? formatDate(anniversaryDate) : 'Not set'}
-        </span>
-        {/*<span className="text-[10px] text-slate-400 dark:text-slate-500">*/}
-        {/*  Anchors “Per anniversary year” windows and the Rewards overview — set it by editing the card on the{' '}*/}
-        {/*  <Link href="/accounts" className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold">Accounts</Link> page.*/}
-        {/*</span>*/}
+      {/* Anniversary anchor & Card Config row */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div className="flex items-center gap-2 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900/60 px-3 py-2">
+          <CalendarClock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Anniversary date</span>
+          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            {anniversaryDate ? formatDate(anniversaryDate) : 'Not set'}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900/60 px-3 py-2">
+          <Coins className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Rewards paid as</span>
+          <Select value={defaultRewardType} disabled={loading}
+                  onValueChange={(v) => void saveDefaultRewardType(v as RewardType)}>
+            <SelectTrigger className="bg-slate-50 dark:bg-slate-950 text-xs h-7 w-32 border-slate-200 dark:border-slate-800 rounded-lg font-semibold">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs">
+              <SelectItem value="CASH" className="text-xs font-medium">Cash ₹</SelectItem>
+              <SelectItem value="POINTS" className="text-xs font-medium">Reward points</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex items-center gap-2 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900/60 px-3 py-2">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium shrink-0">Point Value (₹/pt)</span>
+          <Input
+            type="number"
+            step="0.0001"
+            min="0.0001"
+            placeholder="0.25 (default)"
+            value={pointValueInr}
+            onChange={(e) => setPointValueInr(e.target.value)}
+            onBlur={(e) => void savePointValueInr(e.target.value)}
+            className="h-7 text-xs font-semibold bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg"
+          />
+        </div>
       </div>
 
-      {/* Card-level default reward currency — preselected on every new rule */}
-      <div className="flex items-center gap-2 flex-wrap rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900/60 px-3 py-2">
-        <Coins className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-        <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Rewards paid as</span>
-        <Select value={defaultRewardType} disabled={loading}
-                onValueChange={(v) => void saveDefaultRewardType(v as RewardType)}>
-          <SelectTrigger className="bg-slate-50 dark:bg-slate-950 text-xs h-8 w-36 border-slate-200 dark:border-slate-800 rounded-lg font-semibold">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs">
-            <SelectItem value="CASH" className="text-xs font-medium">Cash ₹</SelectItem>
-            <SelectItem value="POINTS" className="text-xs font-medium">Reward points</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
 
       <p className="text-[11px] text-slate-400 dark:text-slate-500">
         Rules are evaluated top-down: the first matching <span className="font-semibold">exclusive</span> rule

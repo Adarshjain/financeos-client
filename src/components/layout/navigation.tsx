@@ -4,6 +4,7 @@ import {
   BookOpen,
   Briefcase,
   CheckSquare,
+  CreditCard,
   DollarSign,
   FolderTree,
   Gift,
@@ -16,6 +17,7 @@ import {
   Tags,
   Wallet,
 } from 'lucide-react';
+
 
 export interface NavItem {
   href: string;
@@ -95,8 +97,15 @@ export const NAV_ITEMS = {
     shortLabel: 'Rules',
     icon: <Tags className="h-5 w-5" />,
   },
+  rewardsRecommend: {
+    href: '/rewards/recommend',
+    label: 'Card Picker',
+    shortLabel: 'Card Picker',
+    icon: <CreditCard className="h-5 w-5" />,
+  },
 
   // Investments module items
+
   investmentsHoldings: {
     href: '/investments',
     label: 'Holdings',
@@ -182,8 +191,10 @@ export const REWARDS_MODULE: NavModule = {
   items: [
     NAV_ITEMS.rewardsOverview,
     NAV_ITEMS.rewardsRules,
+    NAV_ITEMS.rewardsRecommend,
   ],
 };
+
 
 export const REPORTS_MODULE: NavModule = {
   key: 'reports',
@@ -275,9 +286,11 @@ export function getMobileNavContext(pathname: string): {
       items: [
         NAV_ITEMS.rewardsOverview,
         NAV_ITEMS.rewardsRules,
+        NAV_ITEMS.rewardsRecommend,
       ],
     };
   }
+
 
   if (
     pathname.startsWith('/transactions') ||

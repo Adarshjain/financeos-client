@@ -31,6 +31,7 @@ export default async function RewardRulesPage() {
         initialCapBuckets={initialCapBuckets}
         initialAnniversaryDate={initialConfig?.rewardAnniversaryDate ?? null}
         initialDefaultRewardType={initialConfig?.defaultRewardType ?? 'CASH'}
+        initialPointValueInr={initialConfig?.pointValueInr}
       />
     </div>
   );
