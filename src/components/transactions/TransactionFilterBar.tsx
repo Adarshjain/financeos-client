@@ -324,7 +324,7 @@ export function TransactionFilterBar({
   const hasActiveFilters = activeBadges.length > 0 || search.trim() !== '';
 
   return (
-    <div className="space-y-1.5 px-4 pt-0.5">
+    <div className="space-y-1 pt-0.5">
       {/* Top Row: Mobile-first Search Bar */}
       <div className="relative flex items-center w-full">
         <Search
@@ -346,8 +346,8 @@ export function TransactionFilterBar({
         )}
       </div>
 
-      {/* Horizontal Scrollable Quick Filter Pills Bar */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+      {/* Quick Filter Pills Bar */}
+      <div className="flex flex-wrap items-center gap-1.5 pb-1 pt-1.5">
         {/* Type Segment Control Pill */}
         <div
           className="inline-flex items-center p-0.5 bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-full shrink-0">

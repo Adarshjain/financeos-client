@@ -6,13 +6,15 @@ import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { searchTransactions } from '@/actions/transactions';
+import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { FilterClause } from '@/lib/reports.types';
 import type { PagedTransaction } from '@/lib/transaction.types';
-import { formatDate } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 
 import { TRANSACTIONS_CATALOG } from './catalog';
 import { TransactionCard } from './TransactionCard';
@@ -202,46 +204,9 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
     setPage(0);
   };
 
-  return (
-    <div className="space-y-0.5">
-      <div className="flex justify-between items-center px-4 pt-2.5 pb-0.5">
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
-        <div className="flex items-center gap-2">
-          {selectedTxnIds.size > 0 ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setBulkLinkOpen(true)}
-              className="gap-1.5 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 rounded-xl h-8 text-xs font-semibold"
-            >
-              <Link2 className="h-3.5 w-3.5" />
-              <span>Link ({selectedTxnIds.size})</span>
-            </Button>
-          ) : (<>
-              <Link href="/transactions/review">
-                <Button variant="outline" size="sm"
-                        className="relative gap-1.5 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all h-8 text-xs">
-                  <span>Review</span>
-                  {localReviewCount !== null && localReviewCount > 0 && (
-                    <span
-                      className="flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-md bg-amber-500 text-[10px] font-bold text-white">
-                  {localReviewCount}
-                </span>
-                  )}
-                </Button>
-              </Link>
-              <TransactionFormWrapper
-                categories={categories}
-                accounts={accounts}
-                onSuccess={handleReload}
-                trigger={<Button size="sm" className="rounded-xl h-8 text-xs">Create</Button>}
-              />
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Mobile-First Transaction Filter Bar */}
+  const renderActionBar = (isMobile = false) => (
+    <div className={cn('flex flex-col gap-2 w-full', isMobile ? 'text-xs' : '')}>
+      {/* Search & Filter Bar */}
       <TransactionFilterBar
         accounts={accounts}
         categories={categories}
@@ -257,10 +222,83 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
         }}
       />
 
+      {/* Pagination Footer */}
+      {pagedData && pagedData.totalElements > 0 && (
+          <TablePagination
+            page={{
+              number: pagedData.number,
+              size: pagedData.size,
+              totalElements: pagedData.totalElements,
+              totalPages: pagedData.totalPages,
+            }}
+            onPageChange={setPage}
+            onSizeChange={(newSize) => {
+              setSize(newSize);
+              setPage(0);
+            }}
+            loading={loading}
+            unit="txn"
+          />
+      )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-2 pb-16">
+      {/* Page Header with Review and Create buttons */}
+      <div className="flex justify-between items-center px-4 pt-2.5 pb-0.5">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
+        <div className="flex items-center gap-2">
+          {selectedTxnIds.size > 0 ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBulkLinkOpen(true)}
+              className="gap-1.5 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 rounded-xl h-8 text-xs font-semibold"
+            >
+              <Link2 className="h-3.5 w-3.5" />
+              <span>Link ({selectedTxnIds.size})</span>
+            </Button>
+          ) : (
+            <>
+              <Link href="/transactions/review">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="relative gap-1.5 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all h-8 text-xs"
+                >
+                  <span>Review</span>
+                  {localReviewCount !== null && localReviewCount > 0 && (
+                    <span className="flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-md bg-amber-500 text-[10px] font-bold text-white">
+                      {localReviewCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+              <TransactionFormWrapper
+                categories={categories}
+                accounts={accounts}
+                onSuccess={handleReload}
+                trigger={<Button size="sm" className="rounded-xl h-8 text-xs">Create</Button>}
+              />
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Desktop Action Bar Container */}
+      <Card className="hidden lg:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-3 mx-2">
+        {renderActionBar(false)}
+      </Card>
+
+      {/* Mobile PageActionBar Integration */}
+      <PageActionBar defaultCollapsed trigger={<span>Filters</span>}>
+        {renderActionBar(true)}
+      </PageActionBar>
+
       {/* Sort Toolbar */}
-      <div
-        className="flex flex-wrap items-center justify-between gap-2 px-4 py-1 border-b border-slate-100 dark:border-slate-800">
-        <div className="flex items-center gap-1.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-1 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-xs font-medium text-slate-500">Sort:</span>
           <Button
             variant={sort.startsWith('date') ? 'secondary' : 'outline'}
@@ -282,7 +320,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
             {sort === 'amount,desc' && <ArrowDown className="h-3 w-3" />}
             {sort === 'amount,asc' && <ArrowUp className="h-3 w-3" />}
           </Button>
-          <div className="w-[1px] h-4 bg-slate-400"></div>
+          <div className="w-[1px] h-4 bg-slate-300 dark:bg-slate-700 hidden sm:block"></div>
           <Button
             variant={isSelectionMode || selectedTxnIds.size > 0 ? 'secondary' : 'outline'}
             size="sm"
@@ -307,11 +345,12 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
               }}
               className="h-7 text-[11px] text-slate-500 hover:text-slate-900 gap-1 px-2"
             >
-              <X className="h-3 w-3" /> Clear selection ({selectedTxnIds.size})
+              <X className="h-3 w-3" /> Clear ({selectedTxnIds.size})
             </Button>
           )}
         </div>
 
+        {/* Total Count Indicator */}
         <div className="flex items-center text-xs text-slate-500">
           {loading && <Loader2 className="h-3.5 w-3.5 animate-spin mr-2 text-slate-400" />}
           {pagedData && (
@@ -323,7 +362,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
       </div>
 
       {/* Transactions List */}
-      <div className="px-2 pb-14">
+      <div className="px-2">
         {loading && !pagedData ? (
           <div className="flex flex-col items-center justify-center py-20 text-slate-400">
             <Loader2 className="h-8 w-8 animate-spin mb-2" />
@@ -365,25 +404,6 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
                 </Fragment>
               );
             })}
-
-            {/* Pagination Footer */}
-            <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-              <TablePagination
-                page={{
-                  number: pagedData.number,
-                  size: pagedData.size,
-                  totalElements: pagedData.totalElements,
-                  totalPages: pagedData.totalPages,
-                }}
-                onPageChange={setPage}
-                onSizeChange={(newSize) => {
-                  setSize(newSize);
-                  setPage(0);
-                }}
-                loading={loading}
-                unit="transaction"
-              />
-            </div>
           </div>
         )}
       </div>

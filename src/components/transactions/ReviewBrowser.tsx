@@ -10,6 +10,7 @@ import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { batchFailureLabel, reviewReasonLabel } from '@/components/transactions/catalog';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
@@ -24,7 +25,7 @@ import type { Category } from '@/lib/categories.types';
 import type { FilterClause } from '@/lib/reports.types';
 import type { PagedTransaction, ReviewReason } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
-import { formatDate } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 
 import { ReviewFilterBar } from './ReviewFilterBar';
 import { TransactionCard } from './TransactionCard';
@@ -313,14 +314,8 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
     }
   };
 
-  return (
-    <div className="space-y-1 pb-20">
-      {/* Header */}
-      <div className="flex justify-between items-center px-4 pt-2.5 pb-0.5">
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Review Transactions</h1>
-      </div>
-
-      {/* Mobile-First Review Filter Bar */}
+  const renderActionBar = (isMobile = false) => (
+    <div className={cn('flex flex-col gap-2 w-full', isMobile ? 'text-xs' : '')}>
       <ReviewFilterBar
         accounts={accounts}
         appliedAccountIds={appliedAccountIds}
@@ -352,6 +347,46 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
           setPage(0);
         }}
       />
+
+      {pagedData && pagedData.totalElements > 0 && (
+        <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
+          <TablePagination
+            page={{
+              number: pagedData.number,
+              size: pagedData.size,
+              totalElements: pagedData.totalElements,
+              totalPages: pagedData.totalPages,
+            }}
+            onPageChange={handlePageChange}
+            onSizeChange={(newSize) => {
+              setSize(newSize);
+              setPage(0);
+              setSelectedIds([]);
+            }}
+            unit="transaction"
+            loading={loading}
+          />
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-2 pb-16">
+      {/* Header */}
+      <div className="flex justify-between items-center px-4 pt-2.5 pb-0.5">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Review Transactions</h1>
+      </div>
+
+      {/* Desktop Action Bar Container */}
+      <Card className="hidden lg:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-3 mx-2">
+        {renderActionBar(false)}
+      </Card>
+
+      {/* Mobile PageActionBar Integration */}
+      <PageActionBar>
+        {renderActionBar(true)}
+      </PageActionBar>
 
       {/* Statement cutoff warning note */}
       {appliedOnlyUpToLastStatement && hiddenCount > 0 && (
@@ -446,26 +481,6 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
               </Fragment>
             );
           })}
-
-          {/* Pagination */}
-          <PageActionBar>
-            <TablePagination
-              page={{
-                number: pagedData.number,
-                size: pagedData.size,
-                totalElements: pagedData.totalElements,
-                totalPages: pagedData.totalPages,
-              }}
-              onPageChange={handlePageChange}
-              onSizeChange={(newSize) => {
-                setSize(newSize);
-                setPage(0);
-                setSelectedIds([]);
-              }}
-              unit="transaction"
-              loading={loading}
-            />
-          </PageActionBar>
         </div>
       )}
 

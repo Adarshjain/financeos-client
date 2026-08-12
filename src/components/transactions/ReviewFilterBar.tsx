@@ -164,7 +164,7 @@ export function ReviewFilterBar({
   const activeSortLabel = SORT_OPTIONS.find((s) => s.value === sortBy)?.label || 'Sort';
 
   return (
-    <div className="space-y-1.5 px-4 pt-0.5">
+    <div>
       {/* Top Search Bar */}
       <div className="relative flex items-center w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
@@ -185,10 +185,10 @@ export function ReviewFilterBar({
         )}
       </div>
 
-      {/* Horizontal Scrollable Quick Filter Pills Bar */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+      {/* Quick Filter Pills Bar */}
+      <div className="flex flex-wrap items-center gap-1.5 pb-1 pt-2">
         {/* Reason Segment Control Pill */}
-        <div className="inline-flex items-center p-0.5 bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-full shrink-0">
+        <div className="inline-flex flex-wrap items-center p-0.5 bg-slate-100 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-full">
           {REASON_OPTIONS.map((opt) => (
             <button
               key={opt.value}
