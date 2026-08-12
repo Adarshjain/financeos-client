@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowDown, ArrowUp, Link2, Loader2, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Link2, Loader2, X, PlusIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
@@ -261,25 +261,26 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
             </Button>
           ) : (
             <>
-              <Link href="/transactions/review">
+              {localReviewCount > 0 && <Link href="/transactions/review">
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="relative gap-1.5 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all h-8 text-xs"
+                    variant="outline"
+                    size="sm"
+                    className="relative gap-1.5 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all h-8 text-xs"
                 >
                   <span>Review</span>
                   {localReviewCount !== null && localReviewCount > 0 && (
-                    <span className="flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-md bg-amber-500 text-[10px] font-bold text-white">
+                      <span
+                          className="flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-md bg-amber-500 text-[10px] font-bold text-white">
                       {localReviewCount}
                     </span>
                   )}
                 </Button>
-              </Link>
+              </Link>}
               <TransactionFormWrapper
                 categories={categories}
                 accounts={accounts}
                 onSuccess={handleReload}
-                trigger={<Button size="sm" className="rounded-xl h-8 text-xs">Create</Button>}
+                trigger={<Button size="sm" className="rounded-xl h-8 text-xs"><PlusIcon className="w-4" data-icon="inline-end" />Create</Button>}
               />
             </>
           )}
