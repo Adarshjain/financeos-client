@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils';
 interface PageActionBarConfig {
   content: React.ReactNode | null;
   hideOnScroll?: boolean;
+  trigger?: React.ReactNode;
+  defaultCollapsed?: boolean;
 }
 
 interface PageActionBarContextType {
@@ -16,7 +18,7 @@ interface PageActionBarContextType {
 }
 
 const PageActionBarContext = createContext<PageActionBarContextType>({
-  config: { content: null, hideOnScroll: false },
+  config: { content: null, hideOnScroll: false, defaultCollapsed: false },
   setConfig: () => {},
 });
 
@@ -28,6 +30,7 @@ export function PageActionBarProvider({
   const [config, setConfig] = useState<PageActionBarConfig>({
     content: null,
     hideOnScroll: false,
+    defaultCollapsed: false,
   });
 
   return (
@@ -40,18 +43,34 @@ export function PageActionBarProvider({
 interface PageActionBarProps {
   children: React.ReactNode;
   hideOnScroll?: boolean;
+  trigger?: React.ReactNode;
+  defaultCollapsed?: boolean;
+  defaultOpen?: boolean;
 }
 
 /**
  * Component used inside ANY page or feature view to declare its mobile bottom action bar.
  */
-export function PageActionBar({ children, hideOnScroll = true }: PageActionBarProps) {
+export function PageActionBar({
+  children,
+  hideOnScroll = true,
+  trigger,
+  defaultCollapsed = false,
+  defaultOpen,
+}: PageActionBarProps) {
   const { setConfig } = useContext(PageActionBarContext);
 
+  const isInitiallyCollapsed = defaultOpen !== undefined ? !defaultOpen : defaultCollapsed;
+
   useEffect(() => {
-    setConfig({ content: children, hideOnScroll });
-    return () => setConfig({ content: null, hideOnScroll: false });
-  }, [children, hideOnScroll, setConfig]);
+    setConfig({
+      content: children,
+      hideOnScroll,
+      trigger,
+      defaultCollapsed: isInitiallyCollapsed,
+    });
+    return () => setConfig({ content: null, hideOnScroll: false, trigger: undefined, defaultCollapsed: false });
+  }, [children, hideOnScroll, trigger, isInitiallyCollapsed, setConfig]);
 
   return null;
 }
@@ -62,7 +81,7 @@ export function PageActionBar({ children, hideOnScroll = true }: PageActionBarPr
 export function PageActionBarSlot() {
   const { config } = useContext(PageActionBarContext);
   const [isVisible, setIsVisible] = useState(true);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(config?.defaultCollapsed ?? false);
   const lastScrollY = useRef(0);
 
   const [prevHideOnScroll, setPrevHideOnScroll] = useState(config?.hideOnScroll);
@@ -72,10 +91,12 @@ export function PageActionBarSlot() {
   }
 
   const [prevContent, setPrevContent] = useState(config?.content);
-  if (config?.content !== prevContent) {
+  const [prevDefaultCollapsed, setPrevDefaultCollapsed] = useState(config?.defaultCollapsed);
+  if (config?.content !== prevContent || config?.defaultCollapsed !== prevDefaultCollapsed) {
     setPrevContent(config?.content);
+    setPrevDefaultCollapsed(config?.defaultCollapsed);
     setIsVisible(true);
-    setIsCollapsed(false);
+    setIsCollapsed(config?.defaultCollapsed ?? false);
   }
 
   useEffect(() => {
@@ -116,16 +137,18 @@ export function PageActionBarSlot() {
         className={cn(
           'mr-4 z-10 flex items-center justify-center transition-all duration-300 ease-in-out',
           'bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100',
-          'border border-slate-200 dark:border-slate-800',
+          'border border-slate-200 dark:border-slate-800 rounded-t-xl',
+          config.trigger ? 'px-3 gap-1.5 min-w-[2.5rem]' : 'w-10',
           isCollapsed
-            ? 'w-10 h-[34px] rounded-t-full pt-0.5 shadow-md'
-            : 'w-10 h-[30px] rounded-t-full border-b-0 -mb-px pt-0.5 shadow-none',
+            ? 'h-[34px] pt-0.5 shadow-md'
+            : 'h-[30px] border-b-0 -mb-px pt-0.5 shadow-none',
         )}
       >
+        {config.trigger}
         {isCollapsed ? (
-          <ChevronUp className="w-4 h-4 transition-transform duration-200" />
+          <ChevronUp className="w-4 h-4 transition-transform duration-200 shrink-0" />
         ) : (
-          <ChevronDown className="w-4 h-4 transition-transform duration-200" />
+          <ChevronDown className="w-4 h-4 transition-transform duration-200 shrink-0" />
         )}
       </button>
 
