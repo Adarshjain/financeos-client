@@ -1,87 +1,43 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { rulesApi } from '@/lib/apiClient';
-import { apiResult } from '@/lib/apiResult';
+import { createDomainAction } from '@/lib/domainApi';
 import type {
   ApplyRuleRequest,
-  ApplyRuleResult,
-  CategoryRule,
   CreateRuleRequest,
-  PagedRuleMatches,
   PreviewMatchesRequest,
   UpdateRuleRequest,
 } from '@/lib/rules.types';
-import type { ApiResult } from '@/lib/types';
 
-/**
- * Rules drive auto-categorisation, so any change also invalidates the
- * transaction views that display the resulting categories.
- */
-function revalidateRuleViews(): void {
-  revalidatePath('/rules');
-  revalidatePath('/transactions');
-  revalidatePath('/transactions/review');
-}
+const RULE_PATHS = ['/rules', '/transactions', '/transactions/review'];
 
-export async function createRule(
-  body: CreateRuleRequest,
-): Promise<ApiResult<CategoryRule>> {
-  return apiResult('Failed to create rule', async () => {
-    const rule = await rulesApi.create(body);
-    revalidateRuleViews();
-    return rule;
-  });
-}
+export const createRule = createDomainAction(
+  { fallbackError: 'Failed to create rule', revalidatePaths: RULE_PATHS },
+  (body: CreateRuleRequest) => rulesApi.create(body)
+);
 
-export async function updateRule(
-  id: string,
-  body: UpdateRuleRequest,
-): Promise<ApiResult<CategoryRule>> {
-  return apiResult('Failed to update rule', async () => {
-    const rule = await rulesApi.update(id, body);
-    revalidateRuleViews();
-    return rule;
-  });
-}
+export const updateRule = createDomainAction(
+  { fallbackError: 'Failed to update rule', revalidatePaths: RULE_PATHS },
+  (id: string, body: UpdateRuleRequest) => rulesApi.update(id, body)
+);
 
-export async function verifyRule(
-  id: string,
-): Promise<ApiResult<CategoryRule>> {
-  return apiResult('Failed to verify rule', async () => {
-    const rule = await rulesApi.verify(id);
-    revalidateRuleViews();
-    return rule;
-  });
-}
+export const verifyRule = createDomainAction(
+  { fallbackError: 'Failed to verify rule', revalidatePaths: RULE_PATHS },
+  (id: string) => rulesApi.verify(id)
+);
 
-export async function deleteRule(
-  id: string,
-): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete rule', async () => {
-    await rulesApi.remove(id);
-    revalidateRuleViews();
-  });
-}
+export const deleteRule = createDomainAction(
+  { fallbackError: 'Failed to delete rule', revalidatePaths: RULE_PATHS },
+  (id: string) => rulesApi.remove(id)
+);
 
-/** Read-only preview of what a (possibly unsaved) rule definition would match. */
-export async function previewRuleMatches(
-  body: PreviewMatchesRequest,
-  params: { page?: number; size?: number } = {},
-): Promise<ApiResult<PagedRuleMatches>> {
-  return apiResult('Failed to find matching transactions', async () =>
-    rulesApi.previewMatches(body, params),
-  );
-}
+export const previewRuleMatches = createDomainAction(
+  { fallbackError: 'Failed to find matching transactions' },
+  (body: PreviewMatchesRequest, params: { page?: number; size?: number } = {}) =>
+    rulesApi.previewMatches(body, params)
+);
 
-export async function applyRule(
-  id: string,
-  body: ApplyRuleRequest,
-): Promise<ApiResult<ApplyRuleResult>> {
-  return apiResult('Failed to apply rule', async () => {
-    const result = await rulesApi.apply(id, body);
-    revalidateRuleViews();
-    return result;
-  });
-}
+export const applyRule = createDomainAction(
+  { fallbackError: 'Failed to apply rule', revalidatePaths: RULE_PATHS },
+  (id: string, body: ApplyRuleRequest) => rulesApi.apply(id, body)
+);

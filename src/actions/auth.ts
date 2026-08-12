@@ -3,12 +3,12 @@
 import { redirect } from 'next/navigation';
 
 import { authApi } from '@/lib/apiClient';
-import { apiResult, validationError } from '@/lib/apiResult';
-import { clearSessionCookie,setSessionCookie } from '@/lib/auth';
+import { validationError } from '@/lib/apiResult';
+import { clearSessionCookie, setSessionCookie } from '@/lib/auth';
+import { createDomainAction } from '@/lib/domainApi';
 import { optionalString } from '@/lib/forms';
 import type {
   ApiResult,
-  GoogleAuthStartResponse,
   UserResponse,
 } from '@/lib/types';
 
@@ -27,9 +27,11 @@ export async function signup(
     return validationError('Password must be at least 8 characters');
   }
 
-  return apiResult('An unexpected error occurred', () =>
-    authApi.signup({ email, password }),
+  const action = createDomainAction(
+    { fallbackError: 'An unexpected error occurred' },
+    () => authApi.signup({ email, password })
   );
+  return action();
 }
 
 export async function login(
@@ -43,13 +45,17 @@ export async function login(
     return validationError('Email and password are required');
   }
 
-  return apiResult('An unexpected error occurred', async () => {
-    const { user, sessionCookie } = await authApi.login({ email, password });
-    if (sessionCookie) {
-      await setSessionCookie(sessionCookie);
+  const action = createDomainAction(
+    { fallbackError: 'An unexpected error occurred' },
+    async () => {
+      const { user, sessionCookie } = await authApi.login({ email, password });
+      if (sessionCookie) {
+        await setSessionCookie(sessionCookie);
+      }
+      return user;
     }
-    return user;
-  });
+  );
+  return action();
 }
 
 export async function logout(): Promise<void> {
@@ -59,33 +65,21 @@ export async function logout(): Promise<void> {
     // Ignore logout errors — the local cookie is cleared regardless.
   }
   await clearSessionCookie();
-  // Deliberately outside any try/catch: `redirect` signals by throwing, so
-  // wrapping it would swallow the navigation.
   redirect('/login');
 }
 
-export async function startGoogleSSO(): Promise<
-  ApiResult<GoogleAuthStartResponse>
-> {
-  return apiResult('Failed to start Google SSO', () =>
-    authApi.startGoogleAuth(),
-  );
-}
+export const startGoogleSSO = createDomainAction(
+  { fallbackError: 'Failed to start Google SSO' },
+  () => authApi.startGoogleAuth()
+);
 
-export async function handleGoogleCallbackAction(
-  code: string | undefined,
-  state: string | undefined,
-  error: string | undefined
-): Promise<ApiResult<UserResponse>> {
-  return apiResult('Failed to complete Google SSO', async () => {
-    const { user, sessionCookie } = await authApi.handleGoogleCallback({
-      code,
-      state,
-      error,
-    });
+export const handleGoogleCallbackAction = createDomainAction(
+  { fallbackError: 'Failed to complete Google SSO' },
+  async (code: string | undefined, state: string | undefined, error: string | undefined) => {
+    const { user, sessionCookie } = await authApi.handleGoogleCallback({ code, state, error });
     if (sessionCookie) {
       await setSessionCookie(sessionCookie);
     }
     return user;
-  });
-}
+  }
+);

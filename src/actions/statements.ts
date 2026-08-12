@@ -1,18 +1,14 @@
 'use server';
 
 import { statementsApi } from '@/lib/apiClient';
-import { apiResult } from '@/lib/apiResult';
-import type { StatementDetail,StatementSummary } from '@/lib/statement.types';
-import type { ApiResult } from '@/lib/types';
+import { createDomainAction } from '@/lib/domainApi';
 
-export async function listStatementsByAccount(accountId: string): Promise<ApiResult<StatementSummary[]>> {
-  return apiResult('Failed to fetch statements', () =>
-    statementsApi.listByAccount(accountId),
-  );
-}
+export const listStatementsByAccount = createDomainAction(
+  { fallbackError: 'Failed to fetch statements' },
+  (accountId: string) => statementsApi.listByAccount(accountId)
+);
 
-export async function getStatementDetail(statementId: string): Promise<ApiResult<StatementDetail>> {
-  return apiResult('Failed to fetch statement details', () =>
-    statementsApi.getById(statementId),
-  );
-}
+export const getStatementDetail = createDomainAction(
+  { fallbackError: 'Failed to fetch statement details' },
+  (statementId: string) => statementsApi.getById(statementId)
+);

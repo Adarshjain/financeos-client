@@ -1,4 +1,3 @@
-import type { Page } from './pagination';
 import type { Transaction } from './transaction.types';
 
 export type LoanType =

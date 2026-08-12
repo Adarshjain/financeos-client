@@ -1,147 +1,99 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { rewardsApi } from '@/lib/apiClient';
-import { apiResult } from '@/lib/apiResult';
+import { createDomainAction } from '@/lib/domainApi';
 import type {
-  PagedRewardLines,
   ReorderRewardRulesRequest,
-  RewardAccountConfig,
   RewardAccountConfigRequest,
-  RewardCapBucket,
   RewardCapBucketRequest,
-  RewardMilestone,
   RewardMilestoneRequest,
-  RewardReport,
-  RewardRule,
   RewardRuleRequest,
 } from '@/lib/rewards.types';
-import type { ApiResult } from '@/lib/types';
 
-function revalidateRewardViews(): void {
-  revalidatePath('/rewards');
-  revalidatePath('/rewards/rules');
-}
+const REWARD_PATHS = ['/rewards', '/rewards/rules'];
 
-export async function listRewardRules(accountId: string): Promise<ApiResult<RewardRule[]>> {
-  return apiResult('Failed to load reward rules', async () => rewardsApi.listRules(accountId));
-}
+export const listRewardRules = createDomainAction(
+  { fallbackError: 'Failed to load reward rules' },
+  (accountId: string) => rewardsApi.listRules(accountId)
+);
 
-export async function createRewardRule(body: RewardRuleRequest): Promise<ApiResult<RewardRule>> {
-  return apiResult('Failed to create reward rule', async () => {
-    const rule = await rewardsApi.createRule(body);
-    revalidateRewardViews();
-    return rule;
-  });
-}
+export const createRewardRule = createDomainAction(
+  { fallbackError: 'Failed to create reward rule', revalidatePaths: REWARD_PATHS },
+  (body: RewardRuleRequest) => rewardsApi.createRule(body)
+);
 
-export async function updateRewardRule(id: string, body: RewardRuleRequest): Promise<ApiResult<RewardRule>> {
-  return apiResult('Failed to update reward rule', async () => {
-    const rule = await rewardsApi.updateRule(id, body);
-    revalidateRewardViews();
-    return rule;
-  });
-}
+export const updateRewardRule = createDomainAction(
+  { fallbackError: 'Failed to update reward rule', revalidatePaths: REWARD_PATHS },
+  (id: string, body: RewardRuleRequest) => rewardsApi.updateRule(id, body)
+);
 
-export async function deleteRewardRule(id: string): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete reward rule', async () => {
-    await rewardsApi.deleteRule(id);
-    revalidateRewardViews();
-  });
-}
+export const deleteRewardRule = createDomainAction(
+  { fallbackError: 'Failed to delete reward rule', revalidatePaths: REWARD_PATHS },
+  (id: string) => rewardsApi.deleteRule(id)
+);
 
-export async function reorderRewardRules(body: ReorderRewardRulesRequest): Promise<ApiResult<RewardRule[]>> {
-  return apiResult('Failed to reorder reward rules', async () => {
-    const rules = await rewardsApi.reorderRules(body);
-    revalidateRewardViews();
-    return rules;
-  });
-}
+export const reorderRewardRules = createDomainAction(
+  { fallbackError: 'Failed to reorder reward rules', revalidatePaths: REWARD_PATHS },
+  (body: ReorderRewardRulesRequest) => rewardsApi.reorderRules(body)
+);
 
-export async function listRewardMilestones(accountId: string): Promise<ApiResult<RewardMilestone[]>> {
-  return apiResult('Failed to load milestones', async () => rewardsApi.listMilestones(accountId));
-}
+export const listRewardMilestones = createDomainAction(
+  { fallbackError: 'Failed to load reward milestones' },
+  (accountId: string) => rewardsApi.listMilestones(accountId)
+);
 
-export async function createRewardMilestone(body: RewardMilestoneRequest): Promise<ApiResult<RewardMilestone>> {
-  return apiResult('Failed to create milestone', async () => {
-    const milestone = await rewardsApi.createMilestone(body);
-    revalidateRewardViews();
-    return milestone;
-  });
-}
+export const createRewardMilestone = createDomainAction(
+  { fallbackError: 'Failed to create milestone', revalidatePaths: REWARD_PATHS },
+  (body: RewardMilestoneRequest) => rewardsApi.createMilestone(body)
+);
 
-export async function updateRewardMilestone(id: string, body: RewardMilestoneRequest): Promise<ApiResult<RewardMilestone>> {
-  return apiResult('Failed to update milestone', async () => {
-    const milestone = await rewardsApi.updateMilestone(id, body);
-    revalidateRewardViews();
-    return milestone;
-  });
-}
+export const updateRewardMilestone = createDomainAction(
+  { fallbackError: 'Failed to update milestone', revalidatePaths: REWARD_PATHS },
+  (id: string, body: RewardMilestoneRequest) => rewardsApi.updateMilestone(id, body)
+);
 
-export async function deleteRewardMilestone(id: string): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete milestone', async () => {
-    await rewardsApi.deleteMilestone(id);
-    revalidateRewardViews();
-  });
-}
+export const deleteRewardMilestone = createDomainAction(
+  { fallbackError: 'Failed to delete milestone', revalidatePaths: REWARD_PATHS },
+  (id: string) => rewardsApi.deleteMilestone(id)
+);
 
-export async function listRewardCapBuckets(accountId: string): Promise<ApiResult<RewardCapBucket[]>> {
-  return apiResult('Failed to load cap buckets', async () => rewardsApi.listCapBuckets(accountId));
-}
+export const listRewardCapBuckets = createDomainAction(
+  { fallbackError: 'Failed to load cap buckets' },
+  (accountId: string) => rewardsApi.listCapBuckets(accountId)
+);
 
-export async function createRewardCapBucket(body: RewardCapBucketRequest): Promise<ApiResult<RewardCapBucket>> {
-  return apiResult('Failed to create cap bucket', async () => {
-    const bucket = await rewardsApi.createCapBucket(body);
-    revalidateRewardViews();
-    return bucket;
-  });
-}
+export const createRewardCapBucket = createDomainAction(
+  { fallbackError: 'Failed to create cap bucket', revalidatePaths: REWARD_PATHS },
+  (body: RewardCapBucketRequest) => rewardsApi.createCapBucket(body)
+);
 
-export async function updateRewardCapBucket(id: string, body: RewardCapBucketRequest): Promise<ApiResult<RewardCapBucket>> {
-  return apiResult('Failed to update cap bucket', async () => {
-    const bucket = await rewardsApi.updateCapBucket(id, body);
-    revalidateRewardViews();
-    return bucket;
-  });
-}
+export const updateRewardCapBucket = createDomainAction(
+  { fallbackError: 'Failed to update cap bucket', revalidatePaths: REWARD_PATHS },
+  (id: string, body: RewardCapBucketRequest) => rewardsApi.updateCapBucket(id, body)
+);
 
-export async function deleteRewardCapBucket(id: string): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete cap bucket', async () => {
-    await rewardsApi.deleteCapBucket(id);
-    revalidateRewardViews();
-  });
-}
+export const deleteRewardCapBucket = createDomainAction(
+  { fallbackError: 'Failed to delete cap bucket', revalidatePaths: REWARD_PATHS },
+  (id: string) => rewardsApi.deleteCapBucket(id)
+);
 
-export async function getRewardAccountConfig(accountId: string): Promise<ApiResult<RewardAccountConfig>> {
-  return apiResult('Failed to load reward config', async () => rewardsApi.getAccountConfig(accountId));
-}
+export const getRewardAccountConfig = createDomainAction(
+  { fallbackError: 'Failed to load reward config' },
+  (accountId: string) => rewardsApi.getAccountConfig(accountId)
+);
 
-export async function updateRewardAccountConfig(body: RewardAccountConfigRequest): Promise<ApiResult<RewardAccountConfig>> {
-  return apiResult('Failed to update reward config', async () => {
-    const config = await rewardsApi.updateAccountConfig(body);
-    revalidateRewardViews();
-    return config;
-  });
-}
+export const updateRewardAccountConfig = createDomainAction(
+  { fallbackError: 'Failed to update reward config', revalidatePaths: REWARD_PATHS },
+  (body: RewardAccountConfigRequest) => rewardsApi.updateAccountConfig(body)
+);
 
-export async function getRewardReport(
-  accountId: string,
-  from: string,
-  to: string,
-): Promise<ApiResult<RewardReport>> {
-  return apiResult('Failed to load rewards report', async () =>
-    rewardsApi.report({ accountId, from, to }),
-  );
-}
+export const getRewardReport = createDomainAction(
+  { fallbackError: 'Failed to load rewards report' },
+  (accountId: string, from: string, to: string) => rewardsApi.report({ accountId, from, to })
+);
 
-export async function listRewardLines(params: {
-  accountId: string;
-  from: string;
-  to: string;
-  ruleId?: string;
-  page?: number;
-  size?: number;
-}): Promise<ApiResult<PagedRewardLines>> {
-  return apiResult('Failed to load reward lines', async () => rewardsApi.lines(params));
-}
+export const listRewardLines = createDomainAction(
+  { fallbackError: 'Failed to load reward lines' },
+  (params: { accountId: string; from: string; to: string; ruleId?: string; page?: number; size?: number }) =>
+    rewardsApi.lines(params)
+);

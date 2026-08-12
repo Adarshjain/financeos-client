@@ -1,43 +1,26 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { transactionLinksApi } from '@/lib/apiClient';
-import { apiResult } from '@/lib/apiResult';
+import { createDomainAction } from '@/lib/domainApi';
 import { sanitizeCreateLinkRequest } from '@/lib/transaction.helpers';
-import type { CreateTransactionLinkRequest, TransactionLinkResponse } from '@/lib/transaction.types';
-import type { ApiResult } from '@/lib/types';
+import type { CreateTransactionLinkRequest } from '@/lib/transaction.types';
 
-function revalidateTransactionViews(): void {
-  revalidatePath('/transactions');
-  revalidatePath('/transactions/review');
-}
+const TRANSACTION_PATHS = ['/transactions', '/transactions/review'];
 
-export async function createTransactionLink(
-  request: CreateTransactionLinkRequest,
-): Promise<ApiResult<TransactionLinkResponse>> {
-  return apiResult('Failed to create transaction link', async () => {
+export const createTransactionLink = createDomainAction(
+  { fallbackError: 'Failed to create transaction link', revalidatePaths: TRANSACTION_PATHS },
+  (request: CreateTransactionLinkRequest) => {
     const cleanRequest = sanitizeCreateLinkRequest(request);
+    return transactionLinksApi.create(cleanRequest);
+  }
+);
 
-    const data = await transactionLinksApi.create(cleanRequest);
-    revalidateTransactionViews();
-    return data;
-  });
-}
+export const deleteTransactionLink = createDomainAction(
+  { fallbackError: 'Failed to delete transaction link', revalidatePaths: TRANSACTION_PATHS },
+  (linkId: string) => transactionLinksApi.delete(linkId)
+);
 
-export async function deleteTransactionLink(
-  linkId: string,
-): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete transaction link', async () => {
-    await transactionLinksApi.delete(linkId);
-    revalidateTransactionViews();
-  });
-}
-
-export async function getTransactionLinks(
-  transactionId: string,
-): Promise<ApiResult<TransactionLinkResponse[]>> {
-  return apiResult('Failed to fetch transaction links', () =>
-    transactionLinksApi.getByTransactionId(transactionId),
-  );
-}
+export const getTransactionLinks = createDomainAction(
+  { fallbackError: 'Failed to fetch transaction links' },
+  (transactionId: string) => transactionLinksApi.getByTransactionId(transactionId)
+);

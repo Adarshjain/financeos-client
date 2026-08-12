@@ -261,7 +261,8 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
             </Button>
           ) : (
             <>
-              {localReviewCount > 0 && <Link href="/transactions/review">
+              {localReviewCount != null && localReviewCount > 0 && <Link href="/transactions/review">
+
                 <Button
                     variant="outline"
                     size="sm"

@@ -31,6 +31,7 @@ describe('reports server actions (WP-3)', () => {
     expect((await updateReport('r1', { name: 'Rep2' } as any)).success).toBe(true);
     expect((await deleteReport('r1')).success).toBe(true);
     expect((await runSavedReport('r1', { page: 0 })).success).toBe(true);
-    expect((await runAdHocReport({} as any, { page: 0 })).success).toBe(true);
+    expect((await runAdHocReport({} as any)).success).toBe(true);
   });
 });
+
