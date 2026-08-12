@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowDown, ArrowUp, Link2, Loader2, X, PlusIcon } from 'lucide-react';
+import { ArrowDown, ArrowUp, Link2, Loader2, PlusIcon, X } from 'lucide-react';
 import Link from 'next/link';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
