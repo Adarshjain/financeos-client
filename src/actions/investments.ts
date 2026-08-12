@@ -1,9 +1,8 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-
 import { corporateActionsApi, dividendsApi, fnoApi, importsApi, instrumentsApi, investmentsApi } from '@/lib/apiClient';
-import { apiResult, validationError } from '@/lib/apiResult';
+import { validationError } from '@/lib/apiResult';
+import { createDomainAction } from '@/lib/domainApi';
 import { optionalDecimal, optionalString } from '@/lib/forms';
 import type {
   AcceptSuggestionsRequest,
@@ -42,6 +41,8 @@ import type {
   UpdateFnoTradeRequest,
   UpdateInvestmentTransactionRequest,
 } from '@/lib/types';
+
+const INVESTMENTS_PATHS = ['/investments', '/investments/fno'];
 
 function extractChargesFromFormData(formData: FormData): Charges | undefined {
   const brokerage = optionalDecimal(formData, 'brokerage');
@@ -101,312 +102,164 @@ export async function createInvestmentTransaction(
     req = data;
   }
 
-  return apiResult('Failed to create investment transaction', async () => {
-    const transaction = await investmentsApi.createTransaction(req);
-    revalidatePath('/investments');
-    return transaction;
-  });
+  const action = createDomainAction(
+    { fallbackError: 'Failed to create investment transaction', revalidatePaths: INVESTMENTS_PATHS },
+    (r: CreateInvestmentTransactionRequest) => investmentsApi.createTransaction(r)
+  );
+  return action(req);
 }
 
-export async function listInvestmentTransactions(
-  page: number,
-  size: number,
-  filters?: { brokerAccountId?: string; instrumentId?: string; holdingId?: string; search?: string }
-): Promise<ApiResult<PagedInvestmentTransactionResponse>> {
-  return apiResult('Failed to load transactions', async () => {
-    return await investmentsApi.listTransactions(page, size, filters);
-  });
-}
+export const listInvestmentTransactions = createDomainAction(
+  { fallbackError: 'Failed to load transactions' },
+  (page: number, size: number, filters?: { brokerAccountId?: string; instrumentId?: string; holdingId?: string; search?: string }) =>
+    investmentsApi.listTransactions(page, size, filters)
+);
 
-export async function updateInvestmentTransaction(
-  id: string,
-  data: UpdateInvestmentTransactionRequest
-): Promise<ApiResult<InvestmentTransactionResponse>> {
-  return apiResult('Failed to update investment transaction', async () => {
-    const transaction = await investmentsApi.updateTransaction(id, data);
-    revalidatePath('/investments');
-    return transaction;
-  });
-}
+export const updateInvestmentTransaction = createDomainAction(
+  { fallbackError: 'Failed to update investment transaction', revalidatePaths: INVESTMENTS_PATHS },
+  (id: string, data: UpdateInvestmentTransactionRequest) => investmentsApi.updateTransaction(id, data)
+);
 
-export async function deleteInvestmentTransaction(
-  id: string
-): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete investment transaction', async () => {
-    await investmentsApi.deleteTransaction(id);
-    revalidatePath('/investments');
-  });
-}
+export const deleteInvestmentTransaction = createDomainAction(
+  { fallbackError: 'Failed to delete investment transaction', revalidatePaths: INVESTMENTS_PATHS },
+  (id: string) => investmentsApi.deleteTransaction(id)
+);
 
-export async function catalogSearch(
-  query: string,
-  type?: InstrumentType
-): Promise<ApiResult<InstrumentCandidate[]>> {
-  return apiResult('Failed to search instrument catalog', async () => {
-    return await instrumentsApi.catalogSearch(query, type);
-  });
-}
+export const catalogSearch = createDomainAction(
+  { fallbackError: 'Failed to search instrument catalog' },
+  (query: string, type?: InstrumentType) => instrumentsApi.catalogSearch(query, type)
+);
 
-export async function resolveInstrument(
-  req: ResolveInstrumentRequest
-): Promise<ApiResult<Instrument>> {
-  return apiResult('Failed to resolve instrument', async () => {
-    const instrument = await instrumentsApi.resolveInstrument(req);
-    revalidatePath('/investments');
-    return instrument;
-  });
-}
+export const resolveInstrument = createDomainAction(
+  { fallbackError: 'Failed to resolve instrument', revalidatePaths: INVESTMENTS_PATHS },
+  (req: ResolveInstrumentRequest) => instrumentsApi.resolveInstrument(req)
+);
 
-export async function createInstrument(
-  data: CreateInstrumentRequest
-): Promise<ApiResult<Instrument>> {
-  return apiResult('Failed to create instrument', async () => {
-    const instrument = await instrumentsApi.create(data);
-    revalidatePath('/investments');
-    return instrument;
-  });
-}
+export const createInstrument = createDomainAction(
+  { fallbackError: 'Failed to create instrument', revalidatePaths: INVESTMENTS_PATHS },
+  (data: CreateInstrumentRequest) => instrumentsApi.create(data)
+);
 
-export async function updateInstrument(
-  id: string,
-  data: CreateInstrumentRequest
-): Promise<ApiResult<Instrument>> {
-  return apiResult('Failed to update instrument', async () => {
-    const instrument = await instrumentsApi.update(id, data);
-    revalidatePath('/investments');
-    return instrument;
-  });
-}
+export const updateInstrument = createDomainAction(
+  { fallbackError: 'Failed to update instrument', revalidatePaths: INVESTMENTS_PATHS },
+  (id: string, data: CreateInstrumentRequest) => instrumentsApi.update(id, data)
+);
 
-export async function setInstrumentPrice(
-  id: string,
-  data: SetPriceRequest
-): Promise<ApiResult<Instrument>> {
-  return apiResult('Failed to set instrument price', async () => {
-    const instrument = await instrumentsApi.setPrice(id, data);
-    revalidatePath('/investments');
-    return instrument;
-  });
-}
+export const setInstrumentPrice = createDomainAction(
+  { fallbackError: 'Failed to set instrument price', revalidatePaths: INVESTMENTS_PATHS },
+  (id: string, data: SetPriceRequest) => instrumentsApi.setPrice(id, data)
+);
 
-export async function refreshInvestmentPrices(
-  instrumentId?: string
-): Promise<ApiResult<PriceRefreshResult>> {
-  return apiResult('Failed to refresh investment prices', async () => {
-    const res = await investmentsApi.refreshPrices(instrumentId);
-    revalidatePath('/investments');
-    return res;
-  });
-}
+export const refreshInvestmentPrices = createDomainAction(
+  { fallbackError: 'Failed to refresh investment prices', revalidatePaths: INVESTMENTS_PATHS },
+  (instrumentId?: string) => investmentsApi.refreshPrices(instrumentId)
+);
 
 // Dividends actions
-export async function listDividends(
-  page = 0,
-  size = 25,
-  filters?: {
-    holdingId?: string;
-    brokerAccountId?: string;
-    instrumentId?: string;
-    type?: DividendType;
-    from?: string;
-    to?: string;
-  }
-): Promise<ApiResult<PagedDividendResponse>> {
-  return apiResult('Failed to fetch dividends', async () => {
-    return await dividendsApi.list({ page, size, ...filters });
-  });
-}
+export const listDividends = createDomainAction(
+  { fallbackError: 'Failed to fetch dividends' },
+  (page = 0, size = 25, filters?: { holdingId?: string; brokerAccountId?: string; instrumentId?: string; type?: DividendType; from?: string; to?: string }) =>
+    dividendsApi.list({ page, size, ...filters })
+);
 
-export async function getDividendSummary(filters?: {
-  holdingId?: string;
-  brokerAccountId?: string;
-  instrumentId?: string;
-  type?: DividendType;
-}): Promise<ApiResult<DividendSummary>> {
-  return apiResult('Failed to fetch dividend summary', async () => {
-    return await dividendsApi.summary(filters);
-  });
-}
+export const getDividendSummary = createDomainAction(
+  { fallbackError: 'Failed to fetch dividend summary' },
+  (filters?: { holdingId?: string; brokerAccountId?: string; instrumentId?: string; type?: DividendType }) =>
+    dividendsApi.summary(filters)
+);
 
-export async function scanDividendSuggestions(
-  brokerAccountId?: string
-): Promise<ApiResult<DividendSuggestionsResponse>> {
-  return apiResult('Failed to scan dividend suggestions', async () => {
-    return await dividendsApi.suggestions(brokerAccountId);
-  });
-}
+export const scanDividendSuggestions = createDomainAction(
+  { fallbackError: 'Failed to scan dividend suggestions' },
+  (brokerAccountId?: string) => dividendsApi.suggestions(brokerAccountId)
+);
 
-export async function acceptDividendSuggestions(
-  data: AcceptSuggestionsRequest
-): Promise<ApiResult<AcceptSuggestionsResponse>> {
-  return apiResult('Failed to accept dividend suggestions', async () => {
-    const res = await dividendsApi.acceptSuggestions(data);
-    revalidatePath('/investments');
-    return res;
-  });
-}
+export const acceptDividendSuggestions = createDomainAction(
+  { fallbackError: 'Failed to accept dividend suggestions', revalidatePaths: INVESTMENTS_PATHS },
+  (data: AcceptSuggestionsRequest) => dividendsApi.acceptSuggestions(data)
+);
 
-export async function createDividend(
-  data: CreateDividendRequest
-): Promise<ApiResult<Dividend>> {
-  return apiResult('Failed to record dividend', async () => {
-    const div = await dividendsApi.create(data);
-    revalidatePath('/investments');
-    return div;
-  });
-}
+export const createDividend = createDomainAction(
+  { fallbackError: 'Failed to record dividend', revalidatePaths: INVESTMENTS_PATHS },
+  (data: CreateDividendRequest) => dividendsApi.create(data)
+);
 
-export async function updateDividend(
-  id: string,
-  data: UpdateDividendRequest
-): Promise<ApiResult<Dividend>> {
-  return apiResult('Failed to update dividend', async () => {
-    const div = await dividendsApi.update(id, data);
-    revalidatePath('/investments');
-    return div;
-  });
-}
+export const updateDividend = createDomainAction(
+  { fallbackError: 'Failed to update dividend', revalidatePaths: INVESTMENTS_PATHS },
+  (id: string, data: UpdateDividendRequest) => dividendsApi.update(id, data)
+);
 
-export async function deleteDividend(
-  id: string
-): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete dividend', async () => {
-    await dividendsApi.delete(id);
-    revalidatePath('/investments');
-  });
-}
+export const deleteDividend = createDomainAction(
+  { fallbackError: 'Failed to delete dividend', revalidatePaths: INVESTMENTS_PATHS },
+  (id: string) => dividendsApi.delete(id)
+);
 
-export async function getCorporateActions(
-  instrumentId: string
-): Promise<ApiResult<CorporateAction[]>> {
-  return apiResult('Failed to fetch corporate actions', async () => {
-    return await corporateActionsApi.list(instrumentId);
-  });
-}
+export const getCorporateActions = createDomainAction(
+  { fallbackError: 'Failed to fetch corporate actions' },
+  (instrumentId: string) => corporateActionsApi.list(instrumentId)
+);
 
-export async function createCorporateAction(
-  instrumentId: string,
-  data: CreateCorporateActionRequest
-): Promise<ApiResult<CorporateAction>> {
-  return apiResult('Failed to create corporate action', async () => {
-    const action = await corporateActionsApi.create(instrumentId, data);
-    revalidatePath('/investments');
-    return action;
-  });
-}
+export const createCorporateAction = createDomainAction(
+  { fallbackError: 'Failed to create corporate action', revalidatePaths: INVESTMENTS_PATHS },
+  (instrumentId: string, data: CreateCorporateActionRequest) => corporateActionsApi.create(instrumentId, data)
+);
 
-export async function updateCorporateAction(
-  instrumentId: string,
-  id: string,
-  data: UpdateCorporateActionRequest
-): Promise<ApiResult<CorporateAction>> {
-  return apiResult('Failed to update corporate action', async () => {
-    const action = await corporateActionsApi.update(instrumentId, id, data);
-    revalidatePath('/investments');
-    return action;
-  });
-}
+export const updateCorporateAction = createDomainAction(
+  { fallbackError: 'Failed to update corporate action', revalidatePaths: INVESTMENTS_PATHS },
+  (instrumentId: string, id: string, data: UpdateCorporateActionRequest) => corporateActionsApi.update(instrumentId, id, data)
+);
 
-export async function deleteCorporateAction(
-  instrumentId: string,
-  id: string
-): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete corporate action', async () => {
-    await corporateActionsApi.delete(instrumentId, id);
-    revalidatePath('/investments');
-  });
-}
+export const deleteCorporateAction = createDomainAction(
+  { fallbackError: 'Failed to delete corporate action', revalidatePaths: INVESTMENTS_PATHS },
+  (instrumentId: string, id: string) => corporateActionsApi.delete(instrumentId, id)
+);
 
-// Imports actions (Phase 4a & Reconciliation)
-export async function previewImport(
-  formData: FormData
-): Promise<ApiResult<ImportPreview>> {
-  return apiResult('Failed to preview import file', async () => {
-    return await importsApi.preview(formData);
-  });
-}
+// Imports actions
+export const previewImport = createDomainAction(
+  { fallbackError: 'Failed to preview import file' },
+  (formData: FormData) => importsApi.preview(formData)
+);
 
-export async function commitImport(
-  data: ImportCommitRequest
-): Promise<ApiResult<ImportCommitResult>> {
-  return apiResult('Failed to commit import rows', async () => {
-    const res = await importsApi.commit(data);
-    revalidatePath('/investments');
-    return res;
-  });
-}
+export const commitImport = createDomainAction(
+  { fallbackError: 'Failed to commit import rows', revalidatePaths: INVESTMENTS_PATHS },
+  (data: ImportCommitRequest) => importsApi.commit(data)
+);
 
-export async function previewReconcileImport(
-  formData: FormData
-): Promise<ApiResult<ReconcilePreview>> {
-  return apiResult('Failed to preview broker reconciliation files', async () => {
-    return await importsApi.previewReconcile(formData);
-  });
-}
+export const previewReconcileImport = createDomainAction(
+  { fallbackError: 'Failed to preview broker reconciliation files' },
+  (formData: FormData) => importsApi.previewReconcile(formData)
+);
 
-export async function commitReconcileImport(
-  data: ReconcileCommitRequest
-): Promise<ApiResult<ImportCommitResult>> {
-  return apiResult('Failed to commit reconciled executions', async () => {
-    const res = await importsApi.commitReconcile(data);
-    revalidatePath('/investments');
-    return res;
-  });
-}
+export const commitReconcileImport = createDomainAction(
+  { fallbackError: 'Failed to commit reconciled executions', revalidatePaths: INVESTMENTS_PATHS },
+  (data: ReconcileCommitRequest) => importsApi.commitReconcile(data)
+);
 
-export async function getPriceHistory(
-  instrumentId: string
-): Promise<ApiResult<PriceHistoryPoint[]>> {
-  return apiResult('Failed to load price history', async () => {
-    return await instrumentsApi.getPriceHistory(instrumentId);
-  });
-}
+export const getPriceHistory = createDomainAction(
+  { fallbackError: 'Failed to load price history' },
+  (instrumentId: string) => instrumentsApi.getPriceHistory(instrumentId)
+);
 
-export async function updateInstrumentPrice(
-  instrumentId: string,
-  priceId: string,
-  price: number | string
-): Promise<ApiResult<Instrument>> {
-  return apiResult('Failed to update price point', async () => {
-    const res = await instrumentsApi.updatePrice(instrumentId, priceId, { price });
-    revalidatePath('/investments');
-    return res;
-  });
-}
+export const updateInstrumentPrice = createDomainAction(
+  { fallbackError: 'Failed to update price point', revalidatePaths: INVESTMENTS_PATHS },
+  (instrumentId: string, priceId: string, price: number | string) => instrumentsApi.updatePrice(instrumentId, priceId, { price })
+);
 
-export async function deleteInstrumentPrice(
-  instrumentId: string,
-  priceId: string
-): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete price point', async () => {
-    await instrumentsApi.deletePrice(instrumentId, priceId);
-    revalidatePath('/investments');
-  });
-}
+export const deleteInstrumentPrice = createDomainAction(
+  { fallbackError: 'Failed to delete price point', revalidatePaths: INVESTMENTS_PATHS },
+  (instrumentId: string, priceId: string) => instrumentsApi.deletePrice(instrumentId, priceId)
+);
 
-export async function createFnoTrade(data: CreateFnoTradeRequest): Promise<ApiResult<FnoTradeResponse>> {
-  return apiResult('Failed to create FnO trade', async () => {
-    const res = await fnoApi.createTrade(data);
-    revalidatePath('/investments/fno');
-    revalidatePath('/investments');
-    return res;
-  });
-}
+export const createFnoTrade = createDomainAction(
+  { fallbackError: 'Failed to create FnO trade', revalidatePaths: INVESTMENTS_PATHS },
+  (data: CreateFnoTradeRequest) => fnoApi.createTrade(data)
+);
 
-export async function updateFnoTrade(id: string, data: UpdateFnoTradeRequest): Promise<ApiResult<FnoTradeResponse>> {
-  return apiResult('Failed to update FnO trade', async () => {
-    const res = await fnoApi.updateTrade(id, data);
-    revalidatePath('/investments/fno');
-    revalidatePath('/investments');
-    return res;
-  });
-}
+export const updateFnoTrade = createDomainAction(
+  { fallbackError: 'Failed to update FnO trade', revalidatePaths: INVESTMENTS_PATHS },
+  (id: string, data: UpdateFnoTradeRequest) => fnoApi.updateTrade(id, data)
+);
 
-export async function deleteFnoTrade(id: string): Promise<ApiResult<void>> {
-  return apiResult('Failed to delete FnO trade', async () => {
-    await fnoApi.deleteTrade(id);
-    revalidatePath('/investments/fno');
-    revalidatePath('/investments');
-  });
-}
-
+export const deleteFnoTrade = createDomainAction(
+  { fallbackError: 'Failed to delete FnO trade', revalidatePaths: INVESTMENTS_PATHS },
+  (id: string) => fnoApi.deleteTrade(id)
+);
