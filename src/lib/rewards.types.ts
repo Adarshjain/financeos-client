@@ -68,13 +68,17 @@ export interface RewardAccountConfig {
   rewardAnniversaryDate?: string | null;
   /** Default currency new rules pay in; each rule can override. */
   defaultRewardType?: RewardType | null;
+  /** Per-account point value in INR; fallback is 0.25 when unset. */
+  pointValueInr?: number | null;
 }
 
-/** PUT body — only the default reward type is editable via reward config. */
+/** PUT body — default reward type and point valuation in INR. */
 export interface RewardAccountConfigRequest {
   accountId: string;
-  defaultRewardType: RewardType;
+  defaultRewardType?: RewardType | null;
+  pointValueInr?: number | null;
 }
+
 export type EmiTreatment = 'INCLUDE' | 'EXCLUDE_EMI' | 'ONLY_EMI';
 export type IntlTreatment = 'INCLUDE' | 'EXCLUDE_INTL' | 'ONLY_INTL';
 export type RewardMerchantMatch = 'CONTAINS' | 'STARTS_WITH' | 'EXACT' | 'REGEX';
@@ -94,6 +98,22 @@ export type RewardLineReason =
   | 'FULLY_REFUNDED'
   | 'TRANSFER_OR_PAYMENT'
   | 'TXN_EXCLUDED';
+
+/** Reason shown as plain colored text (not a badge) — label + a short human explanation for the detail dialog. */
+export const REASON_META: Record<RewardLineReason, { label: string; textClass: string; explain: string }> = {
+  MATCHED: { label: 'Earned', textClass: 'text-emerald-600 dark:text-emerald-400', explain: 'Earned in full under the matched rule.' },
+  PARTIAL_CAP: { label: 'Cap clamped', textClass: 'text-amber-600 dark:text-amber-500', explain: 'Earned, but clamped by a per-transaction or period cap.' },
+  CAP_EXHAUSTED: { label: 'Cap exhausted', textClass: 'text-red-500 dark:text-red-400', explain: 'The matched rule’s period cap was already used up.' },
+  EXCLUDED_BY_RULE: { label: 'Excluded by rule', textClass: 'text-slate-500 dark:text-slate-400', explain: 'Matched a zero-rate rule — an explicit exclusion.' },
+  BELOW_SLAB: { label: 'Below slab', textClass: 'text-slate-500 dark:text-slate-400', explain: 'The spend was smaller than one slab of the matched points rule.' },
+  ROUNDED_TO_ZERO: { label: 'Rounds to 0', textClass: 'text-slate-500 dark:text-slate-400', explain: 'The cashback rounded down to zero under the rule’s rounding mode.' },
+  TIER_ZERO: { label: 'Tier earns 0', textClass: 'text-slate-500 dark:text-slate-400', explain: 'At the current tier-window spend level, the applicable tier (or its slab) yields zero.' },
+  NO_RULE: { label: 'No rule', textClass: 'text-slate-400 dark:text-slate-500', explain: 'No reward rule matched this transaction.' },
+  FULLY_REFUNDED: { label: 'Refunded', textClass: 'text-sky-600 dark:text-sky-400', explain: 'Linked refunds reduced the eligible amount to zero.' },
+  TRANSFER_OR_PAYMENT: { label: 'Transfer / payment', textClass: 'text-slate-400 dark:text-slate-500', explain: 'Transfer, card-payment or reversal legs never earn rewards.' },
+  TXN_EXCLUDED: { label: 'Txn excluded', textClass: 'text-slate-400 dark:text-slate-500', explain: 'This transaction is marked excluded from analytics.' },
+};
+
 
 /** One marginal-rate tranche; upTo null = open-ended final tranche. rate = % for PERCENT rules, points-per-slab for SLAB rules. */
 export interface RewardRuleTier {
@@ -340,3 +360,74 @@ export interface RewardLine {
 }
 
 export type PagedRewardLines = Page<RewardLine>;
+
+export interface RewardRecommendationRequest {
+  amount: number;
+  date?: string;
+  categoryIds?: string[];
+  mcc?: string;
+  merchantText?: string;
+  channel?: TransactionChannel;
+  isEmi?: boolean;
+  isIntl?: boolean;
+  accountIds?: string[];
+}
+
+export interface SimulatedCapStatus {
+  capWindow: CapWindow;
+  totalCap: number;
+  usedBefore: number;
+  capRemainingBefore: number;
+  windowEnd?: string;
+  bucketName?: string | null;
+}
+
+export interface SimulatedRuleLine {
+  ruleId?: string | null;
+  ruleName?: string | null;
+  stacking?: RuleStacking | null;
+  earned: number;
+  earnedUnit: 'RUPEES' | 'POINTS';
+  earnedValueInr: number;
+  reason: RewardLineReason;
+  capStatus?: SimulatedCapStatus | null;
+}
+
+export interface SimulatedMilestone {
+  milestoneId: string;
+  name: string;
+  windowEnd: string;
+  progress: number;
+  threshold: number;
+  remainingToThreshold: number;
+  crosses: boolean;
+  payoutInr?: number | null;
+  scoredValueInr: number;
+  payoutType: MilestonePayoutType;
+}
+
+export interface RewardCardRecommendation {
+  accountId: string;
+  accountName: string;
+  rank: number;
+  totalValueInr: number;
+  guaranteedValueInr: number;
+  milestoneValueInr: number;
+  effectiveRatePct: number;
+  /** Whether the card has its own point valuation or fell back to the default. */
+  pointValueSource: 'CONFIG' | 'DEFAULT';
+  pointValueInr: number;
+  /** True when points were actually converted to ₹ — a DEFAULT valuation only misleads then. */
+  pointsValued: boolean;
+  ruleLines: SimulatedRuleLine[];
+  milestones: SimulatedMilestone[];
+  noRulesConfigured: boolean;
+  cycleFallback: boolean;
+  anniversaryFallback: boolean;
+}
+
+export interface RewardRecommendationResponse {
+  input: RewardRecommendationRequest;
+  recommendations: RewardCardRecommendation[];
+}
+

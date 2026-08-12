@@ -45,7 +45,7 @@ import type {
   RunReportRequest,
   UpdateReportRequest,
 } from '@/lib/reports.types';
-import type { PagedRewardLines, ReorderRewardRulesRequest, RewardAccountConfig, RewardAccountConfigRequest, RewardCapBucket, RewardCapBucketRequest, RewardMilestone, RewardMilestoneRequest, RewardReport, RewardRule, RewardRuleRequest } from '@/lib/rewards.types';
+import type { PagedRewardLines, ReorderRewardRulesRequest, RewardAccountConfig, RewardAccountConfigRequest, RewardCapBucket, RewardCapBucketRequest, RewardMilestone, RewardMilestoneRequest, RewardRecommendationRequest, RewardRecommendationResponse, RewardReport, RewardRule, RewardRuleRequest } from '@/lib/rewards.types';
 import type { ApplyRuleRequest, ApplyRuleResult, CategoryRule, CreateRuleRequest, PagedRuleMatches, PagedRules, PreviewMatchesRequest, UpdateRuleRequest } from '@/lib/rules.types';
 import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, CreateTransactionLinkRequest, PagedTransaction, Transaction, TransactionLinkResponse, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 
@@ -1247,7 +1247,15 @@ export const rewardsApi = {
     if (params.size !== undefined) query.set('size', String(params.size));
     return request<PagedRewardLines>(`/api/v1/rewards/lines?${query}`);
   },
+
+  async recommend(body: RewardRecommendationRequest): Promise<RewardRecommendationResponse> {
+    return request<RewardRecommendationResponse>('/api/v1/reward-recommendations', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
 };
+
 
 export { ApiError };
 

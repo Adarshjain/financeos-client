@@ -15,29 +15,14 @@ import type { Account } from '@/lib/account.types';
 import type {
   PagedRewardLines,
   RewardLine,
-  RewardLineReason,
   RewardReport,
   RewardRuleBreakdown,
 } from '@/lib/rewards.types';
-import { accountAnniversaryDate, anniversaryYearRange } from '@/lib/rewards.types';
+import { accountAnniversaryDate, anniversaryYearRange, REASON_META } from '@/lib/rewards.types';
 import { cn, formatDate, formatMoney, parseCalendarDate, toCalendarDate } from '@/lib/utils';
 
-/** Reason shown as plain colored text (not a badge) — label + a short human explanation for the detail dialog. */
-const REASON_META: Record<RewardLineReason, { label: string; textClass: string; explain: string }> = {
-  MATCHED: { label: 'Earned', textClass: 'text-emerald-600 dark:text-emerald-400', explain: 'Earned in full under the matched rule.' },
-  PARTIAL_CAP: { label: 'Cap clamped', textClass: 'text-amber-600 dark:text-amber-500', explain: 'Earned, but clamped by a per-transaction or period cap.' },
-  CAP_EXHAUSTED: { label: 'Cap exhausted', textClass: 'text-red-500 dark:text-red-400', explain: 'The matched rule’s period cap was already used up.' },
-  EXCLUDED_BY_RULE: { label: 'Excluded by rule', textClass: 'text-slate-500 dark:text-slate-400', explain: 'Matched a zero-rate rule — an explicit exclusion.' },
-  BELOW_SLAB: { label: 'Below slab', textClass: 'text-slate-500 dark:text-slate-400', explain: 'The spend was smaller than one slab of the matched points rule.' },
-  ROUNDED_TO_ZERO: { label: 'Rounds to 0', textClass: 'text-slate-500 dark:text-slate-400', explain: 'The cashback rounded down to zero under the rule’s rounding mode.' },
-  TIER_ZERO: { label: 'Tier earns 0', textClass: 'text-slate-500 dark:text-slate-400', explain: 'At the current tier-window spend level, the applicable tier (or its slab) yields zero.' },
-  NO_RULE: { label: 'No rule', textClass: 'text-slate-400 dark:text-slate-500', explain: 'No reward rule matched this transaction.' },
-  FULLY_REFUNDED: { label: 'Refunded', textClass: 'text-sky-600 dark:text-sky-400', explain: 'Linked refunds reduced the eligible amount to zero.' },
-  TRANSFER_OR_PAYMENT: { label: 'Transfer / payment', textClass: 'text-slate-400 dark:text-slate-500', explain: 'Transfer, card-payment or reversal legs never earn rewards.' },
-  TXN_EXCLUDED: { label: 'Txn excluded', textClass: 'text-slate-400 dark:text-slate-500', explain: 'This transaction is marked excluded from analytics.' },
-};
-
 function lineDescription(line: RewardLine): string {
+
   return line.description || line.sourcedDescription || '—';
 }
 
