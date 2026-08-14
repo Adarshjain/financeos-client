@@ -1,18 +1,20 @@
 'use client';
 
-import { CalendarDays, Loader2 } from 'lucide-react';
+import { CalendarDays, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { getRewardReport, listRewardLines } from '@/actions/rewards';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Account } from '@/lib/account.types';
 import type {
+  MilestoneStatus,
   PagedRewardLines,
   RewardLine,
   RewardReport,
@@ -24,6 +26,97 @@ import { cn, formatDate, formatMoney, parseCalendarDate, toCalendarDate } from '
 function lineDescription(line: RewardLine): string {
 
   return line.description || line.sourcedDescription || '—';
+}
+
+function milestoneProgressText(m: MilestoneStatus): string {
+  return m.basis === 'SPEND'
+    ? `${formatMoney(m.progress)} of ${formatMoney(m.threshold)}`
+    : `${m.progress} of ${m.threshold} txns${m.minTxnAmount ? ` (${formatMoney(m.minTxnAmount)}+ each)` : ''}`;
+}
+
+/** Sum of the payouts a set of milestones pays (or would pay) out, as "₹2,500 + 5000 pts". */
+function milestonePayoutTotal(list: MilestoneStatus[]): string {
+  const paying = list.filter((m) => m.payoutType === 'CASH_VALUE');
+  const inr = paying.filter((m) => m.rewardType !== 'POINTS').reduce((s, m) => s + (m.payoutValue ?? 0), 0);
+  const pts = paying.filter((m) => m.rewardType === 'POINTS').reduce((s, m) => s + (m.payoutValue ?? 0), 0);
+  return [inr > 0 ? formatMoney(inr) : null, pts > 0 ? `${pts} pts` : null].filter(Boolean).join(' + ');
+}
+
+/** One row of the milestone list — a progress bar only while the milestone is unachieved. */
+function MilestoneRow({ m }: { m: MilestoneStatus }) {
+  const pct = m.threshold > 0 ? Math.min(100, Math.round((m.progress / m.threshold) * 100)) : 0;
+  const payout = m.rewardType === 'POINTS' ? `${m.payoutValue ?? 0} pts` : formatMoney(m.payoutValue ?? 0);
+  return (
+    <div className="px-3.5 py-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{m.name}</span>
+        <span className={cn(
+          'text-[10px] font-semibold whitespace-nowrap',
+          m.achieved ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500',
+        )}>
+          {m.achieved
+            ? m.payoutType === 'CASH_VALUE' ? `Achieved · ${payout}` : 'Achieved'
+            : m.payoutType === 'CASH_VALUE' ? `${payout} at target` : 'Tracker'}
+        </span>
+      </div>
+      <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+        {m.windowType === 'ONE_TIME' && 'One-time · '}
+        {formatDate(m.windowStart)} – {formatDate(m.windowEnd)}
+        {m.achieved && m.payoutDate && ` · credited ${formatDate(m.payoutDate)}`}
+      </div>
+      {m.achieved ? (
+        <div className="mt-1.5 text-[10px] text-slate-400 dark:text-slate-500">
+          {milestoneProgressText(m)}
+        </div>
+      ) : (
+        <div className="mt-2">
+          <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 mb-0.5">
+            <span>{milestoneProgressText(m)}</span>
+            <span>{pct}%</span>
+          </div>
+          <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+            <div className="h-full rounded-full bg-amber-500 transition-all" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MilestoneSection({ title, items, meta, metaClass, open, onToggle }: {
+  title: string;
+  items: MilestoneStatus[];
+  meta: string;
+  metaClass: string;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className="w-full flex items-center justify-between gap-2 px-3.5 py-3 hover:bg-slate-50 dark:hover:bg-slate-950/40 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-slate-700 dark:text-slate-200">{title}</h3>
+          <Badge variant="outline" size="sm">{items.length}</Badge>
+        </div>
+        <div className="flex items-center gap-2">
+          {meta && <span className={cn('text-[10px] font-semibold', metaClass)}>{meta}</span>}
+          {open ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+        </div>
+      </button>
+      {open && (
+        <CardContent className="border-t border-slate-100 dark:border-slate-800 divide-y divide-slate-100 dark:divide-slate-800">
+          {items.map((m, i) => (
+            <MilestoneRow key={`${m.milestoneId}-${m.windowStart}-${i}`} m={m} />
+          ))}
+        </CardContent>
+      )}
+    </Card>
+  );
 }
 
 type RangePreset =
@@ -103,6 +196,8 @@ export default function RewardsBrowser({
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(initialLines?.size ?? 25);
   const [loading, setLoading] = useState(false);
+  const [inProgressOpen, setInProgressOpen] = useState(true);
+  const [completedOpen, setCompletedOpen] = useState(false);
 
   // Monotonic sequence: a response only lands if no newer request superseded it.
   const requestSeq = useRef(0);
@@ -160,6 +255,14 @@ export default function RewardsBrowser({
   };
 
   const summary = report?.summary;
+
+  const milestones = report?.milestones ?? [];
+  const milestonesInProgress = milestones.filter((m) => !m.achieved);
+  const milestonesCompleted = milestones.filter((m) => m.achieved);
+  // Shown in the headers so a collapsed section still says what it is worth.
+  const inProgressPayout = milestonePayoutTotal(milestonesInProgress);
+  const completedPayout = milestonePayoutTotal(milestonesCompleted);
+
   const dateTrigger = (date: Date) => (
     <button
       type="button"
@@ -359,51 +462,29 @@ export default function RewardsBrowser({
         </CardContent>
       </Card>
 
-      {/* Milestone progress */}
-      {report && report.milestones.length > 0 && (
-        <div className={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5', loading && 'opacity-60')}>
-          {report.milestones.map((m, i) => {
-            const pct = m.threshold > 0 ? Math.min(100, Math.round((m.progress / m.threshold) * 100)) : 0;
-            const progressText = m.basis === 'SPEND'
-              ? `${formatMoney(m.progress)} of ${formatMoney(m.threshold)}`
-              : `${m.progress} of ${m.threshold} txns${m.minTxnAmount ? ` (${formatMoney(m.minTxnAmount)}+ each)` : ''}`;
-            return (
-              <div key={`${m.milestoneId}-${m.windowStart}-${i}`}
-                   className="bg-white dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-800/80 shadow-sm p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{m.name}</span>
-                  <span className={cn(
-                    'text-[10px] font-semibold whitespace-nowrap',
-                    m.achieved ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500',
-                  )}>
-                    {(() => {
-                      const payout = m.rewardType === 'POINTS' ? `${m.payoutValue ?? 0} pts` : formatMoney(m.payoutValue ?? 0);
-                      return m.achieved
-                        ? m.payoutType === 'CASH_VALUE' ? `Achieved · ${payout}` : 'Achieved'
-                        : m.payoutType === 'CASH_VALUE' ? `${payout} at target` : 'Tracker';
-                    })()}
-                  </span>
-                </div>
-                <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
-                  {m.windowType === 'ONE_TIME' && 'One-time · '}
-                  {formatDate(m.windowStart)} – {formatDate(m.windowEnd)}
-                  {m.achieved && m.payoutDate && ` · credited ${formatDate(m.payoutDate)}`}
-                </div>
-                <div className="mt-2">
-                  <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 mb-0.5">
-                    <span>{progressText}</span>
-                    <span>{pct}%</span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                    <div
-                      className={cn('h-full rounded-full transition-all', m.achieved ? 'bg-emerald-500' : 'bg-amber-500')}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+      {/* Milestones — open by default; completed ones collapsed and without a progress bar */}
+      {milestones.length > 0 && (
+        <div className={cn('flex flex-col gap-2.5', loading && 'opacity-60')}>
+          {milestonesInProgress.length > 0 && (
+            <MilestoneSection
+              title="Milestones"
+              items={milestonesInProgress}
+              meta={inProgressPayout && `${inProgressPayout} at target`}
+              metaClass="text-slate-400 dark:text-slate-500"
+              open={inProgressOpen}
+              onToggle={() => setInProgressOpen((o) => !o)}
+            />
+          )}
+          {milestonesCompleted.length > 0 && (
+            <MilestoneSection
+              title="Completed Milestones"
+              items={milestonesCompleted}
+              meta={completedPayout}
+              metaClass="text-emerald-600 dark:text-emerald-400"
+              open={completedOpen}
+              onToggle={() => setCompletedOpen((o) => !o)}
+            />
+          )}
         </div>
       )}
 
