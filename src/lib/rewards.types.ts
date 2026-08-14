@@ -81,6 +81,7 @@ export interface RewardAccountConfigRequest {
 
 export type EmiTreatment = 'INCLUDE' | 'EXCLUDE_EMI' | 'ONLY_EMI';
 export type IntlTreatment = 'INCLUDE' | 'EXCLUDE_INTL' | 'ONLY_INTL';
+export type FeeTreatment = 'INCLUDE' | 'EXCLUDE_FEE';
 export type RewardMerchantMatch = 'CONTAINS' | 'STARTS_WITH' | 'EXACT' | 'REGEX';
 export type CapExhaustedBehavior = 'FALL_THROUGH' | 'STOP';
 export type DayOfWeek =
@@ -96,6 +97,7 @@ export type RewardLineReason =
   | 'TIER_ZERO'
   | 'NO_RULE'
   | 'FULLY_REFUNDED'
+  | 'FEE_ONLY'
   | 'TRANSFER_OR_PAYMENT'
   | 'TXN_EXCLUDED';
 
@@ -110,6 +112,7 @@ export const REASON_META: Record<RewardLineReason, { label: string; textClass: s
   TIER_ZERO: { label: 'Tier earns 0', textClass: 'text-slate-500 dark:text-slate-400', explain: 'At the current tier-window spend level, the applicable tier (or its slab) yields zero.' },
   NO_RULE: { label: 'No rule', textClass: 'text-slate-400 dark:text-slate-500', explain: 'No reward rule matched this transaction.' },
   FULLY_REFUNDED: { label: 'Refunded', textClass: 'text-sky-600 dark:text-sky-400', explain: 'Linked refunds reduced the eligible amount to zero.' },
+  FEE_ONLY: { label: 'Fee only', textClass: 'text-slate-500 dark:text-slate-400', explain: 'The matched rule excludes convenience fees, and the fee accounted for the whole charge.' },
   TRANSFER_OR_PAYMENT: { label: 'Transfer / payment', textClass: 'text-slate-400 dark:text-slate-500', explain: 'Transfer, card-payment or reversal legs never earn rewards.' },
   TXN_EXCLUDED: { label: 'Txn excluded', textClass: 'text-slate-400 dark:text-slate-500', explain: 'This transaction is marked excluded from analytics.' },
 };
@@ -139,6 +142,7 @@ export interface RewardRule {
   maxAmount?: number | null;
   emiTreatment: EmiTreatment;
   intlTreatment: IntlTreatment;
+  feeTreatment: FeeTreatment;
   rewardType: RewardType;
   accrualType: AccrualType;
   percentRate?: number | null;
@@ -176,6 +180,8 @@ export interface RewardRuleRequest {
   maxAmount?: number | null;
   emiTreatment?: EmiTreatment;
   intlTreatment?: IntlTreatment;
+  /** Unset = INCLUDE — the surcharge earns like the rest of the spend. */
+  feeTreatment?: FeeTreatment;
   /** Unset = the account's default reward type. */
   rewardType?: RewardType;
   accrualType: AccrualType;

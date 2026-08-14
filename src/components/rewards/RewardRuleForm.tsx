@@ -21,6 +21,7 @@ import type {
   DayOfWeek,
   EmiTreatment,
   IntlTreatment,
+  FeeTreatment,
   RewardCapBucket,
   RewardMerchantMatch,
   RewardRule,
@@ -128,6 +129,7 @@ export default function RewardRuleForm({
   const [maxAmount, setMaxAmount] = useState(source?.maxAmount != null ? String(source.maxAmount) : '');
   const [emiTreatment, setEmiTreatment] = useState<EmiTreatment>(source?.emiTreatment ?? 'INCLUDE');
   const [intlTreatment, setIntlTreatment] = useState<IntlTreatment>(source?.intlTreatment ?? 'INCLUDE');
+  const [feeTreatment, setFeeTreatment] = useState<FeeTreatment>(source?.feeTreatment ?? 'INCLUDE');
 
   // The rule computes a NUMBER (percent or slab math); the reward type says whether
   // that number is cashback rupees or reward points. Defaulted from the card config.
@@ -341,6 +343,7 @@ export default function RewardRuleForm({
       maxAmount: numOrNull(maxAmount),
       emiTreatment,
       intlTreatment,
+      feeTreatment,
       rewardType,
       accrualType,
       percentRate: accrualType === 'PERCENT' && !isTiered ? numOrNull(percentRate) : null,
@@ -563,6 +566,19 @@ export default function RewardRuleForm({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Convenience fee</Label>
+              <Select value={feeTreatment} onValueChange={(v) => setFeeTreatment(v as FeeTreatment)}>
+                <SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="INCLUDE" className="text-xs">Earns like the rest of the spend</SelectItem>
+                  <SelectItem value="EXCLUDE_FEE" className="text-xs">Netted out of the basis</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                Most issuers post the surcharge to the card but award nothing on it.
+              </span>
             </div>
           </div>
 

@@ -81,6 +81,7 @@ function matchSummary(rule: RewardRule): string {
   }
   if (rule.emiTreatment !== 'INCLUDE') parts.push(rule.emiTreatment === 'EXCLUDE_EMI' ? 'no EMI' : 'EMI only');
   if (rule.intlTreatment !== 'INCLUDE') parts.push(rule.intlTreatment === 'EXCLUDE_INTL' ? 'no intl' : 'intl only');
+  if (rule.feeTreatment === 'EXCLUDE_FEE') parts.push('no fee');
   return parts.length ? parts.join(' · ') : 'All spends';
 }
 
@@ -241,6 +242,7 @@ export default function RewardRulesManager({
       maxAmount: rule.maxAmount,
       emiTreatment: rule.emiTreatment,
       intlTreatment: rule.intlTreatment,
+      feeTreatment: rule.feeTreatment,
       rewardType: rule.rewardType,
       accrualType: rule.accrualType,
       percentRate: rule.percentRate,
