@@ -1,17 +1,22 @@
 import type { Account } from '@/lib/account.types';
+import type { CardFeeSchedule } from '@/lib/cardFees.types';
 import type { Category } from '@/lib/categories.types';
 import type { Page } from '@/lib/pagination';
 import type { TransactionChannel } from '@/lib/transaction.types';
-import { AccountType } from '@/lib/types';
+import { AccountStatus, AccountType } from '@/lib/types';
 
 /**
  * Accounts the rewards engine works with: investment (broker) accounts are
  * excluded, and credit cards sort first since rewards are usually theirs.
  * Shared by the rewards pages and their client components.
  */
-export function rewardEligibleAccounts(accounts: Account[]): Account[] {
+export function rewardEligibleAccounts(
+  accounts: Account[],
+  opts: { includeClosed?: boolean; selectedId?: string | null } = { includeClosed: true },
+): Account[] {
   return accounts
     .filter((a) => a.type !== AccountType.BROKER)
+    .filter((a) => (opts.includeClosed ? true : (a.status ?? AccountStatus.ACTIVE) !== AccountStatus.CLOSED || (opts.selectedId != null && a.id === opts.selectedId)))
     .sort((a, b) => Number(b.type === AccountType.CREDIT_CARD) - Number(a.type === AccountType.CREDIT_CARD));
 }
 
@@ -33,7 +38,7 @@ function anniversaryOnYear(month: number, day: number, year: number): Date {
  */
 export function anniversaryYearRange(
   anniversary: string | null | undefined,
-  offset: 0 | -1 = 0,
+  offset: number = 0,
 ): { from: Date; to: Date } {
   const today = new Date();
   if (!anniversary) {
@@ -47,8 +52,8 @@ export function anniversaryYearRange(
   if (start > today) {
     start = anniversaryOnYear(month, day, today.getFullYear() - 1);
   }
-  if (offset === -1) {
-    start = anniversaryOnYear(month, day, start.getFullYear() - 1);
+  if (offset !== 0) {
+    start = anniversaryOnYear(month, day, start.getFullYear() + offset);
   }
   const nextAnchor = anniversaryOnYear(month, day, start.getFullYear() + 1);
   const to = new Date(nextAnchor.getFullYear(), nextAnchor.getMonth(), nextAnchor.getDate() - 1);
@@ -99,7 +104,8 @@ export type RewardLineReason =
   | 'FULLY_REFUNDED'
   | 'FEE_ONLY'
   | 'TRANSFER_OR_PAYMENT'
-  | 'TXN_EXCLUDED';
+  | 'TXN_EXCLUDED'
+  | 'CARD_FEE';
 
 /** Reason shown as plain colored text (not a badge) — label + a short human explanation for the detail dialog. */
 export const REASON_META: Record<RewardLineReason, { label: string; textClass: string; explain: string }> = {
@@ -115,8 +121,8 @@ export const REASON_META: Record<RewardLineReason, { label: string; textClass: s
   FEE_ONLY: { label: 'Fee only', textClass: 'text-slate-500 dark:text-slate-400', explain: 'The matched rule excludes convenience fees, and the fee accounted for the whole charge.' },
   TRANSFER_OR_PAYMENT: { label: 'Transfer / payment', textClass: 'text-slate-400 dark:text-slate-500', explain: 'Transfer, card-payment or reversal legs never earn rewards.' },
   TXN_EXCLUDED: { label: 'Txn excluded', textClass: 'text-slate-400 dark:text-slate-500', explain: 'This transaction is marked excluded from analytics.' },
+  CARD_FEE: { label: 'Card fee', textClass: 'text-slate-500 dark:text-slate-400', explain: 'A membership fee charged by the issuer — never earns rewards.' },
 };
-
 
 /** One marginal-rate tranche; upTo null = open-ended final tranche. rate = % for PERCENT rules, points-per-slab for SLAB rules. */
 export interface RewardRuleTier {
@@ -336,6 +342,12 @@ export interface RewardSummary {
   effectiveValueInr: number;
   grossPct?: number | null;
   effectivePct?: number | null;
+  cardFeesInr: number;
+  netValueInr: number;
+  netPct?: number | null;
+  pointsValueInr: number;
+  netValueWithPointsInr: number;
+  pointValueSource: 'CONFIG' | 'DEFAULT';
 }
 
 export interface RewardReport {
@@ -344,6 +356,7 @@ export interface RewardReport {
   milestones: MilestoneStatus[];
   cycleFallback: boolean;
   anniversaryFallback: boolean;
+  cardFees: CardFeeSchedule;
 }
 
 export interface RewardLine {
@@ -436,4 +449,3 @@ export interface RewardRecommendationResponse {
   input: RewardRecommendationRequest;
   recommendations: RewardCardRecommendation[];
 }
-

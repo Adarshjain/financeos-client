@@ -406,11 +406,37 @@ export default function RewardsBrowser({
         </div>
       )}
 
+      {report?.cardFees?.unanchoredFees && (
+        <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-[11px] text-amber-700 dark:text-amber-500">
+          Card anniversary date is missing for this account — card membership fee schedule defaults to calendar years. Set the anniversary date on Accounts to align.
+        </div>
+      )}
+      {report?.cardFees?.notConfiguredFeeYears && (
+        <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-[11px] text-amber-700 dark:text-amber-500">
+          Fee schedule contains unconfigured fee years — add a fee term starting on or before the fee year start to calculate fee status.
+        </div>
+      )}
+      {report?.cardFees?.unlinkedFeeCharges && (
+        <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-[11px] text-amber-700 dark:text-amber-500">
+          Fee schedule has unlinked fee charges — link posted fee transactions using the Fee Manager to ensure accurate cash net benefit.
+        </div>
+      )}
+      {report?.cardFees?.waiverSpendIncomplete && (
+        <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-[11px] text-amber-700 dark:text-amber-500">
+          Waiver spend calculation is incomplete — some transaction history for the waiver window is missing.
+        </div>
+      )}
+      {report?.cardFees?.orphanedFeeOverrides && report.cardFees.orphanedFeeOverrides.length > 0 && (
+        <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-[11px] text-amber-700 dark:text-amber-500">
+          Fee schedule has orphaned fee overrides — check fee override dates in the Fee Manager.
+        </div>
+      )}
+
       {/* Summary */}
       <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-sm">
         <CardContent className="p-3.5">
           {summary ? (
-            <div className={cn('grid grid-cols-2 md:grid-cols-4 gap-2.5', loading && 'opacity-60')}>
+            <div className={cn('grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5', loading && 'opacity-60')}>
               <div>
                 <p className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Eligible spend</p>
                 <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{formatMoney(summary.basisSpend)}</p>
@@ -435,24 +461,57 @@ export default function RewardsBrowser({
                 </p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Adjustments</p>
-                <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                  {formatMoney(summary.discounts - summary.fees)}
+                <p className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Convenience fees & discounts</p>
+                <p className={cn(
+                  'text-sm font-bold',
+                  (summary.discounts - summary.fees) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500',
+                )}>
+                  +{formatMoney(summary.discounts)} discounts − {formatMoney(summary.fees)} fees
                 </p>
                 <p className="text-[10px] text-slate-400">
-                  +{formatMoney(summary.discounts)} discounts − {formatMoney(summary.fees)} fees
+                  Instant discounts & fees
                 </p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Effective benefit</p>
-                <p className={cn(
-                  'text-sm font-bold',
-                  summary.effectiveValueInr >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500',
-                )}>
-                  {formatMoney(summary.effectiveValueInr)}
+                <p className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Card Fees (Amortised)</p>
+                <p className="text-sm font-bold text-rose-600 dark:text-rose-400">
+                  {formatMoney(summary.cardFeesInr || 0)}
                 </p>
                 <p className="text-[10px] text-slate-400">
-                  {summary.effectivePct != null ? `${summary.effectivePct}% of spend` : '—'}
+                  Pro-rata membership fees
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Net Cash Benefit</p>
+                <p className={cn(
+                  'text-sm font-bold',
+                  (summary.netValueInr ?? summary.effectiveValueInr) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500',
+                )}>
+                  {formatMoney(summary.netValueInr ?? summary.effectiveValueInr)}
+                </p>
+                <p className="text-[10px] text-slate-400">
+                  {summary.netPct != null ? `${summary.netPct}% net return` : '—'}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Points Value</p>
+                <p className="text-sm font-bold text-sky-600 dark:text-sky-400">
+                  {formatMoney(summary.pointsValueInr || 0)}
+                </p>
+                <p className="text-[10px] text-slate-400">
+                  {summary.pointValueSource === 'CONFIG' ? 'Configured rate' : 'Default rate (₹0.25/pt)'}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Net Total (inc. Points)</p>
+                <p className={cn(
+                  'text-sm font-bold',
+                  (summary.netValueWithPointsInr ?? summary.netValueInr ?? summary.effectiveValueInr) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500',
+                )}>
+                  {formatMoney(summary.netValueWithPointsInr ?? summary.netValueInr ?? summary.effectiveValueInr)}
+                </p>
+                <p className="text-[10px] text-slate-400">
+                  Cash + points valuation
                 </p>
               </div>
             </div>

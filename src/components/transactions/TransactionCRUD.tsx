@@ -14,7 +14,7 @@ import { FormFieldTextArea } from '@/components/ui/form-field-textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Account } from '@/lib/account.types';
+import { Account, activeAccounts } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
 import { ReviewType, Transaction, type TransactionChannel, type TransactionRequest } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
@@ -57,7 +57,7 @@ export default function TransactionCRUD({
   // Investment (broker) accounts are managed via the investments module, not
   // manual transaction entry. Keep the current transaction's account selectable
   // even if it's a broker account, so editing a legacy record doesn't blank out.
-  const selectableAccounts = accounts.filter(
+  const selectableAccounts = activeAccounts(accounts, transaction?.accountId).filter(
     (a) => a.type !== AccountType.BROKER || a.id === transaction?.accountId,
   );
   const [isMonitored, setIsMonitored] = useState(transaction?.isTransactionUnderMonitoring ?? false);

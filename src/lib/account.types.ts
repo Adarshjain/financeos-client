@@ -1,7 +1,9 @@
-import { AccountType, FinancialPosition } from '@/lib/types';
+import { AccountStatus, AccountType, FinancialPosition } from '@/lib/types';
 
 export interface AccountRequestBase {
   name: string;
+  status?: AccountStatus;
+  closedOn?: string | null;
   excludeFromNetAsset?: boolean;
   financialPosition?: FinancialPosition;
   description?: string;
@@ -65,6 +67,8 @@ export type AccountRequest = BankAccountRequest | CreditCardRequest | BrokerRequ
 interface AccountBase {
   id: string;
   name: string;
+  status?: AccountStatus;
+  closedOn?: string | null;
   excludeFromNetAsset?: boolean;
   financialPosition?: FinancialPosition;
   description?: string;
@@ -105,6 +109,10 @@ export type GenericAccount = AccountBase & {
 }
 
 export type Account = BankAccount | CreditCard | Broker | GenericAccount;
+
+export function activeAccounts(accounts: Account[], selectedId?: string | null): Account[] {
+  return accounts.filter((a) => (a.status ?? AccountStatus.ACTIVE) !== AccountStatus.CLOSED || (selectedId != null && a.id === selectedId));
+}
 
 /**
  * Type guard for filtering a mixed `Account[]` down to one variant.

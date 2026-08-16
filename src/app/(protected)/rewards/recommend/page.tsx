@@ -8,7 +8,7 @@ export default async function RewardRecommendPage() {
     accountsApi.list().catch(() => []),
   ]);
 
-  const eligibleAccounts = rewardEligibleAccounts(accounts);
+  const eligibleAccounts = rewardEligibleAccounts(accounts, { includeClosed: false });
 
   return (
     <div className="p-4 sm:p-6 pb-24 space-y-4 max-w-7xl mx-auto">

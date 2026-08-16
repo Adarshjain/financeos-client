@@ -1,6 +1,6 @@
 import type { DynamicOptions } from '@/components/reports/catalog';
 import { ReportBuilder } from '@/components/reports/ReportBuilder';
-import type { Account } from '@/lib/account.types';
+import { type Account,activeAccounts } from '@/lib/account.types';
 import { accountsApi, categoriesApi, instrumentsApi, reportsApi } from '@/lib/apiClient';
 import type { Category } from '@/lib/categories.types';
 import type { Instrument } from '@/lib/types';
@@ -13,10 +13,11 @@ export default async function NewReportPage() {
     instrumentsApi.search(),
   ]);
 
+  const activeAccs = activeAccounts(accounts);
   const dynamicOptions: DynamicOptions = {
     category: categories.map((c: Category) => ({ id: c.id, name: c.name })),
-    account: accounts.map((a: Account) => ({ id: a.id, name: a.name })),
-    broker: accounts.filter((a: Account) => a.type === 'broker').map((a: Account) => ({ id: a.id, name: a.name })),
+    account: activeAccs.map((a: Account) => ({ id: a.id, name: a.name })),
+    broker: activeAccs.filter((a: Account) => a.type === 'broker').map((a: Account) => ({ id: a.id, name: a.name })),
     instrument: instruments.map((i: Instrument) => ({ id: i.id, name: i.name })),
   };
 

@@ -8,6 +8,10 @@ export enum AccountType {
   BROKER = 'broker',
   GENERIC = 'generic',
 }
+export enum AccountStatus {
+  ACTIVE = 'ACTIVE',
+  CLOSED = 'CLOSED',
+}
 export type FinancialPosition = 'asset' | 'liability';
 export type InvestmentTransactionType = 'buy' | 'sell';
 export type SettlementType = 'delivery' | 'intraday';

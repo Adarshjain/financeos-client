@@ -97,6 +97,12 @@ export const NAV_ITEMS = {
     shortLabel: 'Rules',
     icon: <Tags className="h-5 w-5" />,
   },
+  rewardsFees: {
+    href: '/rewards/fees',
+    label: 'Fees',
+    shortLabel: 'Fees',
+    icon: <Receipt className="h-5 w-5" />,
+  },
   rewardsRecommend: {
     href: '/rewards/recommend',
     label: 'Card Picker',
@@ -191,10 +197,10 @@ export const REWARDS_MODULE: NavModule = {
   items: [
     NAV_ITEMS.rewardsOverview,
     NAV_ITEMS.rewardsRules,
+    NAV_ITEMS.rewardsFees,
     NAV_ITEMS.rewardsRecommend,
   ],
 };
-
 
 export const REPORTS_MODULE: NavModule = {
   key: 'reports',
@@ -286,6 +292,7 @@ export function getMobileNavContext(pathname: string): {
       items: [
         NAV_ITEMS.rewardsOverview,
         NAV_ITEMS.rewardsRules,
+        NAV_ITEMS.rewardsFees,
         NAV_ITEMS.rewardsRecommend,
       ],
     };

@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select';
 import { Account, AccountRequest } from '@/lib/account.types';
 import { optionalDecimal, optionalInteger, optionalString } from '@/lib/forms';
-import { AccountType, FinancialPosition } from '@/lib/types';
+import { AccountStatus, AccountType, FinancialPosition } from '@/lib/types';
 import { cn, getAccountTypeLabel } from '@/lib/utils';
 
 const financialPositions = [
@@ -52,6 +52,12 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
   const [excludeFromNetAsset, setExcludeFromNetAsset] = useState<boolean>(
     account?.excludeFromNetAsset || false,
   );
+  const [status, setStatus] = useState<AccountStatus>(
+    account?.status || AccountStatus.ACTIVE,
+  );
+  const [closedOn, setClosedOn] = useState<string>(
+    account?.closedOn || '',
+  );
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -61,6 +67,8 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     }
     if (account) {
       setExcludeFromNetAsset(account.excludeFromNetAsset || false);
+      setStatus(account.status || AccountStatus.ACTIVE);
+      setClosedOn(account.closedOn || '');
     }
   }, [account]);
 
@@ -79,6 +87,15 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     const description = formData.get('description') as string | undefined;
     const ingestFromDateVal = formData.get('ingestFromDate') as string | null;
     const ingestFromDate = ingestFromDateVal ? ingestFromDateVal : null;
+    const formStatus = (formData.get('status') as AccountStatus) || AccountStatus.ACTIVE;
+    const closedOnVal = formData.get('closedOn') as string | null;
+    const formClosedOn = formStatus === AccountStatus.CLOSED ? closedOnVal || null : null;
+
+    if (formStatus === AccountStatus.CLOSED && !formClosedOn) {
+      toast.error('Close date is required when account status is CLOSED.');
+      setIsSubmitting(false);
+      return;
+    }
 
     let data: AccountRequest | undefined;
     const statementPasswordVal = formData.get('statementPassword') as string;
@@ -86,6 +103,8 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     if (accountType === AccountType.BANK_ACCOUNT) {
       data = {
         name,
+        status: formStatus,
+        closedOn: formClosedOn,
         excludeFromNetAsset,
         financialPosition,
         description,
@@ -135,6 +154,8 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
 
       data = {
         name,
+        status: formStatus,
+        closedOn: formClosedOn,
         excludeFromNetAsset,
         financialPosition,
         description,
@@ -161,6 +182,8 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
 
       data = {
         name,
+        status: formStatus,
+        closedOn: formClosedOn,
         excludeFromNetAsset,
         financialPosition,
         description,
@@ -175,6 +198,8 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     if (accountType === AccountType.GENERIC) {
       data = {
         name,
+        status: formStatus,
+        closedOn: formClosedOn,
         excludeFromNetAsset,
         financialPosition,
         description,
@@ -335,6 +360,40 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
               defaultValue={account?.description}
               className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="status" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Status</Label>
+              <Select
+                name="status"
+                value={status}
+                onValueChange={(val) => setStatus(val as AccountStatus)}
+              >
+                <SelectTrigger className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={AccountStatus.ACTIVE}>Active</SelectItem>
+                  <SelectItem value={AccountStatus.CLOSED}>Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {status === AccountStatus.CLOSED && (
+              <div className="space-y-1.5">
+                <Label htmlFor="closedOn" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Close Date</Label>
+                <Input
+                  id="closedOn"
+                  name="closedOn"
+                  type="date"
+                  value={closedOn}
+                  onChange={(e) => setClosedOn(e.target.value)}
+                  required
+                  className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                />
+              </div>
+            )}
           </div>
         </div>
 

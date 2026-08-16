@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 
 import { Account, AccountRequest } from '@/lib/account.types';
+import type { CardFeeCharge, CardFeeChargeRequest, CardFeeKind, CardFeeSchedule, CardFeeTerm, CardFeeTermRequest, FeeChargeCandidate } from '@/lib/cardFees.types';
 import { CategorizeResponse, Category, CategoryRequest } from '@/lib/categories.types';
 import type {
   CreateDashboardRequest,
@@ -1254,8 +1255,69 @@ export const rewardsApi = {
       body: JSON.stringify(body),
     });
   },
+
+  async feeSchedule(params: { accountId: string; from: string; to: string }): Promise<CardFeeSchedule> {
+    const query = new URLSearchParams({
+      accountId: params.accountId,
+      from: params.from,
+      to: params.to,
+    });
+    return request<CardFeeSchedule>(`/api/v1/rewards/fees?${query}`);
+  },
 };
 
+export const cardFeesApi = {
+  async listTerms(accountId: string): Promise<CardFeeTerm[]> {
+    return request<CardFeeTerm[]>(`/api/v1/card-fee-terms?accountId=${accountId}`);
+  },
+
+  async createTerm(body: CardFeeTermRequest): Promise<CardFeeTerm> {
+    return request<CardFeeTerm>('/api/v1/card-fee-terms', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async updateTerm(id: string, body: CardFeeTermRequest): Promise<CardFeeTerm> {
+    return request<CardFeeTerm>(`/api/v1/card-fee-terms/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async deleteTerm(id: string): Promise<void> {
+    return request<void>(`/api/v1/card-fee-terms/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async upsertCharge(body: CardFeeChargeRequest): Promise<CardFeeCharge> {
+    return request<CardFeeCharge>('/api/v1/card-fee-charges', {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  },
+
+  async clearCharge(params: { accountId: string; kind: CardFeeKind; feeYearStart: string }): Promise<void> {
+    const query = new URLSearchParams({
+      accountId: params.accountId,
+      kind: params.kind,
+      feeYearStart: params.feeYearStart,
+    });
+    return request<void>(`/api/v1/card-fee-charges?${query}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async listCandidates(params: { accountId: string; kind: CardFeeKind; feeYearStart: string }): Promise<FeeChargeCandidate[]> {
+    const query = new URLSearchParams({
+      accountId: params.accountId,
+      kind: params.kind,
+      feeYearStart: params.feeYearStart,
+    });
+    return request<FeeChargeCandidate[]>(`/api/v1/card-fee-charges/candidates?${query}`);
+  },
+};
 
 export { ApiError };
 
