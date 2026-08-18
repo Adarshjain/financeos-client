@@ -1,11 +1,16 @@
 'use client';
 
+import './globals.css';
+
+import { useEffect } from 'react';
+
+import { getFaro } from '@/instrumentation-client';
+
 // global-error replaces the root layout entirely, so it must render its own
 // <html>/<body> and cannot rely on anything the root layout sets up (fonts,
 // ThemeProvider, Toaster). The stylesheet is imported here directly; the
 // semantic tokens it defines on `:root` resolve without ThemeProvider, falling
 // back to the light palette.
-import './globals.css';
 
 export default function GlobalError({
   error,
@@ -14,6 +19,18 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    const faro = getFaro();
+    if (faro) {
+      faro.api.pushError(error, {
+        context: {
+          digest: error.digest || '',
+          route: 'global-error',
+        },
+      });
+    }
+  }, [error]);
+
   return (
     <html lang="en">
       <body className="bg-background text-foreground antialiased">
