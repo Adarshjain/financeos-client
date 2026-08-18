@@ -1,6 +1,9 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import { ErrorState } from '@/components/ErrorState';
+import { getFaro } from '@/instrumentation-client';
 
 /**
  * Error boundary for every authenticated route.
@@ -17,5 +20,17 @@ export default function ProtectedError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    const faro = getFaro();
+    if (faro) {
+      faro.api.pushError(error, {
+        context: {
+          digest: error.digest || '',
+          route: 'protected-error',
+        },
+      });
+    }
+  }, [error]);
+
   return <ErrorState error={error} reset={reset} />;
 }
