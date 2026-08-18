@@ -1,4 +1,4 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 
 import { Account, AccountRequest } from '@/lib/account.types';
 import { CategorizeResponse, Category, CategoryRequest } from '@/lib/categories.types';
@@ -33,6 +33,7 @@ import type {
   MatchSuggestionsResponse,
   UpdateLoanRequest,
 } from '@/lib/loan.types';
+import { logger } from '@/lib/observability/logger';
 import type { Page } from '@/lib/pagination';
 import type {
   CreateReportRequest,
@@ -121,21 +122,62 @@ async function request<T>(
 ): Promise<T> {
   const sessionCookie = await getSessionCookie();
 
-  const headers: HeadersInit = {};
-  if (!(options.body instanceof FormData)) {
-    headers['Content-Type'] = 'application/json';
+  let requestId: string | undefined;
+  let sessionId: string | undefined;
+  try {
+    const headerStore = await headers();
+    requestId = headerStore.get('x-request-id') ?? undefined;
+    sessionId = headerStore.get('x-session-id') ?? undefined;
+  } catch {
+    // Outside request context
   }
-  Object.assign(headers, options.headers);
+
+  const reqHeaders: Record<string, string> = {};
+  if (!(options.body instanceof FormData)) {
+    reqHeaders['Content-Type'] = 'application/json';
+  }
+  if (options.headers) {
+    Object.assign(reqHeaders, options.headers);
+  }
 
   if (sessionCookie) {
-    (headers as Record<string, string>)['Cookie'] =
-      `FINANCEOS_SESSION=${sessionCookie}`;
+    reqHeaders['Cookie'] = `FINANCEOS_SESSION=${sessionCookie}`;
+  }
+  if (requestId) {
+    reqHeaders['X-Request-Id'] = requestId;
+  }
+  if (sessionId) {
+    reqHeaders['X-Session-Id'] = sessionId;
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers,
-    cache: 'no-store',
+  const startMs = Date.now();
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${endpoint}`, {
+      ...options,
+      headers: reqHeaders,
+      cache: 'no-store',
+    });
+  } catch (err) {
+    const durationMs = Date.now() - startMs;
+    logger.log('ERROR', 'client.api.call', {
+      endpoint,
+      status: 0,
+      durationMs,
+      requestId,
+      sessionId,
+      message: err instanceof Error ? err.message : String(err),
+    });
+    throw err;
+  }
+
+  const durationMs = Date.now() - startMs;
+  logger.log('INFO', 'client.api.call', {
+    endpoint,
+    status: response.status,
+    durationMs,
+    requestId,
+    sessionId,
   });
 
   if (!response.ok) {

@@ -27,7 +27,14 @@ export function proxy(request: NextRequest) {
   // Don't redirect from login to dashboard here - let the page handle it
   // This avoids redirect loops when the session cookie exists but is invalid
 
-  return NextResponse.next();
+  const headers = new Headers(request.headers);
+  headers.set('x-request-id', crypto.randomUUID().replace(/-/g, '').slice(0, 20));
+  const faroSession = request.cookies.get('faro_session')?.value;
+  if (faroSession) {
+    headers.set('x-session-id', faroSession);
+  }
+
+  return NextResponse.next({ request: { headers } });
 }
 
 export const config = {
