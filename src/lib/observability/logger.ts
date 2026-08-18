@@ -31,10 +31,31 @@ function shouldLog(level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'): boolean {
   return levelNum >= getMinLogLevel();
 }
 
+function getAppEnv(): string {
+  if (process.env.APP_ENV) {
+    return process.env.APP_ENV;
+  }
+  return process.env.NODE_ENV === 'production' ? 'prod' : 'dev';
+}
+
+function getAppVersion(): string {
+  if (process.env.NEXT_PUBLIC_APP_VERSION) {
+    return process.env.NEXT_PUBLIC_APP_VERSION;
+  }
+  const sha =
+    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ||
+    process.env.VERCEL_GIT_COMMIT_SHA;
+  if (sha) {
+    return `1.0.0-${sha.slice(0, 12)}`;
+  }
+  return '1.0.0-local';
+}
+
 let isColdStartEmitted = false;
 
 class RequestLogger {
   private buffer: LogEnvelope[] = [];
+  private isFlushErrorLogged = false;
 
   constructor() {
     if (!isColdStartEmitted) {
@@ -54,8 +75,8 @@ class RequestLogger {
 
     const envelope: LogEnvelope = {
       service: 'financeos-client',
-      env: process.env.NODE_ENV || 'development',
-      version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
+      env: getAppEnv(),
+      version: getAppVersion(),
       level,
       event,
       timestamp: new Date().toISOString(),
@@ -90,8 +111,14 @@ class RequestLogger {
     const lokiToken = process.env.GRAFANA_CLOUD_TOKEN;
 
     if (!lokiUrl || !lokiUser || !lokiToken) {
+      if (!this.isFlushErrorLogged) {
+        this.isFlushErrorLogged = true;
+        console.error('[Logger] Missing Loki configuration (GRAFANA_LOKI_URL, GRAFANA_LOKI_USER, or GRAFANA_CLOUD_TOKEN).');
+      }
       return;
     }
+
+    const host = process.env.VERCEL_REGION || process.env.VERCEL_DEPLOYMENT_ID || 'vercel';
 
     try {
       // Format Loki push payload
@@ -99,7 +126,8 @@ class RequestLogger {
         stream: {
           service: item.service,
           env: item.env,
-          level: item.level.toLowerCase(),
+          level: item.level.toUpperCase(),
+          host,
         },
         values: [
           [
@@ -111,7 +139,7 @@ class RequestLogger {
 
       const authHeader = `Basic ${Buffer.from(`${lokiUser}:${lokiToken}`).toString('base64')}`;
 
-      await fetch(lokiUrl, {
+      const response = await fetch(lokiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,8 +147,19 @@ class RequestLogger {
         },
         body: JSON.stringify({ streams }),
       });
-    } catch {
-      // Fail silently: logger must never throw or disrupt page rendering/actions
+
+      if (!response.ok) {
+        if (!this.isFlushErrorLogged) {
+          this.isFlushErrorLogged = true;
+          console.error(`[Logger] Failed to push logs to Loki (HTTP status ${response.status}).`);
+        }
+      }
+    } catch (err) {
+      if (!this.isFlushErrorLogged) {
+        this.isFlushErrorLogged = true;
+        const errName = err instanceof Error ? err.name : 'UnknownError';
+        console.error(`[Logger] Network failure pushing logs to Loki (${errName}).`);
+      }
     }
   }
 }

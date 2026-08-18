@@ -24,13 +24,23 @@ export function initFaro(): Faro | null {
     return null;
   }
 
+  const sha =
+    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA ||
+    process.env.VERCEL_GIT_COMMIT_SHA;
+  const appVersion =
+    process.env.NEXT_PUBLIC_APP_VERSION ||
+    (sha ? `1.0.0-${sha.slice(0, 12)}` : '1.0.0-local');
+  const appEnv =
+    process.env.APP_ENV ||
+    (process.env.NODE_ENV === 'production' ? 'prod' : 'dev');
+
   try {
     faroInstance = initializeFaro({
       url: faroUrl,
       app: {
         name: 'financeos-client',
-        version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
-        environment: process.env.NODE_ENV || 'development',
+        version: appVersion,
+        environment: appEnv,
       },
       apiKey: faroAppKey,
     });
