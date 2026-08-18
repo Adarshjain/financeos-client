@@ -18,6 +18,11 @@ export async function signup(
 ): Promise<ApiResult<UserResponse>> {
   const email = optionalString(formData, 'email');
   const password = formData.get('password');
+  const inviteCode = optionalString(formData, 'inviteCode');
+
+  if (!inviteCode) {
+    return validationError('Invite code is required');
+  }
 
   if (!email || typeof password !== 'string' || password === '') {
     return validationError('Email and password are required');
@@ -29,7 +34,7 @@ export async function signup(
 
   const action = createDomainAction(
     { fallbackError: 'An unexpected error occurred' },
-    () => authApi.signup({ email, password })
+    () => authApi.signup({ email, password, inviteCode })
   );
   return action();
 }

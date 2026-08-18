@@ -83,13 +83,13 @@ describe('apiClient (CD-14 & API wrapper coverage)', () => {
         mockFetchResponse(true, 200, { id: 'u1', email: 'test@example.com' }),
       );
 
-      const res = await authApi.signup({ email: 'test@example.com', password: 'pass' });
+      const res = await authApi.signup({ email: 'test@example.com', password: 'pass', inviteCode: 'test-invite-code' });
       expect(res.id).toBe('u1');
 
       fetchSpy.mockImplementationOnce(() =>
         mockFetchResponse(false, 400, { code: 'EMAIL_TAKEN', message: 'Email taken', timestamp: '' }),
       );
-      await expect(authApi.signup({ email: 'test@example.com', password: 'pass' })).rejects.toThrow('Email taken');
+      await expect(authApi.signup({ email: 'test@example.com', password: 'pass', inviteCode: 'test-invite-code' })).rejects.toThrow('Email taken');
     });
 
     it('login returns user and sessionCookie when present', async () => {
