@@ -18,6 +18,7 @@ export type InstrumentType = 'stock' | 'mutual_fund' | 'etf';
 export interface SignupRequest {
   email: string;
   password: string;
+  inviteCode: string;
 }
 
 export interface LoginRequest {

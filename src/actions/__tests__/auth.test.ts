@@ -26,9 +26,15 @@ describe('auth server actions (WP-3)', () => {
     const form = new FormData();
     form.append('email', 'test@example.com');
     form.append('password', 'password123');
+    form.append('inviteCode', 'test-invite-code');
 
     const res = await signup(null, form);
     expect(res.success).toBe(true);
+    expect(authApi.signup).toHaveBeenCalledWith({
+      email: 'test@example.com',
+      password: 'password123',
+      inviteCode: 'test-invite-code',
+    });
   });
 
   it('login calls authApi.login', async () => {

@@ -38,7 +38,7 @@ export function SignupForm() {
               Create Account
             </h1>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-              Sign up to get started with FinanceOS
+              FinanceOS is invite-only — you&apos;ll need a code to sign up.
             </p>
           </div>
         </div>
@@ -59,6 +59,16 @@ export function SignupForm() {
               </AlertDescription>
             </Alert>
           )}
+
+          <FormField
+            label="Invite code"
+            name="inviteCode"
+            type="password"
+            placeholder="Provided by the FinanceOS admin"
+            autoComplete="off"
+            required
+            disabled={state?.success}
+          />
 
           <FormField
             label="Email"
