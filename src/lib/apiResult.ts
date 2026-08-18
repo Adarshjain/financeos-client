@@ -1,4 +1,5 @@
 import { ApiError } from '@/lib/apiClient';
+import { logger } from '@/lib/observability/logger';
 import type { ApiResult, ErrorResponse } from '@/lib/types';
 
 /**
@@ -31,9 +32,20 @@ export function toErrorResult(
   fallbackMessage: string,
 ): { success: false; error: ErrorResponse } {
   if (error instanceof ApiError) {
+    logger.log('ERROR', 'client.action.failed', {
+      code: error.response.code,
+      message: error.response.message,
+      errorId: error.response.errorId,
+      fallbackMessage,
+    });
     return { success: false, error: error.response };
   }
   if (error instanceof AppError) {
+    logger.log('ERROR', 'client.action.failed', {
+      code: error.code,
+      message: error.message,
+      fallbackMessage,
+    });
     return {
       success: false,
       error: {
@@ -43,6 +55,12 @@ export function toErrorResult(
       },
     };
   }
+  const errorMsg = error instanceof Error ? error.message : fallbackMessage;
+  logger.log('ERROR', 'client.action.failed', {
+    code: 'UNKNOWN_ERROR',
+    message: errorMsg,
+    fallbackMessage,
+  });
   return {
     success: false,
     error: {

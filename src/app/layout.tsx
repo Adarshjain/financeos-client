@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
 
+import { FaroRouteTracker } from '@/components/FaroRouteTracker';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
 const inter = Inter({
@@ -38,6 +39,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <FaroRouteTracker />
           <Toaster richColors position="top-center" />
         </ThemeProvider>
       </body>
