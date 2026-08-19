@@ -211,6 +211,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
+      autoComplete="off"
       className="flex flex-col h-full max-h-screen sm:max-h-[85vh] bg-slate-50/40 dark:bg-slate-950/20 overflow-hidden"
     >
       <datalist id="broker-providers">
@@ -319,6 +320,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             <Input
               id="name"
               name="name"
+              autoComplete="off"
               placeholder={accountType === AccountType.BROKER ? "e.g., Zerodha Demat" : "e.g., HDFC Savings"}
               defaultValue={account?.name}
               required
@@ -451,9 +453,11 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                     <Input
                       id="statementPassword"
                       name="statementPassword"
-                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="off"
+                      type="text"
+                      style={{ WebkitTextSecurity: showPassword ? 'none' : 'disk' } as React.CSSProperties}
                       placeholder="Enter password if PDF statement is protected"
-                      className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                      className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs [&::placeholder]:[text-security:none]"
                     />
                     <button
                       type="button"
@@ -553,9 +557,11 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                     <Input
                       id="statementPassword"
                       name="statementPassword"
-                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="off"
+                      type="text"
+                      style={{ WebkitTextSecurity: showPassword ? 'none' : 'disk' } as React.CSSProperties}
                       placeholder="Enter password if PDF statement is protected"
-                      className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+                      className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs [&::placeholder]:[text-security:none]"
                     />
                     <button
                       type="button"
