@@ -8,6 +8,7 @@ import { deleteInvestmentTransaction, updateInvestmentTransaction } from '@/acti
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -148,218 +149,214 @@ export function EditTransactionDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent>
         <DialogHeader className="pr-8">
           <DialogTitle className="text-base font-bold">
             Edit Trade ({instrumentName})
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-2 py-2">
-          {/* Broker + Instrument are the trade's identity and can't be changed on edit. */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Broker Account</Label>
-            <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
-              {transaction.brokerName} {transaction.provider ? `(${transaction.provider})` : ''}
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Instrument</Label>
-            <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
-              {transaction.instrument.name}
-              {transaction.instrument.symbol ? ` (${transaction.instrument.symbol})` : ''}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+        <DialogBody>
+          <form id="edit-transaction-form" onSubmit={handleSubmit} className="space-y-3 py-1">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type</Label>
-              <Select value={type} onValueChange={(val) => setType(val as InvestmentTransactionType)}>
-                <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                  <SelectItem value="buy" className="text-xs">Buy</SelectItem>
-                  <SelectItem value="sell" className="text-xs">Sell</SelectItem>
-                </SelectContent>
-              </Select>
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Broker Account</Label>
+              <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
+                {transaction.brokerName} {transaction.provider ? `(${transaction.provider})` : ''}
+              </div>
             </div>
 
-            <FormField
-              label="Trade Date"
-              name="tradeDate"
-              type="date"
-              value={tradeDate}
-              onChange={(e) => setTradeDate(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Settlement (CNC/MIS)</Label>
-              <Select value={settlementType} onValueChange={(val) => setSettlementType(val as SettlementType)}>
-                <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
-                  <SelectValue placeholder="Select settlement" />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                  <SelectItem value="delivery" className="text-xs">Delivery (CNC)</SelectItem>
-                  <SelectItem value="intraday" className="text-xs">Intraday (MIS)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              label="Quantity"
-              name="quantity"
-              type="number"
-              step="0.0001"
-              min="0"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-              required
-            />
-
-            <FormField
-              label="Price (INR)"
-              name="price"
-              type="number"
-              step="0.01"
-              min="0"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-2">
-            <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Itemized Charges</h4>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              <div>
-                <Label className="text-[10px] text-slate-500">Brokerage</Label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={brokerage}
-                  onChange={(e) => setBrokerage(e.target.value)}
-                  className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                />
-              </div>
-              <div>
-                <Label className="text-[10px] text-slate-500">STT</Label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={stt}
-                  onChange={(e) => setStt(e.target.value)}
-                  className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                />
-              </div>
-              <div>
-                <Label className="text-[10px] text-slate-500">Exch Txn</Label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={exchangeTxnCharges}
-                  onChange={(e) => setExchangeTxnCharges(e.target.value)}
-                  className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                />
-              </div>
-              <div>
-                <Label className="text-[10px] text-slate-500">SEBI Fee</Label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={sebiCharges}
-                  onChange={(e) => setSebiCharges(e.target.value)}
-                  className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                />
-              </div>
-              <div>
-                <Label className="text-[10px] text-slate-500">Stamp Duty</Label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={stampDuty}
-                  onChange={(e) => setStampDuty(e.target.value)}
-                  className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                />
-              </div>
-              <div>
-                <Label className="text-[10px] text-slate-500">GST</Label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={gst}
-                  onChange={(e) => setGst(e.target.value)}
-                  className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                />
-              </div>
-              <div>
-                <Label className="text-[10px] text-slate-500">DP Charges</Label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={dpCharges}
-                  onChange={(e) => setDpCharges(e.target.value)}
-                  className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                />
-              </div>
-              <div>
-                <Label className="text-[10px] text-slate-500">Other</Label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={otherCharges}
-                  onChange={(e) => setOtherCharges(e.target.value)}
-                  className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                />
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Instrument</Label>
+              <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
+                {transaction.instrument.name}
+                {transaction.instrument.symbol ? ` (${transaction.instrument.symbol})` : ''}
               </div>
             </div>
-          </div>
 
-          <FormField
-            label="Notes"
-            name="notes"
-            type="text"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Optional notes"
-          />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type</Label>
+                <Select value={type} onValueChange={(val) => setType(val as InvestmentTransactionType)}>
+                  <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                    <SelectItem value="buy" className="text-xs">Buy</SelectItem>
+                    <SelectItem value="sell" className="text-xs">Sell</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          <DialogFooter className="justify-between">
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              <Trash2 className="w-3.5 h-3.5 mr-1" />
-              {isDeleting ? 'Deleting...' : 'Delete Trade'}
-            </Button>
-            <div className="flex items-center gap-2">
+              <FormField
+                label="Trade Date"
+                name="tradeDate"
+                type="date"
+                value={tradeDate}
+                onChange={(e) => setTradeDate(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Settlement (CNC/MIS)</Label>
+                <Select value={settlementType} onValueChange={(val) => setSettlementType(val as SettlementType)}>
+                  <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
+                    <SelectValue placeholder="Select settlement" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                    <SelectItem value="delivery" className="text-xs">Delivery (CNC)</SelectItem>
+                    <SelectItem value="intraday" className="text-xs">Intraday (MIS)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                label="Quantity"
+                name="quantity"
+                type="number"
+                step="0.0001"
+                min="0"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                required
+              />
+
+              <FormField
+                label="Price (INR)"
+                name="price"
+                type="number"
+                step="0.01"
+                min="0"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-2">
+              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Itemized Charges</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div>
+                  <Label className="text-[10px] text-slate-500">Brokerage</Label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={brokerage}
+                    onChange={(e) => setBrokerage(e.target.value)}
+                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+                  />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-slate-500">STT</Label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={stt}
+                    onChange={(e) => setStt(e.target.value)}
+                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+                  />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-slate-500">Exch Txn</Label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={exchangeTxnCharges}
+                    onChange={(e) => setExchangeTxnCharges(e.target.value)}
+                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+                  />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-slate-500">SEBI Fee</Label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={sebiCharges}
+                    onChange={(e) => setSebiCharges(e.target.value)}
+                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+                  />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-slate-500">Stamp Duty</Label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={stampDuty}
+                    onChange={(e) => setStampDuty(e.target.value)}
+                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+                  />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-slate-500">GST</Label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={gst}
+                    onChange={(e) => setGst(e.target.value)}
+                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+                  />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-slate-500">DP Charges</Label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={dpCharges}
+                    onChange={(e) => setDpCharges(e.target.value)}
+                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+                  />
+                </div>
+                <div>
+                  <Label className="text-[10px] text-slate-500">Other</Label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={otherCharges}
+                    onChange={(e) => setOtherCharges(e.target.value)}
+                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <FormField
+              label="Notes"
+              name="notes"
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Optional notes"
+            />
+
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
               <Button
                 type="button"
-                variant="outline"
+                variant="destructive"
                 size="sm"
-                onClick={() => setOpen(false)}
+                onClick={handleDelete}
+                disabled={isDeleting}
               >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Saving...' : 'Save Changes'}
+                <Trash2 className="w-3.5 h-3.5 mr-1" />
+                {isDeleting ? 'Deleting...' : 'Delete Trade'}
               </Button>
             </div>
-          </DialogFooter>
-        </form>
+          </form>
+        </DialogBody>
+
+        <DialogFooter
+          primaryAction={{
+            label: isSubmitting ? 'Saving...' : 'Save Changes',
+            type: 'submit',
+            form: 'edit-transaction-form',
+            disabled: isSubmitting,
+          }}
+          secondaryAction={{
+            label: 'Cancel',
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

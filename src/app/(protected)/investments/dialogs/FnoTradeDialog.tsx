@@ -8,6 +8,7 @@ import { createFnoTrade, updateFnoTrade } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -56,7 +57,6 @@ export function FnoTradeDialog({
   const [exitDate, setExitDate] = useState(trade?.exitDate || '');
   const [notes, setNotes] = useState(trade?.notes || '');
 
-  // Reset the form when the dialog opens (render-phase state adjustment).
   const [prevOpen, setPrevOpen] = useState(false);
   if (open !== prevOpen) {
     setPrevOpen(open);
@@ -149,7 +149,7 @@ export function FnoTradeDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] p-4 sm:p-6">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit FnO Trade' : 'Add FnO Trade'}</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
@@ -159,132 +159,137 @@ export function FnoTradeDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-3 pt-2">
-          <FormField label="Broker Account" required>
-            <Select value={brokerAccountId} onValueChange={setBrokerAccountId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select broker" />
-              </SelectTrigger>
-              <SelectContent>
-                {brokerAccounts.map((b) => (
-                  <SelectItem key={b.id} value={b.id}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </FormField>
-
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label="Contract Type" required>
-              <Select value={contractType} onValueChange={(v) => setContractType(v as FnoContractType)}>
+        <DialogBody>
+          <form id="fno-trade-form" onSubmit={handleSubmit} className="space-y-3 pt-1">
+            <FormField label="Broker Account" required>
+              <Select value={brokerAccountId} onValueChange={setBrokerAccountId}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder="Select broker" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="future">Futures</SelectItem>
-                  <SelectItem value="option">Options</SelectItem>
+                  {brokerAccounts.map((b) => (
+                    <SelectItem key={b.id} value={b.id}>
+                      {b.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </FormField>
 
-            <FormField label="Trading Symbol" required>
-              <input
-                type="text"
-                required
-                placeholder="NIFTY24AUGFUT / NIFTY24250CE"
-                value={tradingSymbol}
-                onChange={(e) => setTradingSymbol(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono uppercase"
-              />
-            </FormField>
-          </div>
-
-          {contractType === 'option' && (
             <div className="grid grid-cols-2 gap-3">
-              <FormField label="Option Type">
-                <Select value={optionType} onValueChange={(v) => setOptionType(v as OptionType)}>
+              <FormField label="Contract Type" required>
+                <Select value={contractType} onValueChange={(v) => setContractType(v as FnoContractType)}>
                   <SelectTrigger>
-                    <SelectValue placeholder="CE / PE" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="call">Call (CE)</SelectItem>
-                    <SelectItem value="put">Put (PE)</SelectItem>
+                    <SelectItem value="future">Futures</SelectItem>
+                    <SelectItem value="option">Options</SelectItem>
                   </SelectContent>
                 </Select>
               </FormField>
 
-              <FormField label="Strike Price">
+              <FormField label="Trading Symbol" required>
+                <input
+                  type="text"
+                  required
+                  placeholder="NIFTY24AUGFUT / NIFTY24250CE"
+                  value={tradingSymbol}
+                  onChange={(e) => setTradingSymbol(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono uppercase"
+                />
+              </FormField>
+            </div>
+
+            {contractType === 'option' && (
+              <div className="grid grid-cols-2 gap-3">
+                <FormField label="Option Type">
+                  <Select value={optionType} onValueChange={(v) => setOptionType(v as OptionType)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="CE / PE" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="call">Call (CE)</SelectItem>
+                      <SelectItem value="put">Put (PE)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormField>
+
+                <FormField label="Strike Price">
+                  <input
+                    type="number"
+                    step="0.05"
+                    placeholder="24250"
+                    value={strikePrice}
+                    onChange={(e) => setStrikePrice(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
+                  />
+                </FormField>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Quantity / Lot Size" required>
                 <input
                   type="number"
-                  step="0.05"
-                  placeholder="24250"
-                  value={strikePrice}
-                  onChange={(e) => setStrikePrice(e.target.value)}
+                  required
+                  placeholder="50"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
+                />
+              </FormField>
+
+              <FormField label="Total Charges">
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={totalCharges}
+                  onChange={(e) => setTotalCharges(e.target.value)}
                   className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
                 />
               </FormField>
             </div>
-          )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label="Quantity / Lot Size" required>
-              <input
-                type="number"
-                required
-                placeholder="50"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
-              />
-            </FormField>
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Buy Value (₹)" required>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  placeholder="0.00"
+                  value={buyValue}
+                  onChange={(e) => setBuyValue(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
+                />
+              </FormField>
 
-            <FormField label="Total Charges">
-              <input
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={totalCharges}
-                onChange={(e) => setTotalCharges(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
-              />
-            </FormField>
-          </div>
+              <FormField label="Sell Value (₹)">
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={sellValue}
+                  onChange={(e) => setSellValue(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
+                />
+              </FormField>
+            </div>
+          </form>
+        </DialogBody>
 
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label="Buy Value (₹)" required>
-              <input
-                type="number"
-                step="0.01"
-                required
-                placeholder="0.00"
-                value={buyValue}
-                onChange={(e) => setBuyValue(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
-              />
-            </FormField>
-
-            <FormField label="Sell Value (₹)">
-              <input
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={sellValue}
-                onChange={(e) => setSellValue(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
-              />
-            </FormField>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : (isEdit ? 'Save Changes' : 'Record FnO Trade')}
-            </Button>
-          </DialogFooter>
-        </form>
+        <DialogFooter
+          primaryAction={{
+            label: isSubmitting ? 'Saving...' : (isEdit ? 'Save Changes' : 'Record FnO Trade'),
+            type: 'submit',
+            form: 'fno-trade-form',
+            disabled: isSubmitting,
+          }}
+          secondaryAction={{
+            label: 'Cancel',
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

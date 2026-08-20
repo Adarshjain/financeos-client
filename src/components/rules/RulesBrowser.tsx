@@ -15,7 +15,7 @@ import { TablePagination } from '@/components/reports/views/TablePagination';
 import { RuleMatchesDialog } from '@/components/rules/RuleMatchesDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -536,15 +536,13 @@ export function RulesBrowser({
         </div>
       </PageActionBar>
 
-      {/* Create / Edit Dialog */}
       <Dialog open={isCreateOpen || !!editingRule} onOpenChange={closeDialogs}>
-        <DialogContent className="sm:max-w-[450px] p-4 sm:p-6">
-          <form onSubmit={handleSubmitRule} className="space-y-2">
-            <DialogHeader>
-              <DialogTitle>{editingRule ? 'Edit Rule' : 'Create Categorization Rule'}</DialogTitle>
-            </DialogHeader>
-
-            <div className="space-y-3">
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle>{editingRule ? 'Edit Rule' : 'Create Categorization Rule'}</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <form id="rule-form" onSubmit={handleSubmitRule} className="space-y-3">
               {/* Match Type + Pattern */}
               <div className="space-y-1">
                 <Label htmlFor="matchType">Match Type</Label>
@@ -563,27 +561,23 @@ export function RulesBrowser({
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="merchantKey">Pattern</Label>
+                <Label htmlFor="merchantKey">Pattern (Merchant Key)</Label>
                 <Input
                   id="merchantKey"
-                  placeholder={MATCH_TYPE_META[matchType].placeholder}
                   value={merchantKey}
                   onChange={(e) => setMerchantKey(e.target.value)}
+                  placeholder="e.g. SWIGGY or STARBUCKS"
                   required
                 />
-                <p className="text-[10px] text-slate-400 dark:text-slate-500">
-                  {MATCH_TYPE_META[matchType].help} Matches run against the original imported description only.
-                </p>
               </div>
 
-              {/* Display Name Input */}
               <div className="space-y-1">
                 <Label htmlFor="displayName">Display Name (Optional)</Label>
                 <Input
                   id="displayName"
-                  placeholder="e.g. Starbucks Coffee"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="e.g. Swiggy Food Delivery"
                 />
               </div>
 
@@ -610,17 +604,22 @@ export function RulesBrowser({
                   Select one or more categories for this rule. Create a new category by typing it in search and clicking create.
                 </p>
               </div>
-            </div>
+            </form>
+          </DialogBody>
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={closeDialogs} disabled={formSubmitting}  className="flex-1">
-                Cancel
-              </Button>
-              <Button type="submit" disabled={formSubmitting || creatingCategory} className="flex-1">
-                {formSubmitting ? 'Saving...' : 'Save'}
-              </Button>
-            </DialogFooter>
-          </form>
+          <DialogFooter
+            primaryAction={{
+              label: formSubmitting ? 'Saving...' : 'Save',
+              type: 'submit',
+              form: 'rule-form',
+              disabled: formSubmitting || creatingCategory,
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+              onClick: closeDialogs,
+              disabled: formSubmitting,
+            }}
+          />
         </DialogContent>
       </Dialog>
 

@@ -4,6 +4,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import * as React from 'react';
 
+import { Button, type ButtonProps } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const Dialog = DialogPrimitive.Root;
@@ -12,27 +13,39 @@ const DialogTrigger = DialogPrimitive.Trigger;
 
 const DialogPortal = DialogPrimitive.Portal;
 
-const DialogOverlay = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Overlay>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Overlay
-    ref={ref}
-    className={cn(
-      'fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-      className,
-    )}
-    {...props}
-  />
-));
-DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
-
-const DialogContent = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
-  hideClose?: boolean;
+function DialogOverlay({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Overlay>) {
+  return (
+    <DialogPrimitive.Overlay
+      ref={ref}
+      data-slot="dialog-overlay"
+      className={cn(
+        'fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+        className,
+      )}
+      {...props}
+    />
+  );
 }
->(({ className, children, hideClose, onOpenAutoFocus, ...props }, forwardedRef) => {
+
+interface DialogContentProps
+  extends React.ComponentProps<typeof DialogPrimitive.Content> {
+  showCloseButton?: boolean;
+  srTitle?: string;
+}
+
+function DialogContent({
+  className,
+  children,
+  showCloseButton = true,
+  srTitle,
+  onOpenAutoFocus,
+  ref: forwardedRef,
+  ...props
+}: DialogContentProps) {
   const contentRef = React.useRef<React.ElementRef<typeof DialogPrimitive.Content> | null>(null);
 
   const setRefs = React.useCallback(
@@ -40,7 +53,7 @@ const DialogContent = React.forwardRef<
       contentRef.current = node;
       if (!forwardedRef) return;
       if (typeof forwardedRef === 'function') forwardedRef(node);
-      else forwardedRef.current = node;
+      else (forwardedRef as React.MutableRefObject<React.ElementRef<typeof DialogPrimitive.Content> | null>).current = node;
     },
     [forwardedRef],
   );
@@ -50,12 +63,13 @@ const DialogContent = React.forwardRef<
       <DialogOverlay />
       <DialogPrimitive.Content
         ref={setRefs}
+        data-slot="dialog-content"
         tabIndex={-1}
         className={cn(
           // Mobile: Bottom sheet style
-          'fixed bottom-0 left-0 right-0 z-50 grid w-full gap-4 border-t bg-background shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom rounded-t-lg max-h-[90vh] overflow-y-auto',
+          'fixed bottom-0 left-0 right-0 z-50 flex flex-col gap-0 p-0 overflow-hidden max-h-[90dvh] w-full border-t bg-background shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom rounded-t-lg',
           // Desktop: Centered dialog style
-          'sm:bottom-auto sm:left-[50%] sm:right-auto sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-lg sm:border sm:rounded-lg sm:data-[state=closed]:slide-out-to-left-1/2 sm:data-[state=closed]:slide-out-to-top-[48%] sm:data-[state=open]:slide-in-from-left-1/2 sm:data-[state=open]:slide-in-from-top-[48%] sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95',
+          'sm:max-h-[85vh] sm:bottom-auto sm:left-[50%] sm:right-auto sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-lg sm:border sm:rounded-lg sm:data-[state=closed]:slide-out-to-left-1/2 sm:data-[state=closed]:slide-out-to-top-[48%] sm:data-[state=open]:slide-in-from-left-1/2 sm:data-[state=open]:slide-in-from-top-[48%] sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95',
           className,
         )}
         onOpenAutoFocus={(e) => {
@@ -83,10 +97,16 @@ const DialogContent = React.forwardRef<
         }}
         {...props}
       >
+        {srTitle && (
+          <DialogPrimitive.Title className="sr-only">
+            {srTitle}
+          </DialogPrimitive.Title>
+        )}
         {children}
-        {!hideClose && (
+        {showCloseButton && (
           <DialogPrimitive.Close
-            className="absolute right-4 top-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+            className="absolute right-4 top-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+          >
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
@@ -94,69 +114,185 @@ const DialogContent = React.forwardRef<
       </DialogPrimitive.Content>
     </DialogPortal>
   );
-});
-DialogContent.displayName = DialogPrimitive.Content.displayName;
+}
 
-const DialogHeader = ({
-                        className,
-                        ...props
-                      }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      'flex flex-col space-y-1.5 text-center sm:text-left pr-8',
-      className,
-    )}
-    {...props}
-  />
-);
-DialogHeader.displayName = 'DialogHeader';
+function DialogHeader({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      data-slot="dialog-header"
+      className={cn(
+        'shrink-0 flex flex-col gap-1.5 px-4 pt-4 pb-3 sm:px-6 sm:pt-6 text-center sm:text-left pr-10',
+        className,
+      )}
+      {...props}
+    />
+  );
+}
 
-const DialogFooter = ({
-                        className,
-                        ...props
-                      }: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cn(
-      // Sticky action bar: pins to the dialog's bottom edge while long content
-      // scrolls beneath it. The negative bottom margin swallows the dialog's
-      // own p-4 sm:p-6 bottom padding so the pinned bar sits flush.
-      'sticky bottom-0 z-10 flex flex-row justify-end gap-2 border-t border-slate-100 dark:border-slate-800 bg-background pt-3 pb-4 sm:pb-6 -mb-4 sm:-mb-6',
-      className,
-    )}
-    {...props}
-  />
-);
-DialogFooter.displayName = 'DialogFooter';
+function DialogBody({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      data-slot="dialog-body"
+      className={cn(
+        'flex-1 min-h-0 overflow-y-auto px-4 py-4 sm:px-6',
+        className,
+      )}
+      {...props}
+    />
+  );
+}
 
-const DialogTitle = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title
-    ref={ref}
-    className={cn(
-      'text-lg font-semibold leading-none tracking-tight',
-      className,
-    )}
-    {...props}
-  />
-));
-DialogTitle.displayName = DialogPrimitive.Title.displayName;
+export type DialogFooterAction = {
+  label: string;
+  onClick?: () => void | Promise<void>;
+  variant?: ButtonProps['variant'];
+  disabled?: boolean;
+  type?: 'button' | 'submit';
+  form?: string;
+};
 
-const DialogDescription = React.forwardRef<
-  React.ElementRef<typeof DialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description
-    ref={ref}
-    className={cn('text-sm text-muted-foreground', className)}
-    {...props}
-  />
-));
-DialogDescription.displayName = DialogPrimitive.Description.displayName;
+export interface DialogFooterProps {
+  primaryAction: DialogFooterAction;
+  secondaryAction?: DialogFooterAction;
+  className?: string;
+}
+
+function DialogFooter({
+  primaryAction,
+  secondaryAction,
+  className,
+}: DialogFooterProps) {
+  const [running, setRunning] = React.useState(false);
+
+  const handlePrimaryClick = async () => {
+    if (running) return;
+    if (!primaryAction.onClick) return;
+
+    // Errors are the caller's to handle (toast etc.); surface anything that
+    // escapes instead of silently discarding it, without turning it into an
+    // unhandled rejection from a fire-and-forget event handler.
+    try {
+      const res = primaryAction.onClick();
+      if (res && typeof (res as Promise<void>).then === 'function') {
+        setRunning(true);
+        try {
+          await res;
+        } finally {
+          setRunning(false);
+        }
+      }
+    } catch (error) {
+      console.error('Dialog primary action failed:', error);
+    }
+  };
+
+  const secondaryVariant = secondaryAction?.variant ?? 'outline';
+  const primaryVariant = primaryAction.variant ?? 'default';
+
+  const secondaryDisabled = secondaryAction?.disabled || running;
+  const primaryDisabled = primaryAction.disabled || running;
+
+  const secondaryBtn = secondaryAction ? (
+    secondaryAction.onClick ? (
+      <Button
+        key="secondary"
+        type={secondaryAction.type ?? 'button'}
+        variant={secondaryVariant}
+        disabled={secondaryDisabled}
+        form={secondaryAction.form}
+        onClick={secondaryAction.onClick}
+        className="w-full sm:w-auto"
+      >
+        {secondaryAction.label}
+      </Button>
+    ) : (
+      <DialogPrimitive.Close key="secondary" asChild>
+        <Button
+          type={secondaryAction.type ?? 'button'}
+          variant={secondaryVariant}
+          disabled={secondaryDisabled}
+          form={secondaryAction.form}
+          className="w-full sm:w-auto"
+        >
+          {secondaryAction.label}
+        </Button>
+      </DialogPrimitive.Close>
+    )
+  ) : null;
+
+  const primaryBtn = (
+    <Button
+      key="primary"
+      type={primaryAction.type ?? 'button'}
+      variant={primaryVariant}
+      disabled={primaryDisabled}
+      form={primaryAction.form}
+      onClick={primaryAction.onClick ? handlePrimaryClick : undefined}
+      className="w-full sm:w-auto"
+    >
+      {primaryAction.label}
+    </Button>
+  );
+
+  return (
+    <div
+      data-slot="dialog-footer"
+      className={cn(
+        'shrink-0 border-t border-slate-100 dark:border-slate-800 bg-background px-4 py-3 sm:px-6 sm:py-4',
+        secondaryAction
+          ? 'grid grid-cols-2 gap-2 sm:flex sm:flex-row sm:justify-end sm:gap-2'
+          : 'grid grid-cols-1 gap-2 sm:flex sm:flex-row sm:justify-end sm:gap-2',
+        className,
+      )}
+    >
+      {secondaryBtn}
+      {primaryBtn}
+    </div>
+  );
+}
+
+function DialogTitle({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Title>) {
+  return (
+    <DialogPrimitive.Title
+      ref={ref}
+      data-slot="dialog-title"
+      className={cn(
+        'text-lg font-semibold leading-none tracking-tight',
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function DialogDescription({
+  className,
+  ref,
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Description>) {
+  return (
+    <DialogPrimitive.Description
+      ref={ref}
+      data-slot="dialog-description"
+      className={cn('text-sm text-muted-foreground', className)}
+      {...props}
+    />
+  );
+}
 
 export {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,

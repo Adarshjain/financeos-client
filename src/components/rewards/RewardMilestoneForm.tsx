@@ -6,9 +6,8 @@ import { toast } from 'sonner';
 
 import { createRewardMilestone, updateRewardMilestone } from '@/actions/rewards';
 import { Combobox } from '@/components/Combobox';
-import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -70,8 +69,7 @@ export default function RewardMilestoneForm({
   const [payoutTiming, setPayoutTiming] = useState<MilestonePayoutTiming>(
     milestone?.payoutTiming ?? 'WINDOW_END',
   );
-  // Preserve ids that aren't in the categories prop (e.g. since-deleted categories)
-  // so an unrelated edit + save can't silently drop them from the eligibility JSON.
+
   const toCategoryOptions = (ids: string[]): Category[] =>
     ids.map((id) => categories.find((c) => c.id === id) ?? ({ id, name: 'Unknown category' } as Category));
   const [includeCategories, setIncludeCategories] = useState<Category[]>(
@@ -163,12 +161,12 @@ export default function RewardMilestoneForm({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-[520px] p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>{isUpdateMode ? 'Edit Milestone' : 'Create Milestone'}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3">
+        <DialogBody className="flex flex-col gap-3">
           <div className="grid grid-cols-2 gap-2.5">
             <div className="flex flex-col gap-1">
               <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Name</Label>
@@ -303,18 +301,19 @@ export default function RewardMilestoneForm({
               </span>
             )}
           </div>
-        </div>
+        </DialogBody>
 
-        <DialogFooter>
-          <Button variant="outline" type="button" onClick={onClose}
-                  className="flex-1">
-            Cancel
-          </Button>
-          <Button type="button" onClick={onSubmit} disabled={isSubmitting}
-                  className="flex-1">
-            {isSubmitting ? 'Saving...' : 'Save Milestone'}
-          </Button>
-        </DialogFooter>
+        <DialogFooter
+          primaryAction={{
+            label: isSubmitting ? 'Saving...' : 'Save Milestone',
+            onClick: onSubmit,
+            disabled: isSubmitting,
+          }}
+          secondaryAction={{
+            label: 'Cancel',
+            onClick: onClose,
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

@@ -4,7 +4,6 @@ import { ChevronRight, KeyRound, Sparkles, Upload } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -277,7 +276,7 @@ export function ImportStep1Upload({
         )}
       </div>
 
-      <DialogFooter className="shrink-0">
+      <div className="shrink-0 border-t border-slate-100 dark:border-slate-800 bg-background pt-3 flex justify-end">
         <Button
           type="submit"
           size="sm"
@@ -287,7 +286,7 @@ export function ImportStep1Upload({
           {isPreviewing ? 'Reconciling & Parsing Files...' : 'Preview Reconciliation'}
           <ChevronRight className="w-3.5 h-3.5 ml-1" />
         </Button>
-      </DialogFooter>
+      </div>
     </form>
   );
 }

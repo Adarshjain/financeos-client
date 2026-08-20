@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -145,8 +146,8 @@ export function DividendSuggestionsDialog({ trigger, onSuccess }: DividendSugges
         )}
       </DialogTrigger>
 
-      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col p-4 sm:p-6">
-        <DialogHeader className="pr-8">
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
           <DialogTitle className="text-base font-bold flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             Auto-Detect Dividends
@@ -156,7 +157,7 @@ export function DividendSuggestionsDialog({ trigger, onSuccess }: DividendSugges
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto space-y-3 py-2 min-h-[220px]">
+        <DialogBody className="space-y-3 min-h-[220px]">
           {isScanning ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-3 text-center">
               <Loader2 className="w-8 h-8 animate-spin text-emerald-600 dark:text-emerald-400" />
@@ -166,12 +167,6 @@ export function DividendSuggestionsDialog({ trigger, onSuccess }: DividendSugges
             </div>
           ) : (
             <div className="space-y-3">
-              {/*
-                The coverage of the scan belongs in both outcomes, not just the
-                one with results: "no unrecorded dividends" is only reassuring
-                if you can see how many symbols were actually checked, and how
-                many were skipped because Yahoo had nothing to say about them.
-              */}
               {hasScanned && (
                 <p className="text-[11px] text-slate-500 px-1">
                   Checked {scannedSymbols} {scannedSymbols === 1 ? 'symbol' : 'symbols'}
@@ -294,20 +289,18 @@ export function DividendSuggestionsDialog({ trigger, onSuccess }: DividendSugges
               )}
             </div>
           )}
-        </div>
+        </DialogBody>
 
-        <DialogFooter>
-          <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleSubmit}
-            disabled={isSubmitting || selectedCount === 0}
-          >
-            {isSubmitting ? 'Recording...' : `Record ${selectedCount} Dividend${selectedCount === 1 ? '' : 's'}`}
-          </Button>
-        </DialogFooter>
+        <DialogFooter
+          primaryAction={{
+            label: isSubmitting ? 'Recording...' : `Record ${selectedCount} Dividend${selectedCount === 1 ? '' : 's'}`,
+            onClick: handleSubmit,
+            disabled: isSubmitting || selectedCount === 0,
+          }}
+          secondaryAction={{
+            label: 'Cancel',
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

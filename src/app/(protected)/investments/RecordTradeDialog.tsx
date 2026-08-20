@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -46,23 +47,23 @@ export function RecordTradeDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="w-full max-w-full sm:max-w-xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-none sm:rounded-xl">
+      <DialogContent className="w-full max-w-full sm:max-w-xl">
         <DialogHeader className="sr-only">
           <DialogTitle>Record Trade</DialogTitle>
           <DialogDescription>Record a new Buy or Sell trade transaction</DialogDescription>
         </DialogHeader>
-        <CreateInvestmentForm
-          brokerAccounts={brokerAccounts}
-          initialBrokerAccountId={initialBrokerAccountId}
-          initialInstrument={initialInstrument}
-          onSuccess={() => {
-            setOpen(false);
-            // Re-run the server component so new positions + freshly auto-fetched prices show
-            // without a manual reload.
-            router.refresh();
-            onSuccess?.();
-          }}
-        />
+        <DialogBody className="p-0">
+          <CreateInvestmentForm
+            brokerAccounts={brokerAccounts}
+            initialBrokerAccountId={initialBrokerAccountId}
+            initialInstrument={initialInstrument}
+            onSuccess={() => {
+              setOpen(false);
+              router.refresh();
+              onSuccess?.();
+            }}
+          />
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

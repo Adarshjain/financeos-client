@@ -8,6 +8,7 @@ import { setInstrumentPrice } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -79,7 +80,7 @@ export function EditPriceDialog({ instrument, trigger, onSuccess }: EditPriceDia
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="text-base font-bold">Update Last Traded Price</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
@@ -87,58 +88,54 @@ export function EditPriceDialog({ instrument, trigger, onSuccess }: EditPriceDia
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-2 py-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="price" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Price (INR)
-            </Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">₹</span>
+        <DialogBody>
+          <form id="edit-price-form" onSubmit={handleSubmit} className="space-y-3 py-1">
+            <div className="space-y-1.5">
+              <Label htmlFor="price" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Price (INR)
+              </Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">₹</span>
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="0.00"
+                  required
+                  className="pl-6 text-xs bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="asOf" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                As of Date
+              </Label>
               <Input
-                id="price"
-                type="number"
-                step="0.01"
-                min="0"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="0.00"
-                required
-                className="pl-6 text-xs bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                id="asOf"
+                type="date"
+                value={asOf}
+                onChange={(e) => setAsOf(e.target.value)}
+                className="text-xs bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 [color-scheme:light] dark:[color-scheme:dark]"
               />
             </div>
-          </div>
+          </form>
+        </DialogBody>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="asOf" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              As of Date
-            </Label>
-            <Input
-              id="asOf"
-              type="date"
-              value={asOf}
-              onChange={(e) => setAsOf(e.target.value)}
-              className="text-xs bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 [color-scheme:light] dark:[color-scheme:dark]"
-            />
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Saving...' : 'Save Price'}
-            </Button>
-          </DialogFooter>
-        </form>
+        <DialogFooter
+          primaryAction={{
+            label: isSubmitting ? 'Saving...' : 'Save Price',
+            type: 'submit',
+            form: 'edit-price-form',
+            disabled: isSubmitting,
+          }}
+          secondaryAction={{
+            label: 'Cancel',
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

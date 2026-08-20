@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -110,14 +111,14 @@ export const ReviewTransaction = ({ transaction, onSuccess }: ReviewTransactionP
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-[425px] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 sm:p-6">
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-slate-900 dark:text-white">Approve Transaction</DialogTitle>
             <DialogDescription className="text-slate-500 dark:text-slate-400 text-xs mt-1">
               Select which review reasons you want to clear from this transaction.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 space-y-3">
+          <DialogBody className="space-y-3">
             {reasons.map((reason) => (
               <div key={reason} className="flex items-center space-x-2">
                 <Checkbox
@@ -133,24 +134,19 @@ export const ReviewTransaction = ({ transaction, onSuccess }: ReviewTransactionP
                 </label>
               </div>
             ))}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={submitting}
-              onClick={() => handleOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              disabled={submitting || reasonsToApprove.length === 0}
-              onClick={handleApprove}
-            >
-              {submitting ? 'Approving...' : 'Approve'}
-            </Button>
-          </DialogFooter>
+          </DialogBody>
+          <DialogFooter
+            primaryAction={{
+              label: submitting ? 'Approving...' : 'Approve',
+              onClick: handleApprove,
+              disabled: submitting || reasonsToApprove.length === 0,
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+              onClick: () => handleOpenChange(false),
+              disabled: submitting,
+            }}
+          />
         </DialogContent>
       </Dialog>
     </>

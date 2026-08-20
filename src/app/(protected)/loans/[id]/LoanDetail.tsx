@@ -40,6 +40,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -823,145 +824,170 @@ export function LoanDetail({
 
       {/* Dialogs */}
       <Dialog open={markPaidOpen} onOpenChange={setMarkPaidOpen}>
-        <DialogContent className="sm:max-w-md w-[95vw] p-4 sm:p-6">
+        <DialogContent className="sm:max-w-md w-[95vw]">
           <DialogHeader><DialogTitle className="text-base font-bold">Settle Installment #{selectedInstallment?.seq}</DialogTitle></DialogHeader>
-          <form onSubmit={handleSettlePayment} className="space-y-3 pt-1 text-xs">
-            <div className="space-y-1">
-              <Label className="text-xs">Payment Date *</Label>
-              <Input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} required className="h-9 text-xs" />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Payment Amount (₹) *</Label>
-              <Input type="number" step="0.01" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} required className="h-9 text-xs" />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Transaction ID (Optional)</Label>
-              <Input placeholder="UUID of DEBIT transaction" value={paymentTxId} onChange={(e) => setPaymentTxId(e.target.value)} className="h-9 text-xs" />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" size="sm" onClick={() => setMarkPaidOpen(false)}>Cancel</Button>
-              <Button type="submit" size="sm" disabled={submittingPayment}>{submittingPayment ? 'Saving...' : 'Confirm Settle'}</Button>
-            </DialogFooter>
-          </form>
+          <DialogBody>
+            <form id="settle-payment-form" onSubmit={handleSettlePayment} className="space-y-3 pt-1 text-xs">
+              <div className="space-y-1">
+                <Label className="text-xs">Payment Date *</Label>
+                <Input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} required className="h-9 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Payment Amount (₹) *</Label>
+                <Input type="number" step="0.01" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} required className="h-9 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Transaction ID (Optional)</Label>
+                <Input placeholder="UUID of DEBIT transaction" value={paymentTxId} onChange={(e) => setPaymentTxId(e.target.value)} className="h-9 text-xs" />
+              </div>
+            </form>
+          </DialogBody>
+          <DialogFooter
+            primaryAction={{
+              label: submittingPayment ? 'Saving...' : 'Confirm Settle',
+              type: 'submit',
+              form: 'settle-payment-form',
+              disabled: submittingPayment,
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+            }}
+          />
         </DialogContent>
       </Dialog>
 
       <Dialog open={addEventOpen} onOpenChange={setAddEventOpen}>
-        <DialogContent className="sm:max-w-md w-[95vw] p-4 sm:p-6">
+        <DialogContent className="sm:max-w-md w-[95vw]">
           <DialogHeader><DialogTitle className="text-base font-bold">Record Lifecycle Event</DialogTitle></DialogHeader>
-          <form onSubmit={handleAddEvent} className="space-y-3 pt-1 text-xs">
-            <div className="space-y-1">
-              <Label className="text-xs">Event Type *</Label>
-              <Select value={eventType} onValueChange={(v) => setEventType(v as LoanEventType)}>
-                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Select type" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="rate_change" className="text-xs">Rate Change</SelectItem>
-                  <SelectItem value="prepayment" className="text-xs">Prepayment</SelectItem>
-                  <SelectItem value="foreclosure" className="text-xs">Foreclosure</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1">
-              <Label className="text-xs">Effective Date *</Label>
-              <Input type="date" value={effectiveDate} onChange={(e) => setEffectiveDate(e.target.value)} required className="h-9 text-xs" />
-            </div>
-
-            {eventType === 'rate_change' && (
+          <DialogBody>
+            <form id="add-event-form" onSubmit={handleAddEvent} className="space-y-3 pt-1 text-xs">
               <div className="space-y-1">
-                <Label className="text-xs">New Annual Rate (%) *</Label>
-                <Input type="number" step="0.01" placeholder="e.g. 9.25" value={newAnnualRatePct} onChange={(e) => setNewAnnualRatePct(e.target.value)} required className="h-9 text-xs" />
+                <Label className="text-xs">Event Type *</Label>
+                <Select value={eventType} onValueChange={(v) => setEventType(v as LoanEventType)}>
+                  <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Select type" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="rate_change" className="text-xs">Rate Change</SelectItem>
+                    <SelectItem value="prepayment" className="text-xs">Prepayment</SelectItem>
+                    <SelectItem value="foreclosure" className="text-xs">Foreclosure</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            )}
 
-            {(eventType === 'prepayment' || eventType === 'foreclosure') && (
               <div className="space-y-1">
-                <Label className="text-xs">Amount (₹) *</Label>
-                <Input type="number" step="0.01" placeholder="e.g. 100000" value={eventAmount} onChange={(e) => setEventAmount(e.target.value)} required className="h-9 text-xs" />
+                <Label className="text-xs">Effective Date *</Label>
+                <Input type="date" value={effectiveDate} onChange={(e) => setEffectiveDate(e.target.value)} required className="h-9 text-xs" />
               </div>
-            )}
 
-            {eventType !== 'foreclosure' && (
-              <div className="space-y-1">
-                <Label className="text-xs">Adjustment Mode *</Label>
-                <div className="flex gap-4 pt-1">
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs">
-                    <input type="radio" name="adjMode" checked={adjustmentMode === 'reduce_tenure'} onChange={() => setAdjustmentMode('reduce_tenure')} />
-                    <span>Reduce Tenure</span>
-                  </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs">
-                    <input type="radio" name="adjMode" checked={adjustmentMode === 'reduce_emi'} onChange={() => setAdjustmentMode('reduce_emi')} />
-                    <span>Reduce EMI</span>
-                  </label>
+              {eventType === 'rate_change' && (
+                <div className="space-y-1">
+                  <Label className="text-xs">New Annual Rate (%) *</Label>
+                  <Input type="number" step="0.01" placeholder="e.g. 9.25" value={newAnnualRatePct} onChange={(e) => setNewAnnualRatePct(e.target.value)} required className="h-9 text-xs" />
                 </div>
-              </div>
-            )}
+              )}
 
-            {eventType !== 'foreclosure' && adjustmentMode === 'reduce_emi' && (
+              {(eventType === 'prepayment' || eventType === 'foreclosure') && (
+                <div className="space-y-1">
+                  <Label className="text-xs">Amount (₹) *</Label>
+                  <Input type="number" step="0.01" placeholder="e.g. 100000" value={eventAmount} onChange={(e) => setEventAmount(e.target.value)} required className="h-9 text-xs" />
+                </div>
+              )}
+
+              {eventType !== 'foreclosure' && (
+                <div className="space-y-1">
+                  <Label className="text-xs">Adjustment Mode *</Label>
+                  <div className="flex gap-4 pt-1">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-xs">
+                      <input type="radio" name="adjMode" checked={adjustmentMode === 'reduce_tenure'} onChange={() => setAdjustmentMode('reduce_tenure')} />
+                      <span>Reduce Tenure</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer text-xs">
+                      <input type="radio" name="adjMode" checked={adjustmentMode === 'reduce_emi'} onChange={() => setAdjustmentMode('reduce_emi')} />
+                      <span>Reduce EMI</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
+              {eventType !== 'foreclosure' && adjustmentMode === 'reduce_emi' && (
+                <div className="space-y-1">
+                  <Label className="text-xs">New EMI Override (Optional)</Label>
+                  <Input type="number" step="0.01" placeholder="Auto if blank" value={newEmiOverride} onChange={(e) => setNewEmiOverride(e.target.value)} className="h-9 text-xs" />
+                </div>
+              )}
+
               <div className="space-y-1">
-                <Label className="text-xs">New EMI Override (Optional)</Label>
-                <Input type="number" step="0.01" placeholder="Auto if blank" value={newEmiOverride} onChange={(e) => setNewEmiOverride(e.target.value)} className="h-9 text-xs" />
+                <Label className="text-xs">Linked Transaction ID (Optional)</Label>
+                <Input placeholder="UUID of transaction" value={eventTxId} onChange={(e) => setEventTxId(e.target.value)} className="h-9 text-xs" />
               </div>
-            )}
-
-            <div className="space-y-1">
-              <Label className="text-xs">Linked Transaction ID (Optional)</Label>
-              <Input placeholder="UUID of transaction" value={eventTxId} onChange={(e) => setEventTxId(e.target.value)} className="h-9 text-xs" />
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" size="sm" onClick={() => setAddEventOpen(false)}>Cancel</Button>
-              <Button type="submit" size="sm" disabled={submittingEvent}>{submittingEvent ? 'Saving...' : 'Record Event'}</Button>
-            </DialogFooter>
-          </form>
+            </form>
+          </DialogBody>
+          <DialogFooter
+            primaryAction={{
+              label: submittingEvent ? 'Saving...' : 'Record Event',
+              type: 'submit',
+              form: 'add-event-form',
+              disabled: submittingEvent,
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+            }}
+          />
         </DialogContent>
       </Dialog>
 
       <Dialog open={addChargeOpen} onOpenChange={setAddChargeOpen}>
-        <DialogContent className="sm:max-w-md w-[95vw] p-4 sm:p-6">
+        <DialogContent className="sm:max-w-md w-[95vw]">
           <DialogHeader><DialogTitle className="text-base font-bold">Add Itemized Charge</DialogTitle></DialogHeader>
-          <form onSubmit={handleAddCharge} className="space-y-3 pt-1 text-xs">
-            <div className="space-y-1">
-              <Label className="text-xs">Charge Type *</Label>
-              <Select value={chargeType} onValueChange={(v) => setChargeType(v as LoanChargeType)}>
-                <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Select type" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="processing_fee" className="text-xs">Processing Fee</SelectItem>
-                  <SelectItem value="insurance_premium" className="text-xs">Insurance Premium</SelectItem>
-                  <SelectItem value="foreclosure_charge" className="text-xs">Foreclosure Charge</SelectItem>
-                  <SelectItem value="bounce_charge" className="text-xs">Bounce Charge</SelectItem>
-                  <SelectItem value="late_fee" className="text-xs">Late Fee</SelectItem>
-                  <SelectItem value="legal_valuation" className="text-xs">Legal / Valuation</SelectItem>
-                  <SelectItem value="other" className="text-xs">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <DialogBody>
+            <form id="add-charge-form" onSubmit={handleAddCharge} className="space-y-3 pt-1 text-xs">
+              <div className="space-y-1">
+                <Label className="text-xs">Charge Type *</Label>
+                <Select value={chargeType} onValueChange={(v) => setChargeType(v as LoanChargeType)}>
+                  <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Select type" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="processing_fee" className="text-xs">Processing Fee</SelectItem>
+                    <SelectItem value="insurance_premium" className="text-xs">Insurance Premium</SelectItem>
+                    <SelectItem value="foreclosure_charge" className="text-xs">Foreclosure Charge</SelectItem>
+                    <SelectItem value="bounce_charge" className="text-xs">Bounce Charge</SelectItem>
+                    <SelectItem value="late_fee" className="text-xs">Late Fee</SelectItem>
+                    <SelectItem value="legal_valuation" className="text-xs">Legal / Valuation</SelectItem>
+                    <SelectItem value="other" className="text-xs">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs">Amount (₹) *</Label>
-              <Input type="number" step="0.01" placeholder="e.g. 5000" value={chargeAmount} onChange={(e) => setChargeAmount(e.target.value)} required className="h-9 text-xs" />
-            </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Amount (₹) *</Label>
+                <Input type="number" step="0.01" placeholder="e.g. 5000" value={chargeAmount} onChange={(e) => setChargeAmount(e.target.value)} required className="h-9 text-xs" />
+              </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs">Charge Date *</Label>
-              <Input type="date" value={chargeDate} onChange={(e) => setChargeDate(e.target.value)} required className="h-9 text-xs" />
-            </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Charge Date *</Label>
+                <Input type="date" value={chargeDate} onChange={(e) => setChargeDate(e.target.value)} required className="h-9 text-xs" />
+              </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs">Notes (Optional)</Label>
-              <Textarea rows={2} placeholder="Description..." value={chargeNotes} onChange={(e) => setChargeNotes(e.target.value)} className="text-xs" />
-            </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Notes (Optional)</Label>
+                <Textarea rows={2} placeholder="Description..." value={chargeNotes} onChange={(e) => setChargeNotes(e.target.value)} className="text-xs" />
+              </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs">Linked Transaction ID (Optional)</Label>
-              <Input placeholder="UUID of transaction" value={chargeTxId} onChange={(e) => setChargeTxId(e.target.value)} className="h-9 text-xs" />
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" size="sm" onClick={() => setAddChargeOpen(false)}>Cancel</Button>
-              <Button type="submit" size="sm" disabled={submittingCharge}>{submittingCharge ? 'Saving...' : 'Add Charge'}</Button>
-            </DialogFooter>
-          </form>
+              <div className="space-y-1">
+                <Label className="text-xs">Linked Transaction ID (Optional)</Label>
+                <Input placeholder="UUID of transaction" value={chargeTxId} onChange={(e) => setChargeTxId(e.target.value)} className="h-9 text-xs" />
+              </div>
+            </form>
+          </DialogBody>
+          <DialogFooter
+            primaryAction={{
+              label: submittingCharge ? 'Saving...' : 'Add Charge',
+              type: 'submit',
+              form: 'add-charge-form',
+              disabled: submittingCharge,
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>

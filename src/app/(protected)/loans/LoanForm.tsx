@@ -7,6 +7,7 @@ import { createLoanAction, updateLoanAction } from '@/actions/loans';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -174,231 +175,230 @@ export function LoanForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle className="text-lg font-bold">
             {isEdit ? 'Edit Loan' : 'Create New Loan'}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 pt-1">
-          {coreDisabled && (
-            <div className="p-2.5 text-xs bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 rounded-lg">
-              Core terms (principal, rate, tenure, dates, EMI) are locked because events or payments exist.
-            </div>
-          )}
+        <DialogBody>
+          <form id="loan-form" onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 pt-1">
+            {coreDisabled && (
+              <div className="p-2.5 text-xs bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 rounded-lg">
+                Core terms (principal, rate, tenure, dates, EMI) are locked because events or payments exist.
+              </div>
+            )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="name" className="text-xs">Loan Name *</Label>
+                <Input
+                  id="name"
+                  placeholder="e.g. Home Loan HDFC"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="h-9 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="lender" className="text-xs">Lender *</Label>
+                <Input
+                  id="lender"
+                  placeholder="e.g. HDFC Bank"
+                  value={lender}
+                  onChange={(e) => setLender(e.target.value)}
+                  required
+                  className="h-9 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="loanType" className="text-xs">Loan Type *</Label>
+                <Select
+                  value={loanType}
+                  onValueChange={(v) => setLoanType(v as LoanType)}
+                >
+                  <SelectTrigger id="loanType" className="h-9 text-xs">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LOAN_TYPES.map((t) => (
+                      <SelectItem key={t.value} value={t.value} className="text-xs">
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="rateType" className="text-xs">Rate Type *</Label>
+                <Select
+                  value={rateType}
+                  onValueChange={(v) => setRateType(v as RateType)}
+                  disabled={coreDisabled}
+                >
+                  <SelectTrigger id="rateType" className="h-9 text-xs">
+                    <SelectValue placeholder="Select rate type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="fixed" className="text-xs">Fixed Rate</SelectItem>
+                    <SelectItem value="floating" className="text-xs">Floating Rate</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="loanAccountNumber" className="text-xs">Loan Account Number</Label>
+                <Input
+                  id="loanAccountNumber"
+                  placeholder="e.g. 123456789"
+                  value={loanAccountNumber}
+                  onChange={(e) => setLoanAccountNumber(e.target.value)}
+                  className="h-9 text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="paymentAccount" className="text-xs">Payment Bank Account</Label>
+                <Select
+                  value={paymentAccountId}
+                  onValueChange={(v) => setPaymentAccountId(v)}
+                >
+                  <SelectTrigger id="paymentAccount" className="h-9 text-xs">
+                    <SelectValue placeholder="Select bank account" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none" className="text-xs">-- None --</SelectItem>
+                    {bankAccounts.map((acc) => (
+                      <SelectItem key={acc.id} value={acc.id} className="text-xs">
+                        {acc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="principal" className="text-xs">Principal (₹) *</Label>
+                <Input
+                  id="principal"
+                  type="number"
+                  step="0.01"
+                  placeholder="1000000"
+                  value={principal}
+                  onChange={(e) => setPrincipal(e.target.value)}
+                  disabled={coreDisabled}
+                  required
+                  className="h-9 text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="annualRatePct" className="text-xs">Annual Rate (%) *</Label>
+                <Input
+                  id="annualRatePct"
+                  type="number"
+                  step="0.01"
+                  placeholder="8.5"
+                  value={annualRatePct}
+                  onChange={(e) => setAnnualRatePct(e.target.value)}
+                  disabled={coreDisabled}
+                  required
+                  className="h-9 text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="tenureMonths" className="text-xs">Tenure (Months) *</Label>
+                <Input
+                  id="tenureMonths"
+                  type="number"
+                  placeholder="240"
+                  value={tenureMonths}
+                  onChange={(e) => setTenureMonths(e.target.value)}
+                  disabled={coreDisabled}
+                  required
+                  className="h-9 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="startDate" className="text-xs">Disbursal Date *</Label>
+                <Input
+                  id="startDate"
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  disabled={coreDisabled}
+                  required
+                  className="h-9 text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="firstEmiDate" className="text-xs">First EMI Due *</Label>
+                <Input
+                  id="firstEmiDate"
+                  type="date"
+                  value={firstEmiDate}
+                  onChange={(e) => setFirstEmiDate(e.target.value)}
+                  disabled={coreDisabled}
+                  required
+                  className="h-9 text-xs"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="emiAmount" className="text-xs">EMI Amount (₹)</Label>
+                <Input
+                  id="emiAmount"
+                  type="number"
+                  step="0.01"
+                  placeholder="Auto if blank"
+                  value={emiAmount}
+                  onChange={(e) => setEmiAmount(e.target.value)}
+                  disabled={coreDisabled}
+                  className="h-9 text-xs"
+                />
+              </div>
+            </div>
+
             <div className="space-y-1">
-              <Label htmlFor="name" className="text-xs">Loan Name *</Label>
-              <Input
-                id="name"
-                placeholder="e.g. Home Loan HDFC"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="h-9 text-xs"
+              <Label htmlFor="notes" className="text-xs">Notes</Label>
+              <Textarea
+                id="notes"
+                rows={2}
+                placeholder="Optional notes or details..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="text-xs"
               />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="lender" className="text-xs">Lender *</Label>
-              <Input
-                id="lender"
-                placeholder="e.g. HDFC Bank"
-                value={lender}
-                onChange={(e) => setLender(e.target.value)}
-                required
-                className="h-9 text-xs"
-              />
-            </div>
-          </div>
+          </form>
+        </DialogBody>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="loanType" className="text-xs">Loan Type *</Label>
-              <Select
-                value={loanType}
-                onValueChange={(v) => setLoanType(v as LoanType)}
-              >
-                <SelectTrigger id="loanType" className="h-9 text-xs">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {LOAN_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value} className="text-xs">
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="rateType" className="text-xs">Rate Type *</Label>
-              <Select
-                value={rateType}
-                onValueChange={(v) => setRateType(v as RateType)}
-                disabled={coreDisabled}
-              >
-                <SelectTrigger id="rateType" className="h-9 text-xs">
-                  <SelectValue placeholder="Select rate type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="fixed" className="text-xs">Fixed Rate</SelectItem>
-                  <SelectItem value="floating" className="text-xs">Floating Rate</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="loanAccountNumber" className="text-xs">Loan Account Number</Label>
-              <Input
-                id="loanAccountNumber"
-                placeholder="e.g. 123456789"
-                value={loanAccountNumber}
-                onChange={(e) => setLoanAccountNumber(e.target.value)}
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="paymentAccount" className="text-xs">Payment Bank Account</Label>
-              <Select
-                value={paymentAccountId}
-                onValueChange={(v) => setPaymentAccountId(v)}
-              >
-                <SelectTrigger id="paymentAccount" className="h-9 text-xs">
-                  <SelectValue placeholder="Select bank account" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none" className="text-xs">-- None --</SelectItem>
-                  {bankAccounts.map((acc) => (
-                    <SelectItem key={acc.id} value={acc.id} className="text-xs">
-                      {acc.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="principal" className="text-xs">Principal (₹) *</Label>
-              <Input
-                id="principal"
-                type="number"
-                step="0.01"
-                placeholder="1000000"
-                value={principal}
-                onChange={(e) => setPrincipal(e.target.value)}
-                disabled={coreDisabled}
-                required
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="annualRatePct" className="text-xs">Annual Rate (%) *</Label>
-              <Input
-                id="annualRatePct"
-                type="number"
-                step="0.01"
-                placeholder="8.5"
-                value={annualRatePct}
-                onChange={(e) => setAnnualRatePct(e.target.value)}
-                disabled={coreDisabled}
-                required
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="tenureMonths" className="text-xs">Tenure (Months) *</Label>
-              <Input
-                id="tenureMonths"
-                type="number"
-                placeholder="240"
-                value={tenureMonths}
-                onChange={(e) => setTenureMonths(e.target.value)}
-                disabled={coreDisabled}
-                required
-                className="h-9 text-xs"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-1">
-              <Label htmlFor="startDate" className="text-xs">Disbursal Date *</Label>
-              <Input
-                id="startDate"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                disabled={coreDisabled}
-                required
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="firstEmiDate" className="text-xs">First EMI Due *</Label>
-              <Input
-                id="firstEmiDate"
-                type="date"
-                value={firstEmiDate}
-                onChange={(e) => setFirstEmiDate(e.target.value)}
-                disabled={coreDisabled}
-                required
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="emiAmount" className="text-xs">EMI Amount (₹)</Label>
-              <Input
-                id="emiAmount"
-                type="number"
-                step="0.01"
-                placeholder="Auto if blank"
-                value={emiAmount}
-                onChange={(e) => setEmiAmount(e.target.value)}
-                disabled={coreDisabled}
-                className="h-9 text-xs"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="notes" className="text-xs">Notes</Label>
-            <Textarea
-              id="notes"
-              rows={2}
-              placeholder="Optional notes or details..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="text-xs"
-            />
-          </div>
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" size="sm" disabled={loading}>
-              {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Loan'}
-            </Button>
-          </DialogFooter>
-        </form>
+        <DialogFooter
+          primaryAction={{
+            label: loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Loan',
+            type: 'submit',
+            form: 'loan-form',
+            disabled: loading,
+          }}
+          secondaryAction={{
+            label: 'Cancel',
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

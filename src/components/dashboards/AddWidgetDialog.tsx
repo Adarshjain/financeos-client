@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -32,38 +33,40 @@ export function AddWidgetDialog({ reports, onAdd }: AddWidgetDialogProps) {
           Add widget
         </Button>
       </DialogTrigger>
-      <DialogContent className="p-4 sm:p-6">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Add a report widget</DialogTitle>
         </DialogHeader>
-        {reports.length === 0 ? (
-          <p className="text-sm text-slate-500">
-            No saved reports yet.{' '}
-            <Link href="/reports/new" className="text-emerald-600 underline">
-              Create one
-            </Link>{' '}
-            first.
-          </p>
-        ) : (
-          <div className="max-h-80 space-y-1 overflow-auto">
-            {reports.map((r) => (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => {
-                  onAdd(r);
-                  setOpen(false);
-                }}
-                className="flex w-full items-center justify-between gap-2 rounded-md border border-slate-200 px-3 py-2 text-left transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
-              >
-                <span className="truncate text-sm font-medium text-slate-900 dark:text-white">
-                  {r.name}
-                </span>
-                <Badge variant="secondary">{r.type}</Badge>
-              </button>
-            ))}
-          </div>
-        )}
+        <DialogBody>
+          {reports.length === 0 ? (
+            <p className="text-sm text-slate-500">
+              No saved reports yet.{' '}
+              <Link href="/reports/new" className="text-emerald-600 underline">
+                Create one
+              </Link>{' '}
+              first.
+            </p>
+          ) : (
+            <div className="space-y-1">
+              {reports.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => {
+                    onAdd(r);
+                    setOpen(false);
+                  }}
+                  className="flex w-full items-center justify-between gap-2 rounded-md border border-slate-200 px-3 py-2 text-left transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
+                >
+                  <span className="truncate text-sm font-medium text-slate-900 dark:text-white">
+                    {r.name}
+                  </span>
+                  <Badge variant="secondary">{r.type}</Badge>
+                </button>
+              ))}
+            </div>
+          )}
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

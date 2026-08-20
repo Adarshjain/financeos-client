@@ -8,7 +8,7 @@ import { createRewardRule, updateRewardRule } from '@/actions/rewards';
 import { Combobox } from '@/components/Combobox';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -423,14 +423,14 @@ export default function RewardRuleForm({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-[560px] p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>
             {isUpdateMode ? 'Edit Reward Rule' : cloneFrom ? 'Clone Reward Rule' : 'Create Reward Rule'}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3">
+        <DialogBody className="flex flex-col gap-3">
           {/* Basics */}
           <div className={sectionClass}>
             <div className="grid grid-cols-2 gap-2.5">
@@ -900,18 +900,19 @@ export default function RewardRuleForm({
               </p>
             )}
           </div>
-        </div>
+        </DialogBody>
 
-        <DialogFooter>
-          <Button variant="outline" type="button" onClick={onClose}
-                  className="flex-1">
-            Cancel
-          </Button>
-          <Button type="button" onClick={onSubmit} disabled={isSubmitting}
-                  className="flex-1">
-            {isSubmitting ? 'Saving...' : 'Save Rule'}
-          </Button>
-        </DialogFooter>
+        <DialogFooter
+          primaryAction={{
+            label: isSubmitting ? 'Saving...' : 'Save Rule',
+            onClick: onSubmit,
+            disabled: isSubmitting,
+          }}
+          secondaryAction={{
+            label: 'Cancel',
+            onClick: onClose,
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

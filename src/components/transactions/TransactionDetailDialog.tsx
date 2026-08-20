@@ -95,7 +95,7 @@ export const TransactionDetailDialog = ({
       <DialogContent
         className={cn(
           'sm:max-w-lg !p-0 overflow-hidden flex flex-col bg-slate-50 dark:bg-slate-950',
-          isEditing ? 'h-[90vh] sm:h-auto sm:max-h-[85vh]' : '',
+          isEditing ? 'h-full max-h-full sm:h-auto sm:max-h-[85vh]' : '',
         )}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -104,7 +104,7 @@ export const TransactionDetailDialog = ({
           transform: transformStyle,
           transition: transitionStyle,
         }}
-        hideClose
+        showCloseButton={false}
       >
         {isEditing ? (
           <TransactionEditContent

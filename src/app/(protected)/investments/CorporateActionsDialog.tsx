@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -156,8 +157,6 @@ export function CorporateActionsDialog({
     setFractionalCashInLieu(act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? String(act.fractionalCashInLieu) : '');
   };
 
-  // When opened in "edit" mode (e.g. from the global Corporate Actions section),
-  // pre-fill the form for the action being edited rather than showing "add new".
   useEffect(() => {
     if (open && editAction) {
       handleEditClick(editAction);
@@ -280,9 +279,6 @@ export function CorporateActionsDialog({
     heldQuantity === undefined || fracShares > 0 || (editingActionId !== null && Boolean(fractionalCashInLieu))
   );
 
-  // A caller that drives `open` itself already owns the affordance that opens
-  // the dialog, so rendering the fallback trigger there would put a stray
-  // second button on the page. Uncontrolled callers still get one.
   const showTrigger = trigger !== undefined || controlledOpen === undefined;
 
   return (
@@ -297,7 +293,7 @@ export function CorporateActionsDialog({
           )}
         </DialogTrigger>
       )}
-      <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:p-6 max-w-full sm:max-w-lg overflow-x-hidden gap-0">
+      <DialogContent className="max-w-full sm:max-w-lg overflow-x-hidden">
         <DialogHeader>
           <DialogTitle className="text-base font-bold flex items-start sm:items-start gap-2 min-w-0">
             <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5 sm:mt-0" />
@@ -311,252 +307,255 @@ export function CorporateActionsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2 min-w-0">
-          <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <div className="min-w-0 break-words">
-            <span className="font-semibold">Note:</span> Position quantities and cost bases auto-adjust when corporate actions are added or updated.
-          </div>
-        </div>
-
-        {/* Existing Corporate Actions List */}
-        <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
-          <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">Recorded Actions</h4>
-          {isLoading ? (
-            <div className="text-xs text-slate-400 py-2">Loading...</div>
-          ) : actions.length === 0 ? (
-            <div className="text-xs text-slate-400 py-2 italic">No corporate actions recorded yet for this instrument.</div>
-          ) : (
-            <div className="space-y-2">
-              {actions.map((act) => (
-                <div key={act.id} className={`p-2.5 rounded-md border flex items-center justify-between text-xs gap-2 ${editingActionId === act.id ? 'bg-purple-50/50 dark:bg-purple-950/30 border-purple-300 dark:border-purple-800' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
-                  <div className="space-y-0.5 min-w-0 flex-1">
-                    <div className="font-semibold flex items-center gap-1.5 flex-wrap">
-                      <Badge variant="outline" className="text-[9px] uppercase px-1 py-0 font-bold bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 shrink-0">
-                        {act.type}
-                      </Badge>
-                      <span className="break-words">
-                        Ratio: {act.ratioFrom} → {act.ratioTo}
-                      </span>
-                    </div>
-                    {act.type === 'demerger' && (
-                      <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300 break-words">
-                        Child: {act.targetInstrumentName || 'Target'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc: {act.costAllocationPct}%{act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? ` • cash-in-lieu ₹${act.fractionalCashInLieu}` : ''}
-                      </div>
-                    )}
-                    {act.type === 'merger' && (
-                      <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300 break-words">
-                        Merged into {act.targetInstrumentName || 'Acquirer'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • swap {act.ratioFrom}:{act.ratioTo}{act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? ` • cash-in-lieu ₹${act.fractionalCashInLieu}` : ''}
-                      </div>
-                    )}
-                    <div className="text-[10px] text-slate-500 break-words">
-                      Ex-Date: {formatDate(act.exDate)} {act.notes ? `• ${act.notes}` : ''}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <Button
-                      type="button"
-                      size="icon-xs"
-                      onClick={() => handleEditClick(act)}
-                      className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
-                    >
-                      <Edit className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost-destructive"
-                      size="icon-xs"
-                      onClick={() => handleDelete(act.id)}
-                      disabled={deletingId === act.id}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+        <DialogBody className="space-y-4">
+          <div className="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2 min-w-0">
+            <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div className="min-w-0 break-words">
+              <span className="font-semibold">Note:</span> Position quantities and cost bases auto-adjust when corporate actions are added or updated.
             </div>
-          )}
-        </div>
+          </div>
 
-        {/* Add / Edit Action Form */}
-        <form onSubmit={handleSubmit} className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
-          <div className="flex items-center justify-between">
-            <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-              {editingActionId ? (
-                <>
-                  <Edit className="w-3.5 h-3.5 text-purple-600" />
-                  Edit Corporate Action
-                </>
-              ) : (
-                <>
-                  <Plus className="w-3.5 h-3.5 text-emerald-600" />
-                  Add Corporate Action
-                </>
-              )}
-            </h4>
-            {editingActionId && (
-              <Button
-                type="button"
-                size="micro"
-                onClick={resetForm}
-                className="text-slate-500 hover:text-slate-900"
-              >
-                <X className="w-3 h-3 mr-1" />
-                Cancel Edit
-              </Button>
+          {/* Existing Corporate Actions List */}
+          <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+            <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">Recorded Actions</h4>
+            {isLoading ? (
+              <div className="text-xs text-slate-400 py-2">Loading...</div>
+            ) : actions.length === 0 ? (
+              <div className="text-xs text-slate-400 py-2 italic">No corporate actions recorded yet for this instrument.</div>
+            ) : (
+              <div className="space-y-2">
+                {actions.map((act) => (
+                  <div key={act.id} className={`p-2.5 rounded-md border flex items-center justify-between text-xs gap-2 ${editingActionId === act.id ? 'bg-purple-50/50 dark:bg-purple-950/30 border-purple-300 dark:border-purple-800' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
+                    <div className="space-y-0.5 min-w-0 flex-1">
+                      <div className="font-semibold flex items-center gap-1.5 flex-wrap">
+                        <Badge variant="outline" className="text-[9px] uppercase px-1 py-0 font-bold bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 shrink-0">
+                          {act.type}
+                        </Badge>
+                        <span className="break-words">
+                          Ratio: {act.ratioFrom} → {act.ratioTo}
+                        </span>
+                      </div>
+                      {act.type === 'demerger' && (
+                        <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300 break-words">
+                          Child: {act.targetInstrumentName || 'Target'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc: {act.costAllocationPct}%{act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? ` • cash-in-lieu ₹${act.fractionalCashInLieu}` : ''}
+                        </div>
+                      )}
+                      {act.type === 'merger' && (
+                        <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300 break-words">
+                          Merged into {act.targetInstrumentName || 'Acquirer'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • swap {act.ratioFrom}:{act.ratioTo}{act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? ` • cash-in-lieu ₹${act.fractionalCashInLieu}` : ''}
+                        </div>
+                      )}
+                      <div className="text-[10px] text-slate-500 break-words">
+                        Ex-Date: {formatDate(act.exDate)} {act.notes ? `• ${act.notes}` : ''}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <Button
+                        type="button"
+                        size="icon-xs"
+                        onClick={() => handleEditClick(act)}
+                        className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                      >
+                        <Edit className="w-3.5 h-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost-destructive"
+                        size="icon-xs"
+                        onClick={() => handleDelete(act.id)}
+                        disabled={deletingId === act.id}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
-          {!instrument && !editingActionId && (
-            <div className="space-y-1 min-w-0">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-words">
-                Parent Instrument *
-              </Label>
-              <InstrumentTypeahead
-                selectedInstrument={selectedParentInstrument}
-                onSelect={setSelectedParentInstrument}
-              />
+          {/* Add / Edit Action Form */}
+          <form id="corporate-action-form" onSubmit={handleSubmit} className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                {editingActionId ? (
+                  <>
+                    <Edit className="w-3.5 h-3.5 text-purple-600" />
+                    Edit Corporate Action
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-3.5 h-3.5 text-emerald-600" />
+                    Add Corporate Action
+                  </>
+                )}
+              </h4>
+              {editingActionId && (
+                <Button
+                  type="button"
+                  size="micro"
+                  onClick={resetForm}
+                  className="text-slate-500 hover:text-slate-900"
+                >
+                  <X className="w-3 h-3 mr-1" />
+                  Cancel Edit
+                </Button>
+              )}
             </div>
-          )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <div className="space-y-1.5 min-w-0">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Action Type</Label>
-              <Select value={type} onValueChange={(val) => setType(val as CorporateActionType)}>
-                <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
-                  <SelectValue placeholder="Select action" />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                  <SelectItem value="split" className="text-xs">Stock Split</SelectItem>
-                  <SelectItem value="bonus" className="text-xs">Bonus Issue</SelectItem>
-                  <SelectItem value="demerger" className="text-xs">Demerger / Spin-off</SelectItem>
-                  <SelectItem value="merger" className="text-xs">Merger / Amalgamation</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <FormField
-              label="Ex-Date"
-              name="exDate"
-              type="date"
-              value={exDate}
-              onChange={(e) => setExDate(e.target.value)}
-              required
-            />
-          </div>
-
-          {(type === 'demerger' || type === 'merger') && (
-            <div className="space-y-2 p-3 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-900/40 min-w-0">
+            {!instrument && !editingActionId && (
               <div className="space-y-1 min-w-0">
                 <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-words">
-                  {type === 'merger' ? 'Surviving (Acquirer) Instrument *' : 'Target (Child) Instrument *'}
+                  Parent Instrument *
                 </Label>
                 <InstrumentTypeahead
-                  selectedInstrument={targetInstrument}
-                  onSelect={setTargetInstrument}
+                  selectedInstrument={selectedParentInstrument}
+                  onSelect={setSelectedParentInstrument}
                 />
               </div>
+            )}
 
-              {type === 'demerger' && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-1.5 min-w-0">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Action Type</Label>
+                <Select value={type} onValueChange={(val) => setType(val as CorporateActionType)}>
+                  <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
+                    <SelectValue placeholder="Select action" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                    <SelectItem value="split" className="text-xs">Stock Split</SelectItem>
+                    <SelectItem value="bonus" className="text-xs">Bonus Issue</SelectItem>
+                    <SelectItem value="demerger" className="text-xs">Demerger / Spin-off</SelectItem>
+                    <SelectItem value="merger" className="text-xs">Merger / Amalgamation</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <FormField
+                label="Ex-Date"
+                name="exDate"
+                type="date"
+                value={exDate}
+                onChange={(e) => setExDate(e.target.value)}
+                required
+              />
+            </div>
+
+            {(type === 'demerger' || type === 'merger') && (
+              <div className="space-y-2 p-3 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-900/40 min-w-0">
+                <div className="space-y-1 min-w-0">
+                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-words">
+                    {type === 'merger' ? 'Surviving (Acquirer) Instrument *' : 'Target (Child) Instrument *'}
+                  </Label>
+                  <InstrumentTypeahead
+                    selectedInstrument={targetInstrument}
+                    onSelect={setTargetInstrument}
+                  />
+                </div>
+
+                {type === 'demerger' && (
+                  <FormField
+                    label="Cost Allocation % (Sec 49(2C)) *"
+                    name="costAllocationPct"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    max="100"
+                    value={costAllocationPct}
+                    onChange={(e) => setCostAllocationPct(e.target.value)}
+                    placeholder="e.g. 20.0"
+                    required
+                  />
+                )}
+              </div>
+            )}
+
+            <div className="space-y-1 min-w-0">
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-words">
+                {type === 'merger'
+                  ? 'Swap Ratio (transferor held → acquirer received)'
+                  : type === 'demerger'
+                  ? 'Share Entitlement Ratio (parent held → child received)'
+                  : 'Ratio (units before → units after)'}
+              </Label>
+              <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4 items-start">
                 <FormField
-                  label="Cost Allocation % (Sec 49(2C)) *"
-                  name="costAllocationPct"
+                  label={type === 'merger' ? 'Transferor Shares Held' : type === 'demerger' ? 'Parent Shares Held' : 'Ratio From (Held)'}
+                  name="ratioFrom"
                   type="number"
-                  step="0.01"
-                  min="0.01"
-                  max="100"
-                  value={costAllocationPct}
-                  onChange={(e) => setCostAllocationPct(e.target.value)}
-                  placeholder="e.g. 20.0"
+                  step="1"
+                  min="1"
+                  value={ratioFrom}
+                  onChange={(e) => setRatioFrom(e.target.value)}
                   required
                 />
-              )}
-            </div>
-          )}
-
-          <div className="space-y-1 min-w-0">
-            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-words">
-              {type === 'merger'
-                ? 'Swap Ratio (transferor held → acquirer received)'
-                : type === 'demerger'
-                ? 'Share Entitlement Ratio (parent held → child received)'
-                : 'Ratio (units before → units after)'}
-            </Label>
-            <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4 items-start">
-              <FormField
-                label={type === 'merger' ? 'Transferor Shares Held' : type === 'demerger' ? 'Parent Shares Held' : 'Ratio From (Held)'}
-                name="ratioFrom"
-                type="number"
-                step="1"
-                min="1"
-                value={ratioFrom}
-                onChange={(e) => setRatioFrom(e.target.value)}
-                required
-              />
-              <FormField
-                label={type === 'merger' ? 'Acquirer Shares Received' : type === 'demerger' ? 'Child Shares Received' : 'Ratio To (Resulting)'}
-                name="ratioTo"
-                type="number"
-                step="1"
-                min="1"
-                value={ratioTo}
-                onChange={(e) => setRatioTo(e.target.value)}
-                required
-              />
-            </div>
-            <p className="text-[10px] text-slate-500 italic break-words">
-              {type === 'merger'
-                ? 'Example: HDFC → HDFC Bank was 25 → 42.'
-                : type === 'demerger'
-                ? 'Example: For 1 child share per 2 parent shares held, enter 2 → 1.'
-                : 'Example: For a 2-for-1 split, enter 1 → 2. For a 1:1 bonus issue, enter 1 → 2.'}
-            </p>
-          </div>
-
-          {(type === 'demerger' || type === 'merger') && (
-            <div className="space-y-2 pt-1 min-w-0">
-              {heldQuantity !== undefined && heldQuantity > 0 && hasValidRatio && fracShares > 0 && (
-                <div className="p-2.5 rounded-md bg-purple-100/60 dark:bg-purple-950/40 text-xs text-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-800 break-words">
-                  You&apos;ll receive <strong className="font-semibold">{wholeShares}</strong> whole shares + cash-in-lieu for <strong className="font-semibold">{fracShares}</strong> fractional shares.
-                </div>
-              )}
-
-              {showCashInLieuField && (
                 <FormField
-                  label="Cash-in-lieu received (₹)"
-                  name="fractionalCashInLieu"
+                  label={type === 'merger' ? 'Acquirer Shares Received' : type === 'demerger' ? 'Child Shares Received' : 'Ratio To (Resulting)'}
+                  name="ratioTo"
                   type="number"
-                  step="0.01"
-                  min="0"
-                  value={fractionalCashInLieu}
-                  onChange={(e) => setFractionalCashInLieu(e.target.value)}
-                  placeholder="0.00"
-                  hint="Leave 0 if not yet known — you can edit this action later."
+                  step="1"
+                  min="1"
+                  value={ratioTo}
+                  onChange={(e) => setRatioTo(e.target.value)}
+                  required
                 />
-              )}
+              </div>
+              <p className="text-[10px] text-slate-500 italic break-words">
+                {type === 'merger'
+                  ? 'Example: HDFC → HDFC Bank was 25 → 42.'
+                  : type === 'demerger'
+                  ? 'Example: For 1 child share per 2 parent shares held, enter 2 → 1.'
+                  : 'Example: For a 2-for-1 split, enter 1 → 2. For a 1:1 bonus issue, enter 1 → 2.'}
+              </p>
             </div>
-          )}
 
-          <FormField
-            label="Notes"
-            name="notes"
-            type="text"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Optional reference / details"
-          />
+            {(type === 'demerger' || type === 'merger') && (
+              <div className="space-y-2 pt-1 min-w-0">
+                {heldQuantity !== undefined && heldQuantity > 0 && hasValidRatio && fracShares > 0 && (
+                  <div className="p-2.5 rounded-md bg-purple-100/60 dark:bg-purple-950/40 text-xs text-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-800 break-words">
+                    You&apos;ll receive <strong className="font-semibold">{wholeShares}</strong> whole shares + cash-in-lieu for <strong className="font-semibold">{fracShares}</strong> fractional shares.
+                  </div>
+                )}
 
-          <DialogFooter>
-            <Button
-              type="submit"
-              size="sm"
-              variant="purple"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto"
-            >
-              {isSubmitting ? 'Saving Action...' : editingActionId ? 'Update Corporate Action' : 'Save Corporate Action'}
-            </Button>
-          </DialogFooter>
-        </form>
+                {showCashInLieuField && (
+                  <FormField
+                    label="Cash-in-lieu received (₹)"
+                    name="fractionalCashInLieu"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={fractionalCashInLieu}
+                    onChange={(e) => setFractionalCashInLieu(e.target.value)}
+                    placeholder="0.00"
+                    hint="Leave 0 if not yet known — you can edit this action later."
+                  />
+                )}
+              </div>
+            )}
+
+            <FormField
+              label="Notes"
+              name="notes"
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Optional reference / details"
+            />
+          </form>
+        </DialogBody>
+
+        <DialogFooter
+          primaryAction={{
+            label: isSubmitting ? 'Saving Action...' : editingActionId ? 'Update Corporate Action' : 'Save Corporate Action',
+            type: 'submit',
+            form: 'corporate-action-form',
+            variant: 'purple',
+            disabled: isSubmitting,
+          }}
+          secondaryAction={{
+            label: 'Cancel',
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

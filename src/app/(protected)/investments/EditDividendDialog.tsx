@@ -8,6 +8,7 @@ import { deleteDividend, updateDividend } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -104,8 +105,8 @@ export function EditDividendDialog({ dividend, trigger, onSuccess }: EditDividen
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-        <DialogHeader className="pr-8">
+      <DialogContent>
+        <DialogHeader>
           <DialogTitle className="text-base font-bold">
             Edit Payout ({instrumentName})
           </DialogTitle>
@@ -114,132 +115,128 @@ export function EditDividendDialog({ dividend, trigger, onSuccess }: EditDividen
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-2 py-2">
-          {/* Broker + Instrument are the payout's identity and can't be changed on edit. */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Broker Account</Label>
-              <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
-                {dividend.brokerName || 'Broker'}
+        <DialogBody>
+          <form id="edit-dividend-form" onSubmit={handleSubmit} className="space-y-3 py-1">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Broker Account</Label>
+                <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
+                  {dividend.brokerName || 'Broker'}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Instrument</Label>
+                <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
+                  {dividend.instrumentName || 'Instrument'}
+                  {dividend.symbol ? ` (${dividend.symbol})` : ''}
+                </div>
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Instrument</Label>
-              <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
-                {dividend.instrumentName || 'Instrument'}
-                {dividend.symbol ? ` (${dividend.symbol})` : ''}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type</Label>
+                <Select value={type} onValueChange={(val) => setType(val as DividendType)}>
+                  <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                    <SelectItem value="dividend" className="text-xs">Dividend</SelectItem>
+                    <SelectItem value="interest" className="text-xs">Interest</SelectItem>
+                    <SelectItem value="other" className="text-xs">Other Payout</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type</Label>
-              <Select value={type} onValueChange={(val) => setType(val as DividendType)}>
-                <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                  <SelectItem value="dividend" className="text-xs">Dividend</SelectItem>
-                  <SelectItem value="interest" className="text-xs">Interest</SelectItem>
-                  <SelectItem value="other" className="text-xs">Other Payout</SelectItem>
-                </SelectContent>
-              </Select>
+              <FormField
+                label="Payment Date"
+                name="payDate"
+                type="date"
+                value={payDate}
+                onChange={(e) => setPayDate(e.target.value)}
+                required
+              />
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                label="Total Amount (INR)"
+                name="amount"
+                type="number"
+                step="0.01"
+                min="0"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+              />
+
+              <FormField
+                label="TDS Deducted (INR)"
+                name="tds"
+                type="number"
+                step="0.01"
+                min="0"
+                value={tds}
+                onChange={(e) => setTds(e.target.value)}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                label="Per Unit Amount"
+                name="perUnit"
+                type="number"
+                step="0.0001"
+                min="0"
+                value={perUnit}
+                onChange={(e) => setPerUnit(e.target.value)}
+              />
+
+              <FormField
+                label="Ex-Date"
+                name="exDate"
+                type="date"
+                value={exDate}
+                onChange={(e) => setExDate(e.target.value)}
+              />
+            </div>
+
             <FormField
-              label="Payment Date"
-              name="payDate"
-              type="date"
-              value={payDate}
-              onChange={(e) => setPayDate(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              label="Total Amount (INR)"
-              name="amount"
-              type="number"
-              step="0.01"
-              min="0"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
+              label="Notes"
+              name="notes"
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Optional notes"
             />
 
-            <FormField
-              label="TDS Deducted (INR)"
-              name="tds"
-              type="number"
-              step="0.01"
-              min="0"
-              value={tds}
-              onChange={(e) => setTds(e.target.value)}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              label="Per Unit Amount"
-              name="perUnit"
-              type="number"
-              step="0.0001"
-              min="0"
-              value={perUnit}
-              onChange={(e) => setPerUnit(e.target.value)}
-            />
-
-            <FormField
-              label="Ex-Date"
-              name="exDate"
-              type="date"
-              value={exDate}
-              onChange={(e) => setExDate(e.target.value)}
-            />
-          </div>
-
-          <FormField
-            label="Notes"
-            name="notes"
-            type="text"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Optional notes"
-          />
-
-          <DialogFooter className="justify-between">
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              <Trash2 className="w-3.5 h-3.5 mr-1" />
-              {isDeleting ? 'Deleting...' : 'Delete Payout'}
-            </Button>
-            <div className="flex items-center gap-2">
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
               <Button
                 type="button"
-                variant="outline"
+                variant="destructive"
                 size="sm"
-                onClick={() => setOpen(false)}
+                onClick={handleDelete}
+                disabled={isDeleting}
               >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Saving...' : 'Save Changes'}
+                <Trash2 className="w-3.5 h-3.5 mr-1" />
+                {isDeleting ? 'Deleting...' : 'Delete Payout'}
               </Button>
             </div>
-          </DialogFooter>
-        </form>
+          </form>
+        </DialogBody>
+
+        <DialogFooter
+          primaryAction={{
+            label: isSubmitting ? 'Saving...' : 'Save Changes',
+            type: 'submit',
+            form: 'edit-dividend-form',
+            disabled: isSubmitting,
+          }}
+          secondaryAction={{
+            label: 'Cancel',
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

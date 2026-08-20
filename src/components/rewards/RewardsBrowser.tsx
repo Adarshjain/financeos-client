@@ -10,7 +10,7 @@ import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Account } from '@/lib/account.types';
 import type {
@@ -674,13 +674,13 @@ export default function RewardsBrowser({
 
       {/* Reward line → source transaction detail */}
       <Dialog open={!!selectedLine} onOpenChange={(o) => !o && setSelectedLine(null)}>
-        <DialogContent className="sm:max-w-[420px] p-4 sm:p-6">
+        <DialogContent className="sm:max-w-[420px]">
           {selectedLine && (
             <>
               <DialogHeader>
                 <DialogTitle className="text-sm">Reward Calculation</DialogTitle>
               </DialogHeader>
-              <div className="flex flex-col gap-2 text-xs">
+              <DialogBody className="flex flex-col gap-2 text-xs">
                 <div className="rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/40 p-3 space-y-1.5">
                   <p className="font-semibold text-slate-700 dark:text-slate-200 break-words">
                     {lineDescription(selectedLine)}
@@ -730,7 +730,7 @@ export default function RewardsBrowser({
                 <p className="text-[9px] text-slate-300 dark:text-slate-600 font-mono break-all">
                   txn {selectedLine.transactionId}
                 </p>
-              </div>
+              </DialogBody>
             </>
           )}
         </DialogContent>

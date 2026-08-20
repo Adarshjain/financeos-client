@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
 import { ImportPreview, ReconcilePreview } from '@/lib/types';
 
 import { ClassifiedExecutionsTable } from './ClassifiedExecutionsTable';
@@ -153,7 +152,7 @@ export function ImportStep2Review({
         </>
       )}
 
-      <DialogFooter className="shrink-0">
+      <div className="shrink-0 border-t border-slate-100 dark:border-slate-800 bg-background pt-3 flex justify-end gap-2">
         <Button
           type="button"
           variant="outline"
@@ -174,7 +173,7 @@ export function ImportStep2Review({
             ? 'Importing Reconciled Executions...'
             : `Import Confirmed Trades (${mode === 'mf_cas' ? casConfirmableCount : confirmableCount})`}
         </Button>
-      </DialogFooter>
+      </div>
     </div>
   );
 }

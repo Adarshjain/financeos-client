@@ -797,7 +797,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={!!deletingTrade} onOpenChange={(open) => !open && setDeletingTrade(null)}>
-          <DialogContent className="sm:max-w-md rounded-2xl p-4 sm:p-6">
+          <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-slate-900 dark:text-white">
                 Delete FnO Trade Record
@@ -809,23 +809,18 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
               </DialogDescription>
             </DialogHeader>
 
-            <DialogFooter>
-              <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setDeletingTrade(null)}
-              >
-                Cancel
-              </Button>
-              <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={handleDeleteConfirm}
-                  disabled={isDeleting}
-              >
-                {isDeleting ? 'Deleting...' : 'Delete Trade'}
-              </Button>
-            </DialogFooter>
+            <DialogFooter
+              primaryAction={{
+                label: isDeleting ? 'Deleting...' : 'Delete Trade',
+                variant: 'destructive',
+                onClick: handleDeleteConfirm,
+                disabled: isDeleting,
+              }}
+              secondaryAction={{
+                label: 'Cancel',
+                onClick: () => setDeletingTrade(null),
+              }}
+            />
           </DialogContent>
         </Dialog>
       </div>

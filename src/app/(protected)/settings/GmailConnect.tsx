@@ -18,7 +18,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
 import type { GmailConnectionResponse, GmailSenderRequest, GmailSenderResponse, SyncSummary } from '@/lib/types';
@@ -403,67 +403,60 @@ export function GmailConnect() {
 
       {/* Add/Edit Sender Dialog */}
       <Dialog open={isSenderDialogOpen} onOpenChange={setIsSenderDialogOpen}>
-        <DialogContent className="max-w-md p-4 sm:p-6">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
               {editingSender ? 'Edit Allowed Sender' : 'Add Allowed Sender'}
             </DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleSenderSubmit} className="space-y-2 pt-2">
-            <FormField
-              label="Sender Name (Optional)"
-              name="name"
-              placeholder="e.g., HDFC Bank Alerts"
-              value={senderName}
-              onChange={(e) => setSenderName(e.target.value)}
-            />
-
-            <FormField
-              label="Sender Email Address"
-              name="senderAddress"
-              type="email"
-              placeholder="e.g., alerts@hdfcbank.net"
-              value={senderAddress}
-              onChange={(e) => setSenderAddress(e.target.value)}
-              required
-            />
-
-            <div className="flex items-center gap-2 pt-1">
-              <input
-                type="checkbox"
-                id="senderEnabled"
-                checked={senderEnabled}
-                onChange={(e) => setSenderEnabled(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+          <DialogBody>
+            <form id="sender-form" onSubmit={handleSenderSubmit} className="space-y-2 pt-2">
+              <FormField
+                label="Sender Name (Optional)"
+                name="name"
+                placeholder="e.g., HDFC Bank Alerts"
+                value={senderName}
+                onChange={(e) => setSenderName(e.target.value)}
               />
-              <label htmlFor="senderEnabled"
-                     className="text-sm font-medium text-slate-700 dark:text-slate-300 select-none">
-                Enable Ingestion for this Sender
-              </label>
-            </div>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsSenderDialogOpen(false)}
-                disabled={submittingSender}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={submittingSender}>
-                {submittingSender ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-1.5" />
-                    Saving...
-                  </>
-                ) : (
-                  'Save Sender'
-                )}
-              </Button>
-            </DialogFooter>
-          </form>
+              <FormField
+                label="Sender Email Address"
+                name="senderAddress"
+                type="email"
+                placeholder="e.g., alerts@hdfcbank.net"
+                value={senderAddress}
+                onChange={(e) => setSenderAddress(e.target.value)}
+                required
+              />
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="senderEnabled"
+                  checked={senderEnabled}
+                  onChange={(e) => setSenderEnabled(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                />
+                <label htmlFor="senderEnabled"
+                       className="text-sm font-medium text-slate-700 dark:text-slate-300 select-none">
+                  Enable Ingestion for this Sender
+                </label>
+              </div>
+            </form>
+          </DialogBody>
+
+          <DialogFooter
+            primaryAction={{
+              label: submittingSender ? 'Saving...' : 'Save Sender',
+              type: 'submit',
+              form: 'sender-form',
+              disabled: submittingSender,
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>

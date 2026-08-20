@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import { createRewardCapBucket, deleteRewardCapBucket, updateRewardCapBucket } from '@/actions/rewards';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
@@ -157,11 +157,11 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
       )}
 
       <Dialog open={isCreateOpen} onOpenChange={(o) => !o && setIsCreateOpen(false)}>
-        <DialogContent className="sm:max-w-[400px] p-4 sm:p-6">
+        <DialogContent className="sm:max-w-[400px]">
           <DialogHeader>
             <DialogTitle>{editing ? 'Edit Cap Bucket' : 'Create Cap Bucket'}</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col gap-2.5">
+          <DialogBody className="flex flex-col gap-2.5">
             <div className="flex flex-col gap-1">
               <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Name</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)}
@@ -201,15 +201,17 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
               The reward type is the cap’s unit — only rules paying that type can share this bucket.
               It can’t be changed while rules still use the bucket.
             </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" type="button" onClick={() => setIsCreateOpen(false)}
-                    className="flex-1">Cancel</Button>
-            <Button type="button" onClick={save} disabled={isSubmitting}
-                    className="flex-1">
-              {isSubmitting ? 'Saving...' : 'Save Bucket'}
-            </Button>
-          </DialogFooter>
+          </DialogBody>
+          <DialogFooter
+            primaryAction={{
+              label: isSubmitting ? 'Saving...' : 'Save Bucket',
+              onClick: save,
+              disabled: isSubmitting,
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>

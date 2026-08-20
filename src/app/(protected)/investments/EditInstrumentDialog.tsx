@@ -8,6 +8,7 @@ import { updateInstrument } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -59,9 +60,6 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
     }
   }, [open, instrument]);
 
-  // Search-fill: pick a live AMFI/Yahoo candidate to overwrite this instrument's identifiers
-  // (name/symbol/exchange/isin/amfiCode/yahooSymbol) so pricing wires up. The instrument keeps
-  // its id + holdings — nothing is persisted until the user reviews and clicks Save.
   const handlePicked = (c: InstrumentCandidate) => {
     setType(c.type);
     setName(c.name);
@@ -116,7 +114,7 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="text-base font-bold">Edit Instrument</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
@@ -125,123 +123,119 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-2 py-1">
-          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Search catalog to auto-fill
-          </Label>
-          <InstrumentSearchField
-            type={type}
-            onPick={handlePicked}
-            placeholder="Search AMFI / Yahoo to fix or fill identifiers…"
-          />
-        </div>
+        <DialogBody className="space-y-3">
+          <div className="space-y-2 py-1">
+            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Search catalog to auto-fill
+            </Label>
+            <InstrumentSearchField
+              type={type}
+              onPick={handlePicked}
+              placeholder="Search AMFI / Yahoo to fix or fill identifiers…"
+            />
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-2 py-2 border-t border-slate-100 dark:border-slate-800">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type</Label>
-              <Select
-                value={type}
-                onValueChange={(val) => setType(val as InstrumentType)}
-              >
-                <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                  <SelectItem value="stock" className="text-xs">Stock</SelectItem>
-                  <SelectItem value="mutual_fund" className="text-xs">Mutual Fund</SelectItem>
-                  <SelectItem value="etf" className="text-xs">ETF</SelectItem>
-                </SelectContent>
-              </Select>
+          <form id="edit-instrument-form" onSubmit={handleSubmit} className="space-y-3 py-1 border-t border-slate-100 dark:border-slate-800">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type</Label>
+                <Select
+                  value={type}
+                  onValueChange={(val) => setType(val as InstrumentType)}
+                >
+                  <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                    <SelectItem value="stock" className="text-xs">Stock</SelectItem>
+                    <SelectItem value="mutual_fund" className="text-xs">Mutual Fund</SelectItem>
+                    <SelectItem value="etf" className="text-xs">ETF</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <FormField
+                label="Exchange"
+                name="exchange"
+                type="text"
+                value={exchange}
+                onChange={(e) => setExchange(e.target.value)}
+                placeholder="e.g. NSE, BSE"
+              />
             </div>
 
             <FormField
-              label="Exchange"
-              name="exchange"
+              label="Instrument Name"
+              name="name"
               type="text"
-              value={exchange}
-              onChange={(e) => setExchange(e.target.value)}
-              placeholder="e.g. NSE, BSE"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Reliance Industries Ltd"
+              required
             />
-          </div>
 
-          <FormField
-            label="Instrument Name"
-            name="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Reliance Industries Ltd"
-            required
-          />
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                label="Symbol / Ticker"
+                name="symbol"
+                type="text"
+                value={symbol}
+                onChange={(e) => setSymbol(e.target.value)}
+                placeholder="e.g. RELIANCE"
+              />
 
-          <div className="grid grid-cols-2 gap-4">
+              <FormField
+                label="Currency"
+                name="currency"
+                type="text"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                placeholder="INR"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                label="ISIN (Optional)"
+                name="isin"
+                type="text"
+                value={isin}
+                onChange={(e) => setIsin(e.target.value)}
+                placeholder="INE002A01018"
+              />
+
+              <FormField
+                label="AMFI Code (For Mutual Funds)"
+                name="amfiCode"
+                type="text"
+                value={amfiCode}
+                onChange={(e) => setAmfiCode(e.target.value)}
+                placeholder="e.g. 120503"
+              />
+            </div>
+
             <FormField
-              label="Symbol / Ticker"
-              name="symbol"
+              label="Yahoo Symbol (For Stocks/ETFs)"
+              name="yahooSymbol"
               type="text"
-              value={symbol}
-              onChange={(e) => setSymbol(e.target.value)}
-              placeholder="e.g. RELIANCE"
+              value={yahooSymbol}
+              onChange={(e) => setYahooSymbol(e.target.value)}
+              placeholder="e.g. RELIANCE.NS"
             />
+          </form>
+        </DialogBody>
 
-            <FormField
-              label="Currency"
-              name="currency"
-              type="text"
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              placeholder="INR"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <FormField
-              label="ISIN (Optional)"
-              name="isin"
-              type="text"
-              value={isin}
-              onChange={(e) => setIsin(e.target.value)}
-              placeholder="INE002A01018"
-            />
-
-            <FormField
-              label="AMFI Code (For Mutual Funds)"
-              name="amfiCode"
-              type="text"
-              value={amfiCode}
-              onChange={(e) => setAmfiCode(e.target.value)}
-              placeholder="e.g. 120503"
-            />
-          </div>
-
-          <FormField
-            label="Yahoo Symbol (For Stocks/ETFs)"
-            name="yahooSymbol"
-            type="text"
-            value={yahooSymbol}
-            onChange={(e) => setYahooSymbol(e.target.value)}
-            placeholder="e.g. RELIANCE.NS"
-          />
-
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </DialogFooter>
-        </form>
+        <DialogFooter
+          primaryAction={{
+            label: isSubmitting ? 'Saving...' : 'Save Changes',
+            type: 'submit',
+            form: 'edit-instrument-form',
+            disabled: isSubmitting,
+          }}
+          secondaryAction={{
+            label: 'Cancel',
+          }}
+        />
       </DialogContent>
     </Dialog>
   );
