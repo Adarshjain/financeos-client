@@ -95,7 +95,7 @@ function AccountTypeButton({
       disabled={disabled}
       onClick={onClick}
       className={cn(
-        "flex items-center justify-center gap-1 py-2 px-2 rounded-xl border-2 text-center transition-all shadow-sm",
+        "flex items-center justify-center gap-2 py-2 px-2 rounded-xl border-2 text-center transition-all shadow-sm",
         selected
           ? activeClassName
           : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850",
@@ -326,28 +326,28 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             ) : (
               <>
                 <AccountTypeButton
-                  label="Bank"
+                    label={ACCOUNT_TYPE_CONFIG.bank_account.label ?? 'Account'}
                   icon={Landmark}
                   selected={accountType === AccountType.BANK_ACCOUNT}
                   activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.BANK_ACCOUNT].activeClassName}
                   onClick={() => setAccountType(AccountType.BANK_ACCOUNT)}
                 />
                 <AccountTypeButton
-                  label="Credit Card"
+                    label={ACCOUNT_TYPE_CONFIG.credit_card.label ?? 'Account'}
                   icon={CreditCard}
                   selected={accountType === AccountType.CREDIT_CARD}
                   activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.CREDIT_CARD].activeClassName}
                   onClick={() => setAccountType(AccountType.CREDIT_CARD)}
                 />
                 <AccountTypeButton
-                  label="Broker"
+                    label={ACCOUNT_TYPE_CONFIG.broker.label ?? 'Account'}
                   icon={TrendingUp}
                   selected={accountType === AccountType.BROKER}
                   activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.BROKER].activeClassName}
                   onClick={() => setAccountType(AccountType.BROKER)}
                 />
                 <AccountTypeButton
-                  label="Wallet/Cash"
+                    label={ACCOUNT_TYPE_CONFIG.generic.label ?? 'Account'}
                   icon={Wallet}
                   selected={accountType === AccountType.GENERIC}
                   activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.GENERIC].activeClassName}
