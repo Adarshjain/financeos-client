@@ -125,22 +125,22 @@ export function InstrumentSearchField({
           <div className="font-semibold text-slate-900 dark:text-slate-100 truncate">
             {candidate.name}
           </div>
-          <div className="text-[10px] text-slate-400">{subtitle}</div>
+          <div className="text-2xs text-slate-400">{subtitle}</div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           {isResolving ? (
-            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
               <Loader2 className="w-3 h-3 animate-spin" /> Adding…
             </span>
           ) : (
             <>
               {candidate.pricePreview && (
-                <Badge variant="outline" className="text-[10px] font-mono">
+                <Badge variant="outline" className="text-2xs font-mono">
                   ₹{candidate.pricePreview.value} · {candidate.pricePreview.asOf}
                 </Badge>
               )}
-              <Badge variant="secondary" className="text-[9px] uppercase">
+              <Badge variant="secondary" className="text-2xs uppercase">
                 {candidate.type.replace('_', ' ')}
               </Badge>
             </>
@@ -171,7 +171,7 @@ export function InstrumentSearchField({
           <div className="space-y-1">
             {localResults.length > 0 && (
               <div>
-                <div className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-900/50 rounded-sm">
+                <div className="px-2 py-1 text-2xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-900/50 rounded-sm">
                   In your catalog
                 </div>
                 {localResults.map(renderRow)}
@@ -179,7 +179,7 @@ export function InstrumentSearchField({
             )}
             {externalResults.length > 0 && (
               <div>
-                <div className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-900/50 rounded-sm mt-1">
+                <div className="px-2 py-1 text-2xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-900/50 rounded-sm mt-1">
                   Search results
                 </div>
                 {externalResults.map(renderRow)}

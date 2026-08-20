@@ -223,7 +223,7 @@ export function GmailConnect() {
                         {conn.email}
                       </span>
                       {conn.isPrimary && (
-                        <Badge variant="success" className="text-[10px] py-0 px-1.5">
+                        <Badge variant="success" className="text-2xs py-0 px-1.5">
                           Primary
                         </Badge>
                       )}
@@ -288,23 +288,23 @@ export function GmailConnect() {
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-2">
                   <div className="p-2 bg-white dark:bg-slate-900 rounded border text-center">
                     <div className="font-bold text-slate-950 dark:text-white text-base">{syncResult.fetched}</div>
-                    <div className="text-[10px] text-slate-500 uppercase">Fetched</div>
+                    <div className="text-2xs text-slate-500 uppercase">Fetched</div>
                   </div>
                   <div className="p-2 bg-white dark:bg-slate-900 rounded border text-center">
                     <div className="font-bold text-emerald-600 text-base">{syncResult.created}</div>
-                    <div className="text-[10px] text-slate-500 uppercase">Created</div>
+                    <div className="text-2xs text-slate-500 uppercase">Created</div>
                   </div>
                   <div className="p-2 bg-white dark:bg-slate-900 rounded border text-center">
                     <div className="font-bold text-blue-600 text-base">{syncResult.reconciled}</div>
-                    <div className="text-[10px] text-slate-500 uppercase">Reconciled</div>
+                    <div className="text-2xs text-slate-500 uppercase">Reconciled</div>
                   </div>
                   <div className="p-2 bg-white dark:bg-slate-900 rounded border text-center">
                     <div className="font-bold text-slate-600 text-base">{syncResult.skipped}</div>
-                    <div className="text-[10px] text-slate-500 uppercase">Skipped</div>
+                    <div className="text-2xs text-slate-500 uppercase">Skipped</div>
                   </div>
                   <div className="p-2 bg-white dark:bg-slate-900 rounded border text-center">
-                    <div className="font-bold text-red-600 text-base">{syncResult.failed}</div>
-                    <div className="text-[10px] text-slate-500 uppercase">Failed</div>
+                    <div className="font-bold text-rose-600 text-base">{syncResult.failed}</div>
+                    <div className="text-2xs text-slate-500 uppercase">Failed</div>
                   </div>
                 </div>
               </AlertDescription>
@@ -368,7 +368,7 @@ export function GmailConnect() {
                       </div>
                       <Badge
                         variant={sender.enabled ? 'success' : 'default'}
-                        className="text-[9px] py-0 px-2 uppercase shrink-0"
+                        className="text-2xs py-0 px-2 uppercase shrink-0"
                       >
                         {sender.enabled ? 'Active' : 'Disabled'}
                       </Badge>

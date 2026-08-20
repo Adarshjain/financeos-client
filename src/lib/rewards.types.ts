@@ -105,7 +105,7 @@ export type RewardLineReason =
 export const REASON_META: Record<RewardLineReason, { label: string; textClass: string; explain: string }> = {
   MATCHED: { label: 'Earned', textClass: 'text-emerald-600 dark:text-emerald-400', explain: 'Earned in full under the matched rule.' },
   PARTIAL_CAP: { label: 'Cap clamped', textClass: 'text-amber-600 dark:text-amber-500', explain: 'Earned, but clamped by a per-transaction or period cap.' },
-  CAP_EXHAUSTED: { label: 'Cap exhausted', textClass: 'text-red-500 dark:text-red-400', explain: 'The matched rule’s period cap was already used up.' },
+  CAP_EXHAUSTED: { label: 'Cap exhausted', textClass: 'text-rose-500 dark:text-rose-400', explain: 'The matched rule’s period cap was already used up.' },
   EXCLUDED_BY_RULE: { label: 'Excluded by rule', textClass: 'text-slate-500 dark:text-slate-400', explain: 'Matched a zero-rate rule — an explicit exclusion.' },
   BELOW_SLAB: { label: 'Below slab', textClass: 'text-slate-500 dark:text-slate-400', explain: 'The spend was smaller than one slab of the matched points rule.' },
   ROUNDED_TO_ZERO: { label: 'Rounds to 0', textClass: 'text-slate-500 dark:text-slate-400', explain: 'The cashback rounded down to zero under the rule’s rounding mode.' },

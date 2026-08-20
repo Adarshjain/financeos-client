@@ -14,7 +14,7 @@ export function ReviewReasonBadges({ reviewType, reviewReasons, className }: Rev
 
   if (!reviewReasons || reviewReasons.length === 0) {
     return (
-      <Badge variant="warning" className={cn("text-[9px] py-0.5 px-1 font-bold rounded-md", className)}>
+      <Badge variant="warning" className={cn("text-2xs py-0.5 px-1 font-bold rounded-md", className)}>
         Needs Review
       </Badge>
     );
@@ -32,7 +32,7 @@ export function ReviewReasonBadges({ reviewType, reviewReasons, className }: Rev
           <Badge
             key={reason}
             variant={variant}
-            className={cn("text-[9px] py-0.5 px-2 font-bold rounded-md", className)}
+            className={cn("text-2xs py-0.5 px-2 font-bold rounded-md", className)}
           >
             {label}
           </Badge>

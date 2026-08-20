@@ -152,7 +152,7 @@ export function MergeTransactionsDialog({
           <div className="flex items-center justify-between">
             <Badge
                 className={cn(
-                    'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md',
+                    'text-2xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-md',
                     isKept
                         ? 'bg-emerald-600 text-white'
                         : 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300'
@@ -161,7 +161,7 @@ export function MergeTransactionsDialog({
               {isKept ? 'Keep Transaction' : 'Delete (Merge In)'}
             </Badge>
             <span
-                className="text-[11px] font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
+                className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">
             {getSourceLabel(tx.source)}
           </span>
           </div>
@@ -181,12 +181,12 @@ export function MergeTransactionsDialog({
               {desc}
             </p>
             {tx.sourcedDescription && tx.description && (
-                <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">
+                <p className="text-xs text-slate-400 dark:text-slate-500 truncate">
                   Raw: {tx.sourcedDescription}
                 </p>
             )}
 
-            <div className="text-[11px] text-slate-500 dark:text-slate-400 pt-1">
+            <div className="text-xs text-slate-500 dark:text-slate-400 pt-1">
               Account: <span className="font-medium text-slate-700 dark:text-slate-300">{accountName}</span>
             </div>
           </div>
@@ -198,14 +198,14 @@ export function MergeTransactionsDialog({
                   {tx.categories.map((c) => (
                       <span
                           key={c.id}
-                          className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium px-2 py-0.5 rounded-md"
+                          className="text-2xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium px-2 py-0.5 rounded-md"
                       >
                   {c.name}
                 </span>
                   ))}
                 </div>
             ) : (
-                <span className="text-[10px] text-slate-400 italic">No categories</span>
+                <span className="text-2xs text-slate-400 italic">No categories</span>
             )}
 
             {tx.reviewReasons && tx.reviewReasons.length > 0 && (
@@ -213,7 +213,7 @@ export function MergeTransactionsDialog({
                   {tx.reviewReasons.map((r) => (
                       <span
                           key={r}
-                          className="text-[10px] bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-medium px-1.5 py-0.5 rounded-md"
+                          className="text-2xs bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 font-medium px-1.5 py-0.5 rounded-md"
                       >
                   {REVIEW_REASON_META[r]?.shortLabel || r}
                 </span>
@@ -273,7 +273,7 @@ export function MergeTransactionsDialog({
               {renderTxnCard(tx2, keepId === tx2.id)}
             </div>
 
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
+            <p className="text-xs text-slate-400 dark:text-slate-500 italic">
               Click on a card above to flip the keep/delete selection.
             </p>
           </DialogBody>

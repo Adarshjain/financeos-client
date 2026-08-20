@@ -14,7 +14,7 @@ export function TransactionCategoryBadges({ categories }: TransactionCategoryBad
         <Badge
           key={category.id}
           variant="outline"
-          className="rounded-full px-2 text-[9px] py-0 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400"
+          className="rounded-full px-2 text-2xs py-0 border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400"
         >
           {category.name}
         </Badge>

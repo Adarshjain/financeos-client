@@ -192,7 +192,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
   const getFileIcon = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase();
     if (ext === 'pdf') {
-      return <FileText className="h-6 w-6 text-red-500" />;
+      return <FileText className="h-6 w-6 text-rose-500" />;
     }
     return <FileSpreadsheet className="h-6 w-6 text-emerald-500" />;
   };
@@ -231,7 +231,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                 onClick={() => handleSubmit()}
                 disabled={isUploading}
                 variant="outline"
-                className="shrink-0 rounded-xl bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-900/40 text-red-800 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-950/40 font-semibold"
+                className="shrink-0 rounded-xl bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40 text-rose-800 dark:text-rose-200 hover:bg-rose-100 dark:hover:bg-rose-950/40 font-semibold"
               >
                 Retry Upload
               </Button>
@@ -285,7 +285,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                   <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                   <AlertTitle className="text-amber-800 dark:text-amber-400 font-semibold">Duplicates Detected</AlertTitle>
                   <AlertDescription className="text-amber-700 dark:text-amber-500 text-xs mt-1">
-                    We found {result.totalDuplicatesFound} transaction(s) that match existing records. Both the old and new copies have been marked as <Badge variant="warning" className="h-5 py-0 px-1.5 text-[10px]">NEEDS_REVIEW</Badge>. Please visit the{' '}
+                    We found {result.totalDuplicatesFound} transaction(s) that match existing records. Both the old and new copies have been marked as <Badge variant="warning" className="h-5 py-0 px-1.5 text-2xs">NEEDS_REVIEW</Badge>. Please visit the{' '}
                     <Link href="/transactions" className="underline font-bold hover:text-amber-950 dark:hover:text-amber-300">
                       Transactions Page
                     </Link>{' '}
@@ -312,7 +312,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                         <span className="font-bold text-slate-800 dark:text-slate-200">{file.linesParsed}</span>
                       </div>
                       {file.errorMessage && (
-                        <div className="text-red-500 dark:text-red-400 pt-1 border-t border-red-100 dark:border-red-950/50">
+                        <div className="text-rose-500 dark:text-rose-400 pt-1 border-t border-rose-100 dark:border-rose-950/50">
                           {file.errorMessage}
                         </div>
                       )}
@@ -347,7 +347,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                           </TableCell>
                           <TableCell className="text-xs text-slate-500 dark:text-slate-400">
                             {file.errorMessage ? (
-                              <span className="text-red-500 dark:text-red-400">{file.errorMessage}</span>
+                              <span className="text-rose-500 dark:text-rose-400">{file.errorMessage}</span>
                             ) : (
                               <span className="text-slate-400 dark:text-slate-500">—</span>
                             )}
@@ -456,7 +456,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                             <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[280px]">
                               {file.name}
                             </span>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500 tabular-nums">
+                            <span className="text-2xs text-slate-400 dark:text-slate-500 tabular-nums">
                               {formatFileSize(file.size)}
                             </span>
                           </div>
@@ -466,7 +466,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                           size="icon-sm"
                           onClick={() => removeFile(index)}
                           disabled={isUploading}
-                          className="text-slate-400 hover:text-red-500"
+                          className="text-slate-400 hover:text-rose-500"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

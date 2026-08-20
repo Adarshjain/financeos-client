@@ -231,7 +231,7 @@ export function RuleMatchesDialog({ rule, open, onOpenChange }: RuleMatchesDialo
                         <td className="p-2 align-top text-slate-700 dark:text-slate-300 break-all">
                           {txn.sourcedDescription}
                           {txn.appliedRuleId === rule.id && (
-                            <span className="ml-1.5 text-[10px] text-slate-400">(already this rule)</span>
+                            <span className="ml-1.5 text-2xs text-slate-400">(already this rule)</span>
                           )}
                         </td>
                         <td
@@ -254,7 +254,7 @@ export function RuleMatchesDialog({ rule, open, onOpenChange }: RuleMatchesDialo
                                 <Badge
                                   key={c.id}
                                   variant="outline"
-                                  className="rounded-full px-2 py-0 text-[10px] border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400"
+                                  className="rounded-full px-2 py-0 text-2xs border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400"
                                 >
                                   {c.name}
                                 </Badge>

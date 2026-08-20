@@ -354,7 +354,7 @@ export function TransactionFilterBar({
           <button
             onClick={() => handleTypeChange('ALL')}
             className={cn(
-              'px-2.5 py-0.5 text-[11px] font-semibold rounded-full transition-all touch-manipulation min-h-[28px]',
+              'px-2.5 py-0.5 text-xs font-semibold rounded-full transition-all touch-manipulation min-h-[28px]',
               activeType === 'ALL'
                 ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200',
@@ -365,7 +365,7 @@ export function TransactionFilterBar({
           <button
             onClick={() => handleTypeChange('DEBIT')}
             className={cn(
-              'px-2.5 py-0.5 text-[11px] font-semibold rounded-full transition-all touch-manipulation min-h-[28px]',
+              'px-2.5 py-0.5 text-xs font-semibold rounded-full transition-all touch-manipulation min-h-[28px]',
               activeType === 'DEBIT'
                 ? 'bg-rose-500 text-white shadow-xs'
                 : 'text-rose-600 dark:text-rose-400 hover:text-rose-700',
@@ -376,7 +376,7 @@ export function TransactionFilterBar({
           <button
             onClick={() => handleTypeChange('CREDIT')}
             className={cn(
-              'px-2.5 py-0.5 text-[11px] font-semibold rounded-full transition-all touch-manipulation min-h-[28px]',
+              'px-2.5 py-0.5 text-xs font-semibold rounded-full transition-all touch-manipulation min-h-[28px]',
               activeType === 'CREDIT'
                 ? 'bg-emerald-600 text-white shadow-xs'
                 : 'text-emerald-600 dark:text-emerald-400 hover:text-emerald-700',
@@ -418,10 +418,10 @@ export function TransactionFilterBar({
             </div>
 
             <div className="border-t border-slate-100 dark:border-slate-800 pt-2 mt-1 px-1 space-y-2">
-              <span className="text-[11px] font-semibold text-slate-500">Custom Date Range</span>
+              <span className="text-xs font-semibold text-slate-500">Custom Date Range</span>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-[10px] text-slate-400 block mb-1">From</label>
+                  <label className="text-2xs text-slate-400 block mb-1">From</label>
                   <Input
                     type="date"
                     value={customDateFrom}
@@ -430,7 +430,7 @@ export function TransactionFilterBar({
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] text-slate-400 block mb-1">To</label>
+                  <label className="text-2xs text-slate-400 block mb-1">To</label>
                   <Input
                     type="date"
                     value={customDateTo}
@@ -487,7 +487,7 @@ export function TransactionFilterBar({
                           <span className="font-medium text-slate-800 dark:text-slate-200">{acc.name}</span>
                         </div>
                         {acc.type && (
-                          <span className="text-[10px] text-slate-400 uppercase tracking-wider">{acc.type}</span>
+                          <span className="text-2xs text-slate-400 uppercase tracking-wider">{acc.type}</span>
                         )}
                       </CommandItem>
                     );
@@ -570,7 +570,7 @@ export function TransactionFilterBar({
                 type="button"
                 onClick={() => setAmountOp('greater_than')}
                 className={cn(
-                  'flex-1 py-1 text-[11px] font-semibold rounded-lg transition-colors',
+                  'flex-1 py-1 text-xs font-semibold rounded-lg transition-colors',
                   amountOp === 'greater_than' ? 'bg-white dark:bg-slate-800 shadow-xs' : 'text-slate-500',
                 )}
               >
@@ -580,7 +580,7 @@ export function TransactionFilterBar({
                 type="button"
                 onClick={() => setAmountOp('less_than')}
                 className={cn(
-                  'flex-1 py-1 text-[11px] font-semibold rounded-lg transition-colors',
+                  'flex-1 py-1 text-xs font-semibold rounded-lg transition-colors',
                   amountOp === 'less_than' ? 'bg-white dark:bg-slate-800 shadow-xs' : 'text-slate-500',
                 )}
               >
@@ -590,7 +590,7 @@ export function TransactionFilterBar({
                 type="button"
                 onClick={() => setAmountOp('between')}
                 className={cn(
-                  'flex-1 py-1 text-[11px] font-semibold rounded-lg transition-colors',
+                  'flex-1 py-1 text-xs font-semibold rounded-lg transition-colors',
                   amountOp === 'between' ? 'bg-white dark:bg-slate-800 shadow-xs' : 'text-slate-500',
                 )}
               >
@@ -600,7 +600,7 @@ export function TransactionFilterBar({
 
             <div className="space-y-2">
               <div>
-                <label className="text-[10px] text-slate-400 block mb-1">
+                <label className="text-2xs text-slate-400 block mb-1">
                   {amountOp === 'between' ? 'Min Amount (₹)' : 'Amount (₹)'}
                 </label>
                 <Input
@@ -614,7 +614,7 @@ export function TransactionFilterBar({
 
               {amountOp === 'between' && (
                 <div>
-                  <label className="text-[10px] text-slate-400 block mb-1">Max Amount (₹)</label>
+                  <label className="text-2xs text-slate-400 block mb-1">Max Amount (₹)</label>
                   <Input
                     type="number"
                     placeholder="e.g. 5000"
@@ -650,11 +650,11 @@ export function TransactionFilterBar({
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start" className="w-56 p-1 rounded-2xl shadow-xl">
-            <div className="text-[11px] font-semibold text-slate-400 px-3 py-1.5">Additional Filters</div>
+            <div className="text-xs font-semibold text-slate-400 px-3 py-1.5">Additional Filters</div>
 
             {/* Review Status */}
             <div className="px-2 py-1">
-              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block px-1 mb-1">Review Status</span>
+              <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block px-1 mb-1">Review Status</span>
               {REVIEW_TYPE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
@@ -673,7 +673,7 @@ export function TransactionFilterBar({
 
             {/* Source */}
             <div className="px-2 py-1">
-              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider block px-1 mb-1">Import Source</span>
+              <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block px-1 mb-1">Import Source</span>
               {SOURCE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
@@ -709,7 +709,7 @@ export function TransactionFilterBar({
       {/* Active Filters Badge Bar */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-1.5 pt-0.5 pb-0">
-          <span className="text-[11px] font-semibold text-slate-400 mr-1 flex items-center gap-1">
+          <span className="text-xs font-semibold text-slate-400 mr-1 flex items-center gap-1">
             <SlidersHorizontal className="h-3 w-3" />
             Active:
           </span>
@@ -720,7 +720,7 @@ export function TransactionFilterBar({
               label={`Search: "${search}"`}
               removeLabel="Clear search"
               onRemove={() => onSearchChange('')}
-              className="h-6 gap-1 px-2.5 text-[10px] font-medium rounded-full bg-slate-100 dark:bg-slate-850 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition-colors touch-manipulation"
+              className="h-6 gap-1 px-2.5 text-2xs font-medium rounded-full bg-slate-100 dark:bg-slate-850 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition-colors touch-manipulation"
             />
           )}
 
@@ -730,7 +730,7 @@ export function TransactionFilterBar({
               variant="secondary"
               label={badge.label}
               onRemove={badge.onRemove}
-              className="h-6 gap-1 px-2.5 text-[10px] font-medium rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 cursor-pointer hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 dark:hover:border-rose-800 transition-colors touch-manipulation"
+              className="h-6 gap-1 px-2.5 text-2xs font-medium rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 cursor-pointer hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 dark:hover:border-rose-800 transition-colors touch-manipulation"
             />
           ))}
 

@@ -269,7 +269,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
                   <span>Review</span>
                   {localReviewCount !== null && localReviewCount > 0 && (
                       <span
-                          className="flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-md bg-amber-500 text-[10px] font-bold text-white">
+                          className="flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-md bg-amber-500 text-2xs font-bold text-white">
                       {localReviewCount}
                     </span>
                   )}

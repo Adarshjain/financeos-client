@@ -59,7 +59,7 @@ export function MccInput({
         className="tabular-nums text-xs"
       />
       {showHelperText && (
-        <p className="text-[10px] text-slate-400 dark:text-slate-500">
+        <p className="text-2xs text-slate-400 dark:text-slate-500">
           Optional 4-digit numeric Merchant Category Code (e.g. 5411 for Grocery Stores).
         </p>
       )}

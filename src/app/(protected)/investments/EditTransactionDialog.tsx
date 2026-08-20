@@ -240,7 +240,7 @@ export function EditTransactionDialog({
               <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Itemized Charges</h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
-                  <Label className="text-[10px] text-slate-500">Brokerage</Label>
+                  <Label className="text-2xs text-slate-500">Brokerage</Label>
                   <input
                     type="number"
                     step="0.01"
@@ -250,7 +250,7 @@ export function EditTransactionDialog({
                   />
                 </div>
                 <div>
-                  <Label className="text-[10px] text-slate-500">STT</Label>
+                  <Label className="text-2xs text-slate-500">STT</Label>
                   <input
                     type="number"
                     step="0.01"
@@ -260,7 +260,7 @@ export function EditTransactionDialog({
                   />
                 </div>
                 <div>
-                  <Label className="text-[10px] text-slate-500">Exch Txn</Label>
+                  <Label className="text-2xs text-slate-500">Exch Txn</Label>
                   <input
                     type="number"
                     step="0.01"
@@ -270,7 +270,7 @@ export function EditTransactionDialog({
                   />
                 </div>
                 <div>
-                  <Label className="text-[10px] text-slate-500">SEBI Fee</Label>
+                  <Label className="text-2xs text-slate-500">SEBI Fee</Label>
                   <input
                     type="number"
                     step="0.01"
@@ -280,7 +280,7 @@ export function EditTransactionDialog({
                   />
                 </div>
                 <div>
-                  <Label className="text-[10px] text-slate-500">Stamp Duty</Label>
+                  <Label className="text-2xs text-slate-500">Stamp Duty</Label>
                   <input
                     type="number"
                     step="0.01"
@@ -290,7 +290,7 @@ export function EditTransactionDialog({
                   />
                 </div>
                 <div>
-                  <Label className="text-[10px] text-slate-500">GST</Label>
+                  <Label className="text-2xs text-slate-500">GST</Label>
                   <input
                     type="number"
                     step="0.01"
@@ -300,7 +300,7 @@ export function EditTransactionDialog({
                   />
                 </div>
                 <div>
-                  <Label className="text-[10px] text-slate-500">DP Charges</Label>
+                  <Label className="text-2xs text-slate-500">DP Charges</Label>
                   <input
                     type="number"
                     step="0.01"
@@ -310,7 +310,7 @@ export function EditTransactionDialog({
                   />
                 </div>
                 <div>
-                  <Label className="text-[10px] text-slate-500">Other</Label>
+                  <Label className="text-2xs text-slate-500">Other</Label>
                   <input
                     type="number"
                     step="0.01"

@@ -27,14 +27,14 @@ const badgeVariants = cva(
         secondary:
           'bg-muted text-muted-foreground',
         destructive:
-          'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400',
+          'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-400',
         outline:
           'border border-border text-foreground',
       },
       size: {
         default: 'px-2.5 py-0.5 rounded-full text-xs font-medium',
-        sm: 'px-2 py-0.5 rounded text-[10px] font-semibold',
-        xs: 'px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide',
+        sm: 'px-2 py-0.5 rounded text-2xs font-semibold',
+        xs: 'px-1.5 py-0.5 rounded text-2xs font-bold uppercase tracking-wide',
       },
     },
     defaultVariants: {

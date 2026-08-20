@@ -207,7 +207,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
               className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 dark:divide-slate-800/60 gap-2 sm:gap-0">
             {/* Total Realized P&L */}
             <div className="sm:px-3 pt-1 sm:pt-0">
-              <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Realized P&L</div>
+              <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Realized P&L</div>
               <div className={`text-base sm:text-lg font-black tracking-tight mt-0.5 ${
                   metrics.totalRealizedPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
               }`}>
@@ -217,11 +217,11 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
 
             {/* Total Trades */}
             <div className="sm:px-3 pt-1 sm:pt-0">
-              <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Total Trades</div>
+              <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Total Trades</div>
               <div
                   className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white mt-0.5 flex items-baseline gap-1.5">
                 <span>{metrics.totalCount}</span>
-                <span className="text-[10px] font-normal text-slate-400">
+                <span className="text-2xs font-normal text-slate-400">
                 ({metrics.futuresCount} Fut / {metrics.optionsCount} Opt)
               </span>
               </div>
@@ -229,7 +229,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
 
             {/* Win Rate */}
             <div className="sm:px-3 pt-1 sm:pt-0">
-              <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Win Rate</div>
+              <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Win Rate</div>
               <div className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white mt-0.5">
                 {metrics.winRate.toFixed(1)}%
               </div>
@@ -237,7 +237,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
 
             {/* Total Charges */}
             <div className="sm:px-3 pt-1 sm:pt-0">
-              <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Charges & Taxes</div>
+              <div className="text-xs font-semibold text-slate-500 dark:text-slate-400">Charges & Taxes</div>
               <div className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white mt-0.5">
                 {formatMoney(metrics.totalCharges)}
               </div>
@@ -498,7 +498,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                   <div>
                     <p className="text-xs font-semibold text-slate-900 dark:text-white">No trades match active
                       filters</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Try clearing filters or search keyword.</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Try clearing filters or search keyword.</p>
                     <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
                       Clear Filters
                     </Button>
@@ -506,7 +506,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
               ) : (
                   <div>
                     <p className="text-xs font-semibold text-slate-900 dark:text-white">No FnO trades recorded yet</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5 max-w-xs mx-auto">
+                    <p className="text-xs text-slate-500 mt-0.5 max-w-xs mx-auto">
                       Log F&O trades manually or import broker Tax P&L statements.
                     </p>
                   </div>
@@ -534,17 +534,17 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                         </span>
                               {trade.contractType === 'future' ? (
                                   <Badge
-                                      className="bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 font-extrabold text-[9px] border-0 px-1.5 py-0">
+                                      className="bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 font-extrabold text-2xs border-0 px-1.5 py-0">
                                     FUT
                                   </Badge>
                               ) : (
                                   <Badge
-                                      className="bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 font-extrabold text-[9px] border-0 px-1.5 py-0">
+                                      className="bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 font-extrabold text-2xs border-0 px-1.5 py-0">
                                     OPT
                                   </Badge>
                               )}
                               {trade.optionType && (
-                                  <Badge className={`font-extrabold text-[9px] border-0 px-1.5 py-0 ${
+                                  <Badge className={`font-extrabold text-2xs border-0 px-1.5 py-0 ${
                                       trade.optionType === 'CE'
                                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                                           : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
@@ -553,7 +553,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                                   </Badge>
                               )}
                             </div>
-                            <div className="text-[10px] text-slate-400 font-medium mt-0.5">
+                            <div className="text-2xs text-slate-400 font-medium mt-0.5">
                               {getBrokerName(trade)} • Qty: <strong
                                 className="text-slate-700 dark:text-slate-300">{Number(trade.quantity).toLocaleString('en-IN')}</strong>
                             </div>
@@ -570,26 +570,26 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
 
                         {/* Middle Row: Values & Details */}
                         <div
-                            className="grid grid-cols-3 gap-2 text-[11px] bg-slate-50 dark:bg-slate-800/40 p-2 rounded-lg">
+                            className="grid grid-cols-3 gap-2 text-xs bg-slate-50 dark:bg-slate-800/40 p-2 rounded-lg">
                           <div>
-                            <span className="text-slate-400 text-[10px] block">Buy Value</span>
+                            <span className="text-slate-400 text-2xs block">Buy Value</span>
                             <span
                                 className="font-semibold text-slate-700 dark:text-slate-300">{formatMoney(Number(trade.buyValue))}</span>
                           </div>
                           <div>
-                            <span className="text-slate-400 text-[10px] block">Sell Value</span>
+                            <span className="text-slate-400 text-2xs block">Sell Value</span>
                             <span
                                 className="font-semibold text-slate-700 dark:text-slate-300">{formatMoney(Number(trade.sellValue))}</span>
                           </div>
                           <div>
-                            <span className="text-slate-400 text-[10px] block">Charges</span>
+                            <span className="text-slate-400 text-2xs block">Charges</span>
                             <span
                                 className="font-semibold text-slate-700 dark:text-slate-300">{formatMoney(Number(trade.totalCharges || 0))}</span>
                           </div>
                         </div>
 
                         {/* Bottom Row: Dates & Actions */}
-                        <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+                        <div className="flex items-center justify-between text-2xs text-slate-400 pt-0.5">
                           <div>
                             Exit: <span
                               className="font-medium text-slate-700 dark:text-slate-300">{trade.exitDate ? formatDate(trade.exitDate) : '—'}</span>
@@ -680,7 +680,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                                         {trade.tradingSymbol}
                                       </div>
                                       {trade.underlyingSymbol && (
-                                          <div className="text-[10px] text-slate-400 font-medium">
+                                          <div className="text-2xs text-slate-400 font-medium">
                                             Underlying: {trade.underlyingSymbol}
                                           </div>
                                       )}
@@ -689,18 +689,18 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                                     <div className="flex flex-wrap gap-1">
                                       {trade.contractType === 'future' ? (
                                           <Badge
-                                              className="bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 font-extrabold text-[9px] border-0 px-1.5 py-0">
+                                              className="bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 font-extrabold text-2xs border-0 px-1.5 py-0">
                                             FUT
                                           </Badge>
                                       ) : (
                                           <Badge
-                                              className="bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 font-extrabold text-[9px] border-0 px-1.5 py-0">
+                                              className="bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 font-extrabold text-2xs border-0 px-1.5 py-0">
                                             OPT
                                           </Badge>
                                       )}
 
                                       {trade.optionType && (
-                                          <Badge className={`font-extrabold text-[9px] border-0 px-1.5 py-0 ${
+                                          <Badge className={`font-extrabold text-2xs border-0 px-1.5 py-0 ${
                                               trade.optionType === 'CE'
                                                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                                                   : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
@@ -732,7 +732,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                                     {trade.exitDate ? formatDate(trade.exitDate) : '—'}
                                   </div>
                                   {trade.entryDate && (
-                                      <div className="text-[10px] text-slate-400">
+                                      <div className="text-2xs text-slate-400">
                                         Entry: {formatDate(trade.entryDate)}
                                       </div>
                                   )}
@@ -744,10 +744,10 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                                 </TableCell>
 
                                 <TableCell className="py-2.5 text-xs text-right">
-                                  <div className="text-emerald-600 dark:text-emerald-400 font-medium text-[11px]">
+                                  <div className="text-emerald-600 dark:text-emerald-400 font-medium text-xs">
                                     Sell: {formatMoney(Number(trade.sellValue))}
                                   </div>
-                                  <div className="text-slate-500 dark:text-slate-400 text-[11px]">
+                                  <div className="text-slate-500 dark:text-slate-400 text-xs">
                                     Buy: {formatMoney(Number(trade.buyValue))}
                                   </div>
                                 </TableCell>
@@ -765,7 +765,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
 
                                 <TableCell className="py-2.5 text-center">
                                   <Badge variant="outline"
-                                         className="text-[10px] capitalize rounded-lg border-slate-200 dark:border-slate-800 text-slate-500">
+                                         className="text-2xs capitalize rounded-lg border-slate-200 dark:border-slate-800 text-slate-500">
                                     {trade.source || 'manual'}
                                   </Badge>
                                 </TableCell>

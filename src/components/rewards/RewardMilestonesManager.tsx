@@ -107,12 +107,12 @@ export default function RewardMilestonesManager({ accountId, categories, default
                  className="bg-white dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-800/80 shadow-sm p-3 flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{milestone.name}</div>
-                <div className="text-[11px] text-amber-600 dark:text-amber-500 font-semibold mt-0.5">
+                <div className="text-xs text-amber-600 dark:text-amber-500 font-semibold mt-0.5">
                   {milestoneSummary(milestone)}
                 </div>
                 {(milestone.includeCategoryIds.length > 0 || milestone.includeMccs.length > 0
                   || milestone.excludeCategoryIds.length > 0 || milestone.excludeMccs.length > 0) && (
-                  <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                  <div className="text-2xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
                     {milestone.includeCategoryIds.length + milestone.includeMccs.length > 0 && 'restricted eligible spend'}
                     {milestone.excludeCategoryIds.length + milestone.excludeMccs.length > 0 && ' · has exclusions'}
                   </div>

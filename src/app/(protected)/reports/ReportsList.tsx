@@ -125,7 +125,7 @@ export function ReportsList({ reports, activeType, datasourceLabels }: ReportsLi
                 <p className="text-xs text-slate-500">
                   Updated {formatDate(report.updatedAt)}
                 </p>
-                <Badge variant="outline" className="text-[10px] font-medium">
+                <Badge variant="outline" className="text-2xs font-medium">
                   {(datasourceLabels && datasourceLabels[report.datasource]) ?? report.datasource}
                 </Badge>
               </Card>

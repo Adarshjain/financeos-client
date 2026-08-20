@@ -405,10 +405,10 @@ export default function RewardRuleForm({
   const sectionClass =
     'rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900/60 p-3 flex flex-col gap-2.5';
   const sectionTitleClass =
-    'text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500';
+    'text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500';
   const chipClass = (active: boolean) =>
     cn(
-      'px-2 py-1 rounded-lg text-[11px] font-semibold border transition-colors',
+      'px-2 py-1 rounded-lg text-xs font-semibold border transition-colors',
       active
         ? 'bg-emerald-600 text-white border-emerald-600'
         : 'bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900',
@@ -456,16 +456,16 @@ export default function RewardRuleForm({
                           trigger={dateTrigger(activeFrom, 'Always')} />
               {activeFrom && (
                 <button type="button" onClick={() => setActiveFrom(undefined)}
-                        className="text-[10px] text-slate-400 hover:text-red-500 font-semibold">
+                        className="text-2xs text-slate-400 hover:text-rose-500 font-semibold">
                   Clear
                 </button>
               )}
-              <span className="text-[10px] text-slate-400">→</span>
+              <span className="text-2xs text-slate-400">→</span>
               <DatePicker date={activeTo} onSelect={setActiveTo}
                           trigger={dateTrigger(activeTo, 'Open-ended')} />
               {activeTo && (
                 <button type="button" onClick={() => setActiveTo(undefined)}
-                        className="text-[10px] text-slate-400 hover:text-red-500 font-semibold">
+                        className="text-2xs text-slate-400 hover:text-rose-500 font-semibold">
                   Clear
                 </button>
               )}
@@ -576,7 +576,7 @@ export default function RewardRuleForm({
                   <SelectItem value="EXCLUDE_FEE" className="text-xs">Netted out of the basis</SelectItem>
                 </SelectContent>
               </Select>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500">
+              <span className="text-2xs text-slate-400 dark:text-slate-500">
                 Most issuers post the surcharge to the card but award nothing on it.
               </span>
             </div>
@@ -684,7 +684,7 @@ export default function RewardRuleForm({
               <button type="button" onClick={() => setIsTiered((p) => !p)} className={chipClass(isTiered)}>
                 Tiered rate
               </button>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500">
+              <span className="text-2xs text-slate-400 dark:text-slate-500">
                 Rate steps as matched spend grows in a window (e.g. 10X above ₹20k/cycle)
               </span>
             </div>
@@ -705,7 +705,7 @@ export default function RewardRuleForm({
                   const last = index === tierRows.length - 1;
                   return (
                     <div key={index} className="flex items-center gap-2">
-                      <span className="text-[10px] text-slate-400 w-10 shrink-0">
+                      <span className="text-2xs text-slate-400 w-10 shrink-0">
                         {index === 0 ? 'First' : last ? 'Above' : 'Then'}
                       </span>
                       {last ? (
@@ -730,7 +730,7 @@ export default function RewardRuleForm({
                       {!last && tierRows.length > 2 && (
                         <button type="button" aria-label="Remove tier"
                                 onClick={() => setTierRows((rows) => rows.filter((_, i) => i !== index))}
-                                className="text-[10px] text-slate-400 hover:text-red-500 font-semibold shrink-0">
+                                className="text-2xs text-slate-400 hover:text-rose-500 font-semibold shrink-0">
                           Remove
                         </button>
                       )}
@@ -739,17 +739,17 @@ export default function RewardRuleForm({
                 })}
                 <button type="button"
                         onClick={() => setTierRows((rows) => [...rows.slice(0, -1), { upTo: '', rate: '' }, rows[rows.length - 1]])}
-                        className="self-start text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
+                        className="self-start text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
                   + Add tier
                 </button>
               </div>
             )}
             {rewardType === 'POINTS' && (
-              <p className="text-[10px] text-slate-400 dark:text-slate-500">
+              <p className="text-2xs text-slate-400 dark:text-slate-500">
                 Points are tracked as points — the report doesn’t convert them to a cash value.
               </p>
             )}
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">
+            <p className="text-2xs text-slate-400 dark:text-slate-500">
               Tip: a 0-rate exclusive rule at high priority models an exclusion (e.g. fuel earns nothing).
             </p>
           </div>
@@ -818,7 +818,7 @@ export default function RewardRuleForm({
                     ))}
                   </SelectContent>
                 </Select>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                <span className="text-2xs text-slate-400 dark:text-slate-500">
                   Several rules can drain one bucket’s ceiling together (manage buckets on the Rules page).
                   A bucket only takes rules of its own reward type.
                 </span>
@@ -841,7 +841,7 @@ export default function RewardRuleForm({
 
           {/* Test this rule — sample transaction (date/day-of-week not simulated) */}
           <div className="rounded-xl border border-emerald-200/60 dark:border-emerald-900/40 bg-emerald-50/50 dark:bg-emerald-950/20 p-3 flex flex-col gap-2.5 min-w-0">
-            <span className="text-[10px] uppercase tracking-wide font-bold text-emerald-700 dark:text-emerald-400">
+            <span className="text-2xs uppercase tracking-wide font-bold text-emerald-700 dark:text-emerald-400">
               Test this rule
             </span>
             <div className="grid grid-cols-2 gap-2.5">
@@ -895,7 +895,7 @@ export default function RewardRuleForm({
               {preview?.text ?? 'Enter an amount (and accrual fields) to test.'}
             </div>
             {daysOfWeek.length > 0 && (
-              <p className="text-[10px] text-slate-400 dark:text-slate-500">
+              <p className="text-2xs text-slate-400 dark:text-slate-500">
                 Note: this rule has day-of-week conditions, which the tester doesn’t simulate. Caps aren’t simulated either.
               </p>
             )}

@@ -125,7 +125,7 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
                  className="bg-white dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-800/80 shadow-sm p-3 flex items-center gap-3">
               <div className="flex-1 min-w-0">
                 <div className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{bucket.name}</div>
-                <div className="text-[11px] text-sky-600 dark:text-sky-400 font-semibold mt-0.5">
+                <div className="text-xs text-sky-600 dark:text-sky-400 font-semibold mt-0.5">
                   {bucket.rewardType === 'POINTS' ? `${bucket.cap} pts` : `₹${bucket.cap}`} / {WINDOW_LABELS[bucket.windowType].replace('Per ', '')}
                   <span className="text-slate-400 dark:text-slate-500 font-medium"> · {bucket.ruleCount} rule{bucket.ruleCount === 1 ? '' : 's'}</span>
                 </div>
@@ -197,7 +197,7 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500">
+            <p className="text-2xs text-slate-400 dark:text-slate-500">
               The reward type is the cap’s unit — only rules paying that type can share this bucket.
               It can’t be changed while rules still use the bucket.
             </p>

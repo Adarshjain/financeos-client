@@ -473,7 +473,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
               setAppliedOnlyUpToLastStatement(false);
               setPage(0);
             }}
-            className="text-[10px] font-bold uppercase tracking-wider bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/40 dark:hover:bg-amber-900/60 px-2.5 py-1 rounded-lg transition-colors text-amber-900 dark:text-amber-200"
+            className="text-2xs font-bold uppercase tracking-wider bg-amber-100 hover:bg-amber-200 dark:bg-amber-900/40 dark:hover:bg-amber-900/60 px-2.5 py-1 rounded-lg transition-colors text-amber-900 dark:text-amber-200"
           >
             Show All
           </button>
@@ -629,7 +629,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
                 <span className="block text-xl font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
                   {summaryData?.succeededCount || 0}
                 </span>
-                <span className="text-[10px] text-emerald-700 dark:text-emerald-500 font-bold uppercase tracking-wider">
+                <span className="text-2xs text-emerald-700 dark:text-emerald-500 font-bold uppercase tracking-wider">
                   Succeeded
                 </span>
               </div>
@@ -638,7 +638,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
                 <span className="block text-xl font-bold text-amber-600 dark:text-amber-400 tabular-nums">
                   {summaryData?.skippedCount || 0}
                 </span>
-                <span className="text-[10px] text-amber-700 dark:text-amber-500 font-bold uppercase tracking-wider">
+                <span className="text-2xs text-amber-700 dark:text-amber-500 font-bold uppercase tracking-wider">
                   Skipped
                 </span>
               </div>
@@ -647,7 +647,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
                 <span className="block text-xl font-bold text-rose-600 dark:text-rose-400 tabular-nums">
                   {summaryData?.failures?.length || 0}
                 </span>
-                <span className="text-[10px] text-rose-700 dark:text-rose-500 font-bold uppercase tracking-wider">
+                <span className="text-2xs text-rose-700 dark:text-rose-500 font-bold uppercase tracking-wider">
                   Failed
                 </span>
               </div>
@@ -678,7 +678,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
                     <li key={idx} className="text-slate-700 dark:text-slate-300">
                       <span
                         className="font-semibold block truncate text-rose-600 dark:text-rose-400">• {f.description}</span>
-                      <span className="text-[10px] text-slate-400 pl-3">Reason: {f.reason}</span>
+                      <span className="text-2xs text-slate-400 pl-3">Reason: {f.reason}</span>
                     </li>
                   ))}
                 </ul>

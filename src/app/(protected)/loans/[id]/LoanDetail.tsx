@@ -420,7 +420,7 @@ export function LoanDetail({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-slate-100">{loan.name}</h1>
-              <Badge variant="outline" className="capitalize text-[10px]">
+              <Badge variant="outline" className="capitalize text-2xs">
                 {loan.loanType.replace('_', ' ')}
               </Badge>
               <Badge
@@ -431,7 +431,7 @@ export function LoanDetail({
                     ? 'secondary'
                     : 'destructive'
                 }
-                className="capitalize text-[10px]"
+                className="capitalize text-2xs"
               >
                 {loan.status}
               </Badge>
@@ -444,12 +444,12 @@ export function LoanDetail({
 
           <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-800 self-start sm:self-auto">
             <div>
-              <div className="text-[10px] text-slate-500 font-semibold uppercase">Nominal Rate</div>
+              <div className="text-2xs text-slate-500 font-semibold uppercase">Nominal Rate</div>
               <div className="text-base font-bold text-slate-900 dark:text-slate-100">{loan.currentAnnualRatePct}%</div>
             </div>
             <div className="h-6 w-px bg-slate-200 dark:bg-slate-800" />
             <div>
-              <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase flex items-center gap-1">
+              <div className="text-2xs text-emerald-600 dark:text-emerald-400 font-semibold uppercase flex items-center gap-1">
                 <Sparkles className="h-3 w-3" /> Effective APR
               </div>
               <div className="text-base font-bold text-emerald-600 dark:text-emerald-400">
@@ -462,41 +462,41 @@ export function LoanDetail({
         {/* 4 Stat Metrics */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
           <div>
-            <span className="text-slate-500 block text-[10px] uppercase font-semibold">Outstanding Balance</span>
+            <span className="text-slate-500 block text-2xs uppercase font-semibold">Outstanding Balance</span>
             <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
               {formatMoney(loan.outstandingPrincipal)}
             </span>
-            <span className="text-[10px] text-slate-500 block">
+            <span className="text-2xs text-slate-500 block">
               Original: {formatMoney(loan.principal)}
             </span>
           </div>
 
           <div>
-            <span className="text-slate-500 block text-[10px] uppercase font-semibold">Current EMI</span>
+            <span className="text-slate-500 block text-2xs uppercase font-semibold">Current EMI</span>
             <span className="text-base font-bold text-slate-900 dark:text-slate-100">
               {formatMoney(loan.currentEmi)}
             </span>
-            <span className="text-[10px] text-slate-500 block">
+            <span className="text-2xs text-slate-500 block">
               Next due: {loan.nextDueDate ? formatDate(loan.nextDueDate) : 'None'}
             </span>
           </div>
 
           <div>
-            <span className="text-slate-500 block text-[10px] uppercase font-semibold">Interest Paid</span>
+            <span className="text-slate-500 block text-2xs uppercase font-semibold">Interest Paid</span>
             <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
               {formatMoney(loan.totalInterestPaid)}
             </span>
-            <span className="text-[10px] text-slate-500 block">
+            <span className="text-2xs text-slate-500 block">
               {formatMoney(loan.totalInterestRemaining)} remaining
             </span>
           </div>
 
           <div>
-            <span className="text-slate-500 block text-[10px] uppercase font-semibold">Timeline</span>
+            <span className="text-slate-500 block text-2xs uppercase font-semibold">Timeline</span>
             <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
               {loan.settledInstallments} / {loan.totalInstallments} EMIs
             </span>
-            <span className="text-[10px] text-slate-500 block">
+            <span className="text-2xs text-slate-500 block">
               Ends: {loan.projectedEndDate ? formatDate(loan.projectedEndDate) : '—'}
             </span>
           </div>
@@ -504,7 +504,7 @@ export function LoanDetail({
 
         {/* Progress Bar */}
         <div className="space-y-1 pt-1">
-          <div className="flex justify-between text-[11px] text-slate-500">
+          <div className="flex justify-between text-xs text-slate-500">
             <span>Amortization Progress</span>
             <span>{progressPct}% Settled</span>
           </div>
@@ -596,7 +596,7 @@ export function LoanDetail({
                 >
                   <div className="flex items-center gap-2">
                     <span>{fy}</span>
-                    <Badge variant="outline" className="text-[10px] font-normal">
+                    <Badge variant="outline" className="text-2xs font-normal">
                       {items.length} EMIs
                     </Badge>
                   </div>
@@ -624,12 +624,12 @@ export function LoanDetail({
                                   ? 'destructive'
                                   : 'outline'
                               }
-                              className="capitalize text-[10px]"
+                              className="capitalize text-2xs"
                             >
                               {inst.status}
                             </Badge>
                           </div>
-                          <div className="grid grid-cols-3 gap-2 text-[11px]">
+                          <div className="grid grid-cols-3 gap-2 text-xs">
                             <div>
                               <span className="text-slate-500 block">EMI</span>
                               <span className="font-bold">{formatMoney(inst.emi)}</span>
@@ -644,7 +644,7 @@ export function LoanDetail({
                             </div>
                           </div>
                           <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800">
-                            <span className="text-slate-500 text-[10px]">Closing: {formatMoney(inst.closingBalance)}</span>
+                            <span className="text-slate-500 text-2xs">Closing: {formatMoney(inst.closingBalance)}</span>
                             {inst.status === 'settled' && inst.payment ? (
                               <Button
                                 variant="ghost"
@@ -672,7 +672,7 @@ export function LoanDetail({
                     <div className="hidden md:block overflow-x-auto">
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
-                          <tr className="bg-slate-50/50 dark:bg-slate-950/40 border-b border-slate-200/80 dark:border-slate-800 font-semibold text-slate-500 uppercase text-[10px]">
+                          <tr className="bg-slate-50/50 dark:bg-slate-950/40 border-b border-slate-200/80 dark:border-slate-800 font-semibold text-slate-500 uppercase text-2xs">
                             <th className="py-2.5 px-4 w-12 text-center">#</th>
                             <th className="py-2.5 px-4">Due Date</th>
                             <th className="py-2.5 px-4 text-right">Opening Bal</th>
@@ -712,7 +712,7 @@ export function LoanDetail({
                                       ? 'destructive'
                                       : 'outline'
                                   }
-                                  className="capitalize text-[10px]"
+                                  className="capitalize text-2xs"
                                 >
                                   {inst.status}
                                 </Badge>
@@ -723,7 +723,7 @@ export function LoanDetail({
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => handleUnlinkPayment(inst.payment!.id)}
-                                    className="h-6 px-2 text-[10px] text-slate-500 hover:text-rose-600"
+                                    className="h-6 px-2 text-2xs text-slate-500 hover:text-rose-600"
                                   >
                                     Unlink
                                   </Button>
@@ -732,7 +732,7 @@ export function LoanDetail({
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleOpenMarkPaid(inst)}
-                                    className="h-6 px-2 text-[10px]"
+                                    className="h-6 px-2 text-2xs"
                                   >
                                     Mark Paid
                                   </Button>
@@ -769,10 +769,10 @@ export function LoanDetail({
                 <div key={evt.id} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950">
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="capitalize text-[10px]">{evt.eventType.replace('_', ' ')}</Badge>
+                      <Badge variant="secondary" className="capitalize text-2xs">{evt.eventType.replace('_', ' ')}</Badge>
                       <span className="font-bold">{formatDate(evt.effectiveDate)}</span>
                     </div>
-                    <div className="text-slate-500 text-[11px]">
+                    <div className="text-slate-500 text-xs">
                       {evt.eventType === 'rate_change' && `New Rate: ${evt.newAnnualRatePct}% (${evt.adjustmentMode})`}
                       {evt.eventType === 'prepayment' && `Amount: ${formatMoney(evt.amount)} (${evt.adjustmentMode})`}
                       {evt.eventType === 'foreclosure' && `Foreclosure Paid: ${formatMoney(evt.amount)}`}
@@ -803,11 +803,11 @@ export function LoanDetail({
                 <div key={chg.id} className="flex items-center justify-between p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950">
                   <div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="capitalize text-[10px]">{chg.chargeType.replace('_', ' ')}</Badge>
+                      <Badge variant="outline" className="capitalize text-2xs">{chg.chargeType.replace('_', ' ')}</Badge>
                       <span className="font-bold text-rose-600">{formatMoney(chg.amount)}</span>
                       <span className="text-slate-500">· {formatDate(chg.chargeDate)}</span>
                     </div>
-                    {chg.notes && <p className="text-slate-500 text-[11px]">{chg.notes}</p>}
+                    {chg.notes && <p className="text-slate-500 text-xs">{chg.notes}</p>}
                   </div>
                   <Button variant="ghost" size="icon-xs" onClick={() => handleDeleteCharge(chg.id)} className="text-slate-400 hover:text-rose-600">
                     <Trash2 className="h-3.5 w-3.5" />

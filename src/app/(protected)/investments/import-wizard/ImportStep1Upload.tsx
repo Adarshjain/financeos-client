@@ -122,7 +122,7 @@ export function ImportStep1Upload({
         {/* RECONCILIATION MULTI-FILE DROPZONES */}
         {(mode === 'reconcile_zerodha' || mode === 'reconcile_groww') && (
           <div className="space-y-3">
-            <div className="p-2.5 rounded-md bg-purple-50/60 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 text-[11px] text-purple-900 dark:text-purple-300">
+            <div className="p-2.5 rounded-md bg-purple-50/60 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 text-xs text-purple-900 dark:text-purple-300">
               <Sparkles className="w-3.5 h-3.5 text-purple-600 inline mr-1.5 -mt-0.5" />
               {isFnoOnly ? (
                 <>
@@ -140,7 +140,7 @@ export function ImportStep1Upload({
               <div className="space-y-2 p-3 rounded-lg border border-purple-200 dark:border-purple-900/40 bg-purple-50/20 dark:bg-purple-950/10">
                 <Label className="text-xs font-bold text-purple-900 dark:text-purple-300 flex items-center justify-between">
                   <span>1. {mode === 'reconcile_zerodha' ? 'Zerodha Tax P&L' : 'Groww Capital Gains'} (XLSX)</span>
-                  <span className="text-[10px] text-purple-600 font-normal">Per FY files</span>
+                  <span className="text-2xs text-purple-600 font-normal">Per FY files</span>
                 </Label>
                 <div className="border-2 border-dashed border-purple-200 dark:border-purple-900/50 rounded-md p-4 text-center hover:bg-purple-50/40 transition-colors">
                   <Upload className="w-6 h-6 text-purple-500 mx-auto mb-1 opacity-80" />
@@ -161,7 +161,7 @@ export function ImportStep1Upload({
                       : `Upload ${mode === 'reconcile_zerodha' ? 'Tax P&L' : 'Capital Gains'} XLSX file(s)`}
                   </label>
                   {taxpnlFiles.length > 0 && (
-                    <div className="mt-1 text-[10px] text-purple-700 dark:text-purple-300 truncate max-w-xs mx-auto">
+                    <div className="mt-1 text-2xs text-purple-700 dark:text-purple-300 truncate max-w-xs mx-auto">
                       {taxpnlFiles.map((f) => f.name).join(', ')}
                     </div>
                   )}
@@ -173,7 +173,7 @@ export function ImportStep1Upload({
                 <div className="space-y-2 p-3 rounded-lg border border-blue-200 dark:border-blue-900/40 bg-blue-50/20 dark:bg-blue-950/10">
                   <Label className="text-xs font-bold text-blue-900 dark:text-blue-300 flex items-center justify-between">
                     <span>2. {mode === 'reconcile_zerodha' ? 'Zerodha Tradebook' : 'Groww Order History'}</span>
-                    <span className="text-[10px] text-blue-600 font-normal">
+                    <span className="text-2xs text-blue-600 font-normal">
                       Full history CSV/XLSX
                     </span>
                   </Label>
@@ -196,7 +196,7 @@ export function ImportStep1Upload({
                         : `Upload ${mode === 'reconcile_zerodha' ? 'Tradebook CSV' : 'Order History XLSX'} file(s)`}
                     </label>
                     {tradebookFiles.length > 0 && (
-                      <div className="mt-1 text-[10px] text-blue-700 dark:text-blue-300 truncate max-w-xs mx-auto">
+                      <div className="mt-1 text-2xs text-blue-700 dark:text-blue-300 truncate max-w-xs mx-auto">
                         {tradebookFiles.map((f) => f.name).join(', ')}
                       </div>
                     )}
@@ -210,7 +210,7 @@ export function ImportStep1Upload({
               <div className="space-y-2 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20">
                 <Label className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center justify-between">
                   <span>3. Holdings Snapshot Anchor (Optional)</span>
-                  <span className="text-[10px] text-slate-500 font-normal">Kite / Groww Holdings export CSV/XLSX</span>
+                  <span className="text-2xs text-slate-500 font-normal">Kite / Groww Holdings export CSV/XLSX</span>
                 </Label>
                 <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-md p-3 text-center hover:bg-slate-100/50 transition-colors">
                   <input

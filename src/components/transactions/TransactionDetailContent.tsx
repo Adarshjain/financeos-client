@@ -230,7 +230,7 @@ export const TransactionDetailContent = ({
                 transaction.categories?.map((category) => (
                   <Badge
                     variant="outline"
-                    className="rounded-full px-2.5 text-[10px] py-0.5 border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-300 bg-slate-50 dark:bg-slate-900"
+                    className="rounded-full px-2.5 text-2xs py-0.5 border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-300 bg-slate-50 dark:bg-slate-900"
                     key={category.id}
                   >
                     {category.name}
@@ -321,7 +321,7 @@ export const TransactionDetailContent = ({
                         <Badge
                           variant="secondary"
                           className={cn(
-                            'text-[10px] font-bold',
+                            'text-2xs font-bold',
                             isCurrentParent
                               ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200'
                               : 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300',
@@ -342,17 +342,17 @@ export const TransactionDetailContent = ({
                     </div>
 
                     {link.note && (
-                      <p className="text-[11px] italic text-slate-500 dark:text-slate-400">{link.note}</p>
+                      <p className="text-xs italic text-slate-500 dark:text-slate-400">{link.note}</p>
                     )}
 
                     {/* If current transaction is a child, prominently display the Parent Transaction */}
                     {!isCurrentParent && parentMember && (
                       <div className="p-2.5 rounded-xl border border-indigo-200/80 dark:border-indigo-800/80 bg-indigo-50/80 dark:bg-indigo-950/40 space-y-1">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 flex items-center gap-1">
+                          <span className="text-2xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 flex items-center gap-1">
                             <ShieldCheck className="h-3.5 w-3.5" /> Parent Transaction
                           </span>
-                          <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 text-[9px] font-bold">
+                          <Badge className="bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200 text-2xs font-bold">
                             {parentMember.roleLabel || getDerivedRoleLabel(link.type as LinkType, true)}
                           </Badge>
                         </div>
@@ -361,7 +361,7 @@ export const TransactionDetailContent = ({
                             <span className="font-bold text-slate-900 dark:text-white truncate">
                               {parentMember.description}
                             </span>
-                            <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400">
+                            <div className="flex items-center gap-1.5 text-2xs text-slate-500 dark:text-slate-400">
                               <span>{formatDate(parentMember.date)}</span>
                               <span>•</span>
                               <span>{accountName(parentMember.accountId)}</span>
@@ -382,7 +382,7 @@ export const TransactionDetailContent = ({
                     {/* List child transactions */}
                     {(isCurrentParent ? childMembers : otherSiblings).length > 0 && (
                       <div className="space-y-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        <span className="text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                           {isCurrentParent ? `Child Transactions (${childMembers.length})` : 'Sibling Counterparts'}
                         </span>
                         {(isCurrentParent ? childMembers : otherSiblings).map((m) => (
@@ -394,7 +394,7 @@ export const TransactionDetailContent = ({
                               <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
                                 {m.description}
                               </span>
-                              <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                              <div className="flex items-center gap-1.5 text-2xs text-slate-400">
                                 <span className="font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-0.5">
                                   <CornerDownRight className="h-2.5 w-2.5 inline" /> {m.roleLabel || getDerivedRoleLabel(link.type as LinkType, m.isAnchor)}
                                 </span>

@@ -235,7 +235,7 @@ export default function TransactionCRUD({
           <div className="relative flex-1">
             <span className={cn(
               'absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold transition-colors pointer-events-none',
-              amount.startsWith('-') ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400',
+              amount.startsWith('-') ? 'text-rose-500' : 'text-emerald-600 dark:text-emerald-400',
             )}>
               ₹
             </span>
@@ -260,7 +260,7 @@ export default function TransactionCRUD({
               }}
               className={cn(
                 'pl-9 pr-3 h-12 text-2xl font-bold rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-inner transition-all focus-visible:ring-2 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 w-full',
-                amount.startsWith('-') ? 'text-red-500' : 'text-emerald-600 dark:text-emerald-400',
+                amount.startsWith('-') ? 'text-rose-500' : 'text-emerald-600 dark:text-emerald-400',
               )}
             />
           </div>
@@ -292,7 +292,7 @@ export default function TransactionCRUD({
                 <Label className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
                   Original Description
                 </Label>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                <div className="text-xs text-slate-500 dark:text-slate-400">
                   {transaction.sourcedDescription}
                 </div>
               </>
@@ -370,7 +370,7 @@ export default function TransactionCRUD({
               <Gift className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
               Rewards Details
               {!showRewardDetails && hasRewardDetails && (
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold">• has values</span>
+                <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-semibold">• has values</span>
               )}
             </Label>
             <ChevronDown
@@ -406,7 +406,7 @@ export default function TransactionCRUD({
                       type="button"
                       aria-label="Clear settlement date"
                       onClick={() => setSettlementDate(undefined)}
-                      className="text-[10px] text-slate-400 dark:text-slate-500 hover:text-red-500 font-semibold px-1"
+                      className="text-2xs text-slate-400 dark:text-slate-500 hover:text-rose-500 font-semibold px-1"
                     >
                       Clear
                     </button>
@@ -426,7 +426,7 @@ export default function TransactionCRUD({
                     onChange={(e) => setInstantDiscount(sanitizeDecimalInput(e.target.value))}
                     className="text-xs h-9 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-lg shadow-none"
                   />
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500">Checkout discount, never charged</span>
+                  <span className="text-2xs text-slate-400 dark:text-slate-500">Checkout discount, never charged</span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Convenience Fee</Label>
@@ -438,7 +438,7 @@ export default function TransactionCRUD({
                     onChange={(e) => setConvenienceFee(sanitizeDecimalInput(e.target.value))}
                     className="text-xs h-9 bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-lg shadow-none"
                   />
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500">Fee portion of the amount</span>
+                  <span className="text-2xs text-slate-400 dark:text-slate-500">Fee portion of the amount</span>
                 </div>
               </div>
 
@@ -471,7 +471,7 @@ export default function TransactionCRUD({
               <div className="flex items-center justify-between py-0.5 border-t border-slate-100 dark:border-slate-800/50 pt-2.5">
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">EMI Transaction</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500">Converted to or made as EMI</span>
+                  <span className="text-2xs text-slate-400 dark:text-slate-500">Converted to or made as EMI</span>
                 </div>
                 <button
                   type="button"
@@ -497,7 +497,7 @@ export default function TransactionCRUD({
               <div className="flex items-center justify-between py-0.5 border-t border-slate-100 dark:border-slate-800/50 pt-2.5">
                 <div className="flex flex-col gap-0.5">
                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">International</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500">Foreign-currency / overseas spend</span>
+                  <span className="text-2xs text-slate-400 dark:text-slate-500">Foreign-currency / overseas spend</span>
                 </div>
                 <button
                   type="button"
@@ -565,7 +565,7 @@ export default function TransactionCRUD({
               <div className="flex flex-col gap-0.5">
                 <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Exclude Transaction</span>
                 <span
-                  className="text-[10px] text-slate-400 dark:text-slate-500"
+                  className="text-2xs text-slate-400 dark:text-slate-500"
                 >Do not include in reporting and budgets</span>
               </div>
               {/* role/aria-checked so assistive tech announces this as a
@@ -578,7 +578,7 @@ export default function TransactionCRUD({
                 onClick={() => setIsExcluded(prev => !prev)}
                 className={cn(
                   'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1',
-                  isExcluded ? 'bg-red-500' : 'bg-slate-200 dark:bg-slate-800',
+                  isExcluded ? 'bg-rose-500' : 'bg-slate-200 dark:bg-slate-800',
                 )}
               >
                 <span
@@ -596,7 +596,7 @@ export default function TransactionCRUD({
               <div className="flex flex-col gap-0.5">
                 <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Monitor Transaction</span>
                 <span
-                  className="text-[10px] text-slate-400 dark:text-slate-500">Track changes and alert on activity</span>
+                  className="text-2xs text-slate-400 dark:text-slate-500">Track changes and alert on activity</span>
               </div>
               <button
                 type="button"

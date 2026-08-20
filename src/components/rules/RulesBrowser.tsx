@@ -354,11 +354,11 @@ export function RulesBrowser({
                 <div className="space-y-2">
                   <div className="flex justify-between items-start gap-2">
                     <div className="min-w-0">
-                      <h3 className="font-bold text-slate-900 dark:text-white truncate">
+                      <h3 className="text-slate-900 dark:text-white truncate">
                         {rule.displayName || rule.merchantKey}
                       </h3>
                       {(rule.displayName || rule.matchType !== 'MERCHANT_KEY') && (
-                        <span className="text-[10px] tabular-nums px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 mt-1 block w-fit font-medium">
+                        <span className="text-2xs tabular-nums px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 mt-1 block w-fit font-medium">
                           {(MATCH_TYPE_META[rule.matchType] || MATCH_TYPE_META.MERCHANT_KEY).chip}: {rule.merchantKey}
                         </span>
                       )}
@@ -366,18 +366,18 @@ export function RulesBrowser({
                     <div className="flex gap-1.5 shrink-0">
                       <Badge
                         variant={rule.verified ? 'success' : 'warning'}
-                        className="text-[9px] font-bold px-2 py-0.5 rounded-md"
+                        className="text-2xs font-bold px-2 py-0.5 rounded-md"
                       >
                         {rule.verified ? 'Verified' : 'Unverified'}
                       </Badge>
                       <Badge
                         variant={rule.source === 'LLM' ? 'info' : 'secondary'}
-                        className="text-[9px] font-bold px-2 py-0.5 rounded-md"
+                        className="text-2xs font-bold px-2 py-0.5 rounded-md"
                       >
                         {rule.source}
                       </Badge>
                       {rule.mcc && (
-                        <span className="text-[10px] tabular-nums px-2 py-0.5 rounded-md font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                        <span className="text-2xs tabular-nums px-2 py-0.5 rounded-md font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
                           MCC: {rule.mcc}
                         </span>
                       )}
@@ -393,7 +393,7 @@ export function RulesBrowser({
                         <Badge
                           key={c.id}
                           variant="outline"
-                          className="rounded-full px-2.5 py-0 text-[10px] border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400"
+                          className="rounded-full px-2.5 py-0 text-2xs border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400"
                         >
                           {c.name}
                         </Badge>
@@ -406,7 +406,7 @@ export function RulesBrowser({
                 <div className="flex items-center justify-between pt-3 text-xs">
                   <div className="text-slate-400 dark:text-slate-500 space-y-0.5">
                     <div>Used {rule.appliedCount}×</div>
-                    <div className="text-[10px]">
+                    <div className="text-2xs">
                       Last active: {formatRelativeTime(rule.lastAppliedAt)}
                     </div>
                   </div>
@@ -600,7 +600,7 @@ export function RulesBrowser({
                   placeholder="Select categories..."
                   className="w-full space-y-1.5"
                 />
-                <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                <p className="text-2xs text-slate-400 dark:text-slate-500">
                   Select one or more categories for this rule. Create a new category by typing it in search and clicking create.
                 </p>
               </div>

@@ -255,7 +255,7 @@ export default function RewardMilestoneForm({
           </div>
 
           <div className="rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900/60 p-3 flex flex-col gap-2.5">
-            <span className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
+            <span className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
               Eligible spend — independent from earn rules; leave empty to count everything
             </span>
             <div className="flex flex-col gap-1">
@@ -286,17 +286,17 @@ export default function RewardMilestoneForm({
                         trigger={dateTrigger(activeFrom, windowType === 'ONE_TIME' ? 'Start (required)' : 'Always')} />
             {activeFrom && (
               <button type="button" onClick={() => setActiveFrom(undefined)}
-                      className="text-[10px] text-slate-400 hover:text-red-500 font-semibold">Clear</button>
+                      className="text-2xs text-slate-400 hover:text-rose-500 font-semibold">Clear</button>
             )}
-            <span className="text-[10px] text-slate-400">→</span>
+            <span className="text-2xs text-slate-400">→</span>
             <DatePicker date={activeTo} onSelect={setActiveTo}
                         trigger={dateTrigger(activeTo, windowType === 'ONE_TIME' ? 'Deadline (required)' : 'Open-ended')} />
             {activeTo && (
               <button type="button" onClick={() => setActiveTo(undefined)}
-                      className="text-[10px] text-slate-400 hover:text-red-500 font-semibold">Clear</button>
+                      className="text-2xs text-slate-400 hover:text-rose-500 font-semibold">Clear</button>
             )}
             {windowType === 'ONE_TIME' && (
-              <span className="text-[10px] text-slate-400 dark:text-slate-500 w-full">
+              <span className="text-2xs text-slate-400 dark:text-slate-500 w-full">
                 The offer period IS the one-time window — spend counts from start until the day before the deadline.
               </span>
             )}

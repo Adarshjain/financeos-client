@@ -25,7 +25,7 @@ export function Sidebar({ userEmail }: { userEmail: string }) {
 
       {/* User Info */}
       <div className="p-3 mx-4 mb-2 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/40">
-        <p className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">
+        <p className="text-2xs uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">
           Signed in as
         </p>
         <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">

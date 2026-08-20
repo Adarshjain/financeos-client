@@ -168,7 +168,7 @@ export function DividendSuggestionsDialog({ trigger, onSuccess }: DividendSugges
           ) : (
             <div className="space-y-3">
               {hasScanned && (
-                <p className="text-[11px] text-slate-500 px-1">
+                <p className="text-xs text-slate-500 px-1">
                   Checked {scannedSymbols} {scannedSymbols === 1 ? 'symbol' : 'symbols'}
                   {skippedSymbols.length > 0 && `, skipped ${skippedSymbols.length}`}.
                 </p>
@@ -189,7 +189,7 @@ export function DividendSuggestionsDialog({ trigger, onSuccess }: DividendSugges
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
                     No unrecorded dividends found
                   </p>
-                  <p className="text-[11px] text-slate-500 max-w-sm">
+                  <p className="text-xs text-slate-500 max-w-sm">
                     All recent stock dividend payouts for your active holdings appear to be recorded.
                   </p>
                   <Button
@@ -244,12 +244,12 @@ export function DividendSuggestionsDialog({ trigger, onSuccess }: DividendSugges
                             <div className="space-y-0.5 min-w-0">
                               <div className="flex items-center gap-2">
                                 <span className="font-bold text-slate-900 dark:text-slate-100">{s.symbol}</span>
-                                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">{s.brokerName}</span>
+                                <span className="text-2xs text-slate-500 dark:text-slate-400 font-medium">{s.brokerName}</span>
                               </div>
-                              <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                              <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
                                 {s.instrumentName}
                               </div>
-                              <div className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-2 font-medium">
+                              <div className="text-2xs text-slate-500 dark:text-slate-400 flex items-center gap-2 font-medium">
                                 <span>Ex-Date: <strong className="text-slate-700 dark:text-slate-300">{formatDate(s.exDate)}</strong></span>
                                 <span>•</span>
                                 <span>Qty Held: <strong className="text-slate-700 dark:text-slate-300">{s.qtyHeld}</strong></span>
@@ -261,7 +261,7 @@ export function DividendSuggestionsDialog({ trigger, onSuccess }: DividendSugges
 
                           <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                             <div className="space-y-1">
-                              <label className="text-[10px] font-semibold text-slate-500 block">Pay Date</label>
+                              <label className="text-2xs font-semibold text-slate-500 block">Pay Date</label>
                               <Input
                                 type="date"
                                 value={item.payDate}
@@ -271,7 +271,7 @@ export function DividendSuggestionsDialog({ trigger, onSuccess }: DividendSugges
                             </div>
 
                             <div className="space-y-1">
-                              <label className="text-[10px] font-semibold text-slate-500 block">Amount (INR)</label>
+                              <label className="text-2xs font-semibold text-slate-500 block">Amount (INR)</label>
                               <Input
                                 type="number"
                                 step="0.01"

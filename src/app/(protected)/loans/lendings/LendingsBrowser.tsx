@@ -256,7 +256,7 @@ export function LendingsBrowser({
                     )}
                   </div>
                   <div className="flex items-center gap-1">
-                    <Badge variant="outline" className="text-[10px]">
+                    <Badge variant="outline" className="text-2xs">
                       {cp.entryCount} entries
                     </Badge>
                     <ConfirmationDialog
@@ -288,19 +288,19 @@ export function LendingsBrowser({
                   className="grid grid-cols-3 gap-2 text-xs pt-1 cursor-pointer"
                 >
                   <div>
-                    <span className="text-slate-500 block text-[10px]">Total Lent</span>
+                    <span className="text-slate-500 block text-2xs">Total Lent</span>
                     <span className="text-emerald-600 dark:text-emerald-400 font-semibold tabular-nums">
                       {cp.totalLent > 0 ? formatMoney(cp.totalLent) : '—'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block text-[10px]">Total Borrowed</span>
+                    <span className="text-slate-500 block text-2xs">Total Borrowed</span>
                     <span className="text-rose-600 dark:text-rose-400 font-semibold tabular-nums">
                       {cp.totalBorrowed > 0 ? formatMoney(cp.totalBorrowed) : '—'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block text-[10px]">Net Position</span>
+                    <span className="text-slate-500 block text-2xs">Net Position</span>
                     <span
                       className={`font-bold tabular-nums ${
                         cp.netPosition > 0
@@ -324,7 +324,7 @@ export function LendingsBrowser({
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-50/80 dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 font-semibold text-slate-500 uppercase tracking-wider text-[10px]">
+              <tr className="bg-slate-50/80 dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 font-semibold text-slate-500 uppercase tracking-wider text-2xs">
                 <th className="py-3 px-4">Person / Counterparty</th>
                 <th className="py-3 px-4 text-right text-emerald-600 dark:text-emerald-400">
                   Total Lent
@@ -356,7 +356,7 @@ export function LendingsBrowser({
                     >
                       {cp.name}
                       {cp.notes && (
-                        <div className="text-[11px] font-normal text-slate-500 truncate max-w-xs">
+                        <div className="text-xs font-normal text-slate-500 truncate max-w-xs">
                           {cp.notes}
                         </div>
                       )}
@@ -394,7 +394,7 @@ export function LendingsBrowser({
                       onClick={() => router.push(`/loans/lendings/${cp.id}`)}
                       className="py-3.5 px-4 text-center cursor-pointer"
                     >
-                      <Badge variant="outline" className="text-[10px]">
+                      <Badge variant="outline" className="text-2xs">
                         {cp.entryCount} entries
                       </Badge>
                     </td>

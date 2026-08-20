@@ -81,7 +81,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
             {/* User Profile Header */}
             {userEmail && (
               <DropdownMenuGroup className="px-3 py-2 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800/60">
-                <DropdownMenuLabel className="text-[10px] uppercase font-extrabold tracking-wider text-slate-400 dark:text-slate-500 p-0 leading-none">
+                <DropdownMenuLabel className="text-2xs uppercase font-extrabold tracking-wider text-slate-400 dark:text-slate-500 p-0 leading-none">
                   Signed in as
                 </DropdownMenuLabel>
                 <div className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1 truncate">

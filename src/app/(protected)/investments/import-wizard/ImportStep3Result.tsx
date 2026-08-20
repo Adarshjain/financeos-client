@@ -31,26 +31,26 @@ export function ImportStep3Result({
 
       <div className="grid grid-cols-3 gap-3 text-xs">
         <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-300">
-          <div className="text-[10px] text-emerald-600 dark:text-emerald-400">Committed</div>
+          <div className="text-2xs text-emerald-600 dark:text-emerald-400">Committed</div>
           <div className="text-lg font-bold">{commitResult.committed}</div>
         </div>
         <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
-          <div className="text-[10px] text-slate-500">Skipped</div>
+          <div className="text-2xs text-slate-500">Skipped</div>
           <div className="text-lg font-bold">{commitResult.skipped}</div>
         </div>
-        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 text-red-800 dark:text-red-300">
-          <div className="text-[10px] text-red-600 dark:text-red-400">Failed</div>
+        <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-rose-800 dark:text-rose-300">
+          <div className="text-2xs text-rose-600 dark:text-rose-400">Failed</div>
           <div className="text-lg font-bold">{commitResult.failed?.length || 0}</div>
         </div>
       </div>
 
       {/* Failed Details List */}
       {commitResult.failed && commitResult.failed.length > 0 && (
-        <div className="text-left p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/40 text-xs">
-          <div className="font-bold text-red-800 dark:text-red-300 mb-1 flex items-center gap-1.5">
+        <div className="text-left p-3 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 text-xs">
+          <div className="font-bold text-rose-800 dark:text-rose-300 mb-1 flex items-center gap-1.5">
             <span>Failed Executions ({commitResult.failed.length})</span>
           </div>
-          <div className="max-h-40 overflow-y-auto space-y-1 text-[11px] font-mono text-red-700 dark:text-red-400 pr-1">
+          <div className="max-h-40 overflow-y-auto space-y-1 text-xs font-mono text-rose-700 dark:text-rose-400 pr-1">
             {commitResult.failed.map((f, i) => (
               <div key={i} className="truncate">
                 #{f.rowIndex} {f.scrip ? `${f.scrip} — ` : ''}{f.reason}
@@ -66,7 +66,7 @@ export function ImportStep3Result({
           <div className="font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
             <span>Skipped Executions ({commitResult.skippedItems.length})</span>
           </div>
-          <div className="max-h-40 overflow-y-auto space-y-1 text-[11px] font-mono text-slate-600 dark:text-slate-400 pr-1">
+          <div className="max-h-40 overflow-y-auto space-y-1 text-xs font-mono text-slate-600 dark:text-slate-400 pr-1">
             {commitResult.skippedItems.map((s, i) => (
               <div key={i} className="truncate">
                 #{s.rowIndex} {s.scrip ? `${s.scrip} — ` : ''}{s.reason}

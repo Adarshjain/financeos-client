@@ -316,7 +316,7 @@ export default function RewardRulesManager({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <div className="flex items-center gap-2 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900/60 px-3 py-2">
           <CalendarClock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Anniversary date</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Anniversary date</span>
           <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
             {anniversaryDate ? formatDate(anniversaryDate) : 'Not set'}
           </span>
@@ -324,7 +324,7 @@ export default function RewardRulesManager({
 
         <div className="flex items-center gap-2 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900/60 px-3 py-2">
           <Coins className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Rewards paid as</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Rewards paid as</span>
           <Select value={defaultRewardType} disabled={loading}
                   onValueChange={(v) => void saveDefaultRewardType(v as RewardType)}>
             <SelectTrigger className="bg-slate-50 dark:bg-slate-950 text-xs h-7 w-32 border-slate-200 dark:border-slate-800 rounded-lg font-semibold">
@@ -338,7 +338,7 @@ export default function RewardRulesManager({
         </div>
 
         <div className="flex items-center gap-2 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-900/60 px-3 py-2">
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium shrink-0">Point Value (₹/pt)</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium shrink-0">Point Value (₹/pt)</span>
           <Input
             type="number"
             step="0.0001"
@@ -353,7 +353,7 @@ export default function RewardRulesManager({
       </div>
 
 
-      <p className="text-[11px] text-slate-400 dark:text-slate-500">
+      <p className="text-xs text-slate-400 dark:text-slate-500">
         Rules are evaluated top-down: the first matching <span className="font-semibold">exclusive</span> rule
         pays (falling through when its cap is exhausted); <span className="font-semibold">additive</span> rules
         stack on top. To devalue a rule, end-date it and create a successor — never rewrite history.
@@ -403,12 +403,12 @@ export default function RewardRulesManager({
                       </Badge>
                     )}
                   </div>
-                  <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold mt-0.5">
+                  <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold mt-0.5">
                     {accrualSummary(rule)}
                     {capSummary(rule) && <span className="text-slate-400 dark:text-slate-500 font-medium"> · {capSummary(rule)}</span>}
                     {rule.perTxnCap != null && <span className="text-slate-400 dark:text-slate-500 font-medium"> · max {rule.perTxnCap}/txn</span>}
                   </div>
-                  <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                  <div className="text-2xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
                     {matchSummary(rule)}
                     <span className="mx-1">·</span>
                     {rule.activeFrom ? formatDate(rule.activeFrom) : 'always'} → {rule.activeTo ? formatDate(rule.activeTo) : 'open'}

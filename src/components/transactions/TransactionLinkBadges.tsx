@@ -33,7 +33,7 @@ export function TransactionLinkBadges({ links }: TransactionLinkBadgesProps) {
             key={link.linkId}
             variant="secondary"
             className={cn(
-              'text-[9px] py-0 px-2 font-bold tracking-tight rounded-md inline-flex items-center gap-1 border',
+              'text-2xs py-0 px-2 font-bold tracking-tight rounded-md inline-flex items-center gap-1 border',
               isParentRole
                 ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
                 : 'bg-amber-50 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300 border-amber-200 dark:border-amber-900/60',

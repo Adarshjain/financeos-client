@@ -26,7 +26,7 @@ export function TransactionSourceBadge({source}: TransactionSourceBadgeProps) {
   return (
       <Badge
           variant={meta.variant}
-          className="text-[9px] py-0.5 px-2 font-bold tracking-wider rounded-md uppercase"
+          className="text-2xs py-0.5 px-2 font-bold tracking-wider rounded-md uppercase"
       >
         {meta.label}
       </Badge>
