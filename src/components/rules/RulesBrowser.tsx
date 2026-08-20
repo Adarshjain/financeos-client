@@ -445,7 +445,7 @@ export function RulesBrowser({
                       </DropdownMenuItem>
                       {!rule.verified && (
                         <DropdownMenuItem onClick={() => void handleVerifyRule(rule.id)}>
-                          <Check className="w-3.5 h-3.5 mr-2" /> Verify Rule
+                          <Check className="w-3.5 h-3.5 mr-2" /> Approve Rule
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuItem onClick={() => openEditDialog(rule)}>
