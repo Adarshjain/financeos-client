@@ -67,7 +67,7 @@ export const TransactionCard = ({
             >
               {transaction.description ?? transaction.sourcedDescription}
             </div>
-            <div className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-0.5">
+            <div className="text-xs font-medium text-slate-500 dark:text-slate-500 mt-0.5">
               {getAccountName(accounts, transaction.accountId)}
             </div>
             <div className="flex flex-col items-start gap-1.5 mt-2.5">
