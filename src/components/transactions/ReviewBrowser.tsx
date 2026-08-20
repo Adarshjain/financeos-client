@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Loader2, Trash2 } from 'lucide-react';
+import { Check, GitMerge, Loader2, Trash2 } from 'lucide-react';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -9,6 +9,8 @@ import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { batchFailureLabel, reviewReasonLabel } from '@/components/transactions/catalog';
+import { MergeTransactionsDialog } from './MergeTransactionsDialog';
+
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -74,6 +76,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
   }, [searchTerm]);
 
   const [isApproveDialogOpen, setIsApproveDialogOpen] = useState(false);
+  const [isMergeDialogOpen, setIsMergeDialogOpen] = useState(false);
   const [reasonsToApprove, setReasonsToApprove] = useState<ReviewReason[]>([]);
   const [summaryData, setSummaryData] = useState<{
     succeededCount: number;
@@ -81,6 +84,12 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
     failures: { description: string; reason: string }[];
     skips: string[];
   } | null>(null);
+
+  const selectedTxns = useMemo(() => {
+    if (!pagedData || selectedIds.length !== 2) return [];
+    return pagedData.content.filter((t) => selectedIds.includes(t.id));
+  }, [pagedData, selectedIds]);
+
 
   const presentReasons = useMemo(() => {
     const txns = pagedData?.content.filter(t => selectedIds.includes(t.id)) || [];
@@ -314,6 +323,59 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
     }
   };
 
+  // Bulk actions (merge/approve/delete) shown in place of the filter action bar
+  // whenever a selection is active — same content on desktop card and mobile PAB.
+  const renderBulkActions = () => (
+    <div className="w-full flex items-center justify-between lg:justify-start gap-1 text-slate-800 dark:text-slate-200 animate-in fade-in duration-200">
+      <span className="text-xs font-semibold whitespace-nowrap pl-1">
+        {selectedIds.length} selected
+      </span>
+      <div className="flex items-center">
+        {selectedIds.length === 2 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={batchActionLoading}
+            onClick={() => setIsMergeDialogOpen(true)}
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-350 hover:bg-blue-50 dark:hover:bg-blue-950/20 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors h-auto shadow-none gap-1.5 flex items-center"
+          >
+            <GitMerge className="h-3.5 w-3.5" />
+            <span>Merge</span>
+          </Button>
+        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={batchActionLoading}
+          onClick={() => setIsApproveDialogOpen(true)}
+          className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-350 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors h-auto shadow-none gap-1.5 flex items-center"
+        >
+          <Check className="h-3.5 w-3.5" />
+          <span>Approve</span>
+        </Button>
+
+        <ConfirmationDialog
+          title="Delete Transactions?"
+          description={`Are you sure you want to permanently delete these ${selectedIds.length} transaction${selectedIds.length === 1 ? '' : 's'}? This action is permanent and cannot be undone.`}
+          primaryActionText={batchActionLoading ? 'Deleting...' : 'Delete'}
+          primaryAction={handleBatchDelete}
+          loading={batchActionLoading}
+          trigger={
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={batchActionLoading}
+              className="text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-350 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors h-auto shadow-none gap-1.5 flex items-center"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              <span>Delete</span>
+            </Button>
+          }
+        />
+      </div>
+    </div>
+  );
+
   const renderActionBar = (isMobile = false) => (
     <div className={cn('flex flex-col gap-2 w-full', isMobile ? 'text-xs' : '')}>
       <ReviewFilterBar
@@ -378,14 +440,23 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Review Transactions</h1>
       </div>
 
-      {/* Desktop Action Bar Container */}
+      {/* Desktop Action Bar Container — swaps to bulk actions while a selection is active */}
       <Card className="hidden lg:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-3 mx-2">
-        {renderActionBar(false)}
+        {selectedIds.length > 0 ? renderBulkActions() : renderActionBar(false)}
       </Card>
 
-      {/* Mobile PageActionBar Integration */}
-      <PageActionBar>
-        {renderActionBar(true)}
+      {/* Mobile PageActionBar Integration — swaps to bulk actions while a selection is active */}
+      <PageActionBar
+        hideOnScroll={selectedIds.length === 0}
+        trigger={
+          selectedIds.length > 0 ? (
+            <span className="text-xs font-semibold whitespace-nowrap">
+              {selectedIds.length} selected
+            </span>
+          ) : undefined
+        }
+      >
+        {selectedIds.length > 0 ? renderBulkActions() : renderActionBar(true)}
       </PageActionBar>
 
       {/* Statement cutoff warning note */}
@@ -484,50 +555,9 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         </div>
       )}
 
-      {/* Sticky Bulk Action Toolbar */}
-      {selectedIds.length > 0 && (
-        <div
-          className="fixed bottom-[100px] left-3 right-3 lg:left-[calc(50%+8rem)] lg:right-auto lg:-translate-x-1/2 lg:w-auto z-50 flex items-center justify-between lg:justify-start gap-4 px-5 py-2.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-300"
-        >
-          <span className="text-xs font-semibold whitespace-nowrap pl-1">
-            {selectedIds.length} selected
-          </span>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={batchActionLoading}
-              onClick={() => setIsApproveDialogOpen(true)}
-              className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-350 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors h-auto shadow-none gap-1.5 flex items-center"
-            >
-              <Check className="h-3.5 w-3.5" />
-              <span>Approve</span>
-            </Button>
-            <ConfirmationDialog
-              title="Delete Transactions?"
-              description={`Are you sure you want to permanently delete these ${selectedIds.length} transaction${selectedIds.length === 1 ? '' : 's'}? This action is permanent and cannot be undone.`}
-              primaryActionText={batchActionLoading ? 'Deleting...' : 'Delete'}
-              primaryAction={handleBatchDelete}
-              loading={batchActionLoading}
-              trigger={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={batchActionLoading}
-                  className="text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-350 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors h-auto shadow-none gap-1.5 flex items-center"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  <span>Delete</span>
-                </Button>
-              }
-            />
-          </div>
-        </div>
-      )}
-
       {/* Approve Dialog */}
       <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+        <DialogContent className="sm:max-w-[425px] p-4 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
           <DialogHeader>
             <DialogTitle className="text-slate-900 dark:text-white">Approve Transactions</DialogTitle>
             <DialogDescription className="text-slate-500 dark:text-slate-400 text-xs mt-1">
@@ -566,7 +596,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
               })
             )}
           </div>
-          <DialogFooter className="flex gap-2">
+          <DialogFooter className="flex gap-2 flex-row">
             <Button variant="outline" size="sm" className="text-xs rounded-xl"
                     onClick={() => setIsApproveDialogOpen(false)}>
               Cancel
@@ -668,6 +698,23 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Merge Dialog */}
+      {selectedTxns.length === 2 && (
+        <MergeTransactionsDialog
+          open={isMergeDialogOpen}
+          onOpenChange={setIsMergeDialogOpen}
+          tx1={selectedTxns[0]}
+          tx2={selectedTxns[1]}
+          accounts={accounts}
+          categories={categories}
+          onSuccess={() => {
+            setSelectedIds([]);
+            handleReload();
+          }}
+        />
+      )}
     </div>
   );
 }
+

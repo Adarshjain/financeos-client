@@ -138,3 +138,14 @@ export interface BatchDeleteResponse {
   succeededIds: string[];
   failures: BatchFailure[];
 }
+
+export interface MergeTransactionsRequest {
+  keepId: string;
+  deleteId: string;
+}
+
+export interface MergeTransactionsResponse {
+  keptId: string;
+  reviewType: ReviewType;
+  remainingReasons: ReviewReason[];
+}

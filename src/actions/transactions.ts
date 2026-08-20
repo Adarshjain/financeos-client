@@ -37,3 +37,9 @@ export const batchDeleteTransactions = createDomainAction(
   { fallbackError: 'Failed to batch delete transactions', revalidatePaths: TRANSACTION_PATHS },
   (transactionIds: string[]) => transactionsApi.batchDelete({ transactionIds })
 );
+
+export const mergeTransactions = createDomainAction(
+  { fallbackError: 'Failed to merge transactions', revalidatePaths: TRANSACTION_PATHS },
+  (keepId: string, deleteId: string) => transactionsApi.merge({ keepId, deleteId })
+);
+

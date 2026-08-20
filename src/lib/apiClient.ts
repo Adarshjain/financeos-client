@@ -48,7 +48,8 @@ import type {
 } from '@/lib/reports.types';
 import type { PagedRewardLines, ReorderRewardRulesRequest, RewardAccountConfig, RewardAccountConfigRequest, RewardCapBucket, RewardCapBucketRequest, RewardMilestone, RewardMilestoneRequest, RewardRecommendationRequest, RewardRecommendationResponse, RewardReport, RewardRule, RewardRuleRequest } from '@/lib/rewards.types';
 import type { ApplyRuleRequest, ApplyRuleResult, CategoryRule, CreateRuleRequest, PagedRuleMatches, PagedRules, PreviewMatchesRequest, UpdateRuleRequest } from '@/lib/rules.types';
-import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, CreateTransactionLinkRequest, PagedTransaction, Transaction, TransactionLinkResponse, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
+import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, CreateTransactionLinkRequest, MergeTransactionsRequest, MergeTransactionsResponse, PagedTransaction, Transaction, TransactionLinkResponse, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
+
 
 import type {
   AcceptSuggestionsRequest,
@@ -398,7 +399,15 @@ export const transactionsApi = {
       body: JSON.stringify(data),
     });
   },
+
+  async merge(data: MergeTransactionsRequest): Promise<MergeTransactionsResponse> {
+    return request<MergeTransactionsResponse>('/api/v1/transactions/merge', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
 };
+
 
 // Instruments API
 export const instrumentsApi = {
