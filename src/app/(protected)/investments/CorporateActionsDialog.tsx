@@ -308,7 +308,7 @@ export function CorporateActionsDialog({
         </DialogHeader>
 
         <DialogBody className="space-y-4">
-          <div className="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2 min-w-0">
+          <div className="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2 min-w-0">
             <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <div className="min-w-0 break-words">
               <span className="font-semibold">Note:</span> Position quantities and cost bases auto-adjust when corporate actions are added or updated.
@@ -328,7 +328,7 @@ export function CorporateActionsDialog({
                   <div key={act.id} className={`p-2.5 rounded-md border flex items-center justify-between text-xs gap-2 ${editingActionId === act.id ? 'bg-purple-50/50 dark:bg-purple-950/30 border-purple-300 dark:border-purple-800' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
                     <div className="space-y-0.5 min-w-0 flex-1">
                       <div className="font-semibold flex items-center gap-1.5 flex-wrap">
-                        <Badge variant="outline" className="text-[9px] uppercase px-1 py-0 font-bold bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 shrink-0">
+                        <Badge variant="outline" className="text-2xs uppercase px-1 py-0 font-bold bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 shrink-0">
                           {act.type}
                         </Badge>
                         <span className="break-words">
@@ -336,16 +336,16 @@ export function CorporateActionsDialog({
                         </span>
                       </div>
                       {act.type === 'demerger' && (
-                        <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300 break-words">
+                        <div className="text-xs font-medium text-purple-700 dark:text-purple-300 break-words">
                           Child: {act.targetInstrumentName || 'Target'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc: {act.costAllocationPct}%{act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? ` • cash-in-lieu ₹${act.fractionalCashInLieu}` : ''}
                         </div>
                       )}
                       {act.type === 'merger' && (
-                        <div className="text-[11px] font-medium text-purple-700 dark:text-purple-300 break-words">
+                        <div className="text-xs font-medium text-purple-700 dark:text-purple-300 break-words">
                           Merged into {act.targetInstrumentName || 'Acquirer'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • swap {act.ratioFrom}:{act.ratioTo}{act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? ` • cash-in-lieu ₹${act.fractionalCashInLieu}` : ''}
                         </div>
                       )}
-                      <div className="text-[10px] text-slate-500 break-words">
+                      <div className="text-2xs text-slate-500 break-words">
                         Ex-Date: {formatDate(act.exDate)} {act.notes ? `• ${act.notes}` : ''}
                       </div>
                     </div>
@@ -500,7 +500,7 @@ export function CorporateActionsDialog({
                   required
                 />
               </div>
-              <p className="text-[10px] text-slate-500 italic break-words">
+              <p className="text-2xs text-slate-500 italic break-words">
                 {type === 'merger'
                   ? 'Example: HDFC → HDFC Bank was 25 → 42.'
                   : type === 'demerger'

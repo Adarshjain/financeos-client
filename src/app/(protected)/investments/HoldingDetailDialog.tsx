@@ -38,7 +38,7 @@ interface MetricItemProps {
 function MetricItem({label, value, subValue, valueClassName}: MetricItemProps) {
   return (
       <div className="p-1">
-        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{label}</div>
+        <div className="text-2xs font-bold uppercase tracking-wider text-slate-400">{label}</div>
         <div
             className={`text-base font-extrabold tabular-nums mt-0.5 ${valueClassName || 'text-slate-900 dark:text-white'}`}>
           {value}
@@ -70,27 +70,27 @@ const getSourceBadge = (source?: string) => {
     case 'AMFI':
       return (
           <Badge
-              className="text-[9px] px-1.5 py-0 bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border-0 font-bold">
+              className="text-2xs px-1.5 py-0 bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border-0 font-bold">
             AMFI
           </Badge>
       );
     case 'YAHOO':
       return (
           <Badge
-              className="text-[9px] px-1.5 py-0 bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border-0 font-bold">
+              className="text-2xs px-1.5 py-0 bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 border-0 font-bold">
             YAHOO
           </Badge>
       );
     case 'MANUAL':
       return (
           <Badge
-              className="text-[9px] px-1.5 py-0 bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border-0 font-bold">
+              className="text-2xs px-1.5 py-0 bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300 border-0 font-bold">
             MANUAL
           </Badge>
       );
     default:
       return (
-          <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-bold">
+          <Badge variant="secondary" className="text-2xs px-1.5 py-0 font-bold">
             {source}
           </Badge>
       );
@@ -155,14 +155,14 @@ export function HoldingDetailDialog({
             <div className="text-xs text-slate-500 flex items-center gap-1 flex-wrap">
               <span className="text-slate-700 dark:text-slate-300 font-bold">{pos.brokerName}</span>
               <span>•</span>
-              <Badge variant="secondary" className="text-[9px] uppercase px-1.5 py-0 font-bold">
+              <Badge variant="secondary" className="text-2xs uppercase px-1.5 py-0 font-bold">
                 {pos.instrument.type}
               </Badge>
               {getSourceBadge(pos.lastPriceSource)}
               {parseNumber(pos.quantity) === 0 && pos.mergedIntoName && (
                   <Badge
                       variant="outline"
-                      className="text-[10px] px-1.5 py-0 font-medium text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/40"
+                      className="text-2xs px-1.5 py-0 font-medium text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/40"
                   >
                     ⤳ Merged into {pos.mergedIntoName} {pos.mergedIntoDate ? `(${formatDate(pos.mergedIntoDate)})` : ''}
                   </Badge>
@@ -245,7 +245,7 @@ export function HoldingDetailDialog({
                     parseNumber(pos.quantity) > 0 && !pos.lastPrice && pos.currentValue ? (
                       <Badge
                         variant="outline"
-                        className="text-[8px] px-1 py-0 font-normal text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30"
+                        className="text-2xs px-1 py-0 font-normal text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30"
                       >
                         at cost
                       </Badge>
@@ -257,7 +257,7 @@ export function HoldingDetailDialog({
                   value={formatMoney(pos.lastPrice)}
                   subValue={
                     pos.lastPriceAsOf ? (
-                        <div className="text-[9px] text-slate-400">As of {formatDate(pos.lastPriceAsOf)}</div>
+                        <div className="text-2xs text-slate-400">As of {formatDate(pos.lastPriceAsOf)}</div>
                     ) : undefined
                   }
               />
@@ -267,7 +267,7 @@ export function HoldingDetailDialog({
                   valueClassName={unrl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}
                   subValue={
                     <div
-                        className={`text-[10px] font-bold ${
+                        className={`text-2xs font-bold ${
                             unrlPct >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
                         }`}
                     >
@@ -325,7 +325,7 @@ export function HoldingDetailDialog({
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-2">
                               <Badge
-                                  className={`text-[9px] uppercase px-1.5 py-0 font-extrabold border-0 ${
+                                  className={`text-2xs uppercase px-1.5 py-0 font-extrabold border-0 ${
                                       isBuy
                                           ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                                           : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
@@ -337,7 +337,7 @@ export function HoldingDetailDialog({
                               {tx.quantity} units @ {formatMoney(tx.price)}
                             </span>
                             </div>
-                            <div className="text-[10px] text-slate-400 flex items-center gap-1">
+                            <div className="text-2xs text-slate-400 flex items-center gap-1">
                               <span>{formatDate(tx.tradeDate)}</span>
                               <span>•</span>
                               <span>{tx.brokerName}</span>
@@ -356,7 +356,7 @@ export function HoldingDetailDialog({
                                 {formatMoney(totalAmt)}
                               </div>
                               {tx.totalCharges && parseNumber(tx.totalCharges) > 0 && (
-                                  <div className="text-[9px] text-slate-400">
+                                  <div className="text-2xs text-slate-400">
                                     Charges: {formatMoney(tx.totalCharges)}
                                   </div>
                               )}

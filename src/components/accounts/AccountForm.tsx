@@ -596,7 +596,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                     required
                     className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                   />
-                  <p className="text-[10px] text-slate-400 dark:text-slate-500">
+                  <p className="text-2xs text-slate-400 dark:text-slate-500">
                     Membership anniversary — anchors “per anniversary year” reward windows and the Rewards overview.
                   </p>
                 </div>
@@ -678,7 +678,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
           <div className="flex items-center justify-between py-1.5 px-0.5">
             <div className="flex flex-col gap-0.5">
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">Exclude from Net Asset</span>
-              <span className="text-[10px] text-slate-400 dark:text-slate-500">Do not include in net asset calculation</span>
+              <span className="text-2xs text-slate-400 dark:text-slate-500">Do not include in net asset calculation</span>
             </div>
             <input
               type="hidden"
@@ -690,7 +690,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
               onClick={() => setExcludeFromNetAsset(prev => !prev)}
               className={cn(
                 "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                excludeFromNetAsset ? "bg-red-500" : "bg-slate-200 dark:bg-slate-800"
+                excludeFromNetAsset ? "bg-rose-500" : "bg-slate-200 dark:bg-slate-800"
               )}
             >
               <span

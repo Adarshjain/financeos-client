@@ -217,7 +217,7 @@ export function CreateInvestmentForm({
           </div>
         </div>
         <div className="text-right pr-10">
-          <div className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">Est. Order Total</div>
+          <div className="text-2xs uppercase font-bold text-slate-500 dark:text-slate-400">Est. Order Total</div>
           <div className="text-sm font-black text-slate-900 dark:text-slate-100 tabular-nums">{formatMoney(estNetTotal)}</div>
         </div>
       </div>
@@ -353,7 +353,7 @@ export function CreateInvestmentForm({
                 <Receipt className="w-4 h-4 text-slate-400" />
                 <span>Zerodha Itemized Charges</span>
                 {totalCharges > 0 && (
-                  <Badge variant="secondary" className="text-[10px] font-mono px-2 py-0.5 bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                  <Badge variant="secondary" className="text-2xs font-mono px-2 py-0.5 bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
                     {formatMoney(totalCharges)}
                   </Badge>
                 )}
@@ -364,7 +364,7 @@ export function CreateInvestmentForm({
             {showCharges && (
               <div className="p-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-2 gap-2.5 text-xs bg-white dark:bg-slate-900">
                 <div className="space-y-1">
-                  <Label htmlFor="charge-brokerage" className="text-[10px] text-slate-500 font-bold uppercase">Brokerage</Label>
+                  <Label htmlFor="charge-brokerage" className="text-2xs text-slate-500 font-bold uppercase">Brokerage</Label>
                   <Input
                     id="charge-brokerage"
                     type="number"
@@ -377,7 +377,7 @@ export function CreateInvestmentForm({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="charge-stt" className="text-[10px] text-slate-500 font-bold uppercase">STT / CTT</Label>
+                  <Label htmlFor="charge-stt" className="text-2xs text-slate-500 font-bold uppercase">STT / CTT</Label>
                   <Input
                     id="charge-stt"
                     type="number"
@@ -390,7 +390,7 @@ export function CreateInvestmentForm({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="charge-exchangeTxnCharges" className="text-[10px] text-slate-500 font-bold uppercase">Exch Txn Fee</Label>
+                  <Label htmlFor="charge-exchangeTxnCharges" className="text-2xs text-slate-500 font-bold uppercase">Exch Txn Fee</Label>
                   <Input
                     id="charge-exchangeTxnCharges"
                     type="number"
@@ -403,7 +403,7 @@ export function CreateInvestmentForm({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="charge-sebiCharges" className="text-[10px] text-slate-500 font-bold uppercase">SEBI Fee</Label>
+                  <Label htmlFor="charge-sebiCharges" className="text-2xs text-slate-500 font-bold uppercase">SEBI Fee</Label>
                   <Input
                     id="charge-sebiCharges"
                     type="number"
@@ -416,7 +416,7 @@ export function CreateInvestmentForm({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="charge-stampDuty" className="text-[10px] text-slate-500 font-bold uppercase">Stamp Duty</Label>
+                  <Label htmlFor="charge-stampDuty" className="text-2xs text-slate-500 font-bold uppercase">Stamp Duty</Label>
                   <Input
                     id="charge-stampDuty"
                     type="number"
@@ -429,7 +429,7 @@ export function CreateInvestmentForm({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="charge-gst" className="text-[10px] text-slate-500 font-bold uppercase">GST (18%)</Label>
+                  <Label htmlFor="charge-gst" className="text-2xs text-slate-500 font-bold uppercase">GST (18%)</Label>
                   <Input
                     id="charge-gst"
                     type="number"
@@ -442,7 +442,7 @@ export function CreateInvestmentForm({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="charge-dpCharges" className="text-[10px] text-slate-500 font-bold uppercase">DP Charges</Label>
+                  <Label htmlFor="charge-dpCharges" className="text-2xs text-slate-500 font-bold uppercase">DP Charges</Label>
                   <Input
                     id="charge-dpCharges"
                     type="number"
@@ -455,7 +455,7 @@ export function CreateInvestmentForm({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="charge-otherCharges" className="text-[10px] text-slate-500 font-bold uppercase">Other Charges</Label>
+                  <Label htmlFor="charge-otherCharges" className="text-2xs text-slate-500 font-bold uppercase">Other Charges</Label>
                   <Input
                     id="charge-otherCharges"
                     type="number"

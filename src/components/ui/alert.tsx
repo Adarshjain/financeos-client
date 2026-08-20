@@ -11,7 +11,7 @@ const alertVariants = cva(
         default:
           'bg-card border-border text-card-foreground',
         destructive:
-          'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/50 text-red-800 dark:text-red-200 [&>svg]:text-red-600 dark:[&>svg]:text-red-400',
+          'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-200 [&>svg]:text-rose-600 dark:[&>svg]:text-rose-400',
         success:
           'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-200 [&>svg]:text-emerald-600 dark:[&>svg]:text-emerald-400',
         warning:

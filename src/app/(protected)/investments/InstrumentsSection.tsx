@@ -59,7 +59,7 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
     }
 
     return (
-      <Badge variant="outline" className={`font-bold text-[10px] uppercase px-2 py-0.5 ${colorClass}`}>
+      <Badge variant="outline" className={`font-bold text-2xs uppercase px-2 py-0.5 ${colorClass}`}>
         {formatted}
       </Badge>
     );
@@ -271,7 +271,7 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
                   <div className="flex items-center gap-1.5 min-w-0">
                     {getTypeBadge(inst.type)}
                     {inst.exchange && (
-                      <Badge variant="secondary" className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 px-1.5 py-0 border border-slate-200 dark:border-slate-800">
+                      <Badge variant="secondary" className="text-2xs font-semibold text-slate-600 dark:text-slate-400 px-1.5 py-0 border border-slate-200 dark:border-slate-800">
                         {inst.exchange}
                       </Badge>
                     )}
@@ -299,17 +299,17 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
                     <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 truncate" title={inst.name}>
                       {inst.name}
                     </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono flex flex-wrap items-center gap-1.5">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 font-mono flex flex-wrap items-center gap-1.5">
                       {inst.symbol && <span className="font-semibold text-slate-700 dark:text-slate-300">{inst.symbol}</span>}
                       {inst.symbol && getIdentifier(inst) !== '—' && <span>•</span>}
                       {getIdentifier(inst) !== '—' && <span>{getIdentifier(inst)}</span>}
-                      {inst.isin && <span className="text-[10px] text-slate-400 font-normal">({inst.isin})</span>}
+                      {inst.isin && <span className="text-2xs text-slate-400 font-normal">({inst.isin})</span>}
                     </div>
                   </div>
 
                   {/* Last Price Info Footer */}
                   <div className="flex items-center justify-start gap-2 text-xs">
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">LTP</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">LTP</span>
                     <div className="text-right">
                       {inst.lastPrice != null ? (
                         <div>
@@ -317,7 +317,7 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
                             {formatMoney(inst.lastPrice)}
                           </span>
                           {inst.lastPriceAsOf && (
-                            <span className="text-[10px] text-slate-400 tabular-nums ml-1.5">
+                            <span className="text-2xs text-slate-400 tabular-nums ml-1.5">
                               ({formatDate(inst.lastPriceAsOf)})
                             </span>
                           )}
@@ -355,7 +355,7 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
                             {inst.name}
                           </div>
                           {inst.symbol && (
-                            <div className="text-[10px] text-slate-400 font-mono">{inst.symbol}</div>
+                            <div className="text-2xs text-slate-400 font-mono">{inst.symbol}</div>
                           )}
                         </TableCell>
                         <TableCell className="py-2.5 text-xs whitespace-nowrap">
@@ -363,7 +363,7 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
                         </TableCell>
                         <TableCell className="py-2.5 text-xs whitespace-nowrap">
                           {inst.exchange ? (
-                            <Badge variant="secondary" className="text-[10px] font-medium text-slate-600 dark:text-slate-400 px-1.5 py-0 border border-slate-200 dark:border-slate-800">
+                            <Badge variant="secondary" className="text-2xs font-medium text-slate-600 dark:text-slate-400 px-1.5 py-0 border border-slate-200 dark:border-slate-800">
                               {inst.exchange}
                             </Badge>
                           ) : (
@@ -373,7 +373,7 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
                         <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400 font-mono">
                           <div className="flex flex-col gap-0.5">
                             {getIdentifier(inst) !== '—' && <span>{getIdentifier(inst)}</span>}
-                            {inst.isin && <span className="text-[10px] text-slate-400">ISIN: {inst.isin}</span>}
+                            {inst.isin && <span className="text-2xs text-slate-400">ISIN: {inst.isin}</span>}
                             {getIdentifier(inst) === '—' && !inst.isin && <span>—</span>}
                           </div>
                         </TableCell>
@@ -384,7 +384,7 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
                                 {formatMoney(inst.lastPrice)}
                               </span>
                               {inst.lastPriceAsOf && (
-                                <span className="text-[10px] text-slate-400 block whitespace-nowrap">
+                                <span className="text-2xs text-slate-400 block whitespace-nowrap">
                                   {formatDate(inst.lastPriceAsOf)}
                                 </span>
                               )}

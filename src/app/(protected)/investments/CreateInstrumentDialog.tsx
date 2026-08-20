@@ -185,13 +185,13 @@ export function CreateInstrumentDialog({
           {manualOpen && (
             <>
               {/* Auto-pricing Readiness Helper */}
-              <div className="p-3 rounded-lg bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-[11px] text-blue-700 dark:text-blue-300 space-y-1">
+              <div className="p-3 rounded-lg bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-xs text-blue-700 dark:text-blue-300 space-y-1">
                 <div className="font-bold flex items-center gap-1">
                   <Info className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                   Auto-pricing Requirements
                 </div>
-                <div className="text-[10px] text-slate-600 dark:text-slate-400 space-y-0.5 pl-4">
-                  <div>• <span className="font-semibold text-slate-800 dark:text-slate-200">Stocks / ETFs</span> require a <span className="font-semibold">Yahoo Symbol</span> (defaults to <code className="bg-slate-100 dark:bg-slate-900 px-1 py-0.5 rounded text-[9px]">SYMBOL.NS</code>).</div>
+                <div className="text-2xs text-slate-600 dark:text-slate-400 space-y-0.5 pl-4">
+                  <div>• <span className="font-semibold text-slate-800 dark:text-slate-200">Stocks / ETFs</span> require a <span className="font-semibold">Yahoo Symbol</span> (defaults to <code className="bg-slate-100 dark:bg-slate-900 px-1 py-0.5 rounded text-2xs">SYMBOL.NS</code>).</div>
                   <div>• <span className="font-semibold text-slate-800 dark:text-slate-200">Mutual Funds</span> require an <span className="font-semibold">AMFI Code</span> (6 digits).</div>
                 </div>
               </div>

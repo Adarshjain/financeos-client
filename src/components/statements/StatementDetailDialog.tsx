@@ -54,7 +54,7 @@ export function StatementDetailDialog({
               <span className="text-sm">Loading statement details and linked transactions...</span>
             </div>
           ) : detailError ? (
-            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-red-700 dark:text-red-400 flex items-center gap-2 text-sm">
+            <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 text-rose-700 dark:text-rose-400 flex items-center gap-2 text-sm">
               <AlertCircle className="w-5 h-5 shrink-0" />
               <span>{detailError}</span>
             </div>
@@ -106,73 +106,73 @@ export function StatementDetailDialog({
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/30 text-xs w-full min-w-0">
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[11px] truncate">Total Due</span>
+                      <span className="text-slate-400 block text-xs truncate">Total Due</span>
                       <span className="font-bold tabular-nums text-slate-900 dark:text-white truncate block">
                         {formatNullableMoney(selectedDetail.cardDetails.totalAmountDue)}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[11px] truncate">Min Due</span>
+                      <span className="text-slate-400 block text-xs truncate">Min Due</span>
                       <span className="font-bold tabular-nums text-slate-900 dark:text-white truncate block">
                         {formatNullableMoney(selectedDetail.cardDetails.minimumAmountDue)}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[11px] truncate">Due Date</span>
+                      <span className="text-slate-400 block text-xs truncate">Due Date</span>
                       <span className="font-semibold text-slate-800 dark:text-slate-200 truncate block">
                         {selectedDetail.cardDetails.paymentDueDate ? formatDate(selectedDetail.cardDetails.paymentDueDate) : '—'}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[11px] truncate">Credit Limit</span>
+                      <span className="text-slate-400 block text-xs truncate">Credit Limit</span>
                       <span className="font-bold tabular-nums text-slate-900 dark:text-white truncate block">
                         {formatNullableMoney(selectedDetail.cardDetails.creditLimit)}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[11px] truncate">Available Credit</span>
+                      <span className="text-slate-400 block text-xs truncate">Available Credit</span>
                       <span className="font-bold tabular-nums text-slate-900 dark:text-white truncate block">
                         {formatNullableMoney(selectedDetail.cardDetails.availableCreditLimit)}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[11px] truncate">Finance Charges</span>
-                      <span className="font-bold tabular-nums text-red-600 dark:text-red-400 truncate block">
+                      <span className="text-slate-400 block text-xs truncate">Finance Charges</span>
+                      <span className="font-bold tabular-nums text-rose-600 dark:text-rose-400 truncate block">
                         {formatNullableMoney(selectedDetail.cardDetails.financeCharges)}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[11px] truncate">Fees & Charges</span>
+                      <span className="text-slate-400 block text-xs truncate">Fees & Charges</span>
                       <span className="font-bold tabular-nums text-slate-900 dark:text-white truncate block">
                         {formatNullableMoney(selectedDetail.cardDetails.feesAndCharges)}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[11px] truncate">Previous Balance</span>
+                      <span className="text-slate-400 block text-xs truncate">Previous Balance</span>
                       <span className="font-bold tabular-nums text-slate-900 dark:text-white truncate block">
                         {formatNullableMoney(selectedDetail.cardDetails.previousBalance)}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[11px] truncate">Payments Received</span>
+                      <span className="text-slate-400 block text-xs truncate">Payments Received</span>
                       <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400 truncate block">
                         {formatNullableMoney(selectedDetail.cardDetails.paymentsReceived)}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[11px] truncate">Total Purchases</span>
+                      <span className="text-slate-400 block text-xs truncate">Total Purchases</span>
                       <span className="font-bold tabular-nums text-slate-900 dark:text-white truncate block">
                         {formatNullableMoney(selectedDetail.cardDetails.totalPurchases)}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[11px] truncate">Reward Points Bal.</span>
+                      <span className="text-slate-400 block text-xs truncate">Reward Points Bal.</span>
                       <span className="font-bold tabular-nums text-amber-600 dark:text-amber-400 truncate block">
                         {selectedDetail.cardDetails.rewardPointsBalance !== null ? selectedDetail.cardDetails.rewardPointsBalance.toLocaleString() : '—'}
                       </span>
                     </div>
                     <div className="min-w-0">
-                      <span className="text-slate-400 block text-[11px] truncate">Points Earned</span>
+                      <span className="text-slate-400 block text-xs truncate">Points Earned</span>
                       <span className="font-bold tabular-nums text-emerald-600 dark:text-emerald-400 truncate block">
                         {selectedDetail.cardDetails.rewardPointsEarned !== null ? `+${selectedDetail.cardDetails.rewardPointsEarned.toLocaleString()}` : '—'}
                       </span>
@@ -208,17 +208,17 @@ export function StatementDetailDialog({
                           <div key={line.transactionId} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/30 space-y-2 text-xs shadow-2xs w-full min-w-0">
                             <div className="flex items-start justify-between gap-2 w-full min-w-0">
                               <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                                <span className="tabular-nums text-slate-400 text-[10px] shrink-0 font-semibold">#{line.lineIndex + 1}</span>
+                                <span className="tabular-nums text-slate-400 text-2xs shrink-0 font-semibold">#{line.lineIndex + 1}</span>
                                 <span className="font-medium text-slate-900 dark:text-white break-words text-sm min-w-0" title={line.description}>
                                   {line.description}
                                 </span>
                               </div>
-                              <span className={cn('tabular-nums font-bold shrink-0 text-sm ml-2', isCredit ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400')}>
+                              <span className={cn('tabular-nums font-bold shrink-0 text-sm ml-2', isCredit ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400')}>
                                 {isCredit ? `+${formatMoney(line.amount)}` : `-${formatMoney(line.amount)}`}
                               </span>
                             </div>
 
-                            <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-slate-100 dark:border-slate-800/60 text-[11px] w-full min-w-0">
+                            <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-slate-100 dark:border-slate-800/60 text-xs w-full min-w-0">
                               <div className="flex items-center gap-2 min-w-0">
                                 <span className="text-slate-400 tabular-nums shrink-0">{formatDate(line.date)}</span>
                                 <div className="shrink-0"><ReviewTypeBadge reviewType={line.reviewType} /></div>
@@ -275,7 +275,7 @@ export function StatementDetailDialog({
                                   {line.description}
                                 </TableCell>
                                 <TableCell className="text-right tabular-nums text-xs">
-                                  <span className={isCredit ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-red-600 dark:text-red-400 font-semibold'}>
+                                  <span className={isCredit ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-rose-600 dark:text-rose-400 font-semibold'}>
                                     {isCredit ? `+${formatMoney(line.amount)}` : `-${formatMoney(line.amount)}`}
                                   </span>
                                 </TableCell>

@@ -111,14 +111,14 @@ function GoogleCallbackContent() {
 
         {status === 'error' && (
           <div className="flex flex-col items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
+            <div className="h-12 w-12 rounded-full bg-rose-100 dark:bg-rose-900/20 flex items-center justify-center">
               <span className="text-2xl">⚠️</span>
             </div>
             <div className="space-y-2">
               <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
                 Authentication Failed
               </h2>
-              <p className="text-red-600 dark:text-red-400 font-medium">
+              <p className="text-rose-600 dark:text-rose-400 font-medium">
                 {errorMessage}
               </p>
               <p className="text-slate-500 dark:text-slate-400 text-sm">

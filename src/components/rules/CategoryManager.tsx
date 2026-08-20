@@ -103,7 +103,7 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
                 <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-600 transition-colors">
                   {cat.name}
                 </h4>
-                <p className="text-[10px] text-slate-400 truncate">ID: {cat.id}</p>
+                <p className="text-2xs text-slate-400 truncate">ID: {cat.id}</p>
               </div>
             </div>
           ))}

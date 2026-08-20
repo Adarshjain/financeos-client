@@ -117,7 +117,7 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
       case 'AMFI':
         return (
           <Badge
-            className="text-[9px] px-1.5 py-0 bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-bold border-0"
+            className="text-2xs px-1.5 py-0 bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-bold border-0"
             title="Auto-fetched price — refreshes from AMFI"
           >
             AMFI
@@ -126,7 +126,7 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
       case 'YAHOO':
         return (
           <Badge
-            className="text-[9px] px-1.5 py-0 bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 font-bold border-0"
+            className="text-2xs px-1.5 py-0 bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 font-bold border-0"
             title="Auto-fetched price — refreshes from Yahoo Finance"
           >
             YAHOO
@@ -134,13 +134,13 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
         );
       case 'MANUAL':
         return (
-          <Badge className="text-[9px] px-1.5 py-0 bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-bold border-0">
+          <Badge className="text-2xs px-1.5 py-0 bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-bold border-0">
             MANUAL
           </Badge>
         );
       default:
         return (
-          <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-bold border-0">
+          <Badge variant="secondary" className="text-2xs px-1.5 py-0 font-bold border-0">
             {source}
           </Badge>
         );
@@ -179,7 +179,7 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
                           <div className="font-bold text-emerald-600 dark:text-emerald-400">
                             {formatMoney(data.price)}
                           </div>
-                          <div className="text-[9px] text-slate-400">Source: {data.source}</div>
+                          <div className="text-2xs text-slate-400">Source: {data.source}</div>
                         </div>
                       );
                     }
@@ -202,7 +202,7 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
           <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
             <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
               <span>Price History Log ({sortedPoints.length})</span>
-              <span className="text-[10px] text-slate-400 font-normal">Newest first</span>
+              <span className="text-2xs text-slate-400 font-normal">Newest first</span>
             </div>
 
             <div className="divide-y divide-slate-100 dark:divide-slate-800/80 border border-slate-200/80 dark:border-slate-800 rounded-lg overflow-hidden max-h-56 overflow-y-auto">

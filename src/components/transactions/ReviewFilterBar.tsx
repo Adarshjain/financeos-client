@@ -194,7 +194,7 @@ export function ReviewFilterBar({
               key={opt.value}
               onClick={() => onReasonFilterChange(opt.value)}
               className={cn(
-                'px-2.5 py-0.5 text-[11px] font-semibold rounded-full transition-all touch-manipulation min-h-[28px]',
+                'px-2.5 py-0.5 text-xs font-semibold rounded-full transition-all touch-manipulation min-h-[28px]',
                 activeReasonFilter === opt.value
                   ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
@@ -254,7 +254,7 @@ export function ReviewFilterBar({
                           <span className="font-medium text-slate-800 dark:text-slate-200">{acc.name}</span>
                         </div>
                         {lastStatementDate && (
-                          <span className="text-[10px] text-slate-400">Cutoff: {lastStatementDate}</span>
+                          <span className="text-2xs text-slate-400">Cutoff: {lastStatementDate}</span>
                         )}
                       </CommandItem>
                     );
@@ -288,7 +288,7 @@ export function ReviewFilterBar({
             </Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-44 p-1 rounded-2xl shadow-xl">
-            <div className="text-[11px] font-semibold text-slate-400 px-3 py-1">Sort Order</div>
+            <div className="text-xs font-semibold text-slate-400 px-3 py-1">Sort Order</div>
             {SORT_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
@@ -314,7 +314,7 @@ export function ReviewFilterBar({
       {/* Active Filters Badge Bar */}
       {hasActiveFilters && (
         <div className="flex flex-wrap items-center gap-1.5 pt-0.5 pb-0">
-          <span className="text-[11px] font-semibold text-slate-400 mr-1 flex items-center gap-1">
+          <span className="text-xs font-semibold text-slate-400 mr-1 flex items-center gap-1">
             <SlidersHorizontal className="h-3 w-3" />
             Active:
           </span>
@@ -325,7 +325,7 @@ export function ReviewFilterBar({
               label={`Search: "${search}"`}
               removeLabel="Clear search"
               onRemove={() => onSearchChange('')}
-              className="h-6 gap-1 px-2.5 text-[10px] font-medium rounded-full bg-slate-100 dark:bg-slate-850 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition-colors touch-manipulation"
+              className="h-6 gap-1 px-2.5 text-2xs font-medium rounded-full bg-slate-100 dark:bg-slate-850 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 cursor-pointer hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition-colors touch-manipulation"
             />
           )}
 
@@ -335,7 +335,7 @@ export function ReviewFilterBar({
               variant="secondary"
               label={badge.label}
               onRemove={badge.onRemove}
-              className="h-6 gap-1 px-2.5 text-[10px] font-medium rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 cursor-pointer hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 dark:hover:border-rose-800 transition-colors touch-manipulation"
+              className="h-6 gap-1 px-2.5 text-2xs font-medium rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 cursor-pointer hover:bg-rose-50 hover:text-rose-600 hover:border-rose-300 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 dark:hover:border-rose-800 transition-colors touch-manipulation"
             />
           ))}
 

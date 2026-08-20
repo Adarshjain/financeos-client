@@ -130,7 +130,7 @@ export function CalendarView({ initialObligations }: CalendarViewProps) {
                         ? `${item.loanName} · EMI #${item.installmentSeq}`
                         : `${item.counterpartyName} (${item.direction === 'lent' ? 'Lent Return' : 'Borrowed Payback'})`}
                     </div>
-                    <div className="text-slate-500 text-[11px]">
+                    <div className="text-slate-500 text-xs">
                       Due: <span className="font-semibold text-rose-600">{formatDate(item.date)}</span>
                     </div>
                   </div>
@@ -139,7 +139,7 @@ export function CalendarView({ initialObligations }: CalendarViewProps) {
                 <div className="flex items-center gap-3">
                   <div className="text-right">
                     <div className="font-bold text-rose-600 tabular-nums">{formatMoney(item.amount)}</div>
-                    <Badge variant="destructive" className="capitalize text-[9px] px-1.5 py-0">Overdue</Badge>
+                    <Badge variant="destructive" className="capitalize text-2xs px-1.5 py-0">Overdue</Badge>
                   </div>
                   <Button variant="ghost" size="icon-sm" asChild className="text-slate-400">
                     <Link href={item.type === 'emi' ? `/loans/${item.loanId}` : `/loans/lendings/${item.counterpartyId}`}>
@@ -188,7 +188,7 @@ export function CalendarView({ initialObligations }: CalendarViewProps) {
                             ? `${item.loanName} · EMI #${item.installmentSeq}`
                             : `${item.counterpartyName} (${item.direction === 'lent' ? 'Receivable' : 'Payable'})`}
                         </div>
-                        <div className="text-slate-500 text-[11px]">
+                        <div className="text-slate-500 text-xs">
                           Due: <span className="font-medium text-slate-800 dark:text-slate-200">{formatDate(item.date)}</span>
                         </div>
                       </div>
@@ -197,7 +197,7 @@ export function CalendarView({ initialObligations }: CalendarViewProps) {
                     <div className="flex items-center gap-3">
                       <div className="text-right">
                         <div className="font-bold text-slate-900 dark:text-slate-100 tabular-nums">{formatMoney(item.amount)}</div>
-                        <Badge variant="outline" className="capitalize text-[9px] px-1.5 py-0">
+                        <Badge variant="outline" className="capitalize text-2xs px-1.5 py-0">
                           {item.type === 'emi' ? 'Loan EMI' : 'P2P Due'}
                         </Badge>
                       </div>

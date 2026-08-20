@@ -41,14 +41,14 @@ export function ClassifiedExecutionsTable({
     <div className="flex items-center gap-1 flex-wrap">
       {state?.selectedInstrumentId ? (
         <div className="flex items-center gap-1">
-          <span className="text-emerald-700 dark:text-emerald-400 font-medium text-[11px]">
+          <span className="text-emerald-700 dark:text-emerald-400 font-medium text-xs">
             ✓ {state.selectedInstrumentName || 'Mapped'}
           </span>
           <Popover>
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="text-[10px] text-slate-400 underline hover:text-slate-600"
+                className="text-2xs text-slate-400 underline hover:text-slate-600"
               >
                 change
               </button>
@@ -65,14 +65,14 @@ export function ClassifiedExecutionsTable({
         </div>
       ) : state?.createNew ? (
         <div className="flex items-center gap-1">
-          <span className="text-blue-700 dark:text-blue-400 font-medium text-[11px]">
+          <span className="text-blue-700 dark:text-blue-400 font-medium text-xs">
             ✦ New: {exec.symbol}
           </span>
-          <span className="text-[9px] text-slate-400">no live price</span>
+          <span className="text-2xs text-slate-400">no live price</span>
           <button
             type="button"
             onClick={() => onCreateNew(exec.rowIndex, false)}
-            className="text-[10px] text-slate-400 underline hover:text-slate-600"
+            className="text-2xs text-slate-400 underline hover:text-slate-600"
           >
             undo
           </button>
@@ -140,19 +140,19 @@ export function ClassifiedExecutionsTable({
                     checked={!state.skip}
                     onCheckedChange={() => onToggleSkip(exec.rowIndex, !!state.skip)}
                   />
-                  <span className="font-semibold tabular-nums text-[11px] text-slate-700 dark:text-slate-300">
+                  <span className="font-semibold tabular-nums text-xs text-slate-700 dark:text-slate-300">
                     {formatDate(exec.tradeDate)}
                   </span>
                   <Badge
-                    className={`text-[8px] px-1 py-0 ${
-                      exec.type === 'buy' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                    className={`text-2xs px-1 py-0 ${
+                      exec.type === 'buy' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
                     }`}
                   >
                     {exec.type.toUpperCase()}
                   </Badge>
                   <Badge
                     variant="outline"
-                    className={`text-[8px] px-1 py-0 ${
+                    className={`text-2xs px-1 py-0 ${
                       exec.settlementType === 'intraday'
                         ? 'border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/40'
                         : 'border-purple-300 bg-purple-50 text-purple-800 dark:bg-purple-950/40'
@@ -162,11 +162,11 @@ export function ClassifiedExecutionsTable({
                   </Badge>
                 </div>
 
-                <div className="text-right tabular-nums text-[11px] shrink-0">
+                <div className="text-right tabular-nums text-xs shrink-0">
                   <div className="font-bold text-slate-900 dark:text-white">
                     {exec.quantity} × {formatMoney(exec.price)}
                   </div>
-                  <div className="text-[10px] text-slate-400 font-normal">{formatMoney(exec.totalValue)}</div>
+                  <div className="text-2xs text-slate-400 font-normal">{formatMoney(exec.totalValue)}</div>
                 </div>
               </div>
 
@@ -174,7 +174,7 @@ export function ClassifiedExecutionsTable({
               <div className="flex items-center justify-between gap-2">
                 <div>
                   <span className="font-extrabold text-sm text-slate-900 dark:text-white">{exec.symbol}</span>
-                  <span className="text-[10px] text-slate-400 ml-1.5">
+                  <span className="text-2xs text-slate-400 ml-1.5">
                     {exec.isin ? `${exec.isin} • ` : ''}{exec.exchange}
                   </span>
                 </div>
@@ -182,7 +182,7 @@ export function ClassifiedExecutionsTable({
 
               {/* Mapping Controls */}
               <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1 flex-wrap">
-                <span className="text-[10px] text-slate-400 font-semibold uppercase">Mapping:</span>
+                <span className="text-2xs text-slate-400 font-semibold uppercase">Mapping:</span>
                 {renderMappingControl(exec, state)}
               </div>
             </div>
@@ -194,7 +194,7 @@ export function ClassifiedExecutionsTable({
       <div className="hidden sm:block overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent text-[11px] bg-slate-50 dark:bg-slate-900">
+            <TableRow className="hover:bg-transparent text-xs bg-slate-50 dark:bg-slate-900">
               <TableHead className="w-8 px-1 text-center py-1 h-7"></TableHead>
               <TableHead className="py-1 px-1 h-7">Date & Side</TableHead>
               <TableHead className="py-1 px-1 h-7">CNC/MIS</TableHead>
@@ -209,7 +209,7 @@ export function ClassifiedExecutionsTable({
               return (
                 <TableRow
                   key={exec.rowIndex}
-                  className={`text-[11px] border-slate-100 dark:border-slate-800 ${state.skip ? 'opacity-50 bg-slate-50/50' : ''}`}
+                  className={`text-xs border-slate-100 dark:border-slate-800 ${state.skip ? 'opacity-50 bg-slate-50/50' : ''}`}
                 >
                   <TableCell className="text-center py-1 px-2">
                     <Checkbox
@@ -220,7 +220,7 @@ export function ClassifiedExecutionsTable({
                   <TableCell className="py-1 px-2 tabular-nums">
                     <div className="whitespace-nowrap">{formatDate(exec.tradeDate)}</div>
                     <Badge
-                      className={`text-[8px] px-1 py-0 ${exec.type === 'buy' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}`}
+                      className={`text-2xs px-1 py-0 ${exec.type === 'buy' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}
                     >
                       {exec.type.toUpperCase()}
                     </Badge>
@@ -228,14 +228,14 @@ export function ClassifiedExecutionsTable({
                   <TableCell className="py-1 px-2">
                     <Badge
                       variant="outline"
-                      className={`text-[8px] px-1 py-0 ${exec.settlementType === 'intraday' ? 'border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/40' : 'border-purple-300 bg-purple-50 text-purple-800 dark:bg-purple-950/40'}`}
+                      className={`text-2xs px-1 py-0 ${exec.settlementType === 'intraday' ? 'border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/40' : 'border-purple-300 bg-purple-50 text-purple-800 dark:bg-purple-950/40'}`}
                     >
                       {exec.settlementType.toUpperCase()}
                     </Badge>
                   </TableCell>
                   <TableCell className="py-1 px-2">
                     <div className="font-semibold text-slate-900 dark:text-white">{exec.symbol}</div>
-                    <div className="text-[9px] text-slate-400">
+                    <div className="text-2xs text-slate-400">
                       {exec.isin ? exec.isin : ''} • {exec.exchange}
                     </div>
                   </TableCell>
@@ -243,7 +243,7 @@ export function ClassifiedExecutionsTable({
                     <div>
                       {exec.quantity} × {formatMoney(exec.price)}
                     </div>
-                    <div className="text-[9px] text-slate-400">{formatMoney(exec.totalValue)}</div>
+                    <div className="text-2xs text-slate-400">{formatMoney(exec.totalValue)}</div>
                   </TableCell>
                   <TableCell className="py-1 px-2">
                     {renderMappingControl(exec, state)}

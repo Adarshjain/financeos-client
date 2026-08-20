@@ -346,7 +346,7 @@ export function TransactionLinkDialog({
               <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                 Selected Transactions ({selectedTransactions.length})
               </Label>
-              <span className="text-[11px] text-indigo-600 dark:text-indigo-400 font-semibold">Select 1 Parent (Anchor) transaction</span>
+              <span className="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">Select 1 Parent (Anchor) transaction</span>
             </div>
 
             <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
@@ -376,16 +376,16 @@ export function TransactionLinkDialog({
                         <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
                           {t.description || t.sourcedDescription}
                         </span>
-                        <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                        <div className="flex items-center gap-2 text-2xs text-slate-400">
                           <span>{formatDate(t.date)}</span>
                           <span>•</span>
                           <span>{acc?.name || 'Unknown Account'}</span>
                           {isAnchor ? (
-                            <Badge className="text-[9px] py-0 px-1.5 h-4 bg-indigo-100 text-indigo-800 font-bold dark:bg-indigo-900/80 dark:text-indigo-200">
+                            <Badge className="text-2xs py-0 px-1.5 h-4 bg-indigo-100 text-indigo-800 font-bold dark:bg-indigo-900/80 dark:text-indigo-200">
                               Parent • {getDerivedRoleLabel(linkType, true)}
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="text-[9px] py-0 px-1.5 h-4 text-slate-500 dark:text-slate-400">
+                            <Badge variant="outline" className="text-2xs py-0 px-1.5 h-4 text-slate-500 dark:text-slate-400">
                               {getDerivedRoleLabel(linkType, false)}
                             </Badge>
                           )}
@@ -440,7 +440,7 @@ export function TransactionLinkDialog({
               ) : filteredCandidates.length === 0 ? (
                 <div className="text-center py-6 px-3 text-xs text-slate-400 space-y-1">
                   <p className="font-semibold text-slate-600 dark:text-slate-300">No matching counterpart transactions found</p>
-                  <p className="text-[11px] text-slate-400 italic">{getRuleHint()}</p>
+                  <p className="text-xs text-slate-400 italic">{getRuleHint()}</p>
                 </div>
               ) : (
                 filteredCandidates.map((t) => {
@@ -455,7 +455,7 @@ export function TransactionLinkDialog({
                         <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
                           {t.description || t.sourcedDescription}
                         </span>
-                        <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                        <div className="flex items-center gap-2 text-2xs text-slate-400">
                           <span>{formatDate(t.date)}</span>
                           <span>•</span>
                           <span>{acc?.name || 'Unknown'}</span>

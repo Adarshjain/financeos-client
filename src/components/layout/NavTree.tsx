@@ -88,7 +88,7 @@ export function NavTree({ onItemClick, renderItemWrapper }: NavTreeProps) {
       <button
         type="button"
         onClick={toggleOpen}
-        className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider select-none"
+        className="w-full flex items-center justify-between px-3 py-1.5 text-2xs font-extrabold uppercase tracking-wider select-none"
       >
         <span>{module.label}</span>
         <ChevronUp

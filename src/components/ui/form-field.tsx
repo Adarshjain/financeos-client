@@ -36,7 +36,7 @@ export function FormField({
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? errorId : showHint ? hintId : undefined}
         className={cn(
-          error && 'border-red-300 dark:border-red-700 focus:ring-red-500',
+          error && 'border-rose-300 dark:border-rose-700 focus:ring-rose-500',
         )}
         {...props}
       />
@@ -46,7 +46,7 @@ export function FormField({
         </p>
       )}
       {error && (
-        <p id={errorId} role="alert" className="text-sm text-red-600 dark:text-red-400">
+        <p id={errorId} role="alert" className="text-sm text-rose-600 dark:text-rose-400">
           {error}
         </p>
       )}

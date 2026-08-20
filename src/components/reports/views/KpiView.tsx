@@ -20,7 +20,7 @@ const directionIcons = {
 
 const sentimentColors = {
   good: 'text-emerald-600 dark:text-emerald-400',
-  bad: 'text-red-600 dark:text-red-400',
+  bad: 'text-rose-600 dark:text-rose-400',
   neutral: 'text-slate-500',
 } as const;
 

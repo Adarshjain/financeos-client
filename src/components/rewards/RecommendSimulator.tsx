@@ -125,13 +125,13 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
         {/* Form Column */}
         <Card className="lg:col-span-1 rounded-2xl border-slate-200 dark:border-slate-800 shadow-sm">
           <CardContent className="p-3.5 space-y-3">
-            <div className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
+            <div className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
               Planned Spend
             </div>
 
             {/* Amount */}
             <div className="space-y-1.5">
-              <Label htmlFor={amountId} className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
+              <Label htmlFor={amountId} className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
                 Amount (₹) *
               </Label>
               <div className="relative">
@@ -151,7 +151,7 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
 
             {/* Merchant / Description */}
             <div className="space-y-1.5">
-              <Label htmlFor={merchantId} className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
+              <Label htmlFor={merchantId} className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
                 Merchant / Pattern
               </Label>
               <Input
@@ -167,7 +167,7 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
             {/* Channel & Date */}
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1.5">
-                <Label htmlFor={channelId} className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
+                <Label htmlFor={channelId} className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
                   Channel
                 </Label>
                 <Select value={channel} onValueChange={setChannel}>
@@ -186,7 +186,7 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor={dateId} className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
+                <Label htmlFor={dateId} className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
                   Purchase Date
                 </Label>
                 <DatePicker
@@ -205,14 +205,14 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
             {/* Category Select */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
+                <Label className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
                   Categories ({selectedCategoryIds.length} selected)
                 </Label>
                 {selectedCategoryIds.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setSelectedCategoryIds([])}
-                    className="text-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline"
+                    className="text-2xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline"
                   >
                     Clear
                   </button>
@@ -235,14 +235,14 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                     />
                     <label
                       htmlFor={`cat-${cat.id}`}
-                      className="text-[11px] text-slate-700 dark:text-slate-300 cursor-pointer select-none truncate"
+                      className="text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none truncate"
                     >
                       {cat.name}
                     </label>
                   </div>
                 ))}
                 {filteredCategories.length === 0 && (
-                  <p className="text-[11px] text-slate-400 italic">
+                  <p className="text-xs text-slate-400 italic">
                     {categorySearchQuery ? 'No matching categories' : 'No categories available'}
                   </p>
                 )}
@@ -252,7 +252,7 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
 
             {/* MCC */}
             <div className="space-y-1.5">
-              <Label htmlFor={mccId} className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
+              <Label htmlFor={mccId} className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
                 MCC (Optional)
               </Label>
               <Input
@@ -269,13 +269,13 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Checkbox id="emi-toggle" checked={isEmi} onCheckedChange={(c) => setIsEmi(!!c)} />
-                <Label htmlFor="emi-toggle" className="text-[11px] text-slate-700 dark:text-slate-300 cursor-pointer">
+                <Label htmlFor="emi-toggle" className="text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
                   EMI Transaction
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <Checkbox id="intl-toggle" checked={isIntl} onCheckedChange={(c) => setIsIntl(!!c)} />
-                <Label htmlFor="intl-toggle" className="text-[11px] text-slate-700 dark:text-slate-300 cursor-pointer">
+                <Label htmlFor="intl-toggle" className="text-xs text-slate-700 dark:text-slate-300 cursor-pointer">
                   International
                 </Label>
               </div>
@@ -284,14 +284,14 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
             {/* Compare Cards Multi-Select */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
+                <Label className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
                   Compare Cards ({selectedAccountIds.length === 0 ? 'All Cards' : `${selectedAccountIds.length} selected`})
                 </Label>
                 {selectedAccountIds.length > 0 && (
                   <button
                     type="button"
                     onClick={() => setSelectedAccountIds([])}
-                    className="text-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline"
+                    className="text-2xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline"
                   >
                     Clear (All Cards)
                   </button>
@@ -307,14 +307,14 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                     />
                     <label
                       htmlFor={`card-${card.id}`}
-                      className="text-[11px] text-slate-700 dark:text-slate-300 cursor-pointer select-none truncate"
+                      className="text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none truncate"
                     >
                       {card.name}
                     </label>
                   </div>
                 ))}
                 {creditCards.length === 0 && (
-                  <p className="text-[11px] text-slate-400 italic">No credit cards available</p>
+                  <p className="text-xs text-slate-400 italic">No credit cards available</p>
                 )}
               </div>
             </div>
@@ -360,10 +360,10 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
             <div className="space-y-2.5">
               {/* Header Summary Bar */}
               <div className="flex items-center justify-between px-1">
-                <span className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
+                <span className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
                   {result.recommendations.length} card{result.recommendations.length === 1 ? '' : 's'} evaluated
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono">
+                <span className="text-2xs text-slate-400 font-mono">
                   Spend: {formatMoney(result.input.amount)}
                 </span>
               </div>
@@ -387,19 +387,19 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                           {/* Left Info */}
                           <div className="space-y-0.5 min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-[11px] font-bold text-slate-400">
+                              <span className="text-xs font-bold text-slate-400">
                                 #{card.rank}
                               </span>
                               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate">
                                 {card.accountName}
                               </h3>
                               {isBest && (
-                                <span className="text-[10px] uppercase tracking-wide font-bold text-emerald-600 dark:text-emerald-400">
+                                <span className="text-2xs uppercase tracking-wide font-bold text-emerald-600 dark:text-emerald-400">
                                   Best
                                 </span>
                               )}
                             </div>
-                            <div className="text-[10px] text-slate-400">
+                            <div className="text-2xs text-slate-400">
                               Guaranteed {formatMoney(card.guaranteedValueInr)}
                               {card.milestoneValueInr > 0 && ` + Milestone ${formatMoney(card.milestoneValueInr)}`}
                             </div>
@@ -411,7 +411,7 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                               <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                                 {formatMoney(card.totalValueInr)}
                               </div>
-                              <div className="text-[10px] text-slate-400 font-medium">
+                              <div className="text-2xs text-slate-400 font-medium">
                                 {card.effectiveRatePct}%
                               </div>
                             </div>
@@ -428,19 +428,19 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
 
                         {/* Notice Banners */}
                         {card.pointValueSource === 'DEFAULT' && card.pointsValued && (
-                          <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-[11px] text-amber-700 dark:text-amber-500 flex items-center gap-1.5">
+                          <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-500 flex items-center gap-1.5">
                             <Info className="h-3.5 w-3.5 shrink-0" />
                             <span>Assumed {formatMoney(card.pointValueInr)}/pt — set point value in rewards config</span>
                           </div>
                         )}
                         {card.cycleFallback && (
-                          <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-[11px] text-amber-700 dark:text-amber-500 flex items-center gap-1.5">
+                          <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-500 flex items-center gap-1.5">
                             <CalendarDays className="h-3.5 w-3.5 shrink-0" />
                             <span>Statement cycle fallback active</span>
                           </div>
                         )}
                         {card.noRulesConfigured && (
-                          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 px-3 py-2 text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 px-3 py-2 text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                             <AlertCircle className="h-3.5 w-3.5 shrink-0" />
                             <span>No reward rules configured</span>
                           </div>
@@ -451,7 +451,7 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                           <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-3">
                             {/* Rule Lines */}
                             <div className="space-y-1.5">
-                              <div className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
+                              <div className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
                                 Rule Breakdown
                               </div>
                               <div className="space-y-1.5">
@@ -460,13 +460,13 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                                   return (
                                     <div
                                       key={lIdx}
-                                      className="bg-white dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-800/80 shadow-sm p-3 text-[11px] flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                                      className="bg-white dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-800/80 shadow-sm p-3 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                                     >
                                       <div className="space-y-0.5 min-w-0">
                                         <div className="font-semibold text-slate-800 dark:text-slate-200 truncate">
                                           {line.ruleName || 'Base Rule Evaluation'}
                                           {line.stacking && (
-                                            <span className="ml-1.5 px-1 py-0.2 rounded text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-500 font-mono">
+                                            <span className="ml-1.5 px-1 py-0.2 rounded text-2xs bg-slate-100 dark:bg-slate-800 text-slate-500 font-mono">
                                               {line.stacking}
                                             </span>
                                           )}
@@ -478,7 +478,7 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                                           </span>
                                         </div>
                                         {line.capStatus && (
-                                          <div className="text-[10px] text-slate-400 pt-0.5">
+                                          <div className="text-2xs text-slate-400 pt-0.5">
                                             <span>
                                               Cap headroom {formatMoney(line.capStatus.capRemainingBefore)} of {formatMoney(line.capStatus.totalCap)}
                                               {line.capStatus.bucketName ? ` (shared: ${line.capStatus.bucketName})` : ''}
@@ -489,7 +489,7 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                                                 className={cn(
                                                   'h-full rounded-full',
                                                   line.capStatus.capRemainingBefore <= 0
-                                                    ? 'bg-red-400'
+                                                    ? 'bg-rose-400'
                                                     : 'bg-emerald-500'
                                                 )}
                                                 style={{
@@ -506,7 +506,7 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                                           {line.earnedUnit === 'POINTS' ? `${line.earned} pts` : formatMoney(line.earned)}
                                         </div>
                                         {line.earnedUnit === 'POINTS' && (
-                                          <div className="text-[10px] text-slate-400">
+                                          <div className="text-2xs text-slate-400">
                                             = {formatMoney(line.earnedValueInr)}
                                           </div>
                                         )}
@@ -516,7 +516,7 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                                 })}
 
                                 {card.ruleLines.length === 0 && (
-                                  <p className="text-[11px] text-slate-400 italic">No matching rule lines.</p>
+                                  <p className="text-xs text-slate-400 italic">No matching rule lines.</p>
                                 )}
                               </div>
                             </div>
@@ -524,14 +524,14 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                             {/* Milestone Statuses */}
                             {card.milestones.length > 0 && (
                               <div className="space-y-1.5">
-                                <div className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
+                                <div className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">
                                   Milestone Proximity & Crossings
                                 </div>
                                 <div className="space-y-1.5">
                                   {card.milestones.map((m) => (
                                     <div
                                       key={m.milestoneId}
-                                      className="bg-white dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-800/80 shadow-sm p-3 text-[11px] space-y-1"
+                                      className="bg-white dark:bg-slate-900/60 rounded-xl border border-slate-100 dark:border-slate-800/80 shadow-sm p-3 text-xs space-y-1"
                                     >
                                       <div className="flex items-center justify-between">
                                         <div className="font-semibold text-slate-800 dark:text-slate-200">
@@ -543,7 +543,7 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                                         </div>
                                       </div>
 
-                                      <div className="flex flex-wrap justify-between text-[10px] text-slate-400">
+                                      <div className="flex flex-wrap justify-between text-2xs text-slate-400">
                                         <span>
                                           Progress: {formatMoney(m.progress)} / {formatMoney(m.threshold)}
                                         </span>

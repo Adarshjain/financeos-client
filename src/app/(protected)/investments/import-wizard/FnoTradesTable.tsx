@@ -36,7 +36,7 @@ export function FnoTradesTable({
       <div className="flex items-center justify-between gap-2 flex-wrap px-0.5">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-bold uppercase tracking-wider text-muted-foreground px-1">F&O Closed Trades</h3>
-          <Badge variant="outline" className="text-[10px] bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+          <Badge variant="outline" className="text-2xs bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800">
             {trades.length} contract{trades.length > 1 ? 's' : ''}
           </Badge>
         </div>
@@ -46,7 +46,7 @@ export function FnoTradesTable({
             className={`font-bold tabular-nums ${
               totalRealized >= 0
                 ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-red-600 dark:text-red-400'
+                : 'text-rose-600 dark:text-rose-400'
             }`}
           >
             {formatCurrency(totalRealized)}
@@ -78,16 +78,16 @@ export function FnoTradesTable({
                   <div className="flex flex-col">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-extrabold text-sm text-slate-900 dark:text-white">{t.tradingSymbol}</span>
-                      <Badge variant="secondary" className="text-[9px] uppercase font-mono px-1 py-0">
+                      <Badge variant="secondary" className="text-2xs uppercase font-mono px-1 py-0">
                         {t.contractType}
                       </Badge>
                       {t.isDuplicate && (
-                        <Badge variant="destructive" className="text-[9px] px-1 py-0">
+                        <Badge variant="destructive" className="text-2xs px-1 py-0">
                           Duplicate
                         </Badge>
                       )}
                     </div>
-                    <span className="text-[10px] text-slate-400 mt-0.5">
+                    <span className="text-2xs text-slate-400 mt-0.5">
                       {t.underlyingSymbol && `Underlying: ${t.underlyingSymbol}`}
                       {t.optionType && ` | ${t.optionType}`}
                       {t.strikePrice && ` @ ${t.strikePrice}`}
@@ -98,7 +98,7 @@ export function FnoTradesTable({
               </div>
 
               {/* Compact Metrics Grid */}
-              <div className="grid grid-cols-4 gap-1 text-[10px] pt-0.5 tabular-nums">
+              <div className="grid grid-cols-4 gap-1 text-2xs pt-0.5 tabular-nums">
                 <div className="flex flex-col">
                   <span className="text-slate-400 font-semibold">Qty</span>
                   <span className="font-mono text-slate-700 dark:text-slate-200">{formatNumber(t.quantity)}</span>
@@ -117,7 +117,7 @@ export function FnoTradesTable({
                     className={`font-mono font-bold ${
                       t.realizedPnl >= 0
                         ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-red-600 dark:text-red-400'
+                        : 'text-rose-600 dark:text-rose-400'
                     }`}
                   >
                     {formatCurrency(t.realizedPnl)}
@@ -133,7 +133,7 @@ export function FnoTradesTable({
       <div className="hidden sm:block overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-md">
         <Table>
           <TableHeader>
-            <TableRow className="text-[11px] bg-slate-50 dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-900">
+            <TableRow className="text-xs bg-slate-50 dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-900">
               <TableHead className="w-8 px-1 text-center py-1.5 h-7"></TableHead>
               <TableHead className="py-1.5 h-7">Contract</TableHead>
               <TableHead className="text-right py-1.5 h-7">Qty</TableHead>
@@ -167,20 +167,20 @@ export function FnoTradesTable({
                         <span className="font-medium">{t.tradingSymbol}</span>
                         <Badge
                           variant="secondary"
-                          className="text-[10px] uppercase font-mono px-1 py-0"
+                          className="text-2xs uppercase font-mono px-1 py-0"
                         >
                           {t.contractType}
                         </Badge>
                         {t.isDuplicate && (
                           <Badge
                             variant="destructive"
-                            className="text-[10px] px-1 py-0"
+                            className="text-2xs px-1 py-0"
                           >
                             Duplicate
                           </Badge>
                         )}
                       </div>
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-2xs text-slate-400">
                         {t.underlyingSymbol && `Underlying: ${t.underlyingSymbol}`}
                         {t.optionType && ` | ${t.optionType}`}
                         {t.strikePrice && ` @ ${t.strikePrice}`}
@@ -204,7 +204,7 @@ export function FnoTradesTable({
                     className={`text-right font-mono font-medium py-1.5 tabular-nums ${
                       t.realizedPnl >= 0
                         ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-red-600 dark:text-red-400'
+                        : 'text-rose-600 dark:text-rose-400'
                     }`}
                   >
                     {formatCurrency(t.realizedPnl)}

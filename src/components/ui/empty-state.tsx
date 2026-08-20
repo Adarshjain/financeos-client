@@ -38,7 +38,7 @@ export function EmptyState({
           {title}
         </h3>
         {description && (
-          <p className={cn('text-slate-400 dark:text-slate-500', compact ? 'text-[11px]' : 'text-xs')}>
+          <p className={cn('text-slate-400 dark:text-slate-500', compact ? 'text-xs' : 'text-xs')}>
             {description}
           </p>
         )}

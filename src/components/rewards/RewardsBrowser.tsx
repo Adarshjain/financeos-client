@@ -51,7 +51,7 @@ function MilestoneRow({ m }: { m: MilestoneStatus }) {
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{m.name}</span>
         <span className={cn(
-          'text-[10px] font-semibold whitespace-nowrap',
+          'text-2xs font-semibold whitespace-nowrap',
           m.achieved ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500',
         )}>
           {m.achieved
@@ -59,18 +59,18 @@ function MilestoneRow({ m }: { m: MilestoneStatus }) {
             : m.payoutType === 'CASH_VALUE' ? `${payout} at target` : 'Tracker'}
         </span>
       </div>
-      <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+      <div className="text-2xs text-slate-400 dark:text-slate-500 mt-0.5">
         {m.windowType === 'ONE_TIME' && 'One-time · '}
         {formatDate(m.windowStart)} – {formatDate(m.windowEnd)}
         {m.achieved && m.payoutDate && ` · credited ${formatDate(m.payoutDate)}`}
       </div>
       {m.achieved ? (
-        <div className="mt-1.5 text-[10px] text-slate-400 dark:text-slate-500">
+        <div className="mt-1.5 text-2xs text-slate-400 dark:text-slate-500">
           {milestoneProgressText(m)}
         </div>
       ) : (
         <div className="mt-2">
-          <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 mb-0.5">
+          <div className="flex justify-between text-2xs text-slate-400 dark:text-slate-500 mb-0.5">
             <span>{milestoneProgressText(m)}</span>
             <span>{pct}%</span>
           </div>
@@ -104,7 +104,7 @@ function MilestoneSection({ title, items, meta, metaClass, open, onToggle }: {
           <Badge variant="outline" size="sm">{items.length}</Badge>
         </div>
         <div className="flex items-center gap-2">
-          {meta && <span className={cn('text-[10px] font-semibold', metaClass)}>{meta}</span>}
+          {meta && <span className={cn('text-2xs font-semibold', metaClass)}>{meta}</span>}
           {open ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
         </div>
       </button>
@@ -339,7 +339,7 @@ export default function RewardsBrowser({
           <div className="flex items-center gap-1.5">
             <DatePicker date={from} onSelect={(d) => d && withSpinner(() => { setFrom(d); setPage(0); })}
                         trigger={dateTrigger(from)} />
-            <span className="text-[10px] text-slate-400">→</span>
+            <span className="text-2xs text-slate-400">→</span>
             <DatePicker date={to} onSelect={(d) => d && withSpinner(() => { setTo(d); setPage(0); })}
                         trigger={dateTrigger(to)} />
           </div>
@@ -396,12 +396,12 @@ export default function RewardsBrowser({
       <PageActionBar>{renderActionBar(true)}</PageActionBar>
 
       {report?.cycleFallback && (
-        <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-[11px] text-amber-700 dark:text-amber-500">
+        <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-500">
           Some statement-cycle caps fell back to calendar months — add statements for this account to get exact cycle windows.
         </div>
       )}
       {report?.anniversaryFallback && (
-        <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-[11px] text-amber-700 dark:text-amber-500">
+        <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-500">
           Some anniversary-year windows fell back to calendar years — set the card’s anniversary date by editing the account on the Accounts page.
         </div>
       )}
@@ -412,19 +412,19 @@ export default function RewardsBrowser({
           {summary ? (
             <div className={cn('grid grid-cols-2 md:grid-cols-4 gap-2.5', loading && 'opacity-60')}>
               <div>
-                <p className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Eligible spend</p>
+                <p className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Eligible spend</p>
                 <p className="text-sm font-bold text-slate-800 dark:text-slate-100">{formatMoney(summary.basisSpend)}</p>
-                <p className="text-[10px] text-slate-400">{summary.matchedCount}/{summary.transactionCount} txns earned</p>
+                <p className="text-2xs text-slate-400">{summary.matchedCount}/{summary.transactionCount} txns earned</p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Gross rewards</p>
+                <p className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Gross rewards</p>
                 <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                   {formatMoney(summary.grossValueInr)}
                   {summary.points + summary.milestonesPts > 0 && (
                     <span className="text-sky-600 dark:text-sky-400"> + {summary.points + summary.milestonesPts} pts</span>
                   )}
                 </p>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-2xs text-slate-400">
                   {[
                     summary.cashbackInr > 0 ? `${formatMoney(summary.cashbackInr)} cashback` : null,
                     summary.milestonesInr > 0 ? `${formatMoney(summary.milestonesInr)} milestones` : null,
@@ -435,23 +435,23 @@ export default function RewardsBrowser({
                 </p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Adjustments</p>
+                <p className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Adjustments</p>
                 <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
                   {formatMoney(summary.discounts - summary.fees)}
                 </p>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-2xs text-slate-400">
                   +{formatMoney(summary.discounts)} discounts − {formatMoney(summary.fees)} fees
                 </p>
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Effective benefit</p>
+                <p className="text-2xs uppercase tracking-wide font-bold text-slate-400 dark:text-slate-500">Effective benefit</p>
                 <p className={cn(
                   'text-sm font-bold',
-                  summary.effectiveValueInr >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500',
+                  summary.effectiveValueInr >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500',
                 )}>
                   {formatMoney(summary.effectiveValueInr)}
                 </p>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-2xs text-slate-400">
                   {summary.effectivePct != null ? `${summary.effectivePct}% of spend` : '—'}
                 </p>
               </div>
@@ -511,7 +511,7 @@ export default function RewardsBrowser({
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{rule.name}</span>
                   <span className={cn(
-                    'text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide shrink-0',
+                    'text-2xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wide shrink-0',
                     rule.stacking === 'EXCLUSIVE'
                       ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                       : 'bg-violet-100 dark:bg-violet-950 text-violet-600 dark:text-violet-400',
@@ -524,12 +524,12 @@ export default function RewardsBrowser({
                     ? `${rule.earned} pts`
                     : formatMoney(rule.earned)}
                 </div>
-                <div className="text-[10px] text-slate-400 dark:text-slate-500">
+                <div className="text-2xs text-slate-400 dark:text-slate-500">
                   {rule.matchedCount} txns · on {formatMoney(rule.basisMatched)}
                 </div>
                 {cap && (
                   <div className="mt-2">
-                    <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 mb-0.5">
+                    <div className="flex justify-between text-2xs text-slate-400 dark:text-slate-500 mb-0.5">
                       <span>
                         {cap.sharedBucket ? `Shared "${cap.sharedBucket}" ` : 'Cap '}
                         {rule.earnedUnit === 'POINTS' ? `${cap.used}/${cap.cap} pts` : `${formatMoney(cap.used)}/${formatMoney(cap.cap)}`}
@@ -541,7 +541,7 @@ export default function RewardsBrowser({
                       <div
                         className={cn(
                           'h-full rounded-full transition-all',
-                          capPct != null && capPct >= 100 ? 'bg-red-500' : capPct != null && capPct >= 80 ? 'bg-amber-500' : 'bg-emerald-500',
+                          capPct != null && capPct >= 100 ? 'bg-rose-500' : capPct != null && capPct >= 80 ? 'bg-amber-500' : 'bg-emerald-500',
                         )}
                         style={{ width: `${capPct ?? 0}%` }}
                       />
@@ -569,10 +569,10 @@ export default function RewardsBrowser({
                   className="p-3 space-y-1.5 cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-800/40 active:bg-slate-100 transition-colors"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                    <span className="text-2xs text-slate-400 dark:text-slate-500 whitespace-nowrap">
                       {formatDate(line.effectiveDate)}
                     </span>
-                    <span className={cn('text-[10px] font-semibold whitespace-nowrap', REASON_META[line.reason].textClass)}>
+                    <span className={cn('text-2xs font-semibold whitespace-nowrap', REASON_META[line.reason].textClass)}>
                       {REASON_META[line.reason].label}
                     </span>
                   </div>
@@ -580,7 +580,7 @@ export default function RewardsBrowser({
                     {lineDescription(line)}
                   </div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
                       {formatMoney(line.basis)}
                       {line.basis !== line.amount && ` of ${formatMoney(line.amount)}`}
                       {line.ruleName && <span className="text-slate-400"> · {line.ruleName}</span>}
@@ -602,12 +602,12 @@ export default function RewardsBrowser({
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-800 text-left">
-                  <th className="px-3 py-2 font-semibold text-slate-400 dark:text-slate-500 text-[10px] uppercase tracking-wide">Date</th>
-                  <th className="px-3 py-2 font-semibold text-slate-400 dark:text-slate-500 text-[10px] uppercase tracking-wide">Description</th>
-                  <th className="px-3 py-2 font-semibold text-slate-400 dark:text-slate-500 text-[10px] uppercase tracking-wide text-right">Basis</th>
-                  <th className="px-3 py-2 font-semibold text-slate-400 dark:text-slate-500 text-[10px] uppercase tracking-wide">Rule</th>
-                  <th className="px-3 py-2 font-semibold text-slate-400 dark:text-slate-500 text-[10px] uppercase tracking-wide text-right">Earned</th>
-                  <th className="px-3 py-2 font-semibold text-slate-400 dark:text-slate-500 text-[10px] uppercase tracking-wide">Why</th>
+                  <th className="px-3 py-2 font-semibold text-slate-400 dark:text-slate-500 text-2xs uppercase tracking-wide">Date</th>
+                  <th className="px-3 py-2 font-semibold text-slate-400 dark:text-slate-500 text-2xs uppercase tracking-wide">Description</th>
+                  <th className="px-3 py-2 font-semibold text-slate-400 dark:text-slate-500 text-2xs uppercase tracking-wide text-right">Basis</th>
+                  <th className="px-3 py-2 font-semibold text-slate-400 dark:text-slate-500 text-2xs uppercase tracking-wide">Rule</th>
+                  <th className="px-3 py-2 font-semibold text-slate-400 dark:text-slate-500 text-2xs uppercase tracking-wide text-right">Earned</th>
+                  <th className="px-3 py-2 font-semibold text-slate-400 dark:text-slate-500 text-2xs uppercase tracking-wide">Why</th>
                 </tr>
               </thead>
               <tbody>
@@ -624,7 +624,7 @@ export default function RewardsBrowser({
                     <td className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
                       {formatMoney(line.basis)}
                       {line.basis !== line.amount && (
-                        <span className="text-[10px] text-slate-400 block">of {formatMoney(line.amount)}</span>
+                        <span className="text-2xs text-slate-400 block">of {formatMoney(line.amount)}</span>
                       )}
                     </td>
                     <td className="px-3 py-2 text-slate-500 dark:text-slate-400 max-w-[140px] truncate">
@@ -636,7 +636,7 @@ export default function RewardsBrowser({
                     )}>
                       {line.earned > 0 ? formatEarned(line) : '—'}
                     </td>
-                    <td className={cn('px-3 py-2 text-[10px] font-semibold whitespace-nowrap', REASON_META[line.reason].textClass)}>
+                    <td className={cn('px-3 py-2 text-2xs font-semibold whitespace-nowrap', REASON_META[line.reason].textClass)}>
                       {REASON_META[line.reason].label}
                     </td>
                   </tr>
@@ -687,9 +687,9 @@ export default function RewardsBrowser({
                   </p>
                   {selectedLine.description && selectedLine.sourcedDescription
                     && selectedLine.description !== selectedLine.sourcedDescription && (
-                    <p className="text-[10px] text-slate-400 break-words">{selectedLine.sourcedDescription}</p>
+                    <p className="text-2xs text-slate-400 break-words">{selectedLine.sourcedDescription}</p>
                   )}
-                  <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] pt-1">
+                  <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs pt-1">
                     <span className="text-slate-400">Transaction date</span>
                     <span className="text-right font-semibold text-slate-700 dark:text-slate-300">{formatDate(selectedLine.transactionDate)}</span>
                     {selectedLine.effectiveDate !== selectedLine.transactionDate && (<>
@@ -714,20 +714,20 @@ export default function RewardsBrowser({
                 </div>
                 <div className="rounded-xl border border-slate-100 dark:border-slate-800/80 p-3 space-y-1.5">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-slate-400 text-[11px]">Rule</span>
+                    <span className="text-slate-400 text-xs">Rule</span>
                     <span className="font-semibold text-slate-700 dark:text-slate-300">{selectedLine.ruleName ?? '—'}</span>
                   </div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-slate-400 text-[11px]">Earned</span>
+                    <span className="text-slate-400 text-xs">Earned</span>
                     <span className={cn('font-bold', selectedLine.earned > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400')}>
                       {selectedLine.earned > 0 ? formatEarned(selectedLine) : '—'}
                     </span>
                   </div>
-                  <p className={cn('text-[11px] font-medium pt-1 border-t border-slate-100 dark:border-slate-800/60', REASON_META[selectedLine.reason].textClass)}>
+                  <p className={cn('text-xs font-medium pt-1 border-t border-slate-100 dark:border-slate-800/60', REASON_META[selectedLine.reason].textClass)}>
                     {REASON_META[selectedLine.reason].label} — {REASON_META[selectedLine.reason].explain}
                   </p>
                 </div>
-                <p className="text-[9px] text-slate-300 dark:text-slate-600 font-mono break-all">
+                <p className="text-2xs text-slate-300 dark:text-slate-600 font-mono break-all">
                   txn {selectedLine.transactionId}
                 </p>
               </DialogBody>

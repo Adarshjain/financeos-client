@@ -156,7 +156,7 @@ export default async function AccountsPage() {
                 <Landmark className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">Bank Accounts</h2>
                 <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+                  className="text-2xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
                   {bankAccounts.length}
                 </span>
               </div>
@@ -173,7 +173,7 @@ export default async function AccountsPage() {
                           {account.name}
                         </div>
                         {account.description ? (
-                          <div className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">
+                          <div className="text-xs text-slate-400 dark:text-slate-500 line-clamp-1">
                             {account.description}
                           </div>
                         ) : null}
@@ -181,7 +181,7 @@ export default async function AccountsPage() {
 
                       {account.last4 ? (
                         <span
-                          className="text-[10px] tabular-nums bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded shrink-0">
+                          className="text-2xs tabular-nums bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded shrink-0">
                           •••• {account.last4}
                         </span>
                       ) : null}
@@ -190,17 +190,17 @@ export default async function AccountsPage() {
                     {/* Metadata Badges */}
                     <div className="flex flex-wrap gap-1.5 items-center">
                       <Badge variant={account.financialPosition === 'liability' ? 'warning' : 'success'}
-                             className="text-[9px] py-0 px-2 font-semibold uppercase">
+                             className="text-2xs py-0 px-2 font-semibold uppercase">
                         {getPositionLabel(account.financialPosition)}
                       </Badge>
                       {account.excludeFromNetAsset ? (
-                        <Badge variant="destructive" className="text-[9px] py-0 px-2 font-semibold uppercase">
+                        <Badge variant="destructive" className="text-2xs py-0 px-2 font-semibold uppercase">
                           Excluded
                         </Badge>
                       ) : null}
                       {account.ingestFromDate ? (
                         <Badge variant="info"
-                               className="text-[9px] py-0 px-2 font-semibold uppercase flex items-center gap-1">
+                               className="text-2xs py-0 px-2 font-semibold uppercase flex items-center gap-1">
                           <RefreshCw className="w-2.5 h-2.5 animate-spin-slow" />
                           Sync Active
                         </Badge>
@@ -213,14 +213,14 @@ export default async function AccountsPage() {
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Balance</span>
                           {account.balanceAnchored && account.anchorDate ? (
-                            <span className="text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded">
+                            <span className="text-2xs font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded">
                               Anchored as of {formatDate(account.anchorDate)}
                             </span>
                           ) : null}
                           {account.reconciliationGap !== null && account.reconciliationGap !== undefined ? (
                             <span
                               title={`Calculated from opening balance: ${formatMoney(account.openingBalance ?? 0)}. Gap from anchored statement: ${formatMoney(account.reconciliationGap)}. Check statement history.`}
-                              className="text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded cursor-help flex items-center gap-1">
+                              className="text-2xs font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded cursor-help flex items-center gap-1">
                               ⚠️ Gap: {formatMoney(account.reconciliationGap)}
                             </span>
                           ) : null}
@@ -232,7 +232,7 @@ export default async function AccountsPage() {
                     </div>
 
                     {account.ingestFromDate ? (
-                      <div className="text-[9px] text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-1">
+                      <div className="text-2xs text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-1">
                         <Calendar className="w-3 h-3 text-slate-400 dark:text-slate-600" />
                         <span>Gmail Sync Watermark: {formatDate(account.ingestFromDate)}</span>
                       </div>
@@ -255,11 +255,11 @@ export default async function AccountsPage() {
                 <CardIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">Credit Cards</h2>
                 <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
+                  className="text-2xs font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
                   {creditCards.length}
                 </span>
               </div>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold tabular-nums">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold tabular-nums">
                 Total Limit: {formatMoney(totalCreditLimit)}
               </span>
             </div>
@@ -275,14 +275,14 @@ export default async function AccountsPage() {
                           {account.name}
                         </div>
                         {account.description ? (
-                          <div className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">
+                          <div className="text-xs text-slate-400 dark:text-slate-500 line-clamp-1">
                             {account.description}
                           </div>
                         ) : null}
                       </div>
 
                       <span
-                        className="text-[10px] tabular-nums bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded shrink-0">
+                        className="text-2xs tabular-nums bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded shrink-0">
                         •••• {account.last4}
                       </span>
                     </div>
@@ -290,17 +290,17 @@ export default async function AccountsPage() {
                     {/* Metadata Badges */}
                     <div className="flex flex-wrap gap-1.5 items-center">
                       <Badge variant={account.financialPosition === 'asset' ? 'success' : 'warning'}
-                             className="text-[9px] py-0 px-2 font-semibold uppercase">
+                             className="text-2xs py-0 px-2 font-semibold uppercase">
                         {getPositionLabel(account.financialPosition)}
                       </Badge>
                       {account.excludeFromNetAsset ? (
-                        <Badge variant="destructive" className="text-[9px] py-0 px-2 font-semibold uppercase">
+                        <Badge variant="destructive" className="text-2xs py-0 px-2 font-semibold uppercase">
                           Excluded
                         </Badge>
                       ) : null}
                       {account.ingestFromDate ? (
                         <Badge variant="info"
-                               className="text-[9px] py-0 px-2 font-semibold uppercase flex items-center gap-1">
+                               className="text-2xs py-0 px-2 font-semibold uppercase flex items-center gap-1">
                           <RefreshCw className="w-2.5 h-2.5 animate-spin-slow" />
                           Sync Active
                         </Badge>
@@ -313,7 +313,7 @@ export default async function AccountsPage() {
                         <div className="flex items-center gap-1.5">
                           <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Balance</span>
                           {account.balanceAnchored && account.anchorDate ? (
-                            <span className="text-[10px] font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded">
+                            <span className="text-2xs font-semibold bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded">
                               Anchored as of {formatDate(account.anchorDate)}
                             </span>
                           ) : null}
@@ -346,12 +346,12 @@ export default async function AccountsPage() {
                             barColor = 'bg-amber-500 dark:bg-amber-400';
                             labelColor = 'text-amber-600 dark:text-amber-400';
                           } else if (utilizationPct >= 70) {
-                            barColor = 'bg-red-500 dark:bg-red-400';
-                            labelColor = 'text-red-600 dark:text-red-400';
+                            barColor = 'bg-rose-500 dark:bg-rose-400';
+                            labelColor = 'text-rose-600 dark:text-rose-400';
                           }
                           return (
                             <div className="space-y-1 pt-1">
-                              <div className="flex justify-between text-[10px] font-medium">
+                              <div className="flex justify-between text-2xs font-medium">
                                 <span className="text-slate-400 dark:text-slate-500">Utilization</span>
                                 <span className={cn('tabular-nums font-bold', labelColor)}>
                                   {utilizationPct}%
@@ -371,21 +371,21 @@ export default async function AccountsPage() {
                     </div>
 
                     <div
-                      className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-50 dark:border-slate-800/30 text-[10px] text-slate-500 dark:text-slate-400">
+                      className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-50 dark:border-slate-800/30 text-2xs text-slate-500 dark:text-slate-400">
                       <div className="flex flex-col">
-                        <span className="text-[9px] text-slate-400">Due Date</span>
+                        <span className="text-2xs text-slate-400">Due Date</span>
                         <span
                           className="font-semibold text-slate-700 dark:text-slate-300">{getOrdinalDay(account.paymentDueDay)} of every month</span>
                       </div>
                       <div className="flex flex-col text-right">
-                        <span className="text-[9px] text-slate-400">Grace Period</span>
+                        <span className="text-2xs text-slate-400">Grace Period</span>
                         <span
                           className="font-semibold text-slate-700 dark:text-slate-300">{account.gracePeriodDays} Days</span>
                       </div>
                     </div>
 
                     {account.ingestFromDate ? (
-                      <div className="text-[9px] text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-1">
+                      <div className="text-2xs text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-1">
                         <Calendar className="w-3 h-3 text-slate-400 dark:text-slate-600" />
                         <span>Gmail Sync Watermark: {formatDate(account.ingestFromDate)}</span>
                       </div>
@@ -408,7 +408,7 @@ export default async function AccountsPage() {
                 <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">Broker Accounts</h2>
                 <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
+                  className="text-2xs font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
                   {brokerAccounts.length}
                 </span>
               </div>
@@ -424,11 +424,11 @@ export default async function AccountsPage() {
                           className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                           {account.name}
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                           {account.provider || 'Broker'} {account.clientId ? `• ${account.clientId}` : ''}
                         </div>
                         {account.description ? (
-                          <div className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">
+                          <div className="text-xs text-slate-400 dark:text-slate-500 line-clamp-1">
                             {account.description}
                           </div>
                         ) : null}
@@ -437,11 +437,11 @@ export default async function AccountsPage() {
 
                     <div className="flex flex-wrap gap-1.5 items-center">
                       <Badge variant={account.financialPosition === 'liability' ? 'warning' : 'success'}
-                             className="text-[9px] py-0 px-2 font-semibold uppercase">
+                             className="text-2xs py-0 px-2 font-semibold uppercase">
                         {getPositionLabel(account.financialPosition)}
                       </Badge>
                       {account.excludeFromNetAsset ? (
-                        <Badge variant="destructive" className="text-[9px] py-0 px-2 font-semibold uppercase">
+                        <Badge variant="destructive" className="text-2xs py-0 px-2 font-semibold uppercase">
                           Excluded
                         </Badge>
                       ) : null}
@@ -480,7 +480,7 @@ export default async function AccountsPage() {
                 <Wallet className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                 <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">Other Accounts</h2>
                 <span
-                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400">
+                  className="text-2xs font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400">
                   {genericAccounts.length}
                 </span>
               </div>
@@ -497,7 +497,7 @@ export default async function AccountsPage() {
                           {account.name}
                         </div>
                         {account.description ? (
-                          <div className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">
+                          <div className="text-xs text-slate-400 dark:text-slate-500 line-clamp-1">
                             {account.description}
                           </div>
                         ) : null}
@@ -507,17 +507,17 @@ export default async function AccountsPage() {
                     {/* Metadata Badges */}
                     <div className="flex flex-wrap gap-1.5 items-center">
                       <Badge variant={account.financialPosition === 'liability' ? 'warning' : 'success'}
-                             className="text-[9px] py-0 px-2 font-semibold uppercase">
+                             className="text-2xs py-0 px-2 font-semibold uppercase">
                         {getPositionLabel(account.financialPosition)}
                       </Badge>
                       {account.excludeFromNetAsset ? (
-                        <Badge variant="destructive" className="text-[9px] py-0 px-2 font-semibold uppercase">
+                        <Badge variant="destructive" className="text-2xs py-0 px-2 font-semibold uppercase">
                           Excluded
                         </Badge>
                       ) : null}
                       {account.ingestFromDate ? (
                         <Badge variant="info"
-                               className="text-[9px] py-0 px-2 font-semibold uppercase flex items-center gap-1">
+                               className="text-2xs py-0 px-2 font-semibold uppercase flex items-center gap-1">
                           <RefreshCw className="w-2.5 h-2.5 animate-spin-slow" />
                           Sync Active
                         </Badge>
@@ -535,7 +535,7 @@ export default async function AccountsPage() {
                     </div>
 
                     {account.ingestFromDate ? (
-                      <div className="text-[9px] text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-1">
+                      <div className="text-2xs text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-1">
                         <Calendar className="w-3 h-3 text-slate-400 dark:text-slate-600" />
                         <span>Gmail Sync Watermark: {formatDate(account.ingestFromDate)}</span>
                       </div>

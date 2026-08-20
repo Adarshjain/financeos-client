@@ -55,7 +55,7 @@ const parseNumber = (val: string | number | null | undefined): number => {
               Avg. <strong className="text-slate-800 dark:text-slate-200 font-bold">{formatMoney(pos.avgCost)}</strong>
             </span>
               <span>•</span>
-              <Badge variant="secondary" className="text-[9px] uppercase px-1.5 py-0 font-bold">
+              <Badge variant="secondary" className="text-2xs uppercase px-1.5 py-0 font-bold">
                 {pos.instrument.type}
               </Badge>
             </div>
@@ -76,7 +76,7 @@ const parseNumber = (val: string | number | null | undefined): number => {
                 {manualOnly && (
                     <Badge
                         variant="outline"
-                        className="text-[8px] px-1 py-0 font-normal text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800"
+                        className="text-2xs px-1 py-0 font-normal text-slate-400 dark:text-slate-500 border-slate-200 dark:border-slate-800"
                     >
                       manual price only
                     </Badge>
@@ -84,7 +84,7 @@ const parseNumber = (val: string | number | null | undefined): number => {
                 {parseNumber(pos.quantity) === 0 && pos.mergedIntoName && (
                     <Badge
                         variant="outline"
-                        className="text-[10px] px-1.5 py-0 font-medium text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/40"
+                        className="text-2xs px-1.5 py-0 font-medium text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-950/40"
                     >
                       ⤳ Merged into {pos.mergedIntoName} {pos.mergedIntoDate ? `(${formatDate(pos.mergedIntoDate)})` : ''}
                     </Badge>
@@ -92,7 +92,7 @@ const parseNumber = (val: string | number | null | undefined): number => {
               </div>
               <span
                   className="text-sm font-extrabold text-slate-900 dark:text-white flex items-center gap-1.5 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{pos.instrument.symbol || pos.instrument.name}</span>
-              <div className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">{pos.instrument.name}</div>
+              <div className="text-xs text-slate-400 line-clamp-1 mt-0.5">{pos.instrument.name}</div>
             </div>
 
             <div className="text-right shrink-0">
@@ -124,7 +124,7 @@ const parseNumber = (val: string | number | null | undefined): number => {
                 {parseNumber(pos.quantity) > 0 && !pos.lastPrice && pos.currentValue && (
                   <Badge
                     variant="outline"
-                    className="text-[8px] px-1 py-0 font-normal text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30"
+                    className="text-2xs px-1 py-0 font-normal text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30"
                   >
                     at cost
                   </Badge>

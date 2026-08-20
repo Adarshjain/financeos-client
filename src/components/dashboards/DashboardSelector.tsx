@@ -30,7 +30,7 @@ export function DashboardSelector({ dashboards, onSelectDashboard, currentDashbo
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-[260px] md:w-[300px] rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-950 p-1.5 shadow-lg shadow-slate-100/10 dark:shadow-none" align="start">
-          <div className="py-1 px-2.5 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+          <div className="py-1 px-2.5 text-2xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
             Switch Dashboard
           </div>
           <div className="space-y-0.5 mt-1">

@@ -287,12 +287,12 @@ export function CounterpartyDetail({
 
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <div className="text-[10px] text-slate-500 font-semibold uppercase">Total Lent</div>
+              <div className="text-2xs text-slate-500 font-semibold uppercase">Total Lent</div>
               <div
                   className="text-sm font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">{formatMoney(cp.totalLent)}</div>
             </div>
             <div>
-              <div className="text-[10px] text-slate-500 font-semibold uppercase">Total Borrowed</div>
+              <div className="text-2xs text-slate-500 font-semibold uppercase">Total Borrowed</div>
               <div
                   className="text-sm font-bold text-rose-600 dark:text-rose-400 tabular-nums">{formatMoney(cp.totalBorrowed)}</div>
             </div>
@@ -333,7 +333,7 @@ export function CounterpartyDetail({
 
                     {item.notes && <p className="text-xs text-slate-600 dark:text-slate-400 font-normal">{item.notes}</p>}
                     {item.expectedReturnDate && (
-                        <p className="text-[11px] text-slate-500">
+                        <p className="text-xs text-slate-500">
                           Expected Return: <span
                             className="font-medium text-slate-700 dark:text-slate-300">{formatDate(item.expectedReturnDate)}</span>
                         </p>
@@ -342,7 +342,7 @@ export function CounterpartyDetail({
                     <div
                         className="flex items-center justify-between text-xs">
                       <div>
-                        <span className="text-slate-400 text-[10px] block font-medium">Running Balance</span>
+                        <span className="text-slate-400 text-2xs block font-medium">Running Balance</span>
                         <span
                             className={`font-bold tabular-nums ${
                                 item.runningBalance > 0
@@ -399,7 +399,7 @@ export function CounterpartyDetail({
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                  <tr className="bg-slate-50/80 dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 font-semibold text-slate-500 uppercase tracking-wider text-[10px]">
+                  <tr className="bg-slate-50/80 dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 font-semibold text-slate-500 uppercase tracking-wider text-2xs">
                     <th className="py-3 px-4">Date</th>
                     <th className="py-3 px-4">Direction</th>
                     <th className="py-3 px-4 text-right">Amount</th>
@@ -418,7 +418,7 @@ export function CounterpartyDetail({
                         <td className="py-3.5 px-4">
                           <Badge
                               variant={item.direction === 'lent' ? 'default' : 'destructive'}
-                              className="capitalize text-[10px] inline-flex items-center gap-1"
+                              className="capitalize text-2xs inline-flex items-center gap-1"
                           >
                             {item.direction === 'lent' ? <ArrowUpRight className="h-3 w-3"/> :
                                 <ArrowDownLeft className="h-3 w-3"/>}

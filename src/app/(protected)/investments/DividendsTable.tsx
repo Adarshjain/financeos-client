@@ -37,19 +37,19 @@ export function DividendsTable({
     switch (type.toLowerCase()) {
       case 'dividend':
         return (
-          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 text-[9px] px-1 py-0">
+          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 text-2xs px-1 py-0">
             Dividend
           </Badge>
         );
       case 'interest':
         return (
-          <Badge variant="outline" className="bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border-sky-200 dark:border-sky-800 text-[9px] px-1 py-0">
+          <Badge variant="outline" className="bg-sky-50 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300 border-sky-200 dark:border-sky-800 text-2xs px-1 py-0">
             Interest
           </Badge>
         );
       default:
         return (
-          <Badge variant="outline" className="text-[9px] px-1 py-0">
+          <Badge variant="outline" className="text-2xs px-1 py-0">
             {type}
           </Badge>
         );
@@ -60,20 +60,20 @@ export function DividendsTable({
     if (!source || source === 'manual') return null;
     if (source === 'suggested') {
       return (
-        <Badge variant="outline" className="bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800 text-[9px] px-1 py-0" title="Auto-detected from Yahoo">
+        <Badge variant="outline" className="bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border-amber-200 dark:border-amber-800 text-2xs px-1 py-0" title="Auto-detected from Yahoo">
           Auto
         </Badge>
       );
     }
     if (source === 'import') {
       return (
-        <Badge variant="outline" className="bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border-purple-200 dark:border-purple-800 text-[9px] px-1 py-0" title="Imported from CAS statement">
+        <Badge variant="outline" className="bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border-purple-200 dark:border-purple-800 text-2xs px-1 py-0" title="Imported from CAS statement">
           CAS
         </Badge>
       );
     }
     return (
-      <Badge variant="outline" className="text-[9px] px-1 py-0">
+      <Badge variant="outline" className="text-2xs px-1 py-0">
         {source}
       </Badge>
     );
@@ -118,7 +118,7 @@ export function DividendsTable({
                       {getSourceBadge(div.source)}
                     </div>
                     {div.instrumentName && div.symbol && (
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                         {div.instrumentName}
                       </p>
                     )}
@@ -131,20 +131,20 @@ export function DividendsTable({
                 {/* Details Grid: Broker, Pay Date, Ex Date, Per Unit */}
                 <div className="grid grid-cols-2 gap-1.5 text-xs text-slate-600 dark:text-slate-400">
                   <div>
-                    <span className="text-[10px] text-slate-400 block font-medium">Broker</span>
+                    <span className="text-2xs text-slate-400 block font-medium">Broker</span>
                     <span className="font-semibold text-slate-800 dark:text-slate-200">
                       {getAccountName(div.brokerAccountId, div.brokerName)}
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-400 block font-medium">Payment Date</span>
+                    <span className="text-2xs text-slate-400 block font-medium">Payment Date</span>
                     <span className="font-medium text-slate-700 dark:text-slate-300 tabular-nums">
                       {formatDate(div.payDate)}
                     </span>
                   </div>
                   {div.exDate && (
                     <div>
-                      <span className="text-[10px] text-slate-400 block font-medium">Ex-Date</span>
+                      <span className="text-2xs text-slate-400 block font-medium">Ex-Date</span>
                       <span className="font-medium text-slate-700 dark:text-slate-300 tabular-nums">
                         {formatDate(div.exDate)}
                       </span>
@@ -152,7 +152,7 @@ export function DividendsTable({
                   )}
                   {div.perUnit && (
                     <div>
-                      <span className="text-[10px] text-slate-400 block font-medium">Per Unit</span>
+                      <span className="text-2xs text-slate-400 block font-medium">Per Unit</span>
                       <span className="font-medium text-slate-700 dark:text-slate-300 tabular-nums">
                         {formatMoney(div.perUnit)}
                       </span>
@@ -162,7 +162,7 @@ export function DividendsTable({
 
                 {/* Amount Breakdown Footer */}
                 <div className="flex items-center justify-between text-xs">
-                  {/*<div className="flex items-center gap-3 text-[11px]">*/}
+                  {/*<div className="flex items-center gap-3 text-xs">*/}
                     <div className="text-left">
                       <span className="text-slate-400 block">Gross: </span>
                       <span className="font-medium text-slate-800 dark:text-slate-200 tabular-nums">
@@ -179,7 +179,7 @@ export function DividendsTable({
                     )}
                   {/*</div>*/}
                   <div className="text-right">
-                    <span className="text-[10px] text-slate-400 block">Net Received</span>
+                    <span className="text-2xs text-slate-400 block">Net Received</span>
                     <span className="font-black text-base text-emerald-600 dark:text-emerald-400 tabular-nums">
                       {formatMoney(net)}
                     </span>
@@ -232,7 +232,7 @@ export function DividendsTable({
                             {div.symbol || div.instrumentName}
                           </div>
                           {div.instrumentName && div.symbol && (
-                            <div className="text-[10px] text-slate-400 truncate max-w-[140px]">{div.instrumentName}</div>
+                            <div className="text-2xs text-slate-400 truncate max-w-[140px]">{div.instrumentName}</div>
                           )}
                         </TableCell>
                         <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400">

@@ -19,7 +19,7 @@
     --muted-foreground: 215 16% 47%; /* slate-500 */
     --accent: 210 40% 96%;
     --accent-foreground: 222 47% 11%;
-    --destructive: 0 84% 60%; /* red-500 */
+    --destructive: 350 89% 60%; /* rose-500 */
     --destructive-foreground: 0 0% 100%;
     --border: 214 32% 91%; /* slate-200 */
     --input: 214 32% 91%;
@@ -52,7 +52,7 @@
     --muted-foreground: 215 20% 65%; /* slate-400 */
     --accent: 217 33% 17%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 63% 31%;
+    --destructive: 345 63% 31%;
     --destructive-foreground: 210 40% 98%;
     --border: 217 33% 17%;
     --input: 217 33% 17%;

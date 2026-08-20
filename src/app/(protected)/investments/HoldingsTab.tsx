@@ -216,7 +216,7 @@ export function HoldingsTab({
         <div className="p-4 sm:p-5 space-y-2">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Total Invested
               </div>
               <div className="text-xl sm:text-2xl font-black tabular-nums tracking-tight mt-0.5 text-slate-900 dark:text-white">
@@ -224,7 +224,7 @@ export function HoldingsTab({
               </div>
             </div>
             <div className="text-right">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Current Value
               </div>
               <div className="text-xl sm:text-2xl font-black tabular-nums tracking-tight mt-0.5 text-slate-900 dark:text-white">

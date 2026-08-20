@@ -144,24 +144,24 @@ export function InstrumentTypeahead({
           <div className="font-semibold text-slate-900 dark:text-slate-100">
             {candidate.name}
           </div>
-          <div className="text-[10px] text-slate-400 flex items-center gap-1">
+          <div className="text-2xs text-slate-400 flex items-center gap-1">
             <span>{subtitle}</span>
           </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           {isResolving ? (
-            <span className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-medium">
               <Loader2 className="w-3 h-3 animate-spin" /> Adding…
             </span>
           ) : (
             <>
               {candidate.pricePreview && (
-                <Badge variant="outline" className="text-[10px] font-mono">
+                <Badge variant="outline" className="text-2xs font-mono">
                   ₹{candidate.pricePreview.value} · {candidate.pricePreview.asOf}
                 </Badge>
               )}
-              <Badge variant="secondary" className="text-[9px] uppercase">
+              <Badge variant="secondary" className="text-2xs uppercase">
                 {candidate.type.replace('_', ' ')}
               </Badge>
               {selectedInstrument?.id &&
@@ -187,7 +187,7 @@ export function InstrumentTypeahead({
       {selectedInstrument ? (
         <div className="flex items-center justify-between p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-emerald-50/50 dark:bg-emerald-950/20">
           <div className="flex items-center gap-2 overflow-hidden">
-            <Badge variant="outline" className="text-[10px] uppercase shrink-0">
+            <Badge variant="outline" className="text-2xs uppercase shrink-0">
               {selectedInstrument.type}
             </Badge>
             <div className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
@@ -230,7 +230,7 @@ export function InstrumentTypeahead({
             <div className="space-y-1">
               {localResults.length > 0 && (
                 <div>
-                  <div className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-900/50 rounded-sm">
+                  <div className="px-2 py-1 text-2xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-900/50 rounded-sm">
                     In your catalog
                   </div>
                   {localResults.map(renderCandidateRow)}
@@ -238,7 +238,7 @@ export function InstrumentTypeahead({
               )}
               {externalResults.length > 0 && (
                 <div>
-                  <div className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-900/50 rounded-sm mt-1">
+                  <div className="px-2 py-1 text-2xs font-bold text-slate-400 uppercase tracking-wider bg-slate-50 dark:bg-slate-900/50 rounded-sm mt-1">
                     Search results
                   </div>
                   {externalResults.map(renderCandidateRow)}
@@ -262,7 +262,7 @@ export function InstrumentTypeahead({
                 setIsOpen(false);
                 setIsCreateOpen(true);
               }}
-              className="w-full text-left px-3 py-1.5 text-[11px] text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-md transition-colors"
+              className="w-full text-left px-3 py-1.5 text-xs text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-md transition-colors"
             >
               Can&apos;t find it? Enter manually (advanced)
             </button>

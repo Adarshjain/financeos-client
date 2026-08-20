@@ -49,7 +49,7 @@ function WidgetReportContent({ available, data, error, onPageChange, onSizeChang
   }
   if (error) {
     return (
-      <div className="flex h-full items-center justify-center text-center text-sm text-red-600 dark:text-red-400">
+      <div className="flex h-full items-center justify-center text-center text-sm text-rose-600 dark:text-rose-400">
         {error}
       </div>
     );

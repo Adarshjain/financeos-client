@@ -66,7 +66,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
     }
 
     return (
-      <Badge variant="outline" className={`font-bold text-[10px] uppercase px-2 py-0.5 ${colorClass}`}>
+      <Badge variant="outline" className={`font-bold text-2xs uppercase px-2 py-0.5 ${colorClass}`}>
         {label}
       </Badge>
     );
@@ -292,7 +292,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
                   <CardHeader className="p-3 sm:p-3.5 pb-2 flex flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800/60 space-y-0">
                     <div className="flex items-center gap-1.5 min-w-0">
                       {getActionBadge(act.type)}
-                      <span className="text-[11px] font-bold text-slate-900 dark:text-slate-100 truncate">
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                         Ratio: {act.ratioFrom} → {act.ratioTo}
                       </span>
                     </div>
@@ -324,7 +324,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
                       <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100">
                         {instName} {instSymbol ? `(${instSymbol})` : ''}
                       </div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">
+                      <div className="text-xs text-slate-500 mt-0.5">
                         Ex-Date:{' '}
                         <span className="font-semibold text-slate-700 dark:text-slate-300 tabular-nums">
                           {formatDate(act.exDate)}
@@ -334,7 +334,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
 
                     {/* Demerger / Merger Banner */}
                     {(act.type === 'demerger' || act.type === 'merger') && (
-                      <div className="text-[11px] font-medium bg-slate-50 dark:bg-slate-950/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800/50">
+                      <div className="text-xs font-medium bg-slate-50 dark:bg-slate-950/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800/50">
                         {act.type === 'demerger' ? (
                           <>
                             Child: <span className="font-bold text-slate-800 dark:text-slate-200">{act.targetInstrumentName || 'Child Instrument'}</span>{' '}
@@ -352,7 +352,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
 
                     {/* Notes Row */}
                     {act.notes && (
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400 italic">
+                      <p className="text-2xs text-slate-500 dark:text-slate-400 italic">
                         &quot;{act.notes}&quot;
                       </p>
                     )}
@@ -390,7 +390,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
                               {instName}
                             </div>
                             {instSymbol && (
-                              <div className="text-[10px] text-slate-400 font-mono">{instSymbol}</div>
+                              <div className="text-2xs text-slate-400 font-mono">{instSymbol}</div>
                             )}
                           </TableCell>
                           <TableCell className="py-2.5 text-xs whitespace-nowrap">
@@ -404,7 +404,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
                           </TableCell>
                           <TableCell className="py-2.5 text-xs text-slate-600 dark:text-slate-400">
                             {(act.type === 'demerger' || act.type === 'merger') && (
-                              <div className="text-[11px] font-normal text-slate-700 dark:text-slate-300">
+                              <div className="text-xs font-normal text-slate-700 dark:text-slate-300">
                                 {act.type === 'demerger' ? (
                                   <>
                                     Child: <span className="font-medium">{act.targetInstrumentName || 'Child Instrument'}</span>{' '}
@@ -420,7 +420,7 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
                               </div>
                             )}
                             {act.notes && (
-                              <div className="text-[10px] text-slate-500 dark:text-slate-400 italic">
+                              <div className="text-2xs text-slate-500 dark:text-slate-400 italic">
                                 &quot;{act.notes}&quot;
                               </div>
                             )}
