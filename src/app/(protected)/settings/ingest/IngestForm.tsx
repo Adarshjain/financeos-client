@@ -40,13 +40,13 @@ import type { Account } from '@/lib/account.types';
 import type { FileIngestionResult, FileSummary } from '@/lib/types';
 
 /**
- * Upload limits, read from next.config.mjs via `env` so the form validates
- * against the value the Next runtime actually enforces and cannot drift from
- * it — the previous hardcoded "10MB per file" copy contradicted a 2mb config.
+ * Upload limit, read from next.config.mjs via `env` so the form validates
+ * against the value the runtime actually enforces and cannot drift from it.
+ * 4.5MB is Vercel's hard cap on serverless request bodies — anything larger
+ * fails at the platform edge regardless of app config, so the whole upload
+ * (all queued files together, one server-action request) must fit under it.
  */
-const MAX_FILE_MB = Number(process.env.NEXT_PUBLIC_MAX_FILE_MB ?? 10);
-const MAX_REQUEST_MB = Number(process.env.NEXT_PUBLIC_MAX_REQUEST_MB ?? 30);
-const MAX_FILE_BYTES = MAX_FILE_MB * 1024 * 1024;
+const MAX_REQUEST_MB = Number(process.env.NEXT_PUBLIC_MAX_REQUEST_MB ?? 4.5);
 const MAX_REQUEST_BYTES = MAX_REQUEST_MB * 1024 * 1024;
 
 function formatFileSize(bytes: number): string {
@@ -112,9 +112,9 @@ export function IngestForm({ accounts }: IngestFormProps) {
         invalidFiles.push(file.name);
         return;
       }
-      // Size was never checked before, so an oversized file was only rejected
-      // by the Next runtime — past the point where we could explain why.
-      if (file.size > MAX_FILE_BYTES) {
+      // A single file over the request cap can never be uploaded — reject it
+      // here so the user finds out at add time, not at submit.
+      if (file.size > MAX_REQUEST_BYTES) {
         oversizedFiles.push(`${file.name} (${formatFileSize(file.size)})`);
         return;
       }
@@ -127,7 +127,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
 
     if (oversizedFiles.length > 0) {
       toast.error(
-        `Too large (max ${MAX_FILE_MB}MB per file): ${oversizedFiles.join(', ')}.`,
+        `Too large (max ${MAX_REQUEST_MB}MB per upload): ${oversizedFiles.join(', ')}.`,
       );
     }
 
@@ -152,8 +152,8 @@ export function IngestForm({ accounts }: IngestFormProps) {
       return;
     }
     // All queued files go up as a single server-action request, so the total is
-    // what the runtime limit applies to. Checked here so the user gets a
-    // specific message instead of an opaque framework error.
+    // what Vercel's 4.5MB body cap applies to. Checked here so the user gets a
+    // specific message instead of an opaque platform 413.
     const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
     if (totalBytes > MAX_REQUEST_BYTES) {
       toast.error(
@@ -422,8 +422,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                     Drag and drop your files here
                   </p>
                   <p className="mt-1 text-xs text-slate-400 dark:text-slate-500 font-medium">
-                    Supports PDF, XLSX, and XLS format (up to {MAX_FILE_MB}MB per file,
-                    {MAX_REQUEST_MB}MB per upload)
+                    Supports PDF, XLSX, and XLS format (up to {MAX_REQUEST_MB}MB per upload)
                   </p>
                 </div>
               </div>

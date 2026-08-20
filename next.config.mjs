@@ -1,25 +1,20 @@
 /**
- * Statement-upload limits.
+ * Statement-upload limit.
  *
- * These live here because `experimental.serverActions.bodySizeLimit` is the
- * binding constraint: it is enforced by the Next runtime *before* the server
- * action body runs, so an oversized request never reaches
- * `ingestionApi.ingest`, never produces a structured ApiError, and surfaces as
- * an opaque framework error instead.
+ * Vercel hard-caps serverless request bodies at ~4.5MB, and the upload goes
+ * through a server action on the Vercel-hosted client — so anything above that
+ * fails at the platform edge with an opaque 413 no matter what we configure.
+ * The limit is therefore pinned to 4.5MB and re-exported to the client through
+ * `env` below so the upload form validates against it and renders it in its
+ * help text, giving a specific error instead of the platform one.
  *
- * They are re-exported to the client through `env` below so the upload form
- * validates against the real configured value and renders it in its help text —
- * the two cannot drift. Previously the config capped a request at 2mb while the
- * UI promised "up to 10MB per file", which made failure the common case for real
- * bank and credit-card statement PDFs, with no useful message.
+ * `bodySizeLimit` cannot be removed outright — Next's default is 1mb, enforced
+ * before the server action body runs.
  *
  * Verified against Next 16.1.1's config schema that `serverActions` is still an
  * `experimental` key, so this setting is honoured rather than silently ignored.
  */
-const MAX_FILE_MB = 10;
-// Headroom over MAX_FILE_MB so several statements can be queued together, plus
-// slack for multipart encoding overhead.
-const MAX_REQUEST_MB = 30;
+const MAX_REQUEST_MB = 4.5;
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -35,7 +30,6 @@ const nextConfig = {
     },
   },
   env: {
-    NEXT_PUBLIC_MAX_FILE_MB: String(MAX_FILE_MB),
     NEXT_PUBLIC_MAX_REQUEST_MB: String(MAX_REQUEST_MB),
   },
 };
