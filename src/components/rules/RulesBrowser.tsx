@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, Edit, ListChecks, Plus, Search, Trash2 } from 'lucide-react';
+import { Check, Edit, ListChecks, MoreVertical, Plus, Search, Trash2 } from 'lucide-react';
 import { usePathname,useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
@@ -8,14 +8,14 @@ import { toast } from 'sonner';
 import { createCategory } from '@/actions/categories';
 import { createRule, deleteRule, updateRule, verifyRule } from '@/actions/rules';
 import { Combobox } from '@/components/Combobox';
-import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { isValidMcc,MccInput } from '@/components/forms/MccInput';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { RuleMatchesDialog } from '@/components/rules/RuleMatchesDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -105,6 +105,8 @@ export function RulesBrowser({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<CategoryRule | null>(null);
   const [matchesRule, setMatchesRule] = useState<CategoryRule | null>(null);
+  const [deletingRule, setDeletingRule] = useState<CategoryRule | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Form States
   const [merchantKey, setMerchantKey] = useState('');
@@ -299,6 +301,26 @@ export function RulesBrowser({
     }
   };
 
+  // Delete Rule Action (confirmed via dialog)
+  const handleDeleteRule = async () => {
+    if (!deletingRule) return;
+    setIsDeleting(true);
+    try {
+      const res = await deleteRule(deletingRule.id);
+      if (res.success) {
+        toast.success('Rule deleted successfully');
+        setDeletingRule(null);
+        router.refresh();
+      } else {
+        toast.error(res.error.message);
+      }
+    } catch {
+      toast.error('Failed to delete rule.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   // Verify Rule Action
   const handleVerifyRule = async (id: string) => {
     try {
@@ -411,67 +433,33 @@ export function RulesBrowser({
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    {/* Find Matching Transactions Action */}
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => setMatchesRule(rule)}
-                      className="text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/20"
-                      title="Find matching transactions"
-                    >
-                      <ListChecks className="h-4 w-4" />
-                    </Button>
-
-                    {/* Verify Action */}
-                    {!rule.verified && (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => handleVerifyRule(rule.id)}
-                        className="text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
-                        title="Verify Rule"
-                      >
-                        <Check className="h-4 w-4" />
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon-sm" aria-label="Rule actions">
+                        <MoreVertical className="h-4 w-4 text-slate-500" />
                       </Button>
-                    )}
-
-                    {/* Edit Action */}
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => openEditDialog(rule)}
-                      className="text-slate-600 dark:text-slate-400"
-                      title="Edit Rule"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-
-                    {/* Delete Action */}
-                    <ConfirmationDialog
-                      title="Delete Rule?"
-                      description="Transactions already categorized by this rule keep their categories."
-                      primaryActionText="Delete"
-                      primaryAction={async () => {
-                        const res = await deleteRule(rule.id);
-                        if (res.success) {
-                          toast.success('Rule deleted successfully');
-                          router.refresh();
-                        } else {
-                          toast.error(res.error.message);
-                        }
-                      }}
-                      trigger={
-                        <Button
-                          variant="ghost-destructive"
-                          size="icon-sm"
-                          title="Delete Rule"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      }
-                    />
-                  </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => setMatchesRule(rule)}>
+                        <ListChecks className="w-3.5 h-3.5 mr-2" /> Find Matches
+                      </DropdownMenuItem>
+                      {!rule.verified && (
+                        <DropdownMenuItem onClick={() => void handleVerifyRule(rule.id)}>
+                          <Check className="w-3.5 h-3.5 mr-2" /> Verify Rule
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuItem onClick={() => openEditDialog(rule)}>
+                        <Edit className="w-3.5 h-3.5 mr-2" /> Edit Rule
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => setDeletingRule(rule)}
+                        className="text-rose-600 dark:text-rose-400 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950/30"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 mr-2 text-rose-600 dark:text-rose-400" /> Delete Rule
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             ))}
@@ -618,6 +606,35 @@ export function RulesBrowser({
               label: 'Cancel',
               onClick: closeDialogs,
               disabled: formSubmitting,
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={!!deletingRule}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) setDeletingRule(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Rule?</DialogTitle>
+            <DialogDescription>
+              Transactions already categorized by this rule keep their categories.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter
+            primaryAction={{
+              label: isDeleting ? 'Deleting...' : 'Delete',
+              variant: 'destructive',
+              onClick: handleDeleteRule,
+              disabled: isDeleting,
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+              disabled: isDeleting,
             }}
           />
         </DialogContent>
