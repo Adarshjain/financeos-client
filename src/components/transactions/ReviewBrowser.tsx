@@ -9,8 +9,6 @@ import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { batchFailureLabel, reviewReasonLabel } from '@/components/transactions/catalog';
-import { MergeTransactionsDialog } from './MergeTransactionsDialog';
-
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -29,6 +27,7 @@ import type { PagedTransaction, ReviewReason } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
 import { cn, formatDate } from '@/lib/utils';
 
+import { MergeTransactionsDialog } from './MergeTransactionsDialog';
 import { ReviewFilterBar } from './ReviewFilterBar';
 import { TransactionCard } from './TransactionCard';
 

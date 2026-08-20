@@ -50,7 +50,6 @@ import type { PagedRewardLines, ReorderRewardRulesRequest, RewardAccountConfig, 
 import type { ApplyRuleRequest, ApplyRuleResult, CategoryRule, CreateRuleRequest, PagedRuleMatches, PagedRules, PreviewMatchesRequest, UpdateRuleRequest } from '@/lib/rules.types';
 import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, CreateTransactionLinkRequest, MergeTransactionsRequest, MergeTransactionsResponse, PagedTransaction, Transaction, TransactionLinkResponse, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
 
-
 import type {
   AcceptSuggestionsRequest,
   AcceptSuggestionsResponse,
