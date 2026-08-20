@@ -27,7 +27,7 @@ export function AccountFormWrapper({ account, trigger }: EditAccountFormProps) {
         {trigger}
       </DialogTrigger>
       <DialogContent
-        className="h-screen max-h-screen rounded-none bottom-0 top-0 border-none p-0 flex flex-col gap-0 sm:h-auto sm:max-h-[85vh] sm:rounded-lg sm:border sm:max-w-lg"
+        className="h-screen max-h-screen rounded-none bottom-0 top-0 border-none p-0 flex flex-col gap-0 overflow-hidden sm:h-auto sm:max-h-[85vh] sm:rounded-lg sm:border sm:max-w-lg"
         hideClose
       >
         <DialogHeader>
