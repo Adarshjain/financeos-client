@@ -277,12 +277,12 @@ export function ImportStep1Upload({
         )}
       </div>
 
-      <DialogFooter className="pt-3 shrink-0">
+      <DialogFooter className="shrink-0">
         <Button
           type="submit"
           size="sm"
+          variant="purple"
           disabled={isPreviewing}
-          className="text-xs bg-purple-600 hover:bg-purple-700 text-white"
         >
           {isPreviewing ? 'Reconciling & Parsing Files...' : 'Preview Reconciliation'}
           <ChevronRight className="w-3.5 h-3.5 ml-1" />

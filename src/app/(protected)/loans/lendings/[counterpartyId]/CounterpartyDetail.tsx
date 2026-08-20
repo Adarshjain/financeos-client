@@ -229,7 +229,7 @@ export function CounterpartyDetail({
                 variant="outline"
                 size="sm"
                 onClick={() => setEditCpOpen(true)}
-                className="h-8 text-xs gap-1.5 flex-1"
+                className="flex-1"
             >
               <Edit2 className="h-3.5 w-3.5"/> Edit Person
             </Button>
@@ -241,7 +241,7 @@ export function CounterpartyDetail({
                 primaryActionText="Delete Person"
                 variant="destructive"
                 trigger={
-                  <Button variant="destructive" size="sm" className="h-8 text-xs gap-1.5 flex-1">
+                  <Button variant="destructive" size="sm" className="flex-1">
                     <Trash2 className="h-3.5 w-3.5"/> Delete Person
                   </Button>
                 }
@@ -299,8 +299,7 @@ export function CounterpartyDetail({
             <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
               Ledger History ({entriesWithRunningBalance.length})
             </h2>
-            <Button size="sm" onClick={() => setAddEntryOpen(true)}
-                    className="h-8 text-xs gap-1.5 font-semibold">
+            <Button size="sm" onClick={() => setAddEntryOpen(true)}>
               <Plus className="h-3.5 w-3.5"/> Add Entry
             </Button>
           </div>
@@ -352,8 +351,8 @@ export function CounterpartyDetail({
                       </div>
 
                       <div className="flex items-center gap-1">
-                        <Button variant="ghost" size="icon" onClick={() => handleOpenEditLending(item)}
-                                className="h-7 w-7 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                        <Button variant="ghost" size="icon-xs" onClick={() => handleOpenEditLending(item)}
+                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                           <Edit2 className="h-3.5 w-3.5"/>
                         </Button>
                         <ConfirmationDialog
@@ -363,8 +362,8 @@ export function CounterpartyDetail({
                             primaryActionText="Delete Entry"
                             variant="destructive"
                             trigger={
-                              <Button variant="ghost" size="icon"
-                                      className="h-7 w-7 text-slate-400 hover:text-rose-600">
+                              <Button variant="ghost" size="icon-xs"
+                                      className="text-slate-400 hover:text-rose-600">
                                 <Trash2 className="h-3.5 w-3.5"/>
                               </Button>
                             }
@@ -444,8 +443,8 @@ export function CounterpartyDetail({
                         </td>
                         <td className="py-3.5 px-4 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => handleOpenEditLending(item)}
-                                    className="h-7 w-7 text-slate-400 hover:text-slate-600">
+                            <Button variant="ghost" size="icon-xs" onClick={() => handleOpenEditLending(item)}
+                                    className="text-slate-400 hover:text-slate-600">
                               <Edit2 className="h-3.5 w-3.5"/>
                             </Button>
                             <ConfirmationDialog
@@ -455,8 +454,8 @@ export function CounterpartyDetail({
                                 primaryActionText="Delete Entry"
                                 variant="destructive"
                                 trigger={
-                                  <Button variant="ghost" size="icon"
-                                          className="h-7 w-7 text-slate-400 hover:text-rose-600">
+                                  <Button variant="ghost" size="icon-xs"
+                                          className="text-slate-400 hover:text-rose-600">
                                     <Trash2 className="h-3.5 w-3.5"/>
                                   </Button>
                                 }
@@ -484,7 +483,7 @@ export function CounterpartyDetail({
                 <Label className="text-xs">Notes</Label>
                 <Textarea rows={2} value={cpNotes} onChange={(e) => setCpNotes(e.target.value)} className="text-xs"/>
               </div>
-              <DialogFooter className="pt-2 flex flex-row gap-2 justify-end">
+              <DialogFooter>
                 <Button type="button" variant="outline" size="sm" onClick={() => setEditCpOpen(false)}>Cancel</Button>
                 <Button type="submit" size="sm"
                         disabled={submittingCp}>{submittingCp ? 'Saving...' : 'Save Changes'}</Button>
@@ -572,7 +571,7 @@ export function CounterpartyDetail({
                 />
               </div>
 
-              <DialogFooter className="pt-2 flex flex-row gap-2 justify-end">
+              <DialogFooter>
                 <Button type="button" variant="outline" size="sm" onClick={() => setAddEntryOpen(false)}>Cancel</Button>
                 <Button type="submit" size="sm"
                         disabled={submittingAddEntry}>{submittingAddEntry ? 'Saving...' : 'Add Entry'}</Button>
@@ -623,7 +622,7 @@ export function CounterpartyDetail({
                 <Textarea rows={2} value={lendingNotes} onChange={(e) => setLendingNotes(e.target.value)}
                           className="text-xs"/>
               </div>
-              <DialogFooter className="pt-2 flex flex-row gap-2 justify-end">
+              <DialogFooter>
                 <Button type="button" variant="outline" size="sm"
                         onClick={() => setEditLendingOpen(false)}>Cancel</Button>
                 <Button type="submit" size="sm"

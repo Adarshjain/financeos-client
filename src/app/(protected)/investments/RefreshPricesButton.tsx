@@ -44,7 +44,7 @@ export function RefreshPricesButton() {
       onClick={handleRefresh}
       disabled={isPending}
       variant="outline"
-      className="h-8 text-xs flex items-center gap-1"
+      size="sm"
     >
       <RefreshCw className={`w-3.5 h-3.5 ${isPending ? 'animate-spin' : ''}`} />
       <span>{isPending ? 'Refreshing...' : 'Refresh Prices'}</span>

@@ -57,9 +57,9 @@ export function ReconciliationSummaryStats({
             <Button
               type="button"
               variant="outline"
-              size="sm"
+              size="micro"
               onClick={onSkipUnmappedRows}
-              className="text-[10px] h-6 px-2 border-red-300 text-red-700 hover:bg-red-100 dark:hover:bg-red-900/50 shrink-0"
+              className="border-red-300 text-red-700 hover:bg-red-100 dark:hover:bg-red-900/50 shrink-0"
             >
               Skip unmapped rows
             </Button>

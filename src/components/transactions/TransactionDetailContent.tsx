@@ -331,11 +331,10 @@ export const TransactionDetailContent = ({
                         </Badge>
                       </div>
                       <Button
-                        variant="ghost"
-                        size="sm"
+                        variant="ghost-destructive"
+                        size="micro"
                         onClick={() => handleUnlink(link.id)}
                         disabled={unlinkingId === link.id}
-                        className="h-6 text-[11px] font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 gap-1 px-2"
                       >
                         {unlinkingId === link.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
                         Unlink
@@ -432,7 +431,7 @@ export const TransactionDetailContent = ({
             variant="outline"
             size="sm"
             onClick={() => setLinkDialogOpen(true)}
-            className="h-9 rounded-lg gap-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-850 border-slate-200 dark:border-slate-850 transition-colors"
+            className="h-9"
           >
             <Link2 className="h-3.5 w-3.5 text-indigo-500" />
             Link to…
@@ -441,7 +440,7 @@ export const TransactionDetailContent = ({
             variant="outline"
             size="sm"
             onClick={onEditClick}
-            className="h-9 rounded-lg gap-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-850 border-slate-200 dark:border-slate-850 transition-colors"
+            className="h-9"
           >
             <PencilIcon className="h-3.5 w-3.5" />
             Edit

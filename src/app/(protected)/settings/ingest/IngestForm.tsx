@@ -201,7 +201,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
     <div className="space-y-2 p-4 max-w-4xl pb-20">
       {/* Header & Navigation */}
       <div className="flex items-center gap-3">
-        <Button asChild variant="ghost" size="icon" className="h-8 w-8 p-0 rounded-lg">
+        <Button asChild size="icon-sm">
           <Link href="/settings">
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -436,11 +436,10 @@ export function IngestForm({ accounts }: IngestFormProps) {
                     </span>
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
+                      variant="ghost-destructive"
+                      size="xs"
                       onClick={() => setFiles([])}
                       disabled={isUploading}
-                      className="text-xs text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/25 h-7 px-2 rounded-lg"
                     >
                       Clear All
                     </Button>
@@ -464,11 +463,10 @@ export function IngestForm({ accounts }: IngestFormProps) {
                         </div>
                         <Button
                           type="button"
-                          variant="ghost"
-                          size="icon"
+                          size="icon-sm"
                           onClick={() => removeFile(index)}
                           disabled={isUploading}
-                          className="h-8 w-8 rounded-lg text-slate-400 hover:text-red-500 hover:bg-slate-50 dark:hover:bg-slate-850"
+                          className="text-slate-400 hover:text-red-500"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

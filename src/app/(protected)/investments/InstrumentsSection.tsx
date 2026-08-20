@@ -162,7 +162,6 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
           variant={sortOrder === 'none' ? 'outline' : 'secondary'}
           size="sm"
           onClick={toggleSort}
-          className="h-8 text-xs font-semibold flex items-center rounded-lg border-slate-200 dark:border-slate-800"
           title="Sort by Name"
         >
           {sortOrder === 'asc' && (
@@ -190,7 +189,8 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
           trigger={
             <Button
               size="sm"
-              className="h-8 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg gap-1 px-3 shadow-sm shrink-0"
+              variant="blue"
+              className="shrink-0"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Add Instrument</span>
@@ -244,7 +244,8 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
             trigger={
               <Button
                 size="sm"
-                className="h-8 text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white rounded-lg gap-1 px-4 mt-2 shadow-sm"
+                variant="blue"
+                className="mt-2"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add First Instrument</span>
@@ -281,8 +282,8 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
                       trigger={
                         <Button
                           variant="ghost"
-                          size="sm"
-                          className="h-6 w-6 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                          size="icon-xs"
+                          className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
                           title="Edit Instrument"
                         >
                           <Edit className="w-3.5 h-3.5" />
@@ -398,8 +399,8 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
                             trigger={
                               <Button
                                 variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                                size="icon-xs"
+                                className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
                                 title="Edit Instrument"
                               >
                                 <Edit className="w-3.5 h-3.5" />

@@ -88,7 +88,7 @@ export function ClassifiedExecutionsTable({
           </Badge>
           <Popover>
             <PopoverTrigger asChild>
-              <Button type="button" variant="outline" size="sm" className="h-5 px-1.5 text-[10px]">
+              <Button type="button" variant="outline" size="micro">
                 Map instrument
               </Button>
             </PopoverTrigger>
@@ -104,8 +104,8 @@ export function ClassifiedExecutionsTable({
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            className="h-5 px-1.5 text-[10px] text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900"
+            size="micro"
+            className="text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900"
             onClick={() => onCreateNew(exec.rowIndex, true)}
           >
             Create new

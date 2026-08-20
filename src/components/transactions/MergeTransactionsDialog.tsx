@@ -276,13 +276,12 @@ export function MergeTransactionsDialog({
           <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
             Click on a card above to flip the keep/delete selection.
           </p>
-          <DialogFooter className="flex sticky bottom-0 bg-white flex-row gap-2 items-center sm:ml-auto pt-2 sm:w-1/2">
+          <DialogFooter>
             <Button
                 variant="outline"
                 size="sm"
                 disabled={loading}
                 onClick={() => onOpenChange(false)}
-                className="w-2/3"
             >
               Cancel
             </Button>
@@ -291,7 +290,6 @@ export function MergeTransactionsDialog({
                 disabled={isDifferentAccount || loading}
                 onClick={handleMerge}
                 variant="primary"
-                className="w-full"
             >
               {loading ? (
                   <>

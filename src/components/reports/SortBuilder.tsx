@@ -91,7 +91,7 @@ export function SortBuilder({
             variant="ghost"
             size="icon"
             onClick={() => remove(i)}
-            className="h-9 w-9 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-400 hover:text-rose-500 transition-colors shrink-0"
+            className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 shrink-0"
           >
             <Trash className="h-4 w-4" />
           </Button>

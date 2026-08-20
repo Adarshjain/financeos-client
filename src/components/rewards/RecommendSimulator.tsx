@@ -193,7 +193,7 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                   date={date}
                   onSelect={(d) => d && setDate(d)}
                   trigger={
-                    <Button variant="outline" className="w-full justify-start text-left font-normal h-8 text-xs">
+                    <Button variant="outline" size="sm" className="w-full justify-start text-left font-normal">
                       <CalendarDays className="mr-1.5 h-3.5 w-3.5 text-slate-400 shrink-0" />
                       <span className="truncate">{date ? formatDate(toCalendarDate(date)) : 'Pick date'}</span>
                     </Button>
@@ -324,7 +324,8 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
             <Button
               onClick={handleSimulate}
               disabled={loading}
-              className="w-full rounded-lg h-8 text-xs font-semibold"
+              size="sm"
+              className="w-full"
             >
               {loading ? (
                 <>
@@ -416,9 +417,9 @@ export default function RecommendSimulator({ categories, accounts }: RecommendSi
                             </div>
                             <Button
                               variant="ghost"
-                              size="sm"
+                              size="icon-xs"
                               onClick={() => toggleExpand(card.accountId)}
-                              className="h-7 w-7 p-0 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                              className="text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                             >
                               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                             </Button>

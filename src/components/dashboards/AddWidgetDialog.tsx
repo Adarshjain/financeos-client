@@ -32,7 +32,7 @@ export function AddWidgetDialog({ reports, onAdd }: AddWidgetDialogProps) {
           Add widget
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>Add a report widget</DialogTitle>
         </DialogHeader>

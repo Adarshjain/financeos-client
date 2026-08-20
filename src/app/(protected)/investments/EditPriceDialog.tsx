@@ -73,7 +73,7 @@ export function EditPriceDialog({ instrument, trigger, onSuccess }: EditPriceDia
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="ghost" size="sm" className="h-6 px-1 text-[11px] text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40">
+          <Button size="micro" className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40">
             <Edit3 className="w-3 h-3 mr-1" />
             Edit Price
           </Button>
@@ -121,13 +121,12 @@ export function EditPriceDialog({ instrument, trigger, onSuccess }: EditPriceDia
             />
           </div>
 
-          <DialogFooter className="pt-3 gap-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setOpen(false)}
-              className="text-xs"
             >
               Cancel
             </Button>
@@ -135,7 +134,6 @@ export function EditPriceDialog({ instrument, trigger, onSuccess }: EditPriceDia
               type="submit"
               size="sm"
               disabled={isSubmitting}
-              className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               {isSubmitting ? 'Saving...' : 'Save Price'}
             </Button>

@@ -403,9 +403,9 @@ export function TransactionLinkDialog({
                       </span>
                       <Button
                         variant="ghost"
-                        size="icon"
+                        size="icon-xs"
                         onClick={() => toggleSelectTransaction(t)}
-                        className="h-6 w-6 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                        className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30"
                       >
                         <X className="h-3.5 w-3.5" />
                       </Button>
@@ -470,7 +470,7 @@ export function TransactionLinkDialog({
                         >
                           {t.amount >= 0 ? '+' : '-'}{formatMoney(Math.abs(t.amount))}
                         </span>
-                        <Button variant="outline" size="sm" className="h-6 text-[10px] px-2">
+                        <Button variant="outline" size="micro">
                           Add
                         </Button>
                       </div>
@@ -482,13 +482,12 @@ export function TransactionLinkDialog({
           </div>
         </div>
 
-        <DialogFooter className="p-3 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-2 bg-slate-50/50 dark:bg-slate-900/50">
+        <DialogFooter className="p-3 sm:pb-3 mb-0 sm:mb-0 bg-slate-50/50 dark:bg-slate-900/50">
           <Button
             variant="outline"
             size="sm"
             onClick={() => onOpenChange(false)}
             disabled={submitting}
-            className="h-8 text-xs"
           >
             Cancel
           </Button>
@@ -496,7 +495,6 @@ export function TransactionLinkDialog({
             size="sm"
             onClick={handleSubmit}
             disabled={submitting || selectedTransactions.length < 2 || !anchorId}
-            className="h-8 text-xs gap-1.5"
           >
             {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             Link Transactions

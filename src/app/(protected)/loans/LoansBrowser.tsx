@@ -159,7 +159,7 @@ export function LoansBrowser({
           </SelectContent>
         </Select>
 
-        <Button onClick={() => setCreateOpen(true)} size="sm" className="h-8 text-xs gap-1.5 font-semibold shrink-0 sm:hidden">
+        <Button onClick={() => setCreateOpen(true)} size="sm" className="shrink-0 sm:hidden">
           <Plus className="h-3.5 w-3.5" /> Add Loan
         </Button>
       </div>
@@ -179,7 +179,7 @@ export function LoansBrowser({
           </p>
         </div>
         <div className="hidden sm:flex items-center gap-2">
-          <Button onClick={() => setCreateOpen(true)} size="sm" className="h-8 text-xs gap-1.5 font-semibold">
+          <Button onClick={() => setCreateOpen(true)} size="sm">
             <Plus className="h-3.5 w-3.5" /> Add Loan
           </Button>
         </div>

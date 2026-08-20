@@ -157,7 +157,7 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
       )}
 
       <Dialog open={isCreateOpen} onOpenChange={(o) => !o && setIsCreateOpen(false)}>
-        <DialogContent className="sm:max-w-[400px] p-4">
+        <DialogContent className="sm:max-w-[400px] p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>{editing ? 'Edit Cap Bucket' : 'Create Cap Bucket'}</DialogTitle>
           </DialogHeader>
@@ -202,11 +202,11 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
               It can’t be changed while rules still use the bucket.
             </p>
           </div>
-          <DialogFooter className="flex gap-2 flex-row">
+          <DialogFooter>
             <Button variant="outline" type="button" onClick={() => setIsCreateOpen(false)}
-                    className="flex-1 rounded-xl h-9 text-xs font-semibold">Cancel</Button>
+                    className="flex-1">Cancel</Button>
             <Button type="button" onClick={save} disabled={isSubmitting}
-                    className="flex-1 rounded-xl h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
+                    className="flex-1">
               {isSubmitting ? 'Saving...' : 'Save Bucket'}
             </Button>
           </DialogFooter>

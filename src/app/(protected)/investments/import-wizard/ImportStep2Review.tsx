@@ -153,13 +153,13 @@ export function ImportStep2Review({
         </>
       )}
 
-      <DialogFooter className="pt-2 gap-2 shrink-0 flex-row sm:flex-row sm:justify-end sm:items-center">
+      <DialogFooter className="shrink-0">
         <Button
           type="button"
           variant="outline"
           size="sm"
           onClick={onBack}
-          className="text-xs w-full sm:w-auto"
+          className="w-full sm:w-auto"
         >
           Back
         </Button>
@@ -168,7 +168,7 @@ export function ImportStep2Review({
           size="sm"
           onClick={onCommit}
           disabled={isCommitting || unresolvedRows.length > 0}
-          className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto disabled:opacity-50"
+          className="w-full sm:w-auto"
         >
           {isCommitting
             ? 'Importing Reconciled Executions...'

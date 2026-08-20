@@ -103,14 +103,14 @@ export const ReviewTransaction = ({ transaction, onSuccess }: ReviewTransactionP
         variant="outline"
         size="sm"
         onClick={() => handleOpenChange(true)}
-        className="h-9 w-full rounded-lg gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/40 hover:bg-emerald-50 hover:text-emerald-800 dark:hover:bg-emerald-950/20 dark:hover:text-emerald-350 transition-colors"
+        className="h-9 w-full text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/40 hover:bg-emerald-50 hover:text-emerald-800 dark:hover:bg-emerald-950/20 dark:hover:text-emerald-350"
       >
         <Check className="h-3.5 w-3.5" />
         Review
       </Button>
 
       <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-[425px] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+        <DialogContent className="sm:max-w-[425px] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-slate-900 dark:text-white">Approve Transaction</DialogTitle>
             <DialogDescription className="text-slate-500 dark:text-slate-400 text-xs mt-1">
@@ -134,18 +134,16 @@ export const ReviewTransaction = ({ transaction, onSuccess }: ReviewTransactionP
               </div>
             ))}
           </div>
-          <DialogFooter className="flex gap-2">
+          <DialogFooter>
             <Button
               variant="outline"
               size="sm"
-              className="text-xs rounded-xl"
               disabled={submitting}
               onClick={() => handleOpenChange(false)}
             >
               Cancel
             </Button>
             <Button
-              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-xl"
               size="sm"
               disabled={submitting || reasonsToApprove.length === 0}
               onClick={handleApprove}

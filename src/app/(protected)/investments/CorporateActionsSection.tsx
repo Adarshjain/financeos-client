@@ -201,7 +201,6 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
           variant={sortOrder === 'none' ? 'outline' : 'secondary'}
           size="sm"
           onClick={toggleSort}
-          className="h-8 text-xs font-semibold flex items-center rounded-lg border-slate-200 dark:border-slate-800"
           title="Sort by Ex-Date"
         >
           {sortOrder === 'asc' && (
@@ -227,8 +226,8 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
         {/* Record Action Button */}
         <Button
           size="sm"
+          variant="purple"
           onClick={openCreateDialog}
-          className="h-8 text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-lg gap-1 px-3 shadow-sm"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Record Action</span>
@@ -263,8 +262,9 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
           </div>
           <Button
             size="sm"
+            variant="purple"
             onClick={openCreateDialog}
-            className="h-8 text-xs font-semibold bg-purple-600 hover:bg-purple-700 text-white rounded-lg gap-1 px-4 mt-2 shadow-sm"
+            className="mt-2"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Record First Action</span>
@@ -299,19 +299,18 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
                     <div className="flex items-center gap-1 shrink-0">
                       <Button
                         variant="ghost"
-                        size="sm"
+                        size="icon-xs"
                         onClick={() => openEditDialog(act)}
-                        className="h-6 w-6 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                        className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
                         title="Edit Corporate Action"
                       >
                         <Edit className="w-3.5 h-3.5" />
                       </Button>
                       <Button
-                        variant="ghost"
-                        size="sm"
+                        variant="ghost-destructive"
+                        size="icon-xs"
                         onClick={() => handleDelete(act.instrumentId, act.id)}
                         disabled={deletingId === act.id}
-                        className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40"
                         title="Delete Corporate Action"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -431,19 +430,18 @@ export function CorporateActionsSection({ corporateActions, instruments }: Corpo
                             <div className="flex items-center justify-end gap-1">
                               <Button
                                 variant="ghost"
-                                size="sm"
+                                size="icon-xs"
                                 onClick={() => openEditDialog(act)}
-                                className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                                className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
                                 title="Edit Corporate Action"
                               >
                                 <Edit className="w-3.5 h-3.5" />
                               </Button>
                               <Button
-                                variant="ghost"
-                                size="sm"
+                                variant="ghost-destructive"
+                                size="icon-xs"
                                 onClick={() => handleDelete(act.instrumentId, act.id)}
                                 disabled={deletingId === act.id}
-                                className="h-7 w-7 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40"
                                 title="Delete Corporate Action"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />

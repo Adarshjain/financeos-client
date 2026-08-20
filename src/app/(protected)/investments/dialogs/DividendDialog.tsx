@@ -153,7 +153,7 @@ export function DividendDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[480px]">
+      <DialogContent className="sm:max-w-[480px] p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Dividend' : 'Record Dividend / Payout'}</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
@@ -285,7 +285,7 @@ export function DividendDialog({
             />
           </FormField>
 
-          <DialogFooter className="pt-2">
+          <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               Cancel
             </Button>

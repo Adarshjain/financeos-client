@@ -334,7 +334,7 @@ export function LoanDetail({
       {/* Top Header Action Bar */}
       <PageActionBar>
         <div className="flex items-center gap-2 w-full">
-          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)} className="h-8 text-xs gap-1.5 flex-1">
+          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)} className="flex-1">
             <Edit2 className="h-3.5 w-3.5" /> Edit
           </Button>
 
@@ -354,7 +354,7 @@ export function LoanDetail({
               primaryActionText="Close Loan"
               variant="default"
               trigger={
-                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 flex-1">
+                <Button variant="outline" size="sm" className="flex-1">
                   <Lock className="h-3.5 w-3.5" /> Close
                 </Button>
               }
@@ -375,7 +375,7 @@ export function LoanDetail({
               primaryActionText="Reopen Loan"
               variant="default"
               trigger={
-                <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5 flex-1">
+                <Button variant="outline" size="sm" className="flex-1">
                   <Unlock className="h-3.5 w-3.5" /> Reopen
                 </Button>
               }
@@ -397,7 +397,7 @@ export function LoanDetail({
             primaryActionText="Delete Loan"
             variant="destructive"
             trigger={
-              <Button variant="destructive" size="sm" className="h-8 text-xs gap-1.5 flex-1">
+              <Button variant="destructive" size="sm" className="flex-1">
                 <Trash2 className="h-3.5 w-3.5" /> Delete
               </Button>
             }
@@ -527,16 +527,15 @@ export function LoanDetail({
           </div>
           <div className="flex gap-2">
             {matchSuggestions && matchSuggestions.suggestions.some((s) => s.candidates.length > 0) && (
-              <Button size="sm" onClick={handleConfirmAllMatches} className="h-7 text-xs gap-1 bg-emerald-600 hover:bg-emerald-700">
+              <Button size="xs" onClick={handleConfirmAllMatches}>
                 <CheckCircle2 className="h-3 w-3" /> Confirm All
               </Button>
             )}
             <Button
               variant="outline"
-              size="sm"
+              size="xs"
               onClick={handleFindMatches}
               disabled={matchLoading}
-              className="h-7 text-xs gap-1.5"
             >
               <RefreshCw className={`h-3 w-3 ${matchLoading ? 'animate-spin' : ''}`} />
               {matchLoading ? 'Searching...' : 'Find Matches'}
@@ -561,7 +560,7 @@ export function LoanDetail({
                       {s.candidates.map((cand) => (
                         <div key={cand.id} className="flex items-center justify-between p-2 rounded bg-slate-50 dark:bg-slate-950 text-xs">
                           <span>{formatDate(cand.date)} · {cand.description || 'DEBIT'} ({formatMoney(Math.abs(cand.amount))})</span>
-                          <Button size="sm" onClick={() => handleConfirmMatch(s.installmentSeq, cand.date, Math.abs(cand.amount), cand.id)} className="h-6 text-[10px]">
+                          <Button size="micro" onClick={() => handleConfirmMatch(s.installmentSeq, cand.date, Math.abs(cand.amount), cand.id)}>
                             Confirm
                           </Button>
                         </div>
@@ -648,18 +647,17 @@ export function LoanDetail({
                             {inst.status === 'settled' && inst.payment ? (
                               <Button
                                 variant="ghost"
-                                size="sm"
+                                size="micro"
                                 onClick={() => handleUnlinkPayment(inst.payment!.id)}
-                                className="h-6 px-2 text-[10px] text-slate-500 hover:text-rose-600"
+                                className="text-slate-500 hover:text-rose-600"
                               >
                                 Unlink
                               </Button>
                             ) : (
                               <Button
                                 variant="outline"
-                                size="sm"
+                                size="micro"
                                 onClick={() => handleOpenMarkPaid(inst)}
-                                className="h-6 px-2 text-[10px]"
                               >
                                 Mark Paid
                               </Button>
@@ -758,7 +756,7 @@ export function LoanDetail({
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Lifecycle Events</h2>
-            <Button size="sm" variant="outline" onClick={() => setAddEventOpen(true)} className="h-7 text-xs gap-1">
+            <Button size="xs" variant="outline" onClick={() => setAddEventOpen(true)}>
               <Plus className="h-3 w-3" /> Add Event
             </Button>
           </div>
@@ -779,7 +777,7 @@ export function LoanDetail({
                       {evt.eventType === 'foreclosure' && `Foreclosure Paid: ${formatMoney(evt.amount)}`}
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleDeleteEvent(evt.id)} className="h-7 w-7 text-slate-400 hover:text-rose-600">
+                  <Button variant="ghost" size="icon-xs" onClick={() => handleDeleteEvent(evt.id)} className="text-slate-400 hover:text-rose-600">
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -792,7 +790,7 @@ export function LoanDetail({
         <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
             <h2 className="text-sm font-bold text-slate-900 dark:text-slate-100">Itemized Charges</h2>
-            <Button size="sm" variant="outline" onClick={() => setAddChargeOpen(true)} className="h-7 text-xs gap-1">
+            <Button size="xs" variant="outline" onClick={() => setAddChargeOpen(true)}>
               <Plus className="h-3 w-3" /> Add Charge
             </Button>
           </div>
@@ -810,7 +808,7 @@ export function LoanDetail({
                     </div>
                     {chg.notes && <p className="text-slate-500 text-[11px]">{chg.notes}</p>}
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleDeleteCharge(chg.id)} className="h-7 w-7 text-slate-400 hover:text-rose-600">
+                  <Button variant="ghost" size="icon-xs" onClick={() => handleDeleteCharge(chg.id)} className="text-slate-400 hover:text-rose-600">
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -840,7 +838,7 @@ export function LoanDetail({
               <Label className="text-xs">Transaction ID (Optional)</Label>
               <Input placeholder="UUID of DEBIT transaction" value={paymentTxId} onChange={(e) => setPaymentTxId(e.target.value)} className="h-9 text-xs" />
             </div>
-            <DialogFooter className="pt-2 flex flex-row gap-2 justify-end">
+            <DialogFooter>
               <Button type="button" variant="outline" size="sm" onClick={() => setMarkPaidOpen(false)}>Cancel</Button>
               <Button type="submit" size="sm" disabled={submittingPayment}>{submittingPayment ? 'Saving...' : 'Confirm Settle'}</Button>
             </DialogFooter>
@@ -911,7 +909,7 @@ export function LoanDetail({
               <Input placeholder="UUID of transaction" value={eventTxId} onChange={(e) => setEventTxId(e.target.value)} className="h-9 text-xs" />
             </div>
 
-            <DialogFooter className="pt-2 flex flex-row gap-2 justify-end">
+            <DialogFooter>
               <Button type="button" variant="outline" size="sm" onClick={() => setAddEventOpen(false)}>Cancel</Button>
               <Button type="submit" size="sm" disabled={submittingEvent}>{submittingEvent ? 'Saving...' : 'Record Event'}</Button>
             </DialogFooter>
@@ -959,7 +957,7 @@ export function LoanDetail({
               <Input placeholder="UUID of transaction" value={chargeTxId} onChange={(e) => setChargeTxId(e.target.value)} className="h-9 text-xs" />
             </div>
 
-            <DialogFooter className="pt-2 flex flex-row gap-2 justify-end">
+            <DialogFooter>
               <Button type="button" variant="outline" size="sm" onClick={() => setAddChargeOpen(false)}>Cancel</Button>
               <Button type="submit" size="sm" disabled={submittingCharge}>{submittingCharge ? 'Saving...' : 'Add Charge'}</Button>
             </DialogFooter>

@@ -152,7 +152,7 @@ export function InstrumentDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Instrument' : 'Add Instrument'}</DialogTitle>
           <DialogDescription>

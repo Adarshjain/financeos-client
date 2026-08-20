@@ -106,9 +106,8 @@ export function MobileNav({ userEmail }: MobileNavProps) {
               <DropdownMenuItem asChild>
                 <Button
                   variant="ghost"
-                  size="sm"
                   type="submit"
-                  className="w-full justify-start rounded-xl hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 gap-2.5 h-9 px-3 transition-colors text-xs font-semibold cursor-pointer focus:outline-none"
+                  className="w-full justify-start gap-2.5 font-semibold hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400"
                 >
                   <LogOut className="h-4 w-4 text-slate-500" />
                   Sign out

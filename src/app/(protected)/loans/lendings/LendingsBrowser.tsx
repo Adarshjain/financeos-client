@@ -156,7 +156,7 @@ export function LendingsBrowser({
       </div>
 
       {/*<div className="flex items-center gap-2 w-full sm:w-auto shrink-0 sm:hidden">*/}
-        <Button onClick={() => setCreateOpen(true)} size="sm" className="h-8 text-xs gap-1.5 font-semibold sm:hidden">
+        <Button onClick={() => setCreateOpen(true)} size="sm" className="sm:hidden">
           <Plus className="h-3.5 w-3.5" /> Add Lending
         </Button>
       {/*</div>*/}
@@ -176,7 +176,7 @@ export function LendingsBrowser({
           </p>
         </div>
         <div className="hidden sm:flex items-center gap-2">
-          <Button onClick={() => setCreateOpen(true)} size="sm" className="h-8 text-xs gap-1.5 font-semibold">
+          <Button onClick={() => setCreateOpen(true)} size="sm">
             <Plus className="h-3.5 w-3.5" /> Add Lending
           </Button>
         </div>
@@ -267,8 +267,8 @@ export function LendingsBrowser({
                       trigger={
                         <Button
                           variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-slate-400 hover:text-rose-600"
+                          size="icon-xs"
+                          className="text-slate-400 hover:text-rose-600"
                           onClick={(e) => e.stopPropagation()}
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -407,8 +407,8 @@ export function LendingsBrowser({
                         trigger={
                           <Button
                             variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-slate-400 hover:text-rose-600"
+                            size="icon-xs"
+                            className="text-slate-400 hover:text-rose-600"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -558,7 +558,7 @@ export function LendingsBrowser({
               />
             </div>
 
-            <DialogFooter className="pt-2 flex flex-row gap-2 justify-end">
+            <DialogFooter>
               <Button type="button" variant="outline" size="sm" onClick={() => setCreateOpen(false)}>
                 Cancel
               </Button>

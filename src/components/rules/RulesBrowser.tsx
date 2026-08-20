@@ -321,7 +321,7 @@ export function RulesBrowser({
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Categorization Rules</h1>
         </div>
-        <Button onClick={openCreateDialog} className="rounded-xl h-8 text-xs">
+        <Button onClick={openCreateDialog} size="sm">
           <Plus className="h-4 w-4" />
           <span>New Rule</span>
         </Button>
@@ -415,9 +415,9 @@ export function RulesBrowser({
                     {/* Find Matching Transactions Action */}
                     <Button
                       variant="ghost"
-                      size="icon"
+                      size="icon-sm"
                       onClick={() => setMatchesRule(rule)}
-                      className="h-8 w-8 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 rounded-lg"
+                      className="text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/20"
                       title="Find matching transactions"
                     >
                       <ListChecks className="h-4 w-4" />
@@ -427,9 +427,9 @@ export function RulesBrowser({
                     {!rule.verified && (
                       <Button
                         variant="ghost"
-                        size="icon"
+                        size="icon-sm"
                         onClick={() => handleVerifyRule(rule.id)}
-                        className="h-8 w-8 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-lg"
+                        className="text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
                         title="Verify Rule"
                       >
                         <Check className="h-4 w-4" />
@@ -439,9 +439,9 @@ export function RulesBrowser({
                     {/* Edit Action */}
                     <Button
                       variant="ghost"
-                      size="icon"
+                      size="icon-sm"
                       onClick={() => openEditDialog(rule)}
-                      className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                      className="text-slate-600 dark:text-slate-400"
                       title="Edit Rule"
                     >
                       <Edit className="h-4 w-4" />
@@ -463,9 +463,8 @@ export function RulesBrowser({
                       }}
                       trigger={
                         <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-rose-650 dark:text-rose-455 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg"
+                          variant="ghost-destructive"
+                          size="icon-sm"
                           title="Delete Rule"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -539,7 +538,7 @@ export function RulesBrowser({
 
       {/* Create / Edit Dialog */}
       <Dialog open={isCreateOpen || !!editingRule} onOpenChange={closeDialogs}>
-        <DialogContent className="sm:max-w-[450px] p-4">
+        <DialogContent className="sm:max-w-[450px] p-4 sm:p-6">
           <form onSubmit={handleSubmitRule} className="space-y-2">
             <DialogHeader>
               <DialogTitle>{editingRule ? 'Edit Rule' : 'Create Categorization Rule'}</DialogTitle>
@@ -613,7 +612,7 @@ export function RulesBrowser({
               </div>
             </div>
 
-            <DialogFooter className="flex gap-2 flex-row">
+            <DialogFooter>
               <Button type="button" variant="outline" onClick={closeDialogs} disabled={formSubmitting}  className="flex-1">
                 Cancel
               </Button>

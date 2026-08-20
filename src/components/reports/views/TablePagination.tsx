@@ -74,8 +74,7 @@ export function TablePagination({
           <div className="flex items-center gap-1.5">
             <Button
               variant="outline"
-              size="icon"
-              className="h-8 w-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-800 transition-colors"
+              size="icon-sm"
               disabled={page.number <= 0 || loading}
               onClick={() => onPageChange?.(page.number - 1)}
             >
@@ -86,8 +85,7 @@ export function TablePagination({
             </span>
             <Button
               variant="outline"
-              size="icon"
-              className="h-8 w-8 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-900 border-slate-200 dark:border-slate-800 transition-colors"
+              size="icon-sm"
               disabled={page.number >= page.totalPages - 1 || loading}
               onClick={() => onPageChange?.(page.number + 1)}
             >

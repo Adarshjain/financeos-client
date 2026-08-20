@@ -40,13 +40,13 @@ export function RecordTradeDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm h-8 px-3">
+          <Button size="sm">
             <Plus className="w-3.5 h-3.5" />
             Record Trade
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="w-full max-w-full sm:max-w-xl max-h-[92vh] overflow-y-auto p-2 sm:p-6 rounded-none sm:rounded-xl">
+      <DialogContent className="w-full max-w-full sm:max-w-xl max-h-[92vh] overflow-y-auto p-4 sm:p-6 rounded-none sm:rounded-xl">
         <DialogHeader className="sr-only">
           <DialogTitle>Record Trade</DialogTitle>
           <DialogDescription>Record a new Buy or Sell trade transaction</DialogDescription>

@@ -180,7 +180,7 @@ export function HoldingDetailDialog({
                 initialInstrument={{currency: 'INR', ...pos.instrument}}
                 onSuccess={fetchHoldingTrades}
                 trigger={
-                  <Button variant="outline" size="sm" className="h-8 text-xs font-semibold">
+                  <Button variant="outline" size="sm">
                     <Plus className="w-3.5 h-3.5"/>
                     Record Trade
                   </Button>
@@ -192,7 +192,7 @@ export function HoldingDetailDialog({
                 initialBrokerAccountId={pos.brokerAccountId}
                 initialInstrumentId={pos.instrument.id}
                 trigger={
-                  <Button variant="outline" size="sm" className="h-8 text-xs font-semibold">
+                  <Button variant="outline" size="sm">
                     <DollarSign className="w-3.5 h-3.5"/>
                     Add Dividend
                   </Button>
@@ -207,7 +207,7 @@ export function HoldingDetailDialog({
                   lastPriceAsOf: pos.lastPriceAsOf,
                 }}
                 trigger={
-                  <Button variant="outline" size="sm" className="h-8 text-xs font-semibold">
+                  <Button variant="outline" size="sm">
                     <Edit className="w-3.5 h-3.5"/>
                     Edit Manual Price
                   </Button>
@@ -218,7 +218,7 @@ export function HoldingDetailDialog({
                 heldQuantity={parseNumber(pos.quantity)}
                 initialType={showMergerNudge ? 'merger' : undefined}
                 trigger={
-                  <Button variant="outline" size="sm" className="h-8 text-xs font-semibold">
+                  <Button variant="outline" size="sm">
                     <Zap className="w-3.5 h-3.5"/>
                     Corporate Actions
                   </Button>

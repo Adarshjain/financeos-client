@@ -114,7 +114,7 @@ export default async function AccountsPage() {
         <AccountFormWrapper
           trigger={
             <Button
-              className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center gap-1 px-4 py-2 text-xs shadow-sm shrink-0">
+              className="shrink-0">
               <Plus className="w-4 h-4" />
               Add Account
             </Button>
@@ -140,8 +140,7 @@ export default async function AccountsPage() {
             </div>
             <AccountFormWrapper
               trigger={
-                <Button
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold px-4 py-2">
+                <Button>
                   Get Started
                 </Button>
               }
