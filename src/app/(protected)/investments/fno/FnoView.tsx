@@ -189,8 +189,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
             <ImportWizardDialog
                 brokerAccounts={brokerAccounts}
                 trigger={
-                  <Button variant="outline" size="sm"
-                          className="rounded-xl text-xs font-semibold gap-1.5 border-slate-200 dark:border-slate-800 h-8">
+                  <Button variant="outline" size="sm">
                     <Download className="w-3.5 h-3.5"/>
                     Import Statement
                   </Button>
@@ -337,7 +336,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                       variant="ghost"
                       size="sm"
                       onClick={clearFilters}
-                      className="rounded-lg h-8 text-xs text-slate-500 hover:text-slate-900 px-2"
+                      className="text-slate-500 hover:text-slate-900"
                   >
                     <X className="w-3.5 h-3.5 mr-1"/>
                     Clear
@@ -458,7 +457,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                       variant="ghost"
                       size="sm"
                       onClick={clearFilters}
-                      className="rounded-lg h-8 text-xs text-slate-500 hover:text-slate-900 px-2"
+                      className="text-slate-500 hover:text-slate-900"
                   >
                     <X className="w-3.5 h-3.5 mr-1"/>
                     Clear
@@ -500,7 +499,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                     <p className="text-xs font-semibold text-slate-900 dark:text-white">No trades match active
                       filters</p>
                     <p className="text-[11px] text-slate-500 mt-0.5">Try clearing filters or search keyword.</p>
-                    <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2 rounded-xl text-xs h-8">
+                    <Button variant="outline" size="sm" onClick={clearFilters} className="mt-2">
                       Clear Filters
                     </Button>
                   </div>
@@ -603,9 +602,9 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                                                 onSuccess={handleRefresh}/>
                             <Button
                                 variant="ghost"
-                                size="sm"
+                                size="icon-xs"
                                 onClick={() => setDeletingTrade(trade)}
-                                className="h-6 w-6 p-0 rounded-lg text-slate-400 hover:text-rose-600"
+                                className="text-slate-400 hover:text-rose-600"
                             >
                               <Trash2 className="w-3.5 h-3.5"/>
                             </Button>
@@ -777,9 +776,9 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                                                         onSuccess={handleRefresh}/>
                                     <Button
                                         variant="ghost"
-                                        size="sm"
+                                        size="icon-xs"
                                         onClick={() => setDeletingTrade(trade)}
-                                        className="h-7 w-7 p-0 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                                        className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
                                     >
                                       <Trash2 className="w-3.5 h-3.5"/>
                                     </Button>
@@ -798,7 +797,7 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={!!deletingTrade} onOpenChange={(open) => !open && setDeletingTrade(null)}>
-          <DialogContent className="sm:max-w-md rounded-2xl">
+          <DialogContent className="sm:max-w-md rounded-2xl p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle className="text-base font-bold text-slate-900 dark:text-white">
                 Delete FnO Trade Record
@@ -810,12 +809,11 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
               </DialogDescription>
             </DialogHeader>
 
-            <DialogFooter className="gap-2 pt-2">
+            <DialogFooter>
               <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setDeletingTrade(null)}
-                  className="rounded-xl text-xs"
               >
                 Cancel
               </Button>
@@ -824,7 +822,6 @@ export function FnoView({initialFnoData, brokerAccounts}: FnoViewProps) {
                   size="sm"
                   onClick={handleDeleteConfirm}
                   disabled={isDeleting}
-                  className="rounded-xl text-xs bg-rose-600 hover:bg-rose-700"
               >
                 {isDeleting ? 'Deleting...' : 'Delete Trade'}
               </Button>

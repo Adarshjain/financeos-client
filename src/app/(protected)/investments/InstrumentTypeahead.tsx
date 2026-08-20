@@ -197,10 +197,9 @@ export function InstrumentTypeahead({
           </div>
           <Button
             type="button"
-            variant="ghost"
-            size="sm"
+            size="micro"
             onClick={handleChangeClick}
-            className="h-6 text-[11px] text-slate-500 hover:text-slate-900 shrink-0"
+            className="text-slate-500 hover:text-slate-900 shrink-0"
           >
             Change
           </Button>

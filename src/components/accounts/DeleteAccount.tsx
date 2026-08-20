@@ -61,14 +61,14 @@ export function DeleteAccount({ account }: DeleteAccountProps) {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>Delete Account</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete <strong>{account.name}</strong>? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="flex gap-2">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={isDeleting}>
               Cancel
             </Button>

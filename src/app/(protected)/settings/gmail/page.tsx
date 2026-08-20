@@ -23,7 +23,7 @@ function GmailSettingsContent() {
     <div className="space-y-2 p-4">
       {/* Page Title & Back Button */}
       <div className="flex items-center gap-3">
-        <Button asChild variant="ghost" size="icon" className="h-8 w-8 p-0 rounded-lg">
+        <Button asChild size="icon-sm">
           <Link href="/settings">
             <ArrowLeft className="h-4 w-4" />
           </Link>

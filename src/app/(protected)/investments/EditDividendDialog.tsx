@@ -99,7 +99,7 @@ export function EditDividendDialog({ dividend, trigger, onSuccess }: EditDividen
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">
+          <Button size="icon-xs" className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">
             <Edit className="w-3.5 h-3.5" />
           </Button>
         )}
@@ -210,14 +210,13 @@ export function EditDividendDialog({ dividend, trigger, onSuccess }: EditDividen
             placeholder="Optional notes"
           />
 
-          <DialogFooter className="pt-3 flex flex-row items-center justify-between sm:justify-between gap-2 border-t border-slate-100 dark:border-slate-800">
+          <DialogFooter className="justify-between">
             <Button
               type="button"
               variant="destructive"
               size="sm"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="h-8 text-xs px-3 bg-red-600 hover:bg-red-700"
             >
               <Trash2 className="w-3.5 h-3.5 mr-1" />
               {isDeleting ? 'Deleting...' : 'Delete Payout'}
@@ -228,7 +227,6 @@ export function EditDividendDialog({ dividend, trigger, onSuccess }: EditDividen
                 variant="outline"
                 size="sm"
                 onClick={() => setOpen(false)}
-                className="h-8 text-xs"
               >
                 Cancel
               </Button>
@@ -236,7 +234,6 @@ export function EditDividendDialog({ dividend, trigger, onSuccess }: EditDividen
                 type="submit"
                 size="sm"
                 disabled={isSubmitting}
-                className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
               >
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>

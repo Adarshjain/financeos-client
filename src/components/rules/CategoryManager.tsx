@@ -112,7 +112,7 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
 
       {/* Create Category Modal */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>Create New Category</DialogTitle>
           </DialogHeader>
@@ -128,7 +128,7 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
                 autoFocus
               />
             </div>
-            <DialogFooter className="gap-2 sm:gap-0">
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"

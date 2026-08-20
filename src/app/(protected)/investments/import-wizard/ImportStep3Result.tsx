@@ -77,12 +77,12 @@ export function ImportStep3Result({
         </div>
       )}
 
-      <DialogFooter className="justify-center pt-2">
+      <DialogFooter>
         <Button
           type="button"
           size="sm"
+          variant="purple"
           onClick={onDone}
-          className="text-xs bg-purple-600 hover:bg-purple-700 text-white"
         >
           Done & View Portfolio
         </Button>

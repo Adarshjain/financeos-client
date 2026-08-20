@@ -137,7 +137,7 @@ export function DividendSuggestionsDialog({ trigger, onSuccess }: DividendSugges
           <Button
             variant="outline"
             size="sm"
-            className="h-8 text-xs font-bold gap-1.5 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/60"
+            className="border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/60"
           >
             <Sparkles className="w-3.5 h-3.5" />
             Detect Dividends
@@ -198,11 +198,10 @@ export function DividendSuggestionsDialog({ trigger, onSuccess }: DividendSugges
                     All recent stock dividend payouts for your active holdings appear to be recorded.
                   </p>
                   <Button
-                    variant="ghost"
-                    size="sm"
+                    size="micro"
                     onClick={runScan}
                     disabled={isScanning}
-                    className="h-6 text-[11px] text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                    className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
                   >
                     Rescan
                   </Button>
@@ -221,11 +220,10 @@ export function DividendSuggestionsDialog({ trigger, onSuccess }: DividendSugges
                       </label>
                     </div>
                     <Button
-                      variant="ghost"
-                      size="sm"
+                      size="micro"
                       onClick={runScan}
                       disabled={isScanning}
-                      className="h-6 text-[11px] text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                      className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
                     >
                       Rescan
                     </Button>
@@ -298,15 +296,14 @@ export function DividendSuggestionsDialog({ trigger, onSuccess }: DividendSugges
           )}
         </div>
 
-        <DialogFooter className="pt-3 flex flex-row items-center justify-between sm:justify-between border-t border-slate-100 dark:border-slate-800">
-          <Button variant="outline" size="sm" onClick={() => setOpen(false)} className="h-8 text-xs">
+        <DialogFooter>
+          <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
             Cancel
           </Button>
           <Button
             size="sm"
             onClick={handleSubmit}
             disabled={isSubmitting || selectedCount === 0}
-            className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
           >
             {isSubmitting ? 'Recording...' : `Record ${selectedCount} Dividend${selectedCount === 1 ? '' : 's'}`}
           </Button>

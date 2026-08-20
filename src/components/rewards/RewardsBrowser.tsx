@@ -674,7 +674,7 @@ export default function RewardsBrowser({
 
       {/* Reward line → source transaction detail */}
       <Dialog open={!!selectedLine} onOpenChange={(o) => !o && setSelectedLine(null)}>
-        <DialogContent className="sm:max-w-[420px] p-4">
+        <DialogContent className="sm:max-w-[420px] p-4 sm:p-6">
           {selectedLine && (
             <>
               <DialogHeader>

@@ -336,7 +336,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
             size="sm"
             disabled={batchActionLoading}
             onClick={() => setIsMergeDialogOpen(true)}
-            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-350 hover:bg-blue-50 dark:hover:bg-blue-950/20 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors h-auto shadow-none gap-1.5 flex items-center"
+            className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-350 hover:bg-blue-50 dark:hover:bg-blue-950/20 font-bold"
           >
             <GitMerge className="h-3.5 w-3.5" />
             <span>Merge</span>
@@ -347,7 +347,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
           size="sm"
           disabled={batchActionLoading}
           onClick={() => setIsApproveDialogOpen(true)}
-          className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-350 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors h-auto shadow-none gap-1.5 flex items-center"
+          className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-350 hover:bg-emerald-50 dark:hover:bg-emerald-950/20 font-bold"
         >
           <Check className="h-3.5 w-3.5" />
           <span>Approve</span>
@@ -361,10 +361,10 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
           loading={batchActionLoading}
           trigger={
             <Button
-              variant="ghost"
+              variant="ghost-destructive"
               size="sm"
               disabled={batchActionLoading}
-              className="text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-350 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors h-auto shadow-none gap-1.5 flex items-center"
+              className="font-bold"
             >
               <Trash2 className="h-3.5 w-3.5" />
               <span>Delete</span>
@@ -556,7 +556,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
 
       {/* Approve Dialog */}
       <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] p-4 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+        <DialogContent className="sm:max-w-[425px] p-4 sm:p-6 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
           <DialogHeader>
             <DialogTitle className="text-slate-900 dark:text-white">Approve Transactions</DialogTitle>
             <DialogDescription className="text-slate-500 dark:text-slate-400 text-xs mt-1">
@@ -595,13 +595,12 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
               })
             )}
           </div>
-          <DialogFooter className="flex gap-2 flex-row">
-            <Button variant="outline" size="sm" className="text-xs rounded-xl"
+          <DialogFooter>
+            <Button variant="outline" size="sm"
                     onClick={() => setIsApproveDialogOpen(false)}>
               Cancel
             </Button>
             <Button
-              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs rounded-xl"
               size="sm"
               disabled={reasonsToApprove.length === 0 || batchActionLoading}
               onClick={handleBatchApprove}
@@ -616,7 +615,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
       <Dialog open={summaryData !== null} onOpenChange={(open) => {
         if (!open) setSummaryData(null);
       }}>
-        <DialogContent className="sm:max-w-[480px] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+        <DialogContent className="sm:max-w-[480px] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-slate-900 dark:text-white">Batch Action Summary</DialogTitle>
             <DialogDescription className="text-slate-500 dark:text-slate-400 text-xs mt-1">
@@ -689,7 +688,7 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
           </div>
           <DialogFooter>
             <Button
-              className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-xs rounded-xl"
+              className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
               onClick={() => setSummaryData(null)}
             >
               Close

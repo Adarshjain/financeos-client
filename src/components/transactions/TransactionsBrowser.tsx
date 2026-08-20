@@ -252,9 +252,8 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
           {selectedTxnIds.size > 0 ? (
             <Button
               variant="outline"
-              size="sm"
               onClick={() => setBulkLinkOpen(true)}
-              className="gap-1.5 border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 rounded-xl h-8 text-xs font-semibold"
+              className="border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300"
             >
               <Link2 className="h-3.5 w-3.5" />
               <span>Link ({selectedTxnIds.size})</span>
@@ -265,8 +264,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
 
                 <Button
                     variant="outline"
-                    size="sm"
-                    className="relative gap-1.5 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 rounded-xl transition-all h-8 text-xs"
+                    className="relative"
                 >
                   <span>Review</span>
                   {localReviewCount !== null && localReviewCount > 0 && (
@@ -281,7 +279,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
                 categories={categories}
                 accounts={accounts}
                 onSuccess={handleReload}
-                trigger={<Button size="sm" className="rounded-xl h-8 text-xs"><PlusIcon className="w-4" data-icon="inline-end" />Create</Button>}
+                trigger={<Button size="sm"><PlusIcon className="w-4" data-icon="inline-end" />Create</Button>}
               />
             </>
           )}
@@ -303,20 +301,20 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-xs font-medium text-slate-500">Sort:</span>
           <Button
-            variant={sort.startsWith('date') ? 'secondary' : 'outline'}
-            size="sm"
+            variant={sort.startsWith('date') ? 'filter-active' : 'filter'}
+            size="pill"
             onClick={() => handleSort('date')}
-            className="gap-1 h-7 rounded-full text-[11px] px-2.5"
+            className="gap-1"
           >
             Date
             {sort === 'date,desc' && <ArrowDown className="h-3 w-3" />}
             {sort === 'date,asc' && <ArrowUp className="h-3 w-3" />}
           </Button>
           <Button
-            variant={sort.startsWith('amount') ? 'secondary' : 'outline'}
-            size="sm"
+            variant={sort.startsWith('amount') ? 'filter-active' : 'filter'}
+            size="pill"
             onClick={() => handleSort('amount')}
-            className="gap-1 h-7 rounded-full text-[11px] px-2.5"
+            className="gap-1"
           >
             Amount
             {sort === 'amount,desc' && <ArrowDown className="h-3 w-3" />}
@@ -324,8 +322,8 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
           </Button>
           <div className="w-[1px] h-4 bg-slate-300 dark:bg-slate-700 hidden sm:block"></div>
           <Button
-            variant={isSelectionMode || selectedTxnIds.size > 0 ? 'secondary' : 'outline'}
-            size="sm"
+            variant={isSelectionMode || selectedTxnIds.size > 0 ? 'filter-active' : 'filter'}
+            size="pill"
             onClick={() => {
               if (isSelectionMode && selectedTxnIds.size === 0) {
                 setIsSelectionMode(false);
@@ -333,19 +331,19 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
                 setIsSelectionMode(!isSelectionMode);
               }
             }}
-            className="gap-1 h-7 rounded-full text-[11px] px-2.5"
+            className="gap-1"
           >
             Link
           </Button>
           {selectedTxnIds.size > 0 && (
             <Button
               variant="ghost"
-              size="sm"
+              size="xs"
               onClick={() => {
                 setSelectedTxnIds(new Set());
                 setIsSelectionMode(false);
               }}
-              className="h-7 text-[11px] text-slate-500 hover:text-slate-900 gap-1 px-2"
+              className="text-slate-500 hover:text-slate-900"
             >
               <X className="h-3 w-3" /> Clear ({selectedTxnIds.size})
             </Button>

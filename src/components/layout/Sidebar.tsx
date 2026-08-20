@@ -38,9 +38,8 @@ export function Sidebar({ userEmail }: { userEmail: string }) {
         <form action={logout}>
           <Button
             variant="outline"
-            size="sm"
             type="submit"
-            className="w-full h-9 rounded-xl border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 hover:border-rose-100 dark:hover:border-rose-900/20 transition-all font-semibold text-xs"
+            className="w-full hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 hover:border-rose-100 dark:hover:border-rose-900/20"
           >
             <LogOut className="h-4 w-4 mr-2" />
             Sign out

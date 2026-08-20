@@ -638,16 +638,14 @@ export default function TransactionCRUD({
         className="flex gap-3 p-2 border-t border-slate-100 dark:border-slate-800/60 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md">
         <Button
           variant="outline"
-          className="flex-1 rounded-xl h-9 text-xs text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
-          size="lg"
+          className="flex-1"
           type="button"
           onClick={onClose}
         >
           {isUpdateMode ? 'Back' : 'Close'}
         </Button>
         <Button
-          className="flex-1 rounded-xl h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-sm transition-all"
-          size="lg"
+          className="flex-1"
           type="submit"
           disabled={isSubmitting}
         >

@@ -316,7 +316,7 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button size="sm" className="gap-1.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white">
+          <Button size="sm">
             <Upload className="w-3.5 h-3.5" />
             Bulk Import / Reconcile
           </Button>

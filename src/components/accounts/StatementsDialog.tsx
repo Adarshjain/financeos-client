@@ -141,7 +141,7 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-5xl sm:max-h-[85vh] overflow-y-auto space-y-1 p-4">
+      <DialogContent className="sm:max-w-5xl sm:max-h-[85vh] overflow-y-auto space-y-1 p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle
             className="text-xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-4">
@@ -352,9 +352,7 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                     <div className="pt-1 flex items-center justify-between text-[11px] text-slate-500">
                       <span>{s.transactionCount !== null && s.transactionCount !== undefined ? `${s.transactionCount} transactions` : 'No transactions linked'}</span>
                       <Button
-                        size="sm"
                         variant="outline"
-                        className="text-xs h-8 px-3 gap-1 rounded-xl font-medium"
                         onClick={() => handleSelectStatement(s.id)}
                       >
                         <span>View details</span>
@@ -412,9 +410,8 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
                         <TableCell><StatementVerdictBadge verdict={s.verdict} /></TableCell>
                         <TableCell className="text-right">
                           <Button
-                            size="sm"
+                            size="xs"
                             variant="outline"
-                            className="text-xs h-7 gap-1"
                             onClick={() => handleSelectStatement(s.id)}
                           >
                             <span>View details</span>

@@ -298,8 +298,7 @@ export default function RewardRulesManager({
       </Select>
       {loading && <Loader2 className="w-4 h-4 animate-spin text-slate-400 shrink-0" />}
       {!isMobile && <div className="flex-1" />}
-      <Button onClick={() => setIsCreateOpen(true)} disabled={!accountId} variant="outline"
-              className="rounded-lg h-8 text-xs font-semibold">
+      <Button onClick={() => setIsCreateOpen(true)} disabled={!accountId} variant="outline" size="sm">
         <Plus className="w-3.5 h-3.5 mr-1" /> New Rule
       </Button>
     </div>

@@ -141,7 +141,7 @@ export function CreateInstrumentDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="outline" size="sm" className="h-8 text-xs flex items-center gap-1">
+          <Button variant="outline" size="sm">
             <Plus className="w-3.5 h-3.5" />
             Add Instrument
           </Button>
@@ -288,13 +288,12 @@ export function CreateInstrumentDialog({
                 placeholder="e.g. RELIANCE.NS"
               />
 
-              <DialogFooter className="pt-3 gap-2">
+              <DialogFooter>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => setOpen(false)}
-                  className="text-xs"
                 >
                   Cancel
                 </Button>
@@ -302,7 +301,6 @@ export function CreateInstrumentDialog({
                   type="submit"
                   size="sm"
                   disabled={isSubmitting}
-                  className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
                   {isSubmitting ? 'Creating...' : 'Create Instrument'}
                 </Button>

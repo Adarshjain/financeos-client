@@ -163,7 +163,7 @@ export default function RewardMilestoneForm({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-[520px] p-4 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[520px] p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isUpdateMode ? 'Edit Milestone' : 'Create Milestone'}</DialogTitle>
         </DialogHeader>
@@ -305,13 +305,13 @@ export default function RewardMilestoneForm({
           </div>
         </div>
 
-        <DialogFooter className="flex gap-2 flex-row">
+        <DialogFooter>
           <Button variant="outline" type="button" onClick={onClose}
-                  className="flex-1 rounded-xl h-9 text-xs font-semibold">
+                  className="flex-1">
             Cancel
           </Button>
           <Button type="button" onClick={onSubmit} disabled={isSubmitting}
-                  className="flex-1 rounded-xl h-9 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
+                  className="flex-1">
             {isSubmitting ? 'Saving...' : 'Save Milestone'}
           </Button>
         </DialogFooter>

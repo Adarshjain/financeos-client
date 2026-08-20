@@ -241,9 +241,8 @@ export function GmailConnect() {
                     </div>
                   </div>
                   <Button
-                    variant="ghost"
+                    variant="ghost-destructive"
                     size="sm"
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
                     onClick={() => handleDisconnect(conn.id)}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -378,18 +377,17 @@ export function GmailConnect() {
 
                   <div className="flex gap-2 mt-3 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex-1 text-xs h-7 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      size="xs"
+                      className="flex-1 text-slate-600 dark:text-slate-400"
                       onClick={() => openEditSenderDialog(sender)}
                     >
                       <Pencil className="h-3 w-3 mr-1" />
                       Edit
                     </Button>
                     <Button
-                      variant="ghost"
-                      size="sm"
-                      className="flex-1 text-xs h-7 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20"
+                      variant="ghost-destructive"
+                      size="xs"
+                      className="flex-1"
                       onClick={() => handleSenderDelete(sender.id)}
                     >
                       <Trash2 className="h-3 w-3 mr-1" />
@@ -405,7 +403,7 @@ export function GmailConnect() {
 
       {/* Add/Edit Sender Dialog */}
       <Dialog open={isSenderDialogOpen} onOpenChange={setIsSenderDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>
               {editingSender ? 'Edit Allowed Sender' : 'Add Allowed Sender'}
@@ -445,7 +443,7 @@ export function GmailConnect() {
               </label>
             </div>
 
-            <DialogFooter className="pt-4 border-t gap-2 sm:gap-0">
+            <DialogFooter>
               <Button
                 type="button"
                 variant="outline"

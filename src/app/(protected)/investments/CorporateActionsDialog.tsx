@@ -17,6 +17,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -289,7 +290,7 @@ export function CorporateActionsDialog({
       {showTrigger && (
         <DialogTrigger asChild>
           {trigger || (
-            <Button variant="ghost" size="sm" className="h-6 px-1.5 text-[10px] text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40">
+            <Button size="micro" className="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40">
               <Layers className="w-3 h-3 mr-1" />
               Corporate Actions
             </Button>
@@ -354,20 +355,18 @@ export function CorporateActionsDialog({
                   <div className="flex items-center gap-1 shrink-0">
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
+                      size="icon-xs"
                       onClick={() => handleEditClick(act)}
-                      className="h-6 w-6 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+                      className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
                     >
                       <Edit className="w-3.5 h-3.5" />
                     </Button>
                     <Button
                       type="button"
-                      variant="ghost"
-                      size="sm"
+                      variant="ghost-destructive"
+                      size="icon-xs"
                       onClick={() => handleDelete(act.id)}
                       disabled={deletingId === act.id}
-                      className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
@@ -397,10 +396,9 @@ export function CorporateActionsDialog({
             {editingActionId && (
               <Button
                 type="button"
-                variant="ghost"
-                size="sm"
+                size="micro"
                 onClick={resetForm}
-                className="h-6 text-[10px] text-slate-500 hover:text-slate-900"
+                className="text-slate-500 hover:text-slate-900"
               >
                 <X className="w-3 h-3 mr-1" />
                 Cancel Edit
@@ -547,16 +545,17 @@ export function CorporateActionsDialog({
             placeholder="Optional reference / details"
           />
 
-          <div className="flex justify-end gap-2 pt-2">
+          <DialogFooter>
             <Button
               type="submit"
               size="sm"
+              variant="purple"
               disabled={isSubmitting}
-              className="w-full sm:w-auto text-xs bg-purple-600 hover:bg-purple-700 text-white"
+              className="w-full sm:w-auto"
             >
               {isSubmitting ? 'Saving Action...' : editingActionId ? 'Update Corporate Action' : 'Save Corporate Action'}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

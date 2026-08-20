@@ -141,7 +141,7 @@ export function CalendarView({ initialObligations }: CalendarViewProps) {
                     <div className="font-bold text-rose-600 tabular-nums">{formatMoney(item.amount)}</div>
                     <Badge variant="destructive" className="capitalize text-[9px] px-1.5 py-0">Overdue</Badge>
                   </div>
-                  <Button variant="ghost" size="icon" asChild className="h-8 w-8 text-slate-400">
+                  <Button variant="ghost" size="icon-sm" asChild className="text-slate-400">
                     <Link href={item.type === 'emi' ? `/loans/${item.loanId}` : `/loans/lendings/${item.counterpartyId}`}>
                       <ChevronRight className="h-4 w-4" />
                     </Link>
@@ -201,7 +201,7 @@ export function CalendarView({ initialObligations }: CalendarViewProps) {
                           {item.type === 'emi' ? 'Loan EMI' : 'P2P Due'}
                         </Badge>
                       </div>
-                      <Button variant="ghost" size="icon" asChild className="h-8 w-8 text-slate-400">
+                      <Button variant="ghost" size="icon-sm" asChild className="text-slate-400">
                         <Link href={item.type === 'emi' ? `/loans/${item.loanId}` : `/loans/lendings/${item.counterpartyId}`}>
                           <ChevronRight className="h-4 w-4" />
                         </Link>

@@ -111,7 +111,7 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">
+          <Button variant="ghost" size="icon-xs" className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">
             <Edit className="w-3.5 h-3.5" />
           </Button>
         )}
@@ -224,13 +224,12 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
             placeholder="e.g. RELIANCE.NS"
           />
 
-          <DialogFooter className="pt-3 gap-2">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => setOpen(false)}
-              className="text-xs"
             >
               Cancel
             </Button>
@@ -238,7 +237,6 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
               type="submit"
               size="sm"
               disabled={isSubmitting}
-              className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
             >
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>

@@ -384,18 +384,17 @@ export function LoanForm({
             />
           </div>
 
-          <DialogFooter className="pt-2 flex flex-row gap-2 justify-end">
+          <DialogFooter>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => onOpenChange(false)}
               disabled={loading}
-              className="text-xs"
             >
               Cancel
             </Button>
-            <Button type="submit" size="sm" disabled={loading} className="text-xs">
+            <Button type="submit" size="sm" disabled={loading}>
               {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Loan'}
             </Button>
           </DialogFooter>

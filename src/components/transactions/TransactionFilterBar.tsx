@@ -440,8 +440,7 @@ export function TransactionFilterBar({
                 </div>
               </div>
               <Button
-                size="sm"
-                className="w-full h-8 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white mt-1"
+                className="w-full mt-1"
                 onClick={handleApplyCustomDate}
                 disabled={!customDateFrom || !customDateTo}
               >
@@ -556,14 +555,9 @@ export function TransactionFilterBar({
         <Popover open={amountOpen} onOpenChange={setAmountOpen}>
           <PopoverTrigger asChild>
             <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                'h-8 rounded-full px-3 text-[11px] font-medium gap-1 border shrink-0 transition-all touch-manipulation',
-                getFilter('amount')
-                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-400 font-semibold'
-                  : 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300',
-              )}
+              variant={getFilter('amount') ? 'filter-active' : 'filter'}
+              size="pill"
+              className="gap-1"
             >
               <span>Amount</span>
               <ChevronDown className="h-3 w-3 opacity-50" />
@@ -633,7 +627,7 @@ export function TransactionFilterBar({
 
               <Button
                 size="sm"
-                className="w-full h-8 text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white mt-1"
+                className="w-full mt-1"
                 onClick={handleApplyAmount}
                 disabled={!amountVal1}
               >
@@ -647,9 +641,9 @@ export function TransactionFilterBar({
         <Popover open={moreFiltersOpen} onOpenChange={setMoreFiltersOpen}>
           <PopoverTrigger asChild>
             <Button
-              variant="outline"
-              size="sm"
-              className="h-8 rounded-full px-3 text-[11px] font-medium gap-1 bg-white dark:bg-slate-950 border-dashed border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 shrink-0 touch-manipulation"
+              variant="filter"
+              size="pill"
+              className="gap-1 border-dashed border-slate-300 dark:border-slate-700"
             >
               <Plus className="h-3 w-3" />
               <span>More</span>
@@ -741,10 +735,10 @@ export function TransactionFilterBar({
           ))}
 
           <Button
-            variant="ghost"
-            size="sm"
+            variant="ghost-destructive"
+            size="micro"
             onClick={handleClearAll}
-            className="h-6 px-2 text-[10px] font-semibold text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-full ml-auto touch-manipulation"
+            className="font-semibold rounded-full ml-auto touch-manipulation"
           >
             Clear all
           </Button>

@@ -235,11 +235,10 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
                             autoFocus
                           />
                           <Button
-                            size="icon"
-                            variant="ghost"
+                            size="icon-xs"
                             onClick={() => pt.id && handleSaveEdit(pt.id)}
                             disabled={isUpdating}
-                            className="h-6 w-6 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                            className="text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
                           >
                             {isUpdating ? (
                               <Loader2 className="w-3 h-3 animate-spin" />
@@ -248,11 +247,10 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
                             )}
                           </Button>
                           <Button
-                            size="icon"
-                            variant="ghost"
+                            size="icon-xs"
                             onClick={() => setEditingId(null)}
                             disabled={isUpdating}
-                            className="h-6 w-6 text-slate-400 hover:text-slate-600"
+                            className="text-slate-400 hover:text-slate-600"
                           >
                             <X className="w-3.5 h-3.5" />
                           </Button>
@@ -266,22 +264,20 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
                       {isManual && pt.id && !isEditingThis && (
                         <div className="flex items-center gap-0.5 border-l border-slate-200 dark:border-slate-800 pl-1.5 ml-1">
                           <Button
-                            size="icon"
-                            variant="ghost"
+                            size="icon-xs"
                             title="Edit manual price"
                             onClick={() => handleStartEdit(pt)}
-                            className="h-6 w-6 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
+                            className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400"
                           >
                             <Edit2 className="w-3 h-3" />
                           </Button>
 
                           <Button
-                            size="icon"
-                            variant="ghost"
+                            size="icon-xs"
                             title="Delete manual price"
                             onClick={() => pt.id && handleDelete(pt.id)}
                             disabled={isDeletingThis}
-                            className="h-6 w-6 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
+                            className="text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
                           >
                             {isDeletingThis ? (
                               <Loader2 className="w-3 h-3 animate-spin text-rose-500" />

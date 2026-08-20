@@ -117,7 +117,10 @@ const DialogFooter = ({
                       }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2',
+      // Sticky action bar: pins to the dialog's bottom edge while long content
+      // scrolls beneath it. The negative bottom margin swallows the dialog's
+      // own p-4 sm:p-6 bottom padding so the pinned bar sits flush.
+      'sticky bottom-0 z-10 flex flex-row justify-end gap-2 border-t border-slate-100 dark:border-slate-800 bg-background pt-3 pb-4 sm:pb-6 -mb-4 sm:-mb-6',
       className,
     )}
     {...props}

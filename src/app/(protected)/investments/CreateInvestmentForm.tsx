@@ -181,7 +181,7 @@ export function CreateInvestmentForm({
         </CardHeader>
         <CardContent className="text-center py-6 text-xs text-slate-500 space-y-3">
           <p>You need at least one broker account to record trades.</p>
-          <Button asChild size="sm" variant="outline" className="text-xs">
+          <Button asChild size="sm" variant="outline">
             <Link href="/accounts">
               <Plus className="w-3.5 h-3.5 mr-1" />
               Add Broker Account

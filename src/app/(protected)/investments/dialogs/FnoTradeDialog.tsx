@@ -149,7 +149,7 @@ export function FnoTradeDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit FnO Trade' : 'Add FnO Trade'}</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
@@ -276,7 +276,7 @@ export function FnoTradeDialog({
             </FormField>
           </div>
 
-          <DialogFooter className="pt-2">
+          <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
               Cancel
             </Button>

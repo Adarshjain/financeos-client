@@ -133,7 +133,7 @@ export function RuleMatchesDialog({ rule, open, onOpenChange }: RuleMatchesDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[720px] p-4 max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-[720px] p-4 sm:p-6 max-h-[85vh] flex flex-col">
         <DialogHeader>
           <DialogTitle>
             Matching transactions
@@ -284,7 +284,7 @@ export function RuleMatchesDialog({ rule, open, onOpenChange }: RuleMatchesDialo
           />
         )}
 
-        <DialogFooter className="flex gap-2 flex-row">
+        <DialogFooter>
           <Button
             type="button"
             variant="outline"

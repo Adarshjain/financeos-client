@@ -186,8 +186,8 @@ export function DashboardWidgetView({
             <Button
               type="button"
               variant="ghost"
-              size="icon"
-              className="h-7 w-7 shrink-0 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              size="icon-xs"
+              className="shrink-0"
               onClick={onToggleWidth}
               onMouseDown={stopDrag}
               onTouchStart={stopDrag}
@@ -202,8 +202,8 @@ export function DashboardWidgetView({
             <Button
               type="button"
               variant="ghost"
-              size="icon"
-              className="h-7 w-7 shrink-0 rounded-lg hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400 transition-colors"
+              size="icon-xs"
+              className="shrink-0 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/20 dark:hover:text-rose-400"
               onClick={onRemove}
               onMouseDown={stopDrag}
               onTouchStart={stopDrag}
@@ -245,8 +245,8 @@ export function DashboardWidgetView({
               <Button
                 type="button"
                 variant="ghost"
-                size="icon"
-                className="h-7 w-7 shrink-0"
+                size="icon-xs"
+                className="shrink-0"
                 onClick={() => setIsFullPage(false)}
               >
                 <X className="h-4 w-4" />
