@@ -38,6 +38,76 @@ const COMMON_BROKERS = [
   'Paytm Money',
 ];
 
+const ACCOUNT_TYPE_CONFIG: Record<
+  AccountType,
+  {
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    activeClassName: string;
+  }
+> = {
+  [AccountType.BANK_ACCOUNT]: {
+    label: 'Bank',
+    icon: Landmark,
+    activeClassName:
+      'bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-500 text-emerald-700 dark:text-emerald-400 font-semibold',
+  },
+  [AccountType.CREDIT_CARD]: {
+    label: 'Credit Card',
+    icon: CreditCard,
+    activeClassName:
+      'bg-amber-50/60 dark:bg-amber-950/20 border-amber-500 text-amber-700 dark:text-amber-400 font-semibold',
+  },
+  [AccountType.BROKER]: {
+    label: 'Broker',
+    icon: TrendingUp,
+    activeClassName:
+      'bg-blue-50/60 dark:bg-blue-950/20 border-blue-500 text-blue-700 dark:text-blue-400 font-semibold',
+  },
+  [AccountType.GENERIC]: {
+    label: 'Wallet/Cash',
+    icon: Wallet,
+    activeClassName:
+      'bg-purple-50/60 dark:bg-purple-950/20 border-purple-500 text-purple-700 dark:text-purple-400 font-semibold',
+  },
+};
+
+interface AccountTypeButtonProps {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  selected: boolean;
+  disabled?: boolean;
+  activeClassName: string;
+  onClick?: () => void;
+}
+
+function AccountTypeButton({
+  label,
+  icon: Icon,
+  selected,
+  disabled,
+  activeClassName,
+  onClick,
+}: AccountTypeButtonProps) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        "flex items-center justify-center gap-1 py-2 px-2 rounded-xl border-2 text-center transition-all shadow-sm",
+        selected
+          ? activeClassName
+          : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850",
+        disabled && "opacity-60 cursor-not-allowed border-dashed"
+      )}
+    >
+      <Icon className="w-4 h-4" />
+      <span className="text-xs">{label}</span>
+    </button>
+  );
+}
+
 interface AccountFormProps {
   account?: Account;
   onSuccess?: () => void;
@@ -244,67 +314,47 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             <Shield className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
             Account Type
           </Label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <button
-              type="button"
-              disabled={isUpdateMode}
-              onClick={() => setAccountType(AccountType.BANK_ACCOUNT)}
-              className={cn(
-                "flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-xl border-2 text-center transition-all shadow-sm",
-                accountType === AccountType.BANK_ACCOUNT
-                  ? "bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-500 text-emerald-700 dark:text-emerald-400 font-semibold"
-                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850",
-                isUpdateMode && "opacity-60 cursor-not-allowed border-dashed"
-              )}
-            >
-              <Landmark className="w-4 h-4" />
-              <span className="text-xs">Bank</span>
-            </button>
-            <button
-              type="button"
-              disabled={isUpdateMode}
-              onClick={() => setAccountType(AccountType.CREDIT_CARD)}
-              className={cn(
-                "flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-xl border-2 text-center transition-all shadow-sm",
-                accountType === AccountType.CREDIT_CARD
-                  ? "bg-amber-50/60 dark:bg-amber-950/20 border-amber-500 text-amber-700 dark:text-amber-400 font-semibold"
-                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850",
-                isUpdateMode && "opacity-60 cursor-not-allowed border-dashed"
-              )}
-            >
-              <CreditCard className="w-4 h-4" />
-              <span className="text-xs">Credit Card</span>
-            </button>
-            <button
-              type="button"
-              disabled={isUpdateMode}
-              onClick={() => setAccountType(AccountType.BROKER)}
-              className={cn(
-                "flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-xl border-2 text-center transition-all shadow-sm",
-                accountType === AccountType.BROKER
-                  ? "bg-blue-50/60 dark:bg-blue-950/20 border-blue-500 text-blue-700 dark:text-blue-400 font-semibold"
-                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850",
-                isUpdateMode && "opacity-60 cursor-not-allowed border-dashed"
-              )}
-            >
-              <TrendingUp className="w-4 h-4" />
-              <span className="text-xs">Broker</span>
-            </button>
-            <button
-              type="button"
-              disabled={isUpdateMode}
-              onClick={() => setAccountType(AccountType.GENERIC)}
-              className={cn(
-                "flex flex-col items-center gap-1.5 py-2.5 px-2 rounded-xl border-2 text-center transition-all shadow-sm",
-                accountType === AccountType.GENERIC
-                  ? "bg-purple-50/60 dark:bg-purple-950/20 border-purple-500 text-purple-700 dark:text-purple-400 font-semibold"
-                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850",
-                isUpdateMode && "opacity-60 cursor-not-allowed border-dashed"
-              )}
-            >
-              <Wallet className="w-4 h-4" />
-              <span className="text-xs">Wallet/Cash</span>
-            </button>
+          <div className={`grid gap-2 ${isUpdateMode ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-4'}`}>
+            {isUpdateMode ? (
+              <AccountTypeButton
+                label={ACCOUNT_TYPE_CONFIG[accountType]?.label ?? 'Account'}
+                icon={ACCOUNT_TYPE_CONFIG[accountType]?.icon ?? Landmark}
+                selected={true}
+                disabled
+                activeClassName={ACCOUNT_TYPE_CONFIG[accountType]?.activeClassName ?? 'bg-slate-50 border-slate-500 text-slate-700 font-semibold'}
+              />
+            ) : (
+              <>
+                <AccountTypeButton
+                  label="Bank"
+                  icon={Landmark}
+                  selected={accountType === AccountType.BANK_ACCOUNT}
+                  activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.BANK_ACCOUNT].activeClassName}
+                  onClick={() => setAccountType(AccountType.BANK_ACCOUNT)}
+                />
+                <AccountTypeButton
+                  label="Credit Card"
+                  icon={CreditCard}
+                  selected={accountType === AccountType.CREDIT_CARD}
+                  activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.CREDIT_CARD].activeClassName}
+                  onClick={() => setAccountType(AccountType.CREDIT_CARD)}
+                />
+                <AccountTypeButton
+                  label="Broker"
+                  icon={TrendingUp}
+                  selected={accountType === AccountType.BROKER}
+                  activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.BROKER].activeClassName}
+                  onClick={() => setAccountType(AccountType.BROKER)}
+                />
+                <AccountTypeButton
+                  label="Wallet/Cash"
+                  icon={Wallet}
+                  selected={accountType === AccountType.GENERIC}
+                  activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.GENERIC].activeClassName}
+                  onClick={() => setAccountType(AccountType.GENERIC)}
+                />
+              </>
+            )}
           </div>
         </div>
 
