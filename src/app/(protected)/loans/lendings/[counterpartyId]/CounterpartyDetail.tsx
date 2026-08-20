@@ -19,7 +19,14 @@ import {PageActionBar} from '@/components/layout/PageActionBarContext';
 import {Badge} from '@/components/ui/badge';
 import {Button} from '@/components/ui/button';
 import {Card} from '@/components/ui/card';
-import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle,} from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {Textarea} from '@/components/ui/textarea';
@@ -472,163 +479,185 @@ export function CounterpartyDetail({
 
         {/* Edit Counterparty Dialog */}
         <Dialog open={editCpOpen} onOpenChange={setEditCpOpen}>
-          <DialogContent className="sm:max-w-md w-[95vw] p-4 sm:p-6">
+          <DialogContent className="sm:max-w-md w-[95vw]">
             <DialogHeader><DialogTitle className="text-base font-bold">Edit Person Details</DialogTitle></DialogHeader>
-            <form onSubmit={handleUpdateCp} className="space-y-3 pt-1 text-xs">
-              <div className="space-y-1">
-                <Label className="text-xs">Name *</Label>
-                <Input value={cpName} onChange={(e) => setCpName(e.target.value)} required className="h-9 text-xs"/>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Notes</Label>
-                <Textarea rows={2} value={cpNotes} onChange={(e) => setCpNotes(e.target.value)} className="text-xs"/>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" size="sm" onClick={() => setEditCpOpen(false)}>Cancel</Button>
-                <Button type="submit" size="sm"
-                        disabled={submittingCp}>{submittingCp ? 'Saving...' : 'Save Changes'}</Button>
-              </DialogFooter>
-            </form>
+            <DialogBody>
+              <form id="edit-cp-form" onSubmit={handleUpdateCp} className="space-y-3 pt-1 text-xs">
+                <div className="space-y-1">
+                  <Label className="text-xs">Name *</Label>
+                  <Input value={cpName} onChange={(e) => setCpName(e.target.value)} required className="h-9 text-xs"/>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Notes</Label>
+                  <Textarea rows={2} value={cpNotes} onChange={(e) => setCpNotes(e.target.value)} className="text-xs"/>
+                </div>
+              </form>
+            </DialogBody>
+            <DialogFooter
+              primaryAction={{
+                label: submittingCp ? 'Saving...' : 'Save Changes',
+                type: 'submit',
+                form: 'edit-cp-form',
+                disabled: submittingCp,
+              }}
+              secondaryAction={{
+                label: 'Cancel',
+              }}
+            />
           </DialogContent>
         </Dialog>
 
         {/* Add Entry Dialog */}
         <Dialog open={addEntryOpen} onOpenChange={setAddEntryOpen}>
-          <DialogContent className="sm:max-w-md w-[95vw] p-4 sm:p-6">
+          <DialogContent className="sm:max-w-md w-[95vw]">
             <DialogHeader>
               <DialogTitle className="text-base font-bold">Add Ledger Entry for {cp.name}</DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleAddEntry} className="space-y-3 pt-1 text-xs">
-              <div className="space-y-1">
-                <Label className="text-xs">Direction *</Label>
-                <div className="flex gap-4 pt-1">
-                  <label
-                      className="flex items-center gap-1.5 cursor-pointer font-medium text-emerald-600 dark:text-emerald-400 text-xs">
-                    <input
-                        type="radio"
-                        name="addDir"
-                        checked={addDir === 'lent'}
-                        onChange={() => setAddDir('lent')}
-                    />
-                    <span>I gave money (Lent)</span>
-                  </label>
-                  <label
-                      className="flex items-center gap-1.5 cursor-pointer font-medium text-rose-600 dark:text-rose-400 text-xs">
-                    <input
-                        type="radio"
-                        name="addDir"
-                        checked={addDir === 'borrowed'}
-                        onChange={() => setAddDir('borrowed')}
-                    />
-                    <span>I received money (Borrowed)</span>
-                  </label>
+            <DialogBody>
+              <form id="add-entry-form" onSubmit={handleAddEntry} className="space-y-3 pt-1 text-xs">
+                <div className="space-y-1">
+                  <Label className="text-xs">Direction *</Label>
+                  <div className="flex gap-4 pt-1">
+                    <label
+                        className="flex items-center gap-1.5 cursor-pointer font-medium text-emerald-600 dark:text-emerald-400 text-xs">
+                      <input
+                          type="radio"
+                          name="addDir"
+                          checked={addDir === 'lent'}
+                          onChange={() => setAddDir('lent')}
+                      />
+                      <span>I gave money (Lent)</span>
+                    </label>
+                    <label
+                        className="flex items-center gap-1.5 cursor-pointer font-medium text-rose-600 dark:text-rose-400 text-xs">
+                      <input
+                          type="radio"
+                          name="addDir"
+                          checked={addDir === 'borrowed'}
+                          onChange={() => setAddDir('borrowed')}
+                      />
+                      <span>I received money (Borrowed)</span>
+                    </label>
+                  </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <Label className="text-xs">Amount (₹) *</Label>
-                  <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="5000"
-                      value={addAmount}
-                      onChange={(e) => setAddAmount(e.target.value)}
-                      required
-                      className="h-9 text-xs"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Amount (₹) *</Label>
+                    <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="5000"
+                        value={addAmount}
+                        onChange={(e) => setAddAmount(e.target.value)}
+                        required
+                        className="h-9 text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Date *</Label>
+                    <Input
+                        type="date"
+                        value={addEntryDate}
+                        onChange={(e) => setAddEntryDate(e.target.value)}
+                        required
+                        className="h-9 text-xs"
+                    />
+                  </div>
                 </div>
+
                 <div className="space-y-1">
-                  <Label className="text-xs">Date *</Label>
+                  <Label className="text-xs">Expected Return Date (Optional)</Label>
                   <Input
                       type="date"
-                      value={addEntryDate}
-                      onChange={(e) => setAddEntryDate(e.target.value)}
-                      required
+                      value={addExpDate}
+                      onChange={(e) => setAddExpDate(e.target.value)}
                       className="h-9 text-xs"
                   />
                 </div>
-              </div>
 
-              <div className="space-y-1">
-                <Label className="text-xs">Expected Return Date (Optional)</Label>
-                <Input
-                    type="date"
-                    value={addExpDate}
-                    onChange={(e) => setAddExpDate(e.target.value)}
-                    className="h-9 text-xs"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label className="text-xs">Notes (Optional)</Label>
-                <Textarea
-                    rows={2}
-                    placeholder="Notes..."
-                    value={addNotes}
-                    onChange={(e) => setAddNotes(e.target.value)}
-                    className="text-xs"
-                />
-              </div>
-
-              <DialogFooter>
-                <Button type="button" variant="outline" size="sm" onClick={() => setAddEntryOpen(false)}>Cancel</Button>
-                <Button type="submit" size="sm"
-                        disabled={submittingAddEntry}>{submittingAddEntry ? 'Saving...' : 'Add Entry'}</Button>
-              </DialogFooter>
-            </form>
+                <div className="space-y-1">
+                  <Label className="text-xs">Notes (Optional)</Label>
+                  <Textarea
+                      rows={2}
+                      placeholder="Notes..."
+                      value={addNotes}
+                      onChange={(e) => setAddNotes(e.target.value)}
+                      className="text-xs"
+                  />
+                </div>
+              </form>
+            </DialogBody>
+            <DialogFooter
+              primaryAction={{
+                label: submittingAddEntry ? 'Saving...' : 'Add Entry',
+                type: 'submit',
+                form: 'add-entry-form',
+                disabled: submittingAddEntry,
+              }}
+              secondaryAction={{
+                label: 'Cancel',
+              }}
+            />
           </DialogContent>
         </Dialog>
 
         {/* Edit Entry Dialog */}
         <Dialog open={editLendingOpen} onOpenChange={setEditLendingOpen}>
-          <DialogContent className="sm:max-w-md w-[95vw] p-4 sm:p-6">
+          <DialogContent className="sm:max-w-md w-[95vw]">
             <DialogHeader><DialogTitle className="text-base font-bold">Edit Ledger Entry</DialogTitle></DialogHeader>
-            <form onSubmit={handleUpdateLending} className="space-y-3 pt-1 text-xs">
-              <div className="space-y-1">
-                <Label className="text-xs">Direction</Label>
-                <div className="flex gap-4 pt-1">
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs">
-                    <input type="radio" name="editDir" checked={lendingDir === 'lent'}
-                           onChange={() => setLendingDir('lent')}/>
-                    <span>I gave money (Lent)</span>
-                  </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs">
-                    <input type="radio" name="editDir" checked={lendingDir === 'borrowed'}
-                           onChange={() => setLendingDir('borrowed')}/>
-                    <span>I received money (Borrowed)</span>
-                  </label>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <DialogBody>
+              <form id="edit-lending-form" onSubmit={handleUpdateLending} className="space-y-3 pt-1 text-xs">
                 <div className="space-y-1">
-                  <Label className="text-xs">Amount (₹)</Label>
-                  <Input type="number" step="0.01" value={lendingAmount}
-                         onChange={(e) => setLendingAmount(e.target.value)} className="h-9 text-xs"/>
+                  <Label className="text-xs">Direction</Label>
+                  <div className="flex gap-4 pt-1">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-xs">
+                      <input type="radio" name="editDir" checked={lendingDir === 'lent'}
+                             onChange={() => setLendingDir('lent')}/>
+                      <span>I gave money (Lent)</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 cursor-pointer text-xs">
+                      <input type="radio" name="editDir" checked={lendingDir === 'borrowed'}
+                             onChange={() => setLendingDir('borrowed')}/>
+                      <span>I received money (Borrowed)</span>
+                    </label>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs">Amount (₹)</Label>
+                    <Input type="number" step="0.01" value={lendingAmount}
+                           onChange={(e) => setLendingAmount(e.target.value)} className="h-9 text-xs"/>
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs">Date</Label>
+                    <Input type="date" value={lendingDate} onChange={(e) => setLendingDate(e.target.value)}
+                           className="h-9 text-xs"/>
+                  </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-xs">Date</Label>
-                  <Input type="date" value={lendingDate} onChange={(e) => setLendingDate(e.target.value)}
+                  <Label className="text-xs">Expected Return Date</Label>
+                  <Input type="date" value={lendingExpDate} onChange={(e) => setLendingExpDate(e.target.value)}
                          className="h-9 text-xs"/>
                 </div>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Expected Return Date</Label>
-                <Input type="date" value={lendingExpDate} onChange={(e) => setLendingExpDate(e.target.value)}
-                       className="h-9 text-xs"/>
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Notes</Label>
-                <Textarea rows={2} value={lendingNotes} onChange={(e) => setLendingNotes(e.target.value)}
-                          className="text-xs"/>
-              </div>
-              <DialogFooter>
-                <Button type="button" variant="outline" size="sm"
-                        onClick={() => setEditLendingOpen(false)}>Cancel</Button>
-                <Button type="submit" size="sm"
-                        disabled={submittingEditLending}>{submittingEditLending ? 'Saving...' : 'Save Changes'}</Button>
-              </DialogFooter>
-            </form>
+                <div className="space-y-1">
+                  <Label className="text-xs">Notes</Label>
+                  <Textarea rows={2} value={lendingNotes} onChange={(e) => setLendingNotes(e.target.value)}
+                            className="text-xs"/>
+                </div>
+              </form>
+            </DialogBody>
+            <DialogFooter
+              primaryAction={{
+                label: submittingEditLending ? 'Saving...' : 'Save Changes',
+                type: 'submit',
+                form: 'edit-lending-form',
+                disabled: submittingEditLending,
+              }}
+              secondaryAction={{
+                label: 'Cancel',
+              }}
+            />
           </DialogContent>
         </Dialog>
       </div>

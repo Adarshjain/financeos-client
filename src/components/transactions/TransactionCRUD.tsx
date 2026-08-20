@@ -8,8 +8,8 @@ import { createTransaction, updateTransaction } from '@/actions/transactions';
 import { Combobox } from '@/components/Combobox';
 import DayPicker from '@/components/DayPicker';
 import { isValidMcc,MccInput } from '@/components/forms/MccInput';
-import { Button } from '@/components/ui/button';
 import { DatePicker } from '@/components/ui/date-picker';
+import { DialogBody, DialogFooter } from '@/components/ui/dialog';
 import { FormFieldTextArea } from '@/components/ui/form-field-textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -209,13 +209,14 @@ export default function TransactionCRUD({
   };
 
   return (
-    <form
-      ref={formRef}
-      onSubmit={onSubmit}
-      className="flex flex-col h-full max-h-screen bg-slate-50/40 dark:bg-slate-950/20 overflow-hidden"
-    >
-      {/* Scrollable Form Fields container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2 pr-2 scrollbar-thin">
+    <>
+      <DialogBody className="bg-slate-50/40 dark:bg-slate-950/20 scrollbar-thin">
+        <form
+          ref={formRef}
+          id="transaction-form"
+          onSubmit={onSubmit}
+          className="space-y-2"
+        >
 
         {/* Hero Section: Amount Input & Sign Toggle */}
         <div className="flex items-center justify-between gap-3 pl-2">
@@ -631,27 +632,21 @@ export default function TransactionCRUD({
             )}
           </div>
         </div>
-      </div>
+        </form>
+      </DialogBody>
 
-      {/* Sticky/Fixed Footer Action Buttons */}
-      <div
-        className="flex gap-3 p-2 border-t border-slate-100 dark:border-slate-800/60 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md">
-        <Button
-          variant="outline"
-          className="flex-1"
-          type="button"
-          onClick={onClose}
-        >
-          {isUpdateMode ? 'Back' : 'Close'}
-        </Button>
-        <Button
-          className="flex-1"
-          type="submit"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Saving...' : 'Save'}
-        </Button>
-      </div>
-    </form>
+      <DialogFooter
+        primaryAction={{
+          label: isSubmitting ? 'Saving...' : 'Save',
+          type: 'submit',
+          form: 'transaction-form',
+          disabled: isSubmitting,
+        }}
+        secondaryAction={{
+          label: isUpdateMode ? 'Back' : 'Close',
+          onClick: () => onClose?.(),
+        }}
+      />
+    </>
   );
 }

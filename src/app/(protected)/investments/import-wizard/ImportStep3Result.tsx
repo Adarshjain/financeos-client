@@ -3,7 +3,6 @@
 import { CheckCircle2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
 import { ImportCommitResult } from '@/lib/types';
 
 interface ImportStep3ResultProps {
@@ -77,7 +76,7 @@ export function ImportStep3Result({
         </div>
       )}
 
-      <DialogFooter>
+      <div className="shrink-0 pt-3 flex justify-center">
         <Button
           type="button"
           size="sm"
@@ -86,7 +85,7 @@ export function ImportStep3Result({
         >
           Done & View Portfolio
         </Button>
-      </DialogFooter>
+      </div>
     </div>
   );
 }

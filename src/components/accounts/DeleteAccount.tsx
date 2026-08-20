@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { deleteAccount } from '@/actions/accounts';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -28,9 +27,6 @@ export function DeleteAccount({ account }: DeleteAccountProps) {
     setIsDeleting(true);
 
     try {
-      // deleteAccount never throws — it returns an ApiResult. This previously
-      // toasted success and closed the dialog unconditionally, so a 4xx/5xx
-      // left the account intact while the UI claimed it was deleted.
       const res = await deleteAccount(account.id);
       if (res.success) {
         toast.success('Account deleted!');
@@ -61,25 +57,24 @@ export function DeleteAccount({ account }: DeleteAccountProps) {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="p-4 sm:p-6">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Account</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete <strong>{account.name}</strong>? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)} disabled={isDeleting}>
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </Button>
-          </DialogFooter>
+          <DialogFooter
+            primaryAction={{
+              label: isDeleting ? 'Deleting...' : 'Delete',
+              variant: 'destructive',
+              onClick: handleDelete,
+              disabled: isDeleting,
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+            }}
+          />
         </DialogContent>
       </Dialog>
     </>

@@ -1,16 +1,16 @@
 'use client';
 
-import {AlertTriangle, Check, Info, Loader2} from 'lucide-react';
+import {AlertTriangle, Info} from 'lucide-react';
 import {useEffect, useState} from 'react';
 import {toast} from 'sonner';
 
 import {mergeTransactions} from '@/actions/transactions';
 import {REVIEW_REASON_META, reviewReasonLabel} from '@/components/transactions/catalog';
 import {Badge} from '@/components/ui/badge';
-import {Button} from '@/components/ui/button';
 import {Card} from '@/components/ui/card';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -227,8 +227,7 @@ export function MergeTransactionsDialog({
 
   return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent
-            className="sm:max-w-[700px] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-6">
+        <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
               Merge Transactions
@@ -240,70 +239,57 @@ export function MergeTransactionsDialog({
             </DialogDescription>
           </DialogHeader>
 
-          {/* Warning Banners */}
-          {isDifferentAccount ? (
-              <div
-                  className="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 rounded-xl flex items-center gap-2.5 text-xs text-rose-800 dark:text-rose-300">
-                <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400"/>
-                <span>
-              <strong>Cross-Account Merge Blocked:</strong> These transactions belong to different accounts ({getAccountName(tx1.accountId)} vs {getAccountName(tx2.accountId)}). Cross-account merging is not allowed.
-            </span>
-              </div>
-          ) : isDirectionMismatch ? (
-              <div
-                  className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl flex items-center gap-2.5 text-xs text-amber-800 dark:text-amber-300">
-                <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"/>
-                <span>
-              <strong>Direction Mismatch:</strong> One transaction is a debit and the other a credit. These are usually a payment and its reversal, not duplicates — consider linking them instead of merging.
-            </span>
-              </div>
-          ) : isAmountMismatch ? (
-              <div
-                  className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl flex items-center gap-2.5 text-xs text-amber-800 dark:text-amber-300">
-                <Info className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"/>
-                <span>
-              <strong>Amount Mismatch:</strong> Amounts differ between these transactions. Please confirm they represent the same real-world event before merging.
-            </span>
-              </div>
-          ) : null}
+          <DialogBody className="space-y-4">
+            {/* Warning Banners */}
+            {isDifferentAccount ? (
+                <div
+                    className="p-3 bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 rounded-xl flex items-center gap-2.5 text-xs text-rose-800 dark:text-rose-300">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400"/>
+                  <span>
+                <strong>Cross-Account Merge Blocked:</strong> These transactions belong to different accounts ({getAccountName(tx1.accountId)} vs {getAccountName(tx2.accountId)}). Cross-account merging is not allowed.
+              </span>
+                </div>
+            ) : isDirectionMismatch ? (
+                <div
+                    className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl flex items-center gap-2.5 text-xs text-amber-800 dark:text-amber-300">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"/>
+                  <span>
+                <strong>Direction Mismatch:</strong> One transaction is a debit and the other a credit. These are usually a payment and its reversal, not duplicates — consider linking them instead of merging.
+              </span>
+                </div>
+            ) : isAmountMismatch ? (
+                <div
+                    className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-xl flex items-center gap-2.5 text-xs text-amber-800 dark:text-amber-300">
+                  <Info className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400"/>
+                  <span>
+                <strong>Amount Mismatch:</strong> Amounts differ between these transactions. Please confirm they represent the same real-world event before merging.
+              </span>
+                </div>
+            ) : null}
 
-          {/* Side-by-side comparison */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
-            {renderTxnCard(tx1, keepId === tx1.id)}
-            {renderTxnCard(tx2, keepId === tx2.id)}
-          </div>
+            {/* Side-by-side comparison */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
+              {renderTxnCard(tx1, keepId === tx1.id)}
+              {renderTxnCard(tx2, keepId === tx2.id)}
+            </div>
 
-          <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
-            Click on a card above to flip the keep/delete selection.
-          </p>
-          <DialogFooter>
-            <Button
-                variant="outline"
-                size="sm"
-                disabled={loading}
-                onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-                size="sm"
-                disabled={isDifferentAccount || loading}
-                onClick={handleMerge}
-                variant="primary"
-            >
-              {loading ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 animate-spin"/>
-                    <span>Merging...</span>
-                  </>
-              ) : (
-                  <>
-                    <Check className="h-3.5 w-3.5"/>
-                    <span>Merge and resolve</span>
-                  </>
-              )}
-            </Button>
-          </DialogFooter>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">
+              Click on a card above to flip the keep/delete selection.
+            </p>
+          </DialogBody>
+
+          <DialogFooter
+            primaryAction={{
+              label: loading ? 'Merging...' : 'Merge and resolve',
+              onClick: handleMerge,
+              disabled: isDifferentAccount || loading,
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+              onClick: () => onOpenChange(false),
+              disabled: loading,
+            }}
+          />
         </DialogContent>
       </Dialog>
   );

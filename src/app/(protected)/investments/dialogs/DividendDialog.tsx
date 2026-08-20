@@ -8,6 +8,7 @@ import { createDividend, updateDividend } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -68,7 +69,6 @@ export function DividendDialog({
   );
   const [notes, setNotes] = useState(dividend?.notes || '');
 
-  // Reset the form when the dialog opens (render-phase state adjustment).
   const [prevOpen, setPrevOpen] = useState(false);
   if (open !== prevOpen) {
     setPrevOpen(open);
@@ -153,7 +153,7 @@ export function DividendDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-[480px] p-4 sm:p-6">
+      <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Dividend' : 'Record Dividend / Payout'}</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
@@ -163,137 +163,142 @@ export function DividendDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label="Broker Account" required>
-              <Select
-                value={brokerAccountId}
-                onValueChange={(val) => {
-                  setBrokerAccountId(val);
-                  setInstrumentId('');
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select broker" />
-                </SelectTrigger>
-                <SelectContent>
-                  {brokerAccounts.map((b) => (
-                    <SelectItem key={b.id} value={b.id}>
-                      {b.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormField>
+        <DialogBody>
+          <form id="dividend-dialog-form" onSubmit={handleSubmit} className="space-y-4 pt-1">
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Broker Account" required>
+                <Select
+                  value={brokerAccountId}
+                  onValueChange={(val) => {
+                    setBrokerAccountId(val);
+                    setInstrumentId('');
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select broker" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {brokerAccounts.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
 
-            <FormField label="Instrument" required>
-              <Select value={instrumentId} onValueChange={setInstrumentId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select instrument" />
-                </SelectTrigger>
-                <SelectContent>
-                  {brokerPositions.map((p) => (
-                    <SelectItem key={p.instrument.id} value={p.instrument.id}>
-                      {p.instrument.name} ({p.instrument.symbol})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </FormField>
-          </div>
+              <FormField label="Instrument" required>
+                <Select value={instrumentId} onValueChange={setInstrumentId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select instrument" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {brokerPositions.map((p) => (
+                      <SelectItem key={p.instrument.id} value={p.instrument.id}>
+                        {p.instrument.name} ({p.instrument.symbol})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormField>
+            </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label="Payout Type" required>
-              <Select value={type} onValueChange={(v) => setType(v as DividendType)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="dividend">Dividend</SelectItem>
-                  <SelectItem value="interest">Interest</SelectItem>
-                  <SelectItem value="capital_gain">Capital Gain Distribution</SelectItem>
-                  <SelectItem value="other">Other Payout</SelectItem>
-                </SelectContent>
-              </Select>
-            </FormField>
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Payout Type" required>
+                <Select value={type} onValueChange={(v) => setType(v as DividendType)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dividend">Dividend</SelectItem>
+                    <SelectItem value="interest">Interest</SelectItem>
+                    <SelectItem value="capital_gain">Capital Gain Distribution</SelectItem>
+                    <SelectItem value="other">Other Payout</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
 
-            <FormField label="Net Amount Received" required>
+              <FormField label="Net Amount Received" required>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
+                />
+              </FormField>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Per Unit Amount">
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="Optional"
+                  value={perUnit}
+                  onChange={(e) => setPerUnit(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
+                />
+              </FormField>
+
+              <FormField label="TDS Deducted">
+                <input
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={tds}
+                  onChange={(e) => setTds(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
+                />
+              </FormField>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <FormField label="Ex-Date">
+                <input
+                  type="date"
+                  value={exDate}
+                  onChange={(e) => setExDate(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                />
+              </FormField>
+
+              <FormField label="Payout / Credit Date" required>
+                <input
+                  type="date"
+                  required
+                  value={payDate}
+                  onChange={(e) => setPayDate(e.target.value)}
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                />
+              </FormField>
+            </div>
+
+            <FormField label="Notes">
               <input
-                type="number"
-                step="0.01"
-                required
-                placeholder="0.00"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
-              />
-            </FormField>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label="Per Unit Amount">
-              <input
-                type="number"
-                step="0.01"
-                placeholder="Optional"
-                value={perUnit}
-                onChange={(e) => setPerUnit(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
-              />
-            </FormField>
-
-            <FormField label="TDS Deducted">
-              <input
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={tds}
-                onChange={(e) => setTds(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
-              />
-            </FormField>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label="Ex-Date">
-              <input
-                type="date"
-                value={exDate}
-                onChange={(e) => setExDate(e.target.value)}
+                type="text"
+                placeholder="e.g. Q4 Interim Dividend"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
                 className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
               />
             </FormField>
+          </form>
+        </DialogBody>
 
-            <FormField label="Payout / Credit Date" required>
-              <input
-                type="date"
-                required
-                value={payDate}
-                onChange={(e) => setPayDate(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-              />
-            </FormField>
-          </div>
-
-          <FormField label="Notes">
-            <input
-              type="text"
-              placeholder="e.g. Q4 Interim Dividend"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-            />
-          </FormField>
-
-          <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : (isEdit ? 'Save Changes' : 'Record Payout')}
-            </Button>
-          </DialogFooter>
-        </form>
+        <DialogFooter
+          primaryAction={{
+            label: isSubmitting ? 'Saving...' : (isEdit ? 'Save Changes' : 'Record Payout'),
+            type: 'submit',
+            form: 'dividend-dialog-form',
+            disabled: isSubmitting,
+          }}
+          secondaryAction={{
+            label: 'Cancel',
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

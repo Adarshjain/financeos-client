@@ -22,21 +22,19 @@ export const TransactionEditContent = ({
   onCancel,
 }: TransactionEditContentProps) => {
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <DialogHeader className="px-6 pt-4 pb-2 border-b border-slate-100 dark:border-slate-900 bg-white dark:bg-slate-900 shrink-0">
+    <>
+      <DialogHeader className="px-6 pt-4 pb-2 border-b border-slate-100 dark:border-slate-900 bg-white dark:bg-slate-900 shrink-0 sr-only">
         <DialogTitle className="text-xl font-bold flex items-center">
           Edit Transaction
         </DialogTitle>
       </DialogHeader>
-      <div className="flex-1 overflow-hidden">
-        <TransactionCRUD
-          accounts={accounts}
-          transaction={transaction}
-          categories={categories}
-          onSuccess={onSuccess}
-          onClose={onCancel}
-        />
-      </div>
-    </div>
+      <TransactionCRUD
+        accounts={accounts}
+        transaction={transaction}
+        categories={categories}
+        onSuccess={onSuccess}
+        onClose={onCancel}
+      />
+    </>
   );
 };

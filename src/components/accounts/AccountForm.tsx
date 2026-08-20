@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { createAccount, updateAccount } from '@/actions/accounts';
-import { Button } from '@/components/ui/button';
+import { DialogBody, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -279,19 +279,9 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      autoComplete="off"
-      className="flex flex-col h-full max-h-screen sm:max-h-[85vh] bg-slate-50/40 dark:bg-slate-950/20 overflow-hidden"
-    >
-      <datalist id="broker-providers">
-        {COMMON_BROKERS.map((b) => (
-          <option key={b} value={b} />
-        ))}
-      </datalist>
-
+    <>
       {/* Header */}
-      <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-950">
+      <div className="shrink-0 px-6 py-5 border-b border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-950">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
           {accountType === AccountType.BANK_ACCOUNT ? (
             <Landmark className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
@@ -306,8 +296,18 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
         </h2>
       </div>
 
-      {/* Scrollable Body */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+      <DialogBody className="py-3 bg-slate-50/40 dark:bg-slate-950/20">
+        <form
+          id="account-form"
+          onSubmit={handleSubmit}
+          autoComplete="off"
+          className="space-y-2"
+        >
+          <datalist id="broker-providers">
+            {COMMON_BROKERS.map((b) => (
+              <option key={b} value={b} />
+            ))}
+          </datalist>
         {/* Account Type Selection (Only for Create Mode) */}
         <div className="space-y-2">
           <Label className="text-xs text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1">
@@ -702,26 +702,23 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             </button>
           </div>
         </div>
-      </div>
+        </form>
+      </DialogBody>
 
-      {/* Sticky/Blur Footer Action Buttons */}
-      <div className="flex gap-3 p-4 border-t border-slate-100 dark:border-slate-800/60 bg-white/70 dark:bg-slate-950/70 backdrop-blur-md">
-        <Button
-          variant="outline"
-          className="flex-1"
-          type="button"
-          onClick={onClose}
-        >
-          Cancel
-        </Button>
-        <Button
-          className="flex-1"
-          type="submit"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? (isUpdateMode ? 'Saving...' : 'Creating...') : (isUpdateMode ? 'Save Changes' : 'Create Account')}
-        </Button>
-      </div>
-    </form>
+      <DialogFooter
+        primaryAction={{
+          label: isSubmitting
+            ? (isUpdateMode ? 'Saving...' : 'Creating...')
+            : (isUpdateMode ? 'Save Changes' : 'Create Account'),
+          type: 'submit',
+          form: 'account-form',
+          disabled: isSubmitting,
+        }}
+        secondaryAction={{
+          label: 'Cancel',
+          onClick: () => onClose?.(),
+        }}
+      />
+    </>
   );
 }

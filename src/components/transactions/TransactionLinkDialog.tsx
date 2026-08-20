@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -280,8 +281,8 @@ export function TransactionLinkDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
-        <DialogHeader className="p-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
             <Link2 className="h-5 w-5 text-indigo-500" />
             Link Transactions
@@ -291,7 +292,7 @@ export function TransactionLinkDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="p-4 space-y-2 overflow-y-auto flex-1 scrollbar-thin">
+        <DialogBody className="space-y-2">
           {/* Link Type & Settings */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
@@ -480,26 +481,20 @@ export function TransactionLinkDialog({
               )}
             </div>
           </div>
-        </div>
+        </DialogBody>
 
-        <DialogFooter className="p-3 sm:pb-3 mb-0 sm:mb-0 bg-slate-50/50 dark:bg-slate-900/50">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenChange(false)}
-            disabled={submitting}
-          >
-            Cancel
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleSubmit}
-            disabled={submitting || selectedTransactions.length < 2 || !anchorId}
-          >
-            {submitting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            Link Transactions
-          </Button>
-        </DialogFooter>
+        <DialogFooter
+          primaryAction={{
+            label: submitting ? 'Linking...' : 'Link Transactions',
+            onClick: handleSubmit,
+            disabled: submitting || selectedTransactions.length < 2 || !anchorId,
+          }}
+          secondaryAction={{
+            label: 'Cancel',
+            onClick: () => onOpenChange(false),
+            disabled: submitting,
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

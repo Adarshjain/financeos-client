@@ -9,6 +9,7 @@ import { commitImport, commitReconcileImport, previewImport, previewReconcileImp
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -323,8 +324,8 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
         )}
       </DialogTrigger>
 
-      <DialogContent className="max-w-4xl max-h-[97vh] flex flex-col p-4 sm:p-6 overflow-hidden">
-        <DialogHeader className="pb-2 border-b shrink-0">
+      <DialogContent className="max-w-4xl">
+        <DialogHeader className="pb-2 border-b">
           <DialogTitle className="flex items-center gap-2 text-base">
             <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
             Investment Import & Reconciliation Wizard
@@ -334,52 +335,54 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
           </DialogDescription>
         </DialogHeader>
 
-        {step === 1 && (
-          <ImportStep1Upload
-            brokerAccounts={brokerAccounts}
-            mode={mode}
-            setMode={setMode}
-            assetScope={assetScope}
-            setAssetScope={setAssetScope}
-            brokerAccountId={brokerAccountId}
-            setBrokerAccountId={setBrokerAccountId}
-            password={password}
-            setPassword={setPassword}
-            taxpnlFiles={taxpnlFiles}
-            setTaxpnlFiles={setTaxpnlFiles}
-            tradebookFiles={tradebookFiles}
-            setTradebookFiles={setTradebookFiles}
-            holdingsFile={holdingsFile}
-            setHoldingsFile={setHoldingsFile}
-            casFile={casFile}
-            setCasFile={setCasFile}
-            isPreviewing={isPreviewing}
-            onSubmit={handlePreviewSubmit}
-          />
-        )}
+        <DialogBody className="p-4 sm:p-6">
+          {step === 1 && (
+            <ImportStep1Upload
+              brokerAccounts={brokerAccounts}
+              mode={mode}
+              setMode={setMode}
+              assetScope={assetScope}
+              setAssetScope={setAssetScope}
+              brokerAccountId={brokerAccountId}
+              setBrokerAccountId={setBrokerAccountId}
+              password={password}
+              setPassword={setPassword}
+              taxpnlFiles={taxpnlFiles}
+              setTaxpnlFiles={setTaxpnlFiles}
+              tradebookFiles={tradebookFiles}
+              setTradebookFiles={setTradebookFiles}
+              holdingsFile={holdingsFile}
+              setHoldingsFile={setHoldingsFile}
+              casFile={casFile}
+              setCasFile={setCasFile}
+              isPreviewing={isPreviewing}
+              onSubmit={handlePreviewSubmit}
+            />
+          )}
 
-        {step === 2 && (
-          <ImportStep2Review
-            mode={mode}
-            reconcilePreview={reconcilePreview}
-            casPreview={casPreview}
-            rowStates={rowStates}
-            setRowStates={setRowStates}
-            fnoRowStates={fnoRowStates}
-            setFnoRowStates={setFnoRowStates}
-            isCommitting={isCommitting}
-            onBack={() => setStep(1)}
-            onCommit={handleCommitSubmit}
-          />
-        )}
+          {step === 2 && (
+            <ImportStep2Review
+              mode={mode}
+              reconcilePreview={reconcilePreview}
+              casPreview={casPreview}
+              rowStates={rowStates}
+              setRowStates={setRowStates}
+              fnoRowStates={fnoRowStates}
+              setFnoRowStates={setFnoRowStates}
+              isCommitting={isCommitting}
+              onBack={() => setStep(1)}
+              onCommit={handleCommitSubmit}
+            />
+          )}
 
-        {step === 3 && commitResult && (
-          <ImportStep3Result
-            commitResult={commitResult}
-            selectedBrokerName={selectedBrokerName}
-            onDone={() => handleOpenChange(false)}
-          />
-        )}
+          {step === 3 && commitResult && (
+            <ImportStep3Result
+              commitResult={commitResult}
+              selectedBrokerName={selectedBrokerName}
+              onDone={() => handleOpenChange(false)}
+            />
+          )}
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

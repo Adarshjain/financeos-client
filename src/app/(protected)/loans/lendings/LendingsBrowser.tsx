@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogFooter,
   DialogHeader,
@@ -433,140 +434,145 @@ export function LendingsBrowser({
 
       {/* Add Lending Dialog */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="sm:max-w-md w-[95vw] p-4 sm:p-6">
+        <DialogContent className="sm:max-w-md w-[95vw]">
           <DialogHeader>
             <DialogTitle className="text-base font-bold">Add Ledger Entry</DialogTitle>
           </DialogHeader>
 
-          <form onSubmit={handleCreateLending} className="space-y-3 pt-1 text-xs">
-            <div className="space-y-1">
-              <Label htmlFor="cpSelect" className="text-xs">Person / Counterparty *</Label>
-              <Select
-                value={selectedCpId}
-                onValueChange={(v) => setSelectedCpId(v)}
-              >
-                <SelectTrigger id="cpSelect" className="h-9 text-xs">
-                  <SelectValue placeholder="Select person" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="new" className="text-xs">+ Add New Person</SelectItem>
-                  {counterpartiesPage.content.map((cp) => (
-                    <SelectItem key={cp.id} value={cp.id} className="text-xs">
-                      {cp.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {selectedCpId === 'new' && (
+          <DialogBody>
+            <form id="add-lending-form" onSubmit={handleCreateLending} className="space-y-3 pt-1 text-xs">
               <div className="space-y-1">
-                <Label htmlFor="cpName" className="text-xs">New Person Name *</Label>
-                <Input
-                  id="cpName"
-                  placeholder="e.g. Rahul Sharma"
-                  value={newCpName}
-                  onChange={(e) => setNewCpName(e.target.value)}
-                  required
-                  className="h-9 text-xs"
-                />
+                <Label htmlFor="cpSelect" className="text-xs">Person / Counterparty *</Label>
+                <Select
+                  value={selectedCpId}
+                  onValueChange={(v) => setSelectedCpId(v)}
+                >
+                  <SelectTrigger id="cpSelect" className="h-9 text-xs">
+                    <SelectValue placeholder="Select person" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="new" className="text-xs">+ Add New Person</SelectItem>
+                    {counterpartiesPage.content.map((cp) => (
+                      <SelectItem key={cp.id} value={cp.id} className="text-xs">
+                        {cp.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            )}
 
-            <div className="space-y-1">
-              <Label className="text-xs">Direction *</Label>
-              <div className="flex gap-4 pt-1">
-                <label className="flex items-center gap-1.5 cursor-pointer font-medium text-emerald-600 dark:text-emerald-400 text-xs">
-                  <input
-                    type="radio"
-                    name="lendingDir"
-                    checked={direction === 'lent'}
-                    onChange={() => setDirection('lent')}
+              {selectedCpId === 'new' && (
+                <div className="space-y-1">
+                  <Label htmlFor="cpName" className="text-xs">New Person Name *</Label>
+                  <Input
+                    id="cpName"
+                    placeholder="e.g. Rahul Sharma"
+                    value={newCpName}
+                    onChange={(e) => setNewCpName(e.target.value)}
+                    required
+                    className="h-9 text-xs"
                   />
-                  <span>I gave money (Lent)</span>
-                </label>
-                <label className="flex items-center gap-1.5 cursor-pointer font-medium text-rose-600 dark:text-rose-400 text-xs">
-                  <input
-                    type="radio"
-                    name="lendingDir"
-                    checked={direction === 'borrowed'}
-                    onChange={() => setDirection('borrowed')}
-                  />
-                  <span>I received money (Borrowed)</span>
-                </label>
-              </div>
-            </div>
+                </div>
+              )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="amount" className="text-xs">Amount (₹) *</Label>
-                <Input
-                  id="amount"
-                  type="number"
-                  step="0.01"
-                  placeholder="5000"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  required
-                  className="h-9 text-xs"
-                />
+                <Label className="text-xs">Direction *</Label>
+                <div className="flex gap-4 pt-1">
+                  <label className="flex items-center gap-1.5 cursor-pointer font-medium text-emerald-600 dark:text-emerald-400 text-xs">
+                    <input
+                      type="radio"
+                      name="lendingDir"
+                      checked={direction === 'lent'}
+                      onChange={() => setDirection('lent')}
+                    />
+                    <span>I gave money (Lent)</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer font-medium text-rose-600 dark:text-rose-400 text-xs">
+                    <input
+                      type="radio"
+                      name="lendingDir"
+                      checked={direction === 'borrowed'}
+                      onChange={() => setDirection('borrowed')}
+                    />
+                    <span>I received money (Borrowed)</span>
+                  </label>
+                </div>
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="amount" className="text-xs">Amount (₹) *</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    step="0.01"
+                    placeholder="5000"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    required
+                    className="h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="entryDate" className="text-xs">Date *</Label>
+                  <Input
+                    id="entryDate"
+                    type="date"
+                    value={entryDate}
+                    onChange={(e) => setEntryDate(e.target.value)}
+                    required
+                    className="h-9 text-xs"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-1">
-                <Label htmlFor="entryDate" className="text-xs">Date *</Label>
+                <Label htmlFor="expDate" className="text-xs">Expected Return Date (Optional)</Label>
                 <Input
-                  id="entryDate"
+                  id="expDate"
                   type="date"
-                  value={entryDate}
-                  onChange={(e) => setEntryDate(e.target.value)}
-                  required
+                  value={expectedReturnDate}
+                  onChange={(e) => setExpectedReturnDate(e.target.value)}
                   className="h-9 text-xs"
                 />
               </div>
-            </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="expDate" className="text-xs">Expected Return Date (Optional)</Label>
-              <Input
-                id="expDate"
-                type="date"
-                value={expectedReturnDate}
-                onChange={(e) => setExpectedReturnDate(e.target.value)}
-                className="h-9 text-xs"
-              />
-            </div>
+              <div className="space-y-1">
+                <Label htmlFor="notes" className="text-xs">Notes (Optional)</Label>
+                <Textarea
+                  id="notes"
+                  rows={2}
+                  placeholder="e.g. Dinner split, trip cash advance..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="text-xs"
+                />
+              </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="notes" className="text-xs">Notes (Optional)</Label>
-              <Textarea
-                id="notes"
-                rows={2}
-                placeholder="e.g. Dinner split, trip cash advance..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="text-xs"
-              />
-            </div>
+              <div className="space-y-1">
+                <Label htmlFor="txId" className="text-xs">Linked Transaction ID (Optional)</Label>
+                <Input
+                  id="txId"
+                  placeholder="UUID of bank transaction"
+                  value={txId}
+                  onChange={(e) => setTxId(e.target.value)}
+                  className="h-9 text-xs"
+                />
+              </div>
+            </form>
+          </DialogBody>
 
-            <div className="space-y-1">
-              <Label htmlFor="txId" className="text-xs">Linked Transaction ID (Optional)</Label>
-              <Input
-                id="txId"
-                placeholder="UUID of bank transaction"
-                value={txId}
-                onChange={(e) => setTxId(e.target.value)}
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" size="sm" onClick={() => setCreateOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" size="sm" disabled={loading}>
-                {loading ? 'Saving...' : 'Save Entry'}
-              </Button>
-            </DialogFooter>
-          </form>
+          <DialogFooter
+            primaryAction={{
+              label: loading ? 'Saving...' : 'Save Entry',
+              type: 'submit',
+              form: 'add-lending-form',
+              disabled: loading,
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>

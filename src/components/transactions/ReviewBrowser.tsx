@@ -14,6 +14,7 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -556,14 +557,14 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
 
       {/* Approve Dialog */}
       <Dialog open={isApproveDialogOpen} onOpenChange={setIsApproveDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] p-4 sm:p-6 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-slate-900 dark:text-white">Approve Transactions</DialogTitle>
             <DialogDescription className="text-slate-500 dark:text-slate-400 text-xs mt-1">
               Select which review reasons you want to clear from the {selectedIds.length} selected transaction(s).
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 space-y-3">
+          <DialogBody className="space-y-3">
             {presentReasons.length === 0 ? (
               <p className="text-xs text-slate-500 italic">No specific review reasons found on selected
                 transactions.</p>
@@ -594,20 +595,18 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
                 );
               })
             )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" size="sm"
-                    onClick={() => setIsApproveDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              disabled={reasonsToApprove.length === 0 || batchActionLoading}
-              onClick={handleBatchApprove}
-            >
-              {batchActionLoading ? 'Approving...' : 'Approve'}
-            </Button>
-          </DialogFooter>
+          </DialogBody>
+          <DialogFooter
+            primaryAction={{
+              label: batchActionLoading ? 'Approving...' : 'Approve',
+              onClick: handleBatchApprove,
+              disabled: reasonsToApprove.length === 0 || batchActionLoading,
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+              onClick: () => setIsApproveDialogOpen(false),
+            }}
+          />
         </DialogContent>
       </Dialog>
 
@@ -615,14 +614,14 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
       <Dialog open={summaryData !== null} onOpenChange={(open) => {
         if (!open) setSummaryData(null);
       }}>
-        <DialogContent className="sm:max-w-[480px] border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4 sm:p-6">
+        <DialogContent className="sm:max-w-[480px]">
           <DialogHeader>
             <DialogTitle className="text-slate-900 dark:text-white">Batch Action Summary</DialogTitle>
             <DialogDescription className="text-slate-500 dark:text-slate-400 text-xs mt-1">
               The batch operation completed with the following results:
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 space-y-2">
+          <DialogBody className="space-y-2">
             {/* Counts */}
             <div className="grid grid-cols-3 gap-2 text-center">
               <div
@@ -685,15 +684,13 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
                 </ul>
               </div>
             )}
-          </div>
-          <DialogFooter>
-            <Button
-              className="w-full bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900"
-              onClick={() => setSummaryData(null)}
-            >
-              Close
-            </Button>
-          </DialogFooter>
+          </DialogBody>
+          <DialogFooter
+            primaryAction={{
+              label: 'Close',
+              onClick: () => setSummaryData(null),
+            }}
+          />
         </DialogContent>
       </Dialog>
 

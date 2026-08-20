@@ -8,6 +8,7 @@ import { createInstrument } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -147,7 +148,7 @@ export function CreateInstrumentDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle className="text-base font-bold">Add Instrument</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
@@ -156,158 +157,160 @@ export function CreateInstrumentDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {searchFirst && (
-          <div className="space-y-2 py-1">
-            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Search catalog
-            </Label>
-            <InstrumentSearchField type={defaultType} autoFocus onResolved={handleResolved} />
-          </div>
-        )}
-
-        {searchFirst && (
-          <button
-            type="button"
-            onClick={() => setManualOpen((v) => !v)}
-            className="w-full flex items-center gap-1.5 px-1 py-2 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 border-t border-slate-100 dark:border-slate-800 transition-colors"
-          >
-            {manualOpen ? (
-              <ChevronDown className="w-3.5 h-3.5" />
-            ) : (
-              <ChevronRight className="w-3.5 h-3.5" />
-            )}
-            Enter manually (advanced)
-          </button>
-        )}
-
-        {manualOpen && (
-          <>
-            {/* Auto-pricing Readiness Helper */}
-            <div className="p-3 rounded-lg bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-[11px] text-blue-700 dark:text-blue-300 space-y-1">
-              <div className="font-bold flex items-center gap-1">
-                <Info className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                Auto-pricing Requirements
-              </div>
-              <div className="text-[10px] text-slate-600 dark:text-slate-400 space-y-0.5 pl-4">
-                <div>• <span className="font-semibold text-slate-800 dark:text-slate-200">Stocks / ETFs</span> require a <span className="font-semibold">Yahoo Symbol</span> (defaults to <code className="bg-slate-100 dark:bg-slate-900 px-1 py-0.5 rounded text-[9px]">SYMBOL.NS</code>).</div>
-                <div>• <span className="font-semibold text-slate-800 dark:text-slate-200">Mutual Funds</span> require an <span className="font-semibold">AMFI Code</span> (6 digits).</div>
-              </div>
+        <DialogBody className="space-y-3">
+          {searchFirst && (
+            <div className="space-y-2 py-1">
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Search catalog
+              </Label>
+              <InstrumentSearchField type={defaultType} autoFocus onResolved={handleResolved} />
             </div>
+          )}
 
-            <form onSubmit={handleSubmit} className="space-y-2 py-2">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type</Label>
-                  <Select
-                    value={type}
-                    onValueChange={(val) => {
-                      const newType = val as InstrumentType;
-                      setType(newType);
-                      if ((newType === 'stock' || newType === 'etf') && symbol && !userEditedYahoo) {
-                        setYahooSymbol(`${symbol.trim().toUpperCase()}.NS`);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                      <SelectItem value="stock" className="text-xs">Stock</SelectItem>
-                      <SelectItem value="mutual_fund" className="text-xs">Mutual Fund</SelectItem>
-                      <SelectItem value="etf" className="text-xs">ETF</SelectItem>
-                    </SelectContent>
-                  </Select>
+          {searchFirst && (
+            <button
+              type="button"
+              onClick={() => setManualOpen((v) => !v)}
+              className="w-full flex items-center gap-1.5 px-1 py-2 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 border-t border-slate-100 dark:border-slate-800 transition-colors"
+            >
+              {manualOpen ? (
+                <ChevronDown className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5" />
+              )}
+              Enter manually (advanced)
+            </button>
+          )}
+
+          {manualOpen && (
+            <>
+              {/* Auto-pricing Readiness Helper */}
+              <div className="p-3 rounded-lg bg-blue-50/70 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 text-[11px] text-blue-700 dark:text-blue-300 space-y-1">
+                <div className="font-bold flex items-center gap-1">
+                  <Info className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                  Auto-pricing Requirements
+                </div>
+                <div className="text-[10px] text-slate-600 dark:text-slate-400 space-y-0.5 pl-4">
+                  <div>• <span className="font-semibold text-slate-800 dark:text-slate-200">Stocks / ETFs</span> require a <span className="font-semibold">Yahoo Symbol</span> (defaults to <code className="bg-slate-100 dark:bg-slate-900 px-1 py-0.5 rounded text-[9px]">SYMBOL.NS</code>).</div>
+                  <div>• <span className="font-semibold text-slate-800 dark:text-slate-200">Mutual Funds</span> require an <span className="font-semibold">AMFI Code</span> (6 digits).</div>
+                </div>
+              </div>
+
+              <form id="create-instrument-form" onSubmit={handleSubmit} className="space-y-3 py-1">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type</Label>
+                    <Select
+                      value={type}
+                      onValueChange={(val) => {
+                        const newType = val as InstrumentType;
+                        setType(newType);
+                        if ((newType === 'stock' || newType === 'etf') && symbol && !userEditedYahoo) {
+                          setYahooSymbol(`${symbol.trim().toUpperCase()}.NS`);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                        <SelectItem value="stock" className="text-xs">Stock</SelectItem>
+                        <SelectItem value="mutual_fund" className="text-xs">Mutual Fund</SelectItem>
+                        <SelectItem value="etf" className="text-xs">ETF</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <FormField
+                    label="Exchange"
+                    name="exchange"
+                    type="text"
+                    value={exchange}
+                    onChange={(e) => setExchange(e.target.value)}
+                    placeholder="e.g. NSE, BSE"
+                  />
                 </div>
 
                 <FormField
-                  label="Exchange"
-                  name="exchange"
+                  label="Instrument Name"
+                  name="name"
                   type="text"
-                  value={exchange}
-                  onChange={(e) => setExchange(e.target.value)}
-                  placeholder="e.g. NSE, BSE"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Reliance Industries Ltd"
+                  required
                 />
-              </div>
 
-              <FormField
-                label="Instrument Name"
-                name="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Reliance Industries Ltd"
-                required
-              />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    label="Symbol / Ticker"
+                    name="symbol"
+                    type="text"
+                    value={symbol}
+                    onChange={(e) => handleSymbolChange(e.target.value)}
+                    placeholder="e.g. RELIANCE"
+                  />
 
-              <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    label="Currency"
+                    name="currency"
+                    type="text"
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    placeholder="INR"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    label="ISIN (Optional)"
+                    name="isin"
+                    type="text"
+                    value={isin}
+                    onChange={(e) => setIsin(e.target.value)}
+                    placeholder="INE002A01018"
+                  />
+
+                  <FormField
+                    label="AMFI Code (For Mutual Funds)"
+                    name="amfiCode"
+                    type="text"
+                    value={amfiCode}
+                    onChange={(e) => setAmfiCode(e.target.value)}
+                    placeholder="e.g. 120503"
+                  />
+                </div>
+
                 <FormField
-                  label="Symbol / Ticker"
-                  name="symbol"
+                  label="Yahoo Symbol (For Stocks/ETFs)"
+                  name="yahooSymbol"
                   type="text"
-                  value={symbol}
-                  onChange={(e) => handleSymbolChange(e.target.value)}
-                  placeholder="e.g. RELIANCE"
+                  value={yahooSymbol}
+                  onChange={(e) => handleYahooChange(e.target.value)}
+                  placeholder="e.g. RELIANCE.NS"
                 />
+              </form>
+            </>
+          )}
+        </DialogBody>
 
-                <FormField
-                  label="Currency"
-                  name="currency"
-                  type="text"
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  placeholder="INR"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  label="ISIN (Optional)"
-                  name="isin"
-                  type="text"
-                  value={isin}
-                  onChange={(e) => setIsin(e.target.value)}
-                  placeholder="INE002A01018"
-                />
-
-                <FormField
-                  label="AMFI Code (For Mutual Funds)"
-                  name="amfiCode"
-                  type="text"
-                  value={amfiCode}
-                  onChange={(e) => setAmfiCode(e.target.value)}
-                  placeholder="e.g. 120503"
-                />
-              </div>
-
-              <FormField
-                label="Yahoo Symbol (For Stocks/ETFs)"
-                name="yahooSymbol"
-                type="text"
-                value={yahooSymbol}
-                onChange={(e) => handleYahooChange(e.target.value)}
-                placeholder="e.g. RELIANCE.NS"
-              />
-
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Creating...' : 'Create Instrument'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </>
-        )}
+        <DialogFooter
+          primaryAction={
+            manualOpen
+              ? {
+                  label: isSubmitting ? 'Creating...' : 'Create Instrument',
+                  type: 'submit',
+                  form: 'create-instrument-form',
+                  disabled: isSubmitting,
+                }
+              : {
+                  label: 'Cancel',
+                  variant: 'outline',
+                  onClick: () => setOpen(false),
+                }
+          }
+          secondaryAction={manualOpen ? { label: 'Cancel' } : undefined}
+        />
       </DialogContent>
     </Dialog>
   );

@@ -8,6 +8,7 @@ import { createInstrument, updateInstrument } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -78,7 +79,6 @@ export function InstrumentDialog({
   const [, setUserEditedYahoo] = useState(false);
   const [currency, setCurrency] = useState(instrument?.currency ?? 'INR');
 
-  // Reset the form when the dialog opens (render-phase state adjustment).
   const [prevOpen, setPrevOpen] = useState(false);
   if (open !== prevOpen) {
     setPrevOpen(open);
@@ -152,7 +152,7 @@ export function InstrumentDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger || defaultTrigger}</DialogTrigger>
-      <DialogContent className="max-w-lg p-4 sm:p-6">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit Instrument' : 'Add Instrument'}</DialogTitle>
           <DialogDescription>
@@ -162,105 +162,109 @@ export function InstrumentDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {!isEdit && searchFirst && (
-          <div className="space-y-3 pb-2">
-            <Label className="text-xs text-slate-500 font-medium">Quick Search Instrument</Label>
-            <InstrumentSearchField
-              onResolved={(inst) => {
-                toast.info(`Selected ${inst.name} (${inst.symbol})`);
-                onCreated?.(inst);
-                setOpen(false);
-              }}
-            />
-          </div>
-        )}
-
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-3">
-            <FormField label="Instrument Type" required>
-              <Select value={type} onValueChange={(v) => setType(v as InstrumentType)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="stock">Stock / Equity</SelectItem>
-                  <SelectItem value="mutual_fund">Mutual Fund</SelectItem>
-                  <SelectItem value="etf">ETF</SelectItem>
-                  <SelectItem value="bond">Bond / Govt Security</SelectItem>
-                  <SelectItem value="reit">REIT / InvIT</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </FormField>
-
-            <FormField label="Name" required>
-              <input
-                type="text"
-                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-                placeholder="e.g. Reliance Industries"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+        <DialogBody className="space-y-4">
+          {!isEdit && searchFirst && (
+            <div className="space-y-3 pb-2">
+              <Label className="text-xs text-slate-500 font-medium">Quick Search Instrument</Label>
+              <InstrumentSearchField
+                onResolved={(inst) => {
+                  toast.info(`Selected ${inst.name} (${inst.symbol})`);
+                  onCreated?.(inst);
+                  setOpen(false);
+                }}
               />
-            </FormField>
-
-            <div className="grid grid-cols-2 gap-3">
-              <FormField label="Symbol" required>
-                <input
-                  type="text"
-                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm uppercase"
-                  placeholder="e.g. RELIANCE"
-                  value={symbol}
-                  onChange={(e) => setSymbol(e.target.value)}
-                />
-              </FormField>
-
-              <FormField label="Exchange">
-                <input
-                  type="text"
-                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm uppercase"
-                  placeholder="NSE, BSE, NASDAQ"
-                  value={exchange}
-                  onChange={(e) => setExchange(e.target.value)}
-                />
-              </FormField>
             </div>
+          )}
 
-            <div className="grid grid-cols-2 gap-3">
-              <FormField label="ISIN">
-                <input
-                  type="text"
-                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm uppercase"
-                  placeholder="INE002A01018"
-                  value={isin}
-                  onChange={(e) => setIsin(e.target.value)}
-                />
+          <form id="instrument-dialog-form" onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-3">
+              <FormField label="Instrument Type" required>
+                <Select value={type} onValueChange={(v) => setType(v as InstrumentType)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="stock">Stock / Equity</SelectItem>
+                    <SelectItem value="mutual_fund">Mutual Fund</SelectItem>
+                    <SelectItem value="etf">ETF</SelectItem>
+                    <SelectItem value="bond">Bond / Govt Security</SelectItem>
+                    <SelectItem value="reit">REIT / InvIT</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
               </FormField>
 
-              <FormField label="Yahoo Symbol">
+              <FormField label="Name" required>
                 <input
                   type="text"
                   className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
-                  placeholder="RELIANCE.NS"
-                  value={yahooSymbol}
-                  onChange={(e) => {
-                    setYahooSymbol(e.target.value);
-                    setUserEditedYahoo(true);
-                  }}
+                  placeholder="e.g. Reliance Industries"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                 />
               </FormField>
-            </div>
-          </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Create Instrument')}
-            </Button>
-          </DialogFooter>
-        </form>
+              <div className="grid grid-cols-2 gap-3">
+                <FormField label="Symbol" required>
+                  <input
+                    type="text"
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm uppercase"
+                    placeholder="e.g. RELIANCE"
+                    value={symbol}
+                    onChange={(e) => setSymbol(e.target.value)}
+                  />
+                </FormField>
+
+                <FormField label="Exchange">
+                  <input
+                    type="text"
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm uppercase"
+                    placeholder="NSE, BSE, NASDAQ"
+                    value={exchange}
+                    onChange={(e) => setExchange(e.target.value)}
+                  />
+                </FormField>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <FormField label="ISIN">
+                  <input
+                    type="text"
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm uppercase"
+                    placeholder="INE002A01018"
+                    value={isin}
+                    onChange={(e) => setIsin(e.target.value)}
+                  />
+                </FormField>
+
+                <FormField label="Yahoo Symbol">
+                  <input
+                    type="text"
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
+                    placeholder="RELIANCE.NS"
+                    value={yahooSymbol}
+                    onChange={(e) => {
+                      setYahooSymbol(e.target.value);
+                      setUserEditedYahoo(true);
+                    }}
+                  />
+                </FormField>
+              </div>
+            </div>
+          </form>
+        </DialogBody>
+
+        <DialogFooter
+          primaryAction={{
+            label: isSubmitting ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Create Instrument'),
+            type: 'submit',
+            form: 'instrument-dialog-form',
+            disabled: isSubmitting,
+          }}
+          secondaryAction={{
+            label: 'Cancel',
+          }}
+        />
       </DialogContent>
     </Dialog>
   );

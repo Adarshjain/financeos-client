@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import { createCategory } from '@/actions/categories';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -112,39 +112,38 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
 
       {/* Create Category Modal */}
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="sm:max-w-md p-4 sm:p-6">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Create New Category</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleCreate} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="category-name">Category Name</Label>
-              <Input
-                id="category-name"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                placeholder="e.g., Subscriptions"
-                disabled={isSubmitting}
-                autoFocus
-              />
-            </div>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsCreateOpen(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || !newCategoryName.trim()}
-              >
-                {isSubmitting ? 'Creating...' : 'Create Category'}
-              </Button>
-            </DialogFooter>
-          </form>
+          <DialogBody>
+            <form id="create-category-form" onSubmit={handleCreate} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="category-name">Category Name</Label>
+                <Input
+                  id="category-name"
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="e.g., Subscriptions"
+                  disabled={isSubmitting}
+                  autoFocus
+                />
+              </div>
+            </form>
+          </DialogBody>
+          <DialogFooter
+            primaryAction={{
+              label: isSubmitting ? 'Creating...' : 'Create Category',
+              type: 'submit',
+              form: 'create-category-form',
+              disabled: isSubmitting || !newCategoryName.trim(),
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+              onClick: () => setIsCreateOpen(false),
+              disabled: isSubmitting,
+            }}
+          />
         </DialogContent>
       </Dialog>
     </div>
