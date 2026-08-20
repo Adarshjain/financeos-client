@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { mockRevalidatePath } from '@/test/next-mocks';
-import { batchDeleteTransactions, batchReviewTransactions, createTransaction, deleteTransaction, searchTransactions, updateTransaction } from '@/actions/transactions';
+import { batchDeleteTransactions, batchReviewTransactions, createTransaction, deleteTransaction, mergeTransactions, searchTransactions, updateTransaction } from '@/actions/transactions';
 import { transactionsApi } from '@/lib/apiClient';
 
 vi.mock('@/lib/apiClient', () => ({
@@ -13,6 +13,7 @@ vi.mock('@/lib/apiClient', () => ({
     search: vi.fn(),
     batchReview: vi.fn(),
     batchDelete: vi.fn(),
+    merge: vi.fn(),
   },
 }));
 
@@ -61,4 +62,15 @@ describe('transactions server actions (WP-3)', () => {
     const deleteRes = await batchDeleteTransactions(['t1']);
     expect(deleteRes.success).toBe(true);
   });
+
+  it('mergeTransactions calls transactionsApi.merge and revalidates views', async () => {
+    vi.mocked(transactionsApi.merge).mockResolvedValue({ keptId: 't1', reviewType: 'MANUALLY_REVIEWED', remainingReasons: [] });
+
+    const res = await mergeTransactions('t1', 't2');
+    expect(res.success).toBe(true);
+    expect(transactionsApi.merge).toHaveBeenCalledWith({ keepId: 't1', deleteId: 't2' });
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/transactions');
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/transactions/review');
+  });
 });
+
