@@ -14,6 +14,8 @@ import {
   syncGmail,
   updateGmailSender,
 } from '@/actions/gmail';
+import { JobsPanel } from '@/components/jobs/JobsPanel';
+import { useJobs } from '@/components/jobs/JobsProvider';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -21,6 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FormField } from '@/components/ui/form-field';
+import { useJobPolling } from '@/hooks/useJobPolling';
 import type { GmailConnectionResponse, GmailSenderRequest, GmailSenderResponse, SyncSummary } from '@/lib/types';
 
 export function GmailConnect() {
@@ -28,11 +31,25 @@ export function GmailConnect() {
   const [connections, setConnections] = useState<GmailConnectionResponse[]>([]);
   const [senders, setSenders] = useState<GmailSenderResponse[]>([]);
 
-  const [syncResult, setSyncResult] = useState<SyncSummary | null>(null);
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [message, setMessage] = useState<{
     type: 'success' | 'error';
     text: string;
   } | null>(null);
+
+  const { notifyJobStarted } = useJobs();
+  const { isPolling } = useJobPolling<SyncSummary>(activeJobId, (job) => {
+    if (job.status === 'SUCCEEDED') {
+      toast.success('Sync completed!');
+    } else if (job.status === 'FAILED') {
+      setMessage({ type: 'error', text: job.errorMessage || 'Sync failed.' });
+      toast.error('Sync failed.');
+    } else if (job.status === 'CANCELLED') {
+      setMessage({ type: 'error', text: 'Sync job was cancelled.' });
+      toast.info('Sync cancelled.');
+    }
+    setActiveJobId(null);
+  });
 
   // Dialog management
   const [isSenderDialogOpen, setIsSenderDialogOpen] = useState(false);
@@ -67,6 +84,8 @@ export function GmailConnect() {
     };
   }, []);
 
+  const isSyncing = Boolean(activeJobId) && isPolling;
+
   const handleConnect = async () => {
     setLoading('connect');
     setMessage(null);
@@ -96,14 +115,15 @@ export function GmailConnect() {
   const handleSync = async () => {
     setLoading('sync');
     setMessage(null);
-    setSyncResult(null);
 
     const response = await syncGmail();
 
-    if (response.success) {
-      setSyncResult(response.data);
-      toast.success('Sync completed!');
-    } else {
+    if (response.success && response.data?.jobId) {
+      const jobId = response.data.jobId;
+      setActiveJobId(jobId);
+      notifyJobStarted(jobId);
+      toast.info('Gmail sync started in background.');
+    } else if (!response.success) {
       setMessage({ type: 'error', text: response.error.message });
     }
     setLoading(null);
@@ -261,9 +281,9 @@ export function GmailConnect() {
                 variant="outline"
                 size="sm"
                 onClick={handleSync}
-                disabled={loading !== null}
+                disabled={loading !== null || isSyncing}
               >
-                {loading === 'sync' ? (
+                {loading === 'sync' || isSyncing ? (
                   <>
                     <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
                     Syncing...
@@ -277,41 +297,11 @@ export function GmailConnect() {
               </Button>
             </div>
           )}
-
-          {/* Sync Result Summary */}
-          {syncResult && (
-            <Alert variant="default"
-                   className="border-slate-200 bg-slate-50 dark:bg-slate-900/40 dark:border-slate-800">
-              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-              <AlertTitle className="text-sm font-semibold mb-1">Ingestion Complete</AlertTitle>
-              <AlertDescription className="text-xs text-slate-600 dark:text-slate-400">
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-2">
-                  <div className="p-2 bg-white dark:bg-slate-900 rounded border text-center">
-                    <div className="font-bold text-slate-950 dark:text-white text-base">{syncResult.fetched}</div>
-                    <div className="text-2xs text-slate-500 uppercase">Fetched</div>
-                  </div>
-                  <div className="p-2 bg-white dark:bg-slate-900 rounded border text-center">
-                    <div className="font-bold text-emerald-600 text-base">{syncResult.created}</div>
-                    <div className="text-2xs text-slate-500 uppercase">Created</div>
-                  </div>
-                  <div className="p-2 bg-white dark:bg-slate-900 rounded border text-center">
-                    <div className="font-bold text-blue-600 text-base">{syncResult.reconciled}</div>
-                    <div className="text-2xs text-slate-500 uppercase">Reconciled</div>
-                  </div>
-                  <div className="p-2 bg-white dark:bg-slate-900 rounded border text-center">
-                    <div className="font-bold text-slate-600 text-base">{syncResult.skipped}</div>
-                    <div className="text-2xs text-slate-500 uppercase">Skipped</div>
-                  </div>
-                  <div className="p-2 bg-white dark:bg-slate-900 rounded border text-center">
-                    <div className="font-bold text-rose-600 text-base">{syncResult.failed}</div>
-                    <div className="text-2xs text-slate-500 uppercase">Failed</div>
-                  </div>
-                </div>
-              </AlertDescription>
-            </Alert>
-          )}
         </CardContent>
       </Card>
+
+      {/* Jobs Panel */}
+      <JobsPanel types={['GMAIL_SYNC']} title="Recent sync jobs" />
 
       {/* Senders Allowlist */}
       <Card className="border border-slate-200 dark:border-slate-800">

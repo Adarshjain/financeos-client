@@ -1,5 +1,7 @@
 import type { Page } from '@/lib/pagination';
 
+export * from '@/lib/jobs.types';
+
 // Types generated from API spec
 
 export enum AccountType {

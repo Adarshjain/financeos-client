@@ -63,6 +63,7 @@ import type {
   DividendSuggestionsResponse,
   DividendSummary,
   DividendType,
+  EnqueueResponse,
   ErrorResponse,
   FileIngestionResult,
   FnoTradeListResponse,
@@ -81,9 +82,11 @@ import type {
   InvestmentPositionResponse,
   InvestmentSummary,
   InvestmentTransactionResponse,
+  JobResponse,
   LoginRequest,
   PagedDividendResponse,
   PagedInvestmentTransactionResponse,
+  PagedJobResponse,
   PriceHistoryPoint,
   PriceRefreshResult,
   ReconcileCommitRequest,
@@ -552,9 +555,9 @@ export const investmentsApi = {
     return request<InvestmentSummary>('/api/v1/investments/summary');
   },
 
-  async refreshPrices(instrumentId?: string): Promise<PriceRefreshResult> {
+  async refreshPrices(instrumentId?: string): Promise<EnqueueResponse> {
     const query = instrumentId ? `?instrumentId=${encodeURIComponent(instrumentId)}` : '';
-    return request<PriceRefreshResult>(`/api/v1/investments/prices/refresh${query}`, {
+    return request<EnqueueResponse>(`/api/v1/investments/prices/refresh${query}`, {
       method: 'POST',
     });
   },
@@ -702,8 +705,8 @@ export const importsApi = {
     });
   },
 
-  async commit(data: ImportCommitRequest): Promise<ImportCommitResult> {
-    return request<ImportCommitResult>('/api/v1/investments/imports/commit', {
+  async commit(data: ImportCommitRequest): Promise<EnqueueResponse> {
+    return request<EnqueueResponse>('/api/v1/investments/imports/commit', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -716,8 +719,8 @@ export const importsApi = {
     });
   },
 
-  async commitReconcile(data: ReconcileCommitRequest): Promise<ImportCommitResult> {
-    return request<ImportCommitResult>('/api/v1/investments/imports/reconcile/commit', {
+  async commitReconcile(data: ReconcileCommitRequest): Promise<EnqueueResponse> {
+    return request<EnqueueResponse>('/api/v1/investments/imports/reconcile/commit', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -730,8 +733,8 @@ export const gmailApi = {
     return request<GmailOAuthStartResponse>('/api/v1/gmail/oauth/start');
   },
 
-  async sync(): Promise<SyncSummary> {
-    return request<SyncSummary>('/api/v1/gmail/sync', {
+  async sync(): Promise<EnqueueResponse> {
+    return request<EnqueueResponse>('/api/v1/gmail/sync', {
       method: 'POST',
     });
   },
@@ -915,8 +918,8 @@ export const dashboardsApi = {
 
 // Ingestion API
 export const ingestionApi = {
-  async ingest(accountId: string, formData: FormData): Promise<FileIngestionResult> {
-    return request<FileIngestionResult>(`/api/v1/accounts/${accountId}/ingest`, {
+  async ingest(accountId: string, formData: FormData): Promise<EnqueueResponse> {
+    return request<EnqueueResponse>(`/api/v1/accounts/${accountId}/ingest`, {
       method: 'POST',
       body: formData,
     });
@@ -980,10 +983,47 @@ export const rulesApi = {
     });
   },
 
-  async apply(id: string, body: ApplyRuleRequest): Promise<ApplyRuleResult> {
-    return request<ApplyRuleResult>(`/api/v1/rules/${id}/apply`, {
+  async apply(id: string, body: ApplyRuleRequest): Promise<EnqueueResponse> {
+    return request<EnqueueResponse>(`/api/v1/rules/${id}/apply`, {
       method: 'POST',
       body: JSON.stringify(body),
+    });
+  },
+};
+
+// Jobs API
+export const jobsApi = {
+  async list(params: {
+    page?: number;
+    size?: number;
+    status?: string;
+    type?: string;
+  } = {}): Promise<PagedJobResponse> {
+    const query = new URLSearchParams();
+    if (params.page !== undefined) query.set('page', String(params.page));
+    if (params.size !== undefined) query.set('size', String(params.size));
+    if (params.status !== undefined && params.status !== '') query.set('status', params.status);
+    if (params.type !== undefined && params.type !== '') query.set('type', params.type);
+    return request<PagedJobResponse>(`/api/v1/jobs?${query}`);
+  },
+
+  async listActive(): Promise<JobResponse[]> {
+    return request<JobResponse[]>('/api/v1/jobs/active');
+  },
+
+  async get(id: string): Promise<JobResponse> {
+    return request<JobResponse>(`/api/v1/jobs/${id}`);
+  },
+
+  async cancel(id: string): Promise<JobResponse> {
+    return request<JobResponse>(`/api/v1/jobs/${id}/cancel`, {
+      method: 'POST',
+    });
+  },
+
+  async retry(id: string): Promise<JobResponse> {
+    return request<JobResponse>(`/api/v1/jobs/${id}/retry`, {
+      method: 'POST',
     });
   },
 };

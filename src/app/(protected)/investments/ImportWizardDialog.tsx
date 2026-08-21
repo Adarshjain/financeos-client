@@ -2,7 +2,7 @@
 
 import { FileSpreadsheet, Upload } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 import { commitImport, commitReconcileImport, previewImport, previewReconcileImport } from '@/actions/investments';
@@ -38,6 +38,9 @@ interface ImportWizardDialogProps {
   onSuccess?: () => void;
 }
 
+import { useJobs } from '@/components/jobs/JobsProvider';
+import { useJobPolling } from '@/hooks/useJobPolling';
+
 export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: ImportWizardDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -65,9 +68,26 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
   const [rowStates, setRowStates] = useState<Record<number, RowState>>({});
   const [fnoRowStates, setFnoRowStates] = useState<Record<number, { skip: boolean }>>({});
   const [isCommitting, setIsCommitting] = useState(false);
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
   // Step 3 Result State
   const [commitResult, setCommitResult] = useState<ImportCommitResult | null>(null);
+
+  const { notifyJobStarted } = useJobs();
+  useJobPolling<ImportCommitResult>(activeJobId, (job) => {
+    if (job.status === 'SUCCEEDED' && job.result) {
+      setCommitResult(job.result);
+      setStep(3);
+      onSuccess?.();
+      router.refresh();
+    } else if (job.status === 'FAILED') {
+      toast.error(job.errorMessage || 'Commit failed.');
+    } else if (job.status === 'CANCELLED') {
+      toast.info('Import commit job was cancelled.');
+    }
+    setActiveJobId(null);
+    setIsCommitting(false);
+  });
 
   const resetWizard = () => {
     setStep(1);
@@ -265,13 +285,14 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
         };
 
         const res = await commitReconcileImport(req);
-        if (res.success) {
-          setCommitResult(res.data);
-          setStep(3);
-          onSuccess?.();
-          router.refresh();
-        } else {
+        if (res.success && res.data?.jobId) {
+          const jobId = res.data.jobId;
+          setActiveJobId(jobId);
+          notifyJobStarted(jobId);
+          toast.info('Reconciliation commit job started in background.');
+        } else if (!res.success) {
           toast.error(res.error.message);
+          setIsCommitting(false);
         }
       } else {
         // CAS Commit
@@ -294,18 +315,18 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
         };
 
         const res = await commitImport(req);
-        if (res.success) {
-          setCommitResult(res.data);
-          setStep(3);
-          onSuccess?.();
-          router.refresh();
-        } else {
+        if (res.success && res.data?.jobId) {
+          const jobId = res.data.jobId;
+          setActiveJobId(jobId);
+          notifyJobStarted(jobId);
+          toast.info('Import commit job started in background.');
+        } else if (!res.success) {
           toast.error(res.error.message);
+          setIsCommitting(false);
         }
       }
     } catch (err) {
       toast.error('Failed to commit import: ' + (err as Error).message);
-    } finally {
       setIsCommitting(false);
     }
   };

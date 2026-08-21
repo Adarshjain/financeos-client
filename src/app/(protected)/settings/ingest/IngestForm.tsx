@@ -16,6 +16,8 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 import { ingestStatementFiles } from '@/actions/ingestion';
+import { JobsPanel } from '@/components/jobs/JobsPanel';
+import { useJobs } from '@/components/jobs/JobsProvider';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,6 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { useJobPolling } from '@/hooks/useJobPolling';
 import type { Account } from '@/lib/account.types';
 import type { FileIngestionResult, FileSummary } from '@/lib/types';
 
@@ -63,15 +66,26 @@ export function IngestForm({ accounts }: IngestFormProps) {
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
   const [files, setFiles] = useState<File[]>([]);
   const [isDragActive, setIsDragActive] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [result, setResult] = useState<FileIngestionResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+
+  const { notifyJobStarted } = useJobs();
+  const { isPolling } = useJobPolling(activeJobId, (job) => {
+    if (job.status === 'SUCCEEDED') {
+      toast.success('Statement ingestion completed — see results below.');
+    } else if (job.status === 'FAILED') {
+      toast.error(job.errorMessage || 'Ingestion failed.');
+    } else {
+      toast.info('Ingestion cancelled.');
+    }
+    setActiveJobId(null);
+  });
+
+  const isUploading = Boolean(activeJobId) && isPolling;
 
   // Filter accounts to standard bank/credit cards for transaction statement upload
   const uploadableAccounts = accounts.filter(
     (acc) => acc.type === 'bank_account' || acc.type === 'credit_card',
   );
-
 
   // Drag and drop handlers
   const handleDragOver = (e: React.DragEvent) => {
@@ -151,6 +165,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
       toast.error('Please select at least one file to upload.');
       return;
     }
+
     // All queued files go up as a single server-action request, so the total is
     // what Vercel's 4.5MB body cap applies to. Checked here so the user gets a
     // specific message instead of an opaque platform 413.
@@ -162,10 +177,6 @@ export function IngestForm({ accounts }: IngestFormProps) {
       return;
     }
 
-    setIsUploading(true);
-    setError(null);
-    setResult(null);
-
     const formData = new FormData();
     files.forEach((file) => {
       formData.append('files', file);
@@ -173,19 +184,17 @@ export function IngestForm({ accounts }: IngestFormProps) {
 
     try {
       const response = await ingestStatementFiles(selectedAccountId, formData);
-      if (response.success) {
-        setResult(response.data);
-        setFiles([]); // clear files queue on success
-        toast.success('Ingestion completed successfully!');
-      } else {
-        setError(response.error.message || 'An error occurred during ingestion.');
-        toast.error('Ingestion failed.');
+      if (response.success && response.data?.jobId) {
+        const jobId = response.data.jobId;
+        setActiveJobId(jobId);
+        notifyJobStarted(jobId);
+        setFiles([]); // clear files queue on enqueue
+        toast.info('Ingestion job started in background.');
+      } else if (!response.success) {
+        toast.error(response.error.message || 'An error occurred while starting ingestion.');
       }
     } catch (err: any) {
-      setError(err?.message || 'An unexpected error occurred.');
-      toast.error('An unexpected error occurred.');
-    } finally {
-      setIsUploading(false);
+      toast.error(err?.message || 'An unexpected error occurred.');
     }
   };
 
@@ -198,10 +207,10 @@ export function IngestForm({ accounts }: IngestFormProps) {
   };
 
   return (
-    <div className="space-y-2 p-4 max-w-4xl pb-20">
+    <div className="space-y-4 p-4 max-w-4xl pb-20">
       {/* Header & Navigation */}
       <div className="flex items-center gap-3">
-        <Button asChild size="icon-sm">
+        <Button asChild size="icon-sm" variant="ghost">
           <Link href="/settings">
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -215,153 +224,6 @@ export function IngestForm({ accounts }: IngestFormProps) {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {/* Error Banner */}
-        {error && (
-          <Alert variant="destructive" className="rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4">
-            <div className="flex gap-3 items-start">
-              <AlertCircle className="h-5 w-5 mt-0.5 shrink-0" />
-              <div>
-                <AlertTitle className="font-semibold">Upload Failed</AlertTitle>
-                <AlertDescription className="text-sm mt-1">{error}</AlertDescription>
-              </div>
-            </div>
-            {files.length > 0 && (
-              <Button
-                type="button"
-                onClick={() => handleSubmit()}
-                disabled={isUploading}
-                variant="outline"
-                className="shrink-0 rounded-xl bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/40 text-rose-800 dark:text-rose-200 hover:bg-rose-100 dark:hover:bg-rose-950/40 font-semibold"
-              >
-                Retry Upload
-              </Button>
-            )}
-          </Alert>
-        )}
-
-
-        {/* Success / Result Summary */}
-        {result && (
-          <Card className="border-emerald-100 bg-emerald-50/5 dark:bg-emerald-950/5 dark:border-emerald-950 rounded-xl overflow-hidden shadow-sm">
-            <CardHeader className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 dark:from-emerald-500/5 dark:to-teal-500/5 border-b border-emerald-100/50 dark:border-emerald-950/50">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                <CardTitle className="text-emerald-800 dark:text-emerald-400">Ingestion Results</CardTitle>
-              </div>
-              <CardDescription className="text-emerald-700/80 dark:text-emerald-400/80">
-                Summary of the transaction extraction process
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6 space-y-2">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col justify-center">
-                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                    Files Processed
-                  </span>
-                  <span className="text-2xl font-black text-slate-800 dark:text-slate-200 mt-1">
-                    {result.filesProcessed}
-                  </span>
-                </div>
-                <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col justify-center">
-                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                    Transactions Created
-                  </span>
-                  <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                    {result.totalCreated}
-                  </span>
-                </div>
-                <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 shadow-sm flex flex-col justify-center">
-                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                    Duplicates Found
-                  </span>
-                  <span className="text-2xl font-black text-amber-500 mt-1">
-                    {result.totalDuplicatesFound}
-                  </span>
-                </div>
-              </div>
-
-              {result.totalDuplicatesFound > 0 && (
-                <Alert variant="warning" className="rounded-xl border-amber-200/60 bg-amber-50/20 dark:bg-amber-950/10 dark:border-amber-900/30">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                  <AlertTitle className="text-amber-800 dark:text-amber-400 font-semibold">Duplicates Detected</AlertTitle>
-                  <AlertDescription className="text-amber-700 dark:text-amber-500 text-xs mt-1">
-                    We found {result.totalDuplicatesFound} transaction(s) that match existing records. Both the old and new copies have been marked as <Badge variant="warning" className="h-5 py-0 px-1.5 text-2xs">NEEDS_REVIEW</Badge>. Please visit the{' '}
-                    <Link href="/transactions" className="underline font-bold hover:text-amber-950 dark:hover:text-amber-300">
-                      Transactions Page
-                    </Link>{' '}
-                    to review and resolve them.
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <div className="space-y-3">
-                {/* Mobile Cards View */}
-                <div className="md:hidden space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
-                  {result.fileDetails.map((file: FileSummary, idx) => (
-                    <div key={idx} className="p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950 space-y-2 text-xs">
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="font-semibold text-sm text-slate-800 dark:text-slate-200 break-all">
-                          {file.filename}
-                        </span>
-                        <Badge variant={file.status === 'SUCCESS' ? 'success' : 'destructive'} className="shrink-0">
-                          {file.status}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-900 tabular-nums">
-                        <span>Transactions parsed:</span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200">{file.linesParsed}</span>
-                      </div>
-                      {file.errorMessage && (
-                        <div className="text-rose-500 dark:text-rose-400 pt-1 border-t border-rose-100 dark:border-rose-950/50">
-                          {file.errorMessage}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Desktop Table View */}
-                <div className="hidden md:block border border-slate-100 dark:border-slate-800/80 rounded-xl overflow-hidden bg-white dark:bg-slate-950">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-slate-50/50 dark:bg-slate-900/50">
-                        <TableHead className="font-semibold text-xs text-slate-500 dark:text-slate-400">Filename</TableHead>
-                        <TableHead className="font-semibold text-xs text-slate-500 dark:text-slate-400 w-32">Status</TableHead>
-                        <TableHead className="font-semibold text-xs text-slate-500 dark:text-slate-400 w-32 text-right">Transactions</TableHead>
-                        <TableHead className="font-semibold text-xs text-slate-500 dark:text-slate-400">Details</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {result.fileDetails.map((file: FileSummary, idx) => (
-                        <TableRow key={idx} className="border-b border-slate-100 dark:border-slate-900">
-                          <TableCell className="font-medium text-sm text-slate-700 dark:text-slate-300 max-w-[200px] truncate">
-                            {file.filename}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant={file.status === 'SUCCESS' ? 'success' : 'destructive'}>
-                              {file.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="tabular-nums text-sm text-right pr-6">
-                            {file.linesParsed}
-                          </TableCell>
-                          <TableCell className="text-xs text-slate-500 dark:text-slate-400">
-                            {file.errorMessage ? (
-                              <span className="text-rose-500 dark:text-rose-400">{file.errorMessage}</span>
-                            ) : (
-                              <span className="text-slate-400 dark:text-slate-500">—</span>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Upload Form */}
         <Card className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
           <CardContent className="p-6">
@@ -466,6 +328,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
                           size="icon-sm"
                           onClick={() => removeFile(index)}
                           disabled={isUploading}
+                          variant="outline"
                           className="text-slate-400 hover:text-rose-500"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -496,6 +359,9 @@ export function IngestForm({ accounts }: IngestFormProps) {
             </form>
           </CardContent>
         </Card>
+
+        {/* Jobs Panel */}
+        <JobsPanel types={['STATEMENT_INGEST']} title="Recent statement ingestion jobs" />
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import { logout } from '@/actions/auth';
+import { JobsIndicator } from '@/components/jobs/JobsIndicator';
 import { getMobileNavContext, isNavItemActive } from '@/components/layout/navigation';
 import { NavTree } from '@/components/layout/NavTree';
 import { Button } from '@/components/ui/button';
@@ -61,8 +62,9 @@ export function MobileNav({ userEmail }: MobileNavProps) {
         })}
       </div>
 
-      {/* Sticky Right: Hamburger Menu Button */}
-      <div className="sticky right-0 z-10 shrink-0 ml-1 bg-white/95 dark:bg-slate-900/95 pl-0.5">
+      {/* Sticky Right: Active Jobs Indicator & Hamburger Menu Button */}
+      <div className="sticky right-0 z-10 shrink-0 ml-1 bg-white/95 dark:bg-slate-900/95 pl-0.5 flex items-center gap-1">
+        <JobsIndicator />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button

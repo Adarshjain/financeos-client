@@ -5,12 +5,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { applyRule, previewRuleMatches } from '@/actions/rules';
+import { useJobs } from '@/components/jobs/JobsProvider';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import type { CategoryRule, PagedRuleMatches } from '@/lib/rules.types';
+import { useJobPolling } from '@/hooks/useJobPolling';
+import type { ApplyRuleResult, CategoryRule, PagedRuleMatches } from '@/lib/rules.types';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
 
 interface RuleMatchesDialogProps {
@@ -34,6 +36,26 @@ export function RuleMatchesDialog({ rule, open, onOpenChange }: RuleMatchesDialo
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   // When true, apply targets every match server-side (not just the checked ids).
   const [allSelected, setAllSelected] = useState(false);
+  const [activeJobId, setActiveJobId] = useState<string | null>(null);
+
+  const { notifyJobStarted } = useJobs();
+  useJobPolling<ApplyRuleResult>(activeJobId, (job) => {
+    if (job.status === 'SUCCEEDED' && job.result) {
+      toast.success(
+        `Rule applied to ${job.result.appliedCount} transaction${job.result.appliedCount === 1 ? '' : 's'}`,
+      );
+      setSelectedIds(new Set());
+      setAllSelected(false);
+      router.refresh();
+      onOpenChange(false);
+    } else if (job.status === 'FAILED') {
+      toast.error(job.errorMessage || 'Failed to apply rule.');
+    } else if (job.status === 'CANCELLED') {
+      toast.info('Rule apply job was cancelled.');
+    }
+    setActiveJobId(null);
+    setApplying(false);
+  });
 
   const loadPage = useCallback(async (pageToLoad: number) => {
     setLoading(true);
@@ -115,18 +137,17 @@ export function RuleMatchesDialog({ rule, open, onOpenChange }: RuleMatchesDialo
         rule.id,
         allSelected ? { all: true } : { transactionIds: Array.from(selectedIds) },
       );
-      if (res.success) {
-        toast.success(
-          `Rule applied to ${res.data.appliedCount} transaction${res.data.appliedCount === 1 ? '' : 's'}`,
-        );
-        setSelectedIds(new Set());
-        setAllSelected(false);
-        void loadPage(0);
-        router.refresh();
-      } else {
+      if (res.success && res.data?.jobId) {
+        const jobId = res.data.jobId;
+        setActiveJobId(jobId);
+        notifyJobStarted(jobId);
+        toast.info('Rule apply job started in background.');
+      } else if (!res.success) {
         toast.error(res.error.message);
+        setApplying(false);
       }
-    } finally {
+    } catch (err) {
+      toast.error('Failed to apply rule: ' + (err as Error).message);
       setApplying(false);
     }
   };
