@@ -23,7 +23,6 @@ export function TransactionFormWrapper({ transaction, categories, accounts, trig
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger ?? <div></div>}</DialogTrigger>
       <DialogContent
-        className="h-screen max-h-screen rounded-none top-0 bottom-0 p-0 flex flex-col gap-0 overflow-hidden"
         showCloseButton={false}
         onOpenAutoFocus={(e) => e.preventDefault()}
       >

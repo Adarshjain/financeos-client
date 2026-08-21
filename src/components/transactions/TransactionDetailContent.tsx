@@ -120,7 +120,7 @@ export const TransactionDetailContent = ({
   };
 
   return (
-    <div className="flex flex-col flex-1 overflow-y-auto max-h-[90vh] sm:max-h-[85vh] scrollbar-thin">
+    <div className="flex flex-col">
       {/* Modal Hero / Header */}
       <DialogHeader
         className="relative p-3 pb-4 text-center sm:text-center bg-white dark:bg-slate-900 border-b border-slate-100/50 dark:border-slate-800/50 block"

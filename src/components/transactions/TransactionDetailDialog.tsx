@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Account } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
 import { Transaction } from '@/lib/transaction.types';
-import { cn } from '@/lib/utils';
 
 import { TransactionDetailContent } from './TransactionDetailContent';
 import { TransactionEditContent } from './TransactionEditContent';
@@ -93,10 +92,7 @@ export const TransactionDetailDialog = ({
       <DialogTrigger asChild>{trigger}</DialogTrigger>
 
       <DialogContent
-        className={cn(
-          'sm:max-w-lg !p-0 overflow-hidden flex flex-col bg-slate-50 dark:bg-slate-950',
-          isEditing ? 'h-full max-h-full sm:h-auto sm:max-h-[85vh]' : '',
-        )}
+        className="sm:max-w-lg bg-slate-50 dark:bg-slate-950"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

@@ -159,6 +159,40 @@ describe('Dialog Primitive', () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
+  it('hides the close button when the footer has a secondary action', () => {
+    const { rerender } = render(
+      <Dialog open>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Title</DialogTitle>
+          </DialogHeader>
+          <DialogBody>Body</DialogBody>
+          <DialogFooter
+            primaryAction={{ label: 'Save' }}
+            secondaryAction={{ label: 'Cancel' }}
+          />
+        </DialogContent>
+      </Dialog>,
+    );
+
+    expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument();
+
+    // Without a secondary action the close button comes back
+    rerender(
+      <Dialog open>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Title</DialogTitle>
+          </DialogHeader>
+          <DialogBody>Body</DialogBody>
+          <DialogFooter primaryAction={{ label: 'Save' }} />
+        </DialogContent>
+      </Dialog>,
+    );
+
+    expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument();
+  });
+
   it('renders srTitle as sr-only title and hides close button when showCloseButton is false', () => {
     render(
       <Dialog open>

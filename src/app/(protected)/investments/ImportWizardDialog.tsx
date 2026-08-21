@@ -12,6 +12,7 @@ import {
   DialogBody,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -30,7 +31,14 @@ import {
 import { ImportStep1Upload } from './import-wizard/ImportStep1Upload';
 import { ImportStep2Review } from './import-wizard/ImportStep2Review';
 import { ImportStep3Result } from './import-wizard/ImportStep3Result';
-import { ImportAssetScope, ImportMode, RowState } from './import-wizard/types';
+import {
+  getCasConfirmableCount,
+  getConfirmableCount,
+  getUnresolvedRows,
+  ImportAssetScope,
+  ImportMode,
+  RowState,
+} from './import-wizard/types';
 
 interface ImportWizardDialogProps {
   brokerAccounts: BrokerAccount[];
@@ -334,6 +342,12 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
   const selectedBroker = brokerAccounts.find((a) => a.id === brokerAccountId);
   const selectedBrokerName = selectedBroker ? `${selectedBroker.name} (${selectedBroker.provider})` : 'Broker';
 
+  const unresolvedCount = getUnresolvedRows(reconcilePreview, rowStates).length;
+  const confirmableCount =
+    mode === 'mf_cas'
+      ? getCasConfirmableCount(casPreview, rowStates)
+      : getConfirmableCount(reconcilePreview, rowStates, fnoRowStates);
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
@@ -376,23 +390,18 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
               setHoldingsFile={setHoldingsFile}
               casFile={casFile}
               setCasFile={setCasFile}
-              isPreviewing={isPreviewing}
               onSubmit={handlePreviewSubmit}
             />
           )}
 
           {step === 2 && (
             <ImportStep2Review
-              mode={mode}
               reconcilePreview={reconcilePreview}
               casPreview={casPreview}
               rowStates={rowStates}
               setRowStates={setRowStates}
               fnoRowStates={fnoRowStates}
               setFnoRowStates={setFnoRowStates}
-              isCommitting={isCommitting}
-              onBack={() => setStep(1)}
-              onCommit={handleCommitSubmit}
             />
           )}
 
@@ -400,10 +409,48 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
             <ImportStep3Result
               commitResult={commitResult}
               selectedBrokerName={selectedBrokerName}
-              onDone={() => handleOpenChange(false)}
             />
           )}
         </DialogBody>
+
+        {step === 1 && (
+          <DialogFooter
+            primaryAction={{
+              label: isPreviewing ? 'Reconciling & Parsing Files...' : 'Preview Reconciliation',
+              type: 'submit',
+              form: 'import-step1-form',
+              variant: 'purple',
+              disabled: isPreviewing,
+            }}
+          />
+        )}
+
+        {step === 2 && (
+          <DialogFooter
+            primaryAction={{
+              label: isCommitting
+                ? 'Importing Reconciled Executions...'
+                : `Import Trades (${confirmableCount})`,
+              onClick: handleCommitSubmit,
+              disabled: isCommitting || unresolvedCount > 0,
+            }}
+            secondaryAction={{
+              label: 'Back',
+              onClick: () => setStep(1),
+              disabled: isCommitting,
+            }}
+          />
+        )}
+
+        {step === 3 && commitResult && (
+          <DialogFooter
+            primaryAction={{
+              label: 'Done & View Portfolio',
+              variant: 'purple',
+              onClick: () => handleOpenChange(false),
+            }}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
