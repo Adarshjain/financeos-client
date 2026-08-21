@@ -2,19 +2,16 @@
 
 import { CheckCircle2 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { ImportCommitResult } from '@/lib/types';
 
 interface ImportStep3ResultProps {
   commitResult: ImportCommitResult;
   selectedBrokerName: string;
-  onDone: () => void;
 }
 
 export function ImportStep3Result({
   commitResult,
   selectedBrokerName,
-  onDone,
 }: ImportStep3ResultProps) {
   return (
     <div className="space-y-2 pb-6 text-center mx-4">
@@ -75,17 +72,6 @@ export function ImportStep3Result({
           </div>
         </div>
       )}
-
-      <div className="shrink-0 pt-3 flex justify-center">
-        <Button
-          type="button"
-          size="sm"
-          variant="purple"
-          onClick={onDone}
-        >
-          Done & View Portfolio
-        </Button>
-      </div>
     </div>
   );
 }

@@ -1,9 +1,8 @@
 'use client';
 
-import { ChevronRight, KeyRound, Sparkles, Upload } from 'lucide-react';
+import { KeyRound, Sparkles, Upload } from 'lucide-react';
 import React from 'react';
 
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -29,7 +28,6 @@ interface ImportStep1UploadProps {
   setHoldingsFile: (file: File | null) => void;
   casFile: File | null;
   setCasFile: (file: File | null) => void;
-  isPreviewing: boolean;
   onSubmit: (e: React.FormEvent) => void;
 }
 
@@ -51,13 +49,12 @@ export function ImportStep1Upload({
   setHoldingsFile,
   casFile,
   setCasFile,
-  isPreviewing,
   onSubmit,
 }: ImportStep1UploadProps) {
   const isFnoOnly = mode === 'reconcile_zerodha' && assetScope === 'fno';
 
   return (
-    <form onSubmit={onSubmit} className="flex-1 flex flex-col justify-between overflow-y-auto min-h-0 space-y-2 py-2">
+    <form id="import-step1-form" onSubmit={onSubmit} className="space-y-2 py-2">
       <div className="space-y-2">
         <div className={`grid grid-cols-1 ${mode === 'reconcile_zerodha' ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-4`}>
           <div className="space-y-1.5">
@@ -274,18 +271,6 @@ export function ImportStep1Upload({
             </div>
           </div>
         )}
-      </div>
-
-      <div className="shrink-0 border-t border-slate-100 dark:border-slate-800 bg-background pt-3 flex justify-end">
-        <Button
-          type="submit"
-          size="sm"
-          variant="purple"
-          disabled={isPreviewing}
-        >
-          {isPreviewing ? 'Reconciling & Parsing Files...' : 'Preview Reconciliation'}
-          <ChevronRight className="w-3.5 h-3.5 ml-1" />
-        </Button>
       </div>
     </form>
   );

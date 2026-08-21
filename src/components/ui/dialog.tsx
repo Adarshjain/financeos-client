@@ -37,6 +37,12 @@ interface DialogContentProps
   srTitle?: string;
 }
 
+// Lets DialogFooter tell its DialogContent that a secondary (dismiss-style)
+// action exists, so the X close button can be dropped as redundant.
+const DialogSecondaryActionContext = React.createContext<
+  ((hasSecondary: boolean) => void) | null
+>(null);
+
 function DialogContent({
   className,
   children,
@@ -47,6 +53,7 @@ function DialogContent({
   ...props
 }: DialogContentProps) {
   const contentRef = React.useRef<React.ElementRef<typeof DialogPrimitive.Content> | null>(null);
+  const [footerHasSecondary, setFooterHasSecondary] = React.useState(false);
 
   const setRefs = React.useCallback(
     (node: React.ElementRef<typeof DialogPrimitive.Content> | null) => {
@@ -66,10 +73,13 @@ function DialogContent({
         data-slot="dialog-content"
         tabIndex={-1}
         className={cn(
-          // Mobile: Bottom sheet style
-          'fixed bottom-0 left-0 right-0 z-50 flex flex-col gap-0 p-0 overflow-hidden max-h-[90dvh] w-full border-t bg-background shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom rounded-t-lg',
+          // The content element is the scroll container: height is driven by the
+          // content, and DialogFooter stays sticky even when a <form> wraps
+          // body + footer (sticky resolves against this scrolling ancestor).
+          // Mobile: bottom sheet, 4px inset, capped at full screen
+          'fixed bottom-1 left-1 right-1 z-50 flex flex-col gap-0 p-0 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden max-h-[calc(100dvh-8px)] border bg-background shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom rounded-lg',
           // Desktop: Centered dialog style
-          'sm:max-h-[85vh] sm:bottom-auto sm:left-[50%] sm:right-auto sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:max-w-lg sm:border sm:rounded-lg sm:data-[state=closed]:slide-out-to-left-1/2 sm:data-[state=closed]:slide-out-to-top-[48%] sm:data-[state=open]:slide-in-from-left-1/2 sm:data-[state=open]:slide-in-from-top-[48%] sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95',
+          'sm:max-h-dvh sm:bottom-auto sm:left-[50%] sm:right-auto sm:top-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%] sm:w-full sm:max-w-lg sm:data-[state=closed]:slide-out-to-left-1/2 sm:data-[state=closed]:slide-out-to-top-[48%] sm:data-[state=open]:slide-in-from-left-1/2 sm:data-[state=open]:slide-in-from-top-[48%] sm:data-[state=closed]:zoom-out-95 sm:data-[state=open]:zoom-in-95',
           className,
         )}
         onOpenAutoFocus={(e) => {
@@ -102,15 +112,21 @@ function DialogContent({
             {srTitle}
           </DialogPrimitive.Title>
         )}
-        {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close
-            className="absolute right-4 top-4 z-10 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
-          >
-            <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
-          </DialogPrimitive.Close>
+        {showCloseButton && !footerHasSecondary && (
+          // Zero-height sticky rail so the close button stays visible while the
+          // content element scrolls (plain `absolute` would scroll away).
+          <div className="sticky top-0 z-20 h-0 shrink-0">
+            <DialogPrimitive.Close
+              className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only">Close</span>
+            </DialogPrimitive.Close>
+          </div>
         )}
+        <DialogSecondaryActionContext.Provider value={setFooterHasSecondary}>
+          {children}
+        </DialogSecondaryActionContext.Provider>
       </DialogPrimitive.Content>
     </DialogPortal>
   );
@@ -139,10 +155,7 @@ function DialogBody({
   return (
     <div
       data-slot="dialog-body"
-      className={cn(
-        'flex-1 min-h-0 overflow-y-auto px-4 py-4 sm:px-6',
-        className,
-      )}
+      className={cn('px-4 py-4 sm:px-6', className)}
       {...props}
     />
   );
@@ -169,6 +182,13 @@ function DialogFooter({
   className,
 }: DialogFooterProps) {
   const [running, setRunning] = React.useState(false);
+
+  const reportSecondary = React.useContext(DialogSecondaryActionContext);
+  const hasSecondary = !!secondaryAction;
+  React.useEffect(() => {
+    reportSecondary?.(hasSecondary);
+    return () => reportSecondary?.(false);
+  }, [reportSecondary, hasSecondary]);
 
   const handlePrimaryClick = async () => {
     if (running) return;
@@ -244,7 +264,7 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        'shrink-0 border-t border-slate-100 dark:border-slate-800 bg-background px-4 py-3 sm:px-6 sm:py-4',
+        'sticky bottom-0 z-10 mt-auto border-t border-slate-100 dark:border-slate-800 bg-background px-4 py-3 sm:px-6 sm:py-4',
         secondaryAction
           ? 'grid grid-cols-2 gap-2 sm:flex sm:flex-row sm:justify-end sm:gap-2'
           : 'grid grid-cols-1 gap-2 sm:flex sm:flex-row sm:justify-end sm:gap-2',
