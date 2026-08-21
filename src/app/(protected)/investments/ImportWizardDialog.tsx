@@ -363,7 +363,7 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
         <DialogHeader className="pb-2 border-b">
           <DialogTitle className="flex items-center gap-2 text-base">
             <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-            Investment Import & Reconciliation Wizard
+            Investment Bulk Import
           </DialogTitle>
           <DialogDescription className="text-xs sr-only">
             Steps
@@ -420,6 +420,10 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
               type: 'submit',
               form: 'import-step1-form',
               variant: 'purple',
+              disabled: isPreviewing,
+            }}
+            secondaryAction={{
+              label: 'Cancel',
               disabled: isPreviewing,
             }}
           />
