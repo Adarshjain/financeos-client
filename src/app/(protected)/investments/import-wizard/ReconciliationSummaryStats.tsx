@@ -1,6 +1,7 @@
 'use client';
 
-import { ShieldAlert } from 'lucide-react';
+import { ChevronDown, ChevronUp, ShieldAlert } from 'lucide-react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { ReconciledExecution,ReconcilePreview } from '@/lib/types';
@@ -18,6 +19,8 @@ export function ReconciliationSummaryStats({
   unresolvedScrips,
   onSkipUnmappedRows,
 }: ReconciliationSummaryStatsProps) {
+  const [showWarnings, setShowWarnings] = useState(true);
+
   return (
     <>
       {/* Summary counters */}
@@ -74,19 +77,32 @@ export function ReconciliationSummaryStats({
 
       {/* Warnings / Data Gaps Banner */}
       {reconcilePreview.warnings.length > 0 && (
-        <div className="shrink-0 space-y-1 max-h-24 overflow-y-auto p-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-xs text-amber-900 dark:text-amber-300">
-          <div className="font-bold flex items-center gap-1.5 text-amber-800 dark:text-amber-200">
-            <ShieldAlert className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-            Reconciliation Alerts & Flags:
-          </div>
-          <ul className="space-y-1 pl-5 list-disc">
-            {reconcilePreview.warnings.map((w, idx) => (
-              <li key={idx} className="leading-tight">
-                <span className="font-semibold mr-1">[{w.type}]:</span>
-                {w.message}
-              </li>
-            ))}
-          </ul>
+        <div className="shrink-0 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 text-xs text-amber-900 dark:text-amber-300 overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowWarnings((prev) => !prev)}
+            className="w-full p-2 font-bold flex items-center justify-between gap-1.5 text-amber-800 dark:text-amber-200 hover:bg-amber-100/60 dark:hover:bg-amber-900/30 transition-colors"
+          >
+            <div className="flex items-center gap-1.5">
+              <ShieldAlert className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              Reconciliation Alerts & Flags ({reconcilePreview.warnings.length})
+            </div>
+            {showWarnings ? (
+              <ChevronUp className="w-4 h-4 text-amber-600 shrink-0" />
+            ) : (
+              <ChevronDown className="w-4 h-4 text-amber-600 shrink-0" />
+            )}
+          </button>
+          {showWarnings && (
+            <ul className="space-y-1 px-2 pb-2 pl-7 list-disc">
+              {reconcilePreview.warnings.map((w, idx) => (
+                <li key={idx} className="leading-tight">
+                  <span className="font-semibold mr-1">[{w.type}]:</span>
+                  {w.message}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </>
