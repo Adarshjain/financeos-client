@@ -18,17 +18,14 @@ describe('ingestion server actions (WP-3)', () => {
 
   it('ingestStatementFiles calls ingestionApi.ingest', async () => {
     vi.mocked(ingestionApi.ingest).mockResolvedValue({
-      filesProcessed: 1,
-      totalCreated: 12,
-      totalDuplicatesFound: 0,
-      fileDetails: [],
+      jobId: 'job-123',
     });
 
     const form = new FormData();
     const res = await ingestStatementFiles('acc1', form);
     expect(res.success).toBe(true);
     if (res.success) {
-      expect(res.data.totalCreated).toBe(12);
+      expect(res.data.jobId).toBe('job-123');
     }
   });
 });

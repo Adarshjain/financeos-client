@@ -9,6 +9,7 @@ import { createCategory } from '@/actions/categories';
 import { createRule, deleteRule, updateRule, verifyRule } from '@/actions/rules';
 import { Combobox } from '@/components/Combobox';
 import { isValidMcc,MccInput } from '@/components/forms/MccInput';
+import { JobsPanel } from '@/components/jobs/JobsPanel';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { RuleMatchesDialog } from '@/components/rules/RuleMatchesDialog';
@@ -468,6 +469,9 @@ export function RulesBrowser({
           {/* Pagination */}
         </>
       )}
+
+      <JobsPanel types={['RULE_APPLY']} title="Recent rule application jobs" />
+
       <PageActionBar>
         {/*<div className="flex flex-col gap-1">*/}
         {/* Tabs and Search Filters */}

@@ -47,6 +47,13 @@ export default async function SettingsPage() {
               <ArrowRight className="w-4 h-4 text-slate-400" />
             </div>
           </Link>
+          <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800"></div>
+          <Link href="/settings/jobs">
+            <div className="flex justify-between items-center text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-850/30 transition-all cursor-pointer">
+              <span>Background Jobs</span>
+              <ArrowRight className="w-4 h-4 text-slate-400" />
+            </div>
+          </Link>
         </CardContent>
       </Card>
     </div>
