@@ -43,11 +43,10 @@ export const viewport: Viewport = {
     { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
     { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
   ],
-  /* `cover` would extend the page under the iOS status bar, which Safari then
-     covers with a translucent blurred material. No layout consumes the
-     env(safe-area-inset-*) values, so the viewport stays inset and iOS paints
-     the safe areas with the solid `themeColor` instead. */
-  viewportFit: 'auto',
+  /* iOS 26 runs Home Screen web apps edge to edge, so the page is laid out
+     under the status bar and home indicator either way; `cover` is what makes
+     env(safe-area-inset-*) report those regions so the app can inset itself. */
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -67,6 +66,15 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          {/* iOS 26 applies a scroll edge effect to a Home Screen web app: the
+              page keeps painting under the status bar and gets blurred there as
+              it scrolls. This band occupies the top inset (so it is 0 high on
+              devices without one), reserving that space in the flow while
+              staying pinned over anything scrolling past it — the status bar
+              then only ever has flat `--background` behind it. `sticky` rather
+              than `fixed` is also what makes Safari 26 extend that colour into
+              the bar as a solid tint; `themeColor` no longer does. */}
+          <div aria-hidden className="sticky top-0 z-50 h-[var(--safe-top)] bg-background" />
           {/* Registering in dev would have the worker serve stale precached
               assets across HMR reloads. */}
           <SerwistProvider swUrl="/serwist/sw.js" disable={isDev}>
