@@ -29,7 +29,7 @@ export default async function ProtectedLayout({
 
           {/* Main Content */}
           <div className="lg:pl-64">
-            <main className="md:p-6 lg:pt-6">{children}</main>
+            <main className="md:p-6 lg:pt-6 pb-[var(--safe-bottom)]">{children}</main>
           </div>
         </div>
       </PageActionBarProvider>

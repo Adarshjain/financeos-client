@@ -124,7 +124,9 @@ export function PageActionBarSlot() {
     <div
       className={cn(
         'lg:hidden fixed left-3 right-3 z-30 flex flex-col items-end transition-all duration-300 ease-in-out',
-        isCollapsed ? 'bottom-[53px]' : 'bottom-16',
+        isCollapsed
+          ? 'bottom-[calc(53px+var(--safe-bottom))]'
+          : 'bottom-[calc(4rem+var(--safe-bottom))]',
         config.hideOnScroll && !isVisible && !isCollapsed
           ? 'translate-y-36 opacity-0 pointer-events-none'
           : 'translate-y-0 opacity-100',

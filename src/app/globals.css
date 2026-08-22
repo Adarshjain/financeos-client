@@ -61,6 +61,13 @@
 }
 
 @layer base {
+  :root {
+    /* env() is not usable inside calc() in every context Tailwind generates,
+       so the display cutout insets are mirrored onto custom properties. */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
   * {
     @apply border-border;
   }
