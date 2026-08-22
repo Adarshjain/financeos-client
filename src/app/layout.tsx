@@ -43,9 +43,11 @@ export const viewport: Viewport = {
     { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
     { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
   ],
-  /* Standalone mode has no browser chrome to scroll away, so the app owns the
-     full viewport including the safe areas around notches. */
-  viewportFit: 'cover',
+  /* `cover` would extend the page under the iOS status bar, which Safari then
+     covers with a translucent blurred material. No layout consumes the
+     env(safe-area-inset-*) values, so the viewport stays inset and iOS paints
+     the safe areas with the solid `themeColor` instead. */
+  viewportFit: 'auto',
 };
 
 export default function RootLayout({
