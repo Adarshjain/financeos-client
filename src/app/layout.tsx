@@ -43,10 +43,8 @@ export const viewport: Viewport = {
     { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
     { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
   ],
-  /* `cover` would extend the page under the iOS status bar, which Safari then
-     covers with a translucent blurred material. No layout consumes the
-     env(safe-area-inset-*) values, so the viewport stays inset and iOS paints
-     the safe areas with the solid `themeColor` instead. */
+  /* `cover` would extend the page under the iOS status bar. No layout consumes
+     the env(safe-area-inset-*) values, so the viewport stays inset instead. */
   viewportFit: 'auto',
 };
 
@@ -67,6 +65,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          {/* Safari 26 ignores `themeColor` and instead samples the
+              background-color of a fixed/sticky element hugging the viewport
+              edge to tint the bar next to it; with no such element the iOS
+              status bar keeps its translucent Liquid Glass blur over the page.
+              The sampling rules require >=80% width, >=3px height and a top
+              edge within 4px, so this strip is the smallest opaque element
+              that makes the status bar solid `--background`. */}
+          <div
+            aria-hidden
+            className="pointer-events-none fixed inset-x-0 top-0 z-50 h-1 bg-background"
+          />
           {/* Registering in dev would have the worker serve stale precached
               assets across HMR reloads. */}
           <SerwistProvider swUrl="/serwist/sw.js" disable={isDev}>
