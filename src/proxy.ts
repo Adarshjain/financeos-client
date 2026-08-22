@@ -1,7 +1,19 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-const publicPaths = ['/login','/signup', '/auth/google/callback'];
+// `/serwist` serves the compiled service worker, `/offline` is its document
+// fallback, and `/manifest.webmanifest` plus the `/icons` it references are
+// fetched by the browser before login — none of them may be bounced to the
+// login page or the app is not installable.
+const publicPaths = [
+  '/login',
+  '/signup',
+  '/auth/google/callback',
+  '/serwist',
+  '/offline',
+  '/manifest.webmanifest',
+  '/icons',
+];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

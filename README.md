@@ -18,6 +18,7 @@ A production-grade personal finance management frontend built with Next.js 14, T
 - 📈 **Investments**: Track buy/sell transactions with FIFO position calculation
 - 📧 **Gmail Integration**: Connect Gmail for transaction sync (skeleton)
 - 🎨 **Modern UI**: Dark theme with emerald accent colors
+- 📱 **Installable PWA**: Web app manifest plus a Serwist service worker
 
 ## Getting Started
 
@@ -77,6 +78,19 @@ src/
 │   └── utils.ts            # Helper functions
 └── middleware.ts           # Auth middleware
 ```
+
+## PWA
+
+The app is installable and registers a service worker (`src/app/sw.ts`, compiled
+and served by the route handler at `/serwist/sw.js`).
+
+The worker only caches build assets, fonts and images. Pages, RSC payloads and
+API responses are all rendered against the session cookie, so caching them would
+risk replaying one session's data into another; those requests are network-only
+and fall back to `/offline` when the device has no connection.
+
+Registration is disabled in development so the worker cannot serve stale assets
+across HMR reloads. To exercise it locally, run `npm run build && npm start`.
 
 ## API Contract
 

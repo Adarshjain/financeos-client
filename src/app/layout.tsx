@@ -1,6 +1,7 @@
 import './globals.css';
 
-import type { Metadata } from 'next';
+import { SerwistProvider } from '@serwist/turbopack/react';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
 
@@ -17,8 +18,34 @@ const inter = Inter({
 const isDev = process.env.NODE_ENV === 'development';
 
 export const metadata: Metadata = {
+  applicationName: 'FinanceOS',
   title: isDev ? 'FinanceOS - Dev' : 'FinanceOS',
   description: 'Personal finance management system',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'FinanceOS',
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: '/icons/apple-touch-icon.png',
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f8fafc' },
+    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
+  ],
+  /* Standalone mode has no browser chrome to scroll away, so the app owns the
+     full viewport including the safe areas around notches. */
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -38,7 +65,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          {/* Registering in dev would have the worker serve stale precached
+              assets across HMR reloads. */}
+          <SerwistProvider swUrl="/serwist/sw.js" disable={isDev}>
+            {children}
+          </SerwistProvider>
           <FaroRouteTracker />
           <Toaster richColors position="top-center" />
         </ThemeProvider>
