@@ -49,6 +49,14 @@ const config = [
         },
     },
     {
+        // The service worker runs in a worker scope, not the browser globals
+        // the rest of the app is linted against.
+        files: ["src/app/sw.ts"],
+        languageOptions: {
+            globals: globals.serviceworker,
+        },
+    },
+    {
         ignores: [".next/*", "node_modules/*"],
     }
 ];

@@ -14,6 +14,8 @@
  * Verified against Next 16.1.1's config schema that `serverActions` is still an
  * `experimental` key, so this setting is honoured rather than silently ignored.
  */
+import { withSerwist } from '@serwist/turbopack';
+
 const MAX_REQUEST_MB = 4.5;
 
 /** @type {import('next').NextConfig} */
@@ -34,4 +36,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);
