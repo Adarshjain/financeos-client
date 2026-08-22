@@ -65,17 +65,15 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {/* Safari 26 ignores `themeColor` and instead samples the
-              background-color of a fixed/sticky element hugging the viewport
-              edge to tint the bar next to it; with no such element the iOS
-              status bar keeps its translucent Liquid Glass blur over the page.
-              The sampling rules require >=80% width, >=3px height and a top
-              edge within 4px, so this strip is the smallest opaque element
-              that makes the status bar solid `--background`. */}
-          <div
-            aria-hidden
-            className="pointer-events-none fixed inset-x-0 top-0 z-50 h-1 bg-background"
-          />
+          {/* Safari 26 ignores `themeColor`: the iOS status bar is translucent
+              Liquid Glass unless a viewport-constrained element at the top edge
+              gives it a solid colour to extend ("top bar tint"). Only `sticky`
+              at exactly `top: 0` triggers that extension — a `fixed` element,
+              or a sticky one offset by >= 0.5rem, leaves the bar transparent
+              and the page blurring through it. The strip is 4px because the
+              sampled element must be >= 3px tall and >= 80% wide, and the
+              negative margin keeps it out of the layout. */}
+          <div aria-hidden className="sticky top-0 z-50 h-1 -mb-1 bg-background" />
           {/* Registering in dev would have the worker serve stale precached
               assets across HMR reloads. */}
           <SerwistProvider swUrl="/serwist/sw.js" disable={isDev}>
