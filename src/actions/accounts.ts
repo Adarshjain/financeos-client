@@ -23,3 +23,13 @@ export const getCardCycleSummary = createDomainAction(
   { fallbackError: 'Failed to fetch card cycle summary' },
   (accountId: string) => accountsApi.getCardCycleSummary(accountId)
 );
+
+export const previewGmailCleanup = createDomainAction(
+  { fallbackError: 'Failed to preview Gmail cleanup' },
+  (accountId: string, before: string) => accountsApi.gmailCleanupPreview(accountId, before)
+);
+
+export const executeGmailCleanup = createDomainAction(
+  { fallbackError: 'Failed to execute Gmail cleanup', revalidatePaths: ['/accounts', '/transactions'] },
+  (accountId: string, before: string) => accountsApi.gmailCleanup(accountId, before)
+);

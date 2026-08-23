@@ -335,6 +335,16 @@ export const accountsApi = {
   async getCardCycleSummary(id: string): Promise<import('@/lib/statement.types').CardCycleSummary> {
     return request<import('@/lib/statement.types').CardCycleSummary>(`/api/v1/accounts/${id}/card-summary`);
   },
+
+  async gmailCleanupPreview(id: string, before: string): Promise<import('@/lib/types').GmailCleanupPreview> {
+    return request<import('@/lib/types').GmailCleanupPreview>(`/api/v1/accounts/${id}/gmail-cleanup-preview?before=${encodeURIComponent(before)}`);
+  },
+
+  async gmailCleanup(id: string, before: string): Promise<import('@/lib/types').GmailCleanupResult> {
+    return request<import('@/lib/types').GmailCleanupResult>(`/api/v1/accounts/${id}/gmail-cleanup?before=${encodeURIComponent(before)}`, {
+      method: 'POST',
+    });
+  },
 };
 
 // Statements API
@@ -770,6 +780,28 @@ export const gmailApi = {
   async disconnectConnection(id: string): Promise<void> {
     return request<void>(`/api/v1/gmail/connections/${id}`, {
       method: 'DELETE',
+    });
+  },
+
+  async getAttentionItems(page = 0, size = 20, includeRetryable = false): Promise<import('@/lib/types').PagedGmailAttention> {
+    const params = new URLSearchParams({
+      page: String(page),
+      size: String(size),
+      includeRetryable: String(includeRetryable),
+    });
+    return request<import('@/lib/types').PagedGmailAttention>(`/api/v1/gmail/attention?${params}`);
+  },
+
+  async retryAttentionItem(ledgerId: string): Promise<EnqueueResponse> {
+    return request<EnqueueResponse>(`/api/v1/gmail/attention/${ledgerId}/retry`, {
+      method: 'POST',
+    });
+  },
+
+  async rescan(fromDate: string): Promise<EnqueueResponse> {
+    return request<EnqueueResponse>('/api/v1/gmail/rescan', {
+      method: 'POST',
+      body: JSON.stringify({ fromDate }),
     });
   },
 };

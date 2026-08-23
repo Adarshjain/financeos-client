@@ -47,3 +47,18 @@ export const disconnectGmailConnection = createDomainAction(
   { fallbackError: 'Failed to disconnect Gmail connection', revalidatePaths: ['/settings'] },
   (id: string) => gmailApi.disconnectConnection(id)
 );
+
+export const getGmailAttentionItems = createDomainAction(
+  { fallbackError: 'Failed to fetch Gmail attention items' },
+  (page = 0, size = 20, includeRetryable = false) => gmailApi.getAttentionItems(page, size, includeRetryable)
+);
+
+export const retryGmailAttentionItem = createDomainAction(
+  { fallbackError: 'Failed to retry Gmail attention item', revalidatePaths: ['/settings'] },
+  (ledgerId: string) => gmailApi.retryAttentionItem(ledgerId)
+);
+
+export const rescanGmail = createDomainAction(
+  { fallbackError: 'Failed to start Gmail rescan', revalidatePaths: ['/settings'] },
+  (fromDate: string) => gmailApi.rescan(fromDate)
+);

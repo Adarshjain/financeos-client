@@ -18,6 +18,7 @@ describe('GmailSyncResultDetails Component', () => {
 
     render(<GmailSyncResultDetails result={oldResult} />);
     expect(screen.getByText('Gmail Sync Summary')).toBeInTheDocument();
+    expect(screen.getByText('Fetched')).toBeInTheDocument();
     expect(screen.getByText('10')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
     expect(screen.getByText('4')).toBeInTheDocument();
@@ -28,11 +29,13 @@ describe('GmailSyncResultDetails Component', () => {
 
   it('renders new sync result with skipped breakdown and Needs Attention section', () => {
     const newResult: SyncSummary = {
-      fetched: 15,
+      discovered: 15,
+      processed: 15,
       created: 3,
       reconciled: 2,
       skipped: 8,
-      failed: 2,
+      parked: 1,
+      failedPermanent: 2,
       alreadyProcessed: 5,
       nonTransaction: 3,
       attention: [
@@ -77,6 +80,8 @@ describe('GmailSyncResultDetails Component', () => {
 
     render(<GmailSyncResultDetails result={newResult} />);
 
+    expect(screen.getByText('Discovered')).toBeInTheDocument();
+    expect(screen.getByText('Processed')).toBeInTheDocument();
     expect(screen.getByText(/Of the skipped: 5 already processed · 3 non-transaction emails/i)).toBeInTheDocument();
     expect(screen.getByText(/Needs attention/i)).toBeInTheDocument();
 
