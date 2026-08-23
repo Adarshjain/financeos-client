@@ -738,12 +738,33 @@ export interface GmailConnectionResponse {
   lastSyncedAt?: string | null;
 }
 
+export interface SyncMessageOutcome {
+  gmailMessageId: string;
+  from: string;
+  subject: string;
+  receivedAt: string;
+  attachmentFilename?: string | null;
+  outcome:
+    | 'EXTRACTION_FAILED'
+    | 'ACCOUNT_UNRESOLVED'
+    | 'DECRYPT_FAILED'
+    | 'PARSE_FAILED'
+    | 'NO_ATTACHMENT'
+    | 'ERROR';
+  reason: string;
+  accountLast4?: string | null;
+}
+
 export interface SyncSummary {
   fetched: number;
   created: number;
   skipped: number;
   failed: number;
   reconciled: number;
+  alreadyProcessed?: number;
+  nonTransaction?: number;
+  attention?: SyncMessageOutcome[];
+  attentionTruncated?: number;
 }
 
 // Error
@@ -758,9 +779,21 @@ export interface ErrorResponse {
 // Ingestion
 export interface FileSummary {
   filename: string;
-  status: 'SUCCESS' | 'FAILED';
+  status: 'SUCCESS' | 'FAILED' | 'SKIPPED';
   linesParsed: number;
   errorMessage: string | null;
+  warning?: string | null;
+  created?: number;
+  duplicates?: number;
+}
+
+export interface DuplicateDetail {
+  date: string;
+  amount: number;
+  description: string;
+  filename: string;
+  transactionId: string;
+  matchedTransactionId?: string | null;
 }
 
 export interface FileIngestionResult {
@@ -768,7 +801,10 @@ export interface FileIngestionResult {
   totalCreated: number;
   totalDuplicatesFound: number;
   fileDetails: FileSummary[];
+  duplicateDetails?: DuplicateDetail[];
+  duplicatesTruncated?: number;
 }
+
 
 // API Result type for server actions
 export type ApiResult<T> =

@@ -124,7 +124,7 @@ export function JobsPanel({ types, title }: JobsPanelProps) {
     types.length === 1 ? `/settings/jobs?type=${types[0]}` : '/settings/jobs';
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3 shadow-sm">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 space-y-3 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -169,7 +169,7 @@ export function JobsPanel({ types, title }: JobsPanelProps) {
             return (
               <div
                 key={job.id}
-                className="p-3 rounded-lg border border-slate-100 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-950/20 space-y-2 text-2xs"
+                className="p-2.5 sm:p-3 rounded-lg border border-slate-100 dark:border-slate-800/80 bg-slate-50/40 dark:bg-slate-950/20 space-y-2 text-2xs"
               >
                 {/* Main Summary Row */}
                 <div className="flex items-center justify-between gap-2">
