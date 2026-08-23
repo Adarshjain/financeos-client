@@ -756,15 +756,57 @@ export interface SyncMessageOutcome {
 }
 
 export interface SyncSummary {
-  fetched: number;
+  discovered?: number;
+  processed?: number;
   created: number;
-  skipped: number;
-  failed: number;
   reconciled: number;
+  skipped: number;
+  parked?: number;
+  failedRetryable?: number;
+  failedPermanent?: number;
+  backlogRemaining?: number;
+  // Legacy / fallback fields
+  fetched?: number;
+  failed?: number;
   alreadyProcessed?: number;
   nonTransaction?: number;
   attention?: SyncMessageOutcome[];
   attentionTruncated?: number;
+}
+
+export interface GmailAttentionItem {
+  id: string;
+  gmailMessageId: string;
+  internalDate?: string | null;
+  senderAddress?: string | null;
+  subject?: string | null;
+  status:
+    | 'UNRESOLVED_ACCOUNT'
+    | 'ACCOUNT_NOT_OPTED_IN'
+    | 'FAILED_PERMANENT'
+    | 'FAILED_RETRYABLE';
+  extractedLast4?: string | null;
+  error?: string | null;
+  attemptCount: number;
+  nextRetryAt?: string | null;
+  discoveredAt: string;
+}
+
+export interface PagedGmailAttention {
+  content: GmailAttentionItem[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
+export interface GmailCleanupPreview {
+  count: number;
+  before: string;
+}
+
+export interface GmailCleanupResult {
+  deletedCount: number;
 }
 
 // Error

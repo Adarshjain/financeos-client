@@ -1,11 +1,11 @@
 'use client';
 
-import { Calendar, CreditCard, Eye, EyeOff, FileText, Landmark, Shield, TrendingUp, Wallet } from 'lucide-react';
+import { AlertTriangle, Calendar, CreditCard, Eye, EyeOff, FileText, Landmark, Shield, TrendingUp, Wallet } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { createAccount, updateAccount } from '@/actions/accounts';
-import { DialogBody, DialogFooter } from '@/components/ui/dialog';
+import { createAccount, executeGmailCleanup, previewGmailCleanup, updateAccount } from '@/actions/accounts';
+import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -124,6 +124,11 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
   );
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmCleanup, setConfirmCleanup] = useState<{
+    count: number;
+    before: string;
+    accountData: AccountRequest;
+  } | null>(null);
 
   useEffect(() => {
     if (account?.type) {
@@ -138,6 +143,10 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
   const creditCard = account?.type === AccountType.CREDIT_CARD ? account : undefined;
   const brokerAccount = account?.type === AccountType.BROKER ? account : undefined;
 
+  const defaultIngestFromDate = account
+    ? (account.ingestFromDate ? account.ingestFromDate.split('T')[0] : '')
+    : new Date().toISOString().split('T')[0];
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -148,7 +157,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     const financialPosition = (formData.get('financialPosition') as FinancialPosition) || 'asset';
     const description = formData.get('description') as string | undefined;
     const ingestFromDateVal = formData.get('ingestFromDate') as string | null;
-    const ingestFromDate = ingestFromDateVal ? ingestFromDateVal : null;
+    const ingestFromDate = ingestFromDateVal && ingestFromDateVal.trim() ? ingestFromDateVal.trim() : null;
 
     let data: AccountRequest | undefined;
     const statementPasswordVal = formData.get('statementPassword') as string;
@@ -254,11 +263,22 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     }
 
     if (!data) {
-      toast.error(
-        `Editing ${getAccountTypeLabel(accountType)} accounts isn't supported yet.`,
-      );
+      toast.error(`Editing ${getAccountTypeLabel(accountType)} accounts isn't supported yet.`);
       setIsSubmitting(false);
       return;
+    }
+
+    if (isUpdateMode && account && account.ingestFromDate && ingestFromDate && ingestFromDate > account.ingestFromDate.split('T')[0]) {
+      const previewRes = await previewGmailCleanup(account.id, ingestFromDate);
+      if (previewRes.success && previewRes.data.count > 0) {
+        setConfirmCleanup({
+          count: previewRes.data.count,
+          before: ingestFromDate,
+          accountData: data,
+        });
+        setIsSubmitting(false);
+        return;
+      }
     }
 
     try {
@@ -278,8 +298,63 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     }
   };
 
+  const handleConfirmCleanup = async () => {
+    if (!confirmCleanup || !account) return;
+    setIsSubmitting(true);
+    try {
+      const cleanupRes = await executeGmailCleanup(account.id, confirmCleanup.before);
+      if (!cleanupRes.success) {
+        toast.error(cleanupRes.error.message);
+        setIsSubmitting(false);
+        return;
+      }
+      const res = await updateAccount(account.id, confirmCleanup.accountData);
+      if (res.success) {
+        toast.success('Account updated and transactions cleaned up successfully!');
+        setConfirmCleanup(null);
+        onSuccess?.();
+      } else {
+        toast.error(res.error.message);
+      }
+    } catch (err) {
+      toast.error('An error occurred: ' + (err as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
+      {/* Cleanup Confirmation Dialog using Dialog primitive (C2) */}
+      <Dialog open={!!confirmCleanup} onOpenChange={(open) => { if (!open) setConfirmCleanup(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-rose-600 dark:text-rose-400 text-sm">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              Confirm Transaction Cleanup
+            </DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed py-2">
+              Delete <strong className="text-rose-600 dark:text-rose-400">{confirmCleanup?.count}</strong> Gmail-imported transactions before <strong>{confirmCleanup?.before}</strong>? Statement imports are not affected.
+            </p>
+          </DialogBody>
+          <DialogFooter
+            primaryAction={{
+              label: isSubmitting ? 'Cleaning up...' : 'Delete & Save',
+              onClick: handleConfirmCleanup,
+              disabled: isSubmitting,
+              variant: 'destructive',
+            }}
+            secondaryAction={{
+              label: 'Cancel',
+              onClick: () => setConfirmCleanup(null),
+              variant: 'outline',
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <div className="shrink-0 px-6 py-5 border-b border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-950">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -308,7 +383,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
               <option key={b} value={b} />
             ))}
           </datalist>
-        {/* Account Type Selection (Only for Create Mode) */}
+        {/* Account Type Selection */}
         <div className="space-y-2">
           <Label className="text-xs text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1">
             <Shield className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
@@ -326,28 +401,28 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             ) : (
               <>
                 <AccountTypeButton
-                    label={ACCOUNT_TYPE_CONFIG.bank_account.label ?? 'Account'}
+                  label={ACCOUNT_TYPE_CONFIG.bank_account.label ?? 'Account'}
                   icon={Landmark}
                   selected={accountType === AccountType.BANK_ACCOUNT}
                   activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.BANK_ACCOUNT].activeClassName}
                   onClick={() => setAccountType(AccountType.BANK_ACCOUNT)}
                 />
                 <AccountTypeButton
-                    label={ACCOUNT_TYPE_CONFIG.credit_card.label ?? 'Account'}
+                  label={ACCOUNT_TYPE_CONFIG.credit_card.label ?? 'Account'}
                   icon={CreditCard}
                   selected={accountType === AccountType.CREDIT_CARD}
                   activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.CREDIT_CARD].activeClassName}
                   onClick={() => setAccountType(AccountType.CREDIT_CARD)}
                 />
                 <AccountTypeButton
-                    label={ACCOUNT_TYPE_CONFIG.broker.label ?? 'Account'}
+                  label={ACCOUNT_TYPE_CONFIG.broker.label ?? 'Account'}
                   icon={TrendingUp}
                   selected={accountType === AccountType.BROKER}
                   activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.BROKER].activeClassName}
                   onClick={() => setAccountType(AccountType.BROKER)}
                 />
                 <AccountTypeButton
-                    label={ACCOUNT_TYPE_CONFIG.generic.label ?? 'Account'}
+                  label={ACCOUNT_TYPE_CONFIG.generic.label ?? 'Account'}
                   icon={Wallet}
                   selected={accountType === AccountType.GENERIC}
                   activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.GENERIC].activeClassName}
@@ -663,13 +738,12 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
                 id="ingestFromDate"
                 name="ingestFromDate"
                 type="date"
-                defaultValue={
-                  account?.ingestFromDate
-                    ? account.ingestFromDate.split('T')[0]
-                    : undefined
-                }
+                defaultValue={defaultIngestFromDate}
                 className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs h-9 [color-scheme:light] dark:[color-scheme:dark]"
               />
+              <p className="text-2xs text-slate-400 dark:text-slate-500 leading-normal">
+                Gmail transactions import from this date. Leave empty to pause Gmail import for this account.
+              </p>
             </div>
           </div>
 

@@ -22,6 +22,8 @@ function formatFromHeader(from: string): string {
 export function GmailSyncResultDetails({ result }: { result: SyncSummary }) {
   const [attentionExpanded, setAttentionExpanded] = useState(false);
 
+  const isLegacy = result.discovered === undefined;
+
   const hasSkippedBreakdown =
     (result.alreadyProcessed !== undefined && result.alreadyProcessed > 0) ||
     (result.nonTransaction !== undefined && result.nonTransaction > 0);
@@ -61,28 +63,66 @@ export function GmailSyncResultDetails({ result }: { result: SyncSummary }) {
       <span className="font-semibold text-slate-800 dark:text-slate-200 block">
         Gmail Sync Summary
       </span>
-      <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2">
-        <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-          <div className="font-black text-slate-800 dark:text-slate-200 text-sm sm:text-base">{result.fetched ?? 0}</div>
-          <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Fetched</div>
+
+      {isLegacy ? (
+        <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2">
+          <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
+            <div className="font-black text-slate-800 dark:text-slate-200 text-sm sm:text-base">{result.fetched ?? 0}</div>
+            <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Fetched</div>
+          </div>
+          <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
+            <div className="font-black text-emerald-600 dark:text-emerald-400 text-sm sm:text-base">{result.created ?? 0}</div>
+            <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Created</div>
+          </div>
+          <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
+            <div className="font-black text-blue-600 dark:text-blue-400 text-sm sm:text-base">{result.reconciled ?? 0}</div>
+            <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Reconciled</div>
+          </div>
+          <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
+            <div className="font-black text-slate-600 dark:text-slate-400 text-sm sm:text-base">{result.skipped ?? 0}</div>
+            <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Skipped</div>
+          </div>
+          <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center col-span-3 sm:col-span-1">
+            <div className="font-black text-rose-600 dark:text-rose-400 text-sm sm:text-base">{result.failed ?? 0}</div>
+            <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Failed</div>
+          </div>
         </div>
-        <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-          <div className="font-black text-emerald-600 dark:text-emerald-400 text-sm sm:text-base">{result.created ?? 0}</div>
-          <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Created</div>
-        </div>
-        <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-          <div className="font-black text-blue-600 dark:text-blue-400 text-sm sm:text-base">{result.reconciled ?? 0}</div>
-          <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Reconciled</div>
-        </div>
-        <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-          <div className="font-black text-slate-600 dark:text-slate-400 text-sm sm:text-base">{result.skipped ?? 0}</div>
-          <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Skipped</div>
-        </div>
-        <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center col-span-3 sm:col-span-1">
-          <div className="font-black text-rose-600 dark:text-rose-400 text-sm sm:text-base">{result.failed ?? 0}</div>
-          <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Failed</div>
-        </div>
-      </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2">
+            <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
+              <div className="font-black text-slate-800 dark:text-slate-200 text-sm sm:text-base">{result.discovered ?? 0}</div>
+              <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Discovered</div>
+            </div>
+            <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
+              <div className="font-black text-slate-800 dark:text-slate-200 text-sm sm:text-base">{result.processed ?? 0}</div>
+              <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Processed</div>
+            </div>
+            <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
+              <div className="font-black text-emerald-600 dark:text-emerald-400 text-sm sm:text-base">{result.created ?? 0}</div>
+              <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Created</div>
+            </div>
+            <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
+              <div className="font-black text-blue-600 dark:text-blue-400 text-sm sm:text-base">{result.reconciled ?? 0}</div>
+              <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Reconciled</div>
+            </div>
+            <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
+              <div className="font-black text-amber-600 dark:text-amber-400 text-sm sm:text-base">{result.parked ?? 0}</div>
+              <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Parked</div>
+            </div>
+            <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
+              <div className="font-black text-rose-600 dark:text-rose-400 text-sm sm:text-base">{result.failedPermanent ?? result.failed ?? 0}</div>
+              <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Failed</div>
+            </div>
+          </div>
+
+          <div className="text-2xs text-slate-500 flex flex-wrap gap-x-3 gap-y-1">
+            <span>Skipped: {result.skipped ?? 0}</span>
+            <span>Retryable: {result.failedRetryable ?? 0}</span>
+            <span>Backlog remaining: {result.backlogRemaining ?? 0}</span>
+          </div>
+        </>
+      )}
 
       {hasSkippedBreakdown && (
         <div className="text-2xs text-slate-500">
@@ -198,4 +238,3 @@ export function GmailSyncResultDetails({ result }: { result: SyncSummary }) {
     </div>
   );
 }
-
