@@ -11,6 +11,7 @@ import {
   Home,
   Layers,
   LayoutDashboard,
+  MessageSquare,
   Receipt,
   Settings as SettingsIcon,
   Sparkles,
@@ -39,6 +40,12 @@ export const NAV_ITEMS = {
     label: 'Home',
     shortLabel: 'Home',
     icon: <Home className="h-5 w-5" />,
+  },
+  chat: {
+    href: '/chat',
+    label: 'Chat with Data',
+    shortLabel: 'Chat',
+    icon: <MessageSquare className="h-5 w-5" />,
   },
   accounts: {
     href: '/accounts',
@@ -358,6 +365,7 @@ export function isNavItemActive(pathname: string, href: string): boolean {
 export function getNavigationTree(needsReviewCount?: number | null): NavItem[] {
   return [
     NAV_ITEMS.home,
+    NAV_ITEMS.chat,
     NAV_ITEMS.accounts,
     {
       ...NAV_ITEMS.transactions,
