@@ -16,6 +16,7 @@ import type {
   UpdateCounterpartyRequest,
   UpdateLendingRequest,
 } from '@/lib/lending.types';
+import type { CreateLlmKeyRequest, LlmKeyDto } from '@/lib/llmKey.types';
 import type {
   BatchLoanPaymentRequest,
   CreateLoanChargeRequest,
@@ -1378,6 +1379,33 @@ export const rewardsApi = {
   },
 };
 
+// LLM API Keys API
+export const llmKeysApi = {
+  async list(): Promise<LlmKeyDto[]> {
+    return request<LlmKeyDto[]>('/api/v1/llm-keys');
+  },
+
+  async create(data: CreateLlmKeyRequest): Promise<LlmKeyDto> {
+    return request<LlmKeyDto>('/api/v1/llm-keys', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(id: string): Promise<void> {
+    return request<void>(`/api/v1/llm-keys/${id}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async updatePosition(id: string, position: number): Promise<LlmKeyDto[]> {
+    return request<LlmKeyDto[]>(`/api/v1/llm-keys/${id}/position`, {
+      method: 'PATCH',
+      body: JSON.stringify({ position }),
+    });
+  },
+};
 
 export { ApiError };
+
 
