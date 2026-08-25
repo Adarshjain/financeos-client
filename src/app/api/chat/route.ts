@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const API_BASE = process.env.API_BASE_URL || 'http://localhost:6969';
 
