@@ -1,8 +1,9 @@
 'use client';
 
-import { Check, ChevronDown, Eye } from 'lucide-react';
+import { Check, ChevronDown, Eye, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,43 +23,50 @@ interface DashboardViewProps {
 export function DashboardSelector({ dashboards, onSelectDashboard, currentDashboard }: DashboardViewProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 px-4">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className="flex items-center gap-2 text-2xl font-black tracking-tight text-slate-900 dark:text-white hover:text-slate-700 dark:hover:text-slate-200 transition-colors focus:outline-none select-none">
-            <span>{currentDashboard.name}</span>
-            <ChevronDown className="w-5 h-5 text-slate-400 mt-1" />
-          </button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-[260px] md:w-[300px] rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-950 p-1.5 shadow-lg shadow-slate-100/10 dark:shadow-none" align="start">
-          <div className="py-1 px-2.5 text-2xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-            Switch Dashboard
-          </div>
-          <div className="space-y-0.5 mt-1">
-            {dashboards?.map(d => (
-              <DropdownMenuItem
-                key={d.id}
-                className={cn(
-                  'flex items-center justify-between py-2 px-3 rounded-lg text-xs font-medium cursor-pointer transition-colors',
-                  currentDashboard.id === d.id
-                    ? 'bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-semibold'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900'
-                )}
-                onClick={() => onSelectDashboard(d)}
-              >
-                <span>{d.name}</span>
-                {currentDashboard.id === d.id && <Check className="w-4 h-4 text-emerald-500 shrink-0" />}
+      <div className="flex items-center gap-1">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2 font-black tracking-tight text-slate-900 dark:text-white hover:text-slate-700 dark:hover:text-slate-200 transition-colors focus:outline-none select-none">
+              <span>{currentDashboard.name}</span>
+              <ChevronDown className="w-5 h-5 text-slate-400 mt-1" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-[260px] md:w-[300px] rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-950 p-1.5 shadow-lg shadow-slate-100/10 dark:shadow-none" align="start">
+            <div className="py-1 px-2.5 text-2xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              Switch Dashboard
+            </div>
+            <div className="space-y-0.5 mt-1">
+              {dashboards?.map(d => (
+                <DropdownMenuItem
+                  key={d.id}
+                  className={cn(
+                    'flex items-center justify-between py-2 px-3 rounded-lg text-xs font-medium cursor-pointer transition-colors',
+                    currentDashboard.id === d.id
+                      ? 'bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-semibold'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900'
+                  )}
+                  onClick={() => onSelectDashboard(d)}
+                >
+                  <span>{d.name}</span>
+                  {currentDashboard.id === d.id && <Check className="w-4 h-4 text-emerald-500 shrink-0" />}
+                </DropdownMenuItem>
+              ))}
+            </div>
+            <DropdownMenuSeparator className="bg-slate-100 dark:bg-slate-800/80 my-1.5" />
+            <Link href="/dashboards">
+              <DropdownMenuItem className="flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium cursor-pointer text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
+                <Eye className="w-4 h-4 text-slate-400" />
+                <span>View All Dashboards</span>
               </DropdownMenuItem>
-            ))}
-          </div>
-          <DropdownMenuSeparator className="bg-slate-100 dark:bg-slate-800/80 my-1.5" />
-          <Link href="/dashboards">
-            <DropdownMenuItem className="flex items-center gap-2 py-2 px-3 rounded-lg text-xs font-medium cursor-pointer text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
-              <Eye className="w-4 h-4 text-slate-400" />
-              <span>View All Dashboards</span>
-            </DropdownMenuItem>
+            </Link>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Button variant="outline" asChild aria-label="Chat with your data">
+          <Link href="/chat">
+            <MessageCircle className="w-4 h-4 text-slate-400" /> Chat
           </Link>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </Button>
+      </div>
     </div>
   );
 }
