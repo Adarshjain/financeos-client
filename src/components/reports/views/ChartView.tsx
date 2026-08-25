@@ -37,10 +37,13 @@ const COLORS = [
 
 type ChartRow = Record<string, string | number | null>;
 
+export type ChartViewData = Pick<ChartData, 'chartType' | 'categories' | 'series'> &
+  Partial<ChartData>;
+
 // `fill` makes the chart fill its parent's height (for fixed-height containers
 // like dashboard widgets) instead of the default fixed height used in flow
 // layouts such as the report builder's preview pane.
-export function ChartView({ data, fill }: { data: ChartData; fill?: boolean }) {
+export function ChartView({ data, fill }: { data: ChartViewData; fill?: boolean }) {
   const { chartType, categories, series } = data;
 
   if (categories.length === 0 || series.length === 0) {
@@ -171,7 +174,7 @@ function ChartFrame({
   children: React.ReactElement;
   fill?: boolean;
   /** Rendered as a screen-reader-only table so the chart isn't content-free. */
-  data?: ChartData;
+  data?: ChartViewData;
 }) {
   return (
     <div className={fill ? 'h-full min-h-0 w-full' : 'h-72 w-full'}>
@@ -191,7 +194,7 @@ function ChartFrame({
   );
 }
 
-function ChartDataTable({ data }: { data: ChartData }) {
+function ChartDataTable({ data }: { data: ChartViewData }) {
   const { categories, series } = data;
   return (
     <table className="sr-only">

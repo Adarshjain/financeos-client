@@ -15,6 +15,27 @@ import remarkGfm from 'remark-gfm';
 
 import { Button } from '@/components/ui/button';
 
+import {
+  ChatChartBlock,
+  ChatChartCard,
+} from './components/ChatChartCard';
+import {
+  ChatDataTable,
+  ChatTableBlock,
+} from './components/ChatDataTable';
+import {
+  ChatStat,
+  ChatStatCards,
+} from './components/ChatStatCards';
+import { FollowUpChips } from './components/FollowUpChips';
+
+export interface ChatBlocks {
+  stats?: ChatStat[];
+  charts?: ChatChartBlock[];
+  tables?: ChatTableBlock[];
+  followUps?: string[];
+}
+
 interface ChatTrace {
   step: number;
   action: string;
@@ -31,6 +52,7 @@ interface Message {
   role: 'user' | 'assistant';
   content?: string;
   clarify?: string;
+  blocks?: ChatBlocks;
   traces?: ChatTrace[];
   isStreaming?: boolean;
   status?: string;
@@ -436,12 +458,28 @@ function AssistantMessage({
   msg,
   isExpanded,
   onToggleTrace,
+  isLastAssistant,
+  isAnyStreaming,
+  onSelectFollowUp,
 }: {
   msg: Message;
   isExpanded: boolean;
   onToggleTrace: () => void;
+  isLastAssistant?: boolean;
+  isAnyStreaming?: boolean;
+  onSelectFollowUp?: (question: string) => void;
 }) {
   const hasTraces = Boolean(msg.traces && msg.traces.length > 0);
+  const hasStats = Boolean(msg.blocks?.stats && msg.blocks.stats.length > 0);
+  const hasCharts = Boolean(msg.blocks?.charts && msg.blocks.charts.length > 0);
+  const hasTables = Boolean(msg.blocks?.tables && msg.blocks.tables.length > 0);
+  const hasFollowUps = Boolean(
+    isLastAssistant &&
+      !isAnyStreaming &&
+      onSelectFollowUp &&
+      msg.blocks?.followUps &&
+      msg.blocks.followUps.length > 0,
+  );
 
   return (
     <div
@@ -470,16 +508,25 @@ function AssistantMessage({
         </div>
       )}
 
-      {/* Clarification prompt */}
+      {/* Render order: stats row -> clarify -> markdown answer -> charts -> tables -> follow-up chips -> error -> trace panel */}
+
+      {/* 1. Stat cards */}
+      {hasStats && (
+        <div className="mb-2.5">
+          <ChatStatCards stats={msg.blocks!.stats!} />
+        </div>
+      )}
+
+      {/* 2. Clarification prompt */}
       {msg.clarify && (
-        <div className="rounded-[10px] bg-[var(--accent-tint)] px-3 py-2 text-2xs text-[var(--ink)]">
+        <div className="rounded-[10px] bg-[var(--accent-tint)] px-3 py-2 text-2xs text-[var(--ink)] mb-2.5">
           <p className="font-medium">{msg.clarify}</p>
         </div>
       )}
 
-      {/* Final Markdown Answer */}
+      {/* 3. Final Markdown Answer */}
       {msg.content && (
-        <div className="prose prose-sm dark:prose-invert max-w-none text-xs leading-relaxed text-[var(--ink)] [&_table]:my-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-2xs [&_th]:border-b [&_th]:border-[var(--line)] [&_th]:pb-1.5 [&_th]:text-left [&_th]:font-semibold [&_th]:text-[var(--ink)] [&_td]:border-b [&_td]:border-[var(--line)] [&_td]:py-1.5 [&_td]:text-[var(--ink)]">
+        <div className="prose prose-sm dark:prose-invert max-w-none text-xs leading-relaxed text-[var(--ink)] [&_table]:my-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-2xs [&_table]:tabular-nums [&_table]:block [&_table]:overflow-x-auto [&_table]:whitespace-nowrap [&_th]:border-b [&_th]:border-[var(--line)] [&_th]:pb-1.5 [&_th]:text-left [&_th]:font-semibold [&_th]:text-[var(--ink)] [&_td]:border-b [&_td]:border-[var(--line)] [&_td]:py-1.5 [&_td]:text-[var(--ink)] [&_td]:align-top">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>
             {msg.content}
           </ReactMarkdown>
@@ -491,14 +538,42 @@ function AssistantMessage({
         </div>
       )}
 
-      {/* Error notice */}
+      {/* 4. Charts */}
+      {hasCharts && (
+        <div className="space-y-2.5 mt-2.5">
+          {msg.blocks!.charts!.map((chart, cIdx) => (
+            <ChatChartCard key={cIdx} chart={chart} />
+          ))}
+        </div>
+      )}
+
+      {/* 5. Tables */}
+      {hasTables && (
+        <div className="space-y-2.5 mt-2.5">
+          {msg.blocks!.tables!.map((table, tIdx) => (
+            <ChatDataTable key={tIdx} table={table} />
+          ))}
+        </div>
+      )}
+
+      {/* 6. Follow-up chips */}
+      {hasFollowUps && (
+        <div className="mt-2.5">
+          <FollowUpChips
+            questions={msg.blocks!.followUps!}
+            onSelect={onSelectFollowUp!}
+          />
+        </div>
+      )}
+
+      {/* 7. Error notice */}
       {msg.error && (
-        <div className="rounded-[10px] bg-rose-50/60 text-rose-700 dark:bg-rose-950/30 dark:text-rose-300 px-3 py-2 text-2xs shadow-[0_0_0_1px_theme(colors.rose.200)] dark:shadow-[0_0_0_1px_theme(colors.rose.900/50)]">
+        <div className="mt-2.5 rounded-[10px] bg-rose-50/60 text-rose-700 dark:bg-rose-950/30 dark:text-rose-300 px-3 py-2 text-2xs shadow-[0_0_0_1px_theme(colors.rose.200)] dark:shadow-[0_0_0_1px_theme(colors.rose.900/50)]">
           <p className="font-medium">{msg.error}</p>
         </div>
       )}
 
-      {/* Post-completion trace disclosure (Lower section only when query is done) */}
+      {/* 8. Post-completion trace disclosure (Lower section only when query is done) */}
       {!msg.isStreaming && hasTraces && (
         <TracePanel
           traces={msg.traces!}
@@ -784,6 +859,7 @@ export default function ChatPage() {
                     role: 'assistant',
                     content: data.answer,
                     clarify: data.clarify,
+                    blocks: data.blocks,
                     traces: accumulatedTraces,
                     isStreaming: false,
                     startTime,
@@ -875,19 +951,27 @@ export default function ChatPage() {
           {messages.length === 0 ? (
             <EmptyState onSelectPrompt={handleSendPrompt} />
           ) : (
-            messages.map((msg, index) => (
-              <div key={index}>
-                {msg.role === 'user' ? (
-                  <UserBubble content={msg.content} />
-                ) : (
-                  <AssistantMessage
-                    msg={msg}
-                    isExpanded={Boolean(expandedTraces[index])}
-                    onToggleTrace={() => toggleTrace(index)}
-                  />
-                )}
-              </div>
-            ))
+            (() => {
+              const lastAssistantIndex = messages
+                .map((m) => m.role)
+                .lastIndexOf('assistant');
+              return messages.map((msg, index) => (
+                <div key={index}>
+                  {msg.role === 'user' ? (
+                    <UserBubble content={msg.content} />
+                  ) : (
+                    <AssistantMessage
+                      msg={msg}
+                      isExpanded={Boolean(expandedTraces[index])}
+                      onToggleTrace={() => toggleTrace(index)}
+                      isLastAssistant={index === lastAssistantIndex}
+                      isAnyStreaming={isStreaming}
+                      onSelectFollowUp={handleSendPrompt}
+                    />
+                  )}
+                </div>
+              ));
+            })()
           )}
           <div ref={messagesEndRef} />
         </div>
