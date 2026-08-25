@@ -22,6 +22,9 @@ interface ChatTrace {
   detail?: string;
   rowCount?: number | null;
   durationMs?: number | null;
+  success?: boolean;
+  error?: string;
+  resultPreview?: string;
 }
 
 interface Message {
@@ -159,6 +162,8 @@ function LiveTraceFeed({ traces }: { traces: ChatTrace[] }) {
     <div className="space-y-1.5 pt-1">
       {traces.map((trace, i) => {
         const isItemExpanded = Boolean(expandedIndices[i]);
+        const isFailed = trace.success === false;
+        const hasExpandableContent = Boolean(trace.detail || trace.resultPreview);
         return (
           <div
             key={i}
@@ -172,19 +177,31 @@ function LiveTraceFeed({ traces }: { traces: ChatTrace[] }) {
           >
             <button
               type="button"
-              onClick={() => trace.detail && toggleIndex(i)}
-              disabled={!trace.detail}
+              onClick={() => hasExpandableContent && toggleIndex(i)}
+              disabled={!hasExpandableContent}
               className={`-mx-1 flex w-full items-center justify-between gap-1.5 rounded-[6px] px-1 py-0.5 text-left transition-colors duration-100 ${
-                trace.detail
+                hasExpandableContent
                   ? 'cursor-pointer hover:bg-[var(--hover-2)]'
                   : 'cursor-default'
               }`}
             >
               <div className="flex items-center gap-1.5 text-2xs leading-[1.3] min-w-0">
-                <span className="font-medium text-[var(--ink)] shrink-0">
+                <span
+                  className={`font-medium shrink-0 ${
+                    isFailed
+                      ? 'text-rose-600 dark:text-rose-400'
+                      : 'text-[var(--ink)]'
+                  }`}
+                >
                   {formatActionLabel(trace.action)}
                 </span>
-                <span className="text-[var(--ink-2)] truncate">
+                <span
+                  className={`truncate ${
+                    isFailed
+                      ? 'text-rose-600/80 dark:text-rose-400/80'
+                      : 'text-[var(--ink-2)]'
+                  }`}
+                >
                   {trace.summary}
                 </span>
               </div>
@@ -192,7 +209,7 @@ function LiveTraceFeed({ traces }: { traces: ChatTrace[] }) {
                 {trace.durationMs ? (
                   <span>{(trace.durationMs / 1000).toFixed(1)}s</span>
                 ) : null}
-                {trace.detail && (
+                {hasExpandableContent && (
                   <ChevronDown
                     className={`size-3 transition-transform duration-300 ${
                       isItemExpanded ? 'rotate-180' : ''
@@ -202,7 +219,13 @@ function LiveTraceFeed({ traces }: { traces: ChatTrace[] }) {
               </div>
             </button>
 
-            {trace.detail && (
+            {isFailed && trace.error && (
+              <p className="px-0.5 pt-0.5 text-2xs text-rose-600 dark:text-rose-400">
+                {trace.error}
+              </p>
+            )}
+
+            {hasExpandableContent && (
               <div
                 className={`grid transition-[grid-template-rows,opacity] duration-300 [transition-timing-function:var(--ease-out-strong)] ${
                   isItemExpanded
@@ -211,8 +234,27 @@ function LiveTraceFeed({ traces }: { traces: ChatTrace[] }) {
                 }`}
               >
                 <div className="overflow-hidden min-h-0">
-                  <div className="mt-1 overflow-x-auto whitespace-pre rounded-[8px] bg-[var(--inset)] p-2 font-mono text-2xs text-[var(--ink)] shadow-[var(--shadow-hairline)]">
-                    {trace.detail}
+                  <div className="mt-1 space-y-1.5">
+                    {trace.detail && (
+                      <div>
+                        <div className="text-2xs font-medium text-[var(--ink-3)] mb-0.5">
+                          {trace.action === 'run_sql' ? 'Query' : 'Arguments'}
+                        </div>
+                        <div className="overflow-x-auto whitespace-pre rounded-[8px] bg-[var(--inset)] p-2 font-mono text-2xs text-[var(--ink)] shadow-[var(--shadow-hairline)]">
+                          {trace.detail}
+                        </div>
+                      </div>
+                    )}
+                    {trace.resultPreview && (
+                      <div>
+                        <div className="text-2xs font-medium text-[var(--ink-3)] mb-0.5">
+                          Result
+                        </div>
+                        <div className="overflow-x-auto whitespace-pre rounded-[8px] bg-[var(--inset)] p-2 font-mono text-2xs text-[var(--ink)] shadow-[var(--shadow-hairline)]">
+                          {trace.resultPreview}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -280,46 +322,90 @@ function TracePanel({
               style={{ height: isExpanded ? '100%' : '0%' }}
             />
             <div className="space-y-3 pb-1">
-              {traces.map((trace, tIdx) => (
-                <div
-                  key={tIdx}
-                  className="relative"
-                  style={
-                    isExpanded
-                      ? {
-                          animationName: 'bui-fade-up',
-                          animationDuration: '300ms',
-                          animationTimingFunction: 'var(--ease-out-strong)',
-                          animationFillMode: 'both',
-                          animationDelay: `${tIdx * 50}ms`,
-                        }
-                      : undefined
-                  }
-                >
-                  <div className="absolute -left-[15px] top-1.5 size-[5px] rounded-full bg-[var(--ink-3)]" />
-                  <div className="flex items-center justify-between text-2xs">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-medium text-[var(--ink)]">
-                        {formatActionLabel(trace.action)}
-                      </span>
-                      <span className="text-[var(--ink-2)]">
-                        {trace.summary}
+              {traces.map((trace, tIdx) => {
+                const isFailed = trace.success === false;
+                const hasExpandableContent = Boolean(trace.detail || trace.resultPreview);
+                return (
+                  <div
+                    key={tIdx}
+                    className="relative"
+                    style={
+                      isExpanded
+                        ? {
+                            animationName: 'bui-fade-up',
+                            animationDuration: '300ms',
+                            animationTimingFunction: 'var(--ease-out-strong)',
+                            animationFillMode: 'both',
+                            animationDelay: `${tIdx * 50}ms`,
+                          }
+                        : undefined
+                    }
+                  >
+                    <div
+                      className={`absolute -left-[15px] top-1.5 size-[5px] rounded-full ${
+                        isFailed ? 'bg-rose-500' : 'bg-[var(--ink-3)]'
+                      }`}
+                    />
+                    <div className="flex items-center justify-between text-2xs">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                          className={`font-medium shrink-0 ${
+                            isFailed
+                              ? 'text-rose-600 dark:text-rose-400'
+                              : 'text-[var(--ink)]'
+                          }`}
+                        >
+                          {formatActionLabel(trace.action)}
+                        </span>
+                        <span
+                          className={`truncate ${
+                            isFailed
+                              ? 'text-rose-600/80 dark:text-rose-400/80'
+                              : 'text-[var(--ink-2)]'
+                          }`}
+                        >
+                          {trace.summary}
+                        </span>
+                      </div>
+                      <span className="font-mono tabular-nums text-[var(--ink-3)] shrink-0 ml-2">
+                        {trace.durationMs ? `${trace.durationMs}ms` : ''}
+                        {trace.rowCount !== null && trace.rowCount !== undefined
+                          ? ` · ${trace.rowCount} rows`
+                          : ''}
                       </span>
                     </div>
-                    <span className="font-mono tabular-nums text-[var(--ink-3)] shrink-0 ml-2">
-                      {trace.durationMs ? `${trace.durationMs}ms` : ''}
-                      {trace.rowCount !== null && trace.rowCount !== undefined
-                        ? ` · ${trace.rowCount} rows`
-                        : ''}
-                    </span>
+                    {isFailed && trace.error && (
+                      <p className="mt-0.5 text-2xs text-rose-600 dark:text-rose-400">
+                        {trace.error}
+                      </p>
+                    )}
+                    {hasExpandableContent && (
+                      <div className="mt-1.5 space-y-1.5">
+                        {trace.detail && (
+                          <div>
+                            <div className="text-2xs font-medium text-[var(--ink-3)] mb-0.5">
+                              {trace.action === 'run_sql' ? 'Query' : 'Arguments'}
+                            </div>
+                            <div className="overflow-x-auto whitespace-pre rounded-[8px] bg-[var(--inset)] p-2 font-mono text-2xs text-[var(--ink)] shadow-[var(--shadow-hairline)]">
+                              {trace.detail}
+                            </div>
+                          </div>
+                        )}
+                        {trace.resultPreview && (
+                          <div>
+                            <div className="text-2xs font-medium text-[var(--ink-3)] mb-0.5">
+                              Result
+                            </div>
+                            <div className="overflow-x-auto whitespace-pre rounded-[8px] bg-[var(--inset)] p-2 font-mono text-2xs text-[var(--ink)] shadow-[var(--shadow-hairline)]">
+                              {trace.resultPreview}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  {trace.detail && (
-                    <div className="mt-1.5 overflow-x-auto whitespace-pre rounded-[8px] bg-[var(--inset)] p-2 font-mono text-2xs text-[var(--ink)] shadow-[var(--shadow-hairline)]">
-                      {trace.detail}
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -476,13 +562,11 @@ function Composer({
   setInput,
   isStreaming,
   onSend,
-  hasMessages,
 }: {
   input: string;
   setInput: (val: string) => void;
   isStreaming: boolean;
   onSend: () => void;
-  hasMessages: boolean;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -815,7 +899,6 @@ export default function ChatPage() {
         setInput={setInput}
         isStreaming={isStreaming}
         onSend={handleSend}
-        hasMessages={messages.length > 0}
       />
     </div>
   );
