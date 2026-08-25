@@ -359,7 +359,7 @@ function AssistantMessage({
 
   return (
     <div
-      className="flex-1 space-y-2.5 pt-0.5 overflow-hidden"
+      className="flex-1 pt-0.5 overflow-hidden"
       style={{
         animationName: 'bui-fade-up',
         animationDuration: '400ms',
@@ -494,11 +494,11 @@ function Composer({
   };
 
   return (
-    <footer className="sticky bottom-0 mx-auto w-full max-w-3xl px-4 pt-2 pb-16 lg:pb-4">
+    <footer className="sticky bottom-0 mx-auto w-full max-w-3xl px-3 pt-2 pb-16 lg:pb-4">
       <div
         role="presentation"
         onClick={() => textareaRef.current?.focus()}
-        className="flex cursor-text flex-col gap-2 rounded-[14px] border border-[var(--line)] bg-[var(--surface)] p-2.5 shadow-[var(--shadow-card)] transition-[border-color,box-shadow] duration-150 focus-within:border-[var(--line-strong)]"
+        className="flex cursor-text flex-col gap-2 rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-2.5 shadow-[var(--shadow-card)] transition-[border-color,box-shadow] duration-150 focus-within:border-[var(--line-strong)]"
       >
         <textarea
           ref={textareaRef}
@@ -787,12 +787,12 @@ export default function ChatPage() {
         ref={containerRef}
         className="flex-1 overflow-y-auto px-4 py-4"
       >
-        <div className="mx-auto max-w-3xl space-y-6">
+        <div className="mx-auto max-w-3xl space-y-3">
           {messages.length === 0 ? (
             <EmptyState onSelectPrompt={handleSendPrompt} />
           ) : (
             messages.map((msg, index) => (
-              <div key={index} className="space-y-2">
+              <div key={index}>
                 {msg.role === 'user' ? (
                   <UserBubble content={msg.content} />
                 ) : (
