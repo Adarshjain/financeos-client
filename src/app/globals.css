@@ -130,3 +130,66 @@ input[type='number'] {
  * ring-emerald-500 rather than the ring token) and .safe-area-bottom — all
  * three had zero usages in src.
  */
+
+/* ==========================================================================
+   Chat UI (beautifului.dev design language tokens & keyframes)
+   ========================================================================== */
+
+.bui-chat {
+  --canvas:  oklch(96.1% .002 247.84);   /* page background behind everything */
+  --surface: oklch(100% 0 0);            /* cards, composer, chat panel */
+  --inset:   oklch(97.9% .002 247.839);  /* subtle inset areas */
+  --hover:   oklch(97% .002 247.839);    /* hover bg (subtle) */
+  --hover-2: oklch(93.3% .003 247.86);   /* hover bg (stronger) */
+  --field:   oklch(92.2% .004 258.361);  /* input fields + user bubble bg */
+  --ink:     oklch(24.7% .006 258.361);  /* primary text */
+  --ink-2:   oklch(50.6% .01 264.477);   /* secondary text */
+  --ink-3:   oklch(69.5% .009 264.505);  /* tertiary/placeholder text */
+  --line:        oklch(94.6% .003 264.542);  /* hairline borders */
+  --line-strong: oklch(91.2% .005 258.326);  /* focused borders, disabled send bg */
+  --accent:      oklch(62.6% .205 254.947);  /* blue accent (enabled send) */
+  --accent-tint: oklch(96% .019 252.878);
+  /* danger stays in our rose family — see UI conventions §2, do NOT use the site's red */
+  --ease-out-strong: cubic-bezier(.23,1,.32,1);
+  --shadow-hairline: 0 0 0 1px var(--line);
+  --shadow-btn:  0 0 0 1px var(--line-strong), 0 0 4px 0 #0000000a;
+  --shadow-card: 0 0 0 1px var(--line),
+                 0 18px 47px 0 #00000008, 0 7.5px 19px 0 #00000005,
+                 0 4px 10.5px 0 #00000005, 0 2.3px 5.8px 0 #00000003,
+                 0 1.2px 3.1px 0 #00000003, 0 .5px 1.3px 0 #00000003;
+}
+
+.dark .bui-chat {
+  --canvas:  oklch(23.1% .004 264.487);
+  --surface: oklch(26% .006 271.191);
+  --inset:   oklch(24.3% .004 264.492);
+  --hover:   oklch(28.9% .006 271.22);
+  --hover-2: oklch(31.8% .007 274.747);
+  --field:   oklch(31.8% .007 274.747);
+  --ink:     oklch(96.4% .002 247.839);
+  --ink-2:   oklch(73.1% .008 260.731);
+  --ink-3:   oklch(54.1% .01 264.484);
+  --line:        oklch(30.8% .006 258.354);
+  --line-strong: oklch(35.6% .007 264.474);
+  --accent:      oklch(68% .173 253.301);
+  --accent-tint: oklch(68% .173 253.301 / .16);
+  --shadow-btn:  0 0 0 1px oklch(100% 0 0/.1), 0 1px 2px oklch(0% 0 0/.3);
+  --shadow-card: 0 0 0 1px oklch(100% 0 0/.11), 0 1px 2px oklch(0% 0 0/.2), 0 2px 6px oklch(0% 0 0/.2);
+}
+
+@keyframes bui-shimmer-text { 0% { background-position: 150% } to { background-position: -50% } }
+@keyframes bui-fade-up { 0% { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes bui-fade-in { 0% { opacity: 0 } to { opacity: 1 } }
+@keyframes bui-pop-in { 0% { opacity: 0; transform: scale(.95) } to { opacity: 1; transform: scale(1) } }
+@keyframes bui-pixel-on { 0%, to { opacity: .15 } 18%, 42% { opacity: 1 } 62% { opacity: .15 } }
+@keyframes bui-caret-blink { 0%, to { opacity: 1 } 50% { opacity: 0 } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bui-chat,
+  .bui-chat * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
