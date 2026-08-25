@@ -1,22 +1,19 @@
 'use client';
 
 import {
-  Bot,
+  ArrowUp,
+  BarChart3,
   ChevronDown,
-  ChevronRight,
-  Database,
-  Loader2,
+  CreditCard,
   Plus,
-  Send,
-  Sparkles,
-  Wrench,
+  TrendingUp,
+  Wallet,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 
 interface ChatTrace {
   step: number;
@@ -35,46 +32,533 @@ interface Message {
   isStreaming?: boolean;
   status?: string;
   error?: string;
+  startTime?: number;
 }
 
 const SUGGESTIONS = [
   {
     title: 'Spend Analysis',
     prompt: 'What was my total spend last month by category?',
-    icon: '📊',
+    icon: BarChart3,
   },
   {
     title: 'Card Recommendation',
     prompt: 'Which credit card gives the best rewards for ₹5,000 dining?',
-    icon: '💳',
+    icon: CreditCard,
   },
   {
     title: 'Net Worth Summary',
     prompt: 'Show my current net worth breakdown across all accounts.',
-    icon: '💰',
+    icon: Wallet,
   },
   {
     title: 'Portfolio Holdings',
     prompt: 'Summarize my top investment holdings and total valuation.',
-    icon: '📈',
+    icon: TrendingUp,
   },
 ];
+
+const PIXEL_DELAYS = [180, 360, 540, 0, 180, 360, 180, 360, 540];
+
+function PixelGridLoader({ className }: { className?: string }) {
+  return (
+    <div
+      className={`grid grid-cols-[repeat(3,4px)] gap-[1.5px] ${className || ''}`}
+      aria-hidden="true"
+    >
+      {PIXEL_DELAYS.map((delay, i) => (
+        <div
+          key={i}
+          className="size-[4px] rounded-[1px] bg-[var(--ink)] opacity-[0.15]"
+          style={{
+            animationName: 'bui-pixel-on',
+            animationDuration: '1400ms',
+            animationTimingFunction: 'ease-in-out',
+            animationIterationCount: 'infinite',
+            animationDelay: `${delay}ms`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function formatActionLabel(action: string): string {
+  if (action === 'run_sql') return 'Query';
+  return action
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+function formatTotalDuration(traces?: ChatTrace[]): string {
+  if (!traces || traces.length === 0) return '0.0s';
+  const totalMs = traces.reduce((acc, t) => acc + (t.durationMs || 0), 0);
+  if (totalMs > 0) {
+    return `${(totalMs / 1000).toFixed(1)}s`;
+  }
+  return '0.0s';
+}
+
+function ThinkingIndicator({
+  status,
+  startTime,
+  isStreaming,
+}: {
+  status?: string;
+  startTime?: number;
+  isStreaming?: boolean;
+}) {
+  const [elapsed, setElapsed] = useState('0.0s');
+
+  useEffect(() => {
+    if (!isStreaming || !startTime) return;
+
+    const interval = setInterval(() => {
+      const ms = Date.now() - startTime;
+      setElapsed(`${(ms / 1000).toFixed(1)}s`);
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [isStreaming, startTime]);
+
+  return (
+    <div className="flex items-center gap-2 text-2xs">
+      <PixelGridLoader />
+      <span
+        className="bg-clip-text text-transparent text-xs font-medium"
+        style={{
+          backgroundImage:
+            'linear-gradient(90deg, var(--ink-3) 35%, var(--ink) 50%, var(--ink-3) 65%)',
+          backgroundSize: '200% 100%',
+          animationName: 'bui-shimmer-text',
+          animationDuration: '1.4s',
+          animationTimingFunction: 'linear',
+          animationIterationCount: 'infinite',
+        }}
+      >
+        {status || 'Thinking…'}
+      </span>
+      <span className="font-mono text-2xs text-[var(--ink-3)] tabular-nums">
+        {elapsed}
+      </span>
+    </div>
+  );
+}
+
+function LiveTraceFeed({ traces }: { traces: ChatTrace[] }) {
+  const [expandedIndices, setExpandedIndices] = useState<Record<number, boolean>>({});
+
+  if (!traces || traces.length === 0) return null;
+
+  const toggleIndex = (idx: number) => {
+    setExpandedIndices((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  };
+
+  return (
+    <div className="space-y-1.5 pt-1">
+      {traces.map((trace, i) => {
+        const isItemExpanded = Boolean(expandedIndices[i]);
+        return (
+          <div
+            key={i}
+            className="rounded-[8px] transition-colors"
+            style={{
+              animationName: 'bui-fade-up',
+              animationDuration: '400ms',
+              animationTimingFunction: 'var(--ease-out-strong)',
+              animationFillMode: 'both',
+            }}
+          >
+            <button
+              type="button"
+              onClick={() => trace.detail && toggleIndex(i)}
+              disabled={!trace.detail}
+              className={`-mx-1 flex w-full items-center justify-between gap-1.5 rounded-[6px] px-1 py-0.5 text-left transition-colors duration-100 ${
+                trace.detail
+                  ? 'cursor-pointer hover:bg-[var(--hover-2)]'
+                  : 'cursor-default'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 text-2xs leading-[1.3] min-w-0">
+                <span className="font-medium text-[var(--ink)] shrink-0">
+                  {formatActionLabel(trace.action)}
+                </span>
+                <span className="text-[var(--ink-2)] truncate">
+                  {trace.summary}
+                </span>
+              </div>
+              <div className="flex items-center gap-1 font-mono text-2xs tabular-nums text-[var(--ink-3)] shrink-0">
+                {trace.durationMs ? (
+                  <span>{(trace.durationMs / 1000).toFixed(1)}s</span>
+                ) : null}
+                {trace.detail && (
+                  <ChevronDown
+                    className={`size-3 transition-transform duration-300 ${
+                      isItemExpanded ? 'rotate-180' : ''
+                    }`}
+                  />
+                )}
+              </div>
+            </button>
+
+            {trace.detail && (
+              <div
+                className={`grid transition-[grid-template-rows,opacity] duration-300 [transition-timing-function:var(--ease-out-strong)] ${
+                  isItemExpanded
+                    ? 'grid-rows-[1fr] opacity-100'
+                    : 'grid-rows-[0fr] opacity-0 pointer-events-none'
+                }`}
+              >
+                <div className="overflow-hidden min-h-0">
+                  <div className="mt-1 overflow-x-auto whitespace-pre rounded-[8px] bg-[var(--inset)] p-2 font-mono text-2xs text-[var(--ink)] shadow-[var(--shadow-hairline)]">
+                    {trace.detail}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function StreamingCaret() {
+  return (
+    <span
+      className="inline-block h-3 w-0.5 translate-y-0.5 rounded-full bg-[var(--ink)]"
+      style={{
+        animation:
+          'bui-fade-in 150ms ease-out both, bui-caret-blink 1s step-end infinite',
+      }}
+      aria-hidden="true"
+    />
+  );
+}
+
+function TracePanel({
+  traces,
+  isExpanded,
+  onToggle,
+}: {
+  traces: ChatTrace[];
+  isExpanded: boolean;
+  onToggle: () => void;
+}) {
+  const stepText = traces.length === 1 ? 'step' : 'steps';
+
+  return (
+    <div className="pt-1">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex w-fit items-center gap-2 rounded-[8px] px-1.5 py-1 transition-colors duration-100 hover:bg-[var(--hover-2)] active:scale-[0.96] cursor-pointer"
+        aria-expanded={isExpanded}
+      >
+        <span className="text-2xs font-medium text-[var(--ink-2)]">
+          Ran {traces.length} {stepText} · {formatTotalDuration(traces)}
+        </span>
+        <ChevronDown
+          className={`size-3.5 text-[var(--ink-3)] transition-transform duration-300 ${
+            isExpanded ? 'rotate-180' : ''
+          }`}
+        />
+      </button>
+
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-400 [transition-timing-function:var(--ease-out-strong)] ${
+          isExpanded
+            ? 'grid-rows-[1fr] opacity-100'
+            : 'grid-rows-[0fr] opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="overflow-hidden min-h-0">
+          <div className="relative mt-2 ml-[5px] pl-4">
+            <div
+              className="absolute left-[3px] top-0 w-px bg-[var(--line)] transition-[height] duration-500 [transition-timing-function:var(--ease-out-strong)]"
+              style={{ height: isExpanded ? '100%' : '0%' }}
+            />
+            <div className="space-y-3 pb-1">
+              {traces.map((trace, tIdx) => (
+                <div
+                  key={tIdx}
+                  className="relative"
+                  style={
+                    isExpanded
+                      ? {
+                          animationName: 'bui-fade-up',
+                          animationDuration: '300ms',
+                          animationTimingFunction: 'var(--ease-out-strong)',
+                          animationFillMode: 'both',
+                          animationDelay: `${tIdx * 50}ms`,
+                        }
+                      : undefined
+                  }
+                >
+                  <div className="absolute -left-[15px] top-1.5 size-[5px] rounded-full bg-[var(--ink-3)]" />
+                  <div className="flex items-center justify-between text-2xs">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium text-[var(--ink)]">
+                        {formatActionLabel(trace.action)}
+                      </span>
+                      <span className="text-[var(--ink-2)]">
+                        {trace.summary}
+                      </span>
+                    </div>
+                    <span className="font-mono tabular-nums text-[var(--ink-3)] shrink-0 ml-2">
+                      {trace.durationMs ? `${trace.durationMs}ms` : ''}
+                      {trace.rowCount !== null && trace.rowCount !== undefined
+                        ? ` · ${trace.rowCount} rows`
+                        : ''}
+                    </span>
+                  </div>
+                  {trace.detail && (
+                    <div className="mt-1.5 overflow-x-auto whitespace-pre rounded-[8px] bg-[var(--inset)] p-2 font-mono text-2xs text-[var(--ink)] shadow-[var(--shadow-hairline)]">
+                      {trace.detail}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UserBubble({ content }: { content?: string }) {
+  return (
+    <div
+      className="flex justify-end pl-14"
+      style={{
+        animationName: 'bui-fade-up',
+        animationDuration: '400ms',
+        animationTimingFunction: 'var(--ease-out-strong)',
+        animationFillMode: 'both',
+      }}
+    >
+      <div className="max-w-[80%] rounded-xl bg-[var(--field)] px-3 py-1.5 text-xs leading-[1.4] text-[var(--ink)] shadow-[var(--shadow-hairline)]">
+        <p className="whitespace-pre-wrap">{content}</p>
+      </div>
+    </div>
+  );
+}
+
+function AssistantMessage({
+  msg,
+  isExpanded,
+  onToggleTrace,
+}: {
+  msg: Message;
+  isExpanded: boolean;
+  onToggleTrace: () => void;
+}) {
+  const hasTraces = Boolean(msg.traces && msg.traces.length > 0);
+
+  return (
+    <div
+      className="flex-1 space-y-2.5 pt-0.5 overflow-hidden"
+      style={{
+        animationName: 'bui-fade-up',
+        animationDuration: '400ms',
+        animationTimingFunction: 'var(--ease-out-strong)',
+        animationFillMode: 'both',
+      }}
+    >
+      {/* Streaming status / thinking (Top section while query is running) */}
+      {msg.isStreaming && !msg.content && (
+        <div className="space-y-2">
+          <ThinkingIndicator
+            status={msg.status}
+            startTime={msg.startTime}
+            isStreaming={msg.isStreaming}
+          />
+          {hasTraces && <LiveTraceFeed traces={msg.traces!} />}
+          {!msg.clarify && (
+            <div className="pt-0.5">
+              <StreamingCaret />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Clarification prompt */}
+      {msg.clarify && (
+        <div className="rounded-[10px] bg-[var(--accent-tint)] px-3 py-2 text-2xs text-[var(--ink)]">
+          <p className="font-medium">{msg.clarify}</p>
+        </div>
+      )}
+
+      {/* Final Markdown Answer */}
+      {msg.content && (
+        <div className="prose prose-sm dark:prose-invert max-w-none text-xs leading-relaxed text-[var(--ink)] [&_table]:my-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-2xs [&_th]:border-b [&_th]:border-[var(--line)] [&_th]:pb-1.5 [&_th]:text-left [&_th]:font-semibold [&_th]:text-[var(--ink)] [&_td]:border-b [&_td]:border-[var(--line)] [&_td]:py-1.5 [&_td]:text-[var(--ink)]">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {msg.content}
+          </ReactMarkdown>
+          {msg.isStreaming && (
+            <span className="ml-1 inline-block">
+              <StreamingCaret />
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Error notice */}
+      {msg.error && (
+        <div className="rounded-[10px] bg-rose-50/60 text-rose-700 dark:bg-rose-950/30 dark:text-rose-300 px-3 py-2 text-2xs shadow-[0_0_0_1px_theme(colors.rose.200)] dark:shadow-[0_0_0_1px_theme(colors.rose.900/50)]">
+          <p className="font-medium">{msg.error}</p>
+        </div>
+      )}
+
+      {/* Post-completion trace disclosure (Lower section only when query is done) */}
+      {!msg.isStreaming && hasTraces && (
+        <TracePanel
+          traces={msg.traces!}
+          isExpanded={isExpanded}
+          onToggle={onToggleTrace}
+        />
+      )}
+    </div>
+  );
+}
+
+function EmptyState({
+  onSelectPrompt,
+}: {
+  onSelectPrompt: (prompt: string) => void;
+}) {
+  return (
+    <div className="my-auto flex flex-col items-center justify-center text-center">
+      <h2 className="text-base font-medium tracking-tight text-[var(--ink)]">
+        How can I help with your finances today?
+      </h2>
+      <p className="mt-1.5 max-w-md text-2xs text-[var(--ink-3)]">
+        Ask questions about transactions, net worth, portfolio holdings, or
+        credit card reward optimizations.
+      </p>
+
+      <div className="mt-8 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
+        {SUGGESTIONS.map((item, i) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onSelectPrompt(item.prompt)}
+              className="group flex flex-col items-start gap-1 rounded-[10px] bg-[var(--surface)] p-3.5 text-left shadow-[var(--shadow-hairline)] transition-[background-color,box-shadow,transform] duration-150 hover:bg-[var(--hover)] hover:shadow-[var(--shadow-btn)] active:scale-[0.98] cursor-pointer"
+              style={{
+                animationName: 'bui-fade-up',
+                animationDuration: '450ms',
+                animationTimingFunction: 'var(--ease-out-strong)',
+                animationFillMode: 'both',
+                animationDelay: `${i * 60}ms`,
+              }}
+            >
+              <div className="flex items-center gap-2 text-xs font-medium text-[var(--ink)]">
+                <Icon className="size-4 text-[var(--ink-3)] transition-colors duration-150 group-hover:text-[var(--ink)]" />
+                <span>{item.title}</span>
+              </div>
+              <p className="text-2xs text-[var(--ink-3)] line-clamp-2">
+                {item.prompt}
+              </p>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Composer({
+  input,
+  setInput,
+  isStreaming,
+  onSend,
+  hasMessages,
+}: {
+  input: string;
+  setInput: (val: string) => void;
+  isStreaming: boolean;
+  onSend: () => void;
+  hasMessages: boolean;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      onSend();
+    }
+  };
+
+  return (
+    <footer className="sticky bottom-0 mx-auto w-full max-w-3xl px-4 pt-2 pb-16 lg:pb-4">
+      <div
+        role="presentation"
+        onClick={() => textareaRef.current?.focus()}
+        className="flex cursor-text flex-col gap-2 rounded-[14px] border border-[var(--line)] bg-[var(--surface)] p-2.5 shadow-[var(--shadow-card)] transition-[border-color,box-shadow] duration-150 focus-within:border-[var(--line-strong)]"
+      >
+        <textarea
+          ref={textareaRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Ask anything about your data…"
+          disabled={isStreaming}
+          rows={1}
+          className="w-full resize-none border-0 bg-transparent p-0 text-xs leading-[1.4] text-[var(--ink)] placeholder:text-[var(--ink-3)] shadow-none focus-visible:ring-0 focus-visible:outline-none max-h-36 overflow-y-auto"
+          style={{ fieldSizing: 'content' } as React.CSSProperties}
+        />
+        <div className="flex items-center justify-end">
+          <button
+            type="button"
+            onClick={onSend}
+            disabled={!input.trim() || isStreaming}
+            className={`size-7 rounded-[8px] flex items-center justify-center transition-[background-color,color,transform] duration-200 enabled:active:scale-[0.96] disabled:cursor-not-allowed ${
+              !input.trim() || isStreaming
+                ? 'bg-[var(--line-strong)] text-[var(--ink-2)]'
+                : 'bg-[var(--accent)] text-white'
+            }`}
+            aria-label="Send message"
+          >
+            {isStreaming ? (
+              <PixelGridLoader className="[&>div]:bg-current" />
+            ) : (
+              <ArrowUp className="size-4" strokeWidth={2.4} />
+            )}
+          </button>
+        </div>
+      </div>
+    </footer>
+  );
+}
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
-  const [expandedTraces, setExpandedTraces] = useState<Record<number, boolean>>({});
+  const [expandedTraces, setExpandedTraces] = useState<Record<number, boolean>>(
+    {},
+  );
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToBottomIfNear = (force = false) => {
+    const container = containerRef.current;
+    if (!container) return;
+    const isNearBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight <=
+      120;
+    if (force || isNearBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    scrollToBottomIfNear();
   }, [messages, isStreaming]);
 
   const toggleTrace = (index: number) => {
@@ -92,8 +576,7 @@ export default function ChatPage() {
     executeSend(promptText.trim());
   };
 
-  const handleSend = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const handleSend = () => {
     const prompt = input.trim();
     if (!prompt || isStreaming) return;
     setInput('');
@@ -101,6 +584,7 @@ export default function ChatPage() {
   };
 
   const executeSend = async (prompt: string) => {
+    const startTime = Date.now();
     const userMsg: Message = { role: 'user', content: prompt };
     const assistantMsgIndex = messages.length + 1;
     const initialAssistantMsg: Message = {
@@ -108,6 +592,7 @@ export default function ChatPage() {
       isStreaming: true,
       status: 'Thinking…',
       traces: [],
+      startTime,
     };
 
     const newMessages = [...messages, userMsg, initialAssistantMsg];
@@ -138,6 +623,7 @@ export default function ChatPage() {
           updated[assistantMsgIndex] = {
             role: 'assistant',
             error: errJson.message || 'Failed to process request',
+            startTime,
           };
           return updated;
         });
@@ -192,6 +678,7 @@ export default function ChatPage() {
                     ...updated[assistantMsgIndex],
                     status: currentStatus,
                     traces: [...accumulatedTraces],
+                    startTime,
                   };
                   return updated;
                 });
@@ -202,6 +689,7 @@ export default function ChatPage() {
                   updated[assistantMsgIndex] = {
                     ...updated[assistantMsgIndex],
                     traces: [...accumulatedTraces],
+                    startTime,
                   };
                   return updated;
                 });
@@ -214,6 +702,7 @@ export default function ChatPage() {
                     clarify: data.clarify,
                     traces: accumulatedTraces,
                     isStreaming: false,
+                    startTime,
                   };
                   return updated;
                 });
@@ -225,6 +714,7 @@ export default function ChatPage() {
                     error: data.message || 'Error occurred during processing',
                     traces: accumulatedTraces,
                     isStreaming: false,
+                    startTime,
                   };
                   return updated;
                 });
@@ -244,9 +734,11 @@ export default function ChatPage() {
         if (msg && msg.isStreaming) {
           updated[assistantMsgIndex] = {
             role: 'assistant',
-            error: 'The stream ended before an answer arrived. Please try again.',
+            error:
+              'The stream ended before an answer arrived. Please try again.',
             traces: accumulatedTraces,
             isStreaming: false,
+            startTime,
           };
         }
         return updated;
@@ -257,6 +749,7 @@ export default function ChatPage() {
         updated[assistantMsgIndex] = {
           role: 'assistant',
           error: err instanceof Error ? err.message : 'Network error occurred',
+          startTime,
         };
         return updated;
       });
@@ -265,159 +758,49 @@ export default function ChatPage() {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
   return (
-    <div className="relative flex h-[calc(100vh-4rem)] flex-col bg-background">
-      {/* Sleek Header */}
-      <header className="flex h-14 shrink-0 items-center justify-between px-4">
-
-        {messages.length > 0 && (<>
-          <h1 className="text-base font-semibold tracking-tight text-foreground">Chat with Your Data</h1>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClearChat}
-            disabled={isStreaming}
-            className="h-8 gap-1.5 text-2xs text-muted-foreground hover:text-foreground"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>New Chat</span>
-          </Button>
-        </>)}
+    <div className="bui-chat relative flex h-screen max-h-screen flex-col bg-[var(--canvas)] -m-0 md:-m-6 lg:-mt-6 overflow-hidden">
+      {/* Header */}
+      <header className="flex h-14 shrink-0 items-center justify-between px-6 border-[var(--line)]">
+        {messages.length > 0 ? (
+          <>
+            <h1 className="text-sm font-semibold tracking-tight text-[var(--ink)]">
+              Chat with Your Data
+            </h1>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleClearChat}
+              className="gap-1.5"
+            >
+              <Plus className="size-3.5" />
+              <span>New Chat</span>
+            </Button>
+          </>
+        ) : (
+          <div className="flex-1" />
+        )}
       </header>
 
       {/* Main Transcript Container */}
-      <main className="flex-1 overflow-y-auto px-4 py-2">
+      <main
+        ref={containerRef}
+        className="flex-1 overflow-y-auto px-4 py-4"
+      >
         <div className="mx-auto max-w-3xl space-y-6">
           {messages.length === 0 ? (
-            /* Modern Empty State Hero & Suggestion Cards */
-            <div className="my-auto flex flex-col items-center justify-center text-center">
-              <div className="relative mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-xs">
-                <Sparkles className="h-7 w-7" />
-              </div>
-              <h2 className="text-base font-medium tracking-tight text-foreground">
-                How can I help with your finances today?
-              </h2>
-              <p className="mt-1.5 max-w-md text-2xs text-muted-foreground">
-                Ask questions about transactions, net worth, portfolio holdings, or credit card reward optimizations.
-              </p>
-
-              <div className="mt-8 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
-                {SUGGESTIONS.map((item, i) => (
-                  <button
-                    key={i}
-                    onClick={() => handleSendPrompt(item.prompt)}
-                    className="flex flex-col items-start gap-1 rounded-xl border border-border/50 bg-card p-3.5 text-left transition-all hover:border-primary/40 hover:bg-accent/40 hover:shadow-xs group"
-                  >
-                    <div className="flex items-center gap-2 text-xs font-medium text-foreground group-hover:text-primary">
-                      <span>{item.icon}</span>
-                      <span>{item.title}</span>
-                    </div>
-                    <p className="text-3xs text-muted-foreground line-clamp-2">{item.prompt}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <EmptyState onSelectPrompt={handleSendPrompt} />
           ) : (
-            /* Message Flow */
             messages.map((msg, index) => (
               <div key={index} className="space-y-2">
                 {msg.role === 'user' ? (
-                  /* User Message Bubble */
-                  <div className="flex justify-end">
-                    <div className="max-w-[80%] rounded-2xl rounded-tr-xs bg-primary px-3 py-1.5 text-xs text-primary-foreground shadow-xs leading-relaxed">
-                      <p className="whitespace-pre-wrap">{msg.content}</p>
-                    </div>
-                  </div>
+                  <UserBubble content={msg.content} />
                 ) : (
-                  /* Assistant Response Row */
-                  <div className="flex-1 space-y-2.5 pt-0.5 overflow-hidden">
-                      {/* Streaming status indicator */}
-                      {msg.isStreaming && (
-                        <div className="flex items-center gap-2 text-2xs text-muted-foreground">
-                          <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                          <span className="font-medium">{msg.status}</span>
-                        </div>
-                      )}
-
-                      {/* Clarification prompt */}
-                      {msg.clarify && (
-                        <div className="rounded-xl bg-amber-500/10 p-3 text-2xs text-amber-700 dark:text-amber-400">
-                          <p className="font-medium">{msg.clarify}</p>
-                        </div>
-                      )}
-
-                      {/* Final Markdown Answer */}
-                      {msg.content && (
-                        <div className="prose prose-sm dark:prose-invert max-w-none text-xs text-foreground [&_table]:my-3 [&_table]:w-full [&_table]:border-collapse [&_table]:text-2xs [&_th]:border-b [&_th]:border-border/60 [&_th]:pb-1.5 [&_th]:text-left [&_th]:font-semibold [&_td]:border-b [&_td]:border-border/30 [&_td]:py-1.5">
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
-                        </div>
-                      )}
-
-                      {/* Error notice */}
-                      {msg.error && (
-                        <div className="rounded-xl border border-rose-200 bg-rose-50/50 p-3 text-2xs text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-300">
-                          <p className="font-medium">{msg.error}</p>
-                        </div>
-                      )}
-
-                      {/* Execution Trace Chip & Panel */}
-                      {msg.traces && msg.traces.length > 0 && (
-                        <div className="pt-1 text-xs">
-                          <button
-                            type="button"
-                            onClick={() => toggleTrace(index)}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-border/40 bg-muted/50 px-3 py-1 text-3xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                          >
-                            {expandedTraces[index] ? (
-                              <ChevronDown className="h-3 w-3" />
-                            ) : (
-                              <ChevronRight className="h-3 w-3" />
-                            )}
-                            <span>Trace ({msg.traces.length} steps)</span>
-                          </button>
-
-                          {expandedTraces[index] && (
-                            <div className="mt-2.5 space-y-2 rounded-xl border border-border/40 bg-muted/40 p-3 text-3xs font-mono">
-                              {msg.traces.map((trace, tIdx) => (
-                                <div key={tIdx} className="space-y-1 border-b border-border/30 pb-2 last:border-0 last:pb-0">
-                                  <div className="flex items-center justify-between font-sans text-muted-foreground">
-                                    <div className="flex items-center gap-1.5">
-                                      {trace.action === 'run_sql' ? (
-                                        <Database className="h-3 w-3 text-blue-500" />
-                                      ) : (
-                                        <Wrench className="h-3 w-3 text-amber-500" />
-                                      )}
-                                      <span className="font-semibold uppercase tracking-wider text-foreground">
-                                        Step {trace.step}: {trace.action}
-                                      </span>
-                                    </div>
-                                    <span>
-                                      {trace.durationMs ? `${trace.durationMs}ms` : ''}
-                                      {trace.rowCount !== null && trace.rowCount !== undefined ? ` • ${trace.rowCount} rows` : ''}
-                                    </span>
-                                  </div>
-                                  <p className="font-sans text-2xs text-muted-foreground">{trace.summary}</p>
-                                  {trace.detail && (
-                                    <div className="relative mt-1 overflow-hidden rounded-lg bg-background p-2 font-mono text-3xs border border-border/40">
-                                      {/*<div className="max-h-32 overflow-x-auto whitespace-pre text-foreground">*/}
-                                        {trace.detail}
-                                      {/*</div>*/}
-                                    </div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                  <AssistantMessage
+                    msg={msg}
+                    isExpanded={Boolean(expandedTraces[index])}
+                    onToggleTrace={() => toggleTrace(index)}
+                  />
                 )}
               </div>
             ))
@@ -426,32 +809,15 @@ export default function ChatPage() {
         </div>
       </main>
 
-      {/* Floating Modern Input Composer */}
-      <footer className="sticky bottom-4 mx-auto w-full max-w-3xl px-4 pt-2">
-        <form
-          onSubmit={handleSend}
-          className="relative flex items-center rounded-2xl border border-border/80 bg-background/95 p-1.5 shadow-lg shadow-black/5 backdrop-blur-md transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20"
-        >
-          <Textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask anything about your data…"
-            disabled={isStreaming}
-            rows={1}
-            className="w-full resize-none !border-0 bg-transparent p-0 min-h-auto h-auto shadow-none pl-1 placeholder:text-muted-foreground/70 focus-visible:ring-0 focus-visible:outline-none"
-          />
-          <Button
-            type="submit"
-            size="icon"
-            disabled={!input.trim() || isStreaming}
-            className="h-9 w-9 shrink-0 rounded-xl transition-all"
-          >
-            {isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          </Button>
-        </form>
-      </footer>
+      {/* Modern Input Composer */}
+      <Composer
+        input={input}
+        setInput={setInput}
+        isStreaming={isStreaming}
+        onSend={handleSend}
+        hasMessages={messages.length > 0}
+      />
     </div>
   );
 }
+
