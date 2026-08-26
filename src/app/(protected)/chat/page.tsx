@@ -24,6 +24,10 @@ import {
   ChatTableBlock,
 } from './components/ChatDataTable';
 import {
+  ChatReportDraft,
+  ChatReportDraftCard,
+} from './components/ChatReportDraftCard';
+import {
   ChatStat,
   ChatStatCards,
 } from './components/ChatStatCards';
@@ -34,6 +38,7 @@ export interface ChatBlocks {
   charts?: ChatChartBlock[];
   tables?: ChatTableBlock[];
   followUps?: string[];
+  reportDraft?: ChatReportDraft;
 }
 
 interface ChatTrace {
@@ -461,6 +466,7 @@ function AssistantMessage({
   isLastAssistant,
   isAnyStreaming,
   onSelectFollowUp,
+  onDraftStateChange,
 }: {
   msg: Message;
   isExpanded: boolean;
@@ -468,11 +474,17 @@ function AssistantMessage({
   isLastAssistant?: boolean;
   isAnyStreaming?: boolean;
   onSelectFollowUp?: (question: string) => void;
+  onDraftStateChange?: (update: {
+    status: 'saved' | 'updated' | 'deleted' | 'failed';
+    savedReportId?: string;
+    errorMessage?: string;
+  }) => void;
 }) {
   const hasTraces = Boolean(msg.traces && msg.traces.length > 0);
   const hasStats = Boolean(msg.blocks?.stats && msg.blocks.stats.length > 0);
   const hasCharts = Boolean(msg.blocks?.charts && msg.blocks.charts.length > 0);
   const hasTables = Boolean(msg.blocks?.tables && msg.blocks.tables.length > 0);
+  const hasReportDraft = Boolean(msg.blocks?.reportDraft);
   const hasFollowUps = Boolean(
     isLastAssistant &&
       !isAnyStreaming &&
@@ -508,7 +520,7 @@ function AssistantMessage({
         </div>
       )}
 
-      {/* Render order: stats row -> clarify -> markdown answer -> charts -> tables -> follow-up chips -> error -> trace panel */}
+      {/* Render order: stats row -> clarify -> markdown answer -> charts -> tables -> draft card -> follow-up chips -> error -> trace panel */}
 
       {/* 1. Stat cards */}
       {hasStats && (
@@ -553,6 +565,16 @@ function AssistantMessage({
           {msg.blocks!.tables!.map((table, tIdx) => (
             <ChatDataTable key={tIdx} table={table} />
           ))}
+        </div>
+      )}
+
+      {/* 5b. Report Draft Card */}
+      {hasReportDraft && (
+        <div className="mt-2.5">
+          <ChatReportDraftCard
+            draft={msg.blocks!.reportDraft!}
+            onStateChange={(update) => onDraftStateChange?.(update)}
+          />
         </div>
       )}
 
@@ -722,6 +744,33 @@ export default function ChatPage() {
 
   const toggleTrace = (index: number) => {
     setExpandedTraces((prev) => ({ ...prev, [index]: !prev[index] }));
+  };
+
+  const handleDraftStateChange = (
+    index: number,
+    update: {
+      status: 'saved' | 'updated' | 'deleted' | 'failed';
+      savedReportId?: string;
+      errorMessage?: string;
+    },
+  ) => {
+    setMessages((prev) => {
+      const updated = [...prev];
+      const targetMsg = updated[index];
+      if (targetMsg && targetMsg.blocks && targetMsg.blocks.reportDraft) {
+        updated[index] = {
+          ...targetMsg,
+          blocks: {
+            ...targetMsg.blocks,
+            reportDraft: {
+              ...targetMsg.blocks.reportDraft,
+              ...update,
+            },
+          },
+        };
+      }
+      return updated;
+    });
   };
 
   const handleClearChat = () => {
@@ -967,6 +1016,9 @@ export default function ChatPage() {
                       isLastAssistant={index === lastAssistantIndex}
                       isAnyStreaming={isStreaming}
                       onSelectFollowUp={handleSendPrompt}
+                      onDraftStateChange={(update) =>
+                        handleDraftStateChange(index, update)
+                      }
                     />
                   )}
                 </div>
