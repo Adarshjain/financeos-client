@@ -244,7 +244,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
   );
 
   return (
-    <div className="space-y-2 pb-16">
+    <div className="space-y-1 pb-16">
       {/* Page Header with Review and Create buttons */}
       <div className="flex justify-between items-center px-4 pt-2.5 pb-0.5">
         <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Transactions</h1>
@@ -380,7 +380,7 @@ export function TransactionsBrowser({ accounts, categories, needsReviewCount }: 
             </p>
           </div>
         ) : (
-          <div className="space-y-1">
+          <div>
             {pagedData.content.map((transaction, index) => {
               const showDate =
                 index === 0 || transaction.date !== pagedData.content[index - 1].date;
