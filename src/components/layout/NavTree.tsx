@@ -110,6 +110,7 @@ export function NavTree({ onItemClick, renderItemWrapper }: NavTreeProps) {
     <div className="space-y-1">
       {/* Top Level Links */}
       {renderLink(NAV_ITEMS.home, true)}
+      {renderLink(NAV_ITEMS.chat, true)}
       {renderLink(NAV_ITEMS.accounts, true)}
 
       {/* Expandable Modules */}
