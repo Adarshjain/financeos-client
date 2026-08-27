@@ -39,11 +39,11 @@ export const TransactionCard = ({
   const isExcluded = transaction.isTransactionExcluded;
 
   const trigger = (
-      <div
-          className="mb-2 rounded-xl border border-slate-200/30 dark:border-slate-800/40 bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 overflow-hidden hover:border-slate-300 dark:hover:border-slate-700/60 hover:shadow-md hover:shadow-slate-100/5 dark:hover:shadow-none">
         <div
             className={cn(
-                'py-3 px-3 flex items-start justify-between relative gap-2 cursor-pointer transition-colors',
+                'py-2 px-2 flex items-start justify-between relative gap-2 cursor-pointer transition-colors',
+                'border-b border-slate-200/30 dark:border-slate-800/40 bg-white dark:bg-slate-900 overflow-hidden',
+                'sm:rounded-lg sm:mb-2 sm:shadow-sm sm:p-3',
                 transaction.isTransactionUnderMonitoring
                     ? 'bg-orange-50/50 dark:bg-orange-950/10 border-l-4 border-l-amber-500'
                     : '',
@@ -62,7 +62,7 @@ export const TransactionCard = ({
             <div
                 className={cn(
                     'break-words text-slate-800 dark:text-slate-200 font-semibold leading-snug',
-                    transaction.description ? 'mb-1' : '',
+                    transaction.description ?? transaction.sourcedDescription ? 'mb-1' : '',
                 )}
             >
               {transaction.description ?? transaction.sourcedDescription}
@@ -88,7 +88,6 @@ export const TransactionCard = ({
             />
           </TransactionAmount>
         </div>
-      </div>
   );
 
   return (
