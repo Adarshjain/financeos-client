@@ -1,4 +1,4 @@
-import { LayoutDashboard, Plus } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, Plus } from 'lucide-react';
 import Link from 'next/link';
 
 import { DashboardHome } from '@/components/dashboards/DashboardHome';
@@ -59,6 +59,12 @@ export default async function DashboardPage() {
               </Link>
               <Link href="/dashboards">
                 <Button variant="secondary">View dashboards</Button>
+              </Link>
+              <Link href="/chat">
+                <Button variant="secondary">
+                  <MessageSquare className="h-4 w-4" />
+                  Chat with Data
+                </Button>
               </Link>
             </div>
           </div>
