@@ -2,12 +2,15 @@
 
 // On-demand preview. Data is fetched only when the user clicks "Preview" (and
 // when paging a table — itself a deliberate action), never automatically on
-// config changes. Once data is shown, changing the config marks it stale: an
-// overlay covers the result and the Preview button re-enables. A monotonic runId
-// guard ensures a stale in-flight response can't overwrite a newer one.
+// config changes. The one exception is editing a saved report: the definition
+// is known-good, so it runs once on mount (autoRunOnMount) — after that, edits
+// go back through the button. Once data is shown, changing the config marks it
+// stale: an overlay covers the result and the Preview button re-enables. A
+// monotonic runId guard ensures a stale in-flight response can't overwrite a
+// newer one.
 
 import { Loader2, RefreshCw } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { runAdHocReport } from '@/actions/reports';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -23,9 +26,10 @@ import { DEFAULT_TABLE_PAGE_SIZE } from './views/TablePagination';
 interface PreviewPaneProps {
   state: BuilderState;
   catalog: DatasourceCatalog;
+  autoRunOnMount?: boolean;
 }
 
-export function PreviewPane({ state, catalog }: PreviewPaneProps) {
+export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewPaneProps) {
   // `ReportBuilder` holds one reducer for the whole page, so typing in the Name
   // or Description field re-renders this component even though neither is part
   // of the definition. Without memoisation that re-ran validation and a full
@@ -91,6 +95,17 @@ export function PreviewPane({ state, catalog }: PreviewPaneProps) {
       setLoadedSignature(null);
     }
   };
+
+  // Edit mode: the saved definition is known-good, so load it once on mount.
+  // Guarded by a ref (not effect deps) so later config changes never re-trigger it.
+  const autoRanRef = useRef(false);
+  useEffect(() => {
+    if (autoRunOnMount && valid && !autoRanRef.current) {
+      autoRanRef.current = true;
+      void runPreview();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handlePageChange = (p: number) => {
     setPage(p);
