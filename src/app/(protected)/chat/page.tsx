@@ -32,6 +32,7 @@ import {
   ChatStatCards,
 } from './components/ChatStatCards';
 import { FollowUpChips } from './components/FollowUpChips';
+import { buildTranscript } from './lib/transcript';
 
 export interface ChatBlocks {
   stats?: ChatStat[];
@@ -57,6 +58,7 @@ interface Message {
   role: 'user' | 'assistant';
   content?: string;
   clarify?: string;
+  clarifyOptions?: string[];
   blocks?: ChatBlocks;
   traces?: ChatTrace[];
   isStreaming?: boolean;
@@ -533,6 +535,19 @@ function AssistantMessage({
       {msg.clarify && (
         <div className="rounded-[10px] bg-[var(--accent-tint)] px-3 py-2 text-2xs text-[var(--ink)] mb-2.5">
           <p className="font-medium">{msg.clarify}</p>
+          {isLastAssistant &&
+            !isAnyStreaming &&
+            onSelectFollowUp &&
+            msg.clarifyOptions &&
+            msg.clarifyOptions.length > 0 && (
+              <div className="mt-1">
+                <FollowUpChips
+                  questions={msg.clarifyOptions}
+                  onSelect={onSelectFollowUp}
+                  variant="onTint"
+                />
+              </div>
+            )}
         </div>
       )}
 
@@ -659,13 +674,26 @@ function Composer({
   setInput,
   isStreaming,
   onSend,
+  awaitingClarify,
 }: {
   input: string;
   setInput: (val: string) => void;
   isStreaming: boolean;
   onSend: () => void;
+  awaitingClarify?: boolean;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Focus on page load, and re-focus whenever a clarifying question arrives.
+  useEffect(() => {
+    textareaRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (awaitingClarify) {
+      textareaRef.current?.focus();
+    }
+  }, [awaitingClarify]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -686,7 +714,11 @@ function Composer({
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask anything about your data…"
+          placeholder={
+            awaitingClarify
+              ? 'Reply to the question above…'
+              : 'Ask anything about your data…'
+          }
           disabled={isStreaming}
           rows={1}
           className="w-full resize-none border-0 bg-transparent p-0 text-xs leading-[1.4] text-[var(--ink)] placeholder:text-[var(--ink-3)] shadow-none focus-visible:ring-0 focus-visible:outline-none max-h-36 overflow-y-auto"
@@ -809,9 +841,7 @@ export default function ChatPage() {
 
     try {
       // Extract transcript (role and content only)
-      const transcript = newMessages
-        .filter((m) => m.content && !m.isStreaming)
-        .map((m) => ({ role: m.role, content: m.content || '' }));
+      const transcript = buildTranscript(newMessages);
 
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -908,6 +938,7 @@ export default function ChatPage() {
                     role: 'assistant',
                     content: data.answer,
                     clarify: data.clarify,
+                    clarifyOptions: data.clarifyOptions,
                     blocks: data.blocks,
                     traces: accumulatedTraces,
                     isStreaming: false,
@@ -966,6 +997,12 @@ export default function ChatPage() {
       setIsStreaming(false);
     }
   };
+
+  const lastMessage = messages[messages.length - 1];
+  const awaitingClarify =
+    !isStreaming &&
+    lastMessage?.role === 'assistant' &&
+    Boolean(lastMessage.clarify);
 
   return (
     <div className="bui-chat relative flex h-screen max-h-screen flex-col bg-[var(--canvas)] -m-0 md:-m-6 lg:-mt-6 overflow-hidden">
@@ -1035,6 +1072,7 @@ export default function ChatPage() {
         setInput={setInput}
         isStreaming={isStreaming}
         onSend={handleSend}
+        awaitingClarify={awaitingClarify}
       />
     </div>
   );

@@ -26,6 +26,21 @@ describe('FollowUpChips', () => {
     );
   });
 
+  it('onTint variant renders surface chips with primary ink; default keeps field/ink-2', () => {
+    const onSelect = vi.fn();
+    const { rerender } = render(
+      <FollowUpChips questions={['Option A']} onSelect={onSelect} variant="onTint" />,
+    );
+    const tintChip = screen.getByText('Option A');
+    expect(tintChip.className).toContain('bg-[var(--surface)]');
+    expect(tintChip.className).toContain('text-[var(--ink)]');
+
+    rerender(<FollowUpChips questions={['Option A']} onSelect={onSelect} />);
+    const defaultChip = screen.getByText('Option A');
+    expect(defaultChip.className).toContain('bg-[var(--field)]');
+    expect(defaultChip.className).toContain('text-[var(--ink-2)]');
+  });
+
   it('renders null when questions array is empty', () => {
     const onSelect = vi.fn();
     const { container } = render(
