@@ -14,6 +14,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import { Button } from '@/components/ui/button';
+import { ensureNotificationPermission } from '@/lib/browserNotifications';
 
 import {
   ChatChartBlock,
@@ -32,6 +33,7 @@ import {
   ChatStatCards,
 } from './components/ChatStatCards';
 import { FollowUpChips } from './components/FollowUpChips';
+import { notifyChatComplete } from './lib/chatNotifications';
 import { buildTranscript } from './lib/transcript';
 
 export interface ChatBlocks {
@@ -838,6 +840,8 @@ export default function ChatPage() {
     const newMessages = [...messages, userMsg, initialAssistantMsg];
     setMessages(newMessages);
     setIsStreaming(true);
+    // Sending is a user gesture, so browsers will honor the permission prompt.
+    ensureNotificationPermission();
 
     try {
       // Extract transcript (role and content only)
@@ -856,15 +860,17 @@ export default function ChatPage() {
         } catch {
           errJson = { message: `HTTP Error ${res.status}` };
         }
+        const errorMessage = errJson.message || 'Failed to process request';
         setMessages((prev) => {
           const updated = [...prev];
           updated[assistantMsgIndex] = {
             role: 'assistant',
-            error: errJson.message || 'Failed to process request',
+            error: errorMessage,
             startTime,
           };
           return updated;
         });
+        notifyChatComplete({ error: errorMessage });
         setIsStreaming(false);
         return;
       }
@@ -881,6 +887,7 @@ export default function ChatPage() {
       // Must survive chunk boundaries: an `event:` line and its `data:` line can
       // arrive in different reads. Reset only on the blank line that ends an event.
       let eventName = 'message';
+      let sawTerminalEvent = false;
 
       while (true) {
         const { value, done } = await reader.read();
@@ -932,6 +939,11 @@ export default function ChatPage() {
                   return updated;
                 });
               } else if (eventName === 'final') {
+                sawTerminalEvent = true;
+                notifyChatComplete({
+                  answer: data.answer,
+                  clarify: data.clarify,
+                });
                 setMessages((prev) => {
                   const updated = [...prev];
                   updated[assistantMsgIndex] = {
@@ -947,6 +959,10 @@ export default function ChatPage() {
                   return updated;
                 });
               } else if (eventName === 'error') {
+                sawTerminalEvent = true;
+                notifyChatComplete({
+                  error: data.message || 'Error occurred during processing',
+                });
                 setMessages((prev) => {
                   const updated = [...prev];
                   updated[assistantMsgIndex] = {
@@ -968,6 +984,11 @@ export default function ChatPage() {
 
       // Stream ended without a final/error event (server timeout, dropped connection):
       // don't leave the bubble spinning forever.
+      if (!sawTerminalEvent) {
+        notifyChatComplete({
+          error: 'The stream ended before an answer arrived. Please try again.',
+        });
+      }
       setMessages((prev) => {
         const updated = [...prev];
         const msg = updated[assistantMsgIndex];
@@ -984,15 +1005,18 @@ export default function ChatPage() {
         return updated;
       });
     } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Network error occurred';
       setMessages((prev) => {
         const updated = [...prev];
         updated[assistantMsgIndex] = {
           role: 'assistant',
-          error: err instanceof Error ? err.message : 'Network error occurred',
+          error: errorMessage,
           startTime,
         };
         return updated;
       });
+      notifyChatComplete({ error: errorMessage });
     } finally {
       setIsStreaming(false);
     }
