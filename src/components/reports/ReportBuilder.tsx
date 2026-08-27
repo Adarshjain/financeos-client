@@ -160,7 +160,11 @@ export function ReportBuilder({
 
         <Card className="self-start lg:sticky lg:top-6">
           <CardContent className="p-4">
-            <PreviewPane state={state} catalog={activeCatalog} />
+            <PreviewPane
+              state={state}
+              catalog={activeCatalog}
+              autoRunOnMount={mode === 'edit'}
+            />
           </CardContent>
         </Card>
       </div>
