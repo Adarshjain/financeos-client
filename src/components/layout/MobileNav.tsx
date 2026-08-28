@@ -29,7 +29,7 @@ export function MobileNav({ userEmail }: MobileNavProps) {
   const { mode, items } = getMobileNavContext(pathname);
 
   return (
-    <nav className="lg:hidden fixed bottom-2 left-3 right-3 h-12 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-slate-900/70 border rounded-2xl border-slate-200 dark:border-slate-800 z-40 flex items-center shadow-lg overflow-hidden px-1">
+    <nav className="lg:hidden fixed bottom-[calc(0.5rem+var(--safe-bottom))] left-3 right-3 h-12 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-slate-900/70 border rounded-2xl border-slate-200 dark:border-slate-800 z-40 flex items-center shadow-lg overflow-hidden px-1">
       {/* Sticky Left: X (Close to Home) Icon */}
       {mode !== 'default' && (
         <Link
