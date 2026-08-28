@@ -31,6 +31,7 @@ export interface RewardDetails {
 
 export interface TransactionBase {
   accountId: string;
+  cardId?: string | null;
   date: string;
   amount: number;
   description?: string;
@@ -102,6 +103,8 @@ export type Transaction = TransactionBase & {
   reviewReasons?: ReviewReason[];
   appliedRuleId?: string | null;
   links?: TransactionLinkSummary[];
+  cardId?: string | null;
+  cardLabel?: string | null;
   // Reward details come back flat on the response (requests nest them in rewardDetails)
   settlementDate?: string | null;
   instantDiscount?: number | null;
@@ -109,6 +112,28 @@ export type Transaction = TransactionBase & {
   channel?: TransactionChannel | null;
   isEmi?: boolean | null;
   isInternational?: boolean | null;
+}
+
+/**
+ * Field names mirror the server record `BulkReattributeCardRequest` exactly
+ * (`accountId, cardId, from, to, currentCardId`). They previously read
+ * `targetCardId`/`fromDate`/`toDate`, which never matched the API — the mismatch
+ * went unnoticed because nothing consumed these types until the CardsDialog
+ * reassign flow landed. Renaming the *caller* to match these names instead would
+ * compile and then silently no-op, since the server would receive nulls.
+ */
+export interface BulkReattributeCardRequest {
+  accountId: string;
+  /** Target card; omit to clear attribution (set to Unattributed). */
+  cardId?: string | null;
+  from?: string | null;
+  to?: string | null;
+  /** Restrict to transactions currently on this card. */
+  currentCardId?: string | null;
+}
+
+export interface BulkReattributeResponse {
+  updatedCount: number;
 }
 
 export type PagedTransaction = Page<Transaction>;

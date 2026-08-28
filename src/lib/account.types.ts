@@ -82,6 +82,51 @@ export type BankAccount = AccountBase & {
   lastStatementDate?: string | null;
 }
 
+export type CardRelationship = 'SELF' | 'SPOUSE' | 'PARENT' | 'CHILD' | 'SIBLING' | 'OTHER';
+
+export interface AccountCard {
+  id: string;
+  accountId: string;
+  label?: string | null;
+  holderName?: string | null;
+  relationship: CardRelationship;
+  last4: string;
+  isPrimary: boolean;
+  issuedOn?: string | null;
+  closedOn?: string | null;
+  spendLimit?: number | null;
+  note?: string | null;
+  transactionCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateAccountCardRequest {
+  label?: string;
+  holderName?: string;
+  relationship: CardRelationship;
+  last4: string;
+  isPrimary?: boolean;
+  issuedOn?: string | null;
+  spendLimit?: number | null;
+  note?: string | null;
+}
+
+export interface UpdateAccountCardRequest {
+  label?: string;
+  holderName?: string;
+  relationship: CardRelationship;
+  last4: string;
+  isPrimary?: boolean;
+  issuedOn?: string | null;
+  spendLimit?: number | null;
+  note?: string | null;
+}
+
+export interface CloseCardRequest {
+  closedOn?: string;
+}
+
 export type CreditCard = AccountBase & {
   type: AccountType.CREDIT_CARD;
   last4: string;
@@ -91,6 +136,7 @@ export type CreditCard = AccountBase & {
   /** Null on cards created before the field became mandatory — set on next edit. */
   anniversaryDate?: string | null;
   lastStatementDate?: string | null;
+  cards?: AccountCard[];
 }
 
 export type Broker = AccountBase & {

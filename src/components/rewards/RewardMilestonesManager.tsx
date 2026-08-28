@@ -9,6 +9,7 @@ import RewardMilestoneForm from '@/components/rewards/RewardMilestoneForm';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/ui/empty-state';
+import type { AccountCard } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { RewardMilestone, RewardType } from '@/lib/rewards.types';
 import { formatMoney } from '@/lib/utils';
@@ -34,13 +35,14 @@ function milestoneSummary(m: RewardMilestone): string {
 
 interface RewardMilestonesManagerProps {
   accountId: string;
+  cards?: AccountCard[];
   categories: Category[];
   /** The card's default reward currency — preselected for new milestones. */
   defaultRewardType: RewardType;
 }
 
 /** Milestones list + CRUD for one account — rendered below the rules list. */
-export default function RewardMilestonesManager({ accountId, categories, defaultRewardType }: RewardMilestonesManagerProps) {
+export default function RewardMilestonesManager({ accountId, cards, categories, defaultRewardType }: RewardMilestonesManagerProps) {
   const [milestones, setMilestones] = useState<RewardMilestone[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editing, setEditing] = useState<RewardMilestone | undefined>();
@@ -148,6 +150,7 @@ export default function RewardMilestonesManager({ accountId, categories, default
         <RewardMilestoneForm
           key={editing?.id ?? 'create'}
           accountId={accountId}
+          cards={cards}
           categories={categories}
           defaultRewardType={defaultRewardType}
           milestone={editing}

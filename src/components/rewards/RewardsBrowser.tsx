@@ -8,7 +8,7 @@ import { getRewardReport, listRewardLines } from '@/actions/rewards';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DatePicker } from '@/components/ui/date-picker';
 import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -405,6 +405,19 @@ export default function RewardsBrowser({
           Some anniversary-year windows fell back to calendar years — set the card’s anniversary date by editing the account on the Accounts page.
         </div>
       )}
+      {report?.perCardAttributionIncomplete != null && report.perCardAttributionIncomplete > 0 && (
+        <div className="rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-500 flex items-center justify-between gap-2">
+          <span>
+            {report.perCardAttributionIncomplete} transaction{report.perCardAttributionIncomplete === 1 ? '' : 's'} on this multi-card account {report.perCardAttributionIncomplete === 1 ? 'is' : 'are'} unattributed and could not match card-scoped rules or limits.
+          </span>
+          <a
+            href="/accounts"
+            className="shrink-0 text-xs font-semibold underline text-amber-700 dark:text-amber-400 hover:text-amber-800"
+          >
+            Manage cards
+          </a>
+        </div>
+      )}
 
       {/* Summary */}
       <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-sm">
@@ -462,6 +475,49 @@ export default function RewardsBrowser({
         </CardContent>
       </Card>
 
+      {/* By card breakdown (shown only when 2+ cards exist) */}
+      {report?.byCard && report.byCard.length >= 2 && (
+        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-sm">
+          <CardHeader className="p-3.5 pb-2">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              By card
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-3.5 pt-0">
+            <div className="divide-y divide-slate-100 dark:divide-slate-800/80">
+              {report.byCard.map((card) => (
+                <div key={card.cardId ?? 'unattributed'} className="py-2.5 first:pt-0 last:pb-0 flex items-center justify-between gap-3 text-xs">
+                  <div className="min-w-0">
+                    <div className="font-semibold text-slate-700 dark:text-slate-200 truncate flex items-center gap-1.5">
+                      <span>{card.cardLabel}</span>
+                      {card.unattributed && (
+                        <span className="text-2xs font-bold px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 uppercase tracking-wide shrink-0">
+                          unassigned
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-2xs text-slate-400 dark:text-slate-500 mt-0.5">
+                      {card.txnCount} transaction{card.txnCount === 1 ? '' : 's'} · {formatMoney(card.basisSpend)} spend
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="font-bold text-emerald-600 dark:text-emerald-400">
+                      {card.points > 0 ? (
+                        <>
+                          {card.cashbackInr > 0 ? `${formatMoney(card.cashbackInr)} + ` : ''}{card.points} pts
+                        </>
+                      ) : (
+                        formatMoney(card.cashbackInr)
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Milestones — open by default; completed ones collapsed and without a progress bar */}
       {milestones.length > 0 && (
         <div className={cn('flex flex-col gap-2.5', loading && 'opacity-60')}>
@@ -493,7 +549,7 @@ export default function RewardsBrowser({
         <div className={cn('grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5', loading && 'opacity-60')}>
           {report.rules.map((rule: RewardRuleBreakdown) => {
             const cap = rule.capStatus;
-            const capPct = cap && cap.cap > 0 ? Math.min(100, Math.round((cap.used / cap.cap) * 100)) : null;
+            const capPct = cap && cap.used != null && cap.cap > 0 ? Math.min(100, Math.round((cap.used / cap.cap) * 100)) : null;
             const selected = ruleFilter === rule.ruleId;
             return (
               <button
@@ -528,24 +584,51 @@ export default function RewardsBrowser({
                   {rule.matchedCount} txns · on {formatMoney(rule.basisMatched)}
                 </div>
                 {cap && (
-                  <div className="mt-2">
-                    <div className="flex justify-between text-2xs text-slate-400 dark:text-slate-500 mb-0.5">
-                      <span>
-                        {cap.sharedBucket ? `Shared "${cap.sharedBucket}" ` : 'Cap '}
-                        {rule.earnedUnit === 'POINTS' ? `${cap.used}/${cap.cap} pts` : `${formatMoney(cap.used)}/${formatMoney(cap.cap)}`}
-                        {cap.cycleFallback && ' (month fallback)'}
-                      </span>
-                      <span>resets {formatDate(cap.windowEnd)}</span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                      <div
-                        className={cn(
-                          'h-full rounded-full transition-all',
-                          capPct != null && capPct >= 100 ? 'bg-rose-500' : capPct != null && capPct >= 80 ? 'bg-amber-500' : 'bg-emerald-500',
-                        )}
-                        style={{ width: `${capPct ?? 0}%` }}
-                      />
-                    </div>
+                  <div className="mt-2 flex flex-col gap-1.5">
+                    {cap.counterScope === 'PER_CARD' && (cap.perCard ?? []).length > 0 ? (
+                      (cap.perCard ?? []).map((pc) => {
+                        const cardPct = cap.cap > 0 ? Math.min(100, Math.round((pc.used / cap.cap) * 100)) : null;
+                        return (
+                          <div key={pc.cardId ?? 'unattributed'} className="flex flex-col gap-0.5">
+                            <div className="flex justify-between text-2xs text-slate-400 dark:text-slate-500">
+                              <span className="font-medium text-slate-600 dark:text-slate-300 truncate max-w-[130px]">
+                                {pc.cardLabel}: {rule.earnedUnit === 'POINTS' ? `${pc.used}/${cap.cap} pts` : `${formatMoney(pc.used)}/${formatMoney(cap.cap)}`}
+                              </span>
+                              <span>resets {formatDate(cap.windowEnd)}</span>
+                            </div>
+                            <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                              <div
+                                className={cn(
+                                  'h-full rounded-full transition-all',
+                                  cardPct != null && cardPct >= 100 ? 'bg-rose-500' : cardPct != null && cardPct >= 80 ? 'bg-amber-500' : 'bg-emerald-500',
+                                )}
+                                style={{ width: `${cardPct ?? 0}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : cap.used != null ? (
+                      <>
+                        <div className="flex justify-between text-2xs text-slate-400 dark:text-slate-500 mb-0.5">
+                          <span>
+                            {cap.sharedBucket ? `Shared "${cap.sharedBucket}" ` : 'Cap '}
+                            {rule.earnedUnit === 'POINTS' ? `${cap.used}/${cap.cap} pts` : `${formatMoney(cap.used)}/${formatMoney(cap.cap)}`}
+                            {cap.cycleFallback && ' (month fallback)'}
+                          </span>
+                          <span>resets {formatDate(cap.windowEnd)}</span>
+                        </div>
+                        <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                          <div
+                            className={cn(
+                              'h-full rounded-full transition-all',
+                              capPct != null && capPct >= 100 ? 'bg-rose-500' : capPct != null && capPct >= 80 ? 'bg-amber-500' : 'bg-emerald-500',
+                            )}
+                            style={{ width: `${capPct ?? 0}%` }}
+                          />
+                        </div>
+                      </>
+                    ) : null}
                   </div>
                 )}
               </button>
@@ -569,8 +652,13 @@ export default function RewardsBrowser({
                   className="p-3 space-y-1.5 cursor-pointer hover:bg-slate-50/80 dark:hover:bg-slate-800/40 active:bg-slate-100 transition-colors"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-2xs text-slate-400 dark:text-slate-500 whitespace-nowrap">
-                      {formatDate(line.effectiveDate)}
+                    <span className="text-2xs text-slate-400 dark:text-slate-500 whitespace-nowrap flex items-center gap-1.5">
+                      <span>{formatDate(line.effectiveDate)}</span>
+                      {line.cardLabel && (
+                        <span className="text-2xs px-1 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded font-medium">
+                          {line.cardLabel}
+                        </span>
+                      )}
                     </span>
                     <span className={cn('text-2xs font-semibold whitespace-nowrap', REASON_META[line.reason].textClass)}>
                       {REASON_META[line.reason].label}
@@ -618,8 +706,13 @@ export default function RewardsBrowser({
                     <td className="px-3 py-2 whitespace-nowrap text-slate-500 dark:text-slate-400">
                       {formatDate(line.effectiveDate)}
                     </td>
-                    <td className="px-3 py-2 max-w-[220px] truncate text-slate-700 dark:text-slate-300">
-                      {lineDescription(line)}
+                    <td className="px-3 py-2 max-w-[220px] text-slate-700 dark:text-slate-300">
+                      <div className="truncate">{lineDescription(line)}</div>
+                      {line.cardLabel && (
+                        <span className="inline-block mt-0.5 text-2xs px-1.5 py-0.2 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded font-medium">
+                          {line.cardLabel}
+                        </span>
+                      )}
                     </td>
                     <td className="px-3 py-2 text-right font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
                       {formatMoney(line.basis)}

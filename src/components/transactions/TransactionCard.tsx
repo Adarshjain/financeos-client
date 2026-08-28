@@ -67,8 +67,13 @@ export const TransactionCard = ({
             >
               {transaction.description ?? transaction.sourcedDescription}
             </div>
-            <div className="text-xs font-medium text-slate-500 dark:text-slate-500 mt-0.5">
-              {getAccountName(accounts, transaction.accountId)}
+            <div className="text-xs font-medium text-slate-500 dark:text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
+              <span>{getAccountName(accounts, transaction.accountId)}</span>
+              {transaction.cardLabel ? (
+                <span className="text-2xs font-normal text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                  {transaction.cardLabel}
+                </span>
+              ) : null}
             </div>
             <div className="flex flex-col items-start gap-1.5 mt-2.5">
               {showSource && <TransactionSourceBadge source={transaction.source}/>}

@@ -124,9 +124,13 @@ export interface RewardRuleTier {
   rate: number;
 }
 
+export type CounterScope = 'ACCOUNT' | 'PER_CARD';
+
 export interface RewardRule {
   id: string;
   accountId: string;
+  cardId?: string | null;
+  counterScope?: CounterScope;
   name: string;
   priority: number;
   stacking: RuleStacking;
@@ -165,6 +169,8 @@ export interface RewardRule {
 /** Full rule definition — POST creates, PUT overwrites (accountId ignored on PUT). */
 export interface RewardRuleRequest {
   accountId?: string;
+  cardId?: string | null;
+  counterScope?: CounterScope;
   name: string;
   priority: number;
   stacking?: RuleStacking;
@@ -214,6 +220,7 @@ export type MilestoneWindow = Exclude<CapWindow, 'DAY'> | 'ONE_TIME';
 export interface RewardMilestone {
   id: string;
   accountId: string;
+  cardId?: string | null;
   name: string;
   windowType: MilestoneWindow;
   basis: MilestoneBasis;
@@ -237,6 +244,7 @@ export interface RewardMilestone {
 /** Full milestone definition — POST creates, PUT overwrites (accountId ignored on PUT). */
 export interface RewardMilestoneRequest {
   accountId?: string;
+  cardId?: string | null;
   name: string;
   windowType: MilestoneWindow;
   basis: MilestoneBasis;
@@ -282,6 +290,7 @@ export interface RewardCapBucket {
   cap: number;
   rewardType: RewardType;
   windowType: CapWindow;
+  counterScope: CounterScope;
   ruleCount: number;
   createdAt: string;
   updatedAt: string;
@@ -294,17 +303,26 @@ export interface RewardCapBucketRequest {
   /** Unit of the cap; only rules of this reward type can share the bucket. */
   rewardType?: RewardType;
   windowType: CapWindow;
+  counterScope?: CounterScope;
+}
+
+export interface PerCardCapUsage {
+  cardId?: string | null;
+  cardLabel: string;
+  used: number;
 }
 
 export interface RewardCapStatus {
   window: CapWindow;
   cap: number;
-  used: number;
+  used?: number | null;
   windowStart: string;
   windowEnd: string;
   cycleFallback: boolean;
   /** Non-null when this cap is a bucket shared by several rules. */
   sharedBucket?: string | null;
+  counterScope?: CounterScope;
+  perCard?: PerCardCapUsage[];
 }
 
 export interface RewardRuleBreakdown {
@@ -338,12 +356,24 @@ export interface RewardSummary {
   effectivePct?: number | null;
 }
 
+export interface CardBreakdown {
+  cardId?: string | null;
+  cardLabel: string;
+  unattributed: boolean;
+  basisSpend: number;
+  cashbackInr: number;
+  points: number;
+  txnCount: number;
+}
+
 export interface RewardReport {
   summary: RewardSummary;
   rules: RewardRuleBreakdown[];
   milestones: MilestoneStatus[];
   cycleFallback: boolean;
   anniversaryFallback: boolean;
+  byCard?: CardBreakdown[];
+  perCardAttributionIncomplete?: number;
 }
 
 export interface RewardLine {
@@ -363,6 +393,8 @@ export interface RewardLine {
   earned: number;
   earnedUnit: 'RUPEES' | 'POINTS';
   reason: RewardLineReason;
+  cardId?: string | null;
+  cardLabel?: string | null;
 }
 
 export type PagedRewardLines = Page<RewardLine>;
@@ -377,6 +409,7 @@ export interface RewardRecommendationRequest {
   isEmi?: boolean;
   isIntl?: boolean;
   accountIds?: string[];
+  cardId?: string;
 }
 
 export interface SimulatedCapStatus {
