@@ -1,7 +1,6 @@
 import {
   Calendar,
   CreditCard as CardIcon,
-  Edit,
   FileText,
   Landmark,
   Plus,
@@ -11,7 +10,7 @@ import {
 } from 'lucide-react';
 
 import { AccountFormWrapper } from '@/components/accounts/AccountFormWrapper';
-import { DeleteAccount } from '@/components/accounts/DeleteAccount';
+import { CardsDialog } from '@/components/accounts/CardsDialog';
 import { StatementsDialog } from '@/components/accounts/StatementsDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -54,11 +53,21 @@ const AccountWrapper = ({ account, children }: { account: Account; children: Rea
               : 'bg-purple-500',
       )}></div>
 
-      <div className="p-3 flex-1 flex flex-col justify-between gap-2">
-        {children}
-      </div>
+      {/* Main card body is clickable trigger for editing the account */}
+      <AccountFormWrapper
+        account={account}
+        trigger={
+          <div
+            role="button"
+            tabIndex={0}
+            className="p-3.5 flex-1 flex flex-col justify-between gap-2 text-left cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors select-none"
+          >
+            {children}
+          </div>
+        }
+      />
 
-      {/* Actions Row */}
+      {/* Actions Row: Only Statements and Cards */}
       <div
         className="flex border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/20 divide-x divide-slate-100 dark:divide-slate-800/65">
         <StatementsDialog
@@ -67,25 +76,26 @@ const AccountWrapper = ({ account, children }: { account: Account; children: Rea
             <button
               type="button"
               suppressHydrationWarning
-              className="flex-1 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100/30 dark:hover:bg-slate-800/20 transition-all flex items-center justify-center gap-1.5">
+              className="flex-1 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100/40 dark:hover:bg-slate-800/30 transition-all flex items-center justify-center gap-1.5 min-h-[40px]">
               <FileText className="w-3.5 h-3.5" />
               Statements
             </button>
           }
         />
-        <AccountFormWrapper
-          account={account}
-          trigger={
-            <button
-              type="button"
-              suppressHydrationWarning
-              className="flex-1 py-2 text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100/30 dark:hover:bg-slate-800/20 transition-all flex items-center justify-center gap-1.5">
-              <Edit className="w-3.5 h-3.5" />
-              Edit
-            </button>
-          }
-        />
-        <DeleteAccount account={account} />
+        {account.type === AccountType.CREDIT_CARD ? (
+          <CardsDialog
+            account={account}
+            trigger={
+              <button
+                type="button"
+                suppressHydrationWarning
+                className="flex-1 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-slate-100/40 dark:hover:bg-slate-800/30 transition-all flex items-center justify-center gap-1.5 min-h-[40px]">
+                <CardIcon className="w-3.5 h-3.5" />
+                Cards
+              </button>
+            }
+          />
+        ) : null}
       </div>
     </div>
   );
@@ -281,10 +291,17 @@ export default async function AccountsPage() {
                         ) : null}
                       </div>
 
-                      <span
-                        className="text-2xs tabular-nums bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded shrink-0">
-                        •••• {account.last4}
-                      </span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {account.cards && account.cards.length > 1 ? (
+                          <span className="text-2xs font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded">
+                            {account.cards.length} cards
+                          </span>
+                        ) : null}
+                        <span
+                          className="text-2xs tabular-nums bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-1.5 py-0.5 rounded">
+                          •••• {account.last4}
+                        </span>
+                      </div>
                     </div>
 
                     {/* Metadata Badges */}

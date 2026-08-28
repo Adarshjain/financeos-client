@@ -43,3 +43,9 @@ export const mergeTransactions = createDomainAction(
   (keepId: string, deleteId: string) => transactionsApi.merge({ keepId, deleteId })
 );
 
+export const bulkReattributeTransactionsCard = createDomainAction(
+  { fallbackError: 'Failed to reattribute transactions to card', revalidatePaths: TRANSACTION_PATHS },
+  (data: import('@/lib/transaction.types').BulkReattributeCardRequest) => transactionsApi.bulkReattributeCard(data)
+);
+
+

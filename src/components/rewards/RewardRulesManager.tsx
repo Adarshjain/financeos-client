@@ -451,12 +451,18 @@ export default function RewardRulesManager({
 
       {/* Shared cap buckets + milestones for the same account */}
       <RewardCapBucketsManager accountId={accountId} buckets={capBuckets} onChanged={() => void refreshBuckets()} />
-      <RewardMilestonesManager accountId={accountId} categories={categories} defaultRewardType={defaultRewardType} />
+      <RewardMilestonesManager
+        accountId={accountId}
+        cards={accounts.find((a) => a.id === accountId)?.type === 'credit_card' ? (accounts.find((a) => a.id === accountId) as import('@/lib/account.types').CreditCard).cards : undefined}
+        categories={categories}
+        defaultRewardType={defaultRewardType}
+      />
 
       {(isCreateOpen || editingRule || cloneSource) && (
         <RewardRuleForm
           key={editingRule?.id ?? cloneSource?.id ?? 'create'}
           accountId={accountId}
+          cards={accounts.find((a) => a.id === accountId)?.type === 'credit_card' ? (accounts.find((a) => a.id === accountId) as import('@/lib/account.types').CreditCard).cards : undefined}
           categories={categories}
           capBuckets={capBuckets}
           defaultRewardType={defaultRewardType}

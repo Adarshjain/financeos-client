@@ -12,12 +12,14 @@ import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTi
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { AccountCard } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type {
   AccrualType,
   CapExhaustedBehavior,
   CapWindow,
   CashbackRounding,
+  CounterScope,
   DayOfWeek,
   EmiTreatment,
   FeeTreatment,
@@ -72,6 +74,7 @@ function numOrNull(value: string): number | null {
 
 interface RewardRuleFormProps {
   accountId: string;
+  cards?: AccountCard[];
   categories: Category[];
   capBuckets: RewardCapBucket[];
   /** The card's default reward currency — preselected for new rules. */
@@ -88,6 +91,7 @@ interface RewardRuleFormProps {
 
 export default function RewardRuleForm({
   accountId,
+  cards,
   categories,
   capBuckets,
   defaultRewardType,
@@ -102,6 +106,8 @@ export default function RewardRuleForm({
   const isUpdateMode = !!rule;
 
   const [name, setName] = useState(source?.name ?? '');
+  const [cardId, setCardId] = useState<string | null>(source?.cardId ?? null);
+  const [counterScope, setCounterScope] = useState<CounterScope>(source?.counterScope ?? 'ACCOUNT');
   const [stacking, setStacking] = useState<RuleStacking>(source?.stacking ?? 'EXCLUSIVE');
   // Defaults: brand-new rule = no start date ("Always") so past transactions count;
   // a CLONE starts where its predecessor ended (or today) — never "Always", which
@@ -326,6 +332,8 @@ export default function RewardRuleForm({
     }
     const body: RewardRuleRequest = {
       accountId,
+      cardId: cardId || null,
+      counterScope,
       name: name.trim(),
       // A clone (devaluation successor) inherits its predecessor's slot in the
       // evaluation chain; only brand-new rules go to the top.
@@ -450,6 +458,34 @@ export default function RewardRuleForm({
                 </Select>
               </div>
             </div>
+            {cards && cards.length > 0 && (
+              <div className="grid grid-cols-2 gap-2.5 pt-1 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Card Scope</Label>
+                  <Select value={cardId || 'ALL'} onValueChange={(v) => setCardId(v === 'ALL' ? null : v)}>
+                    <SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL" className="text-xs">All Cards (Account-level)</SelectItem>
+                      {cards.map((c) => (
+                        <SelectItem key={c.id} value={c.id} className="text-xs">
+                          {c.label || c.holderName || (c.isPrimary ? 'Primary' : 'Add-on')} (•••• {c.last4})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Counter Scope</Label>
+                  <Select value={counterScope} onValueChange={(v) => setCounterScope(v as CounterScope)}>
+                    <SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ACCOUNT" className="text-xs">Account-wide Counter</SelectItem>
+                      <SelectItem value="PER_CARD" className="text-xs">Per-Card Counter</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
             <div className="flex items-center gap-2 flex-wrap">
               <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Active</Label>
               <DatePicker date={activeFrom} onSelect={setActiveFrom}

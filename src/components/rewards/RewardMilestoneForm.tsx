@@ -11,6 +11,7 @@ import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTi
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { AccountCard } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type {
   MilestoneBasis,
@@ -34,6 +35,7 @@ const WINDOW_LABELS: Record<MilestoneWindow, string> = {
 
 interface RewardMilestoneFormProps {
   accountId: string;
+  cards?: AccountCard[];
   categories: Category[];
   /** The card's default reward currency — preselected for new milestones. */
   defaultRewardType: RewardType;
@@ -45,6 +47,7 @@ interface RewardMilestoneFormProps {
 
 export default function RewardMilestoneForm({
   accountId,
+  cards,
   categories,
   defaultRewardType,
   milestone,
@@ -55,6 +58,7 @@ export default function RewardMilestoneForm({
   const isUpdateMode = !!milestone;
 
   const [name, setName] = useState(milestone?.name ?? '');
+  const [cardId, setCardId] = useState<string | null>(milestone?.cardId ?? null);
   const [windowType, setWindowType] = useState<MilestoneWindow>(milestone?.windowType ?? 'CALENDAR_MONTH');
   const [basis, setBasis] = useState<MilestoneBasis>(milestone?.basis ?? 'SPEND');
   const [threshold, setThreshold] = useState(milestone?.threshold != null ? String(milestone.threshold) : '');
@@ -115,6 +119,7 @@ export default function RewardMilestoneForm({
     }
     const body: RewardMilestoneRequest = {
       accountId,
+      cardId: cardId || null,
       name: name.trim(),
       windowType,
       basis,
@@ -184,6 +189,38 @@ export default function RewardMilestoneForm({
                 </SelectContent>
               </Select>
             </div>
+            {cards && cards.length > 0 && (
+              <div className="flex flex-col gap-1 col-span-2">
+                <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Card Scope</Label>
+                <Select
+                  value={cardId || 'ALL'}
+                  onValueChange={(v) => {
+                    const newCardId = v === 'ALL' ? null : v;
+                    setCardId(newCardId);
+                    if (newCardId && windowType === 'ONE_TIME') {
+                      const selectedCard = cards.find((c) => c.id === newCardId);
+                      if (selectedCard?.issuedOn) {
+                        const issued = parseCalendarDate(selectedCard.issuedOn);
+                        setActiveFrom(issued);
+                        const end = new Date(issued);
+                        end.setDate(end.getDate() + 90);
+                        setActiveTo(end);
+                      }
+                    }
+                  }}
+                >
+                  <SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ALL" className="text-xs">All Cards (Account-level)</SelectItem>
+                    {cards.map((c) => (
+                      <SelectItem key={c.id} value={c.id} className="text-xs">
+                        {c.label || c.holderName || (c.isPrimary ? 'Primary' : 'Add-on')} (•••• {c.last4})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex flex-col gap-1">
               <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Counts</Label>
               <Select value={basis} onValueChange={(v) => setBasis(v as MilestoneBasis)}>

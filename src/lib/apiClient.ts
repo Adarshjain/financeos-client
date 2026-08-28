@@ -419,6 +419,47 @@ export const transactionsApi = {
       body: JSON.stringify(data),
     });
   },
+
+  async bulkReattributeCard(data: import('@/lib/transaction.types').BulkReattributeCardRequest): Promise<import('@/lib/transaction.types').BulkReattributeResponse> {
+    return request<import('@/lib/transaction.types').BulkReattributeResponse>('/api/v1/transactions/card', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+// Account Cards API
+export const accountCardsApi = {
+  async listByAccount(accountId: string): Promise<import('@/lib/account.types').AccountCard[]> {
+    return request<import('@/lib/account.types').AccountCard[]>(`/api/v1/accounts/${accountId}/cards`);
+  },
+
+  async create(accountId: string, data: import('@/lib/account.types').CreateAccountCardRequest): Promise<import('@/lib/account.types').AccountCard> {
+    return request<import('@/lib/account.types').AccountCard>(`/api/v1/accounts/${accountId}/cards`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async update(accountId: string, cardId: string, data: import('@/lib/account.types').UpdateAccountCardRequest): Promise<import('@/lib/account.types').AccountCard> {
+    return request<import('@/lib/account.types').AccountCard>(`/api/v1/accounts/${accountId}/cards/${cardId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async close(accountId: string, cardId: string, data: import('@/lib/account.types').CloseCardRequest): Promise<import('@/lib/account.types').AccountCard> {
+    return request<import('@/lib/account.types').AccountCard>(`/api/v1/accounts/${accountId}/cards/${cardId}/close`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async delete(accountId: string, cardId: string): Promise<void> {
+    return request<void>(`/api/v1/accounts/${accountId}/cards/${cardId}`, {
+      method: 'DELETE',
+    });
+  },
 };
 
 

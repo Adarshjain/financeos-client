@@ -54,12 +54,28 @@ export default function TransactionCRUD({
   const suggestedDescriptionRef = useRef<string | null>(null);
 
   const [accountId, setAccountId] = useState<string>(transaction?.accountId ?? '');
+  const [cardId, setCardId] = useState<string | null>(transaction?.cardId ?? null);
   // Investment (broker) accounts are managed via the investments module, not
   // manual transaction entry. Keep the current transaction's account selectable
   // even if it's a broker account, so editing a legacy record doesn't blank out.
   const selectableAccounts = accounts.filter(
     (a) => a.type !== AccountType.BROKER || a.id === transaction?.accountId,
   );
+  const selectedAccount = accounts.find((a) => a.id === accountId);
+  const isCreditCard = selectedAccount?.type === AccountType.CREDIT_CARD;
+  const availableCards = isCreditCard ? (selectedAccount.cards ?? []) : [];
+
+  const handleAccountChange = (newAccountId: string) => {
+    setAccountId(newAccountId);
+    const acc = accounts.find((a) => a.id === newAccountId);
+    if (acc?.type === AccountType.CREDIT_CARD && acc.cards && acc.cards.length > 0) {
+      const primary = acc.cards.find((c) => c.isPrimary);
+      setCardId(primary ? primary.id : acc.cards[0].id);
+    } else {
+      setCardId(null);
+    }
+  };
+
   const [isMonitored, setIsMonitored] = useState(transaction?.isTransactionUnderMonitoring ?? false);
   const [monitoringReason, setMonitoringReason] = useState<string>(transaction?.monitoringReason ?? '');
   const [isExcluded, setIsExcluded] = useState(transaction?.isTransactionExcluded ?? false);
@@ -169,6 +185,7 @@ export default function TransactionCRUD({
       const categoryIds = selectedCategories.map(c => c.id);
       const transactionRequest: TransactionRequest = {
         accountId,
+        cardId: isCreditCard ? (cardId || null) : null,
         description: form.description.value ?? undefined,
         amount: Number(amount),
         categoryIds,
@@ -313,7 +330,7 @@ export default function TransactionCRUD({
             <Select
               name="accountId"
               value={accountId}
-              onValueChange={setAccountId}
+              onValueChange={handleAccountChange}
               required
               disabled={isUpdateMode && !!transaction?.accountId}
             >
@@ -330,6 +347,36 @@ export default function TransactionCRUD({
               </SelectContent>
             </Select>
           </div>
+
+          {/* Card Selector (only for Credit Cards with cards) */}
+          {isCreditCard && availableCards.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <Label className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                <CreditCard className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                Card
+              </Label>
+              <Select
+                value={cardId || 'NONE'}
+                onValueChange={(val) => setCardId(val === 'NONE' ? null : val)}
+              >
+                <SelectTrigger
+                  className="w-full bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 text-xs px-3 h-9 border border-slate-200 dark:border-slate-800 rounded-lg font-semibold shadow-none hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
+                >
+                  <SelectValue placeholder="Select Card" />
+                </SelectTrigger>
+                <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+                  <SelectItem value="NONE" className="text-xs italic text-slate-400">
+                    Unattributed
+                  </SelectItem>
+                  {availableCards.map((c) => (
+                    <SelectItem key={c.id} value={c.id} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
+                      {c.label || c.holderName || (c.isPrimary ? 'Primary' : 'Add-on')} (•••• {c.last4})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Category Selector */}
           <div className="flex flex-col gap-1">

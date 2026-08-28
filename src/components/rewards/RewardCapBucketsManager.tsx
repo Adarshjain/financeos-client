@@ -12,7 +12,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { CapWindow, RewardCapBucket, RewardType } from '@/lib/rewards.types';
+import type { CapWindow, CounterScope, RewardCapBucket, RewardType } from '@/lib/rewards.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
 const WINDOW_LABELS: Record<CapWindow, string> = {
@@ -38,6 +38,7 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
   const [cap, setCap] = useState('');
   const [rewardType, setRewardType] = useState<RewardType>('CASH');
   const [windowType, setWindowType] = useState<CapWindow>('CALENDAR_MONTH');
+  const [counterScope, setCounterScope] = useState<CounterScope>('ACCOUNT');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const openCreate = () => {
@@ -46,6 +47,7 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
     setCap('');
     setRewardType('CASH');
     setWindowType('CALENDAR_MONTH');
+    setCounterScope('ACCOUNT');
     setIsCreateOpen(true);
   };
 
@@ -55,6 +57,7 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
     setCap(String(bucket.cap));
     setRewardType(bucket.rewardType);
     setWindowType(bucket.windowType);
+    setCounterScope(bucket.counterScope || 'ACCOUNT');
     setIsCreateOpen(true);
   };
 
@@ -67,7 +70,7 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
       toast.error('Cap must be a positive number.');
       return;
     }
-    const body = { accountId, name: name.trim(), cap: Number(cap), rewardType, windowType };
+    const body = { accountId, name: name.trim(), cap: Number(cap), rewardType, windowType, counterScope };
     setIsSubmitting(true);
     try {
       const res = editing ? await updateRewardCapBucket(editing.id, body) : await createRewardCapBucket(body);
@@ -127,6 +130,7 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
                 <div className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{bucket.name}</div>
                 <div className="text-xs text-sky-600 dark:text-sky-400 font-semibold mt-0.5">
                   {bucket.rewardType === 'POINTS' ? `${bucket.cap} pts` : `₹${bucket.cap}`} / {WINDOW_LABELS[bucket.windowType].replace('Per ', '')}
+                  {bucket.counterScope === 'PER_CARD' && <span className="text-amber-600 dark:text-amber-400 font-bold"> (per card)</span>}
                   <span className="text-slate-400 dark:text-slate-500 font-medium"> · {bucket.ruleCount} rule{bucket.ruleCount === 1 ? '' : 's'}</span>
                 </div>
               </div>
@@ -187,15 +191,27 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
                 </Select>
               </div>
             </div>
-            <div className="flex flex-col gap-1">
-              <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Reward type</Label>
-              <Select value={rewardType} onValueChange={(v) => setRewardType(v as RewardType)}>
-                <SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CASH" className="text-xs">Cash ₹</SelectItem>
-                  <SelectItem value="POINTS" className="text-xs">Reward points</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Reward type</Label>
+                <Select value={rewardType} onValueChange={(v) => setRewardType(v as RewardType)}>
+                  <SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CASH" className="text-xs">Cash ₹</SelectItem>
+                    <SelectItem value="POINTS" className="text-xs">Reward points</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs text-slate-500 dark:text-slate-400 font-medium">Counter scope</Label>
+                <Select value={counterScope} onValueChange={(v) => setCounterScope(v as CounterScope)}>
+                  <SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ACCOUNT" className="text-xs">Per account (pooled)</SelectItem>
+                    <SelectItem value="PER_CARD" className="text-xs">Per card</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <p className="text-2xs text-slate-400 dark:text-slate-500">
               The reward type is the cap’s unit — only rules paying that type can share this bucket.

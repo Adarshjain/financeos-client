@@ -1,11 +1,12 @@
 'use client';
 
-import { AlertTriangle, Calendar, CreditCard, Eye, EyeOff, FileText, Landmark, Shield, TrendingUp, Wallet } from 'lucide-react';
+import { AlertTriangle, Calendar, CreditCard, Eye, EyeOff, FileText, Landmark, Shield, Trash2, TrendingUp, Wallet } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { createAccount, executeGmailCleanup, previewGmailCleanup, updateAccount } from '@/actions/accounts';
-import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { createAccount, deleteAccount, executeGmailCleanup, previewGmailCleanup, updateAccount } from '@/actions/accounts';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -124,11 +125,33 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
   );
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [confirmCleanup, setConfirmCleanup] = useState<{
     count: number;
     before: string;
     accountData: AccountRequest;
   } | null>(null);
+
+  const handleDelete = async () => {
+    if (!account) return;
+    setIsDeleting(true);
+    try {
+      const res = await deleteAccount(account.id);
+      if (res.success) {
+        toast.success('Account deleted!');
+        setShowDeleteConfirm(false);
+        onSuccess?.();
+        onClose?.();
+      } else {
+        toast.error(res.error.message);
+      }
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   useEffect(() => {
     if (account?.type) {
@@ -776,6 +799,29 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             </button>
           </div>
         </div>
+
+        {/* Card 4: Danger Zone (Only in Edit mode) */}
+        {isUpdateMode && account && (
+          <div className="rounded-xl border border-rose-100 dark:border-rose-900/30 bg-rose-50/40 dark:bg-rose-950/20 p-3.5 flex items-center justify-between gap-3">
+            <div className="space-y-0.5">
+              <div className="text-xs font-bold text-rose-700 dark:text-rose-400">Delete Account</div>
+              <div className="text-2xs text-rose-600/80 dark:text-rose-400/80">
+                Permanently delete this account and its transactions.
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="destructive"
+              size="xs"
+              className="gap-1.5 shrink-0"
+              disabled={isSubmitting || isDeleting}
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Delete
+            </Button>
+          </div>
+        )}
         </form>
       </DialogBody>
 
@@ -793,6 +839,32 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
           onClick: () => onClose?.(),
         }}
       />
+
+      {showDeleteConfirm && account && (
+        <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete Account</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete <strong>{account.name}</strong>? This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter
+              primaryAction={{
+                label: isDeleting ? 'Deleting...' : 'Delete Account',
+                variant: 'destructive',
+                onClick: handleDelete,
+                disabled: isDeleting,
+              }}
+              secondaryAction={{
+                label: 'Cancel',
+                onClick: () => setShowDeleteConfirm(false),
+                disabled: isDeleting,
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 }
