@@ -46,7 +46,7 @@ interface ImportWizardDialogProps {
   onSuccess?: () => void;
 }
 
-import { useJobs } from '@/components/jobs/JobsProvider';
+import { emitJobStarted } from '@/components/jobs/jobsBus';
 import { useJobPolling } from '@/hooks/useJobPolling';
 
 export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: ImportWizardDialogProps) {
@@ -81,7 +81,6 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
   // Step 3 Result State
   const [commitResult, setCommitResult] = useState<ImportCommitResult | null>(null);
 
-  const { notifyJobStarted } = useJobs();
   useJobPolling<ImportCommitResult>(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED' && job.result) {
       setCommitResult(job.result);
@@ -296,7 +295,7 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
         if (res.success && res.data?.jobId) {
           const jobId = res.data.jobId;
           setActiveJobId(jobId);
-          notifyJobStarted(jobId);
+          emitJobStarted(jobId);
           toast.info('Reconciliation commit job started in background.');
         } else if (!res.success) {
           toast.error(res.error.message);
@@ -326,7 +325,7 @@ export function ImportWizardDialog({ brokerAccounts, trigger, onSuccess }: Impor
         if (res.success && res.data?.jobId) {
           const jobId = res.data.jobId;
           setActiveJobId(jobId);
-          notifyJobStarted(jobId);
+          emitJobStarted(jobId);
           toast.info('Import commit job started in background.');
         } else if (!res.success) {
           toast.error(res.error.message);

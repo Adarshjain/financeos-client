@@ -4,7 +4,6 @@ import { LogOut } from 'lucide-react';
 import Link from 'next/link';
 
 import { logout } from '@/actions/auth';
-import { JobsIndicator } from '@/components/jobs/JobsIndicator';
 import { NavTree } from '@/components/layout/NavTree';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
@@ -32,11 +31,6 @@ export function Sidebar({ userEmail }: { userEmail: string }) {
         <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">
           {userEmail}
         </p>
-      </div>
-
-      {/* Jobs Indicator */}
-      <div className="px-4 mb-2">
-        <JobsIndicator />
       </div>
 
       {/* Sign out */}

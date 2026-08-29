@@ -1,10 +1,11 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { beforeEach,describe, expect, it, vi } from 'vitest';
 
 import * as jobsActions from '@/actions/jobs';
 
 import { JobErrorDetails } from '../JobErrorDetails';
+import { emitJobStarted } from '../jobsBus';
 import { JobsPanel } from '../JobsPanel';
 import { JobStatusPill } from '../JobStatusPill';
 import { formatDuration } from '../jobUtils';
@@ -20,11 +21,6 @@ vi.mock('@/actions/jobs', () => ({
   listJobs: vi.fn(),
   retryJob: vi.fn(),
   cancelJob: vi.fn(),
-}));
-
-vi.mock('@/components/jobs/JobsProvider', () => ({
-  useJobs: () => ({ activeJobs: [], notifyJobStarted: vi.fn() }),
-  getJobTypeLabel: (type: string) => type,
 }));
 
 describe('Shared Job Components', () => {
@@ -94,6 +90,43 @@ describe('JobsPanel Component', () => {
     await waitFor(() => {
       expect(screen.getByText('Recent statement ingestion jobs')).toBeInTheDocument();
       expect(screen.getByText('SUCCEEDED')).toBeInTheDocument();
+    });
+  });
+
+  it('refetches when a flow announces a newly started job', async () => {
+    (jobsActions.listJobs as any).mockResolvedValue({
+      success: true,
+      data: { content: [] },
+    });
+
+    render(<JobsPanel types={['STATEMENT_INGEST']} title="Recent statement ingestion jobs" />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/No recent statement ingestion jobs yet/i)).toBeInTheDocument();
+    });
+
+    (jobsActions.listJobs as any).mockResolvedValue({
+      success: true,
+      data: {
+        content: [
+          {
+            id: 'job-9',
+            type: 'STATEMENT_INGEST',
+            status: 'RUNNING',
+            createdAt: '2026-08-29T10:00:00Z',
+            startedAt: '2026-08-29T10:00:00Z',
+          },
+        ],
+      },
+    });
+
+    await act(async () => {
+      emitJobStarted('job-9');
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('RUNNING')).toBeInTheDocument();
+      expect(screen.getByText('Live')).toBeInTheDocument();
     });
   });
 

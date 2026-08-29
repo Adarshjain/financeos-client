@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { listJobs } from '@/actions/jobs';
 import { JobErrorDetails } from '@/components/jobs/JobErrorDetails';
 import { JobRowActions } from '@/components/jobs/JobRowActions';
-import { useJobs } from '@/components/jobs/JobsProvider';
+import { subscribeJobStarted } from '@/components/jobs/jobsBus';
 import { JobStatusPill } from '@/components/jobs/JobStatusPill';
 import { getJobTypeLabel } from '@/components/jobs/jobUtils';
 import { formatDuration } from '@/components/jobs/jobUtils';
@@ -25,14 +25,8 @@ export function JobsPanel({ types, title }: JobsPanelProps) {
   const [loading, setLoading] = useState(true);
   const [expandedJobIds, setExpandedJobIds] = useState<Set<string>>(new Set());
 
-  const { activeJobs } = useJobs();
   const fetchCountRef = useRef(0);
   const prevActiveJobIdsRef = useRef<Set<string>>(new Set());
-
-  const typesSet = useRef(new Set(types));
-  useEffect(() => {
-    typesSet.current = new Set(types);
-  }, [types]);
 
   const typeParam = types.join(',');
 
@@ -84,29 +78,33 @@ export function JobsPanel({ types, title }: JobsPanelProps) {
     fetchJobs();
   }, [fetchJobs]);
 
-  // Re-fetch whenever global activeJobs gains or loses a job of interest
-  const relevantActiveJobsKey = activeJobs
-    .filter((j) => typesSet.current.has(j.type))
-    .map((j) => `${j.id}:${j.status}`)
-    .sort()
-    .join('|');
+  // A flow in this tab just enqueued a job — pick it up without waiting for the
+  // idle beat, so the panel goes live the moment the user hits the button.
+  useEffect(() => subscribeJobStarted(() => fetchJobs()), [fetchJobs]);
 
-  useEffect(() => {
-    fetchJobs();
-  }, [relevantActiveJobsKey, fetchJobs]);
-
-  // 4s polling interval ONLY while any listed job in this panel is PENDING or RUNNING
   const hasLocalActiveJob = jobs.some((j) => j.status === 'PENDING' || j.status === 'RUNNING');
 
+  // Polling while this panel is mounted: 4s while one of its jobs is PENDING or
+  // RUNNING, otherwise a slow beat so jobs started by cron or another tab still
+  // surface. Paused while the tab is hidden; returning to the tab refetches.
+  const pollIntervalMs = hasLocalActiveJob ? 4000 : 30000;
+
   useEffect(() => {
-    if (!hasLocalActiveJob) return;
-
     const interval = setInterval(() => {
+      if (document.hidden) return;
       fetchJobs();
-    }, 4000);
+    }, pollIntervalMs);
 
-    return () => clearInterval(interval);
-  }, [hasLocalActiveJob, fetchJobs]);
+    const handleVisibilityChange = () => {
+      if (!document.hidden) fetchJobs();
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [pollIntervalMs, fetchJobs]);
 
   const toggleExpand = (id: string) => {
     setExpandedJobIds((prev) => {

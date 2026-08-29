@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { applyRule, previewRuleMatches } from '@/actions/rules';
-import { useJobs } from '@/components/jobs/JobsProvider';
+import { emitJobStarted } from '@/components/jobs/jobsBus';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,7 +38,6 @@ export function RuleMatchesDialog({ rule, open, onOpenChange }: RuleMatchesDialo
   const [allSelected, setAllSelected] = useState(false);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
-  const { notifyJobStarted } = useJobs();
   useJobPolling<ApplyRuleResult>(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED' && job.result) {
       toast.success(
@@ -140,7 +139,7 @@ export function RuleMatchesDialog({ rule, open, onOpenChange }: RuleMatchesDialo
       if (res.success && res.data?.jobId) {
         const jobId = res.data.jobId;
         setActiveJobId(jobId);
-        notifyJobStarted(jobId);
+        emitJobStarted(jobId);
         toast.info('Rule apply job started in background.');
       } else if (!res.success) {
         toast.error(res.error.message);
