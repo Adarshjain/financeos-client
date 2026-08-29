@@ -168,7 +168,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
 
   const defaultIngestFromDate = account
     ? (account.ingestFromDate ? account.ingestFromDate.split('T')[0] : '')
-    : new Date().toISOString().split('T')[0];
+    : undefined;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

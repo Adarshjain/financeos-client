@@ -1,7 +1,8 @@
 'use client';
 
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useActionState, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -14,6 +15,9 @@ import { FormField } from '@/components/ui/form-field';
 import type { ApiResult, UserResponse } from '@/lib/types';
 
 export function LoginForm() {
+  const searchParams = useSearchParams();
+  const isDeleted = searchParams.get('deleted') === '1';
+
   const [state, formAction] = useActionState(
     login,
     null as ApiResult<UserResponse> | null,
@@ -35,6 +39,13 @@ export function LoginForm() {
             </p>
           </div>
         </div>
+
+        {isDeleted && (
+          <Alert className="bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900 text-emerald-900 dark:text-emerald-200">
+            <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <AlertDescription>Your account has been deleted.</AlertDescription>
+          </Alert>
+        )}
 
         {/* Login Form */}
         <Button

@@ -1,6 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
+import { DeleteAccountCard } from '@/app/(protected)/settings/DeleteAccountCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { requireAuth } from '@/lib/auth';
 
@@ -9,7 +10,7 @@ export default async function SettingsPage() {
   const user = await requireAuth();
 
   return (
-    <div className="space-y-2 p-4 max-w-4xl">
+    <div className="space-y-4 p-4 max-w-4xl">
       <div>
         <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-slate-900 dark:text-white">Settings</h1>
       </div>
@@ -63,6 +64,8 @@ export default async function SettingsPage() {
           </Link>
         </CardContent>
       </Card>
+
+      <DeleteAccountCard user={user} />
     </div>
   );
 }
