@@ -16,8 +16,8 @@ import {
   syncGmail,
   updateGmailSender,
 } from '@/actions/gmail';
+import { emitJobStarted } from '@/components/jobs/jobsBus';
 import { JobsPanel } from '@/components/jobs/JobsPanel';
-import { useJobs } from '@/components/jobs/JobsProvider';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -48,7 +48,6 @@ export function GmailConnect() {
     }
   }, []);
 
-  const { notifyJobStarted } = useJobs();
   const { isPolling } = useJobPolling<SyncSummary>(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED') {
       toast.success('Sync completed!');
@@ -135,7 +134,7 @@ export function GmailConnect() {
     if (response.success && response.data?.jobId) {
       const jobId = response.data.jobId;
       setActiveJobId(jobId);
-      notifyJobStarted(jobId);
+      emitJobStarted(jobId);
       toast.info('Gmail sync started in background.');
     } else if (!response.success) {
       setMessage({ type: 'error', text: response.error.message });
@@ -147,8 +146,8 @@ export function GmailConnect() {
     const res = await retryGmailAttentionItem(ledgerId);
     if (res.success && res.data?.jobId) {
       toast.success('Item queued for retry!');
-      notifyJobStarted(res.data.jobId);
       setActiveJobId(res.data.jobId);
+      emitJobStarted(res.data.jobId);
       fetchAttention(attentionPage);
     } else if (!res.success) {
       toast.error(res.error.message);

@@ -1092,10 +1092,6 @@ export const jobsApi = {
     return request<PagedJobResponse>(`/api/v1/jobs?${query}`);
   },
 
-  async listActive(): Promise<JobResponse[]> {
-    return request<JobResponse[]>('/api/v1/jobs/active');
-  },
-
   async get(id: string): Promise<JobResponse> {
     return request<JobResponse>(`/api/v1/jobs/${id}`);
   },

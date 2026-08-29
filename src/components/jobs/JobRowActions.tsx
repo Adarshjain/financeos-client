@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 import { cancelJob, retryJob } from '@/actions/jobs';
-import { useJobs } from '@/components/jobs/JobsProvider';
+import { emitJobStarted } from '@/components/jobs/jobsBus';
 import { Button } from '@/components/ui/button';
 import type { JobResponse } from '@/lib/types';
 
@@ -18,7 +18,6 @@ export function JobRowActions({
   onActionSuccess?: () => void;
 }) {
   const router = useRouter();
-  const { notifyJobStarted } = useJobs();
   const [loading, setLoading] = useState(false);
 
   const handleCancel = async () => {
@@ -43,7 +42,7 @@ export function JobRowActions({
       const res = await retryJob(job.id);
       if (res.success && res.data) {
         toast.success('Job retried');
-        notifyJobStarted?.(res.data.id);
+        emitJobStarted(res.data.id);
         onActionSuccess?.();
         router.refresh();
       } else if (!res.success) {

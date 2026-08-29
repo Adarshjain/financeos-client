@@ -16,11 +16,6 @@ export const listJobs = createDomainAction(
     jobsApi.list(params)
 );
 
-export const listActiveJobs = createDomainAction(
-  { fallbackError: 'Failed to fetch active jobs' },
-  () => jobsApi.listActive()
-);
-
 export const cancelJob = createDomainAction(
   { fallbackError: 'Failed to cancel job', revalidatePaths: JOBS_PATHS },
   (id: string) => jobsApi.cancel(id)

@@ -16,8 +16,8 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 import { ingestStatementFiles } from '@/actions/ingestion';
+import { emitJobStarted } from '@/components/jobs/jobsBus';
 import { JobsPanel } from '@/components/jobs/JobsPanel';
-import { useJobs } from '@/components/jobs/JobsProvider';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -68,7 +68,6 @@ export function IngestForm({ accounts }: IngestFormProps) {
   const [isDragActive, setIsDragActive] = useState(false);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
-  const { notifyJobStarted } = useJobs();
   const { isPolling } = useJobPolling(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED') {
       toast.success('Statement ingestion completed — see results below.');
@@ -187,7 +186,7 @@ export function IngestForm({ accounts }: IngestFormProps) {
       if (response.success && response.data?.jobId) {
         const jobId = response.data.jobId;
         setActiveJobId(jobId);
-        notifyJobStarted(jobId);
+        emitJobStarted(jobId);
         setFiles([]); // clear files queue on enqueue
         toast.info('Ingestion job started in background.');
       } else if (!response.success) {

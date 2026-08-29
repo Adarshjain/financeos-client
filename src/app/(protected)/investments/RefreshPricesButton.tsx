@@ -1,11 +1,11 @@
 'use client';
 
 import { RefreshCw } from 'lucide-react';
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
 
 import { refreshInvestmentPrices } from '@/actions/investments';
-import { useJobs } from '@/components/jobs/JobsProvider';
+import { emitJobStarted } from '@/components/jobs/jobsBus';
 import { Button } from '@/components/ui/button';
 import { useJobPolling } from '@/hooks/useJobPolling';
 import type { PriceRefreshResult } from '@/lib/types';
@@ -15,7 +15,6 @@ export function RefreshPricesButton() {
   const [isPending, startTransition] = useTransition();
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
-  const { notifyJobStarted } = useJobs();
   const { isPolling } = useJobPolling<PriceRefreshResult>(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED' && job.result) {
       const { refreshed, skipped, failed, asOf } = job.result;
@@ -46,7 +45,7 @@ export function RefreshPricesButton() {
         if (res.success && res.data?.jobId) {
           const jobId = res.data.jobId;
           setActiveJobId(jobId);
-          notifyJobStarted(jobId);
+          emitJobStarted(jobId);
           toast.info('Price refresh started in background.');
         } else if (!res.success) {
           toast.error(res.error.message);

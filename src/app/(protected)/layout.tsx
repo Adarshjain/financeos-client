@@ -1,4 +1,3 @@
-import { JobsProvider } from '@/components/jobs/JobsProvider';
 import { MobileNav } from '@/components/layout/MobileNav';
 import {
   PageActionBarProvider,
@@ -15,24 +14,22 @@ export default async function ProtectedLayout({
   const user = await requireAuth();
 
   return (
-    <JobsProvider>
-      <PageActionBarProvider>
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
-          {/* Desktop Sidebar */}
-          <Sidebar userEmail={user.email} />
+    <PageActionBarProvider>
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+        {/* Desktop Sidebar */}
+        <Sidebar userEmail={user.email} />
 
-          {/* Mobile Page Action Bar (stacked above MobileNav) */}
-          <PageActionBarSlot />
+        {/* Mobile Page Action Bar (stacked above MobileNav) */}
+        <PageActionBarSlot />
 
-          {/* Mobile Navigation */}
-          <MobileNav userEmail={user.email} />
+        {/* Mobile Navigation */}
+        <MobileNav userEmail={user.email} />
 
-          {/* Main Content */}
-          <div className="lg:pl-64">
-            <main className="md:p-6 lg:pt-6">{children}</main>
-          </div>
+        {/* Main Content */}
+        <div className="lg:pl-64">
+          <main className="md:p-6 lg:pt-6">{children}</main>
         </div>
-      </PageActionBarProvider>
-    </JobsProvider>
+      </div>
+    </PageActionBarProvider>
   );
 }
