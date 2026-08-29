@@ -16,7 +16,18 @@ import type {
   UpdateCounterpartyRequest,
   UpdateLendingRequest,
 } from '@/lib/lending.types';
-import type { CreateLlmKeyRequest, LlmKeyDto } from '@/lib/llmKey.types';
+import type {
+  CreateLlmKeyRequest,
+  LlmBucketHealthDto,
+  LlmKeyDto,
+  LlmRoutingDto,
+  LlmRoutingGroupDto,
+  LlmTaskGroupDto,
+  ProviderCatalogDto,
+  RoutingOptionDto,
+  TestKeyResponse,
+  UpdateRoutingRequest,
+} from '@/lib/llmKey.types';
 import type {
   BatchLoanPaymentRequest,
   CreateLoanChargeRequest,
@@ -1444,6 +1455,49 @@ export const llmKeysApi = {
       method: 'PATCH',
       body: JSON.stringify({ position }),
     });
+  },
+
+  async test(id: string, model?: string): Promise<TestKeyResponse> {
+    return request<TestKeyResponse>(`/api/v1/llm-keys/${id}/test`, {
+      method: 'POST',
+      body: JSON.stringify({ model }),
+    });
+  },
+};
+
+// LLM Routing API
+export const llmRoutingApi = {
+  async getTaskGroups(): Promise<LlmTaskGroupDto[]> {
+    return request<LlmTaskGroupDto[]>('/api/v1/llm/task-groups');
+  },
+
+  async getCatalog(): Promise<ProviderCatalogDto[]> {
+    return request<ProviderCatalogDto[]>('/api/v1/llm/catalog');
+  },
+
+  async getRoutingOptions(): Promise<RoutingOptionDto[]> {
+    return request<RoutingOptionDto[]>('/api/v1/llm/routing-options');
+  },
+
+  async getRouting(): Promise<LlmRoutingDto> {
+    return request<LlmRoutingDto>('/api/v1/llm/routing');
+  },
+
+  async updateRouting(group: string, data: UpdateRoutingRequest): Promise<LlmRoutingGroupDto> {
+    return request<LlmRoutingGroupDto>(`/api/v1/llm/routing/${group}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async resetRouting(group: string): Promise<LlmRoutingGroupDto> {
+    return request<LlmRoutingGroupDto>(`/api/v1/llm/routing/${group}/reset`, {
+      method: 'POST',
+    });
+  },
+
+  async getHealth(): Promise<LlmBucketHealthDto[]> {
+    return request<LlmBucketHealthDto[]>('/api/v1/llm/health');
   },
 };
 
