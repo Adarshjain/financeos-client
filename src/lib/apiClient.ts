@@ -71,6 +71,8 @@ import type {
   CreateFnoTradeRequest,
   CreateInstrumentRequest,
   CreateInvestmentTransactionRequest,
+  DeleteAccountRequest,
+  DeletionSummaryResponse,
   Dividend,
   DividendSuggestionsResponse,
   DividendSummary,
@@ -315,6 +317,17 @@ export const authApi = {
     }
 
     return { user, sessionCookie };
+  },
+
+  async getDeletionSummary(): Promise<DeletionSummaryResponse> {
+    return request<DeletionSummaryResponse>('/api/v1/auth/me/deletion-summary');
+  },
+
+  async deleteAccount(data?: DeleteAccountRequest): Promise<void> {
+    await request<void>('/api/v1/auth/me/delete', {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    });
   },
 };
 

@@ -37,7 +37,18 @@ export interface UserResponse {
   email: string;
   displayName?: string;
   pictureUrl?: string;
+  hasPassword?: boolean;
   createdAt: string;
+}
+
+export interface DeleteAccountRequest {
+  password?: string;
+  confirmEmail?: string;
+}
+
+export interface DeletionSummaryResponse {
+  counts: Record<string, number>;
+  total: number;
 }
 
 

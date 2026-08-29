@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { getOptionalSession } from '@/lib/auth';
 
@@ -11,5 +12,9 @@ export default async function LoginPage() {
     redirect('/dashboard');
   }
 
-  return <LoginForm />;
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
 }
