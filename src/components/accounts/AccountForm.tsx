@@ -1,10 +1,10 @@
 'use client';
 
-import { AlertTriangle, Calendar, CreditCard, Eye, EyeOff, FileText, Landmark, Shield, Trash2, TrendingUp, Wallet } from 'lucide-react';
+import { AlertTriangle, Calendar, CreditCard, Eye, EyeOff, FileText, Landmark, RotateCw, Shield, Trash2, TrendingUp, Wallet, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { createAccount, deleteAccount, executeGmailCleanup, previewGmailCleanup, updateAccount } from '@/actions/accounts';
+import { closeAccount, createAccount, deleteAccount, executeGmailCleanup, previewGmailCleanup, reopenAccount, updateAccount } from '@/actions/accounts';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -19,7 +19,7 @@ import {
 import { Account, AccountRequest } from '@/lib/account.types';
 import { optionalDecimal, optionalInteger, optionalString } from '@/lib/forms';
 import { AccountType, FinancialPosition } from '@/lib/types';
-import { cn, getAccountTypeLabel } from '@/lib/utils';
+import { cn, formatDate, getAccountTypeLabel } from '@/lib/utils';
 
 const financialPositions = [
   { value: 'asset', label: 'Asset' },
@@ -132,6 +132,54 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     before: string;
     accountData: AccountRequest;
   } | null>(null);
+
+  const [isClosingAccount, setIsClosingAccount] = useState(false);
+  const [isReopeningAccount, setIsReopeningAccount] = useState(false);
+  const [closeOnDate, setCloseOnDate] = useState(new Date().toISOString().split('T')[0]);
+  const [showCloseInline, setShowCloseInline] = useState(false);
+
+  const handleCloseAccount = async () => {
+    if (!account) return;
+    setIsClosingAccount(true);
+    try {
+      const res = await closeAccount(account.id, { closedOn: closeOnDate || undefined });
+      if (res.success) {
+        if (res.data?.warnings && res.data.warnings.length > 0) {
+          toast.warning(res.data.warnings.join('; '));
+        } else {
+          toast.success('Account closed successfully');
+        }
+        setShowDeleteConfirm(false);
+        onSuccess?.();
+        onClose?.();
+      } else {
+        toast.error(res.error.message);
+      }
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setIsClosingAccount(false);
+    }
+  };
+
+  const handleReopenAccount = async () => {
+    if (!account) return;
+    setIsReopeningAccount(true);
+    try {
+      const res = await reopenAccount(account.id);
+      if (res.success) {
+        toast.success('Account reopened successfully');
+        onSuccess?.();
+        onClose?.();
+      } else {
+        toast.error(res.error.message);
+      }
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setIsReopeningAccount(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (!account) return;
@@ -379,7 +427,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
       </Dialog>
 
       {/* Header */}
-      <div className="shrink-0 px-6 py-5 border-b border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-950">
+      <div className="shrink-0 px-4 py-3 border-b border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-950">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
           {accountType === AccountType.BANK_ACCOUNT ? (
             <Landmark className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
@@ -391,6 +439,13 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             <Wallet className="w-5 h-5 text-purple-600 dark:text-purple-400" />
           )}
           {isUpdateMode ? 'Edit Account' : 'Create Account'}
+          <AccountTypeButton
+              label={ACCOUNT_TYPE_CONFIG[accountType]?.label ?? 'Account'}
+              icon={ACCOUNT_TYPE_CONFIG[accountType]?.icon ?? Landmark}
+              selected={true}
+              disabled
+              activeClassName={ACCOUNT_TYPE_CONFIG[accountType]?.activeClassName ?? 'bg-slate-50 border-slate-500 text-slate-700 font-semibold'}
+          />
         </h2>
       </div>
 
@@ -401,60 +456,44 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
           autoComplete="off"
           className="space-y-2"
         >
-          <datalist id="broker-providers">
-            {COMMON_BROKERS.map((b) => (
-              <option key={b} value={b} />
-            ))}
-          </datalist>
         {/* Account Type Selection */}
-        <div className="space-y-2">
-          <Label className="text-xs text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1">
-            <Shield className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
-            Account Type
-          </Label>
-          <div className={`grid gap-2 ${isUpdateMode ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-4'}`}>
-            {isUpdateMode ? (
+          {!isUpdateMode && <div className="space-y-2">
+            <Label className="text-xs text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1">
+              <Shield className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500"/>
+              Account Type
+            </Label>
+            <div className={`grid gap-2 ${isUpdateMode ? 'grid-cols-1' : 'grid-cols-2 sm:grid-cols-4'}`}>
               <AccountTypeButton
-                label={ACCOUNT_TYPE_CONFIG[accountType]?.label ?? 'Account'}
-                icon={ACCOUNT_TYPE_CONFIG[accountType]?.icon ?? Landmark}
-                selected={true}
-                disabled
-                activeClassName={ACCOUNT_TYPE_CONFIG[accountType]?.activeClassName ?? 'bg-slate-50 border-slate-500 text-slate-700 font-semibold'}
-              />
-            ) : (
-              <>
-                <AccountTypeButton
                   label={ACCOUNT_TYPE_CONFIG.bank_account.label ?? 'Account'}
                   icon={Landmark}
                   selected={accountType === AccountType.BANK_ACCOUNT}
                   activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.BANK_ACCOUNT].activeClassName}
                   onClick={() => setAccountType(AccountType.BANK_ACCOUNT)}
-                />
-                <AccountTypeButton
+              />
+              <AccountTypeButton
                   label={ACCOUNT_TYPE_CONFIG.credit_card.label ?? 'Account'}
                   icon={CreditCard}
                   selected={accountType === AccountType.CREDIT_CARD}
                   activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.CREDIT_CARD].activeClassName}
                   onClick={() => setAccountType(AccountType.CREDIT_CARD)}
-                />
-                <AccountTypeButton
+              />
+              <AccountTypeButton
                   label={ACCOUNT_TYPE_CONFIG.broker.label ?? 'Account'}
                   icon={TrendingUp}
                   selected={accountType === AccountType.BROKER}
                   activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.BROKER].activeClassName}
                   onClick={() => setAccountType(AccountType.BROKER)}
-                />
-                <AccountTypeButton
+              />
+              <AccountTypeButton
                   label={ACCOUNT_TYPE_CONFIG.generic.label ?? 'Account'}
                   icon={Wallet}
                   selected={accountType === AccountType.GENERIC}
                   activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.GENERIC].activeClassName}
                   onClick={() => setAccountType(AccountType.GENERIC)}
-                />
-              </>
-            )}
+              />
+            </div>
           </div>
-        </div>
+          }
 
         {/* Card 1: General Info */}
         <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-2">
@@ -800,7 +839,100 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
           </div>
         </div>
 
-        {/* Card 4: Danger Zone (Only in Edit mode) */}
+        {/* Card 4: Account Lifecycle (Close / Reopen) (Only in Edit mode) */}
+        {isUpdateMode && account && (
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 p-3.5 space-y-3">
+            {account.closedOn ? (
+              <div className="flex items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="text-xs font-bold text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                    <XCircle className="w-3.5 h-3.5" />
+                    Closed on {formatDate(account.closedOn)}
+                  </div>
+                  <div className="text-2xs text-slate-500 dark:text-slate-400">
+                    This account is closed and hidden from standard selection pickers.
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="xs"
+                  className="gap-1.5 shrink-0 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/80 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                  disabled={isSubmitting || isReopeningAccount}
+                  onClick={handleReopenAccount}
+                >
+                  <RotateCw className="w-3.5 h-3.5" />
+                  {isReopeningAccount ? 'Reopening...' : 'Reopen Account'}
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      Close Account
+                    </div>
+                    <div className="text-2xs text-slate-500 dark:text-slate-400">
+                      Retire this account while preserving its transaction and statement history.
+                    </div>
+                  </div>
+                  {!showCloseInline && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="xs"
+                      className="gap-1.5 shrink-0 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/80 hover:bg-amber-50 dark:hover:bg-amber-950/30"
+                      onClick={() => setShowCloseInline(true)}
+                    >
+                      <XCircle className="w-3.5 h-3.5" />
+                      Close Account
+                    </Button>
+                  )}
+                </div>
+
+                {showCloseInline && (
+                  <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-lg space-y-2.5">
+                    <div className="flex items-center gap-3">
+                      <div className="space-y-1 flex-1">
+                        <Label htmlFor="account-close-date" className="text-2xs font-semibold text-amber-900 dark:text-amber-200">
+                          Closed On Date
+                        </Label>
+                        <Input
+                          id="account-close-date"
+                          type="date"
+                          value={closeOnDate}
+                          onChange={(e) => setCloseOnDate(e.target.value)}
+                          className="h-8 text-xs bg-white dark:bg-slate-950"
+                        />
+                      </div>
+                      <div className="flex gap-1.5 mt-4">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => setShowCloseInline(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="xs"
+                          disabled={isClosingAccount}
+                          onClick={handleCloseAccount}
+                        >
+                          {isClosingAccount ? 'Closing...' : 'Confirm Close'}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Card 5: Danger Zone (Only in Edit mode) */}
         {isUpdateMode && account && (
           <div className="rounded-xl border border-rose-100 dark:border-rose-900/30 bg-rose-50/40 dark:bg-rose-950/20 p-3.5 flex items-center justify-between gap-3">
             <div className="space-y-0.5">
@@ -822,6 +954,11 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             </Button>
           </div>
         )}
+          <datalist id="broker-providers">
+            {COMMON_BROKERS.map((b) => (
+                <option key={b} value={b} />
+            ))}
+          </datalist>
         </form>
       </DialogBody>
 
@@ -844,24 +981,59 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
         <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle>Delete Account</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete <strong>{account.name}</strong>? This action cannot be undone.
+              <DialogTitle className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
+                <AlertTriangle className="w-5 h-5" />
+                Delete Account
+              </DialogTitle>
+              <DialogDescription className="space-y-2 pt-2 text-xs text-slate-600 dark:text-slate-300">
+                <p>
+                  Are you sure you want to delete <strong>{account.name}</strong>?
+                </p>
+                <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-2xs text-rose-700 dark:text-rose-300">
+                  <strong>Warning:</strong> Deleting permanently removes all associated transactions, statements, card instances, and reward rules.
+                </div>
+                {!account.closedOn && (
+                  <p className="text-2xs text-slate-500 dark:text-slate-400">
+                    Consider closing the account instead to preserve your transaction and statement history.
+                  </p>
+                )}
               </DialogDescription>
             </DialogHeader>
-            <DialogFooter
-              primaryAction={{
-                label: isDeleting ? 'Deleting...' : 'Delete Account',
-                variant: 'destructive',
-                onClick: handleDelete,
-                disabled: isDeleting,
-              }}
-              secondaryAction={{
-                label: 'Cancel',
-                onClick: () => setShowDeleteConfirm(false),
-                disabled: isDeleting,
-              }}
-            />
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isDeleting || isClosingAccount}
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                Cancel
+              </Button>
+              {!account.closedOn && (
+                <Button
+                  type="button"
+                  variant="default"
+                  size="sm"
+                  className="gap-1.5 bg-sky-600 hover:bg-sky-700 text-white"
+                  disabled={isDeleting || isClosingAccount}
+                  onClick={handleCloseAccount}
+                >
+                  <XCircle className="w-3.5 h-3.5" />
+                  {isClosingAccount ? 'Closing...' : 'Close Instead'}
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="gap-1.5"
+                disabled={isDeleting || isClosingAccount}
+                onClick={handleDelete}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                {isDeleting ? 'Deleting...' : 'Delete Permanently'}
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       )}

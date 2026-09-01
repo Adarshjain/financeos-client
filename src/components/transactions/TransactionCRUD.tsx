@@ -14,7 +14,7 @@ import { FormFieldTextArea } from '@/components/ui/form-field-textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Account } from '@/lib/account.types';
+import { Account, isAccountClosed, isCardholderClosed } from '@/lib/account.types';
 import { Category } from '@/lib/categories.types';
 import { ReviewType, Transaction, type TransactionChannel, type TransactionRequest } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
@@ -57,23 +57,38 @@ export default function TransactionCRUD({
   const [cardId, setCardId] = useState<string | null>(transaction?.cardId ?? null);
   // Investment (broker) accounts are managed via the investments module, not
   // manual transaction entry. Keep the current transaction's account selectable
-  // even if it's a broker account, so editing a legacy record doesn't blank out.
+  // even if it's a broker or closed account, so editing a legacy record doesn't blank out.
   const selectableAccounts = accounts.filter(
-    (a) => a.type !== AccountType.BROKER || a.id === transaction?.accountId,
+    (a) => (a.type !== AccountType.BROKER && !isAccountClosed(a)) || a.id === transaction?.accountId,
   );
   const selectedAccount = accounts.find((a) => a.id === accountId);
   const isCreditCard = selectedAccount?.type === AccountType.CREDIT_CARD;
-  const availableCards = isCreditCard ? (selectedAccount.cards ?? []) : [];
+  // transaction.cardId references a PLASTIC (cards.id), so the options are cards, labelled by
+  // their holder. Open cards of open cardholders, plus the transaction's current card even when
+  // closed — editing an old record must never silently reassign its plastic.
+  const cardOptions = isCreditCard
+    ? (selectedAccount.cardholders ?? []).flatMap((ch) =>
+        (ch.cards ?? [])
+          .filter((c) => (!c.closedOn && !isCardholderClosed(ch)) || c.id === transaction?.cardId)
+          .map((c) => ({
+            id: c.id,
+            label: `${ch.personName || (ch.role === 'PRIMARY' ? 'You' : 'Add-on')} (•••• ${c.last4})`,
+          })),
+      )
+    : [];
 
   const handleAccountChange = (newAccountId: string) => {
     setAccountId(newAccountId);
     const acc = accounts.find((a) => a.id === newAccountId);
-    if (acc?.type === AccountType.CREDIT_CARD && acc.cards && acc.cards.length > 0) {
-      const primary = acc.cards.find((c) => c.isPrimary);
-      setCardId(primary ? primary.id : acc.cards[0].id);
-    } else {
-      setCardId(null);
-    }
+    const cardholders = acc?.type === AccountType.CREDIT_CARD ? (acc.cardholders ?? []) : [];
+    const primaryOpenCard = cardholders
+      .find((ch) => ch.role === 'PRIMARY')
+      ?.cards?.find((c) => !c.closedOn);
+    const anyOpenCard = cardholders
+      .filter((ch) => !isCardholderClosed(ch))
+      .flatMap((ch) => ch.cards ?? [])
+      .find((c) => !c.closedOn);
+    setCardId(primaryOpenCard?.id ?? anyOpenCard?.id ?? null);
   };
 
   const [isMonitored, setIsMonitored] = useState(transaction?.isTransactionUnderMonitoring ?? false);
@@ -349,7 +364,7 @@ export default function TransactionCRUD({
           </div>
 
           {/* Card Selector (only for Credit Cards with cards) */}
-          {isCreditCard && availableCards.length > 0 && (
+          {isCreditCard && cardOptions.length > 0 && (
             <div className="flex flex-col gap-1">
               <Label className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
                 <CreditCard className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
@@ -368,9 +383,9 @@ export default function TransactionCRUD({
                   <SelectItem value="NONE" className="text-xs italic text-slate-400">
                     Unattributed
                   </SelectItem>
-                  {availableCards.map((c) => (
+                  {cardOptions.map((c) => (
                     <SelectItem key={c.id} value={c.id} className="text-xs hover:bg-slate-50 dark:hover:bg-slate-900">
-                      {c.label || c.holderName || (c.isPrimary ? 'Primary' : 'Add-on')} (•••• {c.last4})
+                      {c.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

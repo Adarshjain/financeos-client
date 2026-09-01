@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Broker } from '@/lib/account.types';
+import { Broker, isAccountClosed } from '@/lib/account.types';
 import { Instrument, InvestmentTransactionType } from '@/lib/types';
 import { formatMoney, toCalendarDate } from '@/lib/utils';
 
@@ -260,11 +260,13 @@ export function CreateInvestmentForm({
                 <SelectValue placeholder="Select broker account..." />
               </SelectTrigger>
               <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                {brokerAccounts.map((b) => (
-                  <SelectItem key={b.id} value={b.id} className="text-xs font-medium">
-                    {b.name} ({b.provider || 'Broker'})
-                  </SelectItem>
-                ))}
+                {brokerAccounts
+                  .filter((b) => !isAccountClosed(b) || b.id === selectedBrokerId)
+                  .map((b) => (
+                    <SelectItem key={b.id} value={b.id} className="text-xs font-medium">
+                      {b.name} ({b.provider || 'Broker'}) {b.closedOn ? '(Closed)' : ''}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>

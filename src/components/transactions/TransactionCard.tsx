@@ -69,9 +69,11 @@ export const TransactionCard = ({
             </div>
             <div className="text-xs font-medium text-slate-500 dark:text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
               <span>{getAccountName(accounts, transaction.accountId)}</span>
-              {transaction.cardLabel ? (
-                <span className="text-2xs font-normal text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
-                  {transaction.cardLabel}
+              {transaction.cardLabel || transaction.cardLast4 ? (
+                <span className="text-2xs font-normal text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded tabular-nums">
+                  {[transaction.cardLabel, transaction.cardLast4 ? `•••• ${transaction.cardLast4}` : null]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </span>
               ) : null}
             </div>

@@ -106,7 +106,7 @@ export default function RewardRuleForm({
   const isUpdateMode = !!rule;
 
   const [name, setName] = useState(source?.name ?? '');
-  const [cardId, setCardId] = useState<string | null>(source?.cardId ?? null);
+  const [cardId, setCardId] = useState<string | null>(source?.cardholderId ?? null);
   const [counterScope, setCounterScope] = useState<CounterScope>(source?.counterScope ?? 'ACCOUNT');
   const [stacking, setStacking] = useState<RuleStacking>(source?.stacking ?? 'EXCLUSIVE');
   // Defaults: brand-new rule = no start date ("Always") so past transactions count;
@@ -332,7 +332,7 @@ export default function RewardRuleForm({
     }
     const body: RewardRuleRequest = {
       accountId,
-      cardId: cardId || null,
+      cardholderId: cardId || null,
       counterScope,
       name: name.trim(),
       // A clone (devaluation successor) inherits its predecessor's slot in the
@@ -465,12 +465,16 @@ export default function RewardRuleForm({
                   <Select value={cardId || 'ALL'} onValueChange={(v) => setCardId(v === 'ALL' ? null : v)}>
                     <SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ALL" className="text-xs">All Cards (Account-level)</SelectItem>
-                      {cards.map((c) => (
-                        <SelectItem key={c.id} value={c.id} className="text-xs">
-                          {c.label || c.holderName || (c.isPrimary ? 'Primary' : 'Add-on')} (•••• {c.last4})
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="ALL" className="text-xs">All Cardholders (Account-level)</SelectItem>
+                      {cards.map((c) => {
+                        const name = c.personName || (c.role === 'PRIMARY' ? 'Primary' : 'Add-on');
+                        const last4 = c.currentLast4 || c.cards?.[0]?.last4 || '';
+                        return (
+                          <SelectItem key={c.id} value={c.id} className="text-xs">
+                            {name} {last4 ? `(•••• ${last4})` : ''}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
@@ -480,7 +484,7 @@ export default function RewardRuleForm({
                     <SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ACCOUNT" className="text-xs">Account-wide Counter</SelectItem>
-                      <SelectItem value="PER_CARD" className="text-xs">Per-Card Counter</SelectItem>
+                      <SelectItem value="PER_CARDHOLDER" className="text-xs">Per-Cardholder Counter</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -252,6 +252,9 @@ export function ReviewFilterBar({
                         <div className="flex items-center gap-2">
                           <Checkbox checked={isSelected} className="pointer-events-none rounded-md" />
                           <span className="font-medium text-slate-800 dark:text-slate-200">{acc.name}</span>
+                          {acc.closedOn && (
+                            <span className="text-2xs text-rose-500 font-semibold">(Closed)</span>
+                          )}
                         </div>
                         {lastStatementDate && (
                           <span className="text-2xs text-slate-400">Cutoff: {lastStatementDate}</span>

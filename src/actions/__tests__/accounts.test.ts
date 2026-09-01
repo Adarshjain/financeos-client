@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { mockRevalidatePath } from '@/test/next-mocks';
-import { createAccount, deleteAccount, getCardCycleSummary, updateAccount } from '@/actions/accounts';
+import { closeAccount, createAccount, deleteAccount, getCardCycleSummary, reopenAccount, updateAccount } from '@/actions/accounts';
 import { accountsApi } from '@/lib/apiClient';
 
 vi.mock('@/lib/apiClient', () => ({
@@ -10,11 +10,13 @@ vi.mock('@/lib/apiClient', () => ({
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
+    close: vi.fn(),
+    reopen: vi.fn(),
     getCardCycleSummary: vi.fn(),
   },
 }));
 
-describe('accounts server actions (WP-3)', () => {
+describe('accounts server actions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -32,6 +34,24 @@ describe('accounts server actions (WP-3)', () => {
     vi.mocked(accountsApi.update).mockResolvedValue({ id: 'acc1', name: 'HDFC Updated' } as any);
 
     const res = await updateAccount('acc1', { name: 'HDFC Updated', type: 'bank_account' } as any);
+    expect(res.success).toBe(true);
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/accounts');
+  });
+
+  it('closeAccount calls accountsApi.close and revalidates paths', async () => {
+    vi.mocked(accountsApi.close).mockResolvedValue({ id: 'acc1', closedOn: '2026-08-01' } as any);
+
+    const res = await closeAccount('acc1', { closedOn: '2026-08-01' });
+    expect(res.success).toBe(true);
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/accounts');
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/transactions');
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/rewards');
+  });
+
+  it('reopenAccount calls accountsApi.reopen and revalidates paths', async () => {
+    vi.mocked(accountsApi.reopen).mockResolvedValue({ id: 'acc1', closedOn: null } as any);
+
+    const res = await reopenAccount('acc1');
     expect(res.success).toBe(true);
     expect(mockRevalidatePath).toHaveBeenCalledWith('/accounts');
   });

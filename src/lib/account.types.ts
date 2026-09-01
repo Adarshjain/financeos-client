@@ -24,7 +24,7 @@ export type BankAccountRequest = AccountRequestBase & {
    * from the backend.
    */
   statementPassword?: string;
-}
+};
 
 export type CreditCardRequest = AccountRequestBase & {
   type: AccountType.CREDIT_CARD;
@@ -35,44 +35,60 @@ export type CreditCardRequest = AccountRequestBase & {
   /** Card membership anniversary (required) — anchors anniversary-year reward windows. */
   anniversaryDate: string;
   statementPassword?: string;
-}
+  replacesAccountId?: string | null;
+  issuer?: string | null;
+  productName?: string | null;
+};
 
 export type BrokerRequest = AccountRequestBase & {
   type: AccountType.BROKER;
   provider: string;
   clientId?: string;
   cashBalance?: number;
-}
+};
 
 export type GenericAccountRequest = AccountRequestBase & {
   type: AccountType.GENERIC;
-}
+};
 
 export type AccountRequest = BankAccountRequest | CreditCardRequest | BrokerRequest | GenericAccountRequest;
 
+export interface CloseAccountRequest {
+  closedOn?: string;
+}
 
 /**
  * Fields common to every account. Deliberately NOT a member of the `Account`
  * union and deliberately without a `type` field.
- *
- * It used to be both: `Account = AccountBase | BankAccount | ...` where
- * `AccountBase.type` was the whole `AccountType` enum. That made the union
- * undiscriminable — `AccountBase` structurally absorbed every variant and its
- * wide `type` meant `account.type === AccountType.CREDIT_CARD` narrowed
- * nothing. Call sites compensated with `as CreditCard[]` casts and
- * `'field' in account` probes, none of which the compiler could verify.
  */
-interface AccountBase {
+export interface AccountBase {
   id: string;
   name: string;
   excludeFromNetAsset?: boolean;
   financialPosition?: FinancialPosition;
   description?: string;
   ingestFromDate?: string | null;
+  closedOn?: string | null;
+  warnings?: string[];
   balance?: number | null;
   balanceAnchored?: boolean | null;
   reconciliationGap?: number | null;
   anchorDate?: string | null;
+}
+
+export type AccountStatus = 'ACTIVE' | 'CLOSING' | 'CLOSED';
+
+export function getAccountStatus(account: AccountBase, asOf: string = new Date().toISOString().slice(0, 10)): AccountStatus {
+  if (!account.closedOn) return 'ACTIVE';
+  return account.closedOn > asOf ? 'CLOSING' : 'CLOSED';
+}
+
+export function isAccountClosed(account: AccountBase, asOf?: string): boolean {
+  return getAccountStatus(account, asOf) === 'CLOSED';
+}
+
+export function isAccountClosing(account: AccountBase, asOf?: string): boolean {
+  return getAccountStatus(account, asOf) === 'CLOSING';
 }
 
 export type BankAccount = AccountBase & {
@@ -80,52 +96,100 @@ export type BankAccount = AccountBase & {
   openingBalance?: string;
   last4?: string;
   lastStatementDate?: string | null;
-}
+};
 
-export type CardRelationship = 'SELF' | 'SPOUSE' | 'PARENT' | 'CHILD' | 'SIBLING' | 'OTHER';
+export type CardholderRole = 'PRIMARY' | 'ADDON';
+export type CardholderRelationship = 'SELF' | 'SPOUSE' | 'CHILD' | 'PARENT' | 'SIBLING' | 'FRIEND' | 'OTHER';
+export type CardRelationship = CardholderRelationship; // backward compat alias
 
-export interface AccountCard {
+export interface Card {
   id: string;
   accountId: string;
-  label?: string | null;
-  holderName?: string | null;
-  relationship: CardRelationship;
+  cardholderId: string;
   last4: string;
-  isPrimary: boolean;
-  issuedOn?: string | null;
+  issuedOn: string;
   closedOn?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Cardholder {
+  id: string;
+  accountId: string;
+  role: CardholderRole;
+  personName?: string | null;
+  relationship?: CardholderRelationship | null;
   spendLimit?: number | null;
-  note?: string | null;
+  openedOn: string;
+  closedOn?: string | null;
+  effectiveClosedOn?: string | null;
+  cards: Card[];
+  currentLast4?: string | null;
   transactionCount?: number;
   createdAt?: string;
   updatedAt?: string;
 }
 
-export interface CreateAccountCardRequest {
-  label?: string;
-  holderName?: string;
-  relationship: CardRelationship;
-  last4: string;
-  isPrimary?: boolean;
-  issuedOn?: string | null;
-  spendLimit?: number | null;
-  note?: string | null;
+// Backward compatibility alias for UI components during transition
+export type AccountCard = Cardholder;
+
+/** True once a cardholder line has effectively ended — its own closure or its account's, whichever came first. */
+export function isCardholderClosed(cardholder: Cardholder, asOf: string = new Date().toISOString().split('T')[0]): boolean {
+  const effective = cardholder.effectiveClosedOn ?? cardholder.closedOn;
+  return !!effective && effective <= asOf;
 }
 
-export interface UpdateAccountCardRequest {
-  label?: string;
-  holderName?: string;
-  relationship: CardRelationship;
-  last4: string;
-  isPrimary?: boolean;
-  issuedOn?: string | null;
+export function isCardLineClosed(cardholder: Cardholder, asOf?: string): boolean {
+  return isCardholderClosed(cardholder, asOf);
+}
+
+export function accountHasActiveCard(account: CreditCard): boolean {
+  if (account.closedOn && account.closedOn <= new Date().toISOString().split('T')[0]) {
+    return false;
+  }
+  if (!account.cardholders || account.cardholders.length === 0) {
+    return !account.closedOn;
+  }
+  return account.cardholders.some(ch => !isCardholderClosed(ch) && (ch.cards || []).some(c => !c.closedOn));
+}
+
+export interface CreateCardholderRequest {
+  personName: string;
+  relationship?: CardholderRelationship;
   spendLimit?: number | null;
-  note?: string | null;
+  last4?: string;
+  openedOn?: string;
+  issuedOn?: string;
+}
+
+export interface UpdateCardholderRequest {
+  personName?: string;
+  relationship?: CardholderRelationship;
+  spendLimit?: number | null;
+}
+
+export interface CreateCardRequest {
+  last4: string;
+  issuedOn?: string;
+}
+
+export interface ReplaceCardRequest {
+  newLast4: string;
+  issuedOn?: string;
+}
+
+export interface CloseCardholderRequest {
+  closedOn?: string;
 }
 
 export interface CloseCardRequest {
   closedOn?: string;
 }
+
+// Legacy request types aliases
+export type CreateAccountCardRequest = CreateCardholderRequest;
+export type UpdateAccountCardRequest = UpdateCardholderRequest;
+export type ReplaceCardInstanceRequest = ReplaceCardRequest;
 
 export type CreditCard = AccountBase & {
   type: AccountType.CREDIT_CARD;
@@ -133,34 +197,29 @@ export type CreditCard = AccountBase & {
   creditLimit: number;
   paymentDueDay: number;
   gracePeriodDays: number;
-  /** Null on cards created before the field became mandatory — set on next edit. */
   anniversaryDate?: string | null;
   lastStatementDate?: string | null;
-  cards?: AccountCard[];
-}
+  cardholders?: Cardholder[];
+  replacesAccountId?: string | null;
+  issuer?: string | null;
+  productName?: string | null;
+};
 
 export type Broker = AccountBase & {
   type: AccountType.BROKER;
   provider?: string;
   clientId?: string;
   cashBalance?: number;
-}
+};
 
 export type GenericAccount = AccountBase & {
   type: AccountType.GENERIC;
-}
+};
 
 export type Account = BankAccount | CreditCard | Broker | GenericAccount;
 
 /**
  * Type guard for filtering a mixed `Account[]` down to one variant.
- *
- * `Array.prototype.filter` does not narrow from a plain boolean predicate, so
- * `accounts.filter(a => a.type === X)` still yields `Account[]` and previously
- * needed an unchecked `as BankAccount[]` cast. This restores the narrowing the
- * compiler can actually verify:
- *
- *   accounts.filter(isAccountOfType(AccountType.CREDIT_CARD)) // CreditCard[]
  */
 export function isAccountOfType<T extends AccountType>(type: T) {
   return (account: Account): account is Extract<Account, { type: T }> =>

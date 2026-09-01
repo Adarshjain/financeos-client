@@ -1,4 +1,4 @@
-import type { Account } from '@/lib/account.types';
+import { type Account, isAccountClosed } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { Page } from '@/lib/pagination';
 import type { TransactionChannel } from '@/lib/transaction.types';
@@ -9,9 +9,9 @@ import { AccountType } from '@/lib/types';
  * excluded, and credit cards sort first since rewards are usually theirs.
  * Shared by the rewards pages and their client components.
  */
-export function rewardEligibleAccounts(accounts: Account[]): Account[] {
+export function rewardEligibleAccounts(accounts: Account[], options?: { includeClosed?: boolean }): Account[] {
   return accounts
-    .filter((a) => a.type !== AccountType.BROKER)
+    .filter((a) => a.type !== AccountType.BROKER && (options?.includeClosed || !isAccountClosed(a)))
     .sort((a, b) => Number(b.type === AccountType.CREDIT_CARD) - Number(a.type === AccountType.CREDIT_CARD));
 }
 
@@ -124,12 +124,12 @@ export interface RewardRuleTier {
   rate: number;
 }
 
-export type CounterScope = 'ACCOUNT' | 'PER_CARD';
+export type CounterScope = 'ACCOUNT' | 'PER_CARDHOLDER';
 
 export interface RewardRule {
   id: string;
   accountId: string;
-  cardId?: string | null;
+  cardholderId?: string | null;
   counterScope?: CounterScope;
   name: string;
   priority: number;
@@ -169,7 +169,7 @@ export interface RewardRule {
 /** Full rule definition — POST creates, PUT overwrites (accountId ignored on PUT). */
 export interface RewardRuleRequest {
   accountId?: string;
-  cardId?: string | null;
+  cardholderId?: string | null;
   counterScope?: CounterScope;
   name: string;
   priority: number;
@@ -220,7 +220,7 @@ export type MilestoneWindow = Exclude<CapWindow, 'DAY'> | 'ONE_TIME';
 export interface RewardMilestone {
   id: string;
   accountId: string;
-  cardId?: string | null;
+  cardholderId?: string | null;
   name: string;
   windowType: MilestoneWindow;
   basis: MilestoneBasis;
@@ -244,7 +244,7 @@ export interface RewardMilestone {
 /** Full milestone definition — POST creates, PUT overwrites (accountId ignored on PUT). */
 export interface RewardMilestoneRequest {
   accountId?: string;
-  cardId?: string | null;
+  cardholderId?: string | null;
   name: string;
   windowType: MilestoneWindow;
   basis: MilestoneBasis;
