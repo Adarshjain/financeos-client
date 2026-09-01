@@ -5,7 +5,6 @@ import { cn, formatDate, formatMoney, formatNullableMoney } from '@/lib/utils';
 
 import { AccountMetadataBadges } from './AccountMetadataBadges';
 import { AccountWrapper } from './AccountWrapper';
-import { getOrdinalDay } from './utils';
 
 export function CreditCardTile({ account }: { account: CreditCard }) {
   return (
@@ -96,27 +95,6 @@ export function CreditCardTile({ account }: { account: CreditCard }) {
               </div>
             );
           })()}
-
-          <div className="pt-2 flex justify-between items-center text-2xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800/40">
-            {account.paymentDueDay ? (
-              <div>
-                Due on:{' '}
-                <span className="font-bold text-slate-700 dark:text-slate-200">
-                  {getOrdinalDay(account.paymentDueDay)}
-                </span>
-              </div>
-            ) : (
-              <div></div>
-            )}
-            {account.gracePeriodDays ? (
-              <div>
-                Grace:{' '}
-                <span className="font-bold text-slate-700 dark:text-slate-200">
-                  {account.gracePeriodDays} days
-                </span>
-              </div>
-            ) : null}
-          </div>
         </div>
 
         {account.ingestFromDate ? (

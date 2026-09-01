@@ -21,8 +21,6 @@ const randomCard = {
   ingestFromDate: null,
   last4: '5554',
   creditLimit: 2000000,
-  paymentDueDay: 15,
-  gracePeriodDays: 20,
   anniversaryDate: '2026-08-01',
   lastStatementDate: null,
   balance: 0,
@@ -51,7 +49,7 @@ const randomCard = {
 const cashCard = {
   ...randomCard,
   id: '26e9fb44', name: 'TEST Cash Card', financialPosition: null,
-  last4: '0001', creditLimit: 200000, paymentDueDay: 15, balance: -274016,
+  last4: '0001', creditLimit: 200000, balance: -274016,
   anniversaryDate: '2026-04-10',
   cardholders: [randomCard.cardholders[1]],
 };

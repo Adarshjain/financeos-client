@@ -110,7 +110,7 @@ export function AccountDetailsSection({
           <CreditCard className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
         )}
         <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-          {accountType === AccountType.BANK_ACCOUNT ? 'Bank Details' : 'Card Details'}
+          {accountType === AccountType.BANK_ACCOUNT ? 'Bank Details' : 'Primary Card Details'}
         </h3>
       </div>
 
@@ -213,41 +213,6 @@ export function AccountDetailsSection({
                   className="pl-6 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                 />
               </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="paymentDueDay" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">
-                Payment Due Day
-              </Label>
-              <Input
-                id="paymentDueDay"
-                name="paymentDueDay"
-                type="number"
-                min={1}
-                max={31}
-                placeholder="15"
-                defaultValue={creditCard?.paymentDueDay}
-                required
-                className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="gracePeriodDays" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">
-                Grace Period (Days)
-              </Label>
-              <Input
-                id="gracePeriodDays"
-                name="gracePeriodDays"
-                type="number"
-                min={0}
-                placeholder="20"
-                defaultValue={creditCard?.gracePeriodDays}
-                required
-                className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
-              />
             </div>
           </div>
 
