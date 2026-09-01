@@ -35,6 +35,7 @@ interface RewardRuleFormProps {
   /** Prefill from this rule but create new (end-date & clone flow). */
   cloneFrom?: RewardRule;
   defaultPriority: number;
+  isBank?: boolean;
   open: boolean;
   onClose: () => void;
   onSaved: () => void;
@@ -49,6 +50,7 @@ export default function RewardRuleForm({
   rule,
   cloneFrom,
   defaultPriority,
+  isBank,
   open,
   onClose,
   onSaved,
@@ -178,6 +180,7 @@ export default function RewardRuleForm({
             setActiveFrom={setActiveFrom}
             activeTo={activeTo}
             setActiveTo={setActiveTo}
+            isBank={isBank}
           />
 
           {/* Match */}

@@ -471,6 +471,13 @@ export const cardholdersApi = {
     return request<import('@/lib/account.types').Cardholder[]>(`/api/v1/accounts/${accountId}/cardholders`);
   },
 
+  async addPrimary(accountId: string, data: import('@/lib/account.types').CreateCardRequest): Promise<import('@/lib/account.types').Cardholder> {
+    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/primary`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
   async addAddon(accountId: string, data: import('@/lib/account.types').CreateCardholderRequest): Promise<import('@/lib/account.types').Cardholder> {
     return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders`, {
       method: 'POST',

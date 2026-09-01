@@ -2,6 +2,7 @@
 
 import { Loader2 } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import { Card, Cardholder } from '@/lib/account.types';
 
 import { CardholderItem } from './CardholderItem';
@@ -9,6 +10,8 @@ import { CardholderItem } from './CardholderItem';
 interface CardholdersListProps {
   isLoading: boolean;
   cardholders: Cardholder[];
+  isBank?: boolean;
+  onAddPrimary?: () => void;
   onEdit: (ch: Cardholder) => void;
   onReassign: (ch: Cardholder, openPlastic?: Card) => void;
   onReopen: (ch: Cardholder) => void;
@@ -23,6 +26,8 @@ interface CardholdersListProps {
 export function CardholdersList({
   isLoading,
   cardholders,
+  isBank,
+  onAddPrimary,
   onEdit,
   onReassign,
   onReopen,
@@ -42,6 +47,18 @@ export function CardholdersList({
   }
 
   if (cardholders.length === 0) {
+    if (isBank) {
+      return (
+        <div className="text-center py-10 space-y-3 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+          <p className="text-xs text-slate-400">No debit cards yet.</p>
+          {onAddPrimary && (
+            <Button size="sm" onClick={onAddPrimary}>
+              Add your debit card
+            </Button>
+          )}
+        </div>
+      );
+    }
     return (
       <div className="text-center py-10 text-xs text-slate-400 border border-dashed rounded-xl">
         No cardholders found for this account.
@@ -55,6 +72,7 @@ export function CardholdersList({
         <CardholderItem
           key={ch.id}
           cardholder={ch}
+          isBank={isBank}
           onEdit={onEdit}
           onReassign={onReassign}
           onReopen={onReopen}

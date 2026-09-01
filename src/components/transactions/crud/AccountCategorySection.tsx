@@ -23,7 +23,8 @@ interface AccountCategorySectionProps {
   isUpdateMode: boolean;
   hasAccountId: boolean;
   handleAccountChange: (newAccountId: string) => void;
-  isCreditCard: boolean;
+  isCreditCard?: boolean;
+  supportsCards?: boolean;
   cardOptions: { id: string; label: string }[];
   localCategories: Category[];
   selectedCategories: Category[];
@@ -43,6 +44,7 @@ export function AccountCategorySection({
   hasAccountId,
   handleAccountChange,
   isCreditCard,
+  supportsCards,
   cardOptions,
   localCategories,
   selectedCategories,
@@ -52,6 +54,7 @@ export function AccountCategorySection({
   mcc,
   setMcc,
 }: AccountCategorySectionProps) {
+  const hasCardSupport = supportsCards ?? isCreditCard ?? false;
   return (
     <div className="bg-white dark:bg-slate-900/60 rounded-xl p-3.5 border border-slate-100 dark:border-slate-800/80 shadow-sm flex flex-col gap-3">
       {/* Account Selector */}
@@ -84,8 +87,8 @@ export function AccountCategorySection({
         </Select>
       </div>
 
-      {/* Card Selector (only for Credit Cards with cards) */}
-      {isCreditCard && cardOptions.length > 0 && (
+      {/* Card Selector (only for accounts supporting cards with cards) */}
+      {hasCardSupport && cardOptions.length > 0 && (
         <div className="flex flex-col gap-1">
           <Label className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
             <CreditCard className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />

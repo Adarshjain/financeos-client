@@ -19,6 +19,7 @@ import { RELATIONSHIP_LABELS } from './constants';
 
 interface CardholderItemProps {
   cardholder: Cardholder;
+  isBank?: boolean;
   onEdit: (ch: Cardholder) => void;
   onReassign: (ch: Cardholder, openPlastic?: Card) => void;
   onReopen: (ch: Cardholder) => void;
@@ -32,6 +33,7 @@ interface CardholderItemProps {
 
 export function CardholderItem({
   cardholder: ch,
+  isBank,
   onEdit,
   onReassign,
   onReopen,
@@ -63,7 +65,14 @@ export function CardholderItem({
             {ch.role}
           </Badge>
           <span className="font-semibold text-sm text-slate-900 dark:text-slate-100">
-            {ch.personName || (ch.role === 'PRIMARY' ? 'Primary Cardholder' : 'Add-on Cardholder')}
+            {ch.personName ||
+              (ch.role === 'PRIMARY'
+                ? isBank
+                  ? 'Your card'
+                  : 'Primary Cardholder'
+                : isBank
+                ? 'Joint holder'
+                : 'Add-on Cardholder')}
           </span>
           {ch.relationship && (
             <Badge variant="outline" className="text-2xs text-slate-600 dark:text-slate-400">

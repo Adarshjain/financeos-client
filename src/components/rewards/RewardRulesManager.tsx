@@ -14,10 +14,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { Account, CreditCard } from '@/lib/account.types';
+import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
 import type { RewardCapBucket, RewardRule, RewardType } from '@/lib/rewards.types';
-import { cn, toCalendarDate } from '@/lib/utils';
+import { AccountType } from '@/lib/types';
+import { toCalendarDate } from '@/lib/utils';
 
 import { AccountConfigHeader } from './rules-manager/AccountConfigHeader';
 import { RuleCardItem } from './rules-manager/RuleCardItem';
@@ -81,9 +82,10 @@ export default function RewardRulesManager({
 
   const today = toCalendarDate(new Date());
   const selectedAccount = accounts.find((a) => a.id === accountId);
+  const isBank = selectedAccount?.type === AccountType.BANK_ACCOUNT;
   const cardholders =
-    selectedAccount?.type === 'credit_card'
-      ? (selectedAccount as CreditCard).cardholders
+    selectedAccount?.type === AccountType.CREDIT_CARD || isBank
+      ? selectedAccount.cardholders
       : undefined;
 
   return (
@@ -178,6 +180,7 @@ export default function RewardRulesManager({
         cards={cardholders}
         categories={categories}
         defaultRewardType={defaultRewardType}
+        isBank={isBank}
       />
 
       {(isCreateOpen || editingRule || cloneSource) && (
@@ -193,6 +196,7 @@ export default function RewardRulesManager({
           defaultPriority={
             (rules.length ? Math.max(...rules.map((r) => r.priority)) : 0) + 1
           }
+          isBank={isBank}
           open
           onClose={closeForm}
           onSaved={() => {

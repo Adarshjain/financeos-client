@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import {
   addAddonCardholder,
   addCard,
+  addPrimaryCard,
   closeCard,
   closeCardholder,
   deleteCard,
@@ -26,9 +27,11 @@ import {
   ReplaceCardRequest,
   UpdateCardholderRequest,
 } from '@/lib/account.types';
+import { AccountType } from '@/lib/types';
 
 export type ViewState =
   | 'list'
+  | 'addPrimary'
   | 'addAddon'
   | 'editCardholder'
   | 'closeCardholder'
@@ -38,6 +41,7 @@ export type ViewState =
   | 'reassign';
 
 export function useCardsDialog(account: Account) {
+  const isBank = account.type === AccountType.BANK_ACCOUNT;
   const [open, setOpen] = useState(false);
   const [cardholders, setCardholders] = useState<Cardholder[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -106,6 +110,13 @@ export function useCardsDialog(account: Account) {
   };
 
   // Handlers for starting sub-views
+  const startAddPrimary = () => {
+    setView('addPrimary');
+    setCardLast4('');
+    setIssuedOn(new Date().toISOString().split('T')[0]);
+    setFormError(null);
+  };
+
   const startAddAddon = () => {
     setView('addAddon');
     setPersonName('');
@@ -169,6 +180,32 @@ export function useCardsDialog(account: Account) {
   };
 
   // Submit Actions
+  const handleSavePrimary = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cardLast4 || cardLast4.length !== 4) {
+      setFormError('Card last 4 digits must be exactly 4 digits.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFormError(null);
+
+    const payload: CreateCardRequest = {
+      last4: cardLast4.trim(),
+      issuedOn: issuedOn || undefined,
+    };
+
+    const res = await addPrimaryCard(account.id, payload);
+    if (res.success) {
+      toast.success('Debit card added');
+      await loadData();
+      backToList();
+    } else {
+      setFormError(res.error.message || 'Failed to add debit card');
+    }
+    setIsSubmitting(false);
+  };
+
   const handleSaveAddon = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!personName.trim()) {
@@ -194,11 +231,11 @@ export function useCardsDialog(account: Account) {
 
     const res = await addAddonCardholder(account.id, payload);
     if (res.success) {
-      toast.success('Add-on cardholder created');
+      toast.success(isBank ? 'Joint holder added' : 'Add-on cardholder created');
       await loadData();
       backToList();
     } else {
-      setFormError(res.error.message || 'Failed to create add-on cardholder');
+      setFormError(res.error.message || (isBank ? 'Failed to add joint holder' : 'Failed to create add-on cardholder'));
     }
     setIsSubmitting(false);
   };
@@ -421,6 +458,8 @@ export function useCardsDialog(account: Account) {
     isReattributing,
     reattributeError,
     backToList,
+    isBank,
+    startAddPrimary,
     startAddAddon,
     startEditCardholder,
     startCloseCardholder,
@@ -428,6 +467,7 @@ export function useCardsDialog(account: Account) {
     startReplaceCard,
     startCloseCard,
     startReassign,
+    handleSavePrimary,
     handleSaveAddon,
     handleSaveEditCardholder,
     handleConfirmCloseCardholder,

@@ -5,6 +5,7 @@ import { mockRevalidatePath } from '@/test/next-mocks';
 import {
   addAddonCardholder,
   addCard,
+  addPrimaryCard,
   closeCard,
   closeCardholder,
   deleteCard,
@@ -19,6 +20,7 @@ import { cardholdersApi } from '@/lib/apiClient';
 vi.mock('@/lib/apiClient', () => ({
   cardholdersApi: {
     listByAccount: vi.fn(),
+    addPrimary: vi.fn(),
     addAddon: vi.fn(),
     update: vi.fn(),
     close: vi.fn(),
@@ -44,6 +46,15 @@ describe('cardholders server actions', () => {
     if (res.success) {
       expect(res.data).toHaveLength(1);
     }
+  });
+
+  it('addPrimaryCard calls cardholdersApi.addPrimary and revalidates paths', async () => {
+    vi.mocked(cardholdersApi.addPrimary).mockResolvedValue({ id: 'ch1', role: 'PRIMARY' } as any);
+
+    const res = await addPrimaryCard('acc1', { last4: '5678', issuedOn: '2026-09-01' });
+    expect(res.success).toBe(true);
+    expect(cardholdersApi.addPrimary).toHaveBeenCalledWith('acc1', { last4: '5678', issuedOn: '2026-09-01' });
+    expect(mockRevalidatePath).toHaveBeenCalledWith('/accounts');
   });
 
   it('addAddonCardholder calls cardholdersApi.addAddon and revalidates paths', async () => {

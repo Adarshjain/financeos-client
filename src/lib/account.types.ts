@@ -94,6 +94,7 @@ export type BankAccount = AccountBase & {
   openingBalance?: string;
   last4?: string;
   lastStatementDate?: string | null;
+  cardholders?: Cardholder[];
 };
 
 export type CardholderRole = 'PRIMARY' | 'ADDON';

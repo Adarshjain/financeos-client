@@ -151,6 +151,7 @@ export function SimulatorForm({
                 <SelectItem value="POS">POS / In-Store</SelectItem>
                 <SelectItem value="UPI">UPI</SelectItem>
                 <SelectItem value="CONTACTLESS">Contactless</SelectItem>
+                <SelectItem value="ATM">ATM</SelectItem>
                 <SelectItem value="OTHER">Other</SelectItem>
               </SelectContent>
             </Select>

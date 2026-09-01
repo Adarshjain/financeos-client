@@ -31,6 +31,7 @@ interface AddAddonCardholderFormProps {
   setIssuedOn: (val: string) => void;
   formError: string | null;
   isSubmitting: boolean;
+  isBank?: boolean;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
 }
@@ -50,6 +51,7 @@ export function AddAddonCardholderForm({
   setIssuedOn,
   formError,
   isSubmitting,
+  isBank,
   onSubmit,
   onCancel,
 }: AddAddonCardholderFormProps) {
@@ -165,6 +167,8 @@ export function AddAddonCardholderForm({
               <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" />
               Saving...
             </>
+          ) : isBank ? (
+            'Add joint holder'
           ) : (
             'Create Add-on Cardholder'
           )}

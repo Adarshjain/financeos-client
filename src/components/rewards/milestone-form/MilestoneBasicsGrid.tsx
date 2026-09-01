@@ -59,6 +59,7 @@ interface MilestoneBasicsGridProps {
   setPayoutValue: (v: string) => void;
   payoutTiming: MilestonePayoutTiming;
   setPayoutTiming: (t: MilestonePayoutTiming) => void;
+  isBank?: boolean;
 }
 
 export function MilestoneBasicsGrid({
@@ -85,6 +86,7 @@ export function MilestoneBasicsGrid({
   setPayoutValue,
   payoutTiming,
   setPayoutTiming,
+  isBank,
 }: MilestoneBasicsGridProps) {
   return (
     <div className="grid grid-cols-2 gap-2.5">
@@ -152,7 +154,7 @@ export function MilestoneBasicsGrid({
               </SelectItem>
               {cards.map((c) => {
                 const cName =
-                  c.personName || (c.role === 'PRIMARY' ? 'Primary' : 'Add-on');
+                  c.personName || (c.role === 'PRIMARY' ? 'Primary' : (isBank ? 'Joint holder' : 'Add-on'));
                 const last4 = c.currentLast4 || c.cards?.[0]?.last4 || '';
                 return (
                   <SelectItem key={c.id} value={c.id} className="text-xs">

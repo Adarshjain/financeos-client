@@ -83,4 +83,28 @@ describe('AccountsPage credit card tile — real payload, real child components'
     // closed card's limit is excluded from the section total (only Random Card's 20L)
     expect(screen.getByText(/Total Limit/)).toHaveTextContent('20,00,000');
   });
+
+  it('renders Cards button for bank accounts', async () => {
+    const bankAccount = {
+      id: 'bank-1',
+      name: 'HDFC Salary Account',
+      type: 'bank_account',
+      excludeFromNetAsset: false,
+      financialPosition: 'asset',
+      description: null,
+      closedOn: null,
+      ingestFromDate: null,
+      last4: '4321',
+      openingBalance: 10000,
+      balance: 15000,
+      lastStatementDate: null,
+      warnings: [],
+    };
+    vi.mocked(accountsApi.list).mockResolvedValue([bankAccount] as never);
+
+    render(await AccountsPage());
+
+    expect(screen.getByText('HDFC Salary Account')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Cards/i })).toBeInTheDocument();
+  });
 });
