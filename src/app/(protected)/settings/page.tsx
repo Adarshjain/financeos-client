@@ -2,6 +2,7 @@ import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 import { DeleteAccountCard } from '@/app/(protected)/settings/DeleteAccountCard';
+import { ThemeSettingsCard } from '@/app/(protected)/settings/ThemeSettingsCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { requireAuth } from '@/lib/auth';
 
@@ -31,10 +32,10 @@ export default async function SettingsPage() {
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 truncate mt-0.5">{user.email}</p>
         </div>
       </div>
-      {/*<ThemeSettingsCard />*/}
-
       <Card className="rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
         <CardContent className="p-0">
+          <ThemeSettingsCard />
+          <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800"></div>
           <Link href="/settings/llm-keys">
             <div className="flex justify-between items-center text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-850/30 transition-all cursor-pointer">
               <span>AI API Keys</span>
