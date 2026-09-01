@@ -1,6 +1,6 @@
 'use server';
 
-import { AccountRequest } from '@/lib/account.types';
+import { AccountRequest, CloseAccountRequest } from '@/lib/account.types';
 import { accountsApi } from '@/lib/apiClient';
 import { createDomainAction } from '@/lib/domainApi';
 
@@ -12,6 +12,16 @@ export const createAccount = createDomainAction(
 export const updateAccount = createDomainAction(
   { fallbackError: 'Failed to update account', revalidatePaths: ['/accounts'] },
   (accountId: string, accountRequest: AccountRequest) => accountsApi.update(accountId, accountRequest)
+);
+
+export const closeAccount = createDomainAction(
+  { fallbackError: 'Failed to close account', revalidatePaths: ['/accounts', '/transactions', '/rewards'] },
+  (accountId: string, data?: CloseAccountRequest) => accountsApi.close(accountId, data)
+);
+
+export const reopenAccount = createDomainAction(
+  { fallbackError: 'Failed to reopen account', revalidatePaths: ['/accounts', '/transactions', '/rewards'] },
+  (accountId: string) => accountsApi.reopen(accountId)
 );
 
 export const deleteAccount = createDomainAction(

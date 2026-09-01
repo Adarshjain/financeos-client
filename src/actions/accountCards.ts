@@ -3,6 +3,7 @@
 import type {
   CloseCardRequest,
   CreateAccountCardRequest,
+  ReplaceCardInstanceRequest,
   UpdateAccountCardRequest,
 } from '@/lib/account.types';
 import { accountCardsApi } from '@/lib/apiClient';
@@ -21,6 +22,11 @@ export const createAccountCard = createDomainAction(
 export const updateAccountCard = createDomainAction(
   { fallbackError: 'Failed to update card', revalidatePaths: ['/accounts', '/transactions', '/rewards'] },
   (accountId: string, cardId: string, data: UpdateAccountCardRequest) => accountCardsApi.update(accountId, cardId, data)
+);
+
+export const replaceAccountCard = createDomainAction(
+  { fallbackError: 'Failed to replace card', revalidatePaths: ['/accounts', '/transactions', '/rewards'] },
+  (accountId: string, cardId: string, data: ReplaceCardInstanceRequest) => accountCardsApi.replace(accountId, cardId, data)
 );
 
 export const closeAccountCard = createDomainAction(

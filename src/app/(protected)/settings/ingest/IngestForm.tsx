@@ -39,7 +39,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useJobPolling } from '@/hooks/useJobPolling';
-import type { Account } from '@/lib/account.types';
+import { type Account, isAccountClosed } from '@/lib/account.types';
 import type { FileIngestionResult, FileSummary } from '@/lib/types';
 
 /**
@@ -81,9 +81,9 @@ export function IngestForm({ accounts }: IngestFormProps) {
 
   const isUploading = Boolean(activeJobId) && isPolling;
 
-  // Filter accounts to standard bank/credit cards for transaction statement upload
+  // Filter accounts to standard bank/credit cards for transaction statement upload (excluding closed)
   const uploadableAccounts = accounts.filter(
-    (acc) => acc.type === 'bank_account' || acc.type === 'credit_card',
+    (acc) => (acc.type === 'bank_account' || acc.type === 'credit_card') && !isAccountClosed(acc),
   );
 
   // Drag and drop handlers

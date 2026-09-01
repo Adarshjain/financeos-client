@@ -585,7 +585,7 @@ export default function RewardsBrowser({
                 </div>
                 {cap && (
                   <div className="mt-2 flex flex-col gap-1.5">
-                    {cap.counterScope === 'PER_CARD' && (cap.perCard ?? []).length > 0 ? (
+                    {cap.counterScope === 'PER_CARDHOLDER' && (cap.perCard ?? []).length > 0 ? (
                       (cap.perCard ?? []).map((pc) => {
                         const cardPct = cap.cap > 0 ? Math.min(100, Math.round((pc.used / cap.cap) * 100)) : null;
                         return (

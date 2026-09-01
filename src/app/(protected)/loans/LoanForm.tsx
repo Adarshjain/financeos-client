@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { Account } from '@/lib/account.types';
+import { type Account, isAccountClosed } from '@/lib/account.types';
 import type { LoanResponse, LoanType, RateType } from '@/lib/types';
 
 interface LoanFormProps {
@@ -276,11 +276,13 @@ export function LoanForm({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none" className="text-xs">-- None --</SelectItem>
-                    {bankAccounts.map((acc) => (
-                      <SelectItem key={acc.id} value={acc.id} className="text-xs">
-                        {acc.name}
-                      </SelectItem>
-                    ))}
+                    {bankAccounts
+                      .filter((acc) => !isAccountClosed(acc) || acc.id === paymentAccountId)
+                      .map((acc) => (
+                        <SelectItem key={acc.id} value={acc.id} className="text-xs">
+                          {acc.name} {acc.closedOn ? '(Closed)' : ''}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>

@@ -105,6 +105,8 @@ export type Transaction = TransactionBase & {
   links?: TransactionLinkSummary[];
   cardId?: string | null;
   cardLabel?: string | null;
+  /** Last 4 digits of the plastic the spend happened on. */
+  cardLast4?: string | null;
   // Reward details come back flat on the response (requests nest them in rewardDetails)
   settlementDate?: string | null;
   instantDiscount?: number | null;

@@ -357,6 +357,19 @@ export const accountsApi = {
     });
   },
 
+  async close(id: string, data?: import('@/lib/account.types').CloseAccountRequest): Promise<Account> {
+    return request<Account>(`/api/v1/accounts/${id}/close`, {
+      method: 'POST',
+      body: JSON.stringify(data || {}),
+    });
+  },
+
+  async reopen(id: string): Promise<Account> {
+    return request<Account>(`/api/v1/accounts/${id}/reopen`, {
+      method: 'POST',
+    });
+  },
+
   async getCardCycleSummary(id: string): Promise<import('@/lib/statement.types').CardCycleSummary> {
     return request<import('@/lib/statement.types').CardCycleSummary>(`/api/v1/accounts/${id}/card-summary`);
   },
@@ -452,39 +465,82 @@ export const transactionsApi = {
   },
 };
 
-// Account Cards API
-export const accountCardsApi = {
-  async listByAccount(accountId: string): Promise<import('@/lib/account.types').AccountCard[]> {
-    return request<import('@/lib/account.types').AccountCard[]>(`/api/v1/accounts/${accountId}/cards`);
+// Cardholders API
+export const cardholdersApi = {
+  async listByAccount(accountId: string): Promise<import('@/lib/account.types').Cardholder[]> {
+    return request<import('@/lib/account.types').Cardholder[]>(`/api/v1/accounts/${accountId}/cardholders`);
   },
 
-  async create(accountId: string, data: import('@/lib/account.types').CreateAccountCardRequest): Promise<import('@/lib/account.types').AccountCard> {
-    return request<import('@/lib/account.types').AccountCard>(`/api/v1/accounts/${accountId}/cards`, {
+  async addAddon(accountId: string, data: import('@/lib/account.types').CreateCardholderRequest): Promise<import('@/lib/account.types').Cardholder> {
+    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
-  async update(accountId: string, cardId: string, data: import('@/lib/account.types').UpdateAccountCardRequest): Promise<import('@/lib/account.types').AccountCard> {
-    return request<import('@/lib/account.types').AccountCard>(`/api/v1/accounts/${accountId}/cards/${cardId}`, {
+  async update(accountId: string, cardholderId: string, data: import('@/lib/account.types').UpdateCardholderRequest): Promise<import('@/lib/account.types').Cardholder> {
+    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}`, {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   },
 
-  async close(accountId: string, cardId: string, data: import('@/lib/account.types').CloseCardRequest): Promise<import('@/lib/account.types').AccountCard> {
-    return request<import('@/lib/account.types').AccountCard>(`/api/v1/accounts/${accountId}/cards/${cardId}/close`, {
+  async close(accountId: string, cardholderId: string, data?: import('@/lib/account.types').CloseCardholderRequest): Promise<import('@/lib/account.types').Cardholder> {
+    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}/close`, {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  },
+
+  async reopen(accountId: string, cardholderId: string): Promise<import('@/lib/account.types').Cardholder> {
+    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}/reopen`, {
+      method: 'POST',
+    });
+  },
+
+  async delete(accountId: string, cardholderId: string): Promise<void> {
+    return request<void>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async addCard(accountId: string, cardholderId: string, data: import('@/lib/account.types').CreateCardRequest): Promise<import('@/lib/account.types').Cardholder> {
+    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}/cards`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
-  async delete(accountId: string, cardId: string): Promise<void> {
-    return request<void>(`/api/v1/accounts/${accountId}/cards/${cardId}`, {
+  async replaceCard(accountId: string, cardholderId: string, cardId: string, data: import('@/lib/account.types').ReplaceCardRequest): Promise<import('@/lib/account.types').Cardholder> {
+    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}/cards/${cardId}/replace`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  async closeCard(accountId: string, cardholderId: string, cardId: string, data?: import('@/lib/account.types').CloseCardRequest): Promise<import('@/lib/account.types').Cardholder> {
+    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}/cards/${cardId}/close`, {
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  },
+
+  async deleteCard(accountId: string, cardholderId: string, cardId: string): Promise<void> {
+    return request<void>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}/cards/${cardId}`, {
       method: 'DELETE',
     });
   },
+
+  // Backward compatibility methods
+  async create(accountId: string, data: import('@/lib/account.types').CreateCardholderRequest): Promise<import('@/lib/account.types').Cardholder> {
+    return this.addAddon(accountId, data);
+  },
+  async replace(accountId: string, cardholderId: string, data: import('@/lib/account.types').ReplaceCardRequest): Promise<import('@/lib/account.types').Cardholder> {
+    return this.replaceCard(accountId, cardholderId, cardholderId, data);
+  },
 };
+
+export const accountCardsApi = cardholdersApi;
 
 
 // Instruments API

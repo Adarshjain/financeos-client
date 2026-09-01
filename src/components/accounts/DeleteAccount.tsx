@@ -1,19 +1,19 @@
 'use client';
 
-import { Trash2 } from 'lucide-react';
+import { AlertTriangle, Trash2, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { deleteAccount } from '@/actions/accounts';
+import { closeAccount, deleteAccount } from '@/actions/accounts';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Account } from '@/lib/account.types';
+import { Account, isAccountClosed } from '@/lib/account.types';
 
 interface DeleteAccountProps {
   account: Account;
@@ -21,7 +21,10 @@ interface DeleteAccountProps {
 
 export function DeleteAccount({ account }: DeleteAccountProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [open, setOpen] = useState(false);
+
+  const closed = isAccountClosed(account);
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -41,6 +44,23 @@ export function DeleteAccount({ account }: DeleteAccountProps) {
     }
   };
 
+  const handleCloseInstead = async () => {
+    setIsClosing(true);
+    try {
+      const res = await closeAccount(account.id);
+      if (res.success) {
+        toast.success('Account closed successfully!');
+        setOpen(false);
+      } else {
+        toast.error(res.error.message);
+      }
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setIsClosing(false);
+    }
+  };
+
   return (
     <>
       <button
@@ -57,24 +77,61 @@ export function DeleteAccount({ account }: DeleteAccountProps) {
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete Account</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete <strong>{account.name}</strong>? This action cannot be undone.
+            <DialogTitle className="flex items-center gap-2 text-rose-600 dark:text-rose-400">
+              <AlertTriangle className="w-5 h-5" />
+              Delete Account
+            </DialogTitle>
+            <DialogDescription className="space-y-2 pt-2 text-xs text-slate-600 dark:text-slate-300">
+              <p>
+                Are you sure you want to permanently delete <strong>{account.name}</strong>?
+              </p>
+              <div className="p-2.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-2xs text-rose-700 dark:text-rose-300">
+                <strong>Warning:</strong> Deletion cascades across transactions, statements, card instances, holdings, and reward rules. This action cannot be undone.
+              </div>
+              {!closed && (
+                <p className="text-2xs text-slate-500 dark:text-slate-400">
+                  If you simply discontinued using this card or account, closing it preserves your historical records while removing it from everyday flows.
+                </p>
+              )}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter
-            primaryAction={{
-              label: isDeleting ? 'Deleting...' : 'Delete',
-              variant: 'destructive',
-              onClick: handleDelete,
-              disabled: isDeleting,
-            }}
-            secondaryAction={{
-              label: 'Cancel',
-            }}
-          />
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isDeleting || isClosing}
+              onClick={() => setOpen(false)}
+            >
+              Cancel
+            </Button>
+            {!closed && (
+              <Button
+                type="button"
+                variant="default"
+                size="sm"
+                className="gap-1.5 bg-sky-600 hover:bg-sky-700 text-white"
+                disabled={isDeleting || isClosing}
+                onClick={handleCloseInstead}
+              >
+                <XCircle className="w-3.5 h-3.5" />
+                {isClosing ? 'Closing...' : 'Close Account Instead'}
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              className="gap-1.5"
+              disabled={isDeleting || isClosing}
+              onClick={handleDelete}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              {isDeleting ? 'Deleting...' : 'Delete Permanently'}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </>

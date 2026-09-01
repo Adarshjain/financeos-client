@@ -21,8 +21,8 @@ export default async function EditReportPage({
 
   const dynamicOptions: DynamicOptions = {
     category: categories.map((c: Category) => ({ id: c.id, name: c.name })),
-    account: accounts.map((a: Account) => ({ id: a.id, name: a.name })),
-    broker: accounts.filter((a: Account) => a.type === 'broker').map((a: Account) => ({ id: a.id, name: a.name })),
+    account: accounts.map((a: Account) => ({ id: a.id, name: a.closedOn ? `${a.name} (Closed)` : a.name })),
+    broker: accounts.filter((a: Account) => a.type === 'broker').map((a: Account) => ({ id: a.id, name: a.closedOn ? `${a.name} (Closed)` : a.name })),
     instrument: instruments.map((i: Instrument) => ({ id: i.id, name: i.name })),
   };
 

@@ -453,7 +453,7 @@ export default function RewardRulesManager({
       <RewardCapBucketsManager accountId={accountId} buckets={capBuckets} onChanged={() => void refreshBuckets()} />
       <RewardMilestonesManager
         accountId={accountId}
-        cards={accounts.find((a) => a.id === accountId)?.type === 'credit_card' ? (accounts.find((a) => a.id === accountId) as import('@/lib/account.types').CreditCard).cards : undefined}
+        cards={accounts.find((a) => a.id === accountId)?.type === 'credit_card' ? (accounts.find((a) => a.id === accountId) as import('@/lib/account.types').CreditCard).cardholders : undefined}
         categories={categories}
         defaultRewardType={defaultRewardType}
       />
@@ -462,7 +462,7 @@ export default function RewardRulesManager({
         <RewardRuleForm
           key={editingRule?.id ?? cloneSource?.id ?? 'create'}
           accountId={accountId}
-          cards={accounts.find((a) => a.id === accountId)?.type === 'credit_card' ? (accounts.find((a) => a.id === accountId) as import('@/lib/account.types').CreditCard).cards : undefined}
+          cards={accounts.find((a) => a.id === accountId)?.type === 'credit_card' ? (accounts.find((a) => a.id === accountId) as import('@/lib/account.types').CreditCard).cardholders : undefined}
           categories={categories}
           capBuckets={capBuckets}
           defaultRewardType={defaultRewardType}

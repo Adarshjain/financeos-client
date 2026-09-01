@@ -130,7 +130,7 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
                 <div className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{bucket.name}</div>
                 <div className="text-xs text-sky-600 dark:text-sky-400 font-semibold mt-0.5">
                   {bucket.rewardType === 'POINTS' ? `${bucket.cap} pts` : `₹${bucket.cap}`} / {WINDOW_LABELS[bucket.windowType].replace('Per ', '')}
-                  {bucket.counterScope === 'PER_CARD' && <span className="text-amber-600 dark:text-amber-400 font-bold"> (per card)</span>}
+                  {bucket.counterScope === 'PER_CARDHOLDER' && <span className="text-amber-600 dark:text-amber-400 font-bold"> (per cardholder)</span>}
                   <span className="text-slate-400 dark:text-slate-500 font-medium"> · {bucket.ruleCount} rule{bucket.ruleCount === 1 ? '' : 's'}</span>
                 </div>
               </div>
@@ -208,7 +208,7 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
                   <SelectTrigger className={selectTriggerClass}><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ACCOUNT" className="text-xs">Per account (pooled)</SelectItem>
-                    <SelectItem value="PER_CARD" className="text-xs">Per card</SelectItem>
+                    <SelectItem value="PER_CARDHOLDER" className="text-xs">Per cardholder</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -6,7 +6,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Broker as BrokerAccount } from '@/lib/account.types';
+import { Broker as BrokerAccount, isAccountClosed } from '@/lib/account.types';
 
 import { ImportAssetScope, ImportMode } from './types';
 
@@ -84,11 +84,13 @@ export function ImportStep1Upload({
                 <SelectValue placeholder="Select target account..." />
               </SelectTrigger>
               <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                {brokerAccounts.map((b) => (
-                  <SelectItem key={b.id} value={b.id} className="text-xs">
-                    {b.name} ({b.provider || 'Broker'})
-                  </SelectItem>
-                ))}
+                {brokerAccounts
+                  .filter((b) => !isAccountClosed(b) || b.id === brokerAccountId)
+                  .map((b) => (
+                    <SelectItem key={b.id} value={b.id} className="text-xs">
+                      {b.name} ({b.provider || 'Broker'}) {b.closedOn ? '(Closed)' : ''}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
