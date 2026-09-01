@@ -9,7 +9,18 @@
 // for the grid drag handle, gaining a title-override input and a remove button.
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { AlertTriangle, ChevronsRightLeft, GripVertical, Loader2, Maximize2, SeparatorVertical, Trash2, X } from 'lucide-react';
+import {
+  AlertTriangle,
+  ChevronsRightLeft,
+  GripVertical,
+  Loader2,
+  Maximize2,
+  Pencil,
+  SeparatorVertical,
+  Trash2,
+  X,
+} from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 
 import { runSavedReport } from '@/actions/reports';
@@ -183,6 +194,22 @@ export function DashboardWidgetView({
               onMouseDown={stopDrag}
               onTouchStart={stopDrag}
             />
+            {available && (
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                className="shrink-0 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+                asChild
+                title="Edit report"
+                aria-label="Edit report"
+                onMouseDown={stopDrag}
+                onTouchStart={stopDrag}
+              >
+                <Link href={`/reports/${widget.reportId}`}>
+                  <Pencil className="h-4 w-4" />
+                </Link>
+              </Button>
+            )}
             <Button
               type="button"
               variant="ghost"
@@ -213,20 +240,35 @@ export function DashboardWidgetView({
           </div>
         ) : (
           <div className="group flex items-center justify-between gap-2 px-3 py-2 border-b border-slate-100 dark:border-slate-850">
-            <span className="truncate text-xs font-black uppercase  text-slate-800 dark:text-slate-200">
+            <span className="truncate text-xs font-black uppercase text-slate-800 dark:text-slate-200">
               {widgetTitle(widget)}
             </span>
             {available && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-4 w-4 shrink-0 opacity-50"
-                onClick={() => setIsFullPage(true)}
-                title="View full page"
-              >
-                <Maximize2 className="h-3.5 w-3.5 text-slate-500" />
-              </Button>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100"
+                  asChild
+                  title="Edit report"
+                  aria-label="Edit report"
+                >
+                  <Link href={`/reports/${widget.reportId}`}>
+                    <Pencil className="h-3.5 w-3.5 text-slate-500" />
+                  </Link>
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-4 w-4 shrink-0 opacity-50 hover:opacity-100"
+                  onClick={() => setIsFullPage(true)}
+                  title="View full page"
+                  aria-label="View full page"
+                >
+                  <Maximize2 className="h-3.5 w-3.5 text-slate-500" />
+                </Button>
+              </div>
             )}
           </div>
         )}
@@ -242,15 +284,31 @@ export function DashboardWidgetView({
           <DialogPrimitive.Content className="fixed inset-0 z-50 flex flex-col bg-background focus:outline-none data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-150">
             <div className="flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3">
               <DialogTitle className="text-base font-semibold">{widgetTitle(widget)}</DialogTitle>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                className="shrink-0"
-                onClick={() => setIsFullPage(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex items-center gap-1">
+                {available && (
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className="shrink-0"
+                    asChild
+                    title="Edit report"
+                    aria-label="Edit report"
+                  >
+                    <Link href={`/reports/${widget.reportId}`}>
+                      <Pencil className="h-4 w-4 text-slate-500" />
+                    </Link>
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  className="shrink-0"
+                  onClick={() => setIsFullPage(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             <div className={cn('min-h-0 flex-1 overflow-hidden', loading && 'opacity-60')}>
               <WidgetReportContent {...sharedContentProps} />
