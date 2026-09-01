@@ -75,7 +75,7 @@ export async function setSessionCookie(value: string): Promise<void> {
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24 * 365, // 1 year — keep in sync with spring.session.timeout and cookie max-age in server application.yml
   });
 }
 
