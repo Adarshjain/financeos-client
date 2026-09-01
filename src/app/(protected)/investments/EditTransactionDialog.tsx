@@ -1,10 +1,8 @@
 'use client';
 
 import { Edit, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { useState } from 'react';
 
-import { deleteInvestmentTransaction, updateInvestmentTransaction } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -25,7 +23,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Broker } from '@/lib/account.types';
-import { Charges, InvestmentTransactionResponse, InvestmentTransactionType, SettlementType } from '@/lib/types';
+import {
+  InvestmentTransactionResponse,
+  InvestmentTransactionType,
+  SettlementType,
+} from '@/lib/types';
+
+import { EditTransactionItemizedCharges } from './edit-transaction/EditTransactionItemizedCharges';
+import { useEditTransactionDialog } from './edit-transaction/useEditTransactionDialog';
 
 interface EditTransactionDialogProps {
   transaction: InvestmentTransactionResponse;
@@ -41,102 +46,46 @@ export function EditTransactionDialog({
   onSuccess,
 }: EditTransactionDialogProps) {
   const [open, setOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [type, setType] = useState<InvestmentTransactionType>(transaction.type);
-  const [settlementType, setSettlementType] = useState<SettlementType>(transaction.settlementType || 'delivery');
-  const [quantity, setQuantity] = useState(transaction.quantity);
-  const [price, setPrice] = useState(transaction.price);
-  const [tradeDate, setTradeDate] = useState(transaction.tradeDate?.split('T')[0] || '');
-  const [notes, setNotes] = useState(transaction.notes || '');
-
-  // Charges
-  const [brokerage, setBrokerage] = useState(transaction.brokerage || '');
-  const [stt, setStt] = useState(transaction.stt || '');
-  const [exchangeTxnCharges, setExchangeTxnCharges] = useState(transaction.exchangeTxnCharges || '');
-  const [sebiCharges, setSebiCharges] = useState(transaction.sebiCharges || '');
-  const [stampDuty, setStampDuty] = useState(transaction.stampDuty || '');
-  const [gst, setGst] = useState(transaction.gst || '');
-  const [dpCharges, setDpCharges] = useState(transaction.dpCharges || '');
-  const [otherCharges, setOtherCharges] = useState(transaction.otherCharges || '');
-
-  useEffect(() => {
-    if (open) {
-      setType(transaction.type);
-      setSettlementType(transaction.settlementType || 'delivery');
-      setQuantity(transaction.quantity);
-      setPrice(transaction.price);
-      setTradeDate(transaction.tradeDate?.split('T')[0] || '');
-      setNotes(transaction.notes || '');
-      setBrokerage(transaction.brokerage || '');
-      setStt(transaction.stt || '');
-      setExchangeTxnCharges(transaction.exchangeTxnCharges || '');
-      setSebiCharges(transaction.sebiCharges || '');
-      setStampDuty(transaction.stampDuty || '');
-      setGst(transaction.gst || '');
-      setDpCharges(transaction.dpCharges || '');
-      setOtherCharges(transaction.otherCharges || '');
-    }
-  }, [open, transaction]);
-
-  const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this trade transaction?')) return;
-    setIsDeleting(true);
-    try {
-      const res = await deleteInvestmentTransaction(transaction.id);
-      if (res.success) {
-        toast.success('Transaction deleted');
-        setOpen(false);
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch (err) {
-      toast.error('Failed to delete transaction: ' + (err as Error).message);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-
-    const charges: Charges = {};
-    if (brokerage) charges.brokerage = Number(brokerage);
-    if (stt) charges.stt = Number(stt);
-    if (exchangeTxnCharges) charges.exchangeTxnCharges = Number(exchangeTxnCharges);
-    if (sebiCharges) charges.sebiCharges = Number(sebiCharges);
-    if (stampDuty) charges.stampDuty = Number(stampDuty);
-    if (gst) charges.gst = Number(gst);
-    if (dpCharges) charges.dpCharges = Number(dpCharges);
-    if (otherCharges) charges.otherCharges = Number(otherCharges);
-
-    try {
-      const res = await updateInvestmentTransaction(transaction.id, {
-        type,
-        settlementType,
-        quantity: Number(quantity),
-        price: Number(price),
-        tradeDate,
-        charges,
-        notes: notes || undefined,
-      });
-
-      if (res.success) {
-        toast.success('Trade updated');
-        setOpen(false);
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch (err) {
-      toast.error('Failed to update trade: ' + (err as Error).message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const {
+    isDeleting,
+    isSubmitting,
+    type,
+    setType,
+    settlementType,
+    setSettlementType,
+    quantity,
+    setQuantity,
+    price,
+    setPrice,
+    tradeDate,
+    setTradeDate,
+    notes,
+    setNotes,
+    brokerage,
+    setBrokerage,
+    stt,
+    setStt,
+    exchangeTxnCharges,
+    setExchangeTxnCharges,
+    sebiCharges,
+    setSebiCharges,
+    stampDuty,
+    setStampDuty,
+    gst,
+    setGst,
+    dpCharges,
+    setDpCharges,
+    otherCharges,
+    setOtherCharges,
+    handleDelete,
+    handleSubmit,
+  } = useEditTransactionDialog({
+    transaction,
+    open,
+    setOpen,
+    onSuccess,
+  });
 
   const instrumentName = transaction.instrument?.name || 'Instrument';
 
@@ -144,7 +93,11 @@ export function EditTransactionDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="ghost" size="icon-xs" className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+          >
             <Edit className="w-3.5 h-3.5" />
           </Button>
         )}
@@ -157,32 +110,54 @@ export function EditTransactionDialog({
         </DialogHeader>
 
         <DialogBody>
-          <form id="edit-transaction-form" onSubmit={handleSubmit} className="space-y-3 py-1">
+          <form
+            id="edit-transaction-form"
+            onSubmit={handleSubmit}
+            className="space-y-3 py-1"
+          >
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Broker Account</Label>
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Broker Account
+              </Label>
               <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
-                {transaction.brokerName} {transaction.provider ? `(${transaction.provider})` : ''}
+                {transaction.brokerName}{' '}
+                {transaction.provider ? `(${transaction.provider})` : ''}
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Instrument</Label>
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Instrument
+              </Label>
               <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
                 {transaction.instrument.name}
-                {transaction.instrument.symbol ? ` (${transaction.instrument.symbol})` : ''}
+                {transaction.instrument.symbol
+                  ? ` (${transaction.instrument.symbol})`
+                  : ''}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type</Label>
-                <Select value={type} onValueChange={(val) => setType(val as InvestmentTransactionType)}>
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Type
+                </Label>
+                <Select
+                  value={type}
+                  onValueChange={(val) =>
+                    setType(val as InvestmentTransactionType)
+                  }
+                >
                   <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                    <SelectItem value="buy" className="text-xs">Buy</SelectItem>
-                    <SelectItem value="sell" className="text-xs">Sell</SelectItem>
+                    <SelectItem value="buy" className="text-xs">
+                      Buy
+                    </SelectItem>
+                    <SelectItem value="sell" className="text-xs">
+                      Sell
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -199,14 +174,25 @@ export function EditTransactionDialog({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Settlement (CNC/MIS)</Label>
-                <Select value={settlementType} onValueChange={(val) => setSettlementType(val as SettlementType)}>
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Settlement (CNC/MIS)
+                </Label>
+                <Select
+                  value={settlementType}
+                  onValueChange={(val) =>
+                    setSettlementType(val as SettlementType)
+                  }
+                >
                   <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
                     <SelectValue placeholder="Select settlement" />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                    <SelectItem value="delivery" className="text-xs">Delivery (CNC)</SelectItem>
-                    <SelectItem value="intraday" className="text-xs">Intraday (MIS)</SelectItem>
+                    <SelectItem value="delivery" className="text-xs">
+                      Delivery (CNC)
+                    </SelectItem>
+                    <SelectItem value="intraday" className="text-xs">
+                      Intraday (MIS)
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -236,91 +222,24 @@ export function EditTransactionDialog({
               />
             </div>
 
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-3 space-y-2">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Itemized Charges</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <div>
-                  <Label className="text-2xs text-slate-500">Brokerage</Label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={brokerage}
-                    onChange={(e) => setBrokerage(e.target.value)}
-                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                  />
-                </div>
-                <div>
-                  <Label className="text-2xs text-slate-500">STT</Label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={stt}
-                    onChange={(e) => setStt(e.target.value)}
-                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                  />
-                </div>
-                <div>
-                  <Label className="text-2xs text-slate-500">Exch Txn</Label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={exchangeTxnCharges}
-                    onChange={(e) => setExchangeTxnCharges(e.target.value)}
-                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                  />
-                </div>
-                <div>
-                  <Label className="text-2xs text-slate-500">SEBI Fee</Label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={sebiCharges}
-                    onChange={(e) => setSebiCharges(e.target.value)}
-                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                  />
-                </div>
-                <div>
-                  <Label className="text-2xs text-slate-500">Stamp Duty</Label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={stampDuty}
-                    onChange={(e) => setStampDuty(e.target.value)}
-                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                  />
-                </div>
-                <div>
-                  <Label className="text-2xs text-slate-500">GST</Label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={gst}
-                    onChange={(e) => setGst(e.target.value)}
-                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                  />
-                </div>
-                <div>
-                  <Label className="text-2xs text-slate-500">DP Charges</Label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={dpCharges}
-                    onChange={(e) => setDpCharges(e.target.value)}
-                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                  />
-                </div>
-                <div>
-                  <Label className="text-2xs text-slate-500">Other</Label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={otherCharges}
-                    onChange={(e) => setOtherCharges(e.target.value)}
-                    className="w-full text-xs p-1.5 rounded border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
-                  />
-                </div>
-              </div>
-            </div>
+            <EditTransactionItemizedCharges
+              brokerage={brokerage}
+              setBrokerage={setBrokerage}
+              stt={stt}
+              setStt={setStt}
+              exchangeTxnCharges={exchangeTxnCharges}
+              setExchangeTxnCharges={setExchangeTxnCharges}
+              sebiCharges={sebiCharges}
+              setSebiCharges={setSebiCharges}
+              stampDuty={stampDuty}
+              setStampDuty={setStampDuty}
+              gst={gst}
+              setGst={setGst}
+              dpCharges={dpCharges}
+              setDpCharges={setDpCharges}
+              otherCharges={otherCharges}
+              setOtherCharges={setOtherCharges}
+            />
 
             <FormField
               label="Notes"

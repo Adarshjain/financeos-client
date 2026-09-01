@@ -1,17 +1,8 @@
 'use client';
 
-import { Edit, Info, Layers, Plus, Trash2, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { Edit, Info, Layers, Plus, X } from 'lucide-react';
+import { useState } from 'react';
 
-import {
-  createCorporateAction,
-  deleteCorporateAction,
-  getCorporateActions,
-  updateCorporateAction,
-} from '@/actions/investments';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -23,19 +14,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { FormField } from '@/components/ui/form-field';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { CorporateAction, CorporateActionType, Instrument } from '@/lib/types';
-import { formatDate, toCalendarDate } from '@/lib/utils';
+import { CorporateAction, CorporateActionType } from '@/lib/types';
 
-import { InstrumentTypeahead } from './InstrumentTypeahead';
+import { CorporateActionFormFields } from './corporate-actions/CorporateActionFormFields';
+import { RecordedActionsList } from './corporate-actions/RecordedActionsList';
+import { useCorporateActionsDialog } from './corporate-actions/useCorporateActionsDialog';
 
 interface CorporateActionsDialogProps {
   instrument?: {
@@ -62,222 +45,51 @@ export function CorporateActionsDialog({
   open: controlledOpen,
   onOpenChange: setControlledOpen,
 }: CorporateActionsDialogProps) {
-  const router = useRouter();
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
   const setOpen = setControlledOpen || setInternalOpen;
-  const [actions, setActions] = useState<CorporateAction[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [editingActionId, setEditingActionId] = useState<string | null>(null);
 
-  // Form state
-  const [selectedParentInstrument, setSelectedParentInstrument] = useState<Instrument | null>(null);
-  const [type, setType] = useState<CorporateActionType>(initialType || 'split');
-  const [ratioFrom, setRatioFrom] = useState('1');
-  const [ratioTo, setRatioTo] = useState('2');
-  const [exDate, setExDate] = useState(toCalendarDate(new Date()));
-  const [notes, setNotes] = useState('');
-  const [targetInstrument, setTargetInstrument] = useState<Instrument | null>(null);
-  const [costAllocationPct, setCostAllocationPct] = useState('20');
-  const [fractionalCashInLieu, setFractionalCashInLieu] = useState('');
-
-  const activeInstrument = instrument || (selectedParentInstrument ? {
-    id: selectedParentInstrument.id,
-    name: selectedParentInstrument.name,
-    symbol: selectedParentInstrument.symbol,
-  } : null);
-
-  const fetchActions = useCallback(async () => {
-    if (!activeInstrument?.id) return;
-    setIsLoading(true);
-    try {
-      const res = await getCorporateActions(activeInstrument.id);
-      if (res.success) {
-        setActions(res.data || []);
-      }
-    } catch {
-      // Ignore initial error fallback
-    } finally {
-      setIsLoading(false);
-    }
-  }, [activeInstrument?.id]);
-
-  useEffect(() => {
-    if (open) {
-      if (!editingActionId && initialType) {
-        setType(initialType);
-      }
-      fetchActions();
-    }
-  }, [open, fetchActions, initialType, editingActionId]);
-
-  const resetForm = () => {
-    setEditingActionId(null);
-    setSelectedParentInstrument(null);
-    setType(initialType || 'split');
-    setRatioFrom('1');
-    setRatioTo('2');
-    setExDate(toCalendarDate(new Date()));
-    setNotes('');
-    setTargetInstrument(null);
-    setCostAllocationPct('20');
-    setFractionalCashInLieu('');
-  };
-
-  const handleEditClick = (act: CorporateAction) => {
-    setEditingActionId(act.id);
-    if (!instrument && act.instrumentId) {
-      setSelectedParentInstrument({
-        id: act.instrumentId,
-        type: 'stock',
-        name: act.instrumentName || 'Instrument',
-        symbol: act.instrumentSymbol,
-        currency: 'INR',
-      });
-    }
-    setType(act.type);
-    setRatioFrom(String(act.ratioFrom));
-    setRatioTo(String(act.ratioTo));
-    setExDate(act.exDate?.split('T')[0] || toCalendarDate(new Date()));
-    setNotes(act.notes || '');
-    if (act.targetInstrumentId) {
-      setTargetInstrument({
-        id: act.targetInstrumentId,
-        type: 'stock',
-        name: act.targetInstrumentName || 'Target Instrument',
-        symbol: act.targetInstrumentSymbol,
-        currency: 'INR',
-      });
-    } else {
-      setTargetInstrument(null);
-    }
-    setCostAllocationPct(act.costAllocationPct ? String(act.costAllocationPct) : '20');
-    setFractionalCashInLieu(act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? String(act.fractionalCashInLieu) : '');
-  };
-
-  useEffect(() => {
-    if (open && editAction) {
-      handleEditClick(editAction);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, editAction?.id]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeInstrument?.id) {
-      toast.error('Please select an instrument.');
-      return;
-    }
-    const fromNum = Number(ratioFrom);
-    const toNum = Number(ratioTo);
-
-    if (!fromNum || fromNum <= 0 || !toNum || toNum <= 0) {
-      toast.error('Please enter valid ratio numbers.');
-      return;
-    }
-    if (!exDate) {
-      toast.error('Ex-date is required.');
-      return;
-    }
-
-    if (type === 'demerger' || type === 'merger') {
-      if (!targetInstrument?.id) {
-        toast.error(`Target ${type === 'merger' ? 'acquirer' : 'child'} instrument is required.`);
-        return;
-      }
-      if (targetInstrument.id === activeInstrument.id) {
-        toast.error('Target instrument must be different from parent instrument.');
-        return;
-      }
-      if (type === 'demerger') {
-        const costPctNum = Number(costAllocationPct);
-        if (!costPctNum || costPctNum <= 0 || costPctNum > 100) {
-          toast.error('Cost allocation % must be between 0 and 100.');
-          return;
-        }
-      }
-    }
-
-    setIsSubmitting(true);
-    try {
-      const payload = {
-        type,
-        ratioFrom: fromNum,
-        ratioTo: toNum,
-        exDate,
-        notes: notes || undefined,
-        targetInstrumentId: (type === 'demerger' || type === 'merger') ? targetInstrument?.id : undefined,
-        costAllocationPct: type === 'demerger' ? Number(costAllocationPct) : undefined,
-        fractionalCashInLieu: (type === 'demerger' || type === 'merger') ? (fractionalCashInLieu ? Number(fractionalCashInLieu) : 0) : undefined,
-      };
-
-      if (editingActionId) {
-        const res = await updateCorporateAction(activeInstrument.id, editingActionId, payload);
-
-        if (res.success) {
-          toast.success(`Updated ${type} (${ratioFrom}:${ratioTo})`);
-          resetForm();
-          fetchActions();
-          router.refresh();
-          onSuccess?.();
-        } else {
-          toast.error(res.error.message);
-        }
-      } else {
-        const res = await createCorporateAction(activeInstrument.id, payload);
-
-        if (res.success) {
-          toast.success(`Recorded ${type} (${ratioFrom}:${ratioTo}) for ${activeInstrument.name}`);
-          resetForm();
-          fetchActions();
-          router.refresh();
-          onSuccess?.();
-        } else {
-          toast.error(res.error.message);
-        }
-      }
-    } catch (err) {
-      toast.error('Failed to save corporate action: ' + (err as Error).message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleDelete = async (actionId: string) => {
-    if (!activeInstrument?.id) return;
-    if (!confirm('Are you sure you want to delete this corporate action?')) return;
-    setDeletingId(actionId);
-    try {
-      const res = await deleteCorporateAction(activeInstrument.id, actionId);
-      if (res.success) {
-        toast.success('Corporate action deleted');
-        if (editingActionId === actionId) resetForm();
-        fetchActions();
-        router.refresh();
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch (err) {
-      toast.error('Failed to delete corporate action: ' + (err as Error).message);
-    } finally {
-      setDeletingId(null);
-    }
-  };
-
-  const fromNum = Number(ratioFrom);
-  const toNum = Number(ratioTo);
-  const hasValidRatio = fromNum > 0 && toNum > 0;
-  const entitlement = (heldQuantity !== undefined && heldQuantity > 0 && hasValidRatio)
-    ? (heldQuantity * toNum) / fromNum
-    : 0;
-  const wholeShares = Math.floor(entitlement);
-  const fracShares = entitlement > 0 ? Number((entitlement - wholeShares).toFixed(4)) : 0;
-  const showCashInLieuField = (type === 'demerger' || type === 'merger') && (
-    heldQuantity === undefined || fracShares > 0 || (editingActionId !== null && Boolean(fractionalCashInLieu))
-  );
+  const {
+    actions,
+    isLoading,
+    isSubmitting,
+    deletingId,
+    editingActionId,
+    selectedParentInstrument,
+    setSelectedParentInstrument,
+    type,
+    setType,
+    ratioFrom,
+    setRatioFrom,
+    ratioTo,
+    setRatioTo,
+    exDate,
+    setExDate,
+    notes,
+    setNotes,
+    targetInstrument,
+    setTargetInstrument,
+    costAllocationPct,
+    setCostAllocationPct,
+    fractionalCashInLieu,
+    setFractionalCashInLieu,
+    activeInstrument,
+    hasValidRatio,
+    fracShares,
+    wholeShares,
+    showCashInLieuField,
+    resetForm,
+    handleEditClick,
+    handleSubmit,
+    handleDelete,
+  } = useCorporateActionsDialog({
+    instrument,
+    heldQuantity,
+    initialType,
+    editAction,
+    open,
+    onSuccess,
+  });
 
   const showTrigger = trigger !== undefined || controlledOpen === undefined;
 
@@ -286,7 +98,10 @@ export function CorporateActionsDialog({
       {showTrigger && (
         <DialogTrigger asChild>
           {trigger || (
-            <Button size="micro" className="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40">
+            <Button
+              size="micro"
+              className="text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/40"
+            >
               <Layers className="w-3 h-3 mr-1" />
               Corporate Actions
             </Button>
@@ -311,71 +126,28 @@ export function CorporateActionsDialog({
           <div className="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2 min-w-0">
             <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <div className="min-w-0 break-words">
-              <span className="font-semibold">Note:</span> Position quantities and cost bases auto-adjust when corporate actions are added or updated.
+              <span className="font-semibold">Note:</span> Position quantities
+              and cost bases auto-adjust when corporate actions are added or
+              updated.
             </div>
           </div>
 
           {/* Existing Corporate Actions List */}
-          <div className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
-            <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300">Recorded Actions</h4>
-            {isLoading ? (
-              <div className="text-xs text-slate-400 py-2">Loading...</div>
-            ) : actions.length === 0 ? (
-              <div className="text-xs text-slate-400 py-2 italic">No corporate actions recorded yet for this instrument.</div>
-            ) : (
-              <div className="space-y-2">
-                {actions.map((act) => (
-                  <div key={act.id} className={`p-2.5 rounded-md border flex items-center justify-between text-xs gap-2 ${editingActionId === act.id ? 'bg-purple-50/50 dark:bg-purple-950/30 border-purple-300 dark:border-purple-800' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}>
-                    <div className="space-y-0.5 min-w-0 flex-1">
-                      <div className="font-semibold flex items-center gap-1.5 flex-wrap">
-                        <Badge variant="outline" className="text-2xs uppercase px-1 py-0 font-bold bg-purple-50 dark:bg-purple-950 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 shrink-0">
-                          {act.type}
-                        </Badge>
-                        <span className="break-words">
-                          Ratio: {act.ratioFrom} → {act.ratioTo}
-                        </span>
-                      </div>
-                      {act.type === 'demerger' && (
-                        <div className="text-xs font-medium text-purple-700 dark:text-purple-300 break-words">
-                          Child: {act.targetInstrumentName || 'Target'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • Cost Alloc: {act.costAllocationPct}%{act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? ` • cash-in-lieu ₹${act.fractionalCashInLieu}` : ''}
-                        </div>
-                      )}
-                      {act.type === 'merger' && (
-                        <div className="text-xs font-medium text-purple-700 dark:text-purple-300 break-words">
-                          Merged into {act.targetInstrumentName || 'Acquirer'} {act.targetInstrumentSymbol ? `(${act.targetInstrumentSymbol})` : ''} • swap {act.ratioFrom}:{act.ratioTo}{act.fractionalCashInLieu !== undefined && act.fractionalCashInLieu !== null ? ` • cash-in-lieu ₹${act.fractionalCashInLieu}` : ''}
-                        </div>
-                      )}
-                      <div className="text-2xs text-slate-500 break-words">
-                        Ex-Date: {formatDate(act.exDate)} {act.notes ? `• ${act.notes}` : ''}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 shrink-0">
-                      <Button
-                        type="button"
-                        size="icon-xs"
-                        onClick={() => handleEditClick(act)}
-                        className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
-                      >
-                        <Edit className="w-3.5 h-3.5" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost-destructive"
-                        size="icon-xs"
-                        onClick={() => handleDelete(act.id)}
-                        disabled={deletingId === act.id}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <RecordedActionsList
+            actions={actions}
+            isLoading={isLoading}
+            editingActionId={editingActionId}
+            deletingId={deletingId}
+            onEditClick={handleEditClick}
+            onDeleteClick={handleDelete}
+          />
 
           {/* Add / Edit Action Form */}
-          <form id="corporate-action-form" onSubmit={handleSubmit} className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+          <form
+            id="corporate-action-form"
+            onSubmit={handleSubmit}
+            className="space-y-2 border-t border-slate-100 dark:border-slate-800 pt-3"
+          >
             <div className="flex items-center justify-between">
               <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
                 {editingActionId ? (
@@ -403,150 +175,43 @@ export function CorporateActionsDialog({
               )}
             </div>
 
-            {!instrument && !editingActionId && (
-              <div className="space-y-1 min-w-0">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-words">
-                  Parent Instrument *
-                </Label>
-                <InstrumentTypeahead
-                  selectedInstrument={selectedParentInstrument}
-                  onSelect={setSelectedParentInstrument}
-                />
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-              <div className="space-y-1.5 min-w-0">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Action Type</Label>
-                <Select value={type} onValueChange={(val) => setType(val as CorporateActionType)}>
-                  <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
-                    <SelectValue placeholder="Select action" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                    <SelectItem value="split" className="text-xs">Stock Split</SelectItem>
-                    <SelectItem value="bonus" className="text-xs">Bonus Issue</SelectItem>
-                    <SelectItem value="demerger" className="text-xs">Demerger / Spin-off</SelectItem>
-                    <SelectItem value="merger" className="text-xs">Merger / Amalgamation</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <FormField
-                label="Ex-Date"
-                name="exDate"
-                type="date"
-                value={exDate}
-                onChange={(e) => setExDate(e.target.value)}
-                required
-              />
-            </div>
-
-            {(type === 'demerger' || type === 'merger') && (
-              <div className="space-y-2 p-3 rounded-lg bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-900/40 min-w-0">
-                <div className="space-y-1 min-w-0">
-                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-words">
-                    {type === 'merger' ? 'Surviving (Acquirer) Instrument *' : 'Target (Child) Instrument *'}
-                  </Label>
-                  <InstrumentTypeahead
-                    selectedInstrument={targetInstrument}
-                    onSelect={setTargetInstrument}
-                  />
-                </div>
-
-                {type === 'demerger' && (
-                  <FormField
-                    label="Cost Allocation % (Sec 49(2C)) *"
-                    name="costAllocationPct"
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    max="100"
-                    value={costAllocationPct}
-                    onChange={(e) => setCostAllocationPct(e.target.value)}
-                    placeholder="e.g. 20.0"
-                    required
-                  />
-                )}
-              </div>
-            )}
-
-            <div className="space-y-1 min-w-0">
-              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 break-words">
-                {type === 'merger'
-                  ? 'Swap Ratio (transferor held → acquirer received)'
-                  : type === 'demerger'
-                  ? 'Share Entitlement Ratio (parent held → child received)'
-                  : 'Ratio (units before → units after)'}
-              </Label>
-              <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4 items-start">
-                <FormField
-                  label={type === 'merger' ? 'Transferor Shares Held' : type === 'demerger' ? 'Parent Shares Held' : 'Ratio From (Held)'}
-                  name="ratioFrom"
-                  type="number"
-                  step="1"
-                  min="1"
-                  value={ratioFrom}
-                  onChange={(e) => setRatioFrom(e.target.value)}
-                  required
-                />
-                <FormField
-                  label={type === 'merger' ? 'Acquirer Shares Received' : type === 'demerger' ? 'Child Shares Received' : 'Ratio To (Resulting)'}
-                  name="ratioTo"
-                  type="number"
-                  step="1"
-                  min="1"
-                  value={ratioTo}
-                  onChange={(e) => setRatioTo(e.target.value)}
-                  required
-                />
-              </div>
-              <p className="text-2xs text-slate-500 italic break-words">
-                {type === 'merger'
-                  ? 'Example: HDFC → HDFC Bank was 25 → 42.'
-                  : type === 'demerger'
-                  ? 'Example: For 1 child share per 2 parent shares held, enter 2 → 1.'
-                  : 'Example: For a 2-for-1 split, enter 1 → 2. For a 1:1 bonus issue, enter 1 → 2.'}
-              </p>
-            </div>
-
-            {(type === 'demerger' || type === 'merger') && (
-              <div className="space-y-2 pt-1 min-w-0">
-                {heldQuantity !== undefined && heldQuantity > 0 && hasValidRatio && fracShares > 0 && (
-                  <div className="p-2.5 rounded-md bg-purple-100/60 dark:bg-purple-950/40 text-xs text-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-800 break-words">
-                    You&apos;ll receive <strong className="font-semibold">{wholeShares}</strong> whole shares + cash-in-lieu for <strong className="font-semibold">{fracShares}</strong> fractional shares.
-                  </div>
-                )}
-
-                {showCashInLieuField && (
-                  <FormField
-                    label="Cash-in-lieu received (₹)"
-                    name="fractionalCashInLieu"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={fractionalCashInLieu}
-                    onChange={(e) => setFractionalCashInLieu(e.target.value)}
-                    placeholder="0.00"
-                    hint="Leave 0 if not yet known — you can edit this action later."
-                  />
-                )}
-              </div>
-            )}
-
-            <FormField
-              label="Notes"
-              name="notes"
-              type="text"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Optional reference / details"
+            <CorporateActionFormFields
+              instrument={instrument}
+              editingActionId={editingActionId}
+              selectedParentInstrument={selectedParentInstrument}
+              setSelectedParentInstrument={setSelectedParentInstrument}
+              type={type}
+              setType={setType}
+              exDate={exDate}
+              setExDate={setExDate}
+              targetInstrument={targetInstrument}
+              setTargetInstrument={setTargetInstrument}
+              costAllocationPct={costAllocationPct}
+              setCostAllocationPct={setCostAllocationPct}
+              ratioFrom={ratioFrom}
+              setRatioFrom={setRatioFrom}
+              ratioTo={ratioTo}
+              setRatioTo={setRatioTo}
+              heldQuantity={heldQuantity}
+              hasValidRatio={hasValidRatio}
+              fracShares={fracShares}
+              wholeShares={wholeShares}
+              showCashInLieuField={showCashInLieuField}
+              fractionalCashInLieu={fractionalCashInLieu}
+              setFractionalCashInLieu={setFractionalCashInLieu}
+              notes={notes}
+              setNotes={setNotes}
             />
           </form>
         </DialogBody>
 
         <DialogFooter
           primaryAction={{
-            label: isSubmitting ? 'Saving Action...' : editingActionId ? 'Update Corporate Action' : 'Save Corporate Action',
+            label: isSubmitting
+              ? 'Saving Action...'
+              : editingActionId
+              ? 'Update Corporate Action'
+              : 'Save Corporate Action',
             type: 'submit',
             form: 'corporate-action-form',
             variant: 'purple',

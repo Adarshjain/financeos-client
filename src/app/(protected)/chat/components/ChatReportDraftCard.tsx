@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import React, { useEffect, useRef, useState } from 'react';
 
 import {
@@ -10,12 +9,14 @@ import {
   updateReport,
 } from '@/actions/reports';
 import { ReportDataView } from '@/components/reports/views/ReportDataView';
-import { Button } from '@/components/ui/button';
 import type {
   ReportData,
   ReportDefinition,
   ReportType,
 } from '@/lib/reports.types';
+
+import { DraftActions } from './DraftActions';
+import { PixelGridLoader } from './PixelGridLoader';
 
 export interface ChatReportDraft {
   mode: 'create' | 'update' | 'delete';
@@ -37,31 +38,6 @@ interface ChatReportDraftCardProps {
     savedReportId?: string;
     errorMessage?: string;
   }) => void;
-}
-
-const PIXEL_DELAYS = [180, 360, 540, 0, 180, 360, 180, 360, 540];
-
-function PixelGridLoader({ className }: { className?: string }) {
-  return (
-    <div
-      className={`grid grid-cols-[repeat(3,4px)] gap-[1.5px] ${className || ''}`}
-      aria-hidden="true"
-    >
-      {PIXEL_DELAYS.map((delay, i) => (
-        <div
-          key={i}
-          className="size-[4px] rounded-[1px] bg-[var(--ink)] opacity-[0.15]"
-          style={{
-            animationName: 'bui-pixel-on',
-            animationDuration: '1400ms',
-            animationTimingFunction: 'ease-in-out',
-            animationIterationCount: 'infinite',
-            animationDelay: `${delay}ms`,
-          }}
-        />
-      ))}
-    </div>
-  );
 }
 
 export function ChatReportDraftCard({
@@ -282,59 +258,20 @@ export function ChatReportDraftCard({
       )}
 
       {/* Action / Confirmation row */}
-      <div className="flex items-center justify-end gap-2 pt-1">
-        {isTerminal ? (
-          <div className="flex items-center gap-2">
-            <span className="text-2xs font-medium text-emerald-600 dark:text-emerald-400">
-              {draft.status === 'saved'
-                ? 'Saved ✓'
-                : draft.status === 'updated'
-                ? 'Updated ✓'
-                : 'Deleted ✓'}
-            </span>
-            {(draft.status === 'saved' || draft.status === 'updated') &&
-              (draft.savedReportId || draft.reportId) && (
-                <Link
-                  href={`/reports/${draft.savedReportId || draft.reportId}`}
-                  className="text-2xs underline text-[var(--ink-2)] hover:text-[var(--ink)]"
-                >
-                  View report
-                </Link>
-              )}
-          </div>
-        ) : isCreate ? (
-          <Button
-            size="sm"
-            variant="default"
-            disabled={isSubmitting || previewLoading || Boolean(previewError)}
-            onClick={() => void handleSave()}
-          >
-            {isSubmitting ? 'Saving…' : 'Save report'}
-          </Button>
-        ) : isUpdate ? (
-          <Button
-            size="sm"
-            variant="default"
-            disabled={isSubmitting || previewLoading || Boolean(previewError)}
-            onClick={() => void handleUpdate()}
-          >
-            {isSubmitting ? 'Updating…' : 'Update report'}
-          </Button>
-        ) : isDelete ? (
-          <Button
-            size="sm"
-            variant="destructive"
-            disabled={isSubmitting}
-            onClick={handleDeleteClick}
-          >
-            {isSubmitting
-              ? 'Deleting…'
-              : armed
-              ? 'Click again to delete'
-              : 'Delete report'}
-          </Button>
-        ) : null}
-      </div>
+      <DraftActions
+        draft={draft}
+        isTerminal={isTerminal}
+        isCreate={isCreate}
+        isUpdate={isUpdate}
+        isDelete={isDelete}
+        isSubmitting={isSubmitting}
+        previewLoading={previewLoading}
+        previewError={previewError}
+        armed={armed}
+        onSave={() => void handleSave()}
+        onUpdate={() => void handleUpdate()}
+        onDeleteClick={handleDeleteClick}
+      />
     </div>
   );
 }
