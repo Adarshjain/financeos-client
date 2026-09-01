@@ -38,7 +38,7 @@ export function SyncConfigSection({
         </h3>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="flex flex-col gap-4">
         <div className="space-y-1.5">
           <Label className="text-xs text-slate-600 dark:text-slate-350 font-semibold">Financial Position</Label>
           <Select name="financialPosition" defaultValue={account?.financialPosition || 'asset'}>

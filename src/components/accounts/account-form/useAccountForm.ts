@@ -13,7 +13,7 @@ import {
   updateAccount,
 } from '@/actions/accounts';
 import { Account, AccountRequest } from '@/lib/account.types';
-import { optionalDecimal, optionalInteger, optionalString } from '@/lib/forms';
+import { optionalDecimal, optionalString } from '@/lib/forms';
 import { AccountType, FinancialPosition } from '@/lib/types';
 import { getAccountTypeLabel } from '@/lib/utils';
 
@@ -156,35 +156,19 @@ export function useAccountForm({ account, onSuccess, onClose }: UseAccountFormOp
     if (accountType === AccountType.CREDIT_CARD) {
       const last4 = optionalString(formData, 'last4');
       const creditLimit = optionalDecimal(formData, 'creditLimit');
-      const paymentDueDay = optionalInteger(formData, 'paymentDueDay');
-      const gracePeriodDays = optionalInteger(formData, 'gracePeriodDays');
       const anniversaryDate = optionalString(formData, 'anniversaryDate');
 
       if (
         last4 === undefined ||
         creditLimit === undefined ||
-        paymentDueDay === undefined ||
-        gracePeriodDays === undefined ||
         anniversaryDate === undefined
       ) {
         const missing = [
           last4 === undefined ? 'last 4 digits' : null,
           creditLimit === undefined ? 'credit limit' : null,
-          paymentDueDay === undefined ? 'payment due day' : null,
-          gracePeriodDays === undefined ? 'grace period' : null,
           anniversaryDate === undefined ? 'anniversary date' : null,
         ].filter((field): field is string => field !== null);
         toast.error(`Credit card needs ${missing.join(', ')}.`);
-        setIsSubmitting(false);
-        return;
-      }
-      if (paymentDueDay < 1 || paymentDueDay > 31) {
-        toast.error('Payment due day must be between 1 and 31.');
-        setIsSubmitting(false);
-        return;
-      }
-      if (gracePeriodDays < 0) {
-        toast.error('Grace period cannot be negative.');
         setIsSubmitting(false);
         return;
       }
@@ -198,8 +182,6 @@ export function useAccountForm({ account, onSuccess, onClose }: UseAccountFormOp
         type: AccountType.CREDIT_CARD,
         last4,
         creditLimit,
-        paymentDueDay,
-        gracePeriodDays,
         anniversaryDate,
         ...(statementPasswordVal ? { statementPassword: statementPasswordVal } : {}),
       };

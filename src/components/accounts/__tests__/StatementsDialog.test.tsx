@@ -60,8 +60,6 @@ const mockCardAccount: Account = {
   type: AccountType.CREDIT_CARD,
   last4: '0001',
   creditLimit: 100000,
-  paymentDueDay: 10,
-  gracePeriodDays: 20,
 };
 
 describe('StatementsDialog & Balance Anchoring Math (CD-11)', () => {

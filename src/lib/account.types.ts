@@ -30,8 +30,6 @@ export type CreditCardRequest = AccountRequestBase & {
   type: AccountType.CREDIT_CARD;
   last4: string;
   creditLimit: number;
-  paymentDueDay: number;
-  gracePeriodDays: number;
   /** Card membership anniversary (required) — anchors anniversary-year reward windows. */
   anniversaryDate: string;
   statementPassword?: string;
@@ -195,8 +193,6 @@ export type CreditCard = AccountBase & {
   type: AccountType.CREDIT_CARD;
   last4: string;
   creditLimit: number;
-  paymentDueDay: number;
-  gracePeriodDays: number;
   anniversaryDate?: string | null;
   lastStatementDate?: string | null;
   cardholders?: Cardholder[];

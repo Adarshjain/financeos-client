@@ -23,8 +23,6 @@ const mockAccounts: Account[] = [
     type: AccountType.CREDIT_CARD,
     last4: '1234',
     creditLimit: 100000,
-    paymentDueDay: 15,
-    gracePeriodDays: 3,
   },
 ];
 
