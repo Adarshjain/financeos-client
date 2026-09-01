@@ -31,6 +31,7 @@ interface RewardMilestoneFormProps {
   /** The card's default reward currency — preselected for new milestones. */
   defaultRewardType: RewardType;
   milestone?: RewardMilestone;
+  isBank?: boolean;
   open: boolean;
   onClose: () => void;
   onSaved: () => void;
@@ -42,6 +43,7 @@ export default function RewardMilestoneForm({
   categories,
   defaultRewardType,
   milestone,
+  isBank,
   open,
   onClose,
   onSaved,
@@ -134,6 +136,7 @@ export default function RewardMilestoneForm({
             setPayoutValue={setPayoutValue}
             payoutTiming={payoutTiming}
             setPayoutTiming={setPayoutTiming}
+            isBank={isBank}
           />
 
           <MilestoneCategoryMccSection

@@ -13,6 +13,8 @@ interface IssueCardFormProps {
   setIssuedOn: (val: string) => void;
   formError: string | null;
   isSubmitting: boolean;
+  submitLabel?: string;
+  submittingLabel?: string;
   onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
 }
@@ -24,6 +26,8 @@ export function IssueCardForm({
   setIssuedOn,
   formError,
   isSubmitting,
+  submitLabel = 'Issue Plastic',
+  submittingLabel = 'Issuing...',
   onSubmit,
   onCancel,
 }: IssueCardFormProps) {
@@ -67,7 +71,7 @@ export function IssueCardForm({
           Cancel
         </Button>
         <Button type="submit" size="sm" disabled={isSubmitting}>
-          {isSubmitting ? 'Issuing...' : 'Issue Plastic'}
+          {isSubmitting ? submittingLabel : submitLabel}
         </Button>
       </div>
     </form>

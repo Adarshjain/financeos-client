@@ -16,6 +16,11 @@ export const listCardholders = createDomainAction(
   (accountId: string) => cardholdersApi.listByAccount(accountId)
 );
 
+export const addPrimaryCard = createDomainAction(
+  { fallbackError: 'Failed to add debit card', revalidatePaths: ['/accounts', '/transactions', '/rewards'] },
+  (accountId: string, data: CreateCardRequest) => cardholdersApi.addPrimary(accountId, data)
+);
+
 export const addAddonCardholder = createDomainAction(
   { fallbackError: 'Failed to add add-on cardholder', revalidatePaths: ['/accounts', '/transactions', '/rewards'] },
   (accountId: string, data: CreateCardholderRequest) => cardholdersApi.addAddon(accountId, data)

@@ -66,9 +66,12 @@ export function useTransactionCRUD({
       a.id === transaction?.accountId
   );
   const selectedAccount = accounts.find((a) => a.id === accountId);
-  const isCreditCard = selectedAccount?.type === AccountType.CREDIT_CARD;
+  const supportsCards =
+    selectedAccount?.type === AccountType.CREDIT_CARD ||
+    selectedAccount?.type === AccountType.BANK_ACCOUNT;
+  const isBank = selectedAccount?.type === AccountType.BANK_ACCOUNT;
 
-  const cardOptions = isCreditCard
+  const cardOptions = supportsCards
     ? (selectedAccount.cardholders ?? []).flatMap((ch) =>
         (ch.cards ?? [])
           .filter(
@@ -78,7 +81,7 @@ export function useTransactionCRUD({
           )
           .map((c) => ({
             id: c.id,
-            label: `${ch.personName || (ch.role === 'PRIMARY' ? 'You' : 'Add-on')} (•••• ${c.last4})`,
+            label: `${ch.personName || (ch.role === 'PRIMARY' ? (isBank ? 'Your card' : 'You') : (isBank ? 'Joint holder' : 'Add-on'))} (•••• ${c.last4})`,
           }))
       )
     : [];
@@ -86,16 +89,19 @@ export function useTransactionCRUD({
   const handleAccountChange = (newAccountId: string) => {
     setAccountId(newAccountId);
     const acc = accounts.find((a) => a.id === newAccountId);
-    const cardholders =
-      acc?.type === AccountType.CREDIT_CARD ? acc.cardholders ?? [] : [];
-    const primaryOpenCard = cardholders
-      .find((ch) => ch.role === 'PRIMARY')
-      ?.cards?.find((c) => !c.closedOn);
-    const anyOpenCard = cardholders
-      .filter((ch) => !isCardholderClosed(ch))
-      .flatMap((ch) => ch.cards ?? [])
-      .find((c) => !c.closedOn);
-    setCardId(primaryOpenCard?.id ?? anyOpenCard?.id ?? null);
+    if (acc?.type === AccountType.CREDIT_CARD) {
+      const cardholders = acc.cardholders ?? [];
+      const primaryOpenCard = cardholders
+        .find((ch) => ch.role === 'PRIMARY')
+        ?.cards?.find((c) => !c.closedOn);
+      const anyOpenCard = cardholders
+        .filter((ch) => !isCardholderClosed(ch))
+        .flatMap((ch) => ch.cards ?? [])
+        .find((c) => !c.closedOn);
+      setCardId(primaryOpenCard?.id ?? anyOpenCard?.id ?? null);
+    } else {
+      setCardId(null);
+    }
   };
 
   const [isMonitored, setIsMonitored] = useState(
@@ -230,7 +236,7 @@ export function useTransactionCRUD({
       const categoryIds = selectedCategories.map((c) => c.id);
       const transactionRequest: TransactionRequest = {
         accountId,
-        cardId: isCreditCard ? cardId || null : null,
+        cardId: supportsCards ? cardId || null : null,
         description: form.description.value ?? undefined,
         amount: Number(amount),
         categoryIds,
@@ -286,7 +292,8 @@ export function useTransactionCRUD({
     setCardId,
     selectableAccounts,
     handleAccountChange,
-    isCreditCard,
+    supportsCards,
+    isCreditCard: supportsCards,
     cardOptions,
     localCategories,
     selectedCategories,

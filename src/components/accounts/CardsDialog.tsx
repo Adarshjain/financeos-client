@@ -73,6 +73,8 @@ export function CardsDialog({ account, trigger }: CardsDialogProps) {
     isReattributing,
     reattributeError,
     backToList,
+    isBank,
+    startAddPrimary,
     startAddAddon,
     startEditCardholder,
     startCloseCardholder,
@@ -80,6 +82,7 @@ export function CardsDialog({ account, trigger }: CardsDialogProps) {
     startReplaceCard,
     startCloseCard,
     startReassign,
+    handleSavePrimary,
     handleSaveAddon,
     handleSaveEditCardholder,
     handleConfirmCloseCardholder,
@@ -93,8 +96,9 @@ export function CardsDialog({ account, trigger }: CardsDialogProps) {
   } = useCardsDialog(account);
 
   const viewTitles: Record<ViewState, string> = {
-    list: `${account.name} — Cardholders & Plastics`,
-    addAddon: 'Add Add-on Cardholder',
+    list: isBank ? `${account.name} — Debit cards` : `${account.name} — Cardholders & Plastics`,
+    addPrimary: isBank ? 'Add your debit card' : 'Add Card',
+    addAddon: isBank ? 'Add Joint Holder Card' : 'Add Add-on Cardholder',
     editCardholder: targetCardholder ? `Edit ${targetCardholder.personName || targetCardholder.role}` : 'Edit Cardholder',
     closeCardholder: targetCardholder ? `Close Cardholder (${targetCardholder.personName || targetCardholder.role})` : 'Close Cardholder',
     issueCard: targetCardholder ? `Issue Plastic Card to ${targetCardholder.personName || targetCardholder.role}` : 'Issue Plastic Card',
@@ -128,7 +132,7 @@ export function CardsDialog({ account, trigger }: CardsDialogProps) {
           {view === 'list' && (
             <Button size="sm" onClick={startAddAddon} className="gap-1.5 shrink-0">
               <Plus className="w-4 h-4" />
-              Add-on Cardholder
+              {isBank ? 'Joint holder card' : 'Add-on Cardholder'}
             </Button>
           )}
         </DialogHeader>
@@ -139,6 +143,21 @@ export function CardsDialog({ account, trigger }: CardsDialogProps) {
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
+          )}
+
+          {view === 'addPrimary' && (
+            <IssueCardForm
+              cardLast4={cardLast4}
+              setCardLast4={setCardLast4}
+              issuedOn={issuedOn}
+              setIssuedOn={setIssuedOn}
+              formError={formError}
+              isSubmitting={isSubmitting}
+              submitLabel={isBank ? 'Add Debit Card' : 'Issue Plastic'}
+              submittingLabel={isBank ? 'Adding...' : 'Issuing...'}
+              onSubmit={handleSavePrimary}
+              onCancel={backToList}
+            />
           )}
 
           {view === 'addAddon' && (
@@ -157,6 +176,7 @@ export function CardsDialog({ account, trigger }: CardsDialogProps) {
               setIssuedOn={setIssuedOn}
               formError={formError}
               isSubmitting={isSubmitting}
+              isBank={isBank}
               onSubmit={handleSaveAddon}
               onCancel={backToList}
             />
@@ -249,6 +269,8 @@ export function CardsDialog({ account, trigger }: CardsDialogProps) {
             <CardholdersList
               isLoading={isLoading}
               cardholders={cardholders}
+              isBank={isBank}
+              onAddPrimary={startAddPrimary}
               onEdit={startEditCardholder}
               onReassign={startReassign}
               onReopen={handleReopenCardholder}

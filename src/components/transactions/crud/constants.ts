@@ -5,5 +5,6 @@ export const CHANNEL_LABELS: Record<TransactionChannel, string> = {
   POS: 'POS / In-store',
   UPI: 'UPI',
   CONTACTLESS: 'Contactless / Tap',
+  ATM: 'ATM',
   OTHER: 'Other',
 };

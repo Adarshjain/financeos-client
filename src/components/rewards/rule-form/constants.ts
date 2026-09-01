@@ -11,6 +11,7 @@ export const CHANNEL_OPTIONS: { value: TransactionChannel; label: string }[] = [
   { value: 'POS', label: 'POS' },
   { value: 'UPI', label: 'UPI' },
   { value: 'CONTACTLESS', label: 'Tap' },
+  { value: 'ATM', label: 'ATM' },
   { value: 'OTHER', label: 'Other' },
 ];
 

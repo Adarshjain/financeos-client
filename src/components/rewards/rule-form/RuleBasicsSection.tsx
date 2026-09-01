@@ -36,6 +36,7 @@ interface RuleBasicsSectionProps {
   setActiveFrom: (date?: Date) => void;
   activeTo?: Date;
   setActiveTo: (date?: Date) => void;
+  isBank?: boolean;
 }
 
 export function RuleBasicsSection({
@@ -52,6 +53,7 @@ export function RuleBasicsSection({
   setActiveFrom,
   activeTo,
   setActiveTo,
+  isBank,
 }: RuleBasicsSectionProps) {
   const dateTrigger = (date: Date | undefined, placeholder: string) => (
     <button
@@ -118,7 +120,7 @@ export function RuleBasicsSection({
                 </SelectItem>
                 {cards.map((c) => {
                   const cName =
-                    c.personName || (c.role === 'PRIMARY' ? 'Primary' : 'Add-on');
+                    c.personName || (c.role === 'PRIMARY' ? 'Primary' : (isBank ? 'Joint holder' : 'Add-on'));
                   const last4 = c.currentLast4 || c.cards?.[0]?.last4 || '';
                   return (
                     <SelectItem key={c.id} value={c.id} className="text-xs">

@@ -45,7 +45,8 @@ export function AccountWrapper({
             </button>
           }
         />
-        {account.type === AccountType.CREDIT_CARD ? (
+        {account.type === AccountType.CREDIT_CARD ||
+        account.type === AccountType.BANK_ACCOUNT ? (
           <CardsDialog
             account={account}
             trigger={

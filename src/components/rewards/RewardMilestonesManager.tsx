@@ -39,10 +39,11 @@ interface RewardMilestonesManagerProps {
   categories: Category[];
   /** The card's default reward currency — preselected for new milestones. */
   defaultRewardType: RewardType;
+  isBank?: boolean;
 }
 
 /** Milestones list + CRUD for one account — rendered below the rules list. */
-export default function RewardMilestonesManager({ accountId, cards, categories, defaultRewardType }: RewardMilestonesManagerProps) {
+export default function RewardMilestonesManager({ accountId, cards, categories, defaultRewardType, isBank }: RewardMilestonesManagerProps) {
   const [milestones, setMilestones] = useState<RewardMilestone[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editing, setEditing] = useState<RewardMilestone | undefined>();
@@ -154,6 +155,7 @@ export default function RewardMilestonesManager({ accountId, cards, categories, 
           categories={categories}
           defaultRewardType={defaultRewardType}
           milestone={editing}
+          isBank={isBank}
           open
           onClose={closeForm}
           onSaved={() => {
