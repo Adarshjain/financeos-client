@@ -27,7 +27,7 @@ export function TransactionSortToolbar({
   pagedData,
 }: TransactionSortToolbarProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-1 border-b border-slate-100 dark:border-slate-800">
+    <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-1 border-b border-slate-200 dark:border-slate-800">
       <div className="flex flex-wrap items-center gap-1.5">
         <span className="text-xs font-medium text-slate-500">Sort:</span>
         <Button

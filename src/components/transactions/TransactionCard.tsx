@@ -42,7 +42,7 @@ export const TransactionCard = ({
         <div
             className={cn(
                 'py-2 px-2 flex items-start justify-between relative gap-2 cursor-pointer transition-colors',
-                'border-b border-slate-200/30 dark:border-slate-800/40 bg-white dark:bg-slate-900 overflow-hidden',
+                'border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden',
                 'sm:rounded-lg sm:mb-2 sm:shadow-sm sm:p-3',
                 transaction.isTransactionUnderMonitoring
                     ? 'bg-orange-50/50 dark:bg-orange-950/10 border-l-4 border-l-amber-500'
@@ -69,7 +69,7 @@ export const TransactionCard = ({
             </div>
             <div className="text-xs font-medium text-slate-500 dark:text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
               <span>{getAccountName(accounts, transaction.accountId)}</span>
-              {transaction.cardLabel || transaction.cardLast4 ? (
+              {(transaction.cardLabel || transaction.cardLast4) && transaction.cardLabel !== 'You' ? (
                 <span className="text-2xs font-normal text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded tabular-nums">
                   {[transaction.cardLabel, transaction.cardLast4 ? `•••• ${transaction.cardLast4}` : null]
                     .filter(Boolean)
