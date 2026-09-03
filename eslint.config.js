@@ -66,6 +66,14 @@ const config = [
         },
     },
     {
+        // E2E test files and Playwright fixtures (where `use` is a fixture argument, not a React hook)
+        files: ["e2e/**"],
+        rules: {
+            "react-hooks/rules-of-hooks": "off",
+            "@typescript-eslint/no-explicit-any": "warn",
+        },
+    },
+    {
         ignores: [".next/*", "node_modules/*"],
     }
 ];

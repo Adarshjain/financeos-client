@@ -1,0 +1,157 @@
+[
+  {
+    "route": "/transactions",
+    "reason": "Not yet covered",
+    "phase": 6
+  },
+  {
+    "route": "/rules",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "route": "/rules/categories",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "route": "/transactions/review",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "route": "/settings/ingest",
+    "reason": "Not yet covered",
+    "phase": 8
+  },
+  {
+    "route": "/settings/jobs",
+    "reason": "Not yet covered",
+    "phase": 8
+  },
+  {
+    "route": "/rewards",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "route": "/rewards/recommend",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "route": "/rewards/rules",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "route": "/loans",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "route": "/loans/[id]",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "route": "/loans/calendar",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "route": "/loans/lendings",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "route": "/loans/lendings/[counterpartyId]",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "route": "/investments",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "route": "/investments/dividends",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "route": "/investments/instruments",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "route": "/investments/tradebook",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "route": "/investments/corporate-actions",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "route": "/investments/fno",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "route": "/dashboards",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "route": "/dashboards/[id]",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "route": "/dashboards/new",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "route": "/reports",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "route": "/reports/[id]",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "route": "/reports/new",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "route": "/chat",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "route": "/settings/llm-keys",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "route": "/auth/google/callback",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "route": "/settings/gmail",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "route": "/offline",
+    "reason": "Not yet covered",
+    "phase": 16
+  }
+]

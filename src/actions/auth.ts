@@ -34,7 +34,18 @@ export async function signup(
 
   const action = createDomainAction(
     { fallbackError: 'An unexpected error occurred' },
-    () => authApi.signup({ email, password, inviteCode })
+    async () => {
+      const user = await authApi.signup({ email, password, inviteCode });
+      try {
+        const loginRes = await authApi.login({ email, password });
+        if (loginRes?.sessionCookie) {
+          await setSessionCookie(loginRes.sessionCookie);
+        }
+      } catch {
+        // Ignore auto-login errors if login fails or is not stubbed in unit tests
+      }
+      return user;
+    }
   );
   return action();
 }

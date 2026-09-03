@@ -1,0 +1,998 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/logout",
+    "reason": "Spring Security LogoutFilter intercepts /api/v1/auth/logout in FilterChain without invoking DispatcherServlet, leaving HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE null; E2eCoverageFilter therefore skips recording this hit until the server filter or controller is updated.",
+    "phase": null
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/transactions",
+    "reason": "Not yet covered",
+    "phase": 6
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/transactions",
+    "reason": "Not yet covered",
+    "phase": 6
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/transactions/{id}",
+    "reason": "Not yet covered",
+    "phase": 6
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/transactions/{id}",
+    "reason": "Not yet covered",
+    "phase": 6
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/transactions/batch-delete",
+    "reason": "Not yet covered",
+    "phase": 6
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/transactions/batch-review",
+    "reason": "Not yet covered",
+    "phase": 6
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/transactions/card",
+    "reason": "Not yet covered",
+    "phase": 6
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/transactions/search",
+    "reason": "Not yet covered",
+    "phase": 6
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/categories",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/categories",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/categories/{id}",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/categories/{id}",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/categories/{id}",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/categorize",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/rules",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/rules",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/rules/{id}",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/rules/{id}",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/rules/{id}/apply",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/rules/{id}/verify",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/rules/preview-matches",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/transaction-links",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/transaction-links",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/transaction-links/{id}",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/transaction-links/{id}",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/transactions/merge",
+    "reason": "Not yet covered",
+    "phase": 7
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/accounts/{accountId}/ingest",
+    "reason": "Not yet covered",
+    "phase": 8
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/jobs",
+    "reason": "Not yet covered",
+    "phase": 8
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/jobs/{id}",
+    "reason": "Not yet covered",
+    "phase": 8
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/jobs/{id}/cancel",
+    "reason": "Not yet covered",
+    "phase": 8
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/jobs/{id}/retry",
+    "reason": "Not yet covered",
+    "phase": 8
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/statements/{statementId}",
+    "reason": "Not yet covered",
+    "phase": 8
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reward-cap-buckets",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/reward-cap-buckets",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/reward-cap-buckets/{id}",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/reward-cap-buckets/{id}",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reward-config",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/reward-config",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reward-milestones",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/reward-milestones",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/reward-milestones/{id}",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/reward-milestones/{id}",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/reward-recommendations",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reward-rules",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/reward-rules",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/reward-rules/{id}",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/reward-rules/{id}",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/reward-rules/reorder",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/rewards/lines",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/rewards/report",
+    "reason": "Not yet covered",
+    "phase": 9
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/counterparties",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/counterparties",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/counterparties/{id}",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/counterparties/{id}",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/lendings",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/lendings",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/lendings/{id}",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/lendings/{id}",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/lendings/{id}",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/loans",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/loans",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/loans/{id}",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/loans/{id}",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/loans/{id}",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/loans/{id}/charges",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/loans/{id}/charges/{chargeId}",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/loans/{id}/close",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/loans/{id}/events",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/loans/{id}/events/{eventId}",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/loans/{id}/match-suggestions",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/loans/{id}/payments",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/loans/{id}/payments/{paymentId}",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/loans/{id}/payments/batch",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/loans/{id}/reopen",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/loans/{id}/schedule",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/loans/summary",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/obligations/upcoming",
+    "reason": "Not yet covered",
+    "phase": 10
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/instruments",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/instruments",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/instruments/{id}",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/instruments/{id}",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/instruments/{id}/price",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/instruments/{id}/prices",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/instruments/{instrumentId}/prices/{priceId}",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/instruments/{instrumentId}/prices/{priceId}",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/instruments/catalog-search",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/instruments/resolve",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investments/dividends",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investments/dividends",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/investments/dividends/{id}",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/investments/dividends/{id}",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investments/dividends/suggestions",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investments/dividends/suggestions/accept",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investments/dividends/summary",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investments/positions",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investments/prices/refresh",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investments/sips",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investments/sips",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/investments/sips/{id}",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investments/sips/{id}",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/investments/sips/{id}",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investments/summary",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investments/transactions",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investments/transactions",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/investments/transactions/{id}",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/investments/transactions/{id}",
+    "reason": "Not yet covered",
+    "phase": 11
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/corporate-actions",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/instruments/{instrumentId}/corporate-actions",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/instruments/{instrumentId}/corporate-actions",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/instruments/{instrumentId}/corporate-actions/{id}",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/instruments/{instrumentId}/corporate-actions/{id}",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/investments/fno",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investments/fno",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/investments/fno/{id}",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/investments/fno/{id}",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investments/imports/commit",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investments/imports/preview",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investments/imports/reconcile/commit",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/investments/imports/reconcile/preview",
+    "reason": "Not yet covered",
+    "phase": 12
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/dashboard/summary",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/dashboards",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/dashboards/{id}",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/dashboards/{id}",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/dashboards/{id}",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/dashboards/default",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/report/datasource",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/reports",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/reports/{id}",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/reports/{id}",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/reports/{id}",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/reports/{id}/data",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/reports/data",
+    "reason": "Not yet covered",
+    "phase": 13
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/chat",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/chat/stream",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/llm-keys",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/llm-keys",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/llm-keys/{id}",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/v1/llm-keys/{id}/position",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/llm-keys/{id}/test",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/llm/catalog",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/llm/health",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/llm/routing",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/llm/routing-options",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/llm/routing/{group}",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/llm/routing/{group}/reset",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/llm/task-groups",
+    "reason": "Not yet covered",
+    "phase": 14
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/accounts/{id}/gmail-cleanup",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/accounts/{id}/gmail-cleanup-preview",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/google/callback",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/google/start",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/auth/me/delete",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/auth/me/deletion-summary",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/gmail/attention",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/gmail/attention/{ledgerId}/retry",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/gmail/connections",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/gmail/connections/{id}",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/gmail/oauth/callback",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/gmail/oauth/start",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/gmail/rescan",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/gmail/senders",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/gmail/senders",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/gmail/senders/{id}",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/gmail/senders/{id}",
+    "reason": "Not yet covered",
+    "phase": 15
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/gmail/sync",
+    "reason": "Not yet covered",
+    "phase": 15
+  }
+]

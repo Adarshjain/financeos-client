@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { ReactNode, useState } from 'react';
 
 import {
@@ -23,6 +24,12 @@ interface AccountFormWrapperProps {
 
 export function AccountFormWrapper({ account, triggerClassName, children }: AccountFormWrapperProps) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  const handleSuccess = () => {
+    setOpen(false);
+    router.refresh();
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -49,7 +56,7 @@ export function AccountFormWrapper({ account, triggerClassName, children }: Acco
         <DialogHeader className="sr-only">
           <DialogTitle>Edit Account</DialogTitle>
         </DialogHeader>
-        <AccountForm account={account} onSuccess={() => setOpen(false)} onClose={() => setOpen(false)} />
+        <AccountForm account={account} onSuccess={handleSuccess} onClose={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

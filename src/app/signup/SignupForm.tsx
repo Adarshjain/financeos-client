@@ -21,10 +21,7 @@ export function SignupForm() {
 
   useEffect(() => {
     if (state?.success) {
-      const timer = setTimeout(() => {
-        router.push('/login');
-      }, 2000);
-      return () => clearTimeout(timer);
+      router.push('/dashboard');
     }
   }, [state, router]);
 
