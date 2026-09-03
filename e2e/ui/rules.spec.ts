@@ -59,8 +59,56 @@ test.describe('Rules & Categories UI (@ui)', () => {
       page.getByRole('heading', { name: 'Initial Seeded Cat' })
     ).toBeVisible();
 
-    // PRODUCT-GAP: CategoryManager UI does not have rename or delete buttons on category cards yet
-    // (API has PUT/DELETE, but UI only supports create and view).
+    // 4. Rename category
+    const createdCard = page.locator('div.group', {
+      has: page.getByRole('heading', { name: 'UI Created Category' }),
+    });
+    await createdCard.getByRole('button', { name: 'Category actions' }).click();
+    await page.getByRole('menuitem', { name: /Rename/i }).click();
+
+    const renameDialog = page.getByRole('dialog', { name: /Rename Category/i });
+    await expect(renameDialog).toBeVisible();
+    const renameInput = page.locator('#rename-category-name');
+    await expect(renameInput).toHaveValue('UI Created Category');
+    await renameInput.fill('UI Renamed Category');
+    await renameDialog.getByRole('button', { name: /Save/i }).click();
+    await expect(renameDialog).not.toBeVisible();
+
+    // Verify heading shows the new name
+    await expect(
+      page.getByRole('heading', { name: 'UI Renamed Category' })
+    ).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'UI Created Category' })
+    ).not.toBeVisible();
+
+    // 5. Delete category
+    const renamedCard = page.locator('div.group', {
+      has: page.getByRole('heading', { name: 'UI Renamed Category' }),
+    });
+    await renamedCard.getByRole('button', { name: 'Category actions' }).click();
+    await page.getByRole('menuitem', { name: /Delete/i }).click();
+
+    const deleteDialog = page.getByRole('dialog', { name: /Delete Category/i });
+    await expect(deleteDialog).toBeVisible();
+    await expect(
+      deleteDialog.getByText(
+        'Transactions in this category will keep their other categories; none are deleted.'
+      )
+    ).toBeVisible();
+    await deleteDialog.getByRole('button', { name: 'Delete' }).click();
+    await expect(deleteDialog).not.toBeVisible();
+
+    // Verify card is gone
+    await expect(
+      page.getByRole('heading', { name: 'UI Renamed Category' })
+    ).not.toBeVisible();
+
+    // 6. Verify via API fixture that GET /api/v1/categories no longer lists it
+    const categoriesRes = await api.GET('/api/v1/categories');
+    expect(
+      categoriesRes.data?.some((c) => c.name === 'UI Renamed Category')
+    ).toBe(false);
   });
 
   test('/rules: create rule, preview matches dialog, verify toggle, edit, and delete', async ({
