@@ -5,66 +5,7 @@
     "reason": "Spring Security LogoutFilter intercepts /api/v1/auth/logout in FilterChain without invoking DispatcherServlet, leaving HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE null; E2eCoverageFilter therefore skips recording this hit until the server filter or controller is updated.",
     "phase": null
   },
-  {
-    "method": "GET",
-    "path": "/api/v1/transactions",
-    "reason": "Not yet covered",
-    "phase": 6
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/transactions",
-    "reason": "Not yet covered",
-    "phase": 6
-  },
-  {
-    "method": "DELETE",
-    "path": "/api/v1/transactions/{id}",
-    "reason": "Not yet covered",
-    "phase": 6
-  },
-  {
-    "method": "PUT",
-    "path": "/api/v1/transactions/{id}",
-    "reason": "Not yet covered",
-    "phase": 6
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/transactions/batch-delete",
-    "reason": "Not yet covered",
-    "phase": 6
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/transactions/batch-review",
-    "reason": "Not yet covered",
-    "phase": 6
-  },
-  {
-    "method": "PATCH",
-    "path": "/api/v1/transactions/card",
-    "reason": "Not yet covered",
-    "phase": 6
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/transactions/search",
-    "reason": "Not yet covered",
-    "phase": 6
-  },
-  {
-    "method": "GET",
-    "path": "/api/v1/categories",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/categories",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
+
   {
     "method": "DELETE",
     "path": "/api/v1/categories/{id}",
@@ -83,12 +24,7 @@
     "reason": "Not yet covered",
     "phase": 7
   },
-  {
-    "method": "POST",
-    "path": "/api/v1/categorize",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
+
   {
     "method": "GET",
     "path": "/api/v1/rules",

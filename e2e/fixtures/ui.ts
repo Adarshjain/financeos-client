@@ -12,6 +12,14 @@ export async function openAccounts(page: Page): Promise<void> {
 }
 
 /**
+ * Navigate to the Transactions page and ensure it has finished loading.
+ */
+export async function openTransactions(page: Page): Promise<void> {
+  await page.goto(`${E2E_CLIENT_URL}/transactions`);
+  await expect(page.getByRole('heading', { name: 'Transactions', level: 1 })).toBeVisible();
+}
+
+/**
  * Assert that a toast with the given text appears in the UI.
  */
 export async function expectToast(page: Page, text: string | RegExp): Promise<void> {
