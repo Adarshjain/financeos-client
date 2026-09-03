@@ -1,9 +1,5 @@
 [
-  {
-    "route": "/transactions",
-    "reason": "Not yet covered",
-    "phase": 6
-  },
+
   {
     "route": "/rules",
     "reason": "Not yet covered",

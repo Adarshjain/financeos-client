@@ -5,6 +5,7 @@ import {
   createGenericAccount,
   ensurePrimaryCardholder,
 } from '../fixtures/seed/accounts';
+import { createTransaction } from '../fixtures/seed/transactions';
 import { expectForeign, expectUnauthenticated, secondUser } from '../fixtures/tenancy';
 import { expect, freshUser,test } from '../fixtures/test';
 
@@ -296,8 +297,32 @@ test.describe('Accounts API (@api)', () => {
     expect(getAfterDelete.response.status).toBe(404);
   });
 
-  test.fixme('delete account with dependent transactions blocked/cascaded (Phase 6 placeholder)', async () => {
-    // Covered in Phase 6 when transaction seeding is available
+  test('delete account with dependent transactions cascades and removes transactions', async ({ api }) => {
+    const bank = await createBankAccount(api, { name: 'Cascade Bank' });
+    const txn = await createTransaction(api, bank.id, { amount: -250, description: 'Dependent Txn' });
+
+    // Delete the account
+    const deleteRes = await api.DELETE('/api/v1/accounts/{id}', {
+      params: { path: { id: bank.id } },
+    });
+    expect(deleteRes.response.status).toBe(200);
+
+    // Account is gone
+    const getAccount = await api.GET('/api/v1/accounts/{id}', {
+      params: { path: { id: bank.id } },
+    });
+    expect(getAccount.response.status).toBe(404);
+
+    // Dependent transaction is also deleted (cascaded via fk_transactions_account ON DELETE CASCADE)
+    const searchRes = await api.POST('/api/v1/transactions/search', {
+      body: {
+        filters: [{ field: 'accountId', operator: 'is', value: bank.id }],
+      },
+      params: { query: { page: 0, size: 10 } },
+    });
+    expect(searchRes.response.status).toBe(200);
+    expect(searchRes.data?.totalElements).toBe(0);
+    expect(searchRes.data?.content?.some((t) => t.id === txn.id)).toBe(false);
   });
 
   test('close and reopen account lifecycle', async ({ api }) => {
