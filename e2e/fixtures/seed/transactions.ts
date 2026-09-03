@@ -149,3 +149,34 @@ export async function findById(
   const all = await searchAll(api);
   return all.find((t) => t.id === id) ?? null;
 }
+
+/**
+ * Creates two near-duplicate transactions (same account, amount, date) representing a candidate pair.
+ * Note: In financeos-server, manual transactions are always marked ReviewType.NA with empty review reasons.
+ * Review reasons (DUPLICATE_SUSPECT, CATEGORY_UNVERIFIED, UNRECONCILED) are only populated via statement/file
+ * ingestion (Phase 8) or Gmail ingestion (Phase 15).
+ */
+export async function createNeedsReviewPair(
+  api: ApiClient,
+  accountId: string,
+  options?: { amount?: number; date?: string; description?: string }
+): Promise<[TransactionResponse, TransactionResponse]> {
+  const amount = options?.amount ?? -250;
+  const date = options?.date ?? todayString(-1);
+  const desc = options?.description ?? 'Near Duplicate Transaction';
+
+  const txn1 = await createTransaction(api, accountId, {
+    amount,
+    date,
+    description: `${desc} A`,
+  });
+
+  const txn2 = await createTransaction(api, accountId, {
+    amount,
+    date,
+    description: `${desc} B`,
+  });
+
+  return [txn1, txn2];
+}
+
