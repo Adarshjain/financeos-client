@@ -1,36 +1,135 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 
-import { searchTransactions } from '@/actions/transactions';
-import { FilterClause } from '@/lib/reports.types';
-import { PagedTransaction } from '@/lib/transaction.types';
+import { api } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
+import type { FilterClause } from '@/lib/reports.types';
+import type { PagedTransaction } from '@/lib/transaction.types';
 
 import { TRANSACTIONS_CATALOG } from '../catalog';
 
 export function useTransactionsBrowser(needsReviewCount?: number | null) {
+  const queryClient = useQueryClient();
   const [appliedFilters, setAppliedFilters] = useState<FilterClause[]>([]);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sort, setSort] = useState('date,desc');
-  const [localReviewCount, setLocalReviewCount] = useState<number | null>(
-    needsReviewCount ?? null
-  );
 
   const [selectedTxnIds, setSelectedTxnIds] = useState<Set<string>>(new Set());
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [bulkLinkOpen, setBulkLinkOpen] = useState(false);
 
-  useEffect(() => {
-    setLocalReviewCount(needsReviewCount ?? null);
-  }, [needsReviewCount]);
-
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(50);
-  const [loading, setLoading] = useState(false);
-  const [pagedData, setPagedData] = useState<PagedTransaction | null>(null);
-  const runIdRef = useRef(0);
+
+  // Debounce search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const cleanFiltersList = appliedFilters.filter((clause) => {
+    const fieldDef = TRANSACTIONS_CATALOG.fields.find(
+      (f) => f.name === clause.field
+    );
+    if (!fieldDef || !clause.operator) return false;
+    const v = clause.value;
+
+    const op = clause.operator;
+    const isRelativeValueless = [
+      'this_month',
+      'this_week',
+      'this_year',
+      'previous_month',
+      'previous_week',
+      'previous_year',
+      'today',
+      'yesterday',
+      'current_fy',
+      'prev_fy',
+      'all_time',
+    ].includes(op);
+
+    if (isRelativeValueless) return true;
+
+    if (op === 'between') {
+      if (!v || typeof v !== 'object') return false;
+      if (fieldDef.type === 'number') {
+        const r = v as { from: number; to: number };
+        return Number.isFinite(r.from) && Number.isFinite(r.to);
+      } else if (fieldDef.type === 'date') {
+        const r = v as { from: string; to: string };
+        return r.from !== '' && r.to !== '';
+      }
+      return false;
+    }
+
+    if (['last_x_days', 'last_x_months', 'last_x_years'].includes(op)) {
+      if (!v || typeof v !== 'object' || !('amount' in v)) return false;
+      return Number.isFinite((v as { amount: number }).amount);
+    }
+
+    if (fieldDef.type === 'boolean') {
+      return typeof v === 'boolean';
+    }
+
+    if (Array.isArray(v)) {
+      return v.length > 0;
+    }
+
+    return v !== undefined && v !== null && v !== '';
+  });
+
+  const searchParams = {
+    filters: cleanFiltersList,
+    search: debouncedSearch.trim() || undefined,
+    page,
+    size,
+    sort,
+  };
+
+  const { data: pagedData = null, isLoading: loading } = useQuery({
+    queryKey: keys.transactions.search(searchParams),
+    queryFn: async () => {
+      const { data } = await api.POST('/api/v1/transactions/search', {
+        body: {
+          filters: searchParams.filters,
+          search: searchParams.search,
+        },
+        params: {
+          query: {
+            page: searchParams.page,
+            size: searchParams.size,
+            sort: [searchParams.sort],
+          },
+        },
+      });
+      return data ?? null;
+    },
+    placeholderData: keepPreviousData,
+  });
+
+  const { data: reviewCountData } = useQuery({
+    queryKey: keys.transactions.reviewCount(),
+    queryFn: async () => {
+      const { data } = await api.POST('/api/v1/transactions/search', {
+        body: {
+          filters: [{ field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' }],
+        },
+        params: {
+          query: { page: 0, size: 1 },
+        },
+      });
+      return data?.totalElements ?? null;
+    },
+    initialData: needsReviewCount ?? undefined,
+  });
+
+  const localReviewCount = reviewCountData ?? needsReviewCount ?? null;
 
   const toggleSelect = (id: string) => {
     setSelectedTxnIds((prev) => {
@@ -48,143 +147,8 @@ export function useTransactionsBrowser(needsReviewCount?: number | null) {
     selectedTxnIds.has(t.id)
   );
 
-  // Debounce search
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(search);
-    }, 300);
-    return () => clearTimeout(handler);
-  }, [search]);
-
-  const fetchReviewCount = useCallback(async (runId: number) => {
-    try {
-      const reviewRes = await searchTransactions(
-        {
-          filters: [
-            { field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' },
-          ],
-          search: null,
-        },
-        0,
-        1
-      );
-      if (runId === runIdRef.current && reviewRes.success) {
-        setLocalReviewCount(reviewRes.data.totalElements);
-      }
-    } catch {
-      // Ignore background errors
-    }
-  }, []);
-
-  const fetchTransactions = useCallback(
-    async (currentPage: number, runId: number) => {
-      setLoading(true);
-      try {
-        const cleanFiltersList = appliedFilters.filter((clause) => {
-          const fieldDef = TRANSACTIONS_CATALOG.fields.find(
-            (f) => f.name === clause.field
-          );
-          if (!fieldDef || !clause.operator) return false;
-          const v = clause.value;
-
-          const op = clause.operator;
-          const isRelativeValueless = [
-            'this_month',
-            'this_week',
-            'this_year',
-            'previous_month',
-            'previous_week',
-            'previous_year',
-            'today',
-            'yesterday',
-            'current_fy',
-            'prev_fy',
-            'all_time',
-          ].includes(op);
-
-          if (isRelativeValueless) return true;
-
-          if (op === 'between') {
-            if (!v || typeof v !== 'object') return false;
-            if (fieldDef.type === 'number') {
-              const r = v as { from: number; to: number };
-              return Number.isFinite(r.from) && Number.isFinite(r.to);
-            } else if (fieldDef.type === 'date') {
-              const r = v as { from: string; to: string };
-              return r.from !== '' && r.to !== '';
-            }
-            return false;
-          }
-
-          if (['last_x_days', 'last_x_months', 'last_x_years'].includes(op)) {
-            if (!v || typeof v !== 'object' || !('amount' in v)) return false;
-            return Number.isFinite((v as { amount: number }).amount);
-          }
-
-          if (fieldDef.type === 'boolean') {
-            return typeof v === 'boolean';
-          }
-
-          if (Array.isArray(v)) {
-            return v.length > 0;
-          }
-
-          return v !== undefined && v !== null && v !== '';
-        });
-
-        const res = await searchTransactions(
-          {
-            filters: cleanFiltersList,
-            search: debouncedSearch.trim() || null,
-          },
-          currentPage,
-          size,
-          sort
-        );
-
-        if (runId !== runIdRef.current) return;
-
-        if (res.success) {
-          setPagedData(res.data);
-          if (
-            res.data.content.length === 0 &&
-            res.data.totalElements > 0 &&
-            currentPage > 0
-          ) {
-            setPage(currentPage - 1);
-            return;
-          }
-        } else {
-          toast.error(res.error.message);
-        }
-      } catch {
-        toast.error('Failed to load transactions');
-      } finally {
-        if (runId === runIdRef.current) {
-          setLoading(false);
-        }
-      }
-    },
-    [appliedFilters, debouncedSearch, size, sort]
-  );
-
-  useEffect(() => {
-    const runId = ++runIdRef.current;
-    const timer = setTimeout(() => {
-      fetchTransactions(page, runId);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [page, fetchTransactions]);
-
-  useEffect(() => {
-    const runId = runIdRef.current;
-    fetchReviewCount(runId);
-  }, [fetchReviewCount]);
-
   const handleReload = () => {
-    const runId = ++runIdRef.current;
-    fetchTransactions(page, runId);
-    fetchReviewCount(runId);
+    queryClient.invalidateQueries({ queryKey: keys.transactions.all });
   };
 
   const handleSort = (field: string) => {

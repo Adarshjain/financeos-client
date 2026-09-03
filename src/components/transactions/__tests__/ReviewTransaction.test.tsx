@@ -1,10 +1,16 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { toast } from 'sonner';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as transactionsActions from '@/actions/transactions';
 import { ReviewTransaction } from '@/components/transactions/ReviewTransaction';
-import type { ReviewType, Transaction } from '@/lib/transaction.types';
+import { api,ApiError } from '@/lib/api/client';
+import type { BatchReviewResponse, ReviewType, Transaction } from '@/lib/transaction.types';
+import { renderWithQuery } from '@/test/renderWithQuery';
+
+vi.mock('@/lib/api/client', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
+  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
+});
 
 vi.mock('sonner', () => ({
   toast: {
@@ -14,7 +20,7 @@ vi.mock('sonner', () => ({
   },
 }));
 
-type ReviewResult = Awaited<ReturnType<typeof transactionsActions.batchReviewTransactions>>;
+type ReviewResult = { data: BatchReviewResponse };
 
 const baseTxn: Transaction = {
   id: 't-1',
@@ -48,7 +54,7 @@ describe('ReviewTransaction', () => {
     it.each<ReviewType>(['AUTO_REVIEWED', 'MANUALLY_REVIEWED', 'NA'])(
       'renders nothing when reviewType is %s',
       (reviewType) => {
-        const { container } = render(
+        const { container } = renderWithQuery(
           <ReviewTransaction transaction={{ ...baseTxn, reviewType }} />,
         );
 
@@ -58,13 +64,13 @@ describe('ReviewTransaction', () => {
 
     it('renders nothing when reviewType is absent', () => {
       const { reviewType: _omitted, ...withoutReviewType } = baseTxn;
-      const { container } = render(<ReviewTransaction transaction={withoutReviewType} />);
+      const { container } = renderWithQuery(<ReviewTransaction transaction={withoutReviewType} />);
 
       expect(container).toBeEmptyDOMElement();
     });
 
     it('offers the Review action when the transaction needs review', () => {
-      render(<ReviewTransaction transaction={baseTxn} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} />);
 
       expect(screen.getByRole('button', { name: /Review/i })).toBeInTheDocument();
     });
@@ -73,7 +79,7 @@ describe('ReviewTransaction', () => {
     // invariant is ever broken there is nothing to clear, so offer no action
     // rather than send an approval whose meaning is undefined.
     it('renders nothing when a flagged transaction carries no reasons', () => {
-      const { container } = render(
+      const { container } = renderWithQuery(
         <ReviewTransaction transaction={{ ...baseTxn, reviewReasons: [] }} />,
       );
 
@@ -82,7 +88,7 @@ describe('ReviewTransaction', () => {
 
     it('renders nothing when reviewReasons is absent', () => {
       const { reviewReasons: _omitted, ...withoutReasons } = baseTxn;
-      const { container } = render(<ReviewTransaction transaction={withoutReasons} />);
+      const { container } = renderWithQuery(<ReviewTransaction transaction={withoutReasons} />);
 
       expect(container).toBeEmptyDOMElement();
     });
@@ -90,7 +96,7 @@ describe('ReviewTransaction', () => {
 
   describe('reason picker', () => {
     it("lists the transaction's own reasons with catalog labels, all pre-checked", async () => {
-      render(<ReviewTransaction transaction={baseTxn} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} />);
       await openPicker();
 
       const unreconciled = screen.getByRole('checkbox', { name: 'Unreconciled' });
@@ -104,7 +110,7 @@ describe('ReviewTransaction', () => {
     });
 
     it('re-checks every reason when reopened after unchecking one', async () => {
-      render(<ReviewTransaction transaction={baseTxn} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} />);
       await openPicker();
 
       fireEvent.click(screen.getByRole('checkbox', { name: 'Unreconciled' }));
@@ -120,9 +126,7 @@ describe('ReviewTransaction', () => {
     });
 
     it('blocks approval once every reason is unchecked', async () => {
-      const spy = vi.spyOn(transactionsActions, 'batchReviewTransactions');
-
-      render(<ReviewTransaction transaction={baseTxn} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} />);
       const approve = await openPicker();
 
       fireEvent.click(screen.getByRole('checkbox', { name: 'Unreconciled' }));
@@ -130,16 +134,15 @@ describe('ReviewTransaction', () => {
 
       expect(approve).toBeDisabled();
       fireEvent.click(approve);
-      expect(spy).not.toHaveBeenCalled();
+      expect(api.POST).not.toHaveBeenCalled();
     });
 
     it('restores a reason to the request when re-checked', async () => {
-      const spy = vi.spyOn(transactionsActions, 'batchReviewTransactions').mockResolvedValue({
-        success: true,
+      (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
         data: { succeededIds: ['t-1'], skippedIds: [], failures: [] },
       });
 
-      render(<ReviewTransaction transaction={baseTxn} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} />);
       const approve = await openPicker();
 
       const unreconciled = screen.getByRole('checkbox', { name: 'Unreconciled' });
@@ -152,90 +155,103 @@ describe('ReviewTransaction', () => {
 
       // Order of reasons is not part of the contract, only membership.
       await waitFor(() => {
-        expect(spy).toHaveBeenCalledTimes(1);
+        expect(api.POST).toHaveBeenCalledTimes(1);
       });
-      const [ids, reviewType, sentReasons] = spy.mock.calls[0];
-      expect(ids).toEqual(['t-1']);
-      expect(reviewType).toBe('MANUALLY_REVIEWED');
-      expect([...(sentReasons ?? [])].sort()).toEqual(['CATEGORY_UNVERIFIED', 'UNRECONCILED']);
+      const [path, options] = (api.POST as ReturnType<typeof vi.fn>).mock.calls[0];
+      expect(path).toBe('/api/v1/transactions/batch-review');
+      expect(options.body.transactionIds).toEqual(['t-1']);
+      expect(options.body.reviewType).toBe('MANUALLY_REVIEWED');
+      expect([...options.body.reviewReasons].sort()).toEqual(['CATEGORY_UNVERIFIED', 'UNRECONCILED']);
     });
 
     it('does not call the action when cancelled', async () => {
-      const spy = vi.spyOn(transactionsActions, 'batchReviewTransactions');
-
-      render(<ReviewTransaction transaction={baseTxn} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} />);
       await openPicker();
       fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
 
       await waitFor(() => {
         expect(screen.queryByRole('heading', { name: 'Approve Transaction' })).not.toBeInTheDocument();
       });
-      expect(spy).not.toHaveBeenCalled();
+      expect(api.POST).not.toHaveBeenCalled();
     });
   });
 
   describe('approval request', () => {
     it('marks the single transaction MANUALLY_REVIEWED with every checked reason', async () => {
-      const spy = vi.spyOn(transactionsActions, 'batchReviewTransactions').mockResolvedValue({
-        success: true,
+      (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
         data: { succeededIds: ['t-1'], skippedIds: [], failures: [] },
       });
 
-      render(<ReviewTransaction transaction={baseTxn} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} />);
       fireEvent.click(await openPicker());
 
       await waitFor(() => {
-        expect(spy).toHaveBeenCalledWith(['t-1'], 'MANUALLY_REVIEWED', [
-          'UNRECONCILED',
-          'CATEGORY_UNVERIFIED',
-        ]);
+        expect(api.POST).toHaveBeenCalledWith('/api/v1/transactions/batch-review', {
+          body: {
+            transactionIds: ['t-1'],
+            reviewType: 'MANUALLY_REVIEWED',
+            reviewReasons: ['UNRECONCILED', 'CATEGORY_UNVERIFIED'],
+          },
+        });
       });
     });
 
     it('sends only the reasons left checked (partial approval)', async () => {
-      const spy = vi.spyOn(transactionsActions, 'batchReviewTransactions').mockResolvedValue({
-        success: true,
+      (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
         data: { succeededIds: ['t-1'], skippedIds: [], failures: [] },
       });
 
-      render(<ReviewTransaction transaction={baseTxn} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} />);
       const approve = await openPicker();
 
       fireEvent.click(screen.getByRole('checkbox', { name: 'Unreconciled' }));
       fireEvent.click(approve);
 
       await waitFor(() => {
-        expect(spy).toHaveBeenCalledWith(['t-1'], 'MANUALLY_REVIEWED', ['CATEGORY_UNVERIFIED']);
+        expect(api.POST).toHaveBeenCalledWith('/api/v1/transactions/batch-review', {
+          body: {
+            transactionIds: ['t-1'],
+            reviewType: 'MANUALLY_REVIEWED',
+            reviewReasons: ['CATEGORY_UNVERIFIED'],
+          },
+        });
       });
     });
 
     it('always sends a non-empty reason list', async () => {
-      const spy = vi.spyOn(transactionsActions, 'batchReviewTransactions').mockResolvedValue({
-        success: true,
+      (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
         data: { succeededIds: ['t-1'], skippedIds: [], failures: [] },
       });
 
-      render(<ReviewTransaction transaction={{ ...baseTxn, reviewReasons: ['DUPLICATE_SUSPECT'] }} />);
+      renderWithQuery(
+        <ReviewTransaction transaction={{ ...baseTxn, reviewReasons: ['DUPLICATE_SUSPECT'] }} />,
+      );
       fireEvent.click(await openPicker());
 
       await waitFor(() => {
-        expect(spy).toHaveBeenCalledWith(['t-1'], 'MANUALLY_REVIEWED', ['DUPLICATE_SUSPECT']);
+        expect(api.POST).toHaveBeenCalledWith('/api/v1/transactions/batch-review', {
+          body: {
+            transactionIds: ['t-1'],
+            reviewType: 'MANUALLY_REVIEWED',
+            reviewReasons: ['DUPLICATE_SUSPECT'],
+          },
+        });
       });
       // Never `undefined` and never `[]` — the backend has no reason-less case.
-      const sentReasons = spy.mock.calls[0][2];
+      const sentReasons = (api.POST as ReturnType<typeof vi.fn>).mock.calls[0][1].body.reviewReasons;
       expect(sentReasons).toEqual(expect.arrayContaining(['DUPLICATE_SUSPECT']));
       expect(sentReasons).toHaveLength(1);
     });
 
     it('fires the action once when Approve is clicked repeatedly in flight', async () => {
       let release: (value: ReviewResult) => void = () => {};
-      const spy = vi
-        .spyOn(transactionsActions, 'batchReviewTransactions')
-        .mockReturnValue(new Promise<ReviewResult>((resolve) => {
+      (api.POST as ReturnType<typeof vi.fn>).mockReturnValue(
+        new Promise<ReviewResult>((resolve) => {
           release = resolve;
-        }));
+        }),
+      );
 
-      render(<ReviewTransaction transaction={baseTxn} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} />);
       const approve = await openPicker();
 
       fireEvent.click(approve);
@@ -243,23 +259,23 @@ describe('ReviewTransaction', () => {
       fireEvent.click(approve);
       fireEvent.click(approve);
 
-      release({ success: true, data: { succeededIds: ['t-1'], skippedIds: [], failures: [] } });
+      release({ data: { succeededIds: ['t-1'], skippedIds: [], failures: [] } });
 
       await waitFor(() => {
-        expect(spy).toHaveBeenCalledTimes(1);
+        expect(api.POST).toHaveBeenCalledTimes(1);
       });
     });
 
     it('cannot be dismissed while the approval is in flight', async () => {
       let release: (value: ReviewResult) => void = () => {};
-      vi
-        .spyOn(transactionsActions, 'batchReviewTransactions')
-        .mockReturnValue(new Promise<ReviewResult>((resolve) => {
+      (api.POST as ReturnType<typeof vi.fn>).mockReturnValue(
+        new Promise<ReviewResult>((resolve) => {
           release = resolve;
-        }));
+        }),
+      );
       const onSuccess = vi.fn();
 
-      render(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
       const approve = await openPicker();
       fireEvent.click(approve);
 
@@ -270,7 +286,7 @@ describe('ReviewTransaction', () => {
       fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
       expect(screen.getByRole('heading', { name: 'Approve Transaction' })).toBeInTheDocument();
 
-      release({ success: true, data: { succeededIds: ['t-1'], skippedIds: [], failures: [] } });
+      release({ data: { succeededIds: ['t-1'], skippedIds: [], failures: [] } });
 
       await waitFor(() => {
         expect(onSuccess).toHaveBeenCalledTimes(1);
@@ -280,13 +296,12 @@ describe('ReviewTransaction', () => {
 
   describe('outcome handling', () => {
     it('confirms, closes and refreshes the parent when the id succeeded', async () => {
-      vi.spyOn(transactionsActions, 'batchReviewTransactions').mockResolvedValue({
-        success: true,
+      (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
         data: { succeededIds: ['t-1'], skippedIds: [], failures: [] },
       });
       const onSuccess = vi.fn();
 
-      render(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
       fireEvent.click(await openPicker());
 
       await waitFor(() => {
@@ -297,13 +312,12 @@ describe('ReviewTransaction', () => {
     });
 
     it('warns and stays open when the id was skipped', async () => {
-      vi.spyOn(transactionsActions, 'batchReviewTransactions').mockResolvedValue({
-        success: true,
+      (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
         data: { succeededIds: [], skippedIds: ['t-1'], failures: [] },
       });
       const onSuccess = vi.fn();
 
-      render(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
       fireEvent.click(await openPicker());
 
       await waitFor(() => {
@@ -315,8 +329,7 @@ describe('ReviewTransaction', () => {
     });
 
     it('surfaces a per-id failure using its human-readable label', async () => {
-      vi.spyOn(transactionsActions, 'batchReviewTransactions').mockResolvedValue({
-        success: true,
+      (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
         data: {
           succeededIds: [],
           skippedIds: [],
@@ -325,7 +338,7 @@ describe('ReviewTransaction', () => {
       });
       const onSuccess = vi.fn();
 
-      render(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
       fireEvent.click(await openPicker());
 
       await waitFor(() => {
@@ -336,8 +349,7 @@ describe('ReviewTransaction', () => {
     });
 
     it('passes through an unrecognised failure code rather than hiding it', async () => {
-      vi.spyOn(transactionsActions, 'batchReviewTransactions').mockResolvedValue({
-        success: true,
+      (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
         data: {
           succeededIds: [],
           skippedIds: [],
@@ -345,7 +357,7 @@ describe('ReviewTransaction', () => {
         },
       });
 
-      render(<ReviewTransaction transaction={baseTxn} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} />);
       fireEvent.click(await openPicker());
 
       await waitFor(() => {
@@ -354,8 +366,7 @@ describe('ReviewTransaction', () => {
     });
 
     it('ignores outcomes reported for other transaction ids', async () => {
-      vi.spyOn(transactionsActions, 'batchReviewTransactions').mockResolvedValue({
-        success: true,
+      (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
         data: {
           succeededIds: ['t-someone-else'],
           skippedIds: [],
@@ -364,7 +375,7 @@ describe('ReviewTransaction', () => {
       });
       const onSuccess = vi.fn();
 
-      render(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
       fireEvent.click(await openPicker());
 
       await waitFor(() => {
@@ -375,13 +386,12 @@ describe('ReviewTransaction', () => {
     });
 
     it('reports the server error message when the action fails', async () => {
-      vi.spyOn(transactionsActions, 'batchReviewTransactions').mockResolvedValue({
-        success: false,
-        error: { code: 'ERR', message: 'Review service unavailable', timestamp: '' },
-      });
+      (api.POST as ReturnType<typeof vi.fn>).mockRejectedValue(
+        new ApiError(500, { code: 'ERR', message: 'Review service unavailable', timestamp: '' }),
+      );
       const onSuccess = vi.fn();
 
-      render(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
       fireEvent.click(await openPicker());
 
       await waitFor(() => {
@@ -391,12 +401,10 @@ describe('ReviewTransaction', () => {
     });
 
     it('reports a thrown error instead of leaving the dialog stuck', async () => {
-      vi.spyOn(transactionsActions, 'batchReviewTransactions').mockRejectedValue(
-        new Error('Network offline'),
-      );
+      (api.POST as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network offline'));
       const onSuccess = vi.fn();
 
-      render(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
+      renderWithQuery(<ReviewTransaction transaction={baseTxn} onSuccess={onSuccess} />);
       const approve = await openPicker();
       fireEvent.click(approve);
 

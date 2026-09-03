@@ -1,10 +1,10 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DollarSign, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { createDividend } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -18,15 +18,12 @@ import {
 } from '@/components/ui/dialog';
 import { FormField } from '@/components/ui/form-field';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Broker } from '@/lib/account.types';
-import { DividendType, Position } from '@/lib/types';
+import { api, ApiError } from '@/lib/api/client';
+import { CreateDividendRequest } from '@/lib/api/types';
+import { keys } from '@/lib/query/keys';
+import { Dividend, DividendType, Position } from '@/lib/types';
 import { toCalendarDate } from '@/lib/utils';
 
 interface CreateDividendDialogProps {
@@ -47,11 +44,15 @@ export function CreateDividendDialog({
   onSuccess,
 }: CreateDividendDialogProps) {
   const [open, setOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const qc = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: (body: CreateDividendRequest) =>
+      api.POST('/api/v1/investments/dividends', { body }).then((r) => r.data! as Dividend),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const isSubmitting = createMutation.isPending;
 
-  const [brokerAccountId, setBrokerAccountId] = useState(
-    initialBrokerAccountId || brokerAccounts[0]?.id || '',
-  );
+  const [brokerAccountId, setBrokerAccountId] = useState(initialBrokerAccountId || brokerAccounts[0]?.id || '');
   const [instrumentId, setInstrumentId] = useState(initialInstrumentId || '');
   const [type, setType] = useState<DividendType>('dividend');
   const [amount, setAmount] = useState('');
@@ -84,9 +85,8 @@ export function CreateDividendDialog({
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      const res = await createDividend({
+      await createMutation.mutateAsync({
         brokerAccountId,
         instrumentId,
         type,
@@ -98,22 +98,16 @@ export function CreateDividendDialog({
         notes: notes || undefined,
       });
 
-      if (res.success) {
-        toast.success(`Recorded ${type} payout of ₹${amount}`);
-        setOpen(false);
-        setAmount('');
-        setPerUnit('');
-        setTds('');
-        setNotes('');
-        setInstrumentId('');
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message);
-      }
+      toast.success(`Recorded ${type} payout of ₹${amount}`);
+      setOpen(false);
+      setAmount('');
+      setPerUnit('');
+      setTds('');
+      setNotes('');
+      setInstrumentId('');
+      onSuccess?.();
     } catch (err) {
-      toast.error('Failed to record dividend: ' + (err as Error).message);
-    } finally {
-      setIsSubmitting(false);
+      toast.error(err instanceof ApiError ? err.response.message : 'Failed to record dividend');
     }
   };
 
@@ -160,7 +154,11 @@ export function CreateDividendDialog({
               <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Held Instrument</Label>
               <Select value={instrumentId} onValueChange={setInstrumentId}>
                 <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
-                  <SelectValue placeholder={brokerPositions.length === 0 ? "No held positions for this broker" : "Select held instrument..."} />
+                  <SelectValue
+                    placeholder={
+                      brokerPositions.length === 0 ? 'No held positions for this broker' : 'Select held instrument...'
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
                   {brokerPositions.map((p) => (
@@ -180,9 +178,15 @@ export function CreateDividendDialog({
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                    <SelectItem value="dividend" className="text-xs">Dividend</SelectItem>
-                    <SelectItem value="interest" className="text-xs">Interest</SelectItem>
-                    <SelectItem value="other" className="text-xs">Other Payout</SelectItem>
+                    <SelectItem value="dividend" className="text-xs">
+                      Dividend
+                    </SelectItem>
+                    <SelectItem value="interest" className="text-xs">
+                      Interest
+                    </SelectItem>
+                    <SelectItem value="other" className="text-xs">
+                      Other Payout
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

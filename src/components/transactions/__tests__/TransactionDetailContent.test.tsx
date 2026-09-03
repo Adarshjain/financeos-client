@@ -1,13 +1,18 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as linkActions from '@/actions/transaction-links';
-import * as transactionsActions from '@/actions/transactions';
 import { TransactionDetailContent } from '@/components/transactions/TransactionDetailContent';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import type { Account } from '@/lib/account.types';
+import { api,ApiError } from '@/lib/api/client';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
+import { renderWithQuery } from '@/test/renderWithQuery';
+
+vi.mock('@/lib/api/client', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
+  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
+});
 
 const mockAccounts: Account[] = [
   { id: 'acc1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT },
@@ -40,8 +45,12 @@ const mockTxnWithNullBalance: Transaction = {
 };
 
 describe('TransactionDetailContent (CD-2c, CD-8)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('displays balance when balance = 0 (falsy number) (CD-2c)', () => {
-    render(
+    renderWithQuery(
       <Dialog open={true}>
         <DialogContent>
           <TransactionDetailContent
@@ -58,7 +67,7 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
   });
 
   it('omits balance block when balance is null (CD-2c)', () => {
-    render(
+    renderWithQuery(
       <Dialog open={true}>
         <DialogContent>
           <TransactionDetailContent
@@ -75,14 +84,14 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
   });
 
   it('fetches and displays linked transactions with derived role labels (CD-8)', async () => {
-    vi.spyOn(linkActions, 'getTransactionLinks').mockResolvedValue({
-      success: true,
+    (api.GET as ReturnType<typeof vi.fn>).mockResolvedValue({
       data: [
         {
           id: 'link1',
           type: 'TRANSFER',
           createdBy: 'USER',
           createdAt: '2026-07-25T00:00:00Z',
+          note: '',
           members: [
             {
               transactionId: 't-zero',
@@ -112,7 +121,7 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
       links: [{ linkId: 'link1', type: 'TRANSFER', roleLabel: 'Transfer out', memberCount: 2 }],
     };
 
-    render(
+    renderWithQuery(
       <Dialog open={true}>
         <DialogContent>
           <TransactionDetailContent
@@ -132,17 +141,16 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
   });
 
   it('renders linksError with retry button when link fetch fails', async () => {
-    vi.spyOn(linkActions, 'getTransactionLinks').mockResolvedValue({
-      success: false,
-      error: { code: 'ERR', message: 'Failed to load links', timestamp: '' },
-    });
+    (api.GET as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new ApiError(500, { code: 'ERR', message: 'Failed to load links', timestamp: '' }),
+    );
 
     const txnWithLink: Transaction = {
       ...mockTxnWithZeroBalance,
       links: [{ linkId: 'link1', type: 'TRANSFER', roleLabel: 'Transfer out', memberCount: 2 }],
     };
 
-    render(
+    renderWithQuery(
       <Dialog open={true}>
         <DialogContent>
           <TransactionDetailContent
@@ -161,14 +169,14 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
   });
 
   it('unlinks transaction link when Unlink button is clicked', async () => {
-    vi.spyOn(linkActions, 'getTransactionLinks').mockResolvedValue({
-      success: true,
+    (api.GET as ReturnType<typeof vi.fn>).mockResolvedValue({
       data: [
         {
           id: 'link1',
           type: 'TRANSFER',
           createdBy: 'USER',
           createdAt: '2026-07-25T00:00:00Z',
+          note: '',
           members: [
             {
               transactionId: 't-zero',
@@ -193,10 +201,7 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
       ],
     });
 
-    const unlinkSpy = vi.spyOn(linkActions, 'deleteTransactionLink').mockResolvedValue({
-      success: true,
-      data: undefined,
-    });
+    const unlinkSpy = (api.DELETE as ReturnType<typeof vi.fn>).mockResolvedValue({ data: undefined });
 
     const txnWithLink: Transaction = {
       ...mockTxnWithZeroBalance,
@@ -207,7 +212,7 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
 
     const onCloseAndRefresh = vi.fn();
 
-    render(
+    renderWithQuery(
       <Dialog open={true}>
         <DialogContent>
           <TransactionDetailContent
@@ -227,7 +232,9 @@ describe('TransactionDetailContent (CD-2c, CD-8)', () => {
     fireEvent.click(screen.getByText('Unlink'));
 
     await waitFor(() => {
-      expect(unlinkSpy).toHaveBeenCalledWith('link1');
+      expect(unlinkSpy).toHaveBeenCalledWith('/api/v1/transaction-links/{id}', {
+        params: { path: { id: 'link1' } },
+      });
       expect(onCloseAndRefresh).toHaveBeenCalled();
     });
 
@@ -244,8 +251,12 @@ describe('TransactionDetailContent review action', () => {
     reviewReasons: ['UNRECONCILED'],
   };
 
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   const renderDetail = (transaction: Transaction, onCloseAndRefresh = vi.fn()) => {
-    render(
+    renderWithQuery(
       <Dialog open={true}>
         <DialogContent>
           <TransactionDetailContent
@@ -275,8 +286,7 @@ describe('TransactionDetailContent review action', () => {
   });
 
   it('closes the dialog and refreshes the parent after approving from the detail view', async () => {
-    const reviewSpy = vi.spyOn(transactionsActions, 'batchReviewTransactions').mockResolvedValue({
-      success: true,
+    (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
       data: { succeededIds: ['t-needs-review'], skippedIds: [], failures: [] },
     });
     const onCloseAndRefresh = renderDetail(needsReviewTxn);
@@ -290,11 +300,13 @@ describe('TransactionDetailContent review action', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Approv/i }));
 
     await waitFor(() => {
-      expect(reviewSpy).toHaveBeenCalledWith(
-        ['t-needs-review'],
-        'MANUALLY_REVIEWED',
-        ['UNRECONCILED'],
-      );
+      expect(api.POST).toHaveBeenCalledWith('/api/v1/transactions/batch-review', {
+        body: {
+          transactionIds: ['t-needs-review'],
+          reviewType: 'MANUALLY_REVIEWED',
+          reviewReasons: ['UNRECONCILED'],
+        },
+      });
       expect(onCloseAndRefresh).toHaveBeenCalledTimes(1);
     });
   });

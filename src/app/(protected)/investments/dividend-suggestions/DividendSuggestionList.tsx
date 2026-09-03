@@ -11,7 +11,7 @@ import { cn, formatDate } from '@/lib/utils';
 export interface EditableSuggestionItem {
   suggestion: DividendSuggestion;
   selected: boolean;
-  amount: string;
+  amount: string | number;
   payDate: string;
 }
 

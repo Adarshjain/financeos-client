@@ -1,10 +1,13 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { createDividend, updateDividend } from '@/actions/investments';
 import { Broker } from '@/lib/account.types';
+import { api, ApiError } from '@/lib/api/client';
+import { CreateDividendRequest, UpdateDividendRequest } from '@/lib/api/types';
+import { keys } from '@/lib/query/keys';
 import { Dividend, DividendType, Position } from '@/lib/types';
 import { toCalendarDate } from '@/lib/utils';
 
@@ -32,7 +35,25 @@ export function useDividendDialog({
   onSuccess,
 }: UseDividendDialogProps) {
   const isEdit = mode === 'edit' || !!dividend;
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const qc = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: (body: CreateDividendRequest) =>
+      api
+        .POST('/api/v1/investments/dividends', { body })
+        .then((r) => r.data! as Dividend),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const updateMutation = useMutation({
+    mutationFn: (body: UpdateDividendRequest) =>
+      api
+        .PUT('/api/v1/investments/dividends/{id}', {
+          params: { path: { id: dividend?.id ?? '' } },
+          body,
+        })
+        .then((r) => r.data! as Dividend),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   const [brokerAccountId, setBrokerAccountId] = useState(
     dividend?.brokerAccountId ||
@@ -43,18 +64,14 @@ export function useDividendDialog({
   const [instrumentId, setInstrumentId] = useState(
     dividend?.instrumentId || initialInstrumentId || ''
   );
-  const [type, setType] = useState<DividendType>(
-    dividend?.type || 'dividend'
-  );
+  const [type, setType] = useState<DividendType>(dividend?.type || 'dividend');
   const [amount, setAmount] = useState(
     dividend?.amount ? String(dividend.amount) : ''
   );
   const [perUnit, setPerUnit] = useState(
     dividend?.perUnit ? String(dividend.perUnit) : ''
   );
-  const [tds, setTds] = useState(
-    dividend?.tds ? String(dividend.tds) : ''
-  );
+  const [tds, setTds] = useState(dividend?.tds ? String(dividend.tds) : '');
   const [exDate, setExDate] = useState(dividend?.exDate || '');
   const [payDate, setPayDate] = useState(
     dividend?.payDate || toCalendarDate(new Date())
@@ -105,32 +122,42 @@ export function useDividendDialog({
       return;
     }
 
-    setIsSubmitting(true);
-    const req = {
-      brokerAccountId,
-      instrumentId,
-      type,
-      amount: numAmount,
-      perUnit: perUnit ? parseFloat(perUnit) : undefined,
-      tds: tds ? parseFloat(tds) : undefined,
-      exDate: exDate || undefined,
-      payDate,
-      notes: notes.trim() || undefined,
-    };
+    try {
+      if (isEdit && dividend) {
+        const req: UpdateDividendRequest = {
+          type,
+          amount: numAmount,
+          perUnit: perUnit ? parseFloat(perUnit) : undefined,
+          tds: tds ? parseFloat(tds) : undefined,
+          exDate: exDate || undefined,
+          payDate,
+          notes: notes.trim() || undefined,
+        };
+        await updateMutation.mutateAsync(req);
+      } else {
+        const req: CreateDividendRequest = {
+          brokerAccountId,
+          instrumentId,
+          type,
+          amount: numAmount,
+          perUnit: perUnit ? parseFloat(perUnit) : undefined,
+          tds: tds ? parseFloat(tds) : undefined,
+          exDate: exDate || undefined,
+          payDate,
+          notes: notes.trim() || undefined,
+        };
+        await createMutation.mutateAsync(req);
+      }
 
-    const res =
-      isEdit && dividend
-        ? await updateDividend(dividend.id, req)
-        : await createDividend(req);
-
-    setIsSubmitting(false);
-
-    if (res.success) {
       toast.success(isEdit ? 'Dividend updated' : 'Dividend recorded');
       setOpen(false);
       onSuccess?.();
-    } else {
-      toast.error(res.error.message);
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to save dividend'
+      );
     }
   };
 

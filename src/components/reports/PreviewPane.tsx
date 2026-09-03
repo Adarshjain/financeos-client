@@ -5,17 +5,26 @@
 // config changes. The one exception is editing a saved report: the definition
 // is known-good, so it runs once on mount (autoRunOnMount) — after that, edits
 // go back through the button. Once data is shown, changing the config marks it
-// stale: an overlay covers the result and the Preview button re-enables. A
-// monotonic runId guard ensures a stale in-flight response can't overwrite a
-// newer one.
+// stale: an overlay covers the result and the Preview button re-enables.
+//
+// The exact params a run was fired with (`runKey`) are held in state and fed
+// straight into the query key, rather than reading `page`/`size` off render
+// state inside the fetch itself. That keeps a slower, superseded run's
+// response from ever clobbering a newer one on screen: TanStack Query only
+// ever surfaces the result for the key this component is currently pointed
+// at, so an out-of-order response for an old key lands in a cache entry
+// nobody's subscribed to.
 
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-import { runAdHocReport } from '@/actions/reports';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import type { DatasourceCatalog, ReportData } from '@/lib/reports.types';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
+import { asReportData } from '@/lib/reports.helpers';
+import type { DatasourceCatalog, RunReportRequest } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 import type { BuilderState } from './builderReducer';
@@ -29,15 +38,20 @@ interface PreviewPaneProps {
   autoRunOnMount?: boolean;
 }
 
+interface RunKey {
+  /** Serialised definition this run was fired for — compared against the live
+   * `defSignature` to decide whether the shown data is stale. */
+  signature: string;
+  request: RunReportRequest;
+  page: number;
+  size: number;
+}
+
 export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewPaneProps) {
   // `ReportBuilder` holds one reducer for the whole page, so typing in the Name
   // or Description field re-renders this component even though neither is part
   // of the definition. Without memoisation that re-ran validation and a full
   // definition serialisation on every keystroke.
-  //
-  // Keeping the request object alongside its signature also removes a
-  // JSON.parse of the string this just produced — runPreview used to
-  // round-trip through text to recover the object it already had.
   const { request, defSignature } = useMemo(() => {
     const req = buildRunRequest(state, catalog);
     return { request: req, defSignature: JSON.stringify(req) };
@@ -51,16 +65,12 @@ export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewP
 
   const isTable = state.type === 'TABLE';
 
-  const [data, setData] = useState<ReportData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   // Page size is a runtime concern (not part of the definition); preview drives
   // it from the table footer's page-size control.
   const [size, setSize] = useState(DEFAULT_TABLE_PAGE_SIZE);
-  // Signature the currently-shown data was fetched for; null until first load.
-  const [loadedSignature, setLoadedSignature] = useState<string | null>(null);
-  const runIdRef = useRef(0);
+  // The last run the user actually asked for. Null until the first run.
+  const [runKey, setRunKey] = useState<RunKey | null>(null);
 
   // Reset paging when the definition changes (render-time derived-state pattern).
   const [lastSignature, setLastSignature] = useState(defSignature);
@@ -69,32 +79,41 @@ export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewP
     setPage(0);
   }
 
-  // Data is shown but the config has since changed → it no longer matches.
-  const isStale = data !== null && loadedSignature !== defSignature;
-  // Worth (re)loading: valid, not already loading, and nothing fresh on screen.
-  const canPreview = valid && !loading && (data === null || isStale);
+  const query = useQuery({
+    // `runKey` (the whole object) and `isTable` are both in the key, not just
+    // the fields the query params need, so the key stays exhaustive over
+    // everything queryFn reads below (including `runKey.request`).
+    queryKey: keys.reports.run(state.reportId ?? 'draft', { runKey, isTable }),
+    queryFn: async () => {
+      const { data } = await api.POST('/api/v1/reports/data', {
+        params: { query: isTable ? { page: runKey!.page, size: runKey!.size } : {} },
+        body: { ...runKey!.request, definition: { ...runKey!.request.definition } },
+      });
+      return asReportData(data);
+    },
+    enabled: runKey !== null,
+    placeholderData: keepPreviousData,
+  });
 
-  const runPreview = async (pageToLoad = page, sizeToLoad = size) => {
+  const data = query.data ?? null;
+  const loading = query.isFetching;
+  const error = query.isError
+    ? query.error instanceof ApiError
+      ? query.error.response.message
+      : 'Failed to run ad-hoc report'
+    : null;
+
+  // Data is shown but the config has since changed → it no longer matches.
+  const isStale = data !== null && runKey !== null && runKey.signature !== defSignature;
+  // Worth (re)loading: valid, not already loading, and nothing fresh on screen.
+  const canPreview = valid && !loading && (data === null || isStale || query.isError);
+
+  const startRun = (pageToLoad: number, sizeToLoad: number) => {
     if (!valid) return;
-    const myId = ++runIdRef.current;
-    const signature = defSignature;
-    setLoading(true);
-    const res = await runAdHocReport(
-      request,
-      isTable ? { page: pageToLoad, size: sizeToLoad } : {},
-    );
-    if (myId !== runIdRef.current) return; // superseded by a newer run
-    setLoading(false);
-    if (res.success) {
-      setData(res.data);
-      setError(null);
-      setLoadedSignature(signature);
-    } else {
-      setData(null);
-      setError(res.error.message);
-      setLoadedSignature(null);
-    }
+    setRunKey({ signature: defSignature, request, page: pageToLoad, size: sizeToLoad });
   };
+
+  const runPreview = () => startRun(page, size);
 
   // Edit mode: the saved definition is known-good, so load it once on mount.
   // Guarded by a ref (not effect deps) so later config changes never re-trigger it.
@@ -102,20 +121,20 @@ export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewP
   useEffect(() => {
     if (autoRunOnMount && valid && !autoRanRef.current) {
       autoRanRef.current = true;
-      void runPreview();
+      startRun(page, size);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handlePageChange = (p: number) => {
     setPage(p);
-    void runPreview(p);
+    startRun(p, size);
   };
 
   const handleSizeChange = (s: number) => {
     setSize(s);
     setPage(0);
-    void runPreview(0, s);
+    startRun(0, s);
   };
 
   return (
@@ -127,7 +146,7 @@ export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewP
         <Button
           size="sm"
           variant="outline"
-          onClick={() => void runPreview()}
+          onClick={() => runPreview()}
           disabled={!canPreview}
         >
           {loading ? (
@@ -183,7 +202,7 @@ export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewP
                 <p className="text-sm text-slate-600 dark:text-slate-300">
                   Configuration changed
                 </p>
-                <Button size="sm" onClick={() => void runPreview()}>
+                <Button size="sm" onClick={() => runPreview()}>
                   <RefreshCw className="h-4 w-4" />
                   Refresh preview
                 </Button>

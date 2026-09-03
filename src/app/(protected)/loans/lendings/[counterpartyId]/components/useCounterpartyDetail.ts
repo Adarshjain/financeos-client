@@ -1,17 +1,13 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import {
-  createLendingAction,
-  deleteCounterpartyAction,
-  deleteLendingAction,
-  fetchLendingsAction,
-  updateCounterpartyAction,
-  updateLendingAction,
-} from '@/actions/lendings';
+import { api } from '@/lib/api/client';
+import type { Page } from '@/lib/pagination';
+import { keys } from '@/lib/query/keys';
 import {
   CounterpartyResponse,
   LendingDirection,
@@ -19,26 +15,66 @@ import {
 } from '@/lib/types';
 
 import { LendingEntryWithBalance } from './CounterpartyLedgerTable';
+import { useCounterpartyMutations } from './useCounterpartyMutations';
+
+const COUNTERPARTIES_PAGE_SIZE = 100;
+const LENDINGS_PAGE_SIZE = 200;
+const EMPTY_LENDINGS: LendingResponse[] = [];
 
 interface UseCounterpartyDetailProps {
-  initialCounterparty: CounterpartyResponse;
-  initialLendings: LendingResponse[];
+  counterpartyId: string;
 }
 
 export function useCounterpartyDetail({
-  initialCounterparty,
-  initialLendings,
+  counterpartyId,
 }: UseCounterpartyDetailProps) {
   const router = useRouter();
 
-  const [cp, setCp] = useState<CounterpartyResponse>(initialCounterparty);
-  const [lendings, setLendings] = useState<LendingResponse[]>(initialLendings);
+  const { data: counterpartiesPage } = useQuery({
+    queryKey: keys.lendings.counterparties({
+      page: 0,
+      size: COUNTERPARTIES_PAGE_SIZE,
+    }),
+    queryFn: async () =>
+      (
+        await api.GET('/api/v1/counterparties', {
+          params: {
+            query: { page: 0, size: COUNTERPARTIES_PAGE_SIZE, sort: [] },
+          },
+        })
+      ).data! as Page<CounterpartyResponse>,
+  });
+  const cp = counterpartiesPage?.content.find((c) => c.id === counterpartyId);
+
+  const { data: lendingsPage } = useQuery({
+    queryKey: keys.lendings.list({
+      counterpartyId,
+      page: 0,
+      size: LENDINGS_PAGE_SIZE,
+    }),
+    queryFn: async () =>
+      (
+        await api.GET('/api/v1/lendings', {
+          params: {
+            query: {
+              counterpartyId,
+              page: 0,
+              size: LENDINGS_PAGE_SIZE,
+              sort: [],
+            },
+          },
+        })
+      ).data! as Page<LendingResponse>,
+    enabled: Boolean(counterpartyId),
+  });
+  const lendings = lendingsPage?.content ?? EMPTY_LENDINGS;
+
+  const mutations = useCounterpartyMutations(counterpartyId);
 
   // Edit Counterparty Details State
   const [editCpOpen, setEditCpOpen] = useState(false);
-  const [cpName, setCpName] = useState(cp.name);
-  const [cpNotes, setCpNotes] = useState(cp.notes ?? '');
-  const [submittingCp, setSubmittingCp] = useState(false);
+  const [cpName, setCpName] = useState(cp?.name ?? '');
+  const [cpNotes, setCpNotes] = useState(cp?.notes ?? '');
 
   // Add Entry State
   const [addEntryOpen, setAddEntryOpen] = useState(false);
@@ -49,38 +85,15 @@ export function useCounterpartyDetail({
   );
   const [addExpDate, setAddExpDate] = useState('');
   const [addNotes, setAddNotes] = useState('');
-  const [submittingAddEntry, setSubmittingAddEntry] = useState(false);
 
   // Edit Entry State
   const [editLendingOpen, setEditLendingOpen] = useState(false);
-  const [editingLending, setEditingLending] = useState<LendingResponse | null>(null);
+  const [editingLendingId, setEditingLendingId] = useState<string | null>(null);
   const [lendingDir, setLendingDir] = useState<LendingDirection>('lent');
   const [lendingAmount, setLendingAmount] = useState('');
   const [lendingDate, setLendingDate] = useState('');
   const [lendingExpDate, setLendingExpDate] = useState('');
   const [lendingNotes, setLendingNotes] = useState('');
-  const [submittingEditLending, setSubmittingEditLending] = useState(false);
-
-  const refreshData = async () => {
-    const res = await fetchLendingsAction(cp.id, 0, 200);
-    if (res.success) {
-      setLendings(res.data.content);
-      let lent = 0;
-      let borrowed = 0;
-
-      for (const l of res.data.content) {
-        if (l.direction === 'lent') lent += l.amount;
-        else if (l.direction === 'borrowed') borrowed += l.amount;
-      }
-      setCp((prev) => ({
-        ...prev,
-        totalLent: lent,
-        totalBorrowed: borrowed,
-        netPosition: lent - borrowed,
-        entryCount: res.data.content.length,
-      }));
-    }
-  };
 
   // Sort entries ASCENDING by date for running balance calculation
   const sortedEntries = useMemo(() => {
@@ -89,18 +102,16 @@ export function useCounterpartyDetail({
 
   // Compute running cumulative balance for each entry down the table
   const entriesWithRunningBalance: LendingEntryWithBalance[] = useMemo(() => {
-    let runningNet = 0;
-    return sortedEntries.map((entry) => {
-      if (entry.direction === 'lent') {
-        runningNet += entry.amount;
-      } else {
-        runningNet -= entry.amount;
-      }
-      return {
-        ...entry,
-        runningBalance: runningNet,
-      };
-    });
+    return sortedEntries.reduce<LendingEntryWithBalance[]>((acc, entry) => {
+      const prevBalance =
+        acc.length > 0 ? acc[acc.length - 1].runningBalance : 0;
+      const runningBalance =
+        entry.direction === 'lent'
+          ? prevBalance + entry.amount
+          : prevBalance - entry.amount;
+      acc.push({ ...entry, runningBalance });
+      return acc;
+    }, []);
   }, [sortedEntries]);
 
   const handleUpdateCp = async (e: React.FormEvent) => {
@@ -109,31 +120,25 @@ export function useCounterpartyDetail({
       toast.error('Name is required');
       return;
     }
-    setSubmittingCp(true);
     try {
-      const res = await updateCounterpartyAction(cp.id, {
+      await mutations.updateCp.mutateAsync({
         name: cpName.trim(),
         notes: cpNotes.trim() || undefined,
       });
-      if (res.success) {
-        toast.success('Person details updated');
-        setCp(res.data);
-        setEditCpOpen(false);
-      } else {
-        toast.error(res.error.message);
-      }
-    } finally {
-      setSubmittingCp(false);
+      toast.success('Person details updated');
+      setEditCpOpen(false);
+    } catch {
+      // onError already surfaced the toast.
     }
   };
 
   const handleDeleteCp = async () => {
-    const res = await deleteCounterpartyAction(cp.id);
-    if (res.success) {
+    try {
+      await mutations.deleteCp.mutateAsync();
       toast.success('Person deleted');
       router.push('/loans/lendings');
-    } else {
-      toast.error(res.error.message);
+    } catch {
+      // onError already surfaced the toast; ConfirmationDialog still closes.
     }
   };
 
@@ -143,43 +148,36 @@ export function useCounterpartyDetail({
       toast.error('Amount must be greater than zero');
       return;
     }
-    setSubmittingAddEntry(true);
     try {
-      const res = await createLendingAction({
-        counterpartyId: cp.id,
+      await mutations.createLending.mutateAsync({
+        counterpartyId,
         direction: addDir,
         amount: Number(addAmount),
         entryDate: addEntryDate,
         expectedReturnDate: addExpDate || undefined,
         notes: addNotes.trim() || undefined,
       });
-      if (res.success) {
-        toast.success('Entry added');
-        setAddEntryOpen(false);
-        setAddAmount('');
-        setAddNotes('');
-        setAddExpDate('');
-        await refreshData();
-      } else {
-        toast.error(res.error.message);
-      }
-    } finally {
-      setSubmittingAddEntry(false);
+      toast.success('Entry added');
+      setAddEntryOpen(false);
+      setAddAmount('');
+      setAddNotes('');
+      setAddExpDate('');
+    } catch {
+      // onError already surfaced the toast.
     }
   };
 
   const handleDeleteLending = async (lendingId: string) => {
-    const res = await deleteLendingAction(lendingId, cp.id);
-    if (res.success) {
+    try {
+      await mutations.deleteLending.mutateAsync(lendingId);
       toast.success('Entry deleted');
-      await refreshData();
-    } else {
-      toast.error(res.error.message);
+    } catch {
+      // onError already surfaced the toast.
     }
   };
 
   const handleOpenEditLending = (lending: LendingResponse) => {
-    setEditingLending(lending);
+    setEditingLendingId(lending.id);
     setLendingDir(lending.direction);
     setLendingAmount(String(lending.amount));
     setLendingDate(lending.entryDate);
@@ -190,29 +188,22 @@ export function useCounterpartyDetail({
 
   const handleUpdateLending = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editingLending) return;
-    setSubmittingEditLending(true);
+    if (!editingLendingId) return;
     try {
-      const res = await updateLendingAction(
-        editingLending.id,
-        {
+      await mutations.updateLending.mutateAsync({
+        id: editingLendingId,
+        body: {
           direction: lendingDir,
           amount: lendingAmount ? Number(lendingAmount) : undefined,
           entryDate: lendingDate || undefined,
           expectedReturnDate: lendingExpDate || undefined,
           notes: lendingNotes.trim() || undefined,
         },
-        cp.id
-      );
-      if (res.success) {
-        toast.success('Entry updated');
-        setEditLendingOpen(false);
-        await refreshData();
-      } else {
-        toast.error(res.error.message);
-      }
-    } finally {
-      setSubmittingEditLending(false);
+      });
+      toast.success('Entry updated');
+      setEditLendingOpen(false);
+    } catch {
+      // onError already surfaced the toast.
     }
   };
 
@@ -225,7 +216,7 @@ export function useCounterpartyDetail({
     setCpName,
     cpNotes,
     setCpNotes,
-    submittingCp,
+    submittingCp: mutations.updateCp.isPending,
     addEntryOpen,
     setAddEntryOpen,
     addDir,
@@ -238,7 +229,7 @@ export function useCounterpartyDetail({
     setAddExpDate,
     addNotes,
     setAddNotes,
-    submittingAddEntry,
+    submittingAddEntry: mutations.createLending.isPending,
     editLendingOpen,
     setEditLendingOpen,
     lendingDir,
@@ -251,7 +242,7 @@ export function useCounterpartyDetail({
     setLendingExpDate,
     lendingNotes,
     setLendingNotes,
-    submittingEditLending,
+    submittingEditLending: mutations.updateLending.isPending,
     handleUpdateCp,
     handleDeleteCp,
     handleAddEntry,
@@ -260,3 +251,5 @@ export function useCounterpartyDetail({
     handleUpdateLending,
   };
 }
+
+export { COUNTERPARTIES_PAGE_SIZE, LENDINGS_PAGE_SIZE };

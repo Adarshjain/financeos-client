@@ -1,52 +1,47 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { FolderTree, Plus, Search, Tag } from 'lucide-react';
-import { useState } from 'react';
+import { type FormEvent, useState } from 'react';
 import { toast } from 'sonner';
 
-import { createCategory } from '@/actions/categories';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Category } from '@/lib/categories.types';
+import { api, ApiError } from '@/lib/api/client';
+import { useCategories } from '@/lib/query/hooks/useCategories';
+import { keys } from '@/lib/query/keys';
 
-interface CategoryManagerProps {
-  initialCategories: Category[];
-}
-
-export function CategoryManager({ initialCategories }: CategoryManagerProps) {
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+export function CategoryManager() {
+  const queryClient = useQueryClient();
+  const { data: categories = [] } = useCategories();
   const [search, setSearch] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const filteredCategories = categories.filter((cat) =>
     cat.name.toLowerCase().includes(search.toLowerCase()),
   );
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const createCategoryMutation = useMutation({
+    mutationFn: (name: string) => api.POST('/api/v1/categories', { body: { name } }).then((r) => r.data!),
+    onSuccess: (category) => {
+      toast.success(`Category "${category.name}" created!`);
+      setNewCategoryName('');
+      setIsCreateOpen(false);
+      queryClient.invalidateQueries({ queryKey: keys.categories.all });
+    },
+    onError: (error) => {
+      toast.error(error instanceof ApiError ? error.response.message : 'Failed to create category');
+    },
+  });
+
+  const handleCreate = (e: FormEvent) => {
     e.preventDefault();
     if (!newCategoryName.trim()) return;
-
-    setIsSubmitting(true);
-    try {
-      const res = await createCategory(newCategoryName.trim());
-      if (res.success) {
-        setCategories((prev) => [...prev, res.data]);
-        toast.success(`Category "${res.data.name}" created!`);
-        setNewCategoryName('');
-        setIsCreateOpen(false);
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch {
-      toast.error('Failed to create category');
-    } finally {
-      setIsSubmitting(false);
-    }
+    createCategoryMutation.mutate(newCategoryName.trim());
   };
 
   return (
@@ -125,7 +120,7 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   placeholder="e.g., Subscriptions"
-                  disabled={isSubmitting}
+                  disabled={createCategoryMutation.isPending}
                   autoFocus
                 />
               </div>
@@ -133,15 +128,15 @@ export function CategoryManager({ initialCategories }: CategoryManagerProps) {
           </DialogBody>
           <DialogFooter
             primaryAction={{
-              label: isSubmitting ? 'Creating...' : 'Create Category',
+              label: createCategoryMutation.isPending ? 'Creating...' : 'Create Category',
               type: 'submit',
               form: 'create-category-form',
-              disabled: isSubmitting || !newCategoryName.trim(),
+              disabled: createCategoryMutation.isPending || !newCategoryName.trim(),
             }}
             secondaryAction={{
               label: 'Cancel',
               onClick: () => setIsCreateOpen(false),
-              disabled: isSubmitting,
+              disabled: createCategoryMutation.isPending,
             }}
           />
         </DialogContent>

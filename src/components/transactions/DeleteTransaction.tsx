@@ -1,12 +1,13 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react';
-import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { deleteTransaction } from '@/actions/transactions';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Button } from '@/components/ui/button';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
 import { Transaction } from '@/lib/transaction.types';
 
 interface DeleteTransactionProps {
@@ -15,23 +16,28 @@ interface DeleteTransactionProps {
 }
 
 export const DeleteTransaction = ({ transaction, onSuccess }: DeleteTransactionProps) => {
-  const [isDeleting, setIsDeleting] = useState(false);
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: () => api.DELETE('/api/v1/transactions/{id}', { params: { path: { id: transaction.id } } }),
+    onSuccess: () => {
+      toast.success('Transaction deleted!');
+      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: keys.accounts.all });
+      onSuccess?.();
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof ApiError ? error.response.message : (error as Error).message);
+    },
+  });
+
+  const isDeleting = deleteMutation.isPending;
 
   const handleDelete = async () => {
-    setIsDeleting(true);
-
     try {
-      const res = await deleteTransaction(transaction.id);
-      if (res.success) {
-        toast.success('Transaction deleted!');
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch (error) {
-      toast.error((error as Error).message);
-    } finally {
-      setIsDeleting(false);
+      await deleteMutation.mutateAsync();
+    } catch {
+      // Error toast already shown by the mutation's onError handler.
     }
   };
 

@@ -38,7 +38,9 @@ export function LoanEventsAndCharges({
         </div>
         <div className="p-4 space-y-2 text-xs">
           {events.length === 0 ? (
-            <p className="text-slate-400 italic">No lifecycle events recorded.</p>
+            <p className="text-slate-400 italic">
+              No lifecycle events recorded.
+            </p>
           ) : (
             events.map((evt) => (
               <div

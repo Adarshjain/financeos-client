@@ -1,12 +1,17 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import {
-  acceptDividendSuggestions,
-  scanDividendSuggestions,
-} from '@/actions/investments';
+import { api, ApiError } from '@/lib/api/client';
+import type { Schemas } from '@/lib/api/types';
+import { keys } from '@/lib/query/keys';
+import type {
+  AcceptSuggestionsRequest,
+  AcceptSuggestionsResponse,
+  DividendSuggestionsResponse,
+} from '@/lib/types';
 
 import { EditableSuggestionItem } from './DividendSuggestionList';
 
@@ -18,8 +23,30 @@ export function useDividendSuggestionsDialog({
   onSuccess,
 }: UseDividendSuggestionsDialogProps) {
   const [open, setOpen] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const qc = useQueryClient();
+  const scanMutation = useMutation({
+    mutationFn: () =>
+      api
+        .GET('/api/v1/investments/dividends/suggestions', {
+          params: { query: {} },
+        })
+        .then((r) => r.data! as DividendSuggestionsResponse),
+  });
+  const acceptMutation = useMutation({
+    mutationFn: (body: AcceptSuggestionsRequest) =>
+      api
+        .POST('/api/v1/investments/dividends/suggestions/accept', {
+          // The generated schema marks every `Item` field (incl. notes/perUnit) as
+          // required, though both are genuinely optional in practice — this form
+          // always supplies notes, and perUnit is only sometimes known. See "Spec
+          // follow-ups" in the migration report.
+          body: body as Schemas['AcceptSuggestionsRequest'],
+        })
+        .then((r) => r.data! as AcceptSuggestionsResponse),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const isScanning = scanMutation.isPending;
+  const isSubmitting = acceptMutation.isPending;
 
   const [items, setItems] = useState<EditableSuggestionItem[]>([]);
   const [scannedSymbols, setScannedSymbols] = useState(0);
@@ -27,28 +54,25 @@ export function useDividendSuggestionsDialog({
   const [hasScanned, setHasScanned] = useState(false);
 
   const runScan = async () => {
-    setIsScanning(true);
     try {
-      const res = await scanDividendSuggestions();
-      if (res.success) {
-        setScannedSymbols(res.data.scannedSymbols);
-        setSkippedSymbols(res.data.skippedSymbols || []);
-        setItems(
-          (res.data.suggestions || []).map((s) => ({
-            suggestion: s,
-            selected: true,
-            amount: s.estimatedAmount,
-            payDate: s.exDate,
-          }))
-        );
-        setHasScanned(true);
-      } else {
-        toast.error(res.error.message);
-      }
+      const data = await scanMutation.mutateAsync();
+      setScannedSymbols(data.scannedSymbols);
+      setSkippedSymbols(data.skippedSymbols || []);
+      setItems(
+        (data.suggestions || []).map((s) => ({
+          suggestion: s,
+          selected: true,
+          amount: s.estimatedAmount,
+          payDate: s.exDate,
+        }))
+      );
+      setHasScanned(true);
     } catch (err) {
-      toast.error('Failed to scan dividends: ' + (err as Error).message);
-    } finally {
-      setIsScanning(false);
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to scan dividends'
+      );
     }
   };
 
@@ -68,9 +92,7 @@ export function useDividendSuggestionsDialog({
   };
 
   const handleToggleAll = (checked: boolean) => {
-    setItems((prev) =>
-      prev.map((item) => ({ ...item, selected: checked }))
-    );
+    setItems((prev) => prev.map((item) => ({ ...item, selected: checked })));
   };
 
   const handleItemChange = (
@@ -79,9 +101,7 @@ export function useDividendSuggestionsDialog({
     value: string
   ) => {
     setItems((prev) =>
-      prev.map((item, i) =>
-        i === index ? { ...item, [field]: value } : item
-      )
+      prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
     );
   };
 
@@ -92,9 +112,8 @@ export function useDividendSuggestionsDialog({
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      const payload = {
+      const payload: AcceptSuggestionsRequest = {
         items: selectedItems.map((item) => ({
           holdingId: item.suggestion.holdingId,
           exDate: item.suggestion.exDate,
@@ -107,23 +126,21 @@ export function useDividendSuggestionsDialog({
         })),
       };
 
-      const res = await acceptDividendSuggestions(payload);
-      if (res.success) {
-        const createdCount = res.data.created.length;
-        const skipped = res.data.skippedCount;
-        toast.success(
-          `Recorded ${createdCount} dividend(s)` +
-            (skipped > 0 ? ` (${skipped} skipped as duplicate)` : '')
-        );
-        setOpen(false);
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message);
-      }
+      const data = await acceptMutation.mutateAsync(payload);
+      const createdCount = data.created.length;
+      const skipped = data.skippedCount;
+      toast.success(
+        `Recorded ${createdCount} dividend(s)` +
+          (skipped > 0 ? ` (${skipped} skipped as duplicate)` : '')
+      );
+      setOpen(false);
+      onSuccess?.();
     } catch (err) {
-      toast.error('Failed to record dividends: ' + (err as Error).message);
-    } finally {
-      setIsSubmitting(false);
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to record dividends'
+      );
     }
   };
 

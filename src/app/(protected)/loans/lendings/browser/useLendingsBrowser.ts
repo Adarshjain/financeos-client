@@ -1,25 +1,50 @@
 'use client';
 
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
+import { api, ApiError } from '@/lib/api/client';
+import type { Page } from '@/lib/pagination';
+import { keys } from '@/lib/query/keys';
 import {
-  createLendingAction,
-  deleteCounterpartyAction,
-  fetchCounterpartiesAction,
-} from '@/actions/lendings';
-import { Page } from '@/lib/pagination';
-import { CounterpartyResponse, LendingDirection } from '@/lib/types';
+  CounterpartyResponse,
+  CreateLendingRequest,
+  LendingDirection,
+} from '@/lib/types';
+
+const PAGE_SIZE = 50;
+
+const EMPTY_PAGE: Page<CounterpartyResponse> = {
+  content: [],
+  number: 0,
+  size: PAGE_SIZE,
+  totalElements: 0,
+  totalPages: 0,
+  first: true,
+  last: true,
+  empty: true,
+};
+
+function errorMessage(e: unknown, fallback: string): string {
+  return e instanceof ApiError ? e.response.message : fallback;
+}
 
 interface UseLendingsBrowserProps {
-  initialCounterparties: Page<CounterpartyResponse>;
+  initialPage?: number;
 }
 
 export function useLendingsBrowser({
-  initialCounterparties,
-}: UseLendingsBrowserProps) {
-  const [counterpartiesPage, setCounterpartiesPage] =
-    useState<Page<CounterpartyResponse>>(initialCounterparties);
+  initialPage = 0,
+}: UseLendingsBrowserProps = {}) {
+  const qc = useQueryClient();
+
+  const [page, setPage] = useState(initialPage);
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
 
@@ -34,31 +59,49 @@ export function useLendingsBrowser({
   const [expectedReturnDate, setExpectedReturnDate] = useState('');
   const [notes, setNotes] = useState('');
   const [txId, setTxId] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handlePageChange = async (newPage: number) => {
-    const res = await fetchCounterpartiesAction(
-      newPage,
-      counterpartiesPage.size
-    );
-    if (res.success) {
-      setCounterpartiesPage(res.data);
-    } else {
-      toast.error(res.error.message);
-    }
-  };
+  const { data } = useQuery({
+    queryKey: keys.lendings.counterparties({ page, size: PAGE_SIZE }),
+    queryFn: async () =>
+      (
+        await api.GET('/api/v1/counterparties', {
+          params: { query: { page, size: PAGE_SIZE, sort: [] } },
+        })
+      ).data! as Page<CounterpartyResponse>,
+    placeholderData: keepPreviousData,
+  });
+
+  const counterpartiesPage = data ?? EMPTY_PAGE;
+
+  const invalidateLendings = () =>
+    qc.invalidateQueries({ queryKey: keys.lendings.all });
+
+  const deleteCpMutation = useMutation({
+    mutationFn: (id: string) =>
+      api.DELETE('/api/v1/counterparties/{id}', { params: { path: { id } } }),
+    onSuccess: invalidateLendings,
+    onError: (e) =>
+      toast.error(errorMessage(e, 'Failed to delete counterparty')),
+  });
+
+  const createLendingMutation = useMutation({
+    mutationFn: (body: CreateLendingRequest) =>
+      api.POST('/api/v1/lendings', { body }).then((r) => r.data!),
+    onSuccess: () => {
+      invalidateLendings();
+      qc.invalidateQueries({ queryKey: keys.transactions.all });
+    },
+    onError: (e) => toast.error(errorMessage(e, 'Failed to create lending')),
+  });
+
+  const handlePageChange = (newPage: number) => setPage(newPage);
 
   const handleDeleteCp = async (cp: CounterpartyResponse) => {
-    const res = await deleteCounterpartyAction(cp.id);
-    if (res.success) {
+    try {
+      await deleteCpMutation.mutateAsync(cp.id);
       toast.success(`Deleted ${cp.name}`);
-      const cpRes = await fetchCounterpartiesAction(
-        counterpartiesPage.number,
-        counterpartiesPage.size
-      );
-      if (cpRes.success) setCounterpartiesPage(cpRes.data);
-    } else {
-      toast.error(res.error.message);
+    } catch {
+      // onError already surfaced the toast.
     }
   };
 
@@ -73,9 +116,8 @@ export function useLendingsBrowser({
       return;
     }
 
-    setLoading(true);
     try {
-      const res = await createLendingAction({
+      await createLendingMutation.mutateAsync({
         counterpartyId: selectedCpId !== 'new' ? selectedCpId : undefined,
         newCounterpartyName:
           selectedCpId === 'new' ? newCpName.trim() : undefined,
@@ -86,20 +128,11 @@ export function useLendingsBrowser({
         transactionId: txId.trim() || undefined,
         notes: notes.trim() || undefined,
       });
-
-      if (res.success) {
-        toast.success('Lending recorded successfully');
-        setCreateOpen(false);
-        const cpRes = await fetchCounterpartiesAction(
-          0,
-          counterpartiesPage.size
-        );
-        if (cpRes.success) setCounterpartiesPage(cpRes.data);
-      } else {
-        toast.error(res.error.message);
-      }
-    } finally {
-      setLoading(false);
+      toast.success('Lending recorded successfully');
+      setCreateOpen(false);
+      setPage(0);
+    } catch {
+      // onError already surfaced the toast.
     }
   };
 
@@ -135,7 +168,7 @@ export function useLendingsBrowser({
     setNotes,
     txId,
     setTxId,
-    loading,
+    loading: createLendingMutation.isPending,
     filteredContent,
     handlePageChange,
     handleDeleteCp,

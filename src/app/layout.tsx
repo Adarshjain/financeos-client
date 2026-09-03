@@ -6,6 +6,7 @@ import { Inter } from 'next/font/google';
 import { Toaster } from 'sonner';
 
 import { FaroRouteTracker } from '@/components/FaroRouteTracker';
+import { QueryProvider } from '@/components/QueryProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
 const inter = Inter({
@@ -67,13 +68,15 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {/* Registering in dev would have the worker serve stale precached
-              assets across HMR reloads. */}
-          <SerwistProvider swUrl="/serwist/sw.js" disable={isDev}>
-            {children}
-          </SerwistProvider>
-          <FaroRouteTracker />
-          <Toaster richColors position="top-center" />
+          <QueryProvider>
+            {/* Registering in dev would have the worker serve stale precached
+                assets across HMR reloads. */}
+            <SerwistProvider swUrl="/serwist/sw.js" disable={isDev}>
+              {children}
+            </SerwistProvider>
+            <FaroRouteTracker />
+            <Toaster richColors position="top-center" />
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -49,12 +49,12 @@ export function capSummary(rule: RewardRule): string | null {
 
 export function matchSummary(rule: RewardRule): string {
   const parts: string[] = [];
-  if (rule.categories.length)
+  if (rule.categories && rule.categories.length)
     parts.push(rule.categories.map((c) => c.name).join(', '));
-  if (rule.mccs.length) parts.push(`MCC ${rule.mccs.join('/')}`);
+  if (rule.mccs && rule.mccs.length) parts.push(`MCC ${rule.mccs.join('/')}`);
   if (rule.merchantPattern) parts.push(`"${rule.merchantPattern}"`);
-  if (rule.channels.length) parts.push(rule.channels.join('/').toLowerCase());
-  if (rule.daysOfWeek.length)
+  if (rule.channels && rule.channels.length) parts.push(rule.channels.join('/').toLowerCase());
+  if (rule.daysOfWeek && rule.daysOfWeek.length)
     parts.push(rule.daysOfWeek.map((d) => d.slice(0, 3).toLowerCase()).join('/'));
   if (rule.minAmount != null || rule.maxAmount != null) {
     parts.push(`₹${rule.minAmount ?? 0}–${rule.maxAmount ?? '∞'}`);

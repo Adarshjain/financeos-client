@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/select';
 import type { Account } from '@/lib/account.types';
 import type { Category } from '@/lib/categories.types';
-import type { RewardCapBucket, RewardRule, RewardType } from '@/lib/rewards.types';
 import { AccountType } from '@/lib/types';
 import { toCalendarDate } from '@/lib/utils';
 
@@ -28,22 +27,12 @@ interface RewardRulesManagerProps {
   accounts: Account[];
   categories: Category[];
   initialAccountId: string;
-  initialRules: RewardRule[];
-  initialCapBuckets: RewardCapBucket[];
-  initialAnniversaryDate: string | null;
-  initialDefaultRewardType: RewardType;
-  initialPointValueInr?: number | null;
 }
 
 export default function RewardRulesManager({
   accounts,
   categories,
   initialAccountId,
-  initialRules,
-  initialCapBuckets,
-  initialAnniversaryDate,
-  initialDefaultRewardType,
-  initialPointValueInr,
 }: RewardRulesManagerProps) {
   const orderedAccounts = accounts;
   const {
@@ -56,29 +45,19 @@ export default function RewardRulesManager({
     pointValueInr,
     setPointValueInr,
     loading,
-    setLoading,
     isCreateOpen,
     setIsCreateOpen,
     editingRule,
     setEditingRule,
     cloneSource,
     setCloneSource,
-    refresh,
-    refreshBuckets,
     saveDefaultRewardType,
     savePointValueInr,
     move,
     remove,
     endDateAndClone,
     closeForm,
-  } = useRewardRulesManager({
-    initialAccountId,
-    initialRules,
-    initialCapBuckets,
-    initialAnniversaryDate,
-    initialDefaultRewardType,
-    initialPointValueInr,
-  });
+  } = useRewardRulesManager({ initialAccountId });
 
   const today = toCalendarDate(new Date());
   const selectedAccount = accounts.find((a) => a.id === accountId);
@@ -94,10 +73,7 @@ export default function RewardRulesManager({
       <div className="flex items-center gap-1 w-full flex-wrap">
         <Select
           value={accountId}
-          onValueChange={(v) => {
-            setLoading(true);
-            setAccountId(v);
-          }}
+          onValueChange={(v) => setAccountId(v)}
         >
           <SelectTrigger className="bg-slate-50 dark:bg-slate-950 text-xs h-8 border-slate-200 dark:border-slate-800 rounded-lg font-semibold w-56">
             <SelectValue placeholder="Select account" />
@@ -170,11 +146,7 @@ export default function RewardRulesManager({
       )}
 
       {/* Shared cap buckets + milestones for the same account */}
-      <RewardCapBucketsManager
-        accountId={accountId}
-        buckets={capBuckets}
-        onChanged={() => void refreshBuckets()}
-      />
+      <RewardCapBucketsManager accountId={accountId} />
       <RewardMilestonesManager
         accountId={accountId}
         cards={cardholders}
@@ -199,10 +171,7 @@ export default function RewardRulesManager({
           isBank={isBank}
           open
           onClose={closeForm}
-          onSaved={() => {
-            closeForm();
-            void refresh(accountId);
-          }}
+          onSaved={closeForm}
         />
       )}
     </div>

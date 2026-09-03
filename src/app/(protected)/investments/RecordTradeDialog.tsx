@@ -1,7 +1,6 @@
 'use client';
 
 import { Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -35,7 +34,6 @@ export function RecordTradeDialog({
   onSuccess,
 }: RecordTradeDialogProps) {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -50,7 +48,9 @@ export function RecordTradeDialog({
       <DialogContent className="w-full max-w-full sm:max-w-xl">
         <DialogHeader className="sr-only">
           <DialogTitle>Record Trade</DialogTitle>
-          <DialogDescription>Record a new Buy or Sell trade transaction</DialogDescription>
+          <DialogDescription>
+            Record a new Buy or Sell trade transaction
+          </DialogDescription>
         </DialogHeader>
         <DialogBody className="p-0">
           <CreateInvestmentForm
@@ -59,7 +59,6 @@ export function RecordTradeDialog({
             initialInstrument={initialInstrument}
             onSuccess={() => {
               setOpen(false);
-              router.refresh();
               onSuccess?.();
             }}
           />

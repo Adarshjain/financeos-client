@@ -167,7 +167,7 @@ export function TransactionMetadataGrid({
           </span>
           <div className="flex flex-wrap gap-1 justify-end">
             <ReviewReasonBadges
-              reviewType={transaction.reviewType}
+              reviewType={transaction.reviewType ?? undefined}
               reviewReasons={transaction.reviewReasons}
             />
           </div>

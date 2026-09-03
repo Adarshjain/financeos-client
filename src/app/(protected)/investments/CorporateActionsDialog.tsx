@@ -14,11 +14,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { CorporateAction, CorporateActionType } from '@/lib/types';
+import { CorporateAction } from '@/lib/api/types';
 
 import { CorporateActionFormFields } from './corporate-actions/CorporateActionFormFields';
 import { RecordedActionsList } from './corporate-actions/RecordedActionsList';
-import { useCorporateActionsDialog } from './corporate-actions/useCorporateActionsDialog';
+import {
+  CorporateActionKind,
+  useCorporateActionsDialog,
+} from './corporate-actions/useCorporateActionsDialog';
 
 interface CorporateActionsDialogProps {
   instrument?: {
@@ -29,7 +32,7 @@ interface CorporateActionsDialogProps {
   heldQuantity?: number;
   trigger?: React.ReactNode;
   onSuccess?: () => void;
-  initialType?: CorporateActionType;
+  initialType?: CorporateActionKind;
   editAction?: CorporateAction;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -210,8 +213,8 @@ export function CorporateActionsDialog({
             label: isSubmitting
               ? 'Saving Action...'
               : editingActionId
-              ? 'Update Corporate Action'
-              : 'Save Corporate Action',
+                ? 'Update Corporate Action'
+                : 'Save Corporate Action',
             type: 'submit',
             form: 'corporate-action-form',
             variant: 'purple',

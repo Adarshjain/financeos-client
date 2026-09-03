@@ -4,7 +4,6 @@ import { Loader2 } from 'lucide-react';
 import { Fragment } from 'react';
 
 import { Account } from '@/lib/account.types';
-import { Category } from '@/lib/categories.types';
 import { PagedTransaction } from '@/lib/transaction.types';
 import { formatDate } from '@/lib/utils';
 
@@ -14,7 +13,6 @@ interface TransactionListFeedProps {
   loading: boolean;
   pagedData: PagedTransaction | null;
   hasFiltersOrSearch: boolean;
-  categories: Category[];
   accounts: Account[];
   isSelectionMode: boolean;
   selectedTxnIds: Set<string>;
@@ -26,7 +24,6 @@ export function TransactionListFeed({
   loading,
   pagedData,
   hasFiltersOrSearch,
-  categories,
   accounts,
   isSelectionMode,
   selectedTxnIds,
@@ -70,7 +67,6 @@ export function TransactionListFeed({
               </div>
             )}
             <TransactionCard
-              categories={categories}
               accounts={accounts}
               transaction={transaction}
               onMutate={onReload}

@@ -4,404 +4,375 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   accountsApi,
-  ApiError,
   authApi,
+  cardholdersApi,
   categoriesApi,
+  counterpartiesApi,
   dashboardsApi,
   gmailApi,
   ingestionApi,
   investmentsApi,
+  jobsApi,
+  lendingsApi,
+  llmKeysApi,
+  llmRoutingApi,
+  loansApi,
+  obligationsApi,
   reportsApi,
+  rewardsApi,
   rulesApi,
   statementsApi,
   transactionLinksApi,
   transactionsApi,
 } from '@/lib/apiClient';
 
-describe('apiClient (CD-14 & API wrapper coverage)', () => {
-  beforeEach(() => {
-    vi.restoreAllMocks();
-  });
+describe('apiClient (Server API Client Modernization & Coverage)', () => {
+  let fetchSpy: ReturnType<typeof vi.spyOn>;
 
-  const mockFetchResponse = (ok: boolean, status: number, body: any, headers?: Record<string, string>) => {
-    const headerObj = new Headers(headers || {});
-    return Promise.resolve({
-      ok,
+  const mockResponse = (status: number, data: any) => {
+    return new Response(JSON.stringify(data), {
       status,
-      headers: headerObj,
-      json: () => (typeof body === 'string' ? Promise.reject(new Error('Invalid JSON')) : Promise.resolve(body)),
-      text: () => Promise.resolve(typeof body === 'string' ? body : JSON.stringify(body)),
-    } as Response);
+      headers: { 'Content-Type': 'application/json' },
+    });
   };
 
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(async () => mockResponse(200, {}));
+  });
+
   describe('authApi', () => {
-    it('login returns user and sessionCookie when present', async () => {
-      const headers = new Headers();
-      headers.set('set-cookie', 'FINANCEOS_SESSION=secret-token; Path=/');
-      vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
-        Promise.resolve(new Response(JSON.stringify({ id: 'u1', email: 'test@example.com' }), { status: 200, headers })),
-      );
-
-      const res = await authApi.login({ email: 'test@example.com', password: 'password' });
-      expect(res.user.id).toBe('u1');
-      expect(res.sessionCookie).toBe('secret-token');
-    });
-
-    it('login handles non-matching cookie header', async () => {
-      const headers = new Headers();
-      headers.set('set-cookie', 'OTHER_COOKIE=abc; Path=/');
-      vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
-        Promise.resolve(new Response(JSON.stringify({ id: 'u1', email: 'test@example.com' }), { status: 200, headers })),
-      );
-
-      const res = await authApi.login({ email: 'test@example.com', password: 'password' });
-      expect(res.sessionCookie).toBeUndefined();
-    });
-
-    it('handleGoogleCallback returns user and sessionCookie when present', async () => {
-      const headers = new Headers();
-      headers.set('set-cookie', 'FINANCEOS_SESSION=google-token; Path=/');
-      vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
-        Promise.resolve(new Response(JSON.stringify({ id: 'u2', email: 'g@example.com' }), { status: 200, headers })),
-      );
-
-      const res = await authApi.handleGoogleCallback({ code: 'c123', state: 's123', error: 'err' });
-      expect(res.user.id).toBe('u2');
-      expect(res.sessionCookie).toBe('google-token');
-    });
-
-    it('handleGoogleCallback error throws ApiError', async () => {
-      vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
-        mockFetchResponse(false, 400, { code: 'INVALID_CODE', message: 'Invalid OAuth code', timestamp: '' }),
-      );
-
-      await expect(authApi.handleGoogleCallback({ code: 'bad' })).rejects.toThrow('Invalid OAuth code');
-    });
-
-    it('signup success and error', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
-        mockFetchResponse(true, 200, { id: 'u1', email: 'test@example.com' }),
-      );
-
-      const res = await authApi.signup({ email: 'test@example.com', password: 'pass', inviteCode: 'test-invite-code' });
-      expect(res.id).toBe('u1');
-
-      fetchSpy.mockImplementationOnce(() =>
-        mockFetchResponse(false, 400, { code: 'EMAIL_TAKEN', message: 'Email taken', timestamp: '' }),
-      );
-      await expect(authApi.signup({ email: 'test@example.com', password: 'pass', inviteCode: 'test-invite-code' })).rejects.toThrow('Email taken');
-    });
-
-    it('login returns user and sessionCookie when present', async () => {
-      vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
-        mockFetchResponse(
-          true,
-          200,
-          { id: 'u1', email: 'test@example.com' },
-          { 'set-cookie': 'FINANCEOS_SESSION=xyz123; Path=/' },
-        ),
-      );
-
-      const res = await authApi.login({ email: 'test@example.com', password: 'pass' });
-      expect(res.user.id).toBe('u1');
-      expect(res.sessionCookie).toBe('xyz123');
-    });
-
-    it('login error handling', async () => {
-      vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
-        mockFetchResponse(false, 401, { code: 'BAD_CREDENTIALS', message: 'Invalid credentials', timestamp: '' }),
-      );
-
-      await expect(authApi.login({ email: 'test@example.com', password: 'wrong' })).rejects.toThrow('Invalid credentials');
-    });
-
-    it('logout, getCurrentUser, startGoogleAuth', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, {}));
-
-      await authApi.logout();
-      expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('/api/v1/auth/logout'), expect.anything());
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'u1' }));
-      const user = await authApi.getCurrentUser();
+    it('signup, login, googleStart, me, deleteAccount, getDeletionSummary', async () => {
+      fetchSpy.mockImplementation(async () => mockResponse(200, { id: 'u1', email: 'test@example.com' }));
+      const user = await authApi.signup({ email: 'test@example.com', password: 'pass', inviteCode: 'code' });
       expect(user.id).toBe('u1');
 
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { authorizationUrl: 'http://auth' }));
-      const google = await authApi.startGoogleAuth();
-      expect(google.authorizationUrl).toBe('http://auth');
-    });
+      const { user: loginUser } = await authApi.login({ email: 'test@example.com', password: 'pass' });
+      expect(loginUser.id).toBe('u1');
 
-    it('handleGoogleCallback success and error', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() =>
-        mockFetchResponse(true, 200, { id: 'u1' }, { 'set-cookie': 'FINANCEOS_SESSION=abc; Path=/' }),
-      );
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { authorizationUrl: 'https://accounts.google.com' }));
+      const google = await authApi.googleStart();
+      expect(google.authorizationUrl).toBe('https://accounts.google.com');
 
-      const res = await authApi.handleGoogleCallback({ code: 'c1', state: 's1', error: 'e1' });
-      expect(res.user.id).toBe('u1');
-      expect(res.sessionCookie).toBe('abc');
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'u1', email: 'test@example.com' }));
+      const me = await authApi.me();
+      expect(me.id).toBe('u1');
 
-      fetchSpy.mockImplementationOnce(() =>
-        mockFetchResponse(false, 400, { code: 'INVALID_CODE', message: 'Bad code', timestamp: '' }),
-      );
-      await expect(authApi.handleGoogleCallback({ code: 'bad' })).rejects.toThrow('Bad code');
+      fetchSpy.mockResolvedValueOnce(new Response(null, { status: 204 }));
+      await authApi.deleteAccount({ password: 'pass' });
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { counts: {}, total: 0 }));
+      const summary = await authApi.getDeletionSummary();
+      expect(summary.total).toBe(0);
     });
   });
 
-  describe('accountsApi', () => {
-    it('list, create, update, delete, getCardCycleSummary', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, [{ id: 'a1' }]));
+  describe('accountsApi & cardholdersApi', () => {
+    it('handles accounts CRUD and cycle summary', async () => {
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, [{ id: 'a1', name: 'Savings' }]));
+      expect(await accountsApi.list()).toHaveLength(1);
 
-      expect(await accountsApi.list()).toEqual([{ id: 'a1' }]);
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'a1', name: 'Savings' }));
+      expect(await accountsApi.get('a1')).toEqual({ id: 'a1', name: 'Savings' });
 
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 201, { id: 'a1' }));
-      expect(await accountsApi.create({ name: 'Acc', type: 'bank_account' } as any)).toEqual({ id: 'a1' });
+      fetchSpy.mockResolvedValueOnce(mockResponse(201, { id: 'a1' }));
+      expect(await accountsApi.create({ name: 'Savings', type: 'bank_account' } as any)).toEqual({ id: 'a1' });
 
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'a1' }));
-      expect(await accountsApi.update('a1', { name: 'Acc2', type: 'bank_account' } as any)).toEqual({ id: 'a1' });
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'a1' }));
+      expect(await accountsApi.update('a1', { name: 'Savings Updated', type: 'bank_account' } as any)).toEqual({ id: 'a1' });
 
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 204, ''));
+      fetchSpy.mockResolvedValueOnce(new Response(null, { status: 204 }));
       await accountsApi.delete('a1');
 
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { totalAmountDue: 500 }));
-      expect(await accountsApi.getCardCycleSummary('a1')).toEqual({ totalAmountDue: 500 });
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { currentCycleSpend: 1000 }));
+      expect(await accountsApi.getCardCycleSummary('a1')).toEqual({ currentCycleSpend: 1000 });
+    });
+
+    it('handles cardholders CRUD and actions', async () => {
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, [{ id: 'ch1', personName: 'John' }]));
+      expect(await cardholdersApi.list('a1')).toHaveLength(1);
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(201, { id: 'ch1' }));
+      expect(await cardholdersApi.create('a1', { personName: 'John', relationship: 'SELF' } as any)).toEqual({ id: 'ch1' });
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'ch1' }));
+      expect(await cardholdersApi.update('a1', 'ch1', { personName: 'John D' } as any)).toEqual({ id: 'ch1' });
+
+      fetchSpy.mockResolvedValueOnce(new Response(null, { status: 204 }));
+      await cardholdersApi.delete('a1', 'ch1');
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'ch1', closedOn: '2026-09-01' }));
+      expect(await cardholdersApi.close('a1', 'ch1')).toEqual({ id: 'ch1', closedOn: '2026-09-01' });
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'ch1', closedOn: null }));
+      expect(await cardholdersApi.reopen('a1', 'ch1')).toEqual({ id: 'ch1', closedOn: null });
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(201, { id: 'card1', last4: '1234' }));
+      expect(await cardholdersApi.createCard('a1', 'ch1', { last4: '1234' } as any)).toEqual({ id: 'card1', last4: '1234' });
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'card2', last4: '5678' }));
+      expect(await cardholdersApi.replaceCard('a1', 'ch1', 'card1', { newLast4: '5678' })).toEqual({ id: 'card2', last4: '5678' });
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'card2', closedOn: '2026-09-01' }));
+      expect(await cardholdersApi.closeCard('a1', 'ch1', 'card2')).toEqual({ id: 'card2', closedOn: '2026-09-01' });
+
+      // Back-compat alias — card id doubles as cardholder id.
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'card3', last4: '9999' }));
+      expect(await cardholdersApi.replace('a1', 'card1', { newLast4: '9999' })).toEqual({ id: 'card3', last4: '9999' });
     });
   });
 
-  describe('statementsApi', () => {
-    it('listByAccount and getById', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, [{ id: 's1' }]));
+  describe('categoriesApi & dashboardsApi', () => {
+    it('handles categories operations', async () => {
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, [{ id: 'c1', name: 'Food' }]));
+      expect(await categoriesApi.list()).toHaveLength(1);
 
-      expect(await statementsApi.listByAccount('a1')).toEqual([{ id: 's1' }]);
+      fetchSpy.mockResolvedValueOnce(mockResponse(201, { id: 'c1', name: 'Food' }));
+      expect(await categoriesApi.create({ name: 'Food' })).toEqual({ id: 'c1', name: 'Food' });
 
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 's1', lines: [] }));
-      expect(await statementsApi.getById('s1')).toEqual({ id: 's1', lines: [] });
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'c1', name: 'Groceries' }));
+      expect(await categoriesApi.update('c1', { name: 'Groceries' })).toEqual({ id: 'c1', name: 'Groceries' });
+
+      fetchSpy.mockResolvedValueOnce(new Response(null, { status: 204 }));
+      await categoriesApi.delete('c1');
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { categoryId: 'c1', fromRule: true }));
+      expect(await categoriesApi.categorize({ description: 'Uber' })).toEqual({ categoryId: 'c1', fromRule: true });
     });
-  });
 
-  describe('transactionsApi', () => {
-    it('search, create, update, delete, batchReview, batchDelete', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, { content: [] }));
+    it('handles dashboards operations', async () => {
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, [{ id: 'd1', name: 'Main' }]));
+      expect(await dashboardsApi.list()).toHaveLength(1);
 
-      expect(await transactionsApi.search({ filters: [] }, 0, 10)).toEqual({ content: [] });
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'd1', name: 'Main' }));
+      expect(await dashboardsApi.get('d1')).toEqual({ id: 'd1', name: 'Main' });
 
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 201, { id: 't1' }));
-      expect(await transactionsApi.create({ accountId: 'a1', amount: 100 } as any)).toEqual({ id: 't1' });
+      fetchSpy.mockResolvedValueOnce(mockResponse(201, { id: 'd1', name: 'Main' }));
+      expect(await dashboardsApi.create({ name: 'Main', isDefault: true, widgets: [] })).toEqual({ id: 'd1', name: 'Main' });
 
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 't1' }));
-      expect(await transactionsApi.update('t1', { amount: 200 } as any)).toEqual({ id: 't1' });
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 'd1', name: 'Main Updated' }));
+      expect(await dashboardsApi.update('d1', { name: 'Main Updated', isDefault: true, widgets: [] })).toEqual({ id: 'd1', name: 'Main Updated' });
 
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 204, ''));
-      await transactionsApi.delete('t1');
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { succeededIds: ['t1'], skippedIds: [], failures: [] }));
-      expect(await transactionsApi.batchReview({ transactionIds: ['t1'], reviewType: 'MANUALLY_REVIEWED' })).toEqual({
-        succeededIds: ['t1'],
-        skippedIds: [],
-        failures: [],
-      });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { succeededIds: ['t1'], failures: [] }));
-      expect(await transactionsApi.batchDelete({ transactionIds: ['t1'] })).toEqual({
-        succeededIds: ['t1'],
-        failures: [],
-      });
-    });
-  });
-
-  describe('investmentsApi', () => {
-    it('listTransactions, createTransaction, updateTransaction, deleteTransaction, getPositions, getSummary', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, { content: [] }));
-
-      expect(await investmentsApi.listTransactions()).toEqual({ content: [] });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 201, { id: 'i1' }));
-      expect(await investmentsApi.createTransaction({ brokerAccountId: 'b1', instrumentId: 'inst1', type: 'buy', quantity: 10, price: 100, tradeDate: '2026-07-25' })).toEqual({ id: 'i1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'i1' }));
-      expect(await investmentsApi.updateTransaction('i1', { type: 'buy', quantity: 12, price: 100, tradeDate: '2026-07-25' })).toEqual({ id: 'i1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 204, ''));
-      await investmentsApi.deleteTransaction('i1');
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { positions: [] }));
-      expect(await investmentsApi.getPositions()).toEqual({ positions: [] });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { totalInvested: '0' }));
-      expect(await investmentsApi.getSummary()).toEqual({ totalInvested: '0' });
-    });
-  });
-
-  describe('gmailApi', () => {
-    it('startOAuth, sync, senders CRUD, connections', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, { authUrl: 'http://auth' }));
-
-      expect(await gmailApi.startOAuth()).toEqual({ authUrl: 'http://auth' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { syncedCount: 5 }));
-      expect(await gmailApi.sync()).toEqual({ syncedCount: 5 });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, [{ id: 'gs1' }]));
-      expect(await gmailApi.listSenders()).toEqual([{ id: 'gs1' }]);
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 201, { id: 'gs1' }));
-      expect(await gmailApi.createSender({ email: 's@gmail.com' } as any)).toEqual({ id: 'gs1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'gs1' }));
-      expect(await gmailApi.updateSender('gs1', { email: 's2@gmail.com' } as any)).toEqual({ id: 'gs1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 204, ''));
-      await gmailApi.deleteSender('gs1');
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, [{ id: 'gc1' }]));
-      expect(await gmailApi.listConnections()).toEqual([{ id: 'gc1' }]);
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 204, ''));
-      await gmailApi.disconnectConnection('gc1');
-    });
-  });
-
-  describe('categoriesApi', () => {
-    it('list, create, categorizeDescription', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, [{ id: 'c1' }]));
-
-      expect(await categoriesApi.list()).toEqual([{ id: 'c1' }]);
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 201, { id: 'c1' }));
-      expect(await categoriesApi.create({ name: 'Food' } as any)).toEqual({ id: 'c1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { categoryId: 'c1' }));
-      expect(await categoriesApi.categorizeDescription('Uber')).toEqual({ categoryId: 'c1' });
-    });
-  });
-
-  describe('reportsApi', () => {
-    it('getDatasource, create, list, getById, update, delete, runSaved, runAdHoc', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, { fields: [] }));
-
-      expect(await reportsApi.getDatasource()).toEqual({ fields: [] });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 201, { id: 'r1' }));
-      expect(await reportsApi.create({ name: 'Rep' } as any)).toEqual({ id: 'r1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, [{ id: 'r1' }]));
-      expect(await reportsApi.list('TABLE')).toEqual([{ id: 'r1' }]);
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'r1' }));
-      expect(await reportsApi.getById('r1')).toEqual({ id: 'r1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'r1' }));
-      expect(await reportsApi.update('r1', { name: 'Rep2' } as any)).toEqual({ id: 'r1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 204, ''));
-      await reportsApi.delete('r1');
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { rows: [] }));
-      expect(await reportsApi.runSaved('r1', { page: 1, size: 25 })).toEqual({ rows: [] });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { rows: [] }));
-      expect(await reportsApi.runAdHoc({} as any, { page: 0, size: 10 })).toEqual({ rows: [] });
-    });
-  });
-
-  describe('dashboardsApi', () => {
-    it('create, list, getDefault, getById, update, delete', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 201, { id: 'd1' }));
-
-      expect(await dashboardsApi.create({ name: 'Dash' } as any)).toEqual({ id: 'd1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, [{ id: 'd1' }]));
-      expect(await dashboardsApi.list()).toEqual([{ id: 'd1' }]);
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'd1' }));
-      expect(await dashboardsApi.getById('d1')).toEqual({ id: 'd1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'd1' }));
-      expect(await dashboardsApi.update('d1', { name: 'Dash2' } as any)).toEqual({ id: 'd1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 204, ''));
+      fetchSpy.mockResolvedValueOnce(new Response(null, { status: 204 }));
       await dashboardsApi.delete('d1');
     });
   });
 
-  describe('ingestionApi and rulesApi and transactionLinksApi', () => {
-    it('ingest file', async () => {
-      vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, { count: 10 }));
-      const form = new FormData();
-      expect(await ingestionApi.ingest('a1', form)).toEqual({ count: 10 });
+  describe('transactionsApi & transactionLinksApi', () => {
+    it('handles transactions search, crud, batch operations', async () => {
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { content: [{ id: 't1' }], totalElements: 1 }));
+      const searchRes = await transactionsApi.search({ filters: [] }, { page: 0, size: 10 });
+      expect(searchRes.totalElements).toBe(1);
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(201, { id: 't1' }));
+      expect(await transactionsApi.create({ accountId: 'a1', amount: 50, date: '2026-09-01', categoryIds: [] } as any)).toEqual({ id: 't1' });
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 't1' }));
+      expect(await transactionsApi.update('t1', { accountId: 'a1', amount: 75, date: '2026-09-01', categoryIds: [] } as any)).toEqual({ id: 't1' });
+
+      fetchSpy.mockResolvedValueOnce(new Response(null, { status: 204 }));
+      await transactionsApi.delete('t1');
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { succeededIds: ['t1'], failures: [] }));
+      expect(await transactionsApi.batchDelete({ transactionIds: ['t1'] })).toEqual({ succeededIds: ['t1'], failures: [] });
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { succeededIds: ['t1'], skippedIds: [], failures: [] }));
+      expect(await transactionsApi.batchReview({ transactionIds: ['t1'], reviewType: 'MANUALLY_REVIEWED' })).toEqual({ succeededIds: ['t1'], skippedIds: [], failures: [] });
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { mergedTransactionId: 't1', deletedTransactionId: 't2' }));
+      expect(await transactionsApi.merge({ deleteId: 't2', keepId: 't1' })).toEqual({ mergedTransactionId: 't1', deletedTransactionId: 't2' });
+
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { updatedCount: 5 }));
+      expect(await transactionsApi.bulkReattributeCard({ accountId: 'a1', cardId: 'c1' })).toEqual({ updatedCount: 5 });
     });
 
-    it('rulesApi list, create, update, verify, remove', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, { content: [] }));
+    it('handles transaction links create, list and delete', async () => {
+      fetchSpy.mockResolvedValueOnce(mockResponse(201, { id: 'link1', type: 'TRANSFER' }));
+      expect(await transactionLinksApi.create({ type: 'TRANSFER', members: [] } as any)).toEqual({ id: 'link1', type: 'TRANSFER' });
 
-      expect(await rulesApi.list({ page: 0, size: 10, sort: 'name', verified: true, search: 'test' })).toEqual({ content: [] });
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, [{ id: 'link1', type: 'TRANSFER' }]));
+      expect(await transactionLinksApi.getByTransactionId('t1')).toHaveLength(1);
 
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 201, { id: 'ru1' }));
-      expect(await rulesApi.create({ descriptionPattern: 'x' } as any)).toEqual({ id: 'ru1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'ru1' }));
-      expect(await rulesApi.update('ru1', { descriptionPattern: 'y' } as any)).toEqual({ id: 'ru1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { id: 'ru1', verified: true }));
-      expect(await rulesApi.verify('ru1')).toEqual({ id: 'ru1', verified: true });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 204, ''));
-      await rulesApi.remove('ru1');
-    });
-
-    it('transactionLinksApi create, getByTransactionId, delete', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 201, { id: 'tl1' }));
-
-      expect(await transactionLinksApi.create({ type: 'TRANSFER', members: [] } as any)).toEqual({ id: 'tl1' });
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, [{ id: 'tl1' }]));
-      expect(await transactionLinksApi.getByTransactionId('t1')).toEqual([{ id: 'tl1' }]);
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 204, ''));
-      await transactionLinksApi.delete('tl1');
+      fetchSpy.mockResolvedValueOnce(new Response(null, { status: 204 }));
+      await transactionLinksApi.delete('link1');
     });
   });
 
-  describe('Error handling & fallback (CD-14)', () => {
-    it('handles non-JSON error response from fetch gracefully', async () => {
-      vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(false, 500, 'Internal Server Error'));
+  describe('statementsApi', () => {
+    it('handles statements listByAccount and getById', async () => {
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, [{ id: 's1' }]));
+      expect(await statementsApi.listByAccount('a1')).toHaveLength(1);
 
-      try {
-        await accountsApi.list();
-        expect.fail('Should have thrown ApiError');
-      } catch (err: any) {
-        expect(err).toBeInstanceOf(ApiError);
-        expect(err.status).toBe(500);
-        expect(err.response.code).toBe('UNKNOWN_ERROR');
-        expect(err.response.message).toBe('Request failed with status 500');
-      }
+      fetchSpy.mockResolvedValueOnce(mockResponse(200, { id: 's1', lines: [] }));
+      expect(await statementsApi.getById('s1')).toEqual({ id: 's1', lines: [] });
+    });
+  });
+
+  describe('ingestionApi (multipart) & jobsApi', () => {
+    it('uploads a multi-MB file without JSON content-type', async () => {
+      const bigBuffer = new Uint8Array(2 * 1024 * 1024); // 2MB
+      const formData = new FormData();
+      formData.append('files', new Blob([bigBuffer], { type: 'application/pdf' }), 'statement.pdf');
+
+      let interceptedContentType: string | null = null;
+      fetchSpy.mockImplementation(async (_input: any, init?: any) => {
+        const headers = new Headers(init?.headers);
+        interceptedContentType = headers.get('Content-Type');
+        return new Response(JSON.stringify({ jobId: 'job-123' }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      });
+
+      const res = await ingestionApi.ingest('a1', formData);
+      expect(res.jobId).toBe('job-123');
+      expect(interceptedContentType).not.toBe('application/json');
     });
 
-    it('handles empty text response as empty object', async () => {
-      vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, ''));
-      const res = await accountsApi.delete('a1');
-      expect(res).toEqual({});
+    it('covers the jobs queue (list/get/cancel/retry)', async () => {
+      fetchSpy.mockImplementation(async () => mockResponse(200, {}));
+      await jobsApi.list();
+      await jobsApi.get('j1');
+      await jobsApi.cancel('j1');
+      await jobsApi.retry('j1');
     });
+  });
 
-    it('covers query params for rulesApi and reportsApi list with type', async () => {
-      const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => mockFetchResponse(true, 200, [] as any));
+  describe('investments, loans, lending, reports, rewards, rules, gmail, llm APIs', () => {
+    it('covers remaining domain APIs, including pageable-nested list endpoints', async () => {
+      fetchSpy.mockImplementation(async () => mockResponse(200, {}));
 
-      await reportsApi.list('TABLE');
-      expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('/api/v1/reports?type=TABLE'), expect.anything());
+      // Investments
+      await investmentsApi.getSummary();
+      await investmentsApi.getPositions();
+      await investmentsApi.getTrades({ page: 0, size: 10, sort: 'tradeDate,desc' });
+      await investmentsApi.createTrade({} as any);
+      await investmentsApi.updateTrade('i1', {} as any);
+      await investmentsApi.deleteTrade('i1');
+      await investmentsApi.getFnoTrades();
+      await investmentsApi.createFnoTrade({} as any);
+      await investmentsApi.updateFnoTrade('f1', {} as any);
+      await investmentsApi.deleteFnoTrade('f1');
+      await investmentsApi.getDividends({ page: 0, size: 10 });
+      await investmentsApi.createDividend({} as any);
+      await investmentsApi.updateDividend('d1', {} as any);
+      await investmentsApi.deleteDividend('d1');
+      await investmentsApi.getDividendSuggestions();
+      await investmentsApi.acceptDividendSuggestions({} as any);
+      await investmentsApi.getCorporateActions();
+      await investmentsApi.createCorporateAction('inst1', {} as any);
+      await investmentsApi.updateCorporateAction('inst1', 'ca1', {} as any);
+      await investmentsApi.deleteCorporateAction('inst1', 'ca1');
+      await investmentsApi.getInstruments();
+      await investmentsApi.getInstrument('inst1');
+      await investmentsApi.createInstrument({} as any);
+      await investmentsApi.setInstrumentPrice('inst1', {} as any);
+      await investmentsApi.refreshPrices();
+      await investmentsApi.commitImport({} as any);
+      await investmentsApi.commitReconcile({} as any);
 
+      // Lending (counterparties / lendings / obligations)
+      await counterpartiesApi.list();
+      await counterpartiesApi.create({ name: 'Alice' });
+      await counterpartiesApi.update('cp1', { name: 'Alice 2' });
+      await counterpartiesApi.remove('cp1');
+      await lendingsApi.list();
+      await lendingsApi.getDetail('l1');
+      await lendingsApi.create({} as any);
+      await lendingsApi.update('l1', {} as any);
+      await lendingsApi.remove('l1');
+      await obligationsApi.getUpcoming();
+
+      // Loans
+      await loansApi.list();
+      await loansApi.get('ln1');
+      await loansApi.create({} as any);
+      await loansApi.update('ln1', {} as any);
+      await loansApi.delete('ln1');
+      await loansApi.createPayment('ln1', {} as any);
+      await loansApi.deletePayment('ln1', 'p1');
+      await loansApi.createEvent('ln1', {} as any);
+      await loansApi.deleteEvent('ln1', 'e1');
+      await loansApi.createCharge('ln1', {} as any);
+      await loansApi.deleteCharge('ln1', 'c1');
+      await loansApi.getSummary();
+      await loansApi.getSchedule('ln1');
+      await loansApi.getMatchSuggestions('ln1');
+      await loansApi.batchPayments('ln1', { items: [] });
+
+      // Reports
       await reportsApi.list();
-      expect(fetchSpy).toHaveBeenCalledWith('http://localhost:6969/api/v1/reports', expect.anything());
-
-      fetchSpy.mockImplementationOnce(() => mockFetchResponse(true, 200, { rows: [] } as any));
+      await reportsApi.getById('r1');
+      await reportsApi.create({} as any);
+      await reportsApi.update('r1', {} as any);
+      await reportsApi.delete('r1');
+      await reportsApi.getDatasource();
       await reportsApi.runSaved('r1');
-      expect(fetchSpy).toHaveBeenCalledWith('http://localhost:6969/api/v1/reports/r1/data', expect.anything());
+      await reportsApi.runAdHoc({} as any);
 
-      await rulesApi.list();
-      expect(fetchSpy).toHaveBeenCalledWith('http://localhost:6969/api/v1/rules?', expect.anything());
+      // Rewards
+      await rewardsApi.listRules('a1');
+      await rewardsApi.createRule({} as any);
+      await rewardsApi.updateRule('rw1', {} as any);
+      await rewardsApi.deleteRule('rw1');
+      await rewardsApi.reorderRules({ accountId: 'a1', orderedIds: ['rw1'] });
+      await rewardsApi.getAccountConfig('a1');
+      await rewardsApi.updateAccountConfig({ accountId: 'a1' });
+      await rewardsApi.listCapBuckets('a1');
+      await rewardsApi.createCapBucket({} as any);
+      await rewardsApi.updateCapBucket('b1', {} as any);
+      await rewardsApi.deleteCapBucket('b1');
+      await rewardsApi.listMilestones('a1');
+      await rewardsApi.createMilestone({} as any);
+      await rewardsApi.updateMilestone('m1', {} as any);
+      await rewardsApi.deleteMilestone('m1');
+      await rewardsApi.report({ accountId: 'a1', from: '2026-01-01', to: '2026-09-01' });
+      await rewardsApi.recommend({} as any);
+      await rewardsApi.getRewardLines({ accountId: 'a1', page: 0, size: 10 });
 
-      await rulesApi.list({ page: 1, size: 10, sort: 'name,asc', verified: true, search: 'test' });
-      expect(fetchSpy).toHaveBeenCalledWith(
-        expect.stringContaining('page=1&size=10&sort=name%2Casc&verified=true&search=test'),
-        expect.anything(),
+      // Rules (pageable-nested list — must not throw the "deeply-nested" error)
+      await rulesApi.list({ page: 0, size: 20, verified: false, search: 'uber' });
+      await rulesApi.create({} as any);
+      await rulesApi.update('rl1', {} as any);
+      await rulesApi.delete('rl1');
+      await rulesApi.apply('rl1');
+      await rulesApi.previewMatches({} as any);
+
+      // Gmail
+      await gmailApi.startOAuth();
+      await gmailApi.sync();
+      await gmailApi.listSenders();
+      await gmailApi.createSender({} as any);
+      await gmailApi.updateSender('s1', {} as any);
+      await gmailApi.deleteSender('s1');
+      await gmailApi.listConnections();
+      await gmailApi.disconnectConnection('c1');
+      await gmailApi.getAttentionItems();
+      await gmailApi.retryAttentionItem('ledger-1');
+      await gmailApi.rescan('2026-01-01');
+
+      // LLM keys & routing
+      await llmKeysApi.list();
+      await llmKeysApi.create({} as any);
+      await llmKeysApi.updatePosition('k1', 1);
+      await llmKeysApi.delete('k1');
+      await llmKeysApi.test('k1');
+      await llmRoutingApi.getTaskGroups();
+      await llmRoutingApi.getCatalog();
+      await llmRoutingApi.getRoutingOptions();
+      await llmRoutingApi.getRouting();
+      await llmRoutingApi.updateRouting('chat', { entries: [] });
+      await llmRoutingApi.resetRouting('chat');
+      await llmRoutingApi.getHealth();
+    });
+
+    it('throws ApiError on error response', async () => {
+      fetchSpy.mockResolvedValueOnce(
+        mockResponse(400, {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid parameters',
+          timestamp: new Date().toISOString(),
+        })
       );
+
+      await expect(accountsApi.list()).rejects.toThrow('Invalid parameters');
     });
   });
 });

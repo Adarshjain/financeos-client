@@ -11,7 +11,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { FormField } from '@/components/ui/form-field';
-import type { GmailSenderResponse } from '@/lib/types';
+// See @/lib/api/types — the spec marks `name` optional+nullable, where the
+// hand-written version in @/lib/types only marks it optional.
+import type { GmailSenderResponse } from '@/lib/api/types';
 
 interface GmailSenderDialogProps {
   open: boolean;

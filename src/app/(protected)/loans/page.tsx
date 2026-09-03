@@ -1,50 +1,37 @@
-import { fetchLoansAction, fetchLoansSummaryAction } from '@/actions/loans';
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+
 import { LoansBrowser } from '@/app/(protected)/loans/LoansBrowser';
-import type { Account } from '@/lib/account.types';
-import { accountsApi } from '@/lib/apiClient';
+import { accountsApi, loansApi } from '@/lib/apiClient';
+import { getQueryClient } from '@/lib/query/client';
+import { keys } from '@/lib/query/keys';
 
 export const metadata = {
   title: 'Loans | FinanceOS',
-  description: 'Manage formal loans, schedules, prepayments, and effective APR.',
+  description:
+    'Manage formal loans, schedules, prepayments, and effective APR.',
 };
 
 export default async function LoansPage() {
-  const [loansRes, summaryRes, bankAccounts] = await Promise.all([
-    fetchLoansAction(undefined, 0, 50),
-    fetchLoansSummaryAction(),
-    accountsApi.list().catch(() => [] as Account[]),
+  const qc = getQueryClient();
+
+  await Promise.all([
+    qc.prefetchQuery({
+      queryKey: keys.loans.list({ status: undefined, page: 0, size: 50 }),
+      queryFn: () => loansApi.list(undefined, 0, 50),
+    }),
+    qc.prefetchQuery({
+      queryKey: keys.loans.summary(),
+      queryFn: () => loansApi.getSummary(),
+    }),
+    qc.prefetchQuery({
+      queryKey: keys.accounts.list(),
+      queryFn: () => accountsApi.list(),
+    }),
   ]);
 
-  const initialLoans = loansRes.success
-    ? loansRes.data
-    : {
-        content: [],
-        number: 0,
-        size: 50,
-        totalElements: 0,
-        totalPages: 0,
-        first: true,
-        last: true,
-        empty: true,
-      };
-
-  const summary = summaryRes.success
-    ? summaryRes.data
-    : {
-        totalOutstanding: 0,
-        activeLoanCount: 0,
-        lentOutstanding: 0,
-        borrowedOutstanding: 0,
-        netReceivable: 0,
-      };
-
-  const filteredAccounts = bankAccounts.filter((a: Account) => a.type === 'bank_account');
-
   return (
-    <LoansBrowser
-      initialLoans={initialLoans}
-      summary={summary}
-      bankAccounts={filteredAccounts}
-    />
+    <HydrationBoundary state={dehydrate(qc)}>
+      <LoansBrowser />
+    </HydrationBoundary>
   );
 }

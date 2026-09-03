@@ -32,8 +32,8 @@ export function LoanHeroHeader({ loan }: LoanHeroHeaderProps) {
                 loan.status === 'active'
                   ? 'default'
                   : loan.status === 'closed'
-                  ? 'secondary'
-                  : 'destructive'
+                    ? 'secondary'
+                    : 'destructive'
               }
               className="capitalize text-2xs"
             >
@@ -66,7 +66,9 @@ export function LoanHeroHeader({ loan }: LoanHeroHeaderProps) {
               <Sparkles className="h-3 w-3" /> Effective APR
             </div>
             <div className="text-base font-bold text-emerald-600 dark:text-emerald-400">
-              {loan.effectiveAprPct != null ? `${loan.effectiveAprPct}%` : 'N/A'}
+              {loan.effectiveAprPct != null
+                ? `${loan.effectiveAprPct}%`
+                : 'N/A'}
             </div>
           </div>
         </div>

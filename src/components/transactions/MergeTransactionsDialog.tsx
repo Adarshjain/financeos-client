@@ -1,10 +1,10 @@
 'use client';
 
+import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {AlertTriangle, Info} from 'lucide-react';
-import {useEffect, useState} from 'react';
+import {useState} from 'react';
 import {toast} from 'sonner';
 
-import {mergeTransactions} from '@/actions/transactions';
 import {REVIEW_REASON_META, reviewReasonLabel} from '@/components/transactions/catalog';
 import {Badge} from '@/components/ui/badge';
 import {Card} from '@/components/ui/card';
@@ -18,8 +18,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import type {Account} from '@/lib/account.types';
-import type {Category} from '@/lib/categories.types';
-import type {Transaction, TransactionSource} from '@/lib/transaction.types';
+import {api, ApiError} from '@/lib/api/client';
+import {keys} from '@/lib/query/keys';
+import type {MergeTransactionsResponse, Transaction, TransactionSource} from '@/lib/transaction.types';
 import {cn, formatCurrency, formatDate} from '@/lib/utils';
 
 interface MergeTransactionsDialogProps {
@@ -28,7 +29,6 @@ interface MergeTransactionsDialogProps {
   tx1: Transaction;
   tx2: Transaction;
   accounts: Account[];
-  categories: Category[];
   onSuccess: () => void;
 }
 
@@ -62,38 +62,53 @@ function getSourceLabel(source: TransactionSource): string {
   }
 }
 
+function computeDefaultKeepId(tx1: Transaction, tx2: Transaction): string {
+  const score1 = getSourcePriorityScore(tx1.source);
+  const score2 = getSourcePriorityScore(tx2.source);
+
+  if (score1 > score2) return tx1.id;
+  if (score2 > score1) return tx2.id;
+
+  const time1 = new Date(tx1.createdAt || tx1.date).getTime();
+  const time2 = new Date(tx2.createdAt || tx2.date).getTime();
+  return time1 <= time2 ? tx1.id : tx2.id;
+}
+
 export function MergeTransactionsDialog({
                                           open,
                                           onOpenChange,
                                           tx1,
                                           tx2,
                                           accounts,
-                                          categories,
                                           onSuccess,
                                         }: MergeTransactionsDialogProps) {
-  const [keepId, setKeepId] = useState<string>('');
-  const [loading, setLoading] = useState(false);
+  const [keepId, setKeepId] = useState<string>(() => computeDefaultKeepId(tx1, tx2));
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (open && tx1 && tx2) {
-      const score1 = getSourcePriorityScore(tx1.source);
-      const score2 = getSourcePriorityScore(tx2.source);
-
-      if (score1 > score2) {
-        setKeepId(tx1.id);
-      } else if (score2 > score1) {
-        setKeepId(tx2.id);
+  const mergeMutation = useMutation({
+    mutationFn: async ({ keepId, deleteId }: { keepId: string; deleteId: string }): Promise<MergeTransactionsResponse> => {
+      const { data } = await api.POST('/api/v1/transactions/merge', { body: { keepId, deleteId } });
+      return data! as MergeTransactionsResponse;
+    },
+    onSuccess: (data) => {
+      const remaining = data?.remainingReasons ?? [];
+      if (remaining.length > 0) {
+        toast.success(
+          `Transactions merged. The kept transaction still needs review: ${remaining.map(reviewReasonLabel).join(', ')}`
+        );
       } else {
-        const time1 = new Date(tx1.createdAt || tx1.date).getTime();
-        const time2 = new Date(tx2.createdAt || tx2.date).getTime();
-        if (time1 <= time2) {
-          setKeepId(tx1.id);
-        } else {
-          setKeepId(tx2.id);
-        }
+        toast.success('Transactions merged and resolved');
       }
-    }
-  }, [open, tx1, tx2]);
+      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: keys.accounts.all });
+      onSuccess();
+      onOpenChange(false);
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof ApiError ? err.response.message : 'An error occurred while merging transactions');
+    },
+  });
+  const loading = mergeMutation.isPending;
 
   if (!tx1 || !tx2) return null;
 
@@ -108,30 +123,9 @@ export function MergeTransactionsDialog({
     return accounts.find((a) => a.id === accountId)?.name || 'Unknown Account';
   };
 
-  const handleMerge = async () => {
+  const handleMerge = () => {
     if (isDifferentAccount || !keepId || !deleteId) return;
-    setLoading(true);
-    try {
-      const res = await mergeTransactions(keepId, deleteId);
-      if (res.success) {
-        const remaining = res.data?.remainingReasons ?? [];
-        if (remaining.length > 0) {
-          toast.success(
-              `Transactions merged. The kept transaction still needs review: ${remaining.map(reviewReasonLabel).join(', ')}`
-          );
-        } else {
-          toast.success('Transactions merged and resolved');
-        }
-        onSuccess();
-        onOpenChange(false);
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch {
-      toast.error('An error occurred while merging transactions');
-    } finally {
-      setLoading(false);
-    }
+    mergeMutation.mutate({ keepId, deleteId });
   };
 
   const renderTxnCard = (tx: Transaction, isKept: boolean) => {

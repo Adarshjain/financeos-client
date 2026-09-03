@@ -3,10 +3,6 @@
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Card } from '@/components/ui/card';
 import type { Account } from '@/lib/account.types';
-import type {
-  PagedRewardLines,
-  RewardReport,
-} from '@/lib/rewards.types';
 
 import { MilestoneSections } from './browser/MilestoneSections';
 import { RewardLineDetailDialog } from './browser/RewardLineDetailDialog';
@@ -21,8 +17,6 @@ interface RewardsBrowserProps {
   initialAccountId: string;
   initialFrom: string;
   initialTo: string;
-  initialReport: RewardReport | null;
-  initialLines: PagedRewardLines | null;
 }
 
 export default function RewardsBrowser({
@@ -30,8 +24,6 @@ export default function RewardsBrowser({
   initialAccountId,
   initialFrom,
   initialTo,
-  initialReport,
-  initialLines,
 }: RewardsBrowserProps) {
   const {
     accountId,
@@ -62,8 +54,6 @@ export default function RewardsBrowser({
     initialAccountId,
     initialFrom,
     initialTo,
-    initialReport,
-    initialLines,
   });
 
   const milestones = report?.milestones ?? [];

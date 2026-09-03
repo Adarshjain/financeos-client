@@ -25,6 +25,8 @@ export default defineConfig({
         'src/app/**/not-found.tsx',
         'src/app/**/loading.tsx',
         'src/test/**',
+        'src/lib/api/schema.d.ts',
+        'src/lib/api/openapi.yaml',
         'next-env.d.ts',
         '**/*.d.ts',
       ],

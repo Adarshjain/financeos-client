@@ -1,12 +1,13 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { applyRule, previewRuleMatches } from '@/actions/rules';
 import { emitJobStarted } from '@/components/jobs/jobsBus';
-import { useJobPolling } from '@/hooks/useJobPolling';
+import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
 import type {
   ApplyRuleResult,
   CategoryRule,
@@ -26,15 +27,14 @@ export function useRuleMatches({
   open,
   onOpenChange,
 }: UseRuleMatchesProps) {
-  const router = useRouter();
-  const [matches, setMatches] = useState<PagedRuleMatches | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [applying, setApplying] = useState(false);
+  const queryClient = useQueryClient();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [allSelected, setAllSelected] = useState(false);
+  const [page, setPage] = useState(0);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
+  const [applying, setApplying] = useState(false);
 
-  useJobPolling<ApplyRuleResult>(activeJobId, (job) => {
+  useJobStatusPolling<ApplyRuleResult>(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED' && job.result) {
       toast.success(
         `Rule applied to ${job.result.appliedCount} transaction${
@@ -43,7 +43,8 @@ export function useRuleMatches({
       );
       setSelectedIds(new Set());
       setAllSelected(false);
-      router.refresh();
+      queryClient.invalidateQueries({ queryKey: keys.rules.all });
+      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
       onOpenChange(false);
     } else if (job.status === 'FAILED') {
       toast.error(job.errorMessage || 'Failed to apply rule.');
@@ -54,38 +55,34 @@ export function useRuleMatches({
     setApplying(false);
   });
 
-  const loadPage = useCallback(
-    async (pageToLoad: number) => {
-      setLoading(true);
-      try {
-        const res = await previewRuleMatches(
-          { merchantKey: rule.merchantKey, matchType: rule.matchType },
-          { page: pageToLoad, size: PAGE_SIZE }
-        );
-        if (res.success) {
-          setMatches(res.data);
-        } else {
-          toast.error(res.error.message);
-        }
-      } finally {
-        setLoading(false);
-      }
-    },
-    [rule.merchantKey, rule.matchType]
-  );
+  // No reset-on-open effect: `RuleMatchesDialog` is only ever rendered by its
+  // parent while `open` is true (`{matchesRule && <RuleMatchesDialog ... />}`
+  // in RulesBrowser), so a fresh rule always means a fresh mount — the
+  // `useState` initializers above already are the "reset" values.
 
-  useEffect(() => {
-    if (open) {
-      setSelectedIds(new Set());
-      setAllSelected(false);
-      void loadPage(0);
-    } else {
-      setMatches(null);
-    }
-  }, [open, loadPage]);
+  const matchesQuery = useQuery({
+    queryKey: keys.rules.preview({
+      merchantKey: rule.merchantKey,
+      matchType: rule.matchType,
+      page,
+      size: PAGE_SIZE,
+    }),
+    queryFn: async () => {
+      const { data } = await api.POST('/api/v1/rules/preview-matches', {
+        params: { query: { page, size: PAGE_SIZE, sort: [] } },
+        body: { merchantKey: rule.merchantKey, matchType: rule.matchType },
+      });
+      return data as PagedRuleMatches;
+    },
+    enabled: open,
+    placeholderData: keepPreviousData,
+  });
+
+  const matches = matchesQuery.data ?? null;
+  const loading = matchesQuery.isLoading;
 
   const handlePageChange = (newPage: number) => {
-    void loadPage(newPage);
+    setPage(newPage);
   };
 
   const rows = useMemo(() => matches?.content ?? [], [matches]);
@@ -135,23 +132,22 @@ export function useRuleMatches({
     if (selectedCount === 0) return;
     setApplying(true);
     try {
-      const res = await applyRule(
-        rule.id,
-        allSelected
-          ? { all: true }
-          : { transactionIds: Array.from(selectedIds) }
-      );
-      if (res.success && res.data?.jobId) {
-        const jobId = res.data.jobId;
+      const { data } = await api.POST('/api/v1/rules/{id}/apply', {
+        params: { path: { id: rule.id } },
+        body: allSelected ? { all: true } : { transactionIds: Array.from(selectedIds) },
+      });
+      const jobId = data?.jobId;
+      if (jobId) {
         setActiveJobId(jobId);
         emitJobStarted(jobId);
         toast.info('Rule apply job started in background.');
-      } else if (!res.success) {
-        toast.error(res.error.message);
+      } else {
         setApplying(false);
       }
     } catch (err) {
-      toast.error('Failed to apply rule: ' + (err as Error).message);
+      toast.error(
+        'Failed to apply rule: ' + (err instanceof ApiError ? err.response.message : (err as Error).message)
+      );
       setApplying(false);
     }
   };

@@ -59,6 +59,22 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /**
+ * Narrows the wire response of the report-run endpoints (`POST
+ * /api/v1/reports/data`, `POST /api/v1/reports/{id}/data`) into the client's
+ * `ReportData` union.
+ *
+ * The generated schema types that response as an open JSON object
+ * (`{ [key: string]: unknown }`) because the backend's `ReportData` shape is
+ * itself a runtime union keyed by the owning report's `type`. Centralised here
+ * so every call site (the dashboard widget query, the ad-hoc preview run)
+ * narrows through the same single cast rather than repeating `as ReportData`
+ * at each fetch.
+ */
+export function asReportData(raw: unknown): ReportData {
+  return raw as ReportData;
+}
+
+/**
  * Runtime guards for a saved report's `definition`.
  *
  * `ReportDefinition` is discriminated only by the *outer* `report.type` — the

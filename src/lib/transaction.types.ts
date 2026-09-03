@@ -34,13 +34,13 @@ export interface TransactionBase {
   cardId?: string | null;
   date: string;
   amount: number;
-  description?: string;
+  description?: string | null;
   isTransactionExcluded?: boolean;
   isTransactionUnderMonitoring?: boolean;
-  monitoringReason?: string;
+  monitoringReason?: string | null;
   mcc?: string | null;
   source: TransactionSource;
-  reviewType?: ReviewType;
+  reviewType?: ReviewType | null;
 }
 
 export type TransactionRequest = Omit<TransactionBase, 'source' | 'reviewType'> & {
@@ -97,9 +97,9 @@ export type Transaction = TransactionBase & {
   createdAt: string;
   updatedAt?: string;
   reviewedAt?: string | null;
-  balance: number | null;
+  balance?: number | null;
   categories?: Category[];
-  sourcedDescription: string;
+  sourcedDescription?: string | null;
   reviewReasons?: ReviewReason[];
   appliedRuleId?: string | null;
   links?: TransactionLinkSummary[];

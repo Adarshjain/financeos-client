@@ -1,30 +1,14 @@
 'use client';
 
-import {
-  ArrowLeft,
-  Edit2,
-  Lock,
-  Trash2,
-  Unlock,
-} from 'lucide-react';
+import { ArrowLeft, Edit2, Lock, Trash2, Unlock } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
-import {
-  closeLoanAction,
-  deleteLoanAction,
-  reopenLoanAction,
-} from '@/actions/loans';
 import { LoanForm } from '@/app/(protected)/loans/LoanForm';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Button } from '@/components/ui/button';
-import type { Account } from '@/lib/account.types';
-import type {
-  InstallmentDto,
-  LoanDetailResponse,
-} from '@/lib/types';
 
 import { LoanAmortizationSchedule } from './components/LoanAmortizationSchedule';
 import { LoanDetailDialogs } from './components/LoanDetailDialogs';
@@ -34,16 +18,10 @@ import { LoanMatchSuggestionsBanner } from './components/LoanMatchSuggestionsBan
 import { useLoanDetail } from './components/useLoanDetail';
 
 interface LoanDetailProps {
-  initialDetail: LoanDetailResponse;
-  initialSchedule: InstallmentDto[];
-  bankAccounts: Account[];
+  loanId: string;
 }
 
-export function LoanDetail({
-  initialDetail,
-  initialSchedule,
-  bankAccounts,
-}: LoanDetailProps) {
+export function LoanDetail({ loanId }: LoanDetailProps) {
   const router = useRouter();
 
   const {
@@ -97,7 +75,6 @@ export function LoanDetail({
     loan,
     hasEventsOrPayments,
     currentFY,
-    refreshData,
     toggleFY,
     handleOpenMarkPaid,
     handleSettlePayment,
@@ -109,10 +86,14 @@ export function LoanDetail({
     handleFindMatches,
     handleConfirmMatch,
     handleConfirmAllMatches,
-  } = useLoanDetail({
-    initialDetail,
-    initialSchedule,
-  });
+    handleCloseLoan,
+    handleReopenLoan,
+    deleteLoanMutation,
+  } = useLoanDetail({ loanId });
+
+  if (!detail || !loan) {
+    return <div className="p-6 text-xs text-slate-500">Loading loan…</div>;
+  }
 
   return (
     <div className="space-y-2 p-3 pb-32">
@@ -132,15 +113,7 @@ export function LoanDetail({
             <ConfirmationDialog
               title="Close Loan"
               description={`Are you sure you want to mark "${loan.name}" as closed?`}
-              primaryAction={async () => {
-                const res = await closeLoanAction(loan.id);
-                if (res.success) {
-                  toast.success('Loan closed');
-                  await refreshData();
-                } else {
-                  toast.error(res.error.message);
-                }
-              }}
+              primaryAction={handleCloseLoan}
               primaryActionText="Close Loan"
               variant="default"
               trigger={
@@ -153,15 +126,7 @@ export function LoanDetail({
             <ConfirmationDialog
               title="Reopen Loan"
               description={`Reopen loan "${loan.name}"?`}
-              primaryAction={async () => {
-                const res = await reopenLoanAction(loan.id);
-                if (res.success) {
-                  toast.success('Loan reopened');
-                  await refreshData();
-                } else {
-                  toast.error(res.error.message);
-                }
-              }}
+              primaryAction={handleReopenLoan}
               primaryActionText="Reopen Loan"
               variant="default"
               trigger={
@@ -176,12 +141,12 @@ export function LoanDetail({
             title="Delete Loan"
             description={`Delete "${loan.name}" and all associated schedule data?`}
             primaryAction={async () => {
-              const res = await deleteLoanAction(loan.id);
-              if (res.success) {
+              try {
+                await deleteLoanMutation.mutateAsync();
                 toast.success('Loan deleted');
                 router.push('/loans');
-              } else {
-                toast.error(res.error.message);
+              } catch {
+                // onError already surfaced the toast.
               }
             }}
             primaryActionText="Delete Loan"
@@ -239,7 +204,6 @@ export function LoanDetail({
       <LoanForm
         open={editOpen}
         onOpenChange={setEditOpen}
-        bankAccounts={bankAccounts}
         loanToEdit={loan}
         hasEventsOrPayments={hasEventsOrPayments}
       />

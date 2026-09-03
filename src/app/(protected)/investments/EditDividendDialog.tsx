@@ -1,10 +1,10 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Edit, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { deleteDividend, updateDividend } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -25,6 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { api, ApiError } from '@/lib/api/client';
+import { UpdateDividendRequest } from '@/lib/api/types';
+import { keys } from '@/lib/query/keys';
 import { Dividend, DividendType } from '@/lib/types';
 
 interface EditDividendDialogProps {
@@ -33,10 +36,32 @@ interface EditDividendDialogProps {
   onSuccess?: () => void;
 }
 
-export function EditDividendDialog({ dividend, trigger, onSuccess }: EditDividendDialogProps) {
+export function EditDividendDialog({
+  dividend,
+  trigger,
+  onSuccess,
+}: EditDividendDialogProps) {
   const [open, setOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const qc = useQueryClient();
+  const deleteMutation = useMutation({
+    mutationFn: () =>
+      api.DELETE('/api/v1/investments/dividends/{id}', {
+        params: { path: { id: dividend.id } },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const updateMutation = useMutation({
+    mutationFn: (body: UpdateDividendRequest) =>
+      api
+        .PUT('/api/v1/investments/dividends/{id}', {
+          params: { path: { id: dividend.id } },
+          body,
+        })
+        .then((r) => r.data! as Dividend),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const isDeleting = deleteMutation.isPending;
+  const isSubmitting = updateMutation.isPending;
 
   const [type, setType] = useState<DividendType>(dividend.type);
   const [amount, setAmount] = useState(dividend.amount);
@@ -47,30 +72,29 @@ export function EditDividendDialog({ dividend, trigger, onSuccess }: EditDividen
   const [notes, setNotes] = useState(dividend.notes || '');
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this dividend payout record?')) return;
-    setIsDeleting(true);
+    if (
+      !confirm('Are you sure you want to delete this dividend payout record?')
+    )
+      return;
     try {
-      const res = await deleteDividend(dividend.id);
-      if (res.success) {
-        toast.success('Dividend deleted');
-        setOpen(false);
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message);
-      }
+      await deleteMutation.mutateAsync();
+      toast.success('Dividend deleted');
+      setOpen(false);
+      onSuccess?.();
     } catch (err) {
-      toast.error('Failed to delete dividend: ' + (err as Error).message);
-    } finally {
-      setIsDeleting(false);
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to delete dividend'
+      );
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
     try {
-      const res = await updateDividend(dividend.id, {
+      await updateMutation.mutateAsync({
         type,
         amount: Number(amount),
         perUnit: perUnit ? Number(perUnit) : undefined,
@@ -80,17 +104,15 @@ export function EditDividendDialog({ dividend, trigger, onSuccess }: EditDividen
         notes: notes || undefined,
       });
 
-      if (res.success) {
-        toast.success('Dividend updated');
-        setOpen(false);
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message);
-      }
+      toast.success('Dividend updated');
+      setOpen(false);
+      onSuccess?.();
     } catch (err) {
-      toast.error('Failed to update dividend: ' + (err as Error).message);
-    } finally {
-      setIsSubmitting(false);
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to update dividend'
+      );
     }
   };
 
@@ -100,7 +122,10 @@ export function EditDividendDialog({ dividend, trigger, onSuccess }: EditDividen
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button size="icon-xs" className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">
+          <Button
+            size="icon-xs"
+            className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+          >
             <Edit className="w-3.5 h-3.5" />
           </Button>
         )}
@@ -116,17 +141,25 @@ export function EditDividendDialog({ dividend, trigger, onSuccess }: EditDividen
         </DialogHeader>
 
         <DialogBody>
-          <form id="edit-dividend-form" onSubmit={handleSubmit} className="space-y-3 py-1">
+          <form
+            id="edit-dividend-form"
+            onSubmit={handleSubmit}
+            className="space-y-3 py-1"
+          >
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Broker Account</Label>
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Broker Account
+                </Label>
                 <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
                   {dividend.brokerName || 'Broker'}
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Instrument</Label>
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Instrument
+                </Label>
                 <div className="w-full rounded-md border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900/60 px-3 py-2 text-xs text-slate-600 dark:text-slate-300">
                   {dividend.instrumentName || 'Instrument'}
                   {dividend.symbol ? ` (${dividend.symbol})` : ''}
@@ -136,15 +169,26 @@ export function EditDividendDialog({ dividend, trigger, onSuccess }: EditDividen
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type</Label>
-                <Select value={type} onValueChange={(val) => setType(val as DividendType)}>
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Type
+                </Label>
+                <Select
+                  value={type}
+                  onValueChange={(val) => setType(val as DividendType)}
+                >
                   <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                    <SelectItem value="dividend" className="text-xs">Dividend</SelectItem>
-                    <SelectItem value="interest" className="text-xs">Interest</SelectItem>
-                    <SelectItem value="other" className="text-xs">Other Payout</SelectItem>
+                    <SelectItem value="dividend" className="text-xs">
+                      Dividend
+                    </SelectItem>
+                    <SelectItem value="interest" className="text-xs">
+                      Interest
+                    </SelectItem>
+                    <SelectItem value="other" className="text-xs">
+                      Other Payout
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

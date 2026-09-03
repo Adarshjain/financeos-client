@@ -186,10 +186,7 @@ export function LoansList({
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <Badge
-                        variant="outline"
-                        className="capitalize text-2xs"
-                      >
+                      <Badge variant="outline" className="capitalize text-2xs">
                         {loan.loanType.replace('_', ' ')}
                       </Badge>
                     </td>

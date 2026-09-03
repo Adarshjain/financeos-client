@@ -1,57 +1,50 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 
-import {
-  createGmailSender,
-  deleteGmailSender,
-  disconnectGmailConnection,
-  getGmailAttentionItems,
-  listGmailConnections,
-  listGmailSenders,
-  retryGmailAttentionItem,
-  startGmailOAuth,
-  syncGmail,
-  updateGmailSender,
-} from '@/actions/gmail';
 import { emitJobStarted } from '@/components/jobs/jobsBus';
-import { useJobPolling } from '@/hooks/useJobPolling';
-import type {
-  GmailConnectionResponse,
-  GmailSenderRequest,
-  GmailSenderResponse,
-  PagedGmailAttention,
-  SyncSummary,
-} from '@/lib/types';
+import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
+import { getErrorMessage } from '@/lib/api/errorMessage';
+// GmailSenderResponse comes from the generated types, not @/lib/types: the
+// spec marks `name` optional+nullable, where the hand-written version in
+// @/lib/types only marks it optional — see "Spec follow-ups" in the
+// migration report.
+import type { GmailSenderRequest, GmailSenderResponse } from '@/lib/api/types';
+import { keys } from '@/lib/query/keys';
+import type { SyncSummary } from '@/lib/types';
 
+import { useGmailMutations } from './useGmailMutations';
+import { useGmailQueries } from './useGmailQueries';
+
+/**
+ * Composes the Gmail reads (`useGmailQueries`), writes (`useGmailMutations`)
+ * and the sync job's live status (`useJobStatusPolling`) into the flat API
+ * `GmailConnect` and its cards already consume.
+ */
 export function useGmailConnect() {
-  const [loading, setLoading] = useState<
-    'connect' | 'sync' | 'connections' | 'senders' | 'attention' | null
-  >(null);
-  const [connections, setConnections] = useState<GmailConnectionResponse[]>([]);
-  const [senders, setSenders] = useState<GmailSenderResponse[]>([]);
-  const [attentionData, setAttentionData] =
-    useState<PagedGmailAttention | null>(null);
+  const qc = useQueryClient();
   const [attentionPage, setAttentionPage] = useState(0);
+  const { connections, senders, attentionData, loading: readsLoading } = useGmailQueries({ attentionPage });
+  const {
+    startOAuthMutation,
+    syncMutation,
+    disconnectMutation,
+    retryAttentionMutation,
+    createSenderMutation,
+    updateSenderMutation,
+    deleteSenderMutation,
+  } = useGmailMutations();
 
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
-  const [message, setMessage] = useState<{
-    type: 'success' | 'error';
-    text: string;
-  } | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const fetchAttention = useCallback(async (page = 0) => {
-    const res = await getGmailAttentionItems(page, 10, false);
-    if (res.success) {
-      setAttentionData(res.data);
-    }
-  }, []);
-
-  const { isPolling } = useJobPolling<SyncSummary>(activeJobId, (job) => {
+  const { isPolling } = useJobStatusPolling<SyncSummary>(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED') {
       toast.success('Sync completed!');
-      fetchAttention(attentionPage);
+      // The job is what actually creates/reconciles transactions.
+      qc.invalidateQueries({ queryKey: keys.transactions.all });
     } else if (job.status === 'FAILED') {
       setMessage({ type: 'error', text: job.errorMessage || 'Sync failed.' });
       toast.error('Sync failed.');
@@ -62,53 +55,26 @@ export function useGmailConnect() {
     setActiveJobId(null);
   });
 
-  // Dialog management
-  const [isSenderDialogOpen, setIsSenderDialogOpen] = useState(false);
-  const [editingSender, setEditingSender] =
-    useState<GmailSenderResponse | null>(null);
-  const [submittingSender, setSubmittingSender] = useState(false);
+  const isSyncing = Boolean(activeJobId) && isPolling;
+  const loading = startOAuthMutation.isPending ? 'connect' : syncMutation.isPending ? 'sync' : readsLoading ? 'connections' : null;
 
-  // Form states for Sender
+  // Sender add/edit dialog state
+  const [isSenderDialogOpen, setIsSenderDialogOpen] = useState(false);
+  const [editingSender, setEditingSender] = useState<GmailSenderResponse | null>(null);
   const [senderName, setSenderName] = useState('');
   const [senderAddress, setSenderAddress] = useState('');
   const [senderEnabled, setSenderEnabled] = useState(true);
-
-  // Load data on mount
-  useEffect(() => {
-    let active = true;
-    const fetchInitialData = async () => {
-      await Promise.resolve();
-      if (!active) return;
-      setLoading('connections');
-      const [connRes, sendersRes, attentionRes] = await Promise.all([
-        listGmailConnections(),
-        listGmailSenders(),
-        getGmailAttentionItems(0, 10, false),
-      ]);
-
-      if (!active) return;
-      if (connRes.success) setConnections(connRes.data);
-      if (sendersRes.success) setSenders(sendersRes.data);
-      if (attentionRes.success) setAttentionData(attentionRes.data);
-      setLoading(null);
-    };
-    fetchInitialData();
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const isSyncing = Boolean(activeJobId) && isPolling;
+  const submittingSender = createSenderMutation.isPending || updateSenderMutation.isPending;
 
   const handleConnect = async () => {
-    setLoading('connect');
     setMessage(null);
-    const response = await startGmailOAuth();
-    if (response.success && response.data.authorizationUrl) {
-      window.location.href = response.data.authorizationUrl;
-    } else if (!response.success) {
-      setMessage({ type: 'error', text: response.error.message });
-      setLoading(null);
+    try {
+      const data = await startOAuthMutation.mutateAsync();
+      if (data?.authorizationUrl) {
+        window.location.href = data.authorizationUrl;
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: getErrorMessage(err, 'Failed to start Gmail OAuth') });
     }
   };
 
@@ -120,42 +86,38 @@ export function useGmailConnect() {
     ) {
       return;
     }
-    const response = await disconnectGmailConnection(id);
-    if (response.success) {
+    try {
+      await disconnectMutation.mutateAsync(id);
       toast.success('Gmail account disconnected');
-      const connRes = await listGmailConnections();
-      if (connRes.success) setConnections(connRes.data);
-    } else {
-      toast.error(response.error.message);
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Failed to disconnect Gmail connection'));
     }
   };
 
   const handleSync = async () => {
-    setLoading('sync');
     setMessage(null);
-
-    const response = await syncGmail();
-
-    if (response.success && response.data?.jobId) {
-      const jobId = response.data.jobId;
-      setActiveJobId(jobId);
-      emitJobStarted(jobId);
-      toast.info('Gmail sync started in background.');
-    } else if (!response.success) {
-      setMessage({ type: 'error', text: response.error.message });
+    try {
+      const data = await syncMutation.mutateAsync();
+      if (data?.jobId) {
+        setActiveJobId(data.jobId);
+        emitJobStarted(data.jobId);
+        toast.info('Gmail sync started in background.');
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: getErrorMessage(err, 'Failed to sync Gmail') });
     }
-    setLoading(null);
   };
 
   const handleRetryAttentionItem = async (ledgerId: string) => {
-    const res = await retryGmailAttentionItem(ledgerId);
-    if (res.success && res.data?.jobId) {
+    try {
+      const data = await retryAttentionMutation.mutateAsync(ledgerId);
       toast.success('Item queued for retry!');
-      setActiveJobId(res.data.jobId);
-      emitJobStarted(res.data.jobId);
-      fetchAttention(attentionPage);
-    } else if (!res.success) {
-      toast.error(res.error.message);
+      if (data?.jobId) {
+        setActiveJobId(data.jobId);
+        emitJobStarted(data.jobId);
+      }
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Failed to retry Gmail attention item'));
     }
   };
 
@@ -177,7 +139,6 @@ export function useGmailConnect() {
 
   const handleSenderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmittingSender(true);
 
     const requestData: GmailSenderRequest = {
       name: senderName || undefined,
@@ -185,37 +146,31 @@ export function useGmailConnect() {
       enabled: senderEnabled,
     };
 
-    let response;
-    if (editingSender) {
-      response = await updateGmailSender(editingSender.id, requestData);
-    } else {
-      response = await createGmailSender(requestData);
-    }
-
-    if (response.success) {
-      toast.success(editingSender ? 'Sender updated' : 'Sender added');
+    try {
+      if (editingSender) {
+        await updateSenderMutation.mutateAsync({ id: editingSender.id, body: requestData });
+        toast.success('Sender updated');
+      } else {
+        await createSenderMutation.mutateAsync(requestData);
+        toast.success('Sender added');
+      }
       setIsSenderDialogOpen(false);
-      const sendersRes = await listGmailSenders();
-      if (sendersRes.success) setSenders(sendersRes.data);
-    } else {
-      toast.error(response.error.message);
+    } catch (err) {
+      toast.error(
+        getErrorMessage(err, editingSender ? 'Failed to update Gmail sender' : 'Failed to create Gmail sender')
+      );
     }
-    setSubmittingSender(false);
   };
 
   const handleSenderDelete = async (id: string) => {
-    if (
-      !confirm('Are you sure you want to delete this sender from the allowlist?')
-    ) {
+    if (!confirm('Are you sure you want to delete this sender from the allowlist?')) {
       return;
     }
-    const response = await deleteGmailSender(id);
-    if (response.success) {
+    try {
+      await deleteSenderMutation.mutateAsync(id);
       toast.success('Sender deleted');
-      const sendersRes = await listGmailSenders();
-      if (sendersRes.success) setSenders(sendersRes.data);
-    } else {
-      toast.error(response.error.message);
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Failed to delete Gmail sender'));
     }
   };
 
@@ -238,7 +193,6 @@ export function useGmailConnect() {
     setSenderAddress,
     senderEnabled,
     setSenderEnabled,
-    fetchAttention,
     handleConnect,
     handleDisconnect,
     handleSync,

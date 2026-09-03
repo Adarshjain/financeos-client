@@ -37,7 +37,9 @@ export function LoanMatchSuggestionsBanner({
         </div>
         <div className="flex gap-2">
           {matchSuggestions &&
-            matchSuggestions.suggestions.some((s) => s.candidates.length > 0) && (
+            matchSuggestions.suggestions.some(
+              (s) => s.candidates.length > 0
+            ) && (
               <Button size="xs" onClick={onConfirmAllMatches}>
                 <CheckCircle2 className="h-3 w-3" /> Confirm All
               </Button>
@@ -58,9 +60,12 @@ export function LoanMatchSuggestionsBanner({
 
       {matchSuggestions && (
         <div className="space-y-2 text-xs pt-1">
-          {matchSuggestions.suggestions.every((s) => s.candidates.length === 0) ? (
+          {matchSuggestions.suggestions.every(
+            (s) => s.candidates.length === 0
+          ) ? (
             <p className="text-slate-500 italic">
-              No matching bank transactions found for due or overdue installments.
+              No matching bank transactions found for due or overdue
+              installments.
             </p>
           ) : (
             matchSuggestions.suggestions

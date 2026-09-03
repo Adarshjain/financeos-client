@@ -34,14 +34,15 @@ export default async function InvestmentsPage() {
       </div>
 
       <JobsPanel
-        types={['PRICE_REFRESH', 'INVESTMENT_IMPORT_COMMIT', 'BROKER_RECONCILE_COMMIT']}
+        types={[
+          'PRICE_REFRESH',
+          'INVESTMENT_IMPORT_COMMIT',
+          'BROKER_RECONCILE_COMMIT',
+        ]}
         title="Recent background jobs"
       />
 
-      <HoldingsTab
-        positions={positions}
-        brokerAccounts={brokerAccounts}
-      />
+      <HoldingsTab positions={positions} brokerAccounts={brokerAccounts} />
     </div>
   );
 }

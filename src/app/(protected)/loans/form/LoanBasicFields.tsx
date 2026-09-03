@@ -164,8 +164,7 @@ export function LoanBasicFields({
               </SelectItem>
               {bankAccounts
                 .filter(
-                  (acc) =>
-                    !isAccountClosed(acc) || acc.id === paymentAccountId
+                  (acc) => !isAccountClosed(acc) || acc.id === paymentAccountId
                 )
                 .map((acc) => (
                   <SelectItem key={acc.id} value={acc.id} className="text-xs">

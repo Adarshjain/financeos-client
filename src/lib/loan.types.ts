@@ -63,9 +63,9 @@ export interface LoanResponse {
   id: string;
   name: string;
   loanType: LoanType;
-  lender: string;
-  loanAccountNumber?: string;
-  paymentAccountId?: string;
+  lender?: string | null;
+  loanAccountNumber?: string | null;
+  paymentAccountId?: string | null;
   principal: number;
   annualRatePct: number;
   rateType: RateType;
@@ -74,7 +74,7 @@ export interface LoanResponse {
   firstEmiDate: string;
   emiAmount: number;
   status: LoanStatus;
-  notes?: string;
+  notes?: string | null;
   createdAt: string;
   updatedAt: string;
   currentAnnualRatePct: number;
@@ -82,11 +82,11 @@ export interface LoanResponse {
   outstandingPrincipal: number;
   totalInstallments: number;
   settledInstallments: number;
-  nextDueDate?: string;
-  projectedEndDate?: string;
+  nextDueDate?: string | null;
+  projectedEndDate?: string | null;
   totalInterestPaid: number;
   totalInterestRemaining: number;
-  effectiveAprPct?: number;
+  effectiveAprPct?: number | null;
 }
 
 export interface LoanEventResponse {
@@ -94,11 +94,11 @@ export interface LoanEventResponse {
   loanId: string;
   eventType: LoanEventType;
   effectiveDate: string;
-  newAnnualRatePct?: number;
-  amount?: number;
-  adjustmentMode?: AdjustmentMode;
-  newEmiOverride?: number;
-  transactionId?: string;
+  newAnnualRatePct?: number | null;
+  amount?: number | null;
+  adjustmentMode?: AdjustmentMode | null;
+  newEmiOverride?: number | null;
+  transactionId?: string | null;
   createdAt: string;
 }
 
@@ -108,8 +108,8 @@ export interface LoanChargeResponse {
   chargeType: LoanChargeType;
   amount: number;
   chargeDate: string;
-  transactionId?: string;
-  notes?: string;
+  transactionId?: string | null;
+  notes?: string | null;
   createdAt: string;
 }
 
@@ -117,6 +117,7 @@ export interface LoanDetailResponse {
   loan: LoanResponse;
   events: LoanEventResponse[];
   charges: LoanChargeResponse[];
+  installments?: InstallmentDto[];
 }
 
 export interface PaymentInfo {

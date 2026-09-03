@@ -1,29 +1,35 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { deleteFnoTrade } from '@/actions/investments';
 import { Broker } from '@/lib/account.types';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
 import { FnoTradeListResponse, FnoTradeResponse } from '@/lib/types';
 
 import { FnoMetrics } from './FnoSummaryCards';
 
 interface UseFnoViewProps {
-  initialFnoData: FnoTradeListResponse;
   brokerAccounts: Broker[];
 }
 
-export function useFnoView({
-  initialFnoData,
-  brokerAccounts,
-}: UseFnoViewProps) {
-  const router = useRouter();
+export function useFnoView({ brokerAccounts }: UseFnoViewProps) {
+  const qc = useQueryClient();
 
-  const [trades, setTrades] = useState<FnoTradeResponse[]>(
-    initialFnoData.trades || []
-  );
+  const { data } = useQuery({
+    queryKey: keys.investments.fno(),
+    queryFn: async () =>
+      (await api.GET('/api/v1/investments/fno')).data! as FnoTradeListResponse,
+  });
+  const trades = useMemo(() => data?.trades ?? [], [data]);
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) =>
+      api.DELETE('/api/v1/investments/fno/{id}', { params: { path: { id } } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
 
   // Filter States
   const [search, setSearch] = useState('');
@@ -45,27 +51,24 @@ export function useFnoView({
   const [deletingTrade, setDeletingTrade] = useState<FnoTradeResponse | null>(
     null
   );
-  const [isDeleting, setIsDeleting] = useState(false);
+  const isDeleting = deleteMutation.isPending;
 
   const handleRefresh = () => {
-    router.refresh();
+    qc.invalidateQueries({ queryKey: keys.investments.all });
   };
 
   const handleDeleteConfirm = async () => {
     if (!deletingTrade) return;
-    setIsDeleting(true);
     try {
-      const res = await deleteFnoTrade(deletingTrade.id);
-      if (res.success) {
-        toast.success(`Deleted trade for ${deletingTrade.tradingSymbol}`);
-        setTrades((prev) => prev.filter((t) => t.id !== deletingTrade.id));
-        setDeletingTrade(null);
-        handleRefresh();
-      } else {
-        toast.error(res.error?.message || 'Failed to delete trade');
-      }
-    } finally {
-      setIsDeleting(false);
+      await deleteMutation.mutateAsync(deletingTrade.id);
+      toast.success(`Deleted trade for ${deletingTrade.tradingSymbol}`);
+      setDeletingTrade(null);
+    } catch (err) {
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to delete trade'
+      );
     }
   };
 
@@ -75,8 +78,9 @@ export function useFnoView({
       if (search.trim()) {
         const q = search.trim().toLowerCase();
         const symbolMatch = trade.tradingSymbol?.toLowerCase().includes(q);
-        const underlyingMatch =
-          trade.underlyingSymbol?.toLowerCase().includes(q);
+        const underlyingMatch = trade.underlyingSymbol
+          ?.toLowerCase()
+          .includes(q);
         const notesMatch = trade.notes?.toLowerCase().includes(q);
         if (!symbolMatch && !underlyingMatch && !notesMatch) return false;
       }
@@ -97,8 +101,8 @@ export function useFnoView({
 
   const sortedTrades = useMemo(() => {
     return [...filteredTrades].sort((a, b) => {
-      let valA: any = a[sortField];
-      let valB: any = b[sortField];
+      let valA: string | number = a[sortField] ?? '';
+      let valB: string | number = b[sortField] ?? '';
 
       if (sortField === 'exitDate') {
         valA = a.exitDate || a.createdAt || '';

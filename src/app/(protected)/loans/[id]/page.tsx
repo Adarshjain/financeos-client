@@ -1,9 +1,10 @@
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { notFound } from 'next/navigation';
 
-import { fetchLoanDetailAction, fetchLoanScheduleAction } from '@/actions/loans';
 import { LoanDetail } from '@/app/(protected)/loans/[id]/LoanDetail';
-import type { Account } from '@/lib/account.types';
-import { accountsApi } from '@/lib/apiClient';
+import { accountsApi, loansApi } from '@/lib/apiClient';
+import { getQueryClient } from '@/lib/query/client';
+import { keys } from '@/lib/query/keys';
 
 interface LoanDetailPageProps {
   params: Promise<{ id: string }>;
@@ -11,35 +12,37 @@ interface LoanDetailPageProps {
 
 export async function generateMetadata({ params }: LoanDetailPageProps) {
   const { id } = await params;
-  const res = await fetchLoanDetailAction(id);
-  if (!res.success) return { title: 'Loan Not Found' };
-  return {
-    title: `${res.data.loan.name} | FinanceOS`,
-  };
+  try {
+    const detail = await loansApi.getDetail(id);
+    return { title: `${detail.loan.name} | FinanceOS` };
+  } catch {
+    return { title: 'Loan Not Found' };
+  }
 }
 
 export default async function LoanDetailPage({ params }: LoanDetailPageProps) {
   const { id } = await params;
 
-  const [detailRes, scheduleRes, bankAccounts] = await Promise.all([
-    fetchLoanDetailAction(id),
-    fetchLoanScheduleAction(id),
-    accountsApi.list().catch(() => [] as Account[]),
+  const [detail, schedule] = await Promise.all([
+    loansApi.getDetail(id).catch(() => null),
+    loansApi.getSchedule(id).catch(() => []),
   ]);
 
-  if (!detailRes.success) {
+  if (!detail) {
     notFound();
   }
 
-  const initialDetail = detailRes.data;
-  const initialSchedule = scheduleRes.success ? scheduleRes.data.installments : [];
-  const filteredAccounts = bankAccounts.filter((a: Account) => a.type === 'bank_account');
+  const qc = getQueryClient();
+  qc.setQueryData(keys.loans.byId(id), detail);
+  qc.setQueryData(keys.loans.schedule(id), schedule);
+  await qc.prefetchQuery({
+    queryKey: keys.accounts.list(),
+    queryFn: () => accountsApi.list(),
+  });
 
   return (
-    <LoanDetail
-      initialDetail={initialDetail}
-      initialSchedule={initialSchedule}
-      bankAccounts={filteredAccounts}
-    />
+    <HydrationBoundary state={dehydrate(qc)}>
+      <LoanDetail loanId={id} />
+    </HydrationBoundary>
   );
 }

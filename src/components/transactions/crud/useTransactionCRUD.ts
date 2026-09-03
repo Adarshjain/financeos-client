@@ -1,20 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import {
-  categorizeDescription,
-  createCategory as createCategoryAction,
-} from '@/actions/categories';
-import { createTransaction, updateTransaction } from '@/actions/transactions';
 import { isValidMcc } from '@/components/forms/MccInput';
-import {
-  Account,
-  isAccountClosed,
-  isCardholderClosed,
-} from '@/lib/account.types';
-import { Category } from '@/lib/categories.types';
+import { api, ApiError } from '@/lib/api/client';
+import type { Schemas } from '@/lib/api/types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { useCategories } from '@/lib/query/hooks/useCategories';
+import { keys } from '@/lib/query/keys';
 import {
   ReviewType,
   Transaction,
@@ -22,36 +17,53 @@ import {
   TransactionRequest,
 } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
-import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
+import { parseCalendarDate } from '@/lib/utils';
+
+import {
+  buildTransactionRequest,
+  computeHasRewardDetails,
+  getCardOptions,
+  getDefaultCardIdForAccount,
+  getSelectableAccounts,
+  parseNonNegativeAmount,
+} from './transactionCRUD.helpers';
+import { useCategorySuggestions } from './useCategorySuggestions';
 
 interface UseTransactionCRUDProps {
   transaction?: Transaction;
-  accounts: Account[];
-  categories: Category[];
   onSuccess?: () => void;
 }
 
 export function useTransactionCRUD({
   transaction,
-  accounts,
-  categories,
   onSuccess,
 }: UseTransactionCRUDProps) {
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>(
-    transaction?.categories ?? []
-  );
-  const [localCategories, setLocalCategories] = useState<Category[]>(
-    categories ?? []
-  );
+  const queryClient = useQueryClient();
+  const { data: accounts = [] } = useAccounts();
+  const { data: categories = [] } = useCategories();
+  const isUpdateMode = !!transaction;
+
   const [amount, setAmount] = useState<string>(
     transaction ? '' + transaction?.amount.toFixed(2) : '-0'
   );
   const [date, setDate] = useState<Date>(
     transaction ? parseCalendarDate(transaction.date) : new Date()
   );
-  const [creatingCategory, setCreatingCategory] = useState(false);
-  const [suggestingCategories, setSuggestingCategories] = useState(false);
-  const suggestedDescriptionRef = useRef<string | null>(null);
+  const [mcc, setMcc] = useState<string>(transaction?.mcc ?? '');
+  const {
+    localCategories,
+    selectedCategories,
+    setSelectedCategories,
+    creatingCategory,
+    suggestingCategories,
+    createCategory,
+    handleDescriptionBlur,
+  } = useCategorySuggestions({
+    categories,
+    initialSelectedCategories: transaction?.categories ?? [],
+    isUpdateMode,
+    onMccSuggested: (suggested) => setMcc((prev) => (!prev ? suggested : prev)),
+  });
 
   const [accountId, setAccountId] = useState<string>(
     transaction?.accountId ?? ''
@@ -60,48 +72,19 @@ export function useTransactionCRUD({
     transaction?.cardId ?? null
   );
 
-  const selectableAccounts = accounts.filter(
-    (a) =>
-      (a.type !== AccountType.BROKER && !isAccountClosed(a)) ||
-      a.id === transaction?.accountId
-  );
+  const selectableAccounts = getSelectableAccounts(accounts, transaction);
   const selectedAccount = accounts.find((a) => a.id === accountId);
   const supportsCards =
     selectedAccount?.type === AccountType.CREDIT_CARD ||
     selectedAccount?.type === AccountType.BANK_ACCOUNT;
   const isBank = selectedAccount?.type === AccountType.BANK_ACCOUNT;
 
-  const cardOptions = supportsCards
-    ? (selectedAccount.cardholders ?? []).flatMap((ch) =>
-        (ch.cards ?? [])
-          .filter(
-            (c) =>
-              (!c.closedOn && !isCardholderClosed(ch)) ||
-              c.id === transaction?.cardId
-          )
-          .map((c) => ({
-            id: c.id,
-            label: `${ch.personName || (ch.role === 'PRIMARY' ? (isBank ? 'Your card' : 'You') : (isBank ? 'Joint holder' : 'Add-on'))} (•••• ${c.last4})`,
-          }))
-      )
-    : [];
+  const cardOptions = getCardOptions(selectedAccount, isBank, transaction);
 
   const handleAccountChange = (newAccountId: string) => {
     setAccountId(newAccountId);
     const acc = accounts.find((a) => a.id === newAccountId);
-    if (acc?.type === AccountType.CREDIT_CARD) {
-      const cardholders = acc.cardholders ?? [];
-      const primaryOpenCard = cardholders
-        .find((ch) => ch.role === 'PRIMARY')
-        ?.cards?.find((c) => !c.closedOn);
-      const anyOpenCard = cardholders
-        .filter((ch) => !isCardholderClosed(ch))
-        .flatMap((ch) => ch.cards ?? [])
-        .find((c) => !c.closedOn);
-      setCardId(primaryOpenCard?.id ?? anyOpenCard?.id ?? null);
-    } else {
-      setCardId(null);
-    }
+    setCardId(getDefaultCardIdForAccount(acc));
   };
 
   const [isMonitored, setIsMonitored] = useState(
@@ -116,15 +99,8 @@ export function useTransactionCRUD({
   const [reviewType, setReviewType] = useState<ReviewType>(
     transaction?.reviewType ?? 'MANUALLY_REVIEWED'
   );
-  const [mcc, setMcc] = useState<string>(transaction?.mcc ?? '');
 
-  const hasRewardDetails =
-    transaction?.settlementDate != null ||
-    transaction?.instantDiscount != null ||
-    transaction?.convenienceFee != null ||
-    transaction?.channel != null ||
-    !!transaction?.isEmi ||
-    !!transaction?.isInternational;
+  const hasRewardDetails = computeHasRewardDetails(transaction);
   const [showRewardDetails, setShowRewardDetails] = useState(hasRewardDetails);
   const [settlementDate, setSettlementDate] = useState<Date | undefined>(
     transaction?.settlementDate
@@ -150,55 +126,34 @@ export function useTransactionCRUD({
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isUpdateMode = !!transaction;
   const formRef = useRef<HTMLFormElement | null>(null);
 
-  useEffect(() => {
-    setLocalCategories(categories);
-  }, [categories]);
+  const createMutation = useMutation({
+    mutationFn: async (body: TransactionRequest) => {
+      const { data } = await api.POST('/api/v1/transactions', {
+        body: body as Schemas['CreateTransactionRequest'],
+      });
+      return data!;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: keys.accounts.all });
+    },
+  });
 
-  const createCategory = async (categoryName: string) => {
-    setCreatingCategory(true);
-    const result = await createCategoryAction(categoryName);
-    if (result.success) {
-      setLocalCategories((prev) => [...prev, result.data]);
-      setSelectedCategories((prev) => [...prev, result.data]);
-    } else {
-      toast.error('Failed to create category: ' + result.error.message);
-    }
-    setCreatingCategory(false);
-  };
-
-  const handleDescriptionBlur = async (
-    e: React.FocusEvent<HTMLTextAreaElement>
-  ) => {
-    if (isUpdateMode) return;
-    const description = e.target.value.trim();
-    if (
-      description.length < 3 ||
-      suggestedDescriptionRef.current === description
-    ) {
-      return;
-    }
-    suggestedDescriptionRef.current = description;
-    setSuggestingCategories(true);
-    try {
-      const result = await categorizeDescription(description);
-      if (result.success && result.data.categories.length > 0) {
-        const suggested = result.data.categories.map(
-          (c) => categories.find((existing) => existing.id === c.id) ?? c
-        );
-        setSelectedCategories((prev) => (prev.length === 0 ? suggested : prev));
-      }
-      if (result.success && result.data.mcc) {
-        setMcc((prev) => (!prev ? result.data.mcc! : prev));
-      }
-    } catch {
-      // Silent suggestion
-    } finally {
-      setSuggestingCategories(false);
-    }
-  };
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, body }: { id: string; body: TransactionRequest }) => {
+      const { data } = await api.PUT('/api/v1/transactions/{id}', {
+        params: { path: { id } },
+        body: body as Schemas['UpdateTransactionRequest'],
+      });
+      return data!;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: keys.accounts.all });
+    },
+  });
 
   const onSubmit = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -216,62 +171,53 @@ export function useTransactionCRUD({
       toast.error('MCC code must be exactly 4 digits (or left empty).');
       return;
     }
-    const discountValue = instantDiscount.trim()
-      ? Number(instantDiscount)
-      : null;
-    const feeValue = convenienceFee.trim() ? Number(convenienceFee) : null;
-    if (
-      discountValue != null &&
-      (Number.isNaN(discountValue) || discountValue < 0)
-    ) {
-      toast.error('Instant discount must be a non-negative number.');
+    const discount = parseNonNegativeAmount(instantDiscount, 'Instant discount');
+    if (discount.error) {
+      toast.error(discount.error);
       return;
     }
-    if (feeValue != null && (Number.isNaN(feeValue) || feeValue < 0)) {
-      toast.error('Convenience fee must be a non-negative number.');
+    const fee = parseNonNegativeAmount(convenienceFee, 'Convenience fee');
+    if (fee.error) {
+      toast.error(fee.error);
       return;
     }
     setIsSubmitting(true);
     try {
-      const categoryIds = selectedCategories.map((c) => c.id);
-      const transactionRequest: TransactionRequest = {
+      const transactionRequest = buildTransactionRequest({
         accountId,
-        cardId: supportsCards ? cardId || null : null,
-        description: form.description.value ?? undefined,
-        amount: Number(amount),
-        categoryIds,
-        date: toCalendarDate(date),
-        isTransactionExcluded: isExcluded,
-        isTransactionUnderMonitoring: isMonitored,
-        monitoringReason: isMonitored ? monitoringReason : undefined,
-        mcc: rawMcc || (isUpdateMode ? '' : undefined),
-        rewardDetails: {
-          settlementDate: settlementDate
-            ? toCalendarDate(settlementDate)
-            : null,
-          instantDiscount: discountValue,
-          convenienceFee: feeValue,
-          channel: channel === 'NONE' ? null : channel,
-          isEmi: isEmi || null,
-          isInternational: isInternational || null,
-        },
-      };
-      if (isUpdateMode) {
-        transactionRequest.source = transaction?.source ?? 'manual';
-        transactionRequest.reviewType = reviewType;
-      }
-      const res =
-        isUpdateMode && transaction
-          ? await updateTransaction(transaction.id, transactionRequest)
-          : await createTransaction(transactionRequest);
-      if (res.success) {
-        toast.success('Transaction saved!');
-        onSuccess?.();
+        cardId,
+        supportsCards,
+        description: form.description.value,
+        amount,
+        categoryIds: selectedCategories.map((c) => c.id),
+        date,
+        isExcluded,
+        isMonitored,
+        monitoringReason,
+        mcc: rawMcc,
+        isUpdateMode,
+        source: transaction?.source,
+        settlementDate,
+        instantDiscount: discount.value,
+        convenienceFee: fee.value,
+        channel,
+        isEmi,
+        isInternational,
+        reviewType,
+      });
+      if (isUpdateMode && transaction) {
+        await updateMutation.mutateAsync({ id: transaction.id, body: transactionRequest });
       } else {
-        toast.error(res.error.message);
+        await createMutation.mutateAsync(transactionRequest);
       }
+      toast.success('Transaction saved!');
+      onSuccess?.();
     } catch (err) {
-      toast.error('Error:\n' + (err as Error).message);
+      if (err instanceof ApiError) {
+        toast.error(err.response.message);
+      } else {
+        toast.error('Error:\n' + (err as Error).message);
+      }
     } finally {
       setIsSubmitting(false);
     }

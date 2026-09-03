@@ -1,10 +1,10 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Check } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { batchReviewTransactions } from '@/actions/transactions';
 import { batchFailureLabel, reviewReasonLabel } from '@/components/transactions/catalog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -17,6 +17,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
 import type { ReviewReason, Transaction } from '@/lib/transaction.types';
 
 interface ReviewTransactionProps {
@@ -37,11 +39,52 @@ interface ReviewTransactionProps {
  * undefined.
  */
 export const ReviewTransaction = ({ transaction, onSuccess }: ReviewTransactionProps) => {
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
   const [reasonsToApprove, setReasonsToApprove] = useState<ReviewReason[]>([]);
 
   const reasons = transaction.reviewReasons ?? [];
+
+  const approveMutation = useMutation({
+    mutationFn: async () => {
+      const { data } = await api.POST('/api/v1/transactions/batch-review', {
+        body: {
+          transactionIds: [transaction.id],
+          reviewType: 'MANUALLY_REVIEWED',
+          reviewReasons: reasonsToApprove as ('UNRECONCILED' | 'CATEGORY_UNVERIFIED' | 'DUPLICATE_SUSPECT')[],
+        },
+      });
+      return data;
+    },
+    onSuccess: (data) => {
+      if (!data) return;
+      const { succeededIds = [], skippedIds = [], failures = [] } = data;
+      const failure = failures.find((f) => f.id === transaction.id);
+
+      if (failure) {
+        toast.error(batchFailureLabel(failure.reason || ''));
+        return;
+      }
+      if (skippedIds.includes(transaction.id)) {
+        toast.warning('Nothing to approve — no matching review reasons');
+        return;
+      }
+      if (!succeededIds.includes(transaction.id)) {
+        toast.error('Failed to mark transaction as reviewed');
+        return;
+      }
+
+      toast.success('Transaction marked as reviewed');
+      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      setOpen(false);
+      onSuccess?.();
+    },
+    onError: (error: unknown) => {
+      toast.error(error instanceof ApiError ? error.response.message : (error as Error).message);
+    },
+  });
+
+  const submitting = approveMutation.isPending;
 
   if (transaction.reviewType !== 'NEEDS_REVIEW' || reasons.length === 0) return null;
 
@@ -58,44 +101,8 @@ export const ReviewTransaction = ({ transaction, onSuccess }: ReviewTransactionP
     );
   };
 
-  const handleApprove = async () => {
-    setSubmitting(true);
-    try {
-      const res = await batchReviewTransactions(
-        [transaction.id],
-        'MANUALLY_REVIEWED',
-        reasonsToApprove,
-      );
-
-      if (!res.success) {
-        toast.error(res.error.message);
-        return;
-      }
-
-      const { succeededIds, skippedIds, failures } = res.data;
-      const failure = failures.find((f) => f.id === transaction.id);
-
-      if (failure) {
-        toast.error(batchFailureLabel(failure.reason));
-        return;
-      }
-      if (skippedIds.includes(transaction.id)) {
-        toast.warning('Nothing to approve — no matching review reasons');
-        return;
-      }
-      if (!succeededIds.includes(transaction.id)) {
-        toast.error('Failed to mark transaction as reviewed');
-        return;
-      }
-
-      toast.success('Transaction marked as reviewed');
-      setOpen(false);
-      onSuccess?.();
-    } catch (error) {
-      toast.error((error as Error).message);
-    } finally {
-      setSubmitting(false);
-    }
+  const handleApprove = () => {
+    approveMutation.mutate();
   };
 
   return (

@@ -1,47 +1,33 @@
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+
+import { RULES_PAGE_SIZE } from '@/components/rules/browser/constants';
 import { RulesBrowser } from '@/components/rules/RulesBrowser';
-import { categoriesApi,rulesApi } from '@/lib/apiClient';
+import { categoriesApi, rulesApi } from '@/lib/apiClient';
+import { getQueryClient } from '@/lib/query/client';
+import { keys } from '@/lib/query/keys';
 
-export default async function RulesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ verified?: string; search?: string; page?: string; size?: string }>;
-}) {
-  const { verified, search, page, size } = await searchParams;
+export default async function RulesPage() {
+  const qc = getQueryClient();
 
-  const pageNum = page ? parseInt(page, 10) : 0;
-  const pageSize = size ? parseInt(size, 10) : 50;
+  // Must mirror useRulesBrowser's initial state exactly — same query key,
+  // same params — so the first client paint is served from this hydrated
+  // cache instead of firing a redundant fetch.
+  const listParams = { verified: false, search: undefined, page: 0, size: RULES_PAGE_SIZE };
 
-  // Defaults to false (Unverified) if not specified or is 'false'.
-  // If 'all', verified param is omitted to fetch both verified and unverified.
-  // If 'true', verified param is true.
-  let isVerifiedParam: boolean | undefined = false;
-  if (verified === 'true') {
-    isVerifiedParam = true;
-  } else if (verified === 'all') {
-    isVerifiedParam = undefined;
-  } else if (verified === 'false') {
-    isVerifiedParam = false;
-  } else {
-    // Default to unverified rules
-    isVerifiedParam = false;
-  }
-
-  const [rulesPaged, categories] = await Promise.all([
-    rulesApi.list({
-      verified: isVerifiedParam,
-      search: search || undefined,
-      page: pageNum,
-      size: pageSize,
+  await Promise.all([
+    qc.prefetchQuery({
+      queryKey: keys.rules.list(listParams),
+      queryFn: () => rulesApi.list(listParams),
     }),
-    categoriesApi.list(),
+    qc.prefetchQuery({
+      queryKey: keys.categories.list(),
+      queryFn: () => categoriesApi.list(),
+    }),
   ]);
 
   return (
-    <RulesBrowser
-      initialRules={rulesPaged}
-      categories={categories}
-      initialVerified={verified || 'false'}
-      initialSearch={search || ''}
-    />
+    <HydrationBoundary state={dehydrate(qc)}>
+      <RulesBrowser />
+    </HydrationBoundary>
   );
 }

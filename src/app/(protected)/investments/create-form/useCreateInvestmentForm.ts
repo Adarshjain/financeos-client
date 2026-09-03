@@ -1,11 +1,18 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { createInvestmentTransaction } from '@/actions/investments';
 import { Broker } from '@/lib/account.types';
-import { Instrument, InvestmentTransactionType } from '@/lib/types';
+import { api, ApiError } from '@/lib/api/client';
+import { CreateInvestmentTransactionRequest } from '@/lib/api/types';
+import { keys } from '@/lib/query/keys';
+import {
+  Instrument,
+  InvestmentTransactionResponse,
+  InvestmentTransactionType,
+} from '@/lib/types';
 
 interface UseCreateInvestmentFormProps {
   brokerAccounts: Broker[];
@@ -37,7 +44,15 @@ export function useCreateInvestmentForm({
   const [dpCharges, setDpCharges] = useState('');
   const [otherCharges, setOtherCharges] = useState('');
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const qc = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: (body: CreateInvestmentTransactionRequest) =>
+      api
+        .POST('/api/v1/investments/transactions', { body })
+        .then((r) => r.data! as InvestmentTransactionResponse),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const isSubmitting = createMutation.isPending;
   const [formKey, setFormKey] = useState(0);
 
   const [quantityInput, setQuantityInput] = useState('');
@@ -110,10 +125,8 @@ export function useCreateInvestmentForm({
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      const res = await createInvestmentTransaction(null, {
+      await createMutation.mutateAsync({
         brokerAccountId: selectedBrokerId,
         instrumentId: selectedInstrument.id,
         type,
@@ -133,31 +146,29 @@ export function useCreateInvestmentForm({
         notes: notes || undefined,
       });
 
-      if (res.success) {
-        toast.success(
-          `Recorded ${type.toUpperCase()} trade for ${selectedInstrument.name}`
-        );
-        // Reset form state
-        setSelectedInstrument(null);
-        setType('buy');
-        setBrokerage('');
-        setStt('');
-        setExchangeTxnCharges('');
-        setSebiCharges('');
-        setStampDuty('');
-        setGst('');
-        setDpCharges('');
-        setOtherCharges('');
-        setShowCharges(false);
-        setFormKey((k) => k + 1);
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message);
-      }
+      toast.success(
+        `Recorded ${type.toUpperCase()} trade for ${selectedInstrument.name}`
+      );
+      // Reset form state
+      setSelectedInstrument(null);
+      setType('buy');
+      setBrokerage('');
+      setStt('');
+      setExchangeTxnCharges('');
+      setSebiCharges('');
+      setStampDuty('');
+      setGst('');
+      setDpCharges('');
+      setOtherCharges('');
+      setShowCharges(false);
+      setFormKey((k) => k + 1);
+      onSuccess?.();
     } catch (err) {
-      toast.error('Failed to record trade: ' + (err as Error).message);
-    } finally {
-      setIsSubmitting(false);
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to record trade'
+      );
     }
   };
 

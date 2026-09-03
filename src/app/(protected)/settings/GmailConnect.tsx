@@ -31,7 +31,6 @@ export function GmailConnect() {
     setSenderAddress,
     senderEnabled,
     setSenderEnabled,
-    fetchAttention,
     handleConnect,
     handleDisconnect,
     handleSync,
@@ -61,10 +60,7 @@ export function GmailConnect() {
         <GmailAttentionCard
           attentionData={attentionData}
           attentionPage={attentionPage}
-          onPageChange={(page) => {
-            setAttentionPage(page);
-            fetchAttention(page);
-          }}
+          onPageChange={setAttentionPage}
           onRetry={handleRetryAttentionItem}
         />
       )}

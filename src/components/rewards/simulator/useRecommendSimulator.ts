@@ -3,10 +3,17 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { recommendCards } from '@/actions/rewards';
-import { RewardRecommendationResponse } from '@/lib/rewards.types';
+import { useRecommendCards } from '@/components/rewards/queries/useRewardRecommendMutation';
+import { ApiError } from '@/lib/api/client';
 import { TransactionChannel } from '@/lib/transaction.types';
 import { toCalendarDate } from '@/lib/utils';
+
+const TRANSACTION_CHANNELS: readonly TransactionChannel[] = [
+  'ONLINE', 'POS', 'UPI', 'CONTACTLESS', 'ATM', 'OTHER',
+];
+function isTransactionChannel(v: string): v is TransactionChannel {
+  return (TRANSACTION_CHANNELS as readonly string[]).includes(v);
+}
 
 export function useRecommendSimulator() {
   const [amount, setAmount] = useState<string>('5000');
@@ -20,46 +27,43 @@ export function useRecommendSimulator() {
   const [isIntl, setIsIntl] = useState<boolean>(false);
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
 
-  const [loading, setLoading] = useState<boolean>(false);
-  const [result, setResult] = useState<RewardRecommendationResponse | null>(null);
   const [expandedCards, setExpandedCards] = useState<Record<string, boolean>>({});
 
-  const handleSimulate = async () => {
+  const recommend = useRecommendCards();
+
+  const handleSimulate = () => {
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount <= 0) {
       toast.error('Please enter a valid spend amount greater than ₹0');
       return;
     }
 
-    setLoading(true);
-    try {
-      const res = await recommendCards({
+    recommend.mutate(
+      {
         amount: numericAmount,
         date: toCalendarDate(date),
         categoryIds:
           selectedCategoryIds.length > 0 ? selectedCategoryIds : undefined,
         mcc: mcc.trim() ? mcc.trim() : undefined,
         merchantText: merchantText.trim() ? merchantText.trim() : undefined,
-        channel: channel !== 'ALL' ? (channel as TransactionChannel) : undefined,
+        channel: isTransactionChannel(channel) ? channel : undefined,
         isEmi,
         isIntl,
         accountIds:
           selectedAccountIds.length > 0 ? selectedAccountIds : undefined,
-      });
-
-      if (res.success) {
-        setResult(res.data);
-        if (res.data.recommendations.length > 0) {
-          setExpandedCards({ [res.data.recommendations[0].accountId]: true });
-        }
-      } else {
-        toast.error(res.error.message || 'Failed to simulate card rewards');
+      },
+      {
+        onSuccess: (data) => {
+          if (data.recommendations.length > 0) {
+            setExpandedCards({ [data.recommendations[0].accountId]: true });
+          }
+        },
+        onError: (e) =>
+          toast.error(
+            e instanceof ApiError ? e.response.message : 'Failed to simulate card rewards'
+          ),
       }
-    } catch {
-      toast.error('An unexpected error occurred during simulation');
-    } finally {
-      setLoading(false);
-    }
+    );
   };
 
   const toggleExpand = (accountId: string) => {
@@ -87,8 +91,8 @@ export function useRecommendSimulator() {
     setIsIntl,
     selectedAccountIds,
     setSelectedAccountIds,
-    loading,
-    result,
+    loading: recommend.isPending,
+    result: recommend.data ?? null,
     expandedCards,
     handleSimulate,
     toggleExpand,

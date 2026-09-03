@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import type { Account } from '@/lib/account.types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import type { LoanResponse } from '@/lib/types';
 
 import { LoanBasicFields } from './form/LoanBasicFields';
@@ -18,20 +18,21 @@ import { useLoanForm } from './form/useLoanForm';
 interface LoanFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  bankAccounts: Account[];
   loanToEdit?: LoanResponse;
   hasEventsOrPayments?: boolean;
-  onSuccess?: () => void;
 }
 
 export function LoanForm({
   open,
   onOpenChange,
-  bankAccounts,
   loanToEdit,
   hasEventsOrPayments = false,
-  onSuccess,
 }: LoanFormProps) {
+  const { data: accounts } = useAccounts();
+  const bankAccounts = (accounts ?? []).filter(
+    (a) => a.type === 'bank_account'
+  );
+
   const {
     isEdit,
     name,
@@ -65,7 +66,6 @@ export function LoanForm({
   } = useLoanForm({
     loanToEdit,
     onOpenChange,
-    onSuccess,
   });
 
   const coreDisabled = isEdit && hasEventsOrPayments;
@@ -134,8 +134,8 @@ export function LoanForm({
             label: loading
               ? 'Saving...'
               : isEdit
-              ? 'Save Changes'
-              : 'Create Loan',
+                ? 'Save Changes'
+                : 'Create Loan',
             type: 'submit',
             form: 'loan-form',
             disabled: loading,

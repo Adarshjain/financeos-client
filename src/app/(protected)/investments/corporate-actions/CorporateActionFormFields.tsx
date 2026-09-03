@@ -9,9 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CorporateActionType, Instrument } from '@/lib/types';
+import { Instrument } from '@/lib/types';
 
 import { InstrumentTypeahead } from '../InstrumentTypeahead';
+import { CorporateActionKind } from './useCorporateActionsDialog';
 
 interface CorporateActionFormFieldsProps {
   instrument?: {
@@ -22,8 +23,8 @@ interface CorporateActionFormFieldsProps {
   editingActionId: string | null;
   selectedParentInstrument: Instrument | null;
   setSelectedParentInstrument: (inst: Instrument | null) => void;
-  type: CorporateActionType;
-  setType: (type: CorporateActionType) => void;
+  type: CorporateActionKind;
+  setType: (type: CorporateActionKind) => void;
   exDate: string;
   setExDate: (d: string) => void;
   targetInstrument: Instrument | null;
@@ -93,7 +94,7 @@ export function CorporateActionFormFields({
           </Label>
           <Select
             value={type}
-            onValueChange={(val) => setType(val as CorporateActionType)}
+            onValueChange={(val) => setType(val as CorporateActionKind)}
           >
             <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
               <SelectValue placeholder="Select action" />
@@ -161,8 +162,8 @@ export function CorporateActionFormFields({
           {type === 'merger'
             ? 'Swap Ratio (transferor held → acquirer received)'
             : type === 'demerger'
-            ? 'Share Entitlement Ratio (parent held → child received)'
-            : 'Ratio (units before → units after)'}
+              ? 'Share Entitlement Ratio (parent held → child received)'
+              : 'Ratio (units before → units after)'}
         </Label>
         <div className="grid grid-cols-2 sm:grid-cols-2 gap-3 sm:gap-4 items-start">
           <FormField
@@ -170,8 +171,8 @@ export function CorporateActionFormFields({
               type === 'merger'
                 ? 'Transferor Shares Held'
                 : type === 'demerger'
-                ? 'Parent Shares Held'
-                : 'Ratio From (Held)'
+                  ? 'Parent Shares Held'
+                  : 'Ratio From (Held)'
             }
             name="ratioFrom"
             type="number"
@@ -186,8 +187,8 @@ export function CorporateActionFormFields({
               type === 'merger'
                 ? 'Acquirer Shares Received'
                 : type === 'demerger'
-                ? 'Child Shares Received'
-                : 'Ratio To (Resulting)'
+                  ? 'Child Shares Received'
+                  : 'Ratio To (Resulting)'
             }
             name="ratioTo"
             type="number"
@@ -202,8 +203,8 @@ export function CorporateActionFormFields({
           {type === 'merger'
             ? 'Example: HDFC → HDFC Bank was 25 → 42.'
             : type === 'demerger'
-            ? 'Example: For 1 child share per 2 parent shares held, enter 2 → 1.'
-            : 'Example: For a 2-for-1 split, enter 1 → 2. For a 1:1 bonus issue, enter 1 → 2.'}
+              ? 'Example: For 1 child share per 2 parent shares held, enter 2 → 1.'
+              : 'Example: For a 2-for-1 split, enter 1 → 2. For a 1:1 bonus issue, enter 1 → 2.'}
         </p>
       </div>
 
@@ -217,8 +218,8 @@ export function CorporateActionFormFields({
                 You&apos;ll receive{' '}
                 <strong className="font-semibold">{wholeShares}</strong> whole
                 shares + cash-in-lieu for{' '}
-                <strong className="font-semibold">{fracShares}</strong> fractional
-                shares.
+                <strong className="font-semibold">{fracShares}</strong>{' '}
+                fractional shares.
               </div>
             )}
 

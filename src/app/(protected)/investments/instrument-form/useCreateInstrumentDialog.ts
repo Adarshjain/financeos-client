@@ -1,10 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { createInstrument } from '@/actions/investments';
-import { Instrument, InstrumentType } from '@/lib/types';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
+import {
+  CreateInstrumentRequest,
+  Instrument,
+  InstrumentType,
+} from '@/lib/types';
 
 interface UseCreateInstrumentDialogProps {
   open: boolean;
@@ -23,7 +29,15 @@ export function useCreateInstrumentDialog({
 }: UseCreateInstrumentDialogProps) {
   const searchFirst = initialMode !== 'manual';
   const [manualOpen, setManualOpen] = useState(!searchFirst);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const qc = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: (body: CreateInstrumentRequest) =>
+      api
+        .POST('/api/v1/instruments', { body })
+        .then((r) => r.data! as Instrument),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const isSubmitting = createMutation.isPending;
 
   const [type, setType] = useState<InstrumentType>(defaultType ?? 'stock');
   const [name, setName] = useState('');
@@ -35,11 +49,17 @@ export function useCreateInstrumentDialog({
   const [userEditedYahoo, setUserEditedYahoo] = useState(false);
   const [currency, setCurrency] = useState('INR');
 
-  useEffect(() => {
+  // Reset which sub-form is open whenever the dialog transitions to open.
+  // Adjusted during render (React's documented alternative to an effect for
+  // "reset state when a prop changes") rather than in a useEffect, so this
+  // doesn't trigger a synchronous setState-in-effect cascade.
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setManualOpen(!searchFirst);
     }
-  }, [open, searchFirst]);
+  }
 
   const resetForm = () => {
     setName('');
@@ -85,9 +105,8 @@ export function useCreateInstrumentDialog({
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      const res = await createInstrument({
+      const created = await createMutation.mutateAsync({
         type,
         name: name.trim(),
         symbol: symbol.trim() || undefined,
@@ -98,18 +117,16 @@ export function useCreateInstrumentDialog({
         currency: currency.trim() || undefined,
       });
 
-      if (res.success) {
-        toast.success(`Created instrument ${res.data.name}`);
-        setOpen(false);
-        resetForm();
-        onCreated?.(res.data);
-      } else {
-        toast.error(res.error.message);
-      }
+      toast.success(`Created instrument ${created.name}`);
+      setOpen(false);
+      resetForm();
+      onCreated?.(created);
     } catch (err) {
-      toast.error('Failed to create instrument: ' + (err as Error).message);
-    } finally {
-      setIsSubmitting(false);
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to create instrument'
+      );
     }
   };
 

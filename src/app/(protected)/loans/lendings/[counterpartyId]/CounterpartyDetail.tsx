@@ -6,10 +6,6 @@ import Link from 'next/link';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Button } from '@/components/ui/button';
-import type {
-  CounterpartyResponse,
-  LendingResponse,
-} from '@/lib/types';
 
 import { AddLendingEntryDialog } from './components/AddLendingEntryDialog';
 import { CounterpartyHeroHeader } from './components/CounterpartyHeroHeader';
@@ -19,13 +15,11 @@ import { EditLendingEntryDialog } from './components/EditLendingEntryDialog';
 import { useCounterpartyDetail } from './components/useCounterpartyDetail';
 
 interface CounterpartyDetailProps {
-  counterparty: CounterpartyResponse;
-  initialLendings: LendingResponse[];
+  counterpartyId: string;
 }
 
 export function CounterpartyDetail({
-  counterparty,
-  initialLendings,
+  counterpartyId,
 }: CounterpartyDetailProps) {
   const {
     cp,
@@ -69,10 +63,11 @@ export function CounterpartyDetail({
     handleDeleteLending,
     handleOpenEditLending,
     handleUpdateLending,
-  } = useCounterpartyDetail({
-    initialCounterparty: counterparty,
-    initialLendings,
-  });
+  } = useCounterpartyDetail({ counterpartyId });
+
+  if (!cp) {
+    return <div className="p-6 text-xs text-slate-500">Loading person…</div>;
+  }
 
   return (
     <div className="space-y-2 p-3 pb-32 max-w-7xl mx-auto w-full">
@@ -82,7 +77,11 @@ export function CounterpartyDetail({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setEditCpOpen(true)}
+            onClick={() => {
+              setCpName(cp.name);
+              setCpNotes(cp.notes ?? '');
+              setEditCpOpen(true);
+            }}
             className="flex-1"
           >
             <Edit2 className="h-3.5 w-3.5" /> Edit Person

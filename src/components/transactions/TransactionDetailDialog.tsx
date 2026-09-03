@@ -4,7 +4,6 @@ import React, { useRef,useState } from 'react';
 
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Account } from '@/lib/account.types';
-import { Category } from '@/lib/categories.types';
 import { Transaction } from '@/lib/transaction.types';
 
 import { TransactionDetailContent } from './TransactionDetailContent';
@@ -13,7 +12,6 @@ import { TransactionEditContent } from './TransactionEditContent';
 interface TransactionDetailDialogProps {
   transaction: Transaction;
   accounts: Account[];
-  categories: Category[];
   onMutate?: () => void;
   trigger: React.ReactNode;
 }
@@ -21,7 +19,6 @@ interface TransactionDetailDialogProps {
 export const TransactionDetailDialog = ({
   transaction,
   accounts,
-  categories,
   onMutate,
   trigger,
 }: TransactionDetailDialogProps) => {
@@ -105,8 +102,6 @@ export const TransactionDetailDialog = ({
         {isEditing ? (
           <TransactionEditContent
             transaction={transaction}
-            accounts={accounts}
-            categories={categories}
             onSuccess={() => {
               setIsEditing(false);
               setShowDetails(false);

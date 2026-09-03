@@ -4,12 +4,12 @@
 // driven by one reducer. Switching report type is non-destructive — shared bits
 // (name, description, filters) and the other types' drafts are preserved.
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useReducer, useState } from 'react';
+import { useReducer } from 'react';
 import { toast } from 'sonner';
 
-import { createReport, updateReport } from '@/actions/reports';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,7 +21,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import type { DatasourceCatalog, ReportCatalog, ReportResponse } from '@/lib/reports.types';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
+import type {
+  CreateReportRequest,
+  DatasourceCatalog,
+  ReportCatalog,
+  ReportResponse,
+  UpdateReportRequest,
+} from '@/lib/reports.types';
 
 import { builderReducer, hydrateState, initialBuilderState } from './builderReducer';
 import type { DynamicOptions } from './catalog';
@@ -43,6 +51,7 @@ export function ReportBuilder({
   report,
 }: ReportBuilderProps) {
   const router = useRouter();
+  const qc = useQueryClient();
 
   const getWorkingCatalog = (dsName: string): DatasourceCatalog => {
     const dsDef = catalog.datasources.find((d) => d.name === dsName) ?? catalog.datasources[0];
@@ -61,7 +70,25 @@ export function ReportBuilder({
   });
 
   const activeCatalog = getWorkingCatalog(state.datasource);
-  const [saving, setSaving] = useState(false);
+
+  const createMutation = useMutation({
+    mutationFn: (body: CreateReportRequest) =>
+      api
+        .POST('/api/v1/reports', {
+          body: { ...body, description: body.description ?? undefined, definition: { ...body.definition } },
+        })
+        .then((r) => r.data!),
+  });
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateReportRequest }) =>
+      api
+        .PUT('/api/v1/reports/{id}', {
+          params: { path: { id } },
+          body: { ...body, description: body.description ?? undefined, definition: { ...body.definition } },
+        })
+        .then((r) => r.data!),
+  });
+  const saving = createMutation.isPending || updateMutation.isPending;
 
   const handleSave = async () => {
     if (!state.name.trim()) {
@@ -72,17 +99,21 @@ export function ReportBuilder({
       toast.error('Finish configuring the report before saving.');
       return;
     }
-    setSaving(true);
-    const res =
+    try {
       mode === 'edit' && state.reportId
-        ? await updateReport(state.reportId, buildUpdateRequest(state, activeCatalog))
-        : await createReport(buildCreateRequest(state, activeCatalog));
-    setSaving(false);
-    if (res.success) {
+        ? await updateMutation.mutateAsync({ id: state.reportId, body: buildUpdateRequest(state, activeCatalog) })
+        : await createMutation.mutateAsync(buildCreateRequest(state, activeCatalog));
+      qc.invalidateQueries({ queryKey: keys.reports.all });
       toast.success(mode === 'edit' ? 'Report updated' : 'Report created');
       router.push('/reports');
-    } else {
-      toast.error(res.error.message);
+    } catch (e) {
+      toast.error(
+        e instanceof ApiError
+          ? e.response.message
+          : mode === 'edit'
+            ? 'Failed to update report'
+            : 'Failed to create report',
+      );
     }
   };
 

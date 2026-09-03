@@ -4,53 +4,48 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import {
-  addLoanChargeAction,
-  addLoanEventAction,
-  addLoanPaymentAction,
-  addLoanPaymentsBatchAction,
-  deleteLoanChargeAction,
-  deleteLoanEventAction,
-  deleteLoanPaymentAction,
-  fetchLoanDetailAction,
-  fetchLoanScheduleAction,
-  fetchMatchSuggestionsAction,
-} from '@/actions/loans';
-import {
   AdjustmentMode,
   InstallmentDto,
   LoanChargeType,
-  LoanDetailResponse,
   LoanEventType,
-  MatchSuggestionsResponse,
 } from '@/lib/types';
 
+import { useLoanMatchActions } from './useLoanMatchActions';
+import { useLoanMutations } from './useLoanMutations';
+import { useLoanQueries } from './useLoanQueries';
+
 interface UseLoanDetailProps {
-  initialDetail: LoanDetailResponse;
-  initialSchedule: InstallmentDto[];
+  loanId: string;
 }
 
-export function useLoanDetail({
-  initialDetail,
-  initialSchedule,
-}: UseLoanDetailProps) {
-  const [detail, setDetail] = useState<LoanDetailResponse>(initialDetail);
-  const [schedule, setSchedule] = useState<InstallmentDto[]>(initialSchedule);
+export function useLoanDetail({ loanId }: UseLoanDetailProps) {
+  const {
+    detail,
+    loan,
+    schedule,
+    hasEventsOrPayments,
+    isLoading,
+    error,
+    matchLoading,
+    matchSuggestions,
+    refetchMatches,
+    expandedFYs,
+    currentFY,
+    toggleFY,
+  } = useLoanQueries({ loanId });
+
+  const mutations = useLoanMutations(loanId);
 
   const [editOpen, setEditOpen] = useState(false);
   const [addEventOpen, setAddEventOpen] = useState(false);
   const [addChargeOpen, setAddChargeOpen] = useState(false);
   const [markPaidOpen, setMarkPaidOpen] = useState(false);
-  const [selectedInstallment, setSelectedInstallment] = useState<InstallmentDto | null>(null);
-
-  const [matchLoading, setMatchLoading] = useState(false);
-  const [matchSuggestions, setMatchSuggestions] = useState<MatchSuggestionsResponse | null>(null);
-
-  const [expandedFYs, setExpandedFYs] = useState<Record<string, boolean>>({});
+  const [selectedInstallment, setSelectedInstallment] =
+    useState<InstallmentDto | null>(null);
 
   const [paymentDate, setPaymentDate] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentTxId, setPaymentTxId] = useState('');
-  const [submittingPayment, setSubmittingPayment] = useState(false);
 
   const [eventType, setEventType] = useState<LoanEventType>('rate_change');
   const [effectiveDate, setEffectiveDate] = useState(
@@ -58,50 +53,19 @@ export function useLoanDetail({
   );
   const [newAnnualRatePct, setNewAnnualRatePct] = useState('');
   const [eventAmount, setEventAmount] = useState('');
-  const [adjustmentMode, setAdjustmentMode] = useState<AdjustmentMode>('reduce_tenure');
+  const [adjustmentMode, setAdjustmentMode] =
+    useState<AdjustmentMode>('reduce_tenure');
   const [newEmiOverride, setNewEmiOverride] = useState('');
   const [eventTxId, setEventTxId] = useState('');
-  const [submittingEvent, setSubmittingEvent] = useState(false);
 
-  const [chargeType, setChargeType] = useState<LoanChargeType>('processing_fee');
+  const [chargeType, setChargeType] =
+    useState<LoanChargeType>('processing_fee');
   const [chargeAmount, setChargeAmount] = useState('');
   const [chargeDate, setChargeDate] = useState(
     new Date().toISOString().split('T')[0]
   );
   const [chargeNotes, setChargeNotes] = useState('');
   const [chargeTxId, setChargeTxId] = useState('');
-  const [submittingCharge, setSubmittingCharge] = useState(false);
-
-  const loan = detail.loan;
-  const hasEventsOrPayments =
-    detail.events.length > 0 || schedule.some((i) => i.status === 'settled');
-
-  const refreshData = async () => {
-    const [dRes, sRes] = await Promise.all([
-      fetchLoanDetailAction(loan.id),
-      fetchLoanScheduleAction(loan.id),
-    ]);
-    if (dRes.success) setDetail(dRes.data);
-    if (sRes.success) setSchedule(sRes.data.installments);
-  };
-
-  const getFYGroupKey = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const fyStart = month >= 3 ? year : year - 1;
-    return `FY ${fyStart}-${(fyStart + 1).toString().slice(-2)}`;
-  };
-
-  const today = new Date();
-  const currentFY = getFYGroupKey(today.toISOString().split('T')[0]);
-
-  const toggleFY = (fy: string) => {
-    setExpandedFYs((prev) => ({
-      ...prev,
-      [fy]: prev[fy] === undefined ? fy !== currentFY : !prev[fy],
-    }));
-  };
 
   const handleOpenMarkPaid = (inst: InstallmentDto) => {
     setSelectedInstallment(inst);
@@ -114,41 +78,33 @@ export function useLoanDetail({
   const handleSettlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedInstallment) return;
-    setSubmittingPayment(true);
     try {
-      const res = await addLoanPaymentAction(loan.id, {
+      await mutations.addPayment.mutateAsync({
         installmentSeq: selectedInstallment.seq,
         paymentDate,
         amount: Number(paymentAmount),
         transactionId: paymentTxId.trim() || undefined,
       });
-      if (res.success) {
-        toast.success(`Installment #${selectedInstallment.seq} marked as paid`);
-        setMarkPaidOpen(false);
-        await refreshData();
-      } else {
-        toast.error(res.error.message);
-      }
-    } finally {
-      setSubmittingPayment(false);
+      toast.success(`Installment #${selectedInstallment.seq} marked as paid`);
+      setMarkPaidOpen(false);
+    } catch {
+      // onError already surfaced the toast.
     }
   };
 
   const handleUnlinkPayment = async (paymentId: string) => {
-    const res = await deleteLoanPaymentAction(loan.id, paymentId);
-    if (res.success) {
+    try {
+      await mutations.deletePayment.mutateAsync(paymentId);
       toast.success('Payment unlinked');
-      await refreshData();
-    } else {
-      toast.error(res.error.message);
+    } catch {
+      // onError already surfaced the toast.
     }
   };
 
   const handleAddEvent = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmittingEvent(true);
     try {
-      const res = await addLoanEventAction(loan.id, {
+      await mutations.addEvent.mutateAsync({
         eventType,
         effectiveDate,
         newAnnualRatePct: newAnnualRatePct
@@ -165,130 +121,74 @@ export function useLoanDetail({
             : undefined,
         transactionId: eventTxId.trim() || undefined,
       });
-      if (res.success) {
-        toast.success('Event recorded');
-        setAddEventOpen(false);
-        await refreshData();
-      } else {
-        toast.error(res.error.message);
-      }
-    } finally {
-      setSubmittingEvent(false);
+      toast.success('Event recorded');
+      setAddEventOpen(false);
+    } catch {
+      // onError already surfaced the toast.
     }
   };
 
   const handleDeleteEvent = async (eventId: string) => {
-    const res = await deleteLoanEventAction(loan.id, eventId);
-    if (res.success) {
+    try {
+      await mutations.deleteEvent.mutateAsync(eventId);
       toast.success('Event deleted');
-      await refreshData();
-    } else {
-      toast.error(res.error.message);
+    } catch {
+      // onError already surfaced the toast.
     }
   };
 
   const handleAddCharge = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmittingCharge(true);
     try {
-      const res = await addLoanChargeAction(loan.id, {
+      await mutations.addCharge.mutateAsync({
         chargeType,
         amount: Number(chargeAmount),
         chargeDate,
         notes: chargeNotes.trim() || undefined,
         transactionId: chargeTxId.trim() || undefined,
       });
-      if (res.success) {
-        toast.success('Charge added');
-        setAddChargeOpen(false);
-        await refreshData();
-      } else {
-        toast.error(res.error.message);
-      }
-    } finally {
-      setSubmittingCharge(false);
+      toast.success('Charge added');
+      setAddChargeOpen(false);
+    } catch {
+      // onError already surfaced the toast.
     }
   };
 
   const handleDeleteCharge = async (chargeId: string) => {
-    const res = await deleteLoanChargeAction(loan.id, chargeId);
-    if (res.success) {
-      toast.success('Charge deleted');
-      await refreshData();
-    } else {
-      toast.error(res.error.message);
-    }
-  };
-
-  const handleFindMatches = async () => {
-    setMatchLoading(true);
     try {
-      const res = await fetchMatchSuggestionsAction(loan.id);
-      if (res.success) {
-        setMatchSuggestions(res.data);
-        if (res.data.suggestions.every((s) => s.candidates.length === 0)) {
-          toast.info('No matching bank transactions found (±7 days)');
-        }
-      } else {
-        toast.error(res.error.message);
-      }
-    } finally {
-      setMatchLoading(false);
+      await mutations.deleteCharge.mutateAsync(chargeId);
+      toast.success('Charge deleted');
+    } catch {
+      // onError already surfaced the toast.
     }
   };
 
-  const handleConfirmMatch = async (
-    seq: number,
-    date: string,
-    amount: number,
-    txId: string
-  ) => {
-    const res = await addLoanPaymentAction(loan.id, {
-      installmentSeq: seq,
-      paymentDate: date,
-      amount,
-      transactionId: txId,
-    });
-    if (res.success) {
-      toast.success(`Matched installment #${seq}`);
-      await refreshData();
-      await handleFindMatches();
-    } else {
-      toast.error(res.error.message);
+  const { handleFindMatches, handleConfirmMatch, handleConfirmAllMatches } =
+    useLoanMatchActions({ matchSuggestions, refetchMatches, mutations });
+
+  const handleCloseLoan = async () => {
+    try {
+      await mutations.closeLoan.mutateAsync();
+      toast.success('Loan closed');
+    } catch {
+      // onError already surfaced the toast; ConfirmationDialog still closes.
     }
   };
 
-  const handleConfirmAllMatches = async () => {
-    if (!matchSuggestions) return;
-    const itemsToConfirm = matchSuggestions.suggestions
-      .filter((s) => s.candidates.length > 0)
-      .map((s) => ({
-        installmentSeq: s.installmentSeq,
-        paymentDate: s.candidates[0].date,
-        amount:
-          s.candidates[0].amount < 0
-            ? Math.abs(s.candidates[0].amount)
-            : s.candidates[0].amount,
-        transactionId: s.candidates[0].id,
-      }));
-
-    if (itemsToConfirm.length === 0) return;
-
-    const res = await addLoanPaymentsBatchAction(loan.id, {
-      items: itemsToConfirm,
-    });
-    if (res.success) {
-      toast.success(`Batch confirmed ${res.data.created} payments`);
-      await refreshData();
-      await handleFindMatches();
-    } else {
-      toast.error(res.error.message);
+  const handleReopenLoan = async () => {
+    try {
+      await mutations.reopenLoan.mutateAsync();
+      toast.success('Loan reopened');
+    } catch {
+      // onError already surfaced the toast; ConfirmationDialog still closes.
     }
   };
 
   return {
     detail,
     schedule,
+    isLoading,
+    error,
     editOpen,
     setEditOpen,
     addEventOpen,
@@ -307,7 +207,7 @@ export function useLoanDetail({
     setPaymentAmount,
     paymentTxId,
     setPaymentTxId,
-    submittingPayment,
+    submittingPayment: mutations.addPayment.isPending,
     eventType,
     setEventType,
     effectiveDate,
@@ -322,7 +222,7 @@ export function useLoanDetail({
     setNewEmiOverride,
     eventTxId,
     setEventTxId,
-    submittingEvent,
+    submittingEvent: mutations.addEvent.isPending,
     chargeType,
     setChargeType,
     chargeAmount,
@@ -333,11 +233,10 @@ export function useLoanDetail({
     setChargeNotes,
     chargeTxId,
     setChargeTxId,
-    submittingCharge,
+    submittingCharge: mutations.addCharge.isPending,
     loan,
     hasEventsOrPayments,
     currentFY,
-    refreshData,
     toggleFY,
     handleOpenMarkPaid,
     handleSettlePayment,
@@ -349,5 +248,8 @@ export function useLoanDetail({
     handleFindMatches,
     handleConfirmMatch,
     handleConfirmAllMatches,
+    handleCloseLoan,
+    handleReopenLoan,
+    deleteLoanMutation: mutations.deleteLoan,
   };
 }

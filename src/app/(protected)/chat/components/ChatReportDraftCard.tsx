@@ -24,7 +24,8 @@ export interface ChatReportDraft {
   description?: string;
   type?: 'KPI' | 'CHART' | 'TABLE';
   datasource?: string;
-  definition?: Record<string, unknown>;
+  /** Shape depends on `type` (KPI/CHART/TABLE); the LLM's draft JSON isn't validated until save, so this stays untyped until cast at the point of use. */
+  definition?: unknown;
   reportId?: string;
   status?: 'saved' | 'updated' | 'deleted' | 'failed';
   savedReportId?: string;
@@ -85,7 +86,7 @@ export function ChatReportDraftCard({
     void runAdHocReport({
       type: draft.type as ReportType,
       datasource: draft.datasource!,
-      definition: draft.definition as unknown as ReportDefinition,
+      definition: draft.definition as ReportDefinition,
     }).then((res) => {
       if (!active) return;
       setPreviewLoading(false);
@@ -116,7 +117,7 @@ export function ChatReportDraftCard({
       description: draft.description || null,
       type: draft.type as ReportType,
       datasource: draft.datasource!,
-      definition: draft.definition as unknown as ReportDefinition,
+      definition: draft.definition as ReportDefinition,
     });
     setIsSubmitting(false);
     if (res.success) {
@@ -138,7 +139,7 @@ export function ChatReportDraftCard({
     const res = await updateReport(draft.reportId, {
       name: draft.name!,
       description: draft.description || null,
-      definition: draft.definition as unknown as ReportDefinition,
+      definition: draft.definition as ReportDefinition,
     });
     setIsSubmitting(false);
     if (res.success) {

@@ -6,8 +6,7 @@ import { JobsPanel } from '@/components/jobs/JobsPanel';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { RuleMatchesDialog } from '@/components/rules/RuleMatchesDialog';
 import { Button } from '@/components/ui/button';
-import { Category } from '@/lib/categories.types';
-import { PagedRules } from '@/lib/rules.types';
+import { Card } from '@/components/ui/card';
 
 import { DeleteRuleDialog } from './browser/DeleteRuleDialog';
 import { RuleCard } from './browser/RuleCard';
@@ -15,21 +14,10 @@ import { RuleFormDialog } from './browser/RuleFormDialog';
 import { RulesFilterBar } from './browser/RulesFilterBar';
 import { useRulesBrowser } from './browser/useRulesBrowser';
 
-interface RulesBrowserProps {
-  initialRules: PagedRules;
-  categories: Category[];
-  initialVerified: string;
-  initialSearch: string;
-}
-
-export function RulesBrowser({
-  initialRules,
-  categories,
-  initialVerified,
-  initialSearch,
-}: RulesBrowserProps) {
+export function RulesBrowser() {
   const {
-    isPending,
+    isFetching,
+    rules,
     searchVal,
     setSearchVal,
     activeTab,
@@ -52,7 +40,7 @@ export function RulesBrowser({
     setSelectedCategories,
     creatingCategory,
     formSubmitting,
-    localCategories,
+    categories,
     handleTabChange,
     handlePageChange,
     handleSizeChange,
@@ -63,11 +51,23 @@ export function RulesBrowser({
     handleSubmitRule,
     handleDeleteRule,
     handleVerifyRule,
-  } = useRulesBrowser({
-    categories,
-    initialVerified,
-    initialSearch,
-  });
+  } = useRulesBrowser();
+
+  const filterBar = (
+    <RulesFilterBar
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
+      searchVal={searchVal}
+      setSearchVal={setSearchVal}
+      pageNumber={rules.number}
+      pageSize={rules.size}
+      totalElements={rules.totalElements}
+      totalPages={rules.totalPages}
+      isPending={isFetching}
+      onPageChange={handlePageChange}
+      onSizeChange={handleSizeChange}
+    />
+  );
 
   return (
     <div className="space-y-2 p-4 pb-32">
@@ -85,13 +85,7 @@ export function RulesBrowser({
       </div>
 
       {/* Rules list content */}
-      {isPending && (
-        <div className="text-center py-10 text-slate-400">
-          <p className="text-sm">Refreshing rules list...</p>
-        </div>
-      )}
-
-      {!isPending && initialRules.content.length === 0 ? (
+      {rules.content.length === 0 ? (
         <div className="text-center py-20 bg-slate-50/50 dark:bg-slate-900/10 border border-slate-200/50 dark:border-slate-800/40 rounded-2xl p-6">
           <p className="text-slate-600 dark:text-slate-400 mb-2 font-medium">
             No categorization rules found
@@ -103,7 +97,7 @@ export function RulesBrowser({
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-          {initialRules.content.map((rule) => (
+          {rules.content.map((rule) => (
             <RuleCard
               key={rule.id}
               rule={rule}
@@ -118,21 +112,13 @@ export function RulesBrowser({
 
       <JobsPanel types={['RULE_APPLY']} title="Recent rule application jobs" />
 
-      <PageActionBar>
-        <RulesFilterBar
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          searchVal={searchVal}
-          setSearchVal={setSearchVal}
-          pageNumber={initialRules.number}
-          pageSize={initialRules.size}
-          totalElements={initialRules.totalElements}
-          totalPages={initialRules.totalPages}
-          isPending={isPending}
-          onPageChange={handlePageChange}
-          onSizeChange={handleSizeChange}
-        />
-      </PageActionBar>
+      {/* Desktop filter/search/pagination bar */}
+      <Card className="hidden lg:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-3">
+        {filterBar}
+      </Card>
+
+      {/* Mobile PageActionBar Integration */}
+      <PageActionBar>{filterBar}</PageActionBar>
 
       <RuleFormDialog
         open={isCreateOpen || !!editingRule}
@@ -146,7 +132,7 @@ export function RulesBrowser({
         setDisplayName={setDisplayName}
         mcc={mcc}
         setMcc={setMcc}
-        localCategories={localCategories}
+        categories={categories}
         selectedCategories={selectedCategories}
         setSelectedCategories={setSelectedCategories}
         onCreateCategory={handleCreateCategory}

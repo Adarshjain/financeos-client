@@ -12,7 +12,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-import type { GmailSenderResponse } from '@/lib/types';
+// The spec marks `name` optional+nullable, where the hand-written version in
+// @/lib/types only marks it optional — see "Spec follow-ups" in the
+// migration report.
+import type { GmailSenderResponse } from '@/lib/api/types';
 
 interface GmailSendersCardProps {
   senders: GmailSenderResponse[];

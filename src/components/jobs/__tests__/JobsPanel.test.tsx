@@ -1,8 +1,9 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import { beforeEach,describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as jobsActions from '@/actions/jobs';
+import { api } from '@/lib/api/client';
+import { renderWithQuery } from '@/test/renderWithQuery';
 
 import { JobErrorDetails } from '../JobErrorDetails';
 import { emitJobStarted } from '../jobsBus';
@@ -17,15 +18,25 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
-vi.mock('@/actions/jobs', () => ({
-  listJobs: vi.fn(),
-  retryJob: vi.fn(),
-  cancelJob: vi.fn(),
+vi.mock('@/lib/api/client', () => ({
+  api: {
+    GET: vi.fn(),
+    POST: vi.fn(),
+    PUT: vi.fn(),
+    DELETE: vi.fn(),
+    use: vi.fn(),
+  },
+  ApiError: class ApiError extends Error {
+    constructor(public status: number, public response: any) {
+      super(response?.message || 'ApiError');
+      this.name = 'ApiError';
+    }
+  },
 }));
 
 describe('Shared Job Components', () => {
   it('renders JobStatusPill correctly for different statuses', () => {
-    const { rerender } = render(<JobStatusPill status="PENDING" />);
+    const { rerender } = renderWithQuery(<JobStatusPill status="PENDING" />);
     expect(screen.getByText('PENDING')).toBeInTheDocument();
 
     rerender(<JobStatusPill status="RUNNING" />);
@@ -50,7 +61,7 @@ describe('Shared Job Components', () => {
   });
 
   it('toggles JobErrorDetails on button click', () => {
-    render(<JobErrorDetails errorCode="INVALID_FILE" errorMessage="File corrupt" />);
+    renderWithQuery(<JobErrorDetails errorCode="INVALID_FILE" errorMessage="File corrupt" />);
     const button = screen.getByText(/Error details/i);
     expect(button).toBeInTheDocument();
     expect(screen.queryByText(/File corrupt/i)).not.toBeInTheDocument();
@@ -66,8 +77,7 @@ describe('JobsPanel Component', () => {
   });
 
   it('fetches and renders jobs list with title', async () => {
-    (jobsActions.listJobs as any).mockResolvedValue({
-      success: true,
+    (api.GET as any).mockResolvedValue({
       data: {
         content: [
           {
@@ -83,7 +93,7 @@ describe('JobsPanel Component', () => {
       },
     });
 
-    render(<JobsPanel types={['STATEMENT_INGEST']} title="Recent statement ingestion jobs" />);
+    renderWithQuery(<JobsPanel types={['STATEMENT_INGEST']} title="Recent statement ingestion jobs" />);
 
     expect(screen.getByText('Loading jobs…')).toBeInTheDocument();
 
@@ -94,19 +104,17 @@ describe('JobsPanel Component', () => {
   });
 
   it('refetches when a flow announces a newly started job', async () => {
-    (jobsActions.listJobs as any).mockResolvedValue({
-      success: true,
+    (api.GET as any).mockResolvedValue({
       data: { content: [] },
     });
 
-    render(<JobsPanel types={['STATEMENT_INGEST']} title="Recent statement ingestion jobs" />);
+    renderWithQuery(<JobsPanel types={['STATEMENT_INGEST']} title="Recent statement ingestion jobs" />);
 
     await waitFor(() => {
       expect(screen.getByText(/No recent statement ingestion jobs yet/i)).toBeInTheDocument();
     });
 
-    (jobsActions.listJobs as any).mockResolvedValue({
-      success: true,
+    (api.GET as any).mockResolvedValue({
       data: {
         content: [
           {
@@ -131,12 +139,11 @@ describe('JobsPanel Component', () => {
   });
 
   it('shows empty state when no jobs returned', async () => {
-    (jobsActions.listJobs as any).mockResolvedValue({
-      success: true,
+    (api.GET as any).mockResolvedValue({
       data: { content: [] },
     });
 
-    render(<JobsPanel types={['GMAIL_SYNC']} title="Recent sync jobs" />);
+    renderWithQuery(<JobsPanel types={['GMAIL_SYNC']} title="Recent sync jobs" />);
 
     await waitFor(() => {
       expect(screen.getByText(/No recent sync jobs yet/i)).toBeInTheDocument();

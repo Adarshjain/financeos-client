@@ -138,7 +138,9 @@ export function AddChargeDialog({
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs">Linked Transaction ID (Optional)</Label>
+              <Label className="text-xs">
+                Linked Transaction ID (Optional)
+              </Label>
               <Input
                 placeholder="UUID of transaction"
                 value={chargeTxId}

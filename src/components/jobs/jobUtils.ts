@@ -46,6 +46,26 @@ export function buildJobsFilterUrl(
   return `/settings/jobs${str ? `?${str}` : ''}`;
 }
 
+/**
+ * Query params for the jobs-history list, in the exact shape used both by the
+ * server-side prefetch (`queryClient.setQueryData`) and the client `useQuery`
+ * in JobsHistoryTable — they must match byte-for-byte so TanStack Query's key
+ * hash lines up and hydration needs no client refetch.
+ */
+export function buildJobsQueryParams(filters: {
+  page: number;
+  size: number;
+  statusFilter: string;
+  typeFilter: string;
+}): { page: number; size: number; status?: string; type?: string } {
+  return {
+    page: filters.page,
+    size: filters.size,
+    status: filters.statusFilter || undefined,
+    type: filters.typeFilter || undefined,
+  };
+}
+
 export function formatDuration(startedAt?: string | null, finishedAt?: string | null): string {
   if (!startedAt) return '-';
   const start = new Date(startedAt).getTime();

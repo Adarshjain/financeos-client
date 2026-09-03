@@ -98,15 +98,17 @@ export type BankAccount = AccountBase & {
 };
 
 export type CardholderRole = 'PRIMARY' | 'ADDON';
-export type CardholderRelationship = 'SELF' | 'SPOUSE' | 'CHILD' | 'PARENT' | 'SIBLING' | 'FRIEND' | 'OTHER';
+/** Mirrors the server enum `CardholderRelationship` exactly — no `FRIEND` value exists there. */
+export type CardholderRelationship = 'SELF' | 'SPOUSE' | 'CHILD' | 'PARENT' | 'SIBLING' | 'OTHER';
 export type CardRelationship = CardholderRelationship; // backward compat alias
 
 export interface Card {
   id: string;
-  accountId: string;
+  accountId?: string;
   cardholderId: string;
   last4: string;
-  issuedOn: string;
+  issuedOn?: string | null;
+  isOpen?: boolean;
   closedOn?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -119,7 +121,7 @@ export interface Cardholder {
   personName?: string | null;
   relationship?: CardholderRelationship | null;
   spendLimit?: number | null;
-  openedOn: string;
+  openedOn?: string | null;
   closedOn?: string | null;
   effectiveClosedOn?: string | null;
   cards: Card[];

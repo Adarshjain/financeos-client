@@ -14,28 +14,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { Account } from '@/lib/account.types';
-import type { Page } from '@/lib/pagination';
-import type { LoanResponse, LoansSummaryResponse } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { LoansList } from './browser/LoansList';
 import { LoansSummaryCards } from './browser/LoansSummaryCards';
 import { useLoansBrowser } from './browser/useLoansBrowser';
 
-interface LoansBrowserProps {
-  initialLoans: Page<LoanResponse>;
-  summary: LoansSummaryResponse;
-  bankAccounts: Account[];
-}
-
-export function LoansBrowser({
-  initialLoans,
-  summary,
-  bankAccounts,
-}: LoansBrowserProps) {
+export function LoansBrowser() {
   const {
     loansPage,
+    summary,
     statusFilter,
     search,
     setSearch,
@@ -45,10 +33,7 @@ export function LoansBrowser({
     totalMonthlyEmi,
     handleFilterChange,
     handlePageChange,
-    handleLoanSuccess,
-  } = useLoansBrowser({
-    initialLoans,
-  });
+  } = useLoansBrowser();
 
   const renderActionBar = (isMobile = false) => (
     <div
@@ -129,10 +114,7 @@ export function LoansBrowser({
       <PageActionBar>{renderActionBar(true)}</PageActionBar>
 
       {/* Consolidated Summary Card */}
-      <LoansSummaryCards
-        summary={summary}
-        totalMonthlyEmi={totalMonthlyEmi}
-      />
+      <LoansSummaryCards summary={summary} totalMonthlyEmi={totalMonthlyEmi} />
 
       {/* Main Table / List Container */}
       <LoansList
@@ -141,12 +123,7 @@ export function LoansBrowser({
         onPageChange={handlePageChange}
       />
 
-      <LoanForm
-        open={createOpen}
-        onOpenChange={setCreateOpen}
-        bankAccounts={bankAccounts}
-        onSuccess={handleLoanSuccess}
-      />
+      <LoanForm open={createOpen} onOpenChange={setCreateOpen} />
     </div>
   );
 }

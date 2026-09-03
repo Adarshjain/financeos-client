@@ -1,12 +1,13 @@
 'use client';
 
 // Read-only dashboard renderer. Lays the widgets out on the (non-editable) grid
-// and lets each DashboardWidgetView run its referenced report via the reports
-// client, exactly as the editor's VIEW mode does. Used by the landing/home view
-// to render the user's default dashboard.
+// and lets each DashboardWidgetView run its referenced report via its own
+// query, exactly as the editor's VIEW mode does. Used by the landing/home view
+// to render the user's default dashboard — whose widget data the landing page
+// has already prefetched into the query cache (see `dashboard/page.tsx`), so
+// no props need to be threaded through here for that.
 
 import { Card } from '@/components/ui/card';
-import type { WidgetPrefetchMap } from '@/lib/dashboards.server';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 
 import { DashboardGrid } from './DashboardGrid';
@@ -14,15 +15,9 @@ import { DashboardWidgetView } from './DashboardWidgetView';
 
 interface DashboardViewProps {
   dashboard: DashboardResponse;
-  /**
-   * Widget data already fetched on the server. Present for the dashboard shown
-   * on first paint; absent when the user switches dashboards client-side, where
-   * the widgets fetch their own data as before.
-   */
-  prefetched?: WidgetPrefetchMap;
 }
 
-export function DashboardView({ dashboard, prefetched }: DashboardViewProps) {
+export function DashboardView({ dashboard }: DashboardViewProps) {
   if (dashboard.widgets.length === 0) {
     return (
       <Card>
@@ -43,13 +38,7 @@ export function DashboardView({ dashboard, prefetched }: DashboardViewProps) {
       widgets={dashboard.widgets}
       editing={false}
       onLayoutChange={() => {}}
-      renderWidget={(w) => (
-        <DashboardWidgetView
-          widget={w}
-          initialData={prefetched?.[w.id]?.data ?? null}
-          initialError={prefetched?.[w.id]?.error ?? null}
-        />
-      )}
+      renderWidget={(w) => <DashboardWidgetView widget={w} />}
     />
   );
 }

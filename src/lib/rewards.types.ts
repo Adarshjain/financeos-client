@@ -136,18 +136,18 @@ export interface RewardRule {
   stacking: RuleStacking;
   activeFrom?: string | null;
   activeTo?: string | null;
-  categories: Category[];
-  mccs: string[];
-  channels: TransactionChannel[];
-  daysOfWeek: DayOfWeek[];
+  categories?: Category[];
+  mccs?: string[];
+  channels?: TransactionChannel[];
+  daysOfWeek?: DayOfWeek[];
   merchantPattern?: string | null;
   merchantMatch?: RewardMerchantMatch | null;
   minAmount?: number | null;
   maxAmount?: number | null;
-  emiTreatment: EmiTreatment;
-  intlTreatment: IntlTreatment;
-  feeTreatment: FeeTreatment;
-  rewardType: RewardType;
+  emiTreatment?: EmiTreatment | null;
+  intlTreatment?: IntlTreatment | null;
+  feeTreatment?: FeeTreatment | null;
+  rewardType?: RewardType;
   accrualType: AccrualType;
   percentRate?: number | null;
   rounding?: CashbackRounding | null;
@@ -161,7 +161,7 @@ export interface RewardRule {
   capWindow?: CapWindow | null;
   capBucketId?: string | null;
   capBucketName?: string | null;
-  onCapExhausted: CapExhaustedBehavior;
+  onCapExhausted?: CapExhaustedBehavior | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -334,7 +334,7 @@ export interface RewardRuleBreakdown {
   matchedCount: number;
   basisMatched: number;
   earned: number;
-  earnedUnit: 'RUPEES' | 'POINTS';
+  earnedUnit?: 'RUPEES' | 'POINTS' | string;
   capStatus?: RewardCapStatus | null;
 }
 
@@ -426,7 +426,7 @@ export interface SimulatedRuleLine {
   ruleName?: string | null;
   stacking?: RuleStacking | null;
   earned: number;
-  earnedUnit: 'RUPEES' | 'POINTS';
+  earnedUnit?: 'RUPEES' | 'POINTS' | string;
   earnedValueInr: number;
   reason: RewardLineReason;
   capStatus?: SimulatedCapStatus | null;
@@ -454,7 +454,7 @@ export interface RewardCardRecommendation {
   milestoneValueInr: number;
   effectiveRatePct: number;
   /** Whether the card has its own point valuation or fell back to the default. */
-  pointValueSource: 'CONFIG' | 'DEFAULT';
+  pointValueSource?: 'CONFIG' | 'DEFAULT' | string;
   pointValueInr: number;
   /** True when points were actually converted to ₹ — a DEFAULT valuation only misleads then. */
   pointsValued: boolean;

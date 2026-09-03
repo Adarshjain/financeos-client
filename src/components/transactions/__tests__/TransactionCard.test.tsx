@@ -44,7 +44,6 @@ describe('TransactionCard (CD-8, CD-2c)', () => {
       <TransactionCard
         transaction={mockTxn}
         accounts={mockAccounts}
-        categories={mockCategories}
       />,
     );
 
@@ -59,7 +58,6 @@ describe('TransactionCard (CD-8, CD-2c)', () => {
       <TransactionCard
         transaction={mockTxn}
         accounts={mockAccounts}
-        categories={mockCategories}
         showSource={true}
       />,
     );
@@ -72,7 +70,6 @@ describe('TransactionCard (CD-8, CD-2c)', () => {
       <TransactionCard
         transaction={mockTxn}
         accounts={mockAccounts}
-        categories={mockCategories}
       />,
     );
 
@@ -85,7 +82,6 @@ describe('TransactionCard (CD-8, CD-2c)', () => {
       <TransactionCard
         transaction={mockTxn}
         accounts={mockAccounts}
-        categories={mockCategories}
         selectable={true}
         selected={false}
         onToggleSelect={onToggleSelect}
@@ -121,7 +117,6 @@ describe('TransactionCard (CD-8, CD-2c)', () => {
       <TransactionCard
         transaction={childTxn}
         accounts={mockAccounts}
-        categories={mockCategories}
         showSource={true}
       />,
     );
@@ -140,7 +135,6 @@ describe('TransactionCard (CD-8, CD-2c)', () => {
       <TransactionCard
         transaction={manualTxn}
         accounts={mockAccounts}
-        categories={mockCategories}
         showSource={true}
       />,
     );
@@ -161,7 +155,6 @@ describe('TransactionCard (CD-8, CD-2c)', () => {
       <TransactionCard
         transaction={bareTxn}
         accounts={mockAccounts}
-        categories={mockCategories}
         showSource={true}
       />,
     );
@@ -189,7 +182,6 @@ describe('TransactionCard (CD-8, CD-2c)', () => {
       <TransactionCard
         transaction={unlabelledTxn}
         accounts={mockAccounts}
-        categories={mockCategories}
       />,
     );
 

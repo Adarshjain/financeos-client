@@ -32,12 +32,15 @@ export function LoanAmortizationSchedule({
     return `FY ${fyStart}-${(fyStart + 1).toString().slice(-2)}`;
   };
 
-  const fyGroups = schedule.reduce((acc, inst) => {
-    const fy = getFYGroupKey(inst.dueDate);
-    if (!acc[fy]) acc[fy] = [];
-    acc[fy].push(inst);
-    return acc;
-  }, {} as Record<string, InstallmentDto[]>);
+  const fyGroups = schedule.reduce(
+    (acc, inst) => {
+      const fy = getFYGroupKey(inst.dueDate);
+      if (!acc[fy]) acc[fy] = [];
+      acc[fy].push(inst);
+      return acc;
+    },
+    {} as Record<string, InstallmentDto[]>
+  );
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
@@ -87,10 +90,7 @@ export function LoanAmortizationSchedule({
                   {/* Mobile View: Flat List */}
                   <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
                     {items.map((inst) => (
-                      <div
-                        key={inst.seq}
-                        className="p-3.5 space-y-1.5 text-xs"
-                      >
+                      <div key={inst.seq} className="p-3.5 space-y-1.5 text-xs">
                         <div className="flex items-center justify-between font-medium">
                           <span>
                             #{inst.seq} · {formatDate(inst.dueDate)}
@@ -100,8 +100,8 @@ export function LoanAmortizationSchedule({
                               inst.status === 'settled'
                                 ? 'default'
                                 : inst.status === 'overdue'
-                                ? 'destructive'
-                                : 'outline'
+                                  ? 'destructive'
+                                  : 'outline'
                             }
                             className="capitalize text-2xs"
                           >
@@ -140,9 +140,7 @@ export function LoanAmortizationSchedule({
                             <Button
                               variant="ghost"
                               size="micro"
-                              onClick={() =>
-                                onUnlinkPayment(inst.payment!.id)
-                              }
+                              onClick={() => onUnlinkPayment(inst.payment!.id)}
                               className="text-slate-500 hover:text-rose-600"
                             >
                               Unlink
@@ -189,8 +187,8 @@ export function LoanAmortizationSchedule({
                               inst.status === 'settled'
                                 ? 'bg-emerald-500/5 dark:bg-emerald-950/20'
                                 : inst.status === 'overdue'
-                                ? 'bg-rose-500/5 dark:bg-rose-950/20'
-                                : ''
+                                  ? 'bg-rose-500/5 dark:bg-rose-950/20'
+                                  : ''
                             }
                           >
                             <td className="py-2.5 px-4 text-center font-mono font-medium">
@@ -220,8 +218,8 @@ export function LoanAmortizationSchedule({
                                   inst.status === 'settled'
                                     ? 'default'
                                     : inst.status === 'overdue'
-                                    ? 'destructive'
-                                    : 'outline'
+                                      ? 'destructive'
+                                      : 'outline'
                                 }
                                 className="capitalize text-2xs"
                               >

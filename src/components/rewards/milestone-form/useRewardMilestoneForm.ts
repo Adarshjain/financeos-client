@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { createRewardMilestone, updateRewardMilestone } from '@/actions/rewards';
+import {
+  useCreateRewardMilestone,
+  useUpdateRewardMilestone,
+} from '@/components/rewards/queries/useRewardMilestonesQueries';
+import { ApiError } from '@/lib/api/client';
 import { Category } from '@/lib/categories.types';
 import {
   MilestoneBasis,
@@ -60,9 +64,7 @@ export function useRewardMilestoneForm({
 
   const toCategoryOptions = (ids: string[]): Category[] =>
     ids.map(
-      (id) =>
-        categories.find((c) => c.id === id) ??
-        ({ id, name: 'Unknown category' } as Category)
+      (id) => categories.find((c) => c.id === id) ?? { id, name: 'Unknown category' }
     );
   const [includeCategories, setIncludeCategories] = useState<Category[]>(
     milestone ? toCategoryOptions(milestone.includeCategoryIds) : []
@@ -82,7 +84,10 @@ export function useRewardMilestoneForm({
   const [activeTo, setActiveTo] = useState<Date | undefined>(
     milestone?.activeTo ? parseCalendarDate(milestone.activeTo) : undefined
   );
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const createMilestone = useCreateRewardMilestone();
+  const updateMilestoneMutation = useUpdateRewardMilestone();
+  const isSubmitting = createMilestone.isPending || updateMilestoneMutation.isPending;
 
   const parseMccList = (text: string) =>
     text
@@ -90,7 +95,7 @@ export function useRewardMilestoneForm({
       .map((m) => m.trim())
       .filter(Boolean);
 
-  const onSubmit = async () => {
+  const onSubmit = () => {
     if (!name.trim()) {
       toast.error('Milestone name is required.');
       return;
@@ -141,22 +146,16 @@ export function useRewardMilestoneForm({
       activeFrom: activeFrom ? toCalendarDate(activeFrom) : null,
       activeTo: activeTo ? toCalendarDate(activeTo) : null,
     };
-    setIsSubmitting(true);
-    try {
-      const res =
-        isUpdateMode && milestone
-          ? await updateRewardMilestone(milestone.id, body)
-          : await createRewardMilestone(body);
-      if (res.success) {
-        toast.success(
-          isUpdateMode ? 'Milestone updated' : 'Milestone created'
-        );
-        onSaved();
-      } else {
-        toast.error(res.error.message);
-      }
-    } finally {
-      setIsSubmitting(false);
+    const onSuccess = () => {
+      toast.success(isUpdateMode ? 'Milestone updated' : 'Milestone created');
+      onSaved();
+    };
+    const onError = (e: unknown) =>
+      toast.error(e instanceof ApiError ? e.response.message : 'Failed to save milestone');
+    if (isUpdateMode && milestone) {
+      updateMilestoneMutation.mutate({ id: milestone.id, body }, { onSuccess, onError });
+    } else {
+      createMilestone.mutate(body, { onSuccess, onError });
     }
   };
 

@@ -164,23 +164,24 @@ export function RecordEventDialog({
               </div>
             )}
 
-            {eventType !== 'foreclosure' &&
-              adjustmentMode === 'reduce_emi' && (
-                <div className="space-y-1">
-                  <Label className="text-xs">New EMI Override (Optional)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="Auto if blank"
-                    value={newEmiOverride}
-                    onChange={(e) => setNewEmiOverride(e.target.value)}
-                    className="h-9 text-xs"
-                  />
-                </div>
-              )}
+            {eventType !== 'foreclosure' && adjustmentMode === 'reduce_emi' && (
+              <div className="space-y-1">
+                <Label className="text-xs">New EMI Override (Optional)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="Auto if blank"
+                  value={newEmiOverride}
+                  onChange={(e) => setNewEmiOverride(e.target.value)}
+                  className="h-9 text-xs"
+                />
+              </div>
+            )}
 
             <div className="space-y-1">
-              <Label className="text-xs">Linked Transaction ID (Optional)</Label>
+              <Label className="text-xs">
+                Linked Transaction ID (Optional)
+              </Label>
               <Input
                 placeholder="UUID of transaction"
                 value={eventTxId}

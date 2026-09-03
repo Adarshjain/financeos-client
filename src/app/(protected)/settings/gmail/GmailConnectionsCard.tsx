@@ -10,7 +10,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import type { GmailConnectionResponse } from '@/lib/types';
+import type { Schemas } from '@/lib/api/types';
+
+// The spec marks `connectedAt` optional+nullable (unlike the hand-written
+// GmailConnectionResponse in @/lib/types, which assumes it's always set) —
+// see "Spec follow-ups" in the migration report. Render defensively instead
+// of casting it away.
+type GmailConnectionResponse = Schemas['GmailConnectionResponse'];
 
 interface GmailConnectionsCardProps {
   connections: GmailConnectionResponse[];
@@ -85,10 +91,12 @@ export function GmailConnectionsCard({
                     )}
                   </div>
                   <div className="text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
-                    <span>
-                      Connected:{' '}
-                      {new Date(conn.connectedAt).toLocaleDateString()}
-                    </span>
+                    {conn.connectedAt && (
+                      <span>
+                        Connected:{' '}
+                        {new Date(conn.connectedAt).toLocaleDateString()}
+                      </span>
+                    )}
                     {conn.lastSyncedAt && (
                       <span>
                         Last sync:{' '}

@@ -1,7 +1,6 @@
 'use client';
 
 import {Account} from '@/lib/account.types';
-import {Category} from '@/lib/categories.types';
 import {Transaction} from '@/lib/transaction.types';
 import {cn, getAccountName} from '@/lib/utils';
 
@@ -16,7 +15,6 @@ import {TransactionSourceBadge} from './TransactionSourceBadge';
 interface TransactionCardProps {
   transaction: Transaction;
   accounts: Account[];
-  categories: Category[];
   className?: string;
   onMutate?: () => void;
   selectable?: boolean;
@@ -29,7 +27,6 @@ export const TransactionCard = ({
                                   transaction,
                                   accounts,
                                   className,
-                                  categories,
                                   onMutate,
                                   selectable,
                                   selected,
@@ -90,7 +87,7 @@ export const TransactionCard = ({
           >
             <ReviewReasonBadges
                 className="mt-2"
-                reviewType={transaction.reviewType}
+                reviewType={transaction.reviewType ?? undefined}
                 reviewReasons={transaction.reviewReasons}
             />
           </TransactionAmount>
@@ -101,7 +98,6 @@ export const TransactionCard = ({
       <TransactionDetailDialog
           transaction={transaction}
           accounts={accounts}
-          categories={categories}
           onMutate={onMutate}
           trigger={trigger}
       />

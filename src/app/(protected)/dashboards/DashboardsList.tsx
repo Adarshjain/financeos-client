@@ -1,56 +1,110 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { LayoutDashboard, Loader2, Pencil, Star, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { deleteDashboard, setDefaultDashboard } from '@/actions/dashboards';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-import type { DashboardResponse } from '@/lib/dashboards.types';
+import { api, ApiError } from '@/lib/api/client';
+import type { DashboardWidget } from '@/lib/dashboards.types';
+import { useDashboards } from '@/lib/query/hooks/useDashboards';
+import { keys } from '@/lib/query/keys';
 import { cn, formatDate } from '@/lib/utils';
 
-interface DashboardsListProps {
-  dashboards: DashboardResponse[];
-}
-
-export function DashboardsList({ dashboards }: DashboardsListProps) {
-  const router = useRouter();
+export function DashboardsList() {
+  const qc = useQueryClient();
+  const { data: dashboards = [] } = useDashboards();
   // The dashboard whose default state is mid-flight (disables its toggle).
   const [defaultPendingId, setDefaultPendingId] = useState<string | null>(null);
 
-  const handleDelete = async (id: string) => {
-    const res = await deleteDashboard(id);
-    if (res.success) {
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) =>
+      api.DELETE('/api/v1/dashboards/{id}', { params: { path: { id } } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: keys.dashboards.all });
       toast.success('Dashboard deleted');
-      router.refresh();
-    } else {
-      toast.error(res.error.message);
+    },
+    onError: (e) =>
+      toast.error(e instanceof ApiError ? e.response.message : 'Failed to delete dashboard'),
+  });
+
+  // Re-reads the dashboard before updating so the mutation can refuse rather
+  // than clobber a dashboard that changed since this list was rendered — it
+  // passes along the `updatedAt` this list was rendered with as the guard.
+  const setDefaultMutation = useMutation({
+    mutationFn: async ({
+      id,
+      makeDefault,
+      updatedAt,
+    }: {
+      id: string;
+      makeDefault: boolean;
+      updatedAt: string;
+    }) => {
+      const { data: current } = await api.GET('/api/v1/dashboards/{id}', {
+        params: { path: { id } },
+      });
+      if (!current) throw new Error('Dashboard not found');
+      if (current.updatedAt !== updatedAt) {
+        throw new Error(
+          'This dashboard changed since the page was loaded. Reload and try again — setting the default would otherwise discard those changes.',
+        );
+      }
+      const widgets: DashboardWidget[] = current.widgets.map((w) => ({
+        id: w.id,
+        reportId: w.reportId,
+        title: w.title ?? '',
+        layout: w.layout,
+      }));
+      return api.PUT('/api/v1/dashboards/{id}', {
+        params: { path: { id } },
+        body: {
+          name: current.name,
+          description: current.description ?? undefined,
+          isDefault: makeDefault,
+          widgets,
+        },
+      });
+    },
+    onMutate: ({ id }) => setDefaultPendingId(id),
+    onSettled: () => setDefaultPendingId(null),
+    onSuccess: (_res, vars) => {
+      qc.invalidateQueries({ queryKey: keys.dashboards.all });
+      toast.success(vars.makeDefault ? 'Set as default' : 'Default cleared');
+    },
+    onError: (e) =>
+      toast.error(
+        e instanceof ApiError
+          ? e.response.message
+          : e instanceof Error
+            ? e.message
+            : 'Failed to update default dashboard',
+      ),
+  });
+
+  // Awaited (rather than fire-and-forget) so the ConfirmationDialog stays open
+  // and busy for the duration of the request, closing only once it settles —
+  // matching its `primaryAction` contract. Errors are swallowed here since
+  // `onError` above already surfaces the toast; the dialog closes either way,
+  // same as it did before this migration.
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteMutation.mutateAsync(id);
+    } catch {
+      // onError already surfaced a toast.
     }
   };
 
-  // Passes the updatedAt this list was rendered with, so the action can refuse
-  // rather than clobber a dashboard that changed in the meantime.
-  const handleToggleDefault = async (
-    id: string,
-    makeDefault: boolean,
-    updatedAt: string,
-  ) => {
-    setDefaultPendingId(id);
-    const res = await setDefaultDashboard(id, makeDefault, updatedAt);
-    setDefaultPendingId(null);
-    if (res.success) {
-      toast.success(makeDefault ? 'Set as default' : 'Default cleared');
-      router.refresh();
-    } else {
-      toast.error(res.error.message);
-    }
-  };
+  // Passes the updatedAt this list was rendered with, so the mutation can
+  // refuse rather than clobber a dashboard that changed in the meantime.
+  const handleToggleDefault = (id: string, makeDefault: boolean, updatedAt: string) =>
+    setDefaultMutation.mutate({ id, makeDefault, updatedAt });
 
   if (dashboards.length === 0) {
     return (

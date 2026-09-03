@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@/lib/apiClient', () => ({
@@ -6,6 +6,7 @@ vi.mock('@/lib/apiClient', () => ({
 }));
 
 import { accountsApi } from '@/lib/apiClient';
+import { renderWithQuery } from '@/test/renderWithQuery';
 
 import AccountsPage from '../page';
 
@@ -56,9 +57,9 @@ const cashCard = {
 
 describe('AccountsPage credit card tile — real payload, real child components', () => {
   it('renders each tile body, not just the Statements/Cards footer', async () => {
-    vi.mocked(accountsApi.list).mockResolvedValue([randomCard, cashCard] as never);
+    vi.mocked(accountsApi.list).mockResolvedValue([randomCard, cashCard] as any);
 
-    render(await AccountsPage());
+    renderWithQuery(await AccountsPage());
 
     expect(screen.getByText('Random Card')).toBeInTheDocument();
     expect(screen.getByText('TEST Cash Card')).toBeInTheDocument();
@@ -69,9 +70,9 @@ describe('AccountsPage credit card tile — real payload, real child components'
 
   it('puts closed accounts in a per-section collapsible, not behind a toggle', async () => {
     const closedCard = { ...cashCard, id: 'closed1', name: 'Old Regalia', closedOn: '2026-01-15' };
-    vi.mocked(accountsApi.list).mockResolvedValue([randomCard, closedCard] as never);
+    vi.mocked(accountsApi.list).mockResolvedValue([randomCard, closedCard] as any);
 
-    render(await AccountsPage());
+    renderWithQuery(await AccountsPage());
 
     // open card in the grid, closed one inside the details element
     expect(screen.getByText('Random Card')).toBeInTheDocument();
@@ -100,9 +101,9 @@ describe('AccountsPage credit card tile — real payload, real child components'
       lastStatementDate: null,
       warnings: [],
     };
-    vi.mocked(accountsApi.list).mockResolvedValue([bankAccount] as never);
+    vi.mocked(accountsApi.list).mockResolvedValue([bankAccount] as any);
 
-    render(await AccountsPage());
+    renderWithQuery(await AccountsPage());
 
     expect(screen.getByText('HDFC Salary Account')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Cards/i })).toBeInTheDocument();

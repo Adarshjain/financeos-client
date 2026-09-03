@@ -35,8 +35,8 @@ export interface GoogleAuthStartResponse {
 export interface UserResponse {
   id: string;
   email: string;
-  displayName?: string;
-  pictureUrl?: string;
+  displayName?: string | null;
+  pictureUrl?: string | null;
   hasPassword?: boolean;
   createdAt: string;
 }
@@ -59,21 +59,21 @@ export interface Instrument {
   id: string;
   type: InstrumentType;
   name: string;
-  symbol?: string;
-  exchange?: string;
-  isin?: string;
-  amfiCode?: string;
-  yahooSymbol?: string;
+  symbol?: string | null;
+  exchange?: string | null;
+  isin?: string | null;
+  amfiCode?: string | null;
+  yahooSymbol?: string | null;
   currency: string;
-  lastPrice?: string;
-  lastPriceAsOf?: string;
-  lastPriceSource?: PriceSource;
+  lastPrice?: string | number | null;
+  lastPriceAsOf?: string | null;
+  lastPriceSource?: PriceSource | null;
 }
 
 export interface PriceHistoryPoint {
   id?: string;
   asOf: string;
-  close: string;
+  close: string | number;
   source: string;
 }
 
@@ -102,7 +102,7 @@ export interface CreateInstrumentRequest {
 }
 
 export interface InstrumentPricePreview {
-  value: string;
+  value: string | number;
   asOf: string;
 }
 
@@ -189,18 +189,18 @@ export interface InvestmentTransactionResponse {
   };
   type: InvestmentTransactionType;
   settlementType?: SettlementType;
-  quantity: string;
-  price: string;
+  quantity: string | number;
+  price: string | number;
   tradeDate: string;
-  brokerage?: string;
-  stt?: string;
-  exchangeTxnCharges?: string;
-  sebiCharges?: string;
-  stampDuty?: string;
-  gst?: string;
-  dpCharges?: string;
-  otherCharges?: string;
-  totalCharges?: string;
+  brokerage?: string | number;
+  stt?: string | number;
+  exchangeTxnCharges?: string | number;
+  sebiCharges?: string | number;
+  stampDuty?: string | number;
+  gst?: string | number;
+  dpCharges?: string | number;
+  otherCharges?: string | number;
+  totalCharges?: string | number;
   source?: string;
   externalRef?: string;
   notes?: string;
@@ -225,30 +225,30 @@ export interface Position {
     yahooSymbol?: string;
     lastPriceSource?: PriceSource;
   };
-  quantity: string;
-  avgCost: string;
-  invested: string;
-  lastPrice?: string;
-  lastPriceAsOf?: string;
-  lastPriceSource?: PriceSource;
-  currentValue?: string;
-  unrealizedGainLoss?: string;
-  unrealizedGainLossPercent?: string;
-  realizedGainLoss: string;
-  totalCharges: string;
-  dividends?: string;
-  xirr?: string;
-  absoluteReturnPercent?: string;
-  mergedIntoName?: string;
-  mergedIntoDate?: string;
-  buyQty?: string;
-  buyValue?: string;
-  avgBuy?: string;
-  sellQty?: string;
-  sellValue?: string;
-  avgSell?: string;
-  netQty?: string;
-  unclosed?: boolean;
+  quantity?: number | string | null;
+  avgCost?: number | string | null;
+  invested?: number | string | null;
+  lastPrice?: number | string | null;
+  lastPriceAsOf?: string | null;
+  lastPriceSource?: PriceSource | null;
+  currentValue?: number | string | null;
+  unrealizedGainLoss?: number | string | null;
+  unrealizedGainLossPercent?: number | string | null;
+  realizedGainLoss?: number | string | null;
+  totalCharges?: number | string | null;
+  dividends?: number | string | null;
+  xirr?: number | string | null;
+  absoluteReturnPercent?: number | string | null;
+  mergedIntoName?: string | null;
+  mergedIntoDate?: string | null;
+  buyQty?: number | string | null;
+  buyValue?: number | string | null;
+  avgBuy?: number | string | null;
+  sellQty?: number | string | null;
+  sellValue?: number | string | null;
+  avgSell?: number | string | null;
+  netQty?: number | string | null;
+  unclosed?: boolean | null;
 }
 
 export interface InvestmentPositionResponse {
@@ -259,33 +259,33 @@ export interface BrokerSummary {
   brokerAccountId: string;
   brokerName: string;
   provider: string;
-  invested: string;
-  currentValue: string;
-  unrealized: string;
-  realized: string;
-  cashBalance?: string;
-  totalCharges?: string;
+  invested: string | number;
+  currentValue: string | number;
+  unrealized: string | number;
+  realized: string | number;
+  cashBalance?: string | number;
+  totalCharges?: string | number;
 }
 
 export interface InstrumentTypeSummary {
   type: InstrumentType;
-  invested?: string;
-  currentValue: string;
-  percentage: string;
+  invested?: string | number;
+  currentValue: string | number;
+  percentage: string | number;
 }
 
 export interface InvestmentSummary {
-  totalInvested: string;
-  totalCurrentValue: string;
-  totalUnrealized: string;
-  totalUnrealizedPercent: string;
-  totalRealized: string;
-  totalDividends: string;
-  totalCharges: string;
-  totalPnl: string;
-  totalFnoRealized?: string;
-  xirr?: string;
-  absoluteReturnPercent?: string;
+  totalInvested: string | number;
+  totalCurrentValue: string | number;
+  totalUnrealized: string | number;
+  totalUnrealizedPercent: string | number;
+  totalRealized: string | number;
+  totalDividends: string | number;
+  totalCharges: string | number;
+  totalPnl: string | number;
+  totalFnoRealized?: string | number;
+  xirr?: string | number | null;
+  absoluteReturnPercent?: string | number;
   byBroker: BrokerSummary[];
   byInstrumentType: InstrumentTypeSummary[];
 }
@@ -302,9 +302,9 @@ export interface Dividend {
   instrumentName?: string;
   symbol?: string;
   type: DividendType;
-  amount: string;
-  perUnit?: string;
-  tds?: string;
+  amount: string | number;
+  perUnit?: string | number;
+  tds?: string | number;
   exDate?: string;
   payDate: string;
   source?: string;
@@ -344,17 +344,17 @@ export interface FyBucket {
   label: string;
   fromDate: string;
   toDate: string;
-  amount: string;
-  tds: string;
-  net: string;
+  amount: number | string;
+  tds: number | string;
+  net: number | string;
   count: number;
 }
 
 export interface DividendSummary {
   buckets: FyBucket[];
-  totalAmount: string;
-  totalTds: string;
-  totalNet: string;
+  totalAmount: number | string;
+  totalTds: number | string;
+  totalNet: number | string;
   totalCount: number;
 }
 
@@ -366,9 +366,9 @@ export interface DividendSuggestion {
   instrumentName?: string;
   symbol: string;
   exDate: string;
-  perUnit: string;
-  qtyHeld: string;
-  estimatedAmount: string;
+  perUnit: string | number;
+  qtyHeld: string | number;
+  estimatedAmount: string | number;
 }
 
 export interface DividendSuggestionsResponse {
@@ -396,31 +396,59 @@ export interface AcceptSuggestionsResponse {
 }
 
 // Corporate Actions
-export type CorporateActionType = 'split' | 'bonus' | 'demerger' | 'merger';
+export type CorporateActionType =
+  | 'split'
+  | 'bonus'
+  | 'demerger'
+  | 'merger'
+  | 'BONUS'
+  | 'SPLIT'
+  | 'DIVIDEND'
+  | 'RIGHTS'
+  | 'MERGER'
+  | 'DEMERGER'
+  | 'SPINOFF'
+  | 'BUYBACK'
+  | 'CAPITAL_REDUCTION';
+
+export type CorporateActionStatus = 'DRAFT' | 'APPLIED' | 'REVERTED' | 'CANCELLED';
 
 export interface CorporateAction {
   id: string;
   instrumentId: string;
   instrumentName?: string;
   instrumentSymbol?: string;
-  type: CorporateActionType;
-  ratioFrom: number;
-  ratioTo: number;
-  exDate: string;
+  type?: CorporateActionType;
+  actionType?: CorporateActionType;
+  status?: CorporateActionStatus;
+  recordDate?: string;
+  exDate?: string;
+  ratioFrom?: number;
+  ratioTo?: number;
+  ratioNumerator?: number;
+  ratioDenominator?: number;
+  cashPerShare?: number;
   notes?: string;
   targetInstrumentId?: string;
   targetInstrumentName?: string;
   targetInstrumentSymbol?: string;
-  costAllocationPct?: string | number;
-  fractionalCashInLieu?: string | number;
+  costAllocationPct?: number;
+  fractionalCashInLieu?: number;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CreateCorporateActionRequest {
-  type: CorporateActionType;
-  ratioFrom: number;
-  ratioTo: number;
-  exDate: string;
+  instrumentId?: string;
+  type?: CorporateActionType;
+  actionType?: CorporateActionType;
+  recordDate?: string;
+  exDate?: string;
+  ratioFrom?: number;
+  ratioTo?: number;
+  ratioNumerator?: number;
+  ratioDenominator?: number;
+  cashPerShare?: number;
   notes?: string;
   targetInstrumentId?: string;
   costAllocationPct?: number;
@@ -428,10 +456,16 @@ export interface CreateCorporateActionRequest {
 }
 
 export interface UpdateCorporateActionRequest {
+  instrumentId?: string;
   type?: CorporateActionType;
+  actionType?: CorporateActionType;
+  recordDate?: string;
+  exDate?: string;
   ratioFrom?: number;
   ratioTo?: number;
-  exDate?: string;
+  ratioNumerator?: number;
+  ratioDenominator?: number;
+  cashPerShare?: number;
   notes?: string;
   targetInstrumentId?: string;
   costAllocationPct?: number;
@@ -440,11 +474,11 @@ export interface UpdateCorporateActionRequest {
 
 // Imports (Phase 4a / 4b / 4c)
 export type ImportSource = 'zerodha_tradebook' | 'mf_cas' | 'groww';
-export type ImportMatchStatus = 'matched' | 'unmatched';
+export type ImportMatchStatus = 'matched' | 'unmatched' | string;
 
 export interface ParsedImportRow {
   rowIndex?: number;
-  kind: 'trade' | 'dividend';
+  kind?: 'trade' | 'dividend' | string;
   type?: InvestmentTransactionType;
   parsedSymbol?: string;
   parsedIsin?: string;
@@ -456,7 +490,7 @@ export interface ParsedImportRow {
   tradeDate: string;
   charges?: Charges;
   externalRef?: string;
-  rawData?: Record<string, any>;
+  rawData?: Record<string, unknown>;
   error?: string;
 }
 
@@ -520,6 +554,7 @@ export interface ImportCommitResult {
   skipped: number;
   failed: ImportCommitFailure[];
   skippedItems: ImportCommitSkipped[];
+  jobId?: string;
 }
 
 // Broker Reconciliation Types
@@ -824,9 +859,9 @@ export interface GmailCleanupResult {
 export interface ErrorResponse {
   code: string;
   message: string;
-  details?: Record<string, string>;
-  errorId?: string;
-  timestamp: string;
+  details?: Record<string, string> | null;
+  errorId?: string | null;
+  timestamp?: string | null;
 }
 
 // Ingestion

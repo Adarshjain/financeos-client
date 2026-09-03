@@ -1,12 +1,27 @@
-import { cookies, headers } from 'next/headers';
+import { cookies, headers as nextHeaders } from 'next/headers';
 
-import { Account, AccountRequest } from '@/lib/account.types';
-import { CategorizeResponse, Category, CategoryRequest } from '@/lib/categories.types';
+import type {
+  Account,
+  AccountRequest,
+  Cardholder,
+  CloseAccountRequest,
+  CloseCardholderRequest,
+  CloseCardRequest,
+  CreateCardholderRequest,
+  CreateCardRequest,
+  ReplaceCardRequest,
+  UpdateCardholderRequest,
+} from '@/lib/account.types';
+import { ApiError } from '@/lib/api/client';
+import { serverApi } from '@/lib/api/server';
+import type { ErrorResponse, Schemas } from '@/lib/api/types';
+import type { CategorizeResponse, Category, CategoryRequest } from '@/lib/categories.types';
 import type {
   CreateDashboardRequest,
   DashboardResponse,
   UpdateDashboardRequest,
 } from '@/lib/dashboards.types';
+import type { EnqueueResponse, JobResponse, PagedJobResponse } from '@/lib/jobs.types';
 import type {
   CounterpartyResponse,
   CreateCounterpartyRequest,
@@ -26,6 +41,7 @@ import type {
   ProviderCatalogDto,
   RoutingOptionDto,
   TestKeyResponse,
+  UpdateLlmKeyPositionRequest,
   UpdateRoutingRequest,
 } from '@/lib/llmKey.types';
 import type {
@@ -45,12 +61,12 @@ import type {
   MatchSuggestionsResponse,
   UpdateLoanRequest,
 } from '@/lib/loan.types';
-import { logger } from '@/lib/observability/logger';
-import type { Page } from '@/lib/pagination';
+import { Page } from '@/lib/pagination';
 import type {
   CreateReportRequest,
   ReportCatalog,
   ReportData,
+  ReportDefinition,
   ReportResponse,
   ReportRunOptions,
   ReportSummaryResponse,
@@ -58,10 +74,47 @@ import type {
   RunReportRequest,
   UpdateReportRequest,
 } from '@/lib/reports.types';
-import type { PagedRewardLines, ReorderRewardRulesRequest, RewardAccountConfig, RewardAccountConfigRequest, RewardCapBucket, RewardCapBucketRequest, RewardMilestone, RewardMilestoneRequest, RewardRecommendationRequest, RewardRecommendationResponse, RewardReport, RewardRule, RewardRuleRequest } from '@/lib/rewards.types';
-import type { ApplyRuleRequest, ApplyRuleResult, CategoryRule, CreateRuleRequest, PagedRuleMatches, PagedRules, PreviewMatchesRequest, UpdateRuleRequest } from '@/lib/rules.types';
-import { BatchDeleteRequest, BatchDeleteResponse, BatchReviewRequest, BatchReviewResponse, CreateTransactionLinkRequest, MergeTransactionsRequest, MergeTransactionsResponse, PagedTransaction, Transaction, TransactionLinkResponse, TransactionRequest, TransactionSearchRequest } from '@/lib/transaction.types';
-
+import type {
+  PagedRewardLines,
+  ReorderRewardRulesRequest,
+  RewardAccountConfig,
+  RewardAccountConfigRequest,
+  RewardCapBucket,
+  RewardCapBucketRequest,
+  RewardMilestone,
+  RewardMilestoneRequest,
+  RewardRecommendationRequest,
+  RewardRecommendationResponse,
+  RewardReport,
+  RewardRule,
+  RewardRuleRequest,
+} from '@/lib/rewards.types';
+import type {
+  ApplyRuleRequest,
+  CategoryRule,
+  CreateRuleRequest,
+  PagedRuleMatches,
+  PagedRules,
+  PreviewMatchesRequest,
+  UpdateRuleRequest,
+} from '@/lib/rules.types';
+import type { CardCycleSummary, StatementDetail, StatementSummary } from '@/lib/statement.types';
+import type {
+  BatchDeleteRequest,
+  BatchDeleteResponse,
+  BatchReviewRequest,
+  BatchReviewResponse,
+  BulkReattributeCardRequest,
+  BulkReattributeResponse,
+  CreateTransactionLinkRequest,
+  MergeTransactionsRequest,
+  MergeTransactionsResponse,
+  PagedTransaction,
+  Transaction,
+  TransactionLinkResponse,
+  TransactionRequest,
+  TransactionSearchRequest,
+} from '@/lib/transaction.types';
 import type {
   AcceptSuggestionsRequest,
   AcceptSuggestionsResponse,
@@ -71,17 +124,14 @@ import type {
   CreateFnoTradeRequest,
   CreateInstrumentRequest,
   CreateInvestmentTransactionRequest,
-  DeleteAccountRequest,
-  DeletionSummaryResponse,
   Dividend,
   DividendSuggestionsResponse,
   DividendSummary,
   DividendType,
-  EnqueueResponse,
-  ErrorResponse,
-  FileIngestionResult,
   FnoTradeListResponse,
   FnoTradeResponse,
+  GmailCleanupPreview,
+  GmailCleanupResult,
   GmailConnectionResponse,
   GmailOAuthStartResponse,
   GmailSenderRequest,
@@ -96,1483 +146,1200 @@ import type {
   InvestmentPositionResponse,
   InvestmentSummary,
   InvestmentTransactionResponse,
-  JobResponse,
-  LoginRequest,
   PagedDividendResponse,
+  PagedGmailAttention,
   PagedInvestmentTransactionResponse,
-  PagedJobResponse,
   PriceHistoryPoint,
-  PriceRefreshResult,
   ReconcileCommitRequest,
   ReconcilePreview,
   ResolveInstrumentRequest,
   SetPriceRequest,
-  SignupRequest,
-  SyncSummary,
   UpdateCorporateActionRequest,
   UpdateDividendRequest,
   UpdateFnoTradeRequest,
   UpdateInvestmentTransactionRequest,
   UserResponse,
-} from './types';
+} from '@/lib/types';
+
+export { ApiError };
 
 const API_BASE = process.env.API_BASE_URL || 'http://localhost:6969';
 
-class ApiError extends Error {
-  constructor(
-    public status: number,
-    public response: ErrorResponse,
-  ) {
-    super(response.message);
-    this.name = 'ApiError';
+// ---------------------------------------------------------------------------
+// Raw-fetch helpers — for the handful of flows serverApi's typed client can't
+// (or shouldn't) cover:
+//   - signup/login/OAuth-callback need the raw Set-Cookie header, which
+//     openapi-fetch's response wrapper doesn't expose.
+//   - multipart file uploads (ingest, import preview/reconcile-preview): the
+//     generated schema types their multipart requestBody as e.g.
+//     `{ file: string }` (binary format collapses to `string`), which a real
+//     `FormData` can never satisfy structurally. Plain `fetch` has no such
+//     constraint, and the middleware's own FormData handling is exactly this
+//     pattern already.
+// ---------------------------------------------------------------------------
+
+async function parseError(response: Response): Promise<ApiError> {
+  const err: ErrorResponse = await response.json().catch(() => ({
+    code: 'UNKNOWN_ERROR',
+    message: `Request failed with status ${response.status}`,
+    timestamp: new Date().toISOString(),
+  }));
+  return new ApiError(response.status, err);
+}
+
+function extractSessionCookie(response: Response): string | undefined {
+  const setCookie = response.headers.get('set-cookie');
+  if (!setCookie) return undefined;
+  const match = setCookie.match(/FINANCEOS_SESSION=([^;]+)/);
+  return match ? match[1] : undefined;
+}
+
+/** Un-authenticated POST that also returns the session cookie from `Set-Cookie`. */
+async function authPost<T>(endpoint: string, body: unknown): Promise<{ data: T; sessionCookie?: string }> {
+  const response = await fetch(`${API_BASE}${endpoint}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    cache: 'no-store',
+  });
+  if (!response.ok) throw await parseError(response);
+  const data: T = await response.json();
+  return { data, sessionCookie: extractSessionCookie(response) };
+}
+
+/** Un-authenticated GET that also returns the session cookie from `Set-Cookie`. */
+async function authGet<T>(endpoint: string, query?: Record<string, string | undefined>): Promise<{ data: T; sessionCookie?: string }> {
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(query ?? {})) {
+    if (v !== undefined) params.set(k, v);
   }
+  const qs = params.toString() ? `?${params}` : '';
+  const response = await fetch(`${API_BASE}${endpoint}${qs}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    cache: 'no-store',
+  });
+  if (!response.ok) throw await parseError(response);
+  const data: T = await response.json();
+  return { data, sessionCookie: extractSessionCookie(response) };
 }
 
-async function getSessionCookie(): Promise<string | undefined> {
-  const cookieStore = await cookies();
-  return cookieStore.get('FINANCEOS_SESSION')?.value;
-}
-
-async function request<T>(
-  endpoint: string,
-  options: RequestInit = {},
+/** Authenticated (session-cookie-forwarding) multipart POST — mirrors serverMiddleware's own header logic. */
+async function authenticatedFormPost<T>(
+  path: string,
+  query: Record<string, string | number | boolean | string[] | undefined>,
+  formData: FormData,
 ): Promise<T> {
-  const sessionCookie = await getSessionCookie();
+  const params = new URLSearchParams();
+  for (const [k, v] of Object.entries(query)) {
+    if (v === undefined) continue;
+    if (Array.isArray(v)) {
+      for (const item of v) params.append(k, item);
+    } else {
+      params.set(k, String(v));
+    }
+  }
+  const qs = params.toString() ? `?${params}` : '';
 
-  let requestId: string | undefined;
-  let sessionId: string | undefined;
+  const reqHeaders: Record<string, string> = {};
   try {
-    const headerStore = await headers();
-    requestId = headerStore.get('x-request-id') ?? undefined;
-    sessionId = headerStore.get('x-session-id') ?? undefined;
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('FINANCEOS_SESSION')?.value;
+    if (sessionCookie) reqHeaders.Cookie = `FINANCEOS_SESSION=${sessionCookie}`;
+  } catch {
+    // Outside request context
+  }
+  try {
+    const headerStore = await nextHeaders();
+    const requestId = headerStore.get('x-request-id');
+    const sessionId = headerStore.get('x-session-id');
+    if (requestId) reqHeaders['X-Request-Id'] = requestId;
+    if (sessionId) reqHeaders['X-Session-Id'] = sessionId;
   } catch {
     // Outside request context
   }
 
-  const reqHeaders: Record<string, string> = {};
-  if (!(options.body instanceof FormData)) {
-    reqHeaders['Content-Type'] = 'application/json';
-  }
-  if (options.headers) {
-    Object.assign(reqHeaders, options.headers);
-  }
-
-  if (sessionCookie) {
-    reqHeaders['Cookie'] = `FINANCEOS_SESSION=${sessionCookie}`;
-  }
-  if (requestId) {
-    reqHeaders['X-Request-Id'] = requestId;
-  }
-  if (sessionId) {
-    reqHeaders['X-Session-Id'] = sessionId;
-  }
-
-  const startMs = Date.now();
-  let response: Response;
-  try {
-    response = await fetch(`${API_BASE}${endpoint}`, {
-      ...options,
-      headers: reqHeaders,
-      cache: 'no-store',
-    });
-  } catch (err) {
-    const durationMs = Date.now() - startMs;
-    logger.log('ERROR', 'client.api.call', {
-      endpoint,
-      status: 0,
-      durationMs,
-      requestId,
-      sessionId,
-      message: err instanceof Error ? err.message : String(err),
-    });
-    throw err;
-  }
-
-  const durationMs = Date.now() - startMs;
-  logger.log('INFO', 'client.api.call', {
-    endpoint,
-    status: response.status,
-    durationMs,
-    requestId,
-    sessionId,
+  const response = await fetch(`${API_BASE}${path}${qs}`, {
+    method: 'POST',
+    headers: reqHeaders,
+    body: formData,
+    cache: 'no-store',
   });
-
-  if (!response.ok) {
-    let errorResponse: ErrorResponse;
-    try {
-      errorResponse = await response.json();
-    } catch {
-      errorResponse = {
-        code: 'UNKNOWN_ERROR',
-        message: `Request failed with status ${response.status}`,
-        timestamp: new Date().toISOString(),
-      };
-    }
-    throw new ApiError(response.status, errorResponse);
-  }
-
-  // Handle empty responses
-  const text = await response.text();
-  if (!text) {
-    return {} as T;
-  }
-
-  return JSON.parse(text);
+  if (!response.ok) throw await parseError(response);
+  if (response.status === 204) return undefined as T;
+  return (await response.json()) as T;
 }
 
-// Auth API
+// ---------------------------------------------------------------------------
+// Auth
+// ---------------------------------------------------------------------------
+
 export const authApi = {
-  async signup(data: SignupRequest): Promise<UserResponse> {
-    const response = await fetch(`${API_BASE}/api/v1/auth/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-      cache: 'no-store',
-    });
-
-    if (!response.ok) {
-      const error: ErrorResponse = await response.json();
-      throw new ApiError(response.status, error);
-    }
-
-    return response.json();
+  signup: async (body: { email: string; password: string; inviteCode: string }): Promise<UserResponse> => {
+    const { data } = await serverApi.POST('/api/v1/auth/signup', { body });
+    return data! as UserResponse;
   },
-
-  async login(
-    data: LoginRequest,
-  ): Promise<{ user: UserResponse; sessionCookie?: string }> {
-    const response = await fetch(`${API_BASE}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-      cache: 'no-store',
-    });
-
-    if (!response.ok) {
-      const error: ErrorResponse = await response.json();
-      throw new ApiError(response.status, error);
-    }
-
-    const user: UserResponse = await response.json();
-    const setCookie = response.headers.get('set-cookie');
-
-    // Extract session cookie value
-    let sessionCookie: string | undefined;
-    if (setCookie) {
-      const match = setCookie.match(/FINANCEOS_SESSION=([^;]+)/);
-      if (match) {
-        sessionCookie = match[1];
-      }
-    }
-
-    return { user, sessionCookie };
+  login: async (body: { email: string; password: string }): Promise<{ user: UserResponse; sessionCookie?: string }> => {
+    const { data, sessionCookie } = await authPost<UserResponse>('/api/v1/auth/login', body);
+    return { user: data, sessionCookie };
   },
-
-  async logout(): Promise<void> {
-    await request('/api/v1/auth/logout', { method: 'POST' });
+  googleStart: async (): Promise<GoogleAuthStartResponse> => {
+    const { data } = await serverApi.GET('/api/v1/auth/google/start');
+    return data! as GoogleAuthStartResponse;
   },
-
-  async getCurrentUser(): Promise<UserResponse> {
-    return request<UserResponse>('/api/v1/auth/me');
+  startGoogleAuth: async (): Promise<GoogleAuthStartResponse> => authApi.googleStart(),
+  me: async (): Promise<UserResponse> => {
+    const { data } = await serverApi.GET('/api/v1/auth/me');
+    return data! as UserResponse;
   },
-
-  async startGoogleAuth(): Promise<GoogleAuthStartResponse> {
-    return request<GoogleAuthStartResponse>('/api/v1/auth/google/start');
+  getCurrentUser: async (): Promise<UserResponse> => authApi.me(),
+  logout: async (): Promise<void> => {
+    await serverApi.POST('/api/v1/auth/logout');
   },
-
-  async handleGoogleCallback(params: {
-    code?: string;
-    state?: string;
-    error?: string;
-  }): Promise<{ user: UserResponse; sessionCookie?: string }> {
-    const query = new URLSearchParams();
-    if (params.code) query.set('code', params.code);
-    if (params.state) query.set('state', params.state);
-    if (params.error) query.set('error', params.error);
-
-    const response = await fetch(
-      `${API_BASE}/api/v1/auth/google/callback?${query.toString()}`,
-      {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        cache: 'no-store',
-      },
-    );
-
-    if (!response.ok) {
-      const error: ErrorResponse = await response.json();
-      throw new ApiError(response.status, error);
-    }
-
-    const user: UserResponse = await response.json();
-    const setCookie = response.headers.get('set-cookie');
-
-    // Extract session cookie value
-    let sessionCookie: string | undefined;
-    if (setCookie) {
-      const match = setCookie.match(/FINANCEOS_SESSION=([^;]+)/);
-      if (match) {
-        sessionCookie = match[1];
-      }
-    }
-
-    return { user, sessionCookie };
+  handleGoogleCallback: async (params: { code?: string; state?: string; error?: string }): Promise<{ user: UserResponse; sessionCookie?: string }> => {
+    const { data, sessionCookie } = await authGet<UserResponse>('/api/v1/auth/google/callback', params);
+    return { user: data, sessionCookie };
   },
-
-  async getDeletionSummary(): Promise<DeletionSummaryResponse> {
-    return request<DeletionSummaryResponse>('/api/v1/auth/me/deletion-summary');
+  deleteAccount: async (body: { password?: string; confirmEmail?: string }): Promise<void> => {
+    await serverApi.POST('/api/v1/auth/me/delete', { body });
   },
-
-  async deleteAccount(data?: DeleteAccountRequest): Promise<void> {
-    await request<void>('/api/v1/auth/me/delete', {
-      method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    });
+  getDeletionSummary: async (): Promise<{ counts: Record<string, number>; total: number }> => {
+    const { data } = await serverApi.GET('/api/v1/auth/me/deletion-summary');
+    return data! as { counts: Record<string, number>; total: number };
   },
 };
 
-// Accounts API
+// ---------------------------------------------------------------------------
+// Accounts & Cardholders
+// ---------------------------------------------------------------------------
+
 export const accountsApi = {
-  async list(): Promise<Account[]> {
-    return request<Account[]>('/api/v1/accounts');
+  list: async (): Promise<Account[]> => {
+    const { data } = await serverApi.GET('/api/v1/accounts');
+    return ((data as Account[]) || []);
   },
-
-  async create(data: AccountRequest): Promise<Account> {
-    return request<Account>('/api/v1/accounts', {
-      method: 'POST',
-      body: JSON.stringify(data),
+  get: async (id: string): Promise<Account> => {
+    const { data } = await serverApi.GET('/api/v1/accounts/{id}', { params: { path: { id } } });
+    return data! as Account;
+  },
+  create: async (body: AccountRequest): Promise<Account> => {
+    const { data } = await serverApi.POST('/api/v1/accounts', { body: body as Schemas['BankAccountRequest'] });
+    return data! as Account;
+  },
+  update: async (id: string, body: AccountRequest): Promise<Account> => {
+    const { data } = await serverApi.PUT('/api/v1/accounts/{id}', {
+      params: { path: { id } },
+      body: body as Schemas['BankAccountRequest'],
     });
+    return data! as Account;
   },
-
-  async update(id: string, data: AccountRequest): Promise<Account> {
-    return request<Account>(`/api/v1/accounts/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
+  delete: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/accounts/{id}', { params: { path: { id } } });
+  },
+  getCardCycleSummary: async (id: string): Promise<CardCycleSummary | null> => {
+    const { data } = await serverApi.GET('/api/v1/accounts/{id}/card-summary', { params: { path: { id } } });
+    return (data as CardCycleSummary) ?? null;
+  },
+  close: async (id: string, body?: CloseAccountRequest): Promise<Account> => {
+    const { data } = await serverApi.POST('/api/v1/accounts/{id}/close', { params: { path: { id } }, body });
+    return data! as Account;
+  },
+  reopen: async (id: string): Promise<Account> => {
+    const { data } = await serverApi.POST('/api/v1/accounts/{id}/reopen', { params: { path: { id } } });
+    return data! as Account;
+  },
+  gmailCleanupPreview: async (id: string, before: string): Promise<GmailCleanupPreview> => {
+    const { data } = await serverApi.GET('/api/v1/accounts/{id}/gmail-cleanup-preview', {
+      params: { path: { id }, query: { before } },
     });
+    return data! as GmailCleanupPreview;
   },
-
-  async delete(id: string): Promise<void> {
-    return request<void>(`/api/v1/accounts/${id}`, {
-      method: 'DELETE',
+  gmailCleanup: async (id: string, before: string): Promise<GmailCleanupResult> => {
+    const { data } = await serverApi.POST('/api/v1/accounts/{id}/gmail-cleanup', {
+      params: { path: { id }, query: { before } },
     });
-  },
-
-  async close(id: string, data?: import('@/lib/account.types').CloseAccountRequest): Promise<Account> {
-    return request<Account>(`/api/v1/accounts/${id}/close`, {
-      method: 'POST',
-      body: JSON.stringify(data || {}),
-    });
-  },
-
-  async reopen(id: string): Promise<Account> {
-    return request<Account>(`/api/v1/accounts/${id}/reopen`, {
-      method: 'POST',
-    });
-  },
-
-  async getCardCycleSummary(id: string): Promise<import('@/lib/statement.types').CardCycleSummary> {
-    return request<import('@/lib/statement.types').CardCycleSummary>(`/api/v1/accounts/${id}/card-summary`);
-  },
-
-  async gmailCleanupPreview(id: string, before: string): Promise<import('@/lib/types').GmailCleanupPreview> {
-    return request<import('@/lib/types').GmailCleanupPreview>(`/api/v1/accounts/${id}/gmail-cleanup-preview?before=${encodeURIComponent(before)}`);
-  },
-
-  async gmailCleanup(id: string, before: string): Promise<import('@/lib/types').GmailCleanupResult> {
-    return request<import('@/lib/types').GmailCleanupResult>(`/api/v1/accounts/${id}/gmail-cleanup?before=${encodeURIComponent(before)}`, {
-      method: 'POST',
-    });
+    return data! as GmailCleanupResult;
   },
 };
 
-// Statements API
-export const statementsApi = {
-  async listByAccount(accountId: string): Promise<import('@/lib/statement.types').StatementSummary[]> {
-    return request<import('@/lib/statement.types').StatementSummary[]>(`/api/v1/accounts/${accountId}/statements`);
-  },
-
-  async getById(statementId: string): Promise<import('@/lib/statement.types').StatementDetail> {
-    return request<import('@/lib/statement.types').StatementDetail>(`/api/v1/statements/${statementId}`);
-  },
-};
-
-// Transactions API
-export const transactionsApi = {
-
-  async search(
-    body: TransactionSearchRequest,
-    page = 0,
-    size = 50,
-    sort = 'date,desc',
-  ): Promise<PagedTransaction> {
-    const params = new URLSearchParams({
-      page: String(page),
-      size: String(size),
-      sort,
-    });
-    return request<PagedTransaction>(`/api/v1/transactions/search?${params}`, {
-      method: 'POST',
-      body: JSON.stringify(body),
-    });
-  },
-
-  async create(data: TransactionRequest): Promise<Transaction> {
-    return request<Transaction>('/api/v1/transactions', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async update(id: string, data: TransactionRequest): Promise<Transaction> {
-    return request<Transaction>(`/api/v1/transactions/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async delete(id: string): Promise<void> {
-    return request<void>(`/api/v1/transactions/${id}`, {
-      method: 'DELETE',
-    });
-  },
-
-  async batchReview(data: BatchReviewRequest): Promise<BatchReviewResponse> {
-    return request<BatchReviewResponse>('/api/v1/transactions/batch-review', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async batchDelete(data: BatchDeleteRequest): Promise<BatchDeleteResponse> {
-    return request<BatchDeleteResponse>('/api/v1/transactions/batch-delete', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async merge(data: MergeTransactionsRequest): Promise<MergeTransactionsResponse> {
-    return request<MergeTransactionsResponse>('/api/v1/transactions/merge', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async bulkReattributeCard(data: import('@/lib/transaction.types').BulkReattributeCardRequest): Promise<import('@/lib/transaction.types').BulkReattributeResponse> {
-    return request<import('@/lib/transaction.types').BulkReattributeResponse>('/api/v1/transactions/card', {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    });
-  },
-};
-
-// Cardholders API
 export const cardholdersApi = {
-  async listByAccount(accountId: string): Promise<import('@/lib/account.types').Cardholder[]> {
-    return request<import('@/lib/account.types').Cardholder[]>(`/api/v1/accounts/${accountId}/cardholders`);
+  list: async (accountId: string): Promise<Cardholder[]> => {
+    const { data } = await serverApi.GET('/api/v1/accounts/{accountId}/cardholders', { params: { path: { accountId } } });
+    return (data as Cardholder[]) || [];
   },
-
-  async addPrimary(accountId: string, data: import('@/lib/account.types').CreateCardRequest): Promise<import('@/lib/account.types').Cardholder> {
-    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/primary`, {
-      method: 'POST',
-      body: JSON.stringify(data),
+  listByAccount: async (accountId: string): Promise<Cardholder[]> => cardholdersApi.list(accountId),
+  create: async (accountId: string, body: CreateCardholderRequest): Promise<Cardholder> => {
+    const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders', {
+      params: { path: { accountId } },
+      body: body as Schemas['CreateCardholderRequest'],
     });
+    return data! as Cardholder;
   },
-
-  async addAddon(accountId: string, data: import('@/lib/account.types').CreateCardholderRequest): Promise<import('@/lib/account.types').Cardholder> {
-    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders`, {
-      method: 'POST',
-      body: JSON.stringify(data),
+  addPrimary: async (accountId: string, body: CreateCardRequest): Promise<Cardholder> => {
+    const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/primary', {
+      params: { path: { accountId } },
+      body: body as Schemas['CreateCardRequest'],
     });
+    return data! as Cardholder;
   },
-
-  async update(accountId: string, cardholderId: string, data: import('@/lib/account.types').UpdateCardholderRequest): Promise<import('@/lib/account.types').Cardholder> {
-    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
+  addAddon: async (accountId: string, body: CreateCardholderRequest): Promise<Cardholder> => cardholdersApi.create(accountId, body),
+  update: async (accountId: string, cardholderId: string, body: UpdateCardholderRequest): Promise<Cardholder> => {
+    const { data } = await serverApi.PUT('/api/v1/accounts/{accountId}/cardholders/{cardholderId}', {
+      params: { path: { accountId, cardholderId } },
+      body: body as Schemas['UpdateCardholderRequest'],
     });
+    return data! as Cardholder;
   },
-
-  async close(accountId: string, cardholderId: string, data?: import('@/lib/account.types').CloseCardholderRequest): Promise<import('@/lib/account.types').Cardholder> {
-    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}/close`, {
-      method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
+  delete: async (accountId: string, cardholderId: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/accounts/{accountId}/cardholders/{cardholderId}', { params: { path: { accountId, cardholderId } } });
+  },
+  close: async (accountId: string, cardholderId: string, body?: CloseCardholderRequest): Promise<Cardholder> => {
+    const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/close', {
+      params: { path: { accountId, cardholderId } },
+      body,
     });
+    return data! as Cardholder;
   },
-
-  async reopen(accountId: string, cardholderId: string): Promise<import('@/lib/account.types').Cardholder> {
-    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}/reopen`, {
-      method: 'POST',
+  reopen: async (accountId: string, cardholderId: string): Promise<Cardholder> => {
+    const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/reopen', {
+      params: { path: { accountId, cardholderId } },
     });
+    return data! as Cardholder;
   },
-
-  async delete(accountId: string, cardholderId: string): Promise<void> {
-    return request<void>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}`, {
-      method: 'DELETE',
+  createCard: async (accountId: string, cardholderId: string, body: CreateCardRequest): Promise<Cardholder> => {
+    const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards', {
+      params: { path: { accountId, cardholderId } },
+      body: body as Schemas['CreateCardRequest'],
     });
+    return data! as Cardholder;
   },
-
-  async addCard(accountId: string, cardholderId: string, data: import('@/lib/account.types').CreateCardRequest): Promise<import('@/lib/account.types').Cardholder> {
-    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}/cards`, {
-      method: 'POST',
-      body: JSON.stringify(data),
+  addCard: async (accountId: string, cardholderId: string, body: CreateCardRequest): Promise<Cardholder> =>
+    cardholdersApi.createCard(accountId, cardholderId, body),
+  replaceCard: async (accountId: string, cardholderId: string, cardId: string, body: ReplaceCardRequest): Promise<Cardholder> => {
+    const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards/{cardId}/replace', {
+      params: { path: { accountId, cardholderId, cardId } },
+      body,
     });
+    return data! as Cardholder;
   },
-
-  async replaceCard(accountId: string, cardholderId: string, cardId: string, data: import('@/lib/account.types').ReplaceCardRequest): Promise<import('@/lib/account.types').Cardholder> {
-    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}/cards/${cardId}/replace`, {
-      method: 'POST',
-      body: JSON.stringify(data),
+  /**
+   * Back-compat alias for callers that only track a card id, not its
+   * cardholder — every card still has exactly one cardholder line, so the
+   * card id doubles as the cardholder id here (mirrors the pre-split model).
+   */
+  replace: async (accountId: string, cardId: string, body: ReplaceCardRequest): Promise<Cardholder> =>
+    cardholdersApi.replaceCard(accountId, cardId, cardId, body),
+  closeCard: async (accountId: string, cardholderId: string, cardId: string, body?: CloseCardRequest): Promise<Cardholder> => {
+    const { data } = await serverApi.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards/{cardId}/close', {
+      params: { path: { accountId, cardholderId, cardId } },
+      body,
     });
+    return data! as Cardholder;
   },
-
-  async closeCard(accountId: string, cardholderId: string, cardId: string, data?: import('@/lib/account.types').CloseCardRequest): Promise<import('@/lib/account.types').Cardholder> {
-    return request<import('@/lib/account.types').Cardholder>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}/cards/${cardId}/close`, {
-      method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    });
-  },
-
-  async deleteCard(accountId: string, cardholderId: string, cardId: string): Promise<void> {
-    return request<void>(`/api/v1/accounts/${accountId}/cardholders/${cardholderId}/cards/${cardId}`, {
-      method: 'DELETE',
-    });
-  },
-
-  // Backward compatibility methods
-  async create(accountId: string, data: import('@/lib/account.types').CreateCardholderRequest): Promise<import('@/lib/account.types').Cardholder> {
-    return this.addAddon(accountId, data);
-  },
-  async replace(accountId: string, cardholderId: string, data: import('@/lib/account.types').ReplaceCardRequest): Promise<import('@/lib/account.types').Cardholder> {
-    return this.replaceCard(accountId, cardholderId, cardholderId, data);
+  /**
+   * No real per-card DELETE endpoint exists on the server (only close/replace
+   * do) — see Server follow-ups. Closing is the closest real lifecycle
+   * operation and, unlike the previous implementation's DELETE call against a
+   * URL that happened to collide with `deleteCardholder`, does not risk
+   * deleting the whole cardholder line by accident.
+   */
+  deleteCard: async (accountId: string, cardholderId: string, cardId: string): Promise<void> => {
+    await cardholdersApi.closeCard(accountId, cardholderId, cardId);
   },
 };
 
+/** Backwards-compatible alias — the original exported both names. */
 export const accountCardsApi = cardholdersApi;
 
-
-// Instruments API
-export const instrumentsApi = {
-  async search(search?: string, type?: string): Promise<Instrument[]> {
-    const params = new URLSearchParams();
-    if (search) params.set('search', search);
-    if (type) params.set('type', type);
-    const query = params.toString();
-    return request<Instrument[]>(`/api/v1/instruments${query ? `?${query}` : ''}`);
-  },
-
-  async catalogSearch(q: string, type?: InstrumentType): Promise<InstrumentCandidate[]> {
-    const params = new URLSearchParams();
-    if (q) params.set('q', q);
-    if (type) params.set('type', type);
-    const query = params.toString();
-    return request<InstrumentCandidate[]>(
-      `/api/v1/instruments/catalog-search${query ? `?${query}` : ''}`,
-    );
-  },
-
-  async resolveInstrument(req: ResolveInstrumentRequest): Promise<Instrument> {
-    return request<Instrument>('/api/v1/instruments/resolve', {
-      method: 'POST',
-      body: JSON.stringify(req),
-    });
-  },
-
-  async create(data: CreateInstrumentRequest): Promise<Instrument> {
-    return request<Instrument>('/api/v1/instruments', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async update(id: string, data: CreateInstrumentRequest): Promise<Instrument> {
-    return request<Instrument>(`/api/v1/instruments/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async setPrice(id: string, data: SetPriceRequest): Promise<Instrument> {
-    return request<Instrument>(`/api/v1/instruments/${id}/price`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async getPriceHistory(
-    id: string,
-    options?: { from?: string; to?: string },
-  ): Promise<PriceHistoryPoint[]> {
-    const params = new URLSearchParams();
-    if (options?.from) params.set('from', options.from);
-    if (options?.to) params.set('to', options.to);
-    const query = params.toString();
-    return request<PriceHistoryPoint[]>(
-      `/api/v1/instruments/${id}/prices${query ? `?${query}` : ''}`,
-    );
-  },
-
-  async updatePrice(
-    instrumentId: string,
-    priceId: string,
-    data: { price: number | string },
-  ): Promise<Instrument> {
-    return request<Instrument>(
-      `/api/v1/instruments/${instrumentId}/prices/${priceId}`,
-      {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      },
-    );
-  },
-
-  async deletePrice(instrumentId: string, priceId: string): Promise<void> {
-    return request<void>(
-      `/api/v1/instruments/${instrumentId}/prices/${priceId}`,
-      {
-        method: 'DELETE',
-      },
-    );
-  },
-};
-
-// Investments API
-export const investmentsApi = {
-  async listTransactions(
-    page = 0,
-    size = 50,
-    filters?: { brokerAccountId?: string; instrumentId?: string; holdingId?: string; search?: string },
-  ): Promise<PagedInvestmentTransactionResponse> {
-    const params = new URLSearchParams({
-      page: String(page),
-      size: String(size),
-    });
-    if (filters?.brokerAccountId) params.set('brokerAccountId', filters.brokerAccountId);
-    if (filters?.instrumentId) params.set('instrumentId', filters.instrumentId);
-    if (filters?.holdingId) params.set('holdingId', filters.holdingId);
-    if (filters?.search) params.set('search', filters.search);
-    return request<PagedInvestmentTransactionResponse>(
-      `/api/v1/investments/transactions?${params}`,
-    );
-  },
-
-  async createTransaction(
-    data: CreateInvestmentTransactionRequest,
-  ): Promise<InvestmentTransactionResponse> {
-    return request<InvestmentTransactionResponse>(
-      '/api/v1/investments/transactions',
-      {
-        method: 'POST',
-        body: JSON.stringify(data),
-      },
-    );
-  },
-
-  async updateTransaction(
-    id: string,
-    data: UpdateInvestmentTransactionRequest,
-  ): Promise<InvestmentTransactionResponse> {
-    return request<InvestmentTransactionResponse>(
-      `/api/v1/investments/transactions/${id}`,
-      {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      },
-    );
-  },
-
-  async deleteTransaction(id: string): Promise<void> {
-    return request<void>(`/api/v1/investments/transactions/${id}`, {
-      method: 'DELETE',
-    });
-  },
-
-  async getPositions(): Promise<InvestmentPositionResponse> {
-    return request<InvestmentPositionResponse>('/api/v1/investments/positions');
-  },
-
-  async getSummary(): Promise<InvestmentSummary> {
-    return request<InvestmentSummary>('/api/v1/investments/summary');
-  },
-
-  async refreshPrices(instrumentId?: string): Promise<EnqueueResponse> {
-    const query = instrumentId ? `?instrumentId=${encodeURIComponent(instrumentId)}` : '';
-    return request<EnqueueResponse>(`/api/v1/investments/prices/refresh${query}`, {
-      method: 'POST',
-    });
-  },
-};
-
-// Dividends API
-export const dividendsApi = {
-  async list(filters?: {
-    holdingId?: string;
-    brokerAccountId?: string;
-    instrumentId?: string;
-    type?: DividendType;
-    from?: string;
-    to?: string;
-    page?: number;
-    size?: number;
-  }): Promise<PagedDividendResponse> {
-    const params = new URLSearchParams({
-      page: String(filters?.page ?? 0),
-      size: String(filters?.size ?? 25),
-    });
-    if (filters?.holdingId) params.set('holdingId', filters.holdingId);
-    if (filters?.brokerAccountId) params.set('brokerAccountId', filters.brokerAccountId);
-    if (filters?.instrumentId) params.set('instrumentId', filters.instrumentId);
-    if (filters?.type) params.set('type', filters.type);
-    if (filters?.from) params.set('from', filters.from);
-    if (filters?.to) params.set('to', filters.to);
-    return request<PagedDividendResponse>(`/api/v1/investments/dividends?${params}`);
-  },
-
-  async summary(filters?: {
-    holdingId?: string;
-    brokerAccountId?: string;
-    instrumentId?: string;
-    type?: DividendType;
-  }): Promise<DividendSummary> {
-    const params = new URLSearchParams();
-    if (filters?.holdingId) params.set('holdingId', filters.holdingId);
-    if (filters?.brokerAccountId) params.set('brokerAccountId', filters.brokerAccountId);
-    if (filters?.instrumentId) params.set('instrumentId', filters.instrumentId);
-    if (filters?.type) params.set('type', filters.type);
-    const query = params.toString() ? `?${params}` : '';
-    return request<DividendSummary>(`/api/v1/investments/dividends/summary${query}`);
-  },
-
-  async suggestions(brokerAccountId?: string): Promise<DividendSuggestionsResponse> {
-    const params = new URLSearchParams();
-    if (brokerAccountId) params.set('brokerAccountId', brokerAccountId);
-    const query = params.toString() ? `?${params}` : '';
-    return request<DividendSuggestionsResponse>(`/api/v1/investments/dividends/suggestions${query}`);
-  },
-
-  async acceptSuggestions(data: AcceptSuggestionsRequest): Promise<AcceptSuggestionsResponse> {
-    return request<AcceptSuggestionsResponse>('/api/v1/investments/dividends/suggestions/accept', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async create(data: CreateDividendRequest): Promise<Dividend> {
-    return request<Dividend>('/api/v1/investments/dividends', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async update(id: string, data: UpdateDividendRequest): Promise<Dividend> {
-    return request<Dividend>(`/api/v1/investments/dividends/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async delete(id: string): Promise<void> {
-    return request<void>(`/api/v1/investments/dividends/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// Futures & Options (FnO) API
-export const fnoApi = {
-  async listTrades(): Promise<FnoTradeListResponse> {
-    return request<FnoTradeListResponse>('/api/v1/investments/fno');
-  },
-
-  async createTrade(data: CreateFnoTradeRequest): Promise<FnoTradeResponse> {
-    return request<FnoTradeResponse>('/api/v1/investments/fno', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async updateTrade(id: string, data: UpdateFnoTradeRequest): Promise<FnoTradeResponse> {
-    return request<FnoTradeResponse>(`/api/v1/investments/fno/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async deleteTrade(id: string): Promise<void> {
-    return request<void>(`/api/v1/investments/fno/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// Corporate Actions API
-export const corporateActionsApi = {
-  async listAll(): Promise<CorporateAction[]> {
-    return request<CorporateAction[]>('/api/v1/corporate-actions');
-  },
-
-  async list(instrumentId: string): Promise<CorporateAction[]> {
-    return request<CorporateAction[]>(`/api/v1/instruments/${instrumentId}/corporate-actions`);
-  },
-
-  async create(instrumentId: string, data: CreateCorporateActionRequest): Promise<CorporateAction> {
-    return request<CorporateAction>(`/api/v1/instruments/${instrumentId}/corporate-actions`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async update(instrumentId: string, id: string, data: UpdateCorporateActionRequest): Promise<CorporateAction> {
-    return request<CorporateAction>(`/api/v1/instruments/${instrumentId}/corporate-actions/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async delete(instrumentId: string, id: string): Promise<void> {
-    return request<void>(`/api/v1/instruments/${instrumentId}/corporate-actions/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// Imports API (Phase 4a & Reconciliation)
-export const importsApi = {
-  async preview(formData: FormData): Promise<ImportPreview> {
-    return request<ImportPreview>('/api/v1/investments/imports/preview', {
-      method: 'POST',
-      body: formData,
-    });
-  },
-
-  async commit(data: ImportCommitRequest): Promise<EnqueueResponse> {
-    return request<EnqueueResponse>('/api/v1/investments/imports/commit', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async previewReconcile(formData: FormData): Promise<ReconcilePreview> {
-    return request<ReconcilePreview>('/api/v1/investments/imports/reconcile/preview', {
-      method: 'POST',
-      body: formData,
-    });
-  },
-
-  async commitReconcile(data: ReconcileCommitRequest): Promise<EnqueueResponse> {
-    return request<EnqueueResponse>('/api/v1/investments/imports/reconcile/commit', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-};
-
-// Gmail API
-export const gmailApi = {
-  async startOAuth(): Promise<GmailOAuthStartResponse> {
-    return request<GmailOAuthStartResponse>('/api/v1/gmail/oauth/start');
-  },
-
-  async sync(): Promise<EnqueueResponse> {
-    return request<EnqueueResponse>('/api/v1/gmail/sync', {
-      method: 'POST',
-    });
-  },
-
-  async listSenders(): Promise<GmailSenderResponse[]> {
-    return request<GmailSenderResponse[]>('/api/v1/gmail/senders');
-  },
-
-  async createSender(data: GmailSenderRequest): Promise<GmailSenderResponse> {
-    return request<GmailSenderResponse>('/api/v1/gmail/senders', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async updateSender(id: string, data: GmailSenderRequest): Promise<GmailSenderResponse> {
-    return request<GmailSenderResponse>(`/api/v1/gmail/senders/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async deleteSender(id: string): Promise<void> {
-    return request<void>(`/api/v1/gmail/senders/${id}`, {
-      method: 'DELETE',
-    });
-  },
-
-  async listConnections(): Promise<GmailConnectionResponse[]> {
-    return request<GmailConnectionResponse[]>('/api/v1/gmail/connections');
-  },
-
-  async disconnectConnection(id: string): Promise<void> {
-    return request<void>(`/api/v1/gmail/connections/${id}`, {
-      method: 'DELETE',
-    });
-  },
-
-  async getAttentionItems(page = 0, size = 20, includeRetryable = false): Promise<import('@/lib/types').PagedGmailAttention> {
-    const params = new URLSearchParams({
-      page: String(page),
-      size: String(size),
-      includeRetryable: String(includeRetryable),
-    });
-    return request<import('@/lib/types').PagedGmailAttention>(`/api/v1/gmail/attention?${params}`);
-  },
-
-  async retryAttentionItem(ledgerId: string): Promise<EnqueueResponse> {
-    return request<EnqueueResponse>(`/api/v1/gmail/attention/${ledgerId}/retry`, {
-      method: 'POST',
-    });
-  },
-
-  async rescan(fromDate: string): Promise<EnqueueResponse> {
-    return request<EnqueueResponse>('/api/v1/gmail/rescan', {
-      method: 'POST',
-      body: JSON.stringify({ fromDate }),
-    });
-  },
-};
+// ---------------------------------------------------------------------------
+// Categories
+// ---------------------------------------------------------------------------
 
 export const categoriesApi = {
-  async list(): Promise<Category[]> {
-    return request<Category[]>('/api/v1/categories');
+  list: async (): Promise<Category[]> => {
+    const { data } = await serverApi.GET('/api/v1/categories');
+    return (data as Category[]) || [];
   },
-
-  async create(data: CategoryRequest): Promise<Category> {
-    return request<Category>('/api/v1/categories', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+  create: async (body: CategoryRequest): Promise<Category> => {
+    const { data } = await serverApi.POST('/api/v1/categories', { body });
+    return data! as Category;
   },
+  update: async (id: string, body: CategoryRequest): Promise<Category> => {
+    const { data } = await serverApi.PUT('/api/v1/categories/{id}', { params: { path: { id } }, body });
+    return data! as Category;
+  },
+  delete: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/categories/{id}', { params: { path: { id } } });
+  },
+  categorize: async (body: { description: string; amount?: number }): Promise<CategorizeResponse> => {
+    const { data } = await serverApi.POST('/api/v1/categorize', { body: { description: body.description } });
+    return data! as CategorizeResponse;
+  },
+  categorizeDescription: async (description: string): Promise<CategorizeResponse> => categoriesApi.categorize({ description }),
+};
 
-  async categorizeDescription(description: string): Promise<CategorizeResponse> {
-    return request<CategorizeResponse>('/api/v1/categorize', {
-      method: 'POST',
-      body: JSON.stringify({ description }),
-    });
+// ---------------------------------------------------------------------------
+// Dashboards
+// ---------------------------------------------------------------------------
+
+export const dashboardsApi = {
+  list: async (): Promise<DashboardResponse[]> => {
+    const { data } = await serverApi.GET('/api/v1/dashboards');
+    return (data as DashboardResponse[]) || [];
+  },
+  get: async (id: string): Promise<DashboardResponse> => {
+    const { data } = await serverApi.GET('/api/v1/dashboards/{id}', { params: { path: { id } } });
+    return data! as DashboardResponse;
+  },
+  getById: async (id: string): Promise<DashboardResponse> => dashboardsApi.get(id),
+  create: async (body: CreateDashboardRequest): Promise<DashboardResponse> => {
+    const { data } = await serverApi.POST('/api/v1/dashboards', { body });
+    return data! as DashboardResponse;
+  },
+  update: async (id: string, body: UpdateDashboardRequest): Promise<DashboardResponse> => {
+    const { data } = await serverApi.PUT('/api/v1/dashboards/{id}', { params: { path: { id } }, body });
+    return data! as DashboardResponse;
+  },
+  delete: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/dashboards/{id}', { params: { path: { id } } });
   },
 };
 
-function buildPageQuery(options: ReportRunOptions): string {
-  const params = new URLSearchParams();
-  if (options.page !== undefined) params.set('page', String(options.page));
-  if (options.size !== undefined) params.set('size', String(options.size));
-  const query = params.toString();
-  return query ? `?${query}` : '';
+// ---------------------------------------------------------------------------
+// Investments
+// ---------------------------------------------------------------------------
+
+export const investmentsApi = {
+  getSummary: async (): Promise<InvestmentSummary> => {
+    const { data } = await serverApi.GET('/api/v1/investments/summary');
+    return data! as InvestmentSummary;
+  },
+  getPositions: async (): Promise<InvestmentPositionResponse> => {
+    const { data } = await serverApi.GET('/api/v1/investments/positions');
+    return data! as InvestmentPositionResponse;
+  },
+  getTrades: async (params?: { page?: number; size?: number; sort?: string; brokerAccountId?: string; instrumentId?: string }): Promise<PagedInvestmentTransactionResponse> => {
+    const { data } = await serverApi.GET('/api/v1/investments/transactions', {
+      params: {
+        query: {
+          brokerAccountId: params?.brokerAccountId,
+          instrumentId: params?.instrumentId,
+          page: params?.page ?? 0, size: params?.size ?? 50, sort: params?.sort ? [params.sort] : [],
+        },
+      },
+    });
+    return data! as PagedInvestmentTransactionResponse;
+  },
+  createTrade: async (body: CreateInvestmentTransactionRequest): Promise<InvestmentTransactionResponse> => {
+    const { data } = await serverApi.POST('/api/v1/investments/transactions', { body: body as Schemas['CreateInvestmentTransactionRequest'] });
+    return data! as InvestmentTransactionResponse;
+  },
+  updateTrade: async (id: string, body: UpdateInvestmentTransactionRequest): Promise<InvestmentTransactionResponse> => {
+    const { data } = await serverApi.PUT('/api/v1/investments/transactions/{id}', {
+      params: { path: { id } },
+      body: body as Schemas['UpdateInvestmentTransactionRequest'],
+    });
+    return data! as InvestmentTransactionResponse;
+  },
+  deleteTrade: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/investments/transactions/{id}', { params: { path: { id } } });
+  },
+  getFnoTrades: async (params?: { page?: number; size?: number; brokerAccountId?: string; symbol?: string; from?: string; to?: string }): Promise<FnoTradeListResponse> => {
+    const { data } = await serverApi.GET('/api/v1/investments/fno');
+    return data! as FnoTradeListResponse;
+  },
+  createFnoTrade: async (body: CreateFnoTradeRequest): Promise<FnoTradeResponse> => {
+    const { data } = await serverApi.POST('/api/v1/investments/fno', { body: body as Schemas['CreateFnoTradeRequest'] });
+    return data! as FnoTradeResponse;
+  },
+  updateFnoTrade: async (id: string, body: UpdateFnoTradeRequest): Promise<FnoTradeResponse> => {
+    const { data } = await serverApi.PUT('/api/v1/investments/fno/{id}', {
+      params: { path: { id } },
+      body: body as Schemas['CreateFnoTradeRequest'],
+    });
+    return data! as FnoTradeResponse;
+  },
+  deleteFnoTrade: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/investments/fno/{id}', { params: { path: { id } } });
+  },
+  getDividends: async (params?: { page?: number; size?: number; sort?: string; brokerAccountId?: string; instrumentId?: string; year?: number }): Promise<PagedDividendResponse> => {
+    const { data } = await serverApi.GET('/api/v1/investments/dividends', {
+      params: {
+        query: {
+          brokerAccountId: params?.brokerAccountId,
+          instrumentId: params?.instrumentId,
+          page: params?.page ?? 0, size: params?.size ?? 50, sort: params?.sort ? [params.sort] : [],
+        },
+      },
+    });
+    return data! as PagedDividendResponse;
+  },
+  createDividend: async (body: CreateDividendRequest): Promise<Dividend> => {
+    const { data } = await serverApi.POST('/api/v1/investments/dividends', { body: body as Schemas['CreateDividendRequest'] });
+    return data! as Dividend;
+  },
+  updateDividend: async (id: string, body: UpdateDividendRequest): Promise<Dividend> => {
+    const { data } = await serverApi.PUT('/api/v1/investments/dividends/{id}', {
+      params: { path: { id } },
+      body: body as Schemas['UpdateDividendRequest'],
+    });
+    return data! as Dividend;
+  },
+  deleteDividend: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/investments/dividends/{id}', { params: { path: { id } } });
+  },
+  getDividendSuggestions: async (brokerAccountId?: string): Promise<DividendSuggestionsResponse> => {
+    const { data } = await serverApi.GET('/api/v1/investments/dividends/suggestions', { params: { query: { brokerAccountId } } });
+    return data! as DividendSuggestionsResponse;
+  },
+  acceptDividendSuggestions: async (body: AcceptSuggestionsRequest): Promise<AcceptSuggestionsResponse> => {
+    const { data } = await serverApi.POST('/api/v1/investments/dividends/suggestions/accept', { body: body as Schemas['AcceptSuggestionsRequest'] });
+    return data! as AcceptSuggestionsResponse;
+  },
+  getCorporateActions: async (instrumentId?: string): Promise<CorporateAction[]> => {
+    if (instrumentId) {
+      const { data } = await serverApi.GET('/api/v1/instruments/{instrumentId}/corporate-actions', { params: { path: { instrumentId } } });
+      return (data as CorporateAction[]) || [];
+    }
+    const { data } = await serverApi.GET('/api/v1/corporate-actions');
+    return (data as CorporateAction[]) || [];
+  },
+  createCorporateAction: async (instrumentId: string, body: CreateCorporateActionRequest): Promise<CorporateAction> => {
+    const { data } = await serverApi.POST('/api/v1/instruments/{instrumentId}/corporate-actions', {
+      params: { path: { instrumentId } },
+      body: body as Schemas['CreateCorporateActionRequest'],
+    });
+    return data! as CorporateAction;
+  },
+  updateCorporateAction: async (instrumentId: string, id: string, body: UpdateCorporateActionRequest): Promise<CorporateAction> => {
+    const { data } = await serverApi.PUT('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', {
+      params: { path: { instrumentId, id } },
+      body: body as Schemas['UpdateCorporateActionRequest'],
+    });
+    return data! as CorporateAction;
+  },
+  deleteCorporateAction: async (instrumentId: string, id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', { params: { path: { instrumentId, id } } });
+  },
+  getInstruments: async (params?: { query?: string; type?: InstrumentType; limit?: number }): Promise<Instrument[]> => {
+    const { data } = await serverApi.GET('/api/v1/instruments', {
+      params: { query: { search: params?.query, type: params?.type } },
+    });
+    return (data as Instrument[]) || [];
+  },
+  getInstrument: async (id: string): Promise<Instrument> => {
+    const { data } = await serverApi.GET('/api/v1/instruments/{id}', { params: { path: { id } } });
+    return data! as Instrument;
+  },
+  createInstrument: async (body: CreateInstrumentRequest): Promise<Instrument> => {
+    const { data } = await serverApi.POST('/api/v1/instruments', { body: body as Schemas['InstrumentRequest'] });
+    return data! as Instrument;
+  },
+  setInstrumentPrice: async (id: string, body: SetPriceRequest): Promise<void> => {
+    await serverApi.POST('/api/v1/instruments/{id}/price', {
+      params: { path: { id } },
+      body: body as Schemas['UpsertPriceRequest'],
+    });
+  },
+  refreshPrices: async (instrumentId?: string): Promise<EnqueueResponse> => {
+    const { data } = await serverApi.POST('/api/v1/investments/prices/refresh', { params: { query: { instrumentId } } });
+    return data! as EnqueueResponse;
+  },
+  getImportPreview: async (_type: string, formData: FormData): Promise<ImportPreview> => {
+    const source = String(formData.get('source') ?? _type);
+    const brokerAccountId = String(formData.get('brokerAccountId') ?? '');
+    const password = formData.get('password');
+    return authenticatedFormPost<ImportPreview>('/api/v1/investments/imports/preview', {
+      source,
+      brokerAccountId,
+      password: password ? String(password) : undefined,
+    }, formData);
+  },
+  commitImport: async (body: ImportCommitRequest): Promise<ImportCommitResult> => {
+    const { data } = await serverApi.POST('/api/v1/investments/imports/commit', { body: body as Schemas['ImportCommitRequest'] });
+    return data! as ImportCommitResult;
+  },
+  getReconcilePreview: async (brokerAccountId: string, formData: FormData): Promise<ReconcilePreview> => {
+    const broker = String(formData.get('broker') ?? '');
+    const assetScope = formData.get('assetScope');
+    return authenticatedFormPost<ReconcilePreview>('/api/v1/investments/imports/reconcile/preview', {
+      broker,
+      brokerAccountId,
+      assetScope: assetScope ? String(assetScope) : undefined,
+    }, formData);
+  },
+  commitReconcile: async (body: ReconcileCommitRequest): Promise<ImportCommitResult> => {
+    const { data } = await serverApi.POST('/api/v1/investments/imports/reconcile/commit', { body: body as Schemas['ReconcileCommitRequest'] });
+    return data! as ImportCommitResult;
+  },
+  search: async (q?: string): Promise<Instrument[]> => investmentsApi.getInstruments({ query: q }),
+  listTransactions: async (page = 0, size = 50, filters?: { brokerAccountId?: string; instrumentId?: string; holdingId?: string; search?: string }): Promise<PagedInvestmentTransactionResponse> =>
+    investmentsApi.getTrades({ page, size, brokerAccountId: filters?.brokerAccountId, instrumentId: filters?.instrumentId }),
+  createTransaction: async (body: CreateInvestmentTransactionRequest): Promise<InvestmentTransactionResponse> => investmentsApi.createTrade(body),
+  updateTransaction: async (id: string, body: UpdateInvestmentTransactionRequest): Promise<InvestmentTransactionResponse> => investmentsApi.updateTrade(id, body),
+  deleteTransaction: async (id: string): Promise<void> => investmentsApi.deleteTrade(id),
+};
+
+export const instrumentsApi = {
+  search: async (q?: string): Promise<Instrument[]> => investmentsApi.search(q),
+  catalogSearch: async (query: string, type?: InstrumentType): Promise<InstrumentCandidate[]> => {
+    const { data } = await serverApi.GET('/api/v1/instruments/catalog-search', { params: { query: { q: query, type } } });
+    return (data as InstrumentCandidate[]) || [];
+  },
+  resolveInstrument: async (req: ResolveInstrumentRequest): Promise<Instrument> => {
+    const { data } = await serverApi.POST('/api/v1/instruments/resolve', { body: req as Schemas['ResolveInstrumentRequest'] });
+    return data! as Instrument;
+  },
+  create: async (body: CreateInstrumentRequest): Promise<Instrument> => investmentsApi.createInstrument(body),
+  update: async (id: string, body: CreateInstrumentRequest): Promise<Instrument> => {
+    const { data } = await serverApi.PUT('/api/v1/instruments/{id}', {
+      params: { path: { id } },
+      body: body as Schemas['InstrumentRequest'],
+    });
+    return data! as Instrument;
+  },
+  setPrice: async (id: string, body: SetPriceRequest): Promise<void> => investmentsApi.setInstrumentPrice(id, body),
+  getPriceHistory: async (id: string): Promise<PriceHistoryPoint[]> => {
+    const { data } = await serverApi.GET('/api/v1/instruments/{id}/prices', { params: { path: { id } } });
+    return (data as PriceHistoryPoint[]) || [];
+  },
+  updatePrice: async (instrumentId: string, priceId: string, body: { price: number | string }): Promise<void> => {
+    await serverApi.PUT('/api/v1/instruments/{instrumentId}/prices/{priceId}', {
+      params: { path: { instrumentId, priceId } },
+      body: { price: Number(body.price) },
+    });
+  },
+  deletePrice: async (instrumentId: string, priceId: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/instruments/{instrumentId}/prices/{priceId}', { params: { path: { instrumentId, priceId } } });
+  },
+};
+
+export const corporateActionsApi = {
+  listAll: async (): Promise<CorporateAction[]> => investmentsApi.getCorporateActions(),
+  listByInstrument: async (instrumentId: string): Promise<CorporateAction[]> => investmentsApi.getCorporateActions(instrumentId),
+  list: async (instrumentId: string): Promise<CorporateAction[]> => investmentsApi.getCorporateActions(instrumentId),
+  create: async (instrumentId: string, data: CreateCorporateActionRequest): Promise<CorporateAction> =>
+    investmentsApi.createCorporateAction(instrumentId, data),
+  update: async (instrumentId: string, id: string, data: UpdateCorporateActionRequest): Promise<CorporateAction> =>
+    investmentsApi.updateCorporateAction(instrumentId, id, data),
+  delete: async (instrumentId: string, id: string): Promise<void> => investmentsApi.deleteCorporateAction(instrumentId, id),
+};
+
+export const dividendsApi = {
+  list: async (params: { page?: number; size?: number; brokerAccountId?: string; instrumentId?: string; year?: number }): Promise<PagedDividendResponse> =>
+    investmentsApi.getDividends(params),
+  summary: async (filters?: { holdingId?: string; brokerAccountId?: string; instrumentId?: string; type?: DividendType }): Promise<DividendSummary> => {
+    const { data } = await serverApi.GET('/api/v1/investments/dividends/summary', {
+      params: { query: { holdingId: filters?.holdingId, brokerAccountId: filters?.brokerAccountId, instrumentId: filters?.instrumentId, type: filters?.type } },
+    });
+    return data! as DividendSummary;
+  },
+  create: async (data: CreateDividendRequest): Promise<Dividend> => investmentsApi.createDividend(data),
+  update: async (id: string, data: UpdateDividendRequest): Promise<Dividend> => investmentsApi.updateDividend(id, data),
+  delete: async (id: string): Promise<void> => investmentsApi.deleteDividend(id),
+  suggestions: async (brokerAccountId?: string): Promise<DividendSuggestionsResponse> => investmentsApi.getDividendSuggestions(brokerAccountId),
+  acceptSuggestions: async (body: AcceptSuggestionsRequest): Promise<AcceptSuggestionsResponse> => investmentsApi.acceptDividendSuggestions(body),
+};
+
+export const fnoApi = {
+  listTrades: async (params: { page?: number; size?: number; brokerAccountId?: string; symbol?: string; from?: string; to?: string } | undefined): Promise<FnoTradeListResponse> =>
+    investmentsApi.getFnoTrades(params),
+  createTrade: async (data: CreateFnoTradeRequest): Promise<FnoTradeResponse> => investmentsApi.createFnoTrade(data),
+  updateTrade: async (id: string, data: UpdateFnoTradeRequest): Promise<FnoTradeResponse> => investmentsApi.updateFnoTrade(id, data),
+  deleteTrade: async (id: string): Promise<void> => investmentsApi.deleteFnoTrade(id),
+};
+
+export const importsApi = {
+  preview: async (formData: FormData): Promise<ImportPreview> => investmentsApi.getImportPreview('', formData),
+  commit: async (body: ImportCommitRequest): Promise<ImportCommitResult> => investmentsApi.commitImport(body),
+  previewReconcile: async (formData: FormData): Promise<ReconcilePreview> => {
+    const brokerAccountId = String(formData.get('brokerAccountId') ?? '');
+    return investmentsApi.getReconcilePreview(brokerAccountId, formData);
+  },
+  commitReconcile: async (body: ReconcileCommitRequest): Promise<ImportCommitResult> => investmentsApi.commitReconcile(body),
+};
+
+// ---------------------------------------------------------------------------
+// Counterparties / Lendings / Obligations (folded from the WIP `lendingApi`)
+// ---------------------------------------------------------------------------
+
+export const counterpartiesApi = {
+  list: async (page = 0, size = 50): Promise<Page<CounterpartyResponse>> => {
+    const { data } = await serverApi.GET('/api/v1/counterparties', {
+      params: { query: { page, size, sort: [] } },
+    });
+    return data! as Page<CounterpartyResponse>;
+  },
+  create: async (body: CreateCounterpartyRequest): Promise<CounterpartyResponse> => {
+    const { data } = await serverApi.POST('/api/v1/counterparties', { body });
+    return data! as CounterpartyResponse;
+  },
+  update: async (id: string, body: UpdateCounterpartyRequest): Promise<CounterpartyResponse> => {
+    const { data } = await serverApi.PUT('/api/v1/counterparties/{id}', { params: { path: { id } }, body });
+    return data! as CounterpartyResponse;
+  },
+  remove: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/counterparties/{id}', { params: { path: { id } } });
+  },
+};
+
+export const lendingsApi = {
+  list: async (counterpartyId?: string, page = 0, size = 50): Promise<Page<LendingResponse>> => {
+    const { data } = await serverApi.GET('/api/v1/lendings', {
+      params: { query: { counterpartyId, page, size, sort: [] } },
+    });
+    return data! as Page<LendingResponse>;
+  },
+  getDetail: async (id: string): Promise<LendingResponse> => {
+    const { data } = await serverApi.GET('/api/v1/lendings/{id}', { params: { path: { id } } });
+    return data! as LendingResponse;
+  },
+  create: async (body: CreateLendingRequest): Promise<LendingResponse> => {
+    const { data } = await serverApi.POST('/api/v1/lendings', { body });
+    return data! as LendingResponse;
+  },
+  update: async (id: string, body: UpdateLendingRequest): Promise<LendingResponse> => {
+    const { data } = await serverApi.PUT('/api/v1/lendings/{id}', { params: { path: { id } }, body });
+    return data! as LendingResponse;
+  },
+  remove: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/lendings/{id}', { params: { path: { id } } });
+  },
+};
+
+export const obligationsApi = {
+  getUpcoming: async (months?: number): Promise<ObligationsResponse> => {
+    const { data } = await serverApi.GET('/api/v1/obligations/upcoming', { params: { query: { months } } });
+    return data! as ObligationsResponse;
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Loans
+// ---------------------------------------------------------------------------
+
+export const loansApi = {
+  list: async (status?: LoanStatus, page = 0, size = 50): Promise<Page<LoanResponse>> => {
+    const { data } = await serverApi.GET('/api/v1/loans', {
+      params: { query: { status, page, size } },
+    });
+    return data! as Page<LoanResponse>;
+  },
+  get: async (id: string): Promise<LoanDetailResponse> => {
+    const { data } = await serverApi.GET('/api/v1/loans/{id}', { params: { path: { id } } });
+    return data! as LoanDetailResponse;
+  },
+  getDetail: async (id: string): Promise<LoanDetailResponse> => loansApi.get(id),
+  create: async (body: CreateLoanRequest): Promise<LoanResponse> => {
+    const { data } = await serverApi.POST('/api/v1/loans', { body });
+    return data! as LoanResponse;
+  },
+  update: async (id: string, body: UpdateLoanRequest): Promise<LoanResponse> => {
+    const { data } = await serverApi.PUT('/api/v1/loans/{id}', { params: { path: { id } }, body });
+    return data! as LoanResponse;
+  },
+  delete: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/loans/{id}', { params: { path: { id } } });
+  },
+  remove: async (id: string): Promise<void> => loansApi.delete(id),
+  close: async (id: string): Promise<void> => {
+    await serverApi.POST('/api/v1/loans/{id}/close', { params: { path: { id } } });
+  },
+  reopen: async (id: string): Promise<void> => {
+    await serverApi.POST('/api/v1/loans/{id}/reopen', { params: { path: { id } } });
+  },
+  createPayment: async (loanId: string, body: CreateLoanPaymentRequest): Promise<LoanPaymentResponse> => {
+    const { data } = await serverApi.POST('/api/v1/loans/{id}/payments', { params: { path: { id: loanId } }, body });
+    return data! as LoanPaymentResponse;
+  },
+  addPayment: async (loanId: string, body: CreateLoanPaymentRequest): Promise<LoanPaymentResponse> => loansApi.createPayment(loanId, body),
+  deletePayment: async (loanId: string, paymentId: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/loans/{id}/payments/{paymentId}', { params: { path: { id: loanId, paymentId } } });
+  },
+  createEvent: async (loanId: string, body: CreateLoanEventRequest): Promise<LoanEventResponse> => {
+    const { data } = await serverApi.POST('/api/v1/loans/{id}/events', { params: { path: { id: loanId } }, body });
+    return data! as LoanEventResponse;
+  },
+  addEvent: async (loanId: string, body: CreateLoanEventRequest): Promise<LoanEventResponse> => loansApi.createEvent(loanId, body),
+  deleteEvent: async (loanId: string, eventId: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/loans/{id}/events/{eventId}', { params: { path: { id: loanId, eventId } } });
+  },
+  createCharge: async (loanId: string, body: CreateLoanChargeRequest): Promise<LoanChargeResponse> => {
+    const { data } = await serverApi.POST('/api/v1/loans/{id}/charges', { params: { path: { id: loanId } }, body });
+    return data! as LoanChargeResponse;
+  },
+  addCharge: async (loanId: string, body: CreateLoanChargeRequest): Promise<LoanChargeResponse> => loansApi.createCharge(loanId, body),
+  deleteCharge: async (loanId: string, chargeId: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/loans/{id}/charges/{chargeId}', { params: { path: { id: loanId, chargeId } } });
+  },
+  getSummary: async (): Promise<LoansSummaryResponse> => {
+    const { data } = await serverApi.GET('/api/v1/loans/summary');
+    return data! as LoansSummaryResponse;
+  },
+  getSchedule: async (id: string): Promise<InstallmentDto[]> => {
+    const { data } = await serverApi.GET('/api/v1/loans/{id}/schedule', { params: { path: { id } } });
+    // Documented as a map keyed by an internal grouping; in practice a flat list.
+    // Object.values(...).flat() is correct either way — a no-op on a flat array.
+    return Object.values((data ?? {}) as Record<string, InstallmentDto[]>).flat();
+  },
+  getMatchSuggestions: async (id: string): Promise<MatchSuggestionsResponse> => {
+    const { data } = await serverApi.GET('/api/v1/loans/{id}/match-suggestions', { params: { path: { id } } });
+    return data! as MatchSuggestionsResponse;
+  },
+  batchPayments: async (id: string, body: BatchLoanPaymentRequest): Promise<void> => {
+    await serverApi.POST('/api/v1/loans/{id}/payments/batch', {
+      params: { path: { id } },
+      body: body as Schemas['BatchLoanPaymentRequest'],
+    });
+  },
+  addPaymentsBatch: async (id: string, body: BatchLoanPaymentRequest): Promise<{ created: number }> => {
+    await loansApi.batchPayments(id, body);
+    return { created: body.items.length };
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Reports
+// ---------------------------------------------------------------------------
+
+/**
+ * The server types report payloads as an open JSON object (a Java interface with per-type records),
+ * so the wire shape is narrowed here once, at the boundary, into the client's discriminated union.
+ */
+function asReportData(raw: unknown): ReportData {
+  return raw as ReportData;
 }
 
-// Reports API
 export const reportsApi = {
-  // Field + operator catalog used to build report definitions.
-  async getDatasource(): Promise<ReportCatalog> {
-    return request<ReportCatalog>('/api/v1/report/datasource');
+  list: async (type?: ReportType): Promise<ReportSummaryResponse[]> => {
+    const { data } = await serverApi.GET('/api/v1/reports', { params: { query: { type } } });
+    return (data as ReportSummaryResponse[]) || [];
   },
-
-  // Create and save a report definition.
-  async create(data: CreateReportRequest): Promise<ReportResponse> {
-    return request<ReportResponse>('/api/v1/reports', {
-      method: 'POST',
-      body: JSON.stringify(data),
+  getById: async (id: string): Promise<ReportResponse> => {
+    const { data } = await serverApi.GET('/api/v1/reports/{id}', { params: { path: { id } } });
+    const raw = data!;
+    const definition: unknown = raw.definition;
+    return { ...raw, definition: definition as ReportDefinition };
+  },
+  get: async (id: string): Promise<ReportResponse> => reportsApi.getById(id),
+  create: async (body: CreateReportRequest): Promise<ReportResponse> => {
+    const { data } = await serverApi.POST('/api/v1/reports', {
+      body: { ...body, description: body.description ?? undefined, definition: { ...body.definition } },
     });
+    const raw = data!;
+    const definition: unknown = raw.definition;
+    return { ...raw, definition: definition as ReportDefinition };
   },
-
-  // List the current user's report summaries; optionally filter by type.
-  async list(type?: ReportType): Promise<ReportSummaryResponse[]> {
-    const query = type ? `?${new URLSearchParams({ type })}` : '';
-    return request<ReportSummaryResponse[]>(`/api/v1/reports${query}`);
-  },
-
-  // Get one saved report, including its definition.
-  async getById(id: string): Promise<ReportResponse> {
-    return request<ReportResponse>(`/api/v1/reports/${id}`);
-  },
-
-  // Update a saved report's name + definition (type/datasource immutable).
-  async update(id: string, data: UpdateReportRequest): Promise<ReportResponse> {
-    return request<ReportResponse>(`/api/v1/reports/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
+  update: async (id: string, body: UpdateReportRequest): Promise<ReportResponse> => {
+    const { data } = await serverApi.PUT('/api/v1/reports/{id}', {
+      params: { path: { id } },
+      body: { ...body, description: body.description ?? undefined, definition: { ...body.definition } },
     });
+    const raw = data!;
+    const definition: unknown = raw.definition;
+    return { ...raw, definition: definition as ReportDefinition };
   },
-
-  // Delete a saved report.
-  async delete(id: string): Promise<void> {
-    return request<void>(`/api/v1/reports/${id}`, {
-      method: 'DELETE',
+  delete: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/reports/{id}', { params: { path: { id } } });
+  },
+  getDatasource: async (): Promise<ReportCatalog> => {
+    const { data } = await serverApi.GET('/api/v1/report/datasource');
+    return data! as ReportCatalog;
+  },
+  getCatalog: async (): Promise<ReportCatalog> => reportsApi.getDatasource(),
+  runSaved: async (id: string, options?: ReportRunOptions): Promise<ReportData> => {
+    const { data } = await serverApi.POST('/api/v1/reports/{id}/data', {
+      params: { path: { id }, query: { page: options?.page, size: options?.size } },
     });
+    return asReportData(data);
   },
-
-  // Run a SAVED report and return computed data. page/size apply to TABLE
-  // reports only (current page is a runtime param, not part of the definition).
-  async runSaved(
-    id: string,
-    options: ReportRunOptions = {},
-  ): Promise<ReportData> {
-    return request<ReportData>(
-      `/api/v1/reports/${id}/data${buildPageQuery(options)}`,
-      { method: 'POST' },
-    );
-  },
-
-  // Run an AD-HOC (unsaved) definition and return computed data — use for live
-  // preview while the user is building. page/size apply to TABLE reports.
-  async runAdHoc(
-    data: RunReportRequest,
-    options: ReportRunOptions = {},
-  ): Promise<ReportData> {
-    return request<ReportData>(
-      `/api/v1/reports/data${buildPageQuery(options)}`,
-      {
-        method: 'POST',
-        body: JSON.stringify(data),
-      },
-    );
+  run: async (id: string, options?: ReportRunOptions): Promise<ReportData> => reportsApi.runSaved(id, options),
+  runAdHoc: async (request: RunReportRequest, options?: ReportRunOptions): Promise<ReportData> => {
+    const { data } = await serverApi.POST('/api/v1/reports/data', {
+      params: { query: { page: options?.page, size: options?.size } },
+      body: { ...request, definition: { ...request.definition } },
+    });
+    return asReportData(data);
   },
 };
 
-// Dashboards API
-// A dashboard arranges report widgets on a grid DASHBOARD_GRID_COLUMNS wide. It
-// stores no query
-// logic: to render one, call getById, then run each widget's report via
-// reportsApi.runSaved(widget.reportId, { page, size }) — page/size for TABLE
-// widgets — and render the returned ReportData by its type. Skip widgets whose
-// report.available is false.
-export const dashboardsApi = {
-  // Create a dashboard.
-  async create(data: CreateDashboardRequest): Promise<DashboardResponse> {
-    return request<DashboardResponse>('/api/v1/dashboards', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  // List the current user's dashboards (summaries, with a widget count).
-  async list(): Promise<DashboardResponse[]> {
-    return request<DashboardResponse[]>('/api/v1/dashboards');
-  },
-
-  // Get one dashboard; widgets are enriched with referenced-report metadata.
-  async getById(id: string): Promise<DashboardResponse> {
-    return request<DashboardResponse>(`/api/v1/dashboards/${id}`);
-  },
-
-  // Update a dashboard — replaces name, description, and the FULL widget set.
-  async update(
-    id: string,
-    data: UpdateDashboardRequest,
-  ): Promise<DashboardResponse> {
-    return request<DashboardResponse>(`/api/v1/dashboards/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  // Delete a dashboard.
-  async delete(id: string): Promise<void> {
-    return request<void>(`/api/v1/dashboards/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// Ingestion API
-export const ingestionApi = {
-  async ingest(accountId: string, formData: FormData): Promise<EnqueueResponse> {
-    return request<EnqueueResponse>(`/api/v1/accounts/${accountId}/ingest`, {
-      method: 'POST',
-      body: formData,
-    });
-  },
-};
-
-// Rules API
-export const rulesApi = {
-  async list(params: {
-    page?: number;
-    size?: number;
-    sort?: string;
-    verified?: boolean;
-    search?: string;
-  } = {}): Promise<PagedRules> {
-    const query = new URLSearchParams();
-    if (params.page !== undefined) query.set('page', String(params.page));
-    if (params.size !== undefined) query.set('size', String(params.size));
-    if (params.sort !== undefined) query.set('sort', params.sort);
-    if (params.verified !== undefined) query.set('verified', String(params.verified));
-    if (params.search !== undefined && params.search !== '') query.set('search', params.search);
-    return request<PagedRules>(`/api/v1/rules?${query}`);
-  },
-
-  async create(body: CreateRuleRequest): Promise<CategoryRule> {
-    return request<CategoryRule>('/api/v1/rules', {
-      method: 'POST',
-      body: JSON.stringify(body),
-    });
-  },
-
-  async update(id: string, body: UpdateRuleRequest): Promise<CategoryRule> {
-    return request<CategoryRule>(`/api/v1/rules/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(body),
-    });
-  },
-
-  async verify(id: string): Promise<CategoryRule> {
-    return request<CategoryRule>(`/api/v1/rules/${id}/verify`, {
-      method: 'POST',
-    });
-  },
-
-  async remove(id: string): Promise<void> {
-    return request<void>(`/api/v1/rules/${id}`, {
-      method: 'DELETE',
-    });
-  },
-
-  async previewMatches(
-    body: PreviewMatchesRequest,
-    params: { page?: number; size?: number } = {},
-  ): Promise<PagedRuleMatches> {
-    const query = new URLSearchParams();
-    if (params.page !== undefined) query.set('page', String(params.page));
-    if (params.size !== undefined) query.set('size', String(params.size));
-    return request<PagedRuleMatches>(`/api/v1/rules/preview-matches?${query}`, {
-      method: 'POST',
-      body: JSON.stringify(body),
-    });
-  },
-
-  async apply(id: string, body: ApplyRuleRequest): Promise<EnqueueResponse> {
-    return request<EnqueueResponse>(`/api/v1/rules/${id}/apply`, {
-      method: 'POST',
-      body: JSON.stringify(body),
-    });
-  },
-};
-
-// Jobs API
-export const jobsApi = {
-  async list(params: {
-    page?: number;
-    size?: number;
-    status?: string;
-    type?: string;
-  } = {}): Promise<PagedJobResponse> {
-    const query = new URLSearchParams();
-    if (params.page !== undefined) query.set('page', String(params.page));
-    if (params.size !== undefined) query.set('size', String(params.size));
-    if (params.status !== undefined && params.status !== '') query.set('status', params.status);
-    if (params.type !== undefined && params.type !== '') query.set('type', params.type);
-    return request<PagedJobResponse>(`/api/v1/jobs?${query}`);
-  },
-
-  async get(id: string): Promise<JobResponse> {
-    return request<JobResponse>(`/api/v1/jobs/${id}`);
-  },
-
-  async cancel(id: string): Promise<JobResponse> {
-    return request<JobResponse>(`/api/v1/jobs/${id}/cancel`, {
-      method: 'POST',
-    });
-  },
-
-  async retry(id: string): Promise<JobResponse> {
-    return request<JobResponse>(`/api/v1/jobs/${id}/retry`, {
-      method: 'POST',
-    });
-  },
-};
-
-// Loans API
-export const loansApi = {
-  async list(status?: LoanStatus, page = 0, size = 50): Promise<Page<LoanResponse>> {
-    const params = new URLSearchParams({ page: String(page), size: String(size) });
-    if (status) params.append('status', status);
-    return request<Page<LoanResponse>>(`/api/v1/loans?${params.toString()}`);
-  },
-
-  async getSummary(): Promise<LoansSummaryResponse> {
-    return request<LoansSummaryResponse>('/api/v1/loans/summary');
-  },
-
-  async getDetail(id: string): Promise<LoanDetailResponse> {
-    return request<LoanDetailResponse>(`/api/v1/loans/${id}`);
-  },
-
-  async getSchedule(id: string): Promise<{ installments: InstallmentDto[] }> {
-    return request<{ installments: InstallmentDto[] }>(`/api/v1/loans/${id}/schedule`);
-  },
-
-  async create(data: CreateLoanRequest): Promise<LoanResponse> {
-    return request<LoanResponse>('/api/v1/loans', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async update(id: string, data: UpdateLoanRequest): Promise<LoanResponse> {
-    return request<LoanResponse>(`/api/v1/loans/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async remove(id: string): Promise<void> {
-    return request<void>(`/api/v1/loans/${id}`, {
-      method: 'DELETE',
-    });
-  },
-
-  async close(id: string): Promise<void> {
-    return request<void>(`/api/v1/loans/${id}/close`, {
-      method: 'POST',
-    });
-  },
-
-  async reopen(id: string): Promise<void> {
-    return request<void>(`/api/v1/loans/${id}/reopen`, {
-      method: 'POST',
-    });
-  },
-
-  async addEvent(id: string, data: CreateLoanEventRequest): Promise<LoanEventResponse> {
-    return request<LoanEventResponse>(`/api/v1/loans/${id}/events`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async deleteEvent(id: string, eventId: string): Promise<void> {
-    return request<void>(`/api/v1/loans/${id}/events/${eventId}`, {
-      method: 'DELETE',
-    });
-  },
-
-  async addPayment(id: string, data: CreateLoanPaymentRequest): Promise<LoanPaymentResponse> {
-    return request<LoanPaymentResponse>(`/api/v1/loans/${id}/payments`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async addPaymentsBatch(id: string, data: BatchLoanPaymentRequest): Promise<{ created: number }> {
-    return request<{ created: number }>(`/api/v1/loans/${id}/payments/batch`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async deletePayment(id: string, paymentId: string): Promise<void> {
-    return request<void>(`/api/v1/loans/${id}/payments/${paymentId}`, {
-      method: 'DELETE',
-    });
-  },
-
-  async addCharge(id: string, data: CreateLoanChargeRequest): Promise<LoanChargeResponse> {
-    return request<LoanChargeResponse>(`/api/v1/loans/${id}/charges`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async deleteCharge(id: string, chargeId: string): Promise<void> {
-    return request<void>(`/api/v1/loans/${id}/charges/${chargeId}`, {
-      method: 'DELETE',
-    });
-  },
-
-  async getMatchSuggestions(id: string): Promise<MatchSuggestionsResponse> {
-    return request<MatchSuggestionsResponse>(`/api/v1/loans/${id}/match-suggestions`);
-  },
-};
-
-// Counterparties API
-export const counterpartiesApi = {
-  async list(page = 0, size = 50): Promise<Page<CounterpartyResponse>> {
-    const params = new URLSearchParams({ page: String(page), size: String(size) });
-    return request<Page<CounterpartyResponse>>(`/api/v1/counterparties?${params.toString()}`);
-  },
-
-  async create(data: CreateCounterpartyRequest): Promise<CounterpartyResponse> {
-    return request<CounterpartyResponse>('/api/v1/counterparties', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async update(id: string, data: UpdateCounterpartyRequest): Promise<CounterpartyResponse> {
-    return request<CounterpartyResponse>(`/api/v1/counterparties/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async remove(id: string): Promise<void> {
-    return request<void>(`/api/v1/counterparties/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// Lendings API
-export const lendingsApi = {
-  async list(counterpartyId?: string, page = 0, size = 50): Promise<Page<LendingResponse>> {
-    const params = new URLSearchParams({ page: String(page), size: String(size) });
-    if (counterpartyId) params.append('counterpartyId', counterpartyId);
-    return request<Page<LendingResponse>>(`/api/v1/lendings?${params.toString()}`);
-  },
-
-  async getDetail(id: string): Promise<LendingResponse> {
-    return request<LendingResponse>(`/api/v1/lendings/${id}`);
-  },
-
-  async create(data: CreateLendingRequest): Promise<LendingResponse> {
-    return request<LendingResponse>('/api/v1/lendings', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async update(id: string, data: UpdateLendingRequest): Promise<LendingResponse> {
-    return request<LendingResponse>(`/api/v1/lendings/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async remove(id: string): Promise<void> {
-    return request<void>(`/api/v1/lendings/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
-
-// Obligations API
-export const obligationsApi = {
-  async getUpcoming(months = 3): Promise<ObligationsResponse> {
-    return request<ObligationsResponse>(`/api/v1/obligations/upcoming?months=${months}`);
-  },
-};
-
-// Transaction Links API
-export const transactionLinksApi = {
-  async create(data: CreateTransactionLinkRequest): Promise<TransactionLinkResponse> {
-    return request<TransactionLinkResponse>('/api/v1/transaction-links', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async getByTransactionId(transactionId: string): Promise<TransactionLinkResponse[]> {
-    return request<TransactionLinkResponse[]>(`/api/v1/transaction-links?transactionId=${encodeURIComponent(transactionId)}`);
-  },
-
-  async delete(id: string): Promise<void> {
-    return request<void>(`/api/v1/transaction-links/${id}`, {
-      method: 'DELETE',
-    });
-  },
-};
+// ---------------------------------------------------------------------------
+// Rewards
+// ---------------------------------------------------------------------------
 
 export const rewardsApi = {
-  async listRules(accountId: string): Promise<RewardRule[]> {
-    return request<RewardRule[]>(`/api/v1/reward-rules?accountId=${accountId}`);
+  listRules: async (accountId: string): Promise<RewardRule[]> => {
+    const { data } = await serverApi.GET('/api/v1/reward-rules', { params: { query: { accountId } } });
+    return (data as RewardRule[]) || [];
   },
-
-  async createRule(body: RewardRuleRequest): Promise<RewardRule> {
-    return request<RewardRule>('/api/v1/reward-rules', {
-      method: 'POST',
-      body: JSON.stringify(body),
+  getRule: async (ruleId: string): Promise<RewardRule | undefined> =>
+    (await rewardsApi.listRules('')).find((r) => r.id === ruleId),
+  createRule: async (body: RewardRuleRequest): Promise<RewardRule> => {
+    const { data } = await serverApi.POST('/api/v1/reward-rules', { body: body as Schemas['RewardRuleRequest'] });
+    return data! as RewardRule;
+  },
+  updateRule: async (ruleId: string, body: RewardRuleRequest): Promise<RewardRule> => {
+    const { data } = await serverApi.PUT('/api/v1/reward-rules/{id}', {
+      params: { path: { id: ruleId } },
+      body: body as Schemas['RewardRuleRequest'],
     });
+    return data! as RewardRule;
   },
-
-  async updateRule(id: string, body: RewardRuleRequest): Promise<RewardRule> {
-    return request<RewardRule>(`/api/v1/reward-rules/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(body),
+  deleteRule: async (ruleId: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/reward-rules/{id}', { params: { path: { id: ruleId } } });
+  },
+  reorderRules: async (body: ReorderRewardRulesRequest): Promise<RewardRule[]> => {
+    const { data } = await serverApi.POST('/api/v1/reward-rules/reorder', { body });
+    return (data as RewardRule[]) || [];
+  },
+  getConfig: async (accountId: string): Promise<RewardAccountConfig> => {
+    const { data } = await serverApi.GET('/api/v1/reward-config', { params: { query: { accountId } } });
+    return data! as RewardAccountConfig;
+  },
+  getAccountConfig: async (accountId: string): Promise<RewardAccountConfig> => rewardsApi.getConfig(accountId),
+  updateConfig: async (accountId: string, body: RewardAccountConfigRequest): Promise<RewardAccountConfig> => {
+    const { data } = await serverApi.PUT('/api/v1/reward-config', {
+      body: { ...body, accountId } as Schemas['RewardAccountConfigRequest'],
     });
+    return data! as RewardAccountConfig;
   },
-
-  async deleteRule(id: string): Promise<void> {
-    return request<void>(`/api/v1/reward-rules/${id}`, {
-      method: 'DELETE',
+  updateAccountConfig: async (body: RewardAccountConfigRequest): Promise<RewardAccountConfig> => rewardsApi.updateConfig(body.accountId, body),
+  listBuckets: async (accountId: string): Promise<RewardCapBucket[]> => {
+    const { data } = await serverApi.GET('/api/v1/reward-cap-buckets', { params: { query: { accountId } } });
+    return (data as RewardCapBucket[]) || [];
+  },
+  listCapBuckets: async (accountId: string): Promise<RewardCapBucket[]> => rewardsApi.listBuckets(accountId),
+  createBucket: async (body: RewardCapBucketRequest): Promise<RewardCapBucket> => {
+    const { data } = await serverApi.POST('/api/v1/reward-cap-buckets', { body: body as Schemas['RewardCapBucketRequest'] });
+    return data! as RewardCapBucket;
+  },
+  createCapBucket: async (body: RewardCapBucketRequest): Promise<RewardCapBucket> => rewardsApi.createBucket(body),
+  updateBucket: async (bucketId: string, body: RewardCapBucketRequest): Promise<RewardCapBucket> => {
+    const { data } = await serverApi.PUT('/api/v1/reward-cap-buckets/{id}', {
+      params: { path: { id: bucketId } },
+      body: body as Schemas['RewardCapBucketRequest'],
     });
+    return data! as RewardCapBucket;
   },
-
-  async reorderRules(body: ReorderRewardRulesRequest): Promise<RewardRule[]> {
-    return request<RewardRule[]>('/api/v1/reward-rules/reorder', {
-      method: 'POST',
-      body: JSON.stringify(body),
+  updateCapBucket: async (id: string, body: RewardCapBucketRequest): Promise<RewardCapBucket> => rewardsApi.updateBucket(id, body),
+  deleteBucket: async (bucketId: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/reward-cap-buckets/{id}', { params: { path: { id: bucketId } } });
+  },
+  deleteCapBucket: async (id: string): Promise<void> => rewardsApi.deleteBucket(id),
+  listMilestones: async (accountId: string): Promise<RewardMilestone[]> => {
+    const { data } = await serverApi.GET('/api/v1/reward-milestones', { params: { query: { accountId } } });
+    return (data as RewardMilestone[]) || [];
+  },
+  createMilestone: async (body: RewardMilestoneRequest): Promise<RewardMilestone> => {
+    const { data } = await serverApi.POST('/api/v1/reward-milestones', { body: body as Schemas['RewardMilestoneRequest'] });
+    return data! as RewardMilestone;
+  },
+  updateMilestone: async (milestoneId: string, body: RewardMilestoneRequest): Promise<RewardMilestone> => {
+    const { data } = await serverApi.PUT('/api/v1/reward-milestones/{id}', {
+      params: { path: { id: milestoneId } },
+      body: body as Schemas['RewardMilestoneRequest'],
     });
+    return data! as RewardMilestone;
   },
-
-  async listMilestones(accountId: string): Promise<RewardMilestone[]> {
-    return request<RewardMilestone[]>(`/api/v1/reward-milestones?accountId=${accountId}`);
+  deleteMilestone: async (milestoneId: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/reward-milestones/{id}', { params: { path: { id: milestoneId } } });
   },
-
-  async createMilestone(body: RewardMilestoneRequest): Promise<RewardMilestone> {
-    return request<RewardMilestone>('/api/v1/reward-milestones', {
-      method: 'POST',
-      body: JSON.stringify(body),
+  getReport: async (accountId: string, from = '', to = ''): Promise<RewardReport> => {
+    const { data } = await serverApi.GET('/api/v1/rewards/report', { params: { query: { accountId, from, to } } });
+    return data! as RewardReport;
+  },
+  report: async (params: { accountId: string; from: string; to: string }): Promise<RewardReport> => rewardsApi.getReport(params.accountId, params.from, params.to),
+  getRecommendations: async (body: RewardRecommendationRequest): Promise<RewardRecommendationResponse> => {
+    const { data } = await serverApi.POST('/api/v1/reward-recommendations', { body: body as Schemas['RewardRecommendationRequest'] });
+    return data! as RewardRecommendationResponse;
+  },
+  recommend: async (body: RewardRecommendationRequest): Promise<RewardRecommendationResponse> => rewardsApi.getRecommendations(body),
+  getRewardLines: async (params: { accountId: string; page?: number; size?: number; from?: string; to?: string; ruleId?: string }): Promise<PagedRewardLines> => {
+    const { data } = await serverApi.GET('/api/v1/rewards/lines', {
+      params: {
+        query: {
+          accountId: params.accountId,
+          from: params.from ?? '',
+          to: params.to ?? '',
+          ruleId: params.ruleId,
+          page: params.page ?? 0, size: params.size ?? 50, sort: [],
+        },
+      },
     });
+    return data! as PagedRewardLines;
   },
+  lines: async (params: { accountId: string; page?: number; size?: number; from?: string; to?: string; ruleId?: string }): Promise<PagedRewardLines> => rewardsApi.getRewardLines(params),
+};
 
-  async updateMilestone(id: string, body: RewardMilestoneRequest): Promise<RewardMilestone> {
-    return request<RewardMilestone>(`/api/v1/reward-milestones/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(body),
+// ---------------------------------------------------------------------------
+// Rules
+// ---------------------------------------------------------------------------
+
+export const rulesApi = {
+  list: async (params?: { page?: number; size?: number; sort?: string; search?: string; verified?: boolean }): Promise<PagedRules> => {
+    const { data } = await serverApi.GET('/api/v1/rules', {
+      params: {
+        query: {
+          verified: params?.verified,
+          search: params?.search,
+          page: params?.page ?? 0, size: params?.size ?? 20, sort: params?.sort ? [params.sort] : [],
+        },
+      },
     });
+    return data! as PagedRules;
   },
-
-  async deleteMilestone(id: string): Promise<void> {
-    return request<void>(`/api/v1/reward-milestones/${id}`, {
-      method: 'DELETE',
+  create: async (body: CreateRuleRequest): Promise<CategoryRule> => {
+    const { data } = await serverApi.POST('/api/v1/rules', { body: body as Schemas['CreateRuleRequest'] });
+    return data! as CategoryRule;
+  },
+  update: async (id: string, body: UpdateRuleRequest): Promise<CategoryRule> => {
+    const { data } = await serverApi.PUT('/api/v1/rules/{id}', {
+      params: { path: { id } },
+      body: body as Schemas['UpdateRuleRequest'],
     });
+    return data! as CategoryRule;
   },
-
-  async listCapBuckets(accountId: string): Promise<RewardCapBucket[]> {
-    return request<RewardCapBucket[]>(`/api/v1/reward-cap-buckets?accountId=${accountId}`);
+  delete: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/rules/{id}', { params: { path: { id } } });
   },
-
-  async createCapBucket(body: RewardCapBucketRequest): Promise<RewardCapBucket> {
-    return request<RewardCapBucket>('/api/v1/reward-cap-buckets', {
-      method: 'POST',
-      body: JSON.stringify(body),
+  /** Alias for delete — matches the original surface. */
+  remove: async (id: string): Promise<void> => rulesApi.delete(id),
+  verify: async (id: string): Promise<CategoryRule> => {
+    const { data } = await serverApi.POST('/api/v1/rules/{id}/verify', { params: { path: { id } } });
+    return data! as CategoryRule;
+  },
+  apply: async (id: string, body?: ApplyRuleRequest): Promise<EnqueueResponse> => {
+    const { data } = await serverApi.POST('/api/v1/rules/{id}/apply', {
+      params: { path: { id } },
+      body: body ?? {},
     });
+    return data! as EnqueueResponse;
   },
-
-  async updateCapBucket(id: string, body: RewardCapBucketRequest): Promise<RewardCapBucket> {
-    return request<RewardCapBucket>(`/api/v1/reward-cap-buckets/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(body),
+  previewMatches: async (body: PreviewMatchesRequest, params?: { page?: number; size?: number }): Promise<PagedRuleMatches> => {
+    const { data } = await serverApi.POST('/api/v1/rules/preview-matches', {
+      params: { query: { page: params?.page ?? 0, size: params?.size ?? 20, sort: [] } },
+      body,
     });
-  },
-
-  async deleteCapBucket(id: string): Promise<void> {
-    return request<void>(`/api/v1/reward-cap-buckets/${id}`, {
-      method: 'DELETE',
-    });
-  },
-
-  async getAccountConfig(accountId: string): Promise<RewardAccountConfig> {
-    return request<RewardAccountConfig>(`/api/v1/reward-config?accountId=${accountId}`);
-  },
-
-  async updateAccountConfig(body: RewardAccountConfigRequest): Promise<RewardAccountConfig> {
-    return request<RewardAccountConfig>('/api/v1/reward-config', {
-      method: 'PUT',
-      body: JSON.stringify(body),
-    });
-  },
-
-  async report(params: { accountId: string; from: string; to: string }): Promise<RewardReport> {
-    const query = new URLSearchParams({
-      accountId: params.accountId,
-      from: params.from,
-      to: params.to,
-    });
-    return request<RewardReport>(`/api/v1/rewards/report?${query}`);
-  },
-
-  async lines(params: {
-    accountId: string;
-    from: string;
-    to: string;
-    ruleId?: string;
-    page?: number;
-    size?: number;
-  }): Promise<PagedRewardLines> {
-    const query = new URLSearchParams({
-      accountId: params.accountId,
-      from: params.from,
-      to: params.to,
-    });
-    if (params.ruleId) query.set('ruleId', params.ruleId);
-    if (params.page !== undefined) query.set('page', String(params.page));
-    if (params.size !== undefined) query.set('size', String(params.size));
-    return request<PagedRewardLines>(`/api/v1/rewards/lines?${query}`);
-  },
-
-  async recommend(body: RewardRecommendationRequest): Promise<RewardRecommendationResponse> {
-    return request<RewardRecommendationResponse>('/api/v1/reward-recommendations', {
-      method: 'POST',
-      body: JSON.stringify(body),
-    });
+    return data! as PagedRuleMatches;
   },
 };
 
-// LLM API Keys API
+// ---------------------------------------------------------------------------
+// Statements
+// ---------------------------------------------------------------------------
+
+export const statementsApi = {
+  listByAccount: async (accountId: string): Promise<StatementSummary[]> => {
+    const { data } = await serverApi.GET('/api/v1/accounts/{accountId}/statements', { params: { path: { accountId } } });
+    return (data as StatementSummary[]) || [];
+  },
+  getById: async (statementId: string): Promise<StatementDetail> => {
+    const { data } = await serverApi.GET('/api/v1/statements/{statementId}', { params: { path: { statementId } } });
+    return data! as StatementDetail;
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Transactions & links
+// ---------------------------------------------------------------------------
+
+export const transactionsApi = {
+  search: async (request: TransactionSearchRequest, queryParams?: { page?: number; size?: number; sort?: string[] }): Promise<PagedTransaction> => {
+    const { data } = await serverApi.POST('/api/v1/transactions/search', {
+      body: request as Schemas['TransactionSearchRequest'],
+      params: { query: queryParams },
+    });
+    return data! as PagedTransaction;
+  },
+  create: async (body: TransactionRequest): Promise<Transaction> => {
+    const { data } = await serverApi.POST('/api/v1/transactions', { body: body as Schemas['CreateTransactionRequest'] });
+    return data! as Transaction;
+  },
+  update: async (id: string, body: TransactionRequest): Promise<Transaction> => {
+    const { data } = await serverApi.PUT('/api/v1/transactions/{id}', {
+      params: { path: { id } },
+      body: body as Schemas['UpdateTransactionRequest'],
+    });
+    return data! as Transaction;
+  },
+  delete: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/transactions/{id}', { params: { path: { id } } });
+  },
+  batchDelete: async (body: BatchDeleteRequest): Promise<BatchDeleteResponse> => {
+    const { data } = await serverApi.POST('/api/v1/transactions/batch-delete', { body });
+    return data! as BatchDeleteResponse;
+  },
+  batchReview: async (body: BatchReviewRequest): Promise<BatchReviewResponse> => {
+    const { data } = await serverApi.POST('/api/v1/transactions/batch-review', { body: body as Schemas['BatchReviewRequest'] });
+    return data! as BatchReviewResponse;
+  },
+  merge: async (body: MergeTransactionsRequest): Promise<MergeTransactionsResponse> => {
+    const { data } = await serverApi.POST('/api/v1/transactions/merge', { body });
+    return data! as MergeTransactionsResponse;
+  },
+  bulkReattributeCard: async (body: BulkReattributeCardRequest): Promise<BulkReattributeResponse> => {
+    const { data } = await serverApi.PATCH('/api/v1/transactions/card', { body: body as Schemas['BulkReattributeCardRequest'] });
+    return data! as BulkReattributeResponse;
+  },
+};
+
+export const transactionLinksApi = {
+  create: async (body: CreateTransactionLinkRequest): Promise<TransactionLinkResponse> => {
+    const { data } = await serverApi.POST('/api/v1/transaction-links', { body: body as Schemas['CreateTransactionLinkRequest'] });
+    return data! as TransactionLinkResponse;
+  },
+  delete: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/transaction-links/{id}', { params: { path: { id } } });
+  },
+  getByTransactionId: async (transactionId: string): Promise<TransactionLinkResponse[]> => {
+    const { data } = await serverApi.GET('/api/v1/transaction-links', { params: { query: { transactionId } } });
+    return (data as TransactionLinkResponse[]) || [];
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Ingestion & Jobs — two distinct resources (file ingest vs. the job queue)
+// ---------------------------------------------------------------------------
+
+export const ingestionApi = {
+  ingest: async (accountId: string, formData: FormData): Promise<EnqueueResponse> => {
+    const files = formData.getAll('files').filter((f): f is File => f instanceof File);
+    const names = files.length > 0 ? files.map((f) => f.name) : [''];
+    return authenticatedFormPost<EnqueueResponse>(`/api/v1/accounts/${accountId}/ingest`, { files: names }, formData);
+  },
+};
+
+export const jobsApi = {
+  list: async (params?: { type?: string; status?: string; page?: number; size?: number }): Promise<PagedJobResponse> => {
+    const { data } = await serverApi.GET('/api/v1/jobs', {
+      params: {
+        query: {
+          type: params?.type,
+          status: params?.status,
+          page: params?.page,
+          size: params?.size,
+          sort: ['createdAt,desc'],
+        },
+      },
+    });
+    return data! as PagedJobResponse;
+  },
+  get: async (id: string): Promise<JobResponse> => {
+    const { data } = await serverApi.GET('/api/v1/jobs/{id}', { params: { path: { id } } });
+    return data! as JobResponse;
+  },
+  cancel: async (id: string): Promise<JobResponse> => {
+    const { data } = await serverApi.POST('/api/v1/jobs/{id}/cancel', { params: { path: { id } } });
+    return data! as JobResponse;
+  },
+  retry: async (id: string): Promise<JobResponse> => {
+    const { data } = await serverApi.POST('/api/v1/jobs/{id}/retry', { params: { path: { id } } });
+    return data! as JobResponse;
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Gmail
+// ---------------------------------------------------------------------------
+
+export const gmailApi = {
+  startOAuth: async (): Promise<GmailOAuthStartResponse> => {
+    const { data } = await serverApi.GET('/api/v1/gmail/oauth/start');
+    return data! as GmailOAuthStartResponse;
+  },
+  sync: async (): Promise<EnqueueResponse> => {
+    const { data } = await serverApi.POST('/api/v1/gmail/sync');
+    return data! as EnqueueResponse;
+  },
+  listSenders: async (): Promise<GmailSenderResponse[]> => {
+    const { data } = await serverApi.GET('/api/v1/gmail/senders');
+    return (data as GmailSenderResponse[]) || [];
+  },
+  createSender: async (body: GmailSenderRequest): Promise<GmailSenderResponse> => {
+    const { data } = await serverApi.POST('/api/v1/gmail/senders', { body });
+    return data! as GmailSenderResponse;
+  },
+  updateSender: async (id: string, body: GmailSenderRequest): Promise<GmailSenderResponse> => {
+    const { data } = await serverApi.PUT('/api/v1/gmail/senders/{id}', { params: { path: { id } }, body });
+    return data! as GmailSenderResponse;
+  },
+  deleteSender: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/gmail/senders/{id}', { params: { path: { id } } });
+  },
+  listConnections: async (): Promise<GmailConnectionResponse[]> => {
+    const { data } = await serverApi.GET('/api/v1/gmail/connections');
+    return (data as GmailConnectionResponse[]) || [];
+  },
+  disconnectConnection: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/gmail/connections/{id}', { params: { path: { id } } });
+  },
+  getAttentionItems: async (page = 0, size = 20, includeRetryable = false): Promise<PagedGmailAttention> => {
+    const { data } = await serverApi.GET('/api/v1/gmail/attention', { params: { query: { page, size, includeRetryable } } });
+    return data! as PagedGmailAttention;
+  },
+  retryAttentionItem: async (ledgerId: string): Promise<EnqueueResponse> => {
+    const { data } = await serverApi.POST('/api/v1/gmail/attention/{ledgerId}/retry', { params: { path: { ledgerId } } });
+    return data! as EnqueueResponse;
+  },
+  rescan: async (fromDate: string): Promise<EnqueueResponse> => {
+    const { data } = await serverApi.POST('/api/v1/gmail/rescan', { body: { fromDate } });
+    return data! as EnqueueResponse;
+  },
+};
+
+// ---------------------------------------------------------------------------
+// LLM keys & routing (folded from the WIP `llmApi`)
+// ---------------------------------------------------------------------------
+
 export const llmKeysApi = {
-  async list(): Promise<LlmKeyDto[]> {
-    return request<LlmKeyDto[]>('/api/v1/llm-keys');
+  list: async (): Promise<LlmKeyDto[]> => {
+    const { data } = await serverApi.GET('/api/v1/llm-keys');
+    return (data as LlmKeyDto[]) || [];
   },
-
-  async create(data: CreateLlmKeyRequest): Promise<LlmKeyDto> {
-    return request<LlmKeyDto>('/api/v1/llm-keys', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+  create: async (body: CreateLlmKeyRequest): Promise<LlmKeyDto> => {
+    const { data } = await serverApi.POST('/api/v1/llm-keys', { body: body as Schemas['CreateLlmKeyRequest'] });
+    return data! as LlmKeyDto;
   },
-
-  async delete(id: string): Promise<void> {
-    return request<void>(`/api/v1/llm-keys/${id}`, {
-      method: 'DELETE',
-    });
+  updatePosition: async (id: string, position: number | UpdateLlmKeyPositionRequest): Promise<void> => {
+    const body = typeof position === 'number' ? { position } : position;
+    await serverApi.PATCH('/api/v1/llm-keys/{id}/position', { params: { path: { id } }, body });
   },
-
-  async updatePosition(id: string, position: number): Promise<LlmKeyDto[]> {
-    return request<LlmKeyDto[]>(`/api/v1/llm-keys/${id}/position`, {
-      method: 'PATCH',
-      body: JSON.stringify({ position }),
-    });
+  delete: async (id: string): Promise<void> => {
+    await serverApi.DELETE('/api/v1/llm-keys/{id}', { params: { path: { id } } });
   },
-
-  async test(id: string, model?: string): Promise<TestKeyResponse> {
-    return request<TestKeyResponse>(`/api/v1/llm-keys/${id}/test`, {
-      method: 'POST',
-      body: JSON.stringify({ model }),
-    });
+  test: async (id: string, model?: string): Promise<TestKeyResponse> => {
+    const { data } = await serverApi.POST('/api/v1/llm-keys/{id}/test', { params: { path: { id } }, body: { model } });
+    return data! as TestKeyResponse;
   },
 };
 
-// LLM Routing API
 export const llmRoutingApi = {
-  async getTaskGroups(): Promise<LlmTaskGroupDto[]> {
-    return request<LlmTaskGroupDto[]>('/api/v1/llm/task-groups');
+  getTaskGroups: async (): Promise<LlmTaskGroupDto[]> => {
+    const { data } = await serverApi.GET('/api/v1/llm/task-groups');
+    return (data as LlmTaskGroupDto[]) || [];
   },
-
-  async getCatalog(): Promise<ProviderCatalogDto[]> {
-    return request<ProviderCatalogDto[]>('/api/v1/llm/catalog');
+  getCatalog: async (): Promise<ProviderCatalogDto[]> => {
+    const { data } = await serverApi.GET('/api/v1/llm/catalog');
+    return (data as ProviderCatalogDto[]) || [];
   },
-
-  async getRoutingOptions(): Promise<RoutingOptionDto[]> {
-    return request<RoutingOptionDto[]>('/api/v1/llm/routing-options');
+  getRoutingOptions: async (): Promise<RoutingOptionDto[]> => {
+    const { data } = await serverApi.GET('/api/v1/llm/routing-options');
+    return (data as RoutingOptionDto[]) || [];
   },
-
-  async getRouting(): Promise<LlmRoutingDto> {
-    return request<LlmRoutingDto>('/api/v1/llm/routing');
+  getRouting: async (): Promise<LlmRoutingDto> => {
+    const { data } = await serverApi.GET('/api/v1/llm/routing');
+    return data! as LlmRoutingDto;
   },
-
-  async updateRouting(group: string, data: UpdateRoutingRequest): Promise<LlmRoutingGroupDto> {
-    return request<LlmRoutingGroupDto>(`/api/v1/llm/routing/${group}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
+  updateRouting: async (group: string, body: UpdateRoutingRequest): Promise<LlmRoutingGroupDto> => {
+    const { data } = await serverApi.PUT('/api/v1/llm/routing/{group}', { params: { path: { group } }, body });
+    return data! as LlmRoutingGroupDto;
   },
-
-  async resetRouting(group: string): Promise<LlmRoutingGroupDto> {
-    return request<LlmRoutingGroupDto>(`/api/v1/llm/routing/${group}/reset`, {
-      method: 'POST',
-    });
+  resetRouting: async (group: string): Promise<LlmRoutingGroupDto> => {
+    const { data } = await serverApi.POST('/api/v1/llm/routing/{group}/reset', { params: { path: { group } } });
+    return data! as LlmRoutingGroupDto;
   },
-
-  async getHealth(): Promise<LlmBucketHealthDto[]> {
-    return request<LlmBucketHealthDto[]>('/api/v1/llm/health');
+  getHealth: async (): Promise<LlmBucketHealthDto[]> => {
+    const { data } = await serverApi.GET('/api/v1/llm/health');
+    return (data as LlmBucketHealthDto[]) || [];
   },
 };
-
-export { ApiError };
-
-

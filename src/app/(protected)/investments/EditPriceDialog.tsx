@@ -1,10 +1,10 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Edit3 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { setInstrumentPrice } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -18,6 +18,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
 import { toCalendarDate } from '@/lib/utils';
 
 interface EditPriceDialogProps {
@@ -32,7 +34,11 @@ interface EditPriceDialogProps {
   onSuccess?: () => void;
 }
 
-export function EditPriceDialog({ instrument, trigger, onSuccess }: EditPriceDialogProps) {
+export function EditPriceDialog({
+  instrument,
+  trigger,
+  onSuccess,
+}: EditPriceDialogProps) {
   const [open, setOpen] = useState(false);
   const [price, setPrice] = useState(instrument.lastPrice || '');
   const [asOf, setAsOf] = useState(
@@ -40,7 +46,16 @@ export function EditPriceDialog({ instrument, trigger, onSuccess }: EditPriceDia
       ? instrument.lastPriceAsOf.split('T')[0]
       : toCalendarDate(new Date())
   );
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const qc = useQueryClient();
+  const setPriceMutation = useMutation({
+    mutationFn: (body: { price: number; asOf?: string }) =>
+      api.POST('/api/v1/instruments/{id}/price', {
+        params: { path: { id: instrument.id } },
+        body,
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const isSubmitting = setPriceMutation.isPending;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,24 +64,17 @@ export function EditPriceDialog({ instrument, trigger, onSuccess }: EditPriceDia
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      const res = await setInstrumentPrice(instrument.id, {
-        price: Number(price),
-        asOf,
-      });
-
-      if (res.success) {
-        toast.success(`Price updated for ${instrument.name}`);
-        setOpen(false);
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message);
-      }
+      await setPriceMutation.mutateAsync({ price: Number(price), asOf });
+      toast.success(`Price updated for ${instrument.name}`);
+      setOpen(false);
+      onSuccess?.();
     } catch (err) {
-      toast.error('Failed to update price: ' + (err as Error).message);
-    } finally {
-      setIsSubmitting(false);
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to update price'
+      );
     }
   };
 
@@ -74,7 +82,10 @@ export function EditPriceDialog({ instrument, trigger, onSuccess }: EditPriceDia
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button size="micro" className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40">
+          <Button
+            size="micro"
+            className="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40"
+          >
             <Edit3 className="w-3 h-3 mr-1" />
             Edit Price
           </Button>
@@ -82,20 +93,35 @@ export function EditPriceDialog({ instrument, trigger, onSuccess }: EditPriceDia
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-base font-bold">Update Last Traded Price</DialogTitle>
+          <DialogTitle className="text-base font-bold">
+            Update Last Traded Price
+          </DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
-            Set the manual market price for <span className="font-semibold text-slate-700 dark:text-slate-300">{instrument.name}</span> {instrument.symbol ? `(${instrument.symbol})` : ''}.
+            Set the manual market price for{' '}
+            <span className="font-semibold text-slate-700 dark:text-slate-300">
+              {instrument.name}
+            </span>{' '}
+            {instrument.symbol ? `(${instrument.symbol})` : ''}.
           </DialogDescription>
         </DialogHeader>
 
         <DialogBody>
-          <form id="edit-price-form" onSubmit={handleSubmit} className="space-y-3 py-1">
+          <form
+            id="edit-price-form"
+            onSubmit={handleSubmit}
+            className="space-y-3 py-1"
+          >
             <div className="space-y-1.5">
-              <Label htmlFor="price" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <Label
+                htmlFor="price"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-300"
+              >
                 Price (INR)
               </Label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">₹</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
+                  ₹
+                </span>
                 <Input
                   id="price"
                   type="number"
@@ -111,7 +137,10 @@ export function EditPriceDialog({ instrument, trigger, onSuccess }: EditPriceDia
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="asOf" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <Label
+                htmlFor="asOf"
+                className="text-xs font-semibold text-slate-700 dark:text-slate-300"
+              >
                 As of Date
               </Label>
               <Input

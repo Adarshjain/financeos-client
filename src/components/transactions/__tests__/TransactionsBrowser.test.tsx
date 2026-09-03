@@ -1,20 +1,31 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as transactionsActions from '@/actions/transactions';
 import { TransactionsBrowser } from '@/components/transactions/TransactionsBrowser';
 import type { Account } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
+import { api } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
+import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
+
+vi.mock('@/lib/api/client', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
+  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
+});
 
 const mockAccounts: Account[] = [
   { id: 'acc1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT },
 ];
 
-const mockCategories: Category[] = [
-  { id: 'cat1', name: 'Food' },
-];
+// Seeds the accounts query synchronously so TransactionsBrowser's internal
+// useAccounts() call resolves without an async wait in every test.
+function renderWithAccounts(ui: ReactElement) {
+  const queryClient = createTestQueryClient();
+  queryClient.setQueryData(keys.accounts.list(), mockAccounts);
+  return renderWithQuery(ui, { queryClient });
+}
 
 const mockTxn: Transaction = {
   id: 't1',
@@ -30,13 +41,15 @@ const mockTxn: Transaction = {
 };
 
 describe('TransactionsBrowser (CD-2a, CD-6)', () => {
-  it('clears loading state and shows toast on fetch rejection (CD-2a)', async () => {
-    vi.spyOn(transactionsActions, 'searchTransactions').mockRejectedValue(new Error('Network error'));
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
-    render(
+  it('clears loading state and shows toast on fetch rejection (CD-2a)', async () => {
+    (api.POST as any).mockRejectedValue(new Error('Network error'));
+
+    renderWithAccounts(
       <TransactionsBrowser
-        accounts={mockAccounts}
-        categories={mockCategories}
         needsReviewCount={5}
       />,
     );
@@ -49,8 +62,7 @@ describe('TransactionsBrowser (CD-2a, CD-6)', () => {
   });
 
   it('renders badge count and updates after search fetch (CD-6)', async () => {
-    vi.spyOn(transactionsActions, 'searchTransactions').mockResolvedValue({
-      success: true,
+    (api.POST as any).mockResolvedValue({
       data: {
         content: [mockTxn],
         number: 0,
@@ -63,10 +75,8 @@ describe('TransactionsBrowser (CD-2a, CD-6)', () => {
       },
     });
 
-    render(
+    renderWithAccounts(
       <TransactionsBrowser
-        accounts={mockAccounts}
-        categories={mockCategories}
         needsReviewCount={12}
       />,
     );
@@ -78,8 +88,7 @@ describe('TransactionsBrowser (CD-2a, CD-6)', () => {
   });
 
   it('toggles sort direction and selection mode', async () => {
-    vi.spyOn(transactionsActions, 'searchTransactions').mockResolvedValue({
-      success: true,
+    (api.POST as any).mockResolvedValue({
       data: {
         content: [mockTxn],
         number: 0,
@@ -92,12 +101,7 @@ describe('TransactionsBrowser (CD-2a, CD-6)', () => {
       },
     });
 
-    render(
-      <TransactionsBrowser
-        accounts={mockAccounts}
-        categories={mockCategories}
-      />,
-    );
+    renderWithAccounts(<TransactionsBrowser />);
 
     await waitFor(() => {
       expect(screen.getByText('Coffee')).toBeInTheDocument();
@@ -112,16 +116,17 @@ describe('TransactionsBrowser (CD-2a, CD-6)', () => {
     fireEvent.click(amountSortBtns[amountSortBtns.length - 1]);
 
     // Click Link selection mode button
-    const linkModeBtn = screen.getByRole('button', { name: /^Link$/i });
-    fireEvent.click(linkModeBtn);
+    const linkModeBtns = screen.getAllByRole('button', { name: /^Link$/i });
+    fireEvent.click(linkModeBtns[0]);
 
     // Checkbox should be rendered in selection mode
-    expect(screen.getByRole('checkbox')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole('checkbox')).toBeInTheDocument();
+    });
   });
 
   it('selects transaction in link selection mode and opens link modal', async () => {
-    vi.spyOn(transactionsActions, 'searchTransactions').mockResolvedValue({
-      success: true,
+    (api.POST as any).mockResolvedValue({
       data: {
         content: [mockTxn],
         number: 0,
@@ -134,20 +139,15 @@ describe('TransactionsBrowser (CD-2a, CD-6)', () => {
       },
     });
 
-    render(
-      <TransactionsBrowser
-        accounts={mockAccounts}
-        categories={mockCategories}
-      />,
-    );
+    renderWithAccounts(<TransactionsBrowser />);
 
     await waitFor(() => {
       expect(screen.getByText('Coffee')).toBeInTheDocument();
     });
 
     // Enter Link selection mode
-    const linkModeBtn = screen.getByRole('button', { name: /^Link$/i });
-    fireEvent.click(linkModeBtn);
+    const linkModeBtns = screen.getAllByRole('button', { name: /^Link$/i });
+    fireEvent.click(linkModeBtns[0]);
 
     // Select row checkbox
     const checkbox = screen.getByRole('checkbox');

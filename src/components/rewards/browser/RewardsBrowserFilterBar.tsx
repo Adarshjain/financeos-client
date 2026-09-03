@@ -15,7 +15,7 @@ import { Account } from '@/lib/account.types';
 import { PagedRewardLines, RewardReport } from '@/lib/rewards.types';
 import { cn, formatDate, toCalendarDate } from '@/lib/utils';
 
-import { RANGE_PRESET_LABELS,RangePreset } from './helpers';
+import { RANGE_PRESET_LABELS, RANGE_PRESETS, RangePreset } from './helpers';
 
 interface RewardsBrowserFilterBarProps {
   accounts: Account[];
@@ -106,7 +106,7 @@ export function RewardsBrowserFilterBar({
             <SelectValue placeholder="Range" />
           </SelectTrigger>
           <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs">
-            {(Object.keys(RANGE_PRESET_LABELS) as RangePreset[]).map((p) => (
+            {RANGE_PRESETS.map((p) => (
               <SelectItem key={p} value={p} className="text-xs font-medium">
                 {RANGE_PRESET_LABELS[p]}
               </SelectItem>

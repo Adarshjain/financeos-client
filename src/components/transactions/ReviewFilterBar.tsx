@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { RemovableBadge } from '@/components/ui/removable-badge';
-import type { Account } from '@/lib/account.types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
 
 import { REASON_OPTIONS } from './review-filter-bar/constants';
@@ -15,7 +15,6 @@ import { ReviewReasonSegmentControl } from './review-filter-bar/ReviewReasonSegm
 import { ReviewSortPopover } from './review-filter-bar/ReviewSortPopover';
 
 interface ReviewFilterBarProps {
-  accounts: Account[];
   appliedAccountIds: string[];
   onAccountIdsChange: (ids: string[]) => void;
   onlyUpToLastStatement: boolean;
@@ -29,7 +28,6 @@ interface ReviewFilterBarProps {
 }
 
 export function ReviewFilterBar({
-  accounts,
   appliedAccountIds,
   onAccountIdsChange,
   onlyUpToLastStatement,
@@ -41,6 +39,7 @@ export function ReviewFilterBar({
   sortBy,
   onSortByChange,
 }: ReviewFilterBarProps) {
+  const { data: accounts = [] } = useAccounts();
   // Investment (broker) accounts don't post manual transactions here; keep
   // them out of the picker unless one is already selected via an existing filter.
   const selectableAccounts = useMemo(

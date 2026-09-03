@@ -16,16 +16,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { type Account } from '@/lib/account.types';
+import { useAccounts } from '@/lib/query';
 
 import { FileDropzone } from './components/FileDropzone';
 import { FilesQueueList } from './components/FilesQueueList';
 import { useIngestForm } from './components/useIngestForm';
 
 interface IngestFormProps {
-  accounts: Account[];
+  initialAccounts: Account[];
 }
 
-export function IngestForm({ accounts }: IngestFormProps) {
+export function IngestForm({ initialAccounts }: IngestFormProps) {
+  // Shared accounts lookup — page.tsx seeds the same key server-side, so this
+  // read is free on first paint and stays live for the rest of the session.
+  const { data: accounts = initialAccounts } = useAccounts(initialAccounts);
+
   const {
     selectedAccountId,
     setSelectedAccountId,

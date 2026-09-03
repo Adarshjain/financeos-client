@@ -1,21 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
-import {
-  closeAccount,
-  createAccount,
-  deleteAccount,
-  executeGmailCleanup,
-  previewGmailCleanup,
-  reopenAccount,
-  updateAccount,
-} from '@/actions/accounts';
 import { Account, AccountRequest } from '@/lib/account.types';
+import { getErrorMessage } from '@/lib/api/errorMessage';
 import { optionalDecimal, optionalString } from '@/lib/forms';
 import { AccountType, FinancialPosition } from '@/lib/types';
 import { getAccountTypeLabel } from '@/lib/utils';
+
+import { useAccountFormMutations } from './useAccountFormMutations';
 
 interface UseAccountFormOptions {
   account?: Account;
@@ -24,6 +18,16 @@ interface UseAccountFormOptions {
 }
 
 export function useAccountForm({ account, onSuccess, onClose }: UseAccountFormOptions) {
+  const {
+    createAccountMutation,
+    updateAccountMutation,
+    closeAccountMutation,
+    reopenAccountMutation,
+    deleteAccountMutation,
+    previewGmailCleanupMutation,
+    executeGmailCleanupMutation,
+  } = useAccountFormMutations();
+
   const isUpdateMode = !!account;
   const [accountType, setAccountType] = useState<AccountType>(
     account?.type || AccountType.BANK_ACCOUNT
@@ -32,28 +36,33 @@ export function useAccountForm({ account, onSuccess, onClose }: UseAccountFormOp
     account?.excludeFromNetAsset || false
   );
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [confirmCleanup, setConfirmCleanup] = useState<{
     count: number;
     before: string;
     accountData: AccountRequest;
   } | null>(null);
 
-  const [isClosingAccount, setIsClosingAccount] = useState(false);
-  const [isReopeningAccount, setIsReopeningAccount] = useState(false);
   const [closeOnDate, setCloseOnDate] = useState(new Date().toISOString().split('T')[0]);
   const [showCloseInline, setShowCloseInline] = useState(false);
 
-  useEffect(() => {
+  /**
+   * Re-syncs the editable `accountType`/`excludeFromNetAsset` fields whenever
+   * the `account` prop's identity changes (e.g. a fresh object from a
+   * query-cache refetch after a mutation) — adjusted during render rather
+   * than in a `useEffect`, per the "adjusting state when a prop changes"
+   * pattern, so it doesn't cause an extra commit-then-effect render pass.
+   */
+  const [syncedAccount, setSyncedAccount] = useState(account);
+  if (account !== syncedAccount) {
+    setSyncedAccount(account);
     if (account?.type) {
       setAccountType(account.type);
     }
     if (account) {
       setExcludeFromNetAsset(account.excludeFromNetAsset || false);
     }
-  }, [account]);
+  }
 
   const defaultIngestFromDate = account
     ? account.ingestFromDate
@@ -61,72 +70,59 @@ export function useAccountForm({ account, onSuccess, onClose }: UseAccountFormOp
       : ''
     : undefined;
 
+  const isSubmitting =
+    createAccountMutation.isPending ||
+    updateAccountMutation.isPending ||
+    previewGmailCleanupMutation.isPending ||
+    executeGmailCleanupMutation.isPending;
+  const isDeleting = deleteAccountMutation.isPending;
+  const isClosingAccount = closeAccountMutation.isPending;
+  const isReopeningAccount = reopenAccountMutation.isPending;
+
   const handleCloseAccount = async () => {
     if (!account) return;
-    setIsClosingAccount(true);
     try {
-      const res = await closeAccount(account.id, { closedOn: closeOnDate || undefined });
-      if (res.success) {
-        if (res.data?.warnings && res.data.warnings.length > 0) {
-          toast.warning(res.data.warnings.join('; '));
-        } else {
-          toast.success('Account closed successfully');
-        }
-        setShowDeleteConfirm(false);
-        onSuccess?.();
-        onClose?.();
+      const closed = await closeAccountMutation.mutateAsync({ id: account.id, body: { closedOn: closeOnDate || undefined } });
+      if (closed.warnings && closed.warnings.length > 0) {
+        toast.warning(closed.warnings.join('; '));
       } else {
-        toast.error(res.error.message);
+        toast.success('Account closed successfully');
       }
+      setShowDeleteConfirm(false);
+      onSuccess?.();
+      onClose?.();
     } catch (error) {
-      toast.error((error as Error).message);
-    } finally {
-      setIsClosingAccount(false);
+      toast.error(getErrorMessage(error, 'Failed to close account'));
     }
   };
 
   const handleReopenAccount = async () => {
     if (!account) return;
-    setIsReopeningAccount(true);
     try {
-      const res = await reopenAccount(account.id);
-      if (res.success) {
-        toast.success('Account reopened successfully');
-        onSuccess?.();
-        onClose?.();
-      } else {
-        toast.error(res.error.message);
-      }
+      await reopenAccountMutation.mutateAsync(account.id);
+      toast.success('Account reopened successfully');
+      onSuccess?.();
+      onClose?.();
     } catch (error) {
-      toast.error((error as Error).message);
-    } finally {
-      setIsReopeningAccount(false);
+      toast.error(getErrorMessage(error, 'Failed to reopen account'));
     }
   };
 
   const handleDelete = async () => {
     if (!account) return;
-    setIsDeleting(true);
     try {
-      const res = await deleteAccount(account.id);
-      if (res.success) {
-        toast.success('Account deleted!');
-        setShowDeleteConfirm(false);
-        onSuccess?.();
-        onClose?.();
-      } else {
-        toast.error(res.error.message);
-      }
+      await deleteAccountMutation.mutateAsync(account.id);
+      toast.success('Account deleted!');
+      setShowDeleteConfirm(false);
+      onSuccess?.();
+      onClose?.();
     } catch (error) {
-      toast.error((error as Error).message);
-    } finally {
-      setIsDeleting(false);
+      toast.error(getErrorMessage(error, 'Failed to delete account'));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
     const form = e.currentTarget;
     const formData = new FormData(form);
 
@@ -169,7 +165,6 @@ export function useAccountForm({ account, onSuccess, onClose }: UseAccountFormOp
           anniversaryDate === undefined ? 'anniversary date' : null,
         ].filter((field): field is string => field !== null);
         toast.error(`Credit card needs ${missing.join(', ')}.`);
-        setIsSubmitting(false);
         return;
       }
 
@@ -191,7 +186,6 @@ export function useAccountForm({ account, onSuccess, onClose }: UseAccountFormOp
       const provider = optionalString(formData, 'provider');
       if (!provider) {
         toast.error('Broker provider is required.');
-        setIsSubmitting(false);
         return;
       }
       const clientId = optionalString(formData, 'clientId');
@@ -223,7 +217,6 @@ export function useAccountForm({ account, onSuccess, onClose }: UseAccountFormOp
 
     if (!data) {
       toast.error(`Editing ${getAccountTypeLabel(accountType)} accounts isn't supported yet.`);
-      setIsSubmitting(false);
       return;
     }
 
@@ -234,60 +227,46 @@ export function useAccountForm({ account, onSuccess, onClose }: UseAccountFormOp
       ingestFromDate &&
       ingestFromDate > account.ingestFromDate.split('T')[0]
     ) {
-      const previewRes = await previewGmailCleanup(account.id, ingestFromDate);
-      if (previewRes.success && previewRes.data.count > 0) {
-        setConfirmCleanup({
-          count: previewRes.data.count,
-          before: ingestFromDate,
-          accountData: data,
-        });
-        setIsSubmitting(false);
+      try {
+        const preview = await previewGmailCleanupMutation.mutateAsync({ accountId: account.id, before: ingestFromDate });
+        if (preview.count > 0) {
+          setConfirmCleanup({ count: preview.count, before: ingestFromDate, accountData: data });
+          return;
+        }
+      } catch (err) {
+        toast.error(getErrorMessage(err, 'Failed to preview Gmail cleanup'));
         return;
       }
     }
 
     try {
-      const res =
-        isUpdateMode && account
-          ? await updateAccount(account.id, data)
-          : await createAccount(data);
-      if (res.success) {
-        toast.success(
-          isUpdateMode ? 'Account updated successfully!' : 'Account created successfully!'
-        );
-        onSuccess?.();
+      if (isUpdateMode && account) {
+        await updateAccountMutation.mutateAsync({ id: account.id, body: data });
       } else {
-        toast.error(res.error.message);
+        await createAccountMutation.mutateAsync(data);
       }
+      toast.success(isUpdateMode ? 'Account updated successfully!' : 'Account created successfully!');
+      onSuccess?.();
     } catch (err) {
-      toast.error('An error occurred: ' + (err as Error).message);
-    } finally {
-      setIsSubmitting(false);
+      toast.error(getErrorMessage(err, isUpdateMode ? 'Failed to update account' : 'Failed to create account'));
     }
   };
 
   const handleConfirmCleanup = async () => {
     if (!confirmCleanup || !account) return;
-    setIsSubmitting(true);
     try {
-      const cleanupRes = await executeGmailCleanup(account.id, confirmCleanup.before);
-      if (!cleanupRes.success) {
-        toast.error(cleanupRes.error.message);
-        setIsSubmitting(false);
-        return;
-      }
-      const res = await updateAccount(account.id, confirmCleanup.accountData);
-      if (res.success) {
-        toast.success('Account updated and transactions cleaned up successfully!');
-        setConfirmCleanup(null);
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message);
-      }
+      await executeGmailCleanupMutation.mutateAsync({ accountId: account.id, before: confirmCleanup.before });
     } catch (err) {
-      toast.error('An error occurred: ' + (err as Error).message);
-    } finally {
-      setIsSubmitting(false);
+      toast.error(getErrorMessage(err, 'Failed to execute Gmail cleanup'));
+      return;
+    }
+    try {
+      await updateAccountMutation.mutateAsync({ id: account.id, body: confirmCleanup.accountData });
+      toast.success('Account updated and transactions cleaned up successfully!');
+      setConfirmCleanup(null);
+      onSuccess?.();
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'Failed to update account'));
     }
   };
 

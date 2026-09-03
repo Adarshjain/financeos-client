@@ -26,11 +26,6 @@ export const deleteReport = createDomainAction(
   (reportId: string) => reportsApi.delete(reportId)
 );
 
-export const runSavedReport = createDomainAction(
-  { fallbackError: 'Failed to run report' },
-  (reportId: string, options: ReportRunOptions = {}) => reportsApi.runSaved(reportId, options)
-);
-
 export const runAdHocReport = createDomainAction(
   { fallbackError: 'Failed to run ad-hoc report' },
   (request: RunReportRequest, options?: ReportRunOptions) => reportsApi.runAdHoc(request, options)
