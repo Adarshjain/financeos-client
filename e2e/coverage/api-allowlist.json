@@ -5,116 +5,13 @@
     "reason": "Spring Security LogoutFilter intercepts /api/v1/auth/logout in FilterChain without invoking DispatcherServlet, leaving HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE null; E2eCoverageFilter therefore skips recording this hit until the server filter or controller is updated.",
     "phase": null
   },
-
-  {
-    "method": "DELETE",
-    "path": "/api/v1/categories/{id}",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "GET",
-    "path": "/api/v1/categories/{id}",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "PUT",
-    "path": "/api/v1/categories/{id}",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-
-  {
-    "method": "GET",
-    "path": "/api/v1/rules",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/rules",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "DELETE",
-    "path": "/api/v1/rules/{id}",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "PUT",
-    "path": "/api/v1/rules/{id}",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/rules/{id}/apply",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/rules/{id}/verify",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/rules/preview-matches",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "GET",
-    "path": "/api/v1/transaction-links",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/transaction-links",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "DELETE",
-    "path": "/api/v1/transaction-links/{id}",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "GET",
-    "path": "/api/v1/transaction-links/{id}",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/transactions/merge",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
   {
     "method": "POST",
     "path": "/api/v1/accounts/{accountId}/ingest",
     "reason": "Not yet covered",
     "phase": 8
   },
-  {
-    "method": "GET",
-    "path": "/api/v1/jobs",
-    "reason": "Not yet covered",
-    "phase": 8
-  },
-  {
-    "method": "GET",
-    "path": "/api/v1/jobs/{id}",
-    "reason": "Not yet covered",
-    "phase": 8
-  },
+
   {
     "method": "POST",
     "path": "/api/v1/jobs/{id}/cancel",

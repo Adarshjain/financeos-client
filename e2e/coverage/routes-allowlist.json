@@ -1,20 +1,4 @@
 [
-
-  {
-    "route": "/rules",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "route": "/rules/categories",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
-  {
-    "route": "/transactions/review",
-    "reason": "Not yet covered",
-    "phase": 7
-  },
   {
     "route": "/settings/ingest",
     "reason": "Not yet covered",
