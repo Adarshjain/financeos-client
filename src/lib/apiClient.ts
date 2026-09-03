@@ -1,4 +1,5 @@
 import { cookies, headers as nextHeaders } from 'next/headers';
+import { unstable_rethrow } from 'next/navigation';
 
 import type {
   Account,
@@ -246,7 +247,8 @@ async function authenticatedFormPost<T>(
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get('FINANCEOS_SESSION')?.value;
     if (sessionCookie) reqHeaders.Cookie = `FINANCEOS_SESSION=${sessionCookie}`;
-  } catch {
+  } catch (error) {
+    unstable_rethrow(error);
     // Outside request context
   }
   try {
@@ -255,7 +257,8 @@ async function authenticatedFormPost<T>(
     const sessionId = headerStore.get('x-session-id');
     if (requestId) reqHeaders['X-Request-Id'] = requestId;
     if (sessionId) reqHeaders['X-Session-Id'] = sessionId;
-  } catch {
+  } catch (error) {
+    unstable_rethrow(error);
     // Outside request context
   }
 

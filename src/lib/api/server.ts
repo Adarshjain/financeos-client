@@ -1,4 +1,5 @@
 import { cookies, headers } from 'next/headers';
+import { unstable_rethrow } from 'next/navigation';
 import createFetchClient, { type Middleware } from 'openapi-fetch';
 
 import { ApiError } from '@/lib/api/client';
@@ -16,7 +17,8 @@ const serverMiddleware: Middleware = {
     try {
       const cookieStore = await cookies();
       sessionCookie = cookieStore.get('FINANCEOS_SESSION')?.value;
-    } catch {
+    } catch (error) {
+      unstable_rethrow(error);
       // Outside request context
     }
 
@@ -26,7 +28,8 @@ const serverMiddleware: Middleware = {
       const headerStore = await headers();
       requestId = headerStore.get('x-request-id') ?? undefined;
       sessionId = headerStore.get('x-session-id') ?? undefined;
-    } catch {
+    } catch (error) {
+      unstable_rethrow(error);
       // Outside request context
     }
 
