@@ -1,13 +1,18 @@
 'use client';
 
 import { Loader2, Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { catalogSearch, resolveInstrument } from '@/actions/investments';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { ApiError } from '@/lib/api/client';
 import { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
+
+import {
+  useCatalogSearch,
+  useResolveInstrumentMutation,
+} from './useCatalogSearch';
 
 interface InstrumentSearchFieldProps {
   type?: InstrumentType;
@@ -23,7 +28,10 @@ interface InstrumentSearchFieldProps {
 }
 
 const candidateKey = (c: InstrumentCandidate) =>
-  c.existingInstrumentId || c.amfiCode || c.yahooSymbol || `${c.source}-${c.name}`;
+  c.existingInstrumentId ||
+  c.amfiCode ||
+  c.yahooSymbol ||
+  `${c.source}-${c.name}`;
 
 /**
  * Inline "search the real feeds (AMFI/Yahoo) and pick" field. On select it resolves the
@@ -38,45 +46,22 @@ export function InstrumentSearchField({
   placeholder,
 }: InstrumentSearchFieldProps) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<InstrumentCandidate[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { results, isLoading: loading } = useCatalogSearch(query, type);
   const [resolvingKey, setResolvingKey] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (query.trim().length < 2) {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    const timer = setTimeout(async () => {
-      try {
-        const res = await catalogSearch(query.trim(), type);
-        setResults(res.success ? res.data || [] : []);
-      } catch {
-        setResults([]);
-      } finally {
-        setLoading(false);
-      }
-    }, 250);
-
-    return () => clearTimeout(timer);
-  }, [query, type]);
+  const resolveInstrument = useResolveInstrumentMutation();
 
   const handleSelect = async (candidate: InstrumentCandidate) => {
     // Fill-fields mode: hand the candidate to the caller without persisting anything.
     if (onPick) {
       onPick(candidate);
       setQuery('');
-      setResults([]);
       return;
     }
 
     const rowKey = candidateKey(candidate);
     setResolvingKey(rowKey);
     try {
-      const res = await resolveInstrument({
+      const resolved = await resolveInstrument.mutateAsync({
         type: candidate.type,
         name: candidate.name,
         symbol: candidate.symbol,
@@ -88,16 +73,15 @@ export function InstrumentSearchField({
         existingInstrumentId: candidate.existingInstrumentId,
       });
 
-      if (res.success) {
-        onResolved?.(res.data);
-        toast.success(`Added ${res.data.name}`);
-        setQuery('');
-        setResults([]);
-      } else {
-        toast.error(res.error.message);
-      }
+      onResolved?.(resolved);
+      toast.success(`Added ${resolved.name}`);
+      setQuery('');
     } catch (err) {
-      toast.error('Failed to add instrument: ' + (err as Error).message);
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to add instrument'
+      );
     } finally {
       setResolvingKey(null);
     }
@@ -137,7 +121,8 @@ export function InstrumentSearchField({
             <>
               {candidate.pricePreview && (
                 <Badge variant="outline" className="text-2xs font-mono">
-                  ₹{candidate.pricePreview.value} · {candidate.pricePreview.asOf}
+                  ₹{candidate.pricePreview.value} ·{' '}
+                  {candidate.pricePreview.asOf}
                 </Badge>
               )}
               <Badge variant="secondary" className="text-2xs uppercase">
@@ -157,7 +142,9 @@ export function InstrumentSearchField({
         <Input
           type="text"
           autoFocus={autoFocus}
-          placeholder={placeholder || 'Search by name or symbol (AMFI / Yahoo)…'}
+          placeholder={
+            placeholder || 'Search by name or symbol (AMFI / Yahoo)…'
+          }
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="pl-8 text-xs bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800"
@@ -166,7 +153,9 @@ export function InstrumentSearchField({
 
       <div className="max-h-64 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-800 p-1">
         {loading ? (
-          <div className="p-3 text-center text-xs text-slate-400">Searching…</div>
+          <div className="p-3 text-center text-xs text-slate-400">
+            Searching…
+          </div>
         ) : results.length > 0 ? (
           <div className="space-y-1">
             {localResults.length > 0 && (

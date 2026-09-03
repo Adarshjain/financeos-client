@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { JobErrorDetails } from '@/components/jobs/JobErrorDetails';
 import { JobRowActions } from '@/components/jobs/JobRowActions';
@@ -16,20 +16,6 @@ import {
 } from '@/components/ui/select';
 
 export { JobErrorDetails, JobRowActions };
-
-export function AutoRefreshOnActive({ hasActive }: { hasActive: boolean }) {
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!hasActive) return;
-    const interval = setInterval(() => {
-      router.refresh();
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [hasActive, router]);
-
-  return null;
-}
 
 interface FilterOption {
   label: string;

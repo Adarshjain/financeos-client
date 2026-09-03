@@ -1,15 +1,16 @@
 'use client';
 
-import { MoreVertical, Pencil, Plus, Trash2, Trophy } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Loader2, MoreVertical, Pencil, Plus, Trash2, Trophy } from 'lucide-react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { deleteRewardMilestone, listRewardMilestones } from '@/actions/rewards';
+import { useDeleteRewardMilestone, useRewardMilestones } from '@/components/rewards/queries/useRewardMilestonesQueries';
 import RewardMilestoneForm from '@/components/rewards/RewardMilestoneForm';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { EmptyState } from '@/components/ui/empty-state';
 import type { AccountCard } from '@/lib/account.types';
+import { ApiError } from '@/lib/api/client';
 import type { Category } from '@/lib/categories.types';
 import type { RewardMilestone, RewardType } from '@/lib/rewards.types';
 import { formatMoney } from '@/lib/utils';
@@ -44,39 +45,20 @@ interface RewardMilestonesManagerProps {
 
 /** Milestones list + CRUD for one account — rendered below the rules list. */
 export default function RewardMilestonesManager({ accountId, cards, categories, defaultRewardType, isBank }: RewardMilestonesManagerProps) {
-  const [milestones, setMilestones] = useState<RewardMilestone[]>([]);
+  const milestonesQuery = useRewardMilestones(accountId);
+  const milestones = milestonesQuery.data ?? [];
+  const deleteMilestone = useDeleteRewardMilestone();
+
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editing, setEditing] = useState<RewardMilestone | undefined>();
 
-  const refresh = useCallback(async (id: string) => {
-    if (!id) return;
-    const res = await listRewardMilestones(id);
-    if (res.success) {
-      setMilestones(res.data);
-    } else {
-      toast.error(res.error.message);
-    }
-  }, []);
-
-  // Milestones are secondary content on the rules page — fetched client-side on
-  // mount and whenever the selected account changes.
-  const lastAccount = useRef<string | null>(null);
-  useEffect(() => {
-    if (lastAccount.current === accountId) return;
-    lastAccount.current = accountId;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    refresh(accountId);
-  }, [accountId, refresh]);
-
-  const remove = async (milestone: RewardMilestone) => {
+  const remove = (milestone: RewardMilestone) => {
     if (!window.confirm(`Delete milestone "${milestone.name}"?`)) return;
-    const res = await deleteRewardMilestone(milestone.id);
-    if (res.success) {
-      toast.success('Milestone deleted');
-      void refresh(accountId);
-    } else {
-      toast.error(res.error.message);
-    }
+    deleteMilestone.mutate(milestone.id, {
+      onSuccess: () => toast.success('Milestone deleted'),
+      onError: (e) =>
+        toast.error(e instanceof ApiError ? e.response.message : 'Failed to delete milestone'),
+    });
   };
 
   const closeForm = () => {
@@ -90,13 +72,16 @@ export default function RewardMilestonesManager({ accountId, cards, categories, 
         <h2 className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
           <Trophy className="w-3.5 h-3.5 text-amber-500" /> Milestones
         </h2>
+        {milestonesQuery.isFetching && (
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400 shrink-0" />
+        )}
         <div className="flex-1" />
         <Button onClick={() => setIsCreateOpen(true)} disabled={!accountId} variant="outline" size="sm">
           <Plus className="w-3.5 h-3.5 mr-1" /> New Milestone
         </Button>
       </div>
 
-      {milestones.length === 0 ? (
+      {milestones.length === 0 && !milestonesQuery.isFetching ? (
         <EmptyState
           compact
           icon={Trophy}
@@ -135,7 +120,7 @@ export default function RewardMilestonesManager({ accountId, cards, categories, 
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => void remove(milestone)}
+                    onClick={() => remove(milestone)}
                     className="text-rose-600 dark:text-rose-400 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950/30"
                   >
                     <Trash2 className="w-3.5 h-3.5 mr-2 text-rose-600 dark:text-rose-400" /> Delete Milestone
@@ -158,10 +143,7 @@ export default function RewardMilestonesManager({ accountId, cards, categories, 
           isBank={isBank}
           open
           onClose={closeForm}
-          onSaved={() => {
-            closeForm();
-            void refresh(accountId);
-          }}
+          onSaved={closeForm}
         />
       )}
     </div>

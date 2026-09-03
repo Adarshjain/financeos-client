@@ -1,25 +1,18 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Edit, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { createFnoTrade, updateFnoTrade } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { FormField } from '@/components/ui/form-field';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Broker } from '@/lib/account.types';
-import { FnoContractType, FnoTradeResponse, OptionType } from '@/lib/types';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
+import { CreateFnoTradeRequest, FnoContractType, FnoTradeResponse, OptionType } from '@/lib/types';
 
 export interface FnoTradeDialogProps {
   mode?: 'create' | 'edit';
@@ -29,20 +22,27 @@ export interface FnoTradeDialogProps {
   onSuccess?: () => void;
 }
 
-export function FnoTradeDialog({
-  mode = 'create',
-  trade,
-  brokerAccounts,
-  trigger,
-  onSuccess,
-}: FnoTradeDialogProps) {
+export function FnoTradeDialog({ mode = 'create', trade, brokerAccounts, trigger, onSuccess }: FnoTradeDialogProps) {
   const isEdit = mode === 'edit' || !!trade;
   const [open, setOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const qc = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: (body: CreateFnoTradeRequest) => api.POST('/api/v1/investments/fno', { body }).then((r) => r.data! as FnoTradeResponse),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const updateMutation = useMutation({
+    mutationFn: (body: CreateFnoTradeRequest) =>
+      api
+        .PUT('/api/v1/investments/fno/{id}', {
+          params: { path: { id: trade?.id ?? '' } },
+          body,
+        })
+        .then((r) => r.data! as FnoTradeResponse),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
-  const [brokerAccountId, setBrokerAccountId] = useState(
-    trade?.brokerAccountId || brokerAccounts[0]?.id || '',
-  );
+  const [brokerAccountId, setBrokerAccountId] = useState(trade?.brokerAccountId || brokerAccounts[0]?.id || '');
   const [tradingSymbol, setTradingSymbol] = useState(trade?.tradingSymbol || '');
   const [underlyingSymbol, setUnderlyingSymbol] = useState(trade?.underlyingSymbol || '');
   const [contractType, setContractType] = useState<FnoContractType>(trade?.contractType || 'future');
@@ -100,8 +100,7 @@ export function FnoTradeDialog({
       return;
     }
 
-    setIsSubmitting(true);
-    const req = {
+    const req: CreateFnoTradeRequest = {
       brokerAccountId,
       tradingSymbol: tradingSymbol.trim().toUpperCase(),
       underlyingSymbol: underlyingSymbol.trim().toUpperCase() || undefined,
@@ -119,18 +118,17 @@ export function FnoTradeDialog({
       notes: notes.trim() || undefined,
     };
 
-    const res = isEdit && trade
-      ? await updateFnoTrade(trade.id, req)
-      : await createFnoTrade(req);
-
-    setIsSubmitting(false);
-
-    if (res.success) {
+    try {
+      if (isEdit && trade) {
+        await updateMutation.mutateAsync(req);
+      } else {
+        await createMutation.mutateAsync(req);
+      }
       toast.success(isEdit ? 'FnO trade updated' : 'FnO trade recorded');
       setOpen(false);
       onSuccess?.();
-    } else {
-      toast.error(res.error.message);
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.response.message : 'Failed to save FnO trade');
     }
   };
 
@@ -152,11 +150,7 @@ export function FnoTradeDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{isEdit ? 'Edit FnO Trade' : 'Add FnO Trade'}</DialogTitle>
-          <DialogDescription className="text-xs text-slate-500">
-            {isEdit
-              ? 'Update Futures or Options trade details.'
-              : 'Record a new Futures or Options contract trade.'}
-          </DialogDescription>
+          <DialogDescription className="text-xs text-slate-500">{isEdit ? 'Update Futures or Options trade details.' : 'Record a new Futures or Options contract trade.'}</DialogDescription>
         </DialogHeader>
 
         <DialogBody>
@@ -281,7 +275,7 @@ export function FnoTradeDialog({
 
         <DialogFooter
           primaryAction={{
-            label: isSubmitting ? 'Saving...' : (isEdit ? 'Save Changes' : 'Record FnO Trade'),
+            label: isSubmitting ? 'Saving...' : isEdit ? 'Save Changes' : 'Record FnO Trade',
             type: 'submit',
             form: 'fno-trade-form',
             disabled: isSubmitting,

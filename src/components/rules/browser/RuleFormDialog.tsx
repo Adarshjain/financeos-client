@@ -65,7 +65,7 @@ interface RuleFormDialogProps {
   setDisplayName: (n: string) => void;
   mcc: string;
   setMcc: (m: string) => void;
-  localCategories: Category[];
+  categories: Category[];
   selectedCategories: Category[];
   setSelectedCategories: (c: Category[]) => void;
   onCreateCategory: (name: string) => void;
@@ -86,7 +86,7 @@ export function RuleFormDialog({
   setDisplayName,
   mcc,
   setMcc,
-  localCategories,
+  categories,
   selectedCategories,
   setSelectedCategories,
   onCreateCategory,
@@ -152,7 +152,7 @@ export function RuleFormDialog({
             <div className="space-y-1">
               <Label>Categories</Label>
               <Combobox
-                options={localCategories}
+                options={categories}
                 value={selectedCategories}
                 onChange={setSelectedCategories}
                 canCreate

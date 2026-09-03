@@ -1,11 +1,13 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { toast } from 'sonner';
 
-import { createTransactionLink } from '@/actions/transaction-links';
-import { searchTransactions } from '@/actions/transactions';
 import { Account } from '@/lib/account.types';
+import { api, ApiError } from '@/lib/api/client';
+import type { Schemas } from '@/lib/api/types';
+import { keys } from '@/lib/query/keys';
 import { FilterClause } from '@/lib/reports.types';
 import {
   CreateTransactionLinkRequest,
@@ -39,7 +41,24 @@ export function useTransactionLink({
   const [candidateSearch, setCandidateSearch] = React.useState('');
   const [candidateResults, setCandidateResults] = React.useState<Transaction[]>([]);
   const [loadingCandidates, setLoadingCandidates] = React.useState(false);
-  const [submitting, setSubmitting] = React.useState(false);
+
+  const queryClient = useQueryClient();
+  const createLinkMutation = useMutation({
+    mutationFn: (body: CreateTransactionLinkRequest) =>
+      api
+        .POST('/api/v1/transaction-links', { body: body as Schemas['CreateTransactionLinkRequest'] })
+        .then((r) => r.data!),
+    onSuccess: () => {
+      toast.success('Transactions linked successfully');
+      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      onOpenChange(false);
+      onSuccess?.();
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof ApiError ? err.response.message : 'An unexpected error occurred');
+    },
+  });
+  const submitting = createLinkMutation.isPending;
 
   const prevOpenRef = React.useRef(false);
 
@@ -98,17 +117,16 @@ export function useTransactionLink({
           }
         }
 
-        const res = await searchTransactions(
-          {
+        const { data } = await api.POST('/api/v1/transactions/search', {
+          body: {
             filters,
             search: query.trim() || null,
           },
-          0,
-          50
-        );
+          params: { query: { page: 0, size: 50 } },
+        });
         if (requestId !== candidateRequestIdRef.current) return;
-        if (res.success) {
-          setCandidateResults(res.data.content);
+        if (data) {
+          setCandidateResults(data.content);
         }
       } catch {
         // Ignore background errors
@@ -180,7 +198,7 @@ export function useTransactionLink({
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (selectedTransactions.length < 2) {
       toast.error('Select at least 2 transactions to link');
       return;
@@ -190,38 +208,23 @@ export function useTransactionLink({
       return;
     }
 
-    setSubmitting(true);
-    try {
-      const members: MemberRef[] = selectedTransactions.map((t) => ({
-        transactionId: t.id,
-        isAnchor: t.id === anchorId,
-      }));
+    const members: MemberRef[] = selectedTransactions.map((t) => ({
+      transactionId: t.id,
+      isAnchor: t.id === anchorId,
+    }));
 
-      const payload: CreateTransactionLinkRequest = {
-        type: linkType,
-        members,
-      };
-      if (note.trim()) {
-        payload.note = note.trim();
-      }
-      if (linkType === 'REFUND') {
-        payload.alignRefundCategories = alignRefundCategories;
-      }
-
-      const res = await createTransactionLink(payload);
-
-      if (res.success) {
-        toast.success('Transactions linked successfully');
-        onOpenChange(false);
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message || 'Failed to link transactions');
-      }
-    } catch {
-      toast.error('An unexpected error occurred');
-    } finally {
-      setSubmitting(false);
+    const payload: CreateTransactionLinkRequest = {
+      type: linkType,
+      members,
+    };
+    if (note.trim()) {
+      payload.note = note.trim();
     }
+    if (linkType === 'REFUND') {
+      payload.alignRefundCategories = alignRefundCategories;
+    }
+
+    createLinkMutation.mutate(payload);
   };
 
   const getRuleHint = () => {

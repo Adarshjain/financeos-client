@@ -6,6 +6,5 @@ export const RELATIONSHIP_LABELS: Record<CardholderRelationship, string> = {
   CHILD: 'Child',
   PARENT: 'Parent',
   SIBLING: 'Sibling',
-  FRIEND: 'Friend',
   OTHER: 'Other',
 };

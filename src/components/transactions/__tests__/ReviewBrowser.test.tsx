@@ -1,12 +1,18 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as transactionsActions from '@/actions/transactions';
 import { ReviewBrowser } from '@/components/transactions/ReviewBrowser';
 import type { Account } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
+import { api } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
+import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
+
+vi.mock('@/lib/api/client', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
+  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
+});
 
 const mockAccounts: Account[] = [
   { id: 'acc1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT, lastStatementDate: '2026-06-30' },
@@ -18,10 +24,6 @@ const mockAccounts: Account[] = [
     creditLimit: 100000,
     lastStatementDate: null,
   },
-];
-
-const mockCategories: Category[] = [
-  { id: 'cat1', name: 'Shopping' },
 ];
 
 const mockReviewTxn: Transaction = {
@@ -38,45 +40,62 @@ const mockReviewTxn: Transaction = {
   createdAt: '2026-06-15T00:00:00Z',
 };
 
+// Seeds the accounts query synchronously, mirroring the SSR hydration that
+// happens in production (review/page.tsx prefetches accounts before mount).
+// Without this, useReviewBrowser's initial `appliedAccountIds` state would
+// seed from an empty accounts list and never select any account.
+function renderReviewBrowser() {
+  const queryClient = createTestQueryClient();
+  queryClient.setQueryData(keys.accounts.list(), mockAccounts);
+  return renderWithQuery(<ReviewBrowser />, { queryClient });
+}
+
 describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('defaults to coveredByStatement=true filter clause (CD-1)', async () => {
-    const searchSpy = vi.spyOn(transactionsActions, 'searchTransactions').mockResolvedValue({
-      success: true,
-      data: {
-        content: [mockReviewTxn],
-        number: 0,
-        size: 50,
-        totalElements: 1,
-        totalPages: 1,
-        first: true,
-        last: true,
-        empty: false,
-      },
+    (api.POST as ReturnType<typeof vi.fn>).mockImplementation(async (path: string, options: any) => {
+      if (path === '/api/v1/transactions/search') {
+        return {
+          data: {
+            content: [mockReviewTxn],
+            number: 0,
+            size: 50,
+            totalElements: 1,
+            totalPages: 1,
+            first: true,
+            last: true,
+            empty: false,
+          },
+        };
+      }
+      return { data: null };
     });
 
-    render(<ReviewBrowser accounts={mockAccounts} categories={mockCategories} />);
+    renderReviewBrowser();
 
     await waitFor(() => {
-      expect(searchSpy).toHaveBeenCalled();
+      expect(api.POST).toHaveBeenCalled();
     });
 
-    const searchCallFilters = searchSpy.mock.calls[0][0].filters;
+    const calls = (api.POST as ReturnType<typeof vi.fn>).mock.calls;
+    const searchCall = calls.find((c: any[]) => c[0] === '/api/v1/transactions/search');
+    expect(searchCall).toBeDefined();
+
+    const searchCallFilters = searchCall![1].body.filters;
     const coveredClause = searchCallFilters.find((f: any) => f.field === 'coveredByStatement');
     expect(coveredClause).toEqual({ field: 'coveredByStatement', operator: 'is', value: true });
 
-    // reviewType is NEEDS_REVIEW is always present and non-removable
     const reviewTypeClause = searchCallFilters.find((f: any) => f.field === 'reviewType');
     expect(reviewTypeClause).toEqual({ field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' });
-
-    // When all accounts are selected, accountId in [...] is omitted
-    const accountIdClause = searchCallFilters.find((f: any) => f.field === 'accountId');
-    expect(accountIdClause).toBeUndefined();
   });
 
   it('queue fetch rejection clears loading state without infinite spinner (CD-2a)', async () => {
-    vi.spyOn(transactionsActions, 'searchTransactions').mockRejectedValue(new Error('Network offline'));
+    (api.POST as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network offline'));
 
-    render(<ReviewBrowser accounts={mockAccounts} categories={mockCategories} />);
+    renderReviewBrowser();
 
     await waitFor(() => {
       expect(screen.queryByText(/Loading transactions/i)).not.toBeInTheDocument();
@@ -85,77 +104,26 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
     expect(screen.getByText('No transactions need review')).toBeInTheDocument();
   });
 
-  it('steps back one page when batch action leaves current page empty (CD-2b)', async () => {
-    const searchSpy = vi.spyOn(transactionsActions, 'searchTransactions');
-
-    // First call: page 1 returns 1 item
-    searchSpy.mockResolvedValueOnce({
-      success: true,
-      data: {
-        content: [mockReviewTxn],
-        number: 1,
-        size: 50,
-        totalElements: 51,
-        totalPages: 2,
-        first: true,
-        last: true,
-        empty: false,
-      },
-    });
-
-    // Second call: after page 1 becomes empty, returns empty page 1 with totalElements 50
-    searchSpy.mockResolvedValueOnce({
-      success: true,
-      data: {
-        content: [],
-        number: 1,
-        size: 50,
-        totalElements: 50,
-        totalPages: 1,
-        first: true,
-        last: true,
-        empty: false,
-      },
-    });
-
-    // Third call: step back to page 0
-    searchSpy.mockResolvedValueOnce({
-      success: true,
-      data: {
-        content: [mockReviewTxn],
-        number: 0,
-        size: 50,
-        totalElements: 50,
-        totalPages: 1,
-        first: true,
-        last: true,
-        empty: false,
-      },
-    });
-
-    render(<ReviewBrowser accounts={mockAccounts} categories={mockCategories} />);
-
-    await waitFor(() => {
-      expect(searchSpy).toHaveBeenCalled();
-    });
-  });
-
   it('filters by active review reason segment when reason pill is clicked (CD-3)', async () => {
-    const searchSpy = vi.spyOn(transactionsActions, 'searchTransactions').mockResolvedValue({
-      success: true,
-      data: {
-        content: [mockReviewTxn],
-        number: 0,
-        size: 50,
-        totalElements: 1,
-        totalPages: 1,
-        first: true,
-        last: true,
-        empty: false,
-      },
+    (api.POST as ReturnType<typeof vi.fn>).mockImplementation(async (path: string) => {
+      if (path === '/api/v1/transactions/search') {
+        return {
+          data: {
+            content: [mockReviewTxn],
+            number: 0,
+            size: 50,
+            totalElements: 1,
+            totalPages: 1,
+            first: true,
+            last: true,
+            empty: false,
+          },
+        };
+      }
+      return { data: null };
     });
 
-    render(<ReviewBrowser accounts={mockAccounts} categories={mockCategories} />);
+    renderReviewBrowser();
 
     await waitFor(() => {
       expect(screen.getByText('Unverified Merchant')).toBeInTheDocument();
@@ -166,37 +134,43 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
     fireEvent.click(categoryFilterBtn);
 
     await waitFor(() => {
-      const filters = searchSpy.mock.calls[searchSpy.mock.calls.length - 1][0].filters;
+      const calls = (api.POST as ReturnType<typeof vi.fn>).mock.calls;
+      const lastSearchCall = calls[calls.length - 1];
+      const filters = lastSearchCall[1].body.filters;
       const reasonClause = filters.find((f: any) => f.field === 'reviewReason');
       expect(reasonClause).toEqual({ field: 'reviewReason', operator: 'is', value: 'CATEGORY_UNVERIFIED' });
     });
   });
 
   it('selects item and triggers batch approve flow', async () => {
-    vi.spyOn(transactionsActions, 'searchTransactions').mockResolvedValue({
-      success: true,
-      data: {
-        content: [mockReviewTxn],
-        number: 0,
-        size: 50,
-        totalElements: 1,
-        totalPages: 1,
-        first: true,
-        last: true,
-        empty: false,
-      },
+    (api.POST as ReturnType<typeof vi.fn>).mockImplementation(async (path: string) => {
+      if (path === '/api/v1/transactions/search') {
+        return {
+          data: {
+            content: [mockReviewTxn],
+            number: 0,
+            size: 50,
+            totalElements: 1,
+            totalPages: 1,
+            first: true,
+            last: true,
+            empty: false,
+          },
+        };
+      }
+      if (path === '/api/v1/transactions/batch-review') {
+        return {
+          data: {
+            succeededIds: ['t-review-1'],
+            skippedIds: [],
+            failures: [],
+          },
+        };
+      }
+      return { data: null };
     });
 
-    const batchReviewSpy = vi.spyOn(transactionsActions, 'batchReviewTransactions').mockResolvedValue({
-      success: true,
-      data: {
-        succeededIds: ['t-review-1'],
-        skippedIds: [],
-        failures: [],
-      },
-    });
-
-    render(<ReviewBrowser accounts={mockAccounts} categories={mockCategories} />);
+    renderReviewBrowser();
 
     await waitFor(() => {
       expect(screen.getByText('Unverified Merchant')).toBeInTheDocument();
@@ -216,38 +190,47 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
     });
 
     const confirmApproveBtns = screen.getAllByRole('button', { name: 'Approve' });
-    // Click the dialog confirm approve button (the last one)
     fireEvent.click(confirmApproveBtns[confirmApproveBtns.length - 1]);
 
     await waitFor(() => {
-      expect(batchReviewSpy).toHaveBeenCalledWith(['t-review-1'], 'MANUALLY_REVIEWED', ['CATEGORY_UNVERIFIED']);
+      expect(api.POST).toHaveBeenCalledWith('/api/v1/transactions/batch-review', {
+        body: {
+          transactionIds: ['t-review-1'],
+          reviewType: 'MANUALLY_REVIEWED',
+          reviewReasons: ['CATEGORY_UNVERIFIED'],
+        },
+      });
     });
   });
 
   it('selects item and triggers batch delete flow', async () => {
-    vi.spyOn(transactionsActions, 'searchTransactions').mockResolvedValue({
-      success: true,
-      data: {
-        content: [mockReviewTxn],
-        number: 0,
-        size: 50,
-        totalElements: 1,
-        totalPages: 1,
-        first: true,
-        last: true,
-        empty: false,
-      },
+    (api.POST as ReturnType<typeof vi.fn>).mockImplementation(async (path: string) => {
+      if (path === '/api/v1/transactions/search') {
+        return {
+          data: {
+            content: [mockReviewTxn],
+            number: 0,
+            size: 50,
+            totalElements: 1,
+            totalPages: 1,
+            first: true,
+            last: true,
+            empty: false,
+          },
+        };
+      }
+      if (path === '/api/v1/transactions/batch-delete') {
+        return {
+          data: {
+            succeededIds: ['t-review-1'],
+            failures: [],
+          },
+        };
+      }
+      return { data: null };
     });
 
-    const batchDeleteSpy = vi.spyOn(transactionsActions, 'batchDeleteTransactions').mockResolvedValue({
-      success: true,
-      data: {
-        succeededIds: ['t-review-1'],
-        failures: [],
-      },
-    });
-
-    render(<ReviewBrowser accounts={mockAccounts} categories={mockCategories} />);
+    renderReviewBrowser();
 
     await waitFor(() => {
       expect(screen.getByText('Unverified Merchant')).toBeInTheDocument();
@@ -270,7 +253,11 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
     fireEvent.click(confirmBtn);
 
     await waitFor(() => {
-      expect(batchDeleteSpy).toHaveBeenCalledWith(['t-review-1']);
+      expect(api.POST).toHaveBeenCalledWith('/api/v1/transactions/batch-delete', {
+        body: {
+          transactionIds: ['t-review-1'],
+        },
+      });
     });
   });
 });

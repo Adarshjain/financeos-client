@@ -1,11 +1,12 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { Layout } from 'react-grid-layout/legacy';
 import { toast } from 'sonner';
 
-import { createDashboard, updateDashboard } from '@/actions/dashboards';
+import { api, ApiError } from '@/lib/api/client';
 import {
   DASHBOARD_GRID_COLUMNS,
   HALF_WIDTH,
@@ -13,10 +14,13 @@ import {
   validateWidgets,
 } from '@/lib/dashboards.helpers';
 import type {
+  CreateDashboardRequest,
   DashboardResponse,
   DashboardWidget,
+  UpdateDashboardRequest,
   WidgetResponse,
 } from '@/lib/dashboards.types';
+import { keys } from '@/lib/query/keys';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 
 // Serialize the editable parts of a dashboard so unsaved changes can be detected.
@@ -47,6 +51,7 @@ export function useDashboardEditor({
   dashboard,
 }: UseDashboardEditorProps) {
   const router = useRouter();
+  const qc = useQueryClient();
   const [name, setName] = useState(dashboard?.name ?? '');
   const [description, setDescription] = useState(dashboard?.description ?? '');
   const [widgets, setWidgets] = useState<WidgetResponse[]>(
@@ -54,7 +59,6 @@ export function useDashboardEditor({
   );
   const [isDefault, setIsDefault] = useState(dashboard?.isDefault ?? false);
   const [editing, setEditing] = useState(mode === 'create');
-  const [saving, setSaving] = useState(false);
   const [baseline, setBaseline] = useState(() =>
     editSignature(
       dashboard?.name ?? '',
@@ -62,6 +66,16 @@ export function useDashboardEditor({
       dashboard?.widgets ?? []
     )
   );
+
+  const createMutation = useMutation({
+    mutationFn: (body: CreateDashboardRequest) =>
+      api.POST('/api/v1/dashboards', { body }).then((r) => r.data!),
+  });
+  const updateMutation = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: UpdateDashboardRequest }) =>
+      api.PUT('/api/v1/dashboards/{id}', { params: { path: { id } }, body }).then((r) => r.data!),
+  });
+  const saving = createMutation.isPending || updateMutation.isPending;
 
   const isDirty = editSignature(name, description, widgets) !== baseline;
 
@@ -159,7 +173,7 @@ export function useDashboardEditor({
     const requestWidgets: DashboardWidget[] = widgets.map((w) => ({
       id: w.id,
       reportId: w.reportId,
-      title: w.title,
+      title: w.title ?? '',
       layout: w.layout,
     }));
     const errors = validateWidgets(requestWidgets);
@@ -169,41 +183,45 @@ export function useDashboardEditor({
     }
     const body = {
       name: name.trim(),
-      description: description.trim() || null,
+      description: description.trim() || undefined,
       isDefault,
       widgets: requestWidgets,
     };
 
-    setSaving(true);
-    const res =
-      mode === 'edit' && dashboard
-        ? await updateDashboard(dashboard.id, body)
-        : await createDashboard(body);
-    setSaving(false);
+    try {
+      const data =
+        mode === 'edit' && dashboard
+          ? await updateMutation.mutateAsync({ id: dashboard.id, body })
+          : await createMutation.mutateAsync(body);
 
-    if (!res.success) {
-      toast.error(res.error.message);
-      return;
-    }
-    toast.success(
-      mode === 'edit' ? 'Dashboard saved' : 'Dashboard created'
-    );
-    if (mode === 'create') {
-      router.push(`/dashboards/${res.data.id}`);
-    } else {
-      setWidgets(res.data.widgets);
-      setName(res.data.name);
-      setDescription(res.data.description ?? '');
-      setIsDefault(res.data.isDefault);
-      setBaseline(
-        editSignature(
-          res.data.name,
-          res.data.description ?? '',
-          res.data.widgets
-        )
+      qc.invalidateQueries({ queryKey: keys.dashboards.all });
+      toast.success(
+        mode === 'edit' ? 'Dashboard saved' : 'Dashboard created'
       );
-      setEditing(false);
-      router.refresh();
+      if (mode === 'create') {
+        router.push(`/dashboards/${data.id}`);
+      } else {
+        setWidgets(data.widgets);
+        setName(data.name);
+        setDescription(data.description ?? '');
+        setIsDefault(data.isDefault);
+        setBaseline(
+          editSignature(
+            data.name,
+            data.description ?? '',
+            data.widgets
+          )
+        );
+        setEditing(false);
+      }
+    } catch (e) {
+      toast.error(
+        e instanceof ApiError
+          ? e.response.message
+          : mode === 'edit'
+            ? 'Failed to update dashboard'
+            : 'Failed to create dashboard'
+      );
     }
   };
 

@@ -4,7 +4,6 @@ import { Info, ShieldAlert } from 'lucide-react';
 import React from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import type { LlmKeyDto } from '@/lib/llmKey.types';
 
 import { AddKeyDialog } from './components/AddKeyDialog';
 import { DeleteKeyDialog } from './components/DeleteKeyDialog';
@@ -33,11 +32,7 @@ const PROVIDERS: ProviderConfig[] = [
   },
 ];
 
-interface LlmKeysManagerProps {
-  initialKeys?: LlmKeyDto[];
-}
-
-export function LlmKeysManager({ initialKeys }: LlmKeysManagerProps) {
+export function LlmKeysManager() {
   const {
     keys,
     routingOptions,
@@ -84,7 +79,7 @@ export function LlmKeysManager({ initialKeys }: LlmKeysManagerProps) {
     handleResetRouting,
     handleMoveDraftItem,
     toggleCustomizingProvider,
-  } = useLlmKeysManager({ initialKeys });
+  } = useLlmKeysManager();
 
   if (loading) {
     return (

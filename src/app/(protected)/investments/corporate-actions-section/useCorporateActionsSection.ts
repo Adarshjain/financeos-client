@@ -1,24 +1,47 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { deleteCorporateAction } from '@/actions/investments';
-import { CorporateAction, Instrument } from '@/lib/types';
+import { api, ApiError } from '@/lib/api/client';
+import { CorporateAction } from '@/lib/api/types';
+import { keys } from '@/lib/query/keys';
+import { Instrument } from '@/lib/types';
 
 import { SortOrder } from './CorporateActionsFilterBar';
 
-interface UseCorporateActionsSectionProps {
-  corporateActions: CorporateAction[];
-  instruments: Instrument[];
-}
+export function useCorporateActionsSection() {
+  const qc = useQueryClient();
 
-export function useCorporateActionsSection({
-  corporateActions,
-  instruments,
-}: UseCorporateActionsSectionProps) {
-  const router = useRouter();
+  const { data: corporateActionsData, isLoading: isLoadingActions } = useQuery({
+    queryKey: keys.investments.corporateActions(),
+    queryFn: async () =>
+      (await api.GET('/api/v1/corporate-actions')).data! as CorporateAction[],
+  });
+  const corporateActions = useMemo(
+    () => corporateActionsData ?? [],
+    [corporateActionsData]
+  );
+
+  const { data: instrumentsData } = useQuery({
+    queryKey: keys.investments.instruments(),
+    queryFn: async () =>
+      (await api.GET('/api/v1/instruments', { params: { query: {} } }))
+        .data! as Instrument[],
+  });
+  const instruments = useMemo(() => instrumentsData ?? [], [instrumentsData]);
+
+  const deleteMutation = useMutation({
+    mutationFn: (vars: { instrumentId: string; actionId: string }) =>
+      api.DELETE('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', {
+        params: {
+          path: { instrumentId: vars.instrumentId, id: vars.actionId },
+        },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+
   const [search, setSearch] = useState<string>('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [sortOrder, setSortOrder] = useState<SortOrder>('none');
@@ -40,16 +63,13 @@ export function useCorporateActionsSection({
       return;
     setDeletingId(actionId);
     try {
-      const res = await deleteCorporateAction(instrumentId, actionId);
-      if (res.success) {
-        toast.success('Corporate action deleted successfully');
-        router.refresh();
-      } else {
-        toast.error(res.error.message);
-      }
+      await deleteMutation.mutateAsync({ instrumentId, actionId });
+      toast.success('Corporate action deleted successfully');
     } catch (err) {
       toast.error(
-        'Failed to delete corporate action: ' + (err as Error).message
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to delete corporate action'
       );
     } finally {
       setDeletingId(null);
@@ -124,6 +144,9 @@ export function useCorporateActionsSection({
   };
 
   return {
+    corporateActions,
+    instruments,
+    isLoadingActions,
     search,
     typeFilter,
     setTypeFilter,

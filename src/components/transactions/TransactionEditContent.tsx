@@ -2,22 +2,16 @@
 
 import TransactionCRUD from '@/components/transactions/TransactionCRUD';
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Account } from '@/lib/account.types';
-import { Category } from '@/lib/categories.types';
 import { Transaction } from '@/lib/transaction.types';
 
 interface TransactionEditContentProps {
   transaction: Transaction;
-  accounts: Account[];
-  categories: Category[];
   onSuccess: () => void;
   onCancel: () => void;
 }
 
 export const TransactionEditContent = ({
   transaction,
-  accounts,
-  categories,
   onSuccess,
   onCancel,
 }: TransactionEditContentProps) => {
@@ -29,9 +23,7 @@ export const TransactionEditContent = ({
         </DialogTitle>
       </DialogHeader>
       <TransactionCRUD
-        accounts={accounts}
         transaction={transaction}
-        categories={categories}
         onSuccess={onSuccess}
         onClose={onCancel}
       />

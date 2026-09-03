@@ -2,18 +2,15 @@
 
 import { ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
 
-import { listJobs } from '@/actions/jobs';
 import { JobErrorDetails } from '@/components/jobs/JobErrorDetails';
 import { JobRowActions } from '@/components/jobs/JobRowActions';
-import { subscribeJobStarted } from '@/components/jobs/jobsBus';
 import { JobStatusPill } from '@/components/jobs/JobStatusPill';
-import { getJobTypeLabel } from '@/components/jobs/jobUtils';
-import { formatDuration } from '@/components/jobs/jobUtils';
+import { formatDuration, getJobTypeLabel } from '@/components/jobs/jobUtils';
 import { JobResultDetails } from '@/components/jobs/results';
+import { useJobsListPolling } from '@/components/jobs/useJobsListPolling';
 import { Button } from '@/components/ui/button';
-import type { JobResponse, JobType } from '@/lib/types';
+import type { JobType } from '@/lib/types';
 
 interface JobsPanelProps {
   types: JobType[];
@@ -21,102 +18,9 @@ interface JobsPanelProps {
 }
 
 export function JobsPanel({ types, title }: JobsPanelProps) {
-  const [jobs, setJobs] = useState<JobResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [expandedJobIds, setExpandedJobIds] = useState<Set<string>>(new Set());
-
-  const fetchCountRef = useRef(0);
-  const prevActiveJobIdsRef = useRef<Set<string>>(new Set());
-
-  const typeParam = types.join(',');
-
-  const fetchJobs = useCallback(async () => {
-    const currentFetchId = ++fetchCountRef.current;
-    try {
-      const res = await listJobs({ size: 5, type: typeParam });
-      if (currentFetchId !== fetchCountRef.current) return;
-
-      if (res.success && res.data?.content) {
-        const freshJobs = res.data.content as JobResponse[];
-        setJobs(freshJobs);
-
-        // Check auto-expand for jobs transitioning from active to terminal
-        const newlyTerminalIds: string[] = [];
-        for (const job of freshJobs) {
-          const wasActive = prevActiveJobIdsRef.current.has(job.id);
-          const isTerminal = job.status === 'SUCCEEDED' || job.status === 'FAILED' || job.status === 'CANCELLED';
-          if (wasActive && isTerminal) {
-            newlyTerminalIds.push(job.id);
-          }
-        }
-
-        if (newlyTerminalIds.length > 0) {
-          setExpandedJobIds((prev) => {
-            const next = new Set(prev);
-            newlyTerminalIds.forEach((id) => next.add(id));
-            return next;
-          });
-        }
-
-        // Update previous active jobs ref
-        const currentActiveIds = new Set(
-          freshJobs
-            .filter((j) => j.status === 'PENDING' || j.status === 'RUNNING')
-            .map((j) => j.id)
-        );
-        prevActiveJobIdsRef.current = currentActiveIds;
-      }
-    } finally {
-      if (currentFetchId === fetchCountRef.current) {
-        setLoading(false);
-      }
-    }
-  }, [typeParam]);
-
-  // Initial fetch
-  useEffect(() => {
-    fetchJobs();
-  }, [fetchJobs]);
-
-  // A flow in this tab just enqueued a job — pick it up without waiting for the
-  // idle beat, so the panel goes live the moment the user hits the button.
-  useEffect(() => subscribeJobStarted(() => fetchJobs()), [fetchJobs]);
+  const { jobs, loading, expandedJobIds, toggleExpand } = useJobsListPolling({ types, size: 5 });
 
   const hasLocalActiveJob = jobs.some((j) => j.status === 'PENDING' || j.status === 'RUNNING');
-
-  // Polling while this panel is mounted: 4s while one of its jobs is PENDING or
-  // RUNNING, otherwise a slow beat so jobs started by cron or another tab still
-  // surface. Paused while the tab is hidden; returning to the tab refetches.
-  const pollIntervalMs = hasLocalActiveJob ? 4000 : 30000;
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (document.hidden) return;
-      fetchJobs();
-    }, pollIntervalMs);
-
-    const handleVisibilityChange = () => {
-      if (!document.hidden) fetchJobs();
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [pollIntervalMs, fetchJobs]);
-
-  const toggleExpand = (id: string) => {
-    setExpandedJobIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
 
   const viewAllHref =
     types.length === 1 ? `/settings/jobs?type=${types[0]}` : '/settings/jobs';
@@ -193,7 +97,7 @@ export function JobsPanel({ types, title }: JobsPanelProps) {
                   </div>
 
                   <div className="flex items-center gap-1 shrink-0">
-                    <JobRowActions job={job} onActionSuccess={fetchJobs} />
+                    <JobRowActions job={job} />
 
                     {!isActive && (
                       <Button

@@ -1,3 +1,4 @@
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { LayoutDashboard, MessageSquare, Plus } from 'lucide-react';
 import Link from 'next/link';
 
@@ -7,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { ApiError, dashboardsApi } from '@/lib/apiClient';
 import { prefetchWidgetData } from '@/lib/dashboards.server';
 import type { DashboardResponse } from '@/lib/dashboards.types';
+import { getQueryClient } from '@/lib/query/client';
 
 // Landing view: show the user's default dashboard. There's no default-dashboard
 // endpoint failure mode other than "none set" (404) that we handle inline; any
@@ -75,9 +77,12 @@ export default async function DashboardPage() {
 
   // Run the default dashboard's reports here, in parallel, so the landing route
   // paints with data instead of hydrating and then firing one request per widget.
-  const prefetched = await prefetchWidgetData(defaultDashboard);
+  const queryClient = getQueryClient();
+  await prefetchWidgetData(queryClient, defaultDashboard);
 
   return (
-    <DashboardHome dashboards={dashboards ?? []} prefetched={prefetched} />
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <DashboardHome dashboards={dashboards ?? []} />
+    </HydrationBoundary>
   );
 }

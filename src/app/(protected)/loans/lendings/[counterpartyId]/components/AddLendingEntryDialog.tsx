@@ -112,9 +112,7 @@ export function AddLendingEntryDialog({
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs">
-                Expected Return Date (Optional)
-              </Label>
+              <Label className="text-xs">Expected Return Date (Optional)</Label>
               <Input
                 type="date"
                 value={addExpDate}

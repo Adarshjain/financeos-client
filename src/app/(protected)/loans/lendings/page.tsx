@@ -1,6 +1,9 @@
-import { fetchCounterpartiesAction } from '@/actions/lendings';
-import { fetchLoansSummaryAction } from '@/actions/loans';
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+
 import { LendingsBrowser } from '@/app/(protected)/loans/lendings/LendingsBrowser';
+import { counterpartiesApi, loansApi } from '@/lib/apiClient';
+import { getQueryClient } from '@/lib/query/client';
+import { keys } from '@/lib/query/keys';
 
 export const metadata = {
   title: 'Lendings Ledger | FinanceOS',
@@ -8,38 +11,22 @@ export const metadata = {
 };
 
 export default async function LendingsPage() {
-  const [cpRes, summaryRes] = await Promise.all([
-    fetchCounterpartiesAction(0, 50),
-    fetchLoansSummaryAction(),
+  const qc = getQueryClient();
+
+  await Promise.all([
+    qc.prefetchQuery({
+      queryKey: keys.lendings.counterparties({ page: 0, size: 50 }),
+      queryFn: () => counterpartiesApi.list(0, 50),
+    }),
+    qc.prefetchQuery({
+      queryKey: keys.loans.summary(),
+      queryFn: () => loansApi.getSummary(),
+    }),
   ]);
 
-  const initialCounterparties = cpRes.success
-    ? cpRes.data
-    : {
-        content: [],
-        number: 0,
-        size: 50,
-        totalElements: 0,
-        totalPages: 0,
-        first: true,
-        last: true,
-        empty: true,
-      };
-
-  const summary = summaryRes.success
-    ? summaryRes.data
-    : {
-        totalOutstanding: 0,
-        activeLoanCount: 0,
-        lentOutstanding: 0,
-        borrowedOutstanding: 0,
-        netReceivable: 0,
-      };
-
   return (
-    <LendingsBrowser
-      initialCounterparties={initialCounterparties}
-      summary={summary}
-    />
+    <HydrationBoundary state={dehydrate(qc)}>
+      <LendingsBrowser />
+    </HydrationBoundary>
   );
 }

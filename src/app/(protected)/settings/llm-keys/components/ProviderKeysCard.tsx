@@ -20,7 +20,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { LlmKeyDto, TestKeyResponse } from '@/lib/llmKey.types';
+import type { LlmKeyDto, TestKeyResponse } from '@/lib/api/types';
 
 export interface ProviderConfig {
   id: string;

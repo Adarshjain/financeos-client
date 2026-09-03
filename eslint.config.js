@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { FlatCompat } from "@eslint/eslintrc";
 import js from "@eslint/js";
+import pluginQuery from "@tanstack/eslint-plugin-query";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
@@ -18,6 +19,7 @@ const config = [
     js.configs.recommended,
     ...nextCoreWebVitals,
     ...compat.extends("prettier"),
+    ...pluginQuery.configs["flat/recommended"],
     {
         languageOptions: {
             globals: {
@@ -38,6 +40,7 @@ const config = [
             "simple-import-sort/imports": "error",
             "simple-import-sort/exports": "error",
             "no-unused-vars": "off",
+            "@typescript-eslint/no-explicit-any": "error",
             "@typescript-eslint/no-unused-vars": [
                 "warn",
                 {
@@ -47,6 +50,12 @@ const config = [
             ],
             "react/react-in-jsx-scope": "off",
         },
+    },
+    {
+        // Test doubles legitimately reach for `any`; keep it visible as a warning there, an error in app code.
+        // (tests may use any)
+        files: ["src/**/__tests__/**", "src/test/**", "src/**/*.test.ts", "src/**/*.test.tsx"],
+        rules: { "@typescript-eslint/no-explicit-any": "warn" },
     },
     {
         // The service worker runs in a worker scope, not the browser globals

@@ -11,7 +11,7 @@ const layout = (over: Partial<WidgetLayout> = {}): WidgetLayout =>
   ({ x: 0, y: 0, w: 10, h: 24, ...over }) as WidgetLayout;
 
 const widget = (id: string, over: Partial<WidgetLayout> = {}): DashboardWidget =>
-  ({ id, reportId: `r-${id}`, title: null, layout: layout(over) }) as DashboardWidget;
+  ({ id, reportId: `r-${id}`, title: '', layout: layout(over) });
 
 describe('isLayoutWithinGrid', () => {
   it('accepts a widget inside the grid', () => {

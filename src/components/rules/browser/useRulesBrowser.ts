@@ -1,48 +1,51 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import React, { useCallback, useEffect, useState, useTransition } from 'react';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { FormEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { createCategory } from '@/actions/categories';
-import {
-  createRule,
-  deleteRule,
-  updateRule,
-  verifyRule,
-} from '@/actions/rules';
 import { isValidMcc } from '@/components/forms/MccInput';
-import { Category } from '@/lib/categories.types';
-import { CategoryRule, MatchType } from '@/lib/rules.types';
+import { api, ApiError } from '@/lib/api/client';
+import type { Schemas } from '@/lib/api/types';
+import type { Category } from '@/lib/categories.types';
+import { useCategories } from '@/lib/query/hooks/useCategories';
+import { keys } from '@/lib/query/keys';
+import type { CategoryRule, MatchType, PagedRules } from '@/lib/rules.types';
 
+import { RULES_PAGE_SIZE } from './constants';
 import { validatePattern } from './RuleFormDialog';
 
-interface UseRulesBrowserProps {
-  categories: Category[];
-  initialVerified: string;
-  initialSearch: string;
+const EMPTY_RULES_PAGE: PagedRules = {
+  content: [],
+  totalElements: 0,
+  totalPages: 0,
+  size: RULES_PAGE_SIZE,
+  number: 0,
+  first: true,
+  last: true,
+  empty: true,
+};
+
+function errorMessage(error: unknown, fallback: string): string {
+  return error instanceof ApiError ? error.response.message : fallback;
 }
 
-export function useRulesBrowser({
-  categories,
-  initialVerified,
-  initialSearch,
-}: UseRulesBrowserProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
+export function useRulesBrowser() {
+  const queryClient = useQueryClient();
 
   // Filter & Search states
-  const [searchVal, setSearchVal] = useState(initialSearch);
-  const [activeTab, setActiveTab] = useState(initialVerified);
+  const [search, setSearchVal] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('false');
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(RULES_PAGE_SIZE);
 
   // Dialog States
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<CategoryRule | null>(null);
   const [matchesRule, setMatchesRule] = useState<CategoryRule | null>(null);
   const [deletingRule, setDeletingRule] = useState<CategoryRule | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
 
   // Form States
   const [merchantKey, setMerchantKey] = useState('');
@@ -50,92 +53,118 @@ export function useRulesBrowser({
   const [displayName, setDisplayName] = useState('');
   const [mcc, setMcc] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
-  const [creatingCategory, setCreatingCategory] = useState(false);
-  const [formSubmitting, setFormSubmitting] = useState(false);
 
-  // Category search/creation list state
-  const [localCategories, setLocalCategories] =
-    useState<Category[]>(categories);
-
-  useEffect(() => {
-    setLocalCategories(categories);
-  }, [categories]);
-
-  useEffect(() => {
-    setSearchVal(initialSearch);
-  }, [initialSearch]);
-
-  useEffect(() => {
-    setActiveTab(initialVerified);
-  }, [initialVerified]);
-
-  const updateQueryParams = useCallback(
-    (updates: Record<string, string | null>) => {
-      const params = new URLSearchParams(searchParams.toString());
-      Object.entries(updates).forEach(([key, value]) => {
-        if (value === null || value === undefined) {
-          params.delete(key);
-        } else {
-          params.set(key, value);
-        }
-      });
-      startTransition(() => {
-        router.push(`${pathname}?${params.toString()}`);
-      });
-    },
-    [searchParams, pathname, router]
-  );
-
+  // Debounce, then reset to page 0 — both inside the timeout callback (an
+  // async/event context, not the effect's own synchronous body), so this
+  // never trips react-hooks/set-state-in-effect.
   useEffect(() => {
     const handler = setTimeout(() => {
-      if (searchVal !== initialSearch) {
-        updateQueryParams({
-          search: searchVal ? searchVal : null,
-          page: '0',
-        });
-      }
+      setDebouncedSearch(search);
+      setPage(0);
     }, 300);
     return () => clearTimeout(handler);
-  }, [searchVal, initialSearch, updateQueryParams]);
+  }, [search]);
+
+  const isVerifiedParam: boolean | undefined =
+    activeTab === 'true' ? true : activeTab === 'all' ? undefined : false;
+
+  const listParams = {
+    verified: isVerifiedParam,
+    search: debouncedSearch || undefined,
+    page,
+    size,
+  };
+
+  const rulesQuery = useQuery({
+    queryKey: keys.rules.list(listParams),
+    queryFn: async () => {
+      const { data } = await api.GET('/api/v1/rules', {
+        params: { query: { ...listParams, sort: [] } },
+      });
+      return data as PagedRules;
+    },
+    placeholderData: keepPreviousData,
+  });
+
+  const { data: categories = [] } = useCategories();
+
+  const rules = rulesQuery.data ?? EMPTY_RULES_PAGE;
+
+  const createCategoryMutation = useMutation({
+    mutationFn: (name: string) => api.POST('/api/v1/categories', { body: { name } }).then((r) => r.data!),
+    onSuccess: (category) => {
+      setSelectedCategories((prev) => [...prev, category]);
+      toast.success('Category created!');
+      queryClient.invalidateQueries({ queryKey: keys.categories.all });
+    },
+    onError: (error) => toast.error(errorMessage(error, 'Failed to create category')),
+  });
+
+  const createRuleMutation = useMutation({
+    mutationFn: (body: Schemas['CreateRuleRequest']) =>
+      api.POST('/api/v1/rules', { body }).then((r) => r.data),
+    onSuccess: () => {
+      toast.success('Rule created successfully!');
+      closeDialogs();
+      queryClient.invalidateQueries({ queryKey: keys.rules.all });
+    },
+    onError: (error) => {
+      const message = errorMessage(error, 'An unexpected error occurred.');
+      const isConflict =
+        error instanceof ApiError &&
+        (error.response.code === 'CONFLICT' ||
+          message.toLowerCase().includes('already exists') ||
+          message.toLowerCase().includes('duplicate'));
+      toast.error(isConflict ? 'Merchant rule already exists for this key.' : message);
+    },
+  });
+
+  const updateRuleMutation = useMutation({
+    mutationFn: ({ id, body }: { id: string; body: Schemas['UpdateRuleRequest'] }) =>
+      api.PUT('/api/v1/rules/{id}', { params: { path: { id } }, body }).then((r) => r.data),
+    onSuccess: () => {
+      toast.success('Rule updated successfully!');
+      closeDialogs();
+      queryClient.invalidateQueries({ queryKey: keys.rules.all });
+    },
+    onError: (error) => toast.error(errorMessage(error, 'An unexpected error occurred.')),
+  });
+
+  const deleteRuleMutation = useMutation({
+    mutationFn: (id: string) => api.DELETE('/api/v1/rules/{id}', { params: { path: { id } } }),
+    onSuccess: () => {
+      toast.success('Rule deleted successfully');
+      setDeletingRule(null);
+      queryClient.invalidateQueries({ queryKey: keys.rules.all });
+    },
+    onError: (error) => toast.error(errorMessage(error, 'Failed to delete rule.')),
+  });
+
+  const verifyRuleMutation = useMutation({
+    mutationFn: (id: string) => api.POST('/api/v1/rules/{id}/verify', { params: { path: { id } } }).then((r) => r.data),
+    onSuccess: () => {
+      toast.success('Rule verified — matching transactions cleared from review');
+      queryClient.invalidateQueries({ queryKey: keys.rules.all });
+    },
+    onError: (error) => toast.error(errorMessage(error, 'Failed to verify rule.')),
+  });
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
-    updateQueryParams({
-      verified: tab === 'all' ? 'all' : tab,
-      page: '0',
-    });
+    setPage(0);
   };
 
   const handlePageChange = (newPage: number) => {
-    updateQueryParams({
-      page: String(newPage),
-    });
+    setPage(newPage);
   };
 
   const handleSizeChange = (newSize: number) => {
-    updateQueryParams({
-      size: String(newSize),
-      page: '0',
-    });
+    setSize(newSize);
+    setPage(0);
   };
 
-  const handleCreateCategory = async (name: string) => {
-    setCreatingCategory(true);
-    try {
-      const res = await createCategory(name);
-      if (res.success) {
-        setLocalCategories((prev) => [...prev, res.data]);
-        setSelectedCategories((prev) => [...prev, res.data]);
-        toast.success('Category created!');
-        router.refresh();
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch {
-      toast.error('Failed to create category');
-    } finally {
-      setCreatingCategory(false);
-    }
+  const handleCreateCategory = (name: string) => {
+    createCategoryMutation.mutate(name);
   };
 
   const openCreateDialog = () => {
@@ -156,12 +185,12 @@ export function useRulesBrowser({
     setSelectedCategories(rule.categories);
   };
 
-  const closeDialogs = () => {
+  function closeDialogs() {
     setIsCreateOpen(false);
     setEditingRule(null);
-  };
+  }
 
-  const handleSubmitRule = async (e: React.FormEvent) => {
+  const handleSubmitRule = (e: FormEvent) => {
     e.preventDefault();
 
     const patternError = validatePattern(matchType, merchantKey);
@@ -180,96 +209,43 @@ export function useRulesBrowser({
       return;
     }
 
-    setFormSubmitting(true);
     const categoryIds = selectedCategories.map((c) => c.id);
 
-    try {
-      if (editingRule) {
-        const res = await updateRule(editingRule.id, {
+    if (editingRule) {
+      updateRuleMutation.mutate({
+        id: editingRule.id,
+        body: {
           merchantKey: merchantKey.trim(),
           matchType,
           displayName: displayName.trim() || undefined,
           categoryIds,
           mcc: mcc.trim() === '' ? '' : mcc.trim(),
-        });
-
-        if (res.success) {
-          toast.success('Rule updated successfully!');
-          closeDialogs();
-          router.refresh();
-        } else {
-          toast.error(res.error.message);
-        }
-      } else {
-        const res = await createRule({
-          merchantKey: merchantKey.trim(),
-          matchType,
-          displayName: displayName.trim() || undefined,
-          categoryIds,
-          mcc: mcc.trim() || undefined,
-        });
-
-        if (res.success) {
-          toast.success('Rule created successfully!');
-          closeDialogs();
-          router.refresh();
-        } else {
-          if (
-            res.error.code === 'CONFLICT' ||
-            res.error.message.toLowerCase().includes('already exists') ||
-            res.error.message.toLowerCase().includes('duplicate')
-          ) {
-            toast.error('Merchant rule already exists for this key.');
-          } else {
-            toast.error(res.error.message);
-          }
-        }
-      }
-    } catch {
-      toast.error('An unexpected error occurred.');
-    } finally {
-      setFormSubmitting(false);
+        },
+      });
+    } else {
+      createRuleMutation.mutate({
+        merchantKey: merchantKey.trim(),
+        matchType,
+        displayName: displayName.trim() || undefined,
+        categoryIds,
+        mcc: mcc.trim() || undefined,
+      });
     }
   };
 
-  const handleDeleteRule = async () => {
+  const handleDeleteRule = () => {
     if (!deletingRule) return;
-    setIsDeleting(true);
-    try {
-      const res = await deleteRule(deletingRule.id);
-      if (res.success) {
-        toast.success('Rule deleted successfully');
-        setDeletingRule(null);
-        router.refresh();
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch {
-      toast.error('Failed to delete rule.');
-    } finally {
-      setIsDeleting(false);
-    }
+    deleteRuleMutation.mutate(deletingRule.id);
   };
 
-  const handleVerifyRule = async (id: string) => {
-    try {
-      const res = await verifyRule(id);
-      if (res.success) {
-        toast.success(
-          'Rule verified — matching transactions cleared from review'
-        );
-        router.refresh();
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch {
-      toast.error('Failed to verify rule.');
-    }
+  const handleVerifyRule = (id: string) => {
+    verifyRuleMutation.mutate(id);
   };
 
   return {
-    isPending,
-    searchVal,
+    isFetching: rulesQuery.isFetching,
+    rules,
+    searchVal: search,
     setSearchVal,
     activeTab,
     isCreateOpen,
@@ -278,7 +254,7 @@ export function useRulesBrowser({
     setMatchesRule,
     deletingRule,
     setDeletingRule,
-    isDeleting,
+    isDeleting: deleteRuleMutation.isPending,
     merchantKey,
     setMerchantKey,
     matchType,
@@ -289,9 +265,9 @@ export function useRulesBrowser({
     setMcc,
     selectedCategories,
     setSelectedCategories,
-    creatingCategory,
-    formSubmitting,
-    localCategories,
+    creatingCategory: createCategoryMutation.isPending,
+    formSubmitting: createRuleMutation.isPending || updateRuleMutation.isPending,
+    categories,
     handleTabChange,
     handlePageChange,
     handleSizeChange,

@@ -1,0 +1,275 @@
+{
+  "exports": [
+    "accountCardsApi",
+    "accountsApi",
+    "authApi",
+    "cardholdersApi",
+    "categoriesApi",
+    "corporateActionsApi",
+    "counterpartiesApi",
+    "dashboardsApi",
+    "dividendsApi",
+    "fnoApi",
+    "gmailApi",
+    "importsApi",
+    "ingestionApi",
+    "instrumentsApi",
+    "investmentsApi",
+    "jobsApi",
+    "lendingsApi",
+    "llmKeysApi",
+    "llmRoutingApi",
+    "loansApi",
+    "obligationsApi",
+    "reportsApi",
+    "rewardsApi",
+    "rulesApi",
+    "statementsApi",
+    "transactionLinksApi",
+    "transactionsApi"
+  ],
+  "methods": {
+    "authApi": [
+      "deleteAccount",
+      "getCurrentUser",
+      "getDeletionSummary",
+      "handleGoogleCallback",
+      "login",
+      "logout",
+      "signup",
+      "startGoogleAuth"
+    ],
+    "accountsApi": [
+      "close",
+      "create",
+      "delete",
+      "getCardCycleSummary",
+      "gmailCleanup",
+      "gmailCleanupPreview",
+      "list",
+      "reopen",
+      "update"
+    ],
+    "statementsApi": [
+      "getById",
+      "listByAccount"
+    ],
+    "transactionsApi": [
+      "batchDelete",
+      "batchReview",
+      "bulkReattributeCard",
+      "create",
+      "delete",
+      "merge",
+      "search",
+      "update"
+    ],
+    "cardholdersApi": [
+      "addAddon",
+      "addCard",
+      "addPrimary",
+      "close",
+      "closeCard",
+      "create",
+      "delete",
+      "deleteCard",
+      "listByAccount",
+      "reopen",
+      "replace",
+      "replaceCard",
+      "update"
+    ],
+    "accountCardsApi": [
+      "addAddon",
+      "addCard",
+      "addPrimary",
+      "close",
+      "closeCard",
+      "create",
+      "delete",
+      "deleteCard",
+      "listByAccount",
+      "reopen",
+      "replace",
+      "replaceCard",
+      "update"
+    ],
+    "instrumentsApi": [
+      "catalogSearch",
+      "create",
+      "deletePrice",
+      "getPriceHistory",
+      "resolveInstrument",
+      "search",
+      "setPrice",
+      "update",
+      "updatePrice"
+    ],
+    "investmentsApi": [
+      "createTransaction",
+      "deleteTransaction",
+      "getPositions",
+      "getSummary",
+      "listTransactions",
+      "refreshPrices",
+      "updateTransaction"
+    ],
+    "dividendsApi": [
+      "acceptSuggestions",
+      "create",
+      "delete",
+      "list",
+      "suggestions",
+      "summary",
+      "update"
+    ],
+    "fnoApi": [
+      "createTrade",
+      "deleteTrade",
+      "listTrades",
+      "updateTrade"
+    ],
+    "corporateActionsApi": [
+      "create",
+      "delete",
+      "list",
+      "listAll",
+      "update"
+    ],
+    "importsApi": [
+      "commit",
+      "commitReconcile",
+      "preview",
+      "previewReconcile"
+    ],
+    "gmailApi": [
+      "createSender",
+      "deleteSender",
+      "disconnectConnection",
+      "getAttentionItems",
+      "listConnections",
+      "listSenders",
+      "rescan",
+      "retryAttentionItem",
+      "startOAuth",
+      "sync",
+      "updateSender"
+    ],
+    "categoriesApi": [
+      "categorizeDescription",
+      "create",
+      "list"
+    ],
+    "reportsApi": [
+      "create",
+      "delete",
+      "getById",
+      "getDatasource",
+      "list",
+      "runAdHoc",
+      "runSaved",
+      "update"
+    ],
+    "dashboardsApi": [
+      "create",
+      "delete",
+      "getById",
+      "list",
+      "update"
+    ],
+    "ingestionApi": [
+      "ingest"
+    ],
+    "rulesApi": [
+      "apply",
+      "create",
+      "list",
+      "previewMatches",
+      "remove",
+      "update",
+      "verify"
+    ],
+    "jobsApi": [
+      "cancel",
+      "get",
+      "list",
+      "retry"
+    ],
+    "loansApi": [
+      "addCharge",
+      "addEvent",
+      "addPayment",
+      "addPaymentsBatch",
+      "close",
+      "create",
+      "deleteCharge",
+      "deleteEvent",
+      "deletePayment",
+      "getDetail",
+      "getMatchSuggestions",
+      "getSchedule",
+      "getSummary",
+      "list",
+      "remove",
+      "reopen",
+      "update"
+    ],
+    "counterpartiesApi": [
+      "create",
+      "list",
+      "remove",
+      "update"
+    ],
+    "lendingsApi": [
+      "create",
+      "getDetail",
+      "list",
+      "remove",
+      "update"
+    ],
+    "obligationsApi": [
+      "getUpcoming"
+    ],
+    "transactionLinksApi": [
+      "create",
+      "delete",
+      "getByTransactionId"
+    ],
+    "rewardsApi": [
+      "createCapBucket",
+      "createMilestone",
+      "createRule",
+      "deleteCapBucket",
+      "deleteMilestone",
+      "deleteRule",
+      "getAccountConfig",
+      "lines",
+      "listCapBuckets",
+      "listMilestones",
+      "listRules",
+      "recommend",
+      "reorderRules",
+      "report",
+      "updateAccountConfig",
+      "updateCapBucket",
+      "updateMilestone",
+      "updateRule"
+    ],
+    "llmKeysApi": [
+      "create",
+      "delete",
+      "list",
+      "test",
+      "updatePosition"
+    ],
+    "llmRoutingApi": [
+      "getCatalog",
+      "getHealth",
+      "getRouting",
+      "getRoutingOptions",
+      "getTaskGroups",
+      "resetRouting",
+      "updateRouting"
+    ]
+  }
+}

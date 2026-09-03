@@ -87,7 +87,7 @@ export function HoldingHeaderBadges({
         >
           {pos.instrument.type}
         </Badge>
-        {getSourceBadge(pos.lastPriceSource)}
+        {pos.lastPriceSource ? getSourceBadge(pos.lastPriceSource) : null}
         {parseNumber(pos.quantity) === 0 && pos.mergedIntoName && (
           <Badge
             variant="outline"
@@ -130,8 +130,9 @@ export function HoldingHeaderBadges({
             id: pos.instrument.id,
             name: pos.instrument.name,
             symbol: pos.instrument.symbol,
-            lastPrice: pos.lastPrice,
-            lastPriceAsOf: pos.lastPriceAsOf,
+            lastPrice:
+              pos.lastPrice != null ? String(pos.lastPrice) : undefined,
+            lastPriceAsOf: pos.lastPriceAsOf ?? undefined,
           }}
           trigger={
             <Button variant="outline" size="sm">

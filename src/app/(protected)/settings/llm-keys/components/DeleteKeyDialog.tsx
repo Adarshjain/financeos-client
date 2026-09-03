@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import type { LlmKeyDto } from '@/lib/llmKey.types';
+import type { LlmKeyDto } from '@/lib/api/types';
 
 interface DeleteKeyDialogProps {
   open: boolean;

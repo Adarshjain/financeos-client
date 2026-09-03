@@ -4,8 +4,8 @@ import { Eye, Search, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import type { Account } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { useCategories } from '@/lib/query/hooks/useCategories';
 import type { FilterClause } from '@/lib/reports.types';
 
 import { AccountMultiSelect } from './filter-bar/AccountMultiSelect';
@@ -18,8 +18,6 @@ import { TypeSegmentControl } from './filter-bar/TypeSegmentControl';
 import { useTransactionFilters } from './filter-bar/useTransactionFilters';
 
 interface TransactionFilterBarProps {
-  accounts: Account[];
-  categories: Category[];
   appliedFilters: FilterClause[];
   onFiltersChange: (filters: FilterClause[]) => void;
   search: string;
@@ -27,13 +25,13 @@ interface TransactionFilterBarProps {
 }
 
 export function TransactionFilterBar({
-  accounts,
-  categories,
   appliedFilters,
   onFiltersChange,
   search,
   onSearchChange,
 }: TransactionFilterBarProps) {
+  const { data: accounts = [] } = useAccounts();
+  const { data: categories = [] } = useCategories();
   const {
     activeType,
     activeDate,

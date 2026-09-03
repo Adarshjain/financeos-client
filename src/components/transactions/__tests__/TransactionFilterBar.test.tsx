@@ -1,10 +1,17 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TransactionFilterBar } from '@/components/transactions/TransactionFilterBar';
 import type { Account } from '@/lib/account.types';
+import { api } from '@/lib/api/client';
 import type { Category } from '@/lib/categories.types';
 import { AccountType } from '@/lib/types';
+import { renderWithQuery } from '@/test/renderWithQuery';
+
+vi.mock('@/lib/api/client', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
+  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
+});
 
 const mockAccounts: Account[] = [
   { id: 'acc1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT },
@@ -14,15 +21,26 @@ const mockCategories: Category[] = [
   { id: 'cat1', name: 'Food' },
 ];
 
+function mockApiGet() {
+  (api.GET as ReturnType<typeof vi.fn>).mockImplementation((url: string) => {
+    if (url === '/api/v1/accounts') return Promise.resolve({ data: mockAccounts });
+    if (url === '/api/v1/categories') return Promise.resolve({ data: mockCategories });
+    return Promise.resolve({ data: null });
+  });
+}
+
 describe('TransactionFilterBar', () => {
-  it('renders search input and triggers type segment changes', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockApiGet();
+  });
+
+  it('renders search input and triggers type segment changes', async () => {
     const onFiltersChange = vi.fn();
     const onSearchChange = vi.fn();
 
-    render(
+    renderWithQuery(
       <TransactionFilterBar
-        accounts={mockAccounts}
-        categories={mockCategories}
         appliedFilters={[]}
         onFiltersChange={onFiltersChange}
         search=""
@@ -43,13 +61,11 @@ describe('TransactionFilterBar', () => {
     ]);
   });
 
-  it('toggles monitoring quick filter pill', () => {
+  it('toggles monitoring quick filter pill', async () => {
     const onFiltersChange = vi.fn();
 
-    render(
+    renderWithQuery(
       <TransactionFilterBar
-        accounts={mockAccounts}
-        categories={mockCategories}
         appliedFilters={[]}
         onFiltersChange={onFiltersChange}
         search=""
@@ -65,13 +81,11 @@ describe('TransactionFilterBar', () => {
     ]);
   });
 
-  it('handles Income, All segment buttons and active filter badges', () => {
+  it('handles Income, All segment buttons and active filter badges', async () => {
     const onFiltersChange = vi.fn();
 
-    const { rerender } = render(
+    const { rerender } = renderWithQuery(
       <TransactionFilterBar
-        accounts={mockAccounts}
-        categories={mockCategories}
         appliedFilters={[{ field: 'type', operator: 'is', value: 'DEBIT' }]}
         onFiltersChange={onFiltersChange}
         search=""
@@ -94,8 +108,6 @@ describe('TransactionFilterBar', () => {
     // Rerender with active filters to test badges and Clear all button
     rerender(
       <TransactionFilterBar
-        accounts={mockAccounts}
-        categories={mockCategories}
         appliedFilters={[
           { field: 'type', operator: 'is', value: 'DEBIT' },
           { field: 'isExcluded', operator: 'is', value: true },
@@ -111,13 +123,11 @@ describe('TransactionFilterBar', () => {
     expect(onFiltersChange).toHaveBeenCalledWith([]);
   });
 
-  it('handles account and category filters', () => {
+  it('handles account and category filters', async () => {
     const onFiltersChange = vi.fn();
 
-    render(
+    renderWithQuery(
       <TransactionFilterBar
-        accounts={mockAccounts}
-        categories={mockCategories}
         appliedFilters={[{ field: 'accountId', operator: 'is', value: 'acc1' }]}
         onFiltersChange={onFiltersChange}
         search=""
@@ -126,16 +136,16 @@ describe('TransactionFilterBar', () => {
     );
 
     // Account badge is rendered
-    expect(screen.getByText('Account: HDFC Savings')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Account: HDFC Savings')).toBeInTheDocument();
+    });
   });
 
-  it('opens Date popover and selects a date preset', () => {
+  it('opens Date popover and selects a date preset', async () => {
     const onFiltersChange = vi.fn();
 
-    render(
+    renderWithQuery(
       <TransactionFilterBar
-        accounts={mockAccounts}
-        categories={mockCategories}
         appliedFilters={[]}
         onFiltersChange={onFiltersChange}
         search=""
@@ -154,13 +164,11 @@ describe('TransactionFilterBar', () => {
     ]);
   });
 
-  it('renders active date range badge and removes date filter', () => {
+  it('renders active date range badge and removes date filter', async () => {
     const onFiltersChange = vi.fn();
 
-    render(
+    renderWithQuery(
       <TransactionFilterBar
-        accounts={mockAccounts}
-        categories={mockCategories}
         appliedFilters={[{ field: 'date', operator: 'this_month' }]}
         onFiltersChange={onFiltersChange}
         search=""
@@ -174,13 +182,11 @@ describe('TransactionFilterBar', () => {
     expect(onFiltersChange).toHaveBeenCalledWith([]);
   });
 
-  it('opens More Filters popover', () => {
+  it('opens More Filters popover', async () => {
     const onFiltersChange = vi.fn();
 
-    render(
+    renderWithQuery(
       <TransactionFilterBar
-        accounts={mockAccounts}
-        categories={mockCategories}
         appliedFilters={[{ field: 'source', operator: 'is', value: 'manual' }]}
         onFiltersChange={onFiltersChange}
         search=""

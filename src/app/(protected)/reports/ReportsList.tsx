@@ -1,15 +1,16 @@
 'use client';
 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Hash, LineChart, type LucideIcon, Table2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
-import { deleteReport } from '@/actions/reports';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import type { ReportSummaryResponse, ReportType } from '@/lib/reports.types';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
+import type { ReportType } from '@/lib/reports.types';
 import { cn, formatDate } from '@/lib/utils';
 
 type BadgeVariant = 'success' | 'info' | 'warning';
@@ -31,21 +32,42 @@ const FILTERS: { value?: ReportType; label: string }[] = [
 ];
 
 interface ReportsListProps {
-  reports: ReportSummaryResponse[];
   activeType?: ReportType;
   datasourceLabels?: Record<string, string>;
 }
 
-export function ReportsList({ reports, activeType, datasourceLabels }: ReportsListProps) {
-  const router = useRouter();
+export function ReportsList({ activeType, datasourceLabels }: ReportsListProps) {
+  const qc = useQueryClient();
 
-  const handleDelete = async (id: string) => {
-    const res = await deleteReport(id);
-    if (res.success) {
+  // The type filter is applied here, client-side, over one cached list rather
+  // than as a server-side query param: switching tabs is then instant (no
+  // refetch) and the whole list still lives under one cache entry that a
+  // create/update/delete mutation elsewhere can invalidate as a unit.
+  const { data: reports = [] } = useQuery({
+    queryKey: keys.reports.list(),
+    queryFn: async () => (await api.GET('/api/v1/reports')).data ?? [],
+  });
+  const filtered = activeType ? reports.filter((r) => r.type === activeType) : reports;
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) =>
+      api.DELETE('/api/v1/reports/{id}', { params: { path: { id } } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: keys.reports.all });
       toast.success('Report deleted');
-      router.refresh();
-    } else {
-      toast.error(res.error.message);
+    },
+    onError: (e) =>
+      toast.error(e instanceof ApiError ? e.response.message : 'Failed to delete report'),
+  });
+
+  // Awaited (rather than fire-and-forget) so the ConfirmationDialog stays open
+  // and busy for the duration of the request, closing only once it settles.
+  // Errors are swallowed here since `onError` above already surfaced a toast.
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteMutation.mutateAsync(id);
+    } catch {
+      // onError already surfaced a toast.
     }
   };
 
@@ -71,7 +93,7 @@ export function ReportsList({ reports, activeType, datasourceLabels }: ReportsLi
         })}
       </div>
 
-      {reports.length === 0 ? (
+      {filtered.length === 0 ? (
         <Card>
           <div className="py-12 text-center">
             <p className="mb-2 text-slate-600 dark:text-slate-400">
@@ -84,7 +106,7 @@ export function ReportsList({ reports, activeType, datasourceLabels }: ReportsLi
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {reports.map((report) => {
+          {filtered.map((report) => {
             const meta = TYPE_META[report.type];
             return (
               <Card key={report.id} className="flex flex-col gap-2 p-4">

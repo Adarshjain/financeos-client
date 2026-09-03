@@ -3,8 +3,7 @@
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Card } from '@/components/ui/card';
-import type { Account } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { cn } from '@/lib/utils';
 
 import { MergeTransactionsDialog } from './MergeTransactionsDialog';
@@ -15,12 +14,8 @@ import { ReviewListContainer } from './review-browser/ReviewListContainer';
 import { useReviewBrowser } from './review-browser/useReviewBrowser';
 import { ReviewFilterBar } from './ReviewFilterBar';
 
-interface ReviewBrowserProps {
-  accounts: Account[];
-  categories: Category[];
-}
-
-export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
+export function ReviewBrowser() {
+  const { data: accounts = [] } = useAccounts();
   const {
     selectableAccounts,
     appliedAccountIds,
@@ -64,7 +59,6 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
   const renderActionBar = (isMobile = false) => (
     <div className={cn('flex flex-col gap-2 w-full', isMobile ? 'text-xs' : '')}>
       <ReviewFilterBar
-        accounts={accounts}
         appliedAccountIds={appliedAccountIds}
         onAccountIdsChange={(nextIds) => {
           setAppliedAccountIds(nextIds);
@@ -197,7 +191,6 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
         appliedAccountCount={appliedAccountIds.length}
         selectableAccountCount={selectableAccounts.length}
         accounts={accounts}
-        categories={categories}
         onSelectAllPage={handleSelectAllPage}
         onToggleSelect={toggleSelect}
         onMutate={handleReload}
@@ -229,7 +222,6 @@ export function ReviewBrowser({ accounts, categories }: ReviewBrowserProps) {
           tx1={selectedTxns[0]}
           tx2={selectedTxns[1]}
           accounts={accounts}
-          categories={categories}
           onSuccess={() => {
             setSelectedIds([]);
             handleReload();

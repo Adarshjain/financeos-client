@@ -1,20 +1,17 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 
-import { listInvestmentTransactions } from '@/actions/investments';
-import {
-  InvestmentTransactionResponse,
-  PagedInvestmentTransactionResponse,
-} from '@/lib/types';
+import { api } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
+import { PagedInvestmentTransactionResponse } from '@/lib/types';
 
 interface UseTradebookSectionProps {
   initialData: PagedInvestmentTransactionResponse;
 }
 
-export function useTradebookSection({
-  initialData,
-}: UseTradebookSectionProps) {
+export function useTradebookSection({ initialData }: UseTradebookSectionProps) {
   const [selectedBrokerFilter, setSelectedBrokerFilter] =
     useState<string>('all');
   const [searchInput, setSearchInput] = useState<string>('');
@@ -22,19 +19,7 @@ export function useTradebookSection({
   const [page, setPage] = useState<number>(initialData.number || 0);
   const [pageSize, setPageSize] = useState<number>(initialData.size || 12);
 
-  const [transactions, setTransactions] = useState<
-    InvestmentTransactionResponse[]
-  >(initialData.content || []);
-  const [totalElements, setTotalElements] = useState<number>(
-    initialData.totalElements || 0
-  );
-  const [totalPages, setTotalPages] = useState<number>(
-    initialData.totalPages || 1
-  );
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const currentPage = Math.min(page, Math.max(0, totalPages - 1));
-
+  // Debounce free-text search input before it drives the query.
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearch(searchInput.trim());
@@ -43,33 +28,40 @@ export function useTradebookSection({
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  const fetchPage = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const res = await listInvestmentTransactions(page, pageSize, {
-        ...(selectedBrokerFilter === 'all'
-          ? {}
-          : { brokerAccountId: selectedBrokerFilter }),
-        ...(search ? { search } : {}),
-      });
-      if (res.success) {
-        setTransactions(res.data.content || []);
-        setTotalElements(res.data.totalElements || 0);
-        setTotalPages(res.data.totalPages || 1);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [page, pageSize, selectedBrokerFilter, search]);
+  const isDefaultFilters =
+    page === (initialData.number || 0) &&
+    pageSize === (initialData.size || 12) &&
+    selectedBrokerFilter === 'all' &&
+    !search;
 
-  const isFirstRun = useRef(true);
-  useEffect(() => {
-    if (isFirstRun.current) {
-      isFirstRun.current = false;
-      return;
-    }
-    fetchPage();
-  }, [fetchPage, initialData]);
+  const queryParams = {
+    page,
+    size: pageSize,
+    ...(selectedBrokerFilter === 'all'
+      ? {}
+      : { brokerAccountId: selectedBrokerFilter }),
+    ...(search ? { search } : {}),
+  };
+
+  const { data, isFetching, refetch } = useQuery({
+    queryKey: keys.investments.transactions(queryParams),
+    queryFn: async () =>
+      (
+        await api.GET('/api/v1/investments/transactions', {
+          params: { query: queryParams },
+        })
+      ).data! as PagedInvestmentTransactionResponse,
+    // The server page prefetches the same (page:0/size:initial/no filters) key, so
+    // reuse that seeded data instead of a redundant client fetch on first paint.
+    initialData: isDefaultFilters ? initialData : undefined,
+    placeholderData: keepPreviousData,
+  });
+
+  const pageData = data ?? initialData;
+  const transactions = pageData.content || [];
+  const totalElements = pageData.totalElements || 0;
+  const totalPages = pageData.totalPages || 1;
+  const currentPage = Math.min(page, Math.max(0, totalPages - 1));
 
   const handleBrokerFilterChange = (val: string) => {
     setSelectedBrokerFilter(val);
@@ -89,9 +81,9 @@ export function useTradebookSection({
     transactions,
     totalElements,
     totalPages,
-    isLoading,
+    isLoading: isFetching,
     currentPage,
-    fetchPage,
+    fetchPage: refetch,
     handleBrokerFilterChange,
   };
 }

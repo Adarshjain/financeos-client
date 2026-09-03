@@ -7,7 +7,6 @@ import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Broker } from '@/lib/account.types';
-import { FnoTradeListResponse } from '@/lib/types';
 
 import { ImportWizardDialog } from '../ImportWizardDialog';
 import { DeleteFnoTradeDialog } from './components/DeleteFnoTradeDialog';
@@ -19,11 +18,10 @@ import { useFnoView } from './components/useFnoView';
 import { CreateFnoTradeDialog } from './CreateFnoTradeDialog';
 
 interface FnoViewProps {
-  initialFnoData: FnoTradeListResponse;
   brokerAccounts: Broker[];
 }
 
-export function FnoView({ initialFnoData, brokerAccounts}: FnoViewProps) {
+export function FnoView({ brokerAccounts }: FnoViewProps) {
   const {
     search,
     setSearch,
@@ -51,7 +49,6 @@ export function FnoView({ initialFnoData, brokerAccounts}: FnoViewProps) {
     handleDeleteConfirm,
     setCurrentPage,
   } = useFnoView({
-    initialFnoData,
     brokerAccounts,
   });
 

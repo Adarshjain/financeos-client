@@ -1,8 +1,17 @@
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+
 import { CategoryManager } from '@/components/rules/CategoryManager';
 import { categoriesApi } from '@/lib/apiClient';
+import { getQueryClient } from '@/lib/query/client';
+import { keys } from '@/lib/query/keys';
 
 export default async function CategoriesPage() {
-  const categories = await categoriesApi.list().catch(() => []);
+  const qc = getQueryClient();
+  await qc.prefetchQuery({ queryKey: keys.categories.list(), queryFn: () => categoriesApi.list() });
 
-  return <CategoryManager initialCategories={categories} />;
+  return (
+    <HydrationBoundary state={dehydrate(qc)}>
+      <CategoryManager />
+    </HydrationBoundary>
+  );
 }

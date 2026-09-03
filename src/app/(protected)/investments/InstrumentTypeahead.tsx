@@ -4,13 +4,17 @@ import { Check, Loader2, Search } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { catalogSearch, resolveInstrument } from '@/actions/investments';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ApiError } from '@/lib/api/client';
 import { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
 
 import { CreateInstrumentDialog } from './CreateInstrumentDialog';
+import {
+  useCatalogSearch,
+  useResolveInstrumentMutation,
+} from './useCatalogSearch';
 
 interface InstrumentTypeaheadProps {
   selectedInstrument: Instrument | null;
@@ -28,9 +32,9 @@ export function InstrumentTypeahead({
   type,
 }: InstrumentTypeaheadProps) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<InstrumentCandidate[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { results, isLoading: loading } = useCatalogSearch(query, type);
   const [resolvingKey, setResolvingKey] = useState<string | null>(null);
+  const resolveInstrument = useResolveInstrumentMutation();
   const [isOpen, setIsOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -46,34 +50,11 @@ export function InstrumentTypeahead({
   };
 
   useEffect(() => {
-    if (query.trim().length < 2) {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    const timer = setTimeout(async () => {
-      try {
-        const res = await catalogSearch(query.trim(), type);
-        if (res.success) {
-          setResults(res.data || []);
-        } else {
-          setResults([]);
-        }
-      } catch {
-        setResults([]);
-      } finally {
-        setLoading(false);
-      }
-    }, 250);
-
-    return () => clearTimeout(timer);
-  }, [query, type]);
-
-  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -90,7 +71,7 @@ export function InstrumentTypeahead({
     setResolvingKey(rowKey);
 
     try {
-      const res = await resolveInstrument({
+      const resolved = await resolveInstrument.mutateAsync({
         type: candidate.type,
         name: candidate.name,
         symbol: candidate.symbol,
@@ -102,16 +83,16 @@ export function InstrumentTypeahead({
         existingInstrumentId: candidate.existingInstrumentId,
       });
 
-      if (res.success) {
-        onSelect(res.data);
-        setQuery('');
-        setIsOpen(false);
-        toast.success(`Added ${res.data.name}`);
-      } else {
-        toast.error(res.error.message);
-      }
+      onSelect(resolved);
+      setQuery('');
+      setIsOpen(false);
+      toast.success(`Added ${resolved.name}`);
     } catch (err) {
-      toast.error('Failed to resolve instrument: ' + (err as Error).message);
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to resolve instrument'
+      );
     } finally {
       setResolvingKey(null);
     }
@@ -158,7 +139,8 @@ export function InstrumentTypeahead({
             <>
               {candidate.pricePreview && (
                 <Badge variant="outline" className="text-2xs font-mono">
-                  ₹{candidate.pricePreview.value} · {candidate.pricePreview.asOf}
+                  ₹{candidate.pricePreview.value} ·{' '}
+                  {candidate.pricePreview.asOf}
                 </Badge>
               )}
               <Badge variant="secondary" className="text-2xs uppercase">
@@ -192,7 +174,9 @@ export function InstrumentTypeahead({
             </Badge>
             <div className="truncate text-xs font-semibold text-slate-900 dark:text-slate-100">
               {selectedInstrument.name}
-              {selectedInstrument.symbol ? ` (${selectedInstrument.symbol})` : ''}
+              {selectedInstrument.symbol
+                ? ` (${selectedInstrument.symbol})`
+                : ''}
             </div>
           </div>
           <Button
@@ -225,7 +209,9 @@ export function InstrumentTypeahead({
       {isOpen && (
         <div className="absolute left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-lg p-1 space-y-1">
           {loading ? (
-            <div className="p-3 text-center text-xs text-slate-400">Searching...</div>
+            <div className="p-3 text-center text-xs text-slate-400">
+              Searching...
+            </div>
           ) : results.length > 0 ? (
             <div className="space-y-1">
               {localResults.length > 0 && (

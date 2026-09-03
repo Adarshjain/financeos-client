@@ -31,6 +31,12 @@ jobs:
 
       - run: npm run typecheck
 
+      # Catch OpenAPI spec drift from server changes
+      - run: npm run gen:api && git diff --exit-code src/lib/api/schema.d.ts
+
+      # Catch unintended changes to the public API surface
+      - run: npm run check:api-surface
+
       - run: npm run lint
 
       - run: npm test

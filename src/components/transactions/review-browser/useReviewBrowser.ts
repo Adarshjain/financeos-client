@@ -1,22 +1,30 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import {
-  batchDeleteTransactions,
-  batchReviewTransactions,
-  searchTransactions,
-} from '@/actions/transactions';
-import { batchFailureLabel } from '@/components/transactions/catalog';
 import { Account } from '@/lib/account.types';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
 import { FilterClause } from '@/lib/reports.types';
-import { PagedTransaction, ReviewReason } from '@/lib/transaction.types';
-import { AccountType } from '@/lib/types';
+import { ReviewReason } from '@/lib/transaction.types';
+
+import {
+  buildReviewFilters,
+  computeHiddenCount,
+  getPresentReasons,
+  getSelectableAccounts,
+  getSelectedTxns,
+  mapBatchFailures,
+  mapBatchSkips,
+  togglePageSelection,
+} from './reviewBrowser.helpers';
 
 export function useReviewBrowser(accounts: Account[]) {
+  const queryClient = useQueryClient();
   const selectableAccounts = useMemo(
-    () => accounts.filter((a) => a.type !== AccountType.BROKER),
+    () => getSelectableAccounts(accounts),
     [accounts]
   );
 
@@ -27,18 +35,12 @@ export function useReviewBrowser(accounts: Account[]) {
 
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(50);
-  const [loading, setLoading] = useState(false);
-  const [pagedData, setPagedData] = useState<PagedTransaction | null>(null);
-
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [batchActionLoading, setBatchActionLoading] = useState(false);
   const [activeReasonFilter, setActiveReasonFilter] = useState<string>('ALL');
-  const runIdRef = useRef(0);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [sortBy, setSortBy] = useState('date,desc');
-  const [hiddenCount, setHiddenCount] = useState(0);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -58,169 +60,178 @@ export function useReviewBrowser(accounts: Account[]) {
     skips: string[];
   } | null>(null);
 
-  const selectedTxns = useMemo(() => {
-    if (!pagedData || selectedIds.length !== 2) return [];
-    return pagedData.content.filter((t) => selectedIds.includes(t.id));
-  }, [pagedData, selectedIds]);
-
-  const presentReasons = useMemo(() => {
-    const txns = pagedData?.content.filter((t) => selectedIds.includes(t.id)) || [];
-    return Array.from(
-      new Set(txns.flatMap((t) => t.reviewReasons || []))
-    ) as ReviewReason[];
-  }, [pagedData, selectedIds]);
-
-  useEffect(() => {
-    if (isApproveDialogOpen) {
-      setReasonsToApprove(presentReasons);
-    }
-  }, [isApproveDialogOpen, presentReasons]);
-
-  const fetchTransactions = useCallback(
-    async (currentPage: number, runId: number) => {
-      if (appliedAccountIds.length === 0) {
-        if (runId === runIdRef.current) {
-          setPagedData({
-            content: [],
-            totalElements: 0,
-            totalPages: 0,
-            size,
-            number: 0,
-            first: true,
-            last: true,
-            empty: true,
-          });
-          setLoading(false);
-        }
-        return;
-      }
-      setLoading(true);
-      try {
-        const filters: FilterClause[] = [
-          { field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' },
-        ];
-
-        if (activeReasonFilter !== 'ALL') {
-          filters.push({
-            field: 'reviewReason',
-            operator: 'is',
-            value: activeReasonFilter,
-          });
-        }
-
-        if (appliedAccountIds.length < selectableAccounts.length) {
-          filters.push({
-            field: 'accountId',
-            operator: 'in',
-            value: appliedAccountIds,
-          });
-        }
-
-        if (appliedOnlyUpToLastStatement) {
-          filters.push({
-            field: 'coveredByStatement',
-            operator: 'is',
-            value: true,
-          });
-        }
-
-        const res = await searchTransactions(
-          {
-            filters,
-            search: debouncedSearch || null,
-          },
-          currentPage,
-          size,
-          sortBy
-        );
-
-        if (runId !== runIdRef.current) return;
-
-        if (res.success) {
-          setPagedData(res.data);
-          if (
-            res.data.content.length === 0 &&
-            res.data.totalElements > 0 &&
-            currentPage > 0
-          ) {
-            setPage(currentPage - 1);
-            return;
-          }
-          const visibleIds = new Set(res.data.content.map((t) => t.id));
-          setSelectedIds((prev) => prev.filter((id) => visibleIds.has(id)));
-
-          let unfilteredTotal = res.data.totalElements;
-          if (appliedOnlyUpToLastStatement) {
-            const unfilteredFilters: FilterClause[] = [
-              { field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' },
-            ];
-
-            if (activeReasonFilter !== 'ALL') {
-              unfilteredFilters.push({
-                field: 'reviewReason',
-                operator: 'is',
-                value: activeReasonFilter,
-              });
-            }
-
-            if (appliedAccountIds.length < selectableAccounts.length) {
-              unfilteredFilters.push({
-                field: 'accountId',
-                operator: 'in',
-                value: appliedAccountIds,
-              });
-            }
-
-            const unfilteredRes = await searchTransactions(
-              {
-                filters: unfilteredFilters,
-                search: debouncedSearch || null,
-              },
-              0,
-              1,
-              sortBy
-            );
-
-            if (runId !== runIdRef.current) return;
-
-            if (unfilteredRes.success) {
-              unfilteredTotal = unfilteredRes.data.totalElements;
-            }
-          }
-          setHiddenCount(Math.max(0, unfilteredTotal - res.data.totalElements));
-        } else {
-          toast.error(res.error.message);
-        }
-      } catch {
-        toast.error('Failed to load transactions');
-      } finally {
-        if (runId === runIdRef.current) {
-          setLoading(false);
-        }
-      }
-    },
-    [
-      selectableAccounts.length,
-      appliedAccountIds,
-      appliedOnlyUpToLastStatement,
-      activeReasonFilter,
-      size,
-      debouncedSearch,
-      sortBy,
-    ]
+  const filters: FilterClause[] = useMemo(
+    () =>
+      buildReviewFilters({
+        activeReasonFilter,
+        appliedAccountIds,
+        selectableAccountsCount: selectableAccounts.length,
+        appliedOnlyUpToLastStatement,
+      }),
+    [activeReasonFilter, appliedAccountIds, appliedOnlyUpToLastStatement, selectableAccounts.length]
   );
 
-  useEffect(() => {
-    const runId = ++runIdRef.current;
-    const timer = setTimeout(() => {
-      fetchTransactions(page, runId);
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [page, activeReasonFilter, fetchTransactions]);
+  const searchParams = {
+    filters,
+    search: debouncedSearch || undefined,
+    page,
+    size,
+    sort: sortBy,
+    accountsSelected: appliedAccountIds.length,
+  };
+
+  const { data: pagedData = null, isLoading: loading } = useQuery({
+    queryKey: keys.transactions.search(searchParams),
+    queryFn: async () => {
+      if (searchParams.accountsSelected === 0) {
+        return {
+          content: [],
+          totalElements: 0,
+          totalPages: 0,
+          size: searchParams.size,
+          number: 0,
+          first: true,
+          last: true,
+          empty: true,
+        };
+      }
+      const { data } = await api.POST('/api/v1/transactions/search', {
+        body: {
+          filters: searchParams.filters,
+          search: searchParams.search,
+        },
+        params: {
+          query: {
+            page: searchParams.page,
+            size: searchParams.size,
+            sort: [searchParams.sort],
+          },
+        },
+      });
+      return data ?? null;
+    },
+    placeholderData: keepPreviousData,
+  });
+
+  // Query unfiltered count when appliedOnlyUpToLastStatement is true
+  const { data: unfilteredPagedData } = useQuery({
+    queryKey: keys.transactions.search({
+      filters: filters.filter((f) => f.field !== 'coveredByStatement'),
+      search: debouncedSearch || undefined,
+      page: 0,
+      size: 1,
+      sort: sortBy,
+    }),
+    queryFn: async () => {
+      const unfilteredFilters = filters.filter((f) => f.field !== 'coveredByStatement');
+      const { data } = await api.POST('/api/v1/transactions/search', {
+        body: {
+          filters: unfilteredFilters,
+          search: debouncedSearch || undefined,
+        },
+        params: {
+          query: { page: 0, size: 1, sort: [sortBy] },
+        },
+      });
+      return data ?? null;
+    },
+    enabled: appliedOnlyUpToLastStatement && appliedAccountIds.length > 0,
+  });
+
+  const hiddenCount = useMemo(
+    () => computeHiddenCount(appliedOnlyUpToLastStatement, pagedData, unfilteredPagedData),
+    [appliedOnlyUpToLastStatement, pagedData, unfilteredPagedData]
+  );
+
+  const selectedTxns = useMemo(
+    () => getSelectedTxns(pagedData, selectedIds),
+    [pagedData, selectedIds]
+  );
+
+  const presentReasons = useMemo(
+    () => getPresentReasons(pagedData, selectedIds),
+    [pagedData, selectedIds]
+  );
+
+  const handleSetIsApproveDialogOpen = (open: boolean) => {
+    if (open) {
+      setReasonsToApprove(presentReasons);
+    }
+    setIsApproveDialogOpen(open);
+  };
+
+  const approveMutation = useMutation({
+    mutationFn: async () => {
+      const { data } = await api.POST('/api/v1/transactions/batch-review', {
+        body: {
+          transactionIds: selectedIds,
+          reviewType: 'MANUALLY_REVIEWED',
+          reviewReasons: reasonsToApprove as ('UNRECONCILED' | 'CATEGORY_UNVERIFIED' | 'DUPLICATE_SUSPECT')[],
+        },
+      });
+      return data;
+    },
+    onSuccess: (data) => {
+      if (!data) return;
+      const { succeededIds = [], skippedIds = [], failures = [] } = data;
+
+      const mappedFailures = mapBatchFailures(failures, pagedData);
+      const mappedSkips = mapBatchSkips(skippedIds, pagedData);
+
+      if (mappedFailures.length > 0 || mappedSkips.length > 0) {
+        setSummaryData({
+          succeededCount: succeededIds.length,
+          skippedCount: skippedIds.length,
+          failures: mappedFailures,
+          skips: mappedSkips,
+        });
+      } else {
+        toast.success(`Successfully approved ${succeededIds.length} transaction(s)!`);
+      }
+      setSelectedIds([]);
+      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      setIsApproveDialogOpen(false);
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof ApiError ? err.response.message : 'An error occurred during batch approval.');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const { data } = await api.POST('/api/v1/transactions/batch-delete', {
+        body: {
+          transactionIds: selectedIds,
+        },
+      });
+      return data;
+    },
+    onSuccess: (data) => {
+      if (!data) return;
+      const { succeededIds = [], failures = [] } = data;
+
+      const mappedFailures = mapBatchFailures(failures, pagedData);
+
+      if (mappedFailures.length > 0) {
+        setSummaryData({
+          succeededCount: succeededIds.length,
+          skippedCount: 0,
+          failures: mappedFailures,
+          skips: [],
+        });
+      } else {
+        toast.success(`Successfully deleted ${succeededIds.length} transaction(s)!`);
+      }
+      setSelectedIds([]);
+      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof ApiError ? err.response.message : 'An error occurred during batch deletion.');
+    },
+  });
 
   const handleReload = () => {
-    const runId = ++runIdRef.current;
-    fetchTransactions(page, runId);
+    queryClient.invalidateQueries({ queryKey: keys.transactions.all });
   };
 
   const handlePageChange = (newPage: number) => {
@@ -235,104 +246,7 @@ export function useReviewBrowser(accounts: Account[]) {
   };
 
   const handleSelectAllPage = (checked: boolean | 'indeterminate') => {
-    if (!pagedData) return;
-    if (checked === true) {
-      const pageIds = pagedData.content.map((t) => t.id);
-      setSelectedIds(Array.from(new Set([...selectedIds, ...pageIds])));
-    } else {
-      const pageIds = pagedData.content.map((t) => t.id);
-      setSelectedIds(selectedIds.filter((id) => !pageIds.includes(id)));
-    }
-  };
-
-  const handleBatchApprove = async () => {
-    setBatchActionLoading(true);
-    try {
-      const res = await batchReviewTransactions(
-        selectedIds,
-        'MANUALLY_REVIEWED',
-        reasonsToApprove
-      );
-      if (res.success) {
-        const { succeededIds, skippedIds, failures } = res.data;
-
-        const mappedFailures = failures.map((f) => {
-          const txn = pagedData?.content.find((t) => t.id === f.id);
-          const desc = txn
-            ? txn.description || txn.sourcedDescription
-            : `Transaction ID: ${f.id}`;
-          return { description: desc, reason: batchFailureLabel(f.reason) };
-        });
-
-        const mappedSkips = skippedIds.map((id) => {
-          const txn = pagedData?.content.find((t) => t.id === id);
-          return txn
-            ? txn.description || txn.sourcedDescription
-            : `Transaction ID: ${id}`;
-        });
-
-        if (failures.length > 0 || skippedIds.length > 0) {
-          setSummaryData({
-            succeededCount: succeededIds.length,
-            skippedCount: skippedIds.length,
-            failures: mappedFailures,
-            skips: mappedSkips,
-          });
-        } else {
-          toast.success(
-            `Successfully approved ${succeededIds.length} transaction(s)!`
-          );
-        }
-        setSelectedIds([]);
-        handleReload();
-        setIsApproveDialogOpen(false);
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch {
-      toast.error('An error occurred during batch approval.');
-    } finally {
-      setBatchActionLoading(false);
-    }
-  };
-
-  const handleBatchDelete = async () => {
-    setBatchActionLoading(true);
-    try {
-      const res = await batchDeleteTransactions(selectedIds);
-      if (res.success) {
-        const { succeededIds, failures } = res.data;
-
-        const mappedFailures = failures.map((f) => {
-          const txn = pagedData?.content.find((t) => t.id === f.id);
-          const desc = txn
-            ? txn.description || txn.sourcedDescription
-            : `Transaction ID: ${f.id}`;
-          return { description: desc, reason: batchFailureLabel(f.reason) };
-        });
-
-        if (failures.length > 0) {
-          setSummaryData({
-            succeededCount: succeededIds.length,
-            skippedCount: 0,
-            failures: mappedFailures,
-            skips: [],
-          });
-        } else {
-          toast.success(
-            `Successfully deleted ${succeededIds.length} transaction(s)!`
-          );
-        }
-        setSelectedIds([]);
-        handleReload();
-      } else {
-        toast.error(res.error.message);
-      }
-    } catch {
-      toast.error('An error occurred during batch deletion.');
-    } finally {
-      setBatchActionLoading(false);
-    }
+    setSelectedIds(togglePageSelection(checked, pagedData, selectedIds));
   };
 
   return {
@@ -349,7 +263,7 @@ export function useReviewBrowser(accounts: Account[]) {
     pagedData,
     selectedIds,
     setSelectedIds,
-    batchActionLoading,
+    batchActionLoading: approveMutation.isPending || deleteMutation.isPending,
     activeReasonFilter,
     setActiveReasonFilter,
     searchTerm,
@@ -358,7 +272,7 @@ export function useReviewBrowser(accounts: Account[]) {
     setSortBy,
     hiddenCount,
     isApproveDialogOpen,
-    setIsApproveDialogOpen,
+    setIsApproveDialogOpen: handleSetIsApproveDialogOpen,
     isMergeDialogOpen,
     setIsMergeDialogOpen,
     reasonsToApprove,
@@ -371,7 +285,7 @@ export function useReviewBrowser(accounts: Account[]) {
     handlePageChange,
     toggleSelect,
     handleSelectAllPage,
-    handleBatchApprove,
-    handleBatchDelete,
+    handleBatchApprove: () => approveMutation.mutate(),
+    handleBatchDelete: () => deleteMutation.mutate(),
   };
 }

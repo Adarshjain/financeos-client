@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import TransactionsPage from '@/app/(protected)/transactions/page';
 import * as apiClient from '@/lib/apiClient';
+import { renderWithQuery } from '@/test/renderWithQuery';
 
 describe('TransactionsPage (CD-6)', () => {
   it('fetches accounts, categories, and needsReviewCount in parallel', async () => {
@@ -17,7 +18,7 @@ describe('TransactionsPage (CD-6)', () => {
     } as any);
 
     const jsx = await TransactionsPage();
-    render(jsx);
+    renderWithQuery(jsx);
 
     expect(screen.getByText('Transactions')).toBeInTheDocument();
     expect(screen.getByText('7')).toBeInTheDocument();
@@ -29,7 +30,7 @@ describe('TransactionsPage (CD-6)', () => {
     vi.spyOn(apiClient.transactionsApi, 'search').mockRejectedValue(new Error('500 Server Error'));
 
     const jsx = await TransactionsPage();
-    render(jsx);
+    renderWithQuery(jsx);
 
     expect(screen.getByText('Transactions')).toBeInTheDocument();
     expect(screen.queryByText('0')).not.toBeInTheDocument();

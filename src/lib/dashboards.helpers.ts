@@ -27,7 +27,7 @@ export function newWidget(
   return {
     id: crypto.randomUUID(),
     reportId,
-    title: null,
+    title: '',
     layout: {
       x: 0,
       y: 0,
@@ -44,6 +44,32 @@ export function newWidget(
  */
 export function isWidgetAvailable(widget: WidgetResponse): boolean {
   return widget.report.available;
+}
+
+/**
+ * The `params` half of `keys.dashboards.widget(widget.id, params)` — everything
+ * a widget's report-run query depends on besides its own id: which report it
+ * runs, and (for TABLE reports only) the page being viewed.
+ *
+ * Shared by `DashboardWidgetView`'s `useQuery` and the landing page's server
+ * prefetch (`prefetchWidgetData`) so both sides always compute byte-identical
+ * keys — the prefetch's whole point is that the client hook hydrates from it
+ * with no fetch of its own. Takes scalars (rather than the whole widget)
+ * so callers pass each field in by name — keeping every field this collapses
+ * into visible, literally, at the `useQuery`/`prefetchQuery` call site for
+ * exhaustive-deps lint checks.
+ */
+export function widgetQueryParams(
+  reportId: string,
+  isTable: boolean,
+  page: number,
+  size: number,
+): Record<string, unknown> {
+  return {
+    reportId,
+    isTable,
+    ...(isTable ? { page, size } : {}),
+  };
 }
 
 /** Whether a layout fits the grid: x 0..C-1, w 1..C, x+w ≤ C (C = column count), y/h ≥ 0/1. */

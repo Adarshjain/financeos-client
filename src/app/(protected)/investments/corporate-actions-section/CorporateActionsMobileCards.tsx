@@ -5,10 +5,13 @@ import { Edit, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { CorporateAction, CorporateActionType, Instrument } from '@/lib/types';
+import { CorporateAction } from '@/lib/api/types';
+import { Instrument } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
-export function getActionBadge(type: CorporateActionType) {
+import { CorporateActionKind } from '../corporate-actions/useCorporateActionsDialog';
+
+export function getActionBadge(type: CorporateActionKind) {
   let colorClass =
     'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-200 dark:border-purple-800';
   let label = type.toUpperCase();

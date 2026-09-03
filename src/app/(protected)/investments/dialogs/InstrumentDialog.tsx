@@ -1,10 +1,10 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Edit, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { createInstrument, updateInstrument } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -18,14 +18,10 @@ import {
 } from '@/components/ui/dialog';
 import { FormField } from '@/components/ui/form-field';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Instrument, InstrumentType } from '@/lib/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
+import { CreateInstrumentRequest, Instrument, InstrumentType } from '@/lib/types';
 
 import { InstrumentSearchField } from '../InstrumentSearchField';
 
@@ -67,7 +63,23 @@ export function InstrumentDialog({
 
   const searchFirst = !isEdit && initialMode !== 'manual';
   const [, setManualOpen] = useState(isEdit || !searchFirst);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const qc = useQueryClient();
+  const createMutation = useMutation({
+    mutationFn: (body: CreateInstrumentRequest) =>
+      api.POST('/api/v1/instruments', { body }).then((r) => r.data! as Instrument),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const updateMutation = useMutation({
+    mutationFn: (body: CreateInstrumentRequest) =>
+      api
+        .PUT('/api/v1/instruments/{id}', {
+          params: { path: { id: instrument?.id ?? '' } },
+          body,
+        })
+        .then((r) => r.data! as Instrument),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
   const [type, setType] = useState<InstrumentType>(instrument?.type ?? defaultType ?? 'stock');
   const [name, setName] = useState(instrument?.name ?? '');
@@ -106,8 +118,7 @@ export function InstrumentDialog({
       return;
     }
 
-    setIsSubmitting(true);
-    const req = {
+    const req: CreateInstrumentRequest = {
       type,
       name: name.trim(),
       symbol: symbol.trim().toUpperCase(),
@@ -118,22 +129,19 @@ export function InstrumentDialog({
       currency: currency.trim().toUpperCase() || 'INR',
     };
 
-    const res = isEdit && instrument
-      ? await updateInstrument(instrument.id, req)
-      : await createInstrument(req);
+    try {
+      const saved =
+        isEdit && instrument ? await updateMutation.mutateAsync(req) : await createMutation.mutateAsync(req);
 
-    setIsSubmitting(false);
-
-    if (res.success) {
       toast.success(isEdit ? 'Instrument updated' : 'Instrument created');
       setOpen(false);
       if (isEdit) {
-        onUpdated?.(res.data);
+        onUpdated?.(saved);
       } else {
-        onCreated?.(res.data);
+        onCreated?.(saved);
       }
-    } else {
-      toast.error(res.error.message);
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.response.message : 'Failed to save instrument');
     }
   };
 
@@ -256,7 +264,13 @@ export function InstrumentDialog({
 
         <DialogFooter
           primaryAction={{
-            label: isSubmitting ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Create Instrument'),
+            label: isSubmitting
+              ? isEdit
+                ? 'Saving...'
+                : 'Creating...'
+              : isEdit
+                ? 'Save Changes'
+                : 'Create Instrument',
             type: 'submit',
             form: 'instrument-dialog-form',
             disabled: isSubmitting,

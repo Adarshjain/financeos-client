@@ -1,5 +1,9 @@
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+
 import { Account, isAccountOfType } from '@/lib/account.types';
 import { accountsApi, investmentsApi } from '@/lib/apiClient';
+import { getQueryClient } from '@/lib/query/client';
+import { keys } from '@/lib/query/keys';
 import { AccountType, PagedInvestmentTransactionResponse } from '@/lib/types';
 
 import { ImportWizardDialog } from '../ImportWizardDialog';
@@ -8,6 +12,9 @@ import { RefreshPricesButton } from '../RefreshPricesButton';
 import { TradebookSection } from '../TradebookSection';
 
 const TRANSACTIONS_INITIAL_PAGE_SIZE = 10;
+// Must match the default (unfiltered, first-page) query params `useTradebookSection`
+// builds, so the client's useQuery hits this prefetched cache entry on first paint.
+const INITIAL_QUERY_PARAMS = { page: 0, size: TRANSACTIONS_INITIAL_PAGE_SIZE };
 
 const EMPTY_TRANSACTIONS_PAGE: PagedInvestmentTransactionResponse = {
   content: [],
@@ -21,10 +28,17 @@ const EMPTY_TRANSACTIONS_PAGE: PagedInvestmentTransactionResponse = {
 };
 
 export default async function TradebookPage() {
+  const qc = getQueryClient();
   const [initialTransactions, accounts] = await Promise.all([
-    investmentsApi.listTransactions(0, TRANSACTIONS_INITIAL_PAGE_SIZE).catch(() => EMPTY_TRANSACTIONS_PAGE),
+    investmentsApi
+      .listTransactions(0, TRANSACTIONS_INITIAL_PAGE_SIZE)
+      .catch(() => EMPTY_TRANSACTIONS_PAGE),
     accountsApi.list().catch(() => [] as Account[]),
   ]);
+  qc.setQueryData(
+    keys.investments.transactions(INITIAL_QUERY_PARAMS),
+    initialTransactions
+  );
 
   const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
 
@@ -36,7 +50,8 @@ export default async function TradebookPage() {
             Tradebook & Actions
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Log of buy/sell execution trades, statement imports, and price refreshes
+            Log of buy/sell execution trades, statement imports, and price
+            refreshes
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -46,11 +61,13 @@ export default async function TradebookPage() {
         </div>
       </div>
 
-      <TradebookSection
-        initialData={initialTransactions}
-        brokerAccounts={brokerAccounts}
-        accounts={accounts}
-      />
+      <HydrationBoundary state={dehydrate(qc)}>
+        <TradebookSection
+          initialData={initialTransactions}
+          brokerAccounts={brokerAccounts}
+          accounts={accounts}
+        />
+      </HydrationBoundary>
     </div>
   );
 }

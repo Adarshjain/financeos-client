@@ -1,10 +1,10 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Trash2, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { closeAccount, deleteAccount } from '@/actions/accounts';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -14,50 +14,54 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Account, isAccountClosed } from '@/lib/account.types';
+import { api } from '@/lib/api/client';
+import { getErrorMessage } from '@/lib/api/errorMessage';
+import { keys } from '@/lib/query/keys';
 
 interface DeleteAccountProps {
   account: Account;
 }
 
 export function DeleteAccount({ account }: DeleteAccountProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
 
   const closed = isAccountClosed(account);
 
-  const handleDelete = async () => {
-    setIsDeleting(true);
+  const deleteAccountMutation = useMutation({
+    mutationFn: (id: string) => api.DELETE('/api/v1/accounts/{id}', { params: { path: { id } } }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.accounts.all }),
+  });
 
+  const closeAccountMutation = useMutation({
+    mutationFn: (id: string) =>
+      api.POST('/api/v1/accounts/{id}/close', { params: { path: { id } } }).then((r) => r.data as Account),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: keys.accounts.all });
+      qc.invalidateQueries({ queryKey: keys.transactions.all });
+    },
+  });
+
+  const isDeleting = deleteAccountMutation.isPending;
+  const isClosing = closeAccountMutation.isPending;
+
+  const handleDelete = async () => {
     try {
-      const res = await deleteAccount(account.id);
-      if (res.success) {
-        toast.success('Account deleted!');
-        setOpen(false);
-      } else {
-        toast.error(res.error.message);
-      }
+      await deleteAccountMutation.mutateAsync(account.id);
+      toast.success('Account deleted!');
+      setOpen(false);
     } catch (error) {
-      toast.error((error as Error).message);
-    } finally {
-      setIsDeleting(false);
+      toast.error(getErrorMessage(error, 'Failed to delete account'));
     }
   };
 
   const handleCloseInstead = async () => {
-    setIsClosing(true);
     try {
-      const res = await closeAccount(account.id);
-      if (res.success) {
-        toast.success('Account closed successfully!');
-        setOpen(false);
-      } else {
-        toast.error(res.error.message);
-      }
+      await closeAccountMutation.mutateAsync(account.id);
+      toast.success('Account closed successfully!');
+      setOpen(false);
     } catch (error) {
-      toast.error((error as Error).message);
-    } finally {
-      setIsClosing(false);
+      toast.error(getErrorMessage(error, 'Failed to close account'));
     }
   };
 

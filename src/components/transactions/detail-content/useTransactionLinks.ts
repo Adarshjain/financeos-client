@@ -1,66 +1,62 @@
 'use client';
 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { toast } from 'sonner';
 
-import {
-  deleteTransactionLink,
-  getTransactionLinks,
-} from '@/actions/transaction-links';
-import { TransactionLinkResponse } from '@/lib/transaction.types';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
+import type { TransactionLinkResponse } from '@/lib/transaction.types';
 
 export function useTransactionLinks(
   transactionId: string,
   hasLinks: boolean,
   onCloseAndRefresh: () => void
 ) {
-  const [links, setLinks] = React.useState<TransactionLinkResponse[]>([]);
-  const [loadingLinks, setLoadingLinks] = React.useState(false);
-  const [linksError, setLinksError] = React.useState<string | null>(null);
+  const queryClient = useQueryClient();
   const [linkDialogOpen, setLinkDialogOpen] = React.useState(false);
   const [unlinkingId, setUnlinkingId] = React.useState<string | null>(null);
 
-  const fetchLinks = React.useCallback(async () => {
-    if (!hasLinks) {
-      setLinks([]);
-      return;
-    }
-    setLoadingLinks(true);
-    setLinksError(null);
-    try {
-      const res = await getTransactionLinks(transactionId);
-      if (res.success) {
-        setLinks(res.data);
-      } else {
-        setLinksError(res.error.message);
-      }
-    } catch (error) {
-      setLinksError((error as Error).message);
-    } finally {
-      setLoadingLinks(false);
-    }
-  }, [transactionId, hasLinks]);
+  const {
+    data: links = [],
+    isLoading: loadingLinks,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: keys.transactions.links(transactionId),
+    queryFn: async () => {
+      const { data } = await api.GET('/api/v1/transaction-links', {
+        params: { query: { transactionId } },
+      });
+      return (data ?? []) as TransactionLinkResponse[];
+    },
+    enabled: hasLinks,
+  });
 
-  React.useEffect(() => {
-    fetchLinks();
-  }, [fetchLinks]);
+  const linksError = error ? (error instanceof ApiError ? error.response.message : (error as Error).message) : null;
+
+  const fetchLinks = React.useCallback(async () => {
+    await refetch();
+  }, [refetch]);
+
+  const unlinkMutation = useMutation({
+    mutationFn: (linkId: string) => api.DELETE('/api/v1/transaction-links/{id}', { params: { path: { id: linkId } } }),
+    onMutate: (linkId: string) => setUnlinkingId(linkId),
+    onSuccess: () => {
+      toast.success('Link removed successfully');
+      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      onCloseAndRefresh();
+    },
+    onError: (err: unknown) => {
+      toast.error(err instanceof ApiError ? err.response.message : 'Failed to unlink transaction');
+    },
+    onSettled: () => setUnlinkingId(null),
+  });
 
   const handleUnlink = async (linkId: string) => {
-    setUnlinkingId(linkId);
-    try {
-      const res = await deleteTransactionLink(linkId);
-      if (res.success) {
-        toast.success('Link removed successfully');
-        fetchLinks();
-        onCloseAndRefresh();
-      } else {
-        toast.error(res.error.message || 'Failed to unlink');
-      }
-    } catch {
-      toast.error('Failed to unlink transaction');
-    } finally {
-      setUnlinkingId(null);
-    }
+    await unlinkMutation.mutateAsync(linkId).catch(() => {
+      // Error toast already shown by the mutation's onError handler.
+    });
   };
 
   return {

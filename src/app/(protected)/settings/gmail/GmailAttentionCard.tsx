@@ -15,7 +15,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import type { PagedGmailAttention } from '@/lib/types';
+import type { Schemas } from '@/lib/api/types';
+
+// The spec's status enum on GmailAttentionItemResponse is the ledger's full
+// lifecycle (DISCOVERED, PROCESSING, CREATED, RECONCILED, SKIPPED_*, ...),
+// wider than the 4 statuses the /gmail/attention endpoint actually returns
+// (the hand-written GmailAttentionItem in @/lib/types hand-narrows to those
+// 4) — see "Spec follow-ups" in the migration report. The default branch
+// below already covers every value outside the two named cases, so this is
+// safe without narrowing.
+type PagedGmailAttention = Schemas['PageGmailAttentionItemResponse'];
 
 interface GmailAttentionCardProps {
   attentionData: PagedGmailAttention;

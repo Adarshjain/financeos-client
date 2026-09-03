@@ -1,12 +1,17 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as linkActions from '@/actions/transaction-links';
-import * as transactionsActions from '@/actions/transactions';
 import { TransactionLinkDialog } from '@/components/transactions/TransactionLinkDialog';
 import type { Account } from '@/lib/account.types';
+import { api,ApiError } from '@/lib/api/client';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
+import { renderWithQuery } from '@/test/renderWithQuery';
+
+vi.mock('@/lib/api/client', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
+  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
+});
 
 const mockAccounts: Account[] = [
   { id: 'acc-bank', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT },
@@ -59,23 +64,35 @@ const mockAlreadyLinkedCandidate: Transaction = {
   links: [{ linkId: 'existing-link', type: 'TRANSFER', roleLabel: 'Transfer in', memberCount: 2 }],
 };
 
-describe('TransactionLinkDialog (CD-7, CD-9)', () => {
-  it('pre-filters candidate transactions and excludes already linked ones (CD-7)', async () => {
-    vi.spyOn(transactionsActions, 'searchTransactions').mockResolvedValue({
-      success: true,
-      data: {
-        content: [mockCandidateCreditDiffAccount, mockAlreadyLinkedCandidate],
-        number: 0,
-        size: 50,
-        totalElements: 2,
-        totalPages: 1,
-        first: true,
-        last: true,
-        empty: false,
-      },
-    });
+function mockSearch(content: Transaction[]) {
+  (api.POST as ReturnType<typeof vi.fn>).mockImplementation((path: string) => {
+    if (path === '/api/v1/transactions/search') {
+      return Promise.resolve({
+        data: {
+          content,
+          number: 0,
+          size: 50,
+          totalElements: content.length,
+          totalPages: content.length > 0 ? 1 : 0,
+          first: true,
+          last: true,
+          empty: content.length === 0,
+        },
+      });
+    }
+    return Promise.resolve({ data: null });
+  });
+}
 
-    render(
+describe('TransactionLinkDialog (CD-7, CD-9)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('pre-filters candidate transactions and excludes already linked ones (CD-7)', async () => {
+    mockSearch([mockCandidateCreditDiffAccount, mockAlreadyLinkedCandidate]);
+
+    renderWithQuery(
       <TransactionLinkDialog
         initialTransaction={mockAnchorDebit}
         accounts={mockAccounts}
@@ -93,12 +110,9 @@ describe('TransactionLinkDialog (CD-7, CD-9)', () => {
   });
 
   it('renders align refund categories checkbox ONLY for REFUND linkType (CD-9)', async () => {
-    vi.spyOn(transactionsActions, 'searchTransactions').mockResolvedValue({
-      success: true,
-      data: { content: [], number: 0, size: 50, totalElements: 0, totalPages: 0, first: true, last: true, empty: false },
-    });
+    mockSearch([]);
 
-    render(
+    renderWithQuery(
       <TransactionLinkDialog
         initialTransaction={mockAnchorDebit}
         accounts={mockAccounts}
@@ -121,33 +135,38 @@ describe('TransactionLinkDialog (CD-7, CD-9)', () => {
   });
 
   it('submits link payload with manual mismatched amounts accepted (CD-7)', async () => {
-    const createLinkSpy = vi.spyOn(linkActions, 'createTransactionLink').mockResolvedValue({
-      success: true,
-      data: {
-        id: 'new-link',
-        type: 'REFUND',
-        createdBy: 'USER',
-        createdAt: '2026-07-25T00:00:00Z',
-        members: [],
-      },
-    });
-
-    vi.spyOn(transactionsActions, 'searchTransactions').mockResolvedValue({
-      success: true,
-      data: {
+    (api.POST as ReturnType<typeof vi.fn>).mockImplementation((path: string) => {
+      if (path === '/api/v1/transactions/search') {
         // Mismatched amount + date candidate
-        content: [{ ...mockCandidateCreditDiffAccount, amount: 2000, date: '2026-07-20' }],
-        number: 0,
-        size: 50,
-        totalElements: 1,
-        totalPages: 1,
-        first: true,
-        last: true,
-        empty: false,
-      },
+        return Promise.resolve({
+          data: {
+            content: [{ ...mockCandidateCreditDiffAccount, amount: 2000, date: '2026-07-20' }],
+            number: 0,
+            size: 50,
+            totalElements: 1,
+            totalPages: 1,
+            first: true,
+            last: true,
+            empty: false,
+          },
+        });
+      }
+      if (path === '/api/v1/transaction-links') {
+        return Promise.resolve({
+          data: {
+            id: 'new-link',
+            type: 'REFUND',
+            createdBy: 'USER',
+            createdAt: '2026-07-25T00:00:00Z',
+            members: [],
+            note: '',
+          },
+        });
+      }
+      return Promise.resolve({ data: null });
     });
 
-    render(
+    renderWithQuery(
       <TransactionLinkDialog
         initialTransaction={mockAnchorDebit}
         accounts={mockAccounts}
@@ -174,8 +193,8 @@ describe('TransactionLinkDialog (CD-7, CD-9)', () => {
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(createLinkSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
+      expect(api.POST).toHaveBeenCalledWith('/api/v1/transaction-links', {
+        body: expect.objectContaining({
           type: 'REFUND',
           members: [
             { transactionId: 't-anchor', isAnchor: true },
@@ -183,31 +202,35 @@ describe('TransactionLinkDialog (CD-7, CD-9)', () => {
           ],
           alignRefundCategories: true,
         }),
-      );
+      });
     });
   });
 
   it('handles link submission failure with error message', async () => {
-    vi.spyOn(linkActions, 'createTransactionLink').mockResolvedValue({
-      success: false,
-      error: { code: 'ERR', message: 'Failed to create link', timestamp: '' },
+    (api.POST as ReturnType<typeof vi.fn>).mockImplementation((path: string) => {
+      if (path === '/api/v1/transactions/search') {
+        return Promise.resolve({
+          data: {
+            content: [mockCandidateCreditDiffAccount],
+            number: 0,
+            size: 50,
+            totalElements: 1,
+            totalPages: 1,
+            first: true,
+            last: true,
+            empty: false,
+          },
+        });
+      }
+      if (path === '/api/v1/transaction-links') {
+        return Promise.reject(
+          new ApiError(400, { code: 'ERR', message: 'Failed to create link', timestamp: '' }),
+        );
+      }
+      return Promise.resolve({ data: null });
     });
 
-    vi.spyOn(transactionsActions, 'searchTransactions').mockResolvedValue({
-      success: true,
-      data: {
-        content: [mockCandidateCreditDiffAccount],
-        number: 0,
-        size: 50,
-        totalElements: 1,
-        totalPages: 1,
-        first: true,
-        last: true,
-        empty: false,
-      },
-    });
-
-    render(
+    renderWithQuery(
       <TransactionLinkDialog
         initialTransaction={mockAnchorDebit}
         accounts={mockAccounts}
@@ -226,26 +249,14 @@ describe('TransactionLinkDialog (CD-7, CD-9)', () => {
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(linkActions.createTransactionLink).toHaveBeenCalled();
+      expect(api.POST).toHaveBeenCalledWith('/api/v1/transaction-links', expect.anything());
     });
   });
 
   it('allows changing anchor transaction radio and filtering candidates by search text', async () => {
-    vi.spyOn(transactionsActions, 'searchTransactions').mockResolvedValue({
-      success: true,
-      data: {
-        content: [mockCandidateCreditDiffAccount],
-        number: 0,
-        size: 50,
-        totalElements: 1,
-        totalPages: 1,
-        first: true,
-        last: true,
-        empty: false,
-      },
-    });
+    mockSearch([mockCandidateCreditDiffAccount]);
 
-    render(
+    renderWithQuery(
       <TransactionLinkDialog
         initialTransaction={mockAnchorDebit}
         accounts={mockAccounts}

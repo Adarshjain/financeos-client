@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import type { JobResponse } from '@/lib/types';
+import type { FileIngestionResult, JobResponse, SyncSummary } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
 import { GmailSyncResultDetails } from './GmailSyncResultDetails';
@@ -16,18 +16,19 @@ export function JobResultDetails({ job }: { job: JobResponse }) {
     return null;
   }
 
+  const raw: unknown = job.result;
   const res = job.result as Record<string, unknown>;
 
   switch (job.type) {
     case 'STATEMENT_INGEST':
-      return <IngestionResultDetails result={res as any} />;
+      return <IngestionResultDetails result={raw as FileIngestionResult} />;
     case 'GMAIL_SYNC':
-      return <GmailSyncResultDetails result={res as any} />;
+      return <GmailSyncResultDetails result={raw as SyncSummary} />;
     case 'PRICE_REFRESH': {
       const refreshed = res.refreshed ?? 0;
       const skipped = res.skipped ?? 0;
       const asOf = res.asOf ? formatDate(String(res.asOf)) : 'today';
-      const failedList = Array.isArray(res.failed) ? res.failed : [];
+      const failedList: Array<{ instrumentName?: string; instrumentId?: string; reason?: string }> = Array.isArray(res.failed) ? res.failed : [];
       return (
         <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 text-2xs space-y-1">
           <div className="font-semibold text-slate-800 dark:text-slate-200">
@@ -35,7 +36,7 @@ export function JobResultDetails({ job }: { job: JobResponse }) {
           </div>
           {failedList.length > 0 && (
             <div className="text-rose-600 dark:text-rose-400 font-medium">
-              Failed ({failedList.length}): {failedList.map((f: any) => `${f.instrumentName || f.instrumentId}: ${f.reason}`).join(', ')}
+              Failed ({failedList.length}): {failedList.map((f) => `${f.instrumentName || f.instrumentId}: ${f.reason}`).join(', ')}
             </div>
           )}
         </div>

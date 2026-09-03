@@ -7,8 +7,7 @@ import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import type { Account } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { cn } from '@/lib/utils';
 
 import { TransactionListFeed } from './browser/TransactionListFeed';
@@ -19,17 +18,14 @@ import { TransactionFormWrapper } from './TransactionFormWrapper';
 import { TransactionLinkDialog } from './TransactionLinkDialog';
 
 interface TransactionsBrowserProps {
-  accounts: Account[];
-  categories: Category[];
   /** `null`/absent means the count could not be determined, not zero. */
   needsReviewCount?: number | null;
 }
 
 export function TransactionsBrowser({
-  accounts,
-  categories,
   needsReviewCount,
 }: TransactionsBrowserProps) {
+  const { data: accounts = [] } = useAccounts();
   const {
     appliedFilters,
     setAppliedFilters,
@@ -59,8 +55,6 @@ export function TransactionsBrowser({
     <div className={cn('flex flex-col gap-2 w-full', isMobile ? 'text-xs' : '')}>
       {/* Search & Filter Bar */}
       <TransactionFilterBar
-        accounts={accounts}
-        categories={categories}
         appliedFilters={appliedFilters}
         onFiltersChange={(nextFilters) => {
           setAppliedFilters(nextFilters);
@@ -126,8 +120,6 @@ export function TransactionsBrowser({
                 </Link>
               )}
               <TransactionFormWrapper
-                categories={categories}
-                accounts={accounts}
                 onSuccess={handleReload}
                 trigger={
                   <Button size="sm">
@@ -169,7 +161,6 @@ export function TransactionsBrowser({
           loading={loading}
           pagedData={pagedData}
           hasFiltersOrSearch={appliedFilters.length > 0 || search.trim() !== ''}
-          categories={categories}
           accounts={accounts}
           isSelectionMode={isSelectionMode}
           selectedTxnIds={selectedTxnIds}

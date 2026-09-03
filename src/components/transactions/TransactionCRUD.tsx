@@ -4,8 +4,6 @@ import * as React from 'react';
 
 import DayPicker from '@/components/DayPicker';
 import { DialogBody, DialogFooter } from '@/components/ui/dialog';
-import { Account } from '@/lib/account.types';
-import { Category } from '@/lib/categories.types';
 import { Transaction } from '@/lib/transaction.types';
 
 import { AccountCategorySection } from './crud/AccountCategorySection';
@@ -17,16 +15,12 @@ import { useTransactionCRUD } from './crud/useTransactionCRUD';
 
 interface TransactionCRUDProps {
   transaction?: Transaction;
-  accounts: Account[];
-  categories: Category[];
   onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function TransactionCRUD({
-  categories,
   transaction,
-  accounts,
   onSuccess,
   onClose,
 }: TransactionCRUDProps) {
@@ -80,8 +74,6 @@ export default function TransactionCRUD({
     onSubmit,
   } = useTransactionCRUD({
     transaction,
-    accounts,
-    categories,
     onSuccess,
   });
 
@@ -104,8 +96,8 @@ export default function TransactionCRUD({
 
           {/* Description & Source Details */}
           <DescriptionSection
-            description={transaction?.description}
-            sourcedDescription={transaction?.sourcedDescription}
+            description={transaction?.description ?? undefined}
+            sourcedDescription={transaction?.sourcedDescription ?? undefined}
             suggestingCategories={suggestingCategories}
             onDescriptionBlur={handleDescriptionBlur}
           />

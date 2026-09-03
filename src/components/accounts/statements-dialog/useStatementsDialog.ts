@@ -1,103 +1,77 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 
-import { getCardCycleSummary } from '@/actions/accounts';
-import { getStatementDetail, listStatementsByAccount } from '@/actions/statements';
 import { Account } from '@/lib/account.types';
+import { api } from '@/lib/api/client';
+import { getErrorMessage } from '@/lib/api/errorMessage';
+import { keys } from '@/lib/query/keys';
 import { CardCycleSummary, StatementDetail, StatementSummary } from '@/lib/statement.types';
 import { AccountType } from '@/lib/types';
 
 export function useStatementsDialog(account: Account) {
+  const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [statements, setStatements] = useState<StatementSummary[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
   const [selectedStatementId, setSelectedStatementId] = useState<string | null>(null);
-  const [selectedDetail, setSelectedDetail] = useState<StatementDetail | null>(null);
-  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
-  const [detailError, setDetailError] = useState<string | null>(null);
 
-  const [cardSummary, setCardSummary] = useState<CardCycleSummary | null>(null);
-  const [isLoadingCardSummary, setIsLoadingCardSummary] = useState(false);
-  const [cardSummaryError, setCardSummaryError] = useState<string | null>(null);
+  const isCard = account.type === AccountType.CREDIT_CARD;
 
-  /** Monotonic id so only the newest statement-detail response is applied. */
-  const detailRequestIdRef = useRef(0);
+  const statementsQuery = useQuery({
+    queryKey: keys.statements.byAccount(account.id),
+    queryFn: async () => {
+      const { data } = await api.GET('/api/v1/accounts/{accountId}/statements', {
+        params: { path: { accountId: account.id } },
+      });
+      return (data ?? []) as StatementSummary[];
+    },
+    enabled: open,
+  });
 
-  const loadStatements = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    setCardSummaryError(null);
+  const cardSummaryQuery = useQuery({
+    queryKey: keys.accounts.cycleSummary(account.id),
+    queryFn: async () => {
+      const { data } = await api.GET('/api/v1/accounts/{id}/card-summary', {
+        params: { path: { id: account.id } },
+      });
+      return (data ?? null) as CardCycleSummary | null;
+    },
+    enabled: open && isCard,
+  });
 
-    const isCard = account.type === AccountType.CREDIT_CARD;
-    if (isCard) setIsLoadingCardSummary(true);
-
-    const [statementsRes, summaryRes] = await Promise.all([
-      listStatementsByAccount(account.id),
-      isCard ? getCardCycleSummary(account.id) : Promise.resolve(null),
-    ]);
-
-    if (statementsRes.success && statementsRes.data) {
-      setStatements(statementsRes.data);
-    } else if (!statementsRes.success) {
-      setError(statementsRes.error.message || 'Failed to load statements');
-    }
-    setIsLoading(false);
-
-    if (isCard && summaryRes) {
-      if (summaryRes.success && summaryRes.data) {
-        setCardSummary(summaryRes.data);
-      } else {
-        setCardSummary(null);
-        if (!summaryRes.success) setCardSummaryError(summaryRes.error.message);
-      }
-      setIsLoadingCardSummary(false);
-    }
-  }, [account.id, account.type]);
+  const detailQuery = useQuery({
+    queryKey: keys.statements.detail(selectedStatementId ?? ''),
+    queryFn: async () => {
+      const { data } = await api.GET('/api/v1/statements/{statementId}', {
+        params: { path: { statementId: selectedStatementId as string } },
+      });
+      return data as StatementDetail;
+    },
+    enabled: Boolean(selectedStatementId),
+  });
 
   const handleOpenChange = (newOpen: boolean) => {
     setOpen(newOpen);
     if (!newOpen) {
       setSelectedStatementId(null);
-      setSelectedDetail(null);
     }
   };
 
-  useEffect(() => {
-    if (!open) return;
-
-    let isMounted = true;
-    queueMicrotask(() => {
-      if (isMounted) {
-        loadStatements();
-      }
-    });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [open, loadStatements]);
-
-  const handleSelectStatement = async (statementId: string) => {
+  const handleSelectStatement = (statementId: string) => {
     setSelectedStatementId(statementId);
-    setSelectedDetail(null);
-    setIsLoadingDetail(true);
-    setDetailError(null);
-
-    const requestId = ++detailRequestIdRef.current;
-    const res = await getStatementDetail(statementId);
-    if (requestId !== detailRequestIdRef.current) return;
-
-    if (res.success && res.data) {
-      setSelectedDetail(res.data);
-    } else if (!res.success) {
-      setDetailError(res.error.message || 'Failed to load statement details');
-    }
-    setIsLoadingDetail(false);
   };
 
+  /** Re-runs both the statements list and (for cards) the cycle summary — wired to the "Retry" affordance. */
+  const loadStatements = () => {
+    statementsQuery.refetch();
+    if (isCard) {
+      cardSummaryQuery.refetch();
+    } else {
+      qc.invalidateQueries({ queryKey: keys.accounts.cycleSummary(account.id) });
+    }
+  };
+
+  const statements = statementsQuery.data ?? [];
   const lastIngestionDate =
     statements.length > 0
       ? statements.reduce((max, s) => {
@@ -110,16 +84,16 @@ export function useStatementsDialog(account: Account) {
     open,
     handleOpenChange,
     statements,
-    isLoading,
-    error,
+    isLoading: statementsQuery.isLoading,
+    error: statementsQuery.error ? getErrorMessage(statementsQuery.error, 'Failed to load statements') : null,
     selectedStatementId,
     setSelectedStatementId,
-    selectedDetail,
-    isLoadingDetail,
-    detailError,
-    cardSummary,
-    isLoadingCardSummary,
-    cardSummaryError,
+    selectedDetail: detailQuery.data ?? null,
+    isLoadingDetail: detailQuery.isLoading,
+    detailError: detailQuery.error ? getErrorMessage(detailQuery.error, 'Failed to load statement details') : null,
+    cardSummary: cardSummaryQuery.data ?? null,
+    isLoadingCardSummary: cardSummaryQuery.isLoading,
+    cardSummaryError: cardSummaryQuery.error ? getErrorMessage(cardSummaryQuery.error, 'Failed to fetch card cycle summary') : null,
     lastIngestionDate,
     loadStatements,
     handleSelectStatement,

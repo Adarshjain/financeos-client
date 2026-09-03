@@ -1,10 +1,10 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Edit } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { updateInstrument } from '@/actions/investments';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -25,7 +25,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
+import {
+  CreateInstrumentRequest,
+  Instrument,
+  InstrumentCandidate,
+  InstrumentType,
+} from '@/lib/types';
 
 import { InstrumentSearchField } from './InstrumentSearchField';
 
@@ -34,9 +41,23 @@ interface EditInstrumentDialogProps {
   trigger?: React.ReactNode;
 }
 
-export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDialogProps) {
+export function EditInstrumentDialog({
+  instrument,
+  trigger,
+}: EditInstrumentDialogProps) {
   const [open, setOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const qc = useQueryClient();
+  const updateInstrumentMutation = useMutation({
+    mutationFn: (body: CreateInstrumentRequest) =>
+      api
+        .PUT('/api/v1/instruments/{id}', {
+          params: { path: { id: instrument.id } },
+          body,
+        })
+        .then((r) => r.data! as Instrument),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const isSubmitting = updateInstrumentMutation.isPending;
 
   const [type, setType] = useState<InstrumentType>(instrument.type || 'stock');
   const [name, setName] = useState(instrument.name || '');
@@ -47,7 +68,13 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
   const [yahooSymbol, setYahooSymbol] = useState(instrument.yahooSymbol || '');
   const [currency, setCurrency] = useState(instrument.currency || 'INR');
 
-  useEffect(() => {
+  // Reset the form from `instrument` whenever the dialog transitions to open.
+  // Adjusted during render (React's documented alternative to an effect for
+  // "reset state when a prop changes") rather than in a useEffect, so this
+  // doesn't trigger a synchronous setState-in-effect cascade.
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setType(instrument.type || 'stock');
       setName(instrument.name || '');
@@ -58,7 +85,7 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
       setYahooSymbol(instrument.yahooSymbol || '');
       setCurrency(instrument.currency || 'INR');
     }
-  }, [open, instrument]);
+  }
 
   const handlePicked = (c: InstrumentCandidate) => {
     setType(c.type);
@@ -79,9 +106,8 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      const res = await updateInstrument(instrument.id, {
+      const updated = await updateInstrumentMutation.mutateAsync({
         type,
         name: name.trim(),
         symbol: symbol.trim() || undefined,
@@ -92,16 +118,14 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
         currency: currency.trim() || undefined,
       });
 
-      if (res.success) {
-        toast.success(`Updated instrument ${res.data.name}`);
-        setOpen(false);
-      } else {
-        toast.error(res.error.message);
-      }
+      toast.success(`Updated instrument ${updated.name}`);
+      setOpen(false);
     } catch (err) {
-      toast.error('Failed to update instrument: ' + (err as Error).message);
-    } finally {
-      setIsSubmitting(false);
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to update instrument'
+      );
     }
   };
 
@@ -109,17 +133,24 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button variant="ghost" size="icon-xs" className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100">
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
+          >
             <Edit className="w-3.5 h-3.5" />
           </Button>
         )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-base font-bold">Edit Instrument</DialogTitle>
+          <DialogTitle className="text-base font-bold">
+            Edit Instrument
+          </DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
-            Search the live AMFI / Yahoo catalog to auto-fill pricing identifiers, or edit the
-            fields below by hand. Saving keeps this instrument and its holdings.
+            Search the live AMFI / Yahoo catalog to auto-fill pricing
+            identifiers, or edit the fields below by hand. Saving keeps this
+            instrument and its holdings.
           </DialogDescription>
         </DialogHeader>
 
@@ -135,10 +166,16 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
             />
           </div>
 
-          <form id="edit-instrument-form" onSubmit={handleSubmit} className="space-y-3 py-1 border-t border-slate-100 dark:border-slate-800">
+          <form
+            id="edit-instrument-form"
+            onSubmit={handleSubmit}
+            className="space-y-3 py-1 border-t border-slate-100 dark:border-slate-800"
+          >
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Type</Label>
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  Type
+                </Label>
                 <Select
                   value={type}
                   onValueChange={(val) => setType(val as InstrumentType)}
@@ -147,9 +184,15 @@ export function EditInstrumentDialog({ instrument, trigger }: EditInstrumentDial
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                    <SelectItem value="stock" className="text-xs">Stock</SelectItem>
-                    <SelectItem value="mutual_fund" className="text-xs">Mutual Fund</SelectItem>
-                    <SelectItem value="etf" className="text-xs">ETF</SelectItem>
+                    <SelectItem value="stock" className="text-xs">
+                      Stock
+                    </SelectItem>
+                    <SelectItem value="mutual_fund" className="text-xs">
+                      Mutual Fund
+                    </SelectItem>
+                    <SelectItem value="etf" className="text-xs">
+                      ETF
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

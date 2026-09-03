@@ -1,12 +1,10 @@
 'use client';
 
 import { Layers, Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { CorporateAction, Instrument } from '@/lib/types';
 
 import { CorporateActionsFilterBar } from './corporate-actions-section/CorporateActionsFilterBar';
 import { CorporateActionsMobileCards } from './corporate-actions-section/CorporateActionsMobileCards';
@@ -14,18 +12,9 @@ import { CorporateActionsTable } from './corporate-actions-section/CorporateActi
 import { useCorporateActionsSection } from './corporate-actions-section/useCorporateActionsSection';
 import { CorporateActionsDialog } from './CorporateActionsDialog';
 
-interface CorporateActionsSectionProps {
-  corporateActions: CorporateAction[];
-  instruments: Instrument[];
-}
-
-export function CorporateActionsSection({
-  corporateActions,
-  instruments,
-}: CorporateActionsSectionProps) {
-  const router = useRouter();
-
+export function CorporateActionsSection() {
   const {
+    corporateActions,
     search,
     typeFilter,
     setTypeFilter,
@@ -42,10 +31,7 @@ export function CorporateActionsSection({
     sortedActions,
     openCreateDialog,
     openEditDialog,
-  } = useCorporateActionsSection({
-    corporateActions,
-    instruments,
-  });
+  } = useCorporateActionsSection();
 
   return (
     <div className="space-y-2 pb-32">
@@ -135,9 +121,16 @@ export function CorporateActionsSection({
         key={activeEditAction?.id ?? 'create'}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        instrument={activeDialogInstrument ?? undefined}
+        instrument={
+          activeDialogInstrument
+            ? {
+                id: activeDialogInstrument.id,
+                name: activeDialogInstrument.name,
+                symbol: activeDialogInstrument.symbol ?? undefined,
+              }
+            : undefined
+        }
         editAction={activeEditAction ?? undefined}
-        onSuccess={() => router.refresh()}
       />
     </div>
   );

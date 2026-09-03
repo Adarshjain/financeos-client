@@ -1,16 +1,15 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { Plus, Search, X } from 'lucide-react';
 
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import type { Page } from '@/lib/pagination';
-import type {
-  CounterpartyResponse,
-  LoansSummaryResponse,
-} from '@/lib/types';
+import { api } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
+import type { LoansSummaryResponse } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { AddLendingDialog } from './browser/AddLendingDialog';
@@ -18,15 +17,22 @@ import { CounterpartiesList } from './browser/CounterpartiesList';
 import { LendingsSummaryCards } from './browser/LendingsSummaryCards';
 import { useLendingsBrowser } from './browser/useLendingsBrowser';
 
-interface LendingsBrowserProps {
-  initialCounterparties: Page<CounterpartyResponse>;
-  summary: LoansSummaryResponse;
-}
+const EMPTY_SUMMARY: LoansSummaryResponse = {
+  totalOutstanding: 0,
+  activeLoanCount: 0,
+  lentOutstanding: 0,
+  borrowedOutstanding: 0,
+  netReceivable: 0,
+};
 
-export function LendingsBrowser({
-  initialCounterparties,
-  summary,
-}: LendingsBrowserProps) {
+export function LendingsBrowser() {
+  const { data: summaryData } = useQuery({
+    queryKey: keys.loans.summary(),
+    queryFn: async () =>
+      (await api.GET('/api/v1/loans/summary')).data! as LoansSummaryResponse,
+  });
+  const summary = summaryData ?? EMPTY_SUMMARY;
+
   const {
     counterpartiesPage,
     search,
@@ -54,9 +60,7 @@ export function LendingsBrowser({
     handlePageChange,
     handleDeleteCp,
     handleCreateLending,
-  } = useLendingsBrowser({
-    initialCounterparties,
-  });
+  } = useLendingsBrowser();
 
   const renderActionBar = (isMobile = false) => (
     <div

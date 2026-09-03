@@ -1,18 +1,23 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { api, ApiError } from '@/lib/api/client';
+import { UpdateInvestmentTransactionRequest } from '@/lib/api/types';
+import { keys } from '@/lib/query/keys';
 import {
-  deleteInvestmentTransaction,
-  updateInvestmentTransaction,
-} from '@/actions/investments';
-import {
-  Charges,
   InvestmentTransactionResponse,
   InvestmentTransactionType,
   SettlementType,
 } from '@/lib/types';
+
+// The generated `ItemizedChargesDto` allows `number | null` per field; our local
+// `Charges` (@/lib/types) types money as `number | string` to mirror the wire's
+// decimal-as-string convention on read. This form only ever writes plain numbers,
+// so derive the charges shape straight from the request type we actually submit.
+type ChargesInput = NonNullable<UpdateInvestmentTransactionRequest['charges']>;
 
 interface UseEditTransactionDialogProps {
   transaction: InvestmentTransactionResponse;
@@ -27,12 +32,28 @@ export function useEditTransactionDialog({
   setOpen,
   onSuccess,
 }: UseEditTransactionDialogProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const qc = useQueryClient();
+  const deleteMutation = useMutation({
+    mutationFn: () =>
+      api.DELETE('/api/v1/investments/transactions/{id}', {
+        params: { path: { id: transaction.id } },
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const updateMutation = useMutation({
+    mutationFn: (body: UpdateInvestmentTransactionRequest) =>
+      api
+        .PUT('/api/v1/investments/transactions/{id}', {
+          params: { path: { id: transaction.id } },
+          body,
+        })
+        .then((r) => r.data! as InvestmentTransactionResponse),
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+  });
+  const isDeleting = deleteMutation.isPending;
+  const isSubmitting = updateMutation.isPending;
 
-  const [type, setType] = useState<InvestmentTransactionType>(
-    transaction.type
-  );
+  const [type, setType] = useState<InvestmentTransactionType>(transaction.type);
   const [settlementType, setSettlementType] = useState<SettlementType>(
     transaction.settlementType || 'delivery'
   );
@@ -49,9 +70,7 @@ export function useEditTransactionDialog({
   const [exchangeTxnCharges, setExchangeTxnCharges] = useState(
     transaction.exchangeTxnCharges || ''
   );
-  const [sebiCharges, setSebiCharges] = useState(
-    transaction.sebiCharges || ''
-  );
+  const [sebiCharges, setSebiCharges] = useState(transaction.sebiCharges || '');
   const [stampDuty, setStampDuty] = useState(transaction.stampDuty || '');
   const [gst, setGst] = useState(transaction.gst || '');
   const [dpCharges, setDpCharges] = useState(transaction.dpCharges || '');
@@ -59,7 +78,13 @@ export function useEditTransactionDialog({
     transaction.otherCharges || ''
   );
 
-  useEffect(() => {
+  // Reset the form from `transaction` whenever the dialog transitions to open.
+  // Adjusted during render (React's documented alternative to an effect for
+  // "reset state when a prop changes") rather than in a useEffect, so this
+  // doesn't trigger a synchronous setState-in-effect cascade.
+  const [prevOpen, setPrevOpen] = useState(false);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
     if (open) {
       setType(transaction.type);
       setSettlementType(transaction.settlementType || 'delivery');
@@ -76,33 +101,29 @@ export function useEditTransactionDialog({
       setDpCharges(transaction.dpCharges || '');
       setOtherCharges(transaction.otherCharges || '');
     }
-  }, [open, transaction]);
+  }
 
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this trade transaction?'))
       return;
-    setIsDeleting(true);
     try {
-      const res = await deleteInvestmentTransaction(transaction.id);
-      if (res.success) {
-        toast.success('Transaction deleted');
-        setOpen(false);
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message);
-      }
+      await deleteMutation.mutateAsync();
+      toast.success('Transaction deleted');
+      setOpen(false);
+      onSuccess?.();
     } catch (err) {
-      toast.error('Failed to delete transaction: ' + (err as Error).message);
-    } finally {
-      setIsDeleting(false);
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to delete transaction'
+      );
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
 
-    const charges: Charges = {};
+    const charges: ChargesInput = {};
     if (brokerage) charges.brokerage = Number(brokerage);
     if (stt) charges.stt = Number(stt);
     if (exchangeTxnCharges)
@@ -114,7 +135,7 @@ export function useEditTransactionDialog({
     if (otherCharges) charges.otherCharges = Number(otherCharges);
 
     try {
-      const res = await updateInvestmentTransaction(transaction.id, {
+      await updateMutation.mutateAsync({
         type,
         settlementType,
         quantity: Number(quantity),
@@ -124,17 +145,15 @@ export function useEditTransactionDialog({
         notes: notes || undefined,
       });
 
-      if (res.success) {
-        toast.success('Trade updated');
-        setOpen(false);
-        onSuccess?.();
-      } else {
-        toast.error(res.error.message);
-      }
+      toast.success('Trade updated');
+      setOpen(false);
+      onSuccess?.();
     } catch (err) {
-      toast.error('Failed to update trade: ' + (err as Error).message);
-    } finally {
-      setIsSubmitting(false);
+      toast.error(
+        err instanceof ApiError
+          ? err.response.message
+          : 'Failed to update trade'
+      );
     }
   };
 

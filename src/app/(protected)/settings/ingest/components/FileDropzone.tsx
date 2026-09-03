@@ -5,9 +5,9 @@ import React from 'react';
 
 import { Label } from '@/components/ui/label';
 
-export const MAX_REQUEST_MB = Number(
-  process.env.NEXT_PUBLIC_MAX_REQUEST_MB ?? 4.5
-);
+// Uploads go straight from the browser to the API through the Vercel rewrite (no server
+// action body in the path), so this is just a sensible client-side cap, not a platform limit.
+export const MAX_REQUEST_MB = 25;
 export const MAX_REQUEST_BYTES = MAX_REQUEST_MB * 1024 * 1024;
 
 export function formatFileSize(bytes: number): string {

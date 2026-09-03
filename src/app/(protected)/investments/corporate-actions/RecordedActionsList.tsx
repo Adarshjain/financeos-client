@@ -4,7 +4,7 @@ import { Edit, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { CorporateAction } from '@/lib/types';
+import { CorporateAction } from '@/lib/api/types';
 import { formatDate } from '@/lib/utils';
 
 interface RecordedActionsListProps {

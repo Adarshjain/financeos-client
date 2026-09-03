@@ -1,12 +1,17 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as transactionsActions from '@/actions/transactions';
 import { MergeTransactionsDialog } from '@/components/transactions/MergeTransactionsDialog';
 import type { Account } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
+import { api } from '@/lib/api/client';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
+import { renderWithQuery } from '@/test/renderWithQuery';
+
+vi.mock('@/lib/api/client', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
+  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
+});
 
 vi.mock('sonner', () => ({
   toast: {
@@ -24,10 +29,6 @@ const mockAccounts: Account[] = [
     last4: '1234',
     creditLimit: 100000,
   },
-];
-
-const mockCategories: Category[] = [
-  { id: 'cat1', name: 'Shopping' },
 ];
 
 const txStatement: Transaction = {
@@ -64,14 +65,13 @@ describe('MergeTransactionsDialog', () => {
   });
 
   it('defaults Keep selection to gmail_statement over gmail_transaction_alert', () => {
-    render(
+    renderWithQuery(
       <MergeTransactionsDialog
         open={true}
         onOpenChange={vi.fn()}
         tx1={txAlert}
         tx2={txStatement}
         accounts={mockAccounts}
-        categories={mockCategories}
         onSuccess={vi.fn()}
       />
     );
@@ -84,14 +84,13 @@ describe('MergeTransactionsDialog', () => {
   });
 
   it('allows flipping Keep/Delete selection by clicking a card', () => {
-    render(
+    renderWithQuery(
       <MergeTransactionsDialog
         open={true}
         onOpenChange={vi.fn()}
         tx1={txAlert}
         tx2={txStatement}
         accounts={mockAccounts}
-        categories={mockCategories}
         onSuccess={vi.fn()}
       />
     );
@@ -112,14 +111,13 @@ describe('MergeTransactionsDialog', () => {
       accountId: 'acc2',
     };
 
-    render(
+    renderWithQuery(
       <MergeTransactionsDialog
         open={true}
         onOpenChange={vi.fn()}
         tx1={txStatement}
         tx2={txOtherAcc}
         accounts={mockAccounts}
-        categories={mockCategories}
         onSuccess={vi.fn()}
       />
     );
@@ -129,9 +127,8 @@ describe('MergeTransactionsDialog', () => {
     expect(mergeBtn).toBeDisabled();
   });
 
-  it('calls mergeTransactions action and onSuccess callback on submit', async () => {
-    const mergeSpy = vi.spyOn(transactionsActions, 'mergeTransactions').mockResolvedValue({
-      success: true,
+  it('calls the merge endpoint and onSuccess callback on submit', async () => {
+    (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
       data: {
         keptId: 'tx-stmt-1',
         reviewType: 'MANUALLY_REVIEWED',
@@ -142,14 +139,13 @@ describe('MergeTransactionsDialog', () => {
     const onSuccessMock = vi.fn();
     const onOpenChangeMock = vi.fn();
 
-    render(
+    renderWithQuery(
       <MergeTransactionsDialog
         open={true}
         onOpenChange={onOpenChangeMock}
         tx1={txStatement}
         tx2={txAlert}
         accounts={mockAccounts}
-        categories={mockCategories}
         onSuccess={onSuccessMock}
       />
     );
@@ -158,7 +154,9 @@ describe('MergeTransactionsDialog', () => {
     fireEvent.click(mergeBtn);
 
     await waitFor(() => {
-      expect(mergeSpy).toHaveBeenCalledWith('tx-stmt-1', 'tx-alert-1');
+      expect(api.POST).toHaveBeenCalledWith('/api/v1/transactions/merge', {
+        body: { keepId: 'tx-stmt-1', deleteId: 'tx-alert-1' },
+      });
       expect(onSuccessMock).toHaveBeenCalled();
       expect(onOpenChangeMock).toHaveBeenCalledWith(false);
     });

@@ -1,8 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-import { listInvestmentTransactions } from '@/actions/investments';
 import {
   Dialog,
   DialogBody,
@@ -12,7 +11,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Broker } from '@/lib/account.types';
-import { InvestmentTransactionResponse, Position } from '@/lib/types';
+import { api } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
+import {
+  InvestmentTransactionResponse,
+  PagedInvestmentTransactionResponse,
+  Position,
+} from '@/lib/types';
 
 import { HoldingHeaderBadges } from './holding-detail/HoldingHeaderBadges';
 import { HoldingSummaryMetrics } from './holding-detail/HoldingSummaryMetrics';
@@ -36,40 +41,40 @@ export function HoldingDetailDialog({
   open,
   onOpenChange,
 }: HoldingDetailDialogProps) {
-  const [holdingTrades, setHoldingTrades] = useState<
-    InvestmentTransactionResponse[]
-  >([]);
-  const [isLoadingTrades, setIsLoadingTrades] = useState(false);
+  const filters = pos.holdingId
+    ? { holdingId: pos.holdingId }
+    : {
+        brokerAccountId: pos.brokerAccountId,
+        instrumentId: pos.instrument.id,
+      };
+  const queryParams = { page: 0, size: HOLDING_TRADES_PAGE_SIZE, ...filters };
 
-  const fetchHoldingTrades = useCallback(async () => {
-    setIsLoadingTrades(true);
-    try {
-      const filters = pos.holdingId
-        ? { holdingId: pos.holdingId }
-        : {
-            brokerAccountId: pos.brokerAccountId,
-            instrumentId: pos.instrument.id,
-          };
-      const res = await listInvestmentTransactions(
-        0,
-        HOLDING_TRADES_PAGE_SIZE,
-        filters
-      );
-      if (res.success) {
-        const rows = [...(res.data.content || [])].sort(
-          (a, b) =>
-            new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime()
-        );
-        setHoldingTrades(rows);
-      }
-    } finally {
-      setIsLoadingTrades(false);
-    }
-  }, [pos.holdingId, pos.brokerAccountId, pos.instrument.id]);
+  const {
+    data,
+    isLoading: isLoadingTrades,
+    refetch: fetchHoldingTrades,
+  } = useQuery({
+    queryKey: keys.investments.transactions(queryParams),
+    queryFn: async () =>
+      (
+        await api.GET('/api/v1/investments/transactions', {
+          params: {
+            query: {
+              page: queryParams.page,
+              size: queryParams.size,
+              brokerAccountId: queryParams.brokerAccountId,
+              instrumentId: queryParams.instrumentId,
+              holdingId: queryParams.holdingId,
+            },
+          },
+        })
+      ).data! as PagedInvestmentTransactionResponse,
+    enabled: open,
+  });
 
-  useEffect(() => {
-    if (open) fetchHoldingTrades();
-  }, [open, fetchHoldingTrades]);
+  const holdingTrades = [...(data?.content || [])].sort(
+    (a, b) => new Date(b.tradeDate).getTime() - new Date(a.tradeDate).getTime()
+  ) as InvestmentTransactionResponse[];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -120,7 +125,7 @@ export function HoldingDetailDialog({
               id: pos.instrument.id,
               name: pos.instrument.name,
               symbol: pos.instrument.symbol,
-              lastPrice: pos.lastPrice,
+              lastPrice: pos.lastPrice ?? undefined,
             }}
           />
         </DialogBody>

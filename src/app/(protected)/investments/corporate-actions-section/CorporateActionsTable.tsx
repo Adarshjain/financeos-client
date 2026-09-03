@@ -12,7 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { CorporateAction, Instrument } from '@/lib/types';
+import { CorporateAction } from '@/lib/api/types';
+import { Instrument } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
 import { getActionBadge } from './CorporateActionsMobileCards';
@@ -39,7 +40,9 @@ export function CorporateActionsTable({
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent border-slate-100 dark:border-slate-800">
-                <TableHead className="text-xs font-medium">Instrument</TableHead>
+                <TableHead className="text-xs font-medium">
+                  Instrument
+                </TableHead>
                 <TableHead className="text-xs font-medium">
                   Action Type
                 </TableHead>
@@ -89,8 +92,7 @@ export function CorporateActionsTable({
                             <>
                               Child:{' '}
                               <span className="font-medium">
-                                {act.targetInstrumentName ||
-                                  'Child Instrument'}
+                                {act.targetInstrumentName || 'Child Instrument'}
                               </span>{' '}
                               {act.targetInstrumentSymbol
                                 ? `(${act.targetInstrumentSymbol})`
@@ -138,9 +140,7 @@ export function CorporateActionsTable({
                         <Button
                           variant="ghost-destructive"
                           size="icon-xs"
-                          onClick={() =>
-                            handleDelete(act.instrumentId, act.id)
-                          }
+                          onClick={() => handleDelete(act.instrumentId, act.id)}
                           disabled={deletingId === act.id}
                           title="Delete Corporate Action"
                         >

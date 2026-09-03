@@ -1,9 +1,10 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, Loader2, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { deleteAccount, getDeletionSummary } from '@/app/(protected)/settings/actions';
+import { deleteAccount } from '@/app/(protected)/settings/actions';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,6 +18,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { FormField } from '@/components/ui/form-field';
+import { api } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
 import type { DeletionSummaryResponse, UserResponse } from '@/lib/types';
 
 interface DeleteAccountCardProps {
@@ -25,8 +28,17 @@ interface DeleteAccountCardProps {
 
 export function DeleteAccountCard({ user }: DeleteAccountCardProps) {
   const [open, setOpen] = useState(false);
-  const [summary, setSummary] = useState<DeletionSummaryResponse | null>(null);
-  const [loadingSummary, setLoadingSummary] = useState(false);
+
+  const { data: summary, isLoading: loadingSummary } = useQuery({
+    queryKey: keys.settings.deletionSummary(),
+    queryFn: async () => {
+      const { data } = await api.GET('/api/v1/auth/me/deletion-summary');
+      return data ?? null;
+    },
+    enabled: open,
+    // A failed summary must not block the deletion flow — no retries needed.
+    retry: false,
+  });
 
   const [password, setPassword] = useState('');
   const [confirmEmail, setConfirmEmail] = useState('');
@@ -38,40 +50,12 @@ export function DeleteAccountCard({ user }: DeleteAccountCardProps) {
 
   const hasPassword = !!user.hasPassword;
 
-  // Only the async continuations set state here. Resetting the fields synchronously
-  // inside the effect tripped the cascading-render lint rule, so that moved into
-  // handleOpen, which is where the state actually changes anyway.
-  useEffect(() => {
-    if (!open) return;
-
-    let cancelled = false;
-    getDeletionSummary()
-      .then((res) => {
-        if (cancelled) return;
-        if (res.success) {
-          setSummary(res.data);
-        }
-      })
-      .catch(() => {
-        // A failed summary must not block the deletion flow.
-      })
-      .finally(() => {
-        if (!cancelled) setLoadingSummary(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [open]);
-
   const handleOpen = () => {
     setPassword('');
     setConfirmEmail('');
     setConfirmPhrase('');
     setError(null);
     setIsBusy(false);
-    setSummary(null);
-    setLoadingSummary(true);
     setOpen(true);
   };
 
@@ -102,9 +86,10 @@ export function DeleteAccountCard({ user }: DeleteAccountCardProps) {
         setError(res.error.message || 'Failed to delete account');
       }
       // If success, Next.js action redirects to /login?deleted=1
-    } catch (e: any) {
+    } catch (e: unknown) {
       // In Next.js, redirect throws a NEXT_REDIRECT digest which must not be caught as an error
-      if (e?.digest?.startsWith('NEXT_REDIRECT')) {
+      const digest = e instanceof Error ? (e as Error & { digest?: string }).digest : undefined;
+      if (digest?.startsWith('NEXT_REDIRECT')) {
         throw e;
       }
       setIsDeleting(false);

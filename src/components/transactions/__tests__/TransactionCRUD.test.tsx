@@ -1,13 +1,20 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import * as categoriesActions from '@/actions/categories';
-import * as transactionsActions from '@/actions/transactions';
 import TransactionCRUD from '@/components/transactions/TransactionCRUD';
 import type { Account } from '@/lib/account.types';
+import { api,ApiError } from '@/lib/api/client';
 import type { Category } from '@/lib/categories.types';
+import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
+import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
+
+vi.mock('@/lib/api/client', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
+  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
+});
 
 const mockAccounts: Account[] = [
   { id: 'acc1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT },
@@ -30,45 +37,41 @@ const mockTxn: Transaction = {
   createdAt: '2026-07-25T00:00:00Z',
 };
 
+// Seeds the accounts/categories queries synchronously so useTransactionCRUD's
+// internal useAccounts()/useCategories() calls resolve without an async wait.
+function renderCRUD(ui: ReactElement) {
+  const queryClient = createTestQueryClient();
+  queryClient.setQueryData(keys.accounts.list(), mockAccounts);
+  queryClient.setQueryData(keys.categories.list(), mockCategories);
+  return renderWithQuery(ui, { queryClient });
+}
+
 describe('TransactionCRUD (CD-2d, CD-4)', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('omits Review Status select in CREATE mode (CD-4)', () => {
-    render(
-      <TransactionCRUD
-        accounts={mockAccounts}
-        categories={mockCategories}
-      />,
-    );
+    renderCRUD(<TransactionCRUD />);
 
     expect(screen.queryByText('Review Status')).not.toBeInTheDocument();
   });
 
   it('renders Review Status select in EDIT mode (CD-4)', () => {
-    render(
-      <TransactionCRUD
-        transaction={mockTxn}
-        accounts={mockAccounts}
-        categories={mockCategories}
-      />,
-    );
+    renderCRUD(<TransactionCRUD transaction={mockTxn} />);
 
     expect(screen.getByText('Review Status')).toBeInTheDocument();
   });
 
   it('disables Save button and prevents double submit while in flight (CD-2d)', async () => {
-    let resolvePromise: (value: any) => void;
+    let resolvePromise: (value: unknown) => void;
     const pendingPromise = new Promise((resolve) => {
       resolvePromise = resolve;
     });
 
-    const updateSpy = vi.spyOn(transactionsActions, 'updateTransaction').mockImplementation(() => pendingPromise as any);
+    const updateSpy = (api.PUT as ReturnType<typeof vi.fn>).mockImplementation(() => pendingPromise);
 
-    const { container } = render(
-      <TransactionCRUD
-        transaction={mockTxn}
-        accounts={mockAccounts}
-        categories={mockCategories}
-      />,
-    );
+    const { container } = renderCRUD(<TransactionCRUD transaction={mockTxn} />);
 
     const form = container.querySelector('form')!;
     if (!('description' in form)) {
@@ -87,22 +90,15 @@ describe('TransactionCRUD (CD-2d, CD-4)', () => {
     expect(updateSpy).toHaveBeenCalledTimes(1);
 
     // Resolve the promise
-    resolvePromise!({ success: true, data: { id: 't1' } });
+    resolvePromise!({ data: { id: 't1' } });
   });
 
   it('edit request includes reviewType and source in payload (CD-4)', async () => {
-    const updateSpy = vi.spyOn(transactionsActions, 'updateTransaction').mockResolvedValue({
-      success: true,
-      data: { id: 't1' } as any,
+    const updateSpy = (api.PUT as ReturnType<typeof vi.fn>).mockResolvedValue({
+      data: { id: 't1' },
     });
 
-    const { container } = render(
-      <TransactionCRUD
-        transaction={mockTxn}
-        accounts={mockAccounts}
-        categories={mockCategories}
-      />,
-    );
+    const { container } = renderCRUD(<TransactionCRUD transaction={mockTxn} />);
 
     const form = container.querySelector('form')!;
     if (!('description' in form)) {
@@ -115,29 +111,25 @@ describe('TransactionCRUD (CD-2d, CD-4)', () => {
       expect(updateSpy).toHaveBeenCalled();
     });
 
-    const payload = updateSpy.mock.calls[0][1];
-    expect(payload.reviewType).toBe('MANUALLY_REVIEWED');
-    expect(payload.source).toBe('manual');
-    expect(payload.accountId).toBe('acc1');
+    const [path, options] = updateSpy.mock.calls[0];
+    expect(path).toBe('/api/v1/transactions/{id}');
+    expect(options.params.path.id).toBe('t1');
+    expect(options.body.reviewType).toBe('MANUALLY_REVIEWED');
+    expect(options.body.source).toBe('manual');
+    expect(options.body.accountId).toBe('acc1');
   });
 
   it('toggles amount sign, validates MCC, and auto-categorizes on description blur', async () => {
-    vi.spyOn(categoriesActions, 'categorizeDescription').mockResolvedValue({
-      success: true,
+    (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
       data: {
         categories: [mockCategories[0]],
-        ruleId: null,
+        ruleId: '',
         fromRule: false,
         mcc: '5411',
       },
     });
 
-    render(
-      <TransactionCRUD
-        accounts={mockAccounts}
-        categories={mockCategories}
-      />,
-    );
+    renderCRUD(<TransactionCRUD />);
 
     // Click +/- sign toggle
     const signToggleBtn = screen.getByRole('button', { name: '+/-' });
@@ -150,7 +142,7 @@ describe('TransactionCRUD (CD-2d, CD-4)', () => {
     fireEvent.blur(descArea);
 
     await waitFor(() => {
-      expect(categoriesActions.categorizeDescription).toHaveBeenCalledWith('Grocery Store');
+      expect(api.POST).toHaveBeenCalledWith('/api/v1/categorize', { body: { description: 'Grocery Store' } });
     });
 
     // Toggle Exclude switch
@@ -169,18 +161,11 @@ describe('TransactionCRUD (CD-2d, CD-4)', () => {
   });
 
   it('handles update submission failure with error toast', async () => {
-    vi.spyOn(transactionsActions, 'updateTransaction').mockResolvedValue({
-      success: false,
-      error: { code: 'ERR', message: 'Failed to update transaction', timestamp: '' },
-    });
-
-    const { container } = render(
-      <TransactionCRUD
-        transaction={mockTxn}
-        accounts={mockAccounts}
-        categories={mockCategories}
-      />,
+    (api.PUT as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new ApiError(400, { code: 'ERR', message: 'Failed to update transaction', timestamp: '' }),
     );
+
+    const { container } = renderCRUD(<TransactionCRUD transaction={mockTxn} />);
 
     const form = container.querySelector('form')!;
     if (!('description' in form)) {
@@ -191,21 +176,14 @@ describe('TransactionCRUD (CD-2d, CD-4)', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(transactionsActions.updateTransaction).toHaveBeenCalled();
+      expect(api.PUT).toHaveBeenCalled();
     });
   });
 
   it('calls onClose when Back button is clicked in update mode', async () => {
     const onClose = vi.fn();
 
-    render(
-      <TransactionCRUD
-        transaction={mockTxn}
-        accounts={mockAccounts}
-        categories={mockCategories}
-        onClose={onClose}
-      />,
-    );
+    renderCRUD(<TransactionCRUD transaction={mockTxn} onClose={onClose} />);
 
     const backBtn = screen.getByRole('button', { name: 'Back' });
     fireEvent.click(backBtn);
@@ -214,20 +192,13 @@ describe('TransactionCRUD (CD-2d, CD-4)', () => {
   });
 
   it('submits new transaction creation in create mode', async () => {
-    const createSpy = vi.spyOn(transactionsActions, 'createTransaction').mockResolvedValue({
-      success: true,
-      data: { id: 't-new' } as any,
+    const createSpy = (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
+      data: { id: 't-new' },
     });
 
     const onSuccess = vi.fn();
 
-    const { container } = render(
-      <TransactionCRUD
-        accounts={mockAccounts}
-        categories={mockCategories}
-        onSuccess={onSuccess}
-      />,
-    );
+    const { container } = renderCRUD(<TransactionCRUD onSuccess={onSuccess} />);
 
     // Select account using form select element
     const hiddenSelect = container.querySelector('select[name="accountId"]');
@@ -248,7 +219,9 @@ describe('TransactionCRUD (CD-2d, CD-4)', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(createSpy).toHaveBeenCalled();
+      expect(createSpy).toHaveBeenCalledWith('/api/v1/transactions', expect.objectContaining({
+        body: expect.objectContaining({ accountId: 'acc1' }),
+      }));
     });
 
     expect(onSuccess).toHaveBeenCalled();

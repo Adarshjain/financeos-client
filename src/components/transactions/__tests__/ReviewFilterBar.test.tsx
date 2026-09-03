@@ -1,9 +1,12 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { ReviewFilterBar } from '@/components/transactions/ReviewFilterBar';
 import type { Account } from '@/lib/account.types';
+import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
+import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
 
 const mockAccounts: Account[] = [
   { id: 'acc1', name: 'HDFC Bank', type: AccountType.BANK_ACCOUNT, lastStatementDate: '2026-06-30' },
@@ -17,11 +20,18 @@ const mockAccounts: Account[] = [
   },
 ];
 
+// Seeds the accounts query synchronously so ReviewFilterBar's internal
+// useAccounts() call resolves without an async wait in every test.
+function renderWithAccounts(ui: ReactElement) {
+  const queryClient = createTestQueryClient();
+  queryClient.setQueryData(keys.accounts.list(), mockAccounts);
+  return renderWithQuery(ui, { queryClient });
+}
+
 describe('ReviewFilterBar (CD-1, CD-5)', () => {
   it('renders search input, reason options, account button, and statement cutoff button', () => {
-    render(
+    renderWithAccounts(
       <ReviewFilterBar
-        accounts={mockAccounts}
         appliedAccountIds={['acc1', 'acc2']}
         onAccountIdsChange={vi.fn()}
         onlyUpToLastStatement={true}
@@ -43,9 +53,8 @@ describe('ReviewFilterBar (CD-1, CD-5)', () => {
 
   it('triggers search change on input', () => {
     const onSearchChange = vi.fn();
-    render(
+    renderWithAccounts(
       <ReviewFilterBar
-        accounts={mockAccounts}
         appliedAccountIds={['acc1', 'acc2']}
         onAccountIdsChange={vi.fn()}
         onlyUpToLastStatement={true}
@@ -66,9 +75,8 @@ describe('ReviewFilterBar (CD-1, CD-5)', () => {
 
   it('toggles statement cutoff filter', () => {
     const onOnlyUpToLastStatementChange = vi.fn();
-    render(
+    renderWithAccounts(
       <ReviewFilterBar
-        accounts={mockAccounts}
         appliedAccountIds={['acc1', 'acc2']}
         onAccountIdsChange={vi.fn()}
         onlyUpToLastStatement={true}
@@ -88,9 +96,8 @@ describe('ReviewFilterBar (CD-1, CD-5)', () => {
 
   it('switches active reason filter', () => {
     const onReasonFilterChange = vi.fn();
-    render(
+    renderWithAccounts(
       <ReviewFilterBar
-        accounts={mockAccounts}
         appliedAccountIds={['acc1', 'acc2']}
         onAccountIdsChange={vi.fn()}
         onlyUpToLastStatement={true}
@@ -114,9 +121,8 @@ describe('ReviewFilterBar (CD-1, CD-5)', () => {
     const onReasonFilterChange = vi.fn();
     const onSearchChange = vi.fn();
 
-    render(
+    renderWithAccounts(
       <ReviewFilterBar
-        accounts={mockAccounts}
         appliedAccountIds={['acc1']}
         onAccountIdsChange={onAccountIdsChange}
         onlyUpToLastStatement={false}
@@ -138,9 +144,8 @@ describe('ReviewFilterBar (CD-1, CD-5)', () => {
   });
 
   it('renders active account badge when only one account is selected', () => {
-    render(
+    renderWithAccounts(
       <ReviewFilterBar
-        accounts={mockAccounts}
         appliedAccountIds={['acc1']}
         onAccountIdsChange={vi.fn()}
         onlyUpToLastStatement={true}
@@ -160,9 +165,8 @@ describe('ReviewFilterBar (CD-1, CD-5)', () => {
   it('removes reason filter badge when badge remove button is clicked', () => {
     const onReasonFilterChange = vi.fn();
 
-    render(
+    renderWithAccounts(
       <ReviewFilterBar
-        accounts={mockAccounts}
         appliedAccountIds={['acc1', 'acc2']}
         onAccountIdsChange={vi.fn()}
         onlyUpToLastStatement={true}
@@ -184,9 +188,8 @@ describe('ReviewFilterBar (CD-1, CD-5)', () => {
   it('selects sort option in sort popover', () => {
     const onSortByChange = vi.fn();
 
-    render(
+    renderWithAccounts(
       <ReviewFilterBar
-        accounts={mockAccounts}
         appliedAccountIds={['acc1', 'acc2']}
         onAccountIdsChange={vi.fn()}
         onlyUpToLastStatement={true}

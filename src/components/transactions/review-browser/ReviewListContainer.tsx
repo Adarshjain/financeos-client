@@ -5,7 +5,6 @@ import { Fragment } from 'react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Account } from '@/lib/account.types';
-import { Category } from '@/lib/categories.types';
 import { PagedTransaction } from '@/lib/transaction.types';
 import { formatDate } from '@/lib/utils';
 
@@ -18,7 +17,6 @@ interface ReviewListContainerProps {
   appliedAccountCount: number;
   selectableAccountCount: number;
   accounts: Account[];
-  categories: Category[];
   onSelectAllPage: (checked: boolean | 'indeterminate') => void;
   onToggleSelect: (id: string) => void;
   onMutate: () => void;
@@ -31,7 +29,6 @@ export function ReviewListContainer({
   appliedAccountCount,
   selectableAccountCount,
   accounts,
-  categories,
   onSelectAllPage,
   onToggleSelect,
   onMutate,
@@ -95,7 +92,6 @@ export function ReviewListContainer({
               </div>
             )}
             <TransactionCard
-              categories={categories}
               accounts={accounts}
               transaction={transaction}
               onMutate={onMutate}

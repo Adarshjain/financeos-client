@@ -18,12 +18,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import type {
-  LlmBucketHealthDto,
-  LlmRoutingGroupDto,
-  RoutingEntryRequest,
-  RoutingOptionDto,
-} from '@/lib/llmKey.types';
+import type { Schemas } from '@/lib/api/types';
+
+// The spec marks a few RoutingEntryDto/RoutingOptionDto fields (`model`,
+// `notes`) optional+nullable, where the hand-written llmKey.types.ts versions
+// only mark them optional — see "Spec follow-ups" in the migration report.
+// Using the generated types directly here avoids casting that gap away.
+type LlmRoutingGroupDto = Schemas['LlmRoutingGroupDto'];
+type RoutingOptionDto = Schemas['RoutingOptionDto'];
+type LlmBucketHealthDto = Schemas['LlmBucketHealthDto'];
+type RoutingEntryRequest = Schemas['RoutingEntryRequest'];
 
 interface RoutingGroupCardProps {
   groupType: 'chat' | 'default';

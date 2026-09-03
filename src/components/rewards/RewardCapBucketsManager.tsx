@@ -1,10 +1,15 @@
 'use client';
 
-import { Layers, MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Layers, Loader2, MoreVertical, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { createRewardCapBucket, deleteRewardCapBucket, updateRewardCapBucket } from '@/actions/rewards';
+import {
+  useCreateRewardCapBucket,
+  useDeleteRewardCapBucket,
+  useRewardCapBuckets,
+  useUpdateRewardCapBucket,
+} from '@/components/rewards/queries/useRewardCapBucketsQueries';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
@@ -12,6 +17,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ApiError } from '@/lib/api/client';
 import type { CapWindow, CounterScope, RewardCapBucket, RewardType } from '@/lib/rewards.types';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
@@ -26,12 +32,16 @@ const WINDOW_LABELS: Record<CapWindow, string> = {
 
 interface RewardCapBucketsManagerProps {
   accountId: string;
-  buckets: RewardCapBucket[];
-  onChanged: () => void;
 }
 
 /** Shared cap buckets list + CRUD for one account. */
-export default function RewardCapBucketsManager({ accountId, buckets, onChanged }: RewardCapBucketsManagerProps) {
+export default function RewardCapBucketsManager({ accountId }: RewardCapBucketsManagerProps) {
+  const bucketsQuery = useRewardCapBuckets(accountId);
+  const buckets = bucketsQuery.data ?? [];
+  const createBucket = useCreateRewardCapBucket();
+  const updateBucket = useUpdateRewardCapBucket();
+  const deleteBucket = useDeleteRewardCapBucket();
+
   const [editing, setEditing] = useState<RewardCapBucket | undefined>();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [name, setName] = useState('');
@@ -39,7 +49,9 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
   const [rewardType, setRewardType] = useState<RewardType>('CASH');
   const [windowType, setWindowType] = useState<CapWindow>('CALENDAR_MONTH');
   const [counterScope, setCounterScope] = useState<CounterScope>('ACCOUNT');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const errorMessage = (e: unknown, fallback: string) =>
+    e instanceof ApiError ? e.response.message : fallback;
 
   const openCreate = () => {
     setEditing(undefined);
@@ -61,7 +73,9 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
     setIsCreateOpen(true);
   };
 
-  const save = async () => {
+  const isSubmitting = createBucket.isPending || updateBucket.isPending;
+
+  const save = () => {
     if (!name.trim()) {
       toast.error('Bucket name is required.');
       return;
@@ -71,30 +85,24 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
       return;
     }
     const body = { accountId, name: name.trim(), cap: Number(cap), rewardType, windowType, counterScope };
-    setIsSubmitting(true);
-    try {
-      const res = editing ? await updateRewardCapBucket(editing.id, body) : await createRewardCapBucket(body);
-      if (res.success) {
-        toast.success(editing ? 'Bucket updated' : 'Bucket created');
-        setIsCreateOpen(false);
-        onChanged();
-      } else {
-        toast.error(res.error.message);
-      }
-    } finally {
-      setIsSubmitting(false);
+    const onSuccess = () => {
+      toast.success(editing ? 'Bucket updated' : 'Bucket created');
+      setIsCreateOpen(false);
+    };
+    const onError = (e: unknown) => toast.error(errorMessage(e, 'Failed to save cap bucket'));
+    if (editing) {
+      updateBucket.mutate({ id: editing.id, body }, { onSuccess, onError });
+    } else {
+      createBucket.mutate(body, { onSuccess, onError });
     }
   };
 
-  const remove = async (bucket: RewardCapBucket) => {
+  const remove = (bucket: RewardCapBucket) => {
     if (!window.confirm(`Delete bucket "${bucket.name}"?`)) return;
-    const res = await deleteRewardCapBucket(bucket.id);
-    if (res.success) {
-      toast.success('Bucket deleted');
-      onChanged();
-    } else {
-      toast.error(res.error.message);
-    }
+    deleteBucket.mutate(bucket.id, {
+      onSuccess: () => toast.success('Bucket deleted'),
+      onError: (e) => toast.error(errorMessage(e, 'Failed to delete cap bucket')),
+    });
   };
 
   const selectTriggerClass =
@@ -108,13 +116,16 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
         <h2 className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wide">
           <Layers className="w-3.5 h-3.5 text-sky-500" /> Shared Cap Buckets
         </h2>
+        {bucketsQuery.isFetching && (
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400 shrink-0" />
+        )}
         <div className="flex-1" />
         <Button onClick={openCreate} disabled={!accountId} variant="outline" size="sm">
           <Plus className="w-3.5 h-3.5 mr-1" /> New Bucket
         </Button>
       </div>
 
-      {buckets.length === 0 ? (
+      {buckets.length === 0 && !bucketsQuery.isFetching ? (
         <EmptyState
           compact
           icon={Layers}
@@ -148,7 +159,7 @@ export default function RewardCapBucketsManager({ accountId, buckets, onChanged 
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => void remove(bucket)}
+                    onClick={() => remove(bucket)}
                     className="text-rose-600 dark:text-rose-400 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950/30"
                   >
                     <Trash2 className="w-3.5 h-3.5 mr-2 text-rose-600 dark:text-rose-400" /> Delete Bucket

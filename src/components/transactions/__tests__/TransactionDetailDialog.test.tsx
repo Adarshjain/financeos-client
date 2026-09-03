@@ -1,10 +1,16 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { TransactionDetailDialog } from '@/components/transactions/TransactionDetailDialog';
 import type { Account } from '@/lib/account.types';
 import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
+import { renderWithQuery } from '@/test/renderWithQuery';
+
+vi.mock('@/lib/api/client', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api/client')>('@/lib/api/client');
+  return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
+});
 
 const mockAccounts: Account[] = [
   { id: 'acc1', name: 'HDFC Savings', type: AccountType.BANK_ACCOUNT },
@@ -26,11 +32,10 @@ const mockTxn: Transaction = {
 describe('TransactionDetailDialog', () => {
   it('renders trigger and handles dialog open and edit click', () => {
     const onMutate = vi.fn();
-    render(
+    renderWithQuery(
       <TransactionDetailDialog
         transaction={mockTxn}
         accounts={mockAccounts}
-        categories={[]}
         onMutate={onMutate}
         trigger={<button>Open Detail</button>}
       />,

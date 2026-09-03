@@ -1,12 +1,15 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 
-import { ingestStatementFiles } from '@/actions/ingestion';
 import { emitJobStarted } from '@/components/jobs/jobsBus';
-import { useJobPolling } from '@/hooks/useJobPolling';
+import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
 import { type Account, isAccountClosed } from '@/lib/account.types';
+import { api, ApiError } from '@/lib/api/client';
+import { multipartBodySerializer } from '@/lib/api/multipart';
+import { keys } from '@/lib/query/keys';
 
 import {
   formatFileSize,
@@ -19,20 +22,33 @@ interface UseIngestFormProps {
 }
 
 export function useIngestForm({ accounts }: UseIngestFormProps) {
+  const qc = useQueryClient();
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
   const [files, setFiles] = useState<File[]>([]);
   const [isDragActive, setIsDragActive] = useState(false);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
 
-  const { isPolling } = useJobPolling(activeJobId, (job) => {
+  const { isPolling } = useJobStatusPolling(activeJobId, (job) => {
     if (job.status === 'SUCCEEDED') {
       toast.success('Statement ingestion completed — see results below.');
+      qc.invalidateQueries({ queryKey: keys.transactions.all });
     } else if (job.status === 'FAILED') {
       toast.error(job.errorMessage || 'Ingestion failed.');
     } else {
       toast.info('Ingestion cancelled.');
     }
     setActiveJobId(null);
+  });
+
+  const ingestMutation = useMutation({
+    mutationFn: (input: { accountId: string; files: File[] }) =>
+      api
+        .POST('/api/v1/accounts/{accountId}/ingest', {
+          params: { path: { accountId: input.accountId } },
+          body: { files: input.files },
+          bodySerializer: multipartBodySerializer,
+        })
+        .then((r) => r.data!),
   });
 
   const isUploading = Boolean(activeJobId) && isPolling;
@@ -138,31 +154,23 @@ export function useIngestForm({ accounts }: UseIngestFormProps) {
       return;
     }
 
-    const formData = new FormData();
-    files.forEach((file) => {
-      formData.append('files', file);
-    });
-
     try {
-      const response = await ingestStatementFiles(
-        selectedAccountId,
-        formData
-      );
-      if (response.success && response.data?.jobId) {
-        const jobId = response.data.jobId;
+      const response = await ingestMutation.mutateAsync({
+        accountId: selectedAccountId,
+        files,
+      });
+      if (response?.jobId) {
+        const jobId = response.jobId;
         setActiveJobId(jobId);
         emitJobStarted(jobId);
         setFiles([]);
         toast.info('Ingestion job started in background.');
-      } else if (!response.success) {
-        toast.error(
-          response.error.message ||
-            'An error occurred while starting ingestion.'
-        );
       }
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : 'An unexpected error occurred.';
+        err instanceof ApiError
+          ? err.response.message
+          : 'An unexpected error occurred.';
       toast.error(msg);
     }
   };

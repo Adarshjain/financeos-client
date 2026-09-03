@@ -1,57 +1,41 @@
 'use client';
 
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Loader2, RotateCcw, XCircle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React from 'react';
 import { toast } from 'sonner';
 
-import { cancelJob, retryJob } from '@/actions/jobs';
 import { emitJobStarted } from '@/components/jobs/jobsBus';
 import { Button } from '@/components/ui/button';
+import { api, ApiError } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
 import type { JobResponse } from '@/lib/types';
 
-export function JobRowActions({
-  job,
-  onActionSuccess,
-}: {
-  job: JobResponse;
-  onActionSuccess?: () => void;
-}) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+export function JobRowActions({ job }: { job: JobResponse }) {
+  const queryClient = useQueryClient();
 
-  const handleCancel = async () => {
-    setLoading(true);
-    try {
-      const res = await cancelJob(job.id);
-      if (res.success) {
-        toast.info('Cancellation requested');
-        onActionSuccess?.();
-        router.refresh();
-      } else {
-        toast.error(res.error.message || 'Failed to cancel job');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  const cancelMutation = useMutation({
+    mutationFn: (id: string) =>
+      api.POST('/api/v1/jobs/{id}/cancel', { params: { path: { id } } }).then((r) => r.data!),
+    onSuccess: () => {
+      toast.info('Cancellation requested');
+      queryClient.invalidateQueries({ queryKey: keys.jobs.all });
+    },
+    onError: (err) => toast.error(err instanceof ApiError ? err.response.message : 'Failed to cancel job'),
+  });
 
-  const handleRetry = async () => {
-    setLoading(true);
-    try {
-      const res = await retryJob(job.id);
-      if (res.success && res.data) {
-        toast.success('Job retried');
-        emitJobStarted(res.data.id);
-        onActionSuccess?.();
-        router.refresh();
-      } else if (!res.success) {
-        toast.error(res.error.message || 'Failed to retry job');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  const retryMutation = useMutation({
+    mutationFn: (id: string) =>
+      api.POST('/api/v1/jobs/{id}/retry', { params: { path: { id } } }).then((r) => r.data!),
+    onSuccess: (retried) => {
+      toast.success('Job retried');
+      emitJobStarted(retried.id);
+      queryClient.invalidateQueries({ queryKey: keys.jobs.all });
+    },
+    onError: (err) => toast.error(err instanceof ApiError ? err.response.message : 'Failed to retry job'),
+  });
+
+  const loading = cancelMutation.isPending || retryMutation.isPending;
 
   if (job.status === 'PENDING' || job.status === 'RUNNING') {
     return (
@@ -59,7 +43,7 @@ export function JobRowActions({
         variant="ghost"
         size="sm"
         disabled={loading || job.cancelRequested}
-        onClick={handleCancel}
+        onClick={() => cancelMutation.mutate(job.id)}
         className="h-7 text-2xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30"
       >
         {loading ? <Loader2 className="w-3 h-3 animate-spin mr-1 text-rose-500" /> : <XCircle className="w-3 h-3 mr-1 text-rose-500" />}
@@ -74,7 +58,7 @@ export function JobRowActions({
         variant="outline"
         size="sm"
         disabled={loading}
-        onClick={handleRetry}
+        onClick={() => retryMutation.mutate(job.id)}
         className="h-7 text-2xs"
       >
         {loading ? <RotateCcw className="w-3 h-3 animate-spin mr-1" /> : <RotateCcw className="w-3 h-3 mr-1" />}
