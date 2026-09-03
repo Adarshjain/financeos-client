@@ -17,6 +17,7 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
   redirect: mockRedirect,
+  unstable_rethrow: vi.fn(),
 }));
 
 vi.mock('next/cache', () => ({
