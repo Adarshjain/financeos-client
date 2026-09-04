@@ -8,10 +8,12 @@ import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Account, Broker } from '@/lib/account.types';
+import { isAccountOfType } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { usePositions } from '@/lib/query/hooks/useInvestments';
 import { keys } from '@/lib/query/keys';
-import { DividendSummary, DividendType, PagedDividendResponse, Position } from '@/lib/types';
+import { AccountType, DividendSummary, DividendType, PagedDividendResponse } from '@/lib/types';
 import { cn, formatMoney } from '@/lib/utils';
 
 import { CreateDividendDialog } from './CreateDividendDialog';
@@ -21,18 +23,15 @@ import { DividendsTable } from './DividendsTable';
 interface DividendsSectionProps {
   initialData: PagedDividendResponse;
   initialSummary: DividendSummary;
-  brokerAccounts: Broker[];
-  accounts: Account[];
-  positions: Position[];
 }
 
 export function DividendsSection({
   initialData,
   initialSummary,
-  brokerAccounts,
-  accounts,
-  positions,
 }: DividendsSectionProps) {
+  const { data: accounts = [] } = useAccounts();
+  const { data: positions = [] } = usePositions();
+  const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
   const [selectedBrokerFilter, setSelectedBrokerFilter] = useState<string>('all');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>('all');
   const [selectedFyFilter, setSelectedFyFilter] = useState<string>('all');

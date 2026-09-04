@@ -1,6 +1,7 @@
 'use client';
 
 import { Coins, Loader2, Plus } from 'lucide-react';
+import { useMemo } from 'react';
 
 import RewardCapBucketsManager from '@/components/rewards/RewardCapBucketsManager';
 import RewardMilestonesManager from '@/components/rewards/RewardMilestonesManager';
@@ -14,8 +15,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { Account } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { useCategories } from '@/lib/query/hooks/useCategories';
+import { rewardEligibleAccounts } from '@/lib/rewards.types';
 import { AccountType } from '@/lib/types';
 import { toCalendarDate } from '@/lib/utils';
 
@@ -24,16 +26,15 @@ import { RuleCardItem } from './rules-manager/RuleCardItem';
 import { useRewardRulesManager } from './rules-manager/useRewardRulesManager';
 
 interface RewardRulesManagerProps {
-  accounts: Account[];
-  categories: Category[];
   initialAccountId: string;
 }
 
 export default function RewardRulesManager({
-  accounts,
-  categories,
   initialAccountId,
 }: RewardRulesManagerProps) {
+  const { data: rawAccounts = [] } = useAccounts();
+  const { data: categories = [] } = useCategories();
+  const accounts = useMemo(() => rewardEligibleAccounts(rawAccounts), [rawAccounts]);
   const orderedAccounts = accounts;
   const {
     accountId,

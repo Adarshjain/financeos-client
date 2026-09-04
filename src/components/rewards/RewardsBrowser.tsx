@@ -1,8 +1,11 @@
 'use client';
 
+import { useMemo } from 'react';
+
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Card } from '@/components/ui/card';
-import type { Account } from '@/lib/account.types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { rewardEligibleAccounts } from '@/lib/rewards.types';
 
 import { MilestoneSections } from './browser/MilestoneSections';
 import { RewardLineDetailDialog } from './browser/RewardLineDetailDialog';
@@ -13,18 +16,19 @@ import { RuleBreakdownGrid } from './browser/RuleBreakdownGrid';
 import { useRewardsBrowser } from './browser/useRewardsBrowser';
 
 interface RewardsBrowserProps {
-  accounts: Account[];
   initialAccountId: string;
   initialFrom: string;
   initialTo: string;
 }
 
 export default function RewardsBrowser({
-  accounts,
   initialAccountId,
   initialFrom,
   initialTo,
 }: RewardsBrowserProps) {
+  const { data: rawAccounts = [] } = useAccounts();
+  const accounts = useMemo(() => rewardEligibleAccounts(rawAccounts), [rawAccounts]);
+
   const {
     accountId,
     preset,

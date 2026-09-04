@@ -21,6 +21,8 @@ export default async function RewardsPage() {
   const initialTo = toCalendarDate(range.to);
 
   const qc = getQueryClient();
+  qc.setQueryData(keys.accounts.list(), accounts);
+
   if (initialAccountId) {
     const linesParams = { accountId: initialAccountId, from: initialFrom, to: initialTo, ...INITIAL_LINES_PAGE };
     await Promise.all([
@@ -40,7 +42,6 @@ export default async function RewardsPage() {
       <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Rewards</h1>
       <HydrationBoundary state={dehydrate(qc)}>
         <RewardsBrowser
-          accounts={orderedAccounts}
           initialAccountId={initialAccountId}
           initialFrom={initialFrom}
           initialTo={initialTo}

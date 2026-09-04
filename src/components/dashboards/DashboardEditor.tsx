@@ -4,8 +4,12 @@
 // runs its report and renders the data) and EDIT (drag/resize/add/remove +
 // title overrides). Saving sends the FULL widget set via create/updateDashboard.
 
+import { useQuery } from '@tanstack/react-query';
+
 import { Card } from '@/components/ui/card';
+import { api } from '@/lib/api/client';
 import type { DashboardResponse } from '@/lib/dashboards.types';
+import { keys } from '@/lib/query/keys';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 
 import { DashboardGrid } from './DashboardGrid';
@@ -15,15 +19,22 @@ import { useDashboardEditor } from './editor/useDashboardEditor';
 
 interface DashboardEditorProps {
   mode: 'create' | 'edit';
-  reports: ReportSummaryResponse[];
   dashboard?: DashboardResponse;
 }
 
 export function DashboardEditor({
   mode,
-  reports,
   dashboard,
 }: DashboardEditorProps) {
+  const { data: reportsData } = useQuery<ReportSummaryResponse[]>({
+    queryKey: keys.reports.list(),
+    queryFn: async () => {
+      const { data } = await api.GET('/api/v1/reports');
+      return (data ?? []) as ReportSummaryResponse[];
+    },
+  });
+
+  const reports = reportsData ?? [];
   const {
     name,
     setName,

@@ -4,8 +4,9 @@ import { Layers, Loader2 } from 'lucide-react';
 
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Card } from '@/components/ui/card';
-import { Account, Broker } from '@/lib/account.types';
-import { PagedInvestmentTransactionResponse } from '@/lib/types';
+import { isAccountOfType } from '@/lib/account.types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { AccountType, PagedInvestmentTransactionResponse } from '@/lib/types';
 
 import { TradebookFilterBar } from './tradebook/TradebookFilterBar';
 import { TradebookMobileCards } from './tradebook/TradebookMobileCards';
@@ -14,15 +15,11 @@ import { useTradebookSection } from './tradebook/useTradebookSection';
 
 interface TradebookSectionProps {
   initialData: PagedInvestmentTransactionResponse;
-  brokerAccounts: Broker[];
-  accounts: Account[];
 }
 
-export function TradebookSection({
-  initialData,
-  brokerAccounts,
-  accounts,
-}: TradebookSectionProps) {
+export function TradebookSection({ initialData }: TradebookSectionProps) {
+  const { data: accounts = [] } = useAccounts();
+  const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
   const {
     selectedBrokerFilter,
     searchInput,

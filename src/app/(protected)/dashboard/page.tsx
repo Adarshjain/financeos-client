@@ -9,6 +9,7 @@ import { ApiError, dashboardsApi } from '@/lib/apiClient';
 import { prefetchWidgetData } from '@/lib/dashboards.server';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 import { getQueryClient } from '@/lib/query/client';
+import { keys } from '@/lib/query/keys';
 
 // Landing view: show the user's default dashboard. There's no default-dashboard
 // endpoint failure mode other than "none set" (404) that we handle inline; any
@@ -78,11 +79,12 @@ export default async function DashboardPage() {
   // Run the default dashboard's reports here, in parallel, so the landing route
   // paints with data instead of hydrating and then firing one request per widget.
   const queryClient = getQueryClient();
+  queryClient.setQueryData(keys.dashboards.list(), dashboards ?? []);
   await prefetchWidgetData(queryClient, defaultDashboard);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <DashboardHome dashboards={dashboards ?? []} />
+      <DashboardHome />
     </HydrationBoundary>
   );
 }

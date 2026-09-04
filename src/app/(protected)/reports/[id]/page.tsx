@@ -1,9 +1,8 @@
-import type { DynamicOptions } from '@/components/reports/catalog';
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+
 import { ReportBuilder } from '@/components/reports/ReportBuilder';
-import type { Account } from '@/lib/account.types';
 import { accountsApi, categoriesApi, instrumentsApi, reportsApi } from '@/lib/apiClient';
-import type { Category } from '@/lib/categories.types';
-import type { Instrument } from '@/lib/types';
+import { getQueryClient, keys } from '@/lib/query';
 
 export default async function EditReportPage({
   params,
@@ -11,27 +10,26 @@ export default async function EditReportPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const qc = getQueryClient();
   const [report, catalog, categories, accounts, instruments] = await Promise.all([
     reportsApi.getById(id),
     reportsApi.getDatasource(),
-    categoriesApi.list(),
-    accountsApi.list(),
-    instrumentsApi.search(),
+    categoriesApi.list().catch(() => []),
+    accountsApi.list().catch(() => []),
+    instrumentsApi.search().catch(() => []),
   ]);
 
-  const dynamicOptions: DynamicOptions = {
-    category: categories.map((c: Category) => ({ id: c.id, name: c.name })),
-    account: accounts.map((a: Account) => ({ id: a.id, name: a.closedOn ? `${a.name} (Closed)` : a.name })),
-    broker: accounts.filter((a: Account) => a.type === 'broker').map((a: Account) => ({ id: a.id, name: a.closedOn ? `${a.name} (Closed)` : a.name })),
-    instrument: instruments.map((i: Instrument) => ({ id: i.id, name: i.name })),
-  };
+  qc.setQueryData(keys.categories.list(), categories);
+  qc.setQueryData(keys.accounts.list(), accounts);
+  qc.setQueryData(keys.investments.instruments(), instruments);
 
   return (
-    <ReportBuilder
-      mode="edit"
-      report={report}
-      catalog={catalog}
-      dynamicOptions={dynamicOptions}
-    />
+    <HydrationBoundary state={dehydrate(qc)}>
+      <ReportBuilder
+        mode="edit"
+        report={report}
+        catalog={catalog}
+      />
+    </HydrationBoundary>
   );
 }

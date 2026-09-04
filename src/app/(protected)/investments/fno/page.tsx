@@ -1,10 +1,10 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
-import { Account, isAccountOfType } from '@/lib/account.types';
+import { Account } from '@/lib/account.types';
 import { accountsApi, fnoApi } from '@/lib/apiClient';
 import { getQueryClient } from '@/lib/query/client';
 import { keys } from '@/lib/query/keys';
-import { AccountType, FnoTradeListResponse } from '@/lib/types';
+import { FnoTradeListResponse } from '@/lib/types';
 
 import { FnoView } from './FnoView';
 
@@ -23,12 +23,12 @@ export default async function FnoPage() {
     accountsApi.list().catch(() => [] as Account[]),
   ]);
 
-  const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
   qc.setQueryData(keys.investments.fno(), fnoData);
+  qc.setQueryData(keys.accounts.list(), accounts);
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>
-      <FnoView brokerAccounts={brokerAccounts} />
+      <FnoView />
     </HydrationBoundary>
   );
 }

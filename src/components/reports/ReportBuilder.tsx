@@ -32,26 +32,25 @@ import type {
 } from '@/lib/reports.types';
 
 import { builderReducer, hydrateState, initialBuilderState } from './builderReducer';
-import type { DynamicOptions } from './catalog';
 import { PreviewPane } from './PreviewPane';
 import { ReportConfigurator } from './ReportConfigurator';
 import { buildCreateRequest, buildUpdateRequest, isMinimalValid } from './serialize';
+import { useReportDynamicOptions } from './useReportDynamicOptions';
 
 interface ReportBuilderProps {
   mode: 'create' | 'edit';
   catalog: ReportCatalog;
-  dynamicOptions: DynamicOptions;
   report?: ReportResponse;
 }
 
 export function ReportBuilder({
   mode,
   catalog,
-  dynamicOptions,
   report,
 }: ReportBuilderProps) {
   const router = useRouter();
   const qc = useQueryClient();
+  const dynamicOptions = useReportDynamicOptions();
 
   const getWorkingCatalog = (dsName: string): DatasourceCatalog => {
     const dsDef = catalog.datasources.find((d) => d.name === dsName) ?? catalog.datasources[0];
