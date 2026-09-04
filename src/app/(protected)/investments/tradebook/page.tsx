@@ -1,10 +1,10 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
-import { Account, isAccountOfType } from '@/lib/account.types';
+import { Account } from '@/lib/account.types';
 import { accountsApi, investmentsApi } from '@/lib/apiClient';
 import { getQueryClient } from '@/lib/query/client';
 import { keys } from '@/lib/query/keys';
-import { AccountType, PagedInvestmentTransactionResponse } from '@/lib/types';
+import { PagedInvestmentTransactionResponse } from '@/lib/types';
 
 import { ImportWizardDialog } from '../ImportWizardDialog';
 import { RecordTradeDialog } from '../RecordTradeDialog';
@@ -39,8 +39,7 @@ export default async function TradebookPage() {
     keys.investments.transactions(INITIAL_QUERY_PARAMS),
     initialTransactions
   );
-
-  const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
+  qc.setQueryData(keys.accounts.list(), accounts);
 
   return (
     <div className="pb-20 p-3 sm:p-6 space-y-2 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden">
@@ -55,18 +54,14 @@ export default async function TradebookPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <RecordTradeDialog brokerAccounts={brokerAccounts} />
-          <ImportWizardDialog brokerAccounts={brokerAccounts} />
+          <RecordTradeDialog />
+          <ImportWizardDialog />
           <RefreshPricesButton />
         </div>
       </div>
 
       <HydrationBoundary state={dehydrate(qc)}>
-        <TradebookSection
-          initialData={initialTransactions}
-          brokerAccounts={brokerAccounts}
-          accounts={accounts}
-        />
+        <TradebookSection initialData={initialTransactions} />
       </HydrationBoundary>
     </div>
   );

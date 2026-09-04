@@ -1,21 +1,19 @@
 'use client';
 
-import type { Account } from '@/lib/account.types';
-import type { Category } from '@/lib/categories.types';
+import { useMemo } from 'react';
+
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { useCategories } from '@/lib/query/hooks/useCategories';
+import { rewardEligibleAccounts } from '@/lib/rewards.types';
 
 import { SimulatorForm } from './simulator/SimulatorForm';
 import { SimulatorResults } from './simulator/SimulatorResults';
 import { useRecommendSimulator } from './simulator/useRecommendSimulator';
 
-interface RecommendSimulatorProps {
-  categories: Category[];
-  accounts: Account[];
-}
-
-export default function RecommendSimulator({
-  categories,
-  accounts,
-}: RecommendSimulatorProps) {
+export default function RecommendSimulator() {
+  const { data: rawAccounts = [] } = useAccounts();
+  const { data: categories = [] } = useCategories();
+  const accounts = useMemo(() => rewardEligibleAccounts(rawAccounts), [rawAccounts]);
   const {
     amount,
     setAmount,

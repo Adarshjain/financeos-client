@@ -14,7 +14,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Broker as BrokerAccount } from '@/lib/account.types';
+import { Broker as BrokerAccount, isAccountOfType } from '@/lib/account.types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { AccountType } from '@/lib/types';
 
 import { ImportStep1Upload } from './import-wizard/ImportStep1Upload';
 import { ImportStep2Review } from './import-wizard/ImportStep2Review';
@@ -22,16 +24,20 @@ import { ImportStep3Result } from './import-wizard/ImportStep3Result';
 import { useImportWizard } from './import-wizard/useImportWizard';
 
 interface ImportWizardDialogProps {
-  brokerAccounts: BrokerAccount[];
+  brokerAccounts?: BrokerAccount[];
   trigger?: React.ReactNode;
   onSuccess?: () => void;
 }
 
 export function ImportWizardDialog({
-  brokerAccounts,
+  brokerAccounts: propBrokerAccounts,
   trigger,
   onSuccess,
-}: ImportWizardDialogProps) {
+}: ImportWizardDialogProps = {}) {
+  const { data: accounts = [] } = useAccounts();
+  const brokerAccounts =
+    propBrokerAccounts ?? accounts.filter(isAccountOfType(AccountType.BROKER));
+
   const {
     open,
     handleOpenChange,

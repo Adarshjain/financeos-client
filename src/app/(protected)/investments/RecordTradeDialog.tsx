@@ -13,13 +13,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Broker } from '@/lib/account.types';
-import { Instrument } from '@/lib/types';
+import { Broker, isAccountOfType } from '@/lib/account.types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { AccountType, Instrument } from '@/lib/types';
 
 import { CreateInvestmentForm } from './CreateInvestmentForm';
 
 interface RecordTradeDialogProps {
-  brokerAccounts: Broker[];
+  brokerAccounts?: Broker[];
   initialBrokerAccountId?: string;
   initialInstrument?: Instrument;
   trigger?: React.ReactNode;
@@ -27,13 +28,17 @@ interface RecordTradeDialogProps {
 }
 
 export function RecordTradeDialog({
-  brokerAccounts,
+  brokerAccounts: propBrokerAccounts,
   initialBrokerAccountId,
   initialInstrument,
   trigger,
   onSuccess,
-}: RecordTradeDialogProps) {
+}: RecordTradeDialogProps = {}) {
   const [open, setOpen] = useState(false);
+  const { data: accounts = [] } = useAccounts();
+
+  const brokerAccounts =
+    propBrokerAccounts ?? accounts.filter(isAccountOfType(AccountType.BROKER));
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

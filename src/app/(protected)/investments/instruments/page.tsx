@@ -1,26 +1,22 @@
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+
 import { instrumentsApi } from '@/lib/apiClient';
+import { getQueryClient, keys } from '@/lib/query';
 import { Instrument } from '@/lib/types';
 
-import { InstrumentsSection } from '../InstrumentsSection';
+import { InstrumentsView } from './InstrumentsView';
 
 export default async function InstrumentsPage() {
+  const qc = getQueryClient();
   const instrumentsData = await instrumentsApi.search().catch(() => [] as Instrument[]);
   const instruments: Instrument[] = instrumentsData || [];
+  qc.setQueryData(keys.investments.instruments(), instruments);
 
   return (
-    <div className="pb-20 p-3 sm:p-6 space-y-2 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-            Instruments ({instruments.length})
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Tracked stocks, ETFs, mutual funds, ISIN codes, and exchange tickers
-          </p>
-        </div>
+    <HydrationBoundary state={dehydrate(qc)}>
+      <div className="pb-20 p-3 sm:p-6 space-y-2 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden">
+        <InstrumentsView />
       </div>
-
-      <InstrumentsSection instruments={instruments} />
-    </div>
+    </HydrationBoundary>
   );
 }

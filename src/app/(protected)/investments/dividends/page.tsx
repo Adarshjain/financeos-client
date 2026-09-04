@@ -1,11 +1,10 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
-import { Account, isAccountOfType } from '@/lib/account.types';
+import { Account } from '@/lib/account.types';
 import { accountsApi, dividendsApi, investmentsApi } from '@/lib/apiClient';
 import { getQueryClient } from '@/lib/query/client';
 import { keys } from '@/lib/query/keys';
 import {
-  AccountType,
   DividendSummary,
   PagedDividendResponse,
   Position,
@@ -53,10 +52,11 @@ export default async function DividendsPage() {
   const initialData: PagedDividendResponse = dividendsData;
   const initialSummary: DividendSummary = summaryData;
   const positions: Position[] = positionsData.positions || [];
-  const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
 
   qc.setQueryData(keys.investments.dividends(INITIAL_LIST_PARAMS), initialData);
   qc.setQueryData(keys.investments.dividendSummary(INITIAL_SUMMARY_PARAMS), initialSummary);
+  qc.setQueryData(keys.investments.positions(), positions);
+  qc.setQueryData(keys.accounts.list(), accounts);
 
   return (
     <div className="pb-20 p-3 sm:p-6 space-y-4 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden">
@@ -64,9 +64,6 @@ export default async function DividendsPage() {
         <DividendsSection
           initialData={initialData}
           initialSummary={initialSummary}
-          brokerAccounts={brokerAccounts}
-          accounts={accounts}
-          positions={positions}
         />
       </HydrationBoundary>
     </div>

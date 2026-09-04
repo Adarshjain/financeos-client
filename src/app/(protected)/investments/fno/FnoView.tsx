@@ -6,7 +6,9 @@ import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Broker } from '@/lib/account.types';
+import { isAccountOfType } from '@/lib/account.types';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
+import { AccountType } from '@/lib/types';
 
 import { ImportWizardDialog } from '../ImportWizardDialog';
 import { DeleteFnoTradeDialog } from './components/DeleteFnoTradeDialog';
@@ -17,11 +19,10 @@ import { FnoSummaryCards } from './components/FnoSummaryCards';
 import { useFnoView } from './components/useFnoView';
 import { CreateFnoTradeDialog } from './CreateFnoTradeDialog';
 
-interface FnoViewProps {
-  brokerAccounts: Broker[];
-}
+export function FnoView() {
+  const { data: accounts = [] } = useAccounts();
+  const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
 
-export function FnoView({ brokerAccounts }: FnoViewProps) {
   const {
     search,
     setSearch,

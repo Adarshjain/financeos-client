@@ -15,6 +15,9 @@ export default async function RewardRulesPage() {
   const initialAccountId = orderedAccounts[0]?.id ?? '';
 
   const qc = getQueryClient();
+  qc.setQueryData(keys.accounts.list(), accounts);
+  qc.setQueryData(keys.categories.list(), categories);
+
   if (initialAccountId) {
     await Promise.all([
       qc.prefetchQuery({
@@ -39,8 +42,6 @@ export default async function RewardRulesPage() {
       </div>
       <HydrationBoundary state={dehydrate(qc)}>
         <RewardRulesManager
-          accounts={orderedAccounts}
-          categories={categories}
           initialAccountId={initialAccountId}
         />
       </HydrationBoundary>
