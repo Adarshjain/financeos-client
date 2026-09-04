@@ -1,30 +1,5 @@
 [
   {
-    "route": "/loans",
-    "reason": "Not yet covered",
-    "phase": 10
-  },
-  {
-    "route": "/loans/[id]",
-    "reason": "Not yet covered",
-    "phase": 10
-  },
-  {
-    "route": "/loans/calendar",
-    "reason": "Not yet covered",
-    "phase": 10
-  },
-  {
-    "route": "/loans/lendings",
-    "reason": "Not yet covered",
-    "phase": 10
-  },
-  {
-    "route": "/loans/lendings/[counterpartyId]",
-    "reason": "Not yet covered",
-    "phase": 10
-  },
-  {
     "route": "/investments",
     "reason": "Not yet covered",
     "phase": 11
