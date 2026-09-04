@@ -1,3 +1,5 @@
+import '@/test/next-mocks'; // must be first: AccountFormWrapper calls useRouter() for router.refresh() after save
+
 import { screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -14,6 +16,7 @@ vi.mock('@/lib/api/client', async () => {
     },
   };
 });
+
 
 import { AccountsView } from '@/app/(protected)/accounts/components/AccountsView';
 import { api } from '@/lib/api/client';
