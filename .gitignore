@@ -49,3 +49,6 @@ e2e/logs/
 e2e/.server.pid
 e2e/.client.pid
 e2e/fixtures/files/samples/
+
+# Stray Playwright output when run from the repo root
+/test-results/

@@ -5,10 +5,7 @@ export async function loginContext(context: BrowserContext, cookie: string): Pro
     {
       name: 'FINANCEOS_SESSION',
       value: cookie,
-      domain: 'localhost',
-      path: '/',
-      httpOnly: true,
-      sameSite: 'Lax',
+      url: 'http://localhost:6970',
     },
   ]);
 }

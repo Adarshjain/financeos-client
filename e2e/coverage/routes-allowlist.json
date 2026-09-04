@@ -1,15 +1,5 @@
 [
   {
-    "route": "/settings/ingest",
-    "reason": "Not yet covered",
-    "phase": 8
-  },
-  {
-    "route": "/settings/jobs",
-    "reason": "Not yet covered",
-    "phase": 8
-  },
-  {
     "route": "/rewards",
     "reason": "Not yet covered",
     "phase": 9

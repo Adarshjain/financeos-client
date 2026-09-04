@@ -149,18 +149,18 @@ test.describe('Auth API (@api)', () => {
     expect(wrongPwRes.status()).toBe(401);
     expect(unknownEmailRes.status()).toBe(401);
 
-    const wrongPwText = await wrongPwRes.text();
-    const unknownEmailText = await unknownEmailRes.text();
+    const wrongPwData = await wrongPwRes.json().catch(() => ({ raw: wrongPwRes.text() }));
+    const unknownEmailData = await unknownEmailRes.json().catch(() => ({ raw: unknownEmailRes.text() }));
 
-    // Check if error message is identical (no user enumeration)
-    // We assert both statuses are 401 and compare texts
-    expect(wrongPwRes.status()).toBe(unknownEmailRes.status());
-    // Document finding if bodies differ:
-    if (wrongPwText !== unknownEmailText) {
-      console.warn(`[SERVER FINDING] Login response differs for wrong password vs unknown email:
-        Wrong pw: ${wrongPwText}
-        Unknown email: ${unknownEmailText}`);
-    }
+    // Strip volatile timestamp/requestId before comparing bodies
+    const normalize = (obj: Record<string, unknown>) => {
+      const copy = { ...obj };
+      delete copy.timestamp;
+      delete copy.requestId;
+      return copy;
+    };
+
+    expect(normalize(wrongPwData)).toEqual(normalize(unknownEmailData));
   });
 
   test('/me with and without cookie', async ({ request }) => {

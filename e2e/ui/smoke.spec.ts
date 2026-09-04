@@ -1,3 +1,4 @@
+import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { expect, test } from '../fixtures/test';
 
@@ -40,11 +41,13 @@ test.describe('UI Smokes', () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test('5. @mobile goto("/") lands on /login when signed out, /dashboard when signed in', async ({ page, context, user }) => {
+  test('5. @mobile goto("/") lands on /login when signed out, /dashboard when signed in', async ({ page, context }) => {
+    await context.clearCookies();
     await page.goto('/');
     await expect(page).toHaveURL(/\/login/);
 
-    await loginContext(context, user.cookie);
+    const fresh = await createUser(page.request, 'smoke-5');
+    await loginContext(context, fresh.cookie);
     await page.goto('/');
     await expect(page).toHaveURL(/\/dashboard/);
   });

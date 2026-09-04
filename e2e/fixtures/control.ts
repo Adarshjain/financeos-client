@@ -7,6 +7,7 @@ export interface ScriptResponseEntry {
     kind: string;
     message: string;
   };
+  delayMs?: number;
 }
 
 export interface CallEntry {
