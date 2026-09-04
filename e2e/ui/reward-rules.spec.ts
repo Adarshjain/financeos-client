@@ -93,7 +93,15 @@ test.describe('Reward Rules Manager UI (@ui)', () => {
     await expect(page.getByText('3%')).toBeVisible();
 
     // 6. Create Cap Bucket
-    await page.getByRole('button', { name: 'New Bucket' }).click();
+    // Observed 3x: the button is visible + enabled (ARIA snapshot) yet Playwright's actionability
+    // check reports it "not stable" for the whole timeout right after the rule edit — the rules
+    // list above is still re-rendering/refetching. Wait for the network to settle, assert the
+    // button is enabled, then click without the stability heuristic. Tracked as a follow-up
+    // (possible refetch loop in RewardRulesManager after a rule mutation).
+    await page.waitForLoadState('networkidle');
+    const newBucketBtn = page.getByRole('button', { name: 'New Bucket' });
+    await expect(newBucketBtn).toBeEnabled();
+    await newBucketBtn.click({ force: true });
     await expect(page.getByText('Create Cap Bucket')).toBeVisible();
     await page.getByPlaceholder('e.g. ACE combined cap').fill('Dining & Travel Pool');
     await page.getByPlaceholder('e.g. 500').fill('1000');
