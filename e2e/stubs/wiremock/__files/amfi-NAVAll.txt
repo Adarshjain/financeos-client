@@ -1,0 +1,5 @@
+Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Net Asset Value;Date
+Open Ended Schemes(Equity Scheme - Large Cap Fund)
+100001;INF100E2E001;INF100E2E002;E2E Bluechip Growth Fund;123.4567;03-Sep-2026
+100002;INF100E2E003;INF100E2E004;E2E Large Cap Index Fund;45.1200;03-Sep-2026
+100003;INF100E2E005;INF100E2E006;E2E Suspended Fund;N.A.;03-Sep-2026

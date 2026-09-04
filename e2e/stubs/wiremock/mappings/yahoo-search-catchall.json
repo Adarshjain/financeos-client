@@ -1,0 +1,16 @@
+{
+  "priority": 10,
+  "request": {
+    "method": "GET",
+    "urlPath": "/yahoo/v1/finance/search"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "quotes": []
+    }
+  }
+}

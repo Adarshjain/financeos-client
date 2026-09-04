@@ -1,0 +1,31 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/yahoo/v1/finance/search",
+    "queryParameters": {
+      "q": {
+        "matches": "(?i).*TCS.*"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "quotes": [
+        {
+          "quoteType": "EQUITY",
+          "symbol": "TCS.NS",
+          "shortname": "Tata Consultancy Services Limited",
+          "longname": "Tata Consultancy Services Limited",
+          "exchange": "NSI",
+          "currency": "INR",
+          "regularMarketPrice": 3600.25
+        }
+      ]
+    }
+  }
+}

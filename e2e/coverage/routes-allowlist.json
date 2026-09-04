@@ -1,25 +1,5 @@
 [
   {
-    "route": "/investments",
-    "reason": "Not yet covered",
-    "phase": 11
-  },
-  {
-    "route": "/investments/dividends",
-    "reason": "Not yet covered",
-    "phase": 11
-  },
-  {
-    "route": "/investments/instruments",
-    "reason": "Not yet covered",
-    "phase": 11
-  },
-  {
-    "route": "/investments/tradebook",
-    "reason": "Not yet covered",
-    "phase": 11
-  },
-  {
     "route": "/investments/corporate-actions",
     "reason": "Not yet covered",
     "phase": 12
