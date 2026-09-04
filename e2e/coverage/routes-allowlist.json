@@ -1,20 +1,5 @@
 [
   {
-    "route": "/rewards",
-    "reason": "Not yet covered",
-    "phase": 9
-  },
-  {
-    "route": "/rewards/recommend",
-    "reason": "Not yet covered",
-    "phase": 9
-  },
-  {
-    "route": "/rewards/rules",
-    "reason": "Not yet covered",
-    "phase": 9
-  },
-  {
     "route": "/loans",
     "reason": "Not yet covered",
     "phase": 10
