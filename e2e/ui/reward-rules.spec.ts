@@ -16,6 +16,8 @@ test.describe('Reward Rules Manager UI (@ui)', () => {
   test('rule lifecycle: create, reorder, edit, bucket CRUD, milestone CRUD, point value config, delete', async ({
     page,
   }) => {
+    test.slow(); // long multi-step journey: 3x timeout under parallel load
+
     const api = makeApi(currentUser.cookie);
 
     // 1. Seed card account
