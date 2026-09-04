@@ -13,7 +13,7 @@ import {
   uniqueSeedSuffix,
 } from '../fixtures/seed/investments';
 import { expectForeign, expectUnauthenticated, secondUser } from '../fixtures/tenancy';
-import { expect, test } from '../fixtures/test';
+import { expect, freshUser, test } from '../fixtures/test';
 
 test.describe('Trades & Positions API (@api)', () => {
   test('Create trade validation, broker vs bank, unknown ids, auto price refresh AFTER_COMMIT', async ({
@@ -510,8 +510,11 @@ test.describe('Trades & Positions API (@api)', () => {
   });
 
   test('Transactions list pagination, filters, summary rollup totals, and XIRR calculation', async ({
-    api,
+    request,
   }) => {
+    // /investments/summary is user-wide: use a fresh user so positions created by other tests in
+    // this worker (valued-at-cost, DEAD symbol, sold-out) cannot drag the XIRR sign around.
+    const { api } = await freshUser(request, 'xirr');
     const broker = await createBroker(api);
     const symbol = generateYahooSymbol('PAGE');
     const inst = await resolveInstrument(api, {
