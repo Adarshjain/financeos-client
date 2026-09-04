@@ -1,0 +1,41 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/yahoo/v8/finance/chart/RELIANCE.NS",
+    "queryParameters": {
+      "events": {
+        "equalTo": "div"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "chart": {
+        "result": [
+          {
+            "meta": {
+              "symbol": "RELIANCE.NS"
+            },
+            "events": {
+              "dividends": {
+                "1767571200": {
+                  "amount": 9.00,
+                  "date": 1767571200
+                },
+                "1751673600": {
+                  "amount": 8.00,
+                  "date": 1751673600
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

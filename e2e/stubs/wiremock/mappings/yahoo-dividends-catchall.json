@@ -1,0 +1,30 @@
+{
+  "priority": 2,
+  "request": {
+    "method": "GET",
+    "urlPattern": "/yahoo/v8/finance/chart/.*",
+    "queryParameters": {
+      "events": {
+        "equalTo": "div"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "chart": {
+        "result": [
+          {
+            "meta": {
+              "symbol": "UNKNOWN"
+            },
+            "events": {}
+          }
+        ]
+      }
+    }
+  }
+}

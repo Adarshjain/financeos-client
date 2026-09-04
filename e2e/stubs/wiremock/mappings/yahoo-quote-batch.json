@@ -1,0 +1,15 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPath": "/yahoo/v7/finance/quote"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "transformers": ["response-template"],
+    "body": "{\"quoteResponse\": {\"result\": [{\"symbol\": \"RELIANCE.NS\", \"regularMarketPrice\": 2500.50}, {\"symbol\": \"TCS.NS\", \"regularMarketPrice\": 3600.25}, {\"symbol\": \"NIFTYBEES.NS\", \"regularMarketPrice\": 250.10}{{#unless (matches request.query.symbols '(?i).*DEAD.*')}}, {\"symbol\": \"{{request.query.symbols}}\", \"regularMarketPrice\": 999.99}{{/unless}}]}}"
+  }
+}

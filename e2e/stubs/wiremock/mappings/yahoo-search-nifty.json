@@ -1,0 +1,39 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/yahoo/v1/finance/search",
+    "queryParameters": {
+      "q": {
+        "matches": "(?i).*NIFTY.*"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "quotes": [
+        {
+          "quoteType": "ETF",
+          "symbol": "NIFTYBEES.NS",
+          "shortname": "Nippon India ETF Nifty BeES",
+          "longname": "Nippon India ETF Nifty BeES",
+          "exchange": "NSI",
+          "currency": "INR",
+          "regularMarketPrice": 250.10
+        },
+        {
+          "quoteType": "MUTUALFUND",
+          "symbol": "NIFTY_MF.BO",
+          "shortname": "Nifty Mutual Fund (Dropped)",
+          "exchange": "BOM",
+          "currency": "INR",
+          "regularMarketPrice": 100.00
+        }
+      ]
+    }
+  }
+}

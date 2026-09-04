@@ -40,3 +40,23 @@ export async function loginViaUi(
   await page.getByLabel('Password').fill(password);
   await page.getByRole('button', { name: 'Sign in' }).click();
 }
+
+export async function openInvestments(page: Page): Promise<void> {
+  await page.goto(`${E2E_CLIENT_URL}/investments`);
+  await expect(page.getByRole('heading', { name: /Portfolio Holdings/i, level: 1 })).toBeVisible();
+}
+
+export async function openInstruments(page: Page): Promise<void> {
+  await page.goto(`${E2E_CLIENT_URL}/investments/instruments`);
+  await expect(page.getByRole('heading', { name: /Instruments/i, level: 1 })).toBeVisible();
+}
+
+export async function openTradebook(page: Page): Promise<void> {
+  await page.goto(`${E2E_CLIENT_URL}/investments/tradebook`);
+  await expect(page.getByRole('heading', { name: /Tradebook & Actions/i, level: 1 })).toBeVisible();
+}
+
+export async function openDividends(page: Page): Promise<void> {
+  await page.goto(`${E2E_CLIENT_URL}/investments/dividends`);
+  await expect(page.getByRole('heading', { name: /Dividend Income & Payouts/i, level: 1 })).toBeVisible();
+}

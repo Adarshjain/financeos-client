@@ -1,0 +1,31 @@
+{
+  "priority": 1,
+  "request": {
+    "method": "GET",
+    "urlPath": "/yahoo/v1/finance/search",
+    "queryParameters": {
+      "q": {
+        "matches": "(?i).*REL.*"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "quotes": [
+        {
+          "quoteType": "EQUITY",
+          "symbol": "RELIANCE.NS",
+          "shortname": "Reliance Industries Limited",
+          "longname": "Reliance Industries Limited",
+          "exchange": "NSI",
+          "currency": "INR",
+          "regularMarketPrice": 2500.50
+        }
+      ]
+    }
+  }
+}
