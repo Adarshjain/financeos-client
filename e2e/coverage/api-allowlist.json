@@ -7,13 +7,6 @@
   },
   {
     "method": "POST",
-    "path": "/api/v1/accounts/{accountId}/ingest",
-    "reason": "Not yet covered",
-    "phase": 8
-  },
-
-  {
-    "method": "POST",
     "path": "/api/v1/jobs/{id}/cancel",
     "reason": "Not yet covered",
     "phase": 8
@@ -21,12 +14,6 @@
   {
     "method": "POST",
     "path": "/api/v1/jobs/{id}/retry",
-    "reason": "Not yet covered",
-    "phase": 8
-  },
-  {
-    "method": "GET",
-    "path": "/api/v1/statements/{statementId}",
     "reason": "Not yet covered",
     "phase": 8
   },
