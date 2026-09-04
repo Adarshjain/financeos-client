@@ -151,10 +151,9 @@ export async function findById(
 }
 
 /**
- * Creates two near-duplicate transactions (same account, amount, date) representing a candidate pair.
- * Note: In financeos-server, manual transactions are always marked ReviewType.NA with empty review reasons.
- * Review reasons (DUPLICATE_SUSPECT, CATEGORY_UNVERIFIED, UNRECONCILED) are only populated via statement/file
- * ingestion (Phase 8) or Gmail ingestion (Phase 15).
+ * Creates two near-duplicate manual transactions.
+ * Note: Manual transactions are marked ReviewType.NA. For transactions with active review reasons
+ * (DUPLICATE_SUSPECT, CATEGORY_UNVERIFIED), seed via statement ingestion (see `seed/statements.ts`).
  */
 export async function createNeedsReviewPair(
   api: ApiClient,

@@ -1,5 +1,5 @@
 import { expectStatus } from '../fixtures/api';
-import { resetLlm } from '../fixtures/control';
+import { resetLlm, setLlmMode } from '../fixtures/control';
 import {
   BankSpec,
   CardSpec,
@@ -22,6 +22,16 @@ import { expect, test } from '../fixtures/test';
 
 test.describe('Statements Ingestion API', () => {
   test.describe.configure({ mode: 'serial' });
+
+  test.beforeEach(async ({ api }) => {
+    await resetLlm(api);
+    await setLlmMode(api, 'SCHEMA_DEFAULT');
+  });
+
+  test.afterEach(async ({ api }) => {
+    await resetLlm(api);
+    await setLlmMode(api, 'SCHEMA_DEFAULT');
+  });
 
   const standardBankSpec: BankSpec = {
     bank: 'HDFC Bank',

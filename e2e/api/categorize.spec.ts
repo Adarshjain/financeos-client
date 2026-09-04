@@ -148,11 +148,9 @@ test.describe('Categorize API & Scripted LLM', () => {
       body: { description: 'SOME TRANSACTION' },
     });
     // Server design: suggestForDescription catches LLM exception and returns 200 with empty result
-    expect([200, 422, 500, 502, 503]).toContain(res.response.status);
-    if (res.response.status === 200) {
-      expect(res.data?.categories.length).toBe(0);
-      expect(res.data?.fromRule).toBe(false);
-    }
+    expectStatus(res, 200);
+    expect(res.data?.categories.length).toBe(0);
+    expect(res.data?.fromRule).toBe(false);
   });
 
   test('STRICT mode with no script produces clean failure path', async ({
@@ -166,10 +164,9 @@ test.describe('Categorize API & Scripted LLM', () => {
       body: { description: 'UNSCRIPTED TRANSACTION' },
     });
     // suggestForDescription catches and logs, resolving to empty result
-    expect([200, 500]).toContain(res.response.status);
-    if (res.response.status === 200) {
-      expect(res.data?.categories.length).toBe(0);
-    }
+    expectStatus(res, 200);
+    expect(res.data?.categories.length).toBe(0);
+    expect(res.data?.fromRule).toBe(false);
   });
 
   test('401 unauthorized on /categorize without session', async () => {
