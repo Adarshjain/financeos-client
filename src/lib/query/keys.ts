@@ -18,6 +18,7 @@ export const keys = {
     byId: (id: string) => [...keys.accounts.all, 'detail', id] as const,
     cycleSummary: (id: string) => [...keys.accounts.all, 'cycleSummary', id] as const,
     cardholders: (accountId: string) => [...keys.accounts.all, 'cardholders', accountId] as const,
+    identifiers: (accountId: string) => [...keys.accounts.all, 'identifiers', accountId] as const,
   },
 
   categories: {
