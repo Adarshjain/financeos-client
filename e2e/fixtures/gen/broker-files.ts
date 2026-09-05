@@ -360,3 +360,340 @@ export async function genCasPdf(spec: CasSpec): Promise<Buffer> {
   doc.end();
   return promise;
 }
+
+export interface ZerodhaTaxPnlRow {
+  symbol: string;
+  isin?: string;
+  entryDate?: string; // YYYY-MM-DD
+  exitDate?: string; // YYYY-MM-DD
+  date?: string; // fallback for entry & exit
+  quantity: number;
+  buyValue?: number;
+  sellValue?: number;
+  profit?: number;
+  brokerage?: number;
+  exchangeTxnCharges?: number;
+  ipft?: number;
+  sebiCharges?: number;
+  cgst?: number;
+  sgst?: number;
+  igst?: number;
+  stampDuty?: number;
+  stt?: number;
+}
+
+export interface ZerodhaFnoExitRow {
+  tradingSymbol: string;
+  quantity: number;
+  buyValue?: number;
+  sellValue?: number;
+  profit?: number;
+  entryDate?: string;
+  exitDate?: string;
+  brokerage?: number;
+  exchangeTxnCharges?: number;
+  ipft?: number;
+  sebiCharges?: number;
+  cgst?: number;
+  sgst?: number;
+  igst?: number;
+  stampDuty?: number;
+  stt?: number;
+  dpCharges?: number;
+  otherCharges?: number;
+}
+
+export interface ZerodhaTaxPnlSpec {
+  sheetName?: string;
+  intraday?: ZerodhaTaxPnlRow[];
+  shortTerm?: ZerodhaTaxPnlRow[];
+  longTerm?: ZerodhaTaxPnlRow[];
+  buyback?: ZerodhaTaxPnlRow[];
+  fno?: ZerodhaFnoExitRow[];
+}
+
+export async function genZerodhaTaxPnlXlsx(spec: ZerodhaTaxPnlSpec): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet(spec.sheetName || 'Tradewise Exits from 2026-04-01');
+
+  let currentRow = 1;
+
+  const writeSection = (
+    title: string,
+    rows: ZerodhaTaxPnlRow[],
+    isFno = false
+  ) => {
+    if (rows.length === 0) return;
+
+    // Section title
+    sheet.getRow(currentRow).values = [title];
+    currentRow++;
+
+    // Header row
+    const headers = [
+      'Symbol',
+      ...(isFno ? [] : ['ISIN']),
+      'Entry Date',
+      'Exit Date',
+      'Quantity',
+      'Buy Value',
+      'Sell Value',
+      'Profit',
+      'Brokerage',
+      'Exchange Transaction Charges',
+      'IPFT',
+      'SEBI Charges',
+      'CGST',
+      'SGST',
+      'IGST',
+      'Stamp Duty',
+      'STT',
+    ];
+    sheet.getRow(currentRow).values = headers;
+    currentRow++;
+
+    for (const r of rows) {
+      const entryD = r.entryDate ?? r.date ?? '2026-08-01';
+      const exitD = r.exitDate ?? r.date ?? '2026-08-01';
+      const buyVal = r.buyValue ?? 0;
+      const sellVal = r.sellValue ?? 0;
+      const profitVal = r.profit ?? sellVal - buyVal;
+
+      const rowValues = [
+        r.symbol,
+        ...(isFno ? [] : [r.isin ?? '']),
+        entryD,
+        exitD,
+        r.quantity,
+        buyVal,
+        sellVal,
+        profitVal,
+        r.brokerage ?? 0,
+        r.exchangeTxnCharges ?? 0,
+        r.ipft ?? 0,
+        r.sebiCharges ?? 0,
+        r.cgst ?? 0,
+        r.sgst ?? 0,
+        r.igst ?? 0,
+        r.stampDuty ?? 0,
+        r.stt ?? 0,
+      ];
+      sheet.getRow(currentRow).values = rowValues;
+      currentRow++;
+    }
+
+    currentRow++; // Empty spacing row
+  };
+
+  if (spec.intraday && spec.intraday.length > 0) {
+    writeSection('Equity - Intraday', spec.intraday);
+  }
+  if (spec.shortTerm && spec.shortTerm.length > 0) {
+    writeSection('Equity - Short Term', spec.shortTerm);
+  }
+  if (spec.longTerm && spec.longTerm.length > 0) {
+    writeSection('Equity - Long Term', spec.longTerm);
+  }
+  if (spec.buyback && spec.buyback.length > 0) {
+    writeSection('Equity - Buyback', spec.buyback);
+  }
+  if (spec.fno && spec.fno.length > 0) {
+    const fnoMapped: ZerodhaTaxPnlRow[] = spec.fno.map((f) => ({
+      symbol: f.tradingSymbol,
+      quantity: f.quantity,
+      buyValue: f.buyValue,
+      sellValue: f.sellValue,
+      profit: f.profit,
+      entryDate: f.entryDate,
+      exitDate: f.exitDate,
+      brokerage: f.brokerage,
+      exchangeTxnCharges: f.exchangeTxnCharges,
+      ipft: f.ipft,
+      sebiCharges: f.sebiCharges,
+      cgst: f.cgst,
+      sgst: f.sgst,
+      igst: f.igst,
+      stampDuty: f.stampDuty,
+      stt: f.stt,
+    }));
+    writeSection('Equity - F&O', fnoMapped, true);
+  }
+
+  const arrayBuffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
+export interface GrowwOrderHistoryRow {
+  stockName?: string;
+  symbol?: string;
+  isin?: string;
+  type: 'buy' | 'sell' | 'BUY' | 'SELL';
+  quantity: number;
+  price?: number;
+  value?: number;
+  exchange?: string;
+  orderId?: string;
+  executionDate: string; // YYYY-MM-DD or DD-MM-YYYY HH:mm a
+  orderStatus?: string; // default 'Executed'
+}
+
+export async function genGrowwOrderHistoryXlsx(rows: GrowwOrderHistoryRow[]): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('Sheet1');
+
+  // Headers
+  const headers = [
+    'Stock name',
+    'Symbol',
+    'ISIN',
+    'Type',
+    'Quantity',
+    'Value',
+    'Exchange',
+    'Exchange Order Id',
+    'Execution date and time',
+    'Order status',
+  ];
+  sheet.getRow(1).values = headers;
+
+  let currentRow = 2;
+  for (const r of rows) {
+    const totalVal = r.value !== undefined ? r.value : (r.price ?? 0) * r.quantity;
+    sheet.getRow(currentRow).values = [
+      r.stockName ?? r.symbol ?? '',
+      r.symbol ?? '',
+      r.isin ?? '',
+      r.type.toUpperCase(),
+      r.quantity,
+      totalVal,
+      r.exchange ?? 'NSE',
+      r.orderId ?? `ord-${currentRow}`,
+      r.executionDate,
+      r.orderStatus ?? 'Executed',
+    ];
+    currentRow++;
+  }
+
+  const arrayBuffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
+export interface GrowwCapitalGainsRow {
+  stockName?: string;
+  isin: string;
+  quantity: number;
+  buyDate?: string;
+  buyPrice?: number;
+  buyValue?: number;
+  sellDate?: string;
+  sellPrice?: number;
+  sellValue?: number;
+  realisedPnl?: number;
+}
+
+export interface GrowwCapitalGainsSpec {
+  intraday?: GrowwCapitalGainsRow[];
+  shortTerm?: GrowwCapitalGainsRow[];
+  longTerm?: GrowwCapitalGainsRow[];
+  buyback?: GrowwCapitalGainsRow[];
+}
+
+export async function genGrowwCapitalGainsXlsx(spec: GrowwCapitalGainsSpec): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('Sheet1');
+
+  let currentRow = 1;
+
+  const writeSubSection = (title: string, rows: GrowwCapitalGainsRow[]) => {
+    if (rows.length === 0) return;
+
+    sheet.getRow(currentRow).values = [title];
+    currentRow++;
+
+    const headers = [
+      'Stock name',
+      'ISIN',
+      'Quantity',
+      'Buy date',
+      'Buy price',
+      'Buy value',
+      'Sell date',
+      'Sell price',
+      'Sell value',
+      'Realised P&L',
+      'Remark',
+    ];
+    sheet.getRow(currentRow).values = headers;
+    currentRow++;
+
+    for (const r of rows) {
+      const buyVal = r.buyValue ?? (r.buyPrice ?? 0) * r.quantity;
+      const sellVal = r.sellValue ?? (r.sellPrice ?? 0) * r.quantity;
+      const pnl = r.realisedPnl ?? sellVal - buyVal;
+
+      sheet.getRow(currentRow).values = [
+        r.stockName ?? '',
+        r.isin,
+        r.quantity,
+        r.buyDate ?? '2026-08-01',
+        r.buyPrice ?? 0,
+        buyVal,
+        r.sellDate ?? '2026-08-01',
+        r.sellPrice ?? 0,
+        sellVal,
+        pnl,
+        '',
+      ];
+      currentRow++;
+    }
+
+    currentRow++; // Empty spacing row
+  };
+
+  if (spec.intraday && spec.intraday.length > 0) {
+    writeSubSection('Intraday trades', spec.intraday);
+  }
+  if (spec.shortTerm && spec.shortTerm.length > 0) {
+    writeSubSection('Short Term trades', spec.shortTerm);
+  }
+  if (spec.longTerm && spec.longTerm.length > 0) {
+    writeSubSection('Long Term trades', spec.longTerm);
+  }
+  if (spec.buyback && spec.buyback.length > 0) {
+    writeSubSection('Buyback trades', spec.buyback);
+  }
+
+  const arrayBuffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
+export interface HoldingsSnapshotRow {
+  isin?: string;
+  symbol?: string;
+  quantity: number;
+  averagePrice?: number;
+}
+
+export function genHoldingsSnapshotCsv(rows: HoldingsSnapshotRow[]): Buffer {
+  const lines: string[] = ['isin,symbol,quantity,average_price'];
+  for (const r of rows) {
+    lines.push(`${r.isin ?? ''},${r.symbol ?? ''},${r.quantity},${r.averagePrice ?? 0}`);
+  }
+  return Buffer.from(lines.join('\n'), 'utf-8');
+}
+
+export async function genHoldingsSnapshotXlsx(rows: HoldingsSnapshotRow[]): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('Holdings');
+  sheet.getRow(1).values = ['isin', 'symbol', 'quantity', 'average_price'];
+
+  let currentRow = 2;
+  for (const r of rows) {
+    sheet.getRow(currentRow).values = [r.isin ?? '', r.symbol ?? '', r.quantity, r.averagePrice ?? 0];
+    currentRow++;
+  }
+
+  const arrayBuffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(arrayBuffer);
+}
+

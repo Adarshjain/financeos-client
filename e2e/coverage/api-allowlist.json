@@ -6,18 +6,6 @@
     "phase": null
   },
   {
-    "method": "POST",
-    "path": "/api/v1/investments/imports/reconcile/commit",
-    "reason": "Phase 12b",
-    "phase": 12
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/investments/imports/reconcile/preview",
-    "reason": "Phase 12b",
-    "phase": 12
-  },
-  {
     "method": "GET",
     "path": "/api/v1/dashboard/summary",
     "reason": "Not yet covered",
