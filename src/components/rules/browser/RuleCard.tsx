@@ -136,38 +136,45 @@ export function RuleCard({
           </div>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {!rule.verified && (
             <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label="Rule actions"
+              variant="outline"
+              size="xs"
+              onClick={() => onVerify(rule.id)}
             >
-              <MoreVertical className="h-4 w-4 text-slate-500" />
+              <Check />
+              Approve
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => onMatches(rule)}>
-              <ListChecks className="w-3.5 h-3.5 mr-2" /> Find Matches
-            </DropdownMenuItem>
-            {!rule.verified && (
-              <DropdownMenuItem onClick={() => onVerify(rule.id)}>
-                <Check className="w-3.5 h-3.5 mr-2" /> Approve Rule
+          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Rule actions"
+              >
+                <MoreVertical className="h-4 w-4 text-slate-500" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => onMatches(rule)}>
+                <ListChecks className="w-3.5 h-3.5 mr-2" /> Find Matches
               </DropdownMenuItem>
-            )}
-            <DropdownMenuItem onClick={() => onEdit(rule)}>
-              <Edit className="w-3.5 h-3.5 mr-2" /> Edit Rule
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={() => onDelete(rule)}
-              className="text-rose-600 dark:text-rose-400 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950/30"
-            >
-              <Trash2 className="w-3.5 h-3.5 mr-2 text-rose-600 dark:text-rose-400" />{' '}
-              Delete Rule
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <DropdownMenuItem onClick={() => onEdit(rule)}>
+                <Edit className="w-3.5 h-3.5 mr-2" /> Edit Rule
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => onDelete(rule)}
+                className="text-rose-600 dark:text-rose-400 focus:text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950/30"
+              >
+                <Trash2 className="w-3.5 h-3.5 mr-2 text-rose-600 dark:text-rose-400" />{' '}
+                Delete Rule
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </div>
   );
