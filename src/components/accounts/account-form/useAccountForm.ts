@@ -15,9 +15,11 @@ interface UseAccountFormOptions {
   account?: Account;
   onSuccess?: () => void;
   onClose?: () => void;
+  /** Identifier aliases collected in create mode, saved right after the account exists. */
+  pendingIdentifiers?: string[];
 }
 
-export function useAccountForm({ account, onSuccess, onClose }: UseAccountFormOptions) {
+export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers = [] }: UseAccountFormOptions) {
   const {
     createAccountMutation,
     updateAccountMutation,
@@ -46,13 +48,8 @@ export function useAccountForm({ account, onSuccess, onClose }: UseAccountFormOp
   const [closeOnDate, setCloseOnDate] = useState(new Date().toISOString().split('T')[0]);
   const [showCloseInline, setShowCloseInline] = useState(false);
 
-  /**
-   * Re-syncs the editable `accountType`/`excludeFromNetAsset` fields whenever
-   * the `account` prop's identity changes (e.g. a fresh object from a
-   * query-cache refetch after a mutation) — adjusted during render rather
-   * than in a `useEffect`, per the "adjusting state when a prop changes"
-   * pattern, so it doesn't cause an extra commit-then-effect render pass.
-   */
+  // Re-syncs the editable fields when the `account` prop's identity changes (fresh
+  // object from a query refetch) — adjusted during render, not in a useEffect.
   const [syncedAccount, setSyncedAccount] = useState(account);
   if (account !== syncedAccount) {
     setSyncedAccount(account);
@@ -243,7 +240,10 @@ export function useAccountForm({ account, onSuccess, onClose }: UseAccountFormOp
       if (isUpdateMode && account) {
         await updateAccountMutation.mutateAsync({ id: account.id, body: data });
       } else {
-        await createAccountMutation.mutateAsync(data);
+        const { failedIdentifiers } = await createAccountMutation.mutateAsync({ body: data, identifiers: pendingIdentifiers });
+        if (failedIdentifiers.length > 0) {
+          toast.error(`Account created, but these identifiers could not be added: ${failedIdentifiers.join(', ')}`);
+        }
       }
       toast.success(isUpdateMode ? 'Account updated successfully!' : 'Account created successfully!');
       onSuccess?.();

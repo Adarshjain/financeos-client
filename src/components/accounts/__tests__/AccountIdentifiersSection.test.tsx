@@ -30,20 +30,19 @@ describe('AccountIdentifiersSection', () => {
     vi.clearAllMocks();
   });
 
-  it('renders existing identifiers and allows adding a new one', async () => {
+  it('renders existing identifiers and allows adding a new one (no kind field)', async () => {
     vi.mocked(api.GET).mockResolvedValue({ data: mockIdentifiers } as never);
     vi.mocked(api.POST).mockResolvedValue({
-      data: { id: 'ident-3', value: '4321', kind: 'CUSTOMER_ID', createdAt: '2026-09-03T00:00:00Z' },
+      data: { id: 'ident-3', value: '4321', kind: 'OTHER', createdAt: '2026-09-03T00:00:00Z' },
     } as never);
 
     renderWithQuery(<AccountIdentifiersSection accountId="acc-1" />);
 
     await waitFor(() => {
       expect(screen.getByText('987654')).toBeInTheDocument();
-      expect(screen.getAllByText('Customer ID').length).toBeGreaterThan(0);
       expect(screen.getByText('CRN123')).toBeInTheDocument();
-      expect(screen.getByText('CRN')).toBeInTheDocument();
     });
+    expect(screen.queryByText('Customer ID')).not.toBeInTheDocument();
 
     const input = screen.getByPlaceholderText(/e\.g\. 1234 or CRN/i);
     fireEvent.change(input, { target: { value: '4321' } });
@@ -56,7 +55,7 @@ describe('AccountIdentifiersSection', () => {
         '/api/v1/accounts/{id}/identifiers',
         expect.objectContaining({
           params: { path: { id: 'acc-1' } },
-          body: { value: '4321', kind: 'CUSTOMER_ID' },
+          body: { value: '4321' },
         })
       );
     });
@@ -83,5 +82,31 @@ describe('AccountIdentifiersSection', () => {
         })
       );
     });
+  });
+
+  it('create mode: collects values locally via Enter without calling the API', async () => {
+    const onPendingChange = vi.fn();
+    renderWithQuery(<AccountIdentifiersSection pending={['9999']} onPendingChange={onPendingChange} />);
+
+    expect(screen.getByText('9999')).toBeInTheDocument();
+
+    const input = screen.getByPlaceholderText(/e\.g\. 1234 or CRN/i);
+    fireEvent.change(input, { target: { value: ' 43 21 ' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+
+    await waitFor(() => {
+      expect(onPendingChange).toHaveBeenCalledWith(['9999', '4321']);
+    });
+    expect(api.GET).not.toHaveBeenCalled();
+    expect(api.POST).not.toHaveBeenCalled();
+  });
+
+  it('create mode: remove drops the value from the pending list', () => {
+    const onPendingChange = vi.fn();
+    renderWithQuery(<AccountIdentifiersSection pending={['9999', '4321']} onPendingChange={onPendingChange} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Remove identifier 9999/i }));
+    expect(onPendingChange).toHaveBeenCalledWith(['4321']);
+    expect(api.DELETE).not.toHaveBeenCalled();
   });
 });
