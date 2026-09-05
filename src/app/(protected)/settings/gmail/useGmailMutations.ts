@@ -3,7 +3,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/lib/api/client';
-import type { GmailSenderRequest } from '@/lib/api/types';
+import type { AssignAttentionRequest, GmailSenderRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 
 /** Every write GmailConnect needs, grouped so the orchestrator hook stays thin. */
@@ -37,6 +37,14 @@ export function useGmailMutations() {
     onSuccess: invalidateAttention,
   });
 
+  const assignAttentionMutation = useMutation({
+    mutationFn: ({ ledgerId, body }: { ledgerId: string; body: AssignAttentionRequest }) =>
+      api
+        .POST('/api/v1/gmail/attention/{ledgerId}/assign', { params: { path: { ledgerId } }, body })
+        .then((r) => r.data),
+    onSuccess: invalidateAttention,
+  });
+
   const createSenderMutation = useMutation({
     mutationFn: (body: GmailSenderRequest) => api.POST('/api/v1/gmail/senders', { body }).then((r) => r.data),
     onSuccess: invalidateSenders,
@@ -58,6 +66,7 @@ export function useGmailMutations() {
     syncMutation,
     disconnectMutation,
     retryAttentionMutation,
+    assignAttentionMutation,
     createSenderMutation,
     updateSenderMutation,
     deleteSenderMutation,

@@ -260,6 +260,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/{id}/identifiers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getAccountIdentifiers"];
+        put?: never;
+        post: operations["createAccountIdentifier"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{id}/identifiers/{identifierId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteAccountIdentifier"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/{id}/reopen": {
         parameters: {
             query?: never;
@@ -606,6 +638,22 @@ export interface paths {
         get: operations["getAttentionItems"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gmail/attention/{ledgerId}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["assignAttentionItem"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2208,10 +2256,32 @@ export interface components {
             /** Format: int32 */
             skippedCount: number;
         };
+        AccountIdentifierResponse: {
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "CUSTOMER_ID" | "ACCOUNT_NUMBER" | "CRN" | "OTHER";
+            value: string;
+        };
         AccountResponse: components["schemas"]["BankAccountResponse"] | components["schemas"]["CreditCardAccountResponse"] | components["schemas"]["BrokerAccountResponse"] | components["schemas"]["GenericAccountResponse"];
         ApplyRuleRequest: {
             all?: boolean;
             transactionIds?: string[];
+        };
+        AssignAttentionRequest: {
+            /** Format: uuid */
+            accountId: string;
+            /** @enum {string|null} */
+            kind?: "CUSTOMER_ID" | "ACCOUNT_NUMBER" | "CRN" | "OTHER" | null;
+        };
+        AssignAttentionResponse: {
+            /** Format: uuid */
+            identifierId: string;
+            jobIds: string[];
+            /** Format: int32 */
+            reactivatedCount: number;
         };
         BankAccountRequest: {
             description?: string;
@@ -2635,6 +2705,11 @@ export interface components {
             notes?: string | null;
             totalBorrowed: number;
             totalLent: number;
+        };
+        CreateAccountIdentifierRequest: {
+            /** @enum {string|null} */
+            kind?: "CUSTOMER_ID" | "ACCOUNT_NUMBER" | "CRN" | "OTHER" | null;
+            value: string;
         };
         CreateAccountRequest: components["schemas"]["BankAccountRequest"] | components["schemas"]["CreditCardRequest"] | components["schemas"]["BrokerRequest"] | components["schemas"]["GenericAccountRequest"];
         CreateCardRequest: {
@@ -3185,7 +3260,7 @@ export interface components {
             nextRetryAt?: string | null;
             senderAddress?: string | null;
             /** @enum {string} */
-            status: "DISCOVERED" | "PROCESSING" | "CREATED" | "RECONCILED" | "SKIPPED_NOT_TRANSACTION" | "SKIPPED_BEFORE_WATERMARK" | "SKIPPED_SENDER_DISABLED" | "SKIPPED_DUPLICATE" | "SKIPPED_MESSAGE_GONE" | "UNRESOLVED_ACCOUNT" | "ACCOUNT_NOT_OPTED_IN" | "FAILED_RETRYABLE" | "FAILED_PERMANENT";
+            status: "DISCOVERED" | "PROCESSING" | "CREATED" | "RECONCILED" | "SKIPPED_NOT_TRANSACTION" | "SKIPPED_BEFORE_WATERMARK" | "SKIPPED_SENDER_DISABLED" | "SKIPPED_DUPLICATE" | "SKIPPED_MESSAGE_GONE" | "UNRESOLVED_ACCOUNT" | "ACCOUNT_NOT_OPTED_IN" | "FAILED_RETRYABLE" | "FAILED_PERMANENT" | "CLEANED_UP";
             subject?: string | null;
         };
         GmailConnectionResponse: {
@@ -5739,6 +5814,102 @@ export interface operations {
             };
         };
     };
+    getAccountIdentifiers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AccountIdentifierResponse"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createAccountIdentifier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAccountIdentifierRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AccountIdentifierResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteAccountIdentifier: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                identifierId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     reopenAccount: {
         parameters: {
             query?: never;
@@ -6668,6 +6839,41 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PageGmailAttentionItemResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    assignAttentionItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ledgerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignAttentionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AssignAttentionResponse"];
                 };
             };
             /** @description Error response */
