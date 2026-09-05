@@ -1,35 +1,5 @@
 [
   {
-    "route": "/dashboards",
-    "reason": "Not yet covered",
-    "phase": 13
-  },
-  {
-    "route": "/dashboards/[id]",
-    "reason": "Not yet covered",
-    "phase": 13
-  },
-  {
-    "route": "/dashboards/new",
-    "reason": "Not yet covered",
-    "phase": 13
-  },
-  {
-    "route": "/reports",
-    "reason": "Not yet covered",
-    "phase": 13
-  },
-  {
-    "route": "/reports/[id]",
-    "reason": "Not yet covered",
-    "phase": 13
-  },
-  {
-    "route": "/reports/new",
-    "reason": "Not yet covered",
-    "phase": 13
-  },
-  {
     "route": "/chat",
     "reason": "Not yet covered",
     "phase": 14
