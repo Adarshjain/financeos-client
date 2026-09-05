@@ -87,8 +87,20 @@ export function useCategorySuggestions({
     try {
       const { data } = await api.POST('/api/v1/categorize', { body: { description } });
       if (data && data.categories.length > 0) {
-        const suggested = data.categories.map(
-          (c) => categories.find((existing) => existing.id === c.id) ?? c
+        const returnedCategories = data.categories;
+        const newCategories = returnedCategories.filter(
+          (c) => !localCategories.some((existing) => existing.id === c.id)
+        );
+        if (newCategories.length > 0) {
+          setLocalCategories((prev) => {
+            const existingIds = new Set(prev.map((c) => c.id));
+            const toAdd = returnedCategories.filter((c) => !existingIds.has(c.id));
+            return toAdd.length > 0 ? [...prev, ...toAdd] : prev;
+          });
+          queryClient.invalidateQueries({ queryKey: keys.categories.all });
+        }
+        const suggested = returnedCategories.map(
+          (c) => localCategories.find((existing) => existing.id === c.id) ?? c
         );
         setSelectedCategories((prev) => (prev.length === 0 ? suggested : prev));
       }
