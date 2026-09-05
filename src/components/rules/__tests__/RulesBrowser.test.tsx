@@ -139,8 +139,12 @@ describe('RulesBrowser', () => {
     renderWithQuery(<RulesBrowser />);
     await waitFor(() => expect(screen.getByText('Swiggy')).toBeInTheDocument());
 
-    await openRuleMenu(user, 'Swiggy');
-    await user.click(await screen.findByText('Approve Rule'));
+    // Approve is an inline card button (not a menu item) and only renders on unverified rules.
+    const zomatoCard = screen.getByText('Zomato').closest('div.relative') as HTMLElement;
+    expect(within(zomatoCard).queryByRole('button', { name: 'Approve' })).toBeNull();
+
+    const swiggyCard = screen.getByText('Swiggy').closest('div.relative') as HTMLElement;
+    await user.click(within(swiggyCard).getByRole('button', { name: 'Approve' }));
 
     await waitFor(() => {
       expect(api.POST).toHaveBeenCalledWith('/api/v1/rules/{id}/verify', { params: { path: { id: 'r1' } } });
