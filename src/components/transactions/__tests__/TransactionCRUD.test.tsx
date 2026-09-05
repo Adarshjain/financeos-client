@@ -39,8 +39,8 @@ const mockTxn: Transaction = {
 
 // Seeds the accounts/categories queries synchronously so useTransactionCRUD's
 // internal useAccounts()/useCategories() calls resolve without an async wait.
-function renderCRUD(ui: ReactElement) {
-  const queryClient = createTestQueryClient();
+function renderCRUD(ui: ReactElement, customQueryClient?: ReturnType<typeof createTestQueryClient>) {
+  const queryClient = customQueryClient ?? createTestQueryClient();
   queryClient.setQueryData(keys.accounts.list(), mockAccounts);
   queryClient.setQueryData(keys.categories.list(), mockCategories);
   return renderWithQuery(ui, { queryClient });
@@ -225,5 +225,86 @@ describe('TransactionCRUD (CD-2d, CD-4)', () => {
     });
 
     expect(onSuccess).toHaveBeenCalled();
+  });
+
+  it('appends novel suggested category to options and chips, and invalidates category queries', async () => {
+    const novelCategory: Category = { id: 'cat-novel', name: 'Coffee' };
+    (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
+      data: {
+        categories: [novelCategory],
+        ruleId: '',
+        fromRule: false,
+        mcc: '5814',
+      },
+    });
+
+    const queryClient = createTestQueryClient();
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+
+    renderCRUD(<TransactionCRUD />, queryClient);
+
+    const descArea = screen.getByPlaceholderText('Add description or notes...');
+    fireEvent.change(descArea, { target: { value: 'Starbucks' } });
+    fireEvent.blur(descArea);
+
+    await waitFor(() => {
+      expect(api.POST).toHaveBeenCalledWith('/api/v1/categorize', { body: { description: 'Starbucks' } });
+    });
+
+    // It should appear as a selected chip
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Remove Coffee' })).toBeInTheDocument();
+    });
+
+    // Invalidate queries called with keys.categories.all
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.categories.all });
+
+    // Open combobox dropdown to verify it is also present in options
+    const categoryBadge = screen.getByRole('button', { name: 'Remove Coffee' }).parentElement?.parentElement;
+    if (categoryBadge) {
+      fireEvent.click(categoryBadge);
+    }
+    await waitFor(() => {
+      expect(screen.getAllByText('Coffee').length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  it('does not override pre-selected categories when suggestion arrives', async () => {
+    const novelCategory: Category = { id: 'cat-novel', name: 'Coffee' };
+    (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({
+      data: {
+        categories: [novelCategory],
+        ruleId: '',
+        fromRule: false,
+        mcc: '5814',
+      },
+    });
+
+    renderCRUD(<TransactionCRUD />);
+
+    // Select existing category Food first by opening combobox
+    const categoryTrigger = screen.getByText('Categories');
+    fireEvent.click(categoryTrigger);
+
+    await waitFor(() => {
+      expect(screen.getByText('Food')).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText('Food'));
+
+    // Verify Food is selected as a chip
+    expect(screen.getByRole('button', { name: 'Remove Food' })).toBeInTheDocument();
+
+    // Now trigger blur
+    const descArea = screen.getByPlaceholderText('Add description or notes...');
+    fireEvent.change(descArea, { target: { value: 'Starbucks' } });
+    fireEvent.blur(descArea);
+
+    await waitFor(() => {
+      expect(api.POST).toHaveBeenCalledWith('/api/v1/categorize', { body: { description: 'Starbucks' } });
+    });
+
+    // Pre-selected 'Food' remains selected; 'Coffee' is not selected as a chip
+    expect(screen.getByRole('button', { name: 'Remove Food' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Remove Coffee' })).not.toBeInTheDocument();
   });
 });
