@@ -81,9 +81,11 @@ test.describe('Accounts UI (@ui)', () => {
     await page.getByLabel('Last 4 Digits').fill('8888');
     await page.getByRole('button', { name: 'Create Add-on Cardholder' }).click();
 
-    // Verify added cardholder appears in list
-    await expect(page.getByText('Sam Addon')).toBeVisible();
-    await expect(page.getByText('•••• 8888')).toBeVisible();
+    // Verify added cardholder appears in the cards dialog (scope to the dialog: the account tile
+    // behind it re-renders the current last4 too, which made getByText ambiguous ~1 run in 2)
+    const cardsDialog = page.getByRole('dialog');
+    await expect(cardsDialog.getByText('Sam Addon')).toBeVisible();
+    await expect(cardsDialog.getByText('•••• 8888')).toBeVisible();
 
     // Replace card on Sam Addon's plastic
     await page.getByRole('button', { name: 'Replace' }).last().click();
@@ -92,8 +94,8 @@ test.describe('Accounts UI (@ui)', () => {
     await page.getByRole('button', { name: 'Confirm Replacement' }).click();
 
     // Verify new card appears and old card is moved to historical
-    await expect(page.getByText('•••• 8889')).toBeVisible();
-    await expect(page.getByText(/Replaced \/ Closed Plastics/i)).toBeVisible();
+    await expect(cardsDialog.getByText('•••• 8889')).toBeVisible();
+    await expect(cardsDialog.getByText(/Replaced \/ Closed Plastics/i)).toBeVisible();
 
     // Close the replaced card
     await page.getByRole('button', { name: 'Close', exact: true }).last().click();
