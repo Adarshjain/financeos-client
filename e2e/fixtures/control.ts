@@ -8,6 +8,12 @@ export interface ScriptResponseEntry {
     message: string;
   };
   delayMs?: number;
+  /**
+   * Keys the entry to prompts containing this text instead of FIFO order. Use it whenever the
+   * server drains work in an order the test cannot control (the Gmail sync processes a discovery
+   * pass's messages in random order), e.g. `promptContains: 'Subject: Debit alert ...'`.
+   */
+  promptContains?: string;
 }
 
 export interface CallEntry {

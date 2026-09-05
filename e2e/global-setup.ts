@@ -6,7 +6,7 @@ import { request } from '@playwright/test';
 
 import { makeApi } from './fixtures/api';
 import { createUser } from './fixtures/auth';
-import { E2E_API_URL, E2E_CLIENT_URL } from './fixtures/config';
+import { E2E_API_URL, E2E_CLIENT_URL, E2E_WIREMOCK_URL } from './fixtures/config';
 import { resetCoverage, resetLlm } from './fixtures/control';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -61,5 +61,15 @@ export default async function globalSetup(): Promise<void> {
     await resetLlm(api);
   } finally {
     await requestContext.dispose();
+  }
+
+  // 4. Reset the WireMock request journal so the teardown's unmatched-request gate only sees this run.
+  try {
+    const res = await fetch(`${E2E_WIREMOCK_URL}/__admin/requests`, { method: 'DELETE' });
+    if (!res.ok) {
+      console.warn(`[WireMock] journal reset returned ${res.status}; unmatched gate may include earlier runs`);
+    }
+  } catch (e) {
+    console.warn(`[WireMock] journal reset failed: ${(e as Error).message}`);
   }
 }

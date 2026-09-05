@@ -13,7 +13,9 @@ export default defineConfig({
   outputDir: 'test-results',
   fullyParallel: true,
   workers: 4,
-  retries: process.env.CI ? 1 : 0,
+  // One retry on CI hides flakes behind a green run, so the nightly schedule sets E2E_RETRIES=0 and
+  // fails on the first flake (see .github/workflows/e2e.yml). Locally there are no retries.
+  retries: process.env.E2E_RETRIES ? Number(process.env.E2E_RETRIES) : process.env.CI ? 1 : 0,
   timeout: 30_000,
   expect: { timeout: 10_000 },
   reporter: [
