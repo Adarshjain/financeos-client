@@ -26,7 +26,7 @@ test.describe('Instruments UI (@ui)', () => {
 
     await expectToast(page, /Added Reliance Industries/i);
     await expect(page.getByRole('heading', { name: /Instruments/i })).toBeVisible();
-    await expect(page.getByText('RELIANCE.NS').and(page.locator(':visible')).first()).toBeVisible();
+    await expect(page.getByText(/RELIANCE/i).filter({ visible: true }).first()).toBeVisible();
 
     // 2. Manual instrument creation (advanced)
     await page.getByRole('button', { name: /Add Instrument/i }).click();

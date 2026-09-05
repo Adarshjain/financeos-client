@@ -60,3 +60,14 @@ export async function openDividends(page: Page): Promise<void> {
   await page.goto(`${E2E_CLIENT_URL}/investments/dividends`);
   await expect(page.getByRole('heading', { name: /Dividend Income & Payouts/i, level: 1 })).toBeVisible();
 }
+
+export async function openCorporateActions(page: Page): Promise<void> {
+  await page.goto(`${E2E_CLIENT_URL}/investments/corporate-actions`);
+  await expect(page.getByRole('heading', { name: /Corporate Actions/i, level: 1 })).toBeVisible();
+}
+
+export async function openFno(page: Page): Promise<void> {
+  await page.goto(`${E2E_CLIENT_URL}/investments/fno`);
+  await expect(page.getByRole('heading', { name: /Futures & Options/i, level: 1 })).toBeVisible();
+}
+

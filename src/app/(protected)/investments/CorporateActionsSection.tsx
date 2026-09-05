@@ -121,6 +121,7 @@ export function CorporateActionsSection() {
         key={activeEditAction?.id ?? 'create'}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        onSuccess={() => setDialogOpen(false)}
         instrument={
           activeDialogInstrument
             ? {

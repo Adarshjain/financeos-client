@@ -22,6 +22,20 @@ export type UpdateDividendRequest = components['schemas']['UpdateDividendRequest
 export type DividendSuggestionsResponse = components['schemas']['DividendSuggestionsResponse'];
 export type AcceptSuggestionsResponse = components['schemas']['AcceptSuggestionsResponse'];
 export type AcceptSuggestionsRequest = components['schemas']['AcceptSuggestionsRequest'];
+export type CorporateActionResponse = components['schemas']['CorporateActionResponse'];
+export type CreateCorporateActionRequest = components['schemas']['CreateCorporateActionRequest'];
+export type UpdateCorporateActionRequest = components['schemas']['UpdateCorporateActionRequest'];
+export type FnoTradeResponse = components['schemas']['FnoTradeResponse'];
+export type FnoTradeListResponse = components['schemas']['FnoTradeListResponse'];
+export type CreateFnoTradeRequest = components['schemas']['CreateFnoTradeRequest'];
+export type UpdateFnoTradeRequest = components['schemas']['CreateFnoTradeRequest'];
+export type ImportPreviewResponse = components['schemas']['ImportPreviewResponse'];
+export type ImportCommitResponse = {
+  committed: number;
+  skipped: number;
+  failed: Array<{ rowIndex: number; scrip?: string; reason: string }>;
+  skippedItems: Array<{ rowIndex: number; scrip?: string; reason: string }>;
+};
 export type JobResponse = components['schemas']['JobResponse'];
 
 let idCounter = 0;
@@ -188,3 +202,117 @@ export async function acceptSuggestions(
   }
   return res.data;
 }
+
+export async function createCorporateAction(
+  api: ApiClient,
+  instrumentId: string,
+  body: CreateCorporateActionRequest
+): Promise<CorporateActionResponse> {
+  const res = await api.POST('/api/v1/instruments/{instrumentId}/corporate-actions', {
+    params: { path: { instrumentId } },
+    body,
+  });
+  if (res.error || !res.data || res.response.status !== 201) {
+    throw new Error(
+      `createCorporateAction failed (${res.response.status}): ${JSON.stringify(res.error ?? res.data)}`
+    );
+  }
+  return res.data;
+}
+
+export async function listAllCorporateActions(
+  api: ApiClient
+): Promise<CorporateActionResponse[]> {
+  const res = await api.GET('/api/v1/corporate-actions');
+  expectStatus(res, 200);
+  return res.data!;
+}
+
+export async function listInstrumentCorporateActions(
+  api: ApiClient,
+  instrumentId: string
+): Promise<CorporateActionResponse[]> {
+  const res = await api.GET('/api/v1/instruments/{instrumentId}/corporate-actions', {
+    params: { path: { instrumentId } },
+  });
+  expectStatus(res, 200);
+  return res.data!;
+}
+
+export async function updateCorporateAction(
+  api: ApiClient,
+  instrumentId: string,
+  id: string,
+  body: UpdateCorporateActionRequest
+): Promise<CorporateActionResponse> {
+  const res = await api.PUT('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', {
+    params: { path: { instrumentId, id } },
+    body,
+  });
+  if (res.error || !res.data || res.response.status !== 200) {
+    throw new Error(
+      `updateCorporateAction failed (${res.response.status}): ${JSON.stringify(res.error ?? res.data)}`
+    );
+  }
+  return res.data;
+}
+
+export async function deleteCorporateAction(
+  api: ApiClient,
+  instrumentId: string,
+  id: string
+): Promise<void> {
+  const res = await api.DELETE('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', {
+    params: { path: { instrumentId, id } },
+  });
+  expectStatus(res, 204);
+}
+
+export async function createFnoTrade(
+  api: ApiClient,
+  body: CreateFnoTradeRequest
+): Promise<FnoTradeResponse> {
+  const res = await api.POST('/api/v1/investments/fno', { body });
+  if (res.error || !res.data || res.response.status !== 201) {
+    throw new Error(
+      `createFnoTrade failed (${res.response.status}): ${JSON.stringify(res.error ?? res.data)}`
+    );
+  }
+  return res.data;
+}
+
+export async function listFnoTrades(
+  api: ApiClient
+): Promise<FnoTradeListResponse> {
+  const res = await api.GET('/api/v1/investments/fno');
+  expectStatus(res, 200);
+  return res.data!;
+}
+
+export async function updateFnoTrade(
+  api: ApiClient,
+  id: string,
+  body: UpdateFnoTradeRequest
+): Promise<FnoTradeResponse> {
+  const res = await api.PUT('/api/v1/investments/fno/{id}', {
+    params: { path: { id } },
+    body,
+  });
+  if (res.error || !res.data || res.response.status !== 200) {
+    throw new Error(
+      `updateFnoTrade failed (${res.response.status}): ${JSON.stringify(res.error ?? res.data)}`
+    );
+  }
+  return res.data;
+}
+
+export async function deleteFnoTrade(
+  api: ApiClient,
+  id: string
+): Promise<void> {
+  const res = await api.DELETE('/api/v1/investments/fno/{id}', {
+    params: { path: { id } },
+  });
+  expectStatus(res, 204);
+}
+

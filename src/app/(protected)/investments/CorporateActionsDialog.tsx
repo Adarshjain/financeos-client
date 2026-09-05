@@ -222,6 +222,7 @@ export function CorporateActionsDialog({
           }}
           secondaryAction={{
             label: 'Cancel',
+            onClick: () => setOpen(false),
           }}
         />
       </DialogContent>
