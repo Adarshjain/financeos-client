@@ -7,6 +7,7 @@ import { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 
 import { AccountDetailsSection } from './account-form/AccountDetailsSection';
+import { AccountIdentifiersSection } from './account-form/AccountIdentifiersSection';
 import { AccountTypeButton, AccountTypeSelector } from './account-form/AccountTypeSelector';
 import { CleanupConfirmDialog } from './account-form/CleanupConfirmDialog';
 import { ACCOUNT_TYPE_CONFIG, COMMON_BROKERS } from './account-form/constants';
@@ -108,6 +109,11 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             showPassword={showPassword}
             setShowPassword={setShowPassword}
           />
+
+          {/* Card 2b: Email Identifier Aliases (Only in Edit mode for Bank and Card accounts) */}
+          {isUpdateMode && account && (accountType === AccountType.BANK_ACCOUNT || accountType === AccountType.CREDIT_CARD) && (
+            <AccountIdentifiersSection accountId={account.id} />
+          )}
 
           {/* Card 3: Configurations & Sync */}
           <SyncConfigSection
