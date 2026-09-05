@@ -21,7 +21,7 @@ export default async function DashboardPage({
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>
-      <DashboardEditor mode="edit" dashboard={dashboard} />
+      <DashboardEditor key={id} mode="edit" dashboard={dashboard} />
     </HydrationBoundary>
   );
 }
