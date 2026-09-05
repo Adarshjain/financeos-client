@@ -25,7 +25,7 @@ export function parseSessionCookie(headers: { name: string; value: string }[]): 
 }
 
 export async function createUser(
-  request: APIRequestContext,
+  _request: APIRequestContext,
   label: string,
   options?: { password?: string; inviteCode?: string }
 ): Promise<CreatedUser> {
@@ -36,25 +36,31 @@ export async function createUser(
   const inviteCode = options?.inviteCode ?? INVITE_CODE;
 
   // 1. Signup
-  const signupRes = await request.post(`${E2E_API_URL}/api/v1/auth/signup`, {
-    data: {
+  const signupRes = await fetch(`${E2E_API_URL}/api/v1/auth/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       email,
       password,
       inviteCode,
-    },
+    }),
   });
-  expect(signupRes.status(), `Signup failed: ${await signupRes.text()}`).toBe(201);
+  expect(signupRes.status, `Signup failed: ${await signupRes.text()}`).toBe(201);
 
   // 2. Login
-  const loginRes = await request.post(`${E2E_API_URL}/api/v1/auth/login`, {
-    data: {
+  const loginRes = await fetch(`${E2E_API_URL}/api/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
       email,
       password,
-    },
+    }),
   });
-  expect(loginRes.status(), `Login failed: ${await loginRes.text()}`).toBe(200);
+  expect(loginRes.status, `Login failed: ${await loginRes.text()}`).toBe(200);
 
-  const cookie = parseSessionCookie(loginRes.headersArray());
+  const rawCookie = loginRes.headers.get('set-cookie') || '';
+  const match = rawCookie.match(/FINANCEOS_SESSION=([^;]+)/);
+  const cookie = match ? match[1] : undefined;
   if (!cookie) {
     throw new Error('FINANCEOS_SESSION cookie not found in login response headers');
   }

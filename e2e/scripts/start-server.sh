@@ -36,8 +36,9 @@ boot_jar() {
   set +a
 
   echo "Starting server with jar: $JAR (profile: ${SPRING_PROFILES_ACTIVE})..."
-  java -jar "$JAR" > e2e/logs/server.log 2>&1 &
+  nohup java -jar "$JAR" > e2e/logs/server.log 2>&1 &
   echo $! > e2e/.server.pid
+  disown || true
 
   local timeout=240
   local start_time

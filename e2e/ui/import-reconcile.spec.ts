@@ -160,15 +160,16 @@ test.describe('Broker Import & Reconciliation UI (@ui)', () => {
     await expect(page.getByText('DELIVERY').and(page.locator(':visible')).first()).toBeVisible();
 
     // Map instrument for the first unmatched row
-    await page.getByRole('button', { name: 'Map instrument' }).and(page.locator(':visible')).first().click();
+    await page.getByRole('button', { name: 'Map instrument' }).filter({ visible: true }).first().click();
     const searchInput = page.getByPlaceholder(/Search for|Search instrument/i);
     await searchInput.fill(symTarget.slice(0, 5));
     await page.getByRole('button', { name: new RegExp(symTarget, 'i') }).first().click();
-    await expect(page.getByText(new RegExp(`✓.*${symTarget}|✓ Mapped`, 'i')).and(page.locator(':visible')).first()).toBeVisible();
+    await expect(page.getByText(new RegExp(`✓.*${symTarget}|✓ Mapped`, 'i')).filter({ visible: true }).first()).toBeVisible();
 
     // Create new instrument for the other unmatched row
-    await page.getByRole('button', { name: 'Create new' }).and(page.locator(':visible')).first().click();
-    await expect(page.getByText(/✦ New:/i).and(page.locator(':visible')).first()).toBeVisible();
+    await page.waitForTimeout(300);
+    await page.getByRole('button', { name: 'Create new' }).filter({ visible: true }).first().click();
+    await expect(page.getByText(/✦ New:/i).filter({ visible: true }).first()).toBeVisible();
 
     // Import Trades button enabled and clicked
     const importBtn = page.getByRole('button', { name: /Import Trades \(\d+\)/i });
