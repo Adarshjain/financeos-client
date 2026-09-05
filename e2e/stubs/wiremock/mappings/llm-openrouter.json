@@ -1,0 +1,97 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/llm/openrouter/api/v1/key",
+        "headers": {
+          "Authorization": {
+            "equalTo": "Bearer e2e-openrouter-good"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "data": {
+            "label": "e2e-test-key",
+            "usage": 0,
+            "limit": null,
+            "is_free_tier": true
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/llm/openrouter/api/v1/key",
+        "headers": {
+          "Authorization": {
+            "equalTo": "Bearer e2e-openrouter-bad"
+          }
+        }
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": {
+            "code": 401,
+            "message": "Invalid API key"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/llm/openrouter/api/v1/key",
+        "headers": {
+          "Authorization": {
+            "equalTo": "Bearer e2e-openrouter-broken"
+          }
+        }
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "Internal server error"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "urlPath": "/llm/openrouter/api/v1/chat/completions"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "id": "gen-12345",
+          "choices": [
+            {
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": "{\"status\":\"ok\"}"
+              },
+              "finish_reason": "stop"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

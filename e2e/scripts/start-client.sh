@@ -25,8 +25,9 @@ export API_BASE_URL="http://localhost:6969"
 export NEXT_PUBLIC_FARO_URL=""
 export NEXT_PUBLIC_FARO_APP_KEY=""
 
-npm run start -- -p 6970 > e2e/logs/client.log 2>&1 &
+nohup npm run start -- -p 6970 > e2e/logs/client.log 2>&1 &
 echo $! > e2e/.client.pid
+disown || true
 
 timeout=60
 start_time=$(date +%s)

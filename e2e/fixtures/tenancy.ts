@@ -13,6 +13,14 @@ export async function secondUser(
   return freshUser(request, label);
 }
 
+export async function newUser(
+  request: APIRequestContext,
+  label = 'user'
+): Promise<{ user: User; api: ApiClient; cookie: string }> {
+  const { user, api } = await freshUser(request, label);
+  return { user, api, cookie: user.cookie };
+}
+
 export async function expectForeign(
   apiB: ApiClient,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',

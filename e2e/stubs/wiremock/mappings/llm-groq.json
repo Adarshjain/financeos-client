@@ -1,0 +1,97 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/llm/groq/openai/v1/models",
+        "headers": {
+          "Authorization": {
+            "equalTo": "Bearer e2e-groq-good"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "data": [
+            {
+              "id": "openai/gpt-oss-120b",
+              "object": "model"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/llm/groq/openai/v1/models",
+        "headers": {
+          "Authorization": {
+            "equalTo": "Bearer e2e-groq-bad"
+          }
+        }
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": {
+            "message": "Invalid API Key",
+            "type": "invalid_request_error"
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/llm/groq/openai/v1/models",
+        "headers": {
+          "Authorization": {
+            "equalTo": "Bearer e2e-groq-broken"
+          }
+        }
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "Internal server error"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "urlPath": "/llm/groq/openai/v1/chat/completions"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "id": "chatcmpl-123",
+          "choices": [
+            {
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": "{\"status\":\"ok\"}"
+              },
+              "finish_reason": "stop"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

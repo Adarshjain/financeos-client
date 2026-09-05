@@ -70,7 +70,7 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
       page.getByRole('heading', { name: 'Statement Ingestion', exact: true })
     ).toBeVisible();
     await expect(
-      page.getByText('Recent statement ingestion jobs')
+      page.getByRole('heading', { name: 'Recent statement ingestion jobs' })
     ).toBeVisible();
 
     // 2. Select Account

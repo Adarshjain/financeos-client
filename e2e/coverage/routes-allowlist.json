@@ -1,15 +1,5 @@
 [
   {
-    "route": "/chat",
-    "reason": "Not yet covered",
-    "phase": 14
-  },
-  {
-    "route": "/settings/llm-keys",
-    "reason": "Not yet covered",
-    "phase": 14
-  },
-  {
     "route": "/auth/google/callback",
     "reason": "Not yet covered",
     "phase": 15

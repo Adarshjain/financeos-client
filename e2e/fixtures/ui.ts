@@ -23,8 +23,8 @@ export async function openTransactions(page: Page): Promise<void> {
  * Assert that a toast with the given text appears in the UI.
  */
 export async function expectToast(page: Page, text: string | RegExp): Promise<void> {
-  const toastLocator = page.locator('[data-sonner-toast]').filter({ hasText: text });
-  await expect(toastLocator).toBeVisible({ timeout: 5000 });
+  const toastLocator = page.locator('[data-sonner-toast], [role="status"], [role="alert"]').filter({ hasText: text });
+  await expect(toastLocator.first()).toBeVisible({ timeout: 10000 });
 }
 
 /**

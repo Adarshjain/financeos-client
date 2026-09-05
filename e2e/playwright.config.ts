@@ -36,6 +36,7 @@ export default defineConfig({
     {
       name: 'ui-desktop',
       testMatch: /ui\/.*\.spec\.ts/,
+      testIgnore: /ui\/chat\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1440, height: 900 },
@@ -44,6 +45,30 @@ export default defineConfig({
     {
       name: 'ui-mobile',
       testMatch: /ui\/.*\.spec\.ts/,
+      testIgnore: /ui\/chat\.spec\.ts/,
+      use: {
+        ...devices['Pixel 7'],
+      },
+      grep: /@mobile/,
+    },
+    // Chat holds a JVM-wide 2-permit semaphore per in-flight answer. The api project's concurrency and
+    // wall-clock tests deliberately saturate it, so the chat UI journeys run only after the whole api
+    // project has finished, one at a time.
+    {
+      name: 'ui-chat',
+      testMatch: /ui\/chat\.spec\.ts/,
+      dependencies: ['api'],
+      fullyParallel: false,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1440, height: 900 },
+      },
+    },
+    {
+      name: 'ui-chat-mobile',
+      testMatch: /ui\/chat\.spec\.ts/,
+      dependencies: ['api'],
+      fullyParallel: false,
       use: {
         ...devices['Pixel 7'],
       },

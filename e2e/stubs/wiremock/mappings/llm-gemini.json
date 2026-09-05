@@ -1,0 +1,97 @@
+{
+  "mappings": [
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/llm/gemini/v1beta/models",
+        "headers": {
+          "x-goog-api-key": {
+            "equalTo": "e2e-gemini-good"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "models": [
+            {
+              "name": "models/gemini-3.5-flash-lite",
+              "displayName": "Gemini 3.5 Flash Lite"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/llm/gemini/v1beta/models",
+        "headers": {
+          "x-goog-api-key": {
+            "equalTo": "e2e-gemini-bad"
+          }
+        }
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": {
+            "code": 401,
+            "message": "API key not valid. Please pass a valid API key."
+          }
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "GET",
+        "urlPath": "/llm/gemini/v1beta/models",
+        "headers": {
+          "x-goog-api-key": {
+            "equalTo": "e2e-gemini-broken"
+          }
+        }
+      },
+      "response": {
+        "status": 500,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "Internal server error"
+        }
+      }
+    },
+    {
+      "request": {
+        "method": "POST",
+        "urlPathPattern": "/llm/gemini/v1beta/models/.*:generateContent"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "candidates": [
+            {
+              "content": {
+                "parts": [
+                  {
+                    "text": "{\"status\":\"ok\"}"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

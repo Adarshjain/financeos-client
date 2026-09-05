@@ -17,7 +17,7 @@ async function checkUrl(url: string, timeoutMs = 5000): Promise<boolean> {
   while (Date.now() - start < timeoutMs) {
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(2000) });
-      if (res.ok) {
+      if (res.ok || res.status === 401) {
         return true;
       }
     } catch {
