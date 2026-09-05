@@ -4,41 +4,34 @@ import { Hash, Plus, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { getErrorMessage } from '@/lib/api/errorMessage';
-import type { AccountIdentifierKind } from '@/lib/types';
 
 import { useAccountIdentifiers } from './useAccountIdentifiers';
 
+/**
+ * Two modes:
+ * - `accountId` set (edit form): identifiers are read and written through the
+ *   API immediately.
+ * - `pending`/`onPendingChange` (create form, no account yet): values are
+ *   collected locally and saved by the account-create mutation once the
+ *   account exists.
+ */
 interface AccountIdentifiersSectionProps {
-  accountId: string;
+  accountId?: string;
+  pending?: string[];
+  onPendingChange?: (values: string[]) => void;
 }
 
-const KIND_LABELS: Record<AccountIdentifierKind, string> = {
-  CUSTOMER_ID: 'Customer ID',
-  ACCOUNT_NUMBER: 'Account No.',
-  CRN: 'CRN',
-  OTHER: 'Other',
-};
+const normalize = (raw: string) => raw.trim().replaceAll(/\s+/g, '');
 
-const KIND_OPTIONS: { value: AccountIdentifierKind; label: string }[] = [
-  { value: 'CUSTOMER_ID', label: 'Customer ID' },
-  { value: 'ACCOUNT_NUMBER', label: 'Account No.' },
-  { value: 'CRN', label: 'CRN' },
-  { value: 'OTHER', label: 'Other' },
-];
-
-export function AccountIdentifiersSection({ accountId }: AccountIdentifiersSectionProps) {
+export function AccountIdentifiersSection({
+  accountId,
+  pending = [],
+  onPendingChange,
+}: AccountIdentifiersSectionProps) {
   const {
     identifiers,
     isLoading,
@@ -48,18 +41,35 @@ export function AccountIdentifiersSection({ accountId }: AccountIdentifiersSecti
   } = useAccountIdentifiers(accountId);
 
   const [newValue, setNewValue] = useState('');
-  const [newKind, setNewKind] = useState<AccountIdentifierKind>('CUSTOMER_ID');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const clean = newValue.trim().replaceAll(/\s+/g, '');
-    if (!clean) return;
+  const isApiMode = Boolean(accountId);
+  const rows = isApiMode
+    ? identifiers.map((ident) => ({ key: ident.id, value: ident.value }))
+    : pending.map((value) => ({ key: value, value }));
 
+  const handleAdd = async () => {
+    const clean = normalize(newValue);
+    if (!clean) return;
+    if (clean.length < 2 || clean.length > 32) {
+      setErrorMessage('Identifier must be between 2 and 32 characters.');
+      return;
+    }
     setErrorMessage(null);
+
+    if (!isApiMode) {
+      if (pending.includes(clean)) {
+        setErrorMessage(`"${clean}" is already in the list.`);
+        return;
+      }
+      onPendingChange?.([...pending, clean]);
+      setNewValue('');
+      return;
+    }
+
     try {
-      await createIdentifier({ value: clean, kind: newKind });
+      await createIdentifier({ value: clean });
       setNewValue('');
       toast.success('Identifier alias added');
     } catch (err) {
@@ -67,11 +77,15 @@ export function AccountIdentifiersSection({ accountId }: AccountIdentifiersSecti
     }
   };
 
-  const handleDelete = async (id: string) => {
-    setDeletingId(id);
+  const handleRemove = async (key: string) => {
+    if (!isApiMode) {
+      onPendingChange?.(pending.filter((value) => value !== key));
+      return;
+    }
+    setDeletingId(key);
     setErrorMessage(null);
     try {
-      await deleteIdentifier(id);
+      await deleteIdentifier(key);
       toast.success('Identifier alias removed');
     } catch (err) {
       toast.error(getErrorMessage(err, 'Failed to remove identifier'));
@@ -103,32 +117,27 @@ export function AccountIdentifiersSection({ accountId }: AccountIdentifiersSecti
       )}
 
       {/* Existing identifiers list */}
-      {isLoading ? (
+      {isApiMode && isLoading ? (
         <div className="text-2xs text-slate-400 py-1">Loading identifiers...</div>
-      ) : identifiers.length > 0 ? (
+      ) : rows.length > 0 ? (
         <div className="space-y-1.5">
-          {identifiers.map((ident) => (
+          {rows.map((row) => (
             <div
-              key={ident.id}
+              key={row.key}
               className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-100 dark:border-slate-800 text-xs"
             >
-              <div className="flex items-center gap-2">
-                <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
-                  {ident.value}
-                </span>
-                <Badge variant="outline" className="text-2xs py-0 px-1.5 border-slate-200 dark:border-slate-700">
-                  {KIND_LABELS[ident.kind] ?? ident.kind}
-                </Badge>
-              </div>
+              <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
+                {row.value}
+              </span>
 
               <Button
                 type="button"
                 variant="ghost"
                 size="xs"
-                disabled={deletingId === ident.id}
-                onClick={() => handleDelete(ident.id)}
+                disabled={deletingId === row.key}
+                onClick={() => handleRemove(row.key)}
                 className="h-6 w-6 p-0 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400"
-                aria-label={`Remove identifier ${ident.value}`}
+                aria-label={`Remove identifier ${row.value}`}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -137,7 +146,7 @@ export function AccountIdentifiersSection({ accountId }: AccountIdentifiersSecti
         </div>
       ) : null}
 
-      {/* Inline add form */}
+      {/* Inline add row */}
       <div className="pt-1">
         <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-350 block mb-1.5">
           Add Identifier
@@ -152,24 +161,15 @@ export function AccountIdentifiersSection({ accountId }: AccountIdentifiersSecti
               setNewValue(e.target.value);
               setErrorMessage(null);
             }}
+            onKeyDown={(e) => {
+              // Enter adds the identifier instead of submitting the account form.
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                void handleAdd();
+              }
+            }}
             className="flex-1 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs h-8"
           />
-
-          <Select
-            value={newKind}
-            onValueChange={(v) => setNewKind(v as AccountIdentifierKind)}
-          >
-            <SelectTrigger className="w-32 h-8 text-xs bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {KIND_OPTIONS.map((opt) => (
-                <SelectItem key={opt.value} value={opt.value} className="text-xs">
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
 
           <Button
             type="button"

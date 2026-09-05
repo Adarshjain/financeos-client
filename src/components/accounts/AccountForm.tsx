@@ -1,6 +1,7 @@
 'use client';
 
 import { CreditCard, Landmark, TrendingUp, Wallet } from 'lucide-react';
+import { useState } from 'react';
 
 import { DialogBody, DialogFooter } from '@/components/ui/dialog';
 import { Account } from '@/lib/account.types';
@@ -25,6 +26,7 @@ interface AccountFormProps {
 }
 
 export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
+  const [pendingIdentifiers, setPendingIdentifiers] = useState<string[]>([]);
   const {
     isUpdateMode,
     accountType,
@@ -51,7 +53,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
     handleDelete,
     handleSubmit,
     handleConfirmCleanup,
-  } = useAccountForm({ account, onSuccess, onClose });
+  } = useAccountForm({ account, onSuccess, onClose, pendingIdentifiers });
 
   return (
     <>
@@ -110,10 +112,14 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             setShowPassword={setShowPassword}
           />
 
-          {/* Card 2b: Email Identifier Aliases (Only in Edit mode for Bank and Card accounts) */}
-          {isUpdateMode && account && (accountType === AccountType.BANK_ACCOUNT || accountType === AccountType.CREDIT_CARD) && (
-            <AccountIdentifiersSection accountId={account.id} />
-          )}
+          {/* Card 2b: Email Identifier Aliases (Bank and Card accounts). In create
+              mode the values are collected locally and saved after the account exists. */}
+          {(accountType === AccountType.BANK_ACCOUNT || accountType === AccountType.CREDIT_CARD) &&
+            (isUpdateMode && account ? (
+              <AccountIdentifiersSection accountId={account.id} />
+            ) : (
+              <AccountIdentifiersSection pending={pendingIdentifiers} onPendingChange={setPendingIdentifiers} />
+            ))}
 
           {/* Card 3: Configurations & Sync */}
           <SyncConfigSection

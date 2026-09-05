@@ -22,8 +22,24 @@ export function useAccountFormMutations() {
   };
 
   const createAccountMutation = useMutation({
-    mutationFn: (body: AccountRequest) =>
-      api.POST('/api/v1/accounts', { body: body as Schemas['BankAccountRequest'] }).then((r) => r.data as Account),
+    // Creates the account, then saves any identifier aliases collected in the
+    // create form (the account id doesn't exist until now). Alias failures do
+    // not roll the account back — they're returned so the form can tell the
+    // user which values to re-add from the edit form.
+    mutationFn: async ({ body, identifiers = [] }: { body: AccountRequest; identifiers?: string[] }) => {
+      const account = await api
+        .POST('/api/v1/accounts', { body: body as Schemas['BankAccountRequest'] })
+        .then((r) => r.data as Account);
+      const failedIdentifiers: string[] = [];
+      for (const value of identifiers) {
+        try {
+          await api.POST('/api/v1/accounts/{id}/identifiers', { params: { path: { id: account.id } }, body: { value } });
+        } catch {
+          failedIdentifiers.push(value);
+        }
+      }
+      return { account, failedIdentifiers };
+    },
     onSuccess: invalidateAccounts,
   });
 

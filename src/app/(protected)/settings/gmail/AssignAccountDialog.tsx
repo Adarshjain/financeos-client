@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/select';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
-import type { AccountIdentifierKind } from '@/lib/types';
 
 import { useGmailMutations } from './useGmailMutations';
 
@@ -30,13 +29,6 @@ interface AssignAccountDialogProps {
   onOpenChange: (open: boolean) => void;
   item: { id: string; extractedLast4?: string | null } | null;
 }
-
-const KIND_OPTIONS: { value: AccountIdentifierKind; label: string }[] = [
-  { value: 'CUSTOMER_ID', label: 'Customer ID / CIF' },
-  { value: 'ACCOUNT_NUMBER', label: 'Account Number' },
-  { value: 'CRN', label: 'CRN (Customer Reference Number)' },
-  { value: 'OTHER', label: 'Other' },
-];
 
 export function AssignAccountDialog({
   open,
@@ -47,7 +39,6 @@ export function AssignAccountDialog({
   const { assignAttentionMutation } = useGmailMutations();
 
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
-  const [selectedKind, setSelectedKind] = useState<AccountIdentifierKind>('CUSTOMER_ID');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const effectiveAccountId = selectedAccountId || accounts?.[0]?.id || '';
@@ -65,10 +56,7 @@ export function AssignAccountDialog({
     try {
       const res = await assignAttentionMutation.mutateAsync({
         ledgerId: item.id,
-        body: {
-          accountId: effectiveAccountId,
-          kind: selectedKind,
-        },
+        body: { accountId: effectiveAccountId },
       });
 
       if (res?.reactivatedCount && res.reactivatedCount > 0) {
@@ -132,27 +120,6 @@ export function AssignAccountDialog({
                 </Select>
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="identifier-kind" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Identifier Type
-                </Label>
-                <Select
-                  value={selectedKind}
-                  onValueChange={(val) => setSelectedKind(val as AccountIdentifierKind)}
-                  disabled={assignAttentionMutation.isPending}
-                >
-                  <SelectTrigger id="identifier-kind" className="text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {KIND_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value} className="text-xs">
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
           </DialogBody>
 

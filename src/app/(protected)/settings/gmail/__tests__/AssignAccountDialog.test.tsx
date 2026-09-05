@@ -21,7 +21,7 @@ describe('AssignAccountDialog', () => {
     vi.clearAllMocks();
   });
 
-  it('renders account options, kind selector, and submits mutation', async () => {
+  it('renders account options and submits mutation', async () => {
     vi.mocked(api.GET).mockResolvedValue({ data: mockAccounts } as never);
     vi.mocked(api.POST).mockResolvedValue({
       data: { identifierId: 'id-1', reactivatedCount: 3, jobIds: ['job-1'] },
@@ -51,10 +51,7 @@ describe('AssignAccountDialog', () => {
         '/api/v1/gmail/attention/{ledgerId}/assign',
         expect.objectContaining({
           params: { path: { ledgerId: 'ledger-1' } },
-          body: {
-            accountId: 'acc-1',
-            kind: 'CUSTOMER_ID',
-          },
+          body: { accountId: 'acc-1' },
         })
       );
       expect(onOpenChange).toHaveBeenCalledWith(false);
