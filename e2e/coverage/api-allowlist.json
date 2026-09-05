@@ -6,81 +6,15 @@
     "phase": null
   },
   {
-    "method": "GET",
-    "path": "/api/v1/corporate-actions",
-    "reason": "Not yet covered",
-    "phase": 12
-  },
-  {
-    "method": "GET",
-    "path": "/api/v1/instruments/{instrumentId}/corporate-actions",
-    "reason": "Not yet covered",
-    "phase": 12
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/instruments/{instrumentId}/corporate-actions",
-    "reason": "Not yet covered",
-    "phase": 12
-  },
-  {
-    "method": "DELETE",
-    "path": "/api/v1/instruments/{instrumentId}/corporate-actions/{id}",
-    "reason": "Not yet covered",
-    "phase": 12
-  },
-  {
-    "method": "PUT",
-    "path": "/api/v1/instruments/{instrumentId}/corporate-actions/{id}",
-    "reason": "Not yet covered",
-    "phase": 12
-  },
-  {
-    "method": "GET",
-    "path": "/api/v1/investments/fno",
-    "reason": "Not yet covered",
-    "phase": 12
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/investments/fno",
-    "reason": "Not yet covered",
-    "phase": 12
-  },
-  {
-    "method": "DELETE",
-    "path": "/api/v1/investments/fno/{id}",
-    "reason": "Not yet covered",
-    "phase": 12
-  },
-  {
-    "method": "PUT",
-    "path": "/api/v1/investments/fno/{id}",
-    "reason": "Not yet covered",
-    "phase": 12
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/investments/imports/commit",
-    "reason": "Not yet covered",
-    "phase": 12
-  },
-  {
-    "method": "POST",
-    "path": "/api/v1/investments/imports/preview",
-    "reason": "Not yet covered",
-    "phase": 12
-  },
-  {
     "method": "POST",
     "path": "/api/v1/investments/imports/reconcile/commit",
-    "reason": "Not yet covered",
+    "reason": "Phase 12b",
     "phase": 12
   },
   {
     "method": "POST",
     "path": "/api/v1/investments/imports/reconcile/preview",
-    "reason": "Not yet covered",
+    "reason": "Phase 12b",
     "phase": 12
   },
   {

@@ -1,15 +1,5 @@
 [
   {
-    "route": "/investments/corporate-actions",
-    "reason": "Not yet covered",
-    "phase": 12
-  },
-  {
-    "route": "/investments/fno",
-    "reason": "Not yet covered",
-    "phase": 12
-  },
-  {
     "route": "/dashboards",
     "reason": "Not yet covered",
     "phase": 13
