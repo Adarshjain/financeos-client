@@ -26,6 +26,11 @@ export type CreateCardRequest = Schemas['CreateCardRequest'];
 export type ReplaceCardRequest = Schemas['ReplaceCardRequest'];
 export type CardCycleSummaryResponse = Schemas['CardCycleSummaryResponse'];
 export type CardCycleHistoryItemResponse = Schemas['CardCycleHistoryItemResponse'];
+export type AccountIdentifierResponse = Schemas['AccountIdentifierResponse'];
+export type CreateAccountIdentifierRequest = Schemas['CreateAccountIdentifierRequest'];
+export type AccountIdentifierKind = NonNullable<Schemas['AccountIdentifierResponse']['kind']>;
+export type AssignAttentionRequest = Schemas['AssignAttentionRequest'];
+export type AssignAttentionResponse = Schemas['AssignAttentionResponse'];
 
 // Transactions
 export type TransactionResponse = Schemas['TransactionResponse'];

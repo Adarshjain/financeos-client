@@ -899,6 +899,13 @@ export type ApiResult<T> =
   | { success: true; data: T }
   | { success: false; error: ErrorResponse };
 
+export type {
+  AccountIdentifierKind,
+  AccountIdentifierResponse,
+  AssignAttentionRequest,
+  AssignAttentionResponse,
+  CreateAccountIdentifierRequest,
+} from './api/types';
 export * from './lending.types';
 export * from './loan.types';
 
