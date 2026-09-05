@@ -138,3 +138,41 @@ const calls = await llmCalls(api, 'categorize');
 // Reset queue and recorded calls
 await resetLlm(api);
 ```
+
+Scripts are consumed FIFO per task. When the server drains work in an order the test cannot control
+(the Gmail sync processes one discovery pass's messages in random order), key each entry to its prompt
+instead — a keyed entry is served to the first call whose prompt contains the text:
+```ts
+await scriptLlm(api, 'email-extract', [
+  { json: { isTransaction: false }, promptContains: 'Subject: One time password ...' },
+  { json: { isTransaction: true, amount: 1250.5, /* … */ }, promptContains: 'Subject: Transaction alert SWIGGY ...' },
+]);
+```
+`e2e/fixtures/seed/gmail.ts` has `extractionFor(mail, answer)` which builds the key from a mail's subject.
+
+---
+
+## Google and Gmail (played by WireMock)
+
+Under the `e2e` profile every Google endpoint the server talks to resolves to WireMock
+(`GOOGLE_*_URL`, `GMAIL_AUTH_URL`, `GMAIL_TOKEN_URL`, `GMAIL_API_ROOT_URL` in `env/server.e2e.env`):
+
+- **Consent screen** — static mapping `google-consent.json`: `GET /google/o/oauth2/v2/auth` answers
+  `302 {redirect_uri}?code=e2e-code-{state}&state={state}`, so a real browser can click *Sign in with
+  Google* or *Add Account* and complete the round trip offline. A catch-all `POST /google/oauth2/revoke`
+  lives in the same file.
+- **Identities** — everything that needs a Google account is registered per test through the admin API
+  by `e2e/fixtures/google-stubs.ts`:
+  `registerIdentity()` mints exact authorization codes (`identity.codes[i]`, priority 1), the refresh
+  grant, `userinfo`, and the Gmail `profile`, all keyed by a unique access token `AT-<id>`.
+  `registerMailbox(identity, messages)` serves `messages.list` (any `q`), each message in
+  `format=full`, and its attachments. Remove what you registered in `afterAll` with `cleanupIdentity`.
+- **Browser flows** mint their code from a server-generated state, so pass `browserSso: true` (client
+  callback, port 6970) or `browserGmail: true` (server callback, port 6969) to add a redirect_uri-scoped
+  token stub (priority 5). Run browser SSO/Gmail journeys serially per flow and clean up after each.
+- `unmatchedCount()` must stay 0 — an unmatched request means a stub is missing or a URL changed.
+  `listQueries(identity)` and `requestCount(pattern)` prove what the server sent (e.g. `after:`/`before:`
+  in Gmail listings, one revoke per connection on account deletion).
+- **Sync ordering** — creating an account or sender enqueues a `GMAIL_SYNC` job once a connection exists
+  (AFTER_COMMIT events). Seed accounts and senders *before* connecting, and call
+  `waitForGmailJobsIdle(api)` after any later change before asserting ledger state.

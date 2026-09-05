@@ -134,6 +134,10 @@ jobs:
         run: bash e2e/scripts/start-client.sh
 
       - name: Run Playwright E2E tests
+        # Nightly runs are the flake detector: no retries, so a test that only passes on its second
+        # attempt fails the schedule instead of hiding behind a green PR run.
+        env:
+          E2E_RETRIES: ${{ github.event_name == 'schedule' && '0' || '' }}
         run: npx playwright test --config e2e/playwright.config.ts
 
       - name: Upload E2E report & logs

@@ -1,17 +1,1 @@
-[
-  {
-    "route": "/auth/google/callback",
-    "reason": "Not yet covered",
-    "phase": 15
-  },
-  {
-    "route": "/settings/gmail",
-    "reason": "Not yet covered",
-    "phase": 15
-  },
-  {
-    "route": "/offline",
-    "reason": "Not yet covered",
-    "phase": 16
-  }
-]
+[]

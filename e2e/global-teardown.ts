@@ -9,6 +9,7 @@ import { loadOperations, normalizePath } from './coverage/spec';
 import { makeApi } from './fixtures/api';
 import { createUser } from './fixtures/auth';
 import { coverage, CoverageHit } from './fixtures/control';
+import { findRequests, unmatchedCount } from './fixtures/google-stubs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -235,6 +236,39 @@ export default async function globalTeardown(): Promise<void> {
       staleRouteEntries.map((r) => `- ${r} (remove from allowlist)`).join('\n') + '\n\n';
   }
 
+  // WireMock: every outbound call the server made must have hit a stub. An unmatched request means
+  // a stub is missing or a URL changed — either way the test that provoked it passed for the wrong
+  // reason (or failed confusingly), so the whole run fails here.
+  let unmatched = 0;
+  let unmatchedLines: string[] = [];
+  try {
+    unmatched = await unmatchedCount();
+    if (unmatched > 0) {
+      const all = await findRequests({});
+      unmatchedLines = all
+        .filter((r) => (r as unknown as { wasMatched?: boolean }).wasMatched === false)
+        .slice(0, 20)
+        .map((r) => `- ${r.method} ${r.url}`);
+    }
+  } catch (e) {
+    summaryMd += `## WireMock
+
+Could not query WireMock: ${(e as Error).message}
+
+`;
+  }
+  summaryMd += `## WireMock
+
+Unmatched requests: **${unmatched}**
+
+`;
+  if (unmatchedLines.length > 0) {
+    summaryMd += `### Unmatched Requests (Failure)
+${unmatchedLines.join('\n')}
+
+`;
+  }
+
   const resultsDir = path.resolve(__dirname, './test-results');
   fs.mkdirSync(resultsDir, { recursive: true });
   fs.writeFileSync(path.join(resultsDir, 'coverage-summary.md'), summaryMd, 'utf8');
@@ -264,6 +298,10 @@ export default async function globalTeardown(): Promise<void> {
         ', '
       )})`
     );
+  }
+
+  if (unmatched > 0) {
+    failureReasons.push(`${unmatched} unmatched WireMock requests`);
   }
 
   if (failureReasons.length > 0) {
