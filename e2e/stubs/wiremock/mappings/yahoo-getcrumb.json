@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "url": "/yahoo/v1/test/getcrumb"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "text/plain"
+    },
+    "body": "e2e-crumb"
+  }
+}

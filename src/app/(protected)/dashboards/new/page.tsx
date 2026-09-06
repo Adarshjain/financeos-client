@@ -12,7 +12,7 @@ export default async function NewDashboardPage() {
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>
-      <DashboardEditor mode="create" />
+      <DashboardEditor key="new" mode="create" />
     </HydrationBoundary>
   );
 }

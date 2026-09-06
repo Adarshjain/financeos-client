@@ -42,3 +42,13 @@ next-env.d.ts
 graphify-out/
 .agents/
 
+# e2e
+e2e/test-results/
+e2e/playwright-report/
+e2e/logs/
+e2e/.server.pid
+e2e/.client.pid
+e2e/fixtures/files/samples/
+
+# Stray Playwright output when run from the repo root
+/test-results/

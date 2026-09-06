@@ -27,7 +27,7 @@ export function newWidget(
   return {
     id: crypto.randomUUID(),
     reportId,
-    title: '',
+    title: null,
     layout: {
       x: 0,
       y: 0,

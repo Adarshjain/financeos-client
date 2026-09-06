@@ -22,7 +22,7 @@ import type { WidgetResponse } from '@/lib/dashboards.types';
 import type { ReportData } from '@/lib/reports.types';
 
 export function widgetTitle(widget: WidgetResponse): string {
-  return widget.title ?? widget.report.name ?? 'Untitled report';
+  return widget.title?.trim() || widget.report?.name || 'Untitled report';
 }
 
 // Keep header controls from starting a grid drag/resize.
