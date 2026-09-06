@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="FinanceOS system and product reference, reverse-engineered from the code. Data.">
+<title>FinanceOS Handbook · Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/handbook/handbook.css">
+</head>
+<body data-page="data.html">
+<div class="shell">
+<aside class="side" id="side">
+  <div class="side-head">
+    <div class="brand">FinanceOS Handbook <small>v1</small></div>
+    <div class="brand-sub">System &amp; product reference, reverse-engineered from code · 2026-09-06</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search sections and text…" autocomplete="off" aria-label="Search">
+      <kbd>/</kbd>
+    </div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="side-foot">
+    <button id="expandAll" type="button">Expand all</button>
+    <button id="collapseAll" type="button">Collapse all</button>
+    <span style="margin-left:auto">Source of truth: code</span>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="burger" id="burger" type="button" aria-label="Open navigation">☰ Sections</button>
+    <div class="crumb" id="crumb"><b>FinanceOS Handbook</b></div>
+    <button id="toTop" type="button">↑ Top</button>
+  </div>
+  <div class="results" id="results" aria-live="polite">
+    <button class="close" id="closeResults" type="button">Close ✕</button>
+    <h3 id="resultsTitle"></h3>
+    <div id="resultsList"></div>
+  </div>
+  <main class="content" id="content">
+<section class="sec" id="s06" data-part="III · Data">
+<p class="eyebrow">Section 6</p>
+<h2><span class="n">06</span>Database deep dive</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>One Oracle schema (Autonomous DB in production, a local Oracle container in dev and E2E), migrated exclusively by 85 Flyway scripts; Hibernate <code>ddl-auto</code> is <code>none</code>, so Flyway, not the entities, is authoritative. It grew from a single-user MVP (V1 seeds one admin user in V2) into roughly 55 tables plus 16 read-only chat views covering the ledger, a three-layer credit-card model, Gmail and statement ingestion ledgers, a rebuilt investment stack, loans and lendings, a large reward-rule configuration, a job queue, LLM keys, and reports. <span class="c cg">Confirmed</span></p>
+<p>Three schema-wide facts: primary keys are <code>VARCHAR2(36)</code> UUID strings (transactions and jobs self-assign UUIDv7); money is <code>NUMBER(19,4)</code> almost everywhere with two scale-2 exceptions; and every <code>Instant</code>-mapped column is now <code>TIMESTAMP WITH TIME ZONE</code>, which took three fix passes (V27, V46, V71) after ORA-18716 outages. No table has <code>@Version</code> or a soft-delete column; deletion is real and relies on FK cascades.</p></div>
+
+<h3 id="s06-er">Entity relationship diagrams</h3>
+<p>Grouped by domain. Cardinalities and column excerpts are from the migrations and entities; join tables (<code>transaction_categories</code>, <code>category_rule_categories</code>, <code>reward_rule_*</code>) are shown as relationships.</p>
+<pre class="mermaid">erDiagram
+    USERS ||--o{ ACCOUNTS : owns
+    USERS ||--o{ CATEGORIES : defines
+    USERS ||--o{ CATEGORY_RULES : defines
+    USERS ||--o{ TRANSACTION_LINKS : creates
+    ACCOUNTS ||--o| ACCOUNT_BANK_DETAILS : has
+    ACCOUNTS ||--o| ACCOUNT_CREDIT_CARD_DETAILS : has
+    ACCOUNTS ||--o| ACCOUNT_BROKER_DETAILS : has
+    ACCOUNTS ||--o{ ACCOUNT_IDENTIFIERS : has
+    ACCOUNTS ||--o{ CARDHOLDERS : has
+    CARDHOLDERS ||--o{ CARDS : issues
+    ACCOUNTS ||--o{ TRANSACTIONS : records
+    CARDS ||--o{ TRANSACTIONS : attributed_to
+    CATEGORY_RULES ||--o{ TRANSACTIONS : auto_applies
+    CATEGORIES ||--o{ TRANSACTION_CATEGORIES : tags
+    TRANSACTIONS ||--o{ TRANSACTION_CATEGORIES : tagged_by
+    TRANSACTIONS ||--o{ TRANSACTION_REVIEW_REASONS : flagged_with
+    TRANSACTION_LINKS ||--o{ TRANSACTION_LINK_MEMBERS : groups
+    TRANSACTIONS ||--o{ TRANSACTION_LINK_MEMBERS : member_of
+    ACCOUNTS ||--o{ STATEMENTS : has
+    STATEMENTS ||--o| STATEMENT_CREDIT_CARD_DETAILS : has
+    STATEMENTS ||--o{ STATEMENT_TRANSACTIONS : parsed_into
+    TRANSACTIONS ||--o{ STATEMENT_TRANSACTIONS : sourced_from
+    ACCOUNTS {
+        varchar2_36 id PK
+        varchar2_36 user_id FK
+        varchar2 type
+        date closed_on
+        date ingest_from_date
+    }
+    TRANSACTIONS {
+        varchar2_36 id PK
+        varchar2_36 account_id FK
+        varchar2_36 card_id FK
+        number_19_4 amount
+        varchar2 type
+        date transaction_date
+        varchar2 review_type
+        varchar2 source_message_id
+    }
+    CARDS {
+        varchar2_36 id PK
+        varchar2_36 cardholder_id FK
+        varchar2_4 last4
+        date closed_on
+    }</pre>
+<pre class="mermaid">erDiagram
+    ACCOUNTS ||--o{ HOLDINGS : broker_positions
+    INSTRUMENTS ||--o{ HOLDINGS : identifies
+    HOLDINGS ||--o{ INVESTMENT_TRANSACTIONS : trades
+    HOLDINGS ||--o{ DIVIDENDS : pays
+    INSTRUMENTS ||--o{ INSTRUMENT_PRICES : priced_daily
+    INSTRUMENTS ||--o{ INSTRUMENT_ALIASES : renamed_from
+    INSTRUMENTS ||--o{ CORPORATE_ACTIONS : subject_of
+    INSTRUMENTS ||--o{ CORPORATE_ACTIONS : target_of
+    ACCOUNTS ||--o{ TRADE_SETTLEMENT_CLASSIFICATIONS : classifies
+    INSTRUMENTS ||--o{ TRADE_SETTLEMENT_CLASSIFICATIONS : instrument
+    ACCOUNTS ||--o{ SIPS : schedules
+    INSTRUMENTS ||--o{ SIPS : instrument
+    ACCOUNTS ||--o{ FNO_TRADES : standalone_ledger
+    HOLDINGS {
+        varchar2_36 id PK
+        varchar2_36 broker_account_id FK
+        varchar2_36 instrument_id FK
+    }
+    INVESTMENT_TRANSACTIONS {
+        varchar2_36 id PK
+        varchar2_36 holding_id FK
+        number_19_8 quantity
+        number_19_4 price
+        number_19_4 total_charges
+        varchar2 settlement_type
+    }
+    CORPORATE_ACTIONS {
+        varchar2_36 id PK
+        varchar2_36 instrument_id FK
+        varchar2_36 target_instrument_id FK
+        number_7_4 cost_allocation_pct
+    }</pre>
+<pre class="mermaid">erDiagram
+    USERS ||--o{ LOANS : owns
+    ACCOUNTS ||--o{ LOANS : payment_account
+    LOANS ||--o{ LOAN_EVENTS : has
+    LOANS ||--o{ LOAN_PAYMENTS : has
+    LOANS ||--o{ LOAN_CHARGES : has
+    USERS ||--o{ COUNTERPARTIES : defines
+    COUNTERPARTIES ||--o{ LENDINGS : party_to
+    ACCOUNTS ||--o{ REWARD_RULES : earn_config
+    REWARD_CAP_BUCKETS ||--o{ REWARD_RULES : shares_cap
+    ACCOUNTS ||--o{ REWARD_CAP_BUCKETS : scoped_to
+    ACCOUNTS ||--o{ REWARD_MILESTONES : scoped_to
+    CARDHOLDERS ||--o{ REWARD_RULES : scoped_to
+    USERS ||--o{ JOBS : triggers
+    JOBS ||--o{ JOB_ARTIFACTS : produces
+    USERS ||--o{ GMAIL_CONNECTIONS : links
+    GMAIL_CONNECTIONS ||--o{ GMAIL_PROCESSED_MESSAGES : ingests
+    GMAIL_CONNECTIONS ||--o{ GMAIL_SYNC_CURSORS : watermarks
+    GMAIL_SENDERS ||--o{ GMAIL_SYNC_CURSORS : watermarks
+    USERS ||--o{ GMAIL_SENDERS : allowlists
+    USERS ||--o| GMAIL_BACKFILL_DEMAND : one_row
+    USERS ||--o{ LLM_API_KEYS : stores
+    USERS ||--o{ LLM_TASK_PREFS : configures
+    USERS ||--o{ REPORTS : defines
+    USERS ||--o{ DASHBOARDS : defines
+    LOANS {
+        varchar2_36 id PK
+        number_19_4 principal
+        number_9_4 annual_rate_pct
+        varchar2 status
+    }
+    REWARD_RULES {
+        varchar2_36 id PK
+        varchar2_36 account_id FK
+        varchar2_36 cardholder_id FK
+        number priority
+        clob tiers
+    }
+    JOBS {
+        varchar2_36 id PK
+        varchar2_36 user_id
+        varchar2 type
+        varchar2 status
+        varchar2 dedup_key
+    }</pre>
+
+<h3 id="s06-catalogue">Table catalogue</h3>
+<p>Columns listed are the ones that carry business meaning; every table also has <code>created_at</code> (and usually <code>updated_at</code>) as <code>TIMESTAMP WITH TIME ZONE</code>. "Filter" marks entities carrying the Hibernate tenancy filter. See the module sections for column-by-column semantics.</p>
+<details class="lvl l3" open><summary><span class="lv">L3</span>Identity, accounts, cards</summary><div class="body">
+<div class="tw compact"><table>
+<tr><th>Table (migration)</th><th>PK / keys</th><th>Business meaning and notable columns</th><th>Filter</th></tr>
+<tr><td><code>users</code> (V1, V2)</td><td>UUID; <code>email</code> unique; <code>google_id</code> unique</td><td>The tenant. <code>password_hash</code> nullable for Google-only users. V2 seeds one admin row by MERGE.</td><td>root</td></tr>
+<tr><td><code>SPRING_SESSION</code>, <code>SPRING_SESSION_ATTRIBUTES</code> (V3)</td><td>CHAR(36); session id unique</td><td>Framework-owned login sessions (BLOB attributes). Backs <code>FINANCEOS_SESSION</code>.</td><td>—</td></tr>
+<tr><td><code>accounts</code> (V1; V18, V25, V35, V56, V57, V59, V81, V82)</td><td>UUID; <code>user_id</code> <strong>nullable</strong></td><td>Wallet or product. <code>type</code> CHECK bank_account|credit_card|broker|generic; <code>exclude_from_net_asset</code>, <code>financial_position</code> (unconsumed); <code>ingest_from_date</code> (Gmail watermark); <code>last_statement_date</code>; <code>closed_on</code>; reward columns <code>reward_anniversary_date</code>, <code>default_reward_type</code>, <code>point_value_inr NUMBER(12,4)</code>; <code>replaces_account_id</code> self-FK SET NULL.</td><td>yes</td></tr>
+<tr><td><code>account_bank_details</code> (V1, V20)</td><td>account_id PK/FK CASCADE</td><td><code>opening_balance</code>, <code>last4</code>, <code>statement_password</code> (AES-GCM ciphertext in VARCHAR2)</td><td>yes</td></tr>
+<tr><td><code>account_credit_card_details</code> (V1; V20, V73, V82, V83)</td><td>account_id PK/FK</td><td><code>credit_limit NOT NULL</code>, <code>issuer</code>, <code>product_name</code>, encrypted <code>statement_password</code>. Dropped: <code>last4</code> (V73), <code>payment_due_day</code>, <code>grace_period_days</code> (V83). Due day is not modelled anywhere today.</td><td>yes</td></tr>
+<tr><td><code>account_broker_details</code> (V35)</td><td>account_id PK/FK</td><td><code>provider</code>, <code>client_id</code>, <code>cash_balance NUMBER(19,2)</code> (scale-2 outlier)</td><td>yes</td></tr>
+<tr><td><code>account_identifiers</code> (V85)</td><td>UUID; UNIQUE(user_id, value)</td><td>Customer ID / account number / CRN aliases for email matching; <code>value VARCHAR2(32)</code>, <code>kind</code></td><td>yes</td></tr>
+<tr><td><code>cardholders</code> (V82)</td><td>UUID; <code>uq_ch_primary</code> one PRIMARY per account</td><td>Person entitled to spend: <code>role</code> PRIMARY|ADDON, <code>relationship</code>, <code>spend_limit</code>, <code>opened_on</code>, <code>closed_on</code> (CHECK ≥ opened)</td><td>yes</td></tr>
+<tr><td><code>cards</code> (V82)</td><td>UUID; <code>uq_card_open</code> one open per cardholder; <code>uq_card_open_last4</code> per account</td><td>Physical plastic: <code>last4</code> (REGEXP 4 digits), <code>issued_on</code>, <code>closed_on</code>. Replaced <code>account_cards</code> (V73) and <code>card_instances</code> (V80).</td><td>yes</td></tr>
+</table></div></div></details>
+<details class="lvl l3"><summary><span class="lv">L3</span>Ledger, categories, links, statements</summary><div class="body">
+<div class="tw compact"><table>
+<tr><th>Table (migration)</th><th>PK / keys</th><th>Business meaning and notable columns</th><th>Filter</th></tr>
+<tr><td><code>transactions</code> (V1; 19 migrations)</td><td>UUIDv7 self-assigned; <code>uk_txn_user_source_msg</code> partial unique (user, source_message_id) V34</td><td>The ledger. <code>account_id NOT NULL</code> CASCADE (V29/V30); <code>card_id</code> SET NULL; <code>amount NUMBER(19,4) CHECK &gt; 0</code> with direction in <code>type</code> DEBIT|CREDIT; <code>transaction_date DATE</code>; <code>description</code> (nullable) vs <code>sourced_description</code>; <code>mcc</code>; <code>settlement_date</code>, <code>instant_discount</code>, <code>convenience_fee</code>, <code>channel</code> (ATM added V84), <code>is_emi</code>, <code>is_international</code>; <code>source</code> CHECK (evolved 4 times); <code>is_under_monitoring</code>, <code>monitoring_reason</code>, <code>is_excluded</code>; <code>review_type</code>; <code>applied_rule_id</code> SET NULL; <code>reviewed_at</code>. <code>metadata CLOB</code> lived V1→V6. <code>user_id</code> nullable.</td><td>yes</td></tr>
+<tr><td><code>transaction_categories</code> (V4, V7)</td><td>NUMBER IDENTITY surrogate (ORA-12860 workaround); UNIQUE(transaction, category)</td><td>Many-to-many tags</td><td>via parent</td></tr>
+<tr><td><code>categories</code> (V4, V11)</td><td>UUID; UNIQUE(user_id, name)</td><td>User taxonomy; <code>user_id</code> nullable</td><td>yes</td></tr>
+<tr><td><code>category_rules</code> (V26, V27, V31, V49)</td><td>UUID; UNIQUE(user_id, merchant_key, match_type)</td><td>Merchant → category memory: <code>match_type</code> (5 values), <code>verified</code>, <code>source</code> (free string USER|LLM), <code>applied_count</code>, <code>last_applied_at</code>. Timestamps rebuilt to TZ in V27.</td><td>yes</td></tr>
+<tr><td><code>category_rule_categories</code> (V26)</td><td>composite PK</td><td>Rule ↔ categories; <code>category_id</code> unindexed</td><td>via parent</td></tr>
+<tr><td><code>transaction_review_reasons</code> (V26)</td><td>PK (transaction_id, reason)</td><td>Reason set; no CHECK; V26 backfilled literal 'OTHER' which no longer exists in the enum</td><td>via parent</td></tr>
+<tr><td><code>transaction_links</code>, <code>transaction_link_members</code> (V33)</td><td>UUID; composite PK (link, transaction)</td><td><code>type</code> TRANSFER|CC_PAYMENT|REFUND|REVERSAL|FEE|EMI, <code>created_by</code> USER|AUTO|IMPORT, <code>is_anchor</code></td><td>yes / via parent</td></tr>
+<tr><td><code>statements</code> (V32, V34, V64, V73→V82)</td><td>UUID; UNIQUE(account, period_start, period_end); <code>uk_stmt_account_sha256</code> per account (V64, was per user)</td><td>Parsed statement metadata: source, source_ref, file_sha256, statement_type (string), period, balances, totals, <code>parse_mode</code>, <code>chain_validation_pct NUMBER(5,2)</code>, <code>checksum_ok</code>, <code>verdict</code> (no CHECK). <code>card_id</code> lived V73→V82.</td><td>yes</td></tr>
+<tr><td><code>statement_credit_card_details</code> (V32)</td><td>statement_id PK</td><td>Dues, minimum due, due date, limits, finance charges, fees, purchases, payments, reward points</td><td>yes</td></tr>
+<tr><td><code>statement_transactions</code> (V32)</td><td>PK (statement, transaction)</td><td><code>line_index</code>, <code>balance_after</code>, <code>chain_valid</code>; no user_id</td><td>via parent</td></tr>
+</table></div></div></details>
+<details class="lvl l3"><summary><span class="lv">L3</span>Gmail ingestion</summary><div class="body">
+<div class="tw compact"><table>
+<tr><th>Table (migration)</th><th>PK / keys</th><th>Business meaning</th><th>Filter</th></tr>
+<tr><td><code>gmail_connections</code> (V1)</td><td>UUID; UNIQUE(user_id, email)</td><td>OAuth mailbox; <code>encrypted_refresh_token</code>, <code>is_connected</code>, <code>is_primary</code> (one-primary is app-level only)</td><td>yes</td></tr>
+<tr><td><code>gmail_senders</code> (V19, V21, V22, V23, V62)</td><td>UUID</td><td>Allowlist: <code>sender_address</code>, <code>enabled</code>, <code>name</code>. <code>account_id</code> added, dropped, re-added, dropped (three reversals).</td><td>yes</td></tr>
+<tr><td><code>gmail_processed_messages</code> (V16, V63, V65, V71)</td><td>UUID; UNIQUE(connection_id, gmail_message_id)</td><td>Ingestion ledger: <code>status</code> (14 values, no CHECK), <code>transaction_id</code> SET NULL (unindexed), <code>account_id</code> CASCADE, <code>extracted_last4 VARCHAR2(4)</code>, <code>attempt_count</code>, <code>next_retry_at</code>, <code>error</code>. TZ columns fixed V71.</td><td>yes</td></tr>
+<tr><td><code>gmail_sync_cursors</code> (V66, V71)</td><td>UUID; UNIQUE(connection_id, sender_id)</td><td><code>last_listed_at</code>, <code>earliest_covered_at</code></td><td><strong>no</strong></td></tr>
+<tr><td><code>gmail_backfill_demand</code> (V67, V71)</td><td>PK = user_id</td><td><code>floor_date</code> ratchet</td><td>no (PK is user)</td></tr>
+<tr><td><code>gmail_sync_state</code> (V1 → dropped V69)</td><td>—</td><td>Superseded by cursors; removed cleanly</td><td>—</td></tr>
+</table></div></div></details>
+<details class="lvl l3"><summary><span class="lv">L3</span>Investments</summary><div class="body">
+<div class="tw compact"><table>
+<tr><th>Table (migration)</th><th>PK / keys</th><th>Business meaning</th><th>Filter</th></tr>
+<tr><td><code>instruments</code> (V35, V37; V43→V45)</td><td>UUID; unique <code>isin</code>; unique (symbol, exchange)</td><td>Global security master: type stock|mutual_fund|etf, symbol, exchange, isin, amfi_code, yahoo_symbol, currency. F&amp;O columns lived one migration (V43→V45).</td><td>global</td></tr>
+<tr><td><code>instrument_prices</code> (V35)</td><td>UNIQUE(instrument_id, as_of)</td><td><code>close NUMBER(19,4)</code>, <code>source</code> AMFI|YAHOO|MANUAL</td><td>global</td></tr>
+<tr><td><code>instrument_aliases</code> (V39)</td><td>UUID</td><td>old_symbol, old_name, source</td><td>global</td></tr>
+<tr><td><code>corporate_actions</code> (V36, V39, V41, V42)</td><td>UUID; index (instrument_id, ex_date); <strong>no uniqueness</strong></td><td>Market facts: type split|bonus|demerger|merger, ratio_from/to &gt; 0, ex_date, <code>target_instrument_id</code> (no index, default delete rule), <code>cost_allocation_pct NUMBER(7,4)</code>, <code>fractional_cash_in_lieu</code></td><td>global</td></tr>
+<tr><td><code>holdings</code> (V35, V40 reset)</td><td>UNIQUE(user, broker_account, instrument)</td><td>Identity row only; quantity, cost and value are derived; <code>user_id</code> nullable</td><td>yes</td></tr>
+<tr><td><code>investment_transactions</code> (V1 → recreated V35, V40)</td><td>UUID</td><td><code>type</code> buy|sell, <code>settlement_type</code> (display hint), <code>quantity NUMBER(19,8) &gt; 0</code>, <code>price ≥ 0</code>, 8 charge columns + <code>total_charges</code> (recomputed in JPA), <code>source</code>, <code>external_ref</code></td><td>yes</td></tr>
+<tr><td><code>trade_settlement_classifications</code> (V40)</td><td>UNIQUE(broker_account, instrument, trade_date)</td><td>Authoritative intraday split: <code>intraday_qty</code>, buy/sell values; <code>instrument_id</code> only in composite index</td><td>yes</td></tr>
+<tr><td><code>dividends</code> (V36)</td><td>UUID</td><td>type dividend|interest|other, amount ≥ 0, per_unit, tds, ex_date, pay_date NOT NULL, source; <code>user_id</code> nullable</td><td>yes</td></tr>
+<tr><td><code>sips</code> (V38)</td><td>UUID</td><td><code>amount NUMBER(19,2)</code> (scale-2 outlier), frequency weekly|monthly, day_of_month, start/end, active</td><td>yes</td></tr>
+<tr><td><code>fno_trades</code> (V44, V46, V79)</td><td>UUID</td><td>Standalone closed round trips: contract fields, quantity, buy/sell values, total_charges, <code>realized_pnl</code> stored (no recompute hook), <code>external_ref</code> (no unique). user FK only since V79.</td><td>yes</td></tr>
+</table></div></div></details>
+<details class="lvl l3"><summary><span class="lv">L3</span>Loans, lendings, rewards, jobs, LLM, reports</summary><div class="body">
+<div class="tw compact"><table>
+<tr><th>Table (migration)</th><th>PK / keys</th><th>Business meaning</th><th>Filter</th></tr>
+<tr><td><code>loans</code> (V47)</td><td>UUID</td><td>Terms only: loan_type (8, CHECK), lender, payment_account SET NULL, principal, <code>annual_rate_pct NUMBER(9,4)</code> as percent, rate_type, tenure_months, start/first_emi dates, emi_amount, status active|closed|foreclosed (CHECK)</td><td>yes</td></tr>
+<tr><td><code>loan_events</code>, <code>loan_payments</code>, <code>loan_charges</code> (V47)</td><td>UUID; <code>transaction_id</code> unique per table; UNIQUE(loan, installment_seq)</td><td>Polymorphic events; payments (seq, date, amount); charges (7 types)</td><td>yes</td></tr>
+<tr><td><code>counterparties</code>, <code>lendings</code> (V47, V48)</td><td>UNIQUE(user_id, name); <code>transaction_id</code> unique</td><td>Ledger entries direction lent|borrowed; V48 dropped <code>status</code> and <code>lending_repayments</code></td><td>yes</td></tr>
+<tr><td><code>reward_rules</code> + <code>reward_rule_{categories,mccs,channels,days}</code> (V51–V60, V74, V82)</td><td>UUID; child composite PKs</td><td>Earn rules; <code>tiers CLOB</code> JSON without IS JSON; <code>cap_bucket_id</code> SET NULL; <code>cardholder_id</code> SET NULL; <code>point_value</code> lived V51→V57</td><td>yes</td></tr>
+<tr><td><code>reward_cap_buckets</code> (V55, V57, V75, V82)</td><td>UUID</td><td>Shared caps: cap &gt; 0, window_type, reward_type, counter_scope</td><td>yes</td></tr>
+<tr><td><code>reward_milestones</code> (V53, V56, V58, V82)</td><td>UUID</td><td>Thresholds; <code>eligibility CLOB</code> JSON without IS JSON</td><td>yes</td></tr>
+<tr><td><code>jobs</code>, <code>job_artifacts</code> (V61)</td><td>UUIDv7; <code>dedup_key</code> no unique</td><td>Queue: type (6), status (5, CHECK), trigger_source, payload/result CLOB, error, progress, cancel_requested, attempt; artifacts BLOB</td><td>yes (Job)</td></tr>
+<tr><td><code>llm_api_keys</code> (V72, V76)</td><td>UNIQUE(user, provider, position)</td><td>BYOK ciphertext + last4, status ACTIVE|INVALID; provider CHECK dropped V76</td><td>yes</td></tr>
+<tr><td><code>llm_task_prefs</code> (V76, V77, V78)</td><td>UNIQUE(user, task_group, option_id)</td><td>Routing order per CHAT|DEFAULT group; option_id values live in config</td><td>yes</td></tr>
+<tr><td><code>reports</code> (V12, V14), <code>dashboards</code> (V13, V15)</td><td>UUID; <code>uq_dashboards_one_default</code></td><td>Definition and widgets as CLOB with IS JSON CHECK (the only JSON columns with a DB check)</td><td>yes</td></tr>
+</table></div></div></details>
+
+<h3 id="s06-views">Chat views and the allow-list drift</h3>
+<p>V70 created the <code>v_chat_*</code> read-only views, each with <code>WHERE user_id = SYS_CONTEXT('USERENV','CLIENT_IDENTIFIER')</code> (instruments and prices are global), and grants SELECT to <code>chat_ro</code> idempotently. Later card-model migrations replaced <code>v_chat_account_cards</code> / <code>v_chat_card_instances</code> with <code>v_chat_cardholders</code> / <code>v_chat_cards</code> (V82). The migrations define 16 current views; <code>ChatSqlValidator.ALLOWED_VIEWS</code> lists 14 and omits <code>V_CHAT_CARDHOLDERS</code> and <code>V_CHAT_CARDS</code>, while <code>dictionary.md</code> tells the model about them. A query the model writes against those two views is rejected with <code>TABLE_NOT_ALLOWED</code> and it must self-correct. <span class="c cg">Confirmed by grep</span> <span class="path">chat/db/ChatSqlValidator.java:18-33</span></p>
+
+<h3 id="s06-tenancy">Tenancy at the database level</h3>
+<ul>
+<li>34 of 50 entities carry <code>@Filter(name="userFilter", condition="user_id = :userId")</code>, enabled by <code>HibernateFilterAspect</code> on every <code>@Transactional</code> method. Join tables and <code>JobArtifact</code> inherit through parents; <code>GmailBackfillDemand</code> is keyed by user id; <code>GmailSyncCursor</code> has a <code>user_id</code> and <strong>no filter</strong>.</li>
+<li>Native SQL exists through <code>EntityManager.createNativeQuery</code> in six classes (<code>AccountRepositoryCustomImpl</code>, <code>TransactionRepositoryCustomImpl</code>, <code>TransactionReferenceValidator</code>, <code>ChartReportExecutor</code>, <code>KpiReportExecutor</code>, <code>TableReportExecutor</code>); each binds <code>user_id</code> explicitly or receives pre-filtered ids. The database analyst's grep for <code>nativeQuery</code> annotations found none; the <code>createNativeQuery</code> sites were confirmed separately. <span class="c cg">Confirmed</span></li>
+<li>Chat uses Oracle-side enforcement (<code>CHAT_RO</code> + session identifier + view predicates), independent of the JVM filter.</li>
+<li>No FK asserts that a transaction's account and card, or a rule's account and cardholder, belong to the same user or account; single-column FKs only.</li>
+<li>V1-era tables (<code>accounts</code>, <code>transactions</code>, <code>categories</code>, <code>holdings</code>, <code>statements</code>, <code>dividends</code>) still have nullable <code>user_id</code>; a NULL row is invisible to the filter, a silent orphan. Every table from V26 onward declares NOT NULL. <span class="c cy">Strongly inferred</span> single-user origin.</li>
+</ul>
+
+<h3 id="s06-money">Money and precision audit</h3>
+<div class="tw compact"><table>
+<tr><th>Column class</th><th>Type</th><th>Notes</th></tr>
+<tr><td>Money (about 45 columns)</td><td><code>NUMBER(19,4)</code></td><td>transactions.amount, all charge columns, loans, reward caps, dividends, F&amp;O values, statement balances</td></tr>
+<tr><td>Quantities</td><td><code>NUMBER(19,8)</code></td><td>investment_transactions.quantity, fno_trades.quantity, intraday_qty</td></tr>
+<tr><td>Rates</td><td><code>NUMBER(9,4)</code> as percent</td><td>annual_rate_pct 8.5000 = 8.5%; reward percent_rate; never fractions</td></tr>
+<tr><td>Outliers</td><td><code>NUMBER(19,2)</code></td><td><code>account_broker_details.cash_balance</code>, <code>sips.amount</code></td></tr>
+<tr><td>Percentages</td><td><code>NUMBER(5,2)</code>, <code>NUMBER(7,4)</code></td><td>chain_validation_pct (correct), cost_allocation_pct</td></tr>
+<tr><td>Point value</td><td><code>NUMBER(12,4)</code></td><td>accounts.point_value_inr</td></tr>
+<tr><td>Floating point</td><td>none</td><td>Every money column is NUMBER → BigDecimal</td></tr>
+<tr><td>Dates</td><td><code>DATE</code> for calendar dates, <code>TIMESTAMP WITH TIME ZONE</code> for instants</td><td>Three fix passes (V27, V46, V71) for ORA-18716</td></tr>
+</table></div>
+
+<h3 id="s06-invariants">What the schema enforces, and what it does not</h3>
+<div class="grid2">
+<div class="tile"><h4>Enforced by Oracle</h4><ul><li>amount &gt; 0 (direction in type)</li><li>One default dashboard, one primary cardholder, one open card per cardholder, unique open last4 per account (NULL-skipping functional unique indexes)</li><li>One processed row per (connection, message); one statement per (account, sha256) and per (account, period); one payment per (loan, seq); one loan or lending fact per transaction</li><li>Every user FK cascades (V79, data-dictionary driven)</li><li>reports.definition and dashboards.widgets are valid JSON</li></ul></div>
+<div class="tile"><h4>Application-only or nowhere</h4><ul><li>transaction.card belongs to transaction.account; rule.cardholder belongs to rule.account</li><li>Cap-bucket members share reward_type</li><li>Shape of tiers and eligibility JSON</li><li>Enum membership for gmail status, statement verdict, review reason, llm option_id</li><li>jobs.dedup_key uniqueness</li><li>Duplicate corporate actions</li><li>fno_trades.realized_pnl consistency after edits</li></ul></div>
+</div>
+
+<h3 id="s06-suspicious">Suspicious areas with evidence</h3>
+<ul>
+<li><strong>Seven unindexed FK columns</strong>: <code>category_rule_categories.category_id</code>, <code>reward_rule_categories.category_id</code>, <code>corporate_actions.target_instrument_id</code>, <code>trade_settlement_classifications.instrument_id</code> (second column of a composite only), <code>gmail_processed_messages.transaction_id</code>, <code>gmail_sync_cursors.sender_id</code> (composite second column), and <code>gmail_senders.account_id</code> as reported by the database analyst (the column was dropped in V62, so verify before acting). V79's own comment explains why this matters: an unindexed FK makes Oracle share-lock and full-scan the child on parent DML. <span class="c pm">Medium</span></li>
+<li><strong>Schema drift</strong>: V81 defensively drops <code>accounts.status</code> and two CHECK constraints that no migration ever created, proof that a live environment carried an uncommitted prototype (the parked card-fees experiment). <span class="c cg">Confirmed</span></li>
+<li><strong>Legacy data landmine</strong>: <code>transaction_review_reasons.reason = 'OTHER'</code> from the V26 backfill has no enum constant; a surviving row fails hydration. <span class="c cr">Unknown</span> whether any exist.</li>
+<li><strong>Dead code</strong>: <code>CardRelationship</code> enum (zero references). Cleanly removed tables: <code>gmail_sync_state</code> (V69), <code>lending_repayments</code> (V48), <code>account_cards</code> and <code>card_instances</code> (V82).</li>
+<li><strong>Short-lived design decisions</strong>: metadata CLOBs (V1→V6), instrument F&amp;O columns (V43→V45), sender account binding (V19→V21→V23→V62), reward point_value (V51→V57), card due day and grace (V1→V83), statement card_id (V73→V82).</li>
+<li><strong>Derived-but-stored</strong>: <code>investment_transactions.total_charges</code> (safe, recomputed), <code>fno_trades.realized_pnl</code> (no recompute hook), <code>transactions.applied_rule_id</code>, statement summary fields, job results.</li>
+<li><strong>Hard resets</strong>: V35 dropped and recreated <code>investment_transactions</code>; V40 deleted every investment row ("no data to preserve").</li>
+</ul>
+
+<h3 id="s06-evolution">Migration evolution</h3>
+<div class="tw compact"><table>
+<tr><th>Era</th><th>Migrations</th><th>What changed</th></tr>
+<tr><td>Single-user MVP</td><td>V1–V11</td><td>Core tables; JSON metadata added then dropped; categories to join table with an identity PK for ORA-12860; one seeded user</td></tr>
+<tr><td>Reports and Gmail v1</td><td>V12–V25</td><td>reports, dashboards (JSON in CLOB pattern); processed-messages ledger; sender allowlist churn</td></tr>
+<tr><td>Categorization and hardening</td><td>V26–V34</td><td>category rules, review reasons; first TZ fix (V27); account_id NOT NULL and cascade; Oracle index pass with NULL-skipping unique indexes</td></tr>
+<tr><td>Investments redesign</td><td>V35–V46</td><td>instruments, holdings, rebuilt trades; dividends and corporate actions; V40 hard reset; F&amp;O attempt and extraction; second TZ fix</td></tr>
+<tr><td>Loans and lendings</td><td>V47–V49</td><td>Full loan schema; lendings redesigned to a ledger; rule match types</td></tr>
+<tr><td>Rewards</td><td>V50–V60</td><td>One axis per migration: inputs, rules, nullable active_from, milestones, tiers, buckets, anniversary, cash vs points, timing, point value, fee treatment</td></tr>
+<tr><td>Jobs</td><td>V61</td><td>Queue built with TZ columns from day one</td></tr>
+<tr><td>Gmail v2 and TZ sweep</td><td>V62–V71</td><td>Sender binding removed; ledger re-scoped; statement dedup per account (V64); cursors, demand, grandfathering; V71 sweep. Idempotent PL/SQL from V63 onward</td></tr>
+<tr><td>Chat and LLM</td><td>V70, V72</td><td>v_chat_* views and grant loop; BYOK keys</td></tr>
+<tr><td>Cards twice, hardening</td><td>V73–V83</td><td>account_cards → split → cardholders + cards (V82, with DISABLE PARALLEL DML for ORA-12839); reward scoping re-pointed twice; LLM routing; V79 user-cascade audit; closure; due-day removal</td></tr>
+<tr><td>Recent</td><td>V84–V85</td><td>ATM channel; account identifiers; SQLCODE-swallowing guards</td></tr>
+</table></div>
+<p>Pattern: older enums got CHECK constraints at creation; newer Java-driven enums did not. From V63 onward every risky migration checks the data dictionary before acting, a direct consequence of Oracle DDL auto-commit leaving partial state when a migration fails.</p>
+
+<h3 id="s06-meaning">Business meaning of the database</h3>
+<ul>
+<li><strong>The ledger</strong> (<code>transactions</code> and satellites): every money movement, however it arrived.</li>
+<li><strong>The wallets</strong> (<code>accounts</code>, detail tables, <code>cardholders</code>, <code>cards</code>): where money lives and who holds which plastic.</li>
+<li><strong>The sources</strong> (Gmail tables, statements): ingestion machinery and the bookkeeping that prevents double ingestion.</li>
+<li><strong>The derived layers</strong> (reward configuration, holdings as identity, classifications): insight computed on read rather than stored.</li>
+<li><strong>The configuration</strong> (category rules, reward rules, reports, dashboards, LLM prefs): how the user teaches the app.</li>
+<li><strong>The operations tables</strong> (jobs, sessions, LLM keys): infrastructure.</li>
+</ul>
+<h3 id="s06-questions">Open questions</h3>
+<div class="qa"><b>Technical</b> Is the missing filter on <code>GmailSyncCursor</code> intentional?</div>
+<div class="qa"><b>Data</b> Do any NULL <code>user_id</code> rows or 'OTHER' review reasons exist in production?</div>
+<div class="qa"><b>Data</b> Should <code>fno_trades.realized_pnl</code> be recomputed on edit?</div>
+<div class="qa"><b>Technical</b> Is account/card and account/cardholder consistency checked at the service layer? (The transactions and rewards analysts confirm service-level checks for card↔account on create/update and cardholder↔account on rule save.)</div>
+</section>
+<section class="sec" id="s35" data-part="III · Data">
+<p class="eyebrow">Section 35</p>
+<h2><span class="n">35</span>Source-of-truth matrix</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>FinanceOS stores facts (transactions, trades, terms, rules) and derives almost everything else on read. That keeps one authoritative copy of each fact but creates several places where the <em>same derivation</em> is implemented twice, and a few places where a stored value could disagree with what it was derived from. The matrix below names the authoritative source for every important data concept and every competing copy. <span class="c cg">Confirmed unless marked</span></p></div>
+<div class="tw"><table>
+<tr><th>Data</th><th>Authoritative source</th><th>Derived copies</th><th>Cache</th><th>Client copy</th><th>Who can modify</th><th>How it syncs</th><th>Competing truths</th></tr>
+<tr><td>User profile</td><td><code>users</code></td><td>—</td><td>Spring Session BLOB holds the serialized principal</td><td><code>requireAuth()</code> per render</td><td>Signup, Google login (links google_id), deletion</td><td>Read per request</td><td>hasPassword computed in two files</td></tr>
+<tr><td>Session</td><td><code>SPRING_SESSION</code> row</td><td>Cookie value on the client origin (re-minted)</td><td>—</td><td>Cookie</td><td>Login, logout, deletion sweep, 365-day expiry</td><td>Cookie relay</td><td>Two cookie attribute policies (Spring vs Next)</td></tr>
+<tr><td>Account balance</td><td><strong>Derived</strong>: statement anchor + later transactions, else opening + all; broker = market value + cash</td><td><code>AccountResponse.balance</code> (@Transient fields on the entity)</td><td>TanStack <code>accounts.list</code> 30 s</td><td>Utilization recomputed client-side in float</td><td>Any transaction or statement change</td><td>Recompute on read; <code>invalidateQueries</code> + <code>router.refresh()</code></td><td>Excludes is_excluded nowhere; anchor-day boundary</td></tr>
+<tr><td>Transaction</td><td><code>transactions</code> row (unsigned amount + type)</td><td>Running balance in search SQL; signed amount in API and two SQL builders</td><td>TanStack per search key</td><td>Filters in component state</td><td>User CRUD, ingestion, merge, batch, rule apply</td><td>Invalidation</td><td>Sign convention ×3; two SQL field maps</td></tr>
+<tr><td>Transaction source</td><td><code>transactions.source</code></td><td>—</td><td></td><td>Client union</td><td>Set at creation</td><td></td><td>Report catalog lists stale values</td></tr>
+<tr><td>Category assignment</td><td><code>transaction_categories</code></td><td><code>applied_rule_id</code> records provenance</td><td></td><td></td><td>User, LLM (via rule), rule apply</td><td></td><td>Chat view LISTAGG vs report fan-out join</td></tr>
+<tr><td>Review status</td><td><code>review_type</code> + <code>transaction_review_reasons</code></td><td>Review count on /transactions page</td><td></td><td>catalog.ts mirrors enums (with dead OTHER)</td><td>Only through <code>ReviewStatusManager</code></td><td></td><td></td></tr>
+<tr><td>Merchant → category memory</td><td><code>category_rules</code></td><td><code>applied_count</code> (lifetime counter, not live)</td><td>Regex cache 1000</td><td></td><td>User CRUD, LLM auto-create, verify, apply</td><td></td><td>applied_count semantics</td></tr>
+<tr><td>Reward earned</td><td><strong>Derived</strong> per request by <code>RewardCalculationService</code> from transactions, links, statements, rules</td><td>None stored</td><td>TanStack report and lines keys</td><td>Rule tester re-implements the math in JS</td><td>Changes to rules, transactions, links, statements</td><td>Recompute</td><td>Point value ₹0.25 (recommender) vs ₹0 (reports datasource); JS tester vs Java</td></tr>
+<tr><td>Reward config</td><td><code>reward_rules</code>, <code>reward_cap_buckets</code>, <code>reward_milestones</code>, 3 columns on <code>accounts</code></td><td>—</td><td></td><td>Client enum unions hand-mirrored</td><td>User</td><td>keys.rewards.all invalidation</td><td></td></tr>
+<tr><td>Card information</td><td><code>cardholders</code>, <code>cards</code></td><td>Transactions carry <code>card_id</code>; Gmail ledger carries extracted last4</td><td></td><td>Account union type duplicates shape</td><td>CardholderService</td><td></td><td>Card.isOpen shallow vs effective closure</td></tr>
+<tr><td>Statement facts</td><td><code>statements</code>, <code>statement_credit_card_details</code></td><td>Balance anchor; reward statement cycles; card summary</td><td></td><td></td><td>Ingestion only (no edit endpoint)</td><td></td><td>Verdict advisory; REJECTED still ingests</td></tr>
+<tr><td>Which emails were seen</td><td><code>gmail_processed_messages</code></td><td>Attention queue view</td><td></td><td>Client SyncSummary type has dead fields</td><td>Ingestion, retry, assign, cleanup</td><td></td><td>Client vs server result shape</td></tr>
+<tr><td>Gmail watermark</td><td><code>accounts.ingest_from_date</code> + <code>gmail_backfill_demand.floor_date</code></td><td>Cursors <code>earliest_covered_at</code></td><td></td><td></td><td>Account form, rescan API</td><td>Ratchet down only</td><td>Three watermark checks</td></tr>
+<tr><td>Position (qty, cost, value, P&amp;L)</td><td><strong>Derived</strong> by FIFO replay of <code>investment_transactions</code> + <code>corporate_actions</code> + <code>trade_settlement_classifications</code></td><td>None stored; <code>HoldingPosition</code> in memory</td><td>TanStack positions</td><td>None (client re-sums server figures for filtered summary only)</td><td>Trades, CAs, classifications</td><td>Recompute</td><td>Two lot builders in InvestmentService; report datasources by construction</td></tr>
+<tr><td>Intraday vs delivery</td><td><code>trade_settlement_classifications</code></td><td><code>investment_transactions.settlement_type</code> hint</td><td></td><td></td><td>recomputeClassificationForDay; reconcile commit (first wins)</td><td></td><td>Hint "lies on straddle days" (documented)</td></tr>
+<tr><td>Instrument price</td><td><code>instrument_prices</code> (one per day; MANUAL wins)</td><td>currentValue; "at cost" fallback</td><td>AMFI feed in memory (no TTL); Yahoo crumb 15 min</td><td></td><td>Cron, event, manual</td><td>Upsert</td><td></td></tr>
+<tr><td>Instrument identity</td><td><code>instruments</code> (ISIN authoritative)</td><td><code>instrument_aliases</code> history</td><td>Yahoo search 5 min</td><td></td><td>resolve, manual create, imports</td><td></td><td>Manual create dedups by ISIN only</td></tr>
+<tr><td>Total charges (trade)</td><td>8 itemized columns</td><td><code>total_charges</code> recomputed in @PrePersist</td><td></td><td></td><td></td><td>Safe</td><td>Excluded from cost basis</td></tr>
+<tr><td>F&amp;O realized P&amp;L</td><td>buy_value, sell_value, total_charges</td><td><code>realized_pnl</code> stored at write</td><td></td><td></td><td>createTrade, updateTrade, importTrades</td><td>Formula in 3 places</td><td>Stale if edited outside the service <span class="c cy">Inferred</span></td></tr>
+<tr><td>Loan schedule and outstanding</td><td><strong>Derived</strong> by <code>LoanScheduleService</code> from loan terms + events</td><td>None stored</td><td>TanStack schedule key</td><td>FY grouping hardcoded April</td><td>Terms, events</td><td>Recompute</td><td>Client FY vs server FY config</td></tr>
+<tr><td>Loan payment split</td><td>Schedule's theoretical split for the seq</td><td>—</td><td></td><td></td><td>Payment stores amount only</td><td></td><td>Paid amount ignored by split and tax report</td></tr>
+<tr><td>Lending balance</td><td><strong>Derived</strong>: Σ lent − Σ borrowed</td><td>Server net per counterparty; client per-row running balance</td><td></td><td>Running balance only in client</td><td>Entries</td><td></td><td>Same-day order non-deterministic</td></tr>
+<tr><td>Report definition</td><td><code>reports.definition</code> CLOB</td><td>—</td><td></td><td><code>builderReducer</code> draft</td><td>Builder save; chat report draft on click</td><td>Re-validated on run</td><td></td></tr>
+<tr><td>Default dashboard</td><td><code>dashboards.is_default</code> (partial unique)</td><td>—</td><td></td><td>Client filters list for isDefault</td><td>Star toggle (with updatedAt guard)</td><td></td><td><code>/dashboards/default</code> endpoint unused</td></tr>
+<tr><td>Financial summary / net worth</td><td><strong>Does not exist</strong></td><td><code>/dashboard/summary</code> returns zeros</td><td></td><td></td><td></td><td></td><td>accounts.financial_position and exclude flags unconsumed</td></tr>
+<tr><td>LLM key</td><td><code>llm_api_keys.key_ciphertext</code></td><td>last4 for display</td><td>Bucket cooldown in memory</td><td>Masked</td><td>User add/delete; 401 marks INVALID</td><td></td><td>Master key rotation impossible</td></tr>
+<tr><td>LLM routing order</td><td><code>llm_task_prefs</code> else <code>llm.default-routing</code></td><td>—</td><td></td><td></td><td>User reorder</td><td></td><td>Gemini models list vs model-catalog</td></tr>
+<tr><td>Chat transcript</td><td><strong>React state only</strong></td><td>—</td><td>—</td><td>useChatStream</td><td>—</td><td>Lost on refresh</td><td></td></tr>
+<tr><td>Job state</td><td><code>jobs</code> row</td><td>result JSON</td><td>TanStack + polling</td><td>jobsBus in-tab</td><td>Worker, cancel, retry (new row)</td><td>Polling</td><td>Terminal writes unguarded</td></tr>
+<tr><td>API contract</td><td>Server controllers (springdoc export)</td><td><code>api-spec.yaml</code> (server), <code>openapi.yaml</code> + <code>schema.d.ts</code> (client), hand-authored <code>*.types.ts</code></td><td></td><td></td><td>CI drift gates</td><td>gen:api</td><td>Hand types can drift; jobs.types.ts and loan.types.ts hand-written</td></tr>
+</table></div>
+<p><strong>Competing sources of truth worth acting on</strong>: point valuation (₹0.25 vs ₹0), FY boundary (server config vs client April), client rule tester vs server engine, settlement hint vs classification table, report category join vs chat LISTAGG view, and the two transaction SQL field maps. Everything else in the "competing truths" column is a maintenance cost rather than a live disagreement.</p>
+</section>
+<section class="sec" id="s36" data-part="III · Data">
+<p class="eyebrow">Sections 36 and G</p>
+<h2><span class="n">36</span>Data provenance: "explain this number"</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>For each important number a user sees, this section traces it from the pixel back to the stored fact and the external source, and states whether it can be proven correct. The recurring answer: the number is recomputed from source rows on every read, so "can I prove it" reduces to "can I prove the source rows and the formula". Where the formula lives in one place and has tests, confidence is high; where it is duplicated or untested, it is not. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s36-balance">Account tile balance (e.g. "−₹3,000.00" on a credit card)</h3>
+<ol class="trace">
+<li><span class="lyr">UI</span><code>CreditCardTile.tsx</code> renders <code>formatNullableMoney(account.balance)</code> and computes utilization as <code>abs(balance)/creditLimit×100</code> in floating point</li>
+<li><span class="lyr">cache</span><code>keys.accounts.list()</code> hydrated by <code>accounts/page.tsx</code>; refetched on invalidation and <code>router.refresh()</code></li>
+<li><span class="lyr">API</span><span class="m m-get">GET</span> <code>/api/v1/accounts</code> → <code>AccountResponse.balance</code>, <code>balanceAnchored</code>, <code>reconciliationGap</code>, <code>anchorDate</code></li>
+<li><span class="lyr">service</span><code>AccountService.getAllAccounts</code> → native <code>findAccountBalanceBatches</code> → <code>BalanceMath.apply</code>: for a card, base = −closing (if closing &gt; 0) then + Σ(CREDIT +, DEBIT −) for transactions dated strictly after the anchor</li>
+<li><span class="lyr">source rows</span><code>statements</code> (latest non-rejected with period_end and closing_balance) and <code>transactions</code> (all rows on the account; <code>is_excluded</code> ignored)</li>
+<li><span class="lyr">origin</span>Statement closing balance parsed by <code>SummaryFieldHarvester</code> from a PDF; transactions from Gmail extraction, statement lines or manual entry</li>
+</ol>
+<p><strong>Provable?</strong> Yes for the formula (<code>AccountBalanceEquivalenceTest</code>, <code>AccountServiceTest</code>); the inputs are only as correct as the parser's closing balance and the completeness of post-anchor transactions. Excluded transactions are counted, contrary to the UI copy. <span class="c cy">Medium confidence</span></p>
+
+<h3 id="s36-reward">Rewards page "Effective value ₹12,450" and a line "₹18.00 · Dining 2 %"</h3>
+<ol class="trace">
+<li><span class="lyr">UI</span><code>RewardsSummaryCards</code> shows <code>summary.effectiveValueInr</code>; <code>RewardLinesTable</code> shows <code>line.earned</code> with <code>reason</code></li>
+<li><span class="lyr">API</span><span class="m m-get">GET</span> <code>/rewards/report</code> and <code>/rewards/lines</code></li>
+<li><span class="lyr">engine</span><code>RewardCalculationService.evaluate</code>: expand window → fetch DEBIT transactions by <code>COALESCE(settlement_date, transaction_date)</code> → net refund links → per transaction resolve exclusive chain + additive rules → clamp to caps → per rule basis = amount − convenience fee if EXCLUDE_FEE → accrue PERCENT or SLAB or tiered → sum into <code>cashbackInr</code>, <code>points</code>, milestones → <code>effectiveValueInr = gross + discounts − fees</code></li>
+<li><span class="lyr">source rows</span><code>transactions</code> (amount, type, dates, MCC, channel, EMI, intl, fee, discount, category joins, card → cardholder), <code>transaction_links</code>, <code>statements</code> (STATEMENT_CYCLE windows), <code>reward_rules</code> (+ join tables), <code>reward_cap_buckets</code>, <code>reward_milestones</code>, <code>accounts</code> (anniversary, point value)</li>
+<li><span class="lyr">origin</span>Rules typed by the user; transactions from ingestion or manual entry; categories from rules or LLM</li>
+</ol>
+<p><strong>Provable?</strong> The engine is one code path shared by report, lines and recommender, with numeric tests for fees, tiers, caps, scoping and anniversary windows. Nothing is stored, so there is no drift between a cached value and the source. Points shown as ₹ on the Card Picker use ₹0.25 by default; the report keeps points separate. <span class="c cg">High confidence in formula</span>; correctness depends on category assignment and reward-input fields, which the review workflow governs.</p>
+
+<h3 id="s36-position">Holdings "Current value", "Unrealized P&amp;L", "XIRR 14.2 %"</h3>
+<ol class="trace">
+<li><span class="lyr">UI</span><code>HoldingCard</code> / <code>HoldingSummaryMetrics</code> render <code>pos.currentValue</code>, <code>pos.unrealized</code>, <code>pos.xirr</code> verbatim</li>
+<li><span class="lyr">API</span><span class="m m-get">GET</span> <code>/investments/positions</code>, <code>/summary</code></li>
+<li><span class="lyr">engine</span><code>InvestmentService.calculateHoldingPosition</code>: timeline of trades (collapsed per day when a classification exists), corporate actions and seed lots → FIFO walk → openQty, openCost (clean price, no charges) → currentValue = openQty × latest price (else openCost) → unrealized = currentValue − openCost → XIRR over flows (buys −(value + charges), sells +(value − charges), dividends gross, intraday net, CA bridges, terminal +currentValue today) via Newton then bisection, Actual/365</li>
+<li><span class="lyr">source rows</span><code>investment_transactions</code>, <code>trade_settlement_classifications</code>, <code>corporate_actions</code>, <code>dividends</code>, <code>instrument_prices</code> (latest row)</li>
+<li><span class="lyr">origin</span>Trades typed or imported from Zerodha/Groww/CAS files; classification from the broker tax P&amp;L; prices from Yahoo or AMFI at 19:00 IST; dividends from Yahoo events or manual</li>
+</ol>
+<p><strong>Provable?</strong> FIFO and CA math have numeric tests and a parity test with the reports datasource. <code>XirrCalculator</code> has <strong>no direct test</strong> and uses doubles. P&amp;L excludes charges by design (contradicting the plan). A stale price silently shows yesterday's value; a missing price shows cost. <span class="c cy">Medium confidence</span>; XIRR <span class="c co">low</span>.</p>
+
+<h3 id="s36-emi">Loan detail "Outstanding ₹8,42,113" and "Effective APR 9.1 %"</h3>
+<ol class="trace">
+<li><span class="lyr">UI</span><code>LoanHeroHeader</code> renders <code>detail.outstandingPrincipal</code>, <code>detail.effectiveAprPct</code></li>
+<li><span class="lyr">API</span><span class="m m-get">GET</span> <code>/loans/{id}</code> and <code>/loans/{id}/schedule</code> (each recomputes)</li>
+<li><span class="lyr">engine</span><code>LoanScheduleService.compute</code>: annuity EMI unless overridden; monthly walk with interest = round2(balance × rate / 1200), principal = min(EMI − interest, balance); events applied strictly before each due date; outstanding = closing balance of the last installment due on or before today; APR = XIRR of +principal, −charges, −payments (settled at paid dates, unsettled projected at due dates), −prepayments</li>
+<li><span class="lyr">source rows</span><code>loans</code>, <code>loan_events</code>, <code>loan_payments</code> (seq, amount, date), <code>loan_charges</code></li>
+<li><span class="lyr">origin</span>Typed by the user; payments optionally linked to bank transactions by hand or via ±₹20 / ±7-day suggestions</li>
+</ol>
+<p><strong>Provable?</strong> The schedule engine has 10 real tests including Σ principal = principal and APR &gt; nominal with a fee. Outstanding follows the schedule, not payments, by design. APR depends on the untested XIRR solver. <span class="c cy">Medium confidence</span></p>
+
+<h3 id="s36-report">A report KPI "Spend this month ₹54,200" (transactions datasource)</h3>
+<ol class="trace">
+<li><span class="lyr">UI</span><code>KpiView</code> renders <code>data.value</code> formatted by <code>formatMeasureValue</code></li>
+<li><span class="lyr">API</span><span class="m m-post">POST</span> <code>/reports/{id}/data</code> (saved) or <code>/reports/data</code> (preview)</li>
+<li><span class="lyr">engine</span><code>ReportDataService</code> → validate → <code>KpiReportExecutor</code> → <code>TransactionQueryBuilder</code> native SQL: <code>SUM(CASE type='CREDIT' THEN amount ELSE −amount END)</code> WHERE user_id = :uid AND filters (date range from <code>DateRangeResolver</code>, inclusive both ends, JVM-zone today) → optional previous-period comparison</li>
+<li><span class="lyr">source rows</span><code>transactions</code> joined to accounts, and to categories when referenced (fan-out)</li>
+</ol>
+<p><strong>Provable?</strong> Only if the definition filters <code>type = DEBIT</code> and <code>isExcluded is false</code> (neither is default), and only if no category filter fans out. A KPI filtered by two categories can double count a multi-category transaction. Chat's <code>v_chat_transactions</code> view would give a different total for the same question. <span class="c co">Low confidence for category-filtered totals</span>; high otherwise.</p>
+
+<h3 id="s36-attention">Gmail "Needs attention (7)"</h3>
+<ol class="trace">
+<li><span class="lyr">UI</span><code>GmailAttentionCard</code> pages <span class="m m-get">GET</span> <code>/gmail/attention</code></li>
+<li><span class="lyr">source</span><code>gmail_processed_messages</code> with status UNRESOLVED_ACCOUNT, ACCOUNT_NOT_OPTED_IN, FAILED_PERMANENT (and FAILED_RETRYABLE if requested)</li>
+<li><span class="lyr">origin</span>Each row is one Gmail message that the extractor read and the resolver could not place, or that failed five times</li>
+</ol>
+<p><strong>Provable?</strong> Yes; it is a direct count of ledger rows. The count omits statement lines dropped by the watermark (no ledger row) and unattributable failures deleted per V63's policy.</p>
+
+<h3 id="s36-lineage-diagram">Lineage overview</h3>
+<pre class="mermaid">flowchart LR
+  G[Gmail alert email] -->|GeminiExtractor| T[(transactions)]
+  P[Statement PDF/Excel] -->|StatementParseEngine| S[(statements)]
+  S -->|lines match or create| T
+  M[Manual entry] --> T
+  B[Broker CSV/XLSX/CAS] -->|ImportService / Reconciliation| IT[(investment_transactions)]
+  B --> C[(trade_settlement_classifications)]
+  Y[Yahoo / AMFI] --> PR[(instrument_prices)]
+  U[User config] --> R[(reward_rules, buckets, milestones)]
+  U --> L[(loans, events, payments)]
+  T --> BAL[Balance]
+  S --> BAL
+  T --> RW[Reward report]
+  R --> RW
+  S --> RW
+  IT --> POS[Positions, XIRR]
+  C --> POS
+  CA[(corporate_actions)] --> POS
+  PR --> POS
+  L --> SCH[EMI schedule, APR]
+  T --> REP[Reports, Chat]
+  IT --> REP
+  RW --> REP
+  SCH --> REP
+  POS --> REP
+  POS --> NW[Broker account balance]</pre>
+</section>
+<section class="sec" id="s52" data-part="III · Data">
+<p class="eyebrow">Section 52</p>
+<h2><span class="n">52</span>Trace-from-database index</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Start from a table and find every writer, reader, API, screen and job that touches it. Compiled from repository usage in the server and screen usage in the client. <span class="c cg">Confirmed</span></p></div>
+<div class="tw"><table>
+<tr><th>Table(s)</th><th>Writers (services)</th><th>Readers (services)</th><th>APIs</th><th>Client screens</th><th>Jobs / automation</th><th>External</th></tr>
+<tr><td><code>users</code>, SPRING_SESSION*</td><td>AuthService (signup, login, Google link), AccountDeletionService/Executor</td><td>UserDetailsServiceImpl, UserContextFilter, every @ManyToOne</td><td>/auth/**</td><td>/login, /signup, /auth/google/callback, /settings</td><td>—</td><td>Google OAuth</td></tr>
+<tr><td><code>accounts</code>, <code>account_*_details</code></td><td>AccountService; RewardAccountConfigController (3 columns); AccountService.ratchetDemand</td><td>Nearly all: TransactionService, RewardCalculationService, HoldingValuationService, AccountResolver, StatementReconciliationService, LoanService (payment account), chat grounding</td><td>/accounts/**, /reward-config</td><td>/accounts, every account picker</td><td>Gmail sync (resolution), statement ingest</td><td>—</td></tr>
+<tr><td><code>account_identifiers</code></td><td>AccountIdentifierService (also via Gmail assign)</td><td>AccountResolver</td><td>/accounts/{id}/identifiers, /gmail/attention/{id}/assign</td><td>Account form identifiers section, AssignAccountDialog</td><td>Gmail sync</td><td>—</td></tr>
+<tr><td><code>cardholders</code>, <code>cards</code></td><td>CardholderService</td><td>AccountResolver, RewardCalculationService, TransactionService (card validation, reattribute), AccountService (reopen collision)</td><td>/accounts/{a}/cardholders/**</td><td>CardsDialog</td><td>—</td><td>—</td></tr>
+<tr><td><code>transactions</code></td><td>TransactionService (CRUD, merge, batch, reattribute), GmailTransactionWriter, StatementReconciliationService, FileIngestionDbHandler, CategorizationService (categories, applied rule), RuleMatchService, GmailController cleanup</td><td>AccountService (balances), RewardCalculationService, report query builders, LoanService (match), LendingService, chat views, AccountIdentifierService</td><td>/transactions/**, /transaction-links, /rules/**, /categorize</td><td>/transactions, /transactions/review, link and merge dialogs, loans match banner</td><td>GMAIL_SYNC, STATEMENT_INGEST, RULE_APPLY</td><td>Gmail, LLM</td></tr>
+<tr><td><code>transaction_categories</code>, <code>categories</code></td><td>TransactionService, CategorizationService, CategoryService, RuleMatchService</td><td>Reports (fan-out), rewards predicates, chat views</td><td>/categories, /transactions</td><td>/rules/categories, category pickers</td><td>RULE_APPLY</td><td>LLM auto-create</td></tr>
+<tr><td><code>category_rules</code>, <code>category_rule_categories</code></td><td>RulesController/CategorizationService (create, update, verify), CategorizationService (LLM create), RuleMatchService (applied_count)</td><td>CategorizationService.bestMatch, suggestFromRules</td><td>/rules/**</td><td>/rules, RuleMatchesDialog</td><td>RULE_APPLY</td><td>LLM</td></tr>
+<tr><td><code>transaction_review_reasons</code></td><td>ReviewStatusManager only</td><td>Search filters, review queue</td><td>/transactions/search, /batch-review</td><td>/transactions/review</td><td>Gmail, statement, rule apply</td><td>—</td></tr>
+<tr><td><code>transaction_links</code>, <code>transaction_link_members</code></td><td>TransactionLinkService; TransactionService (merge re-point, delete dissolve)</td><td>RewardCalculationService, report TransactionQueryBuilder (EXISTS)</td><td>/transaction-links</td><td>TransactionLinkDialog, badges</td><td>—</td><td>—</td></tr>
+<tr><td><code>statements</code>, <code>statement_credit_card_details</code>, <code>statement_transactions</code></td><td>StatementPersistenceService (from FileIngestionService and StatementReconciliationService); TransactionService merge re-points lines</td><td>AccountService (anchor, card summary), RewardCalculationService (cycles), StatementService</td><td>/accounts/{a}/statements, /statements/{id}, /accounts/{a}/card-summary, /accounts/{a}/ingest</td><td>StatementsDialog, StatementDetailDialog, /settings/ingest</td><td>STATEMENT_INGEST, GMAIL_SYNC</td><td>Gmail attachments</td></tr>
+<tr><td><code>gmail_connections</code></td><td>GmailOAuthService, AuthService.handleGoogleLogin, AccountDeletionService (revoke)</td><td>IngestionScheduler, GmailController, GmailIngestionService</td><td>/gmail/oauth/**, /gmail/connections, /gmail/sync</td><td>/settings/gmail</td><td>GMAIL_SYNC</td><td>Google, Gmail</td></tr>
+<tr><td><code>gmail_senders</code></td><td>SenderAllowlistService</td><td>GmailIngestionService, GmailSyncCursorService</td><td>/gmail/senders</td><td>GmailSendersCard</td><td>GMAIL_SYNC</td><td>—</td></tr>
+<tr><td><code>gmail_processed_messages</code></td><td>GmailIngestionService, GmailTransactionWriter, StatementReconciliationService, GmailIngestEventListener, AccountIdentifierService, GmailController (retry, cleanup)</td><td>GmailController attention, AccountIdentifierService</td><td>/gmail/attention/**, /accounts/{id}/gmail-cleanup*</td><td>GmailAttentionCard, CleanupConfirmDialog, job result details</td><td>GMAIL_SYNC</td><td>Gmail, LLM</td></tr>
+<tr><td><code>gmail_sync_cursors</code>, <code>gmail_backfill_demand</code></td><td>GmailSyncCursorService, GmailIngestionService, AccountService (ratchet), GmailController.rescan</td><td>GmailIngestionService, GmailController (lastSyncedAt)</td><td>/gmail/connections (derived), /gmail/rescan</td><td>GmailConnectionsCard</td><td>GMAIL_SYNC</td><td>—</td></tr>
+<tr><td><code>instruments</code>, <code>instrument_aliases</code>, <code>instrument_prices</code></td><td>InstrumentService, InstrumentSearchService.resolve, PriceRefreshService, ImportService, BrokerReconciliationService</td><td>InvestmentService, HoldingValuationService, PortfolioValueDatasource, chat views</td><td>/instruments/**, /investments/prices/refresh</td><td>/investments/instruments, PriceHistoryPanel, typeaheads</td><td>PRICE_REFRESH, price event listener</td><td>Yahoo, AMFI</td></tr>
+<tr><td><code>corporate_actions</code></td><td>CorporateActionService</td><td>InvestmentService (timeline), HoldingValuationService, datasources</td><td>/corporate-actions, /instruments/{i}/corporate-actions</td><td>/investments/corporate-actions</td><td>—</td><td>—</td></tr>
+<tr><td><code>holdings</code>, <code>investment_transactions</code>, <code>trade_settlement_classifications</code></td><td>InvestmentService, ImportService, BrokerReconciliationService, CorporateActionService (child holding)</td><td>InvestmentService, HoldingValuationService, DividendService (openQtyAsOf), SipService, datasources positions / realized_lots / portfolio_value, chat views</td><td>/investments/transactions, /positions, /summary, /imports/**</td><td>/investments, tradebook, import wizard</td><td>INVESTMENT_IMPORT_COMMIT, BROKER_RECONCILE_COMMIT, PRICE_REFRESH (active instruments)</td><td>Broker files</td></tr>
+<tr><td><code>dividends</code>, <code>sips</code>, <code>fno_trades</code></td><td>DividendService, SipService, FnoTradeService (also from BrokerReconciliationService)</td><td>InvestmentService (XIRR flows, summary), datasources dividends / fno_trades, chat views</td><td>/investments/dividends/**, /sips, /fno</td><td>/investments/dividends, /investments/fno</td><td>BROKER_RECONCILE_COMMIT</td><td>Yahoo dividend events</td></tr>
+<tr><td><code>loans</code>, <code>loan_events</code>, <code>loan_payments</code>, <code>loan_charges</code></td><td>LoanService</td><td>LoanService, ObligationsController, LoanPaymentsDatasource, LoanTaxSummaryDatasource, TransactionReferenceValidator, chat views</td><td>/loans/**, /obligations/upcoming</td><td>/loans/**, calendar</td><td>—</td><td>—</td></tr>
+<tr><td><code>counterparties</code>, <code>lendings</code></td><td>LendingService</td><td>ObligationsController, LendingsDatasource, TransactionReferenceValidator, chat views</td><td>/lendings, /counterparties</td><td>/loans/lendings/**</td><td>—</td><td>—</td></tr>
+<tr><td><code>reward_rules</code> (+ children), <code>reward_cap_buckets</code>, <code>reward_milestones</code></td><td>RewardRuleService, RewardCapBucketService, RewardMilestoneService; CardholderService (null out cardholder on close)</td><td>RewardCalculationService, RewardRecommendationService, RewardEarningsDatasource, chat tools</td><td>/reward-rules, /reward-cap-buckets, /reward-milestones, /rewards/report|lines, /reward-recommendations</td><td>/rewards/**</td><td>—</td><td>—</td></tr>
+<tr><td><code>jobs</code>, <code>job_artifacts</code></td><td>JobService (enqueue, claim, succeed, fail, cancel, retry), JobJanitor</td><td>JobWorker, JobController, AccountDeletionService (drain)</td><td>/jobs/**, every 202 endpoint</td><td>/settings/jobs, JobsPanel</td><td>All six handlers; janitor</td><td>—</td></tr>
+<tr><td><code>llm_api_keys</code>, <code>llm_task_prefs</code></td><td>LlmKeyService, LlmRoutingService, FailoverLlmClient (INVALID, last_used_at)</td><td>FailoverLlmClient, LlmRoutingService.getHealth</td><td>/llm-keys/**, /llm/**</td><td>/settings/llm-keys</td><td>Every LLM call</td><td>Providers</td></tr>
+<tr><td><code>reports</code>, <code>dashboards</code></td><td>ReportService, DashboardService; chat report drafts via reports API on click</td><td>ReportDataService, DashboardService, chat report tools</td><td>/reports/**, /dashboards/**, /report/datasource</td><td>/reports/**, /dashboards/**, /dashboard, chat draft cards</td><td>—</td><td>—</td></tr>
+<tr><td><code>v_chat_*</code> views</td><td>— (views)</td><td>ChatSqlExecutor as CHAT_RO</td><td>/chat/stream, /chat</td><td>/chat</td><td>—</td><td>LLM writes the SQL</td></tr>
+</table></div>
+</section>
+<section class="sec" id="s12" data-part="III · Data">
+<p class="eyebrow">Sections 12 and 63</p>
+<h2><span class="n">12</span>Data flows &amp; critical data paths</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Three ingestion paths feed one ledger; four derivation engines read it. Data is created at the edges (email, PDF, broker file, form), normalized once (LLM extraction, parser, import resolver), persisted as facts, and never aggregated into stored summaries. Enrichment happens in two places: LLM categorization at ingestion and corporate-action replay at read. Synchronization is one-directional from sources to the ledger; reconciliation exists only between Gmail alerts and statements. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s12-ingest">Flow 1: external source → ledger → derived views</h3>
+<pre class="mermaid">sequenceDiagram
+  participant Gmail
+  participant Sync as GmailIngestionService
+  participant LLM as FailoverLlmClient
+  participant Res as AccountResolver
+  participant W as GmailTransactionWriter
+  participant Cat as CategorizationService
+  participant DB as Oracle
+  Gmail->>Sync: messages.list from:(senders) after:cursor
+  Sync->>DB: insert gmail_processed_messages DISCOVERED
+  loop drain budget 100/500
+    Sync->>Gmail: messages.get
+    Sync->>LLM: email-extract {isTransaction, amount, direction, date, description, last4}
+    LLM-->>Sync: JSON (or failure → FAILED_RETRYABLE)
+    Sync->>Res: resolve(last4) 4 passes
+    Res-->>Sync: account+card | empty → UNRESOLVED_ACCOUNT
+    Sync->>W: writeTransaction (watermark check)
+    W->>DB: insert transactions NEEDS_REVIEW UNRECONCILED, ledger CREATED
+  end
+  Sync->>Cat: batchCategorize(created)
+  Cat->>LLM: categorize batch (rules first)
+  Cat->>DB: categories, applied_rule, CATEGORY_UNVERIFIED</pre>
+
+<h3 id="s12-input">Flow 2: user input → validation → derived data → UI</h3>
+<pre class="mermaid">sequenceDiagram
+  participant U as User
+  participant C as Client component
+  participant N as Next rewrite
+  participant API as Controller
+  participant S as Service @Transactional
+  participant DB as Oracle
+  U->>C: submit trade form
+  C->>N: POST /api/v1/investments/transactions
+  N->>API: forward with cookie
+  API->>S: createTransaction (DTO validated)
+  S->>S: sell ≤ held? recomputeClassificationForDay
+  S->>DB: insert investment_transactions
+  S-->>API: PositionDto (after commit: PriceRefreshEvent → Yahoo)
+  API-->>C: 201
+  C->>C: invalidateQueries(keys.investments.all)
+  C->>N: GET /positions (FIFO replay on read)
+  N-->>C: fresh positions</pre>
+
+<h3 id="s12-lifecycle">Where data is created, transformed, aggregated, cached, persisted, deleted, synchronized, enriched</h3>
+<div class="tw"><table>
+<tr><th>Operation</th><th>Where</th><th>Examples</th></tr>
+<tr><td>Created</td><td>Edges</td><td>Gmail extraction, statement parser lines, import rows, manual forms, LLM category auto-create, materialized child holdings on a CA</td></tr>
+<tr><td>Transformed</td><td>Normalizers</td><td><code>DescriptionNormalizer</code>, <code>FlexibleDateParser</code>, <code>TransactionType.fromLlmDirection</code>, statement sign oracle, import price = value ÷ qty, ISIN-first instrument resolve, split rows (-I/-D) in reconciliation</td></tr>
+<tr><td>Aggregated</td><td>Read-time engines and SQL</td><td>Balance sums, reward totals, FIFO positions, EMI schedule, report SUM/AVG, lending net, obligations merge</td></tr>
+<tr><td>Cached</td><td>Client TanStack (30 s); server in-memory maps (LLM buckets, quota, grounding 5 min, AMFI feed, Yahoo search 5 min, regex cache)</td><td>No persisted derived tables</td></tr>
+<tr><td>Persisted</td><td>Facts and configuration</td><td>Transactions, trades, statements, rules, terms, jobs, keys; derived-but-stored: total_charges, realized_pnl, applied_rule_id, job results</td></tr>
+<tr><td>Deleted</td><td>Hard deletes with cascades</td><td>Account delete cascades transactions; user delete cascades everything (verified); merge deletes the loser; Gmail cleanup deletes unreconciled alerts; janitor purges jobs; no soft delete anywhere</td></tr>
+<tr><td>Synchronized</td><td>One-way inbound</td><td>Gmail cursors, price refresh, dividend suggestions; nothing pushes back to external systems</td></tr>
+<tr><td>Enriched</td><td>Ingestion and read</td><td>LLM categories and MCC, rule matches, card attribution from last4, corporate actions and classifications applied at read, refund netting in rewards</td></tr>
+</table></div>
+
+<h3 id="s63-critical">Critical data paths (financial correctness)</h3>
+<div class="tw"><table>
+<tr><th>Path</th><th>Transformations</th><th>Validation</th><th>Persistence</th><th>Potential loss</th><th>Potential duplication</th><th>Potential staleness</th><th>Reconciliation point</th></tr>
+<tr><td>Email → transaction → category → reward → report</td><td>LLM extract, direction default DEBIT, day-first date, last4 resolve, watermark, LLM categorize</td><td>isTransaction, amount and date required; account opted in</td><td>ledger row + transaction</td><td>Ambiguous last4 parks; &gt;365-day backfill clamped; token revoke undetected</td><td>Guarded by (connection, message) and (user, source_message_id); overlap window 15 min</td><td>Cron cadence 2 h</td><td>Statement lines match alerts (±3 days, exact amount) and promote them</td></tr>
+<tr><td>Statement PDF → statement → transactions</td><td>Word extraction, date inference, sign oracle, summary harvest</td><td>Verdict advisory only</td><td>statements, lines, transactions</td><td>Lines before watermark dropped without a record; wrong-sign rows if the oracle fails</td><td>File and period dedup skip the whole file (including new lines); upload path flags but never skips duplicate rows</td><td>—</td><td>Balance anchor uses closing balance; card checks ±0.51</td></tr>
+<tr><td>Transaction → balance</td><td>Signed sum after anchor</td><td>none</td><td>none (derived)</td><td>Anchor-day transactions posted after cut dropped until next anchor</td><td>Duplicates flagged not removed inflate balance</td><td>Client cache 30 s</td><td>Bank gap badge ≥ ₹0.01</td></tr>
+<tr><td>Transaction → reward</td><td>Effective date, link netting, matching, accrual, caps</td><td>Rule validation at save</td><td>none</td><td>Broken tier JSON silently skips a rule</td><td>Duplicate ADDITIVE rules double earn</td><td>UI until refetch</td><td>None built (statement reward points parsed but never compared)</td></tr>
+<tr><td>Broker file → trades → classification → position → net worth</td><td>Dedup gate, ISIN resolve, split, value subtraction, FIFO, CA replay, price</td><td>Sell ≤ held only on manual paths</td><td>trades, classifications</td><td>Over-sold histories truncate realized P&amp;L with a warning; "first commit wins" classification</td><td>Service-only dedup; concurrent commits; duplicate CAs double apply</td><td>Price 19:00 daily; "at cost" when none</td><td>Realized cross-check vs classifier (display only); optional holdings snapshot DATA_GAP</td></tr>
+<tr><td>Loan terms → schedule → tax report</td><td>Annuity, event application, FY bucketing by payment date</td><td>EMI &gt; interest; ≤600</td><td>terms, events, payments</td><td>Payment amount never enters split</td><td>Unique seq and unique transaction refs</td><td>—</td><td>None; foreclosure amount unchecked</td></tr>
+<tr><td>Ledger → report → chat</td><td>Two SQL builders, one view layer</td><td>Definition validator</td><td>none</td><td>Stale <code>source</code> values match nothing</td><td>Category fan-out double counts</td><td>—</td><td>None; reports and chat can disagree</td></tr>
+</table></div>
+</section>
+<nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/modules-b.html"><small>Previous</small>Modules B · investments, rewards, loans, reports, LLM and chat</a><a class="next" href="/handbook/client.html"><small>Next</small>Client</a></nav>
+  </main>
+</div>
+</div>
+<script src="/handbook/handbook.js" defer></script>
+</body>
+</html>

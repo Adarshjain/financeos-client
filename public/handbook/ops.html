@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="FinanceOS system and product reference, reverse-engineered from the code. Ops and architecture.">
+<title>FinanceOS Handbook · Ops and architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/handbook/handbook.css">
+</head>
+<body data-page="ops.html">
+<div class="shell">
+<aside class="side" id="side">
+  <div class="side-head">
+    <div class="brand">FinanceOS Handbook <small>v1</small></div>
+    <div class="brand-sub">System &amp; product reference, reverse-engineered from code · 2026-09-06</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search sections and text…" autocomplete="off" aria-label="Search">
+      <kbd>/</kbd>
+    </div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="side-foot">
+    <button id="expandAll" type="button">Expand all</button>
+    <button id="collapseAll" type="button">Collapse all</button>
+    <span style="margin-left:auto">Source of truth: code</span>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="burger" id="burger" type="button" aria-label="Open navigation">☰ Sections</button>
+    <div class="crumb" id="crumb"><b>FinanceOS Handbook</b></div>
+    <button id="toTop" type="button">↑ Top</button>
+  </div>
+  <div class="results" id="results" aria-live="polite">
+    <button class="close" id="closeResults" type="button">Close ✕</button>
+    <h3 id="resultsTitle"></h3>
+    <div id="resultsList"></div>
+  </div>
+  <main class="content" id="content">
+<section class="sec" id="s26" data-part="IX · Ops &amp; architecture">
+<p class="eyebrow">Section 26</p>
+<h2><span class="n">26</span>Configuration and environment</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>The server is configured by <span class="path">application.yml</span> (defaults with <code>${ENV:default}</code> placeholders), <span class="path">application-prod.yml</span> (actuator on 8081 loopback, JSON logging) and <span class="path">application-e2e.yml</span> (crons off, scripted LLM, Swagger, short limits), with secrets from <span class="path">server/.env</span> locally and systemd environment on OCI. The client reads a handful of <code>NEXT_PUBLIC_*</code> and server-only variables; <code>API_ORIGIN</code> must be set on Vercel. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s26-server">Server environment variables</h3>
+<div class="tw"><table>
+<tr><th>Variable</th><th>Purpose</th><th>Default</th><th>Required in prod</th><th>Notes</th></tr>
+<tr><td><code>DB_URL</code>, <code>DB_USER</code>, <code>DB_PASSWORD</code></td><td>Oracle JDBC (ADB via <code>TNS_ADMIN</code> wallet, <code>_tp</code> service)</td><td>local Oracle Free</td><td>Yes</td><td>Hikari 10</td></tr>
+<tr><td><code>TNS_ADMIN</code></td><td>Wallet directory</td><td>—</td><td>Yes</td><td></td></tr>
+<tr><td><code>SERVER_PORT</code></td><td>HTTP port</td><td>6969 (dev), 8080 (prod unit)</td><td></td><td>Caddy → 8080</td></tr>
+<tr><td><code>CORS_ORIGINS</code></td><td>Allowed origins with credentials</td><td>localhost:3000</td><td>Yes</td><td>Vercel domains</td></tr>
+<tr><td><code>COOKIE_SECURE</code>, <code>COOKIE_SAME_SITE</code></td><td>Session cookie flags</td><td>false / Lax</td><td>true</td><td>365 d max-age</td></tr>
+<tr><td><code>UI_PATH</code></td><td>Client origin for OAuth relay redirects</td><td>localhost:3000</td><td>Yes</td><td></td></tr>
+<tr><td><code>INVITE_CODE</code>, <code>INVITE_MAX_FAILURES</code>, <code>INVITE_LOCKOUT_MINUTES</code></td><td>Signup gate</td><td>unset (fail closed) / 10 / 15</td><td>Yes to allow signups</td><td>Set in server/.env since 2026-09-01</td></tr>
+<tr><td><code>ENCRYPTION_KEY</code></td><td>AES-GCM for tokens and statement passwords</td><td>—</td><td>Yes</td><td>Losing it orphans encrypted data</td></tr>
+<tr><td><code>LLM_KEYS_MASTER_KEY</code></td><td>AES-GCM for BYOK keys</td><td>—</td><td>Yes</td><td>Needed on OCI before BYOK deploy</td></tr>
+<tr><td><code>GOOGLE_CLIENT_ID</code>, <code>GOOGLE_CLIENT_SECRET</code>, <code>GOOGLE_OAUTH_REDIRECT_URI</code>, <code>GMAIL_REDIRECT_URI</code></td><td>Google SSO and Gmail OAuth</td><td>—</td><td>Yes</td><td>Callbacks must land on the client</td></tr>
+<tr><td><code>GEMINI_API_KEY</code>, <code>GROQ_API_KEY</code>, <code>OPENROUTER_API_KEY</code></td><td>Env LLM keys (used only if <code>allowNoKey</code> policy permits)</td><td>—</td><td>Optional</td><td>Users may BYOK</td></tr>
+<tr><td><code>GEMINI_MODELS</code>, <code>LLM_*</code> chain and routing options</td><td>Provider order, batch sizes, timeouts</td><td>yml defaults</td><td>No</td><td>See <a href="/handbook/rules.html#s56-config">§56</a></td></tr>
+<tr><td><code>CHAT_ENABLED</code>, <code>CHAT_RO_USER</code>, <code>CHAT_RO_PASSWORD</code>, <code>CHAT_DAILY_QUOTA</code></td><td>Chat feature and read-only DB user</td><td>true / — / 30</td><td>Yes if chat</td><td>CHAT_RO created by <code>chat-ro-setup.sql</code></td></tr>
+<tr><td><code>PRICE_REFRESH_ENABLED</code>, <code>PRICE_CRON</code>, <code>YAHOO_*</code>, <code>AMFI_URL</code></td><td>Price feeds</td><td>true / 19:00 IST</td><td>No</td><td></td></tr>
+<tr><td><code>GMAIL_CRON</code>, <code>GMAIL_TIMEZONE</code>, backfill/budget settings</td><td>Sync cadence</td><td>10–22 every 2 h IST</td><td>No</td><td></td></tr>
+<tr><td><code>JOBS_CONCURRENCY</code>, <code>JOBS_POLL_MS</code>, <code>JOBS_QUEUE_LIMIT</code>, retention</td><td>Queue</td><td>2 / 2000 / 100 / 30 d, 7 d</td><td>No</td><td></td></tr>
+<tr><td><code>SPRING_PROFILES_ACTIVE</code></td><td>prod / e2e</td><td>none</td><td>prod</td><td>README wrongly says prod is inert</td></tr>
+<tr><td><code>JAVA_TOOL_OPTIONS</code></td><td>-Xmx512m -XX:+UseSerialGC -XX:TieredStopAtLevel=1</td><td>—</td><td>Set by unit file</td><td></td></tr>
+<tr><td><code>LOKI_*</code></td><td>Fluent Bit output</td><td>—</td><td>Yes for logs</td><td>In Fluent Bit config, not the JVM</td></tr>
+</table></div>
+
+<h3 id="s26-client">Client environment variables</h3>
+<div class="tw compact"><table>
+<tr><th>Variable</th><th>Purpose</th><th>Scope</th></tr>
+<tr><td><code>API_ORIGIN</code></td><td>Server URL for RSC fetches, server actions and the <code>/api/v1/*</code> rewrite</td><td>Server only; required on Vercel</td></tr>
+<tr><td><code>NEXT_PUBLIC_API_BASE</code></td><td>Browser base path (defaults to same-origin rewrite)</td><td>Public</td></tr>
+<tr><td><code>NEXT_PUBLIC_FARO_URL</code>, <code>NEXT_PUBLIC_FARO_APP</code></td><td>Grafana Faro collector</td><td>Public</td></tr>
+<tr><td><code>LOKI_PUSH_URL</code>, <code>LOKI_USER</code>, <code>LOKI_TOKEN</code></td><td>Server-side client logger</td><td>Server only</td></tr>
+<tr><td><code>NODE_ENV</code></td><td>Cookie <code>secure</code> flag in <code>setSessionCookie</code></td><td>Runtime</td></tr>
+<tr><td><code>E2E_*</code></td><td>Playwright base URL, Oracle container, WireMock ports</td><td>CI only</td></tr>
+</table></div>
+
+<h3 id="s26-profiles">Profiles</h3>
+<div class="tw compact"><table>
+<tr><th>Profile</th><th>Changes</th></tr>
+<tr><td>(none, dev)</td><td>Port 6969, local Oracle Free via Docker, Swagger off, crons on, human-readable logs</td></tr>
+<tr><td><code>prod</code></td><td>Actuator on 8081 loopback, JSON logs, Swagger off, error details suppressed</td></tr>
+<tr><td><code>e2e</code></td><td>Crons disabled, <code>ScriptedLlmClient</code>, WireMock base URLs, Swagger on, <code>E2eControlController</code> (clock, fixtures, coverage), invite code fixed, short quotas</td></tr>
+</table></div>
+
+<h3 id="s26-files">Configuration files</h3>
+<ul>
+<li><span class="path">financeos-server/src/main/resources/application.yml</span>, <span class="path">application-prod.yml</span>, <span class="path">application-e2e.yml</span></li>
+<li><span class="path">financeos-server/.env</span> (local secrets, gitignored), <span class="path">financeos-server/scripts/chat-ro-setup.sql</span></li>
+<li><span class="path">financeos-client/next.config.ts</span> (rewrites, Serwist), <span class="path">proxy.ts</span>, <span class="path">.env.local</span></li>
+<li><span class="path">.github/workflows/*.yml</span> in both repos; systemd unit and Caddyfile on the VM (not in the repo; reconstructed from the deploy workflow)</li>
+</ul>
+</section>
+<section class="sec" id="s27" data-part="IX · Ops &amp; architecture">
+<p class="eyebrow">Section 27</p>
+<h2><span class="n">27</span>Build, deploy and runtime</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Two repositories, two hosts. The server jar is built by GitHub Actions, gated on the client's reusable E2E workflow, copied over SSH to a single OCI always-free VM and restarted under systemd behind Caddy (TLS via DuckDNS). The client deploys to Vercel Hobby on push. Flyway runs at boot against Oracle Autonomous DB; CI boots the server twice to prove migration idempotence. There is no staging environment, no blue/green, and no rollback beyond redeploying the previous commit. <span class="c cg">Confirmed</span> from workflows and memory notes; the VM's systemd unit and Caddyfile are not in the repo.</p></div>
+
+<h3 id="s27-pipeline">Pipeline</h3>
+<pre class="mermaid">flowchart LR
+  subgraph client repo
+    CP[push main] --> CT[lint + tsc + vitest]
+    CT --> CD[Vercel build + deploy]
+    E2E[reusable e2e workflow\nOracle Free + server e2e + WireMock + Playwright]
+  end
+  subgraph server repo
+    SP[push main] --> ST[mvn test]
+    ST --> SB[mvn package jar]
+    SB --> CALL[call client e2e workflow\nwith this jar]
+    CALL --> E2E
+    E2E -->|green| DB2[double boot vs Oracle Free\nFlyway idempotence]
+    DB2 --> SCP[scp jar over SSH]
+    SCP --> RS[systemctl restart financeos]
+    RS --> HC[health check :8081/actuator/health]
+  end
+  HC --> VM[(OCI E2.1.Micro\nCaddy :443 → :8080)]
+  CD --> VC[(Vercel)]
+  VC -->|API_ORIGIN| VM
+  VM -->|wallet| ADB[(Oracle ADB)]</pre>
+
+<h3 id="s27-stages">Stages</h3>
+<div class="tw"><table>
+<tr><th>Stage</th><th>Tool</th><th>Gate</th><th>Notes</th></tr>
+<tr><td>Client CI</td><td>GitHub Actions: <code>npm ci</code>, lint, tsc, vitest, <code>check-api-surface.mjs</code>, schema drift check</td><td>Must pass</td><td>Node 20</td></tr>
+<tr><td>Client deploy</td><td>Vercel Git integration</td><td>Build success</td><td>Hobby: no log drains; <code>API_ORIGIN</code> env required</td></tr>
+<tr><td>Server CI</td><td>Maven test + package (Java 21)</td><td>Must pass</td><td>Surefire ~660 tests</td></tr>
+<tr><td>Cross-repo E2E</td><td><code>workflow_call</code> into the client repo with the jar artefact</td><td>651 tests, coverage 193/193, unmatched 0</td><td>Oracle Free container ~2 min start</td></tr>
+<tr><td>Idempotence</td><td>Boot jar twice against the same DB</td><td>Second boot clean</td><td>Catches non-idempotent migrations</td></tr>
+<tr><td>Deploy</td><td>SSH + scp + systemctl</td><td>Health 200</td><td>Downtime ≈ JVM start (40–60 s)</td></tr>
+<tr><td>Migrations</td><td>Flyway at boot (<code>ddl-auto: none</code>)</td><td>Boot fails on error</td><td>V82 needed manual recovery on ADB (ORA-12839)</td></tr>
+<tr><td>Observability</td><td>Fluent Bit + Grafana Agent on the VM</td><td>—</td><td>Alert rules pushed 2026-08-20</td></tr>
+</table></div>
+
+<h3 id="s27-runtime">Runtime topology</h3>
+<div class="tw compact"><table>
+<tr><th>Component</th><th>Where</th><th>Detail</th></tr>
+<tr><td>Client</td><td>Vercel (Hobby)</td><td>Next 16 RSC; rewrites <code>/api/v1/*</code> → <code>API_ORIGIN</code></td></tr>
+<tr><td>Reverse proxy</td><td>OCI VM, Caddy</td><td>DuckDNS hostname, automatic TLS, → 127.0.0.1:8080</td></tr>
+<tr><td>API</td><td>OCI VM, systemd</td><td>Java 21, -Xmx512m, SerialGC, C1; prod profile; actuator 8081 loopback</td></tr>
+<tr><td>Jobs and crons</td><td>Same JVM</td><td>2 worker threads; Asia/Kolkata crons</td></tr>
+<tr><td>Database</td><td>Oracle ADB always-free</td><td>Wallet auth, <code>_tp</code> service, 20 session cap; CHAT_RO second user</td></tr>
+<tr><td>Logs and metrics</td><td>Grafana Cloud Free</td><td>Fluent Bit → Loki; Agent → Mimir; Faro</td></tr>
+<tr><td>Dev</td><td>Laptop</td><td>Docker Oracle Free 23, port 6969, <code>.env</code></td></tr>
+</table></div>
+
+<h3 id="s27-risks">Operational risks</h3>
+<ul>
+<li><strong>Single VM, 952 MiB, swap active</strong>: one OOM or reboot is an outage; no HA.</li>
+<li><strong>Restart-in-place deploy</strong>: every deploy is downtime; a failed Flyway migration leaves the service down until fixed by hand.</li>
+<li><strong>No staging</strong>: E2E runs against Oracle Free, not ADB; ADB-specific behaviour (parallel DML) surfaced only in prod.</li>
+<li><strong>Secrets on the box</strong>: env in the systemd unit; wallet on disk; SSH key in GitHub secrets.</li>
+<li><strong>Cross-repo coupling</strong>: server deploy depends on the client repo's workflow being green and compatible.</li>
+<li><strong>Uncommitted work</strong>: as of 2026-09-06 a large body of reviewed work sits uncommitted or unpushed across both repos (memory); prod lags the working tree by weeks.</li>
+</ul>
+</section>
+<section class="sec" id="s60" data-part="IX · Ops &amp; architecture">
+<p class="eyebrow">Sections 60, 61 and 62</p>
+<h2><span class="n">60</span>Evolution, architectural decisions and domain boundaries</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>The 85 migrations and the plans directory tell the system's history: a bank-transaction tracker (V1–V25) that grew Gmail ingestion, statements and review workflow (V26–V40), then investments, F&amp;O and loans (V41–V50), then a full rewards engine (V51–V61), then LLM plumbing, chat and account lifecycle (V62–V85). Three areas were redesigned rather than extended: the credit-card model (three times), lendings (repayments → ledger), and the client data path (server-first → TanStack). <span class="c cg">Confirmed</span> from migration files; dates from memory notes where present.</p></div>
+
+<h3 id="s60-timeline">Timeline by migration band</h3>
+<div class="tw"><table>
+<tr><th>Band</th><th>Theme</th><th>Key changes</th><th>Redesigns</th></tr>
+<tr><td>V1–V10</td><td>Foundation</td><td>users (V2 seeds admin), accounts, transactions, categories, Spring Session tables, audit columns</td><td></td></tr>
+<tr><td>V11–V25</td><td>Cards and statements v1</td><td>account_cards, statements, statement_transactions, credit-card details, sha256 dedup</td><td></td></tr>
+<tr><td>V26–V40</td><td>Gmail and review</td><td>review_status + reasons (V26 backfill 'OTHER'), gmail connections/ledger/senders, category_rules, ingest_from_date</td><td></td></tr>
+<tr><td>V41–V50</td><td>Wealth and debt</td><td>brokers, instruments, investment_transactions, corporate_actions (V42 cash-in-lieu), fno_trades (V43–45), loans (V46), lendings (V47 → V48 ledger)</td><td>Lendings</td></tr>
+<tr><td>V51–V61</td><td>Rewards</td><td>reward_rules, buckets, milestones, lines (compute-on-read, no lines table), V52 nullable active_from, V59 point_value_inr, V60 fee treatment</td><td></td></tr>
+<tr><td>V62–V72</td><td>Gmail hardening and LLM</td><td>V62 drop sender→account, V63 ledger cascade (idempotent PL/SQL begins), V65–67 timestamps (TZ bug), V70 chat views + CHAT_RO, V72 BYOK keys</td><td></td></tr>
+<tr><td>V73–V85</td><td>Card model and lifecycle</td><td>V73–75 add-on cards, V76–78 LLM routing, V79 account deletion, V80 card instances, V82 cardholder/card rebuild, V83 grace/due removal, V84 ATM channel, V85 identifier aliases</td><td>Credit card model ×2</td></tr>
+</table></div>
+
+<h3 id="s60-redesigns">Redesigns and why</h3>
+<div class="tw compact"><table>
+<tr><th>Area</th><th>From → To</th><th>Evidence</th><th>Reason</th></tr>
+<tr><td>Credit card model</td><td>last4 on account → account_cards + add-ons (V73) → card_instances (V80) → cardholder/card (V82)</td><td>Migrations; <code>ReplaceCardForm</code> comment</td><td>Reissued plastic broke reward scoping; add-on cards needed holders</td></tr>
+<tr><td>Lendings</td><td>Mini-loans with repayments (V47) → signed ledger (V48)</td><td>Plan lendings-ledger-redesign-prompt.md</td><td>Informal debts have no schedule</td></tr>
+<tr><td>Balance</td><td>Planned tiered rollups → dropped, anchors suffice</td><td>Memory 2026-09-01</td><td>Statements already checkpoint</td></tr>
+<tr><td>Client data path</td><td>Server-first pages with apiClient → TanStack Query + generated client (3 rounds)</td><td>plans/frontend-data-path-round3-report.md</td><td>Stale RSC pages; typed boundary</td></tr>
+<tr><td>Async work</td><td>Bespoke threads per feature → DB job queue</td><td>plans/background-jobs-prompt.md</td><td>Unify, survive restarts</td></tr>
+<tr><td>LLM</td><td>Single Gemini client → failover client → user routing prefs + BYOK</td><td>V72, V76–78</td><td>Free-tier quotas</td></tr>
+<tr><td>Statement parsing</td><td>Python parser → Java port</td><td>plans/statement-parser-port-plan.md</td><td>One runtime</td></tr>
+<tr><td>Gmail sender mapping</td><td>sender → account (dropped V62) → last4/alias resolver</td><td>V62 comment</td><td>One sender serves many accounts</td></tr>
+</table></div>
+
+<h3 id="s61-adr">Architectural decision records, reconstructed (§61)</h3>
+<div class="tw"><table>
+<tr><th>ADR</th><th>Decision</th><th>Context</th><th>Consequences</th><th>Confidence</th></tr>
+<tr><td>ADR-1</td><td>Oracle Autonomous DB as the only store</td><td>Always-free tier; wallet auth</td><td>Oracle-specific SQL (LISTAGG, MERGE, PL/SQL migrations), 20-session cap, parallel DML surprises</td><td><span class="c cy">Inferred</span></td></tr>
+<tr><td>ADR-2</td><td>Tenancy via Hibernate filter + aspect</td><td>Multi-user, single schema</td><td>Every entity must opt in; native SQL binds by hand</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>ADR-3</td><td>Compute derived numbers on read</td><td>Personal scale, correctness</td><td>No caches; cost grows with history</td><td><span class="c cy">Strongly inferred</span></td></tr>
+<tr><td>ADR-4</td><td>Session cookie, not JWT; 365 days</td><td>Web app, two origins</td><td>Cookie relay through the client; OAuth callbacks on the client</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>ADR-5</td><td>DB-backed job queue in the API JVM</td><td>Single VM, no broker</td><td>2 threads; restarts lose in-flight work to stale detection</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>ADR-6</td><td>Free-tier LLM failover with BYOK</td><td>No paid provider</td><td>Complex routing; per-model quotas; user-managed keys</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>ADR-7</td><td>Chat writes SQL against views as CHAT_RO</td><td>Flexible questions, safety</td><td>Validator + grants + Oracle-side tenancy; view drift risk</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>ADR-8</td><td>Provisional ingestion with review queue</td><td>LLM extraction is fallible</td><td>Review workload; reason-scoped statuses</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>ADR-9</td><td>Statement as reconciliation anchor</td><td>Alerts incomplete</td><td>Balance anchors; cycle windows; dedup by sha256</td><td><span class="c cy">Strongly inferred</span></td></tr>
+<tr><td>ADR-10</td><td>Generic heuristic statement parser</td><td>Many issuers</td><td>Advisory verdicts; fixture scarcity</td><td><span class="c cr">Reason unknown</span></td></tr>
+<tr><td>ADR-11</td><td>Next.js RSC + TanStack + generated OpenAPI types</td><td>Stale pages, type drift</td><td>Two clients (RSC apiClient, browser openapi-fetch); CI drift gates</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>ADR-12</td><td>Exhaustive E2E with mocked externals as the deploy gate</td><td>Mockito tests never boot Spring</td><td>Long CI; high confidence in wiring</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>ADR-13</td><td>Idempotent PL/SQL migrations</td><td>Oracle DDL auto-commit</td><td>Verbose migrations; double-boot check</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>ADR-14</td><td>Two-source broker reconciliation</td><td>Intraday corrupts FIFO</td><td>Requires tax P&amp;L export</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>ADR-15</td><td>Cardholder → Card split</td><td>Reissue breaks scoping</td><td>Third model; migrations V80–V82</td><td><span class="c cg">Confirmed</span></td></tr>
+</table></div>
+
+<h3 id="s62-domains">Domain boundaries (§62)</h3>
+<pre class="mermaid">flowchart TB
+  subgraph Core
+    U[users / auth / session]
+    T[tenancy filter]
+  end
+  subgraph Ledger
+    A[accounts · cardholders · cards · identifiers]
+    X[transactions · categories · rules · links · review]
+    S[statements]
+  end
+  subgraph Ingestion
+    G[gmail]
+    F[file upload / parsers]
+    J[jobs]
+  end
+  subgraph Wealth
+    I[brokers · instruments · trades · CAs · prices]
+    FO[fno_trades]
+  end
+  subgraph Debt
+    L[loans]
+    LE[lendings]
+  end
+  subgraph Insight
+    R[rewards]
+    RP[reports · dashboards]
+    C[chat]
+  end
+  LLM[llm client · keys · routing]
+  G --> X
+  F --> X
+  F --> S
+  S --> X
+  G --> J
+  F --> J
+  I --> J
+  X --> R
+  S --> R
+  A --> R
+  X --> RP
+  I --> RP
+  L --> RP
+  LE --> RP
+  R --> RP
+  RP --> C
+  G --> LLM
+  X --> LLM
+  C --> LLM
+  L --> X
+  A --> X
+  I --> A</pre>
+<p><strong>Well-separated</strong>: Wealth (its own brokers table, no coupling to bank transactions except the broker's balance), Debt (loans link to transactions only through payments), Core. <strong>Leaky</strong>: Insight reads every domain's tables directly through SQL (reports) and views (chat), so any schema change ripples into <code>DatasourceCatalog</code>, the executors and the <code>v_chat_*</code> views. <strong>Shared kernel</strong>: <code>transactions</code> is touched by Gmail, files, statements, categorization, rewards, loans and merge; it is the coupling point of the system.</p>
+</section>
+<section class="sec" id="s20" data-part="IX · Ops &amp; architecture">
+<p class="eyebrow">Sections 20, 28 and 53</p>
+<h2><span class="n">20</span>Dependency graph and change impact</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>What depends on what, and therefore what a change touches. The graph below is at service granularity for the server; the tables give per-change blast radius for the most likely modifications. The single highest-fan-in artefact is the <code>transactions</code> table and its entity; the highest fan-out consumers are reports and chat. <span class="c cg">Confirmed</span> from imports and SQL.</p></div>
+
+<h3 id="s20-graph">Server dependency graph</h3>
+<pre class="mermaid">flowchart LR
+  UC[UserContext / Filter aspect] --> ALL[every service]
+  AS[AccountService] --> BM[BalanceMath]
+  AS --> CH[CardholderService]
+  TS[TransactionService] --> RS[ReviewStatusManager]
+  TS --> CS[CategorizationService]
+  TS --> AL[AuditLogger]
+  CS --> LLM[FailoverLlmClient]
+  GI[GmailIngestionService] --> GE[GeminiExtractor] --> LLM
+  GI --> AR[AccountResolver]
+  GI --> GW[GmailTransactionWriter] --> TS
+  GI --> SR[StatementReconciliationService] --> SPE[StatementParseEngine]
+  SR --> TM[TransactionMatcher]
+  FI[FileIngestionService] --> SPE
+  FI --> TM
+  FI --> CS
+  JS[JobService] --> JW[JobWorker] --> GI
+  JW --> FI
+  JW --> IM[Import services]
+  RC[RewardCalculationService] --> TR[(transactions, links, statements, reward_*)]
+  RR[RewardRecommendationService] --> RC
+  IS[InvestmentService] --> HC[HoldingCalculator] --> XI[XirrCalculator]
+  IS --> CA[CorporateActionService]
+  HV[HoldingValuationService] --> HC
+  HV --> PR[PriceRefreshService] --> YF[Yahoo / AMFI]
+  BR[BrokerReconciliationService] --> HC
+  AS --> HV
+  LS[LoanService] --> LSS[LoanScheduleService]
+  RD[ReportDataService] --> EX[executors] --> TQ[TransactionQueryBuilder]
+  RD --> DS[computed datasources] --> HC
+  DS --> LSS
+  DS --> RC
+  DB[DashboardService] --> RD
+  CO[ChatOrchestrator] --> LLM
+  CO --> CV[ChatSqlValidator] --> CE[ChatSqlExecutor / CHAT_RO]
+  CO --> RD
+  AD[AccountDeletionService] --> JS
+  AD --> GO[Google revoke]</pre>
+
+<h3 id="s20-client">Client dependency shape</h3>
+<ul>
+<li><code>app/(protected)/layout.tsx</code> → <code>lib/auth.ts</code> → <code>lib/apiClient.ts</code> (RSC) → every page's <code>*.server.ts</code> prefetch.</li>
+<li><code>lib/api/client.ts</code> (openapi-fetch) ← every <code>use*Queries.ts</code> hook ← components; <code>lib/api/keys.ts</code> is imported by 59 files for invalidation.</li>
+<li><code>schema.d.ts</code> (generated) ← client, hooks, and the surface checker; regenerate on any server DTO change.</li>
+<li><code>components/ui/*</code> primitives (dialog, button, table) ← everything; the dialog rebuild touched 40+ files.</li>
+<li><code>navItems.tsx</code> ← sidebar, E2E route coverage.</li>
+</ul>
+
+<h3 id="s28-impact">Change impact analysis (§28)</h3>
+<div class="tw"><table>
+<tr><th>If you change…</th><th>You must also touch</th><th>Tests to run</th><th>Risk</th></tr>
+<tr><td>A column on <code>transactions</code></td><td>Entity, <code>TransactionResponse</code>, list SQL (<code>TransactionListQueryBuilder.FIELDS</code>), report <code>DatasourceCatalog</code> + MAPPINGS, <code>v_chat_transactions</code> view + dictionary.md, generated client types, filters UI</td><td>Server unit, E2E transactions + reports + chat</td><td><span class="c ph">High</span>: four places drift (C20)</td></tr>
+<tr><td>Review status or reason enum</td><td><code>ReviewStatusManager</code>, DB CHECK, client union + catalog, E2E review spec, V26-style backfill</td><td>Merge tests, review E2E</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Transaction source enum</td><td><code>TransactionSource</code>, <code>DatasourceCatalog</code> (already stale), merge keep-order in client, chat dictionary</td><td>Reports E2E</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Card / cardholder model</td><td>Resolver, rewards scoping, transactions card_id, identifiers, statements card link, client account forms, <code>v_chat_cards</code></td><td>Everything account-related; E2E accounts + gmail + rewards</td><td><span class="c pc">Critical</span> (three redesigns already)</td></tr>
+<tr><td>Reward rule schema (predicates, tiers)</td><td>Validation, <code>resolveTxnFacts</code>, recommender, client rule form + tester, reward_earnings datasource</td><td>Reward suite (~120)</td><td><span class="c ph">High</span></td></tr>
+<tr><td>Balance formula</td><td><code>BalanceMath</code> single + batch, account tiles, broker balance path</td><td>Parity test</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>FIFO / corporate action logic</td><td><code>HoldingCalculator</code>, valuation, portfolio_value datasource, realized_lots datasource, XIRR flows, reconciliation preview</td><td>Holding + CA tests; E2E investments</td><td><span class="c ph">High</span></td></tr>
+<tr><td>Loan schedule math</td><td><code>LoanScheduleService</code>, tax datasource, calendar, client schedule table</td><td>Schedule tests; E2E loans</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Adding an LLM provider</td><td>yml providers, <code>FailoverLlmClient</code> adapter, <code>LlmKeyService</code> fallback set, routing options, model catalog, client settings, E2E scripted client</td><td>Failover tests</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Adding a chat view</td><td>Migration, <code>ALLOWED_VIEWS</code>, dictionary.md, CHAT_RO grant script, prompt rules</td><td>Validator test; chat E2E</td><td><span class="c pm">Medium</span> (drift already)</td></tr>
+<tr><td>Adding an endpoint</td><td>Controller, OpenAPI (automatic), regenerate <code>schema.d.ts</code>, client hook, E2E spec (coverage gate fails otherwise), foreign-id sweep</td><td>E2E coverage 193→194</td><td><span class="c pl">Low</span> (gates catch it)</td></tr>
+<tr><td>Adding a route</td><td><code>navItems.tsx</code>, page, prefetch, E2E route list</td><td>Route coverage 37→38</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Session or cookie settings</td><td>Spring config, client <code>setSessionCookie</code>, proxy.ts, OAuth relay</td><td>Login E2E</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>A migration</td><td>Idempotent PL/SQL, TZ-aware types, no parallel DML, double-boot CI</td><td>CI double boot; local Oracle boot</td><td><span class="c ph">High</span> if not idempotent</td></tr>
+<tr><td>A dialog or button primitive</td><td>Every render-graph child and class-pattern look-alike (memory: verify pattern, not import)</td><td>Client unit + visual check</td><td><span class="c pm">Medium</span></td></tr>
+</table></div>
+
+<h3 id="s53-breaks">What breaks if… (§53)</h3>
+<div class="tw compact"><table>
+<tr><th>If this fails</th><th>Immediately broken</th><th>Degraded</th><th>Unaffected</th></tr>
+<tr><td>Oracle ADB</td><td>Everything (sessions live in the DB)</td><td>—</td><td>Static client shell</td></tr>
+<tr><td>OCI VM</td><td>All API calls; login</td><td>—</td><td>Vercel-served login page renders</td></tr>
+<tr><td>Vercel</td><td>UI</td><td>—</td><td>API and crons keep running</td></tr>
+<tr><td>Gmail API</td><td>Sync, connect</td><td>New transactions stop; attention grows after retries</td><td>Everything else</td></tr>
+<tr><td>All LLM providers</td><td>Chat, categorization suggestions</td><td>Gmail extraction fails → retry ladder; statements still parse; rows stay uncategorized</td><td>Balances, rewards, investments, loans</td></tr>
+<tr><td>Yahoo + AMFI</td><td>Price refresh</td><td>Values stale (no warning)</td><td>Quantities, cost, everything else</td></tr>
+<tr><td>Google OAuth</td><td>SSO login, Gmail connect</td><td>—</td><td>Password login, existing sessions</td></tr>
+<tr><td>Grafana Cloud</td><td>Nothing user-facing</td><td>Blind operations</td><td>All features</td></tr>
+<tr><td>Job worker thread death</td><td>Uploads, imports, sync stuck</td><td>Stale detection after 60 min</td><td>Synchronous reads</td></tr>
+<tr><td>CHAT_RO credentials</td><td>Chat SQL</td><td>—</td><td>Reports (use the app user)</td></tr>
+<tr><td><code>ENCRYPTION_KEY</code> lost</td><td>Gmail tokens, statement passwords undecryptable</td><td>Re-connect and re-enter</td><td>Ledger data</td></tr>
+</table></div>
+</section>
+<nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/quality-risk.html"><small>Previous</small>Quality and risk</a><a class="next" href="/handbook/learning.html"><small>Next</small>Learning</a></nav>
+  </main>
+</div>
+</div>
+<script src="/handbook/handbook.js" defer></script>
+</body>
+</html>

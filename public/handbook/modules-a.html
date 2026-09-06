@@ -1,0 +1,599 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="FinanceOS system and product reference, reverse-engineered from the code. Modules A · inventory, accounts, transactions, Gmail, statements, jobs.">
+<title>FinanceOS Handbook · Modules A · inventory, accounts, transactions, Gmail, statements, jobs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/handbook/handbook.css">
+</head>
+<body data-page="modules-a.html">
+<div class="shell">
+<aside class="side" id="side">
+  <div class="side-head">
+    <div class="brand">FinanceOS Handbook <small>v1</small></div>
+    <div class="brand-sub">System &amp; product reference, reverse-engineered from code · 2026-09-06</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search sections and text…" autocomplete="off" aria-label="Search">
+      <kbd>/</kbd>
+    </div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="side-foot">
+    <button id="expandAll" type="button">Expand all</button>
+    <button id="collapseAll" type="button">Collapse all</button>
+    <span style="margin-left:auto">Source of truth: code</span>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="burger" id="burger" type="button" aria-label="Open navigation">☰ Sections</button>
+    <div class="crumb" id="crumb"><b>FinanceOS Handbook</b></div>
+    <button id="toTop" type="button">↑ Top</button>
+  </div>
+  <div class="results" id="results" aria-live="polite">
+    <button class="close" id="closeResults" type="button">Close ✕</button>
+    <h3 id="resultsTitle"></h3>
+    <div id="resultsList"></div>
+  </div>
+  <main class="content" id="content">
+<section class="sec" id="s04" data-part="II · Modules">
+<p class="eyebrow">Section 4</p>
+<h2><span class="n">04</span>Complete product module inventory</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Eleven modules were identified from controllers, entities, navigation, jobs and integrations, not from folder names. Each has its own section below with the full template (purpose, capabilities, inputs, outputs, rules, calculations, client, server, database, integrations, dependencies, dependents, failure modes, edge cases, unknowns). This page is the index and the dependency overview. <span class="c cg">Confirmed</span></p></div>
+<div class="tw"><table>
+<tr><th>#</th><th>Module</th><th>User problem solved</th><th>Server packages</th><th>Client routes</th><th>Tables</th><th>Depends on</th><th>Depended on by</th><th>Section</th></tr>
+<tr><td>M0</td><td>Identity, tenancy, sessions, deletion</td><td>Log in once, keep data private, be able to leave</td><td><code>core/*</code>, <code>api/auth</code>, <code>domain/user</code></td><td>/login, /signup, /auth/google/callback, /settings</td><td>users, SPRING_SESSION*</td><td>—</td><td>everything</td><td><a href="/handbook/server-api.html#s15">§15</a></td></tr>
+<tr><td>M1</td><td>Accounts, cards, identifiers</td><td>Where money lives; who holds which plastic</td><td><code>domain/account</code>, <code>api/account</code></td><td>/accounts</td><td>accounts, *_details, cardholders, cards, account_identifiers</td><td>M0, statements (anchor), holdings (broker value)</td><td>M2–M9</td><td><a href="#m-accounts">M1</a></td></tr>
+<tr><td>M2</td><td>Transactions, categories, review, rules, links, merge</td><td>One trusted ledger</td><td><code>domain/transaction</code>, <code>categorization</code>, <code>category</code>, <code>api/transaction|transactionlink|rules|categorize|category</code></td><td>/transactions, /transactions/review, /rules, /rules/categories</td><td>transactions, transaction_categories, categories, category_rules, review_reasons, transaction_links</td><td>M1, M10 (LLM), M5 (rule apply job)</td><td>M7, M9, M10, M8 (matching), M1 (balance)</td><td><a href="#m-transactions">M2</a></td></tr>
+<tr><td>M3</td><td>Gmail ingestion</td><td>No manual entry for bank alerts</td><td><code>gmail/*</code>, <code>api/gmail</code></td><td>/settings/gmail</td><td>gmail_connections, gmail_senders, gmail_processed_messages, gmail_sync_cursors, gmail_backfill_demand</td><td>M1, M2, M4 (parser), M5, M10</td><td>M2 (rows), M1 (identifiers reactivation)</td><td><a href="#m-gmail">M3</a></td></tr>
+<tr><td>M4</td><td>Statement ingestion and parsing</td><td>Import a PDF or Excel statement</td><td><code>statement/parser</code>, <code>domain/statement</code>, <code>domain/ingestion</code>, <code>api/ingestion|statement</code></td><td>/settings/ingest, account Statements dialog</td><td>statements, statement_credit_card_details, statement_transactions</td><td>M1, M2, M5</td><td>M1 (anchor), M7 (statement cycles), M3</td><td><a href="#m-statements">M4</a></td></tr>
+<tr><td>M5</td><td>Background jobs</td><td>Slow work without blocking</td><td><code>domain/job</code>, <code>api/job</code></td><td>/settings/jobs, JobsPanel everywhere</td><td>jobs, job_artifacts</td><td>—</td><td>M3, M4, M6, M2 (rule apply)</td><td><a href="#m-jobs">M5</a></td></tr>
+<tr><td>M6</td><td>Investments</td><td>Portfolio, returns, corporate events, derivatives, imports</td><td><code>domain/instrument</code>, <code>holding</code>, <code>investment</code>, <code>api/instrument|investment</code></td><td>/investments/*</td><td>instruments, prices, aliases, corporate_actions, holdings, investment_transactions, classifications, dividends, sips, fno_trades</td><td>M1 (broker), M5, AMFI, Yahoo</td><td>M1 (broker balance), M9, M10</td><td><a href="/handbook/modules-b.html#m-investments">M6</a></td></tr>
+<tr><td>M7</td><td>Rewards engine</td><td>What did my card earn; which card to swipe</td><td><code>domain/reward</code>, <code>api/reward</code></td><td>/rewards/*</td><td>reward_rules(+4 child), reward_cap_buckets, reward_milestones, accounts reward columns</td><td>M2, M1, M4 (cycles)</td><td>M9 (reward_earnings), M10 (tools)</td><td><a href="/handbook/modules-b.html#m-rewards">M7</a></td></tr>
+<tr><td>M8</td><td>Loans, lendings, obligations</td><td>EMIs, prepayments, peer debts, what's due</td><td><code>domain/loan</code>, <code>lending</code>, <code>api/loan|lending|obligations</code></td><td>/loans/*</td><td>loans, loan_events, loan_payments, loan_charges, counterparties, lendings</td><td>M1, M2 (matching), M6 (XirrCalculator)</td><td>M9 only</td><td><a href="/handbook/modules-b.html#m-loans">M8</a></td></tr>
+<tr><td>M9</td><td>Reports and dashboards</td><td>Ad hoc analysis and a home grid</td><td><code>domain/report</code>, <code>dashboard</code>, <code>api/report|dashboard</code></td><td>/reports/*, /dashboards/*, /dashboard</td><td>reports, dashboards</td><td>M2, M6, M7, M8</td><td>M10 (report tools)</td><td><a href="/handbook/modules-b.html#m-reports">M9</a></td></tr>
+<tr><td>M10</td><td>LLM platform and Chat</td><td>AI categorization and extraction; ask questions</td><td><code>llm/*</code>, <code>domain/llm</code>, <code>chat/*</code>, <code>api/llm</code></td><td>/chat, /settings/llm-keys</td><td>llm_api_keys, llm_task_prefs, v_chat_* views</td><td>M0 (UserContext), M9 (tools), M7, M6</td><td>M2, M3, chat UI</td><td><a href="/handbook/modules-b.html#m-llm-chat">M10</a></td></tr>
+</table></div>
+<pre class="mermaid">flowchart TD
+  M0[M0 Identity #38; tenancy] --> M1[M1 Accounts #38; cards]
+  M0 --> M5[M5 Jobs]
+  M0 --> M10[M10 LLM #38; Chat]
+  M1 --> M2[M2 Transactions]
+  M10 --> M2
+  M5 --> M2
+  M1 --> M3[M3 Gmail]
+  M2 --> M3
+  M4[M4 Statements] --> M3
+  M5 --> M3
+  M10 --> M3
+  M1 --> M4
+  M2 --> M4
+  M5 --> M4
+  M4 --> M1
+  M1 --> M6[M6 Investments]
+  M5 --> M6
+  M6 --> M1
+  M2 --> M7[M7 Rewards]
+  M1 --> M7
+  M4 --> M7
+  M1 --> M8[M8 Loans]
+  M2 --> M8
+  M6 --> M8
+  M2 --> M9[M9 Reports]
+  M6 --> M9
+  M7 --> M9
+  M8 --> M9
+  M9 --> M10
+  M7 --> M10
+  M6 --> M10</pre>
+<p>Arrows point from a dependency to the module that uses it. The most central modules are M0 (everything), M1 and M2 (read by almost everything), and M5 (all async paths). See <a href="/handbook/ops.html#s20">Module dependency graph</a> for centrality and change danger.</p>
+</section>
+<section class="sec" id="m-accounts" data-part="II · Modules">
+<p class="eyebrow">Module</p>
+<h2><span class="n">M1</span>Accounts, cards &amp; identifiers</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Accounts model "where money lives": bank accounts, credit cards, broker (demat) accounts and a generic bucket for cash and wallets. Everything else hangs off them: every transaction carries a mandatory <code>account_id</code>, statements attach to an account, Gmail alerts are matched to an account by last-4 or by user-declared identifier aliases, and reward rules scope to a cardholder under an account. A second sub-model, <strong>Cardholder → Card</strong>, records <em>who</em> holds a card (primary or add-on person) and <em>which plastic</em> they carry, so that reissuing a lost card or adding a spouse's card does not corrupt history or reward scoping. <span class="c cg">Confirmed</span></p>
+<p>Balances are <strong>computed, never stored</strong>: the latest non-rejected statement's closing balance acts as an "anchor" and only later transactions are added on top; without an anchor the balance is opening balance plus the signed sum of all transactions. Broker "balance" is portfolio market value plus cash. Closure is a single <code>closed_on</code> date that blocks card mutations but <em>not</em> new transactions or imports. <span class="c cg">Confirmed</span> <span class="path">domain/account/BalanceMath.java:29-82</span></p></div>
+
+<h3 id="m-accounts-l1">Level 1 · Product view</h3>
+<div class="grid3">
+<div class="tile"><h4>Capabilities</h4><ul><li>Create, edit, close, reopen, delete accounts</li><li>Store statement passwords (encrypted at rest)</li><li>Set a Gmail "ingest from" date</li><li>Add identifier aliases for email matching</li><li>Manage cardholders and plastics; replace or close cards; bulk-reassign transactions between cards</li></ul></div>
+<div class="tile"><h4>Inputs</h4><p>Name, type, type-specific details (opening balance and last4 for bank; credit limit, issuer, product for card; provider, client id, cash balance for broker), financial position and net-asset exclusion flags, close date, cardholder name/relationship/spend limit, card last4 and issue date.</p></div>
+<div class="tile"><h4>Outputs</h4><p>A sealed <code>AccountResponse</code> per type with a computed balance, anchor flag, reconciliation gap (bank), utilization (card), cardholders and cards; the card-cycle summary (dues, days until due, utilization, per-statement history).</p></div>
+</div>
+<div class="tw"><table>
+<tr><th>User's mental model</th><th>Code's model</th><th>Mismatch</th></tr>
+<tr><td>"My account has a type"</td><td><code>AccountType</code>: bank_account, credit_card, broker, generic (stock and mutual_fund collapsed into broker at V35) plus an optional 1:1 detail row</td><td>None material</td></tr>
+<tr><td>"My card number changes when replaced, but it's still my card"</td><td><code>Cardholder</code> (person) 1→N <code>Card</code> (plastic with last4, issued_on, closed_on). Transactions point at <code>Card</code>; reward rules point at <code>Cardholder</code></td><td>UI calls the dialog "Cardholders &amp; Plastics" to bridge the two</td></tr>
+<tr><td>"A bank account can have a debit card holder too"</td><td>The same tables are reused for bank accounts</td><td>Retrofitted: migrations only talk about credit cards</td></tr>
+<tr><td>"Closing freezes the account"</td><td><code>closed_on</code> gates only cardholder/card mutations</td><td>Transactions, imports and Gmail matching still land on closed accounts <span class="c ph">High</span></td></tr>
+<tr><td>"Asset vs liability, excluded from net worth"</td><td><code>financial_position</code> and <code>exclude_from_net_asset</code> stored and editable</td><td>No code reads them to compute anything; there is no net-worth feature <span class="c cg">Confirmed</span></td></tr>
+</table></div>
+
+<h3 id="m-accounts-balance">Calculation: account balance</h3>
+<p>Inputs: the anchor (latest statement by <code>period_end DESC, created_at DESC</code> with a non-rejected verdict, a period end and a closing balance; any account type), <code>totalSum</code> = Σ(CREDIT +amount, DEBIT −amount) over <em>all</em> transactions, <code>postAnchorSum</code> = same sum for transactions strictly after the anchor date, and the bank opening balance. <span class="path">StatementRepository.findEligibleAnchorStatements</span>, <span class="path">AccountService.populateBalanceInfo:521-549</span></p>
+<div class="tw"><table class="dt">
+<tr><th>Account type</th><th>Anchor?</th><th>Formula</th><th>Notes</th></tr>
+<tr><td>credit_card</td><td>yes</td><td><code>base = closing &gt; 0 ? −closing : abs(closing)</code>; <code>balance = base + postAnchorSum</code></td><td>"You owe ₹X" becomes a negative cash position; the abs branch is a no-op guard for ≤0 values</td></tr>
+<tr><td>bank_account</td><td>yes</td><td><code>balance = closing + postAnchorSum</code>; <code>gap = (opening + totalSum) − balance</code>, shown if |gap| ≥ 0.01</td><td>Gap badge flags ledger vs statement drift <span class="path">BankAccountTile.tsx:44-51</span></td></tr>
+<tr><td>broker, generic</td><td>yes</td><td><code>balance = closing + postAnchorSum</code></td><td>No opening-balance gap check</td></tr>
+<tr><td>bank_account</td><td>no</td><td><code>balance = (opening ?? 0) + totalSum</code></td><td>Pure ledger</td></tr>
+<tr><td>credit_card, generic</td><td>no</td><td><code>balance = totalSum</code></td><td>Pure ledger</td></tr>
+<tr><td>broker</td><td>n/a</td><td><code>balance = HoldingValuationService.getBrokerMarketValue(id) + (cashBalance ?? 0)</code></td><td>Bypasses BalanceMath entirely <span class="path">AccountService.java:522-531</span></td></tr>
+</table></div>
+<p><strong>Example</strong> (from <span class="path">AccountServiceTest:139-171</span>): statement closing ₹5,000 owed on 2026-06-30; since then a ₹1,000 purchase (−1,000) and a ₹3,000 payment (+3,000) → postAnchorSum +2,000 → balance = −5,000 + 2,000 = <strong>−₹3,000</strong> (owes ₹3,000). The card tile computes utilization client-side as <code>abs(balance) / creditLimit × 100</code> in floating point. <span class="path">CreditCardTile.tsx:70-72</span></p>
+<ul>
+<li><strong>Precision</strong>: bank and card money columns are <code>NUMBER(19,4)</code>; broker <code>cash_balance</code> is <code>NUMBER(19,2)</code> (inconsistent). Utilization on the server is HALF_UP scale 4 then 2. Amounts reach the client as JSON numbers, formatted by <code>Intl.NumberFormat</code> to 2 places.</li>
+<li><strong>Dates</strong>: all <code>LocalDate</code>; the anchor day's own transactions are excluded from <code>postAnchorSum</code> (assumed already inside the closing balance). A transaction posted after the cut but dated the same day is dropped until the next anchor. <span class="c cy">Strongly inferred</span> boundary risk.</li>
+<li><strong>is_excluded is ignored</strong> by the balance queries even though the UI copy says excluded transactions are left out of reporting. See <a href="/handbook/rules.html#s45">Contradiction registry</a>.</li>
+<li>Single-account and batch-list paths are proven numerically identical (<code>AccountBalanceEquivalenceTest</code>) and constant-query (<code>AccountQueryCountTest</code>, ≤3 queries for N accounts via native <code>findAccountBalanceBatches</code>).</li>
+</ul>
+
+<h3 id="m-accounts-cards">Cardholders and cards</h3>
+<div class="tw"><table>
+<tr><th>Rule</th><th>Enforced</th></tr>
+<tr><td>Exactly one PRIMARY cardholder per account</td><td>partial unique index <code>uq_ch_primary</code> + service</td></tr>
+<tr><td>At most one open card per cardholder</td><td><code>uq_card_open</code> (where closed_on is null) + service</td></tr>
+<tr><td>No two simultaneously open cards share a last4 on an account</td><td><code>uq_card_open_last4</code> + pre-checks in issue, replace, add-primary and reopen</td></tr>
+<tr><td>Primary cannot be closed, deleted or reopened directly</td><td><code>CardholderService</code> guards; retire via account close</td></tr>
+<tr><td>Add-on deletable only with zero transactions and zero reward rules/milestones</td><td>service counts</td></tr>
+<tr><td>No card mutation while account closed</td><td><code>account.isClosed()</code> guards in every mutator</td></tr>
+</table></div>
+<p><strong>Replace card</strong> (<span class="m m-post">POST</span> <code>/accounts/{a}/cardholders/{c}/cards/{id}/replace</code>): closes the old card and <code>saveAndFlush</code>es it so the partial unique indexes are vacated before inserting the new row under the same cardholder, then publishes <code>AccountIngestChangedEvent</code>. Old transactions keep pointing at the closed card. <span class="path">CardholderService.replaceCard:292-341</span></p>
+<div class="callout"><p><strong>Bug: "Unattributed Transactions" reassigns everything.</strong> <span class="c ph">High</span> <span class="m m-patch">PATCH</span> <code>/transactions/card</code> with <code>currentCardId=null</code> hits JPQL <code>(:currentCardId IS NULL OR t.card.id = :currentCardId)</code>, which is a no-op filter, so every transaction on the account in range is moved, including ones correctly attributed to another cardholder. This can corrupt per-cardholder reward and cap attribution. The only test uses unattributed rows. <span class="path">TransactionRepository.java:133-142</span>, <span class="path">TransactionService.bulkReattributeCard:687-726</span></p></div>
+
+<h3 id="m-accounts-resolver">Decision table: Gmail email → account resolution</h3>
+<p><code>AccountResolver.resolve(last4)</code> runs four passes and stops at the first pass with exactly one match; two or more matches in a pass means unresolved (no fall-through on ambiguity). <span class="path">gmail/ingest/AccountResolver.java:66-165</span></p>
+<div class="tw"><table class="dt">
+<tr><th>Pass</th><th>Compares against</th><th>Match kind</th><th>Notes</th></tr>
+<tr><td>0</td><td>User-declared <code>AccountIdentifier.value</code></td><td>exact</td><td>Beats a colliding open card on another account</td></tr>
+<tr><td>1</td><td>bank <code>last4</code>, open <code>Card.last4</code> whose cardholder is not effectively closed</td><td>exact</td><td></td></tr>
+<tr><td>2</td><td>same three sources</td><td>fuzzy (equals, prefix, suffix, substring; both ≥3 chars; case-insensitive)</td><td>deduped by account, preferring a candidate carrying a Card</td></tr>
+<tr><td>3</td><td>closed cards or cards of closed cardholders</td><td>exact</td><td>so an old statement for a replaced card still resolves</td></tr>
+<tr><td>—</td><td>none or ambiguous</td><td></td><td>message parked as <code>UNRESOLVED_ACCOUNT</code></td></tr>
+</table></div>
+<p>Adding an identifier later re-queues parked messages whose <code>extracted_last4</code> <em>exactly</em> equals the new value and enqueues a Gmail sync job. Because that column is <code>VARCHAR2(4)</code> and the match is exact, an alias longer than four characters can never reactivate old messages even though it fuzzy-matches new ones. <span class="c cg">Confirmed</span> <span class="path">AccountIdentifierService.java:46-129</span></p>
+
+<h3 id="m-accounts-l3">Level 3 · Implementation</h3>
+<h4>Trace: create a bank account</h4>
+<ol class="trace">
+<li><span class="lyr">UI</span><code>AccountForm</code> → <code>useAccountForm.handleSubmit</code> builds a <code>BankAccountRequest</code> from <code>FormData</code> <span class="path">components/accounts/account-form/useAccountForm.ts:121-253</span></li>
+<li><span class="lyr">mutation</span><code>createAccountMutation</code> → <code>api.POST('/api/v1/accounts')</code>, then one <span class="m m-post">POST</span> <code>/accounts/{id}/identifiers</code> per pending alias; per-alias failures are collected into a toast, create is not rolled back</li>
+<li><span class="lyr">server</span><code>AccountController.createAccount</code> → <code>AccountService.createAccount</code>: builds <code>Account</code>, defaults broker <code>financialPosition</code> to asset (create only), attaches the detail row, saves, <code>populateBalanceInfo</code>, ratchets <code>GmailBackfillDemand</code> if <code>ingestFromDate</code> set, publishes <code>AccountIngestChangedEvent</code> <span class="path">AccountService.java:67-127</span></li>
+<li><span class="lyr">response</span><code>AccountResponse.from</code>: sealed interface, one Jackson subtype per type discriminated by <code>type</code></li>
+<li><span class="lyr">cache</span><code>invalidateQueries(keys.accounts.all)</code> → <code>useAccounts()</code> refetches → <code>AccountsView</code> re-renders four columns (open inline, closed inside a native <code>&lt;details&gt;</code>)</li>
+</ol>
+<h4>Data model</h4>
+<div class="tw compact"><table>
+<tr><th>Table (migration)</th><th>Key columns and constraints</th></tr>
+<tr><td><code>accounts</code> (V1; V18, V25, V68, V81, V82)</td><td>UUID id, user_id (CASCADE), name, type CHECK, exclude_from_net_asset NOT NULL default 0, financial_position CHECK asset|liability, ingest_from_date, last_statement_date, closed_on, reward_anniversary_date, default_reward_type, point_value_inr NUMBER(12,4), replaces_account_id (SET NULL)</td></tr>
+<tr><td><code>account_bank_details</code> (V1; V20)</td><td>account_id PK/FK CASCADE, opening_balance NUMBER(19,4), last4, statement_password (encrypted)</td></tr>
+<tr><td><code>account_credit_card_details</code> (V1; V20, V73, V82, V83)</td><td>credit_limit NUMBER(19,4) NOT NULL, issuer, product_name, statement_password; last4 dropped at V73; payment_due_day and grace_period_days dropped at V83</td></tr>
+<tr><td><code>account_broker_details</code> (V35)</td><td>provider NOT NULL, client_id, cash_balance NUMBER(19,2)</td></tr>
+<tr><td><code>cardholders</code> (V82)</td><td>role PRIMARY|ADDON, person_name, relationship, spend_limit, opened_on, closed_on; <code>uq_ch_primary</code></td></tr>
+<tr><td><code>cards</code> (V82)</td><td>cardholder_id CASCADE, account_id CASCADE, last4, issued_on, closed_on; <code>uq_card_open</code>, <code>uq_card_open_last4</code></td></tr>
+<tr><td><code>account_identifiers</code> (V85)</td><td>value VARCHAR2(32), kind CUSTOMER_ID|ACCOUNT_NUMBER|CRN|OTHER; <code>uq_ai_user_value</code> unique per user across all accounts</td></tr>
+</table></div>
+<p>Related FKs: <code>transactions.account_id</code> CASCADE (V29), <code>transactions.card_id</code> SET NULL, reward tables <code>cardholder_id</code> SET NULL, <code>holdings.broker_account_id</code> CASCADE. Account delete is a one-liner <code>accountRepository.delete(...)</code> relying wholly on DB cascades, with no server-side pre-count. <span class="c cg">Confirmed</span> <span class="path">AccountService.java:272-275</span></p>
+
+<h3 id="m-accounts-risk">State, invariants, idempotency</h3>
+<ul>
+<li><strong>Account status</strong> is derived: <code>closed_on</code> null → ACTIVE; future → CLOSING; past or today → CLOSED. Computed in Java (<code>Account.getStatus</code>, never called externally), in TypeScript (<code>getAccountStatus</code>), and once in a dropped DB column (V81). Three implementations of one trichotomy, one unreachable.</li>
+<li><strong>Close</strong> requires <code>closedOn ≥ MIN(transaction_date)</code>; a non-zero balance only produces a warning string. <strong>Reopen</strong> re-checks last4 collisions.</li>
+<li><strong>Card.isOpen()</strong> is self-referential; the resolver and reward engine additionally require the cardholder not be effectively closed; the client's <code>CardholderItem</code> uses the shallow definition.</li>
+<li><strong>Idempotency</strong>: create is not idempotent (no key); identifier create is idempotent for the same account and rejected for a different one; close/reopen idempotent in effect; no <code>@Version</code> anywhere, so plain edits are last-write-wins.</li>
+<li><strong>Create vs update asymmetry</strong>: update does not default broker <code>financialPosition</code>, so an omitted field nulls it.</li>
+</ul>
+
+<h3 id="m-accounts-dead">Dead and suspicious code</h3>
+<ul>
+<li><code>CardRelationship</code> enum duplicates <code>CardholderRelationship</code>, zero references.</li>
+<li>Three empty detail repositories (bank, broker, credit card) with zero autowired usages.</li>
+<li>Dead DTOs <code>CreditCardDetailsRequest</code>, <code>MutualFundDetailsRequest</code>, <code>StockDetailsRequest</code> (pre-V35 relics).</li>
+<li><code>AccountRepository.findByType</code>, <code>findByFinancialPosition</code>, <code>findIncludedInNetAsset</code>, <code>findInvestmentAccounts</code>: zero callers.</li>
+<li><code>components/accounts/DeleteAccount.tsx</code> unreferenced (superseded by <code>DeleteAccountDialog</code>).</li>
+<li><code>AccountFormWrapper.tsx:36-48</code> documents the Radix <code>asChild</code> RSC-streaming bug and fix; guarded by <span class="path">page.test.tsx:60-71</span>.</li>
+</ul>
+
+<h3 id="m-accounts-unk">Open questions</h3>
+<div class="qa"><b>Product</b> Should a closed account reject new transactions, Gmail matches and imports, or is closure intentionally organisational only?</div>
+<div class="qa"><b>Product</b> Is "Unattributed Transactions" meant to filter to <code>card IS NULL</code>, or is bulk reassign-all the intent with a misleading label?</div>
+<div class="qa"><b>Product</b> Is a net-worth rollup still planned? If not, should the asset/liability fields leave the form?</div>
+<div class="qa"><b>Technical</b> Should identifier reactivation become fuzzy to match the resolver, or should the resolver become exact for identifiers?</div>
+<div class="qa"><b>Data</b> Can a card statement legitimately carry a negative (credit) closing balance, and is the <code>abs()</code> branch correct for it?</div>
+</section>
+<section class="sec" id="m-transactions" data-part="II · Modules">
+<p class="eyebrow">Module</p>
+<h2><span class="n">M2</span>Transactions, categories, review, rules, links &amp; merge</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>The <code>transactions</code> table is FinanceOS's central ledger: every money movement, whether typed by hand, parsed from a Gmail alert, parsed from a statement, or uploaded from a file, becomes one row. Around it sit a many-to-many category taxonomy, an LLM-assisted "auto-tag, then a human confirms" categorization system with saved rules, a review queue that records <em>why</em> a row still needs a look, a read-only relationship graph for transfers, refunds and card payments, a duplicate-merge tool, and bulk card re-attribution. <span class="c cg">Confirmed</span></p>
+<p>The implicit product thesis, confirmed by the code: <strong>ingestion is noisy and provisional; every ingested transaction starts as "needs review" and becomes trusted only when a person, or a rule a person verified, confirms it.</strong> Almost every other module (rewards, reports, chat, balances, loans) reads this table, so its invariants (one account per row, unique source message per user, well-formed review state) matter far beyond this package.</p></div>
+
+<h3 id="m-transactions-l1">Level 1 · Product view</h3>
+<div class="tw"><table>
+<tr><th>User's mental model</th><th>Code's model</th><th>Mismatch or seam</th></tr>
+<tr><td>"I spent ₹450 at Swiggy"</td><td>Unsigned <code>amount ≥ 0</code> plus <code>type</code> DEBIT|CREDIT; the API re-signs on output (negative for debit)</td><td>The sign convention is re-implemented in three places: <code>TransactionResponse.from</code>, the list SQL, the report SQL</td></tr>
+<tr><td>One category per transaction</td><td>Many-to-many <code>transaction_categories</code>; UI shows multiple chips</td><td>Grouping by category in reports can fan out (see <a href="/handbook/modules-b.html#m-reports">Reports</a>)</td></tr>
+<tr><td>"Needs review" is a flag</td><td>A status plus an independent <em>set of reasons</em>; a row leaves the queue only when its reason set is empty</td><td>Enables reason-scoped batch approval</td></tr>
+<tr><td>Linking two rows changes totals</td><td>Links never mutate rows; they are derived at read time (<code>isTransferLeg</code>) and consumed only where a report or the reward engine opts in</td><td>No default exclusion of transfer legs anywhere</td></tr>
+<tr><td>"Excluded" means excluded everywhere</td><td>Honoured by rewards and opt-in report filters; ignored by balance rollups</td><td>UI copy says "Do not include in reporting and budgets" <span class="c ph">High</span></td></tr>
+</table></div>
+<p><strong>Routes</strong>: <code>/transactions</code> (browse, filter, create, edit, link, merge), <code>/transactions/review</code> (triage queue), <code>/rules</code> (category rules with preview and apply), <code>/rules/categories</code> (flat category CRUD). Batch approve or delete is capped at 500 ids.</p>
+
+<h3 id="m-transactions-fields">Field semantics</h3>
+<div class="tw compact"><table>
+<tr><th>Column</th><th>Meaning</th><th>Notes</th></tr>
+<tr><td><code>type</code></td><td>DEBIT | CREDIT</td><td>Zero amount rejected on create and update</td></tr>
+<tr><td><code>amount</code> NUMBER(19,4)</td><td>Unsigned magnitude</td><td>No rounding anywhere in the module; client displays 2 dp via <code>Intl.NumberFormat('en-IN')</code></td></tr>
+<tr><td><code>transaction_date</code>, <code>settlement_date</code></td><td>LocalDate, no zone</td><td>Relative filters use <code>LocalDate.now()</code> in the JVM default zone <span class="c cy">Strongly inferred</span> UTC in prod, no TZ pin found</td></tr>
+<tr><td><code>source</code></td><td>manual | gmail_transaction_alert | gmail_statement | file_upload</td><td>Evolved V1→V20→V24; the report catalog still lists the dead values "gmail"/"manual"</td></tr>
+<tr><td><code>description</code> / <code>sourced_description</code></td><td>User-editable text vs the machine-extracted original</td><td>Rules match only against <code>sourced_description</code>, so manual rows are permanently outside rule matching</td></tr>
+<tr><td><code>review_type</code> + <code>transaction_review_reasons</code></td><td>NEEDS_REVIEW | AUTO_REVIEWED | MANUALLY_REVIEWED | NA and reasons UNRECONCILED | CATEGORY_UNVERIFIED | DUPLICATE_SUSPECT</td><td>Client type union still carries a dead <code>'OTHER'</code></td></tr>
+<tr><td><code>is_excluded</code>, <code>is_under_monitoring</code>, <code>monitoring_reason</code></td><td>User flags</td><td>Monitoring is independent of the review queue</td></tr>
+<tr><td><code>mcc</code>, <code>channel</code>, <code>is_emi</code>, <code>is_international</code>, <code>convenience_fee</code>, <code>instant_discount</code></td><td>Reward inputs (V31, V50, V84 adds ATM)</td><td>See <a href="/handbook/modules-b.html#m-rewards">Rewards</a></td></tr>
+<tr><td><code>source_message_id</code></td><td>Ingestion dedup key</td><td>Partial unique per user (V34 <code>uk_txn_user_source_msg</code>)</td></tr>
+<tr><td><code>applied_rule_id</code></td><td>Rule that categorized this row</td><td>FK ON DELETE SET NULL</td></tr>
+<tr><td><code>card_id</code></td><td>Physical card attribution</td><td>FK to <code>cards</code>, SET NULL</td></tr>
+</table></div>
+
+<h3 id="m-transactions-review">State machine: review</h3>
+<p>Enforced only by <code>ReviewStatusManager</code>; no raw <code>setReviewType</code> call exists elsewhere in the module. Guard: NEEDS_REVIEW requires ≥1 reason, else <code>ValidationException</code>. Moving to any other state clears the whole reason set. <span class="path">domain/transaction/ReviewStatusManager.java:30-48</span></p>
+<div class="tw"><table class="dt">
+<tr><th>From</th><th>Trigger</th><th>To</th></tr>
+<tr><td>create (manual)</td><td><code>TransactionService.createTransaction</code></td><td>NA, always; manual rows are never auto-categorized</td></tr>
+<tr><td>create (ingested)</td><td>Gmail or statement ingestion</td><td>NEEDS_REVIEW + UNRECONCILED <span class="c cy">Inferred from callers</span></td></tr>
+<tr><td>any</td><td>rule or LLM categorization needing confirmation</td><td>NEEDS_REVIEW + CATEGORY_UNVERIFIED (<code>addReason</code> reopens a clean row)</td></tr>
+<tr><td>NEEDS_REVIEW</td><td>rule apply, or <code>verifyRule</code></td><td>AUTO_REVIEWED if CATEGORY_UNVERIFIED was the only reason</td></tr>
+<tr><td>NEEDS_REVIEW</td><td>batch review with matching reasons</td><td>MANUALLY_REVIEWED if reasons now empty, else stays with remaining reasons</td></tr>
+<tr><td>NEEDS_REVIEW</td><td>edit changes categories</td><td>clears CATEGORY_UNVERIFIED → MANUALLY_REVIEWED if empty</td></tr>
+<tr><td>NEEDS_REVIEW</td><td>merge</td><td>clears UNRECONCILED and DUPLICATE_SUSPECT only; CATEGORY_UNVERIFIED untouched</td></tr>
+</table></div>
+<p><strong>Reason-scoped batch approval</strong>: the review browser pre-fills the union of reasons across the selected rows; the request carries the chosen subset; rows lacking any chosen reason are <em>skipped</em> (reported in <code>skippedIds</code>, not failures). Approving a row categorized by an unverified rule auto-verifies that rule. This "manual approval verifies the rule" convention is repeated in three call sites. <span class="path">TransactionService.batchReview:396-471</span></p>
+
+<h3 id="m-transactions-cat">Categorization</h3>
+<h4>Precedence when several rules match one description</h4>
+<div class="tw"><table class="dt">
+<tr><th>Level</th><th>Winner</th></tr>
+<tr><td>1 Source</td><td>USER-authored beats LLM-generated</td></tr>
+<tr><td>2 Specificity</td><td>EXACT &gt; STARTS_WITH &gt; CONTAINS &gt; REGEX &gt; MERCHANT_KEY</td></tr>
+<tr><td>3 Length</td><td>Longer pattern</td></tr>
+<tr><td>4 Verified</td><td>Verified beats unverified</td></tr>
+<tr><td>5 Recency</td><td>Later <code>updatedAt</code></td></tr>
+</table></div>
+<p><span class="path">CategorizationService.RULE_PRECEDENCE:72-77</span>, <span class="path">MatchType.specificity()</span>. Manual transactions never reach this; the on-demand <span class="m m-post">POST</span> <code>/categorize</code> suggestion tries rules first, then the LLM, and swallows every exception so it never returns 500.</p>
+<h4>Match types and normalization</h4>
+<div class="tw compact"><table>
+<tr><th>MatchType</th><th>Comparison</th><th>Notes</th></tr>
+<tr><td>MERCHANT_KEY</td><td>normalized(sourced) contains pattern (≥3 chars)</td><td>Both sides through <code>DescriptionNormalizer</code></td></tr>
+<tr><td>CONTAINS / STARTS_WITH / EXACT</td><td>raw text, case-insensitive</td><td>CONTAINS and STARTS_WITH need ≥3 chars</td></tr>
+<tr><td>REGEX</td><td>case-insensitive, 50 ms deadline via <code>DeadlineCharSequence</code>, 1000-entry cache</td><td>≤200 chars, compile-checked at save; timeouts degrade to no match</td></tr>
+</table></div>
+<p><code>DescriptionNormalizer</code>: uppercase → non-alphanumerics to spaces → drop any token with ≥3 digits → drop noise tokens (UPI, POS, NEFT, IMPS, RTGS, ACH, REF, TXN, PAYMENT, PVT, LTD, LIMITED, PRIVATE, INDIA, WWW, COM, IN) → join, cap 255. Example: <code>UPI-SWIGGY9821827/PAYTM@YBL-REF12345678</code> → <code>PAYTM YBL</code>. The merchant token is erased because it contains digits; a merchant whose name includes a store number cannot be matched by MERCHANT_KEY. <span class="c cy">Strongly inferred</span> intentional. <span class="path">DescriptionNormalizer.java:14-42</span></p>
+<h4>Batch categorization at ingestion</h4>
+<ol class="trace">
+<li><span class="lyr">caller</span><code>FileIngestionService</code> or <code>GmailIngestionService</code> creates rows directly via the repository (bypassing <code>createTransaction</code> validation) and calls <code>CategorizationService.batchCategorize</code></li>
+<li><span class="lyr">read</span>Non-transactional: loads rules and categories explicitly by userId (the Hibernate filter only applies inside <code>@Transactional</code>), skips rows that already have categories or a blank sourced description, runs <code>bestMatch</code> per row</li>
+<li><span class="lyr">LLM</span>Misses go to <code>TransactionCategorizer.categorize</code>: dedup by normalized description, adaptive chunk size from <code>llmClient.recommendedBatchSize(user, "categorize")</code>, on chunk failure retry in sub-chunks of 20, drop what still fails. Prompt: prefer an existing category, at most one new single Title-Case word, never a merchant name, stable <code>merchantKey</code>, <code>noFit</code> when unsure; temperature 0 <span class="path">TransactionCategorizer.java:44-222</span></li>
+<li><span class="lyr">write</span><code>self.applyCategorizationResults</code> through a <code>@Lazy</code> self-proxy so <code>@Transactional</code> applies (comment cites past bugs F2/F3): rule hits set categories, applied rule, MCC if blank, bump <code>appliedCount</code>, add CATEGORY_UNVERIFIED if the rule is unverified; LLM hits are re-validated against the normalized description (anti-hallucination), create or reuse a rule, and always add CATEGORY_UNVERIFIED. New category names with more than two words are rejected.</li>
+<li><span class="lyr">log</span>One <code>CATEGORIZE_DECISION</code> structured line per row</li>
+</ol>
+<p>Categorization runs once at ingestion. There is no backfill; the only retroactive paths are user-triggered: <code>verifyRule</code>, <code>updateRuleCategories</code> (synchronous, unbounded, in-request), and "Apply rule" (background job in chunks of 500, re-verifies the predicate per row, skips MANUALLY_REVIEWED). <span class="c cg">Confirmed</span></p>
+
+<h3 id="m-transactions-links">Links and merge</h3>
+<div class="tw"><table class="dt">
+<tr><th>Link type</th><th>Members</th><th>Anchor</th><th>Counterparts</th><th>Extra</th></tr>
+<tr><td>TRANSFER</td><td>exactly 2</td><td>DEBIT</td><td>CREDIT</td><td>different accounts</td></tr>
+<tr><td>CC_PAYMENT</td><td>exactly 2</td><td>DEBIT</td><td>CREDIT</td><td>counterpart account is a credit card</td></tr>
+<tr><td>REVERSAL</td><td>exactly 2</td><td>any</td><td>opposite of anchor</td><td>same account</td></tr>
+<tr><td>REFUND</td><td>≥2</td><td>DEBIT</td><td>all CREDIT</td><td>optional copy of anchor categories</td></tr>
+<tr><td>FEE, EMI</td><td>≥2</td><td>DEBIT</td><td>all DEBIT</td><td>not consumed by rewards</td></tr>
+</table></div>
+<p>Preconditions: exactly one anchor, no member already in another link (service-enforced, no DB constraint), no amount or date tolerance. A link auto-dissolves when a delete or merge leaves fewer than two members, no anchor, or no counterpart. <code>LinkOrigin.AUTO</code> and <code>IMPORT</code> exist but are never used. <span class="path">TransactionLinkService.validateLinkRules:155-239</span></p>
+<p><strong>Merge</strong> (<span class="m m-post">POST</span> <code>/transactions/merge</code>): hard-fails on same id, missing, foreign, or different account; amount and direction mismatch only warn client-side. Carry-over is fill-blanks-only: categories copied only if kept has none (never unioned); channel, fees, discount, settlement date, MCC, card copied only if kept's is null; EMI, international and monitoring flags ORed; description fields copied if blank. Links and statement lines are re-pointed; if kept already belongs to a different link, the deleted side's link simply loses the member (silent). The deleted row is hard-deleted with audit <code>DELETE_MERGED</code>. Client default keep choice: gmail_statement &gt; file_upload &gt; gmail_transaction_alert &gt; manual, tie to older. <span class="path">TransactionService.mergeTransactions:513-670</span></p>
+
+<h3 id="m-transactions-search">Search, running balance and pagination</h3>
+<p><span class="m m-post">POST</span> <code>/transactions/search</code> uses <code>TransactionListQueryBuilder</code> with its own 16-field whitelist; filters are ANDed; category and reason use EXISTS subqueries; <code>coveredByStatement</code> is a derived pseudo-field (<code>transaction_date ≤ account.last_statement_date</code>); search ORs a case-insensitive LIKE across description, sourced description, account name and category name. Sort whitelist: date, amount, createdAt, id, always followed by the tie-breakers <code>transaction_date DESC, created_at DESC, id DESC</code>. Page size 50. <span class="path">TransactionListQueryBuilder.java:35-289</span></p>
+<div class="flow">balance = COALESCE(opening_balance, 0)
+        + SUM(CASE WHEN type='CREDIT' THEN amount ELSE -amount END)
+          OVER (PARTITION BY account_id ORDER BY transaction_date, created_at, id)</div>
+<p>Filters apply to the <em>outer</em> query, so a filtered page still shows true running balances over the account's whole history. Example: +1,000 (Jan 1), −300 (Jan 5), −200 (Jan 10); filtering "amount &lt; 0" still shows 700 and 500. Credit cards, brokers and generic accounts get an opening balance of 0. <span class="c cg">Confirmed</span></p>
+
+<h3 id="m-transactions-risk">Invariants, idempotency, concurrency</h3>
+<div class="tw"><table>
+<tr><th>Invariant</th><th>Enforced</th><th>Confidence</th></tr>
+<tr><td>Every transaction has an account</td><td>DB NOT NULL (V30)</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>A transaction is in at most one link</td><td>service only</td><td><span class="c cg">Confirmed</span>, by design per plan</td></tr>
+<tr><td>(user, source_message_id) unique</td><td>DB partial unique (V34)</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>(user, category name) unique; (user, merchant_key, match_type) unique</td><td>DB + service pre-check</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>NEEDS_REVIEW has ≥1 reason</td><td><code>ReviewStatusManager</code></td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>Merge never crosses accounts</td><td>service</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>Exactly one anchor after re-pointing</td><td>only at create; auto-dissolve checks counts, not anchor uniqueness</td><td><span class="c cy">Strongly inferred</span> safe</td></tr>
+</table></div>
+<ul>
+<li><strong>No <code>@Version</code></strong> on any entity here; concurrency relies on unique constraints (→ 409 CONFLICT) and one explicit race handler in <code>suggestForDescription</code> for concurrent category creation.</li>
+<li><strong>Idempotency</strong>: manual create not idempotent (client <code>isSubmitting</code> only); ingested creates idempotent via source message id; PUT full-replace; batch review idempotent per reason; batch delete idempotent; merge not repeatable (second call 404s); create link rejected on repeat; rule apply safe but inflates <code>appliedCount</code> (a lifetime counter, not a live count); bulk reattribute idempotent but uncapped.</li>
+<li><strong>Audit</strong>: <code>AuditLogger.mutation</code> covers single create/update/delete and merge only; batch review, batch delete and rule-driven changes leave no audit record. Ownership violations log at ERROR while returning 400.</li>
+</ul>
+
+<h3 id="m-transactions-contra">Contradictions and duplicated logic</h3>
+<ul>
+<li><span class="c ph">High</span> <code>is_excluded</code> honoured by rewards and opt-in reports but ignored by balance rollups (<code>findTotalTransactionSumByAccountId</code>, <code>findBalanceAggregatesByAccountId</code>).</li>
+<li><span class="c ph">High</span> Report catalog <code>source</code> values are <code>["gmail","manual"]</code>; a report or chat filter on "gmail" matches zero rows, and gmail_statement / file_upload cannot be filtered at all. <span class="path">DatasourceCatalog.java:108-109</span></li>
+<li>Two independently maintained SQL builders over the same table with drifted field sets (list has cardId, reviewReason, coveredByStatement; report has isTransferLeg, isRefundLeg, linkType, settlementDate, fees, cardholder). A labelled decision in <span class="path">docs/transaction-filter-sort-search-spec.md</span> §4, still a maintenance cost.</li>
+<li>Sign convention encoded three times; link direction rules encoded twice (server validator and client <code>useTransactionLink.ts</code>); pattern validation encoded twice (client <code>validatePattern</code> and server canonicalization) with no parity test.</li>
+<li>Category name caps differ: 60 chars for LLM-created, 100 for user-typed.</li>
+<li>Client <code>ReviewReason</code> union keeps <code>'OTHER'</code>, removed from the server enum; any pre-decision rows holding 'OTHER' would fail to deserialize. <span class="c cr">Unknown</span> whether such rows exist.</li>
+</ul>
+
+<h3 id="m-transactions-l4">Level 4 · Code index</h3>
+<div class="tw compact"><table>
+<tr><th>Concern</th><th>Server</th><th>Client</th></tr>
+<tr><td>CRUD, batch, merge, card</td><td><code>api/transaction/TransactionController</code>, <code>domain/transaction/TransactionService</code></td><td><code>components/transactions/crud/useTransactionCRUD.ts</code>, <code>MergeTransactionsDialog.tsx</code></td></tr>
+<tr><td>Search</td><td><code>TransactionRepositoryCustomImpl</code>, <code>TransactionListQueryBuilder</code></td><td><code>components/transactions/browser/*</code>, <code>filter-bar/*</code></td></tr>
+<tr><td>Review</td><td><code>ReviewStatusManager</code>, <code>ReviewType</code>, <code>ReviewReason</code></td><td><code>review-browser/*</code>, <code>reviewBrowser.helpers.ts</code></td></tr>
+<tr><td>Rules</td><td><code>api/rules/RulesController</code>, <code>domain/categorization/{CategoryRule,RuleMatcher,RuleMatchService,DescriptionNormalizer}</code></td><td><code>components/rules/*</code>, <code>RuleMatchesDialog</code></td></tr>
+<tr><td>LLM categorize</td><td><code>CategorizationService</code>, <code>TransactionCategorizer</code>, <code>api/categorize/CategorizeController</code></td><td><code>useCategorySuggestions.ts</code></td></tr>
+<tr><td>Links</td><td><code>domain/transaction/link/*</code>, <code>api/transactionlink/TransactionLinkController</code></td><td><code>components/transactions/link-dialog/*</code></td></tr>
+<tr><td>Categories</td><td><code>domain/category/*</code>, <code>api/category/CategoryController</code></td><td><code>components/rules/CategoryManager.tsx</code>, <code>lib/query/hooks/useCategories.ts</code></td></tr>
+</table></div>
+<p>Tests: <code>RuleMatcherTest</code>, <code>DescriptionNormalizerTest</code>, <code>CategorizationServiceTest</code> (903 lines incl. full precedence), <code>TransactionCategorizerTest</code>, <code>RuleMatchServiceTest</code>, <code>TransactionMergeTest</code> (13), <code>TransactionLinkServiceTest</code> (619 lines), <code>ReviewStatusManagerTest</code> (2, thin), <code>TransactionSearchTest</code>, <code>TransactionServiceTest</code>, <code>TransactionServiceBatchIntegrationTest</code>, <code>TransactionCardAttributionTest</code>. Thin: create/update happy path, <code>appliedCount</code> semantics, client/server pattern-validation parity.</p>
+
+<h3 id="m-transactions-unk">Open questions</h3>
+<div class="qa"><b>Product</b> Should <code>is_excluded</code> affect account balances, or only rewards and analyst-authored reports?</div>
+<div class="qa"><b>Technical</b> Is the production JVM timezone pinned? If UTC, is the 5.5-hour skew on "today" filters accepted?</div>
+<div class="qa"><b>Technical</b> Was the report engine's stale <code>source</code> list simply missed when the list endpoint was corrected?</div>
+<div class="qa"><b>Data</b> Do any <code>transaction_review_reasons</code> rows still hold 'OTHER'?</div>
+<div class="qa"><b>Product</b> Should a merge warn before silently dropping a link membership on the deleted side?</div>
+<div class="qa"><b>Technical</b> Is <code>appliedCount</code> meant to be a live count or a lifetime counter?</div>
+</section>
+<section class="sec" id="m-gmail" data-part="II · Modules">
+<p class="eyebrow">Module</p>
+<h2><span class="n">M3</span>Gmail ingestion</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>A user links Gmail (read-only scope) so FinanceOS can turn bank alert emails into transactions and cross-check them against e-statement attachments, with no manual entry. A cron job or "Sync Now" lists mail from allow-listed senders, sends each message's subject and body to an LLM to extract amount, direction, date, description and the last four digits of the card or account, resolves which account those digits belong to, and creates a <code>NEEDS_REVIEW</code> transaction if the account has opted in and the date is on or after its watermark. Statement attachments take a separate path: decrypt, parse, and match lines 1:1 against still-unreconciled alert transactions. Anything that cannot be resolved automatically is parked in a "Needs Attention" queue with retry and assign actions. <span class="c cg">Confirmed</span></p>
+<p>Why it exists: to remove manual entry for the common case while letting the periodic statement be the reconciliation source of truth. This reading matches <span class="path">docs/gmail-ingestion-spec.md</span>. <span class="c cy">Intent doc</span></p></div>
+
+<h3 id="m-gmail-l1">Level 1 · Product view</h3>
+<div class="tw"><table>
+<tr><th>User's mental model</th><th>Code reality</th><th>Mismatch</th></tr>
+<tr><td>"I connect Gmail once"</td><td>Multiple <code>GmailConnection</code> rows allowed; only one is primary; manual sync, rescan and cleanup act only on the primary</td><td>UI implies multi-mailbox; half the API serves only the primary</td></tr>
+<tr><td>"I pick which banks to read"</td><td>Sender allowlist is per user, not per account; the account is decided later from the extracted last4</td><td>Per-sender account binding was added and removed twice (V19/V21, V23/V62)</td></tr>
+<tr><td>"The email says which account"</td><td>Only trailing digits; ambiguity (2+ matches) parks the message rather than guessing</td><td>Two cards sharing trailing digits will sit in Needs Attention</td></tr>
+<tr><td>"Statements are a backup"</td><td>Statements <em>promote</em> matching alerts to AUTO_REVIEWED and <em>create</em> new NEEDS_REVIEW rows for unmatched lines</td><td>The statement path can grow the review queue</td></tr>
+<tr><td>"Ingest-from date just filters the view"</td><td>Hard gate: earlier transactions are never created; lowering it re-processes old emails; raising it offers a bulk cleanup</td><td>Side effects are not visible from the form field</td></tr>
+<tr><td>"Signing in with Google is just login"</td><td>Every Google SSO requests <code>gmail.readonly</code> and upserts a primary <code>GmailConnection</code> if a refresh token is granted</td><td>Most users' first Gmail connection is created implicitly by login <span class="path">AuthService.java:196-206</span></td></tr>
+</table></div>
+<p><strong>Route</strong>: <code>/settings/gmail</code> composes connections, attention queue, a jobs panel filtered to GMAIL_SYNC, and the sender allowlist. Gmail cleanup lives inside the <em>account edit form</em> (raising an existing ingest-from date previews and deletes unreconciled alert rows before the new date). The rescan endpoint has no UI caller. <span class="c cg">Confirmed</span></p>
+
+<h3 id="m-gmail-sync">The sync algorithm</h3>
+<ol class="trace">
+<li><span class="lyr">schedule</span><code>IngestionScheduler</code> cron <code>0 0 10-22/2 * * *</code> Asia/Kolkata = 7 runs per day (10:00 to 22:00, every two hours). For every connected connection across all users it enqueues a <code>GMAIL_SYNC</code> job with <code>dedupKey = connectionId</code>, so a still-running sync is not duplicated. <span class="path">gmail/ingest/IngestionScheduler.java:39-64</span></li>
+<li><span class="lyr">handler</span><code>GmailSyncJobHandler</code> asserts the job's user matches the connection's owner, then <code>GmailIngestionService.syncConnection</code> wrapped in <code>UserContextHelper.callAs(userId)</code> so the tenancy filter works on a cron thread</li>
+<li><span class="lyr">discover</span>One <code>GmailSyncCursor</code> per (connection, sender); new cursors seed <code>lastListedAt</code> and <code>earliestCoveredAt</code> to now − 30 days. Forward query per group of cursors sharing a timestamp: <code>from:(a OR b) after:&lt;lastListedAt − 15 min&gt;</code>. Backfill pass when a <code>gmail_backfill_demand</code> row exists: <code>effectiveFloor = max(floorDate, today − 365d)</code>, query <code>after:floor before:earliestCovered+1d</code>, then ratchet <code>earliestCoveredAt</code> down. Ids deduped in 500-id chunks against the ledger; new ids saved as DISCOVERED. <span class="path">GmailIngestionService.discoverMessages:103-180</span></li>
+<li><span class="lyr">sweep</span>Rows stuck in PROCESSING for more than 60 minutes are reset to DISCOVERED</li>
+<li><span class="lyr">drain</span>Budget 100 messages, or 500 when the backlog exceeds 100. Each row is processed in its own DB transaction; created transactions are batch-categorized <em>after</em> the loop so no LLM call holds a DB connection. Returns <code>SyncSummary(discovered, processed, created, reconciled, skipped, parked, failedRetryable, failedPermanent, backlogRemaining)</code>. <span class="path">processPendingMessages:227-300</span></li>
+</ol>
+<div class="callout warn"><p>A backfill demand older than 365 days is silently clamped; the user gets no signal that older mail was never queried. <span class="c cg">Confirmed</span> <span class="path">GmailIngestionService.java:143-144</span></p></div>
+
+<h3 id="m-gmail-message">Per-message pipeline</h3>
+<ol class="trace">
+<li><span class="lyr">lock</span>Mark PROCESSING and save immediately</li>
+<li><span class="lyr">fetch</span><code>GmailEngine.fetchMessageDetails</code>; a 404 → SKIPPED_MESSAGE_GONE</li>
+<li><span class="lyr">sender</span>Re-check the From address against the <em>currently enabled</em> allowlist (exact when the entry has "@", else domain suffix) → SKIPPED_SENDER_DISABLED</li>
+<li><span class="lyr">dedup</span><code>existsByUserIdAndSourceMessageId</code> → SKIPPED_DUPLICATE</li>
+<li><span class="lyr">route</span>Any attachment ending .pdf, .xlsx or .xls → statement path. The LLM classifier <code>EmailClassifier</code> (task <code>email-classify</code>) is never called. <span class="c cg">Confirmed dead</span></li>
+<li><span class="lyr">extract</span><code>GeminiExtractor.extract</code>, task <code>email-extract</code>, temperature 0, schema {isTransaction, amount, currency, direction, date, description, accountLast4, confidence}. <code>isTransaction=false</code> → SKIPPED_NOT_TRANSACTION; missing amount or date → failure → retry ladder</li>
+<li><span class="lyr">resolve</span><code>AccountResolver.resolve(last4)</code> (four passes, see <a href="#m-accounts-resolver">Accounts</a>); empty → UNRESOLVED_ACCOUNT</li>
+<li><span class="lyr">opt-in</span><code>account.ingestFromDate == null</code> → ACCOUNT_NOT_OPTED_IN</li>
+<li><span class="lyr">write</span><code>GmailTransactionWriter</code>: <code>date &lt; ingestFromDate</code> → SKIPPED_BEFORE_WATERMARK (inclusive boundary); else create with <code>amount = abs()</code>, <code>type = fromLlmDirection</code>, <code>source = gmail_transaction_alert</code>, <code>sourcedDescription</code> = extracted description, <code>sourceMessageId</code> = Gmail id, reason UNRECONCILED → NEEDS_REVIEW; ledger → CREATED <span class="path">GmailTransactionWriter.java:39-90</span></li>
+</ol>
+<p><strong>Direction mapping</strong>: DEBIT, DR, PAYMENT, EXPENSE, WITHDRAWAL, CHARGE → DEBIT; CREDIT, CR, INCOME, DEPOSIT, REFUND → CREDIT; anything else, including null, defaults to DEBIT with a warning. <span class="path">TransactionType.fromLlmDirection:29-51</span> <strong>Date parsing</strong>: <code>FlexibleDateParser</code> tries ISO, d/M/yyyy, dd-MM-yyyy, d-MMM-yyyy, d MMMM yyyy, d MMM yyyy, and only last M/d/yyyy; the prompt also says day-first. <code>03/04/2026</code> is always 3 April.</p>
+<p><strong>Example</strong>: an HDFC alert "Rs.1,250.00 debited from card ending 4321 on 12/08/2026 at SWIGGY" → extractor returns amount 1250.00, DEBIT, 2026-08-12, "SWIGGY", last4 "4321" → resolver finds the one open card 4321 → account opted in from 2026-07-01 → row: amount 1250.0000, type DEBIT, date 2026-08-12, source gmail_transaction_alert, review NEEDS_REVIEW {UNRECONCILED}, card_id set → then batch categorization adds a category and, if the rule is unverified, CATEGORY_UNVERIFIED. <span class="c cy">Illustrative, composed from the code paths above</span></p>
+
+<h3 id="m-gmail-statement">Statement path and reconciliation</h3>
+<p><code>StatementReconciliationService.reconcile</code>: pick the best attachment (prefer an encrypted PDF) → fetch bytes → if encrypted, try every account's stored statement password until one opens it (this provisionally identifies the account) → <code>StatementParseEngine</code> → confirm account via the resolver on the statement's account number → <code>StatementPersistenceService.createIfNew</code> (SHA-256 of bytes, unique per account) → watermark-filter lines → match each line via <code>TransactionMatcher.findBestMatch</code> → promote matches to AUTO_REVIEWED; materialize misses as <code>gmail_statement</code> NEEDS_REVIEW rows keyed <code>messageId:lineIndex</code>. <span class="path">gmail/reconcile/StatementReconciliationService.java:90-320</span></p>
+<div class="tw"><table class="dt">
+<tr><th>Match step</th><th>Rule</th></tr>
+<tr><td>1 Card</td><td>If the line has a card last4, candidates on a different known card are excluded</td></tr>
+<tr><td>2 Amount</td><td>Exact <code>compareTo == 0</code></td></tr>
+<tr><td>3 Direction</td><td>Same <code>TransactionType</code></td></tr>
+<tr><td>4 Date</td><td>|Δdays| ≤ <code>gmail.ingest.date-window-days</code> (default 3)</td></tr>
+<tr><td>Ranking</td><td>same-card first, then smaller date difference, then higher Jaccard token similarity of descriptions</td></tr>
+<tr><td>Assignment</td><td>Greedy 1:1 in parser line order; no global optimum</td></tr>
+</table></div>
+<p>Statement lines dropped by the watermark leave no ledger row, so there is no visibility into how many were skipped. Decrypt or parse failure → FAILED_PERMANENT without retry; an empty statement → SKIPPED_NOT_TRANSACTION.</p>
+
+<h3 id="m-gmail-states">State machine: processed-message ledger</h3>
+<div class="flow">DISCOVERED ─────────────────────────────► PROCESSING
+PROCESSING ─ 404 ───────────────────────► SKIPPED_MESSAGE_GONE        terminal
+PROCESSING ─ sender disabled ───────────► SKIPPED_SENDER_DISABLED     terminal
+PROCESSING ─ txn already exists ────────► SKIPPED_DUPLICATE           terminal
+PROCESSING ─ LLM: not a transaction ────► SKIPPED_NOT_TRANSACTION     terminal
+PROCESSING ─ statement matched/created ─► RECONCILED                  terminal
+PROCESSING ─ no single account ─────────► UNRESOLVED_ACCOUNT          attention, retry, assign, reactivate
+PROCESSING ─ ingestFromDate null ───────► ACCOUNT_NOT_OPTED_IN        attention, retry, reactivate
+PROCESSING ─ date &lt; watermark ──────────► SKIPPED_BEFORE_WATERMARK    reactivate on date lower
+PROCESSING ─ created ───────────────────► CREATED                     terminal
+PROCESSING ─ exception, attempts &lt; 5 ───► FAILED_RETRYABLE ──► PROCESSING (2h, 4h, 8h, 16h; cap 24h)
+FAILED_RETRYABLE ─ attempt 5 ───────────► FAILED_PERMANENT            attention, retry
+PROCESSING &gt; 60 min ─ sweep ────────────► DISCOVERED
+any with txn ─ user cleanup ────────────► CLEANED_UP                  tombstone, never reactivated</div>
+<p>Retry ladder: <code>nextRetryAt = now + min(86400, 7200 × 2^(attempts−1))</code> seconds. A missing-API-key failure (<code>LlmException.Kind.NO_KEYS</code>) only changes the displayed message; it still burns the full ladder (about two days) before surfacing as permanent. <span class="c cg">Confirmed</span> <span class="path">GmailIngestionService.java:400-421</span></p>
+<p><strong>Connection states</strong>: first connection becomes primary; disconnect sets <code>isConnected=false</code> only. Nothing ever re-assigns primary, so disconnecting the primary leaves no primary and manual sync 404s even if another connection is live. <span class="c co">Inferred oversight</span> <span class="path">GmailOAuthService.java:130-133</span></p>
+
+<h3 id="m-gmail-oauth">Trace: connect Gmail</h3>
+<ol class="trace">
+<li><span class="lyr">UI</span>"Add Account" → <span class="m m-get">GET</span> <code>/gmail/oauth/start</code> → <code>GmailOAuthService.buildAuthorizationUrl</code>: scope <code>gmail.readonly</code>, <code>access_type=offline</code>, <code>approval_prompt=force</code>, state = userId</li>
+<li><span class="lyr">google</span>Consent → redirect to the <em>server's</em> <code>/api/v1/gmail/oauth/callback</code> (unlike SSO, which lands on the client, because here no session cookie needs minting: the user is already logged in)</li>
+<li><span class="lyr">server</span><code>handleCallback</code>: exchange code, require a refresh token, read the mailbox profile, upsert connection by (user, email), first one becomes primary, refresh token stored via <code>EncryptedStringConverter</code> (AES-256-GCM); redirect to <code>{ui-path}/settings/gmail?gmail=success|error&amp;message=…</code></li>
+</ol>
+<p>State is not validated here either (comment says so), but the callback re-derives the user from the session, so the boundary is the cookie, not state. The raw exception message is reflected into the redirect URL and rendered verbatim. <span class="c pl">Low</span></p>
+
+<h3 id="m-gmail-data">Data model</h3>
+<div class="tw compact"><table>
+<tr><th>Table</th><th>Meaning</th><th>Key constraints</th></tr>
+<tr><td><code>gmail_connections</code></td><td>One linked mailbox; encrypted refresh token; is_connected, is_primary</td><td>"one primary per user" is app-level only</td></tr>
+<tr><td><code>gmail_senders</code> (V19, V21, V22, V23, V62)</td><td>Per-user allowlist entry: address or domain, enabled</td><td>account binding removed for good in V62</td></tr>
+<tr><td><code>gmail_processed_messages</code> (V16, V63, V65, V71)</td><td>The ledger: idempotency, audit, attention queue; <code>extracted_last4 VARCHAR2(4)</code>, attempt_count, next_retry_at, error</td><td>UNIQUE(connection_id, gmail_message_id); account_id CASCADE (deleting an account wipes its ingestion history so re-creation re-ingests)</td></tr>
+<tr><td><code>gmail_sync_cursors</code> (V66)</td><td>Per (connection, sender) forward and backfill cursor</td><td>UNIQUE(connection_id, sender_id); no <code>@Filter</code></td></tr>
+<tr><td><code>gmail_backfill_demand</code> (V67)</td><td>One row per user; floor date ratchets down only; <code>Persistable</code> override fixes the <code>@MapsId</code> merge crash</td><td>PK = user_id; no <code>@Filter</code></td></tr>
+<tr><td><code>transactions.source_message_id</code></td><td>Alert: Gmail id; statement line: <code>messageId:lineIndex</code></td><td>Per-user partial unique since V34 (this analyst read the older global index; the transactions analyst confirmed V34)</td></tr>
+</table></div>
+<p>The V71 lesson: ojdbc 23 cannot hydrate a plain Oracle <code>TIMESTAMP</code> into <code>Instant</code> (ORA-18716), so every Instant-mapped column must be <code>TIMESTAMP WITH TIME ZONE</code>. V16, V65, V66 and V67 were converted in V71 after every production sync failed. <span class="c cg">Confirmed</span></p>
+
+<h3 id="m-gmail-contra">Contradictions, dead code, gaps</h3>
+<ul>
+<li><span class="c cg">Confirmed dead</span> <code>EmailClassifier</code> and task <code>email-classify</code>; <code>GmailApiClient.getHistory</code> (history API never used; sync uses messages.list with epoch cursors).</li>
+<li><span class="c cg">Confirmed dead UI</span> <code>GmailSyncResultDetails.tsx</code> has a "legacy" branch keyed on <code>discovered === undefined</code> and an attention table keyed on outcome enums (ACCOUNT_UNRESOLVED, DECRYPT_FAILED, PARSE_FAILED…) that the server never emits; about 90 lines unreachable.</li>
+<li><span class="c cg">Confirmed bug</span> Alias longer than 4 characters never reactivates parked messages because <code>extracted_last4</code> is 4 chars and the match is exact.</li>
+<li>Three independently coded watermark checks (service null check, writer date check, statement service null check).</li>
+<li>Intent doc D9 says <code>sourcedDescription</code> stays unused; the writer populates it with the extracted description.</li>
+<li>Intent doc says a revoked token should set <code>isConnected=false</code>; no code path does this. Gmail 401/403 folds into the generic retry path. <span class="c cy">Doc-only</span></li>
+<li><code>AccountResolver</code> calls <code>findAll()</code> on identifiers, accounts and cards with no user predicate; it is safe only inside a <code>UserContext</code> scope.</li>
+<li>Sender email lists are logged in plaintext in discovery queries. <span class="c pl">Low</span></li>
+</ul>
+
+<h3 id="m-gmail-cfg">Configuration</h3>
+<div class="tw compact"><table>
+<tr><th>Key</th><th>Default</th><th>Effect</th></tr>
+<tr><td><code>gmail.ingest.enabled</code></td><td>true</td><td>Cron no-op when false</td></tr>
+<tr><td><code>gmail.ingest.cron</code> / <code>zone</code></td><td><code>0 0 10-22/2 * * *</code> / Asia/Kolkata</td><td>7 runs per day; "-" in e2e disables</td></tr>
+<tr><td><code>first-backfill-days</code> / <code>max-backfill-days</code></td><td>30 / 365</td><td>New cursor seed; hard backfill ceiling</td></tr>
+<tr><td><code>date-window-days</code></td><td>3</td><td>Statement match tolerance and reactivation window</td></tr>
+<tr><td><code>overlap-lap-minutes</code></td><td>15</td><td>Forward query overlap</td></tr>
+<tr><td><code>process-budget</code> / <code>backfill-process-budget</code></td><td>100 / 500</td><td>Messages per run</td></tr>
+<tr><td><code>retry-max-attempts</code> / <code>stale-processing-minutes</code></td><td>5 / 60</td><td>Retry ladder; sweep threshold</td></tr>
+<tr><td><code>GMAIL_CLIENT_ID/SECRET/REDIRECT_URI</code>, <code>GMAIL_AUTH_URL</code>, <code>GMAIL_TOKEN_URL</code>, <code>GMAIL_API_ROOT_URL</code></td><td>Google prod</td><td>Overridable for WireMock in e2e; empty defaults fail at OAuth time, not boot</td></tr>
+</table></div>
+<p>Tests: <code>GmailIngestionServiceTest</code>, <code>AccountResolverAliasTest</code>, <code>AccountResolverCardTest</code>, <code>GmailIngestEventListenerTest</code>, <code>FlexibleDateParserTest</code>, <code>GmailSyncCursorServiceTest</code>, <code>SenderAllowlistServiceTest</code>, <code>GmailBackfillDemandTest</code>, <code>GmailApiClientTest</code>, <code>GmailControllerTest</code>. Untested: <code>GeminiExtractor</code> branches, OAuth exchange, <code>GmailEngine</code> error mapping, <code>GmailTransactionWriter</code> in isolation, <code>StatementReconciliationService</code> end to end, <code>TransactionMatcher</code> tie-breaks, the backoff arithmetic, the long-alias bug.</p>
+
+<h3 id="m-gmail-unk">Open questions</h3>
+<div class="qa"><b>Product</b> Should unmatched statement lines be pre-verified (AUTO_REVIEWED) since they come from the bank's own statement?</div>
+<div class="qa"><b>Product</b> Should rescan have a UI? Should the Assign dialog let users pick the identifier kind (it always defaults to OTHER)?</div>
+<div class="qa"><b>Technical</b> Was <code>EmailClassifier</code> ever wired in? Is leaving no primary after disconnect accepted?</div>
+<div class="qa"><b>Technical</b> Should the 365-day clamp surface a message?</div>
+<div class="qa"><b>Ops</b> Is unvalidated OAuth state an accepted risk for both Gmail connect and SSO?</div>
+</section>
+<section class="sec" id="m-statements" data-part="II · Modules">
+<p class="eyebrow">Module</p>
+<h2><span class="n">M4</span>Statement ingestion &amp; parsing</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>A user drops a bank or credit-card statement (PDF or Excel) into Settings → Ingest and the system detects the transaction table, reads every line, derives each amount's sign by reconciling against the printed running balance, cross-checks totals against the statement's summary box, and imports the lines as transactions while deduplicating at the statement level (same file or period) and flagging suspected duplicate transactions. The parser is <strong>one generic heuristic engine</strong>, not a library of per-bank parsers; it is a line-by-line Java port of a Python reference script and Python is never invoked at runtime. <span class="c cg">Confirmed</span> <span class="path">statement/parser/StatementParseEngine.java</span></p>
+<p>Two materially different reconciliation paths share the same parser: direct upload only <em>flags</em> duplicates and never skips creating a row; a statement arriving as a Gmail attachment <em>matches and promotes</em> existing unreconciled alert transactions and creates new rows only for unmatched lines. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="m-statements-l1">Level 1 · Product view</h3>
+<div class="tw"><table>
+<tr><th>User's mental model</th><th>Code's model</th><th>Mismatch</th></tr>
+<tr><td>"It knows how to read my HDFC statement"</td><td>Bank name is regexed for display only; extraction is generic (column clustering, balance-chain oracle, summary-label harvesting)</td><td>No supported-banks list exists; anything with a date+amount table may parse</td></tr>
+<tr><td>"A statement is one PDF"</td><td>A <code>Statement</code> row is metadata and parser confidence; the lines are ordinary <code>Transaction</code> rows joined via <code>statement_transactions</code></td><td>Deleting an account deletes statements; deleting a statement row does not delete its transactions</td></tr>
+<tr><td>"It reconciles against what it knows"</td><td>Upload path: flag duplicates (same day only). Gmail path: match, promote, or create</td><td>Same feature, different outcomes</td></tr>
+<tr><td>"Rejected means it was not imported"</td><td>Verdict is advisory; REJECTED-verdict statements still create transactions</td><td>Possibly wrong-signed rows land silently <span class="c ph">High</span></td></tr>
+</table></div>
+<p><strong>UI</strong>: <code>/settings/ingest</code> (account picker limited client-side to bank and credit-card accounts, file dropzone with a 25 MB client cap, embedded jobs panel); statement browsing lives inside the account tile's Statements dialog and <code>StatementDetailDialog</code>. There is no standalone <code>/statements</code> route (the directory is empty). Passwords are never sent with the upload; they are read from the account's encrypted <code>statementPassword</code>. Upload goes browser → Vercel rewrite → API directly, bypassing Next server actions, so the 4.5 MB server-action limit does not apply. <span class="c cg">Confirmed</span></p>
+
+<h3 id="m-statements-parser">Parser pipeline</h3>
+<ol class="trace">
+<li><span class="lyr">detect</span>Magic bytes only: <code>%PDF</code>, <code>PK\x03\x04</code> (XLSX), OLE2 (XLS); no extension check server-side</li>
+<li><span class="lyr">words</span>PDFBox text positions grouped into lines (3.8 pt tolerance); POI cells become words at synthetic x = col×100 with numerics rendered <code>%,.2f</code>; repeated per-page furniture dropped</li>
+<li><span class="lyr">rows</span>A line is a candidate if it starts with a date token, an amount exists within 7 lines, and it is not a summary line. Date format inferred by majority vote over 28 formats; a second format accepted if it parses ≥2 leftovers</li>
+<li><span class="lyr">build</span>Per row: description before the date, drop value dates and ref/cheque column values, drop currency glyphs, treat adjacent +/− and Cr/Dr as sign flags, amounts need a decimal point or comma grouping; continuation lines attached by proximity; yearless dates get the period's year</li>
+<li><span class="lyr">sign</span><strong>Balance oracle</strong>: cluster amount columns by x (12 px); score each column as a running balance by the fraction of rows where |Δbalance| equals another amount on the row (±0.011); best score ≥ 0.6 wins → mode <code>balance-chain</code>; sign = direction of Δ. Fallback: header keywords (debit/withdrawal vs credit/deposit), else the busiest column with default sign −1 for credit cards, +1 otherwise, then an opening/closing reconciliation retry (±0.51) <span class="path">SignAssigner</span></li>
+<li><span class="lyr">summary</span><code>SummaryFieldHarvester</code> regex-labels about 19 fields (total due, minimum due, due date, credit limit, previous balance, purchases, reward points…); Cr flips dues-type signs</li>
+<li><span class="lyr">verdict</span>See decision table</li>
+</ol>
+<div class="tw"><table class="dt">
+<tr><th>#</th><th>Condition</th><th>Verdict</th></tr>
+<tr><td>1</td><td>checksum ok AND chainValidationPct &gt; 95</td><td>AUTO-INGEST</td></tr>
+<tr><td>2</td><td>checksum ok AND mode starts with "opening/closing"</td><td>AUTO-INGEST</td></tr>
+<tr><td>3</td><td>checksum unknown AND (cross-total found OR card check passes)</td><td>AUTO-INGEST</td></tr>
+<tr><td>4</td><td>chainValidationPct &gt; 50 OR cross-total OR card check</td><td>NEEDS REVIEW</td></tr>
+<tr><td>5</td><td>otherwise</td><td>REJECT</td></tr>
+</table></div>
+<p>Checksum: <code>|opening + credits − debits − closing| &lt; 0.011</code>, with a credit-card retry swapping debits and credits (±0.51). <code>closing</code> falls back to the last row's derived balance, so a clean self-referential chain can reach AUTO-INGEST with no printed balances at all. <span class="c cy">Possible false confidence</span> <span class="path">StatementParseEngine.java:354-369</span></p>
+<p>Card checks (±0.51): purchases = Σdebits; payments + credits received = Σcredits; previous + finance charges + Σdebits − Σcredits = total due. <code>cardOk</code> = third check, or first and second together. Credit-card detection is <code>text.contains("credit card") || text.contains("credit limit")</code> over the whole document; a bank statement mentioning an overdraft "credit limit" flips the sign default. <span class="c cy">Untested false positive</span></p>
+<p>The engine emits the string "REJECT"; the adapter <code>gmail.reconcile.StatementParser.mapVerdict</code> maps only "AUTO-INGEST" and "NEEDS REVIEW" explicitly and everything else to <code>REJECTED</code>. It works by catch-all, not agreement. <span class="c cy">AI smell</span></p>
+
+<h3 id="m-statements-dedup">Dedup and reconciliation rules</h3>
+<div class="tw"><table class="dt">
+<tr><th>Level</th><th>Rule</th><th>Effect</th></tr>
+<tr><td>Statement</td><td>existing (account, period_start, period_end) or (account, file_sha256)</td><td>Whole file SKIPPED, zero transactions created, even for new lines. Backed by <code>uk_statements_account_period</code> and the V64 functional index <code>uk_stmt_account_sha256</code></td></tr>
+<tr><td>Transaction (upload path)</td><td>same day (window hardcoded 0), exact amount, same type, Jaccard token similarity ≥ 0.70 on sourced description; checked against DB rows in the batch's date span and pairwise within the batch (O(n²))</td><td>Both rows kept and flagged DUPLICATE_SUSPECT; nothing skipped. Detail list capped at 50 with <code>duplicatesTruncated</code></td></tr>
+<tr><td>Transaction (Gmail path)</td><td>configurable ±3-day window, card scoping, same tie-breaks as <a href="#m-gmail-statement">Gmail</a></td><td>Match promotes the alert; miss creates <code>gmail_statement</code> row</td></tr>
+</table></div>
+<p><strong>Worked example</strong> (from <span class="path">FileIngestionServiceTest:124-191</span>): two files uploaded; file1 has two lines, file2 has one line that exactly matches an existing row. Result: 2 statements, 3 transactions created, 1 flagged DUPLICATE_SUSPECT, per-file <code>line_index</code> restarts at 0 (the "line-index bugfix"). New rows start AUTO_REVIEWED unless flagged.</p>
+
+<h3 id="m-statements-data">Data model</h3>
+<div class="tw compact"><table>
+<tr><th>Table (V32 unless noted)</th><th>Columns and constraints</th></tr>
+<tr><td><code>statements</code></td><td>source gmail|file_upload, source_ref, file_sha256, statement_type (free string), period_start/end, opening/closing_balance, bank_name, account_number_masked, transaction_count, lines_skipped, total_debits/credits, parse_mode, chain_validation_pct, checksum_ok, verdict; <code>uk_statements_account_period</code>; V64 <code>uk_stmt_account_sha256</code> (was user-scoped in V34); account FK CASCADE; <code>@Filter</code></td></tr>
+<tr><td><code>statement_credit_card_details</code></td><td>1:1 via <code>@MapsId</code>: total_amount_due, minimum_amount_due, payment_due_date, credit_limit, available_credit_limit, finance_charges, fees_and_charges, previous_balance, payments_received, total_purchases, reward_points_balance/earned</td></tr>
+<tr><td><code>statement_transactions</code></td><td>PK (statement_id, transaction_id), line_index, balance_after, chain_valid; both FKs CASCADE; no user_id (tenancy inherited; <code>StatementService</code> checks ownership manually)</td></tr>
+</table></div>
+<p>Harvested but never persisted: <code>overlimit_amount</code>, <code>cash_advance</code>, <code>available_cash_limit</code>, <code>cash_limit</code>, <code>total_withdrawals</code>, <code>total_deposits</code>, <code>interest_earned</code>. <span class="c cg">Confirmed</span></p>
+
+<h3 id="m-statements-risk">Failure modes, gaps, tests</h3>
+<ul>
+<li>Per-file failures (empty file, wrong password, no text layer, no date rows) mark that file FAILED while the job still SUCCEEDS. An exception outside the per-file loop (batch dedup, categorize, save) fails the whole job and persists nothing from any file.</li>
+<li>Account-number mismatch is a non-fatal warning. Account type is enforced client-side only; a direct call could target a broker or generic account.</li>
+<li>Race: two concurrent identical uploads both pass <code>createIfNew</code>'s pre-check; the second hits the unique index and surfaces as a raw DB error on that file rather than SKIPPED. <span class="c pm">Medium</span></li>
+<li>Raw statement bytes sit unencrypted in <code>job_artifacts.data</code> until success (deleted) or up to 7 days after failure. <span class="c pm">Medium</span></li>
+<li>Tests: <code>PdfStatementSmokeTest</code>, <code>ExcelStatementSmokeTest</code> (synthetic 3-row fixtures), <code>FileIngestionServiceTest</code>, <code>StatementServiceTest</code>, <code>StatementControllerTest</code>. Untested: the balance oracle under chain breaks or multi-page tables, any real bank layout, the credit-card no-balance path and card-check formulas, the REJECT/REJECTED adapter, the concurrent upload race.</li>
+</ul>
+<div class="qa"><b>Product</b> Should REJECTED-verdict statements withhold their transactions until confirmed?</div>
+<div class="qa"><b>Product</b> Is flag-never-skip on upload versus match-promote on Gmail intentional?</div>
+<div class="qa"><b>Technical</b> Is unencrypted statement PII in <code>job_artifacts</code> for up to 7 days an accepted risk?</div>
+<div class="qa"><b>Data</b> Why harvest seven summary fields that are never persisted?</div>
+</section>
+<section class="sec" id="m-jobs" data-part="II · Modules">
+<p class="eyebrow">Module</p>
+<h2><span class="n">M5</span>Background jobs</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>A small DB-backed job queue (<code>jobs</code>, <code>job_artifacts</code>) runs every slow or external-dependent operation off the request thread: statement ingest, Gmail sync, price refresh, rule apply, investment import commit and broker reconcile commit. Requests return <code>202 {jobId}</code> immediately and the UI polls. The worker is a <code>@Scheduled</code> poller (every 2 s, plus an after-commit "poke") inside the same JVM with two threads; claiming is an atomic conditional UPDATE, cancellation is cooperative, and retry always creates a new job row. <span class="c cg">Confirmed</span> <span class="path">domain/job/JobWorker.java</span>, <span class="path">JobService.java</span></p></div>
+
+<h3 id="m-jobs-states">State machine</h3>
+<div class="flow">new ──enqueue──► PENDING ──claim (UPDATE … WHERE status='PENDING')──► RUNNING
+RUNNING ──handler returns──► SUCCEEDED   (result JSON stored; artifacts deleted)
+RUNNING ──handler throws───► FAILED      (errorCode = exception class, message ≤ 2000 chars; artifacts kept)
+RUNNING ──boot sweep───────► FAILED / errorCode INTERRUPTED   (JobJanitor on ApplicationReadyEvent)
+PENDING ──cancel───────────► CANCELLED
+RUNNING ──cancel flag + handler calls ctx.checkCancelled()──► CANCELLED   (cooperative only)
+FAILED | CANCELLED ──retry──► new PENDING row (attempt 0, cloned payload + artifacts, dedupKey null)</div>
+<p>There is no INTERRUPTED status; it is an error code on FAILED. Retrying a STATEMENT_INGEST whose artifacts were purged throws "artifacts expired, please re-upload". <code>succeed</code>, <code>fail</code> and <code>markCancelled</code> do not guard on current status, so an out-of-order cancel racing a success could overwrite SUCCEEDED. <span class="c pm">Medium, latent</span></p>
+
+<h3 id="m-jobs-mech">Mechanics</h3>
+<div class="tw"><table>
+<tr><th>Aspect</th><th>Implementation</th></tr>
+<tr><td>Enqueue</td><td><code>JobService.enqueue(userId, type, trigger, payload, artifacts, dedupKey)</code>; if <code>dedupKey</code> matches an active (PENDING/RUNNING) job of the same type and owner, the existing job is returned (soft, non-atomic check). Artifacts stored as BLOBs in one transaction; <code>afterCommit</code> hook pokes the worker.</td></tr>
+<tr><td>Claim</td><td><code>UPDATE jobs SET status='RUNNING', started_at, attempt+1 WHERE id=? AND status='PENDING'</code> in <code>REQUIRES_NEW</code>. Not SKIP LOCKED, but correct under concurrent claimers.</td></tr>
+<tr><td>Execute</td><td><code>ThreadPoolTaskExecutor</code> core=max=2, queue 100, <code>MdcTaskDecorator</code>; <code>runJob</code> sets <code>UserContext</code> and MDC, re-checks cancel, resolves handler via <code>JobHandlerRegistry</code>. Queue full → job FAILED with <code>EXECUTOR_REJECTED</code> rather than stuck RUNNING.</td></tr>
+<tr><td>Tenancy</td><td>List, get, cancel and retry all filter by the session user (404 for foreign jobs). <code>user_id</code> is nullable for cron-global jobs (price refresh), which are therefore invisible through the API.</td></tr>
+<tr><td>Retention</td><td><code>JobJanitor</code> cron <code>0 30 3 * * *</code> Asia/Kolkata: delete terminal jobs older than 30 days; purge artifacts of FAILED jobs older than 7 days.</td></tr>
+<tr><td>Shutdown</td><td>Wait up to 60 s for in-flight jobs; killed jobs are swept to FAILED/INTERRUPTED on next boot.</td></tr>
+<tr><td>Client</td><td><code>useJobStatusPolling</code> (1.5 s, stops on terminal; no polling without a job id), <code>useJobsListPolling</code> (4 s while any job active), in-tab <code>jobsBus</code> so every <code>JobsPanel</code> refetches on enqueue; on success invalidates <code>keys.transactions.all</code>.</td></tr>
+</table></div>
+<div class="tw compact"><table>
+<tr><th>JobType</th><th>Trigger</th><th>Handler</th><th>dedupKey</th></tr>
+<tr><td>STATEMENT_INGEST</td><td>USER upload</td><td><code>StatementIngestJobHandler</code> → <code>FileIngestionService</code></td><td>none</td></tr>
+<tr><td>GMAIL_SYNC</td><td>CRON 7×/day, USER sync, reactivation events</td><td><code>GmailSyncJobHandler</code></td><td>connectionId</td></tr>
+<tr><td>PRICE_REFRESH</td><td>CRON 19:00 IST, AFTER_COMMIT trade event, USER</td><td><code>PriceRefreshJobHandler</code></td><td>see <a href="/handbook/modules-b.html#m-investments">Investments</a></td></tr>
+<tr><td>RULE_APPLY</td><td>USER apply rule</td><td><code>RuleApplyJobHandler</code> → <code>RuleMatchService</code></td><td>—</td></tr>
+<tr><td>INVESTMENT_IMPORT_COMMIT</td><td>USER import wizard</td><td><code>InvestmentImportCommitJobHandler</code></td><td>—</td></tr>
+<tr><td>BROKER_RECONCILE_COMMIT</td><td>USER reconcile wizard</td><td><code>BrokerReconcileCommitJobHandler</code></td><td>—</td></tr>
+</table></div>
+<p>Configuration: <code>JOBS_WORKER_CONCURRENCY</code> 2, <code>JOBS_WORKER_POLL_DELAY_MS</code> 2000, <code>JOBS_WORKER_QUEUE_CAPACITY</code> 100, <code>JOBS_WORKER_SHUTDOWN_GRACE_SECONDS</code> 60, <code>JOBS_RETENTION_DAYS</code> 30, <code>JOBS_FAILED_ARTIFACT_DAYS</code> 7, <code>JOBS_RETENTION_CRON</code>, <code>JOBS_RETENTION_ZONE</code>. Two worker threads are system-wide, so one user's two large uploads delay everyone's jobs; there is no fairness or priority. Observability: <code>JOB_STARTED</code>, <code>JOB_COMPLETED</code>, <code>JOB_FAILED</code> events with <code>jobName</code>, <code>jobRunId</code>, <code>durationMs</code>; <code>ObservabilityMetrics.recordJobSuccess/Failure</code>; <code>INGEST_FILE_RECEIVED</code> logs a <code>sha256</code> field that is always empty. Tests: <code>JobServiceTest</code>, <code>JobWorkerTest</code>, <code>JobWorkerIntegrationTest</code> (real DB), <code>JobJanitorTest</code>, <code>JobControllerTest</code>, handler tests; client <code>useJobStatusPolling</code>, <code>JobsPanel</code>, result-details tests. Untested: the non-guarded status overwrite race, concurrent enqueue with the same dedupKey.</p>
+<p>The client's <code>lib/jobs.types.ts</code> is hand-maintained rather than generated from the OpenAPI schema, unlike most other modules. <span class="c cg">Confirmed</span></p>
+</section>
+<nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/index.html"><small>Previous</small>Orientation</a><a class="next" href="/handbook/modules-b.html"><small>Next</small>Modules B · investments, rewards, loans, reports, LLM and chat</a></nav>
+  </main>
+</div>
+</div>
+<script src="/handbook/handbook.js" defer></script>
+</body>
+</html>

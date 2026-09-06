@@ -14,6 +14,10 @@ const revision =
 export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
   createSerwistRoute({
     additionalPrecacheEntries: [{ url: '/offline', revision }],
+    // The plugin precaches every file under public/ by default. The static
+    // system reference (public/handbook, ~1.2 MB of docs) is read on demand by
+    // maintainers, not by app users, so keep it out of every install.
+    globIgnores: ['**/node_modules/**/*', 'public/handbook/**/*'],
     swSrc: 'src/app/sw.ts',
     useNativeEsbuild: true,
   });

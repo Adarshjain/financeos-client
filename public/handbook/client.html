@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="FinanceOS system and product reference, reverse-engineered from the code. Client.">
+<title>FinanceOS Handbook · Client</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/handbook/handbook.css">
+</head>
+<body data-page="client.html">
+<div class="shell">
+<aside class="side" id="side">
+  <div class="side-head">
+    <div class="brand">FinanceOS Handbook <small>v1</small></div>
+    <div class="brand-sub">System &amp; product reference, reverse-engineered from code · 2026-09-06</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search sections and text…" autocomplete="off" aria-label="Search">
+      <kbd>/</kbd>
+    </div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="side-foot">
+    <button id="expandAll" type="button">Expand all</button>
+    <button id="collapseAll" type="button">Collapse all</button>
+    <span style="margin-left:auto">Source of truth: code</span>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="burger" id="burger" type="button" aria-label="Open navigation">☰ Sections</button>
+    <div class="crumb" id="crumb"><b>FinanceOS Handbook</b></div>
+    <button id="toTop" type="button">↑ Top</button>
+  </div>
+  <div class="results" id="results" aria-live="polite">
+    <button class="close" id="closeResults" type="button">Close ✕</button>
+    <h3 id="resultsTitle"></h3>
+    <div id="resultsList"></div>
+  </div>
+  <main class="content" id="content">
+<section class="sec" id="s07" data-part="IV · Client">
+<p class="eyebrow">Section 7</p>
+<h2><span class="n">07</span>Client / frontend deep dive</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>A Next.js 16 App Router application (React 19, TypeScript) that renders every authenticated screen twice on purpose: a Server Component <code>page.tsx</code> makes the first API calls and seeds a per-request TanStack Query cache, then a client component hydrates that cache and owns all later reads and writes through browser <code>fetch</code>. The app began as pure Server Components plus Server Actions (the README still describes that design) and was migrated module by module onto TanStack Query in September 2026 while keeping the RSC first paint. <span class="c cg">Confirmed</span></p>
+<p>Two API layers are both live: <code>lib/apiClient.ts</code> (server-only, 1,349 lines of per-domain wrappers) for RSC prefetch, and <code>lib/api/client.ts</code> (browser openapi-fetch) for interactivity. Three refresh mechanisms coexist. List filters live in component state, not URLs, except the jobs history page. Chat transcripts live only in React state.</p></div>
+
+<h3 id="s07-arch">Architecture</h3>
+<figure>
+<svg viewBox="0 0 900 380" role="img" aria-label="Client architecture: browser client components use TanStack Query over same-origin fetch through the Next rewrite; Server Components prefetch through serverApi and hydrate the cache; both reach the Spring Boot API">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12" fill="currentColor">
+<rect x="20" y="20" width="400" height="150" rx="8" fill="none" stroke="currentColor" opacity=".9"/>
+<text x="32" y="40" font-weight="600">Browser (React 19)</text>
+<rect x="36" y="56" width="368" height="42" rx="6" fill="none" stroke="currentColor"/>
+<text x="48" y="74">Client components: *Browser / *View / *Manager</text>
+<text x="48" y="90" opacity=".75">useQuery / useMutation · keys.ts · api/client.ts</text>
+<rect x="36" y="112" width="368" height="42" rx="6" fill="none" stroke="currentColor"/>
+<text x="48" y="130">Hydrated TanStack cache · staleTime 30 s · gcTime 5 min</text>
+<text x="48" y="146" opacity=".75">state in useState · no URL filters (except jobs) · no localStorage</text>
+<rect x="20" y="200" width="400" height="160" rx="8" fill="none" stroke="currentColor"/>
+<text x="32" y="220" font-weight="600">Next.js server (Vercel)</text>
+<rect x="36" y="236" width="368" height="40" rx="6" fill="none" stroke="currentColor"/>
+<text x="48" y="253">proxy.ts: cookie present? stamp x-request-id</text>
+<text x="48" y="268" opacity=".75">requireAuth() → GET /auth/me per render</text>
+<rect x="36" y="286" width="368" height="64" rx="6" fill="none" stroke="currentColor"/>
+<text x="48" y="304">page.tsx (RSC) → apiClient.ts / api/server.ts</text>
+<text x="48" y="320">getQueryClient() · setQueryData / prefetchQuery</text>
+<text x="48" y="336" opacity=".75">HydrationBoundary(dehydrate) · /api/chat SSE relay · server actions</text>
+<rect x="620" y="130" width="260" height="120" rx="8" fill="none" stroke="currentColor"/>
+<text x="632" y="152" font-weight="600">FinanceOS API</text>
+<text x="632" y="172">Spring Boot · Java 21 · Oracle</text>
+<text x="632" y="190" opacity=".75">/api/v1/** · FINANCEOS_SESSION cookie</text>
+<text x="632" y="208" opacity=".75">OCI VM · Caddy TLS</text>
+<path d="M404 77 H520 V180 H616" fill="none" stroke="currentColor" marker-end="url(#ar)"/>
+<text x="424" y="70" opacity=".8">same-origin /api/v1/* → rewrite → API_ORIGIN</text>
+<path d="M404 316 H560 V200 H616" fill="none" stroke="currentColor" stroke-dasharray="5 4" marker-end="url(#ar)"/>
+<text x="424" y="332" opacity=".8">server fetch → API_BASE_URL (cookie copied)</text>
+<path d="M220 200 V172" fill="none" stroke="currentColor" marker-end="url(#ar)"/>
+<text x="230" y="190" opacity=".8">RSC payload hydrates cache</text>
+</g></svg>
+<figcaption>Two paths to one API: browser components call same-origin <code>/api/v1/*</code> through the Next rewrite; Server Components call <code>API_BASE_URL</code> directly and hand the result to the browser as a hydrated cache.</figcaption>
+</figure>
+
+<h3 id="s07-nav">Product information architecture</h3>
+<div class="flow">Home (/dashboard)                    Chat with Data (/chat)              Accounts (/accounts)
+▾ Transactions  /transactions · Needs Review /transactions/review · Rules /rules · Category Manager /rules/categories
+▾ Rewards       Overview /rewards · Rules /rewards/rules · Card Picker /rewards/recommend
+▾ Investments   Holdings /investments · Tradebook · Dividends · Instruments · Corporate Actions · FnO
+▾ Loans         Loans /loans · Lendings /loans/lendings · Obligations Calendar /loans/calendar
+▾ Reports       Dashboards /dashboards · Reports /reports
+Settings (/settings) → Gmail · Statement Ingest · Background Jobs · LLM Keys · Theme · Delete account</div>
+<p>Sidebar on desktop; a contextual bottom nav plus hamburger on mobile (<span class="path">components/layout/MobileNav.tsx</span>, <span class="path">navigation.tsx</span>). The mounted <code>NavTree</code> hardcodes "Needs Review"; a parameterized <code>getNavigationTree(needsReviewCount)</code> and <code>AppShellNav.tsx</code> that would show a live count are dead (zero importers). <span class="c cg">Confirmed</span></p>
+
+<h3 id="s07-layers">Layers and conventions</h3>
+<div class="tw"><table>
+<tr><th>Concern</th><th>Implementation</th><th>Notes</th></tr>
+<tr><td>Route protection</td><td><code>proxy.ts</code> admits any request with a <code>FINANCEOS_SESSION</code> cookie; <code>(protected)/layout.tsx</code> calls <code>requireAuth()</code> which validates via <span class="m m-get">GET</span> <code>/auth/me</code> and redirects only on 401</td><td>Other RSC 401s surface in <code>error.tsx</code>, not a login redirect <span class="c co">Inferred gap</span></td></tr>
+<tr><td>Server state</td><td><code>lib/query/client.ts</code>: staleTime 30 s, gcTime 5 min, retry 1, refetchOnWindowFocus true; <code>keys.ts</code> factory with 13 namespaces; <code>keepPreviousData</code> on paginated lists</td><td>No optimistic updates anywhere (no <code>onMutate</code>)</td></tr>
+<tr><td>Refresh after mutation</td><td><code>invalidateQueries</code> in 59 files; <code>router.refresh()</code> once (<span class="path">AccountFormWrapper.tsx:31</span>); <code>revalidatePath</code> in the three legacy server actions</td><td>Accounts uses two mechanisms at once</td></tr>
+<tr><td>API contract</td><td><code>api:sync</code> copies the server's exported spec → <code>gen-api.mjs</code> runs openapi-typescript with a Blob transform for multipart → <code>schema.d.ts</code>; CI fails on drift; <code>check-api-surface.mjs</code> snapshots <code>apiClient.ts</code> method names</td><td>Hand-authored <code>*.types.ts</code> still dominate because the generated schema cannot express the string-or-number money convention</td></tr>
+<tr><td>Forms and dialogs</td><td>Radix dialog rebuilt so <code>DialogContent</code> is the only scroller with a sticky footer; <code>DialogFooter</code> and <code>ConfirmationDialog</code> each guard against double submit with a <code>running</code> flag</td><td>Bespoke submit handlers must reimplement the guard</td></tr>
+<tr><td>Errors</td><td><code>ApiError {code, message, errorId?}</code>; <code>getErrorMessage</code> in 31 components; <code>toErrorResult</code> for actions (must not swallow <code>NEXT_REDIRECT</code>); three <code>error.tsx</code> tiers push to Faro; sonner toasts (306 call sites)</td><td>Production strips RSC error messages to a digest</td></tr>
+<tr><td>Loading and empty</td><td>16 route-level <code>loading.tsx</code> skeletons plus a group fallback; <code>EmptyState</code> primitive (not used everywhere)</td><td>No Suspense except around the two auth forms</td></tr>
+<tr><td>Money and dates</td><td><code>formatMoney</code>: <code>Intl.NumberFormat('en-IN', INR, 2 dp)</code>, null → ₹0.00; <code>formatNullableMoney</code> null → —. <code>YYYY-MM-DD</code> strings are parsed as local calendar dates; instants use <code>new Date()</code>; vitest pins <code>TZ=Asia/Kolkata</code></td><td>Amounts arrive as JSON numbers; client math is display-only</td></tr>
+<tr><td>Theme</td><td><code>next-themes</code> light / dark / system; HSL semantic tokens; a second OKLCH token set <code>.bui-chat</code> only for <code>/chat</code> (accepted decision)</td><td><code>--chart-1..5</code> defined but unused; ChartView hardcodes colors</td></tr>
+<tr><td>PWA</td><td>Serwist worker caches static assets only, never documents, RSC payloads or API responses (session replay risk); disabled in dev; <code>/offline</code> fallback</td><td>"Offline" means a friendly page, not offline data</td></tr>
+<tr><td>Observability</td><td>Faro init eagerly, <code>page_view</code> per route, <code>api-call</code> measurement per browser call, errors from boundaries; <code>faro_session</code> cookie lets <code>proxy.ts</code> stamp <code>x-session-id</code>; server-side <code>RequestLogger</code> ships to Loki via <code>after()</code></td><td>Request ids propagate client → Next → API</td></tr>
+</table></div>
+
+<h3 id="s07-pages">Per-page inventory</h3>
+<p>All protected pages are RSC shells that hydrate a client component unless noted. "Seeds" lists the TanStack keys the page pre-populates. Deep-dive tables for each screen are in the module sections.</p>
+<div class="tw compact"><table>
+<tr><th>Route</th><th>Purpose</th><th>RSC fetches</th><th>Client mutations</th><th>Seeds</th><th>Notes</th></tr>
+<tr><td><code>/</code></td><td>redirect</td><td>—</td><td>—</td><td>—</td><td>→ /dashboard</td></tr>
+<tr><td><code>/login</code>, <code>/signup</code></td><td>credential auth, invite-gated signup</td><td><code>getOptionalSession</code></td><td>server actions login / signup / Google start</td><td>—</td><td>public</td></tr>
+<tr><td><code>/auth/google/callback</code></td><td>OAuth exchange</td><td>none (client)</td><td>server action; ref guard; full reload on success</td><td>—</td><td>public</td></tr>
+<tr><td><code>/dashboard</code></td><td>default dashboard render</td><td>dashboards list; every widget's report in parallel</td><td>—</td><td>dashboards.list, dashboards.widget(id, params)</td><td>empty state offers create / chat</td></tr>
+<tr><td><code>/chat</code></td><td>LLM chat</td><td>none</td><td>raw fetch <code>/api/chat</code> SSE</td><td>—</td><td>fully client; no persistence</td></tr>
+<tr><td><code>/accounts</code></td><td>account book</td><td>accounts</td><td>create / update / close / reopen / delete / gmail cleanup / cardholders / cards / identifiers</td><td>accounts.list</td><td>dual refresh</td></tr>
+<tr><td><code>/transactions</code></td><td>ledger browse and CRUD</td><td>accounts, categories, review count</td><td>create / update / delete / link / merge / batch</td><td>accounts.list, categories.list, transactions.reviewCount</td><td>filters in state, 300 ms debounce</td></tr>
+<tr><td><code>/transactions/review</code></td><td>triage queue</td><td>accounts, categories</td><td>batch review / delete / merge</td><td>accounts.list, categories.list</td><td></td></tr>
+<tr><td><code>/rules</code>, <code>/rules/categories</code></td><td>rules and categories</td><td>rules(unverified first), categories</td><td>rule CRUD, verify, preview, apply (job); category CRUD</td><td>rules.list(params), categories.list</td><td>prefetch params must mirror hook state</td></tr>
+<tr><td><code>/investments</code></td><td>holdings</td><td>positions, accounts</td><td>trades, prices, refresh (job)</td><td>investments.positions, accounts.list</td><td>recharts statically bundled here</td></tr>
+<tr><td><code>/investments/tradebook</code></td><td>trade log, import, reconcile</td><td>transactions(0, 10), accounts</td><td>trade CRUD, import and reconcile wizards</td><td>investments.transactions, accounts.list</td><td></td></tr>
+<tr><td><code>/investments/dividends</code></td><td>dividends and FY summary</td><td>dividends(25), summary, positions, accounts</td><td>dividend CRUD, suggestions</td><td>4 keys</td><td></td></tr>
+<tr><td><code>/investments/instruments</code></td><td>instrument master</td><td>instruments</td><td>instrument and price CRUD</td><td>investments.instruments</td><td>client-side paging over the full list</td></tr>
+<tr><td><code>/investments/corporate-actions</code></td><td>CA records</td><td>corporate actions, instruments</td><td>CA CRUD</td><td>2 keys</td><td></td></tr>
+<tr><td><code>/investments/fno</code></td><td>F&amp;O ledger</td><td>fno trades, accounts</td><td>fno CRUD</td><td>investments.fno, accounts.list</td><td>client-side paging</td></tr>
+<tr><td><code>/loans</code>, <code>/loans/[id]</code></td><td>loans list, detail</td><td>loans(50) + summary + accounts; detail + schedule + accounts</td><td>loan CRUD, events, payments, charges, match</td><td>loans.list, loans.summary, loans.byId, loans.schedule</td><td><code>notFound()</code> on missing id</td></tr>
+<tr><td><code>/loans/calendar</code></td><td>obligations</td><td>obligations(3 months)</td><td>—</td><td>lendings.obligations(3)</td><td></td></tr>
+<tr><td><code>/loans/lendings</code>, <code>/loans/lendings/[id]</code></td><td>counterparties, ledger</td><td>counterparties(50) + summary; counterparties(100) + lendings(200)</td><td>entry and counterparty CRUD</td><td>lendings.*</td><td>running balance client-side</td></tr>
+<tr><td><code>/dashboards</code>, <code>/new</code>, <code>/[id]</code></td><td>dashboard list and editor</td><td>dashboards; reports list; dashboard by id</td><td>widget add / move / resize, save, set default</td><td>dashboards.list, reports.list</td><td>react-grid-layout not code-split</td></tr>
+<tr><td><code>/reports</code>, <code>/new</code>, <code>/[id]</code></td><td>saved reports and builder</td><td>reports + catalog; catalog + categories + accounts + instruments</td><td>report CRUD, preview (ad hoc run)</td><td>reports.list, categories.list, accounts.list, investments.instruments</td><td><code>?type=</code> is real URL state</td></tr>
+<tr><td><code>/rewards</code></td><td>earnings report and lines</td><td>accounts; conditional report and lines</td><td>—</td><td>accounts.list, rewards.report, rewards.lines</td><td>defaults from rewards.types.ts helpers</td></tr>
+<tr><td><code>/rewards/rules</code></td><td>rules, buckets, milestones, config</td><td>accounts, categories; conditional rules / buckets / config</td><td>CRUD and reorder</td><td>5 keys</td><td></td></tr>
+<tr><td><code>/rewards/recommend</code></td><td>Card Picker</td><td>categories, accounts</td><td>recommendation as a mutation</td><td>2 keys</td><td></td></tr>
+<tr><td><code>/settings</code></td><td>hub, theme, deletion</td><td>user</td><td>delete account (action)</td><td>settings.deletionSummary (client)</td><td></td></tr>
+<tr><td><code>/settings/gmail</code></td><td>connections, senders, attention</td><td>connections, senders, attention(10)</td><td>connect / disconnect, sender CRUD, retry, assign</td><td>settings.gmail*</td><td>rescan has no UI</td></tr>
+<tr><td><code>/settings/ingest</code></td><td>statement upload</td><td>accounts</td><td>multipart upload → job</td><td>accounts.list</td><td>direct browser → API</td></tr>
+<tr><td><code>/settings/jobs</code></td><td>job history</td><td>jobs(searchParams)</td><td>cancel, retry</td><td>jobs.list(params)</td><td>only URL-driven list</td></tr>
+<tr><td><code>/settings/llm-keys</code></td><td>BYOK and routing</td><td>keys, catalog, options, routing, health</td><td>key add / delete / reorder / test; routing update / reset</td><td>5 keys</td><td></td></tr>
+</table></div>
+<p>Non-page routes: <code>app/api/chat/route.ts</code> (SSE relay, <code>maxDuration 300</code>), <code>app/serwist/[path]/route.ts</code>, <code>app/manifest.ts</code>.</p>
+
+<h3 id="s07-state">State management map</h3>
+<div class="tw"><table>
+<tr><th>Kind</th><th>Where</th><th>Persistence</th><th>Notes</th></tr>
+<tr><td>Server state</td><td>TanStack cache under <code>keys.*</code></td><td>in memory; RSC-hydrated</td><td>Seeded keys must equal hook keys byte for byte; comments in several pages admit this is a manual contract</td></tr>
+<tr><td>Client UI state</td><td><code>useState</code>, <code>builderReducer</code> (reports), <code>PageActionBarContext</code></td><td>none</td><td>Filters, sort, page, selection lost on refresh</td></tr>
+<tr><td>URL state</td><td><code>?from=</code>, <code>?type=</code> (reports), jobs page/size/status/type, OAuth params</td><td>URL</td><td>Only jobs history is bookmarkable</td></tr>
+<tr><td>Persistent</td><td><code>FINANCEOS_SESSION</code> cookie (httpOnly, 1 year), <code>faro_session</code> cookie, next-themes localStorage</td><td>cookie / localStorage</td><td>No application <code>localStorage</code> use at all</td></tr>
+<tr><td>Derived</td><td><code>getAccountStatus</code>, <code>isCardholderClosed</code>, <code>isNavItemActive</code>, mobile nav context</td><td>—</td><td>Duplicates server derivations</td></tr>
+</table></div>
+<p><strong>Duplicated sources of truth</strong>: the accounts list is RSC-seeded and also re-fetched by <code>router.refresh()</code>; two transaction list hooks share one cache key (<code>useTransactionsBrowser</code> live, <code>useTransactionWorkspace</code> dead).</p>
+
+<h3 id="s07-perf">Performance notes</h3>
+<ul>
+<li>recharts (~390 KB chunk) is dynamically imported for reports (<span class="path">ReportDataView.tsx:27-47</span>) but statically imported on <code>/investments</code> via <code>HoldingCard → HoldingDetailDialog → PriceHistoryPanel</code>. <span class="c cg">Confirmed</span></li>
+<li>react-grid-layout is never code-split; every dashboard route pays for it.</li>
+<li>RSC fan-out is parallel everywhere (<code>Promise.all</code>): transactions 3 calls, dividends 4, llm-keys 5, most lists 1.</li>
+<li>After 30 s away, window focus refetches every mounted query at once.</li>
+<li>67% of <code>.tsx</code> files are client components; no bundle analyzer is configured.</li>
+</ul>
+
+<h3 id="s07-dead">Dead code and stale documentation</h3>
+<ul>
+<li><code>components/layout/AppShellNav.tsx</code> and the <code>needsReviewCount</code> nav path: zero importers.</li>
+<li><code>components/transactions/useTransactionWorkspace.ts</code>: zero importers; misleading twin of the live hook.</li>
+<li>Module-level dead components found by other analysts: <code>DeleteAccount.tsx</code>, <code>dialogs/InstrumentDialog.tsx</code>, <code>dialogs/DividendDialog.tsx</code>, most of <code>GmailSyncResultDetails.tsx</code>.</li>
+<li>README claims Next 14, <code>middleware.ts</code>, Node 18+, non-existent action files, "no client aggregation", and default credentials. All stale. <span class="c cg">Confirmed</span></li>
+<li><code>.husky/pre-commit</code> runs only <code>lint:fix</code>; typecheck, tests and build run only in CI.</li>
+</ul>
+<h3 id="s07-questions">Open questions</h3>
+<div class="qa"><b>Product</b> Was the live "Needs Review" badge shelved or lost? Should list filters become URL state like jobs?</div>
+<div class="qa"><b>Technical</b> Is the accounts <code>router.refresh()</code> vestigial? Is <code>useTransactionWorkspace</code> a future replacement or abandoned? Should <code>PriceHistoryPanel</code> be dynamically imported?</div>
+<div class="qa"><b>Data</b> Will the generated schema types ever replace the hand-authored <code>*.types.ts</code> files?</div>
+</section>
+<section class="sec" id="s51" data-part="IV · Client">
+<p class="eyebrow">Sections 51, 21, F and 17</p>
+<h2><span class="n">51</span>Trace-from-UI index and "explain this screen"</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Start from what you see and follow it into the code: component → hook or action → endpoint → controller → service → tables. Each screen lists its important numbers and where they come from. State ownership per screen is included so this also serves as the state-management map (§17): server state lives in TanStack keys, UI state in component <code>useState</code>, and nothing but the session cookie persists. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s51-dashboard">Home · /dashboard</h3>
+<div class="tw compact"><table>
+<tr><th>What you see</th><th>Component</th><th>Hook / data</th><th>API</th><th>Server</th><th>Tables</th></tr>
+<tr><td>Dashboard selector, widget grid</td><td><code>DashboardHome</code> → <code>DashboardSelector</code>, <code>DashboardView</code>, <code>DashboardGrid</code></td><td><code>keys.dashboards.list()</code> (RSC seeded)</td><td>GET /dashboards</td><td><code>DashboardService.list</code></td><td>dashboards</td></tr>
+<tr><td>Each KPI, chart, table widget</td><td><code>DashboardWidgetView</code></td><td><code>keys.dashboards.widget(id, params)</code> prefetched in parallel by <code>prefetchWidgetData</code></td><td>POST /reports/{id}/data</td><td><code>ReportDataService.runSaved</code> → executors</td><td>per datasource</td></tr>
+<tr><td>"No default dashboard" empty state</td><td><code>DashboardHome</code></td><td>list empty or 404</td><td></td><td></td><td></td></tr>
+</table></div>
+<p>There is no net-worth or summary number on this screen unless the user built a KPI widget. State: dashboard choice in component state.</p>
+
+<h3 id="s51-accounts">Accounts · /accounts</h3>
+<div class="tw compact"><table>
+<tr><th>What you see</th><th>Component</th><th>Hook</th><th>API</th><th>Server</th><th>Tables</th></tr>
+<tr><td>Four columns of tiles, closed accounts collapsed</td><td><code>AccountsView</code> → <code>AccountWrapper</code> → <code>BankAccountTile</code> / <code>CreditCardTile</code> / <code>BrokerTile</code> / <code>GenericAccountTile</code></td><td><code>useAccounts()</code> → <code>keys.accounts.list()</code></td><td>GET /accounts</td><td><code>AccountService.getAllAccounts</code> → <code>BalanceMath</code></td><td>accounts, *_details, statements, transactions, holdings + prices (broker)</td></tr>
+<tr><td>Balance and "anchored" badge</td><td>tiles</td><td><code>account.balance</code>, <code>balanceAnchored</code>, <code>anchorDate</code></td><td>same</td><td>anchor + post-anchor sum</td><td>statements, transactions</td></tr>
+<tr><td>Reconciliation gap ⚠ (bank)</td><td><code>BankAccountTile</code></td><td><code>reconciliationGap</code></td><td>same</td><td>(opening + all) − anchored, ≥ ₹0.01</td><td></td></tr>
+<tr><td>Utilization bar (card)</td><td><code>CreditCardTile</code></td><td>client: abs(balance)/creditLimit</td><td>same</td><td>—</td><td>account_credit_card_details</td></tr>
+<tr><td>Statements dialog: dues, days until due, history</td><td><code>StatementsDialog</code> → <code>CardCycleSummaryCard</code>, tables</td><td><code>keys.statements.*</code></td><td>GET /accounts/{id}/statements, /card-summary, /statements/{id}</td><td><code>StatementService</code>, <code>AccountService.getCardCycleSummary</code></td><td>statements, statement_credit_card_details, statement_transactions</td></tr>
+<tr><td>Cards dialog: cardholders and plastics</td><td><code>CardsDialog</code> → <code>CardholdersList</code>, forms</td><td>account.cardholders + mutations</td><td>/accounts/{a}/cardholders/**, PATCH /transactions/card</td><td><code>CardholderService</code>, <code>TransactionService.bulkReattributeCard</code></td><td>cardholders, cards, transactions</td></tr>
+<tr><td>Edit form: identifiers, ingest-from date, close, delete, Gmail cleanup</td><td><code>AccountFormWrapper</code> → <code>AccountForm</code> sections</td><td><code>useAccountFormMutations</code></td><td>PUT /accounts/{id}, /close, /reopen, DELETE, /identifiers, /gmail-cleanup*</td><td><code>AccountService</code>, <code>AccountIdentifierService</code>, <code>GmailController</code></td><td>accounts, account_identifiers, gmail_processed_messages</td></tr>
+</table></div>
+<p>State: dialogs in component state; refresh via <code>invalidateQueries</code> and <code>router.refresh()</code>.</p>
+
+<h3 id="s51-transactions">Transactions · /transactions and /transactions/review</h3>
+<div class="tw compact"><table>
+<tr><th>What you see</th><th>Component</th><th>Hook</th><th>API</th><th>Server</th><th>Tables</th></tr>
+<tr><td>Filter bar (accounts, categories, dates, flags), search</td><td><code>TransactionFilterBar</code></td><td><code>useTransactionsBrowser</code> (useState, 300 ms debounce)</td><td>POST /transactions/search</td><td><code>TransactionRepositoryCustomImpl</code> + <code>TransactionListQueryBuilder</code></td><td>transactions, accounts, categories</td></tr>
+<tr><td>Rows with signed amount, badges, running balance</td><td><code>TransactionCard</code> → <code>TransactionAmount</code>, <code>TransactionSourceBadge</code>, <code>ReviewReasonBadges</code>, <code>TransactionLinkBadges</code>, <code>TransactionCategoryBadges</code></td><td>page from search</td><td>same</td><td>signed CASE; window SUM over account history</td><td>transactions, account_bank_details.opening_balance</td></tr>
+<tr><td>"Needs review (N)" count</td><td>page header</td><td><code>keys.transactions.reviewCount()</code></td><td>POST /transactions/search (1 row)</td><td>same</td><td></td></tr>
+<tr><td>Create / edit dialog with category suggestion</td><td><code>TransactionCRUD</code> → crud sections</td><td><code>useTransactionCRUD</code>, <code>useCategorySuggestions</code></td><td>POST/PUT /transactions, POST /categorize</td><td><code>TransactionService</code>, <code>CategorizationService.suggestForDescription</code></td><td>transactions, transaction_categories, category_rules</td></tr>
+<tr><td>Link dialog</td><td><code>TransactionLinkDialog</code></td><td><code>useTransactionLink</code></td><td>POST /transaction-links, search for candidates</td><td><code>TransactionLinkService</code></td><td>transaction_links, members</td></tr>
+<tr><td>Review queue, approve selected, merge two</td><td><code>ReviewBrowser</code>, <code>ReviewBatchSummaryDialog</code>, <code>MergeTransactionsDialog</code></td><td><code>useReviewBrowser</code> (coveredByStatement default)</td><td>POST /batch-review, /batch-delete, /merge</td><td><code>TransactionService.batchReview</code>, <code>mergeTransactions</code>, <code>ReviewStatusManager</code></td><td>transactions, review_reasons, links, statement_transactions</td></tr>
+</table></div>
+
+<h3 id="s51-rules">Rules · /rules and /rules/categories</h3>
+<div class="tw compact"><table>
+<tr><th>What you see</th><th>Component</th><th>Hook</th><th>API</th><th>Server</th></tr>
+<tr><td>Rule cards with applied count, verified badge, Approve</td><td><code>RulesBrowser</code> → <code>RuleCard</code></td><td><code>useRulesBrowser</code>, <code>keys.rules.list(params)</code></td><td>GET /rules, POST /rules/{id}/verify</td><td><code>RulesController</code>, <code>CategorizationService.verifyRule</code></td></tr>
+<tr><td>Preview matches, apply</td><td><code>RuleMatchesDialog</code></td><td><code>useRuleMatches</code> (page 20), job polling</td><td>POST /rules/preview-matches, /rules/{id}/apply</td><td><code>RuleMatchService</code></td></tr>
+<tr><td>Category manager</td><td><code>CategoryManager</code></td><td><code>useCategories</code></td><td>/categories</td><td><code>CategoryService</code></td></tr>
+</table></div>
+
+<h3 id="s51-rewards">Rewards · /rewards, /rewards/rules, /rewards/recommend</h3>
+<div class="tw compact"><table>
+<tr><th>What you see</th><th>Component</th><th>Hook</th><th>API</th><th>Server</th></tr>
+<tr><td>Summary cards: basis spend, cashback, points, discounts, fees, gross and effective value, percentages</td><td><code>RewardsSummaryCards</code></td><td><code>useRewardReport</code></td><td>GET /rewards/report</td><td><code>RewardCalculationService.report</code> → <code>buildReport</code></td></tr>
+<tr><td>Rule breakdown grid with cap status</td><td><code>RuleBreakdownGrid</code></td><td>same</td><td>same</td><td>cap status at range end</td></tr>
+<tr><td>Milestone progress</td><td><code>MilestoneSections</code></td><td>same</td><td>same</td><td><code>evaluateMilestones</code></td></tr>
+<tr><td>Lines table with reason codes</td><td><code>RewardLinesTable</code>, <code>LineDetailDialog</code></td><td><code>useRewardLines</code> (page 25)</td><td>GET /rewards/lines</td><td><code>lines()</code> + in-memory slice</td></tr>
+<tr><td>Rule form with "test this rule"</td><td><code>RewardRuleForm</code> → <code>RuleTesterSection</code></td><td><code>useRewardRulePreview</code> (client JS math)</td><td>POST/PUT /reward-rules</td><td><code>RewardRuleService</code></td></tr>
+<tr><td>Card Picker results</td><td><code>SimulatorResults</code>, <code>RecommendationCardItem</code></td><td><code>useRecommendCards</code> (mutation)</td><td>POST /reward-recommendations</td><td><code>RewardRecommendationService</code></td></tr>
+</table></div>
+
+<h3 id="s51-investments">Investments · /investments/*</h3>
+<div class="tw compact"><table>
+<tr><th>What you see</th><th>Component</th><th>Hook</th><th>API</th><th>Server</th></tr>
+<tr><td>Holding cards: qty, avg cost, current value, unrealized, realized, XIRR, badges (at cost, merged into)</td><td><code>HoldingsView</code> → <code>HoldingCard</code>, <code>HoldingHeaderBadges</code>, <code>HoldingSummaryMetrics</code></td><td><code>keys.investments.positions()</code></td><td>GET /investments/positions</td><td><code>InvestmentService.getPositions</code> → <code>calculateHoldingPosition</code></td></tr>
+<tr><td>Filtered summary card</td><td><code>HoldingsTab</code></td><td>client re-sum of server figures</td><td>same</td><td>—</td></tr>
+<tr><td>Price history chart, manual price edit</td><td><code>PriceHistoryPanel</code> (recharts static)</td><td><code>keys.investments.priceHistory</code></td><td>GET /instruments/{id}/prices, POST /price, PUT/DELETE /prices/{id}</td><td><code>InstrumentService</code></td></tr>
+<tr><td>Tradebook rows, Record Trade, Import Wizard, Refresh Prices</td><td><code>TradebookSection</code>, <code>RecordTradeDialog</code>, <code>ImportWizardDialog</code>, <code>RefreshPricesButton</code></td><td><code>keys.investments.transactions(params)</code>, job polling</td><td>/investments/transactions, /imports/**, /prices/refresh</td><td><code>InvestmentService</code>, <code>ImportService</code>, <code>BrokerReconciliationService</code>, <code>PriceRefreshService</code></td></tr>
+<tr><td>Dividends table, FY summary strip, Detect Dividends</td><td><code>DividendsSection</code>, <code>DividendSuggestionsDialog</code></td><td>4 keys</td><td>/investments/dividends/**</td><td><code>DividendService</code></td></tr>
+<tr><td>Instruments table</td><td><code>InstrumentsView</code></td><td><code>keys.investments.instruments()</code> (client paging)</td><td>GET /instruments</td><td><code>InstrumentService</code></td></tr>
+<tr><td>Corporate actions list and dialog with share preview</td><td><code>CorporateActionsSection</code>, <code>CorporateActionsDialog</code></td><td>2 keys</td><td>/corporate-actions, /instruments/{i}/corporate-actions</td><td><code>CorporateActionService</code> (math lives in InvestmentService on read)</td></tr>
+<tr><td>F&amp;O rows, total realized, win rate</td><td><code>FnoView</code>, <code>FnoSummaryCards</code></td><td><code>keys.investments.fno()</code> (client paging, whole-list summary)</td><td>/investments/fno</td><td><code>FnoTradeService</code></td></tr>
+</table></div>
+
+<h3 id="s51-loans">Loans · /loans/*</h3>
+<div class="tw compact"><table>
+<tr><th>What you see</th><th>Component</th><th>Hook</th><th>API</th><th>Server</th></tr>
+<tr><td>Summary cards (total outstanding, monthly EMI)</td><td><code>LoansBrowser</code></td><td><code>keys.loans.summary()</code>; monthly EMI summed client-side over the current page</td><td>GET /loans/summary, /loans</td><td><code>LoanController.getLoansSummary</code></td></tr>
+<tr><td>Hero: nominal vs effective APR, outstanding, interest paid and remaining, progress</td><td><code>LoanHeroHeader</code></td><td><code>keys.loans.byId(id)</code></td><td>GET /loans/{id}</td><td><code>LoanScheduleService.compute</code></td></tr>
+<tr><td>Amortization table grouped by FY (client April boundary)</td><td><code>LoanAmortizationSchedule</code></td><td><code>keys.loans.schedule(id)</code></td><td>GET /loans/{id}/schedule</td><td>same</td></tr>
+<tr><td>Match suggestions banner, Confirm / Confirm All</td><td><code>LoanMatchSuggestionsBanner</code></td><td><code>useLoanMatchActions</code> (enabled: false)</td><td>GET /match-suggestions, POST /payments[/batch]</td><td><code>LoanService.getMatchSuggestions</code>, <code>addPaymentsBatch</code></td></tr>
+<tr><td>Events and charges</td><td><code>LoanEventsAndCharges</code>, <code>RecordEventDialog</code></td><td>mutations</td><td>/events, /charges</td><td><code>LoanService.addEvent</code></td></tr>
+<tr><td>Calendar: overdue and month groups</td><td><code>CalendarView</code></td><td><code>keys.lendings.obligations(months)</code></td><td>GET /obligations/upcoming</td><td><code>ObligationsController</code></td></tr>
+<tr><td>Counterparty ledger with running balance</td><td><code>CounterpartyDetail</code> → <code>CounterpartyLedgerTable</code></td><td><code>useCounterpartyDetail</code> (running balance computed client-side)</td><td>GET /lendings, /counterparties</td><td><code>LendingService</code></td></tr>
+</table></div>
+
+<h3 id="s51-reports">Reports and dashboards editor · /reports/*, /dashboards/*</h3>
+<div class="tw compact"><table>
+<tr><th>What you see</th><th>Component</th><th>Hook / state</th><th>API</th><th>Server</th></tr>
+<tr><td>Builder: datasource, type tabs, filters, config, preview</td><td><code>ReportBuilder</code> → <code>ReportConfigurator</code>, <code>FilterEditor</code>, <code>PreviewPane</code></td><td><code>builderReducer</code> (95 % covered), <code>serialize.ts</code>, catalog from <code>keys.reports.catalog</code></td><td>GET /report/datasource, POST /reports/data</td><td><code>ReportDatasourceController</code>, <code>ReportDataService.runAdHoc</code></td></tr>
+<tr><td>KPI value and change %, chart series, table rows, pivot cells</td><td><code>KpiView</code>, <code>ChartView</code> (dynamic), <code>TableView</code>, <code>PivotTableView</code></td><td>server-computed <code>ReportData</code></td><td>same</td><td>executors</td></tr>
+<tr><td>Dashboard editor grid, add widget, save</td><td><code>DashboardEditor</code>, <code>DashboardGrid</code>, <code>AddWidgetDialog</code></td><td><code>useDashboardEditor</code> (dirty signature)</td><td>PUT /dashboards/{id}</td><td><code>DashboardService.update</code></td></tr>
+</table></div>
+
+<h3 id="s51-chat">Chat · /chat</h3>
+<div class="tw compact"><table>
+<tr><th>What you see</th><th>Component</th><th>State</th><th>API</th><th>Server</th></tr>
+<tr><td>Messages, live status, trace panel, blocks (stat cards, charts, tables, follow-ups, report drafts), clarify chips</td><td><code>Composer</code>, message list, <code>TracePanel</code>, <code>ChatStatCards</code>, <code>ChatChartCard</code>, <code>ChatDataTable</code>, <code>FollowUpChips</code>, <code>ChatReportDraftCard</code></td><td><code>useChatStream</code> React state only</td><td>POST /api/chat (Next) → POST /api/v1/chat/stream</td><td><code>ChatController</code> → <code>ChatOrchestrator</code> → tools, <code>ChatSqlExecutor</code> as CHAT_RO</td></tr>
+</table></div>
+
+<h3 id="s51-settings">Settings · /settings/*</h3>
+<div class="tw compact"><table>
+<tr><th>What you see</th><th>Component</th><th>API</th><th>Server</th></tr>
+<tr><td>Gmail connections (last sync), senders, attention queue with Retry and Assign</td><td><code>GmailConnect</code> → cards, <code>AssignAccountDialog</code></td><td>/gmail/**</td><td><code>GmailController</code>, <code>GmailOAuthService</code>, <code>SenderAllowlistService</code>, <code>AccountIdentifierService</code></td></tr>
+<tr><td>Statement upload dropzone, queued files, job results with per-file status and duplicates</td><td><code>IngestForm</code>, <code>FileDropzone</code>, <code>JobsPanel</code>, <code>IngestionResultDetails</code></td><td>POST /accounts/{a}/ingest, GET /jobs</td><td><code>FileUploadController</code>, <code>FileIngestionService</code></td></tr>
+<tr><td>Jobs history with URL filters, cancel, retry</td><td><code>JobsHistoryTable</code>, <code>JobRowActions</code></td><td>/jobs/**</td><td><code>JobService</code></td></tr>
+<tr><td>LLM keys per provider, test, routing order per group, health</td><td><code>LlmKeysManager</code>, <code>ProviderKeysCard</code>, <code>RoutingGroupCard</code></td><td>/llm-keys/**, /llm/**</td><td><code>LlmKeyService</code>, <code>LlmRoutingService</code></td></tr>
+<tr><td>Theme, delete account with typed DELETE and password</td><td><code>ThemeSettingsCard</code>, <code>DeleteAccountCard</code></td><td>/auth/me/deletion-summary, /auth/me/delete</td><td><code>AccountDeletionService</code></td></tr>
+</table></div>
+
+<h3 id="s17-state">State ownership summary (§17)</h3>
+<div class="tw compact"><table>
+<tr><th>State</th><th>Source</th><th>Owner</th><th>Consumers</th><th>Update</th><th>Persistence</th><th>Invalidation</th></tr>
+<tr><td>Every server list and detail</td><td>API</td><td>TanStack cache per <code>keys.*</code></td><td>Client components</td><td>Mutations → <code>invalidateQueries</code></td><td>Memory (hydrated per page)</td><td>staleTime 30 s; window focus; explicit</td></tr>
+<tr><td>Filters, sort, page, selection</td><td>User</td><td>Component <code>useState</code> (hooks like <code>useTransactionsBrowser</code>)</td><td>Same component tree</td><td>setState</td><td>None (jobs page: URL)</td><td>—</td></tr>
+<tr><td>Report draft</td><td>User</td><td><code>builderReducer</code></td><td>Builder</td><td>dispatch</td><td>None until save</td><td>—</td></tr>
+<tr><td>Dialog open, running guards</td><td>User</td><td>Component state</td><td>Dialog</td><td></td><td>None</td><td></td></tr>
+<tr><td>Chat transcript</td><td>User + SSE</td><td><code>useChatStream</code></td><td>Chat page</td><td>SSE events</td><td>None</td><td>New Chat clears</td></tr>
+<tr><td>Session</td><td>API</td><td>Cookie</td><td>proxy, RSC, browser</td><td>Login, logout</td><td>Cookie 365 d</td><td>401 event</td></tr>
+<tr><td>Theme</td><td>User</td><td>next-themes</td><td>ThemeProvider</td><td></td><td>localStorage</td><td></td></tr>
+<tr><td>Telemetry session</td><td>Faro</td><td><code>faro_session</code> cookie</td><td>proxy → x-session-id</td><td>On focus</td><td>Cookie</td><td></td></tr>
+<tr><td>Job progress</td><td>API</td><td>TanStack + <code>jobsBus</code></td><td>JobsPanel, callers</td><td>Polling 1.5 / 4 / 30 s</td><td>None</td><td>Terminal status</td></tr>
+</table></div>
+</section>
+<nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/data.html"><small>Previous</small>Data</a><a class="next" href="/handbook/server-api.html"><small>Next</small>Server and API</a></nav>
+  </main>
+</div>
+</div>
+<script src="/handbook/handbook.js" defer></script>
+</body>
+</html>

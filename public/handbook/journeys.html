@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="FinanceOS system and product reference, reverse-engineered from the code. Journeys and flows.">
+<title>FinanceOS Handbook · Journeys and flows</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/handbook/handbook.css">
+</head>
+<body data-page="journeys.html">
+<div class="shell">
+<aside class="side" id="side">
+  <div class="side-head">
+    <div class="brand">FinanceOS Handbook <small>v1</small></div>
+    <div class="brand-sub">System &amp; product reference, reverse-engineered from code · 2026-09-06</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search sections and text…" autocomplete="off" aria-label="Search">
+      <kbd>/</kbd>
+    </div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="side-foot">
+    <button id="expandAll" type="button">Expand all</button>
+    <button id="collapseAll" type="button">Collapse all</button>
+    <span style="margin-left:auto">Source of truth: code</span>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="burger" id="burger" type="button" aria-label="Open navigation">☰ Sections</button>
+    <div class="crumb" id="crumb"><b>FinanceOS Handbook</b></div>
+    <button id="toTop" type="button">↑ Top</button>
+  </div>
+  <div class="results" id="results" aria-live="polite">
+    <button class="close" id="closeResults" type="button">Close ✕</button>
+    <h3 id="resultsTitle"></h3>
+    <div id="resultsList"></div>
+  </div>
+  <main class="content" id="content">
+<section class="sec" id="s11" data-part="VII · Journeys &amp; flows">
+<p class="eyebrow">Sections 11 and 54</p>
+<h2><span class="n">11</span>End-to-end user journeys and critical paths</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>The workflows that explain most of the system, each with its sequence, the code involved and failure points. The seven critical paths at the end are the ones whose failure produces wrong financial information or blocks the product. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s11-login">Journey 1: Open the app and reach the dashboard</h3>
+<pre class="mermaid">sequenceDiagram
+  participant B as Browser
+  participant P as proxy.ts
+  participant L as (protected)/layout.tsx
+  participant API as Spring API
+  participant DB as Oracle
+  B->>P: GET /dashboard (cookie?)
+  alt no cookie
+    P-->>B: 302 /login?from=/dashboard
+    B->>API: POST /auth/login via server action (raw fetch)
+    API->>DB: SPRING_SESSION insert
+    API-->>B: Set-Cookie (relayed and re-minted on client origin)
+  end
+  P->>L: stamp x-request-id, x-session-id
+  L->>API: GET /auth/me (cookie copied)
+  API-->>L: user or 401 → redirect /login
+  L->>API: GET /dashboards, POST /reports/{id}/data × widgets (parallel)
+  L-->>B: RSC HTML + dehydrated TanStack cache
+  B->>B: hydrate, no refetch within 30 s</pre>
+<p>Failure points: invalid cookie (one extra hop), API down (error.tsx, not login), widget report broken (only that widget shows unavailable). Code: <span class="path">proxy.ts</span>, <span class="path">lib/auth.ts</span>, <span class="path">actions/auth.ts</span>, <span class="path">AuthService</span>, <span class="path">dashboard/page.tsx</span>, <span class="path">lib/dashboards.server.ts</span>.</p>
+
+<h3 id="s11-manual">Journey 2: Record a manual transaction</h3>
+<ol class="trace">
+<li><span class="lyr">intent</span>Log a cash expense on a bank account with a category</li>
+<li><span class="lyr">UI</span>/transactions → New → <code>TransactionCRUD</code> (signed amount input, account, optional card, categories, flags, reward details); on description blur <code>useCategorySuggestions</code> calls <span class="m m-post">POST</span> <code>/categorize</code></li>
+<li><span class="lyr">client</span><code>useTransactionCRUD.handleSubmit</code> → <code>buildTransactionRequest</code> → <code>api.POST('/api/v1/transactions')</code></li>
+<li><span class="lyr">server</span><code>TransactionService.createTransaction</code>: non-zero, account owned, card belongs to account, sign → type + abs, source manual, review NA, categories resolved, save, <code>AuditLogger CREATE</code></li>
+<li><span class="lyr">DB</span>insert transactions (+ transaction_categories)</li>
+<li><span class="lyr">response</span><code>TransactionResponse</code> re-signed</li>
+<li><span class="lyr">UI</span>invalidate <code>transactions.all</code> and <code>accounts.all</code>; list refetches with new running balances</li>
+<li><span class="lyr">failure</span>Zero amount → 400 toast; foreign account → 400 with a security log; double click guarded by <code>isSubmitting</code> only</li>
+</ol>
+
+<h3 id="s11-gmail">Journey 3: Gmail alert to reviewed transaction</h3>
+<pre class="mermaid">sequenceDiagram
+  participant Cron as IngestionScheduler
+  participant Q as JobService/JobWorker
+  participant H as GmailSyncJobHandler
+  participant S as GmailIngestionService
+  participant G as Gmail API
+  participant LLM as FailoverLlmClient
+  participant DB as Oracle
+  participant U as User
+  Cron->>Q: enqueue GMAIL_SYNC (dedup connectionId)
+  Q->>H: claim + run as user
+  H->>S: syncConnection
+  S->>G: list new ids → DISCOVERED
+  S->>G: get message
+  S->>LLM: email-extract
+  S->>DB: transaction NEEDS_REVIEW + ledger CREATED
+  S->>LLM: categorize batch → categories + CATEGORY_UNVERIFIED
+  U->>U: /transactions/review: approve reasons
+  U->>DB: batch-review → MANUALLY_REVIEWED, rule verified</pre>
+<p>Failure points: LLM chain exhausted (retry ladder), ambiguous last4 (attention), not opted in (attention), watermark (skipped), token revoked (silent per-message failures), Gmail 429 (aborts discovery for the run). Code: <span class="path">gmail/ingest/*</span>, <span class="path">domain/job/*</span>, <span class="path">domain/categorization/*</span>, <span class="path">components/transactions/review-browser/*</span>.</p>
+
+<h3 id="s11-statement">Journey 4: Upload a statement</h3>
+<ol class="trace">
+<li><span class="lyr">UI</span>/settings/ingest: pick a bank or card account, drop PDFs (≤25 MB client cap), submit</li>
+<li><span class="lyr">client</span>Browser multipart <span class="m m-post">POST</span> <code>/accounts/{id}/ingest</code> via the rewrite (no server action) → 202 {jobId}; <code>emitJobStarted</code>; poll every 1.5 s</li>
+<li><span class="lyr">server</span><code>FileUploadController</code> stages bytes as <code>job_artifacts</code>, enqueues STATEMENT_INGEST, pokes the worker</li>
+<li><span class="lyr">job</span><code>FileIngestionService.ingest</code>: per file parse (password from account) → dedup statement → build rows → dedup transactions (same day, exact, Jaccard ≥ 0.70 → flag) → categorize outside a transaction → save in one write transaction</li>
+<li><span class="lyr">result</span>Job SUCCEEDED with per-file status, created and duplicate counts (details capped at 50)</li>
+<li><span class="lyr">UI</span><code>IngestionResultDetails</code> renders; <code>transactions.all</code> invalidated</li>
+<li><span class="lyr">failure</span>Wrong password → that file FAILED; exception in the batch phase → whole job FAILED and nothing saved; verdict REJECTED still ingests</li>
+</ol>
+
+<h3 id="s11-rewards">Journey 5: Configure a card's rewards and check what it earned</h3>
+<ol class="trace">
+<li><span class="lyr">UI</span>/rewards/rules: pick the account, add rules (match, earn, limits sections), buckets, milestones; reorder; set anniversary in the account form and point value in config</li>
+<li><span class="lyr">server</span><code>RewardRuleService.create</code> validates predicates, tiers, caps, bucket type; saves; <code>keys.rewards.all</code> invalidated</li>
+<li><span class="lyr">UI</span>/rewards: pick account and range → <code>useRewardReport</code> and <code>useRewardLines</code></li>
+<li><span class="lyr">server</span><code>RewardCalculationService.report</code>: window expansion, fetch, evaluate every transaction, aggregate</li>
+<li><span class="lyr">UI</span>Summary cards, rule breakdown with cap status, milestone progress, lines with reasons</li>
+<li><span class="lyr">decision</span>/rewards/recommend: enter a hypothetical spend → ranked cards with guaranteed and milestone value</li>
+<li><span class="lyr">failure</span>Range too large for milestones → 400; broken tier JSON → rule skipped silently; no statements → cycle fallback flag</li>
+</ol>
+
+<h3 id="s11-invest">Journey 6: Import a broker year and see positions</h3>
+<ol class="trace">
+<li><span class="lyr">UI</span>/investments/tradebook → Import Wizard → mode reconcile_zerodha, broker account, tradebook CSVs + tax P&amp;L XLSX</li>
+<li><span class="lyr">preview</span><span class="m m-post">POST</span> <code>/imports/reconcile/preview</code> (sync): dedup executions, classify intraday per day, split rows, delivery FIFO, warnings, derived holdings, unmatched instruments</li>
+<li><span class="lyr">review</span>Step 2: resolve instruments (or Create new), uncheck rows</li>
+<li><span class="lyr">commit</span><span class="m m-post">POST</span> <code>/reconcile/commit</code> → 202 job → writes trades (source import, charges verbatim), classifications (insert-if-absent), F&amp;O trades; price refresh event</li>
+<li><span class="lyr">UI</span>Step 3 counts; invalidate <code>investments.all</code> and <code>accounts.all</code>; /investments recomputes positions by FIFO with classifications</li>
+<li><span class="lyr">later</span>19:00 IST price refresh updates values; corporate actions recorded manually replay on read</li>
+<li><span class="lyr">failure</span>Missing tax P&amp;L → everything delivery; duplicate commit → service dedup (race possible); corrected classifications cannot overwrite</li>
+</ol>
+
+<h3 id="s11-loan">Journey 7: Track a loan</h3>
+<p>/loans → New (terms) → schedule computed to validate → /loans/[id] shows hero and schedule → record events (rate change, prepayment) → Find Matches → Confirm → payments recorded → calendar shows upcoming EMIs → tax report via reports datasource. Failure points: non-amortizing EMI (400), prepayment ≥ outstanding (400), payment without seq retried (settles the next installment). Code: <span class="path">domain/loan/*</span>, <span class="path">app/(protected)/loans/**</span>.</p>
+
+<h3 id="s11-chat">Journey 8: Ask a question and save a report from the answer</h3>
+<p>/chat → question → SSE status and trace events → answer with blocks → a report draft card previews via <code>runAdHocReport</code> → user clicks Save → <code>createReport</code> action → report appears in /reports. Failure points: quota 30/day, 2 concurrent, no keys, deadline. Code: <span class="path">chat/**</span>, <span class="path">app/api/chat/route.ts</span>, <span class="path">app/(protected)/chat/**</span>.</p>
+
+<h3 id="s11-delete">Journey 9: Delete the account</h3>
+<p>/settings → type DELETE and password → limiter → re-auth → drain jobs (5 s) → revoke Google tokens → delete user with dictionary verification → destroy sessions → /login?deleted=1. See <a href="/handbook/server-api.html#s15-deletion">§15</a>.</p>
+
+<h3 id="s54-critical">Critical paths (§54)</h3>
+<div class="tw"><table>
+<tr><th>#</th><th>Path</th><th>Components and services</th><th>APIs</th><th>Tables</th><th>External</th><th>Failure points</th><th>Why critical</th></tr>
+<tr><td>P1</td><td>Login → dashboard</td><td>proxy, requireAuth, SecurityConfig, AuthService, DashboardService, ReportDataService</td><td>/auth/login, /auth/me, /dashboards, /reports/{id}/data</td><td>users, SPRING_SESSION, dashboards, reports</td><td>Google (SSO)</td><td>Cookie relay, session cap, OAuth state</td><td>Blocks everything</td></tr>
+<tr><td>P2</td><td>Gmail email → transaction → categorization → review</td><td>IngestionScheduler, JobWorker, GmailIngestionService, GeminiExtractor, AccountResolver, GmailTransactionWriter, CategorizationService, ReviewStatusManager</td><td>/gmail/*, /transactions/search, /batch-review</td><td>gmail_*, transactions, categories, category_rules</td><td>Gmail, LLMs</td><td>Quota, ambiguity, watermark, token revoke</td><td>Primary data entry path</td></tr>
+<tr><td>P3</td><td>Statement → reconciliation → balance anchor</td><td>StatementParseEngine, StatementReconciliationService / FileIngestionService, BalanceMath</td><td>/accounts/{id}/ingest, /accounts</td><td>statements, statement_transactions, transactions</td><td>Gmail</td><td>Sign oracle, dedup skips new lines, advisory verdict</td><td>Balances and reward cycles depend on it</td></tr>
+<tr><td>P4</td><td>Transactions + rules → reward report and Card Picker</td><td>RewardCalculationService, RewardRecommendationService</td><td>/rewards/report, /lines, /reward-recommendations</td><td>transactions, links, statements, reward_*</td><td>—</td><td>Duplicate rules, tier JSON, point defaults</td><td>Money decisions at checkout</td></tr>
+<tr><td>P5</td><td>Trades + classifications + CAs + prices → positions → broker balance</td><td>InvestmentService, HoldingValuationService, PriceRefreshService, CorporateActionService</td><td>/investments/*, /instruments/*</td><td>investment_transactions, classifications, corporate_actions, instrument_prices, holdings</td><td>Yahoo, AMFI</td><td>Untested XIRR, duplicate CA, stale price, over-sold</td><td>Wealth figures</td></tr>
+<tr><td>P6</td><td>Loan terms → schedule → outstanding, APR, calendar</td><td>LoanScheduleService, LoanService, ObligationsController</td><td>/loans/*, /obligations/upcoming</td><td>loans, loan_*</td><td>—</td><td>Event boundary rule, month clamp, unreconciled payments</td><td>Debt figures</td></tr>
+<tr><td>P7</td><td>Ledger → report / chat answer</td><td>ReportDataService, executors, ChatOrchestrator, ChatSqlExecutor</td><td>/reports/data, /chat/stream</td><td>all</td><td>LLMs</td><td>Category fan-out, stale source list, KPI NPE, quota</td><td>Insight the user acts on</td></tr>
+<tr><td>P8</td><td>Job queue</td><td>JobService, JobWorker, JobJanitor</td><td>/jobs/*</td><td>jobs, job_artifacts</td><td>—</td><td>Two threads, cooperative cancel, unguarded terminal writes</td><td>Every async path</td></tr>
+</table></div>
+</section>
+<nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/rules.html"><small>Previous</small>Rules, decisions and scenarios</a><a class="next" href="/handbook/quality-risk.html"><small>Next</small>Quality and risk</a></nav>
+  </main>
+</div>
+</div>
+<script src="/handbook/handbook.js" defer></script>
+</body>
+</html>
