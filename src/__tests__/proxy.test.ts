@@ -29,4 +29,13 @@ describe('proxy', () => {
 
     expect(response.headers.get('location')).toBeNull();
   });
+
+  it.each(['/handbook', '/handbook/index.html', '/handbook/handbook.css'])(
+    'serves the public system reference at %s without a session',
+    (pathname) => {
+      const response = proxy(requestWithoutSession(pathname));
+
+      expect(response.headers.get('location')).toBeNull();
+    }
+  );
 });
