@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="FinanceOS system and product reference, reverse-engineered from the code. Learning.">
+<title>FinanceOS Handbook · Learning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/handbook/handbook.css">
+</head>
+<body data-page="learning.html">
+<div class="shell">
+<aside class="side" id="side">
+  <div class="side-head">
+    <div class="brand">FinanceOS Handbook <small>v1</small></div>
+    <div class="brand-sub">System &amp; product reference, reverse-engineered from code · 2026-09-06</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search sections and text…" autocomplete="off" aria-label="Search">
+      <kbd>/</kbd>
+    </div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="side-foot">
+    <button id="expandAll" type="button">Expand all</button>
+    <button id="collapseAll" type="button">Collapse all</button>
+    <span style="margin-left:auto">Source of truth: code</span>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="burger" id="burger" type="button" aria-label="Open navigation">☰ Sections</button>
+    <div class="crumb" id="crumb"><b>FinanceOS Handbook</b></div>
+    <button id="toTop" type="button">↑ Top</button>
+  </div>
+  <div class="results" id="results" aria-live="polite">
+    <button class="close" id="closeResults" type="button">Close ✕</button>
+    <h3 id="resultsTitle"></h3>
+    <div id="resultsList"></div>
+  </div>
+  <main class="content" id="content">
+<section class="sec" id="s29" data-part="X · Learning">
+<p class="eyebrow">Sections 29 and 68</p>
+<h2><span class="n">29</span>Onboarding and learning order</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>A path through the codebase for someone who has to own it. Read in this order and each step makes the next one shorter. The whole path takes about a working week for a developer familiar with Spring and Next.js; the product-owner path (steps 1, 2, 5, 8) takes an afternoon. <span class="c cg">Confirmed</span> file paths.</p></div>
+
+<h3 id="s29-start">Start here</h3>
+<ol class="trace">
+<li><span class="lyr">read</span><a href="/handbook/index.html#s01">§1 Executive overview</a> and <a href="/handbook/index.html#s01-five">FinanceOS in 5 minutes</a></li>
+<li><span class="lyr">read</span><a href="/handbook/index.html#s05">§5 Product architecture</a> for the concept vocabulary, then <a href="#s30">§30 Glossary</a> when a word is unfamiliar</li>
+<li><span class="lyr">run</span>Local setup: Docker Oracle Free, <code>server/.env</code>, <code>./mvnw spring-boot:run</code> on 6969, <code>npm run dev</code> on 3000 with Node 20; log in as the seeded admin or sign up with the invite code</li>
+<li><span class="lyr">trace</span>Follow <a href="/handbook/client.html#s51">§51 trace from UI</a> for the transactions list, then <a href="/handbook/journeys.html#s11-manual">Journey 2</a> and create one transaction while watching the server log</li>
+<li><span class="lyr">read</span><a href="/handbook/data.html#s06">§6 Database</a> ER diagrams; open <code>V1</code>, <code>V26</code>, <code>V51</code>, <code>V82</code> to see how the schema grew</li>
+<li><span class="lyr">read</span><a href="/handbook/server-api.html#s08">§8 Server</a> then <a href="/handbook/server-api.html#s15">§15 Auth</a>; open <code>HibernateFilterAspect</code> and one <code>@Filter</code> entity</li>
+<li><span class="lyr">read</span><a href="/handbook/client.html#s07">§7 Client</a>; open <code>proxy.ts</code>, <code>lib/auth.ts</code>, one <code>*.server.ts</code> prefetch and its hook</li>
+<li><span class="lyr">read</span><a href="/handbook/calculations.html#s10">§10 Calculations</a> for the five formulas; open <code>BalanceMath</code> and <code>RewardCalculationService.evaluate</code></li>
+<li><span class="lyr">read</span><a href="/handbook/server-api.html#s14">§14 Jobs</a> and <a href="/handbook/modules-a.html#m-gmail">M3 Gmail</a>; run a sync locally with WireMock from the E2E fixtures if you have no Gmail credentials</li>
+<li><span class="lyr">read</span><a href="/handbook/rules.html#s45">§45 Contradictions</a> and <a href="/handbook/quality-risk.html#s67-matrix">§67 Priority matrix</a> before changing anything</li>
+</ol>
+
+<h3 id="s29-files">The 25 files that explain the system</h3>
+<div class="tw compact"><table>
+<tr><th>File</th><th>Why</th></tr>
+<tr><td><span class="path">server/.../core/security/SecurityConfig.java</span></td><td>Session, CORS, cookie, session cap</td></tr>
+<tr><td><span class="path">server/.../core/tenancy/HibernateFilterAspect.java</span></td><td>Tenancy in one place</td></tr>
+<tr><td><span class="path">server/.../domain/transaction/Transaction.java</span></td><td>The central entity: type, source, review, flags, links</td></tr>
+<tr><td><span class="path">server/.../domain/transaction/TransactionService.java</span></td><td>CRUD, merge, batch review, reattribute</td></tr>
+<tr><td><span class="path">server/.../domain/transaction/ReviewStatusManager.java</span></td><td>Review state machine</td></tr>
+<tr><td><span class="path">server/.../domain/categorization/CategorizationService.java</span></td><td>Rules, precedence, LLM fallback</td></tr>
+<tr><td><span class="path">server/.../domain/account/BalanceMath.java</span></td><td>Anchor balance</td></tr>
+<tr><td><span class="path">server/.../gmail/ingest/GmailIngestionService.java</span></td><td>Sync orchestration</td></tr>
+<tr><td><span class="path">server/.../gmail/ingest/AccountResolver.java</span></td><td>last4/alias passes</td></tr>
+<tr><td><span class="path">server/.../statement/StatementParseEngine.java</span></td><td>Heuristic parser and verdicts</td></tr>
+<tr><td><span class="path">server/.../statement/StatementReconciliationService.java</span></td><td>Alert vs statement match</td></tr>
+<tr><td><span class="path">server/.../domain/job/JobWorker.java</span></td><td>Claim loop</td></tr>
+<tr><td><span class="path">server/.../domain/reward/RewardCalculationService.java</span></td><td>The reward engine</td></tr>
+<tr><td><span class="path">server/.../domain/investment/HoldingCalculator.java</span></td><td>FIFO, CAs</td></tr>
+<tr><td><span class="path">server/.../domain/investment/BrokerReconciliationService.java</span></td><td>Two-source import</td></tr>
+<tr><td><span class="path">server/.../domain/loan/LoanScheduleService.java</span></td><td>EMI math</td></tr>
+<tr><td><span class="path">server/.../domain/report/TransactionQueryBuilder.java</span></td><td>Report SQL (and the fan-out)</td></tr>
+<tr><td><span class="path">server/.../llm/FailoverLlmClient.java</span></td><td>Provider chain</td></tr>
+<tr><td><span class="path">server/.../chat/ChatOrchestrator.java</span> + <span class="path">ChatSqlValidator.java</span></td><td>ReAct loop and SQL guard</td></tr>
+<tr><td><span class="path">server/src/main/resources/application.yml</span></td><td>All knobs</td></tr>
+<tr><td><span class="path">server/src/main/resources/db/migration/V82__*.sql</span></td><td>The card model as it is now</td></tr>
+<tr><td><span class="path">client/proxy.ts</span> + <span class="path">lib/auth.ts</span></td><td>Client auth gate</td></tr>
+<tr><td><span class="path">client/lib/api/client.ts</span> + <span class="path">keys.ts</span></td><td>Typed fetch and cache keys</td></tr>
+<tr><td><span class="path">client/components/nav/navItems.tsx</span></td><td>Information architecture</td></tr>
+<tr><td><span class="path">client/e2e/**</span> and <span class="path">server/.../e2e/*</span></td><td>How the system is proven</td></tr>
+</table></div>
+
+<h3 id="s68-order">Learning order by role (§68)</h3>
+<div class="tw compact"><table>
+<tr><th>Role</th><th>Order</th><th>Time</th></tr>
+<tr><td>Product owner</td><td>§1 → §5 → §11 journeys → §18 decisions → §47 gaps → §64 trust → §31 questions</td><td>Half a day</td></tr>
+<tr><td>Backend developer</td><td>§1 → §8 → §15 → §6 → §10 → §14 → module pages M1–M10 → §41/§43 → §67</td><td>2–3 days</td></tr>
+<tr><td>Frontend developer</td><td>§1 → §7 → §51 → §9 API map → §17 state → §22 conventions</td><td>1 day</td></tr>
+<tr><td>Operator</td><td>§2 → §27 → §26 → §57 → §16 playbook → §23</td><td>Half a day</td></tr>
+<tr><td>Reviewer / auditor</td><td>§45 → §46 → §23 → §25 → §37 invariants → §64</td><td>1 day</td></tr>
+</table></div>
+
+<h3 id="s29-gotchas">Gotchas for newcomers</h3>
+<ul>
+<li>Mockito tests never boot Spring or Flyway. Always boot the server after schema or config changes.</li>
+<li>Client tests need Node 20; the default Node 18 crashes vitest.</li>
+<li>Amounts are positive in the DB with a <code>type</code>; the API re-signs them. Do not add signs in SQL without checking the three existing CASE expressions.</li>
+<li>Each sub-repository has its own git; use <code>git -C</code> when diffing.</li>
+<li>A new entity is not tenant-safe until it has <code>@Filter(name="userFilter")</code>.</li>
+<li>Migrations must be idempotent PL/SQL and must not use parallel DML on ADB.</li>
+<li>Regenerate <code>schema.d.ts</code> after any DTO change or CI fails on drift.</li>
+<li>Radix <code>asChild</code> triggers drop streamed RSC children; use children plus <code>triggerClassName</code>.</li>
+<li>The READMEs describe an older architecture; trust this handbook and the code.</li>
+</ul>
+</section>
+<section class="sec" id="s30" data-part="X · Learning">
+<p class="eyebrow">Sections 30 and 66</p>
+<h2><span class="n">30</span>Glossary and code-vs-product vocabulary</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Domain terms as FinanceOS uses them, with the code name beside the product name. Where the two differ the code name is authoritative for searching and the product name for talking to users. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s30-terms">Glossary</h3>
+<div class="tw"><table>
+<tr><th>Term</th><th>Meaning in FinanceOS</th><th>Code</th></tr>
+<tr><td>Account</td><td>A bank account, credit card line, broker account, or generic pot owned by a user</td><td><code>Account</code>, <code>accounts</code>; <code>type</code> BANK / CREDIT_CARD / BROKER / OTHER</td></tr>
+<tr><td>Cardholder</td><td>A person on a credit-card account (primary or add-on); owns plastic cards</td><td><code>Cardholder</code>, <code>cardholders</code> (V82)</td></tr>
+<tr><td>Card</td><td>A physical or virtual plastic with a last4, belonging to a cardholder; reissue creates a new card</td><td><code>Card</code>, <code>cards</code>; status ACTIVE / CLOSED</td></tr>
+<tr><td>Identifier / alias</td><td>A string (last4 or bank alias) that maps emails to an account</td><td><code>account_identifiers</code> (V85)</td></tr>
+<tr><td>Transaction</td><td>One money movement on an account; positive amount plus a type</td><td><code>Transaction</code>; type DEBIT / CREDIT</td></tr>
+<tr><td>Source</td><td>How a transaction entered</td><td><code>TransactionSource</code>: manual, gmail_transaction_alert, gmail_statement, file_upload</td></tr>
+<tr><td>Review status</td><td>Trust state of a transaction</td><td>NEEDS_REVIEW, AUTO_REVIEWED, MANUALLY_REVIEWED, NA</td></tr>
+<tr><td>Review reason</td><td>Why it needs review</td><td>UNRECONCILED, CATEGORY_UNVERIFIED, DUPLICATE_SUSPECT</td></tr>
+<tr><td>Excluded</td><td>Flag meant to remove a row from reporting</td><td><code>is_excluded</code> (honoured by rewards only)</td></tr>
+<tr><td>Link</td><td>Relationship between two transactions (refund, CC payment, transfer, EMI, fee)</td><td><code>transaction_links</code>, <code>is_anchor</code></td></tr>
+<tr><td>Category / rule</td><td>Label and the pattern that assigns it</td><td><code>categories</code>, <code>category_rules</code> with match type and source USER / LLM</td></tr>
+<tr><td>Statement</td><td>A parsed bank or card statement for a period, with lines and summary</td><td><code>statements</code>, <code>statement_transactions</code>, <code>statement_credit_card_details</code></td></tr>
+<tr><td>Anchor</td><td>The latest statement's closing balance used as the base for balance math</td><td><code>BalanceMath</code></td></tr>
+<tr><td>Verdict</td><td>Parser's confidence in a statement</td><td>AUTO_INGEST / NEEDS_REVIEW / REJECTED (advisory)</td></tr>
+<tr><td>Ledger (Gmail)</td><td>Per-message processing record</td><td><code>gmail_message_ledger</code></td></tr>
+<tr><td>Watermark</td><td>Date from which an account accepts Gmail transactions</td><td><code>accounts.ingest_from_date</code></td></tr>
+<tr><td>Needs Attention</td><td>Parked or permanently failed emails</td><td>ledger statuses UNRESOLVED_ACCOUNT, FAILED_PERMANENT</td></tr>
+<tr><td>Job</td><td>Queued background unit of work</td><td><code>jobs</code>, <code>job_artifacts</code>; types GMAIL_SYNC, STATEMENT_INGEST, IMPORT_COMMIT, …</td></tr>
+<tr><td>Reward rule</td><td>Earning rule on a card: match predicates, rate or tiers, caps, stacking</td><td><code>reward_rules</code>; EXCLUSIVE / ADDITIVE</td></tr>
+<tr><td>Bucket</td><td>Shared cap across rules over a window</td><td><code>reward_buckets</code></td></tr>
+<tr><td>Milestone</td><td>Spend threshold with a payout</td><td><code>reward_milestones</code></td></tr>
+<tr><td>Line</td><td>Computed reward outcome for one transaction and rule (not stored)</td><td><code>RewardLine</code> with reason code</td></tr>
+<tr><td>Card Picker</td><td>Recommendation of which card to use for a spend</td><td><code>RewardRecommendationService</code></td></tr>
+<tr><td>Broker</td><td>An investment account</td><td>accounts type BROKER + <code>brokers</code></td></tr>
+<tr><td>Instrument</td><td>A stock, ETF or mutual fund from the master</td><td><code>instruments</code>; ISIN, AMFI code, Yahoo symbol</td></tr>
+<tr><td>Trade</td><td>Buy or sell execution</td><td><code>investment_transactions</code></td></tr>
+<tr><td>Classification</td><td>Per-day intraday vs delivery split</td><td><code>trade_settlement_classifications</code></td></tr>
+<tr><td>Corporate action (CA)</td><td>Split, bonus, demerger, merger replayed on read</td><td><code>corporate_actions</code></td></tr>
+<tr><td>Position / lot</td><td>FIFO open quantity and cost</td><td><code>HoldingCalculator</code></td></tr>
+<tr><td>XIRR</td><td>Money-weighted annual return</td><td><code>XirrCalculator</code></td></tr>
+<tr><td>F&amp;O</td><td>Futures and options ledger, separate from instruments</td><td><code>fno_trades</code></td></tr>
+<tr><td>Loan</td><td>Amortizing debt with schedule and events</td><td><code>loans</code>, <code>loan_events</code>, <code>loan_payments</code></td></tr>
+<tr><td>Lending</td><td>Informal money lent or borrowed, signed ledger</td><td><code>lendings</code>, <code>lending_entries</code></td></tr>
+<tr><td>Report / datasource</td><td>Saved query over a datasource with filters and grouping</td><td><code>reports</code>; SQL and computed datasources</td></tr>
+<tr><td>Dashboard / widget</td><td>Grid of report renderings</td><td><code>dashboards</code>, <code>dashboard_widgets</code></td></tr>
+<tr><td>Chat</td><td>Natural-language questions answered by model-written SQL</td><td><code>ChatOrchestrator</code>, <code>v_chat_*</code>, CHAT_RO</td></tr>
+<tr><td>BYOK</td><td>Bring your own LLM key</td><td><code>llm_keys</code></td></tr>
+<tr><td>Cooldown</td><td>Provider/model bucket unavailable until PT midnight after a quota error</td><td><code>FailoverLlmClient</code></td></tr>
+<tr><td>Tenant</td><td>A user; every row has <code>user_id</code></td><td><code>userFilter</code></td></tr>
+</table></div>
+
+<h3 id="s66-vocab">Code vs product vocabulary (§66)</h3>
+<div class="tw compact"><table>
+<tr><th>Product says</th><th>Code says</th><th>Note</th></tr>
+<tr><td>Card</td><td><code>Account</code> of type CREDIT_CARD (the line) vs <code>Card</code> (the plastic)</td><td>Ambiguous in conversation; ask which</td></tr>
+<tr><td>Review queue</td><td>NEEDS_REVIEW rows</td><td></td></tr>
+<tr><td>Needs attention</td><td>Gmail ledger parked/failed</td><td>Different from review queue</td></tr>
+<tr><td>Sync</td><td>GMAIL_SYNC job</td><td></td></tr>
+<tr><td>Upload / ingest</td><td>STATEMENT_INGEST job via <code>/accounts/{id}/ingest</code></td><td></td></tr>
+<tr><td>Import</td><td>Broker file import (reconcile preview/commit)</td><td>Not statements</td></tr>
+<tr><td>Holdings</td><td>Computed positions</td><td>Not the <code>holdings</code> snapshot table</td></tr>
+<tr><td>Balance</td><td>Anchor + post-anchor sum</td><td>Not a column</td></tr>
+<tr><td>Points</td><td>Reward lines × <code>point_value_inr</code></td><td></td></tr>
+<tr><td>Rules</td><td>Either category rules or reward rules</td><td>Ask which</td></tr>
+<tr><td>Excluded</td><td><code>is_excluded</code></td><td>Partially honoured</td></tr>
+<tr><td>Closed account</td><td><code>closed_on</code> set</td><td>Blocks card edits only</td></tr>
+<tr><td>Ask / Chat with data</td><td><code>/chat</code> ReAct loop</td><td></td></tr>
+<tr><td>Provider</td><td>LLM provider (gemini, groq, openrouter)</td><td>Not price provider (Yahoo, AMFI)</td></tr>
+</table></div>
+</section>
+<section class="sec" id="s31" data-part="X · Learning">
+<p class="eyebrow">Section 31</p>
+<h2><span class="n">31</span>Unknowns and open questions</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Everything this handbook could not establish from the repository, grouped by who can answer it. Each is phrased so that a one-line answer settles it. Product questions are decisions the owner must make; engineering questions need a test or a measurement; historical questions need a person. <span class="c cr">Unknown</span> by definition.</p></div>
+
+<h3 id="s31-product">Product decisions needed</h3>
+<div class="qa"><b>Q1</b> Should <code>is_excluded</code> remove a transaction from balances as well as from rewards and reports? The UI copy says reporting and budgets; balances include it today.</div>
+<div class="qa"><b>Q2</b> Should buy charges be part of a lot's cost basis (plan) or kept out (code)? This changes every unrealized and realized P&amp;L figure.</div>
+<div class="qa"><b>Q3</b> Should a REJECTED statement verdict block ingestion, quarantine the lines, or stay advisory?</div>
+<div class="qa"><b>Q4</b> What is the intended default value of a reward point when none is configured: ₹0.25, ₹0, or "unknown, do not rank"?</div>
+<div class="qa"><b>Q5</b> Should the Card Picker account for annual fees (parked card-fees plan) and milestone proximity the way it does today?</div>
+<div class="qa"><b>Q6</b> Is the ±₹20 / ±7-day EMI match tolerance intentional, or should it be exact as the plan said?</div>
+<div class="qa"><b>Q7</b> Should a closed account also stop Gmail ingestion and imports, or only card edits?</div>
+<div class="qa"><b>Q8</b> Should merge union categories from both rows?</div>
+<div class="qa"><b>Q9</b> Is a net-worth figure (accounts + holdings − loans ± lendings) wanted? The stub suggests yes; nothing computes it.</div>
+<div class="qa"><b>Q10</b> Should chat transcripts persist per user?</div>
+<div class="qa"><b>Q11</b> Should statement reward points be reconciled against the engine (parked analysis, 5 open questions there)?</div>
+<div class="qa"><b>Q12</b> Should Google SSO remain ungated by the invite code (user decision 2026-08-18) now that OAuth state is known to be unchecked?</div>
+<div class="qa"><b>Q13</b> Should a fractional cash-in-lieu of ₹0 be treated as unknown rather than as a loss?</div>
+<div class="qa"><b>Q14</b> Should the tax datasource apply statutory caps (80C ₹1.5 L, 24(b) ₹2 L) or stay a raw sum?</div>
+
+<h3 id="s31-eng">Engineering questions</h3>
+<div class="qa"><b>Q15</b> Does the Spring Session JDBC registry ever free the 5-session slots? Needs a test with 6 logins.</div>
+<div class="qa"><b>Q16</b> Are there rows with review reason 'OTHER' left by the V26 backfill in prod? A count settles the client hydration risk.</div>
+<div class="qa"><b>Q17</b> Is the session cookie in the committed <code>cookies.txt</code> still valid? Rotate regardless.</div>
+<div class="qa"><b>Q18</b> What is the real p95 of the reward report and Card Picker for the largest user? No measurement exists.</div>
+<div class="qa"><b>Q19</b> Does <code>XirrCalculator</code> converge for the merger bridge flows (large equal and opposite flows on one day)? Needs goldens.</div>
+<div class="qa"><b>Q20</b> How many multi-category transactions exist in prod? That bounds the fan-out error.</div>
+<div class="qa"><b>Q21</b> Does the Gmail connect callback on Vercel still fail (memory says yes)? Re-verify after the SSO relay fix.</div>
+<div class="qa"><b>Q22</b> Are the prod schema and V85 in sync (memory: "prod schema-drift check pending")?</div>
+<div class="qa"><b>Q23</b> Which PDFBox version is in use, and are its known CVEs relevant to untrusted uploads?</div>
+<div class="qa"><b>Q24</b> Does the deploy script stop the old jar before Flyway runs, or after health passes? Determines downtime on a failed migration.</div>
+
+<h3 id="s31-history">Historical questions (need a person)</h3>
+<div class="qa"><b>Q25</b> Why was the built <code>EmailClassifier</code> abandoned in favour of attachment-filename routing?</div>
+<div class="qa"><b>Q26</b> Why does the statement parser avoid per-issuer templates?</div>
+<div class="qa"><b>Q27</b> Why was STOP stacking added to reward rules, and is any rule using it?</div>
+<div class="qa"><b>Q28</b> Why are FEE and EMI link types ignored by reward eligibility?</div>
+<div class="qa"><b>Q29</b> Why is the invite lockout global rather than per IP (beyond the Vercel egress note)?</div>
+<div class="qa"><b>Q30</b> Which of the uncommitted work items (memory lists more than a dozen) are intended to ship, and in what order?</div>
+
+<h3 id="s31-cannot">Things that cannot be established from the repository</h3>
+<ul>
+<li>Real user count and data volume (only the seeded admin is visible).</li>
+<li>Which banks' statements have actually been parsed successfully in prod (no fixture set).</li>
+<li>Actual LLM quota consumption and failover frequency (tokens not recorded).</li>
+<li>Whether alert rules have fired and what was done.</li>
+<li>The systemd unit, Caddyfile and Fluent Bit config as deployed (reconstructed from workflows and memory).</li>
+</ul>
+</section>
+<section class="sec" id="s34" data-part="X · Learning">
+<p class="eyebrow">Section 34</p>
+<h2><span class="n">34</span>Reverse-engineered requirements</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>The requirements FinanceOS satisfies, written as if they had been specified up front, and derived only from what the code does. Each requirement has a status (fully / partially / not implemented) and the evidence. Plans in <span class="path">plans/</span> are cited as intent where they exist; where code and plan disagree the requirement follows the code and the disagreement is noted. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s34-functional">Functional requirements</h3>
+<div class="tw"><table>
+<tr><th>ID</th><th>Requirement</th><th>Status</th><th>Evidence / note</th></tr>
+<tr><td>FR-1</td><td>A user can sign up with an invite code, log in with email/password or Google, and stay logged in for a year</td><td>Full</td><td>AuthController; SSO ungated; OAuth state unchecked</td></tr>
+<tr><td>FR-2</td><td>A user sees only their own data</td><td>Full</td><td>Filter + native binds + CHAT_RO context; E2E sweep</td></tr>
+<tr><td>FR-3</td><td>A user can create bank, credit-card, broker and other accounts, with cardholders and cards for credit cards, and close accounts</td><td>Full</td><td>V82 model; closure blocks card edits only</td></tr>
+<tr><td>FR-4</td><td>A user can record, edit, delete, tag, flag, link and merge transactions</td><td>Full</td><td>TransactionService</td></tr>
+<tr><td>FR-5</td><td>Transactions are auto-categorized by user rules, then by an LLM which creates new rules and categories</td><td>Full</td><td>CategorizationService; no backfill</td></tr>
+<tr><td>FR-6</td><td>Ingested transactions enter a review queue with reasons and can be approved singly or in batch</td><td>Full</td><td>ReviewStatusManager</td></tr>
+<tr><td>FR-7</td><td>Bank alert emails are pulled from Gmail on a schedule, extracted by an LLM, and matched to accounts by last4 or alias</td><td>Full</td><td>gmail/ingest; parked when ambiguous</td></tr>
+<tr><td>FR-8</td><td>Statement PDFs (from Gmail or upload) are parsed generically, deduplicated, reconciled against alerts, and used as balance anchors</td><td>Full</td><td>StatementParseEngine; verdict advisory</td></tr>
+<tr><td>FR-9</td><td>Account balances are computed from the latest statement plus later transactions</td><td>Full</td><td>BalanceMath; excluded rows included</td></tr>
+<tr><td>FR-10</td><td>A user defines card reward rules (match, rate/tiers, caps, buckets, milestones, stacking, fee treatment) and sees earned rewards per period with reasons</td><td>Full</td><td>Reward engine; compute-on-read</td></tr>
+<tr><td>FR-11</td><td>A user asks which card to use for a hypothetical spend and gets a ranked answer</td><td>Full</td><td>RewardRecommendationService; fees ignored</td></tr>
+<tr><td>FR-12</td><td>A user records or imports trades, dividends and F&amp;O; positions use FIFO with intraday separation and corporate actions; prices refresh daily; XIRR is shown</td><td>Full</td><td>Investments; XIRR untested; charges outside cost</td></tr>
+<tr><td>FR-13</td><td>A user tracks loans with schedules, events, payments matched from bank transactions, and lendings as a ledger</td><td>Full</td><td>Loans; payments not reconciled to amounts</td></tr>
+<tr><td>FR-14</td><td>A user builds saved reports over transactions, trades, dividends, F&amp;O, loans, lendings, rewards and computed datasources, and arranges them on dashboards</td><td>Full</td><td>Reports; fan-out bug; stale source list</td></tr>
+<tr><td>FR-15</td><td>A user asks questions in natural language and gets answers, charts and report drafts grounded in their data</td><td>Full</td><td>Chat; not persisted</td></tr>
+<tr><td>FR-16</td><td>A user brings their own LLM keys and orders providers</td><td>Full</td><td>BYOK, routing prefs</td></tr>
+<tr><td>FR-17</td><td>Long-running work runs in the background with visible status, retries and cancellation</td><td>Full</td><td>Job queue</td></tr>
+<tr><td>FR-18</td><td>A user can delete their account and all data</td><td>Full</td><td>Verified deletion</td></tr>
+<tr><td>FR-19</td><td>A user sees net worth</td><td>Not</td><td>Stub</td></tr>
+<tr><td>FR-20</td><td>A user sets budgets</td><td>Not</td><td>Copy only</td></tr>
+<tr><td>FR-21</td><td>A user is notified of upcoming dues</td><td>Partial</td><td>Calendar view only; chat notifications</td></tr>
+<tr><td>FR-22</td><td>Statement reward points are compared with computed rewards</td><td>Not</td><td>Parked</td></tr>
+<tr><td>FR-23</td><td>Card fees are tracked and netted</td><td>Not</td><td>Parked</td></tr>
+<tr><td>FR-24</td><td>A user exports data</td><td>Not</td><td>—</td></tr>
+</table></div>
+
+<h3 id="s34-nfr">Non-functional requirements</h3>
+<div class="tw compact"><table>
+<tr><th>ID</th><th>Requirement</th><th>Status</th><th>Evidence</th></tr>
+<tr><td>NFR-1</td><td>Money is exact to 4 decimals server-side and never handled as floats</td><td>Full except XIRR</td><td>BigDecimal, NUMBER(19,4)</td></tr>
+<tr><td>NFR-2</td><td>Derived numbers are never stale</td><td>Full</td><td>Compute-on-read</td></tr>
+<tr><td>NFR-3</td><td>Secrets at rest are encrypted</td><td>Full</td><td>AES-GCM ×2 keys; statement PDFs in artifacts excepted</td></tr>
+<tr><td>NFR-4</td><td>Runs on free tiers (OCI micro, ADB free, Vercel Hobby, Grafana free, free LLM quotas)</td><td>Full</td><td>Config</td></tr>
+<tr><td>NFR-5</td><td>Every endpoint and route is exercised before deploy</td><td>Full</td><td>E2E gate</td></tr>
+<tr><td>NFR-6</td><td>Schema changes are safe to re-run</td><td>Full from V63</td><td>PL/SQL guards, double boot</td></tr>
+<tr><td>NFR-7</td><td>Requests are traceable end to end</td><td>Full</td><td>X-Request-Id</td></tr>
+<tr><td>NFR-8</td><td>External providers are all replaceable/mocked</td><td>Full</td><td>WireMock, ScriptedLlmClient</td></tr>
+<tr><td>NFR-9</td><td>High availability</td><td>Not</td><td>Single VM</td></tr>
+<tr><td>NFR-10</td><td>Concurrent edits are detected</td><td>Not</td><td>No @Version</td></tr>
+<tr><td>NFR-11</td><td>Times are stored with zone and computed in IST</td><td>Partial</td><td>TZ columns since V68; 3 unzoned now() sites</td></tr>
+</table></div>
+
+<h3 id="s34-implicit">Implicit requirements visible only in code</h3>
+<ul>
+<li>Indian context throughout: ₹, FY April–March, 80C/24(b), NSE/BSE, AMFI, Indian issuer reward mechanics, day-first dates in extraction.</li>
+<li>Single household scale: 2 job threads, 512 MB heap, per-user quotas of 30 chat questions.</li>
+<li>Trust hierarchy: statement &gt; upload &gt; alert &gt; manual for merge; USER &gt; LLM for rules; ISIN &gt; symbol for instruments.</li>
+<li>Never lose an ingested fact: provisional rows instead of drops; parked instead of discarded; REJECTED still stored.</li>
+<li>Free-tier resilience: failover, cooldowns, budgets, retries with backoff.</li>
+</ul>
+</section>
+<section class="sec" id="s32" data-part="X · Learning">
+<p class="eyebrow">Sections 32, 33 and 65</p>
+<h2><span class="n">32</span>Master system map, knowledge graph and master table</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>One picture of everything, one graph of how concepts relate, and one table that indexes every module against its UI, API, services, tables, jobs, rules, risks and this handbook's sections. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s32-map">Master system map</h3>
+<pre class="mermaid">flowchart TB
+  subgraph Users
+    UB[Browser · PWA shell]
+  end
+  subgraph Vercel
+    NX[Next.js 16 RSC · proxy.ts · TanStack]
+  end
+  subgraph OCI VM
+    CD[Caddy TLS]
+    API[Spring Boot API /api/v1 · 37 controllers]
+    JOBS[Job worker ×2 · 3 crons]
+    FB[Fluent Bit · Grafana Agent]
+  end
+  subgraph Oracle ADB
+    DBT[(50 entities · 85 migrations)]
+    VW[(v_chat_* views · CHAT_RO)]
+  end
+  subgraph External
+    GM[Gmail API]
+    GO[Google OAuth]
+    LL[Gemini · Groq · OpenRouter]
+    YF[Yahoo Finance · AMFI]
+    GR[Grafana Cloud]
+  end
+  UB -->|cookie| NX
+  NX -->|API_ORIGIN, cookie relay| CD --> API
+  API --> DBT
+  API --> JOBS --> DBT
+  JOBS --> GM
+  JOBS --> LL
+  JOBS --> YF
+  API --> GO
+  API -->|chat SQL| VW
+  API --> LL
+  API --> FB --> GR
+  UB -->|Faro| GR</pre>
+
+<h3 id="s65-graph">Knowledge graph (§65)</h3>
+<pre class="mermaid">flowchart LR
+  User -->|owns| Account
+  Account -->|has| Cardholder -->|holds| Card
+  Account -->|has| Identifier
+  Account -->|holds| Transaction
+  Card -->|attributed| Transaction
+  Transaction -->|tagged| Category
+  Category -->|assigned by| Rule
+  Transaction -->|linked| Transaction
+  Statement -->|anchors| Account
+  Statement -->|lines match| Transaction
+  Email -->|extracted into| Transaction
+  Email -->|resolved by| Identifier
+  Email -->|may carry| Statement
+  RewardRule -->|scoped to| Account
+  RewardRule -->|evaluates| Transaction
+  RewardRule -->|shares| Bucket
+  Account -->|has| Milestone
+  Broker -->|is an| Account
+  Broker -->|holds| Trade
+  Trade -->|of| Instrument
+  Instrument -->|priced by| Price
+  Instrument -->|affected by| CorporateAction
+  Trade -->|classified| Classification
+  Loan -->|paid by| Transaction
+  Loan -->|has| LoanEvent
+  Lending -->|entries| LendingEntry
+  Report -->|reads| Transaction
+  Report -->|reads| Trade
+  Report -->|reads| Loan
+  Report -->|reads| RewardRule
+  Dashboard -->|shows| Report
+  Chat -->|queries views over| Transaction
+  Chat -->|drafts| Report
+  Job -->|runs| Email
+  Job -->|runs| Statement
+  Job -->|runs| Trade
+  LlmKey -->|powers| Chat
+  LlmKey -->|powers| Email
+  LlmKey -->|powers| Rule</pre>
+
+<h3 id="s33-table">Master table (§33)</h3>
+<div class="tw"><table>
+<tr><th>Module</th><th>UI routes</th><th>API (controllers)</th><th>Key services</th><th>Tables</th><th>Jobs / crons</th><th>Key rules</th><th>Top risks</th><th>Sections</th></tr>
+<tr><td>M0 Core / auth</td><td>/login, /signup, /settings</td><td>Auth, Invite, Session, AccountDeletion, Health</td><td>AuthService, InviteCodeService, AccountDeletionService</td><td>users, SPRING_SESSION*</td><td>—</td><td>Invite fail-closed; 365 d session; 5-session cap</td><td>OAuth state; session cap; cookies.txt</td><td><a href="/handbook/server-api.html#s15">§15</a> <a href="/handbook/quality-risk.html#s23">§23</a></td></tr>
+<tr><td>M1 Accounts</td><td>/accounts, /accounts/[id]</td><td>Account, Cardholder, Card, Identifier, Statement</td><td>AccountService, BalanceMath, CardholderService</td><td>accounts, cardholders, cards, account_identifiers, statements*</td><td>—</td><td>Anchor balance; closure semantics</td><td>is_excluded; long alias</td><td><a href="/handbook/modules-a.html#m-accounts">M1</a> <a href="/handbook/calculations.html#s10">§10</a></td></tr>
+<tr><td>M2 Transactions</td><td>/transactions, /transactions/review</td><td>Transaction, Category, CategoryRule, Link, Merge</td><td>TransactionService, CategorizationService, ReviewStatusManager</td><td>transactions, categories, category_rules, transaction_categories, transaction_links</td><td>—</td><td>USER&gt;LLM; review reasons; merge keep-order</td><td>Bulk reattribute null card; 'OTHER'</td><td><a href="/handbook/modules-a.html#m-transactions">M2</a> <a href="/handbook/calculations.html#s38">§38</a></td></tr>
+<tr><td>M3 Gmail</td><td>/settings/gmail</td><td>Gmail, GmailOAuth, GmailSender</td><td>GmailIngestionService, AccountResolver, GmailTransactionWriter, StatementReconciliationService</td><td>gmail_connections, gmail_message_ledger, gmail_senders, gmail_sync_cursor</td><td>GMAIL_SYNC; cron 10–22/2 h</td><td>Watermark; 4-pass resolve; ±3 d match</td><td>Silent token revoke; classifier dead; Vercel callback</td><td><a href="/handbook/modules-a.html#m-gmail">M3</a> <a href="/handbook/data.html#s12">§12</a></td></tr>
+<tr><td>M4 Statements</td><td>/settings/ingest</td><td>FileUpload, Statement</td><td>StatementParseEngine, FileIngestionService, TransactionMatcher</td><td>statements, statement_transactions, statement_credit_card_details</td><td>STATEMENT_INGEST</td><td>sha256 dedup; verdict; Jaccard 0.70</td><td>REJECTED ingests; PDFs in artifacts</td><td><a href="/handbook/modules-a.html#m-statements">M4</a> <a href="/handbook/rules.html#s43">§43</a></td></tr>
+<tr><td>M5 Jobs</td><td>/jobs</td><td>Job</td><td>JobService, JobWorker, JobJanitor</td><td>jobs, job_artifacts</td><td>All; retention 03:30</td><td>Claim by UPDATE; retry ladder; stale 60 min</td><td>2 threads; artifacts unencrypted</td><td><a href="/handbook/modules-a.html#m-jobs">M5</a> <a href="/handbook/server-api.html#s14">§14</a></td></tr>
+<tr><td>M6 Investments</td><td>/investments/**</td><td>Investment, Instrument, Import, CorporateAction, Dividend, Fno, Price</td><td>InvestmentService, HoldingCalculator, BrokerReconciliationService, PriceRefreshService</td><td>brokers, instruments, investment_transactions, trade_settlement_classifications, corporate_actions, instrument_prices, dividends, fno_trades, holdings</td><td>IMPORT_COMMIT, PRICE_REFRESH; cron 19:00</td><td>FIFO; ISIN-first; classifier authoritative; CA replay</td><td>XIRR untested; duplicate CA; charges</td><td><a href="/handbook/modules-b.html#m-investments">M6</a> <a href="/handbook/calculations.html#s40">§40</a></td></tr>
+<tr><td>M7 Rewards</td><td>/rewards, /rewards/rules, /rewards/recommend</td><td>RewardRule, RewardBucket, RewardMilestone, RewardReport, RewardRecommendation</td><td>RewardCalculationService, RewardRecommendationService</td><td>reward_rules, reward_buckets, reward_milestones, reward_rule_*</td><td>—</td><td>DEBIT only; exclusive chain; PARTIAL_CAP; cycles</td><td>Duplicate rules; ₹0.25 vs ₹0</td><td><a href="/handbook/modules-b.html#m-rewards">M7</a> <a href="/handbook/calculations.html#s37">§37</a></td></tr>
+<tr><td>M8 Loans</td><td>/loans/**, /lendings</td><td>Loan, LoanEvent, LoanPayment, Lending, Obligations</td><td>LoanService, LoanScheduleService, LendingService</td><td>loans, loan_events, loan_payments, lendings, lending_entries</td><td>—</td><td>Annuity; strictly-before events; ±₹20/7 d match</td><td>Hollow tests; unreconciled payments</td><td><a href="/handbook/modules-b.html#m-loans">M8</a></td></tr>
+<tr><td>M9 Reports</td><td>/reports/**, /dashboard, /dashboards</td><td>Report, ReportData, Dashboard</td><td>ReportDataService, executors, datasources, DashboardService</td><td>reports, dashboards, dashboard_widgets</td><td>—</td><td>No default exclusions; FY month 4</td><td>Fan-out; KPI NPE; stale sources; summary stub</td><td><a href="/handbook/modules-b.html#m-reports">M9</a> <a href="/handbook/rules.html#s45">§45</a></td></tr>
+<tr><td>M10 LLM / chat</td><td>/chat, /settings/llm</td><td>Chat, LlmKey, LlmRouting, LlmHealth, Categorize</td><td>FailoverLlmClient, ChatOrchestrator, ChatSqlValidator, LlmKeyService</td><td>llm_keys, llm_routing_prefs, chat quota state, v_chat_*</td><td>—</td><td>Chain resolution; cooldown PT midnight; 22 prompt rules; 6/180/270 s</td><td>View drift; quota; no persistence</td><td><a href="/handbook/modules-b.html#m-llm-chat">M10</a> <a href="/handbook/server-api.html#s13">§13</a></td></tr>
+</table></div>
+</section>
+<section class="sec" id="s70" data-part="X · Learning">
+<p class="eyebrow">Sections 69 and 70 · Closing</p>
+<h2><span class="n">70</span>If you only read ten things, the mental model, and a self-critique</h2>
+
+<h3 id="s70-ten">If I only read ten things</h3>
+<ol>
+<li><strong>The ledger is <code>transactions</code>, everything else is derived.</strong> Balances, rewards, positions, schedules and reports are recomputed on every read from source rows. There are no cached totals to go stale, and no cached totals to protect you from a wrong formula. <a href="/handbook/calculations.html#s10">§10</a></li>
+<li><strong>Trust is a state, not a boolean.</strong> Every ingested row carries a review status and reasons; the statement is the reconciliation truth that promotes alerts. Manual rows are trusted by definition. <a href="/handbook/calculations.html#s38">§38</a></li>
+<li><strong>Tenancy is enforced three ways</strong> (Hibernate filter, explicit binds, Oracle-side context for chat) and swept by E2E for every endpoint. It is the most trustworthy part of the system. <a href="/handbook/server-api.html#s15">§15</a></li>
+<li><strong>The credit-card model is on its third design</strong> (account → cardholder → card). Reward scoping, Gmail resolution and statements all hang off it; touch it carefully. <a href="/handbook/modules-a.html#m-accounts">M1</a></li>
+<li><strong>Rewards are a rules engine with an exclusive chain and shared caps</strong>, evaluated per transaction with a reason code. Duplicate rules double-pay; point value defaults disagree between the report and the Card Picker. <a href="/handbook/modules-b.html#m-rewards">M7</a></li>
+<li><strong>Reports over-count multi-category transactions</strong> because of a join fan-out; chat does not. When two numbers disagree, this is the first suspect. <a href="/handbook/rules.html#s45">§45 C1</a></li>
+<li><strong>Google OAuth never checks <code>state</code>.</strong> This is the one security finding to fix before anything else. <a href="/handbook/quality-risk.html#s23">§23</a></li>
+<li><strong>XIRR has no tests and uses doubles.</strong> Every return figure rests on it. <a href="/handbook/quality-risk.html#s25">§25</a></li>
+<li><strong>Everything asynchronous is a job in the DB</strong> run by two threads in the API JVM; failures surface in job results and the Gmail attention queue, not in alerts. <a href="/handbook/server-api.html#s14">§14</a></li>
+<li><strong>The plans directory is intent, the code is truth, and they disagree in known places</strong> (charges in cost basis, EMI match tolerance, is_excluded). The READMEs are stale. <a href="/handbook/rules.html#s45">§45</a> <a href="#s31">§31</a></li>
+</ol>
+
+<h3 id="s70-model">The mental model</h3>
+<p>Picture a single append-mostly ledger of money movements per person, fed by three intakes of decreasing trust: hand entry, bank statements, and LLM-read emails. Around the ledger sit five calculators that never store their answers: a balance calculator anchored to statements, a reward calculator that replays card rules, a portfolio calculator that replays trades and corporate actions in FIFO order, a loan calculator that regenerates amortization schedules, and a report engine that aggregates whatever it is pointed at. A job queue in the same process does the slow intake work on a timer. A model can be asked questions and answers by writing SQL against read-only views that already carry the tenant boundary. The whole thing runs on free tiers, so quotas, cooldowns and small heaps shape many of its behaviours. If a number looks wrong, the question is never "which cache is stale" but always "which source row is wrong, or which formula".</p>
+
+<h3 id="s69-critique">Self-critique of this handbook (§69)</h3>
+<div class="tw compact"><table>
+<tr><th>Area</th><th>Confidence</th><th>Weakness</th></tr>
+<tr><td>Inventory (routes, endpoints, tables, migrations, tests)</td><td><span class="c cg">High</span></td><td>Counted from the tree at analysis time; uncommitted worktrees may differ from main</td></tr>
+<tr><td>Business rules and formulas</td><td><span class="c cg">High</span></td><td>Read from code and tests; a few thresholds quoted from analyst reports rather than re-read by the author</td></tr>
+<tr><td>Contradictions and findings</td><td><span class="c cg">High</span> for the 🔴 items (each re-verified by grep)</td><td>Some 🟡 items rest on a single analyst's reading</td></tr>
+<tr><td>"Why" explanations</td><td><span class="c cy">Medium</span></td><td>Only comments and plans were available; motives are inferred and marked</td></tr>
+<tr><td>Client behaviour</td><td><span class="c cy">Medium-High</span></td><td>No page was rendered during analysis; behaviours are read from components and hooks</td></tr>
+<tr><td>Ops and runtime</td><td><span class="c cy">Medium</span></td><td>systemd, Caddy and Fluent Bit configs are not in the repo; reconstructed from workflows and memory notes</td></tr>
+<tr><td>Performance</td><td><span class="c co">Low</span></td><td>No measurements exist; cost models are structural</td></tr>
+<tr><td>Prod state</td><td><span class="c co">Low</span></td><td>Prod lags the working tree; which findings are live in prod was not checked against the deployed commit</td></tr>
+<tr><td>Coverage of ~70 sections</td><td><span class="c cy">Medium</span></td><td>Several requested sections were merged (e.g. §19 into §18, §42 into §41, §54 into §11); depth varies with the analyst reports behind them</td></tr>
+</table></div>
+<p>Method: two repositories inventoried directly; fourteen parallel deep-dive analyses on lower-cost models against a shared brief; every 🔴 finding and every claimed absence re-verified by the author with grep against the source; cross-cutting registries accumulated before synthesis. Nothing was built or run; no tests were executed for this document. Dates come from the repository's memory notes and are stated where used.</p>
+
+<h3 id="s70-summary">Final master summary</h3>
+<p>FinanceOS is a single-person-scale personal finance system for an Indian household: a Spring Boot API over Oracle with a Next.js client, that ingests money movements from Gmail alerts and statements, lets the owner review and categorize them, and derives balances, credit-card rewards, investment positions, loan schedules, reports and chat answers on demand. It is well isolated per tenant, well tested at the wiring level, and deployed through a strict pipeline to a single small VM. Its financial numbers are trustworthy for balances, card dues, F&amp;O and lendings; need a second look for rewards, positions and loans versus outside sources; and are known-wrong for category-grouped report totals with multi-category rows and unverified for XIRR. The three actions with the best return are validating OAuth state, fixing the category join, and writing XIRR goldens. Beyond that, the codebase would benefit most from deleting its dead code, reconciling its duplicated logic, and committing the large body of reviewed but unshipped work.</p>
+</section>
+<nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/ops.html"><small>Previous</small>Ops and architecture</a></nav>
+  </main>
+</div>
+</div>
+<script src="/handbook/handbook.js" defer></script>
+</body>
+</html>

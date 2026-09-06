@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="FinanceOS system and product reference, reverse-engineered from the code. Server and API.">
+<title>FinanceOS Handbook · Server and API</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/handbook/handbook.css">
+</head>
+<body data-page="server-api.html">
+<div class="shell">
+<aside class="side" id="side">
+  <div class="side-head">
+    <div class="brand">FinanceOS Handbook <small>v1</small></div>
+    <div class="brand-sub">System &amp; product reference, reverse-engineered from code · 2026-09-06</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search sections and text…" autocomplete="off" aria-label="Search">
+      <kbd>/</kbd>
+    </div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="side-foot">
+    <button id="expandAll" type="button">Expand all</button>
+    <button id="collapseAll" type="button">Collapse all</button>
+    <span style="margin-left:auto">Source of truth: code</span>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="burger" id="burger" type="button" aria-label="Open navigation">☰ Sections</button>
+    <div class="crumb" id="crumb"><b>FinanceOS Handbook</b></div>
+    <button id="toTop" type="button">↑ Top</button>
+  </div>
+  <div class="results" id="results" aria-live="polite">
+    <button class="close" id="closeResults" type="button">Close ✕</button>
+    <h3 id="resultsTitle"></h3>
+    <div id="resultsList"></div>
+  </div>
+  <main class="content" id="content">
+<section class="sec" id="s15" data-part="V · Server &amp; API">
+<p class="eyebrow">Section 15</p>
+<h2><span class="n">15</span>Authentication, authorization &amp; multi-tenancy</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>One shared Spring Boot backend serves every user's financial data from the same Oracle tables, and the client (Vercel) and API (OCI VM) are different origins. This module therefore answers three load-bearing questions: <em>who is asking</em> (an opaque <code>FINANCEOS_SESSION</code> cookie resolved by Spring Session JDBC), <em>which rows may they touch</em> (a Hibernate <code>@Filter</code> switched on automatically by an AOP aspect for 36 entities), and <em>how do two origins share one cookie</em> (the Next.js server re-mints the API's cookie on its own origin). There are no roles: every user has identical authority over their own data and none over anyone else's. <span class="c cg">Confirmed</span></p>
+<p>Quality is high for the tenancy and deletion designs (declarative filter, delete-then-verify in one transaction, a build-time schema test). Three real gaps stand out: the Google OAuth <code>state</code> is generated but never validated <span class="c pc">Critical</span>; two Gmail bookkeeping entities lack the tenancy filter <span class="c pm">Medium</span>; and <code>maximumSessions(5)</code> has no session-registry cleanup <span class="c pm">Medium</span>.</p></div>
+
+<h3 id="s15-identity">Identity, session and cookie model</h3>
+<div class="tw"><table>
+<tr><th>Concept</th><th>Implementation</th><th>Notes</th></tr>
+<tr><td>User</td><td><code>users</code> row: UUID id, unique <code>email</code>, nullable <code>password_hash</code> (BCrypt cost 12), nullable unique <code>google_id</code>, display name, picture, <code>created_at</code></td><td>No roles table. Google-only users have no password. <span class="path">domain/user/User.java</span></td></tr>
+<tr><td>Session</td><td>Spring Session JDBC (<code>SPRING_SESSION</code>, <code>SPRING_SESSION_ATTRIBUTES</code>, V3). Cookie is a random id, not a JWT; the serialized <code>SecurityContext</code> is a BLOB</td><td>Timeout 365 days (<code>spring.session.timeout</code>) mirrored by the client's cookie <code>maxAge</code> by comment convention only</td></tr>
+<tr><td>Cookie relay</td><td>Server actions call the API with raw <code>fetch</code>, regex the <code>Set-Cookie</code> value, and set a new cookie on the client origin with client-chosen attributes</td><td>The Spring-side cookie attributes never reach the browser in the normal flow. <span class="path">src/lib/apiClient.ts:191</span>, <span class="path">src/lib/auth.ts:71</span></td></tr>
+<tr><td>Route guard</td><td><code>proxy.ts</code> redirects non-public paths without a cookie to <code>/login</code> and stamps <code>x-request-id</code>; authoritative check is <code>requireAuth()</code> → <span class="m m-get">GET</span> <code>/auth/me</code></td><td>Public paths: login, signup, google callback, serwist, offline, manifest, icons</td></tr>
+<tr><td>Signup gate</td><td>Single shared invite code from <code>INVITE_CODE</code>, compared as SHA-256 digests with constant-time equality; global sliding-window lockout 10 failures / 15 min</td><td>Unset code → all signups refused. Global (not per-IP) because all signups arrive from Vercel's egress IP. <span class="path">core/security/InviteCodeService</span>, <span class="path">InviteAttemptLimiter</span></td></tr>
+</table></div>
+
+<h3 id="s15-login">Trace: email and password login</h3>
+<ol class="trace">
+<li><span class="lyr">UI</span><code>LoginForm.tsx</code> → server action <code>login</code> <span class="path">src/actions/auth.ts:53</span></li>
+<li><span class="lyr">client</span><code>authApi.login</code> uses raw fetch (<code>authPost</code>) because openapi-fetch hides <code>Set-Cookie</code> <span class="path">src/lib/apiClient.ts:199,285</span></li>
+<li><span class="lyr">API</span><span class="m m-post">POST</span> <code>/api/v1/auth/login</code> → <code>AuthController.login</code> → <code>AuthService.login</code> <span class="path">AuthService.java:87</span></li>
+<li><span class="lyr">auth</span><code>DaoAuthenticationProvider</code> → <code>UserDetailsServiceImpl.loadUserByUsername</code>; a Google-only user's empty hash fails BCrypt matching cleanly (<code>reason=bad-password</code>)</li>
+<li><span class="lyr">session</span><code>createSession</code> saves the <code>SecurityContext</code> via <code>HttpSessionSecurityContextRepository</code>; Spring Session writes the row; Tomcat emits <code>Set-Cookie</code> <span class="path">AuthService.java:233</span></li>
+<li><span class="lyr">relay</span><code>extractSessionCookie</code> regexes the value; <code>setSessionCookie</code> sets httpOnly, sameSite lax, secure in production, 365 days <span class="path">src/lib/auth.ts:71-78</span></li>
+<li><span class="lyr">after</span>Every protected render calls <code>requireAuth()</code> → <code>serverApi.GET('/api/v1/auth/me')</code> with the cookie copied onto the server-to-server request <span class="path">src/lib/api/server.ts:14,93</span></li>
+</ol>
+
+<h3 id="s15-google">Trace: Google SSO, and why the callback lands on the client</h3>
+<ol class="trace">
+<li><span class="lyr">start</span><span class="m m-get">GET</span> <code>/auth/google/start</code> mints <code>state = flowId + "." + UUID</code> and builds the Google URL with scopes openid, email, profile and <code>gmail.readonly</code>, plus <code>access_type=offline&amp;prompt=consent</code> on every login <span class="path">GoogleOAuthClient.java:27-31,65</span></li>
+<li><span class="lyr">redirect</span>Google redirects to <code>google.oauth.redirect-uri</code>, which is the <em>client</em> page <code>/auth/google/callback</code>. If it pointed at the API, the cookie would be set on the OCI origin, unreadable by the Vercel client. <span class="path">application.yml</span>, <span class="path">AuthController.java:65-76</span></li>
+<li><span class="lyr">exchange</span>The client page posts code/state/error to server action <code>handleGoogleCallbackAction</code> (guarded by a ref against StrictMode double-invoke) → <span class="m m-get">GET</span> <code>/auth/google/callback</code> → <code>AuthService.handleGoogleLogin</code> <span class="path">AuthService.java:159</span></li>
+<li><span class="lyr">resolve</span>Match user by <code>google_id</code>, else by email (links Google onto a password account), else create. If a refresh token was granted, upsert a primary <code>GmailConnection</code> with the token encrypted. Then <code>createSession</code>.</li>
+<li><span class="lyr">finish</span>Client does <code>window.location.href = '/dashboard'</code> as a full reload so the new cookie is sent.</li>
+</ol>
+<div class="callout"><p><strong>Login CSRF gap.</strong> <span class="c pc">Critical</span> The code logs <code>stateValidated=false</code> and the comment says state "is carried for correlation only (flowId) and is not verified against session state". Nothing checks that the browser completing the exchange started it. The callback is a GET, so <code>OriginValidationFilter</code> (unsafe methods only) does not apply. Google's single-use, short-lived codes narrow the window but do not close it. No exploit steps are given here; the fix is the standard pre-redirect state cookie or session nonce. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s15-tenancy">Trace: how a request is scoped to one user</h3>
+<ol class="trace">
+<li><span class="lyr">filter</span><code>RequestContextFilter</code> (highest precedence, outside Spring Security) validates or mints <code>X-Request-Id</code> into MDC</li>
+<li><span class="lyr">security</span><code>OriginValidationFilter</code> rejects unsafe-method requests whose <code>Origin</code> is present but not in <code>CORS_ORIGINS</code>; <code>SecurityContextHolderFilter</code> restores the context from the session; <code>UserContextFilter</code> resolves the user by email and sets <code>UserContext</code> (a ThreadLocal UUID) and MDC <code>userId</code></li>
+<li><span class="lyr">authz</span><code>anyRequest().authenticated()</code> except <code>/auth/login</code>, <code>/auth/signup</code>, <code>/auth/google/**</code>, and <code>/v3/api-docs*</code> when enabled</li>
+<li><span class="lyr">pivot</span><code>HibernateFilterAspect</code> runs <code>@Before</code> any <code>@Transactional</code> method and calls <code>session.enableFilter("userFilter").setParameter("userId", …)</code> <span class="path">core/security/HibernateFilterAspect.java:26</span></li>
+<li><span class="lyr">data</span>Every HQL, Criteria and find-by-id on the 36 <code>@Filter(name="userFilter", condition="user_id = :userId")</code> entities is rewritten to add the predicate. A foreign id resolves to "not found".</li>
+<li><span class="lyr">exit</span><code>AccessLogFilter</code> logs one <code>event=http.request</code> line with userId, requestId, route, status, duration, errorCode/errorId; <code>UserContextFilter</code> clears the ThreadLocal and MDC</li>
+</ol>
+<h4>Paths that bypass the Hibernate filter (native SQL) and why they are safe today</h4>
+<div class="tw"><table>
+<tr><th>Path</th><th>Mechanism</th><th>Safety argument</th><th>Assessment</th></tr>
+<tr><td><code>AccountRepositoryCustomImpl.findAccountBalanceBatches</code></td><td>Native SQL, no user predicate</td><td>Receives only ids already narrowed by the filter in the same method</td><td>Safe by construction <span class="c cg">Confirmed</span></td></tr>
+<tr><td><code>TransactionListQueryBuilder</code>, report executors (<code>TableReportExecutor</code>, <code>ChartReportExecutor</code>, <code>KpiReportExecutor</code>)</td><td>Native SQL with explicit <code>WHERE user_id = :userId</code></td><td>userId is a mandatory builder parameter</td><td>Safe, but a second mechanism to maintain <span class="c cg">Confirmed</span></td></tr>
+<tr><td><code>TransactionReferenceValidator.getAllReferencedTransactionIds</code></td><td>Globally unscoped id set</td><td>Used only as an exclusion set for match suggestions; never returned</td><td>Correctness nit, not a leak <span class="c cy">Strongly inferred</span></td></tr>
+<tr><td>Chat SQL (<code>ChatSqlExecutor</code>)</td><td>Separate least-privilege DB user <code>CHAT_RO</code>; <code>DBMS_SESSION.SET_IDENTIFIER(userId)</code> per connection; every <code>V_CHAT_*</code> view filters on <code>SYS_CONTEXT('USERENV','CLIENT_IDENTIFIER')</code></td><td>Tenancy enforced inside Oracle, independent of the JSQLParser allow-list; fails closed when no user; identifier cleared on close</td><td>Defense in depth <span class="c cg">Confirmed</span> See <a href="/handbook/modules-b.html#m-llm-chat">LLM &amp; Chat</a></td></tr>
+<tr><td><code>GmailSyncCursor</code>, <code>GmailBackfillDemand</code></td><td>Entities carry <code>user_id</code> but have no <code>@Filter</code></td><td>Every current caller pre-scopes (demand PK is the user id via <code>@MapsId</code>; cursors reached via a user-owned connection)</td><td>Incidental, not structural <span class="c pm">Medium</span></td></tr>
+</table></div>
+
+<h3 id="s15-deletion">Trace: account deletion</h3>
+<ol class="trace">
+<li><span class="lyr">UI</span><code>DeleteAccountCard.tsx</code> requires the literal <code>DELETE</code> plus password (or exact email for Google-only users); shows a live <span class="m m-get">GET</span> <code>/auth/me/deletion-summary</code></li>
+<li><span class="lyr">limits</span><code>AccountDeletionLimiter</code>: 5 failures / 15 min per user (a stolen session must not brute-force a wipe)</li>
+<li><span class="lyr">re-auth</span>BCrypt check or case-insensitive email match; failure → 403 <code>ACCOUNT_DELETE_FORBIDDEN</code></li>
+<li><span class="lyr">jobs</span><code>jobService.requestCancelAllUserJobs</code>, then poll every 250 ms up to 5 s; still running → 409 <code>ACCOUNT_DELETE_BUSY</code></li>
+<li><span class="lyr">google</span>Best-effort revoke of every Gmail refresh token (3 s timeout); failures logged and ignored</li>
+<li><span class="lyr">delete</span><code>AccountDeletionExecutor.deleteUserAndVerify</code> (separate bean so <code>@Transactional</code> proxies apply): read Oracle's dictionary for every table with a <code>USER_ID</code> column (fail closed if unreadable, empty, or missing canary tables ACCOUNTS/TRANSACTIONS) → <code>DELETE FROM users</code> (exactly one row) → V79 <code>ON DELETE CASCADE</code> does the rest → re-count every table; any survivor rolls back everything <span class="path">domain/user/AccountDeletionExecutor.java:99</span></li>
+<li><span class="lyr">sessions</span>Only after commit: delete every Spring Session row for the principal, invalidate the current session, clear the cookie, redirect to <code>/login?deleted=1</code></li>
+</ol>
+<p><code>AccountDeletionSchemaTest</code> regex-scans every migration for <code>CREATE TABLE … user_id</code> and fails the build if a table is missing from the expected list. <code>fno_trades</code> had no user FK at all until V79. <span class="c cg">Confirmed</span></p>
+
+<h3 id="s15-errors">Error contract</h3>
+<p>Uniform envelope <code>{ code, message, details?, timestamp, errorId? }</code> from <code>GlobalExceptionHandler</code>. <code>errorId</code> (8-char Crockford Base32) appears only on unhandled 500s, so its presence tells the client "unexpected failure", while the real exception stays in server logs.</p>
+<div class="tw compact"><table>
+<tr><th>Exception</th><th>Status</th><th>code</th></tr>
+<tr><td>ResourceNotFoundException</td><td>404</td><td>NOT_FOUND</td></tr>
+<tr><td>DuplicateResourceException</td><td>409</td><td>DUPLICATE</td></tr>
+<tr><td>ValidationException / MethodArgumentNotValid</td><td>400</td><td>VALIDATION_ERROR (+ details map)</td></tr>
+<tr><td>TooManyAttemptsException</td><td>429</td><td>RATE_LIMITED (+ Retry-After)</td></tr>
+<tr><td>ApiStatusException</td><td>caller-chosen</td><td>caller-chosen (deletion 403/409)</td></tr>
+<tr><td>DataIntegrityViolationException</td><td>409</td><td>CONFLICT (+ constraint name, ORA code)</td></tr>
+<tr><td>OptimisticLockingFailureException</td><td>409</td><td>CONFLICT</td></tr>
+<tr><td>AccessDenied / Authentication</td><td>403 / 401</td><td>FORBIDDEN / UNAUTHORIZED</td></tr>
+<tr><td>anything else</td><td>500</td><td>INTERNAL_ERROR + errorId</td></tr>
+</table></div>
+<p>Browser 401s dispatch a <code>financeos:auth-expired</code> window event that <code>QueryProvider</code> turns into a single redirect to <code>/login</code>. Server-side <code>getSession()</code> swallows only 401; other statuses surface as route errors so "backend unreachable" is no longer mistaken for "signed out". <span class="path">src/lib/api/client.ts</span>, <span class="path">src/components/QueryProvider.tsx</span></p>
+
+<h3 id="s15-risks">Security-sensitive assumptions and risks</h3>
+<div class="tw"><table>
+<tr><th>Risk</th><th>Evidence</th><th>Impact</th><th>Priority</th></tr>
+<tr><td>OAuth state not validated</td><td><code>stateValidated=false</code> log; comment in <code>AuthService.handleGoogleLogin</code></td><td>Login CSRF into an attacker-controlled account</td><td><span class="c pc">Critical</span></td></tr>
+<tr><td>Concurrent-session cap never decrements</td><td><code>.maximumSessions(5)</code> with no <code>HttpSessionEventPublisher</code> or session registry bridge (repo-wide grep)</td><td>Intermittent "cannot log in" until restart</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Two Gmail entities outside the filter convention</td><td>no <code>@Filter</code> on <code>GmailSyncCursor</code>, <code>GmailBackfillDemand</code></td><td>Future caller could forget to scope</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Google-only deletion factor is the email</td><td><code>AccountDeletionService.isConfirmed</code></td><td>Weaker than a password, but requires a live session</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Every Google login re-prompts offline Gmail consent</td><td><code>access_type=offline&amp;prompt=consent</code> hardcoded</td><td>UX cost; possibly unintended</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Cookie policy configured twice</td><td>Spring <code>server.servlet.session.cookie.*</code> vs <code>auth.ts</code> <code>NODE_ENV</code> flag</td><td>Drift risk; startup fingerprint warns only on the server flag</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Global invite lockout is a DoS on signups</td><td>10 failures / 15 min shared by everyone</td><td>Attacker can block new signups temporarily</td><td><span class="c pl">Low</span></td></tr>
+</table></div>
+<p><strong>Encryption.</strong> <code>EncryptedStringConverter</code> uses AES-256-GCM with a fresh random 12-byte IV per call and a 128-bit tag; used for bank and credit-card detail PII and the Gmail refresh token. The placeholder default key is detected at startup (<code>event=app.config.suspect</code>) and would fail at boot if used. <span class="c cg">Confirmed</span></p>
+
+<h3 id="s15-open">Open questions for the author</h3>
+<div class="qa"><b>Technical</b> Was the missing <code>state</code> validation an accepted risk for a small trusted user base, or an oversight?</div>
+<div class="qa"><b>Technical</b> Is <code>maximumSessions(5)</code> load-bearing or vestigial?</div>
+<div class="qa"><b>Product</b> Is the single shared invite code permanent, or a stop-gap before per-invitee tracking?</div>
+<div class="qa"><b>Product</b> Is the every-login Gmail consent prompt intentional?</div>
+<div class="qa"><b>Data</b> What is the backup retention window the deletion UI alludes to ("age out on standard retention")?</div>
+</section>
+<section class="sec" id="s08" data-part="V · Server &amp; API">
+<p class="eyebrow">Section 8</p>
+<h2><span class="n">08</span>Server / backend deep dive</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>A single Spring Boot 3.3.4 process (Java 21) hosts the REST API, the job worker and three cron schedulers. Requests pass a servlet filter that stamps a request id, then Spring Security (origin validation, session restore, user-context resolution, authorization), then thin controllers that validate DTOs and delegate to <code>@Transactional</code> services, where an AOP aspect switches on the Hibernate tenancy filter before any repository call. Errors are mapped to one JSON envelope. Slow or external work is enqueued as a job. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s08-lifecycle">Request lifecycle</h3>
+<figure>
+<svg viewBox="0 0 960 260" role="img" aria-label="Server request lifecycle from Tomcat through filters, Spring Security, controller, service with tenancy filter, repository and Oracle, back through the exception handler and access log">
+<defs><marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g font-family="IBM Plex Sans, system-ui, sans-serif" font-size="11.5" fill="currentColor">
+<rect x="10" y="40" width="110" height="60" rx="6" fill="none" stroke="currentColor"/><text x="20" y="62" font-weight="600">RequestContext</text><text x="20" y="78">Filter</text><text x="20" y="92" opacity=".75">X-Request-Id → MDC</text>
+<rect x="140" y="40" width="130" height="60" rx="6" fill="none" stroke="currentColor"/><text x="150" y="62" font-weight="600">Spring Security</text><text x="150" y="78">OriginValidation</text><text x="150" y="92" opacity=".75">session → UserContext</text>
+<rect x="290" y="40" width="110" height="60" rx="6" fill="none" stroke="currentColor"/><text x="300" y="62" font-weight="600">Authorization</text><text x="300" y="78">authenticated()</text><text x="300" y="92" opacity=".75">public: auth/*, docs</text>
+<rect x="420" y="40" width="110" height="60" rx="6" fill="none" stroke="currentColor"/><text x="430" y="62" font-weight="600">Controller</text><text x="430" y="78">@Valid DTO</text><text x="430" y="92" opacity=".75">thin mapping</text>
+<rect x="550" y="40" width="150" height="60" rx="6" fill="none" stroke="currentColor"/><text x="560" y="62" font-weight="600">Service @Transactional</text><text x="560" y="78">HibernateFilterAspect</text><text x="560" y="92" opacity=".75">enableFilter(userFilter)</text>
+<rect x="720" y="40" width="110" height="60" rx="6" fill="none" stroke="currentColor"/><text x="730" y="62" font-weight="600">Repository</text><text x="730" y="78">JPA / 6 native</text><text x="730" y="92" opacity=".75">AND user_id = :uid</text>
+<rect x="850" y="40" width="100" height="60" rx="6" fill="none" stroke="currentColor"/><text x="860" y="62" font-weight="600">Oracle</text><text x="860" y="78">Hikari 10</text>
+<path d="M120 70 H136" stroke="currentColor" marker-end="url(#ar3)"/><path d="M270 70 H286" stroke="currentColor" marker-end="url(#ar3)"/><path d="M400 70 H416" stroke="currentColor" marker-end="url(#ar3)"/><path d="M530 70 H546" stroke="currentColor" marker-end="url(#ar3)"/><path d="M700 70 H716" stroke="currentColor" marker-end="url(#ar3)"/><path d="M830 70 H846" stroke="currentColor" marker-end="url(#ar3)"/>
+<rect x="420" y="150" width="280" height="50" rx="6" fill="none" stroke="currentColor"/><text x="430" y="170" font-weight="600">GlobalExceptionHandler</text><text x="430" y="188" opacity=".75">{code, message, details?, timestamp, errorId?}</text>
+<rect x="10" y="150" width="260" height="50" rx="6" fill="none" stroke="currentColor"/><text x="20" y="170" font-weight="600">AccessLogFilter (@Order 10)</text><text x="20" y="188" opacity=".75">event=http.request · userId · route · status · ms</text>
+<path d="M485 100 V146" stroke="currentColor" stroke-dasharray="4 4" marker-end="url(#ar3)"/><text x="492" y="130" opacity=".8">exception</text>
+<path d="M420 175 H274" stroke="currentColor" stroke-dasharray="4 4" marker-end="url(#ar3)"/><text x="300" y="168" opacity=".8">errorCode, errorId attrs</text>
+<rect x="720" y="150" width="230" height="50" rx="6" fill="none" stroke="currentColor"/><text x="730" y="170" font-weight="600">Side channels</text><text x="730" y="188" opacity=".75">AFTER_COMMIT events · job enqueue + poke</text>
+<path d="M625 100 V175 H716" stroke="currentColor" stroke-dasharray="4 4" marker-end="url(#ar3)"/>
+</g></svg>
+<figcaption>Typical request path. The tenancy filter is applied at the service boundary, so a repository call outside a <code>@Transactional</code> method runs unfiltered.</figcaption>
+</figure>
+
+<h3 id="s08-layers">Layers</h3>
+<div class="tw"><table>
+<tr><th>Layer</th><th>Where</th><th>Responsibilities</th><th>Conventions and notes</th></tr>
+<tr><td>Entry point</td><td><code>FinanceOsApplication</code> (<code>@SpringBootApplication</code>, <code>@EnableScheduling</code>)</td><td>Boot; Flyway migrate; Spring Session schema init</td><td><code>StartupFingerprintLogger</code> logs version, profiles, DB host, LLM key presence and four misconfiguration checks</td></tr>
+<tr><td>Servlet filters</td><td><code>core/observability/RequestContextFilter</code> (highest precedence), <code>AccessLogFilter</code> (order 10), <code>E2eCoverageFilter</code> (order −200, e2e only)</td><td>Request id, access log, coverage</td><td>Outside the security chain so auth failures are still correlated</td></tr>
+<tr><td>Security chain</td><td><code>core/security/SecurityConfig</code></td><td><code>OriginValidationFilter</code> → <code>SecurityContextHolderFilter</code> → <code>UserContextFilter</code> → <code>AuthorizationFilter</code></td><td>CSRF disabled (API only); CORS from <code>CORS_ORIGINS</code>; <code>maximumSessions(5)</code> without a registry bridge</td></tr>
+<tr><td>Controllers</td><td><code>api/&lt;feature&gt;/*Controller</code> + <code>dto/</code></td><td>Bean validation (<code>@Valid</code>, <code>@MccCode</code>), ownership pre-checks in some, mapping to responses</td><td>Sealed response interfaces with Jackson subtypes (accounts); <code>@PageableDefault</code> sizes; multipart via <code>MultipartFile</code></td></tr>
+<tr><td>Services</td><td><code>domain/&lt;feature&gt;/*Service</code></td><td>Business rules, ownership re-checks ("Security Breach Attempt" logs), transactions</td><td>Class-level <code>@Transactional</code> common; deliberately non-transactional read phases in <code>CategorizationService</code> and <code>FileIngestionService</code> to keep LLM and parsing off DB connections; <code>@Lazy self</code> proxies for internal transactional calls</td></tr>
+<tr><td>Calculation engines</td><td><code>BalanceMath</code>, <code>RewardCalculationService</code>, <code>InvestmentService</code>, <code>XirrCalculator</code>, <code>LoanScheduleService</code>, <code>StatementParseEngine</code>, <code>ChatOrchestrator</code></td><td>Pure or mostly pure compute</td><td>BigDecimal everywhere except <code>XirrCalculator</code> (double)</td></tr>
+<tr><td>Repositories</td><td>Spring Data JPA with <code>@EntityGraph</code> fetch profiles; six <code>createNativeQuery</code> sites</td><td>Data access</td><td>Native SQL binds <code>user_id</code> by hand or receives filtered ids</td></tr>
+<tr><td>Events</td><td><code>@TransactionalEventListener(AFTER_COMMIT)</code>: <code>PriceRefreshEventListener</code>, <code>GmailIngestEventListener</code>; <code>@EventListener(ApplicationReadyEvent)</code>: <code>JobJanitor</code>, fingerprint</td><td>Post-commit side effects</td><td>Listener runs in REQUIRES_NEW so failures never roll back the trigger</td></tr>
+<tr><td>Jobs and schedulers</td><td><code>JobWorker</code> (fixed delay 2 s), <code>IngestionScheduler</code>, <code>PriceSchedulerConfiguration</code>, <code>JobJanitor</code></td><td>Async work and crons</td><td>Same JVM; single instance; <code>UserContextHelper.callAs</code> for tenancy on worker threads</td></tr>
+<tr><td>Integrations</td><td><code>gmail/client</code>, <code>instrument/price</code>, <code>instrument/search</code>, <code>llm/provider</code>, <code>core/oauth</code></td><td>External HTTP</td><td>All fail soft with logging; see <a href="#s13">§13</a></td></tr>
+<tr><td>Error handling</td><td><code>core/exception/GlobalExceptionHandler</code></td><td>Exception → status mapping</td><td>See <a href="#s15-errors">error contract</a>; controllers occasionally return bare statuses (rules duplicate → 409 with no body)</td></tr>
+<tr><td>Observability</td><td><code>core/observability/*</code>, <code>Events</code> vocabulary, <code>ObservabilityMetrics</code>, <code>SlowQueryObservationHandler</code></td><td>Structured logs, metrics</td><td>See <a href="/handbook/quality-risk.html#s57">§57</a></td></tr>
+</table></div>
+
+<h3 id="s08-deviations">Deviations from the typical pattern</h3>
+<ul>
+<li><strong>Asynchronous 202 responses.</strong> Statement upload, price refresh, rule apply, import commit and reconcile commit return <code>{jobId}</code>; the real work runs later in <code>JobWorker</code> with <code>UserContext</code> set manually. <span class="path">domain/job/JobWorker.runJob</span></li>
+<li><strong>Server-sent events.</strong> <code>ChatController.streamChat</code> returns an <code>SseEmitter</code> (290 s timeout) fed from a 4-thread pool with a 15 s heartbeat; the Next route relays it.</li>
+<li><strong>Cron threads have no user.</strong> Price refresh runs with an empty context and refreshes all users' instruments deliberately; Gmail sync wraps each connection in <code>callAs(userId)</code>.</li>
+<li><strong>Ingestion bypasses <code>TransactionService.createTransaction</code>.</strong> Gmail and file ingestion save <code>Transaction</code> rows through the repository directly, so create-path validation (non-zero amount) does not apply to them.</li>
+<li><strong>Two tenancy mechanisms plus chat's third.</strong> Hibernate filter; explicit <code>user_id</code> binds in native SQL builders; Oracle <code>SYS_CONTEXT</code> for chat.</li>
+<li><strong>Google OAuth callback lands on the client</strong>, not this server, so the session cookie is minted on the client origin. Gmail-connect's callback lands on the server because the user is already logged in.</li>
+<li><strong>Full-history recompute on read</strong> for balances, positions, rewards and schedules, with in-memory pagination for reward lines and instruments.</li>
+<li><strong>Self-proxy idiom.</strong> <code>CategorizationService</code> and <code>TransactionService</code> inject a <code>@Lazy</code> reference to themselves so intra-class calls hit the transactional proxy (comments cite bugs F2/F3); <code>AccountDeletionExecutor</code> was split into a separate bean for the same reason.</li>
+<li><strong>Controller-layer aggregation.</strong> <code>LoanController.getLoansSummary</code> sums outstanding principal itself; <code>RewardReportController</code> slices lines in memory.</li>
+<li><strong>E2E profile backdoor.</strong> <code>E2eControlController</code> and <code>ScriptedLlmClient</code> exist only under <code>@Profile("e2e")</code>; the systemd unit activates <code>prod</code> only. <span class="c cg">Confirmed</span></li>
+</ul>
+
+<h3 id="s08-validation">Validation and error handling summary</h3>
+<div class="tw compact"><table>
+<tr><th>Where</th><th>Mechanism</th><th>Examples</th></tr>
+<tr><td>DTO</td><td>Bean Validation</td><td><code>@Email</code>, <code>@Size(min=8)</code> password, <code>@Pattern</code> last4, <code>@MccCode</code>, <code>@Size(max=500)</code> batch ids, <code>@DecimalMin</code> loan rate, <code>@Positive</code> ratios</td></tr>
+<tr><td>Service</td><td><code>ValidationException</code> (400) and <code>ResourceNotFoundException</code> (404); ownership violations also 400 by convention</td><td>Sell exceeds held; close before earliest transaction; prepayment ≥ outstanding; regex compile at save; bucket reward type mismatch</td></tr>
+<tr><td>Database</td><td>CHECK, UNIQUE, FK; mapped to 409 CONFLICT with constraint name</td><td>amount &gt; 0; unique source message per user; one default dashboard</td></tr>
+<tr><td>Degradation</td><td>Catch-and-flag rather than fail</td><td>LLM chunk failure → CATEGORY_UNVERIFIED; broken tier JSON → rule skipped; provider outage → empty prices; per-file parse failure → file FAILED, job SUCCEEDED</td></tr>
+</table></div>
+</section>
+<section class="sec" id="s09" data-part="V · Server &amp; API">
+<p class="eyebrow">Section 9</p>
+<h2><span class="n">09</span>Complete API map</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>About 190 operations across 37 controllers under <code>/api/v1</code>, plus 6 e2e-only control endpoints. Every operation requires the session cookie except signup, login, the Google SSO pair, and the OpenAPI docs when enabled. Client callers fall into two families: Server Components and server actions use <code>lib/apiClient.ts</code>'s <code>*Api</code> objects; client components use <code>lib/api/client.ts</code> (<code>api.GET/POST…</code>) inside TanStack hooks. The E2E suite exercises 193 of 193 operations in the exported spec. <span class="c cg">Confirmed</span></p></div>
+<p>Legend: caller "RSC" = <code>apiClient.ts</code> from a page or action; "hook" = browser openapi-fetch inside a TanStack hook or component; "job" = enqueues and returns 202. Purpose, validation and side effects are summarised; module sections carry the detail.</p>
+
+<details class="lvl l3" open><summary><span class="lv">API</span>Authentication and account deletion · <code>AuthController</code></summary><div class="body"><div class="tw compact"><table>
+<tr><th>Method</th><th>Endpoint</th><th>Purpose</th><th>Auth</th><th>Input → output</th><th>Caller</th><th>Notes</th></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/auth/signup</td><td>Create user</td><td>public</td><td>email, password ≥8, inviteCode → UserResponse + cookie</td><td>action signup</td><td>Invite fail-closed; global lockout 10/15 min; auto-login after</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/auth/login</td><td>Password login</td><td>public</td><td>email, password → UserResponse; Set-Cookie</td><td>action login (raw fetch)</td><td>New session row per login</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/auth/logout</td><td>Invalidate session</td><td>session</td><td>—</td><td>action logout</td><td>Client clears cookie even on failure</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/auth/me</td><td>Current user</td><td>session</td><td>→ UserResponse (hasPassword)</td><td>requireAuth every RSC render</td><td>401 → login</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/auth/google/start</td><td>Google auth URL</td><td>public</td><td>→ authorizationUrl</td><td>action startGoogleSSO</td><td>state = flowId.UUID, never validated</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/auth/google/callback</td><td>Exchange code, log in, upsert Gmail connection</td><td>public</td><td>code, state, error → UserResponse; Set-Cookie</td><td>action from client callback page</td><td>Redirect URI is the client page</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/auth/me/deletion-summary</td><td>Row counts per table</td><td>session</td><td>→ DeletionSummaryResponse</td><td>hook (settings)</td><td></td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/auth/me/delete</td><td>Hard delete with verification</td><td>session</td><td>password | confirmEmail → 204; 403 / 409 / 429</td><td>action deleteAccount</td><td>Drains jobs 5 s, revokes Google, verifies via data dictionary</td></tr>
+</table></div></div></details>
+
+<details class="lvl l3"><summary><span class="lv">API</span>Accounts, cardholders, cards, identifiers · <code>AccountController</code>, <code>CardholderController</code>, <code>StatementController</code>, <code>FileUploadController</code></summary><div class="body"><div class="tw compact"><table>
+<tr><th>Method</th><th>Endpoint</th><th>Purpose</th><th>Input → output</th><th>Caller</th><th>Notes</th></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/accounts</td><td>Create account (sealed request per type)</td><td>Bank|CreditCard|Broker|Generic request → AccountResponse with computed balance</td><td>hook useAccountFormMutations</td><td>Ratchets Gmail backfill floor if ingestFromDate set</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/accounts</td><td>List with balances</td><td>→ AccountResponse[]</td><td>RSC + hook useAccounts</td><td>Constant query count via native batch</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/accounts/{id}</td><td>One account</td><td>→ AccountResponse</td><td>hook</td><td></td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/accounts/{id}/card-summary</td><td>Latest statement dues and history</td><td>→ CardCycleSummary | null</td><td>hook StatementsDialog</td><td>400 unless credit card</td></tr>
+<tr><td><span class="m m-put">PUT</span></td><td>/accounts/{id}</td><td>Update</td><td>Update request → AccountResponse</td><td>hook</td><td>Broker financialPosition not defaulted</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/accounts/{id}/close · /reopen</td><td>Set or clear closed_on</td><td>closedOn? → AccountResponse (+ warning)</td><td>hook</td><td>Close ≥ earliest transaction</td></tr>
+<tr><td><span class="m m-delete">DELETE</span></td><td>/accounts/{id}</td><td>Delete account (DB cascade)</td><td>→ 204</td><td>hook DeleteAccountDialog</td><td>No server pre-count</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span> <span class="m m-delete">DELETE</span></td><td>/accounts/{id}/identifiers[/{identifierId}]</td><td>Alias CRUD</td><td>value, kind → AccountIdentifierResponse</td><td>hook AccountIdentifiersSection</td><td>Create reactivates parked Gmail rows (exact match)</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span></td><td>/accounts/{a}/cardholders</td><td>List; add add-on cardholder</td><td>→ CardholderResponse[]</td><td>hook CardsDialog</td><td>Bank accounts allowed (debit cards)</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/accounts/{a}/cardholders/primary</td><td>Add primary with first card</td><td>personName?, last4, issuedOn</td><td>hook</td><td>One primary per account</td></tr>
+<tr><td><span class="m m-put">PUT</span> <span class="m m-post">POST</span> <span class="m m-delete">DELETE</span></td><td>/accounts/{a}/cardholders/{c} · /close · /reopen · delete</td><td>Edit, close, reopen, delete cardholder</td><td></td><td>hook</td><td>Primary cannot be closed or deleted; delete needs zero transactions and rules</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/accounts/{a}/cardholders/{c}/cards</td><td>Issue plastic</td><td>last4, issuedOn</td><td>hook</td><td>One open card per cardholder</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/accounts/{a}/cardholders/{c}/cards/{id}/replace · /close</td><td>Replace (close + new) or close plastic</td><td></td><td>hook</td><td>saveAndFlush to vacate partial unique indexes</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/accounts/{a}/statements</td><td>Statement list for account</td><td>→ StatementSummaryResponse[]</td><td>hook StatementsDialog</td><td></td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/statements/{id}</td><td>Statement detail with lines</td><td>→ StatementDetailResponse</td><td>hook StatementDetailDialog</td><td>Manual ownership check (no user_id on join)</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/accounts/{a}/ingest</td><td>Upload statements</td><td>multipart files[] → 202 {jobId}</td><td>browser multipart via rewrite</td><td>Password from account; type allowlist client-only</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span></td><td>/accounts/{id}/gmail-cleanup-preview · /gmail-cleanup</td><td>Count / delete unreconciled alert rows before a date</td><td>before → count / deleted</td><td>hook CleanupConfirmDialog</td><td>Lives in GmailController</td></tr>
+</table></div></div></details>
+
+<details class="lvl l3"><summary><span class="lv">API</span>Transactions, links, categories, rules, categorize · <code>TransactionController</code> and friends</summary><div class="body"><div class="tw compact"><table>
+<tr><th>Method</th><th>Endpoint</th><th>Purpose</th><th>Input → output</th><th>Caller</th><th>Notes</th></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/transactions</td><td>Create manual transaction</td><td>signed amount, account, card?, categories, flags, reward details → TransactionResponse</td><td>hook TransactionCRUD</td><td>Zero rejected; review NA; audit CREATE</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/transactions</td><td>Simple paged list</td><td>page, size 50</td><td>RSC</td><td></td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/transactions/search</td><td>Filter, search, sort, paginate with running balance</td><td>filters[], search, sort → Page</td><td>hook useTransactionsBrowser, useReviewBrowser, link dialog</td><td>Whitelisted fields; tie-breakers</td></tr>
+<tr><td><span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/transactions/{id}</td><td>Update (full replace) / delete</td><td></td><td>hook</td><td>Category edit clears CATEGORY_UNVERIFIED; delete dissolves links</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/transactions/batch-review</td><td>Reason-scoped approve</td><td>ids ≤500, reviewType, reviewReasons → succeeded, skipped, failures</td><td>hook ReviewBrowser</td><td>Auto-verifies applied rules</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/transactions/batch-delete</td><td>Delete many</td><td>ids ≤500</td><td>hook</td><td></td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/transactions/merge</td><td>Keep one, delete one</td><td>keepId, deleteId → MergeResponse</td><td>hook MergeTransactionsDialog</td><td>Same account only; fill-blanks carry-over</td></tr>
+<tr><td><span class="m m-patch">PATCH</span></td><td>/transactions/card</td><td>Bulk reattribute to a card</td><td>accountId, from, to, currentCardId?, cardId</td><td>hook ReassignTransactionsForm</td><td>null currentCardId = all rows <span class="c ph">bug</span>; uncapped</td></tr>
+<tr><td><span class="m m-post">POST</span> <span class="m m-get">GET</span> <span class="m m-delete">DELETE</span></td><td>/transaction-links[/{id}]</td><td>Create typed link, list, get, delete</td><td>type, members[{id, isAnchor}], note, alignRefundCategories</td><td>hook TransactionLinkDialog</td><td>Validation table per type; origin always USER</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/categories[/{id}]</td><td>Category CRUD</td><td>name ≤100</td><td>RSC + hook useCategories, CategoryManager</td><td>Unique per user</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/rules[/{id}]</td><td>Rule CRUD (page 20)</td><td>merchantKey, matchType, categoryIds, mcc</td><td>RSC + hook RulesBrowser</td><td>Duplicate → bare 409; update rewrites categories synchronously</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/rules/{id}/verify</td><td>Mark verified, promote its transactions</td><td>→ RuleResponse</td><td>hook</td><td></td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/rules/preview-matches</td><td>Matches for an unsaved pattern</td><td>pattern, matchType, page → Page</td><td>hook RuleMatchesDialog</td><td>In-memory predicate over all candidates</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/rules/{id}/apply</td><td>Apply to selection or all</td><td>ids | all → 202 {jobId}</td><td>hook (job RULE_APPLY)</td><td>Chunks of 500; skips MANUALLY_REVIEWED</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/categorize</td><td>On-demand category + MCC suggestion</td><td>description → suggestion (may be empty)</td><td>hook useCategorySuggestions</td><td>Rules first, then LLM; never 500</td></tr>
+</table></div></div></details>
+
+<details class="lvl l3"><summary><span class="lv">API</span>Gmail · <code>GmailController</code></summary><div class="body"><div class="tw compact"><table>
+<tr><th>Method</th><th>Endpoint</th><th>Purpose</th><th>Caller</th><th>Notes</th></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/gmail/oauth/start</td><td>Consent URL (gmail.readonly, offline, force)</td><td>hook GmailConnectionsCard</td><td></td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/gmail/oauth/callback</td><td>Exchange code, upsert connection, redirect to client with ?gmail=</td><td>Google redirect</td><td>Server-landed; raw error message in URL</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/gmail/sync</td><td>Enqueue GMAIL_SYNC for the primary connection</td><td>hook</td><td>404 if no primary</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-delete">DELETE</span></td><td>/gmail/connections[/{id}]</td><td>List (lastSyncedAt derived from cursors); soft disconnect</td><td>RSC + hook</td><td>Primary never reassigned</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/gmail/senders[/{id}]</td><td>Allowlist CRUD</td><td>RSC + hook GmailSendersCard</td><td>Address change resets cursor</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/gmail/attention?page&amp;size&amp;includeRetryable</td><td>Parked and failed messages</td><td>RSC + hook GmailAttentionCard</td><td></td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/gmail/attention/{ledgerId}/retry</td><td>Reset to DISCOVERED and enqueue sync</td><td>hook</td><td>Only retryable statuses</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/gmail/attention/{ledgerId}/assign</td><td>Create identifier alias, reactivate matches</td><td>hook AssignAccountDialog</td><td>Kind always OTHER; &gt;4-char values never reactivate</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/gmail/rescan</td><td>Lower backfill floor, sync</td><td><strong>none</strong></td><td>API only</td></tr>
+</table></div></div></details>
+
+<details class="lvl l3"><summary><span class="lv">API</span>Jobs · <code>JobController</code></summary><div class="body"><div class="tw compact"><table>
+<tr><th>Method</th><th>Endpoint</th><th>Purpose</th><th>Caller</th><th>Notes</th></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/jobs?status&amp;type&amp;page&amp;size</td><td>History for the current user</td><td>RSC (URL params) + hooks JobsPanel</td><td>Cron-global jobs invisible</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/jobs/{id}</td><td>One job with result JSON</td><td>hook useJobStatusPolling (1.5 s)</td><td>404 for foreign</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/jobs/{id}/cancel</td><td>Cancel PENDING or flag RUNNING</td><td>hook JobRowActions</td><td>Cooperative</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/jobs/{id}/retry</td><td>Clone FAILED or CANCELLED into a new job</td><td>hook</td><td>Artifacts expired → 400</td></tr>
+</table></div></div></details>
+
+<details class="lvl l3"><summary><span class="lv">API</span>Investments · <code>InstrumentController</code>, <code>CorporateActionController</code>, <code>InvestmentController</code>, <code>SipController</code>, <code>DividendController</code>, <code>FnoTradeController</code>, <code>ImportController</code></summary><div class="body"><div class="tw compact"><table>
+<tr><th>Method</th><th>Endpoint</th><th>Purpose</th><th>Caller</th><th>Notes</th></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/instruments/catalog-search?q&amp;type</td><td>Local + AMFI + Yahoo candidates (≤25)</td><td>hook useCatalogSearch (250 ms debounce)</td><td>Fail soft per provider</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/instruments/resolve</td><td>Upsert on select (ISIN authoritative)</td><td>hook</td><td>Writes aliases on rename</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span> <span class="m m-put">PUT</span></td><td>/instruments[/{id}]</td><td>List, manual create, update</td><td>RSC + hook InstrumentsView</td><td>Create dedups by ISIN only</td></tr>
+<tr><td><span class="m m-post">POST</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span> <span class="m m-get">GET</span></td><td>/instruments/{id}/price · /prices/{priceId} · /prices</td><td>Manual price upsert, edit, delete, history</td><td>hook PriceHistoryPanel</td><td>Only MANUAL rows editable</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/corporate-actions</td><td>All CAs (global table)</td><td>RSC + hook</td><td></td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/instruments/{i}/corporate-actions[/{id}]</td><td>CA CRUD; merger forces 100 %</td><td>hook CorporateActionsDialog</td><td>No duplicate guard; child holding materialized</td></tr>
+<tr><td><span class="m m-post">POST</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span> <span class="m m-get">GET</span></td><td>/investments/transactions[/{id}]</td><td>Trade CRUD, paged list</td><td>RSC + hook TradebookSection, RecordTradeDialog</td><td>Sell ≤ held; recompute day classification; AFTER_COMMIT price refresh</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/investments/positions · /summary</td><td>Open positions; portfolio totals, by broker/type, XIRR, F&amp;O realized</td><td>RSC + hook HoldingsView</td><td>Full FIFO replay per holding</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/investments/prices/refresh</td><td>Enqueue PRICE_REFRESH (all or one)</td><td>hook RefreshPricesButton</td><td>202</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/investments/sips[/{id}]</td><td>SIP CRUD with computed progress</td><td>hook</td><td>Plan only</td></tr>
+<tr><td><span class="m m-post">POST</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span> <span class="m m-get">GET</span></td><td>/investments/dividends[/{id}] · /summary · /suggestions · /suggestions/accept</td><td>Dividend CRUD, FY summary, Yahoo suggestions, bulk accept</td><td>RSC + hook DividendsSection</td><td>±7 day dedup</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/investments/fno[/{id}]</td><td>F&amp;O round-trip CRUD</td><td>RSC + hook FnoView</td><td>Broker account only</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/investments/imports/preview · /commit</td><td>Plain import (mf_cas in practice)</td><td>hook ImportWizardDialog (commit = job)</td><td>Commit trusts echoed rows</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/investments/imports/reconcile/preview · /reconcile/commit</td><td>Two-source broker reconciliation</td><td>hook ImportWizardDialog (commit = job)</td><td>Preview sync multipart</td></tr>
+</table></div></div></details>
+
+<details class="lvl l3"><summary><span class="lv">API</span>Rewards · six controllers</summary><div class="body"><div class="tw compact"><table>
+<tr><th>Method</th><th>Endpoint</th><th>Purpose</th><th>Caller</th><th>Notes</th></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/rewards/report?accountId&amp;from&amp;to</td><td>Full compute-on-read report</td><td>RSC + hook useRewardReport</td><td>Window expansion</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/rewards/lines?accountId&amp;from&amp;to&amp;ruleId&amp;page&amp;size</td><td>Per-transaction lines</td><td>hook useRewardLines</td><td>In-memory slice</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/reward-rules[/{id}]</td><td>Rule CRUD</td><td>hook useRewardRulesQueries</td><td>Full overwrite on PUT</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/reward-rules/reorder</td><td>Set priorities from complete id list</td><td>hook</td><td>Rejects partial lists</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/reward-cap-buckets[/{id}]</td><td>Shared cap CRUD</td><td>hook</td><td>Reward type change blocked while referenced</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/reward-milestones[/{id}]</td><td>Milestone CRUD</td><td>hook</td><td>ONE_TIME needs both dates</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-put">PUT</span></td><td>/reward-config?accountId</td><td>Default reward type, point value (anniversary read-only)</td><td>hook</td><td>Three columns on accounts</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/reward-recommendations</td><td>Rank cards for a hypothetical spend</td><td>hook useRecommendCards (mutation)</td><td>Points at 0.25 default</td></tr>
+</table></div></div></details>
+
+<details class="lvl l3"><summary><span class="lv">API</span>Loans, lendings, obligations</summary><div class="body"><div class="tw compact"><table>
+<tr><th>Method</th><th>Endpoint</th><th>Purpose</th><th>Caller</th><th>Notes</th></tr>
+<tr><td><span class="m m-post">POST</span> <span class="m m-get">GET</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/loans[/{id}]</td><td>CRUD (page 50); schedule computed to validate</td><td>RSC + hook LoansBrowser, LoanDetail</td><td></td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/loans/summary</td><td>Totals (aggregated in controller)</td><td>RSC + hook</td><td></td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/loans/{id}/schedule</td><td>Installments</td><td>RSC + hook</td><td>Recomputed separately from detail</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/loans/{id}/close · /reopen</td><td>Status</td><td>hook</td><td>No zero-balance guard</td></tr>
+<tr><td><span class="m m-post">POST</span> <span class="m m-delete">DELETE</span></td><td>/loans/{id}/events[/{eventId}]</td><td>Rate change, prepayment, foreclosure</td><td>hook RecordEventDialog</td><td>Delete guards schedule length only</td></tr>
+<tr><td><span class="m m-post">POST</span> <span class="m m-delete">DELETE</span></td><td>/loans/{id}/payments[/{paymentId}] · /payments/batch</td><td>Settle installments (single, batch ≤500)</td><td>hook</td><td>Batch all-or-nothing</td></tr>
+<tr><td><span class="m m-post">POST</span> <span class="m m-delete">DELETE</span></td><td>/loans/{id}/charges[/{chargeId}]</td><td>Fees</td><td>hook</td><td>APR only</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/loans/{id}/match-suggestions</td><td>Bank transactions ± ₹20 / ± 7 days</td><td>hook (enabled: false, on demand)</td><td>Plan said exact</td></tr>
+<tr><td><span class="m m-post">POST</span> <span class="m m-get">GET</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/lendings[/{id}]</td><td>Ledger entry CRUD</td><td>RSC + hook</td><td>Counterparty create-or-reuse</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/counterparties[/{id}]</td><td>People CRUD</td><td>RSC + hook</td><td>Cascade deletes ledger</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/obligations/upcoming?months</td><td>EMIs and lending dues (1–12 months)</td><td>RSC CalendarView</td><td></td></tr>
+</table></div></div></details>
+
+<details class="lvl l3"><summary><span class="lv">API</span>Reports, dashboards, datasources</summary><div class="body"><div class="tw compact"><table>
+<tr><th>Method</th><th>Endpoint</th><th>Purpose</th><th>Caller</th><th>Notes</th></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/report/datasource</td><td>Field catalog for all datasources</td><td>RSC ReportBuilder pages</td><td>Singular path</td></tr>
+<tr><td><span class="m m-post">POST</span> <span class="m m-get">GET</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/reports[/{id}]</td><td>Saved report CRUD</td><td>RSC + hook</td><td>type and datasource immutable</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/reports/{id}/data?page&amp;size</td><td>Run saved</td><td>hook DashboardWidgetView, ReportsList; RSC prefetch</td><td>Re-validates definition</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/reports/data</td><td>Run ad hoc</td><td>hook PreviewPane; chat report draft preview (action)</td><td></td></tr>
+<tr><td><span class="m m-post">POST</span> <span class="m m-get">GET</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/dashboards[/{id}]</td><td>Dashboard CRUD; PUT replaces widgets</td><td>RSC + hook</td><td></td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/dashboards/default</td><td>Default dashboard</td><td><strong>none</strong></td><td>Dead</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/dashboard/summary</td><td>Financial summary</td><td><strong>none</strong></td><td>Hardcoded zeros, status "skeleton"</td></tr>
+</table></div></div></details>
+
+<details class="lvl l3"><summary><span class="lv">API</span>LLM keys, routing, chat · <code>LlmKeyController</code>, <code>LlmRoutingController</code>, <code>ChatController</code></summary><div class="body"><div class="tw compact"><table>
+<tr><th>Method</th><th>Endpoint</th><th>Purpose</th><th>Caller</th><th>Notes</th></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span> <span class="m m-delete">DELETE</span></td><td>/llm-keys[/{id}]</td><td>BYOK list, add (validated live), delete</td><td>RSC + hook LlmKeysManager</td><td>Two-phase reorder</td></tr>
+<tr><td><span class="m m-patch">PATCH</span></td><td>/llm-keys/{id}/position</td><td>Reorder</td><td>hook</td><td></td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/llm-keys/{id}/test</td><td>Live test</td><td>hook</td><td>Bypasses failover</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/llm/task-groups · /catalog · /routing-options · /routing · /health</td><td>Groups, model catalog, menu, saved order, bucket health</td><td>RSC + hook</td><td>Health uses the same bucket keys</td></tr>
+<tr><td><span class="m m-put">PUT</span> <span class="m m-post">POST</span></td><td>/llm/routing/{group} · /routing/{group}/reset</td><td>Save or reset order</td><td>hook RoutingGroupCard</td><td>Reorder only</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/chat/stream</td><td>SSE answer</td><td>Next route /api/chat</td><td>429 CHAT_QUOTA_EXCEEDED | CHAT_BUSY; 503 CHAT_DISABLED</td></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/chat</td><td>Non-streamed answer</td><td>tests</td><td></td></tr>
+</table></div></div></details>
+
+<details class="lvl l3"><summary><span class="lv">API</span>E2E control (profile e2e only) · <code>E2eControlController</code></summary><div class="body"><div class="tw compact"><table>
+<tr><th>Method</th><th>Endpoint</th><th>Purpose</th></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/api/e2e/llm/script</td><td>Queue scripted LLM responses per user and task</td></tr>
+<tr><td><span class="m m-put">PUT</span></td><td>/api/e2e/llm/mode</td><td>Scripted vs passthrough</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-delete">DELETE</span></td><td>/api/e2e/llm/calls · /api/e2e/llm</td><td>Inspect or reset calls</td></tr>
+<tr><td><span class="m m-get">GET</span> <span class="m m-post">POST</span></td><td>/api/e2e/coverage · /coverage/reset</td><td>Operation coverage counters</td></tr>
+</table></div></div></details>
+
+<h3 id="s09-findings">Findings</h3>
+<div class="tw"><table>
+<tr><th>Category</th><th>Endpoints</th><th>Evidence</th></tr>
+<tr><td>Dead (no caller)</td><td><code>GET /dashboard/summary</code> (stub), <code>GET /dashboards/default</code>, <code>POST /gmail/rescan</code></td><td>grep in client shows no caller; E2E sweep still hits them for coverage</td></tr>
+<tr><td>Internal only</td><td><code>POST /chat</code> (non-stream, tests), <code>/api/e2e/**</code></td><td>profile-gated</td></tr>
+<tr><td>Overlapping</td><td><code>GET /transactions</code> vs <code>POST /transactions/search</code>; <code>/dashboards/default</code> vs client-side filter of <code>/dashboards</code></td><td>list endpoint used only by RSC</td></tr>
+<tr><td>Suspicious behaviour</td><td><code>PATCH /transactions/card</code> with null currentCardId; <code>POST /rules</code> duplicate returns a bodiless 409; <code>GET /rewards/lines</code> paginates in memory; <code>POST /imports/commit</code> trusts client rows; <code>/gmail/oauth/callback</code> reflects exception text</td><td>see module sections</td></tr>
+<tr><td>Naming inconsistencies</td><td>/report/datasource vs /reports; /dashboard/summary vs /dashboards; /accounts/{id}/gmail-cleanup in GmailController; /transactions/card is a PATCH on a collection</td><td>—</td></tr>
+</table></div>
+</section>
+<section class="sec" id="s13" data-part="V · Server &amp; API">
+<p class="eyebrow">Section 13</p>
+<h2><span class="n">13</span>External integrations</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Eight external services touch FinanceOS: Google OAuth (sign-in), Gmail API (alerts and statements), three LLM providers (Gemini, Groq, OpenRouter) behind one failover client, Yahoo Finance (quotes, search, dividend events), AMFI (mutual fund NAVs), and Grafana Cloud plus Slack for telemetry. Every integration fails soft: an outage degrades a feature (no price, no categorization, parked email) rather than breaking a request. In the E2E profile every one of them is replaced by WireMock and the suite proves zero unmatched outbound calls. <span class="c cg">Confirmed</span></p></div>
+
+<figure>
+<svg viewBox="0 0 960 330" role="img" aria-label="Integration map: FinanceOS server calls Google OAuth, Gmail API, Gemini, Groq, OpenRouter, Yahoo Finance and AMFI; ships telemetry to Grafana Cloud and Slack; each arrow labelled with trigger">
+<defs><marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g font-family="IBM Plex Sans, system-ui, sans-serif" font-size="11.5" fill="currentColor">
+<rect x="380" y="110" width="200" height="110" rx="8" fill="none" stroke="currentColor"/>
+<text x="392" y="132" font-weight="600">FinanceOS server</text>
+<text x="392" y="150">GoogleOAuthClient · GmailApiClient</text>
+<text x="392" y="166">FailoverLlmClient</text>
+<text x="392" y="182">YahooPriceProvider · AmfiFeedClient</text>
+<text x="392" y="198" opacity=".75">logback JSON → Fluent Bit</text>
+<rect x="30" y="20" width="220" height="50" rx="6" fill="none" stroke="currentColor"/><text x="40" y="40" font-weight="600">Google OAuth</text><text x="40" y="56" opacity=".75">login, token exchange, revoke</text>
+<rect x="30" y="90" width="220" height="50" rx="6" fill="none" stroke="currentColor"/><text x="40" y="110" font-weight="600">Gmail API</text><text x="40" y="126" opacity=".75">messages.list, get, attachments</text>
+<rect x="30" y="160" width="220" height="50" rx="6" fill="none" stroke="currentColor"/><text x="40" y="180" font-weight="600">Yahoo Finance</text><text x="40" y="196" opacity=".75">v7 quote batch, crumb, chart, search, dividends</text>
+<rect x="30" y="230" width="220" height="50" rx="6" fill="none" stroke="currentColor"/><text x="40" y="250" font-weight="600">AMFI</text><text x="40" y="266" opacity=".75">NAVAll.txt daily</text>
+<rect x="710" y="20" width="220" height="70" rx="6" fill="none" stroke="currentColor"/><text x="720" y="40" font-weight="600">LLM providers</text><text x="720" y="56" opacity=".75">Gemini (native schema)</text><text x="720" y="72" opacity=".75">Groq, OpenRouter (OpenAI-compatible)</text>
+<rect x="710" y="130" width="220" height="70" rx="6" fill="none" stroke="currentColor"/><text x="720" y="150" font-weight="600">Grafana Cloud</text><text x="720" y="166" opacity=".75">Loki · Prometheus · Faro · (Tempo off)</text>
+<rect x="710" y="240" width="220" height="50" rx="6" fill="none" stroke="currentColor"/><text x="720" y="260" font-weight="600">Slack webhook</text><text x="720" y="276" opacity=".75">deploy and alert notifications</text>
+<path d="M376 150 H254" stroke="currentColor" marker-end="url(#ar4)"/><text x="262" y="82" opacity=".8">on login, connect, delete</text>
+<path d="M376 160 H254 V115" stroke="currentColor" fill="none" marker-end="url(#ar4)"/>
+<path d="M376 175 H254 V185" stroke="currentColor" fill="none" marker-end="url(#ar4)"/><text x="262" y="222" opacity=".8">19:00 IST cron, after trades, search</text>
+<path d="M376 190 H300 V255 H254" stroke="currentColor" fill="none" marker-end="url(#ar4)"/>
+<path d="M580 150 H706 V55" stroke="currentColor" fill="none" marker-end="url(#ar4)"/><text x="590" y="142" opacity=".8">categorize, extract, chat</text>
+<path d="M580 180 H706 V165" stroke="currentColor" fill="none" marker-end="url(#ar4)"/><text x="590" y="205" opacity=".8">logs, metrics (dashed: client Faro/Loki)</text>
+<path d="M580 200 H650 V265 H706" stroke="currentColor" fill="none" stroke-dasharray="4 4" marker-end="url(#ar4)"/>
+</g></svg>
+<figcaption>Outbound integrations and their triggers. The Gmail sync cron runs seven times a day; the price cron once; LLM calls happen on demand from ingestion and chat.</figcaption>
+</figure>
+
+<div class="tw"><table>
+<tr><th>Service</th><th>Purpose</th><th>Auth</th><th>Endpoints and data</th><th>Trigger and frequency</th><th>Errors, retries, limits</th><th>Persistence</th><th>If unavailable</th></tr>
+<tr><td><strong>Google OAuth</strong></td><td>Sign in with Google; token revoke on account deletion</td><td>OAuth 2 client id and secret (<code>GOOGLE_CLIENT_ID/SECRET</code>, fallback to Gmail creds)</td><td>authorization URL, token endpoint, userinfo, revoke (all overridable for WireMock)</td><td>Per login; per deletion</td><td>state never validated <span class="c pc">Critical</span>; revoke best-effort 3 s timeout</td><td><code>users.google_id</code>, <code>gmail_connections.encrypted_refresh_token</code></td><td>Password login still works; Google-only users locked out</td></tr>
+<tr><td><strong>Gmail API</strong></td><td>Discover and read bank alert emails and statement attachments</td><td>Refresh token per connection (AES-GCM at rest); scope gmail.readonly</td><td><code>users.messages.list</code> with <code>from:(…) after: before:</code>, <code>messages.get</code>, attachments, <code>getProfile</code>; <code>history.list</code> wrapped but unused</td><td>Cron <code>0 0 10-22/2 * * *</code> IST (7 per day), manual sync, reactivation events</td><td>404 → SKIPPED_MESSAGE_GONE; 401/403 → GmailEngineException(AUTH_ERROR) but connection not marked disconnected; 429 → RATE_LIMIT, no explicit backoff beyond the message retry ladder; budgets 100/500 messages per run</td><td>Ledger rows, transactions, statements</td><td>No new alerts; parked rows retry over ~2 days; manual entry unaffected</td></tr>
+<tr><td><strong>Gemini</strong></td><td>Categorize, extract email fields, chat</td><td>User BYOK keys (encrypted) or env <code>GEMINI_API_KEY</code></td><td><code>generateContent</code> with <code>responseSchema</code>; 7 models tried model-major</td><td>On ingestion batches (200 per call), per email, per chat turn</td><td>429 per-day → cooldown to midnight Pacific; per-minute → 60 s; 401 → key INVALID; 2 attempts on 5xx</td><td><code>llm_api_keys.last_used_at</code></td><td>Falls to Groq then OpenRouter</td></tr>
+<tr><td><strong>Groq</strong></td><td>Same tasks (GPT-OSS 120B)</td><td>BYOK or env key</td><td>OpenAI-compatible chat completions, <code>json_schema</code> strict</td><td>Batch 100</td><td>same ladder</td><td></td><td>next provider</td></tr>
+<tr><td><strong>OpenRouter</strong></td><td>Same tasks (GLM-5.3-Flash, free pool)</td><td>BYOK or env key; key validate URL</td><td>OpenAI-compatible, <code>json_object</code> with schema in prompt; 90 s timeout</td><td>Batch 40</td><td>same ladder</td><td></td><td>chain exhausted → categorization flagged, extraction parked, chat friendly error</td></tr>
+<tr><td><strong>Yahoo Finance</strong></td><td>Stock and ETF prices, instrument search, dividend events</td><td>None; crumb cookie bootstrap; desktop user agent</td><td><code>v7/finance/quote</code> batches of 50 with crumb (15 min cache), <code>v8/finance/chart</code> fallback per symbol and for dividends, <code>v1/finance/search</code> (5 min cache); hosts <code>query2</code>, <code>fc</code>, <code>finance</code> configurable</td><td>19:00 IST cron; after each trade or import commit; catalog search keystrokes (debounced)</td><td>401 crumb → one refresh retry; failures per symbol with human reasons; 100 ms pause between batches</td><td><code>instrument_prices</code> (source YAHOO), dividend suggestions (not persisted until accepted)</td><td>Stale prices; "at cost" valuation; no suggestions; catalog shows local + AMFI only</td></tr>
+<tr><td><strong>AMFI</strong></td><td>Mutual fund NAVs and scheme catalog</td><td>None</td><td><code>NAVAll.txt</code> download; in-memory feed with no TTL, force-reloaded by the price job</td><td>19:00 cron; search</td><td>30 s timeout; failures logged; empty results</td><td><code>instrument_prices</code> (source AMFI)</td><td>MF prices stale</td></tr>
+<tr><td><strong>Grafana Cloud</strong></td><td>Logs (Loki), metrics (Prometheus), RUM (Faro), traces (Tempo, off)</td><td>Loki user + cloud token; Faro app key (public)</td><td>Fluent Bit ships <code>logs/financeos.json</code>; Prometheus scrapes 8081 loopback; client RequestLogger POSTs to Loki; Faro collector</td><td>Continuous</td><td>Client logger disables itself if env missing; Faro no-ops</td><td>—</td><td>No visibility; app unaffected</td></tr>
+<tr><td><strong>Slack</strong></td><td>Deploy notifications, alert contact point</td><td>Webhook URL</td><td>started / success / failure messages; Grafana alerts</td><td>Per deploy; on alert</td><td>Script no-ops if unset</td><td>—</td><td>Silent deploys</td></tr>
+<tr><td><strong>DuckDNS</strong></td><td>DNS-01 for Let's Encrypt via Caddy</td><td>Token</td><td>—</td><td>Cert renewal</td><td>—</td><td>—</td><td>TLS renewal fails eventually</td></tr>
+</table></div>
+
+<h3 id="s13-e2e">Test doubles</h3>
+<p>The E2E docker stack (<span class="path">financeos-client/e2e/docker-compose.yml</span>) runs WireMock 3.9.1 with mappings for Google OAuth, Gmail, Yahoo (chart, crumb, dividends, search, quote batch, including a dead-symbol mapping), AMFI, and the three LLM providers; every provider URL is env-overridable for this reason (commits "make every provider URL configurable", 2026-09-04/05). The scripted LLM client replaces the failover client under the e2e profile. The last recorded run shows 0 unmatched WireMock requests. <span class="c cg">Confirmed</span></p>
+
+<h3 id="s13-risk">Dependency risk</h3>
+<div class="tw compact"><table>
+<tr><th>Dependency</th><th>Risk</th><th>Priority</th></tr>
+<tr><td>Free-tier LLM quotas</td><td>Daily exhaustion of every bucket stops categorization and extraction until Pacific midnight; chat answers with an error. In-memory cooldown state resets on restart, which can cause immediate re-tries.</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Yahoo unofficial API</td><td>Crumb and host changes break quotes; user-agent spoofing suggests fragility. Fallback to chart endpoint exists.</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Gmail token revocation</td><td>Not detected; sync fails silently per message until the user reconnects.</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>OAuth state</td><td>Login CSRF</td><td><span class="c pc">Critical</span></td></tr>
+<tr><td>Grafana Cloud Free</td><td>Instance sleeps; Loki proxy GET-only quirks noted in memory</td><td><span class="c pl">Low</span></td></tr>
+</table></div>
+</section>
+<section class="sec" id="s14" data-part="V · Server &amp; API">
+<p class="eyebrow">Section 14</p>
+<h2><span class="n">14</span>Background jobs &amp; automation</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>All automation runs inside the single server JVM: three cron schedulers (Gmail ingest, price refresh, job retention), a two-thread job worker polling a DB queue every 2 s, two after-commit event listeners (price refresh after trades, Gmail reactivation after account or card changes), and the boot-time sweep that marks orphaned RUNNING jobs as failed. There is no external scheduler, no message broker, and no second instance, so nothing can double-run but nothing fails over either. <span class="c cg">Confirmed</span> Job mechanics are detailed in <a href="/handbook/modules-a.html#m-jobs">M5</a>.</p></div>
+
+<div class="tw"><table>
+<tr><th>Automation</th><th>Trigger / schedule</th><th>Purpose</th><th>Inputs</th><th>Processing</th><th>Outputs and DB effects</th><th>Failure and retry</th><th>Idempotency</th></tr>
+<tr><td><code>IngestionScheduler</code></td><td>Cron <code>0 0 10-22/2 * * *</code> Asia/Kolkata (7 runs/day); disabled when <code>gmail.ingest.enabled=false</code> or in e2e</td><td>Enqueue a Gmail sync per connected connection</td><td>All connected <code>gmail_connections</code> across users</td><td>One <code>GMAIL_SYNC</code> job per connection, dedupKey = connectionId</td><td>Jobs rows</td><td>Enqueue failures logged per connection</td><td>Dedup on active job</td></tr>
+<tr><td><code>GmailSyncJobHandler</code></td><td>Job (cron, manual sync, retry, reactivation, assign)</td><td>Discover, sweep, drain</td><td>Cursors, senders, backfill demand, ledger</td><td>See <a href="/handbook/modules-a.html#m-gmail-sync">M3</a>; budgets 100 / 500</td><td>Ledger rows, transactions, statements, cursors</td><td>Per-message try/catch; ladder 2h/4h/8h/16h; permanent after 5; stale PROCESSING sweep at 60 min</td><td>Ledger unique key + source_message_id</td></tr>
+<tr><td><code>PriceSchedulerConfiguration</code></td><td>Cron <code>0 0 19 * * *</code> Asia/Kolkata; <code>price.enabled</code> gate</td><td>Enqueue daily price refresh</td><td>—</td><td>One <code>PRICE_REFRESH</code> job, dedupKey <code>cron-&lt;date&gt;</code>, user null</td><td>Job row (invisible in UI)</td><td>—</td><td>Same-day re-fire is a no-op</td></tr>
+<tr><td><code>PriceRefreshJobHandler</code></td><td>Job (cron, manual button)</td><td>Refresh prices for actively held instruments</td><td>Holdings with net qty &gt; 0 (all users when cron)</td><td>Force AMFI reload; group by provider; Yahoo batches of 50</td><td>Upsert <code>instrument_prices</code>; skip MANUAL rows</td><td>Per-instrument failure reasons in result</td><td>Upsert by (instrument, date)</td></tr>
+<tr><td><code>PriceRefreshEventListener</code></td><td>AFTER_COMMIT of a trade or import commit</td><td>Fetch today's price for touched instruments</td><td><code>PriceRefreshEvent(instrumentIds)</code></td><td>REQUIRES_NEW transaction</td><td>Price rows</td><td>Swallowed; never rolls back the trade</td><td>Upsert</td></tr>
+<tr><td><code>GmailIngestEventListener</code></td><td>AFTER_COMMIT of <code>AccountIngestChangedEvent</code> or <code>SenderIngestChangedEvent</code></td><td>Reactivate parked messages within the window; enqueue sync</td><td>Account last4 / identifiers, dates</td><td>Reset UNRESOLVED_ACCOUNT, ACCOUNT_NOT_OPTED_IN, SKIPPED_BEFORE_WATERMARK rows to DISCOVERED</td><td>Ledger status, jobs</td><td>Logged</td><td>Re-processing guarded by dedup</td></tr>
+<tr><td><code>StatementIngestJobHandler</code></td><td>Job from upload (202)</td><td>Parse files, dedup, categorize, persist</td><td>Artifacts (BLOBs), account</td><td>See <a href="/handbook/modules-a.html#m-statements">M4</a></td><td>Statements, statement_transactions, transactions; artifacts deleted on success</td><td>Per-file failure → file FAILED, job SUCCEEDED; outside-loop exception → job FAILED</td><td>Statement dedup by period or sha256</td></tr>
+<tr><td><code>RuleApplyJobHandler</code></td><td>Job from "Apply rule"</td><td>Apply categories to matching transactions</td><td>Rule id, selection or all</td><td>Chunks of 500, re-verifies predicate</td><td>transaction_categories, applied_rule, review reasons, applied_count</td><td>Standard job failure</td><td>Safe to repeat; inflates applied_count</td></tr>
+<tr><td><code>InvestmentImportCommitJobHandler</code>, <code>BrokerReconcileCommitJobHandler</code></td><td>Jobs from the import wizard</td><td>Persist previewed rows</td><td>Client-echoed rows and choices</td><td>Dedup, resolve instruments, write</td><td>investment_transactions, classifications, fno_trades, instruments; price refresh event</td><td>Per-row try/catch; whole method one transaction</td><td>Service-level dedup only</td></tr>
+<tr><td><code>JobWorker.poll</code></td><td><code>fixedDelay</code> 2000 ms plus after-commit poke</td><td>Claim and run PENDING jobs</td><td>Queue</td><td>Conditional UPDATE claim; 2 threads; queue 100</td><td>Job status, result</td><td>Executor full → FAILED EXECUTOR_REJECTED</td><td>Claim atomic</td></tr>
+<tr><td><code>JobJanitor</code></td><td><code>ApplicationReadyEvent</code>; cron <code>0 30 3 * * *</code> Asia/Kolkata</td><td>Boot sweep and retention</td><td>RUNNING rows; terminal rows older than 30 d; FAILED artifacts older than 7 d</td><td>Mark FAILED/INTERRUPTED; delete</td><td>Jobs, artifacts</td><td>—</td><td>Repeatable</td></tr>
+<tr><td><code>StartupFingerprintLogger</code></td><td><code>ApplicationReadyEvent</code></td><td>Log configuration and four suspect checks</td><td>Config</td><td></td><td>Log lines only</td><td></td><td></td></tr>
+<tr><td>Client polling</td><td><code>useJobStatusPolling</code> 1.5 s; <code>useJobsListPolling</code> 4 s while active else 30 s; TanStack window-focus refetch after 30 s</td><td>Reflect job progress</td><td></td><td></td><td>Cache invalidation on completion</td><td></td><td></td></tr>
+</table></div>
+
+<h3 id="s14-notes">Notes</h3>
+<ul>
+<li><strong>Timezones</strong>: crons run in Asia/Kolkata; "today" inside handlers uses <code>LocalDate.now(zone)</code> for price code but bare <code>LocalDate.now()</code> for XIRR, reports and chat quota, which is the JVM default zone. <span class="c cy">Strongly inferred</span> UTC in production.</li>
+<li><strong>Tenancy on worker threads</strong>: <code>runJob</code> sets <code>UserContext</code> from the job row; cron price refresh deliberately runs without a user and touches all users' instruments; <code>GmailSyncJobHandler</code> asserts the connection belongs to the job's user.</li>
+<li><strong>Cron-global jobs</strong> (user null) are invisible and uncancellable through the API.</li>
+<li><strong>Notifications</strong>: none server-side. Client toasts on job completion; chat completion may raise a browser notification when the tab is hidden.</li>
+<li><strong>Recalculation jobs</strong>: none exist. Balances, positions, rewards and schedules are computed on read, so there is nothing to recalculate.</li>
+<li><strong>Cleanup</strong>: job retention only. Gmail cleanup is user-initiated from the account form.</li>
+<li><strong>What is not automated</strong>: Gmail token revocation detection, corporate-action ingestion, dividend detection (manual scan), SIP execution, reconciliation of derived figures.</li>
+</ul>
+</section>
+<nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/client.html"><small>Previous</small>Client</a><a class="next" href="/handbook/calculations.html"><small>Next</small>Calculations and invariants</a></nav>
+  </main>
+</div>
+</div>
+<script src="/handbook/handbook.js" defer></script>
+</body>
+</html>

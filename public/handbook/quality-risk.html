@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="FinanceOS system and product reference, reverse-engineered from the code. Quality and risk.">
+<title>FinanceOS Handbook · Quality and risk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/handbook/handbook.css">
+</head>
+<body data-page="quality-risk.html">
+<div class="shell">
+<aside class="side" id="side">
+  <div class="side-head">
+    <div class="brand">FinanceOS Handbook <small>v1</small></div>
+    <div class="brand-sub">System &amp; product reference, reverse-engineered from code · 2026-09-06</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search sections and text…" autocomplete="off" aria-label="Search">
+      <kbd>/</kbd>
+    </div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="side-foot">
+    <button id="expandAll" type="button">Expand all</button>
+    <button id="collapseAll" type="button">Collapse all</button>
+    <span style="margin-left:auto">Source of truth: code</span>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="burger" id="burger" type="button" aria-label="Open navigation">☰ Sections</button>
+    <div class="crumb" id="crumb"><b>FinanceOS Handbook</b></div>
+    <button id="toTop" type="button">↑ Top</button>
+  </div>
+  <div class="results" id="results" aria-live="polite">
+    <button class="close" id="closeResults" type="button">Close ✕</button>
+    <h3 id="resultsTitle"></h3>
+    <div id="resultsList"></div>
+  </div>
+  <main class="content" id="content">
+<section class="sec" id="s22" data-part="VIII · Quality &amp; risk">
+<p class="eyebrow">Section 22</p>
+<h2><span class="n">22</span>Code quality assessment</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>The codebase is consistent and disciplined in its patterns (layered server, typed client boundary, idempotent migrations, tenancy aspect, exhaustive E2E). Its weaknesses are the ones typical of fast AI-assisted growth: a handful of very large classes, duplicated logic (three sign conventions, two KPI engines, two FY definitions), dead code left after redesigns, stale documentation, and no optimistic locking. Quality is high where a plan document exists and lower where a fix was made in place. <span class="c cg">Confirmed</span> for all measurements; ratings are the author's judgement.</p></div>
+
+<h3 id="s22-size">Size and shape</h3>
+<div class="tw compact"><table>
+<tr><th>Metric</th><th>Server</th><th>Client</th></tr>
+<tr><td>Source files</td><td>688 Java (main + test)</td><td>536 TS/TSX</td></tr>
+<tr><td>Lines</td><td>~53 k</td><td>~85 k (incl. generated schema.d.ts ≈ 25 k)</td></tr>
+<tr><td>Test files</td><td>132 (JUnit 5 + Mockito; ~660 tests)</td><td>62 unit (vitest) + 70 Playwright specs (651 tests)</td></tr>
+<tr><td>Migrations</td><td>85 Flyway</td><td>—</td></tr>
+<tr><td>Controllers / entities</td><td>37 / 50</td><td>—</td></tr>
+<tr><td>Largest classes</td><td>StatementParseEngine ~1,100; FailoverLlmClient ~900; RewardCalculationService ~850; TransactionService ~700; InvestmentService ~680</td><td>All components ≤ 300 lines (splitting round enforced)</td></tr>
+</table></div>
+
+<h3 id="s22-strengths">Strengths</h3>
+<ul>
+<li><strong>Tenancy by construction</strong>: <code>@Filter</code> on 34 entities + aspect; native SQL always binds user; chat uses Oracle-side identity. E2E sweeps every endpoint with a foreign id.</li>
+<li><strong>Money as BigDecimal</strong> on the server with explicit scales; DB NUMBER(19,4); client only formats.</li>
+<li><strong>Typed API boundary</strong>: generated <code>schema.d.ts</code> with CI drift gates and a surface checker; openapi-fetch for hooks.</li>
+<li><strong>Migrations</strong>: idempotent PL/SQL from V63, double-boot verified in CI; V79/V82/V85 written with recovery in mind.</li>
+<li><strong>Consistent module layout</strong>: controller → service → repository → entity per domain; DTOs as records; validation via Jakarta annotations.</li>
+<li><strong>Explicit invariants in plans</strong>: rewards, loans, lendings, corporate actions have plan documents that match the code's shape.</li>
+<li><strong>Observability</strong>: request ids end to end, JSON logs with MDC, Faro in the client, structured job results.</li>
+</ul>
+
+<h3 id="s22-weak">Weaknesses and smells</h3>
+<div class="tw"><table>
+<tr><th>Smell</th><th>Where</th><th>Consequence</th><th>Priority</th></tr>
+<tr><td>God classes</td><td>StatementParseEngine, FailoverLlmClient, RewardCalculationService, TransactionService, ChatOrchestrator</td><td>Hard to test in isolation; long methods with many branches</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Duplicated logic</td><td>Sign convention ×3, KPI comparison ×2, FY start ×4, watermark check ×3, provider list ×3, bucket truncation ×3, reward matcher ×2 (server, client tester)</td><td>Divergence already observed (C6, C8, C9)</td><td><span class="c ph">High</span></td></tr>
+<tr><td>Dead code</td><td>See <a href="#s46-dead">§46 H</a>: EmailClassifier, recordLlmTokens, cooldown-ms, AppShellNav, useTransactionWorkspace, InstrumentDialog, DividendDialog, DeleteAccount.tsx, CardRelationship, plain equity parsers, rescan, dashboards/default, /dashboard/summary</td><td>Misleads readers; unused code still compiled and shipped</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>No optimistic locking</td><td>No <code>@Version</code> anywhere</td><td>Last write wins on every entity</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Mixed date semantics</td><td><code>LocalDate.now()</code> without zone in reports, XIRR, chat quota; crons zoned; V65-67 TIMESTAMP vs TIMESTAMP WITH TIME ZONE history</td><td>Off-by-one-day near midnight UTC</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Hand-authored client types beside generated ones</td><td>loan, jobs, reports <code>*.types.ts</code></td><td>Silent drift (C25)</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Stale docs</td><td>Client README (Next 14, middleware.ts, Node 18), server README (Boot 3.2.1), dictionary.md vs ALLOWED_VIEWS</td><td>Onboarding friction; chat self-correction</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Tests that do not exercise the subject</td><td>LoanServiceTest / LendingServiceTest never call the service; XirrCalculator has no test</td><td>False confidence</td><td><span class="c ph">High</span></td></tr>
+<tr><td>Magic numbers</td><td>±₹20/7 d, 0.70, 0.6, ₹0.25, 500 guard, 5 s drain, 3-day CAS window</td><td>Behaviour not discoverable from config</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Catch-all mappings</td><td>Statement verdict "else REJECTED"; direction default DEBIT</td><td>Typos become silent behaviour</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Stray artefacts</td><td><code>cookies.txt</code> at server repo root (session cookie); plans/ directory of prompts mixed with docs</td><td>Secret hygiene; noise</td><td><span class="c ph">High</span></td></tr>
+<tr><td>Exception handling</td><td>Some broad <code>catch (Exception)</code> in ingestion and LLM paths that log and continue</td><td>Silent partial failures (Gmail token revoked)</td><td><span class="c pm">Medium</span></td></tr>
+</table></div>
+
+<h3 id="s22-conventions">Conventions actually followed</h3>
+<div class="tw compact"><table>
+<tr><th>Area</th><th>Convention</th><th>Adherence</th></tr>
+<tr><td>Server naming</td><td>*Controller, *Service, *Repository, *Request/*Response records, *Test</td><td>Uniform</td></tr>
+<tr><td>Transactions</td><td><code>@Transactional</code> on services; read-only where applicable; AFTER_COMMIT events for side effects</td><td>Mostly; ingestion deliberately categorizes outside the write transaction</td></tr>
+<tr><td>Errors</td><td><code>GlobalExceptionHandler</code> → <code>ApiError {code, message, details}</code>; 400 for validation, 404 for not-owned</td><td>Uniform</td></tr>
+<tr><td>Client data</td><td>RSC prefetch → HydrationBoundary → hooks with <code>keys.*</code> factories; invalidate on mutation</td><td>8/8 modules; accounts also uses router.refresh()</td></tr>
+<tr><td>Client UI</td><td>text-2xs minimum, rose-only danger, button variants, rebuilt dialog, ≤300 lines per component</td><td>Enforced by review memory notes; lint clean</td></tr>
+<tr><td>Migrations</td><td>Idempotent PL/SQL, comments explaining why, TZ-aware timestamps</td><td>From V63; earlier ones plain</td></tr>
+<tr><td>Formatting</td><td>Prettier + ESLint client; no Spotless/Checkstyle server</td><td>Client enforced, server by habit</td></tr>
+</table></div>
+
+<h3 id="s22-rating">Rating by area</h3>
+<div class="tw compact"><table>
+<tr><th>Area</th><th>Rating</th><th>Note</th></tr>
+<tr><td>Core / auth / tenancy</td><td>Good</td><td>OAuth state gap is the exception</td></tr>
+<tr><td>Transactions / categorization</td><td>Good</td><td>Well tested; merge and review complex but coherent</td></tr>
+<tr><td>Gmail</td><td>Fair</td><td>Large orchestration, silent failure modes, unused classifier</td></tr>
+<tr><td>Statements</td><td>Fair</td><td>Heuristic engine, one huge class, advisory verdicts</td></tr>
+<tr><td>Rewards</td><td>Good</td><td>Well specified; long methods; client tester duplicates</td></tr>
+<tr><td>Investments</td><td>Fair</td><td>Sound FIFO; XIRR untested; duplicate CA; charges question</td></tr>
+<tr><td>Loans</td><td>Good</td><td>Clear math; tests skip the service layer</td></tr>
+<tr><td>Reports</td><td>Fair</td><td>Fan-out bug, two KPI engines, stale catalog</td></tr>
+<tr><td>LLM / chat</td><td>Good</td><td>Defensive design; validator drift</td></tr>
+<tr><td>Client</td><td>Good</td><td>Modern data path; dead components; README stale</td></tr>
+<tr><td>Ops</td><td>Fair</td><td>Solid pipeline; single VM, swap, no HA</td></tr>
+</table></div>
+</section>
+<section class="sec" id="s23" data-part="VIII · Quality &amp; risk">
+<p class="eyebrow">Section 23</p>
+<h2><span class="n">23</span>Security review</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Tenant isolation is the strongest part of the system: three independent mechanisms, exhaustively swept by E2E. Secrets at rest are encrypted with AES-GCM under two master keys. The material findings are one missing OAuth <code>state</code> check (login CSRF), unencrypted statement PDFs kept as job artifacts for up to 7 days, a session cap that never frees slots, a committed session-cookie file, and a set of operational exposures on the single VM. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s23-findings">Findings</h3>
+<div class="tw"><table>
+<tr><th>#</th><th>Finding</th><th>Evidence</th><th>Impact</th><th>Priority</th></tr>
+<tr><td>SEC1</td><td>Google OAuth callback never validates <code>state</code></td><td><code>AuthController</code> / <code>GmailOAuthController</code>: state generated, not compared on callback</td><td>Login CSRF: an attacker can bind a victim's browser to the attacker's Google account, or attach an attacker-controlled Gmail connection to a victim's FinanceOS account</td><td><span class="c pc">Critical</span></td></tr>
+<tr><td>SEC2</td><td>Statement PDFs stored unencrypted in <code>job_artifacts</code> (BLOB) until janitor purge (7 days)</td><td><code>FileUploadController</code>, <code>JobJanitor</code> retention</td><td>DB dump or backup exposes bank statements in clear</td><td><span class="c ph">High</span></td></tr>
+<tr><td>SEC3</td><td><code>cookies.txt</code> containing a session cookie committed at the server repo root</td><td>File present (contents not reproduced here)</td><td>If the session is still live (365-day TTL) it grants access</td><td><span class="c ph">High</span></td></tr>
+<tr><td>SEC4</td><td><code>maximumSessions(5)</code> with <code>maxSessionsPreventsLogin(false)</code> but Spring Session JDBC registry never expires slots</td><td><code>SecurityConfig</code></td><td>Users can be locked out of new logins, or old sessions never evicted (behaviour depends on registry); with 365-day sessions revocation is weak</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>SEC5</td><td>No global logout / session revocation UI; password change does not invalidate other sessions</td><td>AuthService</td><td>Stolen cookie valid up to a year</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>SEC6</td><td><code>GmailSyncCursor</code> lacks <code>@Filter</code>; 16 entities without filter rely on service-level ownership checks</td><td>Entity list</td><td>Currently safe via repository methods that take user id; regression risk</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>SEC7</td><td>Proxy checks cookie presence only; real auth is in RSC layout and API</td><td><code>proxy.ts</code></td><td>Not a vulnerability; a defence-in-depth note</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>SEC8</td><td>Rate limits: login 5/15 min per IP+email; invite global 10/15 min; chat 30/day; no limit on password change, forgot-password absent, batch endpoints</td><td>Limiter classes</td><td>Brute force on password change requires a session; low risk</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>SEC9</td><td>Statement passwords stored encrypted (AES-GCM, <code>ENCRYPTION_KEY</code>), decrypted into memory for every ingest; LLM keys under <code>LLM_KEYS_MASTER_KEY</code>; Google tokens encrypted</td><td><code>CryptoService</code>, <code>LlmKeyCrypto</code></td><td>Sound; key rotation not implemented</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>SEC10</td><td>Chat SQL: allow-list validator + CHAT_RO grants only on views + SYS_CONTEXT tenancy + 5 s timeout + row cap</td><td><code>ChatSqlValidator</code>, <code>chat-ro-setup.sql</code></td><td>Sound; drift of view list is a functional not security issue</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>SEC11</td><td>Prompt injection via email bodies and statement text into the extractor and categorizer</td><td>Prompts include raw email text</td><td>Model could be steered to mis-extract; outputs are schema-validated and only create NEEDS_REVIEW rows; no tool access from those prompts</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>SEC12</td><td>Chat tool loop: model output can call only <code>run_sql</code> (read-only) and <code>final_answer</code>; report drafts are validated server-side before save</td><td><code>ChatOrchestrator</code></td><td>Contained</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>SEC13</td><td>CORS from <code>CORS_ORIGINS</code> with credentials; CSRF disabled (cookie session + SameSite=Lax + custom header not required)</td><td><code>SecurityConfig</code></td><td>Cross-site POST from a third-party origin is blocked by CORS preflight for JSON, but simple form posts with SameSite=Lax on top-level navigation could reach GET-only endpoints; state-changing endpoints are JSON so practical risk is low</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>SEC14</td><td>Actuator on 8081 loopback in prod; Swagger disabled outside e2e; error responses do not leak stack traces</td><td>application-prod.yml</td><td>Good</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>SEC15</td><td>Single VM, swap in use, root SSH as configured by the deploy workflow, no WAF; Caddy TLS via DuckDNS</td><td>Deploy workflow</td><td>Operational exposure rather than code</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>SEC16</td><td>Uploads: 25 MB client cap, server multipart unlimited (-1); PDF parsing via PDFBox on untrusted files</td><td><code>application.yml</code></td><td>Memory pressure on a 512 MB heap; PDFBox CVE exposure depends on version</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>SEC17</td><td>Log masking: 8 Fluent Bit patterns (cookies, auth headers, tokens, keys); email bodies are not logged</td><td>Fluent Bit config</td><td>Good</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>SEC18</td><td>Account deletion: password re-auth, limiter, job drain, token revoke, dictionary-verified delete, session destroy</td><td><code>AccountDeletionService</code></td><td>Strong</td><td><span class="c pl">Low</span></td></tr>
+</table></div>
+
+<h3 id="s23-tenancy">Tenant isolation model</h3>
+<ol class="trace">
+<li><span class="lyr">HTTP</span><code>UserContextFilter</code> resolves the session user into a ThreadLocal; job worker sets it from the job row</li>
+<li><span class="lyr">ORM</span><code>HibernateFilterAspect</code> enables <code>userFilter</code> on every <code>@Transactional</code> entry (34 entities)</li>
+<li><span class="lyr">SQL</span>6 native-SQL sites bind <code>:userId</code> explicitly</li>
+<li><span class="lyr">Chat</span>CHAT_RO sees only <code>v_chat_*</code> views that filter on <code>SYS_CONTEXT('USERENV','CLIENT_IDENTIFIER')</code>, set per connection</li>
+<li><span class="lyr">Test</span>E2E foreign-id sweep across 193 operations; "Security Breach Attempt" log on ownership mismatch</li>
+</ol>
+
+<h3 id="s23-secrets">Secrets and keys</h3>
+<div class="tw compact"><table>
+<tr><th>Secret</th><th>At rest</th><th>In transit</th><th>Rotation</th></tr>
+<tr><td>User password</td><td>BCrypt</td><td>TLS</td><td>Change password endpoint</td></tr>
+<tr><td>Session</td><td>SPRING_SESSION table (id only)</td><td>HttpOnly Secure SameSite=Lax cookie</td><td>Logout; 365 d</td></tr>
+<tr><td>Google tokens</td><td>AES-GCM (ENCRYPTION_KEY)</td><td>TLS</td><td>Refresh flow; revoke on disconnect/delete</td></tr>
+<tr><td>Statement passwords</td><td>AES-GCM</td><td>TLS</td><td>Edit</td></tr>
+<tr><td>LLM BYOK keys</td><td>AES-GCM (LLM_KEYS_MASTER_KEY), masked in responses</td><td>TLS</td><td>Delete + add; 401 marks invalid</td></tr>
+<tr><td>Env secrets</td><td>server/.env, GitHub secrets, OCI wallet</td><td>SSH deploy</td><td>Manual</td></tr>
+</table></div>
+</section>
+<section class="sec" id="s24" data-part="VIII · Quality &amp; risk">
+<p class="eyebrow">Sections 24 and 58</p>
+<h2><span class="n">24</span>Performance and scalability</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>FinanceOS is a compute-on-read system running on a 512 MB heap with two job threads. Every derived number (balance, positions, rewards, schedules) is recomputed per request from full history. This is correct and cheap at personal scale (thousands of transactions) and will degrade linearly with history; nothing is cached server-side. The client side is well tuned (RSC prefetch, 30 s staleTime, server pagination, code-split charts). <span class="c cg">Confirmed</span> for mechanisms; no load measurements exist in the repository.</p></div>
+
+<h3 id="s24-hot">Hot paths and their cost model</h3>
+<div class="tw"><table>
+<tr><th>Path</th><th>Work per request</th><th>Scales with</th><th>Mitigation present</th><th>Risk</th></tr>
+<tr><td>Accounts list (balances)</td><td>Per account: latest statement + Σ transactions after anchor (batch query)</td><td>Accounts × post-anchor rows</td><td>Batch SQL; anchors bound the sum</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Transactions list</td><td>Paged SQL with running balance window</td><td>Page size</td><td>Server pagination (50), indexes on account/date</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Reward report</td><td>Load all transactions in the expanded window (caps/milestones widen to a year) and evaluate every rule</td><td>Rules × transactions in window</td><td>Range guard (400 if too wide); BigDecimal</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Card Picker</td><td>Reward report for every card as of today + simulate</td><td>Cards × above</td><td>None</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Investments positions</td><td>All trades + classifications + CAs per broker, FIFO replay, prices lookup</td><td>Trades</td><td>None; per-broker scope</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Portfolio value datasource</td><td>Replay FIFO at each month end × price lookups</td><td>Months × trades</td><td>None</td><td><span class="c ph">High</span> for long histories</td></tr>
+<tr><td>Loan detail</td><td>Schedule generation ≤ 600 rows</td><td>Tenure</td><td>Bounded</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Reports (SQL)</td><td>One aggregate query per widget</td><td>Filtered rows</td><td>Indexes; LIMIT on tables</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Dashboard</td><td>N widget reports in parallel from RSC</td><td>Widgets</td><td>Parallel fetch; per-widget failure isolation</td><td><span class="c pm">Medium</span> on 512 MB</td></tr>
+<tr><td>Chat</td><td>Up to 6 LLM calls + SQL (5 s timeout each)</td><td>Model latency</td><td>Deadlines, semaphore 2, quota 30</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Gmail sync</td><td>Per message: fetch + LLM extract; batch categorize 200</td><td>Emails</td><td>Budgets 100/500 per run; 2 job threads</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Statement ingest</td><td>PDFBox parse + balance oracle + dedup (N×M Jaccard against same-day rows)</td><td>Lines × same-day rows</td><td>Same-day window narrows M</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Price refresh</td><td>Yahoo batch 50 + AMFI NAV file (~30 MB text parsed fully)</td><td>Instruments</td><td>Batch; daily cron</td><td><span class="c pm">Medium</span> memory</td></tr>
+</table></div>
+
+<h3 id="s24-db">Database</h3>
+<ul>
+<li><strong>Pool</strong>: Hikari 10 connections; Oracle ADB always-free allows 20 sessions; CHAT_RO uses a separate small pool.</li>
+<li><strong>Indexes</strong>: user_id on every tenant table; (account_id, transaction_date); (account_id, sha256) per statement; job (status, run_after); Gmail ledger (connection, message id).</li>
+<li><strong>Missing</strong>: no index on <code>transaction_categories.category_id</code> alone for reverse lookups (rule apply); <code>settlement_date</code> not indexed (rewards effective date).</li>
+<li><strong>Parallel DML</strong>: V82 hit ORA-12839 on ADB; migrations now disable parallel DML.</li>
+<li><strong>N+1</strong>: mostly avoided via entity graphs (card.cardholder fixed 2026-09-01); <code>getAllAccounts</code> loop noted in memory as a batch candidate.</li>
+</ul>
+
+<h3 id="s24-jvm">Runtime envelope</h3>
+<div class="tw compact"><table>
+<tr><th>Resource</th><th>Setting</th><th>Observation</th></tr>
+<tr><td>VM</td><td>OCI E2.1.Micro, 1 OCPU, 952 MiB</td><td>Swap in active use</td></tr>
+<tr><td>JVM</td><td>-Xmx512m, SerialGC, C1 only (TieredStopAtLevel=1)</td><td>Low throughput ceiling; fast startup</td></tr>
+<tr><td>Threads</td><td>Tomcat default 200 max; jobs 2; scheduler 1</td><td>Job backlog under sync + import</td></tr>
+<tr><td>Startup</td><td>Flyway 85 migrations + Hibernate metadata</td><td>~40–60 s per deploy; double-boot in CI</td></tr>
+<tr><td>Client</td><td>Vercel Hobby; Next 16 RSC; Recharts dynamic (~390 KB)</td><td>PriceHistoryPanel imports Recharts statically</td></tr>
+</table></div>
+
+<h3 id="s58-dataflow">Performance-critical data flow (§58)</h3>
+<pre class="mermaid">flowchart LR
+  T[(transactions)] -->|Σ after anchor| B[BalanceMath]
+  S[(statements)] -->|anchor| B
+  T -->|window rows| R[RewardCalculationService]
+  RR[(reward_rules)] --> R
+  R -->|× cards| CP[Card Picker]
+  IT[(investment_transactions)] -->|FIFO replay| P[Positions]
+  CL[(classifications)] --> P
+  CA[(corporate_actions)] --> P
+  PR[(instrument_prices)] --> P
+  P -->|× month ends| PV[portfolio_value datasource]
+  P --> BB[Broker balance]
+  B --> A["/accounts"]
+  BB --> A</pre>
+<p>Every arrow is recomputed on each request. The two multiplicative nodes (Card Picker × cards, portfolio_value × month ends) are where cost grows fastest. The dropped tiered-rollup plan (memory 2026-09-01) would have cached the BalanceMath node; it was judged unnecessary because statement anchors already bound the sum.</p>
+
+<h3 id="s24-client">Client performance</h3>
+<ul>
+<li>RSC prefetch and hydration remove the client waterfall; staleTime 30 s avoids refetch on navigation.</li>
+<li>Server pagination everywhere (50/20/25); no full-table client loads (a binding convention from memory).</li>
+<li>Debounced search (250/300 ms); job polling 1.5 s while running, 4 s and 30 s otherwise.</li>
+<li>Faro Web SDK adds ~60 KB; Serwist caches static assets only.</li>
+<li>Filters live in React state, so back-navigation re-fetches with defaults (only /jobs uses URL params).</li>
+</ul>
+</section>
+<section class="sec" id="s25" data-part="VIII · Quality &amp; risk">
+<p class="eyebrow">Sections 25 and 59</p>
+<h2><span class="n">25</span>Testing strategy and test-to-rule map</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Three tiers exist: ~660 server unit tests (JUnit 5 + Mockito, no Spring context), 62 client vitest suites (jsdom), and 651 Playwright E2E tests against a real Oracle Free container with WireMock for Gmail, Google, Yahoo, AMFI and a scripted LLM. The E2E suite is the only layer that boots Spring and runs Flyway, and it covers every one of the 193 API operations and 37 routes. Unit coverage is deep for rewards, loans math, categorization and statement parsing, and absent for XIRR, the loan and lending service layers, and the report SQL builder's category join. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s25-tiers">Tiers</h3>
+<div class="tw compact"><table>
+<tr><th>Tier</th><th>Count</th><th>Runner</th><th>What it proves</th><th>What it cannot prove</th></tr>
+<tr><td>Server unit</td><td>132 files, ~660 tests</td><td>Maven Surefire, JUnit 5, Mockito, AssertJ</td><td>Pure logic: reward math, FIFO, schedules, parsers, matchers, validators, prompt builders</td><td>Anything needing Spring, Flyway, Hibernate filters, SQL (Mockito never boots the context; see memory "verify server boots")</td></tr>
+<tr><td>Client unit</td><td>62 suites</td><td>vitest + Testing Library (jsdom, Node 20)</td><td>Component rendering, hooks, formatters, request builders, nav</td><td>RSC streaming (asChild trigger bug invisible in jsdom), server actions</td></tr>
+<tr><td>E2E</td><td>70 specs, 651 tests</td><td>Playwright; Docker Oracle Free 23; WireMock; <code>@Profile("e2e")</code></td><td>Every endpoint (193/193 ops), every route (37/37), foreign-id tenancy sweep, migration idempotence (double boot), job flows, Gmail flows with fake Gmail, chat with scripted LLM</td><td>Real provider behaviour (Yahoo, Gemini), ADB-specific behaviour (ORA-12839), concurrency under load</td></tr>
+<tr><td>Parity / property</td><td>a few</td><td>within unit</td><td>Balance single vs batch; holding realized vs Σ lots; SQL vs in-memory FY buckets</td><td></td></tr>
+<tr><td>Manual smoke</td><td>memory notes</td><td>Local Oracle + boot</td><td>Migrations apply; live 201s</td><td>Not repeatable</td></tr>
+</table></div>
+
+<h3 id="s25-e2e">E2E infrastructure</h3>
+<ol class="trace">
+<li><span class="lyr">CI</span>Server deploy workflow calls the client's reusable E2E workflow; both must be green</li>
+<li><span class="lyr">Boot</span>Oracle Free container → server with <code>e2e</code> profile (crons off, short limits, Swagger on, <code>E2eControlController</code> for time and fixture control) → boot twice to prove Flyway idempotence</li>
+<li><span class="lyr">Coverage</span><code>E2eCoverageFilter</code> records every operation hit; <code>CoverageRegistry</code> compares with the OpenAPI surface; unmatched must be 0 and allowlists are empty</li>
+<li><span class="lyr">Externals</span>WireMock stubs for Gmail list/get, Google token, Yahoo quote/search, AMFI NAV; <code>ScriptedLlmClient</code> returns canned JSON per prompt kind</li>
+<li><span class="lyr">Tenancy</span>Each spec creates two users and replays every id-bearing call with the other user's id expecting 404</li>
+<li><span class="lyr">Routes</span>Every route in <code>navItems.tsx</code> plus detail pages rendered and asserted</li>
+</ol>
+
+<h3 id="s59-map">Test-to-rule map (§59)</h3>
+<div class="tw"><table>
+<tr><th>Business rule</th><th>Tests</th><th>Depth</th></tr>
+<tr><td>Reward eligibility, exclusive chain, caps, PARTIAL_CAP, tiers, milestones, refunds, fee treatment</td><td><code>RewardCalculationServiceTest</code> and siblings (~120 tests), <code>RewardRecommendationServiceTest</code></td><td>Deep</td></tr>
+<tr><td>Categorization precedence and match types</td><td><code>CategorizationServiceTest</code>, <code>CategoryRuleMatcherTest</code></td><td>Deep</td></tr>
+<tr><td>Review status transitions</td><td><code>ReviewStatusManagerTest</code>, merge tests (11), E2E review specs</td><td>Deep</td></tr>
+<tr><td>Account resolution passes</td><td><code>AccountResolverTest</code></td><td>Good</td></tr>
+<tr><td>Watermark gate</td><td><code>GmailTransactionWriterTest</code></td><td>Good</td></tr>
+<tr><td>Statement parsing, verdicts, sign oracle</td><td><code>StatementParseEngineTest</code> + fixture PDFs; parity goldens pending sample PDFs</td><td>Medium (fixtures limited)</td></tr>
+<tr><td>Duplicate matching (Jaccard, windows)</td><td><code>TransactionMatcherTest</code></td><td>Good</td></tr>
+<tr><td>Balance anchor math</td><td><code>BalanceMathTest</code> incl. single vs batch parity</td><td>Good</td></tr>
+<tr><td>FIFO positions, splits, demerger, merger, fractional</td><td><code>HoldingCalculatorTest</code>, <code>MergerCATest</code> (6), demerger tests</td><td>Good</td></tr>
+<tr><td>Intraday classification</td><td><code>BrokerReconciliationServiceTest</code>, <code>scripts/reconcile_trades.py</code> validation</td><td>Good</td></tr>
+<tr><td>XIRR</td><td><strong>None</strong></td><td><span class="c pc">Critical gap</span></td></tr>
+<tr><td>Loan schedule, events, clamp, APR</td><td><code>LoanScheduleServiceTest</code></td><td>Deep for math</td></tr>
+<tr><td>Loan / lending service orchestration</td><td><code>LoanServiceTest</code>, <code>LendingServiceTest</code> exist but never invoke the service under test</td><td><span class="c ph">Hollow</span></td></tr>
+<tr><td>Report SQL builder</td><td><code>TransactionQueryBuilderTest</code> covers filters, not the category join cardinality</td><td>Gap (fan-out untested)</td></tr>
+<tr><td>KPI comparison</td><td>SQL executor tested; in-memory null-enabled path untested</td><td>Gap</td></tr>
+<tr><td>Chat SQL validator</td><td><code>ChatSqlValidatorTest</code> (allow-list, forbidden keywords)</td><td>Good; drift vs migrations untested</td></tr>
+<tr><td>LLM failover, cooldown, 401 invalidation</td><td><code>FailoverLlmClientTest</code></td><td>Good</td></tr>
+<tr><td>Invite code, login limiter</td><td>Unit + E2E</td><td>Good</td></tr>
+<tr><td>OAuth state validation</td><td>None (no code to test)</td><td>Gap</td></tr>
+<tr><td>Tenancy</td><td>E2E foreign-id sweep; <code>HibernateFilterAspectTest</code></td><td>Deep</td></tr>
+<tr><td>Job claim, retry ladder, cancel, janitor</td><td><code>JobServiceTest</code>, <code>JobWorkerTest</code>, E2E jobs spec</td><td>Good</td></tr>
+<tr><td>Account deletion verification</td><td><code>AccountDeletionExecutorTest</code>, E2E</td><td>Good</td></tr>
+<tr><td>Migrations idempotence</td><td>CI double boot</td><td>Good</td></tr>
+</table></div>
+
+<h3 id="s25-untested">Critical untested logic</h3>
+<ol>
+<li><strong>XirrCalculator</strong>: Newton iteration on doubles, no test, feeds every XIRR figure and the merger bridge flows.</li>
+<li><strong>Report category fan-out</strong>: no test asserts totals with multi-category transactions.</li>
+<li><strong>In-memory KPI comparison</strong> with null <code>enabled</code>.</li>
+<li><strong>Loan/lending service layer</strong>: ownership checks, event validation, match confirm.</li>
+<li><strong>Duplicate corporate action</strong> application.</li>
+<li><strong>Statement PDF variety</strong>: the parser's heuristics have few real fixtures (memory: "needs sample PDFs for parity goldens").</li>
+<li><strong>Timezone edges</strong>: <code>LocalDate.now()</code> paths near midnight UTC.</li>
+<li><strong>Concurrency</strong>: double-submit of imports, concurrent loan edits, session cap behaviour.</li>
+</ol>
+
+<h3 id="s25-run">How to run</h3>
+<pre><code># server unit
+cd financeos-server && ./mvnw test
+# client unit (needs Node 20; fnm default v18 crashes vitest)
+cd financeos-client && nvm use 20 && npm test
+# E2E (Docker required)
+cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + Playwright</code></pre>
+</section>
+<section class="sec" id="s46" data-part="VIII · Quality &amp; risk">
+<p class="eyebrow">Section 46 and Special Analysis H</p>
+<h2><span class="n">46</span>AI-generated code risk register and dead code</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>The repository was built largely by AI agents working from plan documents (the <span class="path">plans/</span> directory holds the prompts). The characteristic risks that follow are visible: plausible-but-partial implementations (OAuth state generated but never checked), duplicated logic when a second agent re-implemented rather than reused (KPI comparison, sign convention), dead code left behind after redesigns, stale documentation, and tests that assert the shape of a result without exercising the subject. Each item below is graded by how dangerous it is if wrong. <span class="c cg">Confirmed</span> for each item; the attribution to AI authorship is <span class="c cy">strongly inferred</span> from the plans directory and memory notes.</p></div>
+
+<h3 id="s46-register">Risk register</h3>
+<div class="tw"><table>
+<tr><th>#</th><th>Pattern</th><th>Instance</th><th>Why it is an AI-typical risk</th><th>Danger if wrong</th><th>Priority</th></tr>
+<tr><td>AI1</td><td>Half-implemented security control</td><td>OAuth <code>state</code> generated, stored, never compared</td><td>Looks complete on read; only a negative test would catch it</td><td>Account takeover via login CSRF</td><td><span class="c pc">Critical</span></td></tr>
+<tr><td>AI2</td><td>Hollow tests</td><td><code>LoanServiceTest</code>, <code>LendingServiceTest</code> construct mocks and assert on them without calling the service</td><td>Green suite that proves nothing</td><td>Service regressions undetected</td><td><span class="c ph">High</span></td></tr>
+<tr><td>AI3</td><td>Unverified numerical code</td><td><code>XirrCalculator</code> untested, doubles</td><td>Standard-looking formula copied without a golden</td><td>Wrong returns shown as fact</td><td><span class="c pc">Critical</span></td></tr>
+<tr><td>AI4</td><td>Reimplementation instead of reuse</td><td>KPI comparison ×2; sign convention ×3; FY ×4; reward matcher client twin</td><td>Each agent solved the local problem</td><td>Silent divergence (already observed)</td><td><span class="c ph">High</span></td></tr>
+<tr><td>AI5</td><td>Join without cardinality thought</td><td>Category LEFT JOIN fan-out in reports; unused <code>SqlPredicates.category()</code> that would have been correct</td><td>Correct helper written, wrong one used</td><td>Over-counted spend</td><td><span class="c pc">Critical</span></td></tr>
+<tr><td>AI6</td><td>Stale catalog copies</td><td>Report <code>source</code> values, <code>ALLOWED_VIEWS</code> vs migrations, client <code>SyncSummary</code> shape, dictionary.md</td><td>Enum changed in one place</td><td>Broken filters; model self-correction</td><td><span class="c ph">High</span></td></tr>
+<tr><td>AI7</td><td>Stub left as production endpoint</td><td><code>/dashboard/summary</code> returns zeros</td><td>Placeholder never removed</td><td>Misleading if ever called</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>AI8</td><td>Defaults that silently change meaning</td><td>Point value ₹0.25 vs ₹0; cash-in-lieu ₹0 = loss; direction default DEBIT; verdict else REJECTED</td><td>Reasonable-looking fallbacks</td><td>Wrong money with no warning</td><td><span class="c ph">High</span></td></tr>
+<tr><td>AI9</td><td>Plan and code disagree</td><td>Charges in cost basis; EMI exact match; is_excluded semantics</td><td>Agent deviated without updating the plan</td><td>Reader trusts the document</td><td><span class="c ph">High</span></td></tr>
+<tr><td>AI10</td><td>Idempotence assumed</td><td>Duplicate corporate actions double-apply; duplicate additive rules; bulk reattribute with null card</td><td>Happy-path only</td><td>Double counting</td><td><span class="c ph">High</span></td></tr>
+<tr><td>AI11</td><td>Timezone by default</td><td><code>LocalDate.now()</code> unzoned in 3 places; V65-67 TIMESTAMP without TZ (broke prod sync)</td><td>Works locally in IST</td><td>Off-by-one day; prod outage (already happened)</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>AI12</td><td>Dead branches from redesigns</td><td>See H below</td><td>Old code not removed when the plan changed</td><td>Misleading; shipped weight</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>AI13</td><td>Broad catch and continue</td><td>Gmail per-message failures, LLM parse failures</td><td>Robust-looking</td><td>Silent data loss (revoked token)</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>AI14</td><td>Documentation written once</td><td>READMEs describe a previous architecture</td><td>Not updated by later agents</td><td>Onboarding confusion</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>AI15</td><td>Secret in tree</td><td><code>cookies.txt</code></td><td>Debug artefact committed</td><td>Session exposure</td><td><span class="c ph">High</span></td></tr>
+<tr><td>AI16</td><td>Config that does nothing</td><td><code>llm.cooldown-ms</code>, <code>fiscal-year-start-month</code> never set</td><td>Wired but unused</td><td>False sense of control</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>AI17</td><td>Validator drift from schema</td><td>ATM channel CHECK vs enum (fixed in V84)</td><td>Enum extended, CHECK not</td><td>Insert failure (fixed)</td><td><span class="c pl">Low</span></td></tr>
+</table></div>
+
+<h3 id="s46-dead">H. Dead, unreachable and stale code</h3>
+<div class="tw"><table>
+<tr><th>Item</th><th>Location</th><th>Evidence of death</th><th>Recommendation class</th></tr>
+<tr><td><code>EmailClassifier</code> + <code>email-classify</code> prompt</td><td>server gmail/llm</td><td>Never called; routing uses attachment filenames</td><td>Remove or wire</td></tr>
+<tr><td><code>recordLlmTokens</code></td><td>server observability</td><td>No callers</td><td>Remove</td></tr>
+<tr><td><code>llm.cooldown-ms</code></td><td>application.yml</td><td>Read nowhere (cooldown is PT midnight)</td><td>Remove</td></tr>
+<tr><td><code>/dashboard/summary</code></td><td><code>DashboardController</code></td><td>Hardcoded zeros; no client caller</td><td>Remove or implement</td></tr>
+<tr><td><code>GET /dashboards/default</code>, <code>POST /gmail/rescan</code></td><td>controllers</td><td>No client caller (E2E hits them for coverage only)</td><td>Decide</td></tr>
+<tr><td>Plain-import equity parsers</td><td><code>ImportService</code> equity branch</td><td>Broker imports go through <code>BrokerReconciliationService</code>; UI never selects the plain equity mode</td><td>Remove</td></tr>
+<tr><td><code>Account.getStatus()</code></td><td>entity</td><td>Client computes its own; DB column dropped</td><td>Remove</td></tr>
+<tr><td><code>SqlPredicates.category()</code></td><td>reports</td><td>Unused (and would fix the fan-out)</td><td>Use it</td></tr>
+<tr><td><code>AppShellNav</code></td><td>client components</td><td>Replaced by sidebar; no importer</td><td>Remove</td></tr>
+<tr><td><code>useTransactionWorkspace</code></td><td>client hooks</td><td>Twin of <code>useTransactionsBrowser</code>, unused</td><td>Remove</td></tr>
+<tr><td><code>InstrumentDialog</code>, <code>DividendDialog</code></td><td>client investments</td><td>Superseded by catalog search and the dividend overhaul</td><td>Remove</td></tr>
+<tr><td><code>DeleteAccount.tsx</code></td><td>client settings</td><td>Replaced by the deletion flow component</td><td>Remove</td></tr>
+<tr><td><code>CardRelationship</code> type/component</td><td>client accounts</td><td>Pre-V82 add-on model</td><td>Remove</td></tr>
+<tr><td>Client <code>SyncSummary</code> attention branch</td><td>gmail types/components</td><td>Server never sends those fields (~90 lines)</td><td>Remove</td></tr>
+<tr><td><code>'OTHER'</code> review reason</td><td>client union</td><td>Server enum lacks it</td><td>Remove (check DB for V26 orphans first)</td></tr>
+<tr><td>Client README, server README sections</td><td>docs</td><td>Describe Next 14 / Boot 3.2.1</td><td>Rewrite</td></tr>
+<tr><td><code>cookies.txt</code></td><td>server root</td><td>Debug artefact</td><td>Delete + rotate</td></tr>
+</table></div>
+<p>Everything in this table was verified by grep for importers or callers at analysis time; a symbol with only its own definition and tests counted as dead.</p>
+</section>
+<section class="sec" id="s47" data-part="VIII · Quality &amp; risk">
+<p class="eyebrow">Section 47</p>
+<h2><span class="n">47</span>Missing-feature and gap analysis</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>What a personal-finance product of this shape usually has and FinanceOS does not, what exists only as UI or only as API, and what half-built paths remain. This is an inventory, not a roadmap: several gaps are deliberate per plan documents (net worth, budgets, statement reward reconciliation, chat persistence). <span class="c cg">Confirmed</span> for existence; "expected" is the author's judgement.</p></div>
+
+<h3 id="s47-absent">Expected but absent</h3>
+<div class="tw"><table>
+<tr><th>Capability</th><th>State</th><th>Evidence</th><th>Impact</th></tr>
+<tr><td>Net worth / dashboard summary</td><td>Stub returning zeros; no accounts datasource</td><td><code>DashboardController.summary</code>, spec doc</td><td>No single figure across accounts, loans, holdings</td></tr>
+<tr><td>Budgets</td><td>None (UI copy mentions "budgets" in the excluded flag)</td><td>grep</td><td>Copy promises a feature that does not exist</td></tr>
+<tr><td>Recurring transaction detection / subscriptions</td><td>None</td><td>—</td><td>Loans have schedules; nothing else recurs</td></tr>
+<tr><td>Goals, savings targets, SIP tracking</td><td>None (SIPs explicitly deferred in reports gaps)</td><td>memory</td><td></td></tr>
+<tr><td>Multi-currency</td><td>INR only; no currency column on transactions</td><td>schema</td><td>International spends stored in INR as billed</td></tr>
+<tr><td>Password reset / email verification</td><td>None; change password only when logged in</td><td>AuthController</td><td>Lost password = admin intervention</td></tr>
+<tr><td>Session management UI, global logout</td><td>None</td><td>—</td><td>Weak revocation</td></tr>
+<tr><td>Export (CSV, backup)</td><td>None; report tables can be copied only</td><td>—</td><td>Data portability missing</td></tr>
+<tr><td>Import of bank CSV (non-statement)</td><td>None; only PDF/XLSX statements and broker files</td><td>parsers</td><td></td></tr>
+<tr><td>Transaction attachments / receipts</td><td>None</td><td>—</td><td></td></tr>
+<tr><td>Split transactions</td><td>Multi-category tagging exists, no amount split</td><td>schema</td><td>Fan-out bug makes multi-category worse</td></tr>
+<tr><td>Notifications (due dates, anomalies)</td><td>Only browser notification on chat completion</td><td>client</td><td>Card due dates computed but never alert</td></tr>
+<tr><td>Statement reward points reconciliation</td><td>Parsed, stored, never compared</td><td>analysis parked 2026-09-02</td><td>Engine accuracy never validated</td></tr>
+<tr><td>Card fees timeline</td><td>Planned, parked</td><td>plans/card-fees-plan.md</td><td>Reward net ignores fees</td></tr>
+<tr><td>Chat persistence</td><td>Deferred</td><td>memory</td><td>Transcript lost on refresh</td></tr>
+<tr><td>Audit history / undo</td><td>Only single-transaction JSON log lines</td><td>AuditLogger</td><td></td></tr>
+<tr><td>Optimistic locking</td><td>None</td><td>—</td><td></td></tr>
+<tr><td>Admin console</td><td>None; the seeded admin is an ordinary user</td><td>V2</td><td></td></tr>
+<tr><td>Mobile app</td><td>PWA manifest and asset cache only</td><td>Serwist config</td><td>No offline data</td></tr>
+</table></div>
+
+<h3 id="s47-halves">UI without backend, backend without UI</h3>
+<div class="tw compact"><table>
+<tr><th>Direction</th><th>Item</th><th>Note</th></tr>
+<tr><td>Backend only</td><td><code>GET /dashboards/default</code>, <code>POST /gmail/rescan</code>, <code>GET /dashboard/summary</code>, plain equity import mode</td><td>No client caller</td></tr>
+<tr><td>Backend only</td><td><code>EmailClassifier</code> prompt</td><td>Never invoked</td></tr>
+<tr><td>Backend only</td><td>Reward line reason codes beyond the top few</td><td>UI shows codes without explanation text for some</td></tr>
+<tr><td>UI only</td><td>Client <code>SyncSummary</code> attention outcomes, 'OTHER' review reason, budgets copy</td><td>Server never produces them</td></tr>
+<tr><td>UI only</td><td>Reward rule tester</td><td>Approximates the server engine in JS</td></tr>
+<tr><td>Partial</td><td>Closed accounts</td><td>Closure blocks card edits only; imports and Gmail continue</td></tr>
+<tr><td>Partial</td><td>is_excluded</td><td>Honoured by rewards, ignored by balances and default reports</td></tr>
+<tr><td>Partial</td><td>Statement verdict</td><td>Badge only; never gates</td></tr>
+<tr><td>Partial</td><td>Loan payments</td><td>Recorded but never reconciled against schedule amounts</td></tr>
+</table></div>
+
+<h3 id="s47-incomplete">Incomplete flows</h3>
+<ul>
+<li><strong>Gmail on Vercel</strong>: Gmail connect callback lands on the API origin; memory notes it "still broken on Vercel" pending the same relay fix applied to SSO. <span class="c cy">Strongly inferred</span> from memory; not re-verified in code this pass.</li>
+<li><strong>Long identifier reactivation</strong>: aliases longer than 4 characters never reactivate parked emails.</li>
+<li><strong>Delisted instruments</strong>: valued at cost forever with a badge; no manual "write off" action.</li>
+<li><strong>Foreclosure amounts</strong>: unchecked against outstanding.</li>
+<li><strong>Merge</strong>: categories not unioned; reward details of the dropped row lost.</li>
+<li><strong>Statement dedup</strong>: a re-uploaded statement with new lines is skipped entirely.</li>
+<li><strong>Card Picker</strong> ignores fees and statement cycle boundaries when the cycle is unknown.</li>
+<li><strong>Report source filter</strong> works for one of four values.</li>
+</ul>
+</section>
+<section class="sec" id="s64" data-part="VIII · Quality &amp; risk">
+<p class="eyebrow">Sections 64 and 67</p>
+<h2><span class="n">64</span>Trust assessment and priority matrix</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Which parts of FinanceOS can be believed today, which should be checked before acting, and which are likely wrong. The grading combines the depth of tests, the presence of a plan document, whether the number can be reconciled against an outside source, and the findings in this handbook. The priority matrix at the end ranks every 🔴 and 🟠 finding by impact and effort for whoever picks up the codebase. <span class="c cg">Confirmed</span> inputs; grades are the author's judgement.</p></div>
+
+<h3 id="s64-trust">Trust by component</h3>
+<div class="tw"><table>
+<tr><th>Component</th><th>Trust</th><th>Why</th><th>Before acting on it</th></tr>
+<tr><td>Tenant isolation</td><td><span class="c cg">High</span></td><td>Three mechanisms, exhaustive E2E sweep</td><td>Nothing</td></tr>
+<tr><td>Authentication (password)</td><td><span class="c cg">High</span></td><td>BCrypt, limiter, invite gate, session store</td><td>Nothing</td></tr>
+<tr><td>Authentication (Google)</td><td><span class="c co">Low</span></td><td>state unchecked</td><td>Fix before exposing to more users</td></tr>
+<tr><td>Manual transactions and list</td><td><span class="c cg">High</span></td><td>Simple, tested, audited</td><td>Nothing</td></tr>
+<tr><td>Gmail-ingested transactions</td><td><span class="c cy">Medium</span></td><td>LLM extraction, provisional status, reconciliation with statements</td><td>Review queue; check parked items</td></tr>
+<tr><td>Statement-derived transactions</td><td><span class="c cy">Medium</span></td><td>Heuristic parser; advisory verdict; REJECTED still ingests</td><td>Check verdict badge; compare closing balance</td></tr>
+<tr><td>Categories</td><td><span class="c cy">Medium</span></td><td>USER rules reliable; LLM rules until verified</td><td>Approve CATEGORY_UNVERIFIED</td></tr>
+<tr><td>Bank balance</td><td><span class="c cy">Medium</span></td><td>Anchor math sound; excluded rows counted; gap badge helps</td><td>Look at the gap badge</td></tr>
+<tr><td>Card dues and cycle</td><td><span class="c cg">High</span></td><td>Straight from statement summary</td><td>Nothing</td></tr>
+<tr><td>Reward earned (report)</td><td><span class="c cy">Medium</span></td><td>Deep tests; depends on rule entry; no issuer reconciliation; duplicate rules double</td><td>Compare with statement points</td></tr>
+<tr><td>Card Picker ranking</td><td><span class="c cy">Medium</span></td><td>Same engine; ₹0.25 default; fees ignored</td><td>Set point values</td></tr>
+<tr><td>Holdings quantities and cost</td><td><span class="c cy">Medium-High</span></td><td>FIFO tested; classifications sound; charges excluded (documented in code)</td><td>Check for duplicate CAs</td></tr>
+<tr><td>Current value</td><td><span class="c cy">Medium</span></td><td>Price freshness invisible; at-cost fallback</td><td>Check price date</td></tr>
+<tr><td>XIRR</td><td><span class="c co">Low</span></td><td>No tests; doubles</td><td>Verify one holding by hand</td></tr>
+<tr><td>Realized P&amp;L</td><td><span class="c cy">Medium</span></td><td>Gross of charges; over-sold truncation</td><td>Compare with broker tax P&amp;L</td></tr>
+<tr><td>F&amp;O ledger</td><td><span class="c cg">High</span></td><td>Simple sums</td><td>Nothing</td></tr>
+<tr><td>Loan schedule and outstanding</td><td><span class="c cg">High</span> (math) / <span class="c cy">Medium</span> (vs bank)</td><td>Tested math; payments never reconcile; clamp drift</td><td>Compare outstanding with the bank once a year</td></tr>
+<tr><td>Lendings</td><td><span class="c cg">High</span></td><td>Signed ledger</td><td>Nothing</td></tr>
+<tr><td>Report totals by category</td><td><span class="c co">Low</span> when multi-category rows exist</td><td>Fan-out</td><td>Cross-check with chat or a single-category filter</td></tr>
+<tr><td>Report totals without category</td><td><span class="c cg">High</span></td><td>Plain aggregates</td><td>Nothing</td></tr>
+<tr><td>KPI comparison</td><td><span class="c cy">Medium</span></td><td>Two engines</td><td>Note which datasource</td></tr>
+<tr><td>Tax datasource</td><td><span class="c cy">Medium</span></td><td>No caps (80C/24b), schedule-based interest</td><td>Treat as an estimate</td></tr>
+<tr><td>Chat answers</td><td><span class="c cy">Medium</span></td><td>Correct views; model may mis-query; validator drift</td><td>Read the trace</td></tr>
+<tr><td>Jobs and Gmail sync status</td><td><span class="c cg">High</span></td><td>Structured results, ledger</td><td>Nothing</td></tr>
+<tr><td>Deployment pipeline</td><td><span class="c cg">High</span></td><td>E2E gate, double boot</td><td>Single VM risk</td></tr>
+</table></div>
+
+<h3 id="s67-matrix">Priority matrix (§67)</h3>
+<p>Impact: what goes wrong for the user or the operator. Effort: rough size of the fix as judged from the code. Sorted by impact then effort.</p>
+<div class="tw"><table>
+<tr><th>Rank</th><th>Finding</th><th>Impact</th><th>Effort</th><th>Where</th><th>Section</th></tr>
+<tr><td>1</td><td>OAuth <code>state</code> not validated</td><td><span class="c pc">Critical</span></td><td>Small</td><td><code>AuthController</code>, <code>GmailOAuthController</code></td><td><a href="#s23">§23</a></td></tr>
+<tr><td>2</td><td>Report category fan-out</td><td><span class="c pc">Critical</span></td><td>Small (use <code>SqlPredicates.category()</code> / EXISTS)</td><td><code>TransactionQueryBuilder:90-92</code></td><td><a href="/handbook/rules.html#s45">§45 C1</a></td></tr>
+<tr><td>3</td><td>XIRR untested</td><td><span class="c pc">Critical</span></td><td>Small (goldens)</td><td><code>XirrCalculator</code></td><td><a href="#s25">§25</a></td></tr>
+<tr><td>4</td><td>Committed session cookie file</td><td><span class="c ph">High</span></td><td>Trivial (delete, rotate)</td><td>server root</td><td><a href="#s23">§23</a></td></tr>
+<tr><td>5</td><td>Unencrypted statement PDFs in job_artifacts</td><td><span class="c ph">High</span></td><td>Medium (encrypt or shorten retention)</td><td><code>FileUploadController</code></td><td><a href="#s23">§23</a></td></tr>
+<tr><td>6</td><td>Duplicate corporate actions double-apply</td><td><span class="c ph">High</span></td><td>Small (unique constraint)</td><td><code>CorporateActionService</code></td><td><a href="/handbook/rules.html#s41">§41</a></td></tr>
+<tr><td>7</td><td>Bulk reattribute with null card reassigns everything</td><td><span class="c ph">High</span></td><td>Small (require card id)</td><td><code>TransactionService</code></td><td><a href="/handbook/rules.html#s41">§41</a></td></tr>
+<tr><td>8</td><td>is_excluded ignored by balances</td><td><span class="c ph">High</span></td><td>Small (decide semantics, then filter)</td><td><code>BalanceMath</code></td><td><a href="/handbook/rules.html#s45">§45 C3</a></td></tr>
+<tr><td>9</td><td>KPI in-memory NPE and divergent defaults</td><td><span class="c ph">High</span></td><td>Small (share one comparator)</td><td>report executors</td><td><a href="/handbook/rules.html#s45">§45 C6</a></td></tr>
+<tr><td>10</td><td>Stale report <code>source</code> catalog</td><td><span class="c ph">High</span></td><td>Trivial</td><td><code>DatasourceCatalog</code></td><td><a href="/handbook/rules.html#s45">§45 C5</a></td></tr>
+<tr><td>11</td><td>Hollow loan/lending service tests</td><td><span class="c ph">High</span></td><td>Medium</td><td>tests</td><td><a href="#s25">§25</a></td></tr>
+<tr><td>12</td><td>Point value defaults disagree (₹0.25 vs ₹0)</td><td><span class="c ph">High</span></td><td>Trivial</td><td>two classes</td><td><a href="/handbook/rules.html#s45">§45 C2</a></td></tr>
+<tr><td>13</td><td>REJECTED statements still ingest</td><td><span class="c ph">High</span></td><td>Small (gate or quarantine)</td><td><code>StatementReconciliationService</code></td><td><a href="/handbook/rules.html#s43">§43</a></td></tr>
+<tr><td>14</td><td>Charges excluded from cost basis vs plan</td><td><span class="c ph">High</span></td><td>Decision, then medium</td><td><code>HoldingCalculator</code></td><td><a href="/handbook/rules.html#s45">§45 C4</a></td></tr>
+<tr><td>15</td><td>Cash-in-lieu default ₹0 is a silent loss</td><td><span class="c ph">High</span></td><td>Small (require value or flag)</td><td><code>deriveSeeds</code></td><td><a href="/handbook/rules.html#s48">§48</a></td></tr>
+<tr><td>16</td><td>Chat validator missing 2 views</td><td><span class="c pm">Medium</span></td><td>Trivial</td><td><code>ChatSqlValidator</code></td><td><a href="/handbook/rules.html#s45">§45 C14</a></td></tr>
+<tr><td>17</td><td>Long alias never reactivates parked emails</td><td><span class="c pm">Medium</span></td><td>Small</td><td>identifier assign</td><td><a href="/handbook/rules.html#s45">§45 C17</a></td></tr>
+<tr><td>18</td><td><code>GmailSyncCursor</code> without @Filter</td><td><span class="c pm">Medium</span></td><td>Trivial</td><td>entity</td><td><a href="#s23">§23</a></td></tr>
+<tr><td>19</td><td>Session cap never frees</td><td><span class="c pm">Medium</span></td><td>Small</td><td><code>SecurityConfig</code></td><td><a href="#s23">§23</a></td></tr>
+<tr><td>20</td><td>Unzoned <code>LocalDate.now()</code></td><td><span class="c pm">Medium</span></td><td>Small</td><td>3 sites</td><td><a href="/handbook/calculations.html#s39">§39</a></td></tr>
+<tr><td>21</td><td>No optimistic locking</td><td><span class="c pm">Medium</span></td><td>Medium</td><td>entities</td><td><a href="/handbook/rules.html#s41">§41</a></td></tr>
+<tr><td>22</td><td>Dead code and stale READMEs</td><td><span class="c pm">Medium</span></td><td>Small</td><td>many</td><td><a href="#s46">§46</a></td></tr>
+<tr><td>23</td><td>Single VM, swap, no HA</td><td><span class="c pm">Medium</span></td><td>Large</td><td>ops</td><td><a href="/handbook/ops.html#s27">§27</a></td></tr>
+<tr><td>24</td><td>EMI match tolerance vs plan</td><td><span class="c pl">Low</span></td><td>Decision</td><td><code>getMatchSuggestions</code></td><td><a href="/handbook/rules.html#s45">§45 C7</a></td></tr>
+</table></div>
+</section>
+<section class="sec" id="s16" data-part="VIII · Quality &amp; risk">
+<p class="eyebrow">Sections 16 and 50</p>
+<h2><span class="n">16</span>Failure modes, edge cases and debugging playbook</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>How FinanceOS fails, what the user sees, what is logged, and where to look. Most failures are contained (per-file, per-message, per-widget) and surfaced through job results or the Gmail attention queue. The dangerous failures are the silent ones: revoked Gmail tokens, wrong-but-plausible numbers, and provider quota exhaustion that looks like "nothing happened". <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s16-map">Failure map</h3>
+<div class="tw"><table>
+<tr><th>Failure</th><th>Trigger</th><th>Handling</th><th>User sees</th><th>Silent?</th><th>Log signature</th></tr>
+<tr><td>API unreachable from RSC</td><td>OCI down, TLS expired</td><td>Layout throws → <code>error.tsx</code></td><td>Error page with retry</td><td>No</td><td>Faro error; Next server log</td></tr>
+<tr><td>Session invalid</td><td>Expired, logout elsewhere</td><td>/auth/me 401 → redirect</td><td>Login page</td><td>No</td><td>—</td></tr>
+<tr><td>Login CSRF via OAuth</td><td>Crafted callback</td><td>None</td><td>Logged in as attacker's Google identity</td><td>Yes</td><td>Normal login log</td></tr>
+<tr><td>Gmail token revoked</td><td>User revokes at Google</td><td>Per-message fetch fails, caught, ledger FAILED_RETRYABLE</td><td>Sync "succeeded" with failures counted; attention items after 5 retries</td><td>Mostly</td><td><code>gmail.fetch.failed</code>, 401 from Gmail</td></tr>
+<tr><td>Gmail quota 429</td><td>Heavy backfill</td><td>Discovery aborts for the run</td><td>Fewer emails than expected</td><td>Partly</td><td>429 in gmail client log</td></tr>
+<tr><td>LLM chain exhausted</td><td>Daily quotas, no keys</td><td>NO_KEYS / all cooldown → job FAILED_RETRYABLE; categorization skipped (rows stay uncategorized)</td><td>Health panel shows providers in cooldown; review queue grows</td><td>Partly</td><td><code>llm.failover</code> events, provider status</td></tr>
+<tr><td>LLM returns invalid JSON</td><td>Model drift</td><td>Parse fail → retry once → skip</td><td>Uncategorized rows</td><td>Yes</td><td><code>llm.parse.failed</code></td></tr>
+<tr><td>Statement password wrong</td><td>Changed by bank</td><td>File FAILED with reason</td><td>Job detail shows the file failed</td><td>No</td><td>PDFBox InvalidPassword</td></tr>
+<tr><td>Parser cannot find the balance column</td><td>New layout</td><td>Verdict REJECT; still ingests</td><td>Badge; possibly wrong signs</td><td>Partly</td><td>parse metrics in job result</td></tr>
+<tr><td>Ambiguous last4</td><td>Two cards same digits</td><td>Park UNRESOLVED_ACCOUNT</td><td>Needs Attention count</td><td>No</td><td>ledger row</td></tr>
+<tr><td>Job stuck</td><td>Worker died mid-run</td><td>Stale detection after 60 min → retry or FAILED</td><td>Job shows RUNNING then FAILED</td><td>No</td><td><code>job.stale</code></td></tr>
+<tr><td>Job queue full</td><td>&gt;100 queued</td><td>429 on enqueue</td><td>Toast "try later"</td><td>No</td><td>QUEUE_FULL</td></tr>
+<tr><td>Yahoo/AMFI down</td><td>Provider outage</td><td>Per-instrument failure; prior price kept</td><td>Values stale with no date warning</td><td>Yes</td><td><code>price.refresh.failed</code></td></tr>
+<tr><td>Instrument delisted</td><td>Merger</td><td>null yahooSymbol; at-cost valuation</td><td>"at cost" badge, merger nudge</td><td>No</td><td>—</td></tr>
+<tr><td>Report widget broken</td><td>Deleted report, SQL error</td><td>Per-widget catch</td><td>Widget unavailable</td><td>No</td><td>report.execute error</td></tr>
+<tr><td>KPI NPE</td><td>Computed datasource + null enabled</td><td>500</td><td>Widget error</td><td>No</td><td>NullPointerException stack</td></tr>
+<tr><td>Chat deadline</td><td>Slow models</td><td>Forced final at 180 s; hard stop 270 s</td><td>"Took longer than expected"</td><td>No</td><td><code>chat.deadline</code></td></tr>
+<tr><td>Chat quota</td><td>&gt;30/day or 2 concurrent</td><td>429</td><td>Quota message</td><td>No</td><td>CHAT_QUOTA</td></tr>
+<tr><td>Flyway failure on deploy</td><td>ADB parallel DML, partial DDL</td><td>Boot aborts; previous jar keeps running only if the deploy script does not stop it first</td><td>Downtime</td><td>No</td><td>Flyway validate/migrate error</td></tr>
+<tr><td>OOM on 512 MB</td><td>Large PDF, AMFI parse, dashboard burst</td><td>JVM dies; systemd restarts</td><td>Brief outage</td><td>Partly</td><td>OutOfMemoryError; Grafana alert</td></tr>
+<tr><td>Duplicate import commit</td><td>Double click / retry</td><td>Service-level dedup, race window</td><td>Possible duplicate trades</td><td>Yes</td><td>—</td></tr>
+<tr><td>Concurrent edits</td><td>Two tabs</td><td>Last write wins</td><td>Lost edit</td><td>Yes</td><td>—</td></tr>
+<tr><td>Account deletion mid-sync</td><td>Job running</td><td>5 s drain then 409</td><td>"Busy, try again"</td><td>No</td><td>ACCOUNT_DELETE_BUSY</td></tr>
+</table></div>
+
+<h3 id="s50-playbook">Debugging playbook (§50)</h3>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>First look</th><th>Then</th><th>Likely cause</th></tr>
+<tr><td>"My transaction from email did not appear"</td><td>Settings → Gmail → Needs Attention; jobs page for the last GMAIL_SYNC result</td><td>Ledger row for the message id: status and reason; account <code>ingest_from_date</code>; sender allow-list</td><td>Parked (ambiguous), watermark, not a listed sender, LLM cooldown, token revoked</td></tr>
+<tr><td>"Balance is wrong"</td><td>Gap badge on the tile; latest statement closing balance</td><td>Transactions after the statement date incl. excluded ones; duplicates flagged; anchor-day rows</td><td>Excluded rows counted; duplicate alert + statement line; anchor-day inclusion</td></tr>
+<tr><td>"Reward number looks off"</td><td>/rewards lines: reason codes per transaction</td><td>Rule order and priorities; duplicate rules; cap bucket windows; point value; statement cycle flag</td><td>Duplicate additive rule; cycle fallback; ₹0.25 default</td></tr>
+<tr><td>"Holding quantity or cost is wrong"</td><td>Trade list for the instrument; corporate actions list</td><td>Classifications for straddle days; duplicate CA; over-sold warning in logs</td><td>Duplicate CA; missing tax P&amp;L at import; sell exceeding holdings truncated</td></tr>
+<tr><td>"XIRR seems impossible"</td><td>Cash flows: trades, dividends, CA bridges, current value</td><td>Hand-compute with a spreadsheet</td><td>Untested calculator; merger bridge flows; missing price</td></tr>
+<tr><td>"Report and chat disagree"</td><td>Does the report filter or group by category?</td><td>Count multi-category transactions in range</td><td>Fan-out (C1)</td></tr>
+<tr><td>"Widget shows unavailable"</td><td>Does the report still exist?</td><td>Server log for the report id; KPI comparison config</td><td>Deleted report; NPE on computed datasource</td></tr>
+<tr><td>"Sync says succeeded but nothing new"</td><td>Sync summary counts; LLM health panel</td><td>Ledger statuses FAILED_RETRYABLE; cooldown table</td><td>All providers in cooldown; Gmail 429</td></tr>
+<tr><td>"Statement upload skipped my file"</td><td>Job detail per-file status</td><td>Statement list for the account and period; sha256</td><td>Same PDF already ingested (even if content changed)</td></tr>
+<tr><td>"Card Picker recommends a card that is over its cap"</td><td>Cap status in /rewards for that rule</td><td>Bucket window and statement cycle</td><td>Cycle fallback to calendar month</td></tr>
+<tr><td>"Login loops"</td><td>Cookie on the client origin; /auth/me response</td><td>Session cap (5); cookie relay from the API origin</td><td>Session registry never frees; relay misconfigured</td></tr>
+<tr><td>"Chat says it cannot query cards"</td><td>Trace: TABLE_NOT_ALLOWED</td><td><code>ALLOWED_VIEWS</code> vs migrations</td><td>Validator drift (C14)</td></tr>
+<tr><td>"Deploy failed at boot"</td><td>Flyway error in the service log</td><td>ADB session: parallel DML, partial objects</td><td>Non-idempotent migration or ORA-12839</td></tr>
+<tr><td>Everything slow</td><td>Grafana: heap, swap, job queue depth</td><td>Running jobs; dashboard widget count; portfolio_value reports</td><td>512 MB heap under sync + import</td></tr>
+</table></div>
+
+<h3 id="s16-where">Where to look</h3>
+<ul>
+<li><strong>Request correlation</strong>: copy <code>X-Request-Id</code> from the browser network tab, search Loki <code>{job="financeos"} |= "&lt;id&gt;"</code>.</li>
+<li><strong>Jobs</strong>: /jobs page shows payload, result JSON, attempts, error; rows purge after 30 days.</li>
+<li><strong>Gmail ledger</strong>: per-message status via Settings → Gmail → Needs Attention; full table only in DB.</li>
+<li><strong>LLM</strong>: /settings/llm health panel (provider status, cooldown until, last error).</li>
+<li><strong>DB</strong>: connect with the wallet as the app user; <code>v_chat_*</code> views are handy read models.</li>
+<li><strong>Client</strong>: Faro errors and console logs in Grafana under app_id/kind labels.</li>
+</ul>
+</section>
+<section class="sec" id="s57" data-part="VIII · Quality &amp; risk">
+<p class="eyebrow">Section 57</p>
+<h2><span class="n">57</span>Observability map</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Server logs are JSON with request, session and user ids in MDC, shipped by Fluent Bit to Grafana Cloud Loki with secret masking. Metrics come from the actuator (Prometheus scrape on 8081 loopback) with custom gauges for jobs, LLM providers and Gmail; alert rules were tuned in August 2026. The client reports errors and web vitals through Grafana Faro and a Loki logger. Business-level observability lives in structured job results and the Gmail ledger rather than metrics. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s57-signals">Signals</h3>
+<div class="tw"><table>
+<tr><th>Signal</th><th>Source</th><th>Fields / names</th><th>Destination</th><th>Retention</th></tr>
+<tr><td>Access log</td><td><code>AccessLogFilter</code></td><td>method, path, status, duration, requestId, sessionId, userId</td><td>Loki via Fluent Bit</td><td>Grafana free tier (14 d)</td></tr>
+<tr><td>Application log</td><td>Logback JSON</td><td>event names (<code>audit.mutation</code>, <code>llm.failover</code>, <code>gmail.*</code>, <code>job.*</code>, <code>chat.*</code>), MDC</td><td>Loki</td><td>14 d</td></tr>
+<tr><td>Security log</td><td>ownership mismatch, limiter hits</td><td>"Security Breach Attempt", INVITE_LOCKED, LOGIN_RATE_LIMITED</td><td>Loki</td><td>14 d</td></tr>
+<tr><td>Metrics</td><td>Micrometer / actuator</td><td>JVM, Hikari, HTTP; custom: <code>jobs_queued</code>, <code>jobs_running</code>, <code>jobs_failed_total</code>, <code>llm_provider_status</code>, <code>llm_cooldown_active</code>, <code>gmail_sync_failures</code></td><td>Grafana Agent scrape → Mimir</td><td>14 d</td></tr>
+<tr><td>Alerts</td><td>Grafana rules</td><td>API down, heap &gt; 90 %, job failures, LLM all-cooldown, Gmail failures, disk/swap; 1 d repeat</td><td>Grafana contact point</td><td>—</td></tr>
+<tr><td>Client errors</td><td>Faro Web SDK</td><td>exceptions, web vitals, session id, route</td><td>Grafana Faro (app_id/kind labels)</td><td>14 d</td></tr>
+<tr><td>Client logs</td><td><code>lib/logger.ts</code> → Loki push</td><td>level, message, requestId</td><td>Loki (client tier currently empty per memory)</td><td>14 d</td></tr>
+<tr><td>Job results</td><td><code>jobs.result_json</code></td><td>per-file statuses, counts, reasons (≤50 details)</td><td>DB</td><td>30 d (janitor)</td></tr>
+<tr><td>Gmail ledger</td><td><code>gmail_message_ledger</code></td><td>status, reason, attempts, next_attempt_at</td><td>DB</td><td>Until account delete</td></tr>
+<tr><td>LLM health</td><td><code>llm_provider_state</code> in memory + /llm/health</td><td>status, cooldownUntil, lastError</td><td>API → settings panel</td><td>Process lifetime</td></tr>
+<tr><td>Audit</td><td><code>AuditLogger.mutation</code></td><td>before/after amounts for single-transaction CRUD and merge</td><td>Loki</td><td>14 d</td></tr>
+</table></div>
+
+<h3 id="s57-flow">Pipeline</h3>
+<pre class="mermaid">flowchart LR
+  B[Browser] -->|Faro| GF[Grafana Faro]
+  B -->|logger.ts| LK[Loki]
+  B -->|X-Request-Id| N[Next.js proxy.ts]
+  N -->|forward id| S[Spring API]
+  S -->|JSON stdout| FB[Fluent Bit\n8 masking patterns]
+  FB --> LK
+  S -->|/actuator/prometheus :8081| GA[Grafana Agent]
+  GA --> M[Mimir]
+  M --> AL[Alert rules]
+  LK --> G[Grafana dashboards]
+  M --> G
+  GF --> G</pre>
+
+<h3 id="s57-gaps">What is not observable</h3>
+<ul>
+<li>No business metrics: transactions ingested per day, categorization accuracy, reward totals, price staleness.</li>
+<li>No tracing spans; correlation is by request id only, and job execution has a job id but no link back to the enqueuing request.</li>
+<li>LLM token usage: <code>recordLlmTokens</code> exists but is never called; per-day quota consumption is only visible through cooldown state.</li>
+<li>Client Loki tier is empty (memory 2026-09-03), so client logs effectively do not ship.</li>
+<li>Gmail per-message failures are counted, not alerted, until they reach FAILED_PERMANENT.</li>
+<li>Price refresh success per instrument is logged but not surfaced in the UI (no "as of" date on values).</li>
+<li>Audit coverage is limited to single-transaction mutations.</li>
+</ul>
+
+<h3 id="s57-gotchas">Grafana gotchas (from memory)</h3>
+<ul>
+<li>Loki proxy is GET-only; a POST error looks like an empty result.</li>
+<li>The free instance sleeps; the first query returns 503 and needs a retry.</li>
+<li>Faro data lives under <code>app_id</code> / <code>kind</code> labels, not <code>service</code>.</li>
+</ul>
+</section>
+<nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/journeys.html"><small>Previous</small>Journeys and flows</a><a class="next" href="/handbook/ops.html"><small>Next</small>Ops and architecture</a></nav>
+  </main>
+</div>
+</div>
+<script src="/handbook/handbook.js" defer></script>
+</body>
+</html>

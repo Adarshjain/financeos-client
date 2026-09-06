@@ -13,6 +13,9 @@ const publicPaths = [
   '/offline',
   '/manifest.webmanifest',
   '/icons',
+  // `/handbook` is the static system reference (public/handbook/*), deliberately
+  // readable without a session.
+  '/handbook',
 ];
 
 export function proxy(request: NextRequest) {

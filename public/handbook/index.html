@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="FinanceOS system and product reference, reverse-engineered from the code. Orientation.">
+<title>FinanceOS Handbook · Orientation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/handbook/handbook.css">
+</head>
+<body data-page="index.html">
+<div class="shell">
+<aside class="side" id="side">
+  <div class="side-head">
+    <div class="brand">FinanceOS Handbook <small>v1</small></div>
+    <div class="brand-sub">System &amp; product reference, reverse-engineered from code · 2026-09-06</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search sections and text…" autocomplete="off" aria-label="Search">
+      <kbd>/</kbd>
+    </div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="side-foot">
+    <button id="expandAll" type="button">Expand all</button>
+    <button id="collapseAll" type="button">Collapse all</button>
+    <span style="margin-left:auto">Source of truth: code</span>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="burger" id="burger" type="button" aria-label="Open navigation">☰ Sections</button>
+    <div class="crumb" id="crumb"><b>FinanceOS Handbook</b></div>
+    <button id="toTop" type="button">↑ Top</button>
+  </div>
+  <div class="results" id="results" aria-live="polite">
+    <button class="close" id="closeResults" type="button">Close ✕</button>
+    <h3 id="resultsTitle"></h3>
+    <div id="resultsList"></div>
+  </div>
+  <main class="content" id="content">
+<section class="sec" id="s01" data-part="I · Orientation">
+<p class="eyebrow">Section 1</p>
+<h1>FinanceOS System &amp; Product Handbook</h1>
+<p class="lead">A reverse-engineered, evidence-backed model of FinanceOS: what it does, why each part exists, how the client, server, database, jobs and external services fit together, what the business rules and calculations actually are, and what remains unknown. Every non-trivial claim carries a confidence chip and a file reference. Code is the source of truth; the 164 plan documents are cited only as intent.</p>
+<div class="legend"><span class="c cg">Confirmed</span> directly in code &nbsp; <span class="c cy">Strongly inferred</span> very likely from code and usage &nbsp; <span class="c co">Inferred</span> reasonable reading &nbsp; <span class="c cr">Unknown</span> cannot be established from the repository &nbsp; · &nbsp; <span class="c pc">Critical</span> <span class="c ph">High</span> <span class="c pm">Medium</span> <span class="c pl">Low</span> issue priority</div>
+
+<h2><span class="n">01</span>Executive overview</h2>
+<div class="exec"><h4>FinanceOS in one paragraph</h4>
+<p>FinanceOS is a self-hosted, multi-user personal-finance system for the Indian market (₹, Apr–Mar financial year, UPI, NSE/BSE, AMFI mutual funds). It keeps one ledger of every money movement across bank accounts, credit cards, broker accounts and cash, fed by three ingestion paths: hand entry, Gmail alert emails read by an LLM, and PDF or Excel statement uploads parsed by a heuristic engine. On top of that ledger it computes credit-card rewards under user-defined rules, tracks investment positions and returns with FIFO lots and XIRR, amortizes loans and tracks peer lendings, lets the user build ad hoc reports and dashboards over eleven datasources, and answers natural-language questions through an LLM that writes SQL against tenant-scoped read-only views. It is a Spring Boot 3.3 / Java 21 / Oracle backend on one OCI virtual machine and a Next.js 16 / React 19 client on Vercel, joined by a session cookie relayed across origins. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s01-what">What problem it solves, and for whom</h3>
+<p>The evidence points to a single primary user who is also the developer: V2 seeds one admin user, signups are gated by a single shared invite code, and the operations runbook is written for one VM and one operator. <span class="c cy">Strongly inferred</span> The product thesis, reconstructed from the transaction review workflow, is that <strong>ingestion is noisy and provisional</strong>: every automatically created transaction starts as "needs review" and is trusted only after a human, or a rule a human verified, confirms it. Statements are the reconciliation source of truth for Gmail alerts. Almost every derived figure (balance, position, reward, schedule) is recomputed from source facts on read rather than stored, a philosophy the plan documents name "recompute over incremental". <span class="c cg">Confirmed in code</span>; the rationale appears only in plans and javadocs.</p>
+<div class="grid3">
+<div class="tile"><h4>What makes it more than an expense tracker</h4><ul><li>Three ingestion paths with dedup and a reconciliation model</li><li>A credit-card reward engine that models real issuer mechanics (exclusive and additive rules, marginal tiers, shared cap buckets, milestones, anniversary windows)</li><li>Broker-statement reconciliation that separates intraday square-offs from delivery holdings using the broker's tax P&amp;L</li><li>Corporate actions that rewrite FIFO lots (split, bonus, demerger, merger, cash in lieu)</li><li>A self-service report builder and an LLM chat over read-only, tenant-filtered views</li></ul></div>
+<div class="tile"><h4>Most important product concepts</h4><ul><li><strong>Account</strong> (wallet or product) → <strong>Cardholder</strong> (person) → <strong>Card</strong> (plastic)</li><li><strong>Transaction</strong> with unsigned amount plus DEBIT/CREDIT type, a review status and a set of review reasons</li><li><strong>Source</strong>: manual, gmail_transaction_alert, gmail_statement, file_upload</li><li><strong>Category rule</strong> with USER-over-LLM precedence</li><li><strong>Holding</strong> as identity only; position derived by FIFO</li><li><strong>Reward rule</strong>, cap bucket, milestone; reward computed on read</li><li><strong>Loan</strong> schedule computed on read; <strong>lending</strong> as a signed ledger</li></ul></div>
+<div class="tile"><h4>Most important technical concepts</h4><ul><li>Hibernate <code>userFilter</code> enabled by an AOP aspect on every <code>@Transactional</code> method is the tenancy mechanism</li><li>Session cookie relay: the Next server re-mints the API's cookie on its own origin</li><li>RSC prefetch → hydrated TanStack Query cache → browser fetch through a rewrite</li><li>DB-backed job queue in the same JVM; cron schedulers for Gmail, prices, retention</li><li>Failover LLM client across free-tier providers</li><li>Chat SQL runs as <code>CHAT_RO</code> with <code>SYS_CONTEXT</code> tenancy inside Oracle</li><li>Flyway is authoritative; 85 migrations, idempotent PL/SQL since V63</li></ul></div>
+</div>
+
+<h3 id="s01-map">Conceptual map</h3>
+<pre class="mermaid">flowchart LR
+  FO[FinanceOS]
+  FO --> A1[Money in #38; out]
+  FO --> A2[Cards #38; rewards]
+  FO --> A3[Wealth]
+  FO --> A4[Debts]
+  FO --> A5[Insight]
+  A1 --> M1[Accounts]
+  A1 --> M2[Transactions, categories, review, rules]
+  A1 --> M3[Gmail ingestion]
+  A1 --> M4[Statement ingestion]
+  A2 --> M1
+  A2 --> M7[Rewards engine]
+  A3 --> M6[Investments: instruments, positions, CAs, F#38;O, imports]
+  A4 --> M8[Loans #38; lendings]
+  A5 --> M9[Reports #38; dashboards]
+  A5 --> M10[Chat with data]
+  M2 --> D1[(ledger: transactions)]
+  M1 --> D2[(wallets: accounts, cardholders, cards)]
+  M3 --> D3[(sources: gmail ledger, statements)]
+  M4 --> D3
+  M6 --> D4[(instruments, holdings, trades, CAs)]
+  M8 --> D5[(loans, lendings)]
+  M7 --> D6[(reward config)]
+  M9 --> D7[(reports, dashboards)]
+  M10 --> D8[(v_chat_* views)]
+  J[Jobs queue #38; crons] -.-> M3
+  J -.-> M4
+  J -.-> M6
+  L[LLM platform] -.-> M2
+  L -.-> M3
+  L -.-> M10</pre>
+
+<h3 id="s01-journey">Overall user journey</h3>
+<ol class="trace">
+<li><span class="lyr">onboard</span>Sign up with an invite code or sign in with Google (which also grants Gmail read access and creates a primary Gmail connection)</li>
+<li><span class="lyr">set up</span>Create accounts (bank, credit card with cardholders and plastics, broker), set a Gmail "ingest from" date per account, allow-list bank sender addresses, add LLM keys if the shared free-tier keys are not enough</li>
+<li><span class="lyr">ingest</span>Every two hours (10:00–22:00 IST) Gmail alerts become NEEDS_REVIEW transactions; statement uploads and Gmail statement attachments reconcile them; the LLM categorizes new rows and remembers merchant rules</li>
+<li><span class="lyr">review</span>Approve or fix categories in the review queue, merge duplicates, link transfers and refunds, verify rules</li>
+<li><span class="lyr">configure</span>Model each card's reward program; record trades, dividends, SIPs, corporate actions; add loans and lendings</li>
+<li><span class="lyr">understand</span>Read balances, rewards earned, positions and XIRR, EMI schedules; build reports and a dashboard; ask questions in chat; use the Card Picker before a purchase</li>
+</ol>
+
+<h3 id="s01-five">FinanceOS in 5 minutes (for a new developer)</h3>
+<ol>
+<li><strong>Two repos, one folder.</strong> <span class="path">financeos-server</span> (Spring Boot, port 6969, Oracle via Flyway) and <span class="path">financeos-client</span> (Next.js, port 6970, proxies <code>/api/v1/*</code> to the server). Both have their own git history since 2025-12-31.</li>
+<li><strong>Everything is per user.</strong> A request's user id sits in a ThreadLocal; an aspect enables a Hibernate filter so every entity read is scoped. If a service method is not <code>@Transactional</code> the filter is off. Six native-SQL sites bind <code>user_id</code> by hand. Chat has its own DB-level tenancy.</li>
+<li><strong>The ledger is <code>transactions</code>.</strong> Unsigned amount plus type. Source tells you where it came from. <code>review_type</code> and a reason set tell you whether a human has trusted it. Categories are many-to-many. Links (transfer, refund, card payment) never mutate rows.</li>
+<li><strong>Derived numbers are computed on read.</strong> Balance = statement anchor plus later transactions. Position = FIFO replay of trades and corporate actions. Reward = rule engine over the ledger. Loan schedule = annuity walk over terms and events. None of these are stored, so there is no cache to invalidate but every read pays the full cost.</li>
+<li><strong>Slow work runs as jobs.</strong> Uploads, Gmail sync, price refresh, rule apply, import commits go through a DB-backed queue with two worker threads in the same JVM. The UI polls.</li>
+<li><strong>LLMs are a utility, not the product.</strong> A failover client tries Gemini, Groq and OpenRouter in a user-configurable order for categorization, email extraction and chat. Chat writes SQL against 14 allow-listed <code>v_chat_*</code> views as a read-only Oracle user.</li>
+<li><strong>The client renders twice.</strong> A Server Component fetches and seeds a TanStack Query cache; a client component hydrates it and does all later reads and writes. Filters live in component state; refresh loses them.</li>
+<li><strong>Start reading here:</strong> <code>TransactionService</code>, <code>ReviewStatusManager</code>, <code>HibernateFilterAspect</code>, <code>BalanceMath</code>, <code>RewardCalculationService</code>, <code>InvestmentService.calculateHoldingPosition</code>, <code>LoanScheduleService</code>, <code>GmailIngestionService</code>, <code>FailoverLlmClient</code>, <code>ChatOrchestrator</code>, <code>JobWorker</code>, <code>proxy.ts</code>, <code>lib/query/keys.ts</code>. See <a href="/handbook/learning.html#s29">Onboarding</a>.</li>
+</ol>
+
+<h3 id="s01-philosophy">Apparent product philosophy</h3>
+<ul>
+<li><strong>Provisional until confirmed.</strong> Ingested data is flagged, not trusted. <span class="c cg">Confirmed</span></li>
+<li><strong>Model reality, not a simplification.</strong> Cardholders vs plastics, marginal tiers, shared caps, intraday vs delivery, demerger cost carve-outs, cash in lieu. <span class="c cg">Confirmed</span></li>
+<li><strong>Recompute over incremental.</strong> Named in the loans and rewards plans and visible in every derived figure. <span class="c cy">Strongly inferred</span></li>
+<li><strong>Free-tier everything.</strong> LLM failover across free keys, a 1 GB VM with swap, Grafana Cloud Free. <span class="c cy">Strongly inferred</span> from config comments and the runbook.</li>
+<li><strong>Defense in depth where it matters.</strong> Chat tenancy inside Oracle plus a SQL allow-list; account deletion verified against the data dictionary; ReDoS-safe regex rules. <span class="c cg">Confirmed</span></li>
+<li>The reason a given workflow exists is recorded in <span class="path">plans/</span> and in unusually dense "why" comments, but not in any single product document. Where neither exists, this handbook says so.</li>
+</ul>
+</section>
+<section class="sec" id="s02" data-part="I · Orientation">
+<p class="eyebrow">Section 2</p>
+<h2><span class="n">02</span>System map</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Four tiers: a Next.js client on Vercel, a Spring Boot API plus job worker plus cron schedulers in one JVM on a single OCI VM behind Caddy, an Oracle Autonomous Database reached through a wallet (plus a second least-privileged DB user for chat), and external services (Google OAuth and Gmail, Yahoo Finance, AMFI, three LLM providers, Grafana Cloud). Every layer's technology is listed below with where it is configured and what depends on it. <span class="c cg">Confirmed</span></p></div>
+
+<figure>
+<svg viewBox="0 0 960 520" role="img" aria-label="System map: browser to Vercel Next.js to OCI Spring Boot behind Caddy, to Oracle ADB and external services, with Grafana Cloud receiving logs and telemetry">
+<defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+<g font-family="IBM Plex Sans, system-ui, sans-serif" font-size="12" fill="currentColor">
+<rect x="20" y="30" width="200" height="90" rx="8" fill="none" stroke="currentColor"/>
+<text x="32" y="52" font-weight="600">Browser</text>
+<text x="32" y="72">React 19 client components</text>
+<text x="32" y="90" opacity=".75">TanStack cache · Faro RUM</text>
+<text x="32" y="108" opacity=".75">FINANCEOS_SESSION cookie</text>
+<rect x="20" y="170" width="200" height="120" rx="8" fill="none" stroke="currentColor"/>
+<text x="32" y="192" font-weight="600">Vercel · Next.js 16</text>
+<text x="32" y="212">proxy.ts (cookie gate)</text>
+<text x="32" y="230">RSC pages · server actions</text>
+<text x="32" y="248">/api/v1/* rewrite → API</text>
+<text x="32" y="266" opacity=".75">/api/chat SSE relay · Loki logs</text>
+<rect x="330" y="30" width="300" height="260" rx="8" fill="none" stroke="currentColor"/>
+<text x="342" y="52" font-weight="600">OCI VM (1 GB) · Caddy TLS → 127.0.0.1:8080</text>
+<rect x="346" y="66" width="268" height="64" rx="6" fill="none" stroke="currentColor"/>
+<text x="358" y="86">Spring Boot 3.3 · Java 21 · 512 MB heap</text>
+<text x="358" y="104">37 controllers · services · JPA</text>
+<text x="358" y="122" opacity=".75">Security · userFilter aspect · MDC</text>
+<rect x="346" y="140" width="128" height="60" rx="6" fill="none" stroke="currentColor"/>
+<text x="356" y="160">JobWorker</text>
+<text x="356" y="178" opacity=".75">2 threads · 2 s poll</text>
+<rect x="486" y="140" width="128" height="60" rx="6" fill="none" stroke="currentColor"/>
+<text x="496" y="160">Crons</text>
+<text x="496" y="178" opacity=".75">Gmail 7×/day · prices 19:00</text>
+<text x="496" y="194" opacity=".75">retention 03:30</text>
+<rect x="346" y="212" width="268" height="64" rx="6" fill="none" stroke="currentColor"/>
+<text x="358" y="232">FailoverLlmClient · ChatOrchestrator</text>
+<text x="358" y="250" opacity=".75">Flyway V1…V85 on boot</text>
+<text x="358" y="266" opacity=".75">actuator 8081 loopback (prod)</text>
+<rect x="720" y="30" width="220" height="110" rx="8" fill="none" stroke="currentColor"/>
+<text x="732" y="52" font-weight="600">Oracle Autonomous DB</text>
+<text x="732" y="72">ADMIN schema · ~55 tables</text>
+<text x="732" y="90">Hikari pool 10 · wallet TNS_ADMIN</text>
+<text x="732" y="108" opacity=".75">CHAT_RO user · v_chat_* views</text>
+<text x="732" y="126" opacity=".75">SPRING_SESSION store</text>
+<rect x="720" y="170" width="220" height="150" rx="8" fill="none" stroke="currentColor"/>
+<text x="732" y="192" font-weight="600">External services</text>
+<text x="732" y="212">Google OAuth · Gmail API</text>
+<text x="732" y="230">Yahoo Finance · AMFI NAV</text>
+<text x="732" y="248">Gemini · Groq · OpenRouter</text>
+<text x="732" y="266" opacity=".75">DuckDNS (TLS DNS-01)</text>
+<text x="732" y="284" opacity=".75">Slack webhook (deploys)</text>
+<rect x="330" y="360" width="610" height="120" rx="8" fill="none" stroke="currentColor"/>
+<text x="342" y="382" font-weight="600">Grafana Cloud</text>
+<text x="342" y="402">Loki: JSON logs via Fluent Bit (server) and RequestLogger (Vercel)</text>
+<text x="342" y="420">Prometheus: JVM and node metrics · alert rules → Slack</text>
+<text x="342" y="438">Faro: browser RUM, errors, page views</text>
+<text x="342" y="456" opacity=".75">Tempo/OTLP wired but TRACING_ENABLED=false</text>
+<path d="M120 120 V166" fill="none" stroke="currentColor" marker-end="url(#ar2)"/>
+<path d="M220 230 H326" fill="none" stroke="currentColor" marker-end="url(#ar2)"/>
+<text x="228" y="222" opacity=".8">HTTPS + cookie</text>
+<path d="M220 80 H326" fill="none" stroke="currentColor" stroke-dasharray="5 4" marker-end="url(#ar2)"/>
+<text x="228" y="72" opacity=".8">same-origin via rewrite</text>
+<path d="M630 90 H716" fill="none" stroke="currentColor" marker-end="url(#ar2)"/>
+<text x="640" y="82" opacity=".8">JDBC thin</text>
+<path d="M630 240 H716" fill="none" stroke="currentColor" marker-end="url(#ar2)"/>
+<text x="640" y="232" opacity=".8">HTTPS</text>
+<path d="M480 290 V356" fill="none" stroke="currentColor" stroke-dasharray="5 4" marker-end="url(#ar2)"/>
+<path d="M120 290 V420 H326" fill="none" stroke="currentColor" stroke-dasharray="5 4" marker-end="url(#ar2)"/>
+</g></svg>
+<figcaption>Runtime topology. Solid arrows carry user requests; dashed arrows carry telemetry and the browser's same-origin API calls that Vercel rewrites to the API origin.</figcaption>
+</figure>
+
+<h3 id="s02-client">Client tier</h3>
+<div class="tw"><table>
+<tr><th>Layer</th><th>Technology</th><th>What it does</th><th>Why (evidence)</th><th>Configured in</th><th>Depended on by</th></tr>
+<tr><td>UI</td><td>React 19, Radix primitives (dialog, select, tabs, popover, dropdown, checkbox), Tailwind 3.4, lucide icons, sonner toasts, recharts, react-grid-layout, react-markdown</td><td>Screens, dialogs, charts, dashboard grid, chat rendering</td><td>shadcn-style component set (<code>components.json</code>) <span class="c cg">Confirmed</span></td><td><code>tailwind.config.ts</code>, <code>components/ui/*</code></td><td>every page</td></tr>
+<tr><td>State</td><td>TanStack Query 5 (hydrated from RSC), React state, URL params (jobs page only)</td><td>Server cache, UI state</td><td>Migration from pure RSC for interactivity <span class="c cy">Strongly inferred</span></td><td><code>lib/query/client.ts</code>, <code>keys.ts</code></td><td>all client components</td></tr>
+<tr><td>API client</td><td>openapi-fetch typed from <code>schema.d.ts</code> (browser and server variants); legacy <code>apiClient.ts</code> for RSC</td><td>Typed calls; cookie forwarding; 401 event</td><td>Generated types keep the contract honest (CI drift gate)</td><td><code>lib/api/*</code>, <code>scripts/gen-api.mjs</code></td><td>hooks, pages</td></tr>
+<tr><td>Authentication</td><td><code>proxy.ts</code> presence check; <code>requireAuth()</code> validation; server actions mint the cookie</td><td>Route gating and cookie relay</td><td>Cross-origin cookie problem <span class="c cg">Confirmed</span></td><td><code>proxy.ts</code>, <code>lib/auth.ts</code>, <code>actions/auth.ts</code></td><td>all protected routes</td></tr>
+<tr><td>Routing</td><td>App Router; <code>(protected)</code> group; dynamic segments for loans, lendings, reports, dashboards</td><td>~40 pages</td><td></td><td><code>src/app/**</code></td><td></td></tr>
+<tr><td>PWA</td><td>Serwist (assets only), manifest, offline page</td><td>Installable app shell</td><td>Session replay risk drives the "no data caching" rule</td><td><code>app/sw.ts</code>, <code>next.config.mjs</code></td><td></td></tr>
+<tr><td>Telemetry</td><td>Grafana Faro web SDK; server-side Loki logger</td><td>RUM, errors, page views, API timings</td><td></td><td><code>instrumentation-client.ts</code>, <code>lib/observability/*</code></td><td></td></tr>
+<tr><td>Build and test</td><td>Node 20, TypeScript 5.7, ESLint 9 (TanStack plugin), Prettier, Vitest 4 + Testing Library, Playwright 1.62, Husky</td><td></td><td></td><td><code>package.json</code>, <code>vitest.config.ts</code>, <code>e2e/playwright.config.ts</code></td><td>CI</td></tr>
+</table></div>
+
+<h3 id="s02-server">Server tier</h3>
+<div class="tw"><table>
+<tr><th>Layer</th><th>Technology</th><th>What it does</th><th>Configured in</th><th>Depended on by</th></tr>
+<tr><td>HTTP</td><td>Spring Boot 3.3.4 web MVC, embedded Tomcat, springdoc OpenAPI export</td><td>37 REST controllers under <code>/api/v1</code>; <code>/api/e2e</code> in the e2e profile</td><td><code>application.yml</code> (<code>server.port</code> 6969, multipart unlimited)</td><td>client</td></tr>
+<tr><td>Security</td><td>Spring Security (session), Spring Session JDBC, BCrypt cost 12, OriginValidationFilter, invite gate</td><td>Cookie sessions, CSRF disabled, CORS allow-list</td><td><code>core/security/*</code>, <code>server.servlet.session.cookie.*</code></td><td>everything</td></tr>
+<tr><td>Tenancy</td><td>Hibernate <code>@Filter</code> + <code>HibernateFilterAspect</code> + <code>UserContext</code></td><td>Row scoping</td><td><code>core/security/*</code></td><td>34 entities</td></tr>
+<tr><td>Persistence</td><td>Spring Data JPA, Hibernate 6.3 (Oracle dialect), hypersistence-utils, ojdbc11, Hikari (pool 10)</td><td>Entities, repositories, six native SQL sites</td><td><code>spring.datasource.*</code>, <code>spring.jpa.*</code></td><td>services</td></tr>
+<tr><td>Schema</td><td>Flyway 10 (Oracle), <code>baseline-version 0</code>, <code>repair-on-migrate</code></td><td>85 migrations on boot</td><td><code>spring.flyway.*</code>, <code>db/migration</code></td><td>schema</td></tr>
+<tr><td>Jobs</td><td>DB-backed queue, <code>@Scheduled</code> poller, <code>ThreadPoolTaskExecutor</code>, <code>@EnableScheduling</code></td><td>6 job types; 3 crons</td><td><code>jobs.*</code>, <code>gmail.ingest.cron</code>, <code>price.refresh-cron</code></td><td>ingestion, prices, imports, rules</td></tr>
+<tr><td>Parsing</td><td>Apache PDFBox 3, POI 5, JSQLParser 4.9 (chat), exp4j (chat calc)</td><td>Statement and CAS parsing, SQL validation, calculator</td><td><code>pom.xml</code></td><td>statements, imports, chat</td></tr>
+<tr><td>External clients</td><td>Google API client and Gmail service, Unirest, Java HTTP for Yahoo, AMFI, LLM providers</td><td>Integrations</td><td><code>gmail.*</code>, <code>price.*</code>, <code>llm.*</code></td><td>see <a href="/handbook/server-api.html#s13">Integrations</a></td></tr>
+<tr><td>Crypto</td><td>AES-256-GCM (<code>EncryptionService</code>, <code>LlmKeyEncryptionService</code>)</td><td>Statement passwords, Gmail refresh tokens, LLM keys</td><td><code>ENCRYPTION_KEY</code>, <code>LLM_KEYS_MASTER_KEY</code></td><td>accounts, gmail, llm</td></tr>
+<tr><td>Observability</td><td>Logback + Logstash JSON encoder with masking, Micrometer + Prometheus, OTLP bridge (off), Datasource micrometer</td><td>Structured events, metrics, slow-query logs</td><td><code>logback-spring.xml</code>, <code>application-prod.yml</code></td><td>Grafana</td></tr>
+<tr><td>Build and test</td><td>Maven 3.9.6 wrapper, Lombok, JUnit 5, Mockito, H2 (Oracle mode) for 10 Spring tests</td><td></td><td><code>pom.xml</code>, <code>src/test/resources/application.properties</code></td><td>CI</td></tr>
+</table></div>
+
+<h3 id="s02-data">Data tier</h3>
+<div class="tw"><table>
+<tr><th>Store</th><th>Technology</th><th>Holds</th><th>Notes</th></tr>
+<tr><td>Primary database</td><td>Oracle Autonomous DB (prod, <code>_tp</code> service), Oracle Free 23 container (dev, e2e)</td><td>All application tables, sessions, Flyway history</td><td>Wallet via <code>TNS_ADMIN</code>; <code>_high</code> service caused ORA-12839 in V82</td></tr>
+<tr><td>Chat read model</td><td><code>CHAT_RO</code> user, 3-connection pool, 16 <code>v_chat_*</code> views</td><td>Tenant-filtered projections</td><td>Validator allows 14 of 16</td></tr>
+<tr><td>Cache</td><td>None server-side beyond in-memory maps (LLM bucket state, chat quota, grounding 5 min, AMFI feed, Yahoo search 5 min, invite/deletion limiters)</td><td>Ephemeral</td><td>All lost on restart; not multi-instance safe</td></tr>
+<tr><td>Files</td><td><code>job_artifacts.data</code> BLOBs (uploaded statements until job success or 7 days after failure); no object storage</td><td>Raw PDFs and Excel</td><td>Unencrypted at rest inside the DB <span class="c pm">Medium</span></td></tr>
+<tr><td>Client storage</td><td>Session cookie, <code>faro_session</code> cookie, next-themes localStorage</td><td></td><td>No application localStorage; chat transcript in memory only</td></tr>
+<tr><td>External data</td><td>AMFI NAVAll (daily), Yahoo quote and chart, Yahoo dividend events, Gmail messages</td><td>Prices, dividends, emails</td><td>see <a href="/handbook/server-api.html#s13">Integrations</a></td></tr>
+</table></div>
+
+<h3 id="s02-infra">Infrastructure tier</h3>
+<div class="tw"><table>
+<tr><th>Concern</th><th>Implementation</th><th>Evidence</th></tr>
+<tr><td>Server deployment</td><td>GitHub Actions <code>deploy.yml</code> on push to main: build, verify, spec drift, run the client repo's E2E workflow, SCP jar, <code>systemctl restart</code>, health poll on 8081; manual rollback via <code>.prev</code> jar</td><td><span class="path">financeos-server/.github/workflows</span>, <span class="path">deploy/README.md</span></td></tr>
+<tr><td>Client deployment</td><td>Vercel from the client repo; <code>API_ORIGIN</code> must be set or the build throws</td><td><span class="path">next.config.mjs</span></td></tr>
+<tr><td>Runtime host</td><td>Ubuntu 20.04 OCI E2.1.Micro, 952 MiB RAM, 2 GB swap in active use, systemd unit with Serial GC and C1-only JIT</td><td><span class="path">deploy/financeos.service</span>, <span class="path">tune-jvm-and-db.sh</span></td></tr>
+<tr><td>TLS</td><td>Caddy with DuckDNS DNS-01, reverse proxy to loopback 8080</td><td><span class="path">deploy/Caddyfile</span></td></tr>
+<tr><td>Environment</td><td>Profiles default, prod, e2e; <code>.env</code> via systemd EnvironmentFile (no server <code>.env.example</code>)</td><td><span class="path">application-*.yml</span></td></tr>
+<tr><td>Logging</td><td>JSON file → Fluent Bit → Loki; plaintext console → journald stays local; 8 masking patterns</td><td><span class="path">logback-spring.xml</span>, <span class="path">deploy/fluent-bit.conf</span></td></tr>
+<tr><td>Monitoring</td><td>Prometheus on 8081 loopback, Grafana dashboards and alert rules (e.g. Hikari pending &gt; 0), Slack contact point</td><td><span class="path">deploy/grafana/*</span></td></tr>
+<tr><td>Scheduled jobs</td><td>Gmail ingest <code>0 0 10-22/2 * * *</code>, price refresh <code>0 0 19 * * *</code>, job retention <code>0 30 3 * * *</code>, all Asia/Kolkata, all disabled in e2e</td><td><span class="path">application.yml</span>, <span class="path">application-e2e.yml</span></td></tr>
+<tr><td>CI</td><td>Server: <code>mvnw verify</code> + spec drift + cross-repo E2E; client: typecheck, gen:api drift, api-surface, lint, test, build; nightly E2E at 01:30</td><td><span class="path">.github/workflows/*</span></td></tr>
+</table></div>
+</section>
+<section class="sec" id="s03" data-part="I · Orientation">
+<p class="eyebrow">Section 3</p>
+<h2><span class="n">03</span>Repository &amp; codebase map</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>FinanceOS is two independent git repositories that live side by side in one folder: <span class="path">financeos-server</span> (Java 21 / Spring Boot 3.3.4 / Oracle, 688 main-source files, ~53k lines, 85 Flyway migrations, 132 test classes) and <span class="path">financeos-client</span> (Next.js 16 App Router / React 19 / TypeScript, ~536 source files, ~85k lines incl. tests, 62 unit-test files, 70 Playwright specs). A third folder, <span class="path">plans/</span> (164 markdown files), holds the design plans and AI-implementer prompts that drove most feature work; it is the best surviving record of <em>intent</em>, but it is not code and must be checked against the build. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s03-top">Top-level layout</h3>
+<div class="tw"><table>
+<tr><th>Path</th><th>Kind</th><th>What it is</th><th>Trust</th></tr>
+<tr><td><span class="path">financeos-server/</span></td><td>Server repo (own <code>.git</code>, 194 commits since 2025-12-31)</td><td>Spring Boot API, domain logic, Flyway migrations, background jobs, integrations, deploy scripts</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td><span class="path">financeos-client/</span></td><td>Client repo (own <code>.git</code>, 285 commits)</td><td>Next.js app: RSC pages, client components, TanStack Query, generated OpenAPI client, Playwright E2E harness</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td><span class="path">plans/</span></td><td>Design corpus (not versioned)</td><td>Plans, decision records and implementer prompts (e.g. <code>rewards-engine-plan.md</code>, <code>credit-card-model-v2.md</code>, <code>e2e-testing-plan.md</code>). Intent evidence only.</td><td><span class="c cy">Intent, not code</span></td></tr>
+<tr><td><span class="path">scripts/</span></td><td>Operator scripts (Python/SQL)</td><td>Test-data seeders (<code>seed_all_testdata.py</code>, <code>seed_rewards_testdata.py</code> + manifests), cleanup helpers, <code>reconcile_trades.py</code> (reference algorithm for broker reconciliation), <code>reset-financeos-schema.sql</code>, <code>parse_statement.py</code></td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td><span class="path">docs/</span>, <span class="path">financeos-server/docs/</span></td><td>Older specs</td><td>Module specs from June–July 2026 (reports, dashboards, gmail ingestion, categorization, transaction filter/search) and <code>chat-ro-setup.sql</code> (read-only DB user for Chat)</td><td><span class="c cy">Partly stale</span></td></tr>
+<tr><td><span class="path">extract_cas.py</span>, <span class="path">cookies.txt</span>, <span class="path">financeos-client_dump.txt</span></td><td>Stray files</td><td>Ad-hoc helpers and a curl cookie jar at repo root. See <a href="/handbook/quality-risk.html#s23">Security review</a> for the cookie-jar risk.</td><td><span class="c cg">Confirmed present</span></td></tr>
+</table></div>
+
+<h3 id="s03-server">Server repository map</h3>
+<p>Package root is <span class="path">financeos-server/src/main/java/com/financeos</span>. The server is organised in a <strong>layered-by-feature</strong> style: HTTP adapters in <code>api/*</code>, business logic and JPA entities in <code>domain/*</code>, cross-cutting concerns in <code>core/*</code>, and four larger subsystems (<code>gmail</code>, <code>llm</code>, <code>chat</code>, <code>statement</code>) as top-level packages. <span class="c cg">Confirmed</span></p>
+<div class="tw"><table>
+<tr><th>Area</th><th>Path (under <code>com/financeos</code>)</th><th>Responsibility</th><th>Important files</th><th>Depends on</th><th>Used by</th></tr>
+<tr><td>Bootstrap</td><td><code>FinanceOsApplication</code> (root)</td><td>Spring Boot entry point; enables scheduling</td><td>root class; <code>resources/application.yml</code>, <code>application-prod.yml</code>, <code>application-e2e.yml</code>, <code>logback-spring.xml</code></td><td>Spring Boot</td><td>everything</td></tr>
+<tr><td>Core / cross-cutting</td><td><code>core/config</code>, <code>core/security</code>, <code>core/crypto</code>, <code>core/data</code>, <code>core/exception</code>, <code>core/oauth</code>, <code>core/observability</code>, <code>core/util</code>, <code>core/validation</code></td><td>Security filter chain &amp; session cookie, tenancy (Hibernate filter aspect), AES-GCM field encryption, global error mapping, Google OAuth client, request-id/MDC/access-log/audit/secret-masking/slow-query observation</td><td><code>SecurityConfig</code>, <code>HibernateFilterAspect</code>, <code>OriginValidationFilter</code>, <code>InviteAttemptLimiter</code>, <code>EncryptedStringConverter</code>, <code>GlobalExceptionHandler</code>, <code>GoogleOAuthClient</code>, <code>RequestContextFilter</code>, <code>AccessLogFilter</code>, <code>AuditLogger</code>, <code>SecretMasking</code></td><td>Spring Security, Spring Session JDBC, Micrometer</td><td>every controller/service</td></tr>
+<tr><td>HTTP API</td><td><code>api/&lt;feature&gt;/*Controller</code> + <code>dto/</code></td><td>37 REST controllers under <code>/api/v1/**</code> (plus <code>/api/e2e/**</code> in the e2e profile). Thin: validate, call service, map DTO.</td><td>see <a href="/handbook/server-api.html#s09">API map</a></td><td>domain services</td><td>client</td></tr>
+<tr><td>Identity &amp; tenancy</td><td><code>domain/user</code>, <code>api/auth</code></td><td>User entity, signup (invite-gated), login, Google SSO, account deletion</td><td><code>User</code>, <code>AuthController</code>, <code>AccountDeletionService</code>, <code>AccountDeletionExecutor</code></td><td>core/security</td><td>all tenant-scoped data</td></tr>
+<tr><td>Accounts &amp; cards</td><td><code>domain/account</code>, <code>domain/account/card</code>, <code>api/account</code></td><td>Account + typed detail rows (bank / credit card / broker), cardholders &amp; card instances, closure, identifiers (aliases for email matching), balances</td><td><code>Account</code>, <code>AccountBankDetails</code>, <code>AccountCreditCardDetails</code>, <code>AccountBrokerDetails</code>, <code>AccountIdentifier</code>, <code>Cardholder</code>, <code>Card</code>, <code>AccountController</code>, <code>CardholderController</code></td><td>user</td><td>transactions, statements, gmail, rewards, investments, dashboard</td></tr>
+<tr><td>Ledger</td><td><code>domain/transaction</code> (+ <code>link/</code>), <code>domain/category</code>, <code>domain/categorization</code>, <code>api/transaction</code>, <code>api/transactionlink</code>, <code>api/category</code>, <code>api/rules</code>, <code>api/categorize</code></td><td>The central transactions table, categories (many-to-many), review workflow, rules engine, LLM categorization, transfer/settlement links, merge</td><td><code>Transaction</code>, <code>TransactionService</code>, <code>ReviewStatusManager</code>, <code>CategoryRule</code>, <code>RuleMatcher</code>, <code>TransactionCategorizer</code>, <code>TransactionLink</code></td><td>account, llm</td><td>rewards, reports, dashboard, chat, gmail, statements, loans (match)</td></tr>
+<tr><td>Gmail ingestion</td><td><code>gmail/{client,domain,engine,ingest,internal,oauth,reconcile}</code>, <code>api/gmail</code></td><td>OAuth connection, sender allowlist, scheduled sync, LLM extraction of transaction emails, processed-message ledger, attention queue</td><td><code>GmailController</code>, <code>GmailIngestionService</code>, <code>GmailSyncCursorService</code>, <code>IngestionScheduler</code>, <code>AccountResolver</code>, <code>GmailIngestEventListener</code></td><td>account, transaction, llm, job</td><td>transactions (source=gmail), jobs UI</td></tr>
+<tr><td>Statements &amp; file ingest</td><td><code>statement/parser</code>, <code>domain/statement</code>, <code>domain/ingestion</code>, <code>api/ingestion</code>, <code>api/statement</code></td><td>PDF/Excel statement parsing, statement + line persistence, merge into ledger</td><td><code>FileUploadController</code>, <code>FileIngestionService</code>, <code>StatementService</code>, parser classes</td><td>account, transaction, job</td><td>transactions (source=statement), statements UI</td></tr>
+<tr><td>Background jobs</td><td><code>domain/job</code>, <code>domain/job/handlers</code>, <code>api/job</code></td><td>DB-backed job queue, worker, janitor, per-operation handlers</td><td><code>Job</code>, <code>JobArtifact</code>, <code>JobWorker</code>, <code>JobJanitor</code>, <code>JobService</code>, handlers</td><td>all handled modules</td><td>gmail, statements, prices, settings/jobs UI</td></tr>
+<tr><td>Rewards</td><td><code>domain/reward</code>, <code>api/reward</code></td><td>Credit-card reward rules, tiers, cap buckets, milestones, account config, recompute, recommender, report</td><td><code>RewardRule</code>, <code>RewardCapBucket</code>, <code>RewardMilestone</code>, <code>RewardRecommendationService</code>, six controllers</td><td>transaction, account/card</td><td>reports (reward_earnings), chat tool, dashboard</td></tr>
+<tr><td>Investments</td><td><code>domain/instrument</code> (+ <code>price/</code>, <code>search/</code>, <code>corporateaction/</code>), <code>domain/holding</code>, <code>domain/investment</code> (+ <code>charges/</code>, <code>dividend/</code>, <code>fno/</code>, <code>imports/</code>, <code>reconcile/</code>, <code>returncalc/</code>, <code>sip/</code>), <code>api/instrument</code>, <code>api/investment</code></td><td>Instrument master, AMFI/Yahoo prices, holdings &amp; valuation, trades &amp; FIFO positions, XIRR, dividends, SIPs, corporate actions, F&amp;O, broker imports and reconciliation</td><td><code>Instrument</code>, <code>InstrumentPrice</code>, <code>Holding</code>, <code>HoldingValuationService</code>, <code>InvestmentTransaction</code>, <code>InvestmentService</code>, <code>CorporateAction</code>, <code>FnoTrade</code>, <code>ImportService</code>, <code>BrokerReconciliationService</code></td><td>account (broker), external AMFI/Yahoo, job</td><td>reports (positions, realized_lots, portfolio_value), dashboard net worth, chat</td></tr>
+<tr><td>Loans &amp; lendings</td><td><code>domain/loan</code> (+ <code>schedule/</code>), <code>domain/lending</code>, <code>api/loan</code>, <code>api/lending</code>, <code>api/obligations</code></td><td>Borrowings with EMI schedules, events, payments, charges; peer lending ledger with counterparties; upcoming obligations</td><td><code>Loan</code>, <code>LoanScheduleService</code>, <code>LoanService</code>, <code>Lending</code>, <code>Counterparty</code>, <code>ObligationsController</code></td><td>transaction (match suggestions)</td><td>reports (loan datasources), calendar UI</td></tr>
+<tr><td>Reports &amp; dashboards</td><td><code>domain/report</code> (+ <code>definition/</code>, <code>engine/</code>, <code>datasource/impl/</code>), <code>domain/dashboard</code>, <code>api/report</code>, <code>api/dashboard</code></td><td>Saved report definitions executed by SQL query builders or in-memory executors; dashboards of report widgets; landing summary</td><td><code>Report</code>, <code>DatasourceRegistry</code>, <code>*QueryBuilder</code>, <code>InMemoryReportExecutor</code>, <code>DateRangeResolver</code>, <code>Dashboard</code>, <code>DashboardService</code></td><td>transaction, investment, loan, lending, reward</td><td>client reports/dashboards, chat (report drafts)</td></tr>
+<tr><td>LLM platform</td><td><code>llm</code>, <code>llm/provider</code>, <code>llm/security</code>, <code>domain/llm</code>, <code>api/llm</code></td><td>Provider-agnostic failover client (Gemini, Groq, OpenRouter), bring-your-own-key storage, routing preferences, health</td><td><code>FailoverLlmClient</code>, <code>GeminiProvider</code>, <code>OpenAiCompatProvider</code>, <code>BucketStateRegistry</code>, <code>LlmKey</code>, <code>LlmTaskPref</code>, <code>LlmKeyEncryptionService</code></td><td>core/crypto, external LLM APIs</td><td>categorization, gmail, chat</td></tr>
+<tr><td>Chat with data</td><td><code>chat/{api,db,orchestrator,tool,tool/impl}</code>, <code>resources/chat/dictionary.md</code></td><td>Natural-language questions answered by an LLM tool loop over a read-only DB user, with SQL validation, quotas and rich answer blocks</td><td><code>ChatController</code>, <code>ChatOrchestrator</code>, <code>ChatSqlValidator</code>, <code>ChatSqlExecutor</code>, <code>ChatDbSession</code>, tools</td><td>llm, V70 chat views, reports, rewards</td><td>client /chat</td></tr>
+<tr><td>E2E control</td><td><code>e2e</code></td><td>Profile-gated endpoints for scripted LLM responses and API coverage tracking</td><td><code>E2eControlController</code>, <code>E2eCoverageFilter</code>, <code>ScriptedLlmClient</code>, <code>CoverageRegistry</code></td><td>llm</td><td>Playwright harness only</td></tr>
+<tr><td>Migrations</td><td><code>resources/db/migration/V1…V85</code></td><td>Flyway, Oracle dialect; baseline-version 0; repair-on-migrate</td><td>see <a href="/handbook/data.html#s06">Database</a></td><td>Oracle</td><td>schema</td></tr>
+<tr><td>Deploy &amp; ops</td><td><code>financeos-server/deploy</code>, <code>financeos-server/scripts</code></td><td>OCI VM runbook, systemd unit, Caddy TLS, Fluent Bit → Loki, Grafana dashboards/alerts, JVM/DB tuning, OpenAPI export</td><td><code>README.md</code>, <code>financeos.service</code>, <code>Caddyfile</code>, <code>fluent-bit.conf</code>, <code>grafana/</code>, <code>export-openapi.sh</code></td><td>—</td><td>operations</td></tr>
+<tr><td>Tests</td><td><code>src/test/java/com/financeos/**</code></td><td>132 classes; mostly Mockito unit tests, some Spring-context and H2-backed integration tests</td><td>see <a href="/handbook/quality-risk.html#s25">Testing</a></td><td>—</td><td>CI</td></tr>
+</table></div>
+
+<h3 id="s03-client">Client repository map</h3>
+<p>Source root is <span class="path">financeos-client/src</span>. The client mixes two data paths that coexist: <strong>React Server Components + server actions</strong> (older pages; fetch on the server with the session cookie) and <strong>TanStack Query hooks over a generated OpenAPI client</strong> (the eight modules migrated in the September 2026 "frontend data path" rounds). Both hit the same <code>/api/v1/**</code> surface. <span class="c cg">Confirmed</span></p>
+<div class="tw"><table>
+<tr><th>Area</th><th>Path (under <code>src</code>)</th><th>Responsibility</th><th>Important files</th><th>Depends on</th><th>Used by</th></tr>
+<tr><td>Entry &amp; shell</td><td><code>app/layout.tsx</code>, <code>app/page.tsx</code>, <code>app/(protected)/layout.tsx</code>, <code>proxy.ts</code></td><td>Root HTML/theme/query providers; root redirect; authenticated shell with sidebar; route protection (Next 16 "proxy", formerly middleware) that bounces missing-cookie requests to <code>/login</code> and stamps <code>x-request-id</code></td><td><code>proxy.ts</code>, <code>components/layout/AppShellNav.tsx</code>, <code>Sidebar.tsx</code>, <code>MobileNav.tsx</code>, <code>navigation/navItems.tsx</code></td><td>Next.js</td><td>all pages</td></tr>
+<tr><td>Auth pages</td><td><code>app/login</code>, <code>app/signup</code>, <code>app/auth/google/callback</code></td><td>Credential login, invite-gated signup, Google SSO landing that exchanges the code via a server action and sets the cookie on the client origin</td><td><code>actions/auth.ts</code>, <code>lib/auth.ts</code></td><td>API auth</td><td>proxy</td></tr>
+<tr><td>Feature routes</td><td><code>app/(protected)/{accounts,transactions,rules,rewards,investments,loans,reports,dashboards,dashboard,chat,statements,settings}</code></td><td>One folder per product area; ~40 pages. Investments and loans have deep sub-trees.</td><td>see <a href="/handbook/client.html#s07">Client deep dive</a></td><td>components, lib</td><td>users</td></tr>
+<tr><td>Feature components</td><td><code>components/{accounts,transactions,rules,rewards,reports,dashboards,statements,jobs,forms}</code></td><td>Browsers, CRUD dialogs, filter bars, builders, panels. Files kept ≤300 lines by a splitting pass.</td><td><code>transactions/browser</code>, <code>transactions/review-browser</code>, <code>rewards/rule-form</code>, <code>rewards/simulator</code>, <code>reports/editor</code>, <code>jobs/JobsPanel.tsx</code></td><td>ui, lib</td><td>pages</td></tr>
+<tr><td>Design system</td><td><code>components/ui/*</code>, <code>tailwind.config.ts</code>, <code>components.json</code></td><td>shadcn-style primitives over Radix (dialog rebuilt with a single-scroller model, button variants, badges, tables, tabs, popover, select, calendar)</td><td><code>ui/dialog.tsx</code>, <code>ui/button.tsx</code>, <code>ui/table.tsx</code></td><td>Radix, Tailwind</td><td>all components</td></tr>
+<tr><td>API layer (new)</td><td><code>lib/api/{client.ts,server.ts,types.ts,errorMessage.ts,multipart.ts}</code>, <code>lib/api/schema.d.ts</code>, <code>lib/api/openapi.yaml</code></td><td>openapi-fetch clients (browser and server variants) typed from the server's exported OpenAPI spec; drift gate via <code>scripts/check-api-surface.mjs</code></td><td><code>scripts/gen-api.mjs</code>, <code>api-surface.snapshot.json</code></td><td>server <code>api-spec.yaml</code></td><td>TanStack hooks</td></tr>
+<tr><td>API layer (legacy)</td><td><code>lib/apiClient.ts</code>, <code>lib/domainApi.ts</code>, <code>lib/apiResult.ts</code></td><td>Server-side fetch wrapper using <code>next/headers</code> cookies; result envelope; used by RSC pages and server actions</td><td>—</td><td>Next headers</td><td>RSC pages, actions</td></tr>
+<tr><td>Server state</td><td><code>lib/query/{client.ts,keys.ts,index.ts,hooks/*}</code>, <code>components/QueryProvider.tsx</code>, <code>components/rewards/queries</code></td><td>TanStack QueryClient defaults, key factory, per-module hooks (accounts, categories, dashboards, investments, rewards…)</td><td>—</td><td>lib/api</td><td>client components</td></tr>
+<tr><td>Server actions</td><td><code>actions/auth.ts</code>, <code>actions/reports.ts</code></td><td>'use server' functions callable from client components (login/logout/Google exchange; report execution)</td><td>—</td><td>lib/apiClient</td><td>pages</td></tr>
+<tr><td>Domain types &amp; helpers</td><td><code>lib/*.types.ts</code>, <code>lib/*.helpers.ts</code>, <code>lib/utils.ts</code>, <code>lib/forms.ts</code>, <code>lib/pagination.ts</code></td><td>Hand-written types per module (pre-codegen), money/date formatting, form helpers, pagination contract</td><td>—</td><td>—</td><td>components</td></tr>
+<tr><td>Observability</td><td><code>lib/observability/{events.ts,logger.ts}</code>, <code>components/FaroRouteTracker.tsx</code></td><td>Grafana Faro web SDK init and route tracking; custom events; server-side logger</td><td>—</td><td>Faro, Loki</td><td>shell</td></tr>
+<tr><td>PWA</td><td><code>app/serwist/[path]/route.ts</code>, <code>app/offline</code>, <code>public/</code></td><td>Serwist service worker (assets only; pages/API network-only), offline fallback, manifest</td><td>—</td><td>Serwist</td><td>browser</td></tr>
+<tr><td>Chat proxy route</td><td><code>app/api/chat/route.ts</code></td><td>The only Next API route: relays the chat SSE stream to the server with the session cookie</td><td>—</td><td>server /chat/stream</td><td>/chat page</td></tr>
+<tr><td>Tests</td><td><code>**/__tests__</code>, <code>*.test.ts(x)</code>, <code>src/test/*</code>, <code>vitest.config.ts</code></td><td>62 vitest files with testing-library; harness mocks Next router/headers and wraps QueryClient</td><td><code>test/renderWithQuery.tsx</code>, <code>test/next-mocks.ts</code></td><td>vitest, jsdom</td><td>CI</td></tr>
+<tr><td>E2E</td><td><code>e2e/**</code></td><td>Playwright: 41 API specs + 29 UI specs against a dockerised Oracle + WireMock stubs, with API-operation and route coverage gates</td><td><code>playwright.config.ts</code>, <code>docker-compose.yml</code>, <code>run-local.sh</code>, <code>global-setup.ts</code></td><td>Docker, server e2e profile</td><td>CI (<code>.github/workflows/e2e.yml</code>)</td></tr>
+</table></div>
+
+<h3 id="s03-entry">Entry points at a glance</h3>
+<div class="tw compact"><table>
+<tr><th>Concern</th><th>Server</th><th>Client</th></tr>
+<tr><td>Process entry</td><td><code>FinanceOsApplication</code> → embedded Tomcat on <code>${SERVER_PORT:6969}</code></td><td><code>next dev -p 6970 --experimental-https</code> / Vercel build</td></tr>
+<tr><td>Routing</td><td>Spring MVC <code>@RequestMapping</code> per controller under <code>/api/v1</code></td><td>App Router file system; <code>proxy.ts</code> guards non-public paths</td></tr>
+<tr><td>Configuration</td><td><code>application.yml</code> + profile overlays + <code>.env</code> via systemd EnvironmentFile</td><td><code>next.config.mjs</code> (rewrites <code>/api/v1/*</code> → <code>API_ORIGIN</code>), <code>.env</code></td></tr>
+<tr><td>Database init</td><td>Flyway on boot (<code>baseline-version: 0</code>, <code>repair-on-migrate</code>), Spring Session JDBC <code>initialize-schema: always</code></td><td>—</td></tr>
+<tr><td>Authentication</td><td><code>core/security/SecurityConfig</code>, <code>api/auth/AuthController</code></td><td><code>proxy.ts</code>, <code>lib/auth.ts</code>, <code>actions/auth.ts</code></td></tr>
+<tr><td>Jobs</td><td><code>domain/job/JobWorker</code> (<code>@Scheduled fixedDelay 2s</code>), <code>IngestionScheduler</code>, <code>PriceSchedulerConfiguration</code>, <code>JobJanitor</code></td><td><code>components/jobs/useJobStatusPolling</code></td></tr>
+<tr><td>Seed data</td><td><code>V2__seed_user.sql</code> (default admin user)</td><td>—</td></tr>
+</table></div>
+</section>
+<section class="sec" id="s05" data-part="I · Orientation">
+<p class="eyebrow">Section 5</p>
+<h2><span class="n">05</span>Product architecture: core concepts</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Twenty-odd concepts explain most of FinanceOS. Each is derived from an entity or a computed structure in the code, not assumed. The single most important mismatch between product and implementation is that <strong>the product concepts users think of as stored values (balance, position, reward earned, EMI schedule) are computed on read</strong>; the stored facts are transactions, trades, terms and rules. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s05-concepts">Concept catalogue</h3>
+<div class="tw"><table>
+<tr><th>Concept</th><th>Definition (product language)</th><th>Why it exists</th><th>Key attributes</th><th>Relationships and lifecycle</th><th>Used by</th></tr>
+<tr><td><strong>User</strong></td><td>The tenant; one person's whole financial world</td><td>Multi-user isolation on shared tables</td><td>email, optional password hash, optional Google id</td><td>Owns everything; hard-deleted with a verified cascade</td><td>all</td></tr>
+<tr><td><strong>Account</strong></td><td>A wallet or product: bank account, credit card, broker (demat) account, or generic bucket</td><td>Every transaction must belong somewhere</td><td>type, name, detail row per type, ingest-from date, closed_on, reward config columns</td><td>ACTIVE → CLOSING → CLOSED derived from closed_on; closure gates card mutations only</td><td>transactions, statements, gmail, rewards, investments (broker), loans (payment account)</td></tr>
+<tr><td><strong>Cardholder</strong></td><td>A person entitled to spend on a card account: PRIMARY or ADDON</td><td>Add-on cards and reward scoping per person</td><td>role, relationship, spend limit, opened/closed</td><td>Exactly one primary per account; add-on deletable only when unused</td><td>rewards (scope and counters), cards</td></tr>
+<tr><td><strong>Card</strong></td><td>One physical or virtual plastic (last4) under a cardholder</td><td>Reissue without losing history</td><td>last4, issued_on, closed_on</td><td>At most one open per cardholder; replace closes old and opens new</td><td>transactions (attribution), Gmail resolution</td></tr>
+<tr><td><strong>Account identifier</strong></td><td>A customer id, account number or CRN that emails may carry instead of a card last4</td><td>Gmail matching for accounts without recognisable digits</td><td>value (2–32 chars), kind</td><td>Unique per user; adding one re-queues parked emails (exact match only)</td><td>Gmail resolver pass 0</td></tr>
+<tr><td><strong>Transaction</strong></td><td>One money movement on one account</td><td>The ledger</td><td>unsigned amount, DEBIT|CREDIT, date, settlement date, description vs sourced description, source, MCC, channel, flags, review status and reasons, applied rule, card</td><td>Created manually (NA) or ingested (NEEDS_REVIEW); reviewed; merged; deleted</td><td>balance, rewards, reports, chat, loans matching</td></tr>
+<tr><td><strong>Source</strong></td><td>Where a transaction came from</td><td>Trust and dedup differ by origin</td><td>manual, gmail_transaction_alert, gmail_statement, file_upload</td><td>Immutable</td><td>merge priority, reconciliation</td></tr>
+<tr><td><strong>Category</strong></td><td>A user-defined label (many per transaction)</td><td>Spend analysis</td><td>name, unique per user</td><td>Created by user or LLM (auto-create, ≤2 words)</td><td>rules, rewards predicates, reports</td></tr>
+<tr><td><strong>Category rule</strong></td><td>"If the bank text matches X, tag Y"</td><td>Remember categorization</td><td>merchant key, match type, verified, source USER|LLM, applied count</td><td>Unverified until a human approves; USER beats LLM</td><td>categorization, review</td></tr>
+<tr><td><strong>Review status and reasons</strong></td><td>Whether a human trusts a transaction, and why not yet</td><td>Provisional ingestion</td><td>NEEDS_REVIEW, AUTO_REVIEWED, MANUALLY_REVIEWED, NA; UNRECONCILED, CATEGORY_UNVERIFIED, DUPLICATE_SUSPECT</td><td>Leaves the queue only when the reason set is empty</td><td>review UI, statements, rules</td></tr>
+<tr><td><strong>Transaction link</strong></td><td>A typed relationship between transactions: transfer, card payment, refund, reversal, fee, EMI</td><td>Analytics honesty without mutating rows</td><td>type, anchor member</td><td>One link per transaction; auto-dissolves when under-strength</td><td>rewards (never earn / refund netting), reports (isTransferLeg filter)</td></tr>
+<tr><td><strong>Statement</strong></td><td>A parsed bank or card statement (metadata and parser verdict)</td><td>Reconciliation source of truth; balance anchor</td><td>period, balances, totals, sha256, verdict, credit-card summary</td><td>Deduped per account by period or file hash</td><td>balance anchor, reward statement cycles, card summary</td></tr>
+<tr><td><strong>Gmail connection, sender, processed message</strong></td><td>A linked mailbox, an allow-listed bank address, and the ledger of every email evaluated</td><td>Automatic ingestion with idempotency and an attention queue</td><td>refresh token (encrypted), address, 14-state status</td><td>Discovered → processed → created, reconciled, skipped, parked, failed</td><td>transactions</td></tr>
+<tr><td><strong>Job</strong></td><td>A unit of background work</td><td>Keep slow work off the request thread</td><td>type (6), status (5), payload, result, artifacts</td><td>PENDING → RUNNING → terminal; retry creates a new job</td><td>ingestion, prices, imports, rule apply</td></tr>
+<tr><td><strong>Instrument</strong></td><td>A security: stock, ETF or mutual fund (global)</td><td>Shared master across users</td><td>symbol, exchange, ISIN, AMFI code, Yahoo symbol</td><td>Resolved ISIN-first; renames recorded as aliases</td><td>holdings, prices, CAs, SIPs</td></tr>
+<tr><td><strong>Holding and position</strong></td><td>"I hold instrument X in broker Y" (identity) and the derived quantity, cost, value, P&amp;L, XIRR</td><td>Positions must survive edits and corporate actions</td><td>none stored; computed by FIFO replay</td><td>Created on first trade; never deleted</td><td>net worth, reports, chat</td></tr>
+<tr><td><strong>Investment transaction</strong></td><td>A buy or sell with itemized charges and a settlement hint</td><td>Trade ledger</td><td>quantity 8 dp, price, 8 charge columns, source, external ref</td><td>Manual or imported</td><td>positions</td></tr>
+<tr><td><strong>Settlement classification</strong></td><td>The authoritative intraday quantity for (broker, instrument, day)</td><td>Day trades must not consume delivery lots</td><td>intraday qty and values</td><td>Derived from tags or the broker tax P&amp;L; first commit wins</td><td>FIFO</td></tr>
+<tr><td><strong>Corporate action</strong></td><td>Split, bonus, demerger or merger (global market fact)</td><td>Lots must reflect corporate events</td><td>ratio, ex-date, target, cost allocation %, cash in lieu</td><td>Replayed on every read; no duplicate guard</td><td>positions, XIRR, net worth</td></tr>
+<tr><td><strong>Dividend, SIP, F&amp;O trade</strong></td><td>Cash received; a recurring plan; a closed derivatives round trip</td><td>Income, discipline tracking, derivatives P&amp;L</td><td>amount, TDS, dates; amount, frequency; buy/sell values, realized P&amp;L</td><td></td><td>XIRR, summaries, reports</td></tr>
+<tr><td><strong>Reward rule, cap bucket, milestone</strong></td><td>How a card earns; a shared ceiling; a threshold bonus</td><td>Model issuer programs</td><td>predicates, accrual, tiers, caps, windows, scope</td><td>Effective-dated; reordered by priority</td><td>reward report, recommender, chat, reports</td></tr>
+<tr><td><strong>Loan, event, payment, charge</strong></td><td>A formal borrowing with terms; a rate change, prepayment or foreclosure; a settled installment; a fee</td><td>Amortization and effective APR</td><td>principal, rate %, tenure, EMI; seq, amount, transaction</td><td>active → closed | foreclosed</td><td>calendar, tax report</td></tr>
+<tr><td><strong>Counterparty and lending</strong></td><td>A person and a signed ledger entry (lent or borrowed)</td><td>Informal debts</td><td>name; direction, amount, dates</td><td>Net position derived</td><td>calendar, reports</td></tr>
+<tr><td><strong>Report and dashboard</strong></td><td>A saved KPI, chart or table definition; a grid of report widgets</td><td>Self-service analysis</td><td>datasource, definition JSON; widgets JSON, default flag</td><td>Immutable type and datasource</td><td>chat report drafts</td></tr>
+<tr><td><strong>LLM key and routing preference</strong></td><td>A bring-your-own provider key; the order in which providers are tried per task group</td><td>Free-tier failover</td><td>ciphertext, last4, position, status; option ids</td><td>Key INVALID one-way on 401</td><td>categorization, extraction, chat</td></tr>
+</table></div>
+
+<h3 id="s05-er">Conceptual entity diagram</h3>
+<pre class="mermaid">erDiagram
+    USER ||--o{ ACCOUNT : owns
+    ACCOUNT ||--o{ CARDHOLDER : has
+    CARDHOLDER ||--o{ CARD : issues
+    ACCOUNT ||--o{ ACCOUNT_IDENTIFIER : aliases
+    ACCOUNT ||--o{ TRANSACTION : records
+    CARD ||--o{ TRANSACTION : attributed
+    TRANSACTION }o--o{ CATEGORY : tagged
+    CATEGORY_RULE ||--o{ TRANSACTION : applied
+    TRANSACTION }o--o| TRANSACTION_LINK : member
+    ACCOUNT ||--o{ STATEMENT : anchors
+    STATEMENT ||--o{ TRANSACTION : produced
+    GMAIL_CONNECTION ||--o{ PROCESSED_MESSAGE : ledger
+    PROCESSED_MESSAGE ||--o| TRANSACTION : created
+    ACCOUNT ||--o{ REWARD_RULE : earns_by
+    CARDHOLDER ||--o{ REWARD_RULE : scoped
+    REWARD_CAP_BUCKET ||--o{ REWARD_RULE : shared_cap
+    ACCOUNT ||--o{ REWARD_MILESTONE : bonus
+    ACCOUNT ||--o{ HOLDING : broker
+    INSTRUMENT ||--o{ HOLDING : of
+    HOLDING ||--o{ INVESTMENT_TRANSACTION : trades
+    HOLDING ||--o{ DIVIDEND : pays
+    INSTRUMENT ||--o{ CORPORATE_ACTION : event
+    INSTRUMENT ||--o{ INSTRUMENT_PRICE : priced
+    ACCOUNT ||--o{ FNO_TRADE : derivatives
+    USER ||--o{ LOAN : borrows
+    LOAN ||--o{ LOAN_EVENT : reshaped
+    LOAN ||--o{ LOAN_PAYMENT : settled
+    TRANSACTION ||--o| LOAN_PAYMENT : backs
+    USER ||--o{ COUNTERPARTY : knows
+    COUNTERPARTY ||--o{ LENDING : ledger
+    USER ||--o{ REPORT : saves
+    USER ||--o{ DASHBOARD : pins
+    DASHBOARD }o--o{ REPORT : widgets
+    USER ||--o{ JOB : runs
+    USER ||--o{ LLM_KEY : brings</pre>
+
+<h3 id="s05-mismatch">Product model vs implementation model</h3>
+<div class="tw"><table>
+<tr><th>Domain</th><th>Product model</th><th>Implementation model</th><th>Mismatch to remember</th></tr>
+<tr><td>Balance</td><td>A number the bank tells me</td><td>Statement anchor + signed sum of later transactions, or opening + all transactions; broker = market value + cash</td><td>Excluded transactions still count; anchor-day transactions dropped from the post-anchor sum</td></tr>
+<tr><td>Card</td><td>One card</td><td>Account (product) → Cardholder (person) → Card (plastic)</td><td>Rewards scope to the person; transactions attribute to the plastic</td></tr>
+<tr><td>Transaction amount</td><td>Signed</td><td>Unsigned + type; API re-signs</td><td>Sign convention implemented three times</td></tr>
+<tr><td>Category</td><td>One label</td><td>Many-to-many</td><td>Report fan-out risk</td></tr>
+<tr><td>Excluded</td><td>Ignored everywhere</td><td>Ignored by rewards and opt-in reports only</td><td>Balances include it</td></tr>
+<tr><td>Position</td><td>N shares I own</td><td>FIFO replay of trades + CAs on every read</td><td>Editing history changes today; charges excluded from cost</td></tr>
+<tr><td>Reward earned</td><td>Stored per transaction</td><td>Never stored; computed per request</td><td>Lines pagination is in memory</td></tr>
+<tr><td>EMI schedule</td><td>A table the bank gave me</td><td>Regenerated from terms and events each read; payments store only seq and amount</td><td>Paid amount never changes the split</td></tr>
+<tr><td>Lending</td><td>A mini-loan being repaid</td><td>Signed ledger entries; repayment is an opposite entry</td><td>Running balance only in the client</td></tr>
+<tr><td>Dashboard</td><td>An auto-computed home with net worth</td><td>A widget grid of saved reports; the summary endpoint is a stub</td><td>No net-worth feature exists</td></tr>
+<tr><td>Chat memory</td><td>The assistant remembers</td><td>Transcript in React state only</td><td>Refresh forgets</td></tr>
+</table></div>
+</section>
+<nav class="pager" aria-label="Parts"><a class="next" href="/handbook/modules-a.html"><small>Next</small>Modules A · inventory, accounts, transactions, Gmail, statements, jobs</a></nav>
+  </main>
+</div>
+</div>
+<script src="/handbook/handbook.js" defer></script>
+</body>
+</html>
