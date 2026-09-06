@@ -1,0 +1,15 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPathTemplate": "/yahoo/v8/finance/chart/{symbol}"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "transformers": ["response-template"],
+    "body": "{\"chart\": {\"result\": [{\"meta\": {\"symbol\": \"{{request.pathSegments.[4]}}\", \"regularMarketPrice\": {{#if (matches request.pathSegments.[4] '(?i)RELIANCE\\.NS')}}2500.50{{else if (matches request.pathSegments.[4] '(?i)TCS\\.NS')}}3600.25{{else if (matches request.pathSegments.[4] '(?i)NIFTYBEES\\.NS')}}250.10{{else}}999.99{{/if}} }}], \"error\": null}}"
+  }
+}

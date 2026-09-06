@@ -173,7 +173,7 @@ export function useDashboardEditor({
     const requestWidgets: DashboardWidget[] = widgets.map((w) => ({
       id: w.id,
       reportId: w.reportId,
-      title: w.title ?? '',
+      title: w.title?.trim() || null,
       layout: w.layout,
     }));
     const errors = validateWidgets(requestWidgets);

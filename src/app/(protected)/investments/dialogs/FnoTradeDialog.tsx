@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { FormField } from '@/components/ui/form-field';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Broker } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
@@ -155,7 +156,8 @@ export function FnoTradeDialog({ mode = 'create', trade, brokerAccounts, trigger
 
         <DialogBody>
           <form id="fno-trade-form" onSubmit={handleSubmit} className="space-y-3 pt-1">
-            <FormField label="Broker Account" required>
+            <div className="space-y-1">
+              <Label>Broker Account *</Label>
               <Select value={brokerAccountId} onValueChange={setBrokerAccountId}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select broker" />
@@ -168,10 +170,11 @@ export function FnoTradeDialog({ mode = 'create', trade, brokerAccounts, trigger
                   ))}
                 </SelectContent>
               </Select>
-            </FormField>
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <FormField label="Contract Type" required>
+              <div className="space-y-1">
+                <Label>Contract Type *</Label>
                 <Select value={contractType} onValueChange={(v) => setContractType(v as FnoContractType)}>
                   <SelectTrigger>
                     <SelectValue />
@@ -181,23 +184,25 @@ export function FnoTradeDialog({ mode = 'create', trade, brokerAccounts, trigger
                     <SelectItem value="option">Options</SelectItem>
                   </SelectContent>
                 </Select>
-              </FormField>
+              </div>
 
-              <FormField label="Trading Symbol" required>
-                <input
+              <div className="space-y-1">
+                <Label>Trading Symbol *</Label>
+                <Input
                   type="text"
                   required
                   placeholder="NIFTY24AUGFUT / NIFTY24250CE"
                   value={tradingSymbol}
                   onChange={(e) => setTradingSymbol(e.target.value)}
-                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono uppercase"
+                  className="h-9 font-mono uppercase"
                 />
-              </FormField>
+              </div>
             </div>
 
             {contractType === 'option' && (
               <div className="grid grid-cols-2 gap-3">
-                <FormField label="Option Type">
+                <div className="space-y-1">
+                  <Label>Option Type</Label>
                   <Select value={optionType} onValueChange={(v) => setOptionType(v as OptionType)}>
                     <SelectTrigger>
                       <SelectValue placeholder="CE / PE" />
@@ -207,68 +212,73 @@ export function FnoTradeDialog({ mode = 'create', trade, brokerAccounts, trigger
                       <SelectItem value="put">Put (PE)</SelectItem>
                     </SelectContent>
                   </Select>
-                </FormField>
+                </div>
 
-                <FormField label="Strike Price">
-                  <input
+                <div className="space-y-1">
+                  <Label>Strike Price</Label>
+                  <Input
                     type="number"
                     step="0.05"
                     placeholder="24250"
                     value={strikePrice}
                     onChange={(e) => setStrikePrice(e.target.value)}
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
+                    className="h-9 font-mono"
                   />
-                </FormField>
+                </div>
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-3">
-              <FormField label="Quantity / Lot Size" required>
-                <input
+              <div className="space-y-1">
+                <Label>Quantity / Lot Size *</Label>
+                <Input
                   type="number"
                   required
                   placeholder="50"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
+                  className="h-9 font-mono"
                 />
-              </FormField>
+              </div>
 
-              <FormField label="Total Charges">
-                <input
+              <div className="space-y-1">
+                <Label>Total Charges</Label>
+                <Input
                   type="number"
                   step="0.01"
                   placeholder="0.00"
                   value={totalCharges}
                   onChange={(e) => setTotalCharges(e.target.value)}
-                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
+                  className="h-9 font-mono"
                 />
-              </FormField>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <FormField label="Buy Value (₹)" required>
-                <input
+              <div className="space-y-1">
+                <Label>Buy Value (₹) *</Label>
+                <Input
                   type="number"
                   step="0.01"
                   required
                   placeholder="0.00"
                   value={buyValue}
                   onChange={(e) => setBuyValue(e.target.value)}
-                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
+                  className="h-9 font-mono"
                 />
-              </FormField>
+              </div>
 
-              <FormField label="Sell Value (₹)">
-                <input
+              <div className="space-y-1">
+                <Label>Sell Value (₹)</Label>
+                <Input
                   type="number"
                   step="0.01"
                   placeholder="0.00"
                   value={sellValue}
                   onChange={(e) => setSellValue(e.target.value)}
-                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm font-mono"
+                  className="h-9 font-mono"
                 />
-              </FormField>
+              </div>
             </div>
           </form>
         </DialogBody>

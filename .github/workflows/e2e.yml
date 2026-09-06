@@ -1,0 +1,156 @@
+name: E2E
+
+on:
+  workflow_call:
+    inputs:
+      server_ref:
+        type: string
+        default: main
+        description: financeos-server ref to test against
+      client_ref:
+        type: string
+        default: ''
+        description: financeos-client ref (empty = event default)
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      server_ref:
+        type: string
+        default: main
+        description: financeos-server ref to test against
+  schedule:
+    - cron: '30 1 * * *'
+
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.ref }}-${{ inputs.server_ref || 'main' }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  refs:
+    # Only for the client's own PRs. When this workflow is *called*, inputs.server_ref is always set
+    # (default 'main') and must win; the caller's PR body belongs to the other repo.
+    if: github.event_name == 'pull_request' && inputs.server_ref == ''
+    runs-on: ubuntu-latest
+    outputs:
+      server_ref: ${{ steps.extract.outputs.server_ref }}
+    steps:
+      - id: extract
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # Only ref-safe characters are accepted; the value later flows into checkout and a script.
+          ref=$(echo "$PR_BODY" | grep -oE '^e2e-server-ref:[[:space:]]*[A-Za-z0-9._/-]+' | head -1 | sed -E 's/^e2e-server-ref:[[:space:]]*//' || true)
+          echo "server_ref=${ref:-main}" >> "$GITHUB_OUTPUT"
+
+  e2e:
+    needs: [refs]
+    if: always() && !cancelled() && !failure()
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SERVER_DIR: server
+      CI: 'true'
+    steps:
+      - name: Checkout client
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.client_ref }}
+
+      - name: Checkout server
+        uses: actions/checkout@v4
+        with:
+          repository: Adarshjain/financeos-server
+          ref: ${{ inputs.server_ref || needs.refs.outputs.server_ref || github.event.inputs.server_ref || 'main' }}
+          path: server
+
+      - name: Print resolved refs
+        env:
+          CLIENT_REF: ${{ inputs.client_ref || github.ref }}
+          SERVER_REF: ${{ inputs.server_ref || needs.refs.outputs.server_ref || github.event.inputs.server_ref || 'main' }}
+        run: |
+          echo "Client ref: $CLIENT_REF ($(git rev-parse HEAD))"
+          echo "Server ref: $SERVER_REF ($(git -C server rev-parse HEAD))"
+
+      - name: Docker Hub login (optional)
+        env:
+          U: ${{ secrets.DOCKERHUB_USERNAME }}
+          T: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          if [ -n "$U" ] && [ -n "$T" ]; then
+            echo "$T" | docker login -u "$U" --password-stdin
+          fi
+
+      - name: Start Docker Compose (background boot)
+        run: docker compose -f e2e/docker-compose.yml up -d
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: server/pom.xml
+
+      - name: Build server JAR
+        run: |
+          chmod +x server/mvnw
+          bash e2e/scripts/build-server.sh
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright Chromium with system dependencies
+        run: npx playwright install --with-deps chromium
+
+      - name: Wait for Docker Compose services
+        run: |
+          docker compose -f e2e/docker-compose.yml up -d --wait
+          bash e2e/scripts/check-chat-ro.sh
+
+      - name: Start server & verify migration idempotence
+        run: |
+          bash e2e/scripts/start-server.sh
+          bash e2e/scripts/start-server.sh --second-boot
+
+      - name: Start client
+        run: bash e2e/scripts/start-client.sh
+
+      - name: Run Playwright E2E tests
+        # Nightly runs are the flake detector: no retries, so a test that only passes on its second
+        # attempt fails the schedule instead of hiding behind a green PR run.
+        env:
+          E2E_RETRIES: ${{ github.event_name == 'schedule' && '0' || '' }}
+        run: npx playwright test --config e2e/playwright.config.ts
+
+      - name: Upload E2E report & logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-${{ github.run_attempt }}
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+            e2e/logs
+          retention-days: 14
+
+      - name: Teardown E2E environment
+        if: always()
+        run: bash e2e/scripts/down.sh
