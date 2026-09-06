@@ -23,7 +23,6 @@
     "e2e:api": "E2E_SKIP_GATES=1 playwright test --config e2e/playwright.config.ts --project=api",
     "e2e:browser": "E2E_SKIP_GATES=1 playwright test --config e2e/playwright.config.ts --project=ui-desktop --project=ui-mobile",
     "e2e:ui": "E2E_SKIP_GATES=1 playwright test --config e2e/playwright.config.ts --ui",
-    "e2e:gen-samples": "npx tsx e2e/scripts/gen-samples.ts",
     "e2e:report": "playwright show-report e2e/playwright-report",
     "e2e:down": "bash e2e/scripts/down.sh"
   },

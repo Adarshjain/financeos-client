@@ -1,22 +1,11 @@
 import type { components } from '../../../src/lib/api/schema.d.ts';
-import { type ApiClient, expectStatus } from '../api';
-import { createBankAccount, createBrokerAccount } from './accounts';
+import { type ApiClient } from '../api';
+import { createBankAccount } from './accounts';
 import {
-  createDividend,
-  createFnoTrade,
-  createInstrument,
-  generateIsin,
-  generateYahooSymbol,
-  trade,
 } from './investments';
 import {
-  addDays,
-  addLending,
-  createCounterparty,
-  createLoan,
-  pay,
 } from './loans';
-import { createRewardCard, createRule, fixedMonth, spend } from './rewards';
+import { fixedMonth } from './rewards';
 import { createCategory, createTransaction } from './transactions';
 
 export type CreateReportRequest = components['schemas']['CreateReportRequest'];

@@ -11,7 +11,6 @@ import {
   getStatement,
   uploadAndIngest,
 } from '../fixtures/seed/statements';
-import { searchAll } from '../fixtures/seed/transactions';
 import { expectUnauthenticated, secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 

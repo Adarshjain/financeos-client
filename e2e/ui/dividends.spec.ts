@@ -4,7 +4,6 @@ import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import {
   createBroker,
-  createDividend,
   resolveInstrument,
   trade,
 } from '../fixtures/seed/investments';

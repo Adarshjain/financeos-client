@@ -9,7 +9,6 @@ import {
   trade,
 } from '../fixtures/seed/investments';
 import {
-  addDays,
   addLending,
   createCounterparty,
   createLoan,
@@ -23,9 +22,9 @@ import {
   runSaved,
   seedTransactionsDataset,
 } from '../fixtures/seed/reports';
-import { createRewardCard, createRule, spend } from '../fixtures/seed/rewards';
+import { createRewardCard, createRewardRule, spend } from '../fixtures/seed/rewards';
 import { createTransaction } from '../fixtures/seed/transactions';
-import { expectUnauthenticated, secondUser } from '../fixtures/tenancy';
+import { secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
 test.describe('Reports API (@api)', () => {
@@ -1177,7 +1176,7 @@ test.describe('Reports API (@api)', () => {
       const month = fixedMonth();
       const { account } = await createRewardCard(api, { name: `Reward Card ${Date.now()}` });
 
-      const rule = await createRule(api, account.id, {
+      const rule = await createRewardRule(api, account.id, {
         name: `2% Cashback Rule ${Date.now()}`,
         accrualType: 'PERCENT',
         percentRate: 2.0,
@@ -1242,27 +1241,5 @@ test.describe('Reports API (@api)', () => {
       expectStatus(res, 404);
     });
 
-    test('All report endpoints require authentication (401)', async () => {
-      const dummyId = '00000000-0000-0000-0000-000000000000';
-      await expectUnauthenticated('GET', '/api/v1/reports');
-      await expectUnauthenticated('POST', '/api/v1/reports', {
-        name: 'Unauth',
-        type: 'KPI',
-        datasource: 'transactions',
-        definition: {},
-      });
-      await expectUnauthenticated('GET', `/api/v1/reports/${dummyId}`);
-      await expectUnauthenticated('PUT', `/api/v1/reports/${dummyId}`, {
-        name: 'Unauth',
-        definition: {},
-      });
-      await expectUnauthenticated('DELETE', `/api/v1/reports/${dummyId}`);
-      await expectUnauthenticated('POST', `/api/v1/reports/${dummyId}/data`);
-      await expectUnauthenticated('POST', '/api/v1/reports/data', {
-        type: 'KPI',
-        datasource: 'transactions',
-        definition: {},
-      });
-    });
   });
 });

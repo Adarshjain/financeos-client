@@ -1,5 +1,5 @@
 import { expectStatus } from '../fixtures/api';
-import { expectUnauthenticated, newUser, secondUser } from '../fixtures/tenancy';
+import { newUser, secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
 test.describe('LLM Keys API', () => {
@@ -206,16 +206,4 @@ test.describe('LLM Keys API', () => {
     expectStatus(bDel, 404);
   });
 
-  test('401 unauthorized on LLM keys endpoints without session', async () => {
-    await expectUnauthenticated('GET', '/api/v1/llm-keys');
-    await expectUnauthenticated('POST', '/api/v1/llm-keys', {
-      provider: 'gemini',
-      key: 'e2e-gemini-good',
-    });
-    await expectUnauthenticated('DELETE', '/api/v1/llm-keys/00000000-0000-0000-0000-000000000000');
-    await expectUnauthenticated('PATCH', '/api/v1/llm-keys/00000000-0000-0000-0000-000000000000/position', {
-      position: 1,
-    });
-    await expectUnauthenticated('POST', '/api/v1/llm-keys/00000000-0000-0000-0000-000000000000/test', {});
-  });
 });

@@ -1,5 +1,5 @@
 import { addCardholder, ensurePrimaryCardholder } from '../fixtures/seed/accounts';
-import { createBucket, createRewardCard, createRule } from '../fixtures/seed/rewards';
+import { createBucket, createRewardCard, createRewardRule } from '../fixtures/seed/rewards';
 import { expectUnauthenticated, secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
@@ -70,7 +70,7 @@ test.describe('Reward Cap Buckets API (@api)', () => {
       windowType: 'CALENDAR_MONTH',
     });
 
-    const rule = await createRule(api, account.id, {
+    const rule = await createRewardRule(api, account.id, {
       name: 'Rule using bucket',
       capBucketId: bucket.id,
     });

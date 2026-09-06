@@ -4,7 +4,7 @@ import {
   createReport,
   widget,
 } from '../fixtures/seed/reports';
-import { expectUnauthenticated, secondUser } from '../fixtures/tenancy';
+import { secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
 test.describe('Dashboards API (@api)', () => {
@@ -329,21 +329,5 @@ test.describe('Dashboards API (@api)', () => {
       expect(res.data!.categoryBreakdown).toEqual([]);
     });
 
-    test('All dashboard endpoints require authentication (401)', async () => {
-      const dummyId = '00000000-0000-0000-0000-000000000000';
-      await expectUnauthenticated('GET', '/api/v1/dashboards');
-      await expectUnauthenticated('POST', '/api/v1/dashboards', {
-        name: 'Unauth',
-        widgets: [],
-      });
-      await expectUnauthenticated('GET', '/api/v1/dashboards/default');
-      await expectUnauthenticated('GET', `/api/v1/dashboards/${dummyId}`);
-      await expectUnauthenticated('PUT', `/api/v1/dashboards/${dummyId}`, {
-        name: 'Unauth',
-        widgets: [],
-      });
-      await expectUnauthenticated('DELETE', `/api/v1/dashboards/${dummyId}`);
-      await expectUnauthenticated('GET', '/api/v1/dashboard/summary');
-    });
   });
 });

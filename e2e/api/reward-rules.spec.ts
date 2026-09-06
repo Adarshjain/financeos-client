@@ -1,5 +1,5 @@
-import { addCardholder, ensurePrimaryCardholder } from '../fixtures/seed/accounts';
-import { createRewardCard, createRule } from '../fixtures/seed/rewards';
+import { ensurePrimaryCardholder } from '../fixtures/seed/accounts';
+import { createRewardCard, createRewardRule } from '../fixtures/seed/rewards';
 import { createCategory } from '../fixtures/seed/transactions';
 import { expectUnauthenticated, secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
@@ -11,7 +11,7 @@ test.describe('Reward Rules API (@api)', () => {
     const cat2 = await createCategory(api, 'Travel Category');
 
     // 1. Create rule with full predicate set and POINTS rewardType
-    const created = await createRule(api, account.id, {
+    const created = await createRewardRule(api, account.id, {
       name: 'Dining & Flights Multiplier',
       priority: 15,
       stacking: 'EXCLUSIVE',
@@ -152,7 +152,7 @@ test.describe('Reward Rules API (@api)', () => {
     expect(singleChRes.response.status).toBe(400);
 
     // 4. PUT ignores accountId (rule stays on its original account)
-    const validRule = await createRule(api, account.id, { name: 'Stay On Account Rule' });
+    const validRule = await createRewardRule(api, account.id, { name: 'Stay On Account Rule' });
     const putRes = await api.PUT('/api/v1/reward-rules/{id}', {
       params: { path: { id: validRule.id } },
       body: {
@@ -171,9 +171,9 @@ test.describe('Reward Rules API (@api)', () => {
     api,
   }) => {
     const { account } = await createRewardCard(api, { name: 'Reorder CC' });
-    const ruleA = await createRule(api, account.id, { name: 'Rule A', priority: 1 });
-    const ruleB = await createRule(api, account.id, { name: 'Rule B', priority: 2 });
-    const ruleC = await createRule(api, account.id, { name: 'Rule C', priority: 3 });
+    const ruleA = await createRewardRule(api, account.id, { name: 'Rule A', priority: 1 });
+    const ruleB = await createRewardRule(api, account.id, { name: 'Rule B', priority: 2 });
+    const ruleC = await createRewardRule(api, account.id, { name: 'Rule C', priority: 3 });
 
     // 1. Incomplete set -> 400
     const incompleteRes = await api.POST('/api/v1/reward-rules/reorder', {
@@ -206,7 +206,7 @@ test.describe('Reward Rules API (@api)', () => {
 
   test('reward rule tenancy and 401 unauthenticated', async ({ api, request }) => {
     const { account } = await createRewardCard(api, { name: 'User A Rule CC' });
-    const rule = await createRule(api, account.id, { name: 'User A Rule' });
+    const rule = await createRewardRule(api, account.id, { name: 'User A Rule' });
 
     const { api: apiB } = await secondUser(request, 'user-b-rules');
 

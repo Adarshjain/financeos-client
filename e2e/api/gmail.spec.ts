@@ -541,6 +541,102 @@ test.describe('Gmail extraction failure paths', () => {
   });
 });
 
+test.describe('Gmail account identifier aliases', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  let api: ReturnType<typeof makeApi>;
+  let identity: GoogleIdentity;
+  let mailbox: Mailbox;
+  let accountId: string;
+  let ledgerId: string;
+
+  // Banks often alert by customer ID, whose digits match no account or card the user has.
+  const customerIdMail = alertMail({ last4: '7741', amount: 210, merchant: 'CUSTOMER ID ALERT', date: isoDaysAgo(2) });
+
+  test.beforeAll(async ({ request }) => {
+    const user = await createUser(request, 'gmail-alias');
+    api = makeApi(user.cookie);
+    identity = await registerIdentity();
+    const account = await createBankAccount(api, { name: 'Alias Target Bank', last4: '1234', ingestFromDate: isoDaysAgo(60) });
+    accountId = account.id;
+    await createSender(api);
+    await connectGmail(api, identity);
+    await waitForGmailJobsIdle(api);
+    mailbox = await registerMailbox(identity, [customerIdMail]);
+    // Initial extraction + the re-extraction after the assign re-activates the row.
+    const answer = extractionFor(customerIdMail, {
+      json: extractedTxn({ amount: 210, date: isoDaysAgo(2), last4: '7741', merchant: 'CUSTOMER ID ALERT' }),
+    });
+    await scriptExtractions(api, [answer, answer]);
+  });
+
+  test.afterAll(async () => {
+    await resetLlm(api);
+    await cleanupIdentity(identity);
+  });
+
+  test('assign-and-remember creates the alias, re-activates the parked row and imports it', async () => {
+    test.slow();
+    const { summary } = await runSync(api);
+    expect(summary).toMatchObject({ discovered: 1, processed: 1, parked: 1, created: 0 });
+    const [parked] = await attentionItems(api);
+    expect(parked).toMatchObject({ status: 'UNRESOLVED_ACCOUNT', extractedLast4: '7741' });
+    ledgerId = parked.id;
+
+    const assign = await api.POST('/api/v1/gmail/attention/{ledgerId}/assign', {
+      params: { path: { ledgerId } },
+      body: { accountId, kind: 'CUSTOMER_ID' },
+    });
+    expectStatus(assign, 200);
+    expect(assign.data?.reactivatedCount).toBe(1);
+    expect(assign.data?.jobIds).toHaveLength(1);
+    const job = await waitForJob(api, assign.data!.jobIds[0]);
+    expect(job.status).toBe('SUCCEEDED');
+    expect(job.result).toMatchObject({ processed: 1, created: 1 });
+
+    expect(await attentionItems(api)).toHaveLength(0);
+    const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: accountId }]);
+    expect(txns).toHaveLength(1);
+    expect(txns[0]).toMatchObject({ amount: -210, sourcedDescription: 'CUSTOMER ID ALERT', source: 'gmail_transaction_alert' });
+
+    const identifiers = await api.GET('/api/v1/accounts/{id}/identifiers', { params: { path: { id: accountId } } });
+    expectStatus(identifiers, 200);
+    expect(identifiers.data).toHaveLength(1);
+    expect(identifiers.data?.[0]).toMatchObject({ id: assign.data?.identifierId, value: '7741', kind: 'CUSTOMER_ID' });
+  });
+
+  test('the next alert with the same customer ID resolves through the alias without parking', async () => {
+    test.slow();
+    const again = alertMail({ last4: '7741', amount: 75, merchant: 'CUSTOMER ID AGAIN', date: isoDaysAgo(1) });
+    await removeMappings(mailbox.mappingIds);
+    mailbox = await registerMailbox(identity, [...mailbox.messages, again]);
+    await scriptExtractions(api, [
+      extractionFor(again, { json: extractedTxn({ amount: 75, date: isoDaysAgo(1), last4: '7741', merchant: 'CUSTOMER ID AGAIN' }) }),
+    ]);
+
+    const { summary } = await runSync(api);
+    expect(summary).toMatchObject({ discovered: 1, processed: 1, created: 1, parked: 0 });
+    expect(await attentionItems(api)).toHaveLength(0);
+    const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: accountId }]);
+    expect(txns.map((t) => t.sourcedDescription).sort()).toEqual(['CUSTOMER ID AGAIN', 'CUSTOMER ID ALERT']);
+  });
+
+  test('assign refuses rows that are not parked as unresolved and unknown rows', async () => {
+    const done = await api.POST('/api/v1/gmail/attention/{ledgerId}/assign', {
+      params: { path: { ledgerId } },
+      body: { accountId },
+    });
+    expectStatus(done, 400);
+    expect((done.error as { message?: string })?.message).toContain('Only UNRESOLVED_ACCOUNT items can be assigned');
+
+    const unknown = await api.POST('/api/v1/gmail/attention/{ledgerId}/assign', {
+      params: { path: { ledgerId: randomUUID() } },
+      body: { accountId },
+    });
+    expectStatus(unknown, 404);
+  });
+});
+
 test.describe('Gmail tenancy', () => {
   test('another user cannot touch connections, senders, ledger rows or cleanup', async ({ request }) => {
     test.slow();
@@ -569,13 +665,24 @@ test.describe('Gmail tenancy', () => {
       });
       statuses.deleteSender = await expectForeign(apiB, 'DELETE', `/api/v1/gmail/senders/${sender.id}`);
       statuses.retry = await expectForeign(apiB, 'POST', `/api/v1/gmail/attention/${ledger.id}/retry`);
+      const accountB = await createBankAccount(apiB, { name: 'Tenant B Bank', last4: '4321' });
+      statuses.assignForeignRow = await expectForeign(apiB, 'POST', `/api/v1/gmail/attention/${ledger.id}/assign`, {
+        accountId: accountB.id,
+      });
+      // A's own row, but B's account as the target.
+      statuses.assignForeignAccount = await expectForeign(apiA, 'POST', `/api/v1/gmail/attention/${ledger.id}/assign`, {
+        accountId: accountB.id,
+      });
       statuses.cleanupPreview = await expectForeign(
         apiB,
         'GET',
         `/api/v1/accounts/${account.id}/gmail-cleanup-preview?before=${isoDaysAgo(0)}`
       );
       statuses.cleanup = await expectForeign(apiB, 'POST', `/api/v1/accounts/${account.id}/gmail-cleanup?before=${isoDaysAgo(0)}`);
-      console.log(`[gmail tenancy] cross-tenant statuses: ${JSON.stringify(statuses)}`);
+      // Ownership checks answer 400 (ValidationException); tenant-filtered lookups answer 404. Never 500.
+      for (const [name, status] of Object.entries(statuses)) {
+        expect([400, 404], `${name} returned ${status}`).toContain(status);
+      }
 
       // B sees none of A's Gmail state.
       expect(await listConnections(apiB)).toHaveLength(0);

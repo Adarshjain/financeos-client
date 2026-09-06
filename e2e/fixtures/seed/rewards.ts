@@ -1,6 +1,6 @@
 import type { components } from '../../../src/lib/api/schema.d.ts';
 import type { ApiClient } from '../api';
-import { addCard, addCardholder, createCreditCard, ensurePrimaryCardholder } from './accounts';
+import { addCardholder, createCreditCard, ensurePrimaryCardholder } from './accounts';
 import { createTransaction } from './transactions';
 
 export type RewardAccountConfigRequest = components['schemas']['RewardAccountConfigRequest'];
@@ -166,7 +166,7 @@ export async function createBucket(
   return res.data;
 }
 
-export async function createRule(
+export async function createRewardRule(
   api: ApiClient,
   accountId: string,
   overrides?: Partial<RewardRuleRequest>

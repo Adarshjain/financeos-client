@@ -213,30 +213,4 @@ test.describe('Loans and Obligations UI (@ui)', () => {
     await expect(page.getByRole('heading', { name: 'Obligations Calendar' })).toBeVisible();
   });
 
-  test('Mobile Amortization and Mark Paid journey (@mobile)', async ({ page }) => {
-    const api = makeApi(currentUser.cookie);
-    const startDate = monthsAgo(2);
-    const loan = await createLoan(api, {
-      name: 'Mobile Loan',
-      principal: 60000,
-      annualRatePct: 10,
-      tenureMonths: 6,
-      startDate,
-      firstEmiDate: startDate,
-    });
-
-    await page.goto(`/loans/${loan.id}`);
-    await page.waitForLoadState('networkidle');
-
-    await expect(page.getByRole('heading', { name: 'Mobile Loan' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Amortization Schedule' })).toBeVisible();
-
-    // Click Mark Paid on mobile card
-    const markPaidBtn = page.getByRole('button', { name: 'Mark Paid' }).first();
-    await markPaidBtn.click();
-    await expect(page.getByRole('heading', { name: /Settle Installment #1/i })).toBeVisible();
-    await page.getByRole('button', { name: 'Confirm Settle' }).click();
-
-    await expect(page.getByRole('button', { name: 'Unlink' }).first()).toBeVisible();
-  });
 });

@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import type { components } from '../../../src/lib/api/schema.d.ts';
 import type { ApiClient, JobResponse } from '../api';
 import { expectStatus, makeApi, waitForJob } from '../api';
-import { E2E_API_URL, E2E_WIREMOCK_URL } from '../config';
+import { E2E_API_URL, E2E_CLIENT_URL, E2E_WIREMOCK_URL } from '../config';
 import type { ScriptResponseEntry } from '../control';
 import { scriptLlm } from '../control';
 import type { GoogleIdentity, MailMessage } from '../google-stubs';
@@ -32,9 +32,9 @@ export interface SyncSummary {
 }
 
 export const GOOGLE_AUTH_URL = `${E2E_WIREMOCK_URL}/google/o/oauth2/v2/auth`;
-export const SSO_REDIRECT_URI = 'http://localhost:6970/auth/google/callback';
-export const GMAIL_REDIRECT_URI = 'http://localhost:6969/api/v1/gmail/oauth/callback';
-export const SETTINGS_GMAIL_URL = 'http://localhost:6970/settings/gmail';
+export const SSO_REDIRECT_URI = `${E2E_CLIENT_URL}/auth/google/callback`;
+export const GMAIL_REDIRECT_URI = `${E2E_API_URL}/api/v1/gmail/oauth/callback`;
+export const SETTINGS_GMAIL_URL = `${E2E_CLIENT_URL}/settings/gmail`;
 /** The allow-listed bank sender every synthetic mail comes from. */
 export const BANK_SENDER = 'alerts@e2ebank.test';
 export const BANK_SENDER_NAME = 'E2E Bank Alerts';

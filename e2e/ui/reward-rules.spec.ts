@@ -4,6 +4,7 @@ import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { createRewardCard } from '../fixtures/seed/rewards';
 import { expect, test } from '../fixtures/test';
+import { expectToast } from '../fixtures/ui';
 
 test.describe('Reward Rules Manager UI (@ui)', () => {
   let currentUser: CreatedUser;
@@ -21,7 +22,7 @@ test.describe('Reward Rules Manager UI (@ui)', () => {
     const api = makeApi(currentUser.cookie);
 
     // 1. Seed card account
-    const { account } = await createRewardCard(api, {
+    await createRewardCard(api, {
       name: 'UI Rules Card',
       anniversaryDate: '2025-06-01',
     });
@@ -68,7 +69,8 @@ test.describe('Reward Rules Manager UI (@ui)', () => {
     // 4. Test reorder: move second rule up
     const moveUpBtns = page.getByRole('button', { name: 'Move up' });
     await moveUpBtns.nth(1).click();
-    await page.waitForTimeout(300);
+    // The dining rule is now first: its Move up button is the disabled one.
+    await expect(moveUpBtns.nth(0)).toBeDisabled();
 
     // Reload page to verify order persisted
     await page.reload();
@@ -134,7 +136,7 @@ test.describe('Reward Rules Manager UI (@ui)', () => {
     const pointValueInput = page.getByPlaceholder('0.25 (default)');
     await pointValueInput.fill('0.5');
     await pointValueInput.blur();
-    await page.waitForTimeout(500);
+    await expectToast(page, 'Point value set to ₹0.5/pt');
 
     // Reload and verify
     await page.reload();

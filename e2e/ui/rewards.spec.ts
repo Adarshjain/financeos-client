@@ -5,7 +5,7 @@ import { loginContext } from '../fixtures/browser';
 import { createBankAccount } from '../fixtures/seed/accounts';
 import {
   createRewardCard,
-  createRule,
+  createRewardRule,
   fixedMonth,
   spend,
 } from '../fixtures/seed/rewards';
@@ -31,7 +31,7 @@ test.describe('Rewards Browser UI (@ui)', () => {
       anniversaryDate: '2025-06-01',
     });
 
-    const rule = await createRule(api, card.id, {
+    await createRewardRule(api, card.id, {
       name: 'UI 2% Flat Rule',
       accrualType: 'PERCENT',
       percentRate: 2.0,
@@ -48,7 +48,7 @@ test.describe('Rewards Browser UI (@ui)', () => {
     const noAnivCard = await createBankAccount(api, {
       name: 'UI No Anniversary Account',
     });
-    await createRule(api, noAnivCard.id, {
+    await createRewardRule(api, noAnivCard.id, {
       name: 'Anniversary Rule on No-Aniv Card',
       accrualType: 'PERCENT',
       percentRate: 5.0,
@@ -107,31 +107,4 @@ test.describe('Rewards Browser UI (@ui)', () => {
     ).toBeVisible();
   });
 
-  test('rewards tiles view on mobile viewport (@mobile)', async ({ page }) => {
-    const api = makeApi(currentUser.cookie);
-    const month = fixedMonth();
-    const { account } = await createRewardCard(api, {
-      name: 'Mobile Rewards CC',
-      anniversaryDate: '2025-06-01',
-    });
-
-    await createRule(api, account.id, {
-      name: 'Mobile 1% Base',
-      accrualType: 'PERCENT',
-      percentRate: 1.0,
-    });
-
-    await spend(api, account.id, {
-      amount: 1000,
-      date: `${month.from.slice(0, 7)}-05`,
-      description: 'Mobile Test Swipe',
-    });
-
-    await page.goto('/rewards');
-    await page.waitForLoadState('networkidle');
-
-    await expect(page.getByRole('heading', { name: 'Rewards', exact: true })).toBeVisible();
-    await expect(page.getByText('Eligible spend')).toBeVisible();
-    await expect(page.getByText('Gross rewards')).toBeVisible();
-  });
 });

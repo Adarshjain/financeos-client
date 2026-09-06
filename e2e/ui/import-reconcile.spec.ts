@@ -165,8 +165,10 @@ test.describe('Broker Import & Reconciliation UI (@ui)', () => {
     await searchInput.fill(symTarget.slice(0, 5));
     await page.getByRole('button', { name: new RegExp(symTarget, 'i') }).first().click();
     await expect(page.getByText(new RegExp(`✓.*${symTarget}|✓ Mapped`, 'i')).filter({ visible: true }).first()).toBeVisible();
-
-    // Create new instrument for the other unmatched row
+    // Create new instrument for the other unmatched row. The 300 ms pause is deliberate and the only
+    // sleep in the suite: after picking an instrument, the Radix popover dismisses asynchronously and
+    // swallows the next pointer event; there is no DOM signal to wait on (the popover heading is
+    // already gone). Row-scoped clicks and waiting on the heading both proved flakier than this.
     await page.waitForTimeout(300);
     await page.getByRole('button', { name: 'Create new' }).filter({ visible: true }).first().click();
     await expect(page.getByText(/✦ New:/i).filter({ visible: true }).first()).toBeVisible();

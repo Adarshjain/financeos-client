@@ -1,9 +1,7 @@
+import { expectStatus } from '../fixtures/api';
 import {
   createBankAccount,
-  createBrokerAccount,
   createCreditCard,
-  createGenericAccount,
-  ensurePrimaryCardholder,
 } from '../fixtures/seed/accounts';
 import { createTransaction } from '../fixtures/seed/transactions';
 import { expectForeign, expectUnauthenticated, secondUser } from '../fixtures/tenancy';
@@ -222,8 +220,8 @@ test.describe('Accounts API (@api)', () => {
     const { api: freshApi } = await freshUser(request, 'acc-list');
 
     const b1 = await createBankAccount(freshApi, { name: 'Alpha Bank' });
-    const b2 = await createBankAccount(freshApi, { name: 'Beta Bank' });
-    const cc = await createCreditCard(freshApi, { name: 'Gamma Card' });
+    await createBankAccount(freshApi, { name: 'Beta Bank' });
+    await createCreditCard(freshApi, { name: 'Gamma Card' });
 
     // Close b1
     await freshApi.POST('/api/v1/accounts/{id}/close', {
@@ -384,11 +382,80 @@ test.describe('Accounts API (@api)', () => {
     expect(getRes.data?.balance).toBe(12345.67);
   });
 
+  test('identifiers: add (whitespace normalised), idempotent re-add, cross-account conflict, validation, delete', async ({ api }) => {
+    const acc = await createBankAccount(api, { name: 'Alias Bank', last4: '1234' });
+    const other = await createBankAccount(api, { name: 'Other Alias Bank', last4: '5678' });
+
+    const empty = await api.GET('/api/v1/accounts/{id}/identifiers', { params: { path: { id: acc.id } } });
+    expectStatus(empty, 200);
+    expect(empty.data).toEqual([]);
+
+    const created = await api.POST('/api/v1/accounts/{id}/identifiers', {
+      params: { path: { id: acc.id } },
+      body: { value: ' 77 41 ', kind: 'CUSTOMER_ID' },
+    });
+    expectStatus(created, 201);
+    expect(created.data).toMatchObject({ value: '7741', kind: 'CUSTOMER_ID' });
+
+    // Same value on the same account is an idempotent no-op; on another account it is a conflict.
+    const again = await api.POST('/api/v1/accounts/{id}/identifiers', {
+      params: { path: { id: acc.id } },
+      body: { value: '7741' },
+    });
+    expectStatus(again, 201);
+    expect(again.data?.id).toBe(created.data?.id);
+    const conflict = await api.POST('/api/v1/accounts/{id}/identifiers', {
+      params: { path: { id: other.id } },
+      body: { value: '7741' },
+    });
+    expectStatus(conflict, 400);
+    expect((conflict.error as { message?: string })?.message).toContain("already assigned to account 'Alias Bank'");
+
+    // kind defaults to OTHER; blank / too short / too long values are rejected.
+    const defaulted = await api.POST('/api/v1/accounts/{id}/identifiers', {
+      params: { path: { id: acc.id } },
+      body: { value: 'CRN-000123' },
+    });
+    expectStatus(defaulted, 201);
+    expect(defaulted.data?.kind).toBe('OTHER');
+    for (const value of ['   ', '1', 'x'.repeat(33)]) {
+      const bad = await api.POST('/api/v1/accounts/{id}/identifiers', {
+        params: { path: { id: acc.id } },
+        body: { value },
+      });
+      expectStatus(bad, 400);
+    }
+
+    const list = await api.GET('/api/v1/accounts/{id}/identifiers', { params: { path: { id: acc.id } } });
+    expect(list.data?.map((i) => i.value)).toEqual(['7741', 'CRN-000123']);
+
+    const del = await api.DELETE('/api/v1/accounts/{id}/identifiers/{identifierId}', {
+      params: { path: { id: acc.id, identifierId: created.data!.id } },
+    });
+    expectStatus(del, 204);
+    const delAgain = await api.DELETE('/api/v1/accounts/{id}/identifiers/{identifierId}', {
+      params: { path: { id: acc.id, identifierId: created.data!.id } },
+    });
+    expectStatus(delAgain, 404);
+    // The freed value can now be claimed by the other account.
+    const claimed = await api.POST('/api/v1/accounts/{id}/identifiers', {
+      params: { path: { id: other.id } },
+      body: { value: '7741' },
+    });
+    expectStatus(claimed, 201);
+  });
+
   test('tenancy: cross-tenant access returns 404/403/400; unauthenticated returns 401', async ({
     api: apiA,
     request,
   }) => {
     const accA = await createBankAccount(apiA, { name: "User A's Bank" });
+    const identRes = await apiA.POST('/api/v1/accounts/{id}/identifiers', {
+      params: { path: { id: accA.id } },
+      body: { value: '8123' },
+    });
+    expectStatus(identRes, 201);
+    const identA = identRes.data!;
     const { api: apiB } = await secondUser(request, 'acc-tenancy');
 
     const accountEndpoints = [
@@ -402,6 +469,9 @@ test.describe('Accounts API (@api)', () => {
       { method: 'POST' as const, path: `/api/v1/accounts/${accA.id}/reopen`, body: {} },
       { method: 'GET' as const, path: `/api/v1/accounts/${accA.id}/card-summary` },
       { method: 'GET' as const, path: `/api/v1/accounts/${accA.id}/statements` },
+      { method: 'GET' as const, path: `/api/v1/accounts/${accA.id}/identifiers` },
+      { method: 'POST' as const, path: `/api/v1/accounts/${accA.id}/identifiers`, body: { value: '9001' } },
+      { method: 'DELETE' as const, path: `/api/v1/accounts/${accA.id}/identifiers/${identA.id}` },
       { method: 'DELETE' as const, path: `/api/v1/accounts/${accA.id}` },
     ];
 

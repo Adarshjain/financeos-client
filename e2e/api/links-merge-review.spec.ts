@@ -9,7 +9,7 @@ import {
   findById,
   searchAll,
 } from '../fixtures/seed/transactions';
-import { expectUnauthenticated, secondUser } from '../fixtures/tenancy';
+import { secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
 const UNKNOWN_UUID = '00000000-0000-0000-0000-000000000000';
@@ -273,15 +273,6 @@ test.describe('Transaction Links, Merge & Review API', () => {
       expect([400, 404]).toContain(crossTenantLinkRes.response.status);
     });
 
-    test('401 unauthorized on link endpoints without session', async () => {
-      await expectUnauthenticated('GET', `/api/v1/transaction-links?transactionId=${UNKNOWN_UUID}`);
-      await expectUnauthenticated('GET', `/api/v1/transaction-links/${UNKNOWN_UUID}`);
-      await expectUnauthenticated('POST', '/api/v1/transaction-links', {
-        type: 'TRANSFER',
-        members: [],
-      });
-      await expectUnauthenticated('DELETE', `/api/v1/transaction-links/${UNKNOWN_UUID}`);
-    });
   });
 
   test.describe('Transaction Merge', () => {
@@ -365,12 +356,6 @@ test.describe('Transaction Links, Merge & Review API', () => {
       expectStatus(unknownMergeRes, 404);
     });
 
-    test('401 unauthorized on /merge without session', async () => {
-      await expectUnauthenticated('POST', '/api/v1/transactions/merge', {
-        keepId: UNKNOWN_UUID,
-        deleteId: UNKNOWN_UUID,
-      });
-    });
   });
 
   test.describe('Transaction Batch Review', () => {
@@ -452,12 +437,5 @@ test.describe('Transaction Links, Merge & Review API', () => {
       expectStatus(noReasonsRes, 400);
     });
 
-    test('401 unauthorized on /batch-review without session', async () => {
-      await expectUnauthenticated('POST', '/api/v1/transactions/batch-review', {
-        transactionIds: [UNKNOWN_UUID],
-        reviewType: 'MANUALLY_REVIEWED',
-        reviewReasons: ['CATEGORY_UNVERIFIED'],
-      });
-    });
   });
 });

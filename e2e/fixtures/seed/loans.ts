@@ -54,16 +54,6 @@ export function monthsAhead(n: number): string {
 }
 
 /**
- * Formats a Date object or string as YYYY-MM-01.
- */
-export function isoFirstOfMonth(d: Date | string): string {
-  const date = typeof d === 'string' ? new Date(d) : d;
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  return `${year}-${month}-01`;
-}
-
-/**
  * Adds or subtracts days from a date string (YYYY-MM-DD).
  */
 export function addDays(dateStr: string, days: number): string {

@@ -23,6 +23,15 @@ This directory contains the Playwright end-to-end (E2E) testing harness for Fina
 
 ---
 
+## Prerequisites
+
+- Docker (Oracle Free + WireMock containers), Java 21 and Node 20 (`nvm use`).
+- Playwright's Chromium: `npx playwright install --with-deps chromium` once per machine (CI does this every run).
+- After any server change run `bash e2e/run-local.sh --build` (or `bash e2e/scripts/build-server.sh`): a stale
+  `target/backend-*.jar` is reused silently otherwise.
+- CI additionally boots the jar a second time (`start-server.sh --second-boot`) to prove Flyway reports no
+  pending migrations; run it locally when you add a migration.
+
 ## Commands
 
 ### One-Command Flow

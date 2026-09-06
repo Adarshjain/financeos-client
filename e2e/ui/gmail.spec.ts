@@ -35,6 +35,8 @@ test.describe('Gmail settings UI (@ui)', () => {
   let bankAccountId: string;
 
   const parkedMail = alertMail({ last4: '9999', amount: 640, merchant: 'UBER', date: isoDaysAgo(3) });
+  // Alerts keyed by a customer ID match nothing until the user assigns them to an account.
+  const customerIdMail = alertMail({ last4: '7741', amount: 210, merchant: 'CUSTOMER ID ALERT', date: isoDaysAgo(2) });
 
   test.beforeAll(async ({ request }) => {
     user = await createUser(request, 'ui-gmail');
@@ -44,9 +46,15 @@ test.describe('Gmail settings UI (@ui)', () => {
     // Seeded before connecting: once a connection exists, account/sender changes enqueue syncs.
     const account = await createBankAccount(api, { name: 'UI Gmail Bank', last4: '1234', ingestFromDate: isoDaysAgo(60) });
     bankAccountId = account.id;
-    await registerMailbox(identity, [parkedMail]);
+    await registerMailbox(identity, [parkedMail, customerIdMail]);
+    const customerIdAnswer = extractionFor(customerIdMail, {
+      json: extractedTxn({ amount: 210, date: isoDaysAgo(2), last4: '7741', merchant: 'CUSTOMER ID ALERT' }),
+    });
     await scriptExtractions(api, [
       extractionFor(parkedMail, { json: extractedTxn({ amount: 640, date: isoDaysAgo(3), last4: '9999', merchant: 'UBER' }) }),
+      // Once for the first sync, once for the re-extraction after Assign & Remember re-activates it.
+      customerIdAnswer,
+      customerIdAnswer,
     ]);
   });
 
@@ -110,9 +118,25 @@ test.describe('Gmail settings UI (@ui)', () => {
     await expect(page.getByText('SUCCEEDED', { exact: true }).first()).toBeVisible();
 
     await page.reload();
-    await expect(page.getByText('Needs Attention (1)')).toBeVisible();
-    await expect(page.getByText('Unresolved', { exact: true })).toBeVisible();
+    await expect(page.getByText('Needs Attention (2)')).toBeVisible();
+    await expect(page.getByText('Unresolved', { exact: true })).toHaveCount(2);
     await expect(page.getByText(/No account matching ••9999/)).toBeVisible();
+    await expect(page.getByText(/No account matching ••7741/)).toBeVisible();
+
+    // Assign & Remember: the customer-ID alert is mapped to the bank account and re-processed.
+    const customerIdRow = page.locator('div').filter({ hasText: /No account matching ••7741/ }).filter({ has: page.getByRole('button', { name: 'Assign' }) }).last();
+    await customerIdRow.getByRole('button', { name: 'Assign' }).click();
+    await expect(page.getByRole('heading', { name: 'Assign Account Identifier' })).toBeVisible();
+    await page.locator('#target-account').click();
+    await page.getByRole('option', { name: 'UI Gmail Bank' }).click();
+    await page.getByRole('button', { name: 'Assign & Remember' }).click();
+    await expectToast(page, 'Re-processing 1 parked emails');
+    await waitForGmailJobsIdle(api);
+    await page.reload();
+    await expect(page.getByText('Needs Attention (1)')).toBeVisible();
+    await expect(page.getByText(/No account matching ••7741/)).not.toBeVisible();
+    const aliased = await searchAll(api, [{ field: 'accountId', operator: 'is', value: bankAccountId }]);
+    expect(aliased.map((t) => t.sourcedDescription)).toEqual(['CUSTOMER ID ALERT']);
 
     // The card the alert names now exists — but is not opted in yet.
     await createBankAccount(api, { name: 'UI Late Account', last4: '9999' });
@@ -183,12 +207,11 @@ test.describe('Gmail settings UI (@ui)', () => {
 
   test('disconnecting via the trash icon needs the native confirm and marks the row disconnected', async ({ page }) => {
     await page.goto('/settings/gmail');
-    const row = page.locator('div').filter({ hasText: identity.email }).filter({ has: page.locator('svg.lucide-trash-2') }).last();
     page.once('dialog', (dialog) => {
       expect(dialog.message()).toContain('Are you sure you want to disconnect this Gmail account?');
       dialog.accept();
     });
-    await row.getByRole('button').click();
+    await page.getByRole('button', { name: `Disconnect ${identity.email}` }).click();
     await expectToast(page, 'Gmail account disconnected');
 
     await expect.poll(async () => (await listConnections(api))[0]?.isConnected).toBe(false);
@@ -196,7 +219,9 @@ test.describe('Gmail settings UI (@ui)', () => {
     await page.reload();
     await expect(page.getByText(identity.email).first()).toBeVisible();
 
-    // Bank account 1234 was never touched by this journey.
-    expect(await searchAll(api, [{ field: 'accountId', operator: 'is', value: bankAccountId }])).toHaveLength(0);
+    // Bank account 1234 only ever received the alert assigned to it via the alias.
+    expect(await searchAll(api, [{ field: 'accountId', operator: 'is', value: bankAccountId }])).toHaveLength(1);
+    const identifiers = await api.GET('/api/v1/accounts/{id}/identifiers', { params: { path: { id: bankAccountId } } });
+    expect(identifiers.data?.map((i) => i.value)).toEqual(['7741']);
   });
 });

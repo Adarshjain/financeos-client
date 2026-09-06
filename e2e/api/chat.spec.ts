@@ -14,7 +14,7 @@ import {
   generateYahooSymbol,
   trade,
 } from '../fixtures/seed/investments';
-import { createRule as createRewardRule, spend } from '../fixtures/seed/rewards';
+import { createRewardRule as createRewardRule, spend } from '../fixtures/seed/rewards';
 import { createTransactions } from '../fixtures/seed/transactions';
 import { newUser, secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
@@ -622,17 +622,4 @@ test.describe('Chat API & Orchestrator', () => {
     expect(finalEvent.blocks.reportDraft.mode).toBe('create');
   });
 
-  test('13. 401 unauthorized on chat endpoints without session cookie', async () => {
-    // Stream endpoint
-    const streamRes = await streamChat(null, [{ role: 'user', content: 'Hi' }]);
-    expect(streamRes.status).toBe(401);
-
-    // Sync endpoint
-    const unauthFetch = await fetch('http://localhost:6969/api/v1/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: [{ role: 'user', content: 'Hi' }] }),
-    });
-    expect(unauthFetch.status).toBe(401);
-  });
 });

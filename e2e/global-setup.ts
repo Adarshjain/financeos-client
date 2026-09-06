@@ -64,12 +64,8 @@ export default async function globalSetup(): Promise<void> {
   }
 
   // 4. Reset the WireMock request journal so the teardown's unmatched-request gate only sees this run.
-  try {
-    const res = await fetch(`${E2E_WIREMOCK_URL}/__admin/requests`, { method: 'DELETE' });
-    if (!res.ok) {
-      console.warn(`[WireMock] journal reset returned ${res.status}; unmatched gate may include earlier runs`);
-    }
-  } catch (e) {
-    console.warn(`[WireMock] journal reset failed: ${(e as Error).message}`);
+  const journal = await fetch(`${E2E_WIREMOCK_URL}/__admin/requests`, { method: 'DELETE' });
+  if (!journal.ok) {
+    throw new Error(`WireMock journal reset failed (${journal.status}); the unmatched-request gate would be unreliable`);
   }
 }

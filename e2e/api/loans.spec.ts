@@ -369,7 +369,7 @@ test.describe('Loans API (@api)', () => {
     expect(schedRestored.installments.length).toBeGreaterThanOrEqual(12);
 
     // 2. prepayment reduce_emi: row count unchanged, EMI recomputed lower
-    const evPrepayEmi = await addEvent(api, loan.id, {
+    await addEvent(api, loan.id, {
       eventType: 'prepayment',
       effectiveDate: monthsAgo(1),
       amount: 30000,
@@ -542,7 +542,7 @@ test.describe('Loans API (@api)', () => {
 
   test('Summary: totalOutstanding and activeLoanCount aggregation across loans', async ({ api }) => {
     const startDate = monthsAgo(1);
-    const l1 = await createLoan(api, {
+    await createLoan(api, {
       name: 'Summary Loan 1',
       principal: 100000,
       annualRatePct: 10,

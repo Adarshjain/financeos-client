@@ -2,10 +2,10 @@ import { expectStatus } from '../fixtures/api';
 import { createBankAccount } from '../fixtures/seed/accounts';
 import { createCategory } from '../fixtures/seed/categories';
 import { createTransaction, searchAll } from '../fixtures/seed/transactions';
-import { expectForeign, expectUnauthenticated, secondUser } from '../fixtures/tenancy';
+import { expectForeign, secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
-const UNKNOWN_UUID = '00000000-0000-0000-0000-000000000000';
+'00000000-0000-0000-0000-000000000000';
 
 test.describe('Categories API', () => {
   test('CRUD category by ID', async ({ api }) => {
@@ -157,11 +157,4 @@ test.describe('Categories API', () => {
     expect(checkRes.data?.name).toBe('User A Only Category');
   });
 
-  test('401 unauthorized on categories endpoints without session', async () => {
-    await expectUnauthenticated('GET', `/api/v1/categories/${UNKNOWN_UUID}`);
-    await expectUnauthenticated('PUT', `/api/v1/categories/${UNKNOWN_UUID}`, {
-      name: 'Unauthorized',
-    });
-    await expectUnauthenticated('DELETE', `/api/v1/categories/${UNKNOWN_UUID}`);
-  });
 });

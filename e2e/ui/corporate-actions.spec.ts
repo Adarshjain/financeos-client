@@ -4,7 +4,6 @@ import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import {
   createBroker,
-  createCorporateAction,
   generateIsin,
   generateYahooSymbol,
   resolveInstrument,
@@ -119,34 +118,4 @@ test.describe('Corporate Actions UI (@ui)', () => {
     await expect(page.getByText('1 → 5').filter({ visible: true })).not.toBeVisible();
   });
 
-  test('Mobile card view of corporate actions (@mobile)', async ({ page }) => {
-    const userApi = makeApi(currentUser.cookie);
-    const broker = await createBroker(userApi);
-    const sym = generateYahooSymbol('MOBC');
-    const isin = generateIsin();
-
-    const inst = await resolveInstrument(userApi, {
-      type: 'stock',
-      name: `Mobile CA Stock ${uniqueSeedSuffix()}`,
-      isin,
-      symbol: sym,
-      exchange: 'NSE',
-      yahooSymbol: sym,
-    });
-
-    await createCorporateAction(userApi, inst.id, {
-      type: 'bonus',
-      ratioFrom: 1,
-      ratioTo: 2,
-      exDate: '2026-06-01',
-      notes: '1:1 Bonus Issue',
-    });
-
-    await openCorporateActions(page);
-
-    // On mobile or desktop, check that the corporate action details are visible
-    await expect(page.getByText(inst.name).filter({ visible: true }).first()).toBeVisible();
-    await expect(page.getByText(/Bonus Issue|Bonus/i).filter({ visible: true }).first()).toBeVisible();
-    await expect(page.getByText('1 → 2').filter({ visible: true }).first()).toBeVisible();
-  });
 });

@@ -7,14 +7,14 @@
  * WireMock admin API and keyed by a unique access token, so parallel workers never see each other's
  * mailboxes. Remove what you registered in `afterAll` via `cleanupIdentity`.
  */
-import { E2E_WIREMOCK_URL } from './config';
+import { E2E_API_URL, E2E_CLIENT_URL, E2E_WIREMOCK_URL } from './config';
 
 const ADMIN = `${E2E_WIREMOCK_URL}/__admin`;
 const runId = process.env.E2E_RUN_ID ?? Date.now().toString(36);
 let identityCounter = 0;
 
-export const SSO_REDIRECT_PORT = 6970;
-export const GMAIL_REDIRECT_PORT = 6969;
+export const SSO_REDIRECT_PORT = Number(new URL(E2E_CLIENT_URL).port);
+export const GMAIL_REDIRECT_PORT = Number(new URL(E2E_API_URL).port);
 export const GMAIL_API_PREFIX = '/gmail/gmail/v1/users/me';
 
 export interface GoogleIdentity {
@@ -104,12 +104,6 @@ export async function removeMappings(ids: string[]): Promise<void> {
       throw new Error(`WireMock DELETE mapping ${id} failed: ${res.status}`);
     }
   }
-}
-
-export async function mappingsCount(): Promise<number> {
-  const res = await admin('GET', '/mappings');
-  const json = (await res.json()) as { meta: { total: number } };
-  return json.meta.total;
 }
 
 /** Requests WireMock could not match to any stub. The suite treats anything above 0 as a bug. */

@@ -27,20 +27,6 @@ export async function expectToast(page: Page, text: string | RegExp): Promise<vo
   await expect(toastLocator.first()).toBeVisible({ timeout: 10000 });
 }
 
-/**
- * Log in through the UI form.
- */
-export async function loginViaUi(
-  page: Page,
-  email: string,
-  password: string
-): Promise<void> {
-  await page.goto(`${E2E_CLIENT_URL}/login`);
-  await page.getByLabel('Email').fill(email);
-  await page.getByLabel('Password').fill(password);
-  await page.getByRole('button', { name: 'Sign in' }).click();
-}
-
 export async function openInvestments(page: Page): Promise<void> {
   await page.goto(`${E2E_CLIENT_URL}/investments`);
   await expect(page.getByRole('heading', { name: /Portfolio Holdings/i, level: 1 })).toBeVisible();
