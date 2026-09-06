@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="FinanceOS system and product reference, reverse-engineered from the code. Calculations and invariants.">
+<title>FinanceOS Handbook · Calculations and invariants</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/handbook/handbook.css">
+</head>
+<body data-page="calculations.html">
+<div class="shell">
+<aside class="side" id="side">
+  <div class="side-head">
+    <div class="brand">FinanceOS Handbook <small>v1</small></div>
+    <div class="brand-sub">System &amp; product reference, reverse-engineered from code · 2026-09-06</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search sections and text…" autocomplete="off" aria-label="Search">
+      <kbd>/</kbd>
+    </div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="side-foot">
+    <button id="expandAll" type="button">Expand all</button>
+    <button id="collapseAll" type="button">Collapse all</button>
+    <span style="margin-left:auto">Source of truth: code</span>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="burger" id="burger" type="button" aria-label="Open navigation">☰ Sections</button>
+    <div class="crumb" id="crumb"><b>FinanceOS Handbook</b></div>
+    <button id="toTop" type="button">↑ Top</button>
+  </div>
+  <div class="results" id="results" aria-live="polite">
+    <button class="close" id="closeResults" type="button">Close ✕</button>
+    <h3 id="resultsTitle"></h3>
+    <div id="resultsList"></div>
+  </div>
+  <main class="content" id="content">
+<section class="sec" id="s10" data-part="VI · Business logic">
+<p class="eyebrow">Sections 10 and 49</p>
+<h2><span class="n">10</span>Business logic &amp; calculations: the consolidated index</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Every meaningful calculation in FinanceOS, with its formula, inputs, output, location, precision, an example, and the product decision it drives. Full derivations, decision tables and edge cases live in the module sections linked in each row; this page is the index a developer opens when a number looks wrong. Where the same concept is computed in more than one place, the row says so. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s10-money">Money and balances</h3>
+<div class="tw"><table>
+<tr><th>Calculation</th><th>Formula</th><th>Inputs</th><th>Location</th><th>Precision</th><th>Example</th><th>Decides</th><th>Detail</th></tr>
+<tr><td>Signed transaction amount</td><td>CREDIT → +amount, DEBIT → −amount</td><td>amount &gt; 0, type</td><td><code>TransactionResponse.from</code>; SQL in <code>TransactionListQueryBuilder</code> and report <code>TransactionQueryBuilder</code> (×3)</td><td>NUMBER(19,4)</td><td>−450.00 for a ₹450 debit</td><td>Everything displayed</td><td><a href="/handbook/modules-a.html#m-transactions-fields">M2</a></td></tr>
+<tr><td>Running balance per row</td><td>opening + SUM(signed) OVER (PARTITION account ORDER BY date, created, id)</td><td>all account rows, bank opening balance</td><td><code>TransactionListQueryBuilder.buildDataQuery</code></td><td>Oracle exact</td><td>+1000, −300, −200 → 700, 500 even when filtered</td><td>List column</td><td><a href="/handbook/modules-a.html#m-transactions-search">M2</a></td></tr>
+<tr><td>Account balance</td><td>card: (−closing if &gt; 0) + Σ post-anchor; bank: closing + Σ post-anchor, gap = (opening + Σ all) − that; none: opening + Σ all; broker: market value + cash</td><td>latest non-rejected statement, all transactions</td><td><code>BalanceMath.apply</code>, <code>AccountService</code></td><td>BigDecimal 19,4; gap threshold 0.01</td><td>−5,000 + 2,000 = −3,000</td><td>Tile balance, chat portfolio tool</td><td><a href="/handbook/modules-a.html#m-accounts-balance">M1</a></td></tr>
+<tr><td>Card utilization</td><td>|balance| / creditLimit × 100</td><td>balance, limit</td><td>client <code>CreditCardTile</code> (float); server card summary HALF_UP 4 → 2</td><td>mixed</td><td>3,000 / 1,00,000 = 3 %</td><td>Tile bar; card summary</td><td>M1</td></tr>
+<tr><td>Days until due</td><td>DAYS.between(today, paymentDueDate) (negative = overdue)</td><td>latest statement</td><td><code>AccountService.getCardCycleSummary</code></td><td>days</td><td></td><td>Statements dialog badge</td><td>M1</td></tr>
+</table></div>
+
+<h3 id="s10-reward">Rewards</h3>
+<div class="tw"><table>
+<tr><th>Calculation</th><th>Formula</th><th>Location</th><th>Precision</th><th>Example</th><th>Detail</th></tr>
+<tr><td>Rule match</td><td>AND over 9 optional axes; category OR MCC</td><td><code>RewardCalculationService.matches</code></td><td>—</td><td>Dining rule, channel ONLINE vs POS → no match</td><td><a href="/handbook/modules-b.html#m-rewards-l2">M7</a></td></tr>
+<tr><td>Precedence</td><td>EXCLUSIVE chain by priority desc (0 % blocks; FALL_THROUGH or STOP on cap) + all ADDITIVE</td><td><code>resolveTxnFacts</code></td><td>—</td><td>5 % capped → 1 % base ₹10 + 0.5 % bonus ₹5 = ₹15</td><td>M7</td></tr>
+<tr><td>Basis</td><td>amount − Σ linked REFUND credits; per rule − convenienceFee if EXCLUDE_FEE; floored 0</td><td><code>basisFor</code>, refund netting</td><td>19,4</td><td>₹1,000 − ₹100 fee → ₹900</td><td>M7</td></tr>
+<tr><td>PERCENT accrual</td><td>basis × rate / 100 → NONE 2 dp HALF_UP, FLOOR_RUPEE, NEAREST_RUPEE</td><td><code>accrue</code>, <code>roundCashback</code></td><td>scale 6 intermediate</td><td>₹900 × 2 % = ₹18.00</td><td>M7</td></tr>
+<tr><td>SLAB accrual</td><td>floor(basis / slab) × pointsPerSlab, floored at pointPrecision</td><td><code>accrue</code>, <code>floorPoints</code></td><td>0–2 dp</td><td>₹1,000 / ₹100 × 10 = 100 pts</td><td>M7</td></tr>
+<tr><td>Tiered accrual</td><td>Σ tranches at each tier's rate against running window position</td><td><code>accrueTiered</code></td><td>as above</td><td>₹12,000 with 5 % ≤ ₹10k then 1 % → ₹520</td><td>M7</td></tr>
+<tr><td>Cap clamp</td><td>min(raw, perTxnCap); remaining = cap − used; 0 if ≤ 0; partial if raw &gt; remaining</td><td><code>clamp</code></td><td></td><td>₹20 raw, ₹10 headroom → ₹10 PARTIAL_CAP</td><td>M7</td></tr>
+<tr><td>Windows</td><td>DAY, month, quarter, year, statement cycle (fallback month), anniversary year (Feb-29 clamp; fallback year)</td><td><code>windowContaining</code></td><td>LocalDate</td><td>anniv 2025-06-01 at 2026-03-15 → 2025-06-01..2026-05-31</td><td>M7</td></tr>
+<tr><td>Milestone</td><td>progress ≥ threshold → payout at window end or on achievement; recommender adds delta/threshold × payout when unreached</td><td><code>milestoneStatus</code>, recommender</td><td></td><td>₹12k of ₹1L, ₹1,000 payout → ₹120 credit (recommender only)</td><td>M7</td></tr>
+<tr><td>Report totals</td><td>gross = cashback + cash milestones; effective = gross + discounts − fees; pct = value / basis × 100</td><td><code>buildReport</code>, <code>pct</code></td><td>2 dp HALF_UP</td><td></td><td>M7</td></tr>
+<tr><td>Points → ₹</td><td>points × (account.pointValueInr ?? 0.25) in recommender; ?? 0 in RewardEarningsDatasource</td><td>two places</td><td>2 dp HALF_UP</td><td>100 pts → ₹25 or ₹0</td><td><a href="/handbook/rules.html#s45">Contradictions</a></td></tr>
+<tr><td>Card ranking</td><td>sort by total desc, guaranteed desc, name</td><td><code>RewardRecommendationService</code></td><td></td><td>capped 5 % (₹10) loses to 1.5 % (₹15)</td><td>M7</td></tr>
+</table></div>
+
+<h3 id="s10-invest">Investments</h3>
+<div class="tw"><table>
+<tr><th>Calculation</th><th>Formula</th><th>Location</th><th>Precision</th><th>Example</th><th>Detail</th></tr>
+<tr><td>FIFO position</td><td>buy pushes lot(qty, price); sell consumes oldest; realized = qty × sell − matched cost (gross of charges)</td><td><code>InvestmentService.calculateHoldingPosition</code> (+ duplicate <code>buildOpenLotsBeforeDate</code>)</td><td>qty 8 dp, cost 4 dp</td><td>10@100, 20@150, sell 15@200 → ₹1,250 realized, 15@150 open</td><td><a href="/handbook/modules-b.html#m-inv-fifo">M6</a></td></tr>
+<tr><td>Open cost, avg cost, current value</td><td>Σ qty × cost; openCost / openQty; openQty × latest price (else openCost; null if qty 0)</td><td>same</td><td>4 dp HALF_UP</td><td></td><td>M6</td></tr>
+<tr><td>Unrealized and absolute return</td><td>currentValue − openCost; (currentValue − openCost + realized + intraday + dividends) / openCost × 100</td><td>same</td><td>2 dp</td><td></td><td>M6</td></tr>
+<tr><td>XIRR</td><td>Newton (10 %, 100 iter, 1e-7) then bisection [−0.9999, 10] on dated flows, Actual/365; dividends gross; terminal +value today</td><td><code>XirrCalculator</code></td><td>double → ×100 2 dp</td><td>null for same-day or same-sign flows</td><td>M6; untested</td></tr>
+<tr><td>Groww charges</td><td>brokerage min(0.1 %, ₹20) floor ₹5 delivery; STT 0.1 % delivery both / 0.025 % intraday sell; exchange 0.00297 % NSE, 0.00375 % BSE; SEBI 0.0001 %; stamp 0.015 % / 0.003 % buy; DP ₹13.50 delivery sell; GST 18 % of (brokerage + exchange + SEBI + DP)</td><td><code>ChargeCalculator</code> (reconciliation only)</td><td>4 dp HALF_UP each</td><td>100 @ ₹500 → ≈ ₹82.91</td><td>M6</td></tr>
+<tr><td>Split / bonus</td><td>qty × to/from; cost/unit ÷ same</td><td>timeline CA event</td><td>10 dp ratio → 8 dp</td><td>100@100, 1→2 → 200@50</td><td><a href="/handbook/modules-b.html#m-inv-ca">M6</a></td></tr>
+<tr><td>Demerger</td><td>parent cost × (1 − pct/100); child qty = parentQty × to/from, cost = parentQty × cost × pct/100</td><td><code>deriveSeeds</code></td><td>8 dp</td><td>20 %, 2→1 → parent 100@80, child 50@40</td><td>M6</td></tr>
+<tr><td>Merger</td><td>transferor lots cleared; acquirer seeded at 100 % cost; XIRR bridge ± cost at ex-date</td><td>same</td><td></td><td>100@100, 25→42 → 168@59.52</td><td>M6</td></tr>
+<tr><td>Fractional cash in lieu</td><td>W = floor(E); F = E − W; cost = F × Cseed/E; realized = cashInLieu × F/total − cost</td><td>same</td><td>10 dp / 8 dp</td><td>121@100, 100→155 → F 0.55, cost ₹35.48</td><td>M6</td></tr>
+<tr><td>Intraday split</td><td>intradayQty = min(Σ intraday buys, Σ intraday sells) per day; delivery = day − intraday by value subtraction</td><td><code>recomputeClassificationForDay</code>, <code>BrokerReconciliationService</code></td><td>8 dp</td><td>buy 15, sell 10 intraday → 5 delivery @100</td><td>M6</td></tr>
+<tr><td>F&amp;O realized</td><td>sell − buy − charges</td><td><code>FnoTradeService</code> (×3 sites)</td><td>4 dp</td><td>7,500 − 5,000 − 25 = 2,475</td><td>M6</td></tr>
+<tr><td>Dividend FY</td><td>start = month ≥ 4 ? year : year − 1; net = amount − tds</td><td><code>DividendService.getSummary</code></td><td></td><td>2025-03-31 → FY 2024-25</td><td>M6</td></tr>
+<tr><td>Dividend suggestion</td><td>perUnit × qtyHeld(exDate); dedup ±7 days</td><td><code>DividendService.scanSuggestions</code></td><td>2 dp</td><td></td><td>M6</td></tr>
+<tr><td>SIP progress</td><td>expected = stepped dates ≤ min(today, end); executed = buys in window; missed = max(0, diff)</td><td><code>SipService.computeProgress</code></td><td></td><td></td><td>M6</td></tr>
+<tr><td>Import price</td><td>value / quantity when no price column</td><td><code>GrowwStocksParser</code></td><td>4 dp HALF_UP</td><td>50,125.50 / 25 = 2,005.02</td><td>M6</td></tr>
+</table></div>
+
+<h3 id="s10-loans">Loans and lendings</h3>
+<div class="tw"><table>
+<tr><th>Calculation</th><th>Formula</th><th>Location</th><th>Precision</th><th>Example</th><th>Detail</th></tr>
+<tr><td>EMI</td><td>P·r·(1+r)^n / ((1+r)^n − 1), r = annual/1200; zero rate → P/n</td><td><code>LoanScheduleService.calculateAnnuityEmi</code></td><td>DECIMAL64 → 2 dp HALF_UP</td><td>12L, 8.5 %, 60 → ₹24,619.16</td><td><a href="/handbook/modules-b.html#m-loans-emi">M8</a></td></tr>
+<tr><td>Installment</td><td>interest = round2(balance × rate/1200); principal = min(EMI − interest, balance); last absorbs residue</td><td><code>compute</code></td><td>2 dp</td><td>first interest ₹8,500.00</td><td>M8</td></tr>
+<tr><td>Event application</td><td>strictly before due date; rate_change &lt; prepayment &lt; foreclosure on ties; reduce_tenure or re-annuitize</td><td><code>compute</code></td><td></td><td>event on 06-01 applies from 07-01</td><td>M8</td></tr>
+<tr><td>Modeled outstanding</td><td>closing of last installment ≤ date − interim prepayments</td><td><code>LoanService.addEvent</code></td><td></td><td></td><td>M8</td></tr>
+<tr><td>Effective APR</td><td>XIRR of +principal, −charges, −payments (settled actual, unsettled projected), −prepayments</td><td><code>calculateEffectiveApr</code></td><td>2 dp</td><td>10 % + ₹2,000 fee → &gt; 10 %</td><td>M8</td></tr>
+<tr><td>Match suggestions</td><td>DEBIT, EMI ± ₹20, due ± 7 d, payment account else all, not referenced, greedy nearest</td><td><code>getMatchSuggestions</code></td><td></td><td></td><td>M8</td></tr>
+<tr><td>Tax summary</td><td>settled installments by payment-date FY; 24(b)/80C for home, 80E for education; no caps</td><td><code>LoanTaxSummaryDatasource</code></td><td></td><td>2026-03-10 → FY 25-26</td><td>M8</td></tr>
+<tr><td>Lending net</td><td>Σ lent − Σ borrowed</td><td>server <code>getLendingTotals</code>; client running balance</td><td>4 dp</td><td>50,000 − 20,000 = 30,000 receivable</td><td>M8</td></tr>
+</table></div>
+
+<h3 id="s10-ingest">Ingestion, parsing, categorization</h3>
+<div class="tw"><table>
+<tr><th>Calculation</th><th>Formula / rule</th><th>Location</th><th>Detail</th></tr>
+<tr><td>Description normalization</td><td>upper → non-alnum to space → drop tokens with ≥3 digits → drop noise list → cap 255</td><td><code>DescriptionNormalizer</code></td><td><a href="/handbook/modules-a.html#m-transactions-cat">M2</a></td></tr>
+<tr><td>Rule precedence</td><td>USER &gt; LLM; EXACT &gt; STARTS_WITH &gt; CONTAINS &gt; REGEX &gt; MERCHANT_KEY; longer; verified; newer</td><td><code>CategorizationService.RULE_PRECEDENCE</code></td><td>M2</td></tr>
+<tr><td>Statement sign oracle</td><td>column with ≥ 60 % rows where |Δbalance| = another amount (±0.011); sign = Δ direction; fallbacks by header or default −1 card / +1 bank</td><td><code>SignAssigner</code></td><td><a href="/handbook/modules-a.html#m-statements-parser">M4</a></td></tr>
+<tr><td>Statement verdict</td><td>5-rule table on checksum, chain %, cross totals, card checks</td><td><code>StatementParseEngine:354-369</code></td><td>M4</td></tr>
+<tr><td>Duplicate transaction (upload)</td><td>same day, exact amount, same type, Jaccard ≥ 0.70</td><td><code>TransactionMatcher.areDuplicates</code></td><td>M4</td></tr>
+<tr><td>Statement line match (Gmail)</td><td>exact amount, same type, ± 3 days, same card; rank by card, date diff, similarity</td><td><code>TransactionMatcher.findBestMatch</code></td><td><a href="/handbook/modules-a.html#m-gmail-statement">M3</a></td></tr>
+<tr><td>Account resolution</td><td>alias exact → bank/open card exact → fuzzy ≥3 chars → closed cards; ambiguity parks</td><td><code>AccountResolver</code></td><td><a href="/handbook/modules-a.html#m-accounts-resolver">M1</a></td></tr>
+<tr><td>Retry backoff</td><td>min(86400, 7200 × 2^(n−1)) s, 5 attempts</td><td><code>GmailIngestionService</code></td><td>M3</td></tr>
+<tr><td>Direction mapping</td><td>DEBIT/DR/PAYMENT/EXPENSE/WITHDRAWAL/CHARGE → DEBIT; CREDIT/CR/INCOME/DEPOSIT/REFUND → CREDIT; else DEBIT</td><td><code>TransactionType.fromLlmDirection</code></td><td>M3</td></tr>
+<tr><td>Import dedup</td><td>Zerodha: externalRef; others: exact (date, type, qty, price)</td><td><code>ImportService</code>, <code>BrokerReconciliationService</code></td><td>M6</td></tr>
+</table></div>
+
+<h3 id="s10-llm">LLM, chat, reports</h3>
+<div class="tw"><table>
+<tr><th>Calculation</th><th>Rule</th><th>Location</th><th>Detail</th></tr>
+<tr><td>Failover order</td><td>prefs → default-routing → legacy chains; model-major Gemini; dedup keyId:model; skip cooldown</td><td><code>FailoverLlmClient</code></td><td><a href="/handbook/modules-b.html#m-llm-failover">M10</a></td></tr>
+<tr><td>Cooldown</td><td>PerDay 429 → midnight America/Los_Angeles; else max(Retry-After, 60 s); 3 failures / 60 s circuit</td><td><code>BucketStateRegistry</code></td><td>M10</td></tr>
+<tr><td>Chat deadlines</td><td>forceFinal = min(180 s, max(30 s, emitter − 90 s)); hard = max(10 s, emitter − 20 s); emitter 290 s</td><td><code>ChatOrchestrator</code></td><td>M10</td></tr>
+<tr><td>Report date ranges</td><td>inclusive both ends; FY from month 4; previous period calendar-aligned or flat shift</td><td><code>DateRangeResolver</code></td><td><a href="/handbook/modules-b.html#m-reports-kpi">M9</a></td></tr>
+<tr><td>KPI change %</td><td>(current − previous) / previous × 100; SQL scale 6 → 2; in-memory scale 4</td><td>two executors</td><td>M9</td></tr>
+<tr><td>Grounding FY</td><td>month ≥ 4 ? "FY y-(y+1)" : "FY (y−1)-y"</td><td><code>ChatGroundingService</code></td><td>M10</td></tr>
+</table></div>
+<p><strong>Decision tables (§49)</strong> are embedded where the logic lives: reward matching and eligibility (<a href="/handbook/modules-b.html#m-rewards-l2">M7</a>), link validation and rule precedence (<a href="/handbook/modules-a.html#m-transactions-links">M2</a>), account resolution (<a href="/handbook/modules-a.html#m-accounts-resolver">M1</a>), balance formula (<a href="/handbook/modules-a.html#m-accounts-balance">M1</a>), statement verdict and dedup (<a href="/handbook/modules-a.html#m-statements-parser">M4</a>), loan events and match filters (<a href="/handbook/modules-b.html#m-loans-emi">M8</a>), corporate actions (<a href="/handbook/modules-b.html#m-inv-ca">M6</a>), report validation and category fan-out (<a href="/handbook/modules-b.html#m-reports-def">M9</a>), failover and structured output (<a href="/handbook/modules-b.html#m-llm-failover">M10</a>), signup gate (<a href="/handbook/server-api.html#s15-identity">§15</a>).</p>
+</section>
+<section class="sec" id="s37" data-part="VI · Business logic">
+<p class="eyebrow">Section 37</p>
+<h2><span class="n">37</span>Financial invariant registry</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Properties that should always hold, derived from the implementation rather than assumed. For each: where it is enforced (database, service, nowhere), whether a test covers it, how it could be violated, and how a violation would be detected. The pattern is clear: uniqueness and existence are enforced by Oracle; arithmetic invariants are enforced structurally inside the compute-on-read engines; cross-table and cross-module consistency is mostly enforced by service code or not at all. <span class="c cg">Confirmed</span></p></div>
+<div class="tw"><table>
+<tr><th>#</th><th>Invariant</th><th>Enforced by</th><th>Not enforced at</th><th>Test</th><th>How it could break</th><th>Detection today</th></tr>
+<tr><td>I1</td><td>Every transaction belongs to exactly one account of the same user</td><td>DB NOT NULL + FK (account); service ownership check</td><td>DB does not check user match; <code>user_id</code> nullable on V1-era tables</td><td>service tests, e2e cross-tenant sweep</td><td>Direct SQL or a service bug writing a foreign account id</td><td>None automatic</td></tr>
+<tr><td>I2</td><td>Amount is positive; direction is the type</td><td>DB CHECK amount &gt; 0; service rejects 0</td><td>Ingestion bypasses the service zero check (DB still blocks 0? CHECK is &gt; 0, so yes)</td><td>—</td><td>—</td><td>DB error</td></tr>
+<tr><td>I3</td><td>A transaction is counted once in a balance</td><td>By construction (sum over rows)</td><td>Duplicate <em>rows</em> are only flagged, never blocked</td><td>—</td><td>Re-uploading an overlapping statement; Gmail alert plus statement line unmatched (amount or date mismatch)</td><td>DUPLICATE_SUSPECT badge; bank reconciliation gap ⚠</td></tr>
+<tr><td>I4</td><td>No email is ingested twice</td><td>DB UNIQUE(connection, gmail_message_id); UNIQUE(user, source_message_id); pre-check</td><td>—</td><td><code>GmailIngestionServiceTest.testDuplicateGuard</code></td><td>Same email in two mailboxes of one user (different connection ids) → blocked by source_message_id</td><td>SKIPPED_DUPLICATE</td></tr>
+<tr><td>I5</td><td>No statement file is ingested twice into an account</td><td>DB UNIQUE(account, sha256); UNIQUE(account, period)</td><td>Same file into another account of the same user is allowed by design</td><td><code>FileIngestionServiceTest</code></td><td>Concurrent identical uploads → second fails with a raw error</td><td>Job result FAILED</td></tr>
+<tr><td>I6</td><td>Balance = anchor + post-anchor sum (single and batch paths agree)</td><td>Structural</td><td>—</td><td><code>AccountBalanceEquivalenceTest</code></td><td>Divergent edits to the two paths</td><td>Test</td></tr>
+<tr><td>I7</td><td>Reward per line ≤ cap; ≥ 0</td><td><code>clamp()</code>, floors</td><td>—</td><td>yes</td><td>Cap key collision</td><td>Test</td></tr>
+<tr><td>I8</td><td>Reward is never double-earned by two rules unless ADDITIVE</td><td>Exclusive chain</td><td>Duplicate ADDITIVE rules (no dedup key on create)</td><td>stacking tests</td><td>Double submit of a rule form</td><td>None</td></tr>
+<tr><td>I9</td><td>Cap-bucket members share the bucket's reward type</td><td>Service</td><td>DB</td><td>yes</td><td>Manual SQL</td><td>None</td></tr>
+<tr><td>I10</td><td>Position quantity ≥ 0; sells never exceed holdings</td><td>Service on manual create/update</td><td>Imports; DB</td><td>indirect</td><td>Incomplete broker history → over-sold; engine truncates with a warning</td><td>Log warning; DATA_GAP in reconciliation preview</td></tr>
+<tr><td>I11</td><td>Holding realized P&amp;L = Σ per-lot realized</td><td>Same loop</td><td>—</td><td><code>RealizedLotsParityTest</code></td><td>Forking the two computations</td><td>Test</td></tr>
+<tr><td>I12</td><td>Split or bonus preserves total cost; demerger carves exactly pct %</td><td>Arithmetic</td><td>Duplicate CA rows double apply</td><td>CA tests</td><td>Recording the same CA twice</td><td>None</td></tr>
+<tr><td>I13</td><td>One price per instrument per day; MANUAL never overwritten by a feed</td><td>DB UNIQUE; service skip</td><td>—</td><td>not directly</td><td>—</td><td>DB</td></tr>
+<tr><td>I14</td><td>total_charges = Σ itemized charges</td><td>JPA lifecycle recompute</td><td>Raw SQL</td><td>—</td><td>Out-of-band update</td><td>None</td></tr>
+<tr><td>I15</td><td>F&amp;O realized_pnl = sell − buy − charges</td><td>Service at write</td><td>No recompute hook on edit outside the service</td><td>partial</td><td>Out-of-band edit</td><td>None</td></tr>
+<tr><td>I16</td><td>Σ installment principal = loan principal</td><td>Structural (last row absorbs residue)</td><td>—</td><td><code>LoanScheduleServiceTest.testA</code></td><td>—</td><td>Test</td></tr>
+<tr><td>I17</td><td>One payment per installment; one loan or lending fact per bank transaction</td><td>DB UNIQUE(loan, seq); unique transaction_id on four tables; service pre-checks</td><td>—</td><td>service tests are fake (see §25)</td><td>TOCTOU → raw constraint error</td><td>DB</td></tr>
+<tr><td>I18</td><td>Foreclosure amount equals remaining balance</td><td><strong>Nowhere</strong></td><td>—</td><td>—</td><td>Any amount accepted; outstanding zeroed</td><td>None</td></tr>
+<tr><td>I19</td><td>Payment amount reconciles to the scheduled EMI</td><td><strong>Nowhere</strong> (amount &gt; 0 only)</td><td>—</td><td>—</td><td>Any positive amount settles the installment</td><td>None</td></tr>
+<tr><td>I20</td><td>Lending net = Σ lent − Σ borrowed (server and client agree)</td><td>Same sign convention in both</td><td>Ordering of same-day rows</td><td>datasource test</td><td>Non-deterministic API order affects intermediate balances only</td><td>Visual</td></tr>
+<tr><td>I21</td><td>A report over transactions counts each transaction once</td><td><strong>Not enforced</strong></td><td>Category join fans out</td><td>none</td><td>Filter or group by category on a multi-category row</td><td>None; chat gives a different total</td></tr>
+<tr><td>I22</td><td>Every derived read is scoped to the caller</td><td>Hibernate filter inside @Transactional; explicit binds in native SQL; Oracle SYS_CONTEXT for chat</td><td>GmailSyncCursor entity; any <code>rows()</code> call outside a transaction</td><td><code>HibernateFilterAspectTest</code> (aspect only); e2e foreign-id sweep</td><td>New entity without @Filter; new non-transactional caller</td><td>e2e sweep for reachable endpoints only</td></tr>
+<tr><td>I23</td><td>Deleting a user leaves zero rows</td><td>V79 cascades + dictionary re-count in one transaction, fail closed</td><td>Backups</td><td>9 executor tests + schema test</td><td>Table name failing the regex</td><td>Exception</td></tr>
+<tr><td>I24</td><td>NEEDS_REVIEW always has ≥ 1 reason</td><td><code>ReviewStatusManager</code></td><td>DB</td><td>thin</td><td>Direct setter (none found)</td><td>—</td></tr>
+<tr><td>I25</td><td>Chat SQL touches only allow-listed views under the caller's identity</td><td>JSQLParser allow-list + Oracle view predicates + CHAT_RO grants</td><td>—</td><td>validator tests</td><td>Grant creep on CHAT_RO</td><td>None automatic (doc invariant)</td></tr>
+<tr><td>I26</td><td>Job status moves forward only</td><td>Conditional UPDATE on claim</td><td><code>succeed/fail/markCancelled</code> unguarded</td><td>—</td><td>Out-of-order cancel vs success</td><td>None</td></tr>
+<tr><td>I27</td><td>Excluded transactions are excluded "from reporting and budgets"</td><td>Rewards; opt-in report filter</td><td>Balances; default reports</td><td>—</td><td>By design or gap</td><td>—</td></tr>
+</table></div>
+<div class="callout"><p><strong>Reconciliation gap.</strong> FinanceOS has no job or report that compares a derived figure with an independent source: no statement-total vs ledger check beyond the bank gap badge, no reward statement points vs computed points (parsed but never compared), no position vs broker holdings snapshot outside the reconciliation preview, no schedule vs actual payments. See <a href="/handbook/rules.html#s43">§43</a>.</p></div>
+</section>
+<section class="sec" id="s38" data-part="VI · Business logic">
+<p class="eyebrow">Section 38</p>
+<h2><span class="n">38</span>State machines &amp; lifecycles</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Seven entities carry meaningful states. Only one (job status) has a DB CHECK on its values and a guarded transition; the review state machine is guarded in a single Java class; the Gmail ledger, account, card, loan and LLM key states are enforced by service code or derived from dates with no transition log anywhere. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s38-review">Transaction review</h3>
+<pre class="mermaid">stateDiagram-v2
+  [*] --> NA : manual create
+  [*] --> NEEDS_REVIEW : ingested (UNRECONCILED) or categorized by unverified rule/LLM (CATEGORY_UNVERIFIED) or duplicate flagged
+  NEEDS_REVIEW --> NEEDS_REVIEW : clearReason but reasons remain
+  NEEDS_REVIEW --> AUTO_REVIEWED : statement line match / rule verify / rule apply clears last reason
+  NEEDS_REVIEW --> MANUALLY_REVIEWED : batch review or category edit or merge clears last reason
+  AUTO_REVIEWED --> NEEDS_REVIEW : addReason (new unverified categorization)
+  MANUALLY_REVIEWED --> NEEDS_REVIEW : addReason
+  NA --> NEEDS_REVIEW : addReason</pre>
+<p>Guards: NEEDS_REVIEW requires ≥1 reason (throws otherwise); leaving it clears all reasons and stamps <code>reviewed_at</code> for the reviewed states. All writes go through <code>ReviewStatusManager</code>; echoing the current review type on update is a no-op. Invalid: entering NEEDS_REVIEW with no reasons. <span class="path">domain/transaction/ReviewStatusManager.java</span></p>
+
+<h3 id="s38-gmail">Gmail processed message</h3>
+<pre class="mermaid">stateDiagram-v2
+  [*] --> DISCOVERED
+  DISCOVERED --> PROCESSING
+  PROCESSING --> CREATED
+  PROCESSING --> RECONCILED : statement path
+  PROCESSING --> SKIPPED_NOT_TRANSACTION
+  PROCESSING --> SKIPPED_DUPLICATE
+  PROCESSING --> SKIPPED_SENDER_DISABLED
+  PROCESSING --> SKIPPED_MESSAGE_GONE
+  PROCESSING --> SKIPPED_BEFORE_WATERMARK
+  PROCESSING --> UNRESOLVED_ACCOUNT
+  PROCESSING --> ACCOUNT_NOT_OPTED_IN
+  PROCESSING --> FAILED_RETRYABLE : exception, attempts under 5
+  FAILED_RETRYABLE --> PROCESSING : next_retry_at reached
+  FAILED_RETRYABLE --> FAILED_PERMANENT : attempt 5
+  PROCESSING --> DISCOVERED : stale over 60 min sweep
+  UNRESOLVED_ACCOUNT --> DISCOVERED : retry, assign, or account/card event
+  ACCOUNT_NOT_OPTED_IN --> DISCOVERED : ingest date set
+  SKIPPED_BEFORE_WATERMARK --> DISCOVERED : ingest date lowered
+  FAILED_PERMANENT --> DISCOVERED : manual retry
+  CREATED --> CLEANED_UP : user cleanup deletes the transaction</pre>
+<p>Only DISCOVERED and due FAILED_RETRYABLE rows are drained. Attention queue shows UNRESOLVED_ACCOUNT, ACCOUNT_NOT_OPTED_IN, FAILED_PERMANENT (+ FAILED_RETRYABLE optionally). CLEANED_UP is never reactivated. No DB CHECK on the 14 values. <span class="path">gmail/ingest/GmailIngestionService.java</span></p>
+
+<h3 id="s38-job">Job</h3>
+<pre class="mermaid">stateDiagram-v2
+  [*] --> PENDING : enqueue (dedupKey may return an existing active job)
+  PENDING --> RUNNING : claim UPDATE … WHERE status='PENDING'
+  PENDING --> CANCELLED : cancel
+  RUNNING --> SUCCEEDED : handler returns (artifacts deleted)
+  RUNNING --> FAILED : handler throws / EXECUTOR_REJECTED / boot sweep INTERRUPTED
+  RUNNING --> CANCELLED : cancel flag + handler checks
+  FAILED --> [*] : retry clones into a new PENDING job
+  CANCELLED --> [*] : retry clones</pre>
+<p>Guards: claim is atomic; cancel of a terminal job and retry of a non-terminal job throw. Unguarded: <code>succeed</code>, <code>fail</code>, <code>markCancelled</code> overwrite whatever status exists. <span class="path">domain/job/JobService.java</span></p>
+
+<h3 id="s38-account">Account, cardholder, card (date-derived)</h3>
+<pre class="mermaid">stateDiagram-v2
+  ACTIVE --> CLOSING : POST /close with a future closedOn (≥ earliest transaction)
+  ACTIVE --> CLOSED : POST /close with today or past
+  CLOSING --> CLOSED : date passes
+  CLOSING --> ACTIVE : POST /reopen (no open last4 collision)
+  CLOSED --> ACTIVE : POST /reopen</pre>
+<p>No status column; three implementations derive the trichotomy. Cardholder: PRIMARY cannot close, reopen or delete directly; ADDON closes and reopens freely, deletes only when unused; effective closure = min(own, account). Card: open iff issued_on ≤ date &lt; closed_on; replace = close + new under the same cardholder; one open card per cardholder and no duplicate open last4 per account (DB). Closure does not block transactions or imports. <span class="path">domain/account/Account.java:139-152</span>, <span class="path">card/CardholderService.java</span></p>
+
+<h3 id="s38-loan">Loan</h3>
+<pre class="mermaid">stateDiagram-v2
+  [*] --> active
+  active --> closed : POST /close (no balance guard)
+  active --> foreclosed : foreclosure event (one only, no later events)
+  foreclosed --> active : delete the foreclosure event
+  closed --> active : POST /reopen (blocked if a foreclosure exists)
+  foreclosed --> closed : POST /close (distinction lost)</pre>
+<p>Installment status (settled, overdue, upcoming) is an overlay computed against "today". <span class="path">domain/loan/LoanService.java:220-235</span></p>
+
+<h3 id="s38-other">Other lifecycles</h3>
+<div class="tw compact"><table>
+<tr><th>Entity</th><th>States</th><th>Transitions and guards</th><th>Enforced</th></tr>
+<tr><td>Category rule</td><td>unverified → verified</td><td>verify endpoint; manual approval of a categorized transaction; USER rules start verified; LLM rules start unverified</td><td>service</td></tr>
+<tr><td>Transaction link</td><td>whole → shrunk → dissolved</td><td>created whole; members leave via delete or merge; auto-dissolve below 2 members, no anchor, or no counterpart</td><td>service</td></tr>
+<tr><td>Statement verdict</td><td>AUTO_INGEST, NEEDS_REVIEW, REJECTED</td><td>set once at parse; no user transition; never gates ingestion</td><td>none</td></tr>
+<tr><td>Instrument price source</td><td>AMFI or YAHOO ⇄ MANUAL</td><td>feed never overwrites MANUAL; only MANUAL editable</td><td>service</td></tr>
+<tr><td>LLM key</td><td>ACTIVE → INVALID</td><td>401/403 during failover; one way; re-add to recover</td><td>service</td></tr>
+<tr><td>LLM bucket</td><td>OK → COOLDOWN (per-day to Pacific midnight, per-minute 60 s) → OK; OK → CIRCUIT_OPEN (3 failures / 60 s) → OK on success</td><td>in memory</td><td>registry</td></tr>
+<tr><td>Chat turn</td><td>Thinking → run_sql | call_tool | calc → Thinking … → clarify | final_answer; forced final at 6 iterations, 180 s, or 3 identical failures</td><td></td><td>orchestrator</td></tr>
+<tr><td>Chat report draft (client)</td><td>undefined → saved | updated | deleted | failed</td><td>one click each; delete armed for 3 s</td><td>client</td></tr>
+<tr><td>Gmail connection</td><td>connected primary / non-primary; disconnected</td><td>first becomes primary; disconnect never reassigns primary</td><td>service (gap)</td></tr>
+<tr><td>Dialog primary action (client)</td><td>idle → running → idle</td><td>blocks double submit</td><td><code>DialogFooter</code>, <code>ConfirmationDialog</code></td></tr>
+<tr><td>Session</td><td>none → active → expired (365 d) | destroyed</td><td>login, logout, deletion sweep</td><td>Spring Session</td></tr>
+</table></div>
+</section>
+<section class="sec" id="s39" data-part="VI · Business logic">
+<p class="eyebrow">Section 39</p>
+<h2><span class="n">39</span>Temporal and date logic audit</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Business dates are calendar dates (<code>LocalDate</code> ↔ Oracle <code>DATE</code>) everywhere; system timestamps are <code>Instant</code> ↔ <code>TIMESTAMP WITH TIME ZONE</code>, which took three fix passes to get right. Cron schedules and price code pin Asia/Kolkata explicitly. The gaps are the places that call bare <code>LocalDate.now()</code> (report ranges, XIRR terminal flow, chat quota), which resolve in the JVM default zone and, if production runs in UTC, shift "today" by 5.5 hours. The client parses <code>YYYY-MM-DD</code> as local calendar dates and pins <code>TZ=Asia/Kolkata</code> in tests. <span class="c cg">Confirmed</span>; production JVM zone <span class="c cr">Unknown</span>.</p></div>
+
+<h3 id="s39-zone">Timezone model</h3>
+<div class="tw"><table>
+<tr><th>Concern</th><th>Implementation</th><th>Risk</th></tr>
+<tr><td>Calendar dates</td><td><code>LocalDate</code> → <code>DATE</code>: transaction_date, settlement_date, trade_date, pay_date, ex_date, period_start/end, closed_on, ingest_from_date, loan dates, active_from/to</td><td>None; zone-free by design</td></tr>
+<tr><td>Instants</td><td><code>Instant</code> → <code>TIMESTAMP WITH TIME ZONE</code> after V27, V46, V71 (ORA-18716 with ojdbc 23 and Hibernate 6.3)</td><td>Any new Instant column must use TZ from its first migration</td></tr>
+<tr><td>Cron zones</td><td>Gmail ingest, price refresh, job retention all <code>Asia/Kolkata</code></td><td>None</td></tr>
+<tr><td>Price code "today"</td><td><code>LocalDate.now(ZoneId.of(price.timezone))</code> in PriceRefreshService, YahooDividendEventsClient, quote timestamp conversion</td><td>None</td></tr>
+<tr><td>Bare <code>LocalDate.now()</code></td><td><code>DateRangeResolver</code> (all relative report and transaction filters), XIRR terminal flow (InvestmentService:347, :715), <code>ChatQuotaService</code> daily reset, loans "today" for outstanding and statuses, obligations horizon, ObligationsController</td><td>UTC server → between 00:00 and 05:30 IST "today" is yesterday; quota resets at 05:30 IST; XIRR terminal date off by one day</td></tr>
+<tr><td>LLM daily cooldown</td><td>Midnight <code>America/Los_Angeles</code> hardcoded for any PerDay 429</td><td>Wrong for non-Google providers</td></tr>
+<tr><td>Client</td><td><code>toCalendarDate</code> uses local components; <code>parseCalendarDate</code> local constructor; <code>formatDate</code> distinguishes date strings from instants; vitest <code>TZ=Asia/Kolkata</code></td><td>A user's browser zone drives display; a date typed at 00:30 IST is correct (fixed bug)</td></tr>
+</table></div>
+
+<h3 id="s39-boundaries">Inclusive vs exclusive and boundary rules</h3>
+<div class="tw"><table>
+<tr><th>Rule</th><th>Semantics</th><th>Location</th><th>Off-by-one risk</th></tr>
+<tr><td>Reward rule and milestone active window</td><td><code>active_from</code> inclusive, <code>active_to</code> exclusive</td><td><code>RewardRule.isActiveOn</code></td><td>End-date-and-clone on "today" never overlaps; UI must show exclusive end</td></tr>
+<tr><td>Reward report range</td><td>inclusive both ends; window expansion covers whole cap windows</td><td><code>evaluate</code></td><td>None</td></tr>
+<tr><td>Reward effective date</td><td>settlement_date ?? transaction_date</td><td><code>effectiveDate</code></td><td>A purchase near month end may fall in the next cycle once settled</td></tr>
+<tr><td>Anniversary year</td><td>anchor day clamped to month length (Feb 29 → 28); window = anchor this year, or last year if still in future, to the day before next anchor</td><td><code>anniversaryOnYear</code>, <code>windowContaining</code></td><td>None found</td></tr>
+<tr><td>Statement cycle</td><td>real statement period rows (non-rejected); fallback calendar month with flag</td><td><code>windowContaining</code></td><td>Gaps between statements fall back silently (flag only)</td></tr>
+<tr><td>Balance anchor</td><td>post-anchor = transaction_date <em>strictly after</em> period_end</td><td><code>BalanceMath</code></td><td>Anchor-day transactions posted after the cut are dropped until the next statement</td></tr>
+<tr><td>Gmail watermark</td><td>create iff date ≥ ingest_from_date (inclusive)</td><td><code>GmailTransactionWriter</code></td><td>None</td></tr>
+<tr><td>Gmail discovery window</td><td>after: lastListedAt − 15 min; backfill after: floor before: earliestCovered + 1 day; floor ≥ today − 365 d</td><td><code>discoverMessages</code></td><td>Silent 365-day clamp</td></tr>
+<tr><td>Statement match window</td><td>|Δdays| ≤ 3</td><td><code>TransactionMatcher</code></td><td>Weekend posting beyond 3 days creates a duplicate row</td></tr>
+<tr><td>Upload duplicate window</td><td>same day only (0)</td><td><code>FileIngestionService</code></td><td>Posting-date shifts miss duplicates</td></tr>
+<tr><td>Report ranges</td><td>inclusive both ends; this_week ISO Monday; FY start month 4; previous period calendar-aligned for named, flat shift for rolling; <code>after</code>/<code>before</code> unbounded in metadata</td><td><code>DateRangeResolver</code></td><td>"today" zone; quarter is calendar even under FY grouping</td></tr>
+<tr><td>Dividend FY</td><td>month ≥ 4 → FY starts this year</td><td><code>DividendService</code>, <code>ChatGroundingService</code>, <code>LoanTaxSummaryDatasource</code> (payment date), client loans (hardcoded April)</td><td>Four implementations; server FY configurable, client fixed</td></tr>
+<tr><td>Loan due dates</td><td><code>firstEmiDate.plusMonths(k)</code>; 31st → 28th forever after February</td><td><code>LoanScheduleService</code></td><td>Real banks return to the 31st; untested</td></tr>
+<tr><td>Loan event application</td><td>event applies to installment k iff effectiveDate <em>strictly before</em> dueDate_k</td><td><code>compute</code></td><td>Event dated on a due date takes effect the following month</td></tr>
+<tr><td>Loan outstanding "as of today"</td><td>last installment with due date ≤ today</td><td><code>compute</code></td><td>zone</td></tr>
+<tr><td>Match suggestions</td><td>installments due ≤ today + 7 d (all overdue); transactions ± 7 d</td><td><code>getMatchSuggestions</code></td><td>Unbounded past</td></tr>
+<tr><td>Realized lot term</td><td>holdingDays &gt; 365 → long</td><td>FIFO emit</td><td>Exactly 365 = short; CA-seeded lots reset the clock at ex-date (documented)</td></tr>
+<tr><td>Corporate action ordering</td><td>same-day: seed lots, then CA, then trades</td><td>timeline sort</td><td>A same-day trade after a split is applied post-split</td></tr>
+<tr><td>Dividend suggestion dedup</td><td>±7 days on ex-date (or pay-date)</td><td><code>DividendService</code></td><td>Client seeds pay date = ex date</td></tr>
+<tr><td>F&amp;O expiry parse</td><td>monthly symbols → calendar month end (not last Thursday)</td><td><code>FnoSymbolParser</code></td><td>Wrong expiry date by a few days</td></tr>
+<tr><td>Statement yearless dates</td><td>year injected from period so the date lands inside it</td><td><code>TransactionBuilder</code></td><td>Period spanning New Year handled</td></tr>
+<tr><td>Session and cookie</td><td>365 days server and client, kept in sync by comment</td><td>yml, auth.ts</td><td>Drift risk</td></tr>
+<tr><td>Job retention</td><td>terminal &gt; 30 d deleted; failed artifacts &gt; 7 d</td><td><code>JobJanitor</code></td><td>—</td></tr>
+<tr><td>Gmail retry ladder</td><td>2h, 4h, 8h, 16h, cap 24h; permanent after 5</td><td><code>GmailIngestionService</code></td><td>NO_KEYS burns two days</td></tr>
+<tr><td>Future-dated transactions</td><td>Allowed everywhere (no guard); rewards count them by effective date; balances include them</td><td>—</td><td>Manual typo shows in today's balance</td></tr>
+<tr><td>Weekends and holidays</td><td>Not modelled anywhere</td><td>—</td><td>Prices refresh daily including weekends (no-op or stale)</td></tr>
+</table></div>
+<div class="callout warn"><p><strong>Highest-value fix.</strong> Pin the JVM zone (or replace bare <code>LocalDate.now()</code> with <code>LocalDate.now(ZoneId.of("Asia/Kolkata"))</code>) in <code>DateRangeResolver</code>, the two XIRR call sites, <code>ChatQuotaService</code>, and the loans "today" paths. Until then, whether production reports "today" correctly depends on the OCI VM's TZ, which the repository does not record. <span class="c cr">Unknown</span></p></div>
+</section>
+<section class="sec" id="s40" data-part="VI · Business logic">
+<p class="eyebrow">Section 40</p>
+<h2><span class="n">40</span>Rounding and money precision audit</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Money is <code>BigDecimal</code> in Java and <code>NUMBER(19,4)</code> in Oracle with two scale-2 exceptions; quantities are 8 decimals; rates are stored as percents. Rounding happens at well-defined points inside each engine (HALF_UP unless a reward rule chooses FLOOR) and, for display, once in the client at 2 decimals. The exceptions worth knowing: <code>XirrCalculator</code> uses doubles; client card utilization and the reward rule tester use JavaScript numbers; SQL report aggregates pass through unrounded; the in-memory KPI path rounds differently from the SQL path. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s40-where">Where rounding happens</h3>
+<div class="tw"><table>
+<tr><th>Calculation</th><th>Intermediate</th><th>Final</th><th>Mode</th><th>Location</th><th>Note</th></tr>
+<tr><td>Transaction amount</td><td>none</td><td>stored as given (4 dp column)</td><td>—</td><td>entity</td><td>No <code>setScale</code> anywhere in the transaction module</td></tr>
+<tr><td>Running balance, balance</td><td>Oracle exact / BigDecimal</td><td>none</td><td>—</td><td>SQL window; <code>BalanceMath</code></td><td>Display rounds to 2 dp</td></tr>
+<tr><td>Utilization (server)</td><td>scale 4</td><td>scale 2</td><td>HALF_UP</td><td><code>AccountService</code></td><td>Client tile recomputes in float</td></tr>
+<tr><td>Reward PERCENT</td><td>scale 6</td><td>NONE → 2 dp HALF_UP; FLOOR_RUPEE → 0 dp FLOOR; NEAREST_RUPEE → 0 dp HALF_UP</td><td>per rule</td><td><code>accrue</code>, <code>roundCashback</code></td><td>Per line, before cap clamp</td></tr>
+<tr><td>Reward SLAB</td><td>whole slabs FLOOR</td><td>points floored at pointPrecision 0–2</td><td>FLOOR</td><td><code>floorPoints</code></td><td></td></tr>
+<tr><td>Reward tiers</td><td>per tranche scale 6</td><td>as PERCENT/SLAB</td><td></td><td><code>accrueTiered</code></td><td></td></tr>
+<tr><td>Reward percentages</td><td>—</td><td>2 dp</td><td>HALF_UP</td><td><code>pct</code></td><td></td></tr>
+<tr><td>Points → ₹</td><td>—</td><td>2 dp</td><td>HALF_UP</td><td>recommender</td><td>Default 0.25</td></tr>
+<tr><td>Reward rule tester (client)</td><td>JS double</td><td>display</td><td>—</td><td><code>useRewardRulePreview</code></td><td>Approximation, disclosed</td></tr>
+<tr><td>FIFO lot qty and cost</td><td>—</td><td>qty 8 dp, cost 4 dp</td><td>HALF_UP</td><td><code>calculateHoldingPosition</code></td><td>Charges excluded from cost</td></tr>
+<tr><td>Avg cost, unrealized %, absolute return %</td><td>—</td><td>4 dp; 2 dp; 2 dp</td><td>HALF_UP</td><td>same</td><td></td></tr>
+<tr><td>CA ratios and scale</td><td>10 dp</td><td>8 dp per lot</td><td>HALF_UP</td><td><code>deriveSeeds</code></td><td>Multi-lot seeds may drift below 1e-8</td></tr>
+<tr><td>Charges (Groww schedule)</td><td>each 4 dp</td><td>4 dp</td><td>HALF_UP</td><td><code>ChargeCalculator</code></td><td></td></tr>
+<tr><td>total_charges</td><td>Σ of 8 columns</td><td>4 dp</td><td>—</td><td>@PrePersist</td><td></td></tr>
+<tr><td>XIRR</td><td><strong>double</strong> Newton/bisection</td><td>×100, 2 dp</td><td>HALF_UP</td><td><code>XirrCalculator</code>, <code>calculateXirrPercentage</code></td><td>Only double-precision money math in the server</td></tr>
+<tr><td>Dividend estimate</td><td>—</td><td>2 dp</td><td>HALF_UP</td><td>suggestions</td><td></td></tr>
+<tr><td>Import price</td><td>value / qty</td><td>4 dp</td><td>HALF_UP</td><td><code>GrowwStocksParser</code></td><td></td></tr>
+<tr><td>Reconciliation cost/unit</td><td>value / qty</td><td>8 dp</td><td>HALF_UP</td><td><code>BrokerReconciliationService</code></td><td></td></tr>
+<tr><td>EMI</td><td>DECIMAL64</td><td>2 dp</td><td>HALF_UP</td><td><code>calculateAnnuityEmi</code></td><td></td></tr>
+<tr><td>Installment interest</td><td>—</td><td>2 dp immediately</td><td>HALF_UP</td><td><code>compute</code></td><td>Principal and closing inherit scale; DTO re-rounds to 2 dp; last row absorbs residue</td></tr>
+<tr><td>Effective APR</td><td>double (XIRR)</td><td>2 dp</td><td>HALF_UP</td><td><code>calculateEffectiveApr</code></td><td></td></tr>
+<tr><td>Statement parser tolerances</td><td>—</td><td>0.011 per row; 0.51 whole statement and card checks</td><td>—</td><td><code>Tokens.EPS</code>, engine</td><td>Absorbs accumulated rounding</td></tr>
+<tr><td>Report SQL aggregates</td><td>Oracle NUMBER</td><td>none</td><td>—</td><td>executors</td><td>Client formats</td></tr>
+<tr><td>Report in-memory AVG</td><td>—</td><td>4 dp</td><td>HALF_UP</td><td><code>InMemoryReportExecutor</code></td><td>Differs from SQL AVG precision</td></tr>
+<tr><td>KPI change %</td><td>SQL: scale 6 then ×100 scale 2; memory: scale 4 then ×100</td><td>2 dp / unrounded</td><td>HALF_UP</td><td>two executors</td><td>Divergent</td></tr>
+<tr><td>Client display</td><td>—</td><td>2 dp</td><td>Intl (half-even per spec)</td><td><code>formatMoney</code></td><td>Applied once; 4-dp values round-trip untouched</td></tr>
+</table></div>
+
+<h3 id="s40-example">Worked example: one purchase through every layer</h3>
+<div class="flow">Purchase ₹1,000.00 on a card with a ₹100.00 convenience fee, rule 2 % EXCLUDE_FEE, NONE rounding, ₹50/month cap with ₹40 already used
+  stored:      amount 1000.0000 DEBIT, convenience_fee 100.0000
+  basis:       1000.0000 − 100.0000 = 900.0000
+  raw:         900.0000 × 2 / 100 = 18.000000            (scale 6)
+  rounded:     18.00                                     (scale 2 HALF_UP)
+  clamp:       remaining = 50 − 40 = 10.00 → award 10.00  PARTIAL_CAP
+  report:      cashbackInr += 10.00; fees += 100.00; effective = gross + discounts − fees
+  display:     formatMoney → "₹10.00"; balance shows −₹1,000.00 (fee is inside the amount)</div>
+<div class="flow">Same purchase in a report KPI "spend this month" with a category filter matching two of its categories
+  SQL:         SUM(CASE type='CREDIT' THEN amount ELSE −amount END) over the fanned-out join → −2,000.0000 (double counted)
+  client:      formatMeasureValue → "−₹2,000.00"
+  chat:        v_chat_transactions LISTAGG → one row → −1,000.00</div>
+
+<h3 id="s40-findings">Findings</h3>
+<ul>
+<li><span class="c ph">High</span> Category fan-out changes totals, not rounding, but it is the largest numeric discrepancy in the system.</li>
+<li><span class="c pm">Medium</span> <code>XirrCalculator</code> is double-precision and untested; acceptable for a percentage but worth a golden test.</li>
+<li><span class="c pm">Medium</span> KPI comparison rounding and defaults differ between SQL and in-memory datasources.</li>
+<li><span class="c pm">Medium</span> Scale-2 columns (<code>account_broker_details.cash_balance</code>, <code>sips.amount</code>) vs scale-4 elsewhere.</li>
+<li><span class="c pl">Low</span> Client float math for utilization and the reward tester is display-only.</li>
+<li><span class="c pl">Low</span> Rates stored as percent (8.5000) consistently; a future fraction-scale column would be a ×100 trap.</li>
+<li>No integer overflow risk: all money is BigDecimal / NUMBER(19,4) (max ~10^15).</li>
+<li>Currency: every column defaults INR; <code>instruments.currency</code> exists but no conversion logic anywhere. Multi-currency is not implemented. <span class="c cg">Confirmed</span></li>
+</ul>
+</section>
+<nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/server-api.html"><small>Previous</small>Server and API</a><a class="next" href="/handbook/rules.html"><small>Next</small>Rules, decisions and scenarios</a></nav>
+  </main>
+</div>
+</div>
+<script src="/handbook/handbook.js" defer></script>
+</body>
+</html>

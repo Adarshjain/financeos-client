@@ -21,6 +21,11 @@ const nextConfig = {
         source: '/api/v1/:path*',
         destination: `${api}/api/v1/:path*`,
       },
+      // The static system reference lives in public/handbook; give it a clean entry URL.
+      {
+        source: '/handbook',
+        destination: '/handbook/index.html',
+      },
     ];
   },
 };

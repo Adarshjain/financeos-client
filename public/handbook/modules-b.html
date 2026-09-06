@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="FinanceOS system and product reference, reverse-engineered from the code. Modules B · investments, rewards, loans, reports, LLM and chat.">
+<title>FinanceOS Handbook · Modules B · investments, rewards, loans, reports, LLM and chat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/handbook/handbook.css">
+</head>
+<body data-page="modules-b.html">
+<div class="shell">
+<aside class="side" id="side">
+  <div class="side-head">
+    <div class="brand">FinanceOS Handbook <small>v1</small></div>
+    <div class="brand-sub">System &amp; product reference, reverse-engineered from code · 2026-09-06</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search sections and text…" autocomplete="off" aria-label="Search">
+      <kbd>/</kbd>
+    </div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="side-foot">
+    <button id="expandAll" type="button">Expand all</button>
+    <button id="collapseAll" type="button">Collapse all</button>
+    <span style="margin-left:auto">Source of truth: code</span>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="burger" id="burger" type="button" aria-label="Open navigation">☰ Sections</button>
+    <div class="crumb" id="crumb"><b>FinanceOS Handbook</b></div>
+    <button id="toTop" type="button">↑ Top</button>
+  </div>
+  <div class="results" id="results" aria-live="polite">
+    <button class="close" id="closeResults" type="button">Close ✕</button>
+    <h3 id="resultsTitle"></h3>
+    <div id="resultsList"></div>
+  </div>
+  <main class="content" id="content">
+<section class="sec" id="m-investments" data-part="II · Modules">
+<p class="eyebrow">Module</p>
+<h2><span class="n">M6</span>Investments: instruments, prices, positions, returns, dividends, SIPs, corporate actions, F&amp;O, imports</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>The portfolio tracker for stocks, ETFs and mutual funds held in "broker" accounts. A user maintains an instrument catalog (symbol, exchange, ISIN, AMFI code, Yahoo ticker), records buy and sell trades with itemized charges, and sees positions (FIFO lots, average cost, current value, realized and unrealized P&amp;L, XIRR), dividends, and SIP progress. A daily job at 19:00 IST refreshes prices from AMFI (mutual funds) and Yahoo Finance (stocks, ETFs). Corporate actions (split, bonus, demerger, merger with fractional cash-in-lieu) rewrite lots without re-entering trades. F&amp;O is a standalone realized-only ledger. Broker exports are imported through two pipelines: a plain importer (used in practice only for mutual-fund CAS PDFs) and a reconciliation pipeline that uses the broker's tax-P&amp;L statement to separate intraday square-offs from delivery holdings. <span class="c cg">Confirmed</span></p>
+<p>Two facts shape everything: <strong>nothing about a position is stored</strong> (every read replays all trades and corporate actions through FIFO), and <strong>charges are excluded from cost basis</strong> (only XIRR is fee-aware), which contradicts the original plan document. Dependents: net worth via <code>HoldingValuationService.getBrokerMarketValue</code>, the report datasources positions / realized_lots / portfolio_value / fno_trades, the chat portfolio tool, and the investments pages.</p></div>
+
+<h3 id="m-inv-l1">Level 1 · Product view</h3>
+<div class="tw"><table>
+<tr><th>User's mental model</th><th>Code's model</th><th>Mismatch</th></tr>
+<tr><td>"I own N shares"</td><td><code>Holding</code> (broker account × instrument) has no quantity; quantity is derived on every read by <code>InvestmentService.calculateHoldingPosition</code></td><td>Editing an old trade changes today's numbers instantly, with no point-in-time record</td></tr>
+<tr><td>"P&amp;L includes brokerage and STT"</td><td>Realized, unrealized, average cost and absolute return use clean prices; charges are a separate total; only XIRR nets them</td><td>A flat sale shows ₹0 P&amp;L while fees were lost <span class="c ph">High</span></td></tr>
+<tr><td>"I typed a trade, fees were applied"</td><td><code>ChargeCalculator</code> (Groww schedule) runs only in the reconciliation import; manual trades have zero charges unless typed</td><td>Manual and imported trades differ silently</td></tr>
+<tr><td>"SIP automates investing"</td><td><code>Sip</code> is a plan row; progress counts <em>any</em> manual buy in the (broker, instrument, date) window; nothing is auto-created</td><td>No <code>sip_id</code> on transactions</td></tr>
+<tr><td>"A corporate action is my event"</td><td><code>corporate_actions</code> is global with no <code>user_id</code>: shared market facts</td><td>One user's entry affects everyone holding that instrument; no dedup guard</td></tr>
+<tr><td>"F&amp;O trades are trades"</td><td><code>FnoTrade</code> stores a closed round trip: buy value, sell value, charges, realized P&amp;L</td><td>No open positions, no mark-to-market</td></tr>
+<tr><td>"I upload my Zerodha file, it imports"</td><td>Client wizard offers mf_cas, reconcile_zerodha, reconcile_groww; the plain importer's Zerodha and Groww parsers are never called by the UI</td><td>Two pipelines, one reachable for equities</td></tr>
+</table></div>
+<p><strong>Routes</strong>: <code>/investments</code> (holdings), <code>/investments/tradebook</code>, <code>/investments/instruments</code>, <code>/investments/dividends</code>, <code>/investments/corporate-actions</code>, <code>/investments/fno</code>; the import wizard dialog is reachable from the holdings and F&amp;O pages. All client mutations invalidate the whole <code>keys.investments.all</code> prefix; the module uses no <code>router.refresh()</code>.</p>
+
+<h3 id="m-inv-fifo">Calculation: FIFO position engine</h3>
+<p><span class="path">domain/investment/InvestmentService.calculateHoldingPosition:427-762</span> builds one date-sorted timeline per holding and walks it once. Same-day order: CA-seeded lots (0) → corporate actions (1) → transactions (2), so a CA applies to the lots that existed before that day's trades.</p>
+<ul>
+<li><strong>Day collapse</strong>: when a <code>trade_settlement_classifications</code> row exists for (broker, instrument, day), that day's raw rows collapse into at most one synthetic delivery buy and one delivery sell (residual after removing intraday quantity and value); the intraday net (sell value − buy value) goes straight to <code>intradayRealized</code> and to an XIRR flow of <code>sell − buy − dayCharges</code>.</li>
+<li><strong>Buy</strong>: push <code>Lot(qty, costPerUnit = price, buyDate)</code>. Cost excludes charges (comment at line 601: "Clean cost basis"). XIRR outflow = qty×price + charges.</li>
+<li><strong>Sell</strong>: consume oldest lots; per lot emit a <code>RealizedLot</code> (buy date, sell date, qty, values, P&amp;L, holding days, term = days &gt; 365 ? long : short). Realized = qty×sellPrice − matched cost (gross). XIRR inflow = qty×price − charges. If lots run out, log a warning and stop; the remainder is silently dropped from realized P&amp;L.</li>
+<li><strong>Corporate action</strong>: split/bonus multiply qty by <code>ratioTo/ratioFrom</code> and divide cost per unit by it (openCost invariant); demerger multiplies parent cost per unit by <code>1 − pct/100</code>; merger clears all lots.</li>
+</ul>
+<div class="flow">openQty  = Σ remainingQty                       (scale 8)
+openCost = Σ remainingQty × costPerUnit          (scale 4)
+avgCost  = openCost / openQty                    (scale 4 HALF_UP; 0 if no qty)
+currentValue = openQty × latestPrice | openCost ("at cost" if no price row) | null (qty 0)
+unrealized = currentValue − openCost;   unrealizedPct = unrealized / openCost × 100 (scale 2)
+absoluteReturnPct = (currentValue − openCost + realized + intradayRealized + dividends) / openCost × 100</div>
+<p><strong>Example</strong> (<span class="path">RealizedLotsParityTest</span>): buy 10 @ ₹100, buy 20 @ ₹150, sell 15 @ ₹200 → first lot fully consumed (10 × 100 = ₹1,000), 5 from the second (5 × 50 = ₹250) → realized <strong>₹1,250</strong>; open 15 @ ₹150, openCost ₹2,250. The holding's realized always equals Σ per-lot P&amp;L because both come from the same loop (parity contract with the reports engine).</p>
+<p><strong>Invisible-fee example</strong>: buy 100 @ ₹500 delivery. Groww charges: brokerage min(0.1%, ₹20) = ₹20; STT 0.1% = ₹50; exchange 0.00297% ≈ ₹1.49; SEBI ₹0.05; stamp 0.015% = ₹7.50; GST 18% of (brokerage + exchange + SEBI + DP) ≈ ₹3.88; total ≈ <strong>₹82.91</strong>. The lot still costs ₹500.00/unit. Selling flat at ₹500 shows ₹0 realized while ₹82.91 was lost; only XIRR reflects it. <span class="path">InvestmentService.java:601,661-663,720-730</span>; contradicts <span class="path">plans/investment-tracking-plan.md:154-157</span> ("cost/unit incl. allocated buy charges"). <span class="c cg">Confirmed</span></p>
+<p>A second, lighter lot builder <code>buildOpenLotsBeforeDate</code> (<span class="path">:993-1134</span>) duplicates the timeline and FIFO logic for CA seed derivation and month-end snapshots; the two must be kept in lock-step by hand. <span class="c cg">Confirmed</span></p>
+
+<h3 id="m-inv-xirr">Calculation: XIRR</h3>
+<div class="flow">flows: buy −(qty×price + charges) @ tradeDate | sell +(qty×price − charges) | dividend +amount (gross, TDS not subtracted) @ payDate
+       intraday net per classified day | merger bridge / cash-in-lieu @ ex_date | terminal +currentValue @ LocalDate.now()
+solver: Newton from 10%, ≤100 iterations, tol 1e-7; guards rate ≤ −0.9999 and |f'| &lt; 1e-12
+        fallback bisection on [−0.9999, 10.0], ≤100 iterations, tol 1e-6; null if no sign change
+basis:  Actual/365 (days / 365.0);  result ×100, HALF_UP 2 dp; null for &lt;2 flows, same-sign flows, or NaN</div>
+<p>Same-day-only flows return null. The terminal flow uses bare <code>LocalDate.now()</code> at two call sites (<span class="path">InvestmentService.java:347,715</span>) while every price-feed call uses <code>Asia/Kolkata</code> explicitly; on a UTC server "today" trails IST between 00:00 and 05:30. <span class="c cy">Strongly inferred</span> There is no CAGR anywhere; only XIRR and <code>absoluteReturnPercent</code> exist. <span class="c cg">Confirmed</span> The client performs no P&amp;L or XIRR math; <code>HoldingsTab</code> only re-sums server-computed figures over the filtered subset.</p>
+
+<h3 id="m-inv-ca">Corporate actions</h3>
+<div class="tw"><table class="dt">
+<tr><th>Type</th><th>Parent / transferor lots</th><th>Child / acquirer</th><th>XIRR</th></tr>
+<tr><td>split, bonus</td><td>qty × ratioTo/ratioFrom; cost/unit ÷ same; buy date preserved</td><td>—</td><td>none</td></tr>
+<tr><td>demerger</td><td>cost/unit × (1 − pct/100); qty unchanged</td><td>seed lots: childQty = parentQty × ratioTo/ratioFrom; childCost = parentQty × cost × pct/100</td><td>no flow on parent haircut; child cost baked into openCost</td></tr>
+<tr><td>merger</td><td>all lots cleared; pct forced to 100 server-side</td><td>seed lots at 100% carried cost</td><td>transferor +cost inflow and acquirer −cost outflow at ex_date (break-even bridge)</td></tr>
+<tr><td>fractional (V42)</td><td colspan="2">E = Σ childQty; W = floor(E); F = E − W; per-lot seed scaled by W/E; fractionalCost = F × (Cseed/E); proceeds = cashInLieu × F / total fraction across holders; fractionalRealized = proceeds − fractionalCost</td><td>synthetic flow</td></tr>
+</table></div>
+<p>Examples (from tests): 100 @ ₹100, 1→2 split → 200 @ ₹50. Demerger 20%, ratio 2→1 → parent 100 @ ₹80 (₹8,000), child 50 @ ₹40 (₹2,000). Merger 25→42 → transferor 0, acquirer 168 @ ₹59.52 (₹10,000 carried). Fractional: 121 @ ₹100 merged 100→155 → E 187.55, W 187, F 0.55, cost ₹35.48; cash-in-lieu 0 → realized −₹35.48; cash-in-lieu ₹385 → +₹349.52. <span class="path">MergerCorporateActionTest</span>, <span class="path">DemergerCorporateActionTest</span></p>
+<ul>
+<li>Ratio semantics: always "from units → to units"; the UI says "for a 1:1 bonus, enter 1 → 2". <code>1 → 1</code> is a silent no-op. <span class="c co">Ambiguity</span></li>
+<li>Cash-in-lieu defaults to ₹0 client-side and books a loss until edited; no "unconfirmed" flag. <span class="c ph">High</span></li>
+<li>No unique constraint or check prevents recording the same CA twice; a duplicate split double-multiplies lots on the next read. <span class="c ph">High</span></li>
+<li>Creating a CA never writes <code>instrument_aliases</code>; renames and CAs are unlinked despite being planned together. Deleting a CA leaves the auto-materialized child <code>Holding</code> row.</li>
+<li>Multi-lot seed rounding (10 dp scale, then 8 dp per lot) can drift below 1e-8; cosmetic, untested.</li>
+<li>The list page subtitle mentions "rights issues", which is not a supported type.</li>
+</ul>
+
+<h3 id="m-inv-prices">Prices, catalog, dividends, SIPs</h3>
+<div class="tw"><table>
+<tr><th>Concern</th><th>Behaviour</th><th>Location</th></tr>
+<tr><td>Daily refresh</td><td>Cron <code>0 0 19 * * *</code> Asia/Kolkata enqueues PRICE_REFRESH with dedupKey <code>cron-&lt;date&gt;</code>; runs with an empty UserContext so it refreshes <em>all users'</em> actively held instruments (net open qty &gt; 0) in one pass</td><td><span class="path">PriceSchedulerConfiguration:33-45</span>, <span class="path">PriceRefreshService:47-136</span></td></tr>
+<tr><td>After-trade refresh</td><td><code>PriceRefreshEvent</code> handled AFTER_COMMIT in REQUIRES_NEW; provider failure never rolls back the trade</td><td><span class="path">PriceRefreshEventListener</span></td></tr>
+<tr><td>Providers</td><td>AMFI NAVAll (in-memory cache with no TTL; handler forces reload) for mutual funds; Yahoo v7 quote batches of 50 with a crumb cached 15 min, one refresh retry on 401, per-symbol chart fallback</td><td><span class="path">AmfiPriceProvider</span>, <span class="path">YahooPriceProvider</span></td></tr>
+<tr><td>Price rows</td><td>One row per (instrument, as_of); refresh updates in place; MANUAL rows are never overwritten by a feed and are the only ones editable or deletable</td><td><span class="path">InstrumentService.upsertPrice / updateManualPrice</span></td></tr>
+<tr><td>Catalog search</td><td>Local LIKE, then AMFI (ISIN exact or name, cap 15) and Yahoo search (5-min cache, EQUITY→stock, ETF→etf, mutual funds excluded), deduped by ISIN → AMFI code → Yahoo symbol → symbol+exchange, cap 25</td><td><span class="path">InstrumentSearchService.catalogSearch:31-84</span></td></tr>
+<tr><td>Resolve</td><td>ISIN → AMFI code → Yahoo symbol → (symbol, exchange); an ISIN match is authoritative and overwrites symbol and name, recording the old ones in <code>instrument_aliases</code> (this is how ZOMATO→ETERNAL renames self-heal); other matches fill blanks only</td><td><span class="path">InstrumentSearchService.resolve:121-224</span></td></tr>
+<tr><td>Manual create</td><td>Dedups by ISIN only; duplicate AMFI code or Yahoo symbol without an ISIN is possible</td><td><span class="path">InstrumentService.createInstrument</span></td></tr>
+<tr><td>Dividend suggestions</td><td>Yahoo chart events since the earliest trade per symbol; qty held as of ex-date via <code>openQtyAsOf</code>; dedup ±7 days against existing rows (ex-date, else pay-date); estimate = perUnit × qty (2 dp); accept re-runs dedup. Client seeds pay date = ex date</td><td><span class="path">DividendService.scanSuggestions:175-263</span></td></tr>
+<tr><td>Dividend FY</td><td>FY start = month ≥ 4 ? year : year − 1; label "FY 2025-26"; net = amount − tds</td><td><span class="path">DividendService.getSummary</span></td></tr>
+<tr><td>SIP progress</td><td>expected = dates from start stepped weekly or monthly (day-of-month clamped) to min(today, end); executed = count of buys in the window; missed = max(0, expected − executed)</td><td><span class="path">SipService.computeProgress:134-197</span></td></tr>
+</table></div>
+
+<h3 id="m-inv-fno">F&amp;O</h3>
+<p><code>fno_trades</code> (V44; V43's attempt to add F&amp;O columns to <code>instruments</code> was dropped in V45; V46 fixed a plain TIMESTAMP created_at). One row per closed round trip: <code>realizedPnl = sellValue − buyValue − totalCharges</code>, no long/short branching. Examples: buy ₹5,000, sell ₹7,500, charges ₹25 → ₹2,475; sold ₹6,000, bought back ₹1,500, charges ₹20 → ₹4,480. <code>FnoSymbolParser</code> grammar: monthly future <code>RELIANCE24AUGFUT</code> (expiry = calendar month end, not NSE's last Thursday), monthly option <code>NIFTY24AUG24500CE</code>, weekly option <code>BANKNIFTY2481551000PE</code> (month code 1-9 or O/N/D, day clamped), general option fallback, raw fallback (no weekly futures). Import defaults contract type to future when unset. Dedup by <code>external_ref</code> has no DB constraint. The page-1 reset after filter changes was lost in the component split and patched in <code>FnoView.tsx:58-71</code>. Summary pulls <code>FnoTradeRepository.sumRealizedPnl()</code> into the investments summary card.</p>
+
+<h3 id="m-inv-import">Imports and reconciliation</h3>
+<div class="tw"><table class="dt">
+<tr><th>Wizard mode</th><th>Endpoint</th><th>Service</th><th>Parsers</th><th>Step 2 review UI</th></tr>
+<tr><td>mf_cas</td><td>/imports/preview, /imports/commit (job INVESTMENT_IMPORT_COMMIT)</td><td><code>ImportService</code></td><td><code>CasParser</code> (PDFBox + regex; a .csv would fail at <code>loadPDF</code>)</td><td>none rendered <span class="c ph">High</span></td></tr>
+<tr><td>reconcile_zerodha</td><td>/imports/reconcile/preview (sync), /reconcile/commit (job BROKER_RECONCILE_COMMIT)</td><td><code>BrokerReconciliationService</code></td><td>tradebook CSV + <code>ZerodhaTaxPnlParser</code> XLSX (+ holdings snapshot)</td><td>yes</td></tr>
+<tr><td>reconcile_groww</td><td>same</td><td>same</td><td><code>GrowwOrderHistoryParser</code>, <code>GrowwCapitalGainsParser</code></td><td>yes</td></tr>
+<tr><td>(unreachable)</td><td>/imports/preview with zerodha_tradebook or groww</td><td><code>ImportService</code></td><td><code>ZerodhaTradebookParser</code>, <code>GrowwStocksParser</code> (alias columns, value/qty price fix, XLSX preamble hints)</td><td>—</td></tr>
+</table></div>
+<ul>
+<li><strong>Preview → commit contract</strong>: the server parses the file at preview and echoes every row; the client posts those rows back with skip and instrument choices; commit trusts client-echoed quantities, prices, dates and charges verbatim and re-checks only duplicates and instrument existence. <span class="c pm">Medium trust boundary</span></li>
+<li><strong>Dedup gate</strong>: <code>matchByExternalRefOnly = (source == zerodha_tradebook)</code>; otherwise exact tuple (date, type, qty, price). No tolerance. No DB constraint; concurrent commits could double insert.</li>
+<li><strong>Instrument resolution</strong>: ISIN → local symbol + alias → catalog search (ISIN first) → auto-create shell; <code>likelyDelisted</code> (ISIN present, search exhausted) sets <code>yahooSymbol = null</code> so the instrument is manual-price-only and valued at cost. Preview and commit implement the chain separately.</li>
+<li><strong>Charges</strong> come from the file only (Zerodha and Groww exports have none; CAS attaches stamp duty within 3 days). Reconciliation attaches Zerodha delivery-sell charges from the tax-P&amp;L rows.</li>
+</ul>
+<h4>Reconciliation algorithm (two sources)</h4>
+<ol class="trace">
+<li><span class="lyr">dedup</span>Executions (tradebook) deduped by the full tuple (tradeId, orderId, date, isin, type, qty, price, time); tradeId alone is not unique</li>
+<li><span class="lyr">classify</span>Tax-P&amp;L rows bucketed INTRADAY / STCG / LTCG / BUYBACK / FNO → <code>intradayMap[isin][date] = {qty, buyValue, sellValue}</code></li>
+<li><span class="lyr">split</span>Per (scrip, day), walk executions in order: intraQty = min(remaining target, e.qty), rest delivery; split rows get refs suffixed -I / -D</li>
+<li><span class="lyr">events</span>Day-level delivery events by value subtraction: delivBuyQty = dayBuyQty − intradayQty, delivBuyVal = dayBuyVal − intraBuyVal</li>
+<li><span class="lyr">fifo</span>Delivery-only FIFO per scrip; unmatched sells → <code>DATA_GAP</code>; classifier delivery sells exceeding the tradebook → synthesized <code>CA_EXIT_</code> sell at average price with <code>OFF_MARKET_EXIT</code> (buybacks, tenders)</li>
+<li><span class="lyr">commit</span>Writes <code>investment_transactions</code> (source import, charges verbatim), <code>trade_settlement_classifications</code> (insert-if-absent only, never updates), <code>fno_trades</code>; fires a price refresh per instrument</li>
+</ol>
+<p>Example (<span class="path">IntradayClassificationTest.partialIntraday_straddlingBuy_isSplit</span>): buy 15 @ ₹100 and sell 10 @ ₹110 same day with classifier intraday 10 → the buy splits into 10 intraday + 5 delivery; holdings show 5 @ ₹100; intraday P&amp;L ₹100 stays out of cost basis. The Java matches <span class="path">scripts/reconcile_trades.py</span> and adds per-execution tagging, off-market exits and snapshot validation. Without a tax-P&amp;L file everything is treated as delivery. The per-row <code>settlement_type</code> is a display hint that "will lie on mixed straddle days" (V40 comment); <code>recomputeClassificationForDay</code> rebuilds the authoritative day row after every manual create, update or delete using min(intraday buys, intraday sells).</p>
+
+<h3 id="m-inv-data">Data model</h3>
+<div class="tw compact"><table>
+<tr><th>Table</th><th>Key facts</th></tr>
+<tr><td><code>instruments</code> (V35, V37)</td><td>type CHECK stock|mutual_fund|etf; unique functional index on isin; unique (symbol, exchange) when both non-null; no uniqueness on amfi_code or yahoo_symbol</td></tr>
+<tr><td><code>instrument_prices</code> (V35)</td><td>UNIQUE(instrument_id, as_of); close NUMBER(19,4); source AMFI|YAHOO|MANUAL</td></tr>
+<tr><td><code>instrument_aliases</code> (V39)</td><td>old_symbol, old_name, source USER_EDIT|IMPORT_RESOLVE; append-only</td></tr>
+<tr><td><code>holdings</code> (V35)</td><td>UNIQUE(user, broker_account, instrument); no qty/cost columns; <code>@Filter</code></td></tr>
+<tr><td><code>investment_transactions</code> (V35, V40)</td><td>type buy|sell; settlement_type delivery|intraday (hint); quantity NUMBER(19,8), price NUMBER(19,4); 8 charge columns + total_charges recomputed in <code>@PrePersist</code>; CHECK qty &gt; 0, price ≥ 0; source, external_ref</td></tr>
+<tr><td><code>trade_settlement_classifications</code> (V40)</td><td>UNIQUE(broker_account, instrument, trade_date); intraday_qty, buy/sell values; authoritative</td></tr>
+<tr><td><code>dividends</code> (V36)</td><td>type dividend|interest|other; amount ≥ 0; per_unit, tds, ex_date nullable, pay_date NOT NULL; source manual|suggested|import</td></tr>
+<tr><td><code>sips</code> (V38)</td><td>amount NUMBER(19,2) (inconsistent scale); frequency weekly|monthly; day_of_month; active</td></tr>
+<tr><td><code>corporate_actions</code> (V36, V39, V41, V42)</td><td>global, no user_id; type CHECK; ratio_from/to &gt; 0; ex_date; target_instrument_id; cost_allocation_pct 0-100; fractional_cash_in_lieu ≥ 0; no uniqueness</td></tr>
+<tr><td><code>fno_trades</code> (V44, V46, V79 FK)</td><td>denormalized contract fields, no FK to instruments; buy_value, sell_value, total_charges, realized_pnl stored; external_ref (no unique)</td></tr>
+</table></div>
+<p>Precision: quantities 8 dp, prices and money 4 dp, ratio intermediates 10 dp, all HALF_UP. Dates are LocalDate throughout.</p>
+
+<h3 id="m-inv-risk">Invariants, idempotency, failure modes</h3>
+<div class="tw"><table>
+<tr><th>Invariant</th><th>Enforced</th><th>Gap</th></tr>
+<tr><td>Sell ≤ held</td><td><code>createTransaction</code> and <code>updateTransaction</code> (service)</td><td>Not at DB; imports can create over-sold histories that under-report realized P&amp;L</td></tr>
+<tr><td>Holding realized = Σ lot realized</td><td>same loop</td><td>—</td></tr>
+<tr><td>One price per day; one classification per day</td><td>DB unique</td><td>—</td></tr>
+<tr><td>No duplicate CA</td><td>nowhere</td><td>double application</td></tr>
+<tr><td>total_charges = Σ parts</td><td>JPA lifecycle</td><td>raw SQL could desync</td></tr>
+<tr><td>Broker account for F&amp;O</td><td>create/update</td><td><code>importTrades</code> does not re-check</td></tr>
+</table></div>
+<ul>
+<li><strong>Idempotency</strong>: price upsert idempotent per day; price job deduped (<code>cron-date</code>, <code>manual-instrumentId</code>); dividend accept re-dedups; manual create never idempotent; import commit dedup is service-only; classification commit insert-if-absent (a re-run with corrected data cannot overwrite). No <code>@Version</code> anywhere.</li>
+<li><strong>Failure modes</strong>: provider outages degrade to "no price / no suggestions" with per-instrument reasons (<code>describeFetchFailure</code>); one bad holding does not blank the portfolio (per-holding try/catch in <code>getAllPositions</code> and <code>getSummary</code>); reconciliation warnings never block commit; commit-time constraint violations are caught per row and logged (silent partial failure).</li>
+<li><strong>Dead code</strong>: <code>dialogs/InstrumentDialog.tsx</code> and <code>dialogs/DividendDialog.tsx</code> (+ hook) unimported (an abandoned refactor; the dead dialog offers bond/reit/other types that exist nowhere); <code>FnoTradeRepository.existsBy…SellValue</code> uncalled; one <code>checkDuplicateInDb</code> overload uncalled; plain importer's equity parsers unreachable from the UI.</li>
+</ul>
+
+<h3 id="m-inv-tests">Tests</h3>
+<p>Covered: <code>ChargeCalculatorTest</code>, <code>IsinFirstSearchTest</code>, <code>YahooHostsTest</code>, <code>HoldingValuationServiceTest</code>, <code>RealizedLotsParityTest</code>, <code>DividendServiceTest</code>, <code>DividendFySummaryTest</code>, <code>MergerCorporateActionTest</code> (7), <code>DemergerCorporateActionTest</code> (2), <code>FnoTradeServiceTest</code> (6), <code>FnoSymbolParserTest</code> (4), <code>InvestmentServiceFnoTest</code>, <code>ImportServiceTest</code> (2), <code>IntradayClassificationTest</code> (4), <code>BrokerReconciliationServiceTest</code> (4), <code>ZerodhaTaxPnlParserTest</code>. <strong>Untested</strong>: over-sell tolerance path, <code>XirrCalculator</code> in isolation, MANUAL-price skip, <code>SipService.computeProgress</code>, every import parser at unit level (Groww, Zerodha tradebook, CAS), both Groww reconciliation parsers, <code>reconcile/commit</code> persistence (zero coverage), off-market exits, snapshot validation, fractional demerger, multi-lot drift, duplicate CA.</p>
+
+<h3 id="m-inv-unk">Open questions</h3>
+<div class="qa"><b>Product</b> Is excluding charges from displayed P&amp;L intentional given the plan said the opposite? Should CAGR exist?</div>
+<div class="qa"><b>Product</b> Should duplicate corporate actions be blocked? Should cash-in-lieu ₹0 be flagged as unconfirmed?</div>
+<div class="qa"><b>Product</b> Is F&amp;O deliberately realized-only? Should "first commit wins" for classifications be overridable?</div>
+<div class="qa"><b>Technical</b> Keep or delete the unreachable plain-import equity parsers and the dead dialogs? Why is the CAS Step-2 review missing?</div>
+<div class="qa"><b>Technical</b> Is the production JVM zone UTC (XIRR terminal-date skew)? Should manual instrument create dedup on AMFI code and Yahoo symbol?</div>
+<div class="qa"><b>Data</b> Should <code>investment_transactions.sip_id</code> exist? Do mutual-fund dividend plans need a suggestion path?</div>
+</section>
+<section class="sec" id="m-rewards" data-part="II · Modules">
+<p class="eyebrow">Module</p>
+<h2><span class="n">M7</span>Credit-card rewards engine</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Answers three questions for an Indian credit-card user: <em>what did I actually earn</em> (rewards report and per-transaction lines), <em>what would this swipe earn</em> (rule tester and simulator), and <em>which of my cards should I use</em> (the Card Picker). It is a single <strong>stateless, compute-on-read</strong> engine: nothing about "how much a transaction earned" is ever stored. Every report, lines page or recommendation re-runs the user's rule set over the ledger. <span class="c cg">Confirmed</span> <span class="path">domain/reward/RewardCalculationService.java:47-55</span> (javadoc: "Pure compute-on-read rewards calculator. No persisted reward state").</p>
+<p>Why it exists: Indian issuer cards have idiosyncratic rate, cap, tier and milestone shapes (Axis ACE shared caps, Amex slab points, HDFC Infinia tiers); the research doc in <span class="path">plans/credit-card-reward-calculation-research.md</span> catalogues 16 issuers and the engine primitives were derived from it. <span class="c cy">Strongly inferred</span> from plan docs; the code itself does not state the rationale.</p></div>
+
+<h3 id="m-rewards-l1">Level 1 · Product view</h3>
+<div class="grid3">
+<div class="tile"><h4>Who uses it</h4><p>A cardholder with one or more credit cards who wants to know real earned value and to pick the best card per purchase.</p></div>
+<div class="tile"><h4>What they configure</h4><p>Reward rules (match conditions + accrual), cap buckets shared across rules, milestones, and per-account settings (anniversary date, default reward type, point value in ₹).</p></div>
+<div class="tile"><h4>What they get</h4><p>Per-account report (cash ₹ and points kept separate), per-transaction lines with a reason code, cap and milestone status, per-cardholder split, ranked card recommendations.</p></div>
+</div>
+<p><strong>Product model vs implementation model.</strong> Users think "my card". Code has two things: <code>Account</code> (the card product or line, e.g. "HDFC Infinia") and <code>Cardholder</code> (the person swiping: primary or add-on). A physical plastic is a third thing, <code>Card</code>. Reward scoping keys off account + cardholder, never off the plastic, so a lost-card reissue never disturbs reward configuration. <span class="c cg">Confirmed</span> V82 rewrote <code>reward_rules.card_id</code> to <code>cardholder_id</code> (<span class="path">V82__credit_card_model_v2.sql:128-138</span>).</p>
+<p>Users also assume "one deal per transaction". In code a transaction can earn under several rules at once: one <em>exclusive</em> winner plus every matching <em>additive</em> bonus, each with its own cap. A transaction id is therefore not a unique key for a report row.</p>
+
+<h3 id="m-rewards-l2">Level 2 · How it behaves</h3>
+<h4>Rule matching decision table</h4>
+<p>All predicates are optional; unset means wildcard. All axes are ANDed; the category/MCC axis is an internal OR. <span class="path">RewardCalculationService.matches():555-615</span></p>
+<div class="tw"><table class="dt">
+<tr><th>#</th><th>Axis</th><th>Rule is rejected when…</th><th>Null / empty behaviour</th></tr>
+<tr><td>1</td><td>Cardholder scope</td><td>rule has a cardholder and the transaction's cardholder differs, or cannot be resolved on a 2+-cardholder account</td><td>unset → any cardholder</td></tr>
+<tr><td>2</td><td>Category OR MCC</td><td>rule lists categories and/or MCCs and the transaction hits neither</td><td>both unset → skipped</td></tr>
+<tr><td>3</td><td>Merchant pattern</td><td>neither description nor sourced description matches (CONTAINS / STARTS_WITH / EXACT / REGEX, case-insensitive)</td><td>unset → wildcard</td></tr>
+<tr><td>4</td><td>Channel</td><td>channel list non-empty and transaction channel null or not listed</td><td>empty → wildcard</td></tr>
+<tr><td>5</td><td>Day of week</td><td>day list non-empty and day not listed</td><td>empty → wildcard</td></tr>
+<tr><td>6–7</td><td>Amount band</td><td><code>amount &lt; minAmount</code> or <code>amount &gt; maxAmount</code></td><td>null → no bound</td></tr>
+<tr><td>8</td><td>EMI treatment</td><td>EXCLUDE_EMI and isEmi, or ONLY_EMI and not isEmi</td><td>INCLUDE → wildcard</td></tr>
+<tr><td>9</td><td>International</td><td>EXCLUDE_INTL and isIntl, or ONLY_INTL and not isIntl</td><td>INCLUDE → wildcard</td></tr>
+</table></div>
+<p><strong>Fee treatment is not a predicate.</strong> <code>EXCLUDE_FEE</code> nets the labelled convenience fee out of the basis <em>after</em> a match: basis = max(amount − convenienceFee, 0). <span class="path">RewardCalculationService.basisFor():527-532</span></p>
+
+<h4>Precedence: exclusive chain, additive stack</h4>
+<p>There is no single total order across all rules. <code>resolveTxnFacts()</code> partitions matching rules by <code>stacking</code>: <span class="path">RewardCalculationService.java:449-525</span></p>
+<ol>
+<li><strong>EXCLUSIVE rules</strong> in descending <code>priority</code> (ties by <code>created_at</code> ascending) form a first-match chain. A 0% exclusive rule that matches <em>wins and blocks</em> everything below it (this is how "no rewards on rent" is modelled). If the winner's cap is exhausted: <code>FALL_THROUGH</code> (default) tries the next exclusive rule; <code>STOP</code> emits a zero line and ends the chain.</li>
+<li><strong>ADDITIVE rules</strong> each accrue, clamp against their own cap, and always emit a line, stacking on the exclusive result. Priority among additive rules is cosmetic.</li>
+</ol>
+<p>Worked example from <span class="path">RewardRecommendationServiceTest.exclusiveFallThrough_plusAdditiveStacking</span>: 5% exclusive with a ₹0 cap (exhausted) falls through to a 1% exclusive base (₹10 on ₹1,000), plus a 0.5% additive bonus (₹5) → ₹15 across two lines. The reorder endpoint reassigns priority = N…1 from the UI order, so drag order <em>is</em> the exclusive-chain order. <span class="path">RewardRuleService.reorder():139-164</span></p>
+
+<h4>What counts as eligible spend</h4>
+<div class="tw"><table class="dt">
+<tr><th>Condition</th><th>Outcome</th><th>Reason code</th></tr>
+<tr><td>Transaction type is not DEBIT</td><td>Skipped entirely (no line)</td><td>—</td></tr>
+<tr><td>Member of a TRANSFER, CC_PAYMENT or REVERSAL link</td><td>Never earns</td><td><code>TRANSFER_OR_PAYMENT</code></td></tr>
+<tr><td>User-excluded transaction</td><td>Never earns</td><td><code>TXN_EXCLUDED</code></td></tr>
+<tr><td>REFUND-link anchor with linked credits ≥ amount</td><td>Basis 0</td><td><code>FULLY_REFUNDED</code></td></tr>
+<tr><td>REFUND-link anchor, partial</td><td>Basis = amount − credits, evaluated normally</td><td>normal codes</td></tr>
+<tr><td>No rule matches</td><td>Zero line</td><td><code>NO_RULE</code></td></tr>
+</table></div>
+<p>Refund netting is retroactive at the <em>original purchase's</em> effective date, not the refund's. <span class="c cg">Confirmed</span> <span class="path">RewardCalculationService.java:354-380,416</span>. FEE and EMI link types exist in <code>LinkType</code> but are not referenced by the engine. <span class="c cr">Unknown</span> whether that is intentional.</p>
+
+<h3 id="m-rewards-calc">Calculations</h3>
+<details class="lvl l3" open><summary><span class="lv">L3</span>Accrual formulas (PERCENT, SLAB, tiered)</summary><div class="body">
+<div class="flow">PERCENT:  raw = basis × percentRate / 100          (scale 6, HALF_UP)
+          earned = round(raw, rounding)             NONE → scale 2 HALF_UP | FLOOR_RUPEE → scale 0 FLOOR | NEAREST_RUPEE → scale 0 HALF_UP
+SLAB:     slabs = floor(basis / slabSize)           (whole slabs only)
+          points = floor(slabs × pointsPerSlab, pointPrecision)   (pointPrecision 0–2, default 0)
+TIERED:   for each tier in order:
+            headroom = tier.upTo − position          (∞ for the open last tier)
+            tranche  = min(remaining, headroom)
+            total   += PERCENT ? tranche×rate/100 : floor(tranche/slabSize)×rate
+            position += tranche</div>
+<ul>
+<li>Example PERCENT: ₹1,000 at 2% → ₹20.00. Example SLAB: ₹1,000, slab ₹100, 10 pts/slab → 100 points.</li>
+<li>Example tiered (marginal, not whole-amount): tiers [≤₹10,000 @5%, then 1%], position 0, one ₹12,000 spend → ₹10,000×5% + ₹2,000×1% = <strong>₹520</strong>. Tier position accumulates across transactions in the window, partitioned per cardholder when scope is PER_CARDHOLDER. <span class="path">accrueTiered():661-694</span>; tests <span class="path">RewardRecommendationServiceTest.tieredRule_accruesAtMarginalTrancheRate</span>, <span class="path">RewardCardScopingTest.test22</span>.</li>
+<li>Example fee treatment: ₹1,000 charged with ₹100 surcharge, 2% EXCLUDE_FEE → 2% × ₹900 = <strong>₹18.00</strong>; fee ≥ basis → ₹0 with reason <code>FEE_ONLY</code>; the fee portion does not advance tier progress. <span class="path">RewardCalculationFeeTreatmentTest</span></li>
+<li>All server math is <code>BigDecimal</code>; no double or float in the engine. <span class="c cg">Confirmed</span></li>
+</ul></div></details>
+
+<details class="lvl l3"><summary><span class="lv">L3</span>Caps and cap buckets: clamp formula and boundary behaviour</summary><div class="body">
+<div class="flow">award     = min(rawAccrual, perTxnCap ?? ∞)
+remaining = cap − used                     (counter key = owner, cardholderId|null, windowStart)
+if remaining ≤ 0       → award = 0                CAP_EXHAUSTED
+elif award > remaining → award = remaining        PARTIAL_CAP   (partial credit, not all-or-nothing)
+else                   → award unchanged          MATCHED</div>
+<ul>
+<li><strong>Owner</strong> is the shared bucket id when <code>cap_bucket_id</code> is set (bucket cap and window replace the rule's own), else the rule id. A shared bucket is drained jointly by every rule pointing at it. <span class="path">capOwner():779-781</span>, <span class="path">effectiveCap():731-741</span></li>
+<li><strong>Counter scope</strong>: ACCOUNT (one counter) or PER_CARDHOLDER. An unattributed transaction charges the <em>primary</em> cardholder's counter for counting, but for <em>matching</em> a cardholder-scoped rule it only resolves when exactly one cardholder exists. This asymmetry is deliberate per code comments. <span class="path">counterCardholderId():1164-1175</span>, <span class="path">matchCardholderId():1154-1162</span></li>
+<li>Example: 2% rule, ₹50/month cap per cardholder. Unattributed ₹2,000 → ₹40 (primary counter 40/50). Primary's own ₹1,000 (raw ₹20) → ₹10 PARTIAL_CAP. Add-on's ₹2,000 → ₹40 on a separate counter. <span class="path">RewardCardScopingTest.perCardholderCap_unattributedSpend…</span></li>
+<li><strong>Windows</strong> (<code>CapWindow</code>): DAY, CALENDAR_MONTH, QUARTER (Jan/Apr/Jul/Oct), CALENDAR_YEAR, STATEMENT_CYCLE (from real non-rejected <code>Statement</code> periods; falls back to CALENDAR_MONTH with <code>cycleFallback=true</code>), ANNIVERSARY_YEAR (anchored on <code>accounts.reward_anniversary_date</code>; Feb-29 clamped; falls back to CALENDAR_YEAR with <code>anniversaryFallback=true</code>). Example: anniversary 2025-06-01 evaluated on 2026-03-15 → window 2025-06-01 to 2026-05-31. <span class="path">windowContaining():785-824</span></li>
+<li><strong>Window expansion</strong>: before fetching, the requested range is widened to cover every whole cap/tier/milestone window intersecting it, so a mid-month filter still sees earlier cap consumption; only lines inside the original range are summed. <span class="path">evaluate():298-346</span></li>
+</ul></div></details>
+
+<details class="lvl l3"><summary><span class="lv">L3</span>Milestones</summary><div class="body">
+<ul>
+<li>Basis SPEND (₹) or TXN_COUNT (with an optional per-transaction floor <code>min_txn_amount</code>, "Amex style"). Eligibility is an <em>independent</em> include/exclude category/MCC list (exclude wins; empty include = everything not excluded). <span class="path">milestoneStatus():1075-1124</span></li>
+<li>Payout types: <code>CASH_VALUE</code> (counted in totals) or <code>INFO_TRACKER</code> (progress only, e.g. fee-waiver target; never scored). Payout timing <code>WINDOW_END</code> or <code>ON_ACHIEVEMENT</code>; a milestone is counted in the summary only when its payout date falls inside the requested range, which prevents double counting across adjacent reports.</li>
+<li><code>ONE_TIME</code> windows require both active dates (service-validated only; no DB CHECK). Recurring windows are walked with a 500-iteration guard that throws "Date range too large" rather than looping. <span class="path">evaluateMilestones():1038-1073</span></li>
+<li>The recommender scores unreached milestones with a <em>fractional proximity credit</em> = (delta / threshold) × payout: ₹12,000 toward a ₹1,00,000 / ₹1,000 milestone scores ₹120. The report never does this. <span class="path">RewardRecommendationService.java:180-237</span></li>
+</ul></div></details>
+
+<details class="lvl l3"><summary><span class="lv">L3</span>Recommender ("Card Picker") algorithm</summary><div class="body">
+<ol class="trace">
+<li><span class="lyr">candidates</span>Explicit account ids, else every non-closed account that is a credit card or has ≥1 rule. <span class="path">RewardRecommendationService.java:88-95</span></li>
+<li><span class="lyr">history</span>For each candidate run <code>evaluate(accountId, day, day, true)</code> so real cap, tier and milestone progress as of today is loaded.</li>
+<li><span class="lyr">snapshot</span>Record each capped rule's headroom before the hypothetical spend (<code>ruleCapStatusBefore</code>).</li>
+<li><span class="lyr">simulate</span>Build synthetic <code>TxnFacts</code> (amount, MCC, merchant, channel, EMI, intl, categories, cardholder; convenience fee 0) and run the <em>same</em> <code>resolveTxnFacts()</code> as the report.</li>
+<li><span class="lyr">value</span>guaranteed ₹ = Σ line values (points × <code>account.pointValueInr ?? 0.25</code>); milestone ₹ = crossing or fractional credit; total = guaranteed + milestone.</li>
+<li><span class="lyr">rank</span>Sort by total desc, guaranteed desc, account name asc. Output includes <code>effectiveRatePct</code>, <code>pointValueSource</code> CONFIG/DEFAULT, <code>pointsValued</code>, fallback flags.</li>
+</ol>
+<p>Example cap flip: Card A 5% with ₹10/month cap, Card B 1.5% uncapped, spend ₹1,000 → A earns ₹10, B earns ₹15, <strong>B ranks first</strong> despite the lower headline rate. <span class="path">RewardRecommendationServiceTest.capFlip_partialCapAndCapExhausted</span></p>
+</div></details>
+
+<details class="lvl l3"><summary><span class="lv">L3</span>Report aggregation</summary><div class="body">
+<p><code>buildReport()</code> (<span class="path">RewardCalculationService.java:872-1036</span>) sums, over lines inside the display range: <code>basisSpend</code>, <code>cashbackInr</code> and <code>points</code> (kept separate), <code>discounts</code> (Σ instant discounts), <code>fees</code> (Σ convenience fees), <code>grossValueInr = cashbackInr + cash milestones</code>, <code>effectiveValueInr = gross + discounts − fees</code>, and <code>grossPct</code> / <code>effectivePct</code> = value ÷ basisSpend × 100 (scale 2 HALF_UP). Per-rule cap status is evaluated at the range <em>end</em> date. Per-cardholder split appears only for accounts with ≥2 cardholders.</p>
+</div></details>
+
+<h3 id="m-rewards-l3">Level 3 · Implementation</h3>
+<h4>End-to-end trace: view the rewards report</h4>
+<ol class="trace">
+<li><span class="lyr">UI</span><code>RewardsBrowser.tsx</code> mounts <code>useRewardsBrowser</code> <span class="path">components/rewards/browser/useRewardsBrowser.ts</span></li>
+<li><span class="lyr">hook</span><code>useRewardReport(accountId, from, to)</code>, TanStack key <code>keys.rewards.report(accountId, from, to)</code> <span class="path">lib/query/keys.ts:94-95</span></li>
+<li><span class="lyr">API</span><span class="m m-get">GET</span> <code>/api/v1/rewards/report?accountId&amp;from&amp;to</code></li>
+<li><span class="lyr">controller</span><code>RewardReportController.getReport</code> <span class="path">api/reward/RewardReportController.java:34-40</span></li>
+<li><span class="lyr">service</span><code>RewardCalculationService.report()</code> → <code>evaluate()</code> (window expansion, fetch via <code>TransactionRepository.findForRewardEvaluation</code> using <code>COALESCE(settlement_date, transaction_date)</code>, link netting, per-txn resolve) → <code>buildReport()</code></li>
+<li><span class="lyr">response</span><code>RewardReportResponse</code> → cached under the key; rendered by <code>RewardsSummaryCards</code>, <code>RuleBreakdownGrid</code>, <code>MilestoneSections</code></li>
+</ol>
+<p>Lines page: <span class="m m-get">GET</span> <code>/rewards/lines</code> recomputes the <em>whole</em> window (milestones skipped) and then slices in memory (<code>lines.subList</code> wrapped in <code>PageImpl</code>). This is not DB pagination. <span class="c cg">Confirmed</span> <span class="path">RewardReportController.java:53-56</span>. Rule mutations invalidate <code>keys.rewards.all</code> for every account. <span class="path">useRewardRulesQueries.ts:69-87</span></p>
+
+<h4>Data model</h4>
+<div class="tw compact"><table>
+<tr><th>Table (migration)</th><th>Meaning</th><th>Key columns</th></tr>
+<tr><td><code>reward_rules</code> (V51; V52, V54–V60, V74, V82)</td><td>One earn rule per account, optional cardholder (<code>ON DELETE SET NULL</code>)</td><td><code>priority</code>, <code>stacking</code> EXCLUSIVE|ADDITIVE, <code>active_from</code> incl./<code>active_to</code> excl., <code>counter_scope</code> ACCOUNT|PER_CARDHOLDER, join tables for categories/mccs/channels/days, <code>merchant_pattern</code>+<code>merchant_match</code>, <code>min_amount</code>/<code>max_amount</code> NUMBER(19,4), <code>emi_treatment</code>, <code>intl_treatment</code>, <code>fee_treatment</code>, <code>reward_type</code> CASH|POINTS, <code>accrual_type</code> PERCENT|SLAB, <code>percent_rate</code>, <code>slab_size</code>, <code>points_per_slab</code>, <code>rounding</code>, <code>point_precision</code>, <code>tier_window</code>, <code>tiers</code> CLOB JSON, <code>per_txn_cap</code>, <code>period_cap</code>, <code>cap_window</code>, <code>cap_bucket_id</code> (SET NULL), <code>on_cap_exhausted</code></td></tr>
+<tr><td><code>reward_cap_buckets</code> (V55; V57, V75, V82)</td><td>A cap shared by several rules</td><td><code>cap</code>, <code>reward_type</code>, <code>window_type</code>, <code>counter_scope</code>. Members must share <code>reward_type</code> (service-enforced; V57 detached mismatches)</td></tr>
+<tr><td><code>reward_milestones</code> (V53; V58, V74, V82)</td><td>Threshold bonus or tracker per window</td><td><code>basis</code> SPEND|TXN_COUNT, <code>threshold</code>, <code>min_txn_amount</code>, <code>payout_type</code> CASH_VALUE|INFO_TRACKER, <code>payout_value</code>, <code>payout_timing</code>, <code>eligibility</code> CLOB JSON, active dates, <code>cardholder_id</code></td></tr>
+<tr><td><code>accounts</code> reward columns (V56, V57, V59, V81)</td><td>"Reward config" is three columns on accounts; there is no <code>RewardAccountConfig</code> entity</td><td><code>reward_anniversary_date</code>, <code>default_reward_type</code>, <code>point_value_inr</code> CHECK &gt; 0, <code>closed_on</code></td></tr>
+<tr><td><code>transactions</code> reward inputs (V50)</td><td>Inputs, not cached outputs</td><td><code>settlement_date</code>, <code>instant_discount</code>, <code>convenience_fee</code>, <code>channel</code>, <code>is_emi</code>, <code>is_international</code></td></tr>
+</table></div>
+<p>No unique constraint on (account, priority): duplicate priorities are legal and resolved by insertion order. <span class="c cg">Confirmed</span></p>
+
+<h4>Dependencies and dependents</h4>
+<p><strong>Reads</strong>: transactions and their reward columns, transaction links, statements (cycle windows), accounts, cardholders, categories. <strong>Writes</strong>: only its own three tables plus two account columns. <strong>Called by</strong>: chat tools <code>GetRewardSummaryTool</code> and <code>RecommendCardTool</code>, the reports datasource <code>RewardEarningsDatasource</code> (recomputes full history from the earliest transaction to today on every render), and the three rewards pages.</p>
+
+<h3 id="m-rewards-risk">Invariants, idempotency, failure modes</h3>
+<div class="tw"><table>
+<tr><th>Invariant</th><th>Enforced</th><th>Tested</th><th>Gap</th></tr>
+<tr><td>Reward ≤ cap</td><td><code>clamp()</code></td><td>yes</td><td>—</td></tr>
+<tr><td>Reward ≥ 0</td><td>every subtraction floored at zero</td><td>yes</td><td>—</td></tr>
+<tr><td>Bucket members share reward type</td><td>service only</td><td>yes</td><td>no DB CHECK; manual SQL can desync</td></tr>
+<tr><td>PER_CARDHOLDER needs ≥2 open cardholders</td><td>at create/update only</td><td>no</td><td>closing a cardholder later does not invalidate existing rules</td></tr>
+<tr><td>ONE_TIME milestone has both dates</td><td>service only</td><td>no</td><td>a null-bounded row would NPE in <code>evaluateMilestones()</code></td></tr>
+<tr><td>Tier breakpoints increasing, last open</td><td><code>applyTiers()</code> at write; broken JSON → rule skipped with a warning</td><td>indirect</td><td>silent under-earning if JSON corrupts</td></tr>
+</table></div>
+<ul>
+<li><strong>Idempotency</strong>: <code>evaluate()</code> is a pure read. PUT is a full overwrite (idempotent). POST create has no dedup key; a double submit creates two rules, and two ADDITIVE duplicates double-earn. <span class="c cy">Strongly inferred</span> risk.</li>
+<li><strong>Concurrency</strong>: cap usage is an in-memory accumulator per request, iterated in (date, id) order, so "two transactions racing for the last headroom" cannot race; the trade-off is no reservation and stale on-screen numbers until refetch. <span class="c cg">Confirmed</span></li>
+<li><strong>Degraded modes</strong>: broken tier JSON skips the rule silently (<code>REWARD_RULE_SKIPPED</code> log); broken eligibility JSON treats all spend as eligible; missing statement or anniversary falls back with a flag on the response. Whether the client surfaces <code>anniversaryFallback</code> prominently was not verified. <span class="c cr">Unknown</span></li>
+</ul>
+
+<h3 id="m-rewards-contra">Contradictions and duplicated logic</h3>
+<ul>
+<li><span class="c co">Inferred risk</span> <strong>Client rule tester re-implements the engine in JavaScript</strong> (<span class="path">components/rewards/rule-form/useRewardRulePreview.ts</span>): matching, tiered accrual, rounding, all in double arithmetic, with disclosed gaps (no caps, no day-of-week, REGEX untestable, tier progress assumed ₹0). A second source of truth with no shared test.</li>
+<li><span class="c cy">Confirmed divergence</span> <strong>Unvalued points</strong>: the recommender defaults a point to ₹0.25 (<code>DEFAULT_POINT_VALUE_INR</code>); the Reward Earnings report datasource values them at ₹0. Same card, two answers.</li>
+<li><span class="c cg">Confirmed</span> <code>lib/rewards.types.ts:12-56</code> mirrors anniversary-window math and eligible-account selection in TypeScript for default UI state only.</li>
+<li><span class="c cy">Schema drift</span> Java <code>TransactionChannel</code> has six values incl. <code>ATM</code>; the V50 and V51 CHECK constraints list five. V84 ("add_atm_channel") exists in the migration list and should be verified as the fix; the rewards analyst did not find it within V50–V82. See <a href="/handbook/data.html#s06">Database</a>.</li>
+</ul>
+
+<h3 id="m-rewards-unk">Open questions</h3>
+<div class="qa"><b>Product</b> Why does <code>on_cap_exhausted = STOP</code> exist when FALL_THROUGH is strictly better for the user? Does it model an issuer that pays nothing once the category cap is hit?</div>
+<div class="qa"><b>Product</b> Should PER_CARDHOLDER rules be flagged when an account drops to one open cardholder?</div>
+<div class="qa"><b>Business</b> Is ₹0.25/point a deliberate market estimate, and was the ₹0 default in reports intentional?</div>
+<div class="qa"><b>Technical</b> Why does the rule tester duplicate the engine in JS instead of calling a server dry-run, given the recommender already proves that plumbing exists?</div>
+<div class="qa"><b>Product</b> Should spend that earns under no rule still count toward milestones (it currently can)?</div>
+<p>Not modelled anywhere: annual/joining fees (<span class="path">plans/card-fees-plan.md</span>, status PLAN), statement-vs-computed reward reconciliation (<span class="path">plans/statement-rewards-reconciliation-analysis.md</span>, nothing built), redemption. <span class="c cg">Confirmed absent</span></p>
+</section>
+<section class="sec" id="m-loans" data-part="II · Modules">
+<p class="eyebrow">Module</p>
+<h2><span class="n">M8</span>Loans, lendings &amp; obligations</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Three kinds of "money owed on a schedule": <strong>formal loans</strong> (home, car, personal, education, gold, two-wheeler, consumer durable, other) with a computed EMI amortization schedule, rate revisions, prepayments, foreclosure, itemized charges and bank-transaction matching; <strong>person-to-person lendings</strong> as a plain two-way ledger per counterparty (no interest, no schedule); and an <strong>obligations calendar</strong> merging upcoming and overdue EMIs with lending due dates. The plan doc explains the split: banks compute interest on a schedule, informal debts do not. <span class="c cy">Intent doc</span> <span class="path">plans/loans-module-plan.md:13</span></p>
+<p>The schedule is never stored; every read recomputes it from the loan's terms and events. Payments record only (installment seq, date, amount, transaction id); the interest/principal split shown everywhere is the schedule's theoretical split. Outstanding principal follows the schedule, not payments. Nothing outside this module reads loans or lendings today; the net-worth integration in the plan was deferred. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="m-loans-l1">Level 1 · Product view</h3>
+<div class="tw"><table>
+<tr><th>User's mental model</th><th>Code's model</th><th>Mismatch</th></tr>
+<tr><td>"My EMI has an interest part and a principal part"</td><td><code>Loan</code> stores static terms; <code>LoanScheduleService.compute</code> regenerates every installment on every read</td><td>No installment table; <code>seq</code> is a position</td></tr>
+<tr><td>"I paid installment #7"</td><td><code>LoanPayment</code> stores seq, date, amount, transaction id; split comes from the schedule</td><td>Over- or under-payment is invisible to the split and the tax report</td></tr>
+<tr><td>"Lending is a mini-loan"</td><td>Signed ledger entries (<code>lent</code> +, <code>borrowed</code> −); a repayment is an opposite-direction entry; no status</td><td>V48 dropped <code>lending_repayments</code> and <code>status</code>; running balance is computed only in the client</td></tr>
+<tr><td>"The calendar shows everything I owe"</td><td>Only loan EMIs and lending due dates</td><td>Card dues, SIPs, insurance excluded by design</td></tr>
+</table></div>
+<p><strong>Routes</strong>: <code>/loans</code> (paginated list, summary cards), <code>/loans/[id]</code> (hero header with nominal vs effective APR, schedule grouped by FY, events, charges, match banner), <code>/loans/calendar</code>, <code>/loans/lendings</code>, <code>/loans/lendings/[counterpartyId]</code>. Transaction ids for settlement are typed by hand; there is no picker.</p>
+
+<h3 id="m-loans-emi">Calculation: EMI and amortization</h3>
+<div class="flow">r   = annualRatePct / 1200                        (MathContext DECIMAL64)
+EMI = P · r · (1+r)^n / ((1+r)^n − 1)             → HALF_UP 2 dp;  zero rate → P / n
+per installment (seq from 1, dueDate = firstEmiDate + k months):
+  interest      = round2(balance × ratePct / 1200)
+  principalPart = min(emi − interest, balance)
+  closing       = balance − principalPart
+  if closing == 0: emittedEmi = interest + principalPart   (last row absorbs the residue)
+guards: EMI must exceed the month's interest ("non-amortizing"); ≤ 600 installments</div>
+<p><strong>Example</strong> (<span class="path">LoanScheduleServiceTest.testA</span>): ₹12,00,000 at 8.5% for 60 months → EMI ≈ <strong>₹24,619.16</strong>; first interest = 12,00,000 × 8.5 / 1200 = ₹8,500.00; Σ principal = ₹12,00,000.00 exactly. A user-supplied EMI or a <code>newEmiOverride</code> wins unconditionally over the annuity. <span class="path">domain/loan/schedule/LoanScheduleService.java:29-263</span></p>
+<ul>
+<li><strong>Due dates</strong>: <code>plusMonths(1)</code> from <code>firstEmiDate</code>. A first EMI on the 31st clamps to Feb 28 and then stays on the 28th forever (Java <code>LocalDate</code> semantics, no compensation). <span class="c cg">Confirmed</span>, untested. No broken-period interest (out of scope per plan).</li>
+<li><strong>Events</strong> sort by effective date, then rate_change (1) &lt; prepayment (2) &lt; foreclosure (3). An event applies to installment k only if <code>effectiveDate.isBefore(dueDate_k)</code>, so an event dated exactly on a due date takes effect from the <em>next</em> installment. <span class="c cg">Confirmed</span> via testB; whether intended is unknown.</li>
+</ul>
+<div class="tw"><table class="dt">
+<tr><th>Event</th><th>Required</th><th>Default mode</th><th>Balance</th><th>EMI going forward</th></tr>
+<tr><td>rate_change</td><td>newRate ∈ (0, 60]</td><td>reduce_tenure</td><td>unchanged</td><td>reduce_tenure: EMI unchanged, tenure floats; reduce_emi: re-annuitized on remaining months unless overridden</td></tr>
+<tr><td>prepayment</td><td>0 &lt; amount &lt; modeled outstanding at that date (else 400 "record a foreclosure")</td><td>reduce_tenure</td><td>reduced immediately; balance ≤ 0 stops the schedule</td><td>same mechanics on the new balance</td></tr>
+<tr><td>foreclosure</td><td>amount &gt; 0; at most one; no later-dated event</td><td>null</td><td>schedule stops after its date; <strong>amount is never checked against remaining balance</strong> <span class="c ph">High</span></td><td>—</td></tr>
+</table></div>
+<p>Modeled outstanding for a prepayment = closing balance of the last installment on or before the effective date (or original principal) minus other prepayments in the gap. <span class="path">LoanService.addEvent:260-299</span></p>
+
+<h3 id="m-loans-rules">Other rules</h3>
+<div class="tw"><table>
+<tr><th>Rule</th><th>Behaviour</th><th>Location</th></tr>
+<tr><td>Payment</td><td>amount &gt; 0 only; seq must be unsettled, else the lowest unsettled seq is auto-picked; optional transaction must be a user-owned DEBIT not referenced anywhere in loans or lendings; delete is hard</td><td><span class="path">LoanService.addPayment:379-428</span></td></tr>
+<tr><td>Batch payments</td><td>1–500 items; all-or-nothing; errors accumulated across items; auto-seq consumed in order</td><td><span class="path">addPaymentsBatch:430-514</span></td></tr>
+<tr><td>Charges</td><td>7 types; never enter the schedule or outstanding; only feed effective APR</td><td><span class="path">calculateEffectiveApr:274-311</span></td></tr>
+<tr><td>Effective APR</td><td>XIRR of +principal, −charges, −settled payments at paid dates, −unsettled EMIs at due dates (projected), −prepayments/foreclosure; shared <code>XirrCalculator</code> from investments; null → "N/A"</td><td>cross-module reuse</td></tr>
+<tr><td>Outstanding principal</td><td>closing balance of the last installment due on or before today; 0 after foreclosure; missed EMIs only flip status to overdue</td><td><span class="path">LoanScheduleService.java:178-195</span></td></tr>
+<tr><td>Tax summary</td><td>settled installments bucketed by payment date into Indian FY; sec 24(b) and 80C for home, 80E for education; no statutory caps</td><td><span class="path">LoanTaxSummaryDatasource:62-123</span></td></tr>
+<tr><td>Lending net position</td><td>Σ lent − Σ borrowed per counterparty; &gt; 0 receivable, &lt; 0 payable; counterparty create-or-reuse by exact name</td><td><span class="path">LendingService.getLendingTotals:180-213</span></td></tr>
+<tr><td>Obligations</td><td>active loans' unsettled installments due ≤ today + N months (1–12) incl. all overdue; one netted item per counterparty; overdue first</td><td><span class="path">ObligationsController.java:32-83</span></td></tr>
+</table></div>
+<h4>Decision table: EMI match suggestions</h4>
+<div class="tw"><table class="dt">
+<tr><th>Filter</th><th>Value</th><th>Note</th></tr>
+<tr><td>Target installments</td><td>unsettled, due ≤ today + 7 days (all overdue included, unbounded)</td><td></td></tr>
+<tr><td>Type</td><td>DEBIT</td><td></td></tr>
+<tr><td>Amount</td><td>EMI ± ₹20 (<code>MATCH_AMOUNT_TOLERANCE</code>)</td><td>Plan doc says exact match only <span class="c cy">Drift</span> <span class="path">LoanService.java:39</span></td></tr>
+<tr><td>Date</td><td>due date ± 7 days</td><td>hardcoded</td></tr>
+<tr><td>Account</td><td>loan's payment account, else all accounts</td><td></td></tr>
+<tr><td>Exclusion</td><td>not referenced in loan_events, loan_payments, loan_charges, lendings (native UNION ALL)</td><td><code>TransactionReferenceValidator</code></td></tr>
+<tr><td>Assignment</td><td>greedy: nearest due date, tie → lower seq; one installment per transaction</td><td>"Confirm All" uses only the first candidate per installment</td></tr>
+</table></div>
+
+<h3 id="m-loans-states">State machines and data</h3>
+<div class="flow">active ──POST /close (no guard)──► closed          closed ──POST /reopen (blocked if a foreclosure exists)──► active
+active ──foreclosure event──────► foreclosed      foreclosed ──DELETE that event──► active
+foreclosed ──POST /close──► closed   (distinction lost; event row survives)</div>
+<div class="tw compact"><table>
+<tr><th>Table (V47; V48)</th><th>Key constraints</th></tr>
+<tr><td><code>loans</code></td><td>loan_type CHECK (8); rate_type fixed|floating (descriptive only); tenure 1–600; principal NUMBER(19,4); annual_rate_pct NUMBER(9,4); status active|closed|foreclosed; payment_account_id SET NULL (must be bank type, service-checked); no unique name</td></tr>
+<tr><td><code>loan_events</code></td><td>polymorphic: event_type, new_annual_rate_pct, amount, adjustment_mode, new_emi_override; transaction_id globally unique; no updated_at (delete and recreate)</td></tr>
+<tr><td><code>loan_payments</code></td><td><code>uk_loan_payments_seq UNIQUE(loan_id, installment_seq)</code>; transaction_id globally unique</td></tr>
+<tr><td><code>loan_charges</code></td><td>charge_type CHECK (7); transaction_id globally unique</td></tr>
+<tr><td><code>counterparties</code></td><td>UNIQUE(user_id, name) case-sensitive ("Ramesh" and "ramesh" coexist)</td></tr>
+<tr><td><code>lendings</code></td><td>V48 dropped status and <code>lending_repayments</code>, renamed lend_date → entry_date; direction lent|borrowed; counterparty CASCADE; transaction_id unique</td></tr>
+</table></div>
+
+<h3 id="m-loans-risk">Invariants, concurrency, contradictions</h3>
+<ul>
+<li>Σ principal = principal (structural). One payment per seq (service + DB unique). One loan/lending reference per transaction (service + DB unique). Deleting an event rejects if any payment's seq exceeds the new schedule length, but not if the seq now means a different installment. Foreclosure amount is unreconciled. Close has no zero-balance guard.</li>
+<li>No <code>@Version</code>; TOCTOU windows on payment seq and transaction linking fall through to raw DB constraint errors. Re-posting <code>addPayment</code> without a seq settles the <em>next</em> installment (not idempotent); the UI always passes a seq. Batch re-post is rejected wholesale.</li>
+<li><strong>Contradictions</strong>: ±₹20 tolerance vs plan exact match; client running balance vs server net (same sign convention; same-day order non-deterministic because the API sorts only by entry date); FY boundary configurable on the server (<code>financeos.reports.fiscal-year-start-month</code>) but hardcoded to April in <code>useLoanQueries.ts:63-69</code> and <code>LoanAmortizationSchedule.tsx:27-33</code>; <code>loan.types.ts</code> hand-written while <code>lending.types.ts</code> re-exports generated types; browser "Monthly EMI" sums the current page only; <code>rate_type</code> has no behaviour.</li>
+<li><strong>Dead or suspicious</strong>: <code>LoanRepository.findByStatus(LoanStatus)</code> unpaged overload unreferenced; <code>LendingRepository.existsByCounterparty_Id</code> leftover from pre-V48; duplicate aliases <code>loansApi.addPayment/createPayment</code>, <code>delete/remove</code>; summary aggregation lives in the controller.</li>
+</ul>
+<div class="callout"><p><strong>Tests that do not test the code.</strong> <span class="c ph">High</span> <code>LoanServiceTest</code> and <code>LendingServiceTest</code> never instantiate the services; each test re-implements the condition inline and asserts on its own literal (e.g. constructing a <code>ValidationException</code> by hand). Only <code>LoanScheduleService</code> (10 real tests) and the three report datasource tests provide genuine coverage. Match suggestions, batch payments, close/reopen, event-delete cascade and the obligations endpoint have zero real coverage. <span class="path">src/test/java/com/financeos/domain/loan/LoanServiceTest.java:38-48</span></p></div>
+<p>Observability: <code>LOAN_SCHEDULE_GENERATED</code> on every compute (very frequent) and <code>LOAN_MATCH_ATTEMPTED</code> per candidate with reasons; ownership violations log "Security Breach Attempt". Configuration: only <code>financeos.reports.fiscal-year-start-month</code> (default 4, never set); everything else hardcoded (±₹20, ±7 days, 600, rate (0, 60], batch 1–500, calendar 1–12 months).</p>
+
+<h3 id="m-loans-unk">Open questions</h3>
+<div class="qa"><b>Product</b> Is the ±₹20 / ±7-day tolerance intentional, or should matching be exact as designed?</div>
+<div class="qa"><b>Product</b> Should a foreclosure amount be validated against the modeled balance? Should close require zero outstanding?</div>
+<div class="qa"><b>Technical</b> Should an event dated on a due date apply to that installment or the next?</div>
+<div class="qa"><b>Technical</b> Should <code>rate_type = floating</code> enforce anything? Should the client FY boundary track the server setting?</div>
+<div class="qa"><b>Data</b> Should counterparty names be case-insensitively unique?</div>
+</section>
+<section class="sec" id="m-reports" data-part="II · Modules">
+<p class="eyebrow">Module</p>
+<h2><span class="n">M9</span>Reports engine &amp; dashboards</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>A self-service BI builder: the user picks one of eleven datasources (transactions, investment trades, dividends, F&amp;O trades, positions, realized lots, portfolio value, loan payments, loan tax summary, lendings, reward earnings), builds a KPI, Chart or Table definition (filters, group-bys, measures, sort, granularity including Indian financial year), previews it, and saves it as a <code>Report</code> row with a JSON definition. A <code>Dashboard</code> is a named 100-column grid of widgets, each just a (reportId, layout) pair; it computes nothing itself. <span class="c cg">Confirmed</span></p>
+<p>Two facts matter most. First, <strong>the landing dashboard is a widget grid the user populates; the "financial summary" endpoint behind it is a hardcoded stub that returns zeros and is never called.</strong> There is no computed net-worth screen in the shipped build. Second, grouping or filtering transactions by category uses a fan-out join with no de-duplication, so multi-category transactions can be double counted; the sibling chat views already solved this with <code>LISTAGG</code>. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="m-reports-l1">Level 1 · Product view</h3>
+<div class="tw"><table>
+<tr><th>User's mental model</th><th>Code's model</th><th>Mismatch</th></tr>
+<tr><td>"My Dashboard shows net worth, cash, cards"</td><td><code>/dashboard</code> renders the default <code>Dashboard</code> entity's widget grid</td><td>The auto-computed summary does not exist <span class="c pc">Critical to expectations</span></td></tr>
+<tr><td>"Dashboards and Dashboard are one thing"</td><td><code>/dashboards</code> manages entities; <code>/dashboard</code> renders the default one</td><td>Two route trees, one resource</td></tr>
+<tr><td>"A report groups my spend by category"</td><td>Many-to-many join; a two-category transaction contributes its full amount to both groups</td><td>Totals across groups exceed true spend</td></tr>
+<tr><td>"Chat and reports agree"</td><td>Independent SQL; chat views de-duplicate categories, reports do not</td><td>Same question, different totals</td></tr>
+<tr><td>"KPI change vs last period works the same everywhere"</td><td>Implemented twice (SQL and in-memory) with opposite defaults and different rounding</td><td>Behaviour depends on the datasource</td></tr>
+</table></div>
+<p><strong>Routes</strong>: <code>/reports</code>, <code>/reports/new</code>, <code>/reports/[id]</code> (builder), <code>/dashboards</code>, <code>/dashboards/new</code>, <code>/dashboards/[id]</code> (editor), <code>/dashboard</code> (landing, read-only). Datasource and report type are immutable after creation. Widgets referencing a deleted report render "no longer available" instead of breaking the page (intentional).</p>
+
+<h3 id="m-reports-def">Report definition and validation</h3>
+<p><code>ReportDefinition</code> is a sealed interface: <code>KpiDefinition</code> | <code>ChartDefinition</code> | <code>TableDefinition</code> (itself <code>RawTableDefinition</code> | <code>AggregatedTableDefinition</code>, discriminated by <code>mode</code>). Enums: chart types line, bar, stackedBar, area, pie, donut; granularity day, week, month, quarter, year, fy; aggregations sum, avg, count, min, max; field roles measure, dimension, filter. The validator is fully datasource-driven through <code>DatasourceRegistry</code> field definitions. <span class="path">domain/report/definition/*</span>, <span class="path">ReportDefinitionValidator</span></p>
+<div class="tw"><table class="dt">
+<tr><th>Definition part</th><th>Field role must be</th><th>Allowed in</th><th>Extra rule</th></tr>
+<tr><td>KPI measure</td><td>MEASURE</td><td>KPI</td><td>aggregation required and allowed for the field</td></tr>
+<tr><td>Chart dimension / series</td><td>DIMENSION</td><td>CHART</td><td>series ≠ dimension; DATE requires granularity, non-DATE forbids it</td></tr>
+<tr><td>Raw table columns</td><td>not checked</td><td>TABLE</td><td>duplicates allowed; FILTER-role fields blocked only because they carry <code>allowedInReports = NONE</code> (coincidence, not structure)</td></tr>
+<tr><td>Aggregated rows / columns</td><td>DIMENSION</td><td>TABLE</td><td>each set duplicate-free and disjoint</td></tr>
+<tr><td>Aggregated measures</td><td>MEASURE</td><td>TABLE</td><td>client rejects duplicate field+aggregation pairs; server does not</td></tr>
+<tr><td>Any filter</td><td>any, incl. FILTER</td><td>exempt</td><td>operator must be valid for the type; dynamic enums (category, account, broker, instrument) are not checked against real values</td></tr>
+<tr><td>Sort key</td><td></td><td></td><td>must be in the validated key set; measure sort keys are unavailable when pivoting on columns (client and server agree)</td></tr>
+</table></div>
+
+<h3 id="m-reports-exec">Execution pipeline</h3>
+<div class="flow">JSON (CLOB or body) → ReportDefinitions.parse → ReportDefinitionValidator.validate → DatasourceRegistry.byName
+  → dispatch(): ComputedReportDatasource ? InMemoryReportExecutor : {Kpi|Chart|Table}ReportExecutor(userId)
+SQL path:   queryBuilder.buildWhere() [userScopePredicate first, always] → native SQL → ResultValues → BucketLabels → ReportData
+Memory path: datasource.rows() (List&lt;Map&gt; from another module's service) → Java filter/group/aggregate/sort/paginate → ReportData</div>
+<p>Saved reports are re-parsed and re-validated on every run (a field removed from the catalog fails loudly; there is no migration for stale definitions). <span class="path">domain/report/ReportDataService.java:58-93</span></p>
+<h4>Transactions datasource semantics</h4>
+<ul>
+<li>Amount is signed CREDIT positive, DEBIT negative; "total spend" is SUM(amount) filtered to DEBIT.</li>
+<li><strong>No default exclusions.</strong> <code>isExcluded</code>, <code>isTransferLeg</code>, <code>isRefundLeg</code>, <code>isUnderMonitoring</code> and <code>reviewType</code> are opt-in filters. The builder seeds <code>isExcluded is false</code> on a new transactions report as a UI convenience only; it is not re-applied on edit or on ad hoc runs from elsewhere.</li>
+<li><code>isTransferLeg</code> and <code>isRefundLeg</code> are correlated EXISTS subqueries (no fan-out).</li>
+<li>The <code>source</code> filter values are the stale strings "gmail" and "manual"; three of four real sources cannot be filtered and "gmail" matches nothing. See <a href="/handbook/modules-a.html#m-transactions">Transactions</a>.</li>
+</ul>
+<div class="callout"><p><strong>Category double counting.</strong> <span class="c pc">Critical</span> <code>JOIN_CATEGORIES</code> is a fan-out LEFT JOIN added whenever <code>category</code> is a dimension, column, sort key <em>or filter</em>. A purpose-built EXISTS-based <code>SqlPredicates.category()</code> exists in the same package with the comment "so the join never fans out an aggregate" but is never called by the report engine (only by the transactions list). <code>ChartReportExecutor.countRows</code> uses COUNT(DISTINCT id) to fix the row count but not the SUM. <span class="path">domain/report/engine/TransactionQueryBuilder.java:90-92</span>, <span class="path">SqlPredicates.java:46-69</span></p></div>
+<div class="tw"><table class="dt">
+<tr><th>Usage</th><th>Grouped by category?</th><th>Effect</th><th>Severity</th></tr>
+<tr><td>Chart or pivot grouped by category, SUM(amount)</td><td>yes</td><td>Each category gets the full amount; the cross-group total exceeds real spend</td><td><span class="c pm">Medium</span> ambiguity, undocumented</td></tr>
+<tr><td>KPI or chart <em>filtered</em> by <code>category in (...)</code>, grouped by something else or not at all</td><td>no</td><td>A transaction matching two of the filtered categories is summed twice into one bucket</td><td><span class="c pc">Critical</span> untested</td></tr>
+<tr><td>Raw table selecting category</td><td>n/a</td><td>Duplicate rows, each with the full amount</td><td><span class="c ph">High</span></td></tr>
+</table></div>
+
+<h3 id="m-reports-computed">Computed datasources and parity</h3>
+<div class="tw"><table>
+<tr><th>Datasource</th><th>Source</th><th>Parity</th><th>Notes</th></tr>
+<tr><td>positions</td><td><code>InvestmentService.getAllPositions()</code></td><td>by construction</td><td>no independent math</td></tr>
+<tr><td>realized_lots</td><td><code>InvestmentService.getAllRealizedLots()</code></td><td>tested (<code>RealizedLotsParityTest</code>)</td><td>documented divergences: fractional cash-in-lieu never produces a lot; CA-seeded lots use the ex-date as buy date</td></tr>
+<tr><td>portfolio_value</td><td>month-end and today via <code>buildOpenLotsBeforeDate</code>, latest price on or before, else average cost</td><td>by construction</td><td>possible step artefact near CA ex-dates</td></tr>
+<tr><td>loan_payments, loan_tax_summary</td><td><code>LoanService.getAllLoansWithSchedule()</code> → same <code>LoanScheduleService</code></td><td>by construction</td><td>tax rows are raw eligible amounts, no caps</td></tr>
+<tr><td>lendings</td><td><code>LendingService.getAllLendings()</code></td><td>by construction</td><td>signed amount from direction</td></tr>
+<tr><td>reward_earnings</td><td><code>RewardCalculationService.lines(account, earliest txn date, today)</code> for every account with rules</td><td>by construction</td><td><strong>full-history recompute on every run</strong>, no cache; milestones absent; unvalued points = ₹0 <span class="c ph">High perf</span></td></tr>
+</table></div>
+<p><strong>Tenancy</strong>: the four SQL datasources bind <code>user_id = :userId</code> structurally through <code>AbstractReportQueryBuilder.buildWhere</code> (no bypass found). The seven computed datasources rely on the Hibernate filter riding the caller's <code>@Transactional</code>; any future call to <code>rows()</code> outside a transaction would return every user's rows. Only <code>reward_earnings</code> checks <code>UserContext</code> itself. <span class="c cy">Fragile</span></p>
+
+<h3 id="m-reports-kpi">KPI comparison, dates, buckets, precision</h3>
+<div class="tw"><table>
+<tr><th></th><th>SQL path (<code>KpiReportExecutor</code>)</th><th>In-memory path (<code>InMemoryReportExecutor</code>)</th></tr>
+<tr><td>Default when <code>comparison</code> is null</td><td>enabled</td><td>disabled</td></tr>
+<tr><td><code>changePercent</code> rounding</td><td>scale 6 HALF_UP then ×100, final scale 2</td><td>scale 4 HALF_UP then ×100, no final scale</td></tr>
+<tr><td><code>comparison</code> present but <code>enabled</code> null</td><td>guarded</td><td>auto-unboxing <strong>NullPointerException → 500</strong> <span class="c ph">High</span></td></tr>
+</table></div>
+<p><strong>Date ranges</strong> (<code>DateRangeResolver</code>): inclusive both ends; "today" is <code>LocalDate.now()</code> in the JVM default zone; FY start month from <code>financeos.reports.fiscal-year-start-month</code> (default 4, never set anywhere). Operators: today, yesterday, this/previous week (ISO Monday), this/previous month, this/previous year, current/prev FY, last_x_days/months/years, all_time, between, after/before (resolve to unbounded for metadata while still constraining the query). Previous period is calendar-aligned for named periods and a flat day shift for rolling or explicit ranges. Only the <em>first</em> DATE filter drives metadata and comparison.</p>
+<p><strong>Buckets</strong>: truncation exists three times (Oracle <code>TRUNC/ADD_MONTHS</code>, <code>BucketLabels</code>, <code>InMemoryReportExecutor.processDimensionValue</code>); they agree for FY per <code>FyGranularityTest</code>. Quarter is always calendar quarter, even under FY grouping. Labels: "dd MMM yy", "W&lt;n&gt; yy", "MMM yy", "Q&lt;n&gt; yy", "yyyy", "FY ss-ee".</p>
+<p><strong>Precision</strong>: SQL aggregates pass through Oracle NUMBER unrounded; in-memory AVG is fixed scale 4. Missing pivot or chart cells: SUM and COUNT default 0, AVG/MIN/MAX default null (mirrored in both paths). The client never re-aggregates; <code>isMoneyField</code> is a name heuristic (ends with "amount") unless the catalog supplies a format.</p>
+
+<h3 id="m-reports-dash">Dashboards</h3>
+<ul>
+<li><code>dashboards.widgets</code> is a JSON array in one CLOB (not a child table). <code>DashboardWidget</code> record: id, reportId, title, layout {x, y, w, h} on a 100-column grid. Validator: x ≥ 0, w ≥ 1, x + w ≤ 100, y ≥ 0, h ≥ 1; no upper bound on y or h and no overlap check (intentional).</li>
+<li>At most one default per user, enforced by the V15 partial unique index on <code>CASE WHEN is_default = 1 THEN user_id END</code> plus a clear-then-set in the service; a lost race maps to 409.</li>
+<li>Landing render: <code>dashboard/page.tsx</code> lists dashboards (treating 404 as "none"), picks the default or the first, and <code>prefetchWidgetData</code> runs every widget's report in parallel on the server under the exact TanStack key the widget's <code>useQuery</code> uses, so first paint needs no refetch. <span class="path">src/lib/dashboards.server.ts:32-51</span></li>
+<li>Save sends the entire widget array via PUT; no per-widget PATCH. Only the "set default" star has an <code>updatedAt</code> conflict guard; editor and builder saves are last-write-wins.</li>
+<li><strong>Dead</strong>: <span class="m m-get">GET</span> <code>/api/v1/dashboard/summary</code> (returns zeros, status "skeleton", no service), <span class="m m-get">GET</span> <code>/api/v1/dashboards/default</code> (never called), <code>DashboardService.toSummary()</code> and <code>DashboardSummaryResponse</code>, client <code>keys.dashboards.summary()</code>. The dashboards spec says the summary "stays as-is" until an accounts/positions datasource exists.</li>
+</ul>
+
+<h3 id="m-reports-data">Data model</h3>
+<div class="tw compact"><table>
+<tr><th>Table</th><th>Columns and constraints</th></tr>
+<tr><td><code>reports</code> (V12, V14)</td><td>name, type CHECK KPI|CHART|TABLE, datasource VARCHAR2(50), definition CLOB CHECK IS JSON, description (V14); indexes user_id, type; <code>@Filter</code>; type and datasource immutable</td></tr>
+<tr><td><code>dashboards</code> (V13, V15)</td><td>name, description, widgets CLOB CHECK IS JSON, is_default NUMBER(1) with partial unique index <code>uq_dashboards_one_default</code>; <code>@Filter</code></td></tr>
+</table></div>
+
+<h3 id="m-reports-tests">Tests, dead code, questions</h3>
+<p>Well covered: <code>ReportDefinitionValidatorTest</code> (17), <code>DateRangeResolverTest</code> (7), <code>BucketLabelTest</code>, <code>FyGranularityTest</code>, <code>InMemoryReportExecutorTest</code> (6), query-builder tests (shape only), datasource tests, <code>DashboardValidatorTest</code> (7), <code>DashboardServiceTest</code> (4); client <code>builderReducer</code>, <code>serialize</code> (with a byte-identical duplicated describe block at lines 50–140 and 321–413), <code>catalog</code>, <code>dashboards.helpers</code>. <strong>Untested</strong>: the category fan-out SUM, the KPI NPE, <code>ReportService</code> / <code>ReportDataService</code> directly, controllers, the Hibernate filter end to end for computed datasources, <code>PreviewPane</code>'s stale-response guard, all report views, the dashboard editor.</p>
+<p>Other smells: commented-out JSX in <span class="path">ReportsList.tsx:133-138</span>; <code>DEFAULT_PAGE_SIZE</code> / <code>MAX_PAGE_SIZE</code> duplicated in two executors; react-grid-layout used via its <code>/legacy</code> shim; helper comment says rows are 12 px while the grid uses <code>rowHeight 1</code> with a [6, 12] margin; <code>reports.types.ts</code> hand-written while <code>dashboards.types.ts</code> re-exports generated types; spec doc claims all tenancy goes through the Hibernate filter (wrong for the SQL path).</p>
+<div class="qa"><b>Product</b> Is the landing summary ever going to be real, and is v1 "done" without it?</div>
+<div class="qa"><b>Product</b> Has the category double count been seen with real data?</div>
+<div class="qa"><b>Technical</b> Was the SQL vs in-memory comparison divergence deliberate?</div>
+<div class="qa"><b>Technical</b> Should <code>reward_earnings</code> reports be cached given the full-history recompute?</div>
+<div class="qa"><b>Technical</b> What JVM time zone does production run under?</div>
+<div class="qa"><b>Technical</b> Is the singular/plural route naming (<code>/dashboard</code> vs <code>/dashboards</code>, <code>/report/datasource</code> vs <code>/reports</code>) intentional?</div>
+</section>
+<section class="sec" id="m-llm-chat" data-part="II · Modules">
+<p class="eyebrow">Module</p>
+<h2><span class="n">M10</span>LLM platform &amp; Chat with your data</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>FinanceOS calls third-party LLMs (Google Gemini, Groq, OpenRouter) for two background tasks, transaction categorization and Gmail email extraction, and for one interactive feature, "Chat with your data". Because no provider is paid for centrally, the LLM layer is built around <strong>failover across free tiers</strong>: <code>FailoverLlmClient</code> walks an ordered list of (provider, model, key) "buckets", skipping any in cooldown, so a single free key or the user's own bring-your-own keys keep the app working across daily quota resets. <span class="c cy">Strongly inferred</span> from config comments ("widest free-tier headroom").</p>
+<p>Chat is a bounded tool-calling loop (6 iterations, 180 s soft, 270 s hard, 290 s transport) in which the model writes read-only SQL executed as a separate Oracle user <code>CHAT_RO</code> that can see only tenant-filtered <code>v_chat_*</code> views. The model never sees raw data except what a capped query returns. Transcripts are held only in React state and are lost on refresh. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="m-llm-failover">Failover algorithm</h3>
+<div class="tw"><table class="dt">
+<tr><th>Step</th><th>Rule</th></tr>
+<tr><td>1 Task → group</td><td><code>data-chat</code> → CHAT; <code>categorize</code>, <code>email-extract</code>, anything else → DEFAULT (<code>LlmTasks.groupOf</code>)</td></tr>
+<tr><td>2 Chain order</td><td>user's saved <code>LlmTaskPref</code> rows for the group → else <code>llm.default-routing.&lt;group&gt;</code> → else legacy <code>llm.tasks.&lt;task&gt;.chain</code> → else <code>LLM_CHAIN</code></td></tr>
+<tr><td>3 Expand option</td><td><code>models</code> list → one entry per model; pinned <code>model</code> → one entry; else the provider's full model list</td></tr>
+<tr><td>4 Keys</td><td>user's ACTIVE keys for the provider by position; env key only if <code>allowNoKey</code> (none today; reserved for a future self-hosted provider)</td></tr>
+<tr><td>5 Fan-out</td><td>Gemini with no pinned model: <em>model-major</em> (model A across every key, then model B), so one key earns a separate daily quota per model; otherwise one bucket per key</td></tr>
+<tr><td>6 Dedup</td><td>by <code>keyId:model</code>, first-seen order</td></tr>
+<tr><td>7 No buckets</td><td><code>LlmException(NO_KEYS)</code> without an HTTP call</td></tr>
+<tr><td>8 Walk</td><td>skip buckets in cooldown; call up to <code>attemptsPerProvider</code> (2)</td></tr>
+<tr><td>success</td><td>reset counters, update <code>last_used_at</code>, return</td></tr>
+<tr><td>401 / 403</td><td>mark the key INVALID in the DB (one-way), advance</td></tr>
+<tr><td>429</td><td><code>BucketStateRegistry.handle429</code> sets cooldown, advance, no same-bucket retry</td></tr>
+<tr><td>FATAL / BAD_OUTPUT</td><td>count a failure, advance</td></tr>
+<tr><td>RETRYABLE (5xx, IO)</td><td>retry same bucket with 1000 ms × 2^(n−1) capped 8000 ms, honouring Retry-After</td></tr>
+<tr><td>exhausted</td><td><code>LlmException(FATAL, "chain")</code> with concatenated reasons (≤1500 chars) and the soonest cooldown expiry</td></tr>
+</table></div>
+<p><strong>Cooldowns</strong> (<code>BucketStateRegistry</code>, in-memory, per <code>keyId:model</code>): a 429 whose body contains "PerDay", "per_day" or "quotaId" + "Day" → cooldown until midnight <em>America/Los_Angeles</em> (Gemini's reset), applied to any provider; otherwise max(Retry-After, 60 s). Independently, three consecutive failures within 60 s open a 60 s circuit. State is lost on restart. The "per-day 429 truncation" fix: classification reads the 4000-char response body, not the 200-char log preview (tested by <code>test429BodyWithQuotaIdBeyond200CharsSetsMidnightPtCooldown</code>). <code>llm.retry.cooldown-ms</code> is configured but never read; 60000 is hardcoded. <span class="c cg">Confirmed</span></p>
+<div class="tw compact"><table>
+<tr><th>Provider mode</th><th>Structured output</th></tr>
+<tr><td>Gemini</td><td>native <code>responseSchema</code> (schema converted, types uppercased)</td></tr>
+<tr><td>OpenAI-compatible, json-schema (Groq)</td><td><code>response_format json_schema strict</code>; every property made required and nullable, <code>additionalProperties:false</code>; null schema falls back to json_object</td></tr>
+<tr><td>OpenAI-compatible, json-object (OpenRouter GLM, free pool)</td><td><code>json_object</code> plus the schema embedded in the prompt, because only ~14 of ~21 OpenRouter upstreams honour json_schema</td></tr>
+<tr><td>any</td><td>code fences stripped before parse; blank chat <code>answer</code> treated as retryable (fix for models omitting optional fields)</td></tr>
+</table></div>
+<div class="tw"><table>
+<tr><th>Caller</th><th>Task</th><th>When every bucket fails</th></tr>
+<tr><td><code>TransactionCategorizer</code></td><td>categorize (batch 200 Gemini / 100 Groq / 40 OpenRouter)</td><td>retry in sub-chunks of 20, then drop; rows stay uncategorized with CATEGORY_UNVERIFIED; ingestion succeeds</td></tr>
+<tr><td><code>GeminiExtractor</code></td><td>email-extract</td><td>ledger FAILED_RETRYABLE with backoff; NO_KEYS shows "add an API key in Settings"</td></tr>
+<tr><td><code>ChatOrchestrator</code></td><td>data-chat</td><td>friendly answer text, quota still consumed</td></tr>
+<tr><td>Key test</td><td>test (bypasses failover)</td><td>per-status friendly message</td></tr>
+<tr><td><code>EmailClassifier</code></td><td>email-classify</td><td><strong>dead</strong>: no callers</td></tr>
+</table></div>
+
+<h3 id="m-llm-keys">Keys and routing preferences</h3>
+<ul>
+<li><code>llm_api_keys</code> (V72, V76): provider, <code>key_ciphertext</code> AES-256-GCM under <code>LLM_KEYS_MASTER_KEY</code> (must decode to 32 bytes; unset disables BYOK with an ERROR at boot), <code>key_last4</code>, label, position, status ACTIVE|INVALID, <code>last_used_at</code>; unique (user, provider, position) with a two-phase reorder (offset 1000, flush, renumber). The provider CHECK was dropped in V76; validity is app-only. Create validates the raw key against the provider first (Gemini <code>x-goog-api-key</code>, OpenRouter <code>/key</code>, others <code>/models</code>). There is no master-key rotation tool; rotating it breaks every stored key.</li>
+<li><code>llm_task_prefs</code> (V76, V77): task_group CHAT|DEFAULT, position, <code>option_id</code> (V77 replaced provider+model columns). The menu is five fixed options (gemini-chain, gemini-flash-chain, groq, openrouter-free, openrouter-glm), reorder only; chat does not inherit the default group's order. V78 deleted Cerebras rows.</li>
+<li>Shipped default: chat leads with the Flash chain (fast first token for a wall-clock-bound loop); background leads with the full Gemini chain. Gemini model order comes from <code>llm.providers.gemini.models</code>; <code>model-catalog</code> is display metadata only and must be updated in parallel.</li>
+</ul>
+
+<h3 id="m-llm-chat">Chat orchestration</h3>
+<ol class="trace">
+<li><span class="lyr">UI</span><code>Composer</code> → <code>useChatStream.executeSend</code> builds the transcript (clarify turns serialized as "[You asked the user to clarify]: …", last 10 messages, ≤2000 chars each) → <code>fetch('/api/chat')</code> <span class="path">app/(protected)/chat/lib/useChatStream.ts:71</span></li>
+<li><span class="lyr">proxy</span><code>app/api/chat/route.ts</code> relays the session cookie to <span class="m m-post">POST</span> <code>/api/v1/chat/stream</code> and pipes the SSE body back (<code>maxDuration 300</code>); maps 503 CHAT_DISABLED and 429 CHAT_QUOTA_EXCEEDED / CHAT_BUSY to typed JSON</li>
+<li><span class="lyr">controller</span><code>ChatController.streamChat</code>: feature flag (<code>chat.enabled</code> and CHAT_RO credentials) → daily quota 30 per user (in-memory, JVM-zone date) → semaphore 2 concurrent → worker on a 4-thread pool with <code>UserContext</code> copied across → 15 s heartbeat; a failed heartbeat cancels the worker</li>
+<li><span class="lyr">prompt</span>22 hard rules (tenant reminder, never fabricate, results are untrusted data, decline non-finance, clarify at most once, prefer SQL aggregation, use <code>calc</code> for math, Oracle dialect, no UUIDs in answers, block rules, report-draft rules 17–21, clarify round-trip rule 22) + <code>dictionary.md</code> (loaded once at construction, needs a restart to change) + grounding block (today, active FY, accounts and up to 60 categories with UUIDs, cached 5 min per user) + transcript + this turn's step results</li>
+<li><span class="lyr">loop</span>Each iteration the model must choose <code>run_sql</code> | <code>call_tool</code> | <code>calc</code> | <code>clarify</code> | <code>final_answer</code>. Tool enum is every registered <code>ChatTool</code> (adding a component makes it callable). Budget: 6 iterations; <code>forceFinalAtMs = min(180 s, max(30 s, emitter − 90 s)) = 180 s</code> forces the final-only schema; <code>hardDeadlineMs = max(10 s, emitter − 20 s) = 270 s</code> returns without another call; SSE emitter closes at 290 s. Same failure signature twice → "do NOT retry" instruction; three times → forced final.</li>
+<li><span class="lyr">sql</span><code>ChatSqlExecutor</code>: <code>ChatSqlValidator</code> → wrap in <code>FETCH FIRST 201 ROWS ONLY</code> → <code>ChatDbSession</code> (3-connection CHAT_RO pool, <code>ALTER SESSION SET CURRENT_SCHEMA</code>, <code>DBMS_SESSION.SET_IDENTIFIER(userId)</code> with a bound parameter, fail closed if no user) → 5 s statement timeout → JSON ≤16,000 chars with truncation flags → <code>CLEAR_IDENTIFIER</code> on close; SQL errors genericized</li>
+<li><span class="lyr">answer</span><code>final_answer</code> Markdown plus optional <code>blocks</code> JSON, re-validated by <code>ChatBlocksParser</code> (≤4 stats, ≤2 charts of ≤50 categories × ≤6 series, ≤2 tables of ≤8 columns × ≤50 rows, ≤3 follow-ups, one report draft with UUID-shaped id and ≤8000-char definition); invalid blocks are dropped, not fatal</li>
+<li><span class="lyr">client</span>Progressive render of trace and status events; on final, a Web Notification fires only if the tab is hidden; report drafts preview via the ad hoc reports action and save only on an explicit click (delete needs a second click within 3 s)</li>
+</ol>
+<h4>SQL validator rules</h4>
+<div class="tw compact"><table>
+<tr><th>Check</th><th>Rejects</th></tr>
+<tr><td>Raw text</td><td><code>@</code> (dblinks), <code>/*+</code> hints, <code>DBMS_*</code>, <code>UTL_*</code>, <code>SYS.</code></td></tr>
+<tr><td>Statements</td><td>more than one; anything but a JSQLParser <code>Select</code>; <code>SELECT INTO</code></td></tr>
+<tr><td>Tables</td><td>every referenced table (subqueries, CTEs, UNIONs via <code>TablesNamesFinder</code>) must be one of the 14 <code>ALLOWED_VIEWS</code> or a CTE defined in the statement; schema-qualified or dblink names rejected</td></tr>
+</table></div>
+<p><code>chat_ro</code> holds only CREATE SESSION and SELECT on <code>V_CHAT_%</code> (V70 grants idempotently, tolerating a missing user). Every view filters <code>user_id = SYS_CONTEXT('USERENV','CLIENT_IDENTIFIER')</code>, set only from server-side <code>UserContext</code>, never from model output, so a crafted question cannot cross tenants. <span class="c cg">Confirmed</span> <strong>Drift</strong>: <code>dictionary.md</code> documents <code>v_chat_cardholders</code> and <code>v_chat_cards</code>, which are absent from <code>ALLOWED_VIEWS</code> and from V70; a query against them is rejected and the model must self-correct. <span class="c co">Inferred</span> they were added by a later migration. The database section should be checked for which views exist today.</p>
+
+<h3 id="m-llm-risk">Invariants, quotas, observability, dead code</h3>
+<ul>
+<li>Routing config validated at boot (unknown option, or both <code>model</code> and <code>models</code>, fails startup). Bucket keys are named in exactly one place and the health endpoint reuses it (tested).</li>
+<li>Quota: 30 messages per day per user and 2 concurrent, both in memory (reset on restart; JVM-zone midnight). No token or spend metering anywhere; <code>ObservabilityMetrics.recordLlmTokens</code> is declared and never called. <span class="c cg">Confirmed</span></li>
+<li>Structured events: <code>LLM_ATTEMPT</code> (task, provider, model, keyId, attempt, outcome, latency, status, prompt and response chars, batch size), <code>LLM_CIRCUIT_OPENED/CLOSED</code>, <code>LLM_CHAIN_EXHAUSTED</code>, <code>LLM_BUCKET_COOLDOWN</code>; metric <code>financeos.llm.attempts{provider,outcome}</code>. Keys never logged (last4 only). The chat trace panel is the user-visible observability surface.</li>
+<li>Dead or vestigial: <code>EmailClassifier</code> and <code>email-classify</code>; <code>recordLlmTokens</code>; <code>llm.retry.cooldown-ms</code>; the commented-out <code>ampere</code> provider block (deliberate future extension); a defensive hardcoded provider set in <code>LlmKeyService</code> that only fires if config binding is empty.</li>
+<li>Tests: <code>FailoverLlmClientTest</code> (320 lines), <code>BucketStateRegistryTest</code>, provider tests, <code>LlmKeyServiceTest</code>, <code>LlmRoutingServiceTest</code> (486 lines), <code>ChatOrchestratorTest</code> (~850 lines incl. deadline math and clarify), <code>ChatSqlValidatorTest</code> (incl. UNION/CTE/subquery bypasses), <code>ChatSqlExecutorTest</code>, <code>ChatDbSessionTest</code>, tool and blocks tests. Untested: the Next proxy route, real disconnect cancellation, master-key rotation (no code), grounding cache under concurrency.</li>
+</ul>
+<p>Configuration: <code>LLM_CHAIN</code>, <code>LLM_CHAT_CHAIN</code>, <code>LLM_KEYS_MASTER_KEY</code>, <code>LLM_ATTEMPTS_PER_PROVIDER</code> 2, <code>GEMINI_MODELS</code> (7 models), <code>GEMINI_BATCH_SIZE</code> 200, <code>GROQ_BATCH_SIZE</code> 100, <code>OPENROUTER_BATCH_SIZE</code> 40, OpenRouter timeout 90 s, <code>chat.enabled</code>, <code>CHAT_RO_USERNAME/PASSWORD</code>, quota 30 / 2, loop 6 / 180 s / 200 rows / 5 s / 16,000 chars, <code>CHAT_EMITTER_TIMEOUT_SECONDS</code> 290 (changing it alone silently moves the 180/270 staircase). E2E profile swaps in <code>ScriptedLlmClient</code>.</p>
+
+<h3 id="m-llm-unk">Open questions</h3>
+<div class="qa"><b>Product</b> Is losing the transcript on refresh a decision or a deferral?</div>
+<div class="qa"><b>Product</b> Should the Pacific-midnight daily reset apply to Groq and OpenRouter too?</div>
+<div class="qa"><b>Technical</b> Is there a master-key rotation plan? Was <code>cooldown-ms</code> meant to be wired?</div>
+<div class="qa"><b>Technical</b> Do <code>v_chat_cardholders</code> / <code>v_chat_cards</code> exist, and should the validator allow them?</div>
+<div class="qa"><b>Business</b> Was token or cost metering ever a requirement?</div>
+</section>
+<nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/modules-a.html"><small>Previous</small>Modules A · inventory, accounts, transactions, Gmail, statements, jobs</a><a class="next" href="/handbook/data.html"><small>Next</small>Data</a></nav>
+  </main>
+</div>
+</div>
+<script src="/handbook/handbook.js" defer></script>
+</body>
+</html>

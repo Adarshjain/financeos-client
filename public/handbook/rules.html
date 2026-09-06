@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="FinanceOS system and product reference, reverse-engineered from the code. Rules, decisions and scenarios.">
+<title>FinanceOS Handbook · Rules, decisions and scenarios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="/handbook/handbook.css">
+</head>
+<body data-page="rules.html">
+<div class="shell">
+<aside class="side" id="side">
+  <div class="side-head">
+    <div class="brand">FinanceOS Handbook <small>v1</small></div>
+    <div class="brand-sub">System &amp; product reference, reverse-engineered from code · 2026-09-06</div>
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search sections and text…" autocomplete="off" aria-label="Search">
+      <kbd>/</kbd>
+    </div>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+  <div class="side-foot">
+    <button id="expandAll" type="button">Expand all</button>
+    <button id="collapseAll" type="button">Collapse all</button>
+    <span style="margin-left:auto">Source of truth: code</span>
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <button class="burger" id="burger" type="button" aria-label="Open navigation">☰ Sections</button>
+    <div class="crumb" id="crumb"><b>FinanceOS Handbook</b></div>
+    <button id="toTop" type="button">↑ Top</button>
+  </div>
+  <div class="results" id="results" aria-live="polite">
+    <button class="close" id="closeResults" type="button">Close ✕</button>
+    <h3 id="resultsTitle"></h3>
+    <div id="resultsList"></div>
+  </div>
+  <main class="content" id="content">
+<section class="sec" id="s41" data-part="VI · Business logic">
+<p class="eyebrow">Sections 41 and 42</p>
+<h2><span class="n">41</span>Idempotency matrix and concurrency analysis</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Automated ingestion is idempotent by design (unique keys on message id, file hash and source message id). Manual creates are not (no idempotency keys anywhere). Reads are pure. No entity in the codebase carries <code>@Version</code>, so every concurrent edit is last-write-wins and every check-then-act race falls through to a database constraint error rather than a clean 409 with a friendly message. The single job worker and single VM mean scheduled work never duplicates. <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s41-matrix">Idempotency matrix</h3>
+<div class="tw"><table>
+<tr><th>Operation</th><th>Safe to retry?</th><th>Deduplication</th><th>Mechanism</th><th>Transaction boundary</th><th>Risk</th></tr>
+<tr><td>Gmail message processing</td><td>Yes</td><td>(connection, gmail_message_id) unique; (user, source_message_id) unique; ledger status gate</td><td>DB + service</td><td>One DB transaction per message</td><td>Stale sweep could reprocess a slow message; dedup guard prevents a second row</td></tr>
+<tr><td>Gmail discovery</td><td>Yes</td><td>existing ids filtered in 500-chunks</td><td>DB unique</td><td>per batch</td><td>—</td></tr>
+<tr><td>Statement upload (same file)</td><td>Yes → SKIPPED</td><td>(account, sha256), (account, period)</td><td>service pre-check + DB unique</td><td>parse outside tx; short write tx</td><td>Concurrent identical uploads → raw error on one; skips new lines too</td></tr>
+<tr><td>Statement line → transaction (Gmail path)</td><td>Yes</td><td>source_message_id = messageId:lineIndex</td><td>service check</td><td>per message</td><td><code>existsBySourceMessageId</code> not user-scoped (harmless with per-user partial index)</td></tr>
+<tr><td>Manual transaction create</td><td><strong>No</strong></td><td>none</td><td>client <code>isSubmitting</code>, dialog running guard</td><td>single</td><td>Double submit = duplicate row</td></tr>
+<tr><td>Transaction update (PUT)</td><td>Yes (full replace)</td><td>—</td><td></td><td>single</td><td>Last write wins</td></tr>
+<tr><td>Batch review</td><td>Yes per reason</td><td>rows lacking the reason are skipped</td><td>service</td><td>single</td><td>—</td></tr>
+<tr><td>Batch delete</td><td>Yes</td><td>missing ids → NOT_FOUND failures</td><td>service</td><td>single</td><td>—</td></tr>
+<tr><td>Merge</td><td>No (second call 404s)</td><td>—</td><td></td><td>single</td><td>Not harmful</td></tr>
+<tr><td>Create link</td><td>Safe (repeat rejected)</td><td>"already in a link" check</td><td>service only</td><td>single</td><td>Two concurrent links for one transaction could both pass</td></tr>
+<tr><td>Rule apply</td><td>Safe</td><td>re-verifies predicate; skips MANUALLY_REVIEWED</td><td>service</td><td>chunks of 500</td><td><code>applied_count</code> inflates</td></tr>
+<tr><td>LLM categorize batch</td><td>Yes</td><td>skips rows that already have categories</td><td>service</td><td>read outside tx; write in tx</td><td>—</td></tr>
+<tr><td>Bulk reattribute card</td><td>Yes</td><td>—</td><td></td><td>single</td><td>Uncapped; null filter bug</td></tr>
+<tr><td>Account create</td><td><strong>No</strong></td><td>none</td><td></td><td>account tx + per-identifier calls</td><td>Partial success on identifiers</td></tr>
+<tr><td>Identifier create</td><td>Yes (same account)</td><td>value unique per user</td><td>service + DB</td><td>single</td><td>Different account → rejected</td></tr>
+<tr><td>Close / reopen account</td><td>Yes in effect</td><td>—</td><td>re-validates each time</td><td>single</td><td>Reopen may newly fail on last4 collision</td></tr>
+<tr><td>Replace card</td><td>No</td><td>partial unique indexes</td><td>saveAndFlush ordering</td><td>single</td><td>—</td></tr>
+<tr><td>Reward rule / bucket / milestone create</td><td><strong>No</strong></td><td>none</td><td></td><td>single</td><td>Duplicate ADDITIVE rules double earn</td></tr>
+<tr><td>Reward rule PUT, reorder</td><td>Yes</td><td>full overwrite; complete id list</td><td></td><td>single</td><td>—</td></tr>
+<tr><td>Reward evaluate / report / recommend</td><td>Yes (pure read)</td><td>—</td><td></td><td>read-only</td><td>—</td></tr>
+<tr><td>Trade create</td><td><strong>No</strong></td><td>none (external_ref unused for manual)</td><td></td><td>single + AFTER_COMMIT price event</td><td>Duplicate trade</td></tr>
+<tr><td>Price refresh</td><td>Yes</td><td>(instrument, as_of) upsert; job dedupKey</td><td>DB unique + JobService</td><td>per instrument</td><td>Enqueue dedup non-atomic</td></tr>
+<tr><td>Price refresh event listener</td><td>Yes</td><td>upsert</td><td>REQUIRES_NEW</td><td></td><td>—</td></tr>
+<tr><td>Dividend accept</td><td>Yes</td><td>±7-day dedup re-run at accept</td><td>service</td><td>single</td><td>—</td></tr>
+<tr><td>Corporate action create</td><td><strong>No</strong></td><td><strong>none</strong></td><td></td><td>single</td><td>Double application on every read <span class="c ph">High</span></td></tr>
+<tr><td>Import commit</td><td>Yes (rows re-deduped)</td><td>externalRef or exact tuple</td><td>service only</td><td>whole job</td><td>Concurrent commits double insert</td></tr>
+<tr><td>Reconcile commit</td><td>Mostly</td><td>externalRef with -I/-D; classification insert-if-absent</td><td>service + DB unique on classification</td><td>whole method one tx with per-row try/catch</td><td>Atomicity mismatch; corrected data cannot overwrite classifications</td></tr>
+<tr><td>Loan payment (with seq)</td><td>Yes (rejected as settled)</td><td>UNIQUE(loan, seq); unique transaction_id</td><td>service + DB</td><td>single</td><td>TOCTOU → raw error</td></tr>
+<tr><td>Loan payment (no seq)</td><td><strong>No</strong></td><td>—</td><td>auto-picks next unsettled</td><td>single</td><td>Retry settles the next installment</td></tr>
+<tr><td>Batch loan payments</td><td>Yes (rejected wholesale)</td><td>validated against live schedule</td><td>service</td><td>all-or-nothing</td><td>—</td></tr>
+<tr><td>Lending entry, counterparty</td><td><strong>No</strong></td><td>counterparty name unique (case-sensitive)</td><td></td><td>single</td><td>—</td></tr>
+<tr><td>Report / dashboard create</td><td><strong>No</strong></td><td>none</td><td></td><td>single</td><td>Duplicate names allowed</td></tr>
+<tr><td>Set default dashboard</td><td>Yes</td><td>partial unique index</td><td>client updatedAt guard + DB</td><td>single</td><td>Lost race → 409</td></tr>
+<tr><td>Job enqueue</td><td>Depends on dedupKey</td><td>active job with same key returned</td><td>service check (non-atomic)</td><td>single + afterCommit poke</td><td>Two enqueues can both insert</td></tr>
+<tr><td>Job claim</td><td>Yes</td><td>—</td><td>conditional UPDATE</td><td>REQUIRES_NEW</td><td>—</td></tr>
+<tr><td>Job retry</td><td>Creates a new job each time</td><td>—</td><td></td><td>single</td><td>Multiple retries = multiple jobs</td></tr>
+<tr><td>Login</td><td>Creates a session row each time</td><td>—</td><td></td><td></td><td>maximumSessions(5) never frees</td></tr>
+<tr><td>Signup</td><td>Race → unique email → 409</td><td>email unique</td><td>DB</td><td></td><td>Safe</td></tr>
+<tr><td>Google callback</td><td>Guarded client-side; code single-use at Google</td><td>—</td><td>ref guard</td><td></td><td>—</td></tr>
+<tr><td>Account deletion</td><td>Yes</td><td>—</td><td>limiter; drain; verified tx</td><td>executor tx</td><td>—</td></tr>
+<tr><td>LLM key create</td><td>No</td><td>position unique per provider</td><td>two-phase renumber</td><td>single</td><td>—</td></tr>
+<tr><td>Chat message</td><td>Consumes quota each time</td><td>—</td><td>semaphore</td><td>none</td><td>Retry after error still counts</td></tr>
+</table></div>
+
+<h3 id="s42-conc">Concurrency analysis</h3>
+<div class="tw"><table>
+<tr><th>Scenario</th><th>Locks / versioning</th><th>Outcome</th><th>Priority</th></tr>
+<tr><td>Two users of the same account edit it at once (two tabs)</td><td>None; no <code>@Version</code> on any entity</td><td>Last write wins silently, everywhere</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Two requests settle the same loan installment</td><td>DB UNIQUE(loan, seq)</td><td>Second gets a raw <code>DataIntegrityViolationException</code> → 409 CONFLICT generic message</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Two requests link the same bank transaction to two loan facts</td><td>Unique transaction_id per table</td><td>Same</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Concurrent identical statement uploads</td><td>UNIQUE sha256</td><td>One file FAILED with a DB error rather than SKIPPED</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Concurrent import or reconcile commits</td><td>Service-only dedup; classification UNIQUE</td><td>Possible duplicate trades; classification error caught and logged silently</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Gmail sync twice for one connection</td><td>Job dedupKey at enqueue; no row lock; PROCESSING is not a lock</td><td>Prevented at enqueue today; would race in a multi-worker future</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Job cancel racing job success</td><td>None on terminal writes</td><td>SUCCEEDED could be overwritten to CANCELLED</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Two enqueues with the same dedupKey</td><td>check-then-insert</td><td>Two jobs (cron price refresh, Gmail)</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Two transactions racing for the last reward cap headroom</td><td>Not applicable</td><td>Cap usage is a per-request in-memory accumulator; results deterministic on read</td><td>—</td></tr>
+<tr><td>Trade creation racing recomputeClassificationForDay</td><td>None</td><td>Both recompute from the full set; converge</td><td>—</td></tr>
+<tr><td>Set-default dashboard for two dashboards</td><td>Partial unique index</td><td>One 409</td><td>—</td></tr>
+<tr><td>Chat concurrency</td><td>Semaphore 2; quota <code>compute</code> atomic</td><td>429 CHAT_BUSY</td><td>—</td></tr>
+<tr><td>LLM bucket cooldown writes</td><td>AtomicLong last-writer</td><td>Harmless</td><td>—</td></tr>
+<tr><td>Background job vs user action on the same rows</td><td>None</td><td>e.g. Gmail sync creating rows while the user merges; deletion waits for jobs (5 s) but other flows do not</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Scheduled duplication</td><td>Single instance</td><td>Impossible today; no HA</td><td>—</td></tr>
+</table></div>
+<p><code>GlobalExceptionHandler</code> maps <code>OptimisticLockingFailureException</code> to 409, but nothing can throw it because no entity is versioned. <span class="c cg">Confirmed</span></p>
+</section>
+<section class="sec" id="s43" data-part="VI · Business logic">
+<p class="eyebrow">Sections 43 and 44</p>
+<h2><span class="n">43</span>Reconciliation, correctness and auditability</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>FinanceOS has exactly one built-in reconciliation mechanism between two independent sources, Gmail alerts against statement lines, plus a few advisory signals (bank reconciliation gap badge, statement checksum verdict, broker realized cross-check, holdings snapshot DATA_GAP). There is no job that checks derived numbers against anything, no correction workflow beyond edit and merge, and no audit trail outside single-transaction mutations. Because derived figures are recomputed from source facts, the practical question "how would we know FinanceOS is wrong" reduces to "how would we know the facts are wrong or the formula is wrong". <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s43-mechanisms">Existing reconciliation and validation mechanisms</h3>
+<div class="tw"><table>
+<tr><th>Mechanism</th><th>Compares</th><th>Action on mismatch</th><th>Location</th><th>Strength</th></tr>
+<tr><td>Statement vs alert reconciliation</td><td>Each statement line vs NEEDS_REVIEW alert transactions (exact amount, type, ±3 days, card)</td><td>Match → promote alert; miss → create gmail_statement row</td><td><code>StatementReconciliationService</code></td><td>Real, automatic, Gmail path only</td></tr>
+<tr><td>Balance anchor and gap badge</td><td>opening + Σ all transactions vs statement closing + post-anchor</td><td>Shows ⚠ with the gap ≥ ₹0.01 (bank only)</td><td><code>BalanceMath</code>, <code>BankAccountTile</code></td><td>Advisory</td></tr>
+<tr><td>Statement checksum and card checks</td><td>opening + credits − debits vs closing; purchases vs Σ debits; payments vs Σ credits; prev + charges + spend − payments vs due</td><td>Verdict AUTO_INGEST / NEEDS_REVIEW / REJECT; never blocks</td><td><code>StatementParseEngine</code></td><td>Advisory</td></tr>
+<tr><td>Duplicate transaction detection</td><td>New rows vs existing (same day, exact amount, Jaccard ≥ 0.70)</td><td>Flag DUPLICATE_SUSPECT; user merges</td><td><code>FileIngestionService</code>, <code>TransactionMatcher</code></td><td>Advisory + manual</td></tr>
+<tr><td>Broker realized cross-check</td><td>FIFO realized P&amp;L vs broker tax P&amp;L totals</td><td><code>deliveryDiff</code>, <code>intradayDiff</code> shown in preview; CLASSIFIER_MISMATCH warning</td><td><code>BrokerReconciliationService</code></td><td>Advisory, preview only</td></tr>
+<tr><td>Holdings snapshot anchor</td><td>FIFO quantities vs uploaded demat holdings file</td><td>DATA_GAP warning</td><td>same</td><td>Optional, advisory</td></tr>
+<tr><td>Sell exceeds holdings</td><td>Sell qty vs open qty</td><td>Reject on manual paths; warn-and-truncate in the engine</td><td><code>InvestmentService</code></td><td>Partial</td></tr>
+<tr><td>Import preview vs commit</td><td>Client-echoed rows re-deduped</td><td>Skip duplicates</td><td>import services</td><td>Trusts client values</td></tr>
+<tr><td>Deletion verification</td><td>Post-delete counts across every user_id table</td><td>Roll back</td><td><code>AccountDeletionExecutor</code></td><td>Strong</td></tr>
+<tr><td>Parity tests</td><td>Balance single vs batch; holding realized vs Σ lots; SQL vs in-memory FY buckets</td><td>CI failure</td><td>tests</td><td>Build-time only</td></tr>
+<tr><td>Statement reward points</td><td>Parsed into <code>statement_credit_card_details.reward_points_earned</code> but never compared with the computed reward</td><td>—</td><td>—</td><td>Not built (analysis parked)</td></tr>
+</table></div>
+
+<h3 id="s43-how">How would we know FinanceOS is wrong?</h3>
+<div class="tw"><table>
+<tr><th>If this were wrong…</th><th>Detectable today by</th><th>Not detectable</th></tr>
+<tr><td>A bank balance</td><td>Gap badge (bank accounts with statements); user comparing with the bank</td><td>Card and generic accounts have no gap signal; excluded rows counted; anchor-day drops</td></tr>
+<tr><td>A missing Gmail transaction</td><td>Attention queue (parked); statement line created for it later</td><td>Emails from non-allow-listed senders; token revoked (fails per message silently); backfill clamp at 365 days</td></tr>
+<tr><td>A duplicated transaction</td><td>DUPLICATE_SUSPECT on upload; review queue</td><td>Gmail alert plus statement line with a date gap &gt; 3 days or amount difference; two manual entries</td></tr>
+<tr><td>A wrong category</td><td>CATEGORY_UNVERIFIED until approved</td><td>Once verified, nothing re-checks</td></tr>
+<tr><td>A wrong reward number</td><td>Reason codes per line explain the engine's view</td><td>No comparison with the issuer's statement points; rule tester approximations; duplicate rules</td></tr>
+<tr><td>A wrong position or XIRR</td><td>Reconciliation preview cross-check; DATA_GAP; "at cost" badge for missing prices</td><td>Untested XIRR; duplicate CA; stale price shows without a date warning; charges excluded silently</td></tr>
+<tr><td>A wrong EMI or outstanding</td><td>Nothing compares with the bank</td><td>Payment amounts never reconcile; foreclosure amounts unchecked</td></tr>
+<tr><td>A wrong report total</td><td>Chat may give a different number for the same question</td><td>Category fan-out is invisible in the report itself</td></tr>
+<tr><td>A cross-tenant leak</td><td>E2E foreign-id sweep for every endpoint; "Security Breach Attempt" logs</td><td>A new entity without @Filter reachable only through an internal path</td></tr>
+<tr><td>A parser sign error</td><td>Verdict NEEDS_REVIEW or REJECT badge</td><td>REJECTED statements still ingest; badge is passive</td></tr>
+</table></div>
+
+<h3 id="s44-audit">Auditability (§44)</h3>
+<div class="tw"><table>
+<tr><th>Question</th><th>Answer</th><th>Evidence</th></tr>
+<tr><td>Who changed it?</td><td>Every row carries <code>user_id</code> (the tenant), not an actor id; in a single-user tenant these coincide. Server logs carry <code>userId</code> and <code>requestId</code> in MDC.</td><td><code>UserContextFilter</code>, <code>AccessLogFilter</code></td></tr>
+<tr><td>When?</td><td><code>created_at</code> and usually <code>updated_at</code> on every table (TZ-aware); <code>reviewed_at</code> on transactions; <code>last_applied_at</code> on rules; <code>last_used_at</code> on LLM keys</td><td>entities</td></tr>
+<tr><td>From what to what?</td><td>Only for manual single-transaction create, update, delete and merge: <code>AuditLogger.mutation</code> logs before/after amounts to the JSON log (<code>event=audit.mutation</code>). No audit table.</td><td><code>TransactionService</code>, <code>core/observability/AuditLogger</code></td></tr>
+<tr><td>Why?</td><td>Not recorded. Loan events and links have <code>note</code> fields; corporate actions have <code>notes</code>.</td><td>—</td></tr>
+<tr><td>Through which process?</td><td><code>transactions.source</code>, <code>source_message_id</code>, <code>applied_rule_id</code>, <code>statement_transactions</code> record provenance for ingested rows; jobs record <code>trigger_source</code>, payload and result JSON for 30 days; Gmail ledger records every email outcome</td><td>schema</td></tr>
+<tr><td>Is history retained?</td><td>No. Updates overwrite; deletes cascade; no soft delete; no history tables; the review state loses its previous reasons on transition; corporate action edits leave no trace; job rows purge after 30 days</td><td>schema, <code>JobJanitor</code></td></tr>
+<tr><td>Request ids?</td><td>Client mints <code>X-Request-Id</code>, the server validates or mints and echoes it; every log line for the request carries it; Loki queryable</td><td><code>proxy.ts</code>, <code>RequestContextFilter</code></td></tr>
+<tr><td>Gaps</td><td>Batch review, batch delete, rule apply, LLM categorization, imports, reward and loan mutations have no audit record beyond generic access logs; historical reconstruction of "what did my balance say last month" is impossible except via the portfolio_value datasource's synthetic month-end snapshots</td><td><code>AuditLogger</code> has one caller</td></tr>
+</table></div>
+</section>
+<section class="sec" id="s45" data-part="VI · Business logic">
+<p class="eyebrow">Section 45</p>
+<h2><span class="n">45</span>Contradiction registry</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Places where two parts of FinanceOS implement or describe the same concept differently. Each row names both implementations, the conflict and its user-visible impact. The most consequential are the report category fan-out (chat and reports disagree), the two point valuations (Card Picker vs reports), <code>is_excluded</code> semantics (UI copy vs balances), and cost basis with or without charges (code vs plan). <span class="c cg">Confirmed unless marked</span></p></div>
+<div class="tw"><table>
+<tr><th>#</th><th>Concept</th><th>Implementation A</th><th>Implementation B</th><th>Conflict</th><th>Impact</th><th>Priority</th></tr>
+<tr><td>C1</td><td>Spend by category</td><td>Reports: <code>TransactionQueryBuilder</code> fan-out LEFT JOIN on transaction_categories</td><td>Chat: <code>v_chat_transactions</code> LISTAGG (one row per transaction) + <code>v_chat_transaction_categories</code></td><td>Multi-category rows counted N times in reports</td><td>Report and chat totals differ; KPIs filtered by category over-count</td><td><span class="c pc">Critical</span></td></tr>
+<tr><td>C2</td><td>Value of an unvalued reward point</td><td>Recommender: ₹0.25 default (<code>DEFAULT_POINT_VALUE_INR</code>)</td><td><code>RewardEarningsDatasource</code>: ₹0</td><td>Different defaults</td><td>Card Picker and reports disagree for the same card</td><td><span class="c ph">High</span></td></tr>
+<tr><td>C3</td><td><code>is_excluded</code> meaning</td><td>UI copy "Do not include in reporting and budgets"; reward engine excludes</td><td>Balance queries include; reports include unless filtered</td><td>Partial honouring</td><td>Excluded rows move balances</td><td><span class="c ph">High</span></td></tr>
+<tr><td>C4</td><td>Cost basis of a lot</td><td>Code: traded price only (comment "clean cost basis")</td><td>Plan <span class="path">investment-tracking-plan.md:154-157</span>: include allocated buy charges</td><td>Doc vs code</td><td>P&amp;L gross of fees; only XIRR nets them</td><td><span class="c ph">High</span></td></tr>
+<tr><td>C5</td><td>Transaction source values</td><td><code>TransactionSource</code>: manual, gmail_transaction_alert, gmail_statement, file_upload</td><td><code>DatasourceCatalog</code> report catalog: "gmail", "manual"</td><td>Stale enum copy</td><td>Report and chat filter on source broken for 3 of 4 values</td><td><span class="c ph">High</span></td></tr>
+<tr><td>C6</td><td>KPI period comparison</td><td>SQL executor: default enabled; scale 6 → 2</td><td>In-memory executor: default disabled; scale 4; NPE on null <code>enabled</code></td><td>Divergent defaults, rounding, a crash</td><td>Same widget behaves differently by datasource</td><td><span class="c ph">High</span></td></tr>
+<tr><td>C7</td><td>Loan EMI match tolerance</td><td>Code: ± ₹20 and ± 7 days</td><td>Plan <span class="path">loans-module-implementation-prompt.md:180</span>: exact match only</td><td>Doc vs code</td><td>Looser matching than designed</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>C8</td><td>Financial year boundary</td><td>Server: <code>financeos.reports.fiscal-year-start-month</code> (default 4) in DateRangeResolver, tax datasource</td><td>Client loans: hardcoded April (<code>useLoanQueries.ts</code>, <code>LoanAmortizationSchedule.tsx</code>); DividendService and chat grounding also hardcode month ≥ 4</td><td>One configurable, three fixed</td><td>Silent disagreement if the setting changes</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>C9</td><td>Reward matching and accrual</td><td>Server <code>RewardCalculationService</code> (BigDecimal)</td><td>Client rule tester <code>useRewardRulePreview.ts</code> (JS numbers, no caps, no day-of-week, tier progress 0)</td><td>Second implementation</td><td>Tester can disagree with the report</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>C10</td><td>Intraday vs delivery</td><td><code>trade_settlement_classifications</code> (authoritative)</td><td><code>investment_transactions.settlement_type</code> (hint; "lies on straddle days")</td><td>Two representations, documented</td><td>A reader of the per-row tag mis-attributes</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>C11</td><td>Statement dedup and reconciliation</td><td>Upload path: same-day window 0, flag never skip</td><td>Gmail path: ±3-day window, match-promote-create</td><td>Same <code>TransactionMatcher</code>, different behaviour</td><td>Same statement yields different outcomes by path</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>C12</td><td>Statement verdict vocabulary</td><td>Engine emits "REJECT"</td><td>Adapter maps "AUTO-INGEST", "NEEDS REVIEW", else REJECTED</td><td>Works by catch-all</td><td>A typo would silently become REJECTED</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C13</td><td>Gmail sync result shape</td><td>Server <code>SyncSummary</code> 9 fields</td><td>Client type adds fetched, failed, attention[] with outcome enums the server never sends</td><td>Dead UI branch</td><td>~90 unreachable lines</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C14</td><td>Chat queryable views</td><td>Migrations: 16 <code>v_chat_*</code> views incl. cardholders and cards; <code>dictionary.md</code> documents them</td><td><code>ChatSqlValidator.ALLOWED_VIEWS</code>: 14, without cardholders and cards</td><td>Prompt promises what the validator rejects</td><td>Model must self-correct; card questions may fail</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>C15</td><td>Account status</td><td>Java <code>Account.getStatus</code> (unused)</td><td>TypeScript <code>getAccountStatus</code> (live); dropped DB column</td><td>Three implementations</td><td>Maintenance only</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C16</td><td>"Open card"</td><td><code>Card.isOpen()</code> shallow</td><td>Resolver and rewards require cardholder not effectively closed; client shallow</td><td>Two meanings</td><td>Closed account can show an ACTIVE plastic</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C17</td><td>Identifier matching</td><td>Resolver pass 2 fuzzy (≥3 chars)</td><td>Reactivation exact on a 4-char column</td><td>Long aliases never reactivate</td><td>Parked emails stay parked</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>C18</td><td>Broker financial position default</td><td>Create defaults to asset</td><td>Update does not</td><td>Asymmetry</td><td>Omitted field nulls on update</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C19</td><td>Sign convention</td><td><code>TransactionResponse.from</code></td><td>List SQL and report SQL CASE expressions</td><td>Three copies</td><td>Maintenance</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C20</td><td>Transaction filter fields</td><td><code>TransactionListQueryBuilder.FIELDS</code> (16)</td><td><code>DatasourceCatalog.FIELDS</code> + report MAPPINGS</td><td>Drifted sets (documented as intentional)</td><td>A new flag must be wired in four places</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C21</td><td>Bucket truncation for dates</td><td>Oracle TRUNC/ADD_MONTHS in SQL</td><td><code>BucketLabels</code> and in-memory <code>processDimensionValue</code></td><td>Three copies (FY parity tested)</td><td>Maintenance</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C22</td><td>Cookie policy</td><td>Spring <code>server.servlet.session.cookie.*</code></td><td>Next <code>setSessionCookie</code> (<code>NODE_ENV</code> secure)</td><td>Never meet in the normal flow</td><td>Drift risk</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C23</td><td>Refresh after mutation</td><td>TanStack invalidation (59 files)</td><td><code>router.refresh()</code> (accounts) and <code>revalidatePath</code> (3 actions)</td><td>Three strategies</td><td>Accounts uses two at once</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C24</td><td>Transaction list hook</td><td><code>useTransactionsBrowser</code> (live)</td><td><code>useTransactionWorkspace</code> (dead twin, same cache key)</td><td>Duplicate</td><td>Misleading</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C25</td><td>Client types</td><td>Generated <code>schema.d.ts</code></td><td>Hand-authored <code>*.types.ts</code> (loan, jobs, reports hand; lending, dashboards generated)</td><td>Inconsistent strategy</td><td>Silent drift for hand types</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>C26</td><td>Recharts loading</td><td>Reports: dynamic import (~390 KB chunk)</td><td>Holdings: static import via PriceHistoryPanel</td><td>Policy applied once</td><td>Bundle cost on /investments</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C27</td><td>Watermark check</td><td><code>GmailIngestionService</code> null check</td><td><code>GmailTransactionWriter</code> date check; <code>StatementReconciliationService</code> null check</td><td>Three copies</td><td>Maintenance</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C28</td><td>Provider list</td><td><code>application.yml</code> providers (authoritative)</td><td><code>LlmKeyService</code> fallback set; dropped DB CHECK</td><td>Three places</td><td>Drift risk</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C29</td><td>Category name cap</td><td>LLM-created ≤60 chars</td><td>User-typed ≤100</td><td>Two caps</td><td>Minor</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C30</td><td>Review reason enum</td><td>Server: 3 values</td><td>Client union and catalog include 'OTHER'; V26 backfill wrote 'OTHER'</td><td>Dead value client-side; possible orphan rows</td><td>Hydration failure if rows exist</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>C31</td><td>Tenancy mechanism</td><td>Hibernate filter</td><td>Explicit binds in 6 native SQL sites; Oracle SYS_CONTEXT for chat</td><td>Three mechanisms</td><td>Each sound; must all be maintained</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C32</td><td>Milestone value in decisions</td><td>Report: counted only when achieved and payout date in range</td><td>Recommender: fractional proximity credit</td><td>Different by design</td><td>Card Picker totals exceed report totals</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>C33</td><td>Documentation vs reality</td><td>Client README: Next 14, middleware.ts, Node 18, server-first, money as strings</td><td>Code: Next 16, proxy.ts, Node 20, TanStack, JSON numbers</td><td>Stale</td><td>Misleads newcomers</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>C34</td><td>Deploy README vs profiles</td><td>README: prod profile inert, Boot 3.2.1 EOL</td><td><code>application-prod.yml</code> exists; Boot 3.3.4</td><td>Stale</td><td>Minor</td><td><span class="c pl">Low</span></td></tr>
+</table></div>
+</section>
+<section class="sec" id="s18" data-part="VI · Business logic">
+<p class="eyebrow">Sections 18, 19, 55 and 56</p>
+<h2><span class="n">18</span>Product decision registry, "why does this exist", precedence and configuration</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Places where FinanceOS decides rather than displays. For each decision: inputs, rules, output, user impact, code location and confidence. The "why" column distinguishes what the code does (confirmed) from the reason it does it (confirmed only when a javadoc, config comment or plan document states it; otherwise "cannot be established from the repository"). <span class="c cg">Confirmed</span></p></div>
+
+<h3 id="s18-registry">Decision registry</h3>
+<div class="tw"><table>
+<tr><th>#</th><th>Decision</th><th>Inputs</th><th>Rule</th><th>Output and user impact</th><th>Code</th><th>Why (evidence)</th><th>Confidence</th></tr>
+<tr><td>D1</td><td>Is this ingested transaction trusted?</td><td>source, categorization outcome, statement match</td><td>Ingested → NEEDS_REVIEW with UNRECONCILED; LLM or unverified rule → CATEGORY_UNVERIFIED; statement match → AUTO_REVIEWED; human → MANUALLY_REVIEWED; manual create → NA</td><td>Review queue membership</td><td><code>ReviewStatusManager</code>, <code>GmailTransactionWriter</code>, <code>StatementReconciliationService</code></td><td>Plan <span class="path">transaction-review-decisions.md</span>: provisional ingestion, no auto-trust of LLM</td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D2</td><td>Which category does a transaction get?</td><td>sourced description, user rules, LLM</td><td>Rules first (USER &gt; LLM, specificity, length, verified, recency); LLM fallback creates a rule; manual rows never auto-categorized</td><td>Category chips, review reason</td><td><code>CategorizationService</code></td><td>Plan and prompt text; "no backfill" per plan</td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D3</td><td>Which account does an email belong to?</td><td>extracted last4 or alias, accounts, cards, identifiers</td><td>4-pass resolver; ambiguity parks</td><td>Transaction created or Needs Attention</td><td><code>AccountResolver</code></td><td>V62 comment: one sender serves many accounts, so last4 is the "exactly one" truth</td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D4</td><td>Should a Gmail transaction be created at all?</td><td>account.ingest_from_date, transaction date</td><td>Create iff date set and date ≥ watermark</td><td>Prevents double import of history</td><td><code>GmailTransactionWriter</code></td><td>Spec <span class="path">docs/gmail-ingestion-spec.md</span> §4.9</td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D5</td><td>Is this a statement or an alert email?</td><td>attachment filenames</td><td>.pdf/.xlsx/.xls → statement path; else LLM extract</td><td>Which pipeline runs</td><td><code>GmailIngestionService.hasStatementAttachment</code></td><td>Reason for bypassing the built LLM classifier: <strong>cannot be established from the repository</strong></td><td><span class="c cg">rule</span> <span class="c cr">why</span></td></tr>
+<tr><td>D6</td><td>Are these two rows the same transaction?</td><td>date, amount, type, description</td><td>Upload: same day, exact amount, type, Jaccard ≥ 0.70 → flag; Gmail: exact amount, type, ±3 days, card → match and promote</td><td>DUPLICATE_SUSPECT or AUTO_REVIEWED</td><td><code>TransactionMatcher</code></td><td>"Same day only as requested" comment; plan for merge accepts amount differences</td><td><span class="c cg">rule</span> <span class="c co">why</span></td></tr>
+<tr><td>D7</td><td>Which row survives a merge?</td><td>sources, createdAt (client default), user choice</td><td>gmail_statement &gt; file_upload &gt; gmail_transaction_alert &gt; manual; server carries over blanks only</td><td>One row, categories not unioned</td><td><code>MergeTransactionsDialog</code>, <code>TransactionService.mergeTransactions</code></td><td>Plan <span class="path">transaction-merge-plan.md</span> "don't union"</td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D8</td><td>Is a transaction eligible to earn rewards?</td><td>type, links, is_excluded</td><td>DEBIT only; TRANSFER/CC_PAYMENT/REVERSAL never; REFUND nets basis; excluded never</td><td>Line with reason code</td><td><code>RewardCalculationService.evaluate</code></td><td>Plan <span class="path">rewards-engine-plan.md</span>; FEE/EMI link neglect: cannot be established</td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D9</td><td>Which reward rule wins?</td><td>stacking, priority, caps</td><td>Exclusive chain by priority; 0 % blocks; FALL_THROUGH or STOP; additive always</td><td>One or more lines</td><td><code>resolveTxnFacts</code></td><td>Plan and research doc; STOP's purpose: cannot be established</td><td><span class="c cg">rule</span> <span class="c co">why</span></td></tr>
+<tr><td>D10</td><td>How much does a capped rule pay at the boundary?</td><td>raw accrual, cap headroom</td><td>Partial credit up to remaining</td><td>PARTIAL_CAP</td><td><code>clamp</code></td><td>Matches issuer behaviour per research doc</td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D11</td><td>What is a point worth?</td><td>account.point_value_inr</td><td>Configured value; else ₹0.25 (recommender) or ₹0 (reports datasource)</td><td>Card Picker ranking; report ₹</td><td>two classes</td><td>Cannot be established; both defaults documented in code</td><td><span class="c cg">rule</span> <span class="c cr">why</span></td></tr>
+<tr><td>D12</td><td>Which card should I swipe?</td><td>amount, MCC, category, channel, EMI, intl, date</td><td>Real history as of today; simulate; rank by total then guaranteed then name; fractional milestone credit</td><td>Ranked list with reasons and flags</td><td><code>RewardRecommendationService</code></td><td>Plan <span class="path">reward-card-recommender-prompt.md</span></td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D13</td><td>What is my balance?</td><td>statements, transactions, type</td><td>Anchor + post-anchor; broker = market value + cash</td><td>Tile balance</td><td><code>BalanceMath</code></td><td>Memory: tiered rollups dropped because "anchors already checkpoint"; comment in code</td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D14</td><td>What do I hold and at what cost?</td><td>trades, classifications, CAs, prices</td><td>FIFO, clean cost, intraday out of FIFO, CA replay</td><td>Positions</td><td><code>calculateHoldingPosition</code></td><td>Plan says charges in cost; code comment says clean. Contradiction</td><td><span class="c cg">rule</span> <span class="c cr">why</span></td></tr>
+<tr><td>D15</td><td>Is a same-day buy and sell intraday?</td><td>settlement tags or broker tax P&amp;L</td><td>min(intraday buys, intraday sells) per day; classifier authoritative</td><td>Delivery lots preserved</td><td><code>recomputeClassificationForDay</code>, <code>BrokerReconciliationService</code></td><td>Plan documents the Feb-lot corruption bug</td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D16</td><td>Which instrument is this row?</td><td>ISIN, symbol, exchange, aliases, external catalogs</td><td>ISIN authoritative → AMFI code → Yahoo symbol → symbol+exchange → alias → catalog → create shell (null Yahoo symbol if delisted)</td><td>Holding assignment; renames self-heal</td><td><code>InstrumentSearchService.resolve</code>, import services</td><td>Plan <span class="path">instrument-catalog-search-plan.md</span></td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D17</td><td>Which EMI does this bank transaction pay?</td><td>DEBIT amount, date, account</td><td>± ₹20, ± 7 days, greedy nearest</td><td>Suggestion banner</td><td><code>getMatchSuggestions</code></td><td>Plan said exact; tolerance reason: cannot be established</td><td><span class="c cg">rule</span> <span class="c cr">why</span></td></tr>
+<tr><td>D18</td><td>How much do I still owe on a loan?</td><td>terms, events, today</td><td>Schedule closing balance ≤ today; payments ignored</td><td>Outstanding, overdue statuses</td><td><code>LoanScheduleService</code></td><td>Plan: "schedule marches on regardless" v1 simplification</td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D19</td><td>Is this statement trustworthy?</td><td>checksum, chain %, cross totals, card checks</td><td>5-rule verdict; advisory</td><td>Badge only; always ingested</td><td><code>StatementParseEngine</code></td><td>Not gating: cannot be established</td><td><span class="c cg">rule</span> <span class="c cr">why</span></td></tr>
+<tr><td>D20</td><td>Which LLM answers?</td><td>task, user prefs, keys, cooldowns</td><td>Chain resolution; model-major Gemini; skip cooldown; 401 invalidates</td><td>Provider in logs and health panel</td><td><code>FailoverLlmClient</code></td><td>yml comments: free-tier headroom</td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D21</td><td>Should chat answer, ask, or stop?</td><td>iterations, elapsed, repeated failures</td><td>clarify once; force final at 6 iterations / 180 s / 3 identical failures; hard stop 270 s</td><td>Answer, clarify chips, or "took longer" message</td><td><code>ChatOrchestrator</code></td><td>Comment on emitter margin</td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+<tr><td>D22</td><td>Can a user sign up?</td><td>invite code, failure count</td><td>Code must match; 10 failures lock 15 min globally; unset code refuses all</td><td>Signup accepted or "Signups are currently closed"</td><td><code>InviteCodeService</code></td><td>yml comment "invite-only, fail closed"; javadoc for global limiter</td><td><span class="c cg">both</span></td></tr>
+<tr><td>D23</td><td>Which dashboard is home?</td><td>is_default flag</td><td>Default else first</td><td>Landing render</td><td><code>dashboard/page.tsx</code></td><td>Spec doc</td><td><span class="c cg">both</span></td></tr>
+<tr><td>D24</td><td>Does a widget still render after its report is deleted?</td><td>report existence</td><td>available:false placeholder</td><td>No blocking</td><td><code>DashboardService.toResponse</code></td><td>Validator javadoc: intentional</td><td><span class="c cg">both</span></td></tr>
+<tr><td>D25</td><td>Which transactions appear in a report total?</td><td>filters only</td><td>No default exclusions; category join fan-out</td><td>Potential over-count</td><td><code>TransactionQueryBuilder</code></td><td>No-default-exclusion is in the spec; fan-out reason: cannot be established</td><td><span class="c cg">rule</span> <span class="c cr">why</span></td></tr>
+<tr><td>D26</td><td>Closed account behaviour</td><td>closed_on</td><td>Blocks card mutations; not transactions or imports</td><td>Hidden in a collapsible</td><td><code>CardholderService</code></td><td>Cannot be established</td><td><span class="c cg">rule</span> <span class="c cr">why</span></td></tr>
+<tr><td>D27</td><td>Fractional shares in a merger</td><td>entitlement, cash in lieu</td><td>Floor whole shares; fraction sold at cash in lieu (default ₹0 = loss)</td><td>Realized line</td><td><code>deriveSeeds</code></td><td>Plan <span class="path">corporate-actions-fractional-cash-in-lieu-prompt.md</span></td><td><span class="c cg">rule</span> <span class="c cy">why</span></td></tr>
+</table></div>
+
+<h3 id="s19-why">Why does this exist? Significant intentional functionality</h3>
+<div class="tw"><table>
+<tr><th>What exists</th><th>Evidence</th><th>Likely reason</th><th>Alternative</th><th>Confidence</th></tr>
+<tr><td>Cardholder → Card split (third card model)</td><td>V73 → V80 → V82; <code>ReplaceCardForm.tsx:41</code> comment</td><td>Indian cards are reissued often; reward scoping must survive plastic changes</td><td>Single last4 on the account (the original V1 design that failed)</td><td><span class="c cg">Confirmed by comments</span></td></tr>
+<tr><td>Compute-on-read everywhere</td><td>Javadocs in rewards, loans plan, no derived tables</td><td>No stale caches; single source of truth; personal scale</td><td>Materialized summaries with recalculation jobs</td><td><span class="c cy">Strongly inferred</span></td></tr>
+<tr><td>Hibernate filter tenancy</td><td><code>HibernateFilterAspect</code> javadoc</td><td>Isolation that cannot be forgotten in review</td><td>Per-query WHERE, RLS/VPD</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>Cookie relay and client-landed OAuth</td><td>AuthController comments; yml comments</td><td>Different origins for client and API</td><td>Same-origin deployment, JWT</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>Chat as CHAT_RO with Oracle-side tenancy</td><td>V70 comments; <code>chat-ro-setup.sql</code> invariant</td><td>Model-written SQL must not be able to cross tenants even if the validator fails</td><td>Application-only validation; no raw SQL</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>Free-tier LLM failover</td><td>yml comments</td><td>No paid provider; each model has its own daily quota</td><td>One paid provider</td><td><span class="c cy">Strongly inferred</span></td></tr>
+<tr><td>Statement as reconciliation truth</td><td>Gmail spec; reconciliation service</td><td>Alerts are noisy; statements are complete</td><td>Trust alerts; skip statements</td><td><span class="c cy">Strongly inferred</span></td></tr>
+<tr><td>Generic statement parser, no per-bank code</td><td>Parser package; Python port comments</td><td>Reason not stated; likely a bet on heuristics generalising</td><td>Per-issuer templates</td><td><span class="c cr">Unknown</span></td></tr>
+<tr><td>Two-source broker reconciliation</td><td>Plan documents the cost-basis corruption bug</td><td>Tradebook alone cannot separate intraday from delivery</td><td>Tradebook-only netting</td><td><span class="c cy">Strongly inferred</span></td></tr>
+<tr><td>Standalone F&amp;O ledger</td><td>V43 → V44 → V45</td><td>Contracts do not fit the equity instrument master (plan)</td><td>Contracts as instruments</td><td><span class="c cy">Strongly inferred</span></td></tr>
+<tr><td>Lendings as a signed ledger</td><td>V48; plan</td><td>Informal debts have no schedule or interest</td><td>Mini-loans with repayments (the V47 design)</td><td><span class="c cg">Confirmed by plan</span></td></tr>
+<tr><td>Job queue in the same JVM</td><td>Plan <span class="path">background-jobs-prompt.md</span></td><td>Unify bespoke async patterns; keep slow work off requests</td><td>External queue</td><td><span class="c cy">Strongly inferred</span></td></tr>
+<tr><td>Global invite lockout</td><td>Limiter javadoc</td><td>All signups arrive from Vercel's egress IP</td><td>Per-IP limit</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>Deletion verified against the data dictionary</td><td>Executor comments</td><td>Cascades cannot be trusted blindly</td><td>Trust FKs</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>Idempotent PL/SQL migrations</td><td>V63+ comments</td><td>Oracle DDL auto-commit leaves partial state</td><td>Plain DDL</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>Nullable reward <code>active_from</code></td><td>V52 comment</td><td>New rules ignored past transactions</td><td>Required start date</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>Fee treatment per rule</td><td>V60 comment</td><td>Surcharges were over-earning</td><td>Per card</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>Dashboard summary stub</td><td>Spec doc</td><td>Needs an accounts datasource that does not exist</td><td>Build net worth</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>Chat transcript not persisted</td><td>Memory note "deferred"</td><td>Deferred</td><td>Server or local persistence</td><td><span class="c co">Inferred</span></td></tr>
+</table></div>
+
+<h3 id="s55-precedence">Business-rule precedence (§55)</h3>
+<div class="tw compact"><table>
+<tr><th>Domain</th><th>Order (first wins)</th><th>Fallback</th></tr>
+<tr><td>Categorization</td><td>User rule &gt; LLM rule; EXACT &gt; STARTS_WITH &gt; CONTAINS &gt; REGEX &gt; MERCHANT_KEY; longer pattern; verified; newer</td><td>LLM suggestion → new rule; else uncategorized + CATEGORY_UNVERIFIED</td></tr>
+<tr><td>Review transitions</td><td>Explicit reviewType in request (if changed) &gt; category edit clears CATEGORY_UNVERIFIED &gt; batch review scoped reasons &gt; merge clears UNRECONCILED, DUPLICATE_SUSPECT</td><td>Stays NEEDS_REVIEW while reasons remain</td></tr>
+<tr><td>Account resolution</td><td>Alias exact &gt; bank/open card exact &gt; fuzzy &gt; closed cards</td><td>Park</td></tr>
+<tr><td>Reward rules</td><td>Exclusive by priority desc (ties by created_at); 0 % blocks; cap exhausted → FALL_THROUGH (next) or STOP; then all additive</td><td>NO_RULE zero line</td></tr>
+<tr><td>Reward cap source</td><td>Bucket cap and window &gt; rule's own period cap</td><td>None</td></tr>
+<tr><td>Reward windows</td><td>STATEMENT_CYCLE from statements &gt; CALENDAR_MONTH fallback; ANNIVERSARY_YEAR from account date &gt; CALENDAR_YEAR fallback</td><td>flags</td></tr>
+<tr><td>Reward effective date</td><td>settlement_date &gt; transaction_date</td><td></td></tr>
+<tr><td>Price</td><td>MANUAL &gt; feed for the same day; latest date wins; no price → cost</td><td></td></tr>
+<tr><td>Instrument identity</td><td>ISIN &gt; AMFI code &gt; Yahoo symbol &gt; symbol+exchange &gt; alias &gt; catalog &gt; create</td><td></td></tr>
+<tr><td>Same-day investment events</td><td>CA-seeded lots &gt; corporate action &gt; trades</td><td></td></tr>
+<tr><td>Intraday classification</td><td>classification row &gt; per-row settlement tag</td><td>all delivery</td></tr>
+<tr><td>Loan schedule</td><td>User EMI or event override &gt; annuity; events by date then rate_change &gt; prepayment &gt; foreclosure</td><td></td></tr>
+<tr><td>LLM chain</td><td>User prefs &gt; default-routing &gt; legacy task chain &gt; global chain; within a provider user keys &gt; env key (only if allowNoKey)</td><td>NO_KEYS</td></tr>
+<tr><td>Structured output mode</td><td>Model catalog override &gt; provider default</td><td>json_object</td></tr>
+<tr><td>Session validity</td><td>Cookie presence (proxy) &lt; /auth/me validation (RSC)</td><td>redirect</td></tr>
+<tr><td>Merge keep default</td><td>gmail_statement &gt; file_upload &gt; gmail_transaction_alert &gt; manual; tie → older</td><td>user choice</td></tr>
+</table></div>
+
+<h3 id="s56-config">Configuration-driven business logic (§56)</h3>
+<div class="tw compact"><table>
+<tr><th>Configuration</th><th>Behaviour affected</th></tr>
+<tr><td><code>INVITE_CODE</code>, <code>INVITE_MAX_FAILURES</code>, <code>INVITE_LOCKOUT_MINUTES</code></td><td>Who can sign up; fail closed</td></tr>
+<tr><td><code>gmail.ingest.*</code> (cron, zone, backfill 30/365, window 3, budgets 100/500, retries 5, stale 60, overlap 15)</td><td>When and how far Gmail syncs; match tolerance; retry cadence</td></tr>
+<tr><td><code>price.*</code> (enabled, cron 19:00, timezone, provider URLs, Yahoo batch 50)</td><td>Price freshness</td></tr>
+<tr><td><code>llm.*</code> (chains, routing options, default routing, GEMINI_MODELS, batch sizes 200/100/40, timeouts, attempts 2, delays)</td><td>Provider order and batch sizes; categorization throughput</td></tr>
+<tr><td><code>chat.*</code> (enabled, quota 30/2, loop 6/180/200/5/16000, emitter 290, CHAT_RO creds)</td><td>Chat availability, limits, deadlines</td></tr>
+<tr><td><code>jobs.*</code> (concurrency 2, poll 2000, queue 100, grace 60, retention 30/7, cron)</td><td>Throughput and cleanup</td></tr>
+<tr><td><code>financeos.reports.fiscal-year-start-month</code> (default 4, never set)</td><td>FY ranges and tax buckets (server only)</td></tr>
+<tr><td><code>spring.session.timeout</code> / cookie max-age 365 d</td><td>Login duration</td></tr>
+<tr><td><code>CORS_ORIGINS</code>, <code>COOKIE_SECURE</code>, <code>GOOGLE_OAUTH_REDIRECT_URI</code>, <code>UI_PATH</code></td><td>Cross-origin behaviour</td></tr>
+<tr><td><code>ENCRYPTION_KEY</code>, <code>LLM_KEYS_MASTER_KEY</code></td><td>Decryptability of passwords, tokens, keys</td></tr>
+<tr><td>Spring profile</td><td>e2e disables crons, shortens limits, enables scripted LLM and docs; prod moves actuator</td></tr>
+</table></div>
+<p><strong>Hardcoded rules that look like they should be configuration</strong> (not a recommendation, an inventory): reward point default ₹0.25 and ₹0; milestone iteration guard 500; loan match ±₹20 / ±7 days; loan bounds 600 months, 60 %; batch caps 500; statement thresholds 0.6, 0.011, 0.51, Jaccard 0.70, upload dedup window 0; dividend dedup ±7 days; CAS stamp-duty window 3 days; Groww charge schedule; MCC regex; identifier length 2–32; regex timeout 50 ms; Yahoo search cache 5 min; grounding cache 5 min; PT midnight cooldown; 60 s circuit; client debounce 250/300 ms; client polling 1.5/4/30 s; page sizes 50/20/25; client FY April.</p>
+</section>
+<section class="sec" id="s48" data-part="VI · Business logic">
+<p class="eyebrow">Section 48</p>
+<h2><span class="n">48</span>Scenario-based simulation</h2>
+<div class="exec"><h4>Executive summary</h4>
+<p>Realistic walks through the actual code paths with concrete values, including edge cases (zero, negative, duplicate, boundary, unexpected state). Where a value is quoted it comes from a test in the repository or is computed from the documented formula. <span class="c cg">Confirmed</span> for the paths; illustrative values marked.</p></div>
+
+<h3 id="s48-1">Scenario 1: A Swiggy debit alert arrives by email</h3>
+<div class="tw compact"><table>
+<tr><th>Step</th><th>What happens</th><th>Values</th></tr>
+<tr><td>Trigger</td><td>12:00 IST cron enqueues GMAIL_SYNC (dedupKey = connection id)</td><td>Cron <code>0 0 10-22/2</code></td></tr>
+<tr><td>Discover</td><td><code>from:(alerts@hdfcbank.net) after:&lt;lastListedAt − 15 min&gt;</code>; new id saved DISCOVERED</td><td></td></tr>
+<tr><td>Extract</td><td><code>email-extract</code> via Gemini: isTransaction true, amount 1250.00, direction "debited" → DEBIT, date "12/08/2026" → 2026-08-12 (day-first), description "SWIGGY", last4 "4321"</td><td>illustrative</td></tr>
+<tr><td>Resolve</td><td>Pass 0 no alias; pass 1 open card 4321 on one account → resolved with card</td><td></td></tr>
+<tr><td>Gate</td><td>ingest_from_date 2026-07-01 ≤ 2026-08-12 → create</td><td></td></tr>
+<tr><td>Persist</td><td>transactions: amount 1250.0000, DEBIT, source gmail_transaction_alert, review NEEDS_REVIEW {UNRECONCILED}, source_message_id = gmail id, card_id set; ledger CREATED</td><td></td></tr>
+<tr><td>Categorize</td><td>No rule matches "SWIGGY" (normalized "SWIGGY"); LLM returns categoryNames ["Dining"], merchantKey "SWIGGY"; a Dining category and an LLM rule are created; reason CATEGORY_UNVERIFIED added</td><td>Category "Dining" (1 word) accepted</td></tr>
+<tr><td>UI</td><td>Row appears in /transactions/review with two reason badges; balance tile drops by ₹1,250 on next refetch</td><td></td></tr>
+<tr><td>Edge: ambiguous</td><td>Two open cards end in 4321 on different accounts → UNRESOLVED_ACCOUNT; Needs Attention (1); user assigns → identifier "4321" created; only rows whose extracted_last4 equals "4321" reactivate</td><td></td></tr>
+<tr><td>Edge: unknown direction</td><td>LLM returns "adjusted" → defaults to DEBIT with a warning</td><td></td></tr>
+<tr><td>Edge: LLM down</td><td>Chain exhausted → FAILED_RETRYABLE, retry at +2h, +4h, +8h, +16h, then FAILED_PERMANENT in the attention queue</td><td>~2 days</td></tr>
+</table></div>
+
+<h3 id="s48-2">Scenario 2: The card statement arrives and reconciles</h3>
+<div class="tw compact"><table>
+<tr><th>Step</th><th>What happens</th></tr>
+<tr><td>Route</td><td>Attachment "statement.pdf" → statement path</td></tr>
+<tr><td>Decrypt</td><td>Try every account's stored statement password; the card's opens it (account provisionally identified)</td></tr>
+<tr><td>Parse</td><td>Balance oracle finds the running balance column (≥ 60 % rows chain); 42 lines; summary: total due ₹18,420.00, min due ₹920, due date, reward points earned 1,830</td></tr>
+<tr><td>Dedup</td><td>sha256 not seen for this account; period 2026-07-16..2026-08-15 new → Statement created with StatementCreditCardDetails</td></tr>
+<tr><td>Match</td><td>Line "SWIGGY 1,250.00 DR 12-08-2026" ↔ alert (exact amount, DEBIT, Δ0 days, same card) → alert promoted to AUTO_REVIEWED (UNRECONCILED cleared; CATEGORY_UNVERIFIED remains)</td></tr>
+<tr><td>Miss</td><td>Line "AMAZON 2,999.00" with no alert (email missed) → new transaction source gmail_statement, NEEDS_REVIEW UNRECONCILED, source_message_id "&lt;msg&gt;:17"</td></tr>
+<tr><td>Effects</td><td>Balance tile becomes anchored: base −18,420.00 + post-anchor sum; reward STATEMENT_CYCLE windows now resolve to 07-16..08-15; card summary shows dues and days until due</td></tr>
+<tr><td>Not done</td><td>1,830 statement reward points are stored but never compared with the engine's computed points</td></tr>
+<tr><td>Edge: verdict REJECT</td><td>Chain 40 %, checksum fails → verdict REJECTED badge; lines still create transactions</td></tr>
+<tr><td>Edge: re-upload the same PDF via Settings → Ingest</td><td>sha256 matches → file SKIPPED "Statement already ingested"; zero rows created even if new</td></tr>
+</table></div>
+
+<h3 id="s48-3">Scenario 3: Rewards on a capped dining rule</h3>
+<div class="tw compact"><table>
+<tr><th>Input</th><th>Computation</th><th>Result</th></tr>
+<tr><td>Rule: Dining 5 % EXCLUSIVE, ₹500/month cap, FALL_THROUGH; base 1 % EXCLUSIVE priority lower; ₹450 used this month</td><td></td><td></td></tr>
+<tr><td>₹1,250 Swiggy (DEBIT, Dining, effective date 2026-08-12)</td><td>raw 62.50; remaining 50 → award 50 PARTIAL_CAP; chain stops (award &gt; 0)</td><td>₹50.00</td></tr>
+<tr><td>Next ₹800 Dining same month</td><td>raw 40; remaining 0 → CAP_EXHAUSTED; FALL_THROUGH → base 1 % → ₹8.00 MATCHED</td><td>₹8.00</td></tr>
+<tr><td>₹2,000 refund credit linked REFUND to a ₹5,000 Dining anchor</td><td>anchor basis 3,000 at the anchor's date; 5 % → 150 (subject to cap at that time)</td><td>retroactive</td></tr>
+<tr><td>₹10,000 CC_PAYMENT link</td><td>TRANSFER_OR_PAYMENT, never earns</td><td>₹0</td></tr>
+<tr><td>Report for 08-01..08-31</td><td>basisSpend Σ eligible bases; cashbackInr 58.00 + others; effective = gross + instant discounts − convenience fees</td><td></td></tr>
+<tr><td>Edge: rule created today with active_from today</td><td>Past transactions ignored (V52 made active_from nullable to avoid this trap)</td><td></td></tr>
+<tr><td>Edge: duplicate ADDITIVE 0.5 % rule submitted twice</td><td>Both fire</td><td>double bonus</td></tr>
+</table></div>
+
+<h3 id="s48-4">Scenario 4: Buy, split, sell, merger</h3>
+<div class="tw compact"><table>
+<tr><th>Event</th><th>Lots after</th><th>Numbers</th></tr>
+<tr><td>Buy 100 @ ₹100 (charges ₹82.91 via reconciliation import)</td><td>[100 @ 100]</td><td>openCost 10,000; XIRR flow −10,082.91</td></tr>
+<tr><td>1→2 split ex-date</td><td>[200 @ 50]</td><td>openCost 10,000 unchanged; buy date preserved</td></tr>
+<tr><td>Sell 50 @ ₹80</td><td>[150 @ 50]</td><td>realized 50 × (80 − 50) = ₹1,500 gross; XIRR flow +4,000 − charges</td></tr>
+<tr><td>Merger 25→42 into Acquirer</td><td>Transferor []; Acquirer seeds 252 @ 29.7619 (7,500 carried)</td><td>transferor XIRR +7,500 bridge; acquirer −7,500 at ex-date; mergedIntoName badge</td></tr>
+<tr><td>Fractional case 121 shares 100→155</td><td>E 187.55 → W 187, F 0.55</td><td>cost ₹35.48; cash in lieu blank → realized −₹35.48 until edited</td></tr>
+<tr><td>Edge: same split recorded twice</td><td>[400 @ 25] on next read</td><td>silent double application</td></tr>
+<tr><td>Edge: sell 300 with 150 held (import)</td><td>engine consumes 150, logs warning, drops remainder from realized</td><td>under-reported P&amp;L</td></tr>
+<tr><td>Edge: no price row</td><td>currentValue = openCost, "at cost" badge</td><td></td></tr>
+</table></div>
+
+<h3 id="s48-5">Scenario 5: Home loan with a prepayment</h3>
+<div class="tw compact"><table>
+<tr><th>Step</th><th>Values</th></tr>
+<tr><td>Create ₹12,00,000, 8.5 %, 60 months, first EMI 2026-01-31</td><td>EMI ₹24,619.16; first interest ₹8,500.00; due dates 01-31, 02-28, 03-28, 04-28… (clamp drift)</td></tr>
+<tr><td>Prepay ₹2,00,000 effective 2026-06-28 (reduce_tenure)</td><td>Applies from the installment due 07-28 (strictly before rule); balance reduced first; tenure shortens; Σ principal + prepayment = 12,00,000</td></tr>
+<tr><td>Prepay ₹9,00,000 when modeled outstanding is ₹8,50,000</td><td>400 "Record a foreclosure event for full payoff"</td></tr>
+<tr><td>Mark installment 7 paid with ₹24,600 (₹19.16 short)</td><td>Accepted; installment settled; split shown from schedule; shortfall invisible</td></tr>
+<tr><td>Find matches</td><td>DEBIT ₹24,619.16 ± 20 on 07-28 ± 7 days in the payment account → suggestion</td></tr>
+<tr><td>Foreclose with amount ₹1</td><td>Accepted; outstanding becomes 0 after the date</td></tr>
+<tr><td>Tax report FY 26-27</td><td>Σ schedule interest of settled installments paid on or after 2026-04-01 as 24(b), principal as 80C, no caps</td></tr>
+</table></div>
+
+<h3 id="s48-6">Scenario 6: A chat question</h3>
+<div class="tw compact"><table>
+<tr><th>Step</th><th>What happens</th></tr>
+<tr><td>"How much did I spend on dining this FY?"</td><td>Quota 30/day checked; semaphore acquired; prompt = 22 rules + dictionary + grounding (today, "FY 2026-27", accounts, categories with UUIDs) + transcript</td></tr>
+<tr><td>Iteration 1</td><td>Model chooses run_sql: <code>SELECT SUM(amount) FROM v_chat_transaction_categories … WHERE category_name = 'Dining' AND transaction_date &gt;= DATE '2026-04-01'</code> → validator ok → CHAT_RO session with SET_IDENTIFIER(user) → 5 s timeout → 1 row</td></tr>
+<tr><td>Iteration 2</td><td>final_answer with a stat block; blocks sanitized; SSE final; client renders; notification if tab hidden</td></tr>
+<tr><td>Edge: model queries <code>v_chat_cardholders</code></td><td>TABLE_NOT_ALLOWED → error fed back; model retries</td></tr>
+<tr><td>Edge: model writes <code>SELECT * FROM transactions</code></td><td>Rejected; even if it passed, CHAT_RO has no grant</td></tr>
+<tr><td>Edge: 3 identical SQL failures</td><td>Forced final answer explaining what could not be done</td></tr>
+<tr><td>Edge: 185 s elapsed</td><td>Next call uses final-only schema; at 270 s the loop returns "took longer than expected"</td></tr>
+<tr><td>Edge: refresh the page</td><td>Transcript gone</td></tr>
+</table></div>
+
+<h3 id="s48-7">Scenario 7: Boundary and unexpected states</h3>
+<ul>
+<li><strong>Zero amount</strong>: manual create rejected (400); ingestion cannot insert 0 (CHECK &gt; 0).</li>
+<li><strong>Negative amount</strong>: form accepts a signed input and converts to DEBIT; server stores abs.</li>
+<li><strong>Transaction dated in the future</strong>: accepted; counted in balances and rewards by effective date.</li>
+<li><strong>Same statement to two accounts of one user</strong>: allowed (sha256 unique per account).</li>
+<li><strong>Closed account receives a Gmail alert</strong>: created normally; closure only blocks card mutations.</li>
+<li><strong>Delete an account</strong>: transactions cascade; statements cascade; Gmail ledger rows cascade (so a re-created account re-ingests); jobs remain.</li>
+<li><strong>Delete a user mid-sync</strong>: 409 ACCOUNT_DELETE_BUSY after a 5 s drain.</li>
+<li><strong>Two tabs edit the same loan</strong>: last write wins, no conflict.</li>
+<li><strong>Anniversary date Feb 29</strong>: clamped to Feb 28 in non-leap years.</li>
+<li><strong>Reward rule with tiers JSON corrupted</strong>: rule skipped with a log warning; transactions earn NO_RULE or fall to the next rule.</li>
+<li><strong>Report KPI on a computed datasource with <code>comparison.enabled</code> null</strong>: NullPointerException → 500.</li>
+<li><strong>Gmail primary connection disconnected</strong>: manual sync 404s even with another live connection.</li>
+</ul>
+</section>
+<nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/calculations.html"><small>Previous</small>Calculations and invariants</a><a class="next" href="/handbook/journeys.html"><small>Next</small>Journeys and flows</a></nav>
+  </main>
+</div>
+</div>
+<script src="/handbook/handbook.js" defer></script>
+</body>
+</html>
