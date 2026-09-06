@@ -216,7 +216,7 @@ test.describe('Lendings and Counterparties API (@api)', () => {
   test('Cascade delete: deleting counterparty deletes all its ledger entries', async ({ api }) => {
     const cp = await createCounterparty(api, { name: `Cascade Person ${Date.now()}` });
     const e1 = await addLending(api, { counterpartyId: cp.id, direction: 'lent', amount: 10000, entryDate: monthsAgo(1) });
-    const e2 = await addLending(api, { counterpartyId: cp.id, direction: 'borrowed', amount: 4000, entryDate: monthsAgo(1) });
+    await addLending(api, { counterpartyId: cp.id, direction: 'borrowed', amount: 4000, entryDate: monthsAgo(1) });
 
     // Delete counterparty -> 204
     await deleteCounterparty(api, cp.id);

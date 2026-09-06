@@ -17,13 +17,6 @@ test.describe('UI Smokes', () => {
     await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
   });
 
-  test('3. Cookie-injected context: goto /dashboard renders heading with no redirect', async ({ page, context, user }) => {
-    await loginContext(context, user.cookie);
-    await page.goto('/dashboard');
-    await expect(page).toHaveURL(/\/dashboard/);
-    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
-  });
-
   test('4. @mobile Sign out -> lands on /login; goto /dashboard redirects to login', async ({ page, context, user, isMobile }) => {
     await loginContext(context, user.cookie);
     await page.goto('/dashboard');

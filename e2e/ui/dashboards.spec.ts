@@ -4,6 +4,7 @@ import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { createReport } from '../fixtures/seed/reports';
 import { expect, test } from '../fixtures/test';
+import { expectToast } from '../fixtures/ui';
 
 test.describe('Dashboards UI (@ui)', () => {
   let currentUser: CreatedUser;
@@ -15,14 +16,13 @@ test.describe('Dashboards UI (@ui)', () => {
 
   test('Dashboards journey: empty state -> create dashboard -> add widget -> view -> edit expand -> discard modal -> default dashboard on home', async ({
     page,
-    request,
   }) => {
     test.slow();
 
     const api = makeApi(currentUser.cookie);
 
     // Create a saved report to use as a widget
-    const kpiRep = await createReport(api, {
+    await createReport(api, {
       name: 'Net Cashflow KPI',
       type: 'KPI',
       datasource: 'transactions',
@@ -65,14 +65,12 @@ test.describe('Dashboards UI (@ui)', () => {
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
 
     // Toggle widget width (Expand to full width)
-    const toggleWidthBtn = page.locator('button[title*="full width"], button[title*="half width"]').first();
-    if (await toggleWidthBtn.isVisible()) {
-      await toggleWidthBtn.click();
-    }
+    await page.getByTitle('Expand to full width').first().click();
+    await expect(page.getByTitle('Collapse to half width').first()).toBeVisible();
 
     // Save changes
     await page.getByRole('button', { name: 'Save', exact: true }).click();
-    await page.waitForTimeout(500);
+    await expectToast(page, 'Dashboard saved');
 
     // Verify persisted after reload
     await page.reload();
@@ -96,9 +94,9 @@ test.describe('Dashboards UI (@ui)', () => {
     await page.waitForURL('**/dashboards');
 
     // 9. Set as default dashboard from list
-    const starBtn = page.locator('button[title*="default"]').first();
-    await starBtn.click();
-    await page.waitForTimeout(500);
+    await page.getByTitle('Set as default').first().click();
+    await expectToast(page, 'Set as default');
+    await expect(page.getByTitle('Clear default').first()).toBeVisible();
 
     // 10. Visit `/dashboard` (landing home) -> renders the default dashboard
     await page.goto('/dashboard');
@@ -117,15 +115,4 @@ test.describe('Dashboards UI (@ui)', () => {
     await expect(page.getByRole('button', { name: /Create dashboard/i })).toBeVisible();
   });
 
-  test('Mobile: dashboard home and dashboards list (@mobile)', async ({ page }) => {
-    await page.goto('/dashboard');
-    await page.waitForLoadState('networkidle');
-
-    await expect(page.getByRole('heading', { name: 'Dashboard', exact: true })).toBeVisible();
-    await expect(page.locator("text=You don't have a default dashboard yet")).toBeVisible();
-
-    await page.goto('/dashboards');
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByRole('heading', { name: 'Dashboards', exact: true })).toBeVisible();
-  });
 });

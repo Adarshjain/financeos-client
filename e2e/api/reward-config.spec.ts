@@ -1,5 +1,5 @@
 import { createRewardCard, getRewardConfig, recommend, setRewardConfig } from '../fixtures/seed/rewards';
-import { expectForeign, expectUnauthenticated, secondUser } from '../fixtures/tenancy';
+import { expectUnauthenticated, secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
 test.describe('Reward Config API (@api)', () => {

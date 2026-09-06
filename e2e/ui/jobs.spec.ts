@@ -39,7 +39,7 @@ test.describe('Background Jobs UI (@ui)', () => {
     await setLlmMode(api, 'SCHEMA_DEFAULT');
   });
 
-  test('/settings/jobs: list history, filter by status & type, and pagination', async ({
+  test('/settings/jobs: list history, filter by status and type', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -63,20 +63,21 @@ test.describe('Background Jobs UI (@ui)', () => {
     await expect(page.locator('tbody').getByText('SUCCEEDED').first()).toBeVisible();
 
     // 3. Filter by Status: Succeeded
-    const succFilterBtn = page.getByRole('link', { name: 'Succeeded' }).first();
-    if (await succFilterBtn.isVisible()) {
-      await succFilterBtn.click();
-      await expect(page).toHaveURL(/status=SUCCEEDED/);
-      await expect(page.locator('tbody').getByText('SUCCEEDED').first()).toBeVisible();
-    }
+    await page.getByRole('link', { name: 'Succeeded' }).first().click();
+    await expect(page).toHaveURL(/status=SUCCEEDED/);
+    await expect(page.locator('tbody').getByText('SUCCEEDED').first()).toBeVisible();
 
-    // 4. Filter by Type: Statement Ingest
-    const typeFilterBtn = page.getByRole('link', { name: 'Statement Ingest' }).first();
-    if (await typeFilterBtn.isVisible()) {
-      await typeFilterBtn.click();
-      await expect(page).toHaveURL(/type=STATEMENT_INGEST/);
-      await expect(page.locator('tbody').getByText('Statement Ingest').first()).toBeVisible();
-    }
+    // 4. Filter by Type: Statement Ingest (the type pill, not the table cell)
+    await page.getByRole('link', { name: 'Statement Ingest' }).first().click();
+    await expect(page).toHaveURL(/type=STATEMENT_INGEST/);
+    await expect(page.locator('tbody').getByText('Statement Ingest').first()).toBeVisible();
+
+    // 5. A status with no jobs shows the empty state, and "All Statuses" brings them back
+    await page.getByRole('link', { name: 'Failed' }).first().click();
+    await expect(page).toHaveURL(/status=FAILED/);
+    await expect(page.locator('tbody').getByText('SUCCEEDED')).toHaveCount(0);
+    await page.getByRole('link', { name: 'All Statuses' }).first().click();
+    await expect(page.locator('tbody').getByText('SUCCEEDED').first()).toBeVisible();
   });
 
   test('/settings/jobs: retry a CANCELLED job from row action -> spawns new completing job', async ({

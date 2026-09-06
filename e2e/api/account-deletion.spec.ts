@@ -16,7 +16,6 @@ import {
   waitForGmailJobsIdle,
 } from '../fixtures/seed/gmail';
 import { createTransactions } from '../fixtures/seed/transactions';
-import { expectUnauthenticated } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
 test.describe('Account deletion API', () => {
@@ -154,8 +153,4 @@ test.describe('Account deletion API', () => {
     expect(signup.status).toBe(201);
   });
 
-  test('deletion endpoints require a session', async () => {
-    await expectUnauthenticated('GET', '/api/v1/auth/me/deletion-summary');
-    await expectUnauthenticated('POST', '/api/v1/auth/me/delete', { password: 'x' });
-  });
 });

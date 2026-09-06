@@ -125,7 +125,7 @@ test.describe('Trades & Positions API (@api)', () => {
     });
 
     // Buy 10 @ 120 with charges: 50
-    const b2 = await trade(api, {
+    await trade(api, {
       brokerAccountId: broker.id,
       instrumentId: inst.id,
       type: 'buy',
@@ -143,7 +143,7 @@ test.describe('Trades & Positions API (@api)', () => {
     });
 
     // Sell 15 @ 150
-    const s1 = await trade(api, {
+    await trade(api, {
       brokerAccountId: broker.id,
       instrumentId: inst.id,
       type: 'sell',

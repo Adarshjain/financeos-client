@@ -1,7 +1,7 @@
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { expect, test } from '../fixtures/test';
-import { openAccounts } from '../fixtures/ui';
+import { expectToast, openAccounts } from '../fixtures/ui';
 
 test.describe('Accounts UI (@ui)', () => {
   test.beforeEach(async ({ context, request }) => {
@@ -66,6 +66,17 @@ test.describe('Accounts UI (@ui)', () => {
     await page.getByText('Regalia Gold').click();
     await expect(page.getByLabel('Account Name')).toBeVisible();
     await page.getByLabel('Account Name').fill('Regalia Gold Premium');
+
+    // 1b. Email identifier aliases live in the edit dialog: add one (saved immediately), remove it.
+    await expect(page.getByText('Email Identifier Aliases')).toBeVisible();
+    await page.getByPlaceholder('e.g. 1234 or CRN').fill(' 55 12 ');
+    await page.getByRole('button', { name: 'Add', exact: true }).click();
+    await expectToast(page, 'Identifier alias added');
+    await expect(page.getByText('5512', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Remove identifier 5512' }).click();
+    await expectToast(page, 'Identifier alias removed');
+    await expect(page.getByText('5512', { exact: true })).not.toBeVisible();
+
     await page.getByRole('button', { name: 'Save Changes' }).click();
 
     // Updated name reflects in tile

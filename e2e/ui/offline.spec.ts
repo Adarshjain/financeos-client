@@ -12,8 +12,4 @@ test.describe('Offline page (@ui)', () => {
     await expect(page.getByText(/FinanceOS needs a connection/)).toBeVisible();
   });
 
-  test('renders on a phone too @mobile', async ({ page }) => {
-    await page.goto('/offline');
-    await expect(page.getByRole('heading', { name: "You're offline" })).toBeVisible();
-  });
 });

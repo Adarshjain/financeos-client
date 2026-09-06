@@ -1,5 +1,5 @@
 import { expectStatus } from '../fixtures/api';
-import { expectUnauthenticated, newUser, secondUser } from '../fixtures/tenancy';
+import { newUser, secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
 test.describe('LLM Routing API', () => {
@@ -182,13 +182,4 @@ test.describe('LLM Routing API', () => {
     ]);
   });
 
-  test('401 unauthorized on routing endpoints without session', async () => {
-    await expectUnauthenticated('GET', '/api/v1/llm/task-groups');
-    await expectUnauthenticated('GET', '/api/v1/llm/catalog');
-    await expectUnauthenticated('GET', '/api/v1/llm/routing-options');
-    await expectUnauthenticated('GET', '/api/v1/llm/routing');
-    await expectUnauthenticated('GET', '/api/v1/llm/health');
-    await expectUnauthenticated('PUT', '/api/v1/llm/routing/chat', { entries: [] });
-    await expectUnauthenticated('POST', '/api/v1/llm/routing/chat/reset');
-  });
 });

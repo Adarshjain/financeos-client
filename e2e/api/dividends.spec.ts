@@ -138,7 +138,7 @@ test.describe('Dividends API (@api)', () => {
       payDate: '2024-08-15',
     });
 
-    const d2 = await createDividend(api, {
+    await createDividend(api, {
       brokerAccountId: broker.id,
       instrumentId: inst.id,
       type: 'dividend',

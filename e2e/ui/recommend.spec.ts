@@ -4,7 +4,7 @@ import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import {
   createRewardCard,
-  createRule,
+  createRewardRule,
   fixedMonth,
   spend,
 } from '../fixtures/seed/rewards';
@@ -28,7 +28,7 @@ test.describe('Reward Recommendations / Card Picker UI (@ui)', () => {
     const { account: cardA } = await createRewardCard(api, {
       name: 'UI Card A Capped',
     });
-    await createRule(api, cardA.id, {
+    await createRewardRule(api, cardA.id, {
       name: '5% Capped ₹20',
       accrualType: 'PERCENT',
       percentRate: 5.0,
@@ -44,14 +44,15 @@ test.describe('Reward Recommendations / Card Picker UI (@ui)', () => {
     const { account: cardB } = await createRewardCard(api, {
       name: 'UI Card B Flat',
     });
-    await createRule(api, cardB.id, {
+    await createRewardRule(api, cardB.id, {
       name: '1.5% Flat Rate',
       accrualType: 'PERCENT',
       percentRate: 1.5,
     });
 
     // 3. Seed Card C: Bare card (no rules)
-    const { account: cardC } = await createRewardCard(api, {
+    // A third card with no rule: it must still appear in the ranking below the two scored cards.
+    await createRewardCard(api, {
       name: 'UI Card C Bare',
     });
 

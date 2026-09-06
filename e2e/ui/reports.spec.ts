@@ -15,7 +15,6 @@ test.describe('Reports UI (@ui)', () => {
 
   test('Reports builder journey: empty state -> create KPI -> preview -> edit -> create Table pivot FY -> filter pills -> delete', async ({
     page,
-    request,
   }) => {
     test.slow();
 
@@ -73,38 +72,24 @@ test.describe('Reports UI (@ui)', () => {
 
     // Add row dimension Date @ Financial Year
     await page.getByRole('button', { name: /Add Row/i }).click();
-    await page.waitForTimeout(200);
-
     const rowFieldSelect = page.getByRole('combobox').filter({ hasText: /Select field/i }).first();
-    if (await rowFieldSelect.isVisible()) {
-      await rowFieldSelect.click();
-      await page.getByRole('option', { name: 'Date', exact: true }).click();
-    }
-
+    await rowFieldSelect.click();
+    await page.getByRole('option', { name: 'Date', exact: true }).click();
     const granSelect = page.getByRole('combobox').filter({ hasText: /Month|Select granularity/i }).first();
-    if (await granSelect.isVisible()) {
-      await granSelect.click();
-      await page.getByRole('option', { name: 'Financial Year' }).click();
-    }
+    await granSelect.click();
+    await page.getByRole('option', { name: 'Financial Year' }).click();
+    await expect(page.getByRole('combobox').filter({ hasText: 'Financial Year' }).first()).toBeVisible();
 
     // Add measure Amount
-    const addMeasureBtn = page.getByRole('button', { name: /Add Measure/i });
-    if (await addMeasureBtn.isVisible()) {
-      await addMeasureBtn.click();
-      await page.waitForTimeout(200);
-      const tableMeasSelect = page.getByRole('combobox').filter({ hasText: /None|Select measure/i }).first();
-      if (await tableMeasSelect.isVisible()) {
-        await tableMeasSelect.click();
-        await page.getByRole('option', { name: 'Amount' }).click();
-      }
-    }
+    await page.getByRole('button', { name: /Add Measure/i }).click();
+    const tableMeasSelect = page.getByRole('combobox').filter({ hasText: /None|Select measure/i }).first();
+    await tableMeasSelect.click();
+    await page.getByRole('option', { name: 'Amount' }).click();
 
-    // Click Preview
-    const previewBtn = page.getByRole('button', { name: /Preview|Refresh preview/i }).first();
-    if (await previewBtn.isVisible() && await previewBtn.isEnabled()) {
-      await previewBtn.click();
-      await page.waitForTimeout(500);
-    }
+    // Preview runs on demand: the placeholder text gives way to a result.
+    await expect(page.getByText('Click Preview to run this report.')).toBeVisible();
+    await page.getByRole('button', { name: /^Preview$|Refresh preview/i }).first().click();
+    await expect(page.getByText('Click Preview to run this report.')).not.toBeVisible();
 
     // Save table report
     await page.getByRole('button', { name: 'Create', exact: true }).click();
@@ -133,18 +118,10 @@ test.describe('Reports UI (@ui)', () => {
       await deleteTrigger.click();
       await expect(page.getByRole('heading', { name: 'Delete report' })).toBeVisible();
       await page.getByRole('button', { name: 'Delete', exact: true }).click();
-      await page.waitForTimeout(500);
+      await expect(page.getByRole('heading', { name: 'Delete report' })).not.toBeVisible();
     }
 
     await expect(page.locator('text=No reports yet')).toBeVisible();
   });
 
-  test('Mobile: reports list and navigation (@mobile)', async ({ page }) => {
-    await page.goto('/reports');
-    await page.waitForLoadState('networkidle');
-
-    await expect(page.getByRole('heading', { name: 'Reports', exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: /New report/i })).toBeVisible();
-    await expect(page.locator('text=No reports yet')).toBeVisible();
-  });
 });

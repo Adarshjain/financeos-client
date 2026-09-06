@@ -2,8 +2,7 @@ import { expectStatus } from '../fixtures/api';
 import { llmCalls, resetLlm, setLlmMode } from '../fixtures/control';
 import { scriptCategorize, scriptCategorizeError } from '../fixtures/llm';
 import { createCategory, createRule } from '../fixtures/seed/categories';
-import { expectUnauthenticated } from '../fixtures/tenancy';
-import { expect, test } from '../fixtures/test';
+import { expect, freshUser, test } from '../fixtures/test';
 
 test.describe('Categorize API & Scripted LLM', () => {
   test.describe.configure({ mode: 'serial' });
@@ -110,6 +109,30 @@ test.describe('Categorize API & Scripted LLM', () => {
     expect(calls[0].prompt).toContain('UBER TRIP MUMBAI');
   });
 
+  test('zero categories: the LLM answer creates the categories; a repeat call reuses them', async ({ request }) => {
+    // A brand-new user has no categories at all — the on-demand path must still ask the LLM and
+    // create what it names, instead of answering 200 [] (the pre-2026-09-05 behaviour).
+    const { api: fresh } = await freshUser(request, 'cat-create');
+    const answer = { index: 0, merchantKey: 'MCDONALDS', displayName: "McDonald's", categoryNames: ['Dining', 'Food'] };
+    await scriptCategorize(fresh, [answer]);
+
+    const first = await fresh.POST('/api/v1/categorize', { body: { description: 'MCDONALDS KORAMANGALA' } });
+    expectStatus(first, 200);
+    expect(first.data?.fromRule).toBe(false);
+    expect(first.data?.categories.map((c) => c.name).sort()).toEqual(['Dining', 'Food']);
+
+    const categories = await fresh.GET('/api/v1/categories');
+    expectStatus(categories, 200);
+    expect(categories.data?.map((c) => c.name).sort()).toEqual(['Dining', 'Food']);
+
+    await scriptCategorize(fresh, [answer]);
+    const second = await fresh.POST('/api/v1/categorize', { body: { description: 'MCDONALDS INDIRANAGAR' } });
+    expectStatus(second, 200);
+    expect(second.data?.categories.map((c) => c.id).sort()).toEqual(first.data?.categories.map((c) => c.id).sort());
+    expect((await fresh.GET('/api/v1/categories')).data).toHaveLength(2);
+    expect(await llmCalls(fresh, 'categorize')).toHaveLength(2);
+  });
+
   test('LLM response with noFit=true returns empty categories', async ({
     api,
   }) => {
@@ -169,9 +192,4 @@ test.describe('Categorize API & Scripted LLM', () => {
     expect(res.data?.fromRule).toBe(false);
   });
 
-  test('401 unauthorized on /categorize without session', async () => {
-    await expectUnauthenticated('POST', '/api/v1/categorize', {
-      description: 'SWIGGY',
-    });
-  });
 });

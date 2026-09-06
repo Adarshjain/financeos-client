@@ -52,8 +52,14 @@ function loadRoutesAllowlist(): RouteAllowlistEntry[] {
 }
 
 export default async function globalTeardown(): Promise<void> {
+  // Partial runs (--api/--browser/--ui) cannot satisfy the coverage gates, but every outbound call the
+  // server made must still have hit a stub — that gate always runs.
   if (process.env.E2E_SKIP_GATES === '1') {
-    console.log('[Coverage Gate] E2E_SKIP_GATES=1 is set. Skipping coverage gates.');
+    console.log('[Coverage Gate] E2E_SKIP_GATES=1 is set. Skipping coverage gates (WireMock unmatched check still enforced).');
+    const partialUnmatched = await unmatchedCount();
+    if (partialUnmatched > 0) {
+      throw new Error(`${partialUnmatched} unmatched WireMock requests (GET ${process.env.E2E_WIREMOCK_URL ?? 'http://localhost:8089'}/__admin/requests/unmatched)`);
+    }
     return;
   }
 

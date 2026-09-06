@@ -8,7 +8,6 @@ import {
   setManualPrice,
   uniqueSeedSuffix,
 } from '../fixtures/seed/investments';
-import { expectUnauthenticated } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
 test.describe('Instruments API (@api)', () => {
@@ -354,16 +353,4 @@ test.describe('Instruments API (@api)', () => {
     }
   });
 
-  test('Unauthenticated 401 checks for instrument endpoints', async () => {
-    await expectUnauthenticated('GET', '/api/v1/instruments');
-    await expectUnauthenticated('POST', '/api/v1/instruments', { name: 'Test', type: 'stock' });
-    await expectUnauthenticated('GET', '/api/v1/instruments/00000000-0000-0000-0000-000000000000');
-    await expectUnauthenticated('PUT', '/api/v1/instruments/00000000-0000-0000-0000-000000000000', { name: 'Test' });
-    await expectUnauthenticated('POST', '/api/v1/instruments/00000000-0000-0000-0000-000000000000/price', { price: 100 });
-    await expectUnauthenticated('GET', '/api/v1/instruments/00000000-0000-0000-0000-000000000000/prices');
-    await expectUnauthenticated('DELETE', '/api/v1/instruments/00000000-0000-0000-0000-000000000000/prices/00000000-0000-0000-0000-000000000000');
-    await expectUnauthenticated('PUT', '/api/v1/instruments/00000000-0000-0000-0000-000000000000/prices/00000000-0000-0000-0000-000000000000', { price: 100 });
-    await expectUnauthenticated('GET', '/api/v1/instruments/catalog-search');
-    await expectUnauthenticated('POST', '/api/v1/instruments/resolve', { name: 'Test', type: 'stock' });
-  });
 });

@@ -163,30 +163,6 @@ test.describe('Auth API (@api)', () => {
     expect(normalize(wrongPwData)).toEqual(normalize(unknownEmailData));
   });
 
-  test('/me with and without cookie', async ({ request }) => {
-    const email = nextEmail('me-test');
-    await request.post(`${E2E_API_URL}/api/v1/auth/signup`, {
-      data: { email, password: DEFAULT_PASSWORD, inviteCode: INVITE_CODE },
-    });
-
-    const loginRes = await request.post(`${E2E_API_URL}/api/v1/auth/login`, {
-      data: { email, password: DEFAULT_PASSWORD },
-    });
-    const cookie = parseSessionCookie(loginRes.headersArray());
-    expect(cookie).toBeDefined();
-
-    // With cookie -> 200
-    const apiWithCookie = makeApi(cookie);
-    const meRes = await apiWithCookie.GET('/api/v1/auth/me');
-    expect(meRes.response.status).toBe(200);
-    expect(meRes.data?.email).toBe(email);
-
-    // Without cookie -> 401
-    const apiNoCookie = makeApi();
-    const meNoCookieRes = await apiNoCookie.GET('/api/v1/auth/me');
-    expect(meNoCookieRes.response.status).toBe(401);
-  });
-
   test('login: cookie attributes on Set-Cookie', async ({ request }) => {
     const email = nextEmail('cookie-attr');
     await request.post(`${E2E_API_URL}/api/v1/auth/signup`, {

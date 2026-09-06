@@ -3,7 +3,7 @@ import {
   createBucket,
   createMilestone,
   createRewardCard,
-  createRule,
+  createRewardRule,
   fixedMonth,
   lines,
   report,
@@ -22,7 +22,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     const { account } = await createRewardCard(api, { name: 'Rounding Card' });
 
     // 1. NONE: 2% of 1234.56 = 24.6912 -> 24.69
-    const ruleNone = await createRule(api, account.id, {
+    const ruleNone = await createRewardRule(api, account.id, {
       name: '2% Rounding NONE',
       accrualType: 'PERCENT',
       percentRate: 2.0,
@@ -40,7 +40,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     await api.DELETE('/api/v1/transactions/{id}', { params: { path: { id: txn1.id } } });
 
     // 2. FLOOR_RUPEE: 2% of 1234.56 = 24.6912 -> 24.00
-    const ruleFloor = await createRule(api, account.id, {
+    const ruleFloor = await createRewardRule(api, account.id, {
       name: '2% Rounding FLOOR',
       accrualType: 'PERCENT',
       percentRate: 2.0,
@@ -58,7 +58,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     await api.DELETE('/api/v1/transactions/{id}', { params: { path: { id: txn2.id } } });
 
     // 3. NEAREST_RUPEE: 2% of 1234.56 = 24.6912 -> 25.00
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '2% Rounding NEAREST',
       accrualType: 'PERCENT',
       percentRate: 2.0,
@@ -79,7 +79,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     const month = fixedMonth();
     const { account } = await createRewardCard(api, { name: 'Slab Card' });
 
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: 'Slab 100 -> 2 pts',
       rewardType: 'POINTS',
       accrualType: 'SLAB',
@@ -105,7 +105,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     const { account } = await createRewardCard(api, { name: 'Fee Treatment CC' });
 
     // 1. EXCLUDE_FEE: ₹1000 spend with ₹100 convenienceFee at 2% -> basis ₹900 -> ₹18.00
-    const ruleExclude = await createRule(api, account.id, {
+    const ruleExclude = await createRewardRule(api, account.id, {
       name: '2% EXCLUDE_FEE',
       accrualType: 'PERCENT',
       percentRate: 2.0,
@@ -125,7 +125,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     await api.DELETE('/api/v1/reward-rules/{id}', { params: { path: { id: ruleExclude.id } } });
     await api.DELETE('/api/v1/transactions/{id}', { params: { path: { id: txn1.id } } });
 
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '2% INCLUDE_FEE',
       accrualType: 'PERCENT',
       percentRate: 2.0,
@@ -142,7 +142,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     expect(repInclude.summary.grossValueInr).toBe(20.0);
 
     // 3. Fee >= charge with EXCLUDE_FEE -> FEE_ONLY zero line
-    const ruleFeeOnly = await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '2% EXCLUDE_FEE for FEE_ONLY',
       priority: 20,
       accrualType: 'PERCENT',
@@ -168,7 +168,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     const { account } = await createRewardCard(api, { name: 'Stacking CC' });
 
     // Rule 1: 5% EXCLUSIVE with periodCap=10, onCapExhausted=FALL_THROUGH, priority 30
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '5% Capped Fallthrough',
       priority: 30,
       stacking: 'EXCLUSIVE',
@@ -180,7 +180,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     });
 
     // Rule 2: 1% EXCLUSIVE base, priority 20
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '1% Base',
       priority: 20,
       stacking: 'EXCLUSIVE',
@@ -189,7 +189,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     });
 
     // Rule 3: 0.5% ADDITIVE, priority 10
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '0.5% Additive',
       priority: 10,
       stacking: 'ADDITIVE',
@@ -224,7 +224,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     const { account } = await createRewardCard(api, { name: 'Stop Cap CC' });
 
     // Rule 1: 5% EXCLUSIVE with periodCap=10, onCapExhausted=STOP, priority 20
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '5% Stop On Cap',
       priority: 20,
       stacking: 'EXCLUSIVE',
@@ -236,7 +236,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     });
 
     // Rule 2: 1% fallback rule
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '1% Fallback',
       priority: 10,
       stacking: 'EXCLUSIVE',
@@ -268,7 +268,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     const month = fixedMonth();
     const { account } = await createRewardCard(api, { name: 'Per Txn Cap CC' });
 
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '10% with ₹100 perTxnCap',
       accrualType: 'PERCENT',
       percentRate: 10.0,
@@ -301,7 +301,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     });
 
     // Rule A: 10% on Dining MCC 5812
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: 'Dining 10%',
       priority: 20,
       accrualType: 'PERCENT',
@@ -312,7 +312,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     });
 
     // Rule B: 10% on Grocery MCC 5411
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: 'Grocery 10%',
       priority: 10,
       accrualType: 'PERCENT',
@@ -364,7 +364,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     const month = fixedMonth();
     const { account } = await createRewardCard(api, { name: 'Tiered CC' });
 
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '5% to 10k then 1%',
       accrualType: 'PERCENT',
       tierWindow: 'CALENDAR_MONTH',
@@ -401,7 +401,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
       anniversaryDate: '2025-06-01',
     });
 
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: 'Anniversary Capped 10%',
       accrualType: 'PERCENT',
       percentRate: 10.0,
@@ -426,7 +426,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
 
     // 2. Account without anniversaryDate (Bank Account) -> anniversaryFallback=true
     const noAnivCard = await createBankAccount(api, { name: 'No Aniv Bank' });
-    await createRule(api, noAnivCard.id, {
+    await createRewardRule(api, noAnivCard.id, {
       name: 'Aniv Rule No Card Aniv',
       accrualType: 'PERCENT',
       percentRate: 5.0,
@@ -448,7 +448,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     const month = fixedMonth();
     const { account } = await createRewardCard(api, { name: 'Statement Cycle CC' });
 
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: 'Statement Cycle 5%',
       accrualType: 'PERCENT',
       percentRate: 5.0,
@@ -542,7 +542,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     const month = fixedMonth();
     const { account } = await createRewardCard(api, { name: 'Refund Basis CC' });
 
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '2% Cashback',
       accrualType: 'PERCENT',
       percentRate: 2.0,
@@ -590,7 +590,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     });
 
     // Rule 1: Account-wide 1% base
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '1% Base',
       priority: 10,
       accrualType: 'PERCENT',
@@ -598,7 +598,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     });
 
     // Rule 2: Addon-holder-specific 5% rule
-    await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '5% Addon Only',
       priority: 20,
       cardholderId: cards[1].cardholderId,
@@ -639,7 +639,7 @@ test.describe('Rewards Report and Lines API (@api)', () => {
     const month = fixedMonth();
     const { account } = await createRewardCard(api, { name: 'Lines Pagination CC' });
 
-    const ruleA = await createRule(api, account.id, {
+    const ruleA = await createRewardRule(api, account.id, {
       name: 'Rule A 2%',
       priority: 10,
       accrualType: 'PERCENT',

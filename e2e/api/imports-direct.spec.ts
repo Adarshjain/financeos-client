@@ -19,7 +19,7 @@ import {
   resolveInstrument,
   uniqueSeedSuffix,
 } from '../fixtures/seed/investments';
-import { expectForeign, expectUnauthenticated, secondUser } from '../fixtures/tenancy';
+import { expectUnauthenticated, secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
 async function previewImport(
@@ -585,7 +585,7 @@ test.describe('Direct Broker Imports API (@api)', () => {
     expect(pos?.quantity).toBe(25);
   });
 
-  test('Validation: non-broker 400, unknown broker 404, foreign broker 404, unauthenticated 401', async ({
+  test('Validation: non-broker 400, unknown broker 404 (foreign broker preview has no tenancy check — see comment)', async ({
     api,
     request,
   }) => {

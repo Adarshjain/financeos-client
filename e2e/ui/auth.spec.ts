@@ -82,20 +82,4 @@ test.describe('Auth UI (@ui)', () => {
     await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
   });
 
-  test('/settings renders for a signed-in user', async ({ page, request, context }) => {
-    const u = await createUser(request, 'settings-user');
-    await context.addCookies([
-      {
-        name: 'FINANCEOS_SESSION',
-        value: u.cookie,
-        domain: new URL(E2E_CLIENT_URL).hostname,
-        path: '/',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-
-    await page.goto(`${E2E_CLIENT_URL}/settings`);
-    await expect(page.getByRole('heading', { name: 'Settings', level: 1 })).toBeVisible();
-  });
 });

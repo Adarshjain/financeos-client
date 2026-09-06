@@ -81,11 +81,14 @@ test.describe('Tradebook UI (@ui)', () => {
     // Refresh tradebook page to load paginated data
     await openTradebook(page);
 
-    // Pagination controls should show multiple pages
-    const nextBtn = page.getByRole('button', { name: /Next page/i });
-    if (await nextBtn.isVisible()) {
-      await nextBtn.click();
-      await expect(page.getByRole('table')).toBeVisible();
-    }
+    // 12 trades at page size 10: page 2 holds the last two rows and Next is exhausted there.
+    const nextBtn = page.getByRole('button', { name: 'Next page' });
+    const prevBtn = page.getByRole('button', { name: 'Previous page' });
+    await expect(nextBtn).toBeEnabled();
+    await expect(prevBtn).toBeDisabled();
+    await nextBtn.click();
+    await expect(nextBtn).toBeDisabled();
+    await expect(prevBtn).toBeEnabled();
+    await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(2);
   });
 });

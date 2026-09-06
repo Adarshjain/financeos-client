@@ -146,43 +146,6 @@ export async function scriptChat(
   return scriptLlm(api, 'data-chat', formatted);
 }
 
-export async function withBusyRetry<T>(
-  fn: () => Promise<T>,
-  maxRetries = 5,
-  delayMs = 500
-): Promise<T> {
-  let attempt = 0;
-  while (attempt < maxRetries) {
-    try {
-      const res = await fn();
-      if (
-        res &&
-        typeof res === 'object' &&
-        'status' in res &&
-        (res as { status: number }).status === 429 &&
-        'header' in res &&
-        (res as { header: string | null }).header === 'CHAT_BUSY'
-      ) {
-        attempt++;
-        if (attempt >= maxRetries) return res;
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-        continue;
-      }
-      return res;
-    } catch (err: unknown) {
-      const errStr = String(err);
-      if (errStr.includes('CHAT_BUSY') || errStr.includes('429')) {
-        attempt++;
-        if (attempt >= maxRetries) throw err;
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-        continue;
-      }
-      throw err;
-    }
-  }
-  return fn();
-}
-
 export function clarifyTranscript(
   existingMessages: ChatMessage[],
   question: string,

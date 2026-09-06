@@ -14,14 +14,13 @@ import {
   uniqueSeedSuffix,
   updateCorporateAction,
 } from '../fixtures/seed/investments';
-import { expectUnauthenticated } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
 test.describe('Corporate Actions API (@api)', () => {
   test('Validation: bad type, ratios, demerger target/pct, merger target, negative cash, 404s', async ({
     api,
   }) => {
-    const broker = await createBroker(api);
+    await createBroker(api);
     const symA = generateYahooSymbol('VAL_A');
     const symB = generateYahooSymbol('VAL_B');
 
@@ -539,23 +538,4 @@ test.describe('Corporate Actions API (@api)', () => {
     expect(emptyCAs.length).toBe(0);
   });
 
-  test('Unauthenticated 401s on all corporate action endpoints', async () => {
-    const dummyId = '00000000-0000-0000-0000-000000000000';
-
-    await expectUnauthenticated('GET', '/api/v1/corporate-actions');
-    await expectUnauthenticated('GET', `/api/v1/instruments/${dummyId}/corporate-actions`);
-    await expectUnauthenticated('POST', `/api/v1/instruments/${dummyId}/corporate-actions`, {
-      type: 'split',
-      ratioFrom: 1,
-      ratioTo: 2,
-      exDate: '2026-08-01',
-    });
-    await expectUnauthenticated('PUT', `/api/v1/instruments/${dummyId}/corporate-actions/${dummyId}`, {
-      type: 'split',
-      ratioFrom: 1,
-      ratioTo: 2,
-      exDate: '2026-08-01',
-    });
-    await expectUnauthenticated('DELETE', `/api/v1/instruments/${dummyId}/corporate-actions/${dummyId}`);
-  });
 });

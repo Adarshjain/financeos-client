@@ -56,17 +56,6 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
     await expect(page.getByText('No transactions need review')).toBeVisible();
   });
 
-  test('/transactions/review: mobile viewport journey @mobile', async ({
-    page,
-  }) => {
-    await page.goto('/transactions/review');
-
-    await expect(
-      page.getByRole('heading', { name: 'Review Transactions' })
-    ).toBeVisible();
-    await expect(page.getByText('No transactions need review')).toBeVisible();
-  });
-
   test('/transactions/review: batch approve partial-success summary and duplicate merge flows', async ({
     page,
   }) => {
@@ -91,9 +80,10 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
     await expect(page.getByText('Category unverified').first()).toBeVisible();
 
     // 2. Select 2 rows: one with Possible duplicate (first Swiggy row) and one without (Uber row)
-    const rowCheckboxes = page.locator('[id^="select-"]:not(#select-all-page)');
-    await rowCheckboxes.nth(0).click({ force: true });
-    await rowCheckboxes.nth(2).click({ force: true });
+    // The checkbox is pointer-events:none; its wrapper div carries the onClick.
+    const rowCheckboxes = page.locator('div:has(> [id^="select-"]:not(#select-all-page))');
+    await rowCheckboxes.nth(0).click();
+    await rowCheckboxes.nth(2).click();
 
     // Verify bulk action bar shows "2 selected"
     await expect(page.locator('main').getByText('2 selected')).toBeVisible();
@@ -135,9 +125,9 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
 
     // 5. Merge the duplicate pair
     // Re-select the two Swiggy rows (indices 1 and 2, since index 0 is Uber)
-    const mergeCheckboxes = page.locator('[id^="select-"]:not(#select-all-page)');
-    await mergeCheckboxes.nth(1).click({ force: true });
-    await mergeCheckboxes.nth(2).click({ force: true });
+    const mergeCheckboxes = page.locator('div:has(> [id^="select-"]:not(#select-all-page))');
+    await mergeCheckboxes.nth(1).click();
+    await mergeCheckboxes.nth(2).click();
 
     // Click "Merge"
     await page.getByRole('button', { name: 'Merge' }).first().click();

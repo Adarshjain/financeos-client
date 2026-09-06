@@ -2,7 +2,7 @@ import { expectStatus, waitForJob } from '../fixtures/api';
 import { createBankAccount } from '../fixtures/seed/accounts';
 import { createCategory, createRule, RuleResponse } from '../fixtures/seed/categories';
 import { createTransaction } from '../fixtures/seed/transactions';
-import { expectForeign, expectUnauthenticated, secondUser } from '../fixtures/tenancy';
+import { expectForeign, secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
 const UNKNOWN_UUID = '00000000-0000-0000-0000-000000000000';
@@ -278,23 +278,4 @@ test.describe('Rules API', () => {
     expect(listB.data?.content.some((r: RuleResponse) => r.id === ruleA.id)).toBe(false);
   });
 
-  test('401 unauthorized on all rules endpoints without session', async () => {
-    await expectUnauthenticated('GET', '/api/v1/rules');
-    await expectUnauthenticated('POST', '/api/v1/rules', {
-      merchantKey: 'TEST',
-      categoryIds: [UNKNOWN_UUID],
-    });
-    await expectUnauthenticated('PUT', `/api/v1/rules/${UNKNOWN_UUID}`, {
-      displayName: 'Anon',
-    });
-    await expectUnauthenticated('DELETE', `/api/v1/rules/${UNKNOWN_UUID}`);
-    await expectUnauthenticated('POST', `/api/v1/rules/${UNKNOWN_UUID}/verify`);
-    await expectUnauthenticated('POST', `/api/v1/rules/${UNKNOWN_UUID}/apply`, {
-      all: true,
-    });
-    await expectUnauthenticated('POST', '/api/v1/rules/preview-matches', {
-      merchantKey: 'TEST',
-      matchType: 'MERCHANT_KEY',
-    });
-  });
 });

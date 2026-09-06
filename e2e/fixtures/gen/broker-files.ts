@@ -681,19 +681,3 @@ export function genHoldingsSnapshotCsv(rows: HoldingsSnapshotRow[]): Buffer {
   }
   return Buffer.from(lines.join('\n'), 'utf-8');
 }
-
-export async function genHoldingsSnapshotXlsx(rows: HoldingsSnapshotRow[]): Promise<Buffer> {
-  const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet('Holdings');
-  sheet.getRow(1).values = ['isin', 'symbol', 'quantity', 'average_price'];
-
-  let currentRow = 2;
-  for (const r of rows) {
-    sheet.getRow(currentRow).values = [r.isin ?? '', r.symbol ?? '', r.quantity, r.averagePrice ?? 0];
-    currentRow++;
-  }
-
-  const arrayBuffer = await workbook.xlsx.writeBuffer();
-  return Buffer.from(arrayBuffer);
-}
-

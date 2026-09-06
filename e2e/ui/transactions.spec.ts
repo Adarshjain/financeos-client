@@ -63,7 +63,7 @@ test.describe('Transactions UI (@ui)', () => {
     }
   });
 
-  test('filter bar: filter by account, review status, text search, clear filters', async ({
+  test('filter bar: text search, filter by account, clear filters', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -91,36 +91,22 @@ test.describe('Transactions UI (@ui)', () => {
     await expect(page.locator('main').getByText('Morning Coffee Alpha')).toBeVisible();
     await expect(page.locator('main').getByText('Evening Snacks Beta')).not.toBeVisible();
 
-    // Clear text search via badge or button
-    const clearSearchBadge = page.locator('button[aria-label="Clear search"]:visible').first();
-    if (await clearSearchBadge.isVisible()) {
-      await clearSearchBadge.click();
-    } else {
-      await searchInput.fill('');
-    }
+    // Clear the text search
+    await page.locator('button[aria-label="Clear search"]:visible').first().click();
     await expect(page.locator('main').getByText('Evening Snacks Beta')).toBeVisible();
 
-    // 2. Filter by Account via quick filter pill
-    const accountFilterBtn = page.locator('button:has-text("Account"):visible').first();
-    if (await accountFilterBtn.isVisible()) {
-      await accountFilterBtn.click();
-      const alphaOption = page.getByRole('dialog').getByText('Alpha Bank').first();
-      if (await alphaOption.isVisible()) {
-        await alphaOption.click();
-        await page.keyboard.press('Escape');
+    // 2. Filter by account via the quick-filter pill (popover with a searchable list)
+    await page.getByRole('button', { name: 'Account', exact: true }).click();
+    await page.getByRole('option', { name: 'Alpha Bank' }).click();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('button', { name: 'Alpha Bank', exact: true })).toBeVisible();
+    await expect(page.locator('main').getByText('Morning Coffee Alpha')).toBeVisible();
+    await expect(page.locator('main').getByText('Evening Snacks Beta')).not.toBeVisible();
 
-        // Verify only Alpha is visible
-        await expect(page.locator('main').getByText('Morning Coffee Alpha')).toBeVisible();
-        await expect(page.locator('main').getByText('Evening Snacks Beta')).not.toBeVisible();
-
-        // 3. Clear all filters
-        const clearAllBtn = page.locator('button:has-text("Clear all"):visible').first();
-        if (await clearAllBtn.isVisible()) {
-          await clearAllBtn.click();
-          await expect(page.locator('main').getByText('Evening Snacks Beta')).toBeVisible();
-        }
-      }
-    }
+    // 3. Clear all filters
+    await page.getByRole('button', { name: 'Clear all' }).click();
+    await expect(page.locator('main').getByText('Evening Snacks Beta')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Account', exact: true })).toBeVisible();
   });
 
   test('CRUD dialog: create transaction, edit amount, delete transaction (@mobile)', async ({
@@ -128,7 +114,7 @@ test.describe('Transactions UI (@ui)', () => {
   }) => {
     const api = makeApi(currentUser.cookie);
 
-    const bank = await createBankAccount(api, { name: 'CRUD UI Bank' });
+    await createBankAccount(api, { name: 'CRUD UI Bank' });
 
     await openTransactions(page);
 
@@ -239,7 +225,7 @@ test.describe('Transactions UI (@ui)', () => {
     const api = makeApi(currentUser.cookie);
 
     // Create Bank Account with openingBalance 5000
-    const bank = await createBankAccount(api, {
+    await createBankAccount(api, {
       name: 'Cross Module Bank',
       openingBalance: 5000,
     });

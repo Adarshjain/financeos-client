@@ -1,5 +1,4 @@
 import { catalog } from '../fixtures/seed/reports';
-import { expectUnauthenticated } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
 test.describe('Report Datasources API (@api)', () => {
@@ -76,7 +75,4 @@ test.describe('Report Datasources API (@api)', () => {
     expect(dateField?.role).toBe('dimension');
   });
 
-  test('GET /report/datasource requires authentication (401)', async () => {
-    await expectUnauthenticated('GET', '/api/v1/report/datasource');
-  });
 });

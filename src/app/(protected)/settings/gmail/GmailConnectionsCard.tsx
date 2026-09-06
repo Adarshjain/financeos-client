@@ -113,6 +113,7 @@ export function GmailConnectionsCard({
                 <Button
                   variant="ghost-destructive"
                   size="sm"
+                  aria-label={`Disconnect ${conn.email}`}
                   onClick={() => onDisconnect(conn.id)}
                 >
                   <Trash2 className="h-4 w-4" />

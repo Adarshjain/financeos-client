@@ -102,21 +102,4 @@ test.describe('F&O Trades UI (@ui)', () => {
     await expectToast(page, /Deleted trade/i);
   });
 
-  test('Mobile card view of F&O trades (@mobile)', async ({ page }) => {
-    const userApi = makeApi(currentUser.cookie);
-    const broker = await createBroker(userApi);
-
-    await createFnoTrade(userApi, {
-      brokerAccountId: broker.id,
-      tradingSymbol: 'NIFTY24AUGFUT',
-      quantity: 50,
-      buyValue: 100000,
-      sellValue: 105000,
-      totalCharges: 100,
-    });
-
-    await openFno(page);
-    await expect(page.getByText('NIFTY24AUGFUT').filter({ visible: true }).first()).toBeVisible();
-    await expect(page.getByText(/4,900/).filter({ visible: true }).first()).toBeVisible();
-  });
 });

@@ -1,7 +1,7 @@
 import {
   createMilestone,
   createRewardCard,
-  createRule,
+  createRewardRule,
   fixedMonth,
   recommend,
   setRewardConfig,
@@ -21,7 +21,7 @@ test.describe('Reward Recommendations API (@api)', () => {
     const { account: cardB } = await createRewardCard(api, { name: 'Card B Flat' });
 
     // Card A: 5% EXCLUSIVE with periodCap = ₹10 (CALENDAR_MONTH)
-    await createRule(api, cardA.id, {
+    await createRewardRule(api, cardA.id, {
       name: '5% Capped at 10',
       accrualType: 'PERCENT',
       percentRate: 5.0,
@@ -30,7 +30,7 @@ test.describe('Reward Recommendations API (@api)', () => {
     });
 
     // Card B: 1.5% flat EXCLUSIVE
-    await createRule(api, cardB.id, {
+    await createRewardRule(api, cardB.id, {
       name: '1.5% Flat',
       accrualType: 'PERCENT',
       percentRate: 1.5,
@@ -61,7 +61,7 @@ test.describe('Reward Recommendations API (@api)', () => {
 
     const { account } = await createRewardCard(api, { name: 'Headroom CC' });
 
-    const rule = await createRule(api, account.id, {
+    await createRewardRule(api, account.id, {
       name: '5% Capped ₹20',
       accrualType: 'PERCENT',
       percentRate: 5.0,
@@ -103,7 +103,7 @@ test.describe('Reward Recommendations API (@api)', () => {
     await setRewardConfig(api, cardConfig.id, { pointValueInr: 0.5 });
 
     // 100 points per ₹1000 spend (accrualType SLAB 1000 -> 100 pts)
-    await createRule(api, cardConfig.id, {
+    await createRewardRule(api, cardConfig.id, {
       name: '100 pts per 1000',
       rewardType: 'POINTS',
       accrualType: 'SLAB',
@@ -111,7 +111,7 @@ test.describe('Reward Recommendations API (@api)', () => {
       pointsPerSlab: 100,
     });
 
-    await createRule(api, cardDefault.id, {
+    await createRewardRule(api, cardDefault.id, {
       name: '100 pts per 1000',
       rewardType: 'POINTS',
       accrualType: 'SLAB',

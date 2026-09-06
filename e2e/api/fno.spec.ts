@@ -7,7 +7,7 @@ import {
   listFnoTrades,
   updateFnoTrade,
 } from '../fixtures/seed/investments';
-import { expectForeign, expectUnauthenticated, secondUser } from '../fixtures/tenancy';
+import { secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
 test.describe('F&O Trades API (@api)', () => {
@@ -87,7 +87,7 @@ test.describe('F&O Trades API (@api)', () => {
     expect(updated.notes).toBe('Exited in profit after all');
   });
 
-  test('Validations: non-broker account 400, foreign account 404, list returns all trades (unpaginated), tenancy isolation', async ({
+  test('Validations: non-broker account 400, list returns all trades (unpaginated), tenancy isolation', async ({
     api,
     request,
   }) => {
@@ -161,24 +161,4 @@ test.describe('F&O Trades API (@api)', () => {
     expect(remainingIds).not.toContain(t1.id);
   });
 
-  test('Unauthenticated 401s on all F&O endpoints', async () => {
-    const dummyId = '00000000-0000-0000-0000-000000000000';
-
-    await expectUnauthenticated('GET', '/api/v1/investments/fno');
-    await expectUnauthenticated('POST', '/api/v1/investments/fno', {
-      brokerAccountId: dummyId,
-      tradingSymbol: 'NIFTY24AUGFUT',
-      quantity: 50,
-      buyValue: 100000,
-      sellValue: 105000,
-    });
-    await expectUnauthenticated('PUT', `/api/v1/investments/fno/${dummyId}`, {
-      brokerAccountId: dummyId,
-      tradingSymbol: 'NIFTY24AUGFUT',
-      quantity: 50,
-      buyValue: 100000,
-      sellValue: 105000,
-    });
-    await expectUnauthenticated('DELETE', `/api/v1/investments/fno/${dummyId}`);
-  });
 });

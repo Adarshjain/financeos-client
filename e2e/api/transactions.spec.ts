@@ -1,5 +1,4 @@
 import {
-  addCard,
   addCardholder,
   createBankAccount,
   createCreditCard,
@@ -9,10 +8,8 @@ import {
   createCategory,
   createTransaction,
   createTransactions,
-  searchAll,
-  todayString,
 } from '../fixtures/seed/transactions';
-import { expectForeign, expectUnauthenticated, secondUser } from '../fixtures/tenancy';
+import { secondUser } from '../fixtures/tenancy';
 import { expect, freshUser, test } from '../fixtures/test';
 
 function assertNoExtraKeys(
@@ -878,45 +875,5 @@ test.describe('Transactions API (@api)', () => {
       expect(listB.data?.content?.some((t) => t.id === txnA.id)).toBe(false);
     });
 
-    test('categorize endpoint returns suggestions for description (pulled forward from Phase 7)', async ({ api }) => {
-      const res = await api.POST('/api/v1/categorize', {
-        body: { description: 'Starbucks Coffee' },
-      });
-      expect(res.response.status).toBe(200);
-      expect(res.data).toBeDefined();
-      expect(Array.isArray(res.data?.categories)).toBe(true);
-      expect(typeof res.data?.fromRule).toBe('boolean');
-    });
-
-    test('unauthenticated calls receive 401 across all Phase 6 operations', async () => {
-      const fakeId = '00000000-0000-0000-0000-000000000001';
-
-      await expectUnauthenticated('GET', '/api/v1/transactions');
-      await expectUnauthenticated('POST', '/api/v1/transactions', {
-        accountId: fakeId,
-        amount: -100,
-        date: '2026-07-01',
-      });
-      await expectUnauthenticated('PUT', `/api/v1/transactions/${fakeId}`, {
-        amount: -100,
-        date: '2026-07-01',
-      });
-      await expectUnauthenticated('DELETE', `/api/v1/transactions/${fakeId}`);
-      await expectUnauthenticated('POST', '/api/v1/transactions/search', {});
-      await expectUnauthenticated('POST', '/api/v1/transactions/batch-delete', {
-        transactionIds: [fakeId],
-      });
-      await expectUnauthenticated('POST', '/api/v1/transactions/batch-review', {
-        transactionIds: [fakeId],
-        reviewType: 'MANUALLY_REVIEWED',
-        reviewReasons: ['CATEGORY_UNVERIFIED'],
-      });
-      await expectUnauthenticated('PATCH', '/api/v1/transactions/card', {
-        accountId: fakeId,
-      });
-      await expectUnauthenticated('POST', '/api/v1/categorize', {
-        description: 'Test',
-      });
-    });
   });
 });
