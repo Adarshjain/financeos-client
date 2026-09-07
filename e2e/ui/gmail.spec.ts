@@ -114,7 +114,7 @@ test.describe('Gmail settings UI (@ui)', () => {
     await page.getByRole('button', { name: 'Manually Sync Now' }).click();
     await expectToast(page, 'Gmail sync started in background.');
     await expectToast(page, 'Sync completed!');
-    await expect(page.getByText('Recent sync jobs')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Recent sync jobs' })).toBeVisible();
     await expect(page.getByText('SUCCEEDED', { exact: true }).first()).toBeVisible();
 
     await page.reload();

@@ -59,6 +59,9 @@ jobs:
       - name: Checkout client
         uses: actions/checkout@v4
         with:
+          # Explicit: when this workflow is *called* from financeos-server, github.repository is the
+          # caller, and a bare checkout would fetch the server twice and never the client.
+          repository: Adarshjain/financeos-client
           ref: ${{ inputs.client_ref }}
 
       - name: Checkout server
