@@ -1,5 +1,6 @@
 'use client';
 
+import { TransactionPicker } from '@/components/transactions/TransactionPicker';
 import {
   Dialog,
   DialogBody,
@@ -10,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Transaction } from '@/lib/transaction.types';
 import { InstallmentDto } from '@/lib/types';
 
 interface SettlePaymentDialogProps {
@@ -20,8 +22,9 @@ interface SettlePaymentDialogProps {
   setPaymentDate: (d: string) => void;
   paymentAmount: string;
   setPaymentAmount: (a: string) => void;
-  paymentTxId: string;
-  setPaymentTxId: (id: string) => void;
+  paymentTx: Transaction | null;
+  onSelectPaymentTx: (t: Transaction) => void;
+  onClearPaymentTx: () => void;
   submittingPayment: boolean;
   onSettlePayment: (e: React.FormEvent) => Promise<void>;
 }
@@ -34,8 +37,9 @@ export function SettlePaymentDialog({
   setPaymentDate,
   paymentAmount,
   setPaymentAmount,
-  paymentTxId,
-  setPaymentTxId,
+  paymentTx,
+  onSelectPaymentTx,
+  onClearPaymentTx,
   submittingPayment,
   onSettlePayment,
 }: SettlePaymentDialogProps) {
@@ -75,12 +79,16 @@ export function SettlePaymentDialog({
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Transaction ID (Optional)</Label>
-              <Input
-                placeholder="UUID of DEBIT transaction"
-                value={paymentTxId}
-                onChange={(e) => setPaymentTxId(e.target.value)}
-                className="h-9 text-xs"
+              <Label className="text-xs">Transaction (Optional)</Label>
+              <TransactionPicker
+                value={paymentTx}
+                onSelect={onSelectPaymentTx}
+                onClear={onClearPaymentTx}
+                type="DEBIT"
+                excludeAnyObligationRef
+                suggestAmount={selectedInstallment?.emi ?? null}
+                suggestDate={selectedInstallment?.dueDate ?? null}
+                ruleHint="EMI settlements link money-out (debit) transactions"
               />
             </div>
           </form>

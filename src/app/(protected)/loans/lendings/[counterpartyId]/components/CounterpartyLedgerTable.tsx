@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowDownLeft, ArrowUpRight, Edit2, Plus, Trash2 } from 'lucide-react';
+import * as React from 'react';
 
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Badge } from '@/components/ui/badge';
@@ -9,8 +10,29 @@ import { Card } from '@/components/ui/card';
 import { LendingResponse } from '@/lib/types';
 import { formatDate, formatMoney } from '@/lib/utils';
 
+import { TransactionLinkCell } from './TransactionLinkCell';
+
 export interface LendingEntryWithBalance extends LendingResponse {
   runningBalance: number;
+}
+
+export interface SplitTotal {
+  count: number;
+  sum: number;
+}
+
+/** transactionId -> { count, sum } across the entries in this *loaded* list
+ *  that share it — a split-bill hint, not a global fact about the transaction. */
+function useSplitTotals(entries: LendingEntryWithBalance[]) {
+  return React.useMemo(() => {
+    const byTx = new Map<string, SplitTotal>();
+    for (const e of entries) {
+      if (!e.transaction) continue;
+      const prev = byTx.get(e.transaction.id) ?? { count: 0, sum: 0 };
+      byTx.set(e.transaction.id, { count: prev.count + 1, sum: prev.sum + e.amount });
+    }
+    return byTx;
+  }, [entries]);
 }
 
 interface CounterpartyLedgerTableProps {
@@ -28,6 +50,7 @@ export function CounterpartyLedgerTable({
   onOpenEditEntry,
   onDeleteEntry,
 }: CounterpartyLedgerTableProps) {
+  const splitTotals = useSplitTotals(entries);
   return (
     <>
       {/* Mobile View: Standalone Cards */}
@@ -80,6 +103,12 @@ export function CounterpartyLedgerTable({
                   </span>
                 </p>
               )}
+
+              <TransactionLinkCell
+                entry={item}
+                splitTotal={item.transaction ? splitTotals.get(item.transaction.id) : undefined}
+                onLink={() => onOpenEditEntry(item)}
+              />
 
               <div className="flex items-center justify-between text-xs">
                 <div>
@@ -154,6 +183,7 @@ export function CounterpartyLedgerTable({
                   <th className="py-3 px-4">Date</th>
                   <th className="py-3 px-4">Direction</th>
                   <th className="py-3 px-4 text-right">Amount</th>
+                  <th className="py-3 px-4">Transaction</th>
                   <th className="py-3 px-4 text-right">Running Balance</th>
                   <th className="py-3 px-4">Expected Return</th>
                   <th className="py-3 px-4">Notes</th>
@@ -186,6 +216,13 @@ export function CounterpartyLedgerTable({
                     </td>
                     <td className="py-3.5 px-4 text-right font-bold text-slate-900 dark:text-slate-100 tabular-nums">
                       {formatMoney(item.amount)}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <TransactionLinkCell
+                        entry={item}
+                        splitTotal={item.transaction ? splitTotals.get(item.transaction.id) : undefined}
+                        onLink={() => onOpenEditEntry(item)}
+                      />
                     </td>
                     <td className="py-3.5 px-4 text-right font-extrabold tabular-nums">
                       <span

@@ -12,6 +12,7 @@ import { CounterpartyHeroHeader } from './components/CounterpartyHeroHeader';
 import { CounterpartyLedgerTable } from './components/CounterpartyLedgerTable';
 import { EditCounterpartyDialog } from './components/EditCounterpartyDialog';
 import { EditLendingEntryDialog } from './components/EditLendingEntryDialog';
+import { LendingMatchPanel } from './components/LendingMatchPanel';
 import { useCounterpartyDetail } from './components/useCounterpartyDetail';
 
 interface CounterpartyDetailProps {
@@ -43,6 +44,9 @@ export function CounterpartyDetail({
     setAddExpDate,
     addNotes,
     setAddNotes,
+    addSelectedTx,
+    onSelectAddTx,
+    onClearAddTx,
     submittingAddEntry,
     editLendingOpen,
     setEditLendingOpen,
@@ -56,6 +60,9 @@ export function CounterpartyDetail({
     setLendingExpDate,
     lendingNotes,
     setLendingNotes,
+    editSelectedTx,
+    onSelectEditTx,
+    onClearEditTx,
     submittingEditLending,
     handleUpdateCp,
     handleDeleteCp,
@@ -68,6 +75,8 @@ export function CounterpartyDetail({
   if (!cp) {
     return <div className="p-6 text-xs text-slate-500">Loading person…</div>;
   }
+
+  const hasUnlinkedEntries = entriesWithRunningBalance.some((e) => !e.transaction);
 
   return (
     <div className="space-y-2 p-3 pb-32 max-w-7xl mx-auto w-full">
@@ -113,6 +122,9 @@ export function CounterpartyDetail({
       {/* Header Container */}
       <CounterpartyHeroHeader cp={cp} />
 
+      {/* Transaction Matching */}
+      {hasUnlinkedEntries && <LendingMatchPanel counterpartyId={counterpartyId} />}
+
       {/* Ledger Table / Cards */}
       <CounterpartyLedgerTable
         cpName={cp.name}
@@ -149,6 +161,9 @@ export function CounterpartyDetail({
         setAddExpDate={setAddExpDate}
         addNotes={addNotes}
         setAddNotes={setAddNotes}
+        addSelectedTx={addSelectedTx}
+        onSelectAddTx={onSelectAddTx}
+        onClearAddTx={onClearAddTx}
         submittingAddEntry={submittingAddEntry}
         onAddEntry={handleAddEntry}
       />
@@ -167,6 +182,9 @@ export function CounterpartyDetail({
         setLendingExpDate={setLendingExpDate}
         lendingNotes={lendingNotes}
         setLendingNotes={setLendingNotes}
+        editSelectedTx={editSelectedTx}
+        onSelectEditTx={onSelectEditTx}
+        onClearEditTx={onClearEditTx}
         submittingEditLending={submittingEditLending}
         onUpdateLending={handleUpdateLending}
       />

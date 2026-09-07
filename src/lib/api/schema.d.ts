@@ -564,6 +564,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/counterparties/{id}/match-suggestions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getCounterpartyMatchSuggestions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/dashboard/summary": {
         parameters: {
             query?: never;
@@ -1327,6 +1343,22 @@ export interface paths {
         put: operations["updateLending"];
         post?: never;
         delete: operations["deleteLending"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/lendings/{id}/transaction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["linkTransaction"];
+        post?: never;
+        delete: operations["unlinkTransaction"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3482,6 +3514,22 @@ export interface components {
             /** @enum {string} */
             type: "STATEMENT_INGEST" | "GMAIL_SYNC" | "PRICE_REFRESH" | "INVESTMENT_IMPORT_COMMIT" | "BROKER_RECONCILE_COMMIT" | "RULE_APPLY";
         };
+        LendingMatchSuggestion: {
+            amount: number;
+            candidates: components["schemas"]["TransactionResponse"][];
+            /** @enum {string} */
+            direction: "lent" | "borrowed";
+            /** Format: date */
+            entryDate: string;
+            /** Format: date */
+            expectedReturnDate?: string | null;
+            /** Format: uuid */
+            lendingId: string;
+            notes?: string | null;
+        };
+        LendingMatchSuggestionsResponse: {
+            suggestions: components["schemas"]["LendingMatchSuggestion"][];
+        };
         LendingResponse: {
             amount: number;
             /** Format: uuid */
@@ -3498,8 +3546,24 @@ export interface components {
             /** Format: uuid */
             id: string;
             notes?: string | null;
+            transaction?: components["schemas"]["LendingTransactionSummary"];
             /** Format: uuid */
             transactionId?: string | null;
+        };
+        LendingTransactionSummary: {
+            /** Format: uuid */
+            accountId: string;
+            accountName?: string | null;
+            /** Format: date */
+            date: string;
+            description?: string | null;
+            /** Format: uuid */
+            id: string;
+            signedAmount: number;
+        };
+        LinkLendingTransactionRequest: {
+            /** Format: uuid */
+            transactionId: string;
         };
         LlmBucketHealthDto: {
             /** Format: int32 */
@@ -3753,6 +3817,16 @@ export interface components {
             loanName?: string | null;
             status: string;
             type: string;
+        };
+        ObligationRef: {
+            amount?: number | null;
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "LENDING" | "LOAN_PAYMENT" | "LOAN_EVENT" | "LOAN_CHARGE";
+            label: string;
+            /** Format: uuid */
+            parentId?: string | null;
         };
         ObligationsResponse: {
             items: components["schemas"]["ObligationItemDto"][];
@@ -4914,6 +4988,7 @@ export interface components {
             links: components["schemas"]["TransactionLinkSummary"][];
             mcc?: string | null;
             monitoringReason?: string | null;
+            obligationRefs: components["schemas"]["ObligationRef"][];
             reviewReasons: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT")[];
             /** @enum {string|null} */
             reviewType?: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA" | null;
@@ -6592,6 +6667,37 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getCounterpartyMatchSuggestions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LendingMatchSuggestionsResponse"];
+                };
             };
             /** @description Error response */
             default: {
@@ -8853,6 +8959,70 @@ export interface operations {
         };
     };
     deleteLending: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    linkTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkLendingTransactionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["LendingResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unlinkTransaction: {
         parameters: {
             query?: never;
             header?: never;

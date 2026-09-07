@@ -52,6 +52,21 @@ export type TransactionRequest = Omit<TransactionBase, 'source' | 'reviewType'> 
 
 export type LinkType = 'TRANSFER' | 'CC_PAYMENT' | 'REFUND' | 'REVERSAL' | 'FEE' | 'EMI';
 
+/**
+ * The full set of things the "Link" dialog can create from a transaction: the
+ * existing transaction<->transaction link types, plus two "record" kinds that
+ * fold what used to be a separate "Record as lending" flow (and a new loan-EMI
+ * settlement flow) into the same entry point.
+ */
+export type LinkKind = LinkType | 'LENDING' | 'LOAN_PAYMENT';
+
+/** The `LinkKind` values that are not a `LinkType` — they don't hit `/transaction-links`. */
+export const RECORD_LINK_KINDS = ['LENDING', 'LOAN_PAYMENT'] as const;
+
+export function isRecordKind(kind: LinkKind): kind is (typeof RECORD_LINK_KINDS)[number] {
+  return (RECORD_LINK_KINDS as readonly string[]).includes(kind);
+}
+
 export type LinkOrigin = 'USER' | 'AUTO' | 'IMPORT';
 
 export interface MemberRef {
@@ -92,6 +107,22 @@ export interface TransactionLinkSummary {
   memberCount: number;
 }
 
+export type ObligationKind = 'LENDING' | 'LOAN_PAYMENT' | 'LOAN_EVENT' | 'LOAN_CHARGE';
+
+/**
+ * A direct-FK reference from a lending ledger entry or loan row back to this
+ * transaction. `parentId` is the id of the page the badge should link to: a
+ * counterparty (`/loans/lendings/{parentId}`) for LENDING, a loan
+ * (`/loans/{parentId}`) otherwise.
+ */
+export interface ObligationRef {
+  kind: ObligationKind;
+  id: string;
+  parentId?: string | null;
+  label: string;
+  amount?: number | null;
+}
+
 export type Transaction = TransactionBase & {
   id: string;
   createdAt: string;
@@ -103,6 +134,7 @@ export type Transaction = TransactionBase & {
   reviewReasons?: ReviewReason[];
   appliedRuleId?: string | null;
   links?: TransactionLinkSummary[];
+  obligationRefs?: ObligationRef[];
   cardId?: string | null;
   cardLabel?: string | null;
   /** Last 4 digits of the plastic the spend happened on. */

@@ -13,6 +13,7 @@ import { ReviewReason } from '@/lib/transaction.types';
 import {
   buildReviewFilters,
   computeHiddenCount,
+  getObligationLinkedCount,
   getPresentReasons,
   getSelectableAccounts,
   getSelectedTxns,
@@ -153,6 +154,11 @@ export function useReviewBrowser(accounts: Account[]) {
     [pagedData, selectedIds]
   );
 
+  const obligationLinkedCount = useMemo(
+    () => getObligationLinkedCount(pagedData, selectedIds),
+    [pagedData, selectedIds]
+  );
+
   const handleSetIsApproveDialogOpen = (open: boolean) => {
     if (open) {
       setReasonsToApprove(presentReasons);
@@ -281,6 +287,7 @@ export function useReviewBrowser(accounts: Account[]) {
     setSummaryData,
     selectedTxns,
     presentReasons,
+    obligationLinkedCount,
     handleReload,
     handlePageChange,
     toggleSelect,

@@ -9,16 +9,18 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
+  DialogFooterAction,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import type { Account } from '@/lib/account.types';
 import type { Transaction } from '@/lib/transaction.types';
 
-import { CandidateSearchList } from './link-dialog/CandidateSearchList';
+import { LinkDialogBody } from './link-dialog/LinkDialogBody';
 import { LinkTypeSelector } from './link-dialog/LinkTypeSelector';
-import { SelectedMembersList } from './link-dialog/SelectedMembersList';
+import { useLoanPaymentLink } from './link-dialog/useLoanPaymentLink';
 import { useTransactionLink } from './link-dialog/useTransactionLink';
+import { useRecordLending } from './record-lending/useRecordLending';
 
 const EMPTY_TXN_ARRAY: Transaction[] = [];
 
@@ -39,26 +41,7 @@ export function TransactionLinkDialog({
   onOpenChange,
   onSuccess,
 }: TransactionLinkDialogProps) {
-  const {
-    linkType,
-    setLinkType,
-    note,
-    setNote,
-    alignRefundCategories,
-    setAlignRefundCategories,
-    selectedTransactions,
-    anchorId,
-    setAnchorId,
-    candidateSearch,
-    setCandidateSearch,
-    loadingCandidates,
-    filteredCandidates,
-    submitting,
-    getAccount,
-    toggleSelectTransaction,
-    handleSubmit,
-    getRuleHint,
-  } = useTransactionLink({
+  const linkState = useTransactionLink({
     initialTransaction,
     initialSelectedTransactions,
     accounts,
@@ -67,62 +50,88 @@ export function TransactionLinkDialog({
     onSuccess,
   });
 
+  const { kind, subjectTransaction } = linkState;
+
+  const lending = useRecordLending({
+    transaction: subjectTransaction,
+    open: open && kind === 'LENDING',
+    onOpenChange,
+    onSuccess,
+  });
+
+  const loanPayment = useLoanPaymentLink({
+    transaction: subjectTransaction,
+    open: open && kind === 'LOAN_PAYMENT',
+    onOpenChange,
+    onSuccess,
+  });
+
+  let primaryAction: DialogFooterAction;
+  if (kind === 'LENDING') {
+    primaryAction =
+      lending.mode === 'existing'
+        ? { label: 'Attach from list', disabled: true }
+        : {
+            label: lending.submitting ? 'Saving...' : 'Save entry',
+            onClick: lending.handleSubmitNew,
+            disabled: !lending.canSubmitNew || lending.submitting,
+          };
+  } else if (kind === 'LOAN_PAYMENT') {
+    primaryAction = {
+      label: loanPayment.submitting ? 'Settling...' : 'Settle installment',
+      onClick: loanPayment.handleSubmit,
+      disabled: !loanPayment.canSubmit || loanPayment.submitting,
+    };
+  } else {
+    primaryAction = {
+      label: linkState.submitting ? 'Linking...' : 'Link Transactions',
+      onClick: linkState.handleSubmit,
+      disabled:
+        linkState.submitting || linkState.selectedTransactions.length < 2 || !linkState.anchorId,
+    };
+  }
+
+  const anyBusy = linkState.submitting || lending.submitting || loanPayment.submitting;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-bold text-slate-900 dark:text-white">
             <Link2 className="h-5 w-5 text-indigo-500" />
-            Link Transactions
+            Link
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500 dark:text-slate-400">
-            Establish settlement link accounting relationships between transactions.
+            Connect this transaction to other transactions, a person&apos;s ledger entry, or a
+            loan installment.
           </DialogDescription>
         </DialogHeader>
 
         <DialogBody className="space-y-2">
-          {/* Link Type & Settings */}
           <LinkTypeSelector
-            linkType={linkType}
-            setLinkType={setLinkType}
-            note={note}
-            setNote={setNote}
-            alignRefundCategories={alignRefundCategories}
-            setAlignRefundCategories={setAlignRefundCategories}
+            kind={kind}
+            setKind={linkState.setKind}
+            note={linkState.note}
+            setNote={linkState.setNote}
+            alignRefundCategories={linkState.alignRefundCategories}
+            setAlignRefundCategories={linkState.setAlignRefundCategories}
+            disabledKinds={linkState.disabledKinds}
           />
 
-          {/* Member Selection Section */}
-          <SelectedMembersList
-            selectedTransactions={selectedTransactions}
-            anchorId={anchorId}
-            setAnchorId={setAnchorId}
-            linkType={linkType}
-            getAccount={getAccount}
-            onRemoveTransaction={toggleSelectTransaction}
-          />
-
-          {/* Add Counterparts Search */}
-          <CandidateSearchList
-            candidateSearch={candidateSearch}
-            setCandidateSearch={setCandidateSearch}
-            loadingCandidates={loadingCandidates}
-            filteredCandidates={filteredCandidates}
-            getRuleHint={getRuleHint}
-            getAccount={getAccount}
-            onAddTransaction={toggleSelectTransaction}
+          <LinkDialogBody
+            linkState={linkState}
+            lending={lending}
+            loanPayment={loanPayment}
+            accounts={accounts}
           />
         </DialogBody>
 
         <DialogFooter
-          primaryAction={{
-            label: submitting ? 'Linking...' : 'Link Transactions',
-            onClick: handleSubmit,
-            disabled: submitting || selectedTransactions.length < 2 || !anchorId,
-          }}
+          primaryAction={primaryAction}
           secondaryAction={{
             label: 'Cancel',
             onClick: () => onOpenChange(false),
-            disabled: submitting,
+            disabled: anyBusy,
           }}
         />
       </DialogContent>

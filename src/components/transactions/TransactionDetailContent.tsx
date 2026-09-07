@@ -1,16 +1,16 @@
 'use client';
 
 import { Link2, PencilIcon } from 'lucide-react';
-import * as React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Account } from '@/lib/account.types';
 import { Transaction } from '@/lib/transaction.types';
 
 import { DeleteTransaction } from './DeleteTransaction';
-import { LinkedTransactionsSection } from './detail-content/LinkedTransactionsSection';
+import { LinksSection } from './detail-content/LinksSection';
 import { TransactionHeroHeader } from './detail-content/TransactionHeroHeader';
 import { TransactionMetadataGrid } from './detail-content/TransactionMetadataGrid';
+import { useObligationRefs } from './detail-content/useObligationRefs';
 import { useTransactionLinks } from './detail-content/useTransactionLinks';
 import { ReviewTransaction } from './ReviewTransaction';
 import { TransactionLinkDialog } from './TransactionLinkDialog';
@@ -42,6 +42,13 @@ export const TransactionDetailContent = ({
     handleUnlink,
   } = useTransactionLinks(transaction.id, hasLinks, onCloseAndRefresh);
 
+  const obligationRefs = transaction.obligationRefs ?? [];
+  const {
+    unlinkingId: unlinkingObligationId,
+    handleUnlink: handleUnlinkObligation,
+    handleUnlinkLoanPayment,
+  } = useObligationRefs(onCloseAndRefresh);
+
   return (
     <div className="flex flex-col">
       {/* Modal Hero / Header */}
@@ -54,8 +61,8 @@ export const TransactionDetailContent = ({
           accounts={accounts}
         />
 
-        {/* Linked Transactions Section */}
-        <LinkedTransactionsSection
+        {/* One entry point for everything that explains this transaction. */}
+        <LinksSection
           transaction={transaction}
           accounts={accounts}
           links={links}
@@ -64,6 +71,10 @@ export const TransactionDetailContent = ({
           unlinkingId={unlinkingId}
           fetchLinks={fetchLinks}
           handleUnlink={handleUnlink}
+          obligationRefs={obligationRefs}
+          unlinkingObligationId={unlinkingObligationId}
+          onUnlinkLending={handleUnlinkObligation}
+          onUnlinkLoanPayment={handleUnlinkLoanPayment}
         />
 
         <ReviewTransaction
@@ -71,7 +82,7 @@ export const TransactionDetailContent = ({
           onSuccess={onCloseAndRefresh}
         />
 
-        <div className="grid grid-cols-2 gap-2 pt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
           <Button
             variant="outline"
             size="sm"
