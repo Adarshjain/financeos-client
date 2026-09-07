@@ -237,14 +237,14 @@
 <p class="eyebrow">Sections 25 and 59</p>
 <h2><span class="n">25</span>Testing strategy and test-to-rule map</h2>
 <div class="exec"><h4>Executive summary</h4>
-<p>Three tiers exist: ~660 server unit tests (JUnit 5 + Mockito, no Spring context), 62 client vitest suites (jsdom), and 651 Playwright E2E tests against a real Oracle Free container with WireMock for Gmail, Google, Yahoo, AMFI and a scripted LLM. The E2E suite is the only layer that boots Spring and runs Flyway, and it covers every one of the 193 API operations and 37 routes. Unit coverage is deep for rewards, loans math, categorization and statement parsing, and absent for XIRR, the loan and lending service layers, and the report SQL builder's category join. <span class="c cg">Confirmed</span></p></div>
+<p>Three tiers exist: 778 server unit test methods (821 executions once parameterised cases expand) (JUnit 5 + Mockito, no Spring context), 84 client vitest suites (jsdom), and ~688 Playwright E2E tests against a real Oracle Free container with WireMock for Gmail, Google, Yahoo, AMFI and a scripted LLM. The E2E suite is the only layer that boots Spring and runs Flyway, and it covers every one of the 196 API operations and 37 routes. Unit coverage is deep for rewards, loans math, categorization and statement parsing, and absent for XIRR and the report SQL builder's category join; the loan service layer's own orchestration tests are still hollow, but the newer lending↔transaction linking code (validator, obligation refs, match suggestions) is genuinely covered. <span class="c cg">Confirmed</span></p></div>
 
 <h3 id="s25-tiers">Tiers</h3>
 <div class="tw compact"><table>
 <tr><th>Tier</th><th>Count</th><th>Runner</th><th>What it proves</th><th>What it cannot prove</th></tr>
-<tr><td>Server unit</td><td>132 files, ~660 tests</td><td>Maven Surefire, JUnit 5, Mockito, AssertJ</td><td>Pure logic: reward math, FIFO, schedules, parsers, matchers, validators, prompt builders</td><td>Anything needing Spring, Flyway, Hibernate filters, SQL (Mockito never boots the context; see memory "verify server boots")</td></tr>
-<tr><td>Client unit</td><td>62 suites</td><td>vitest + Testing Library (jsdom, Node 20)</td><td>Component rendering, hooks, formatters, request builders, nav</td><td>RSC streaming (asChild trigger bug invisible in jsdom), server actions</td></tr>
-<tr><td>E2E</td><td>70 specs, 651 tests</td><td>Playwright; Docker Oracle Free 23; WireMock; <code>@Profile("e2e")</code></td><td>Every endpoint (193/193 ops), every route (37/37), foreign-id tenancy sweep, migration idempotence (double boot), job flows, Gmail flows with fake Gmail, chat with scripted LLM</td><td>Real provider behaviour (Yahoo, Gemini), ADB-specific behaviour (ORA-12839), concurrency under load</td></tr>
+<tr><td>Server unit</td><td>137 files, 778 tests (821 executed)</td><td>Maven Surefire, JUnit 5, Mockito, AssertJ</td><td>Pure logic: reward math, FIFO, schedules, parsers, matchers, validators, prompt builders; lending↔transaction linking added 6 files / 101 tests (<code>LendingServiceLinkTest</code>, <code>LendingMatchSuggestionsTest</code>, <code>ObligationRefServiceTest</code>, <code>TransactionServiceObligationRefTest</code>, <code>TransactionResponseObligationRefsTest</code>, <code>LendingsDatasourceTest</code>)</td><td>Anything needing Spring, Flyway, Hibernate filters, SQL (Mockito never boots the context; see memory "verify server boots")</td></tr>
+<tr><td>Client unit</td><td>84 suites</td><td>vitest + Testing Library (jsdom, Node 20)</td><td>Component rendering, hooks, formatters, request builders, nav; lending↔transaction linking added 22 files / 128 tests (picker, link-dialog record kinds, ledger link cell, match panel, obligation ref badges/sections)</td><td>RSC streaming (asChild trigger bug invisible in jsdom), server actions</td></tr>
+<tr><td>E2E</td><td>72 specs, ~688 tests</td><td>Playwright; Docker Oracle Free 23; WireMock; <code>@Profile("e2e")</code></td><td>Every endpoint (196/196 ops), every route (37/37), foreign-id tenancy sweep, migration idempotence (double boot), job flows, Gmail flows with fake Gmail, chat with scripted LLM; <code>api/lending-links.spec.ts</code> (11) + <code>ui/lending-links.spec.ts</code> (7, one <code>@mobile</code>) added in Phase 16</td><td>Real provider behaviour (Yahoo, Gemini), ADB-specific behaviour (ORA-12839), concurrency under load</td></tr>
 <tr><td>Parity / property</td><td>a few</td><td>within unit</td><td>Balance single vs batch; holding realized vs Σ lots; SQL vs in-memory FY buckets</td><td></td></tr>
 <tr><td>Manual smoke</td><td>memory notes</td><td>Local Oracle + boot</td><td>Migrations apply; live 201s</td><td>Not repeatable</td></tr>
 </table></div>
@@ -258,6 +258,7 @@
 <li><span class="lyr">Tenancy</span>Each spec creates two users and replays every id-bearing call with the other user's id expecting 404</li>
 <li><span class="lyr">Routes</span>Every route in <code>navItems.tsx</code> plus detail pages rendered and asserted</li>
 </ol>
+<p>From Phase 16 (lending↔transaction linking) on, the working agreement changed: Claude implements the phase's tests directly rather than writing an AG prompt for a separate implementer to follow (user decision 2026-09-05, recorded in <span class="path">plans/e2e-phases.md</span>). Phase 16 added one new fixture helper file, <span class="path">e2e/fixtures/seed/lendings.ts</span> (<code>linkLendingTransaction</code>, <code>unlinkLendingTransaction</code>, <code>matchSuggestions</code>, <code>searchTransactions</code>); the existing <span class="path">fixtures/seed/loans.ts</span> needed no changes since <code>addLending</code>, <code>pay</code> and <code>addDays</code> already accepted a <code>transactionId</code>. No product code changed for this phase — it landed tests only, against the lending↔transaction linking product code that had already landed earlier on the same branch (<code>feat/lending-txn-linking</code>, not yet committed).</p>
 
 <h3 id="s59-map">Test-to-rule map (§59)</h3>
 <div class="tw"><table>
@@ -274,7 +275,11 @@
 <tr><td>Intraday classification</td><td><code>BrokerReconciliationServiceTest</code>, <code>scripts/reconcile_trades.py</code> validation</td><td>Good</td></tr>
 <tr><td>XIRR</td><td><strong>None</strong></td><td><span class="c pc">Critical gap</span></td></tr>
 <tr><td>Loan schedule, events, clamp, APR</td><td><code>LoanScheduleServiceTest</code></td><td>Deep for math</td></tr>
-<tr><td>Loan / lending service orchestration</td><td><code>LoanServiceTest</code>, <code>LendingServiceTest</code> exist but never invoke the service under test</td><td><span class="c ph">Hollow</span></td></tr>
+<tr><td>Loan / lending service orchestration (create, update, delete, totals)</td><td><code>LoanServiceTest</code>, <code>LendingServiceTest</code> exist but never invoke the service under test</td><td><span class="c ph">Hollow</span></td></tr>
+<tr><td>Lending↔transaction link/relink/unlink, direction rule, split bills, loan exclusivity</td><td><code>LendingServiceLinkTest</code>, <code>TransactionReferenceValidatorTest</code>; E2E <code>api/lending-links.spec.ts</code> (11) covering direction validation, split-bill refs, idempotent unlink/no-op relink, sign-flip and direction-change guards</td><td>Deep</td></tr>
+<tr><td>Obligation-ref reverse lookup, merge compatibility check, FK re-pointing</td><td><code>ObligationRefServiceTest</code>, <code>TransactionServiceObligationRefTest</code>, <code>TransactionResponseObligationRefsTest</code>; E2E merge re-point and merge-rejected cases</td><td>Deep</td></tr>
+<tr><td>Lending match-suggestions (tolerance, window, exclusions, greedy assignment)</td><td><code>LendingMatchSuggestionsTest</code>; E2E match-suggestions case</td><td>Good</td></tr>
+<tr><td>Lendings report datasource fields (<code>isLinked</code>, <code>transactionId</code>, <code>transactionAccount</code>) and transactions' <code>isLendingLeg</code>/<code>isLoanLeg</code></td><td><code>LendingsDatasourceTest</code>; E2E report datasource catalog case</td><td>Good</td></tr>
 <tr><td>Report SQL builder</td><td><code>TransactionQueryBuilderTest</code> covers filters, not the category join cardinality</td><td>Gap (fan-out untested)</td></tr>
 <tr><td>KPI comparison</td><td>SQL executor tested; in-memory null-enabled path untested</td><td>Gap</td></tr>
 <tr><td>Chat SQL validator</td><td><code>ChatSqlValidatorTest</code> (allow-list, forbidden keywords)</td><td>Good; drift vs migrations untested</td></tr>
@@ -292,7 +297,7 @@
 <li><strong>XirrCalculator</strong>: Newton iteration on doubles, no test, feeds every XIRR figure and the merger bridge flows.</li>
 <li><strong>Report category fan-out</strong>: no test asserts totals with multi-category transactions.</li>
 <li><strong>In-memory KPI comparison</strong> with null <code>enabled</code>.</li>
-<li><strong>Loan/lending service layer</strong>: ownership checks, event validation, match confirm.</li>
+<li><strong>Loan service layer orchestration</strong>: ownership checks, event validation, match confirm (<code>LoanServiceTest</code> still hollow) — the lending side of the same layer no longer shares this gap; its linking behaviour has its own real test classes (see the test-to-rule map above).</li>
 <li><strong>Duplicate corporate action</strong> application.</li>
 <li><strong>Statement PDF variety</strong>: the parser's heuristics have few real fixtures (memory: "needs sample PDFs for parity goldens").</li>
 <li><strong>Timezone edges</strong>: <code>LocalDate.now()</code> paths near midnight UTC.</li>
@@ -317,7 +322,7 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <div class="tw"><table>
 <tr><th>#</th><th>Pattern</th><th>Instance</th><th>Why it is an AI-typical risk</th><th>Danger if wrong</th><th>Priority</th></tr>
 <tr><td>AI1</td><td>Half-implemented security control</td><td>OAuth <code>state</code> generated, stored, never compared</td><td>Looks complete on read; only a negative test would catch it</td><td>Account takeover via login CSRF</td><td><span class="c pc">Critical</span></td></tr>
-<tr><td>AI2</td><td>Hollow tests</td><td><code>LoanServiceTest</code>, <code>LendingServiceTest</code> construct mocks and assert on them without calling the service</td><td>Green suite that proves nothing</td><td>Service regressions undetected</td><td><span class="c ph">High</span></td></tr>
+<tr><td>AI2</td><td>Hollow tests</td><td><code>LoanServiceTest</code>, <code>LendingServiceTest</code> construct mocks and assert on them without calling the service — still true of these two classes; the lending↔transaction linking work added six sibling classes that do invoke the real service against mocked repositories, so the pattern was not repeated there</td><td>Green suite that proves nothing</td><td>Service regressions undetected</td><td><span class="c ph">High</span></td></tr>
 <tr><td>AI3</td><td>Unverified numerical code</td><td><code>XirrCalculator</code> untested, doubles</td><td>Standard-looking formula copied without a golden</td><td>Wrong returns shown as fact</td><td><span class="c pc">Critical</span></td></tr>
 <tr><td>AI4</td><td>Reimplementation instead of reuse</td><td>KPI comparison ×2; sign convention ×3; FY ×4; reward matcher client twin</td><td>Each agent solved the local problem</td><td>Silent divergence (already observed)</td><td><span class="c ph">High</span></td></tr>
 <tr><td>AI5</td><td>Join without cardinality thought</td><td>Category LEFT JOIN fan-out in reports; unused <code>SqlPredicates.category()</code> that would have been correct</td><td>Correct helper written, wrong one used</td><td>Over-counted spend</td><td><span class="c pc">Critical</span></td></tr>
@@ -400,6 +405,7 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <tr><td>Partial</td><td>is_excluded</td><td>Honoured by rewards, ignored by balances and default reports</td></tr>
 <tr><td>Partial</td><td>Statement verdict</td><td>Badge only; never gates</td></tr>
 <tr><td>Partial</td><td>Loan payments</td><td>Recorded but never reconciled against schedule amounts</td></tr>
+<tr><td>Closed</td><td>Transaction picker parity</td><td>Closed 2026-09-07 — lending ledger entries and the loan-side <code>SettlePaymentDialog</code>, <code>AddChargeDialog</code> and <code>RecordEventDialog</code> all use the shared <code>TransactionPicker</code>; no raw transaction-ID input remains in the client</td></tr>
 </table></div>
 
 <h3 id="s47-incomplete">Incomplete flows</h3>

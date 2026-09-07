@@ -8,14 +8,12 @@ import { toast } from 'sonner';
 import { api } from '@/lib/api/client';
 import type { Page } from '@/lib/pagination';
 import { keys } from '@/lib/query/keys';
-import {
-  CounterpartyResponse,
-  LendingDirection,
-  LendingResponse,
-} from '@/lib/types';
+import { CounterpartyResponse, LendingResponse } from '@/lib/types';
 
 import { LendingEntryWithBalance } from './CounterpartyLedgerTable';
+import { useAddLendingEntry } from './useAddLendingEntry';
 import { useCounterpartyMutations } from './useCounterpartyMutations';
+import { useEditLendingEntry } from './useEditLendingEntry';
 
 const COUNTERPARTIES_PAGE_SIZE = 100;
 const LENDINGS_PAGE_SIZE = 200;
@@ -70,30 +68,13 @@ export function useCounterpartyDetail({
   const lendings = lendingsPage?.content ?? EMPTY_LENDINGS;
 
   const mutations = useCounterpartyMutations(counterpartyId);
+  const addEntry = useAddLendingEntry(counterpartyId, mutations.createLending);
+  const editEntry = useEditLendingEntry(mutations);
 
   // Edit Counterparty Details State
   const [editCpOpen, setEditCpOpen] = useState(false);
   const [cpName, setCpName] = useState(cp?.name ?? '');
   const [cpNotes, setCpNotes] = useState(cp?.notes ?? '');
-
-  // Add Entry State
-  const [addEntryOpen, setAddEntryOpen] = useState(false);
-  const [addDir, setAddDir] = useState<LendingDirection>('lent');
-  const [addAmount, setAddAmount] = useState('');
-  const [addEntryDate, setAddEntryDate] = useState(
-    new Date().toISOString().split('T')[0]
-  );
-  const [addExpDate, setAddExpDate] = useState('');
-  const [addNotes, setAddNotes] = useState('');
-
-  // Edit Entry State
-  const [editLendingOpen, setEditLendingOpen] = useState(false);
-  const [editingLendingId, setEditingLendingId] = useState<string | null>(null);
-  const [lendingDir, setLendingDir] = useState<LendingDirection>('lent');
-  const [lendingAmount, setLendingAmount] = useState('');
-  const [lendingDate, setLendingDate] = useState('');
-  const [lendingExpDate, setLendingExpDate] = useState('');
-  const [lendingNotes, setLendingNotes] = useState('');
 
   // Sort entries ASCENDING by date for running balance calculation
   const sortedEntries = useMemo(() => {
@@ -142,66 +123,10 @@ export function useCounterpartyDetail({
     }
   };
 
-  const handleAddEntry = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!addAmount || Number(addAmount) <= 0) {
-      toast.error('Amount must be greater than zero');
-      return;
-    }
-    try {
-      await mutations.createLending.mutateAsync({
-        counterpartyId,
-        direction: addDir,
-        amount: Number(addAmount),
-        entryDate: addEntryDate,
-        expectedReturnDate: addExpDate || undefined,
-        notes: addNotes.trim() || undefined,
-      });
-      toast.success('Entry added');
-      setAddEntryOpen(false);
-      setAddAmount('');
-      setAddNotes('');
-      setAddExpDate('');
-    } catch {
-      // onError already surfaced the toast.
-    }
-  };
-
   const handleDeleteLending = async (lendingId: string) => {
     try {
       await mutations.deleteLending.mutateAsync(lendingId);
       toast.success('Entry deleted');
-    } catch {
-      // onError already surfaced the toast.
-    }
-  };
-
-  const handleOpenEditLending = (lending: LendingResponse) => {
-    setEditingLendingId(lending.id);
-    setLendingDir(lending.direction);
-    setLendingAmount(String(lending.amount));
-    setLendingDate(lending.entryDate);
-    setLendingExpDate(lending.expectedReturnDate ?? '');
-    setLendingNotes(lending.notes ?? '');
-    setEditLendingOpen(true);
-  };
-
-  const handleUpdateLending = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingLendingId) return;
-    try {
-      await mutations.updateLending.mutateAsync({
-        id: editingLendingId,
-        body: {
-          direction: lendingDir,
-          amount: lendingAmount ? Number(lendingAmount) : undefined,
-          entryDate: lendingDate || undefined,
-          expectedReturnDate: lendingExpDate || undefined,
-          notes: lendingNotes.trim() || undefined,
-        },
-      });
-      toast.success('Entry updated');
-      setEditLendingOpen(false);
     } catch {
       // onError already surfaced the toast.
     }
@@ -217,38 +142,11 @@ export function useCounterpartyDetail({
     cpNotes,
     setCpNotes,
     submittingCp: mutations.updateCp.isPending,
-    addEntryOpen,
-    setAddEntryOpen,
-    addDir,
-    setAddDir,
-    addAmount,
-    setAddAmount,
-    addEntryDate,
-    setAddEntryDate,
-    addExpDate,
-    setAddExpDate,
-    addNotes,
-    setAddNotes,
-    submittingAddEntry: mutations.createLending.isPending,
-    editLendingOpen,
-    setEditLendingOpen,
-    lendingDir,
-    setLendingDir,
-    lendingAmount,
-    setLendingAmount,
-    lendingDate,
-    setLendingDate,
-    lendingExpDate,
-    setLendingExpDate,
-    lendingNotes,
-    setLendingNotes,
-    submittingEditLending: mutations.updateLending.isPending,
+    ...addEntry,
+    ...editEntry,
     handleUpdateCp,
     handleDeleteCp,
-    handleAddEntry,
     handleDeleteLending,
-    handleOpenEditLending,
-    handleUpdateLending,
   };
 }
 

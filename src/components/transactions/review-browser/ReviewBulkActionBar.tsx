@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 interface ReviewBulkActionBarProps {
   selectedCount: number;
   batchActionLoading: boolean;
+  obligationLinkedCount?: number;
   onOpenMerge: () => void;
   onOpenApprove: () => void;
   onBatchDelete: () => void;
@@ -16,6 +17,7 @@ interface ReviewBulkActionBarProps {
 export function ReviewBulkActionBar({
   selectedCount,
   batchActionLoading,
+  obligationLinkedCount = 0,
   onOpenMerge,
   onOpenApprove,
   onBatchDelete,
@@ -51,7 +53,11 @@ export function ReviewBulkActionBar({
 
         <ConfirmationDialog
           title="Delete Transactions?"
-          description={`Are you sure you want to permanently delete these ${selectedCount} transaction${selectedCount === 1 ? '' : 's'}? This action is permanent and cannot be undone.`}
+          description={`Are you sure you want to permanently delete these ${selectedCount} transaction${selectedCount === 1 ? '' : 's'}? This action is permanent and cannot be undone.${
+            obligationLinkedCount > 0
+              ? ` ${obligationLinkedCount} of these are linked to loan/lending records; those records will stay but lose the link.`
+              : ''
+          }`}
           primaryActionText={batchActionLoading ? 'Deleting...' : 'Delete'}
           primaryAction={onBatchDelete}
           loading={batchActionLoading}

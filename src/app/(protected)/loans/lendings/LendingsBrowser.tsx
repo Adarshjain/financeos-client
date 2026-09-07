@@ -53,8 +53,9 @@ export function LendingsBrowser() {
     setExpectedReturnDate,
     notes,
     setNotes,
-    txId,
-    setTxId,
+    selectedTx,
+    onSelectTx,
+    onClearTx,
     loading,
     filteredContent,
     handlePageChange,
@@ -156,8 +157,9 @@ export function LendingsBrowser() {
         setExpectedReturnDate={setExpectedReturnDate}
         notes={notes}
         setNotes={setNotes}
-        txId={txId}
-        setTxId={setTxId}
+        selectedTx={selectedTx}
+        onSelectTx={onSelectTx}
+        onClearTx={onClearTx}
         loading={loading}
         onCreateLending={handleCreateLending}
       />

@@ -1,5 +1,6 @@
 'use client';
 
+import { TransactionPicker } from '@/components/transactions/TransactionPicker';
 import {
   Dialog,
   DialogBody,
@@ -17,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Transaction } from '@/lib/transaction.types';
 import { AdjustmentMode, LoanEventType } from '@/lib/types';
 
 interface RecordEventDialogProps {
@@ -34,8 +36,9 @@ interface RecordEventDialogProps {
   setAdjustmentMode: (m: AdjustmentMode) => void;
   newEmiOverride: string;
   setNewEmiOverride: (o: string) => void;
-  eventTxId: string;
-  setEventTxId: (id: string) => void;
+  eventTx: Transaction | null;
+  onSelectEventTx: (t: Transaction) => void;
+  onClearEventTx: () => void;
   submittingEvent: boolean;
   onAddEvent: (e: React.FormEvent) => Promise<void>;
 }
@@ -55,11 +58,13 @@ export function RecordEventDialog({
   setAdjustmentMode,
   newEmiOverride,
   setNewEmiOverride,
-  eventTxId,
-  setEventTxId,
+  eventTx,
+  onSelectEventTx,
+  onClearEventTx,
   submittingEvent,
   onAddEvent,
 }: RecordEventDialogProps) {
+  const isCashEvent = eventType === 'prepayment' || eventType === 'foreclosure';
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md w-[95vw]">
@@ -179,14 +184,20 @@ export function RecordEventDialog({
             )}
 
             <div className="space-y-1">
-              <Label className="text-xs">
-                Linked Transaction ID (Optional)
-              </Label>
-              <Input
-                placeholder="UUID of transaction"
-                value={eventTxId}
-                onChange={(e) => setEventTxId(e.target.value)}
-                className="h-9 text-xs"
+              <Label className="text-xs">Transaction (Optional)</Label>
+              <TransactionPicker
+                value={eventTx}
+                onSelect={onSelectEventTx}
+                onClear={onClearEventTx}
+                type={isCashEvent ? 'DEBIT' : null}
+                excludeAnyObligationRef
+                suggestAmount={isCashEvent && eventAmount ? Number(eventAmount) : null}
+                suggestDate={effectiveDate || null}
+                ruleHint={
+                  isCashEvent
+                    ? 'Prepayments and foreclosures link money-out (debit) transactions'
+                    : 'Rate changes rarely have a linked transaction, but you can still link one'
+                }
               />
             </div>
           </form>

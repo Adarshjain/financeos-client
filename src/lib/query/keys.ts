@@ -80,6 +80,8 @@ export const keys = {
       [...keys.lendings.all, 'counterparties', params] as const,
     /** Upcoming obligations within a rolling window of `months`. */
     obligations: (months: number) => [...keys.lendings.all, 'obligations', months] as const,
+    matchSuggestions: (counterpartyId: string) =>
+      [...keys.lendings.all, 'match-suggestions', counterpartyId] as const,
   },
 
   rewards: {

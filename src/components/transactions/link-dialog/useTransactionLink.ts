@@ -8,13 +8,16 @@ import { Account } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
-import { FilterClause } from '@/lib/reports.types';
 import {
   CreateTransactionLinkRequest,
+  isRecordKind,
+  LinkKind,
   LinkType,
   MemberRef,
   Transaction,
 } from '@/lib/transaction.types';
+
+import { useLinkCandidates } from './useLinkCandidates';
 
 interface UseTransactionLinkProps {
   initialTransaction?: Transaction;
@@ -25,6 +28,32 @@ interface UseTransactionLinkProps {
   onSuccess?: () => void;
 }
 
+export interface UseTransactionLinkResult {
+  kind: LinkKind;
+  setKind: (kind: LinkKind) => void;
+  /** `null` when `kind` is a record kind (LENDING / LOAN_PAYMENT). */
+  linkType: LinkType | null;
+  disabledKinds: Partial<Record<LinkKind, string>>;
+  /** The single transaction a LENDING/LOAN_PAYMENT kind would act on, if any. */
+  subjectTransaction?: Transaction;
+  note: string;
+  setNote: (note: string) => void;
+  alignRefundCategories: boolean;
+  setAlignRefundCategories: (align: boolean) => void;
+  selectedTransactions: Transaction[];
+  anchorId: string;
+  setAnchorId: (id: string) => void;
+  candidateSearch: string;
+  setCandidateSearch: (search: string) => void;
+  loadingCandidates: boolean;
+  filteredCandidates: Transaction[];
+  submitting: boolean;
+  getAccount: (id: string) => Account | undefined;
+  toggleSelectTransaction: (t: Transaction) => void;
+  handleSubmit: () => void;
+  getRuleHint: () => string;
+}
+
 export function useTransactionLink({
   initialTransaction,
   initialSelectedTransactions = [],
@@ -32,15 +61,54 @@ export function useTransactionLink({
   open,
   onOpenChange,
   onSuccess,
-}: UseTransactionLinkProps) {
-  const [linkType, setLinkType] = React.useState<LinkType>('TRANSFER');
+}: UseTransactionLinkProps): UseTransactionLinkResult {
+  const [kind, setKind] = React.useState<LinkKind>('TRANSFER');
   const [note, setNote] = React.useState('');
   const [alignRefundCategories, setAlignRefundCategories] = React.useState(true);
   const [selectedTransactions, setSelectedTransactions] = React.useState<Transaction[]>([]);
   const [anchorId, setAnchorId] = React.useState<string>('');
-  const [candidateSearch, setCandidateSearch] = React.useState('');
-  const [candidateResults, setCandidateResults] = React.useState<Transaction[]>([]);
-  const [loadingCandidates, setLoadingCandidates] = React.useState(false);
+
+  const linkType = isRecordKind(kind) ? null : kind;
+
+  const subjectTransaction =
+    initialTransaction ??
+    (initialSelectedTransactions.length === 1 ? initialSelectedTransactions[0] : undefined);
+
+  const disabledKinds = React.useMemo<Partial<Record<LinkKind, string>>>(() => {
+    const isBulk = !initialTransaction && initialSelectedTransactions.length > 1;
+    if (isBulk) {
+      const reason = 'Select a single transaction to record a lending or loan payment';
+      return { LENDING: reason, LOAN_PAYMENT: reason };
+    }
+    if (!subjectTransaction) return {};
+
+    const result: Partial<Record<LinkKind, string>> = {};
+    const refs = subjectTransaction.obligationRefs ?? [];
+
+    if (refs.some((r) => r.kind !== 'LENDING')) {
+      result.LENDING = 'Already linked to a loan record';
+    }
+    if (refs.length > 0) {
+      result.LOAN_PAYMENT = 'Already linked to a ledger/loan record';
+    } else if (subjectTransaction.amount >= 0) {
+      result.LOAN_PAYMENT = 'Loan payments must be money-out (debit) transactions';
+    }
+    return result;
+  }, [initialTransaction, initialSelectedTransactions, subjectTransaction]);
+
+  const getAccount = React.useCallback(
+    (accountId: string) => accounts.find((a) => a.id === accountId),
+    [accounts]
+  );
+
+  const {
+    candidateSearch,
+    setCandidateSearch,
+    loadingCandidates,
+    filteredCandidates,
+    getRuleHint,
+    resetCandidateSearch,
+  } = useLinkCandidates({ open, linkType, selectedTransactions, anchorId, getAccount });
 
   const queryClient = useQueryClient();
   const createLinkMutation = useMutation({
@@ -79,107 +147,13 @@ export function useTransactionLink({
         setAnchorId('');
       }
 
+      setKind('TRANSFER');
       setNote('');
       setAlignRefundCategories(true);
-      setCandidateSearch('');
-      setCandidateResults([]);
+      resetCandidateSearch();
     }
     prevOpenRef.current = open;
-  }, [open, initialTransaction, initialSelectedTransactions]);
-
-  const getAccount = React.useCallback(
-    (accountId: string) => accounts.find((a) => a.id === accountId),
-    [accounts]
-  );
-
-  const anchorTx = selectedTransactions.find((t) => t.id === anchorId);
-  const candidateRequestIdRef = React.useRef(0);
-
-  const fetchCandidates = React.useCallback(
-    async (query: string, type: LinkType, anchor?: Transaction) => {
-      const requestId = ++candidateRequestIdRef.current;
-      setLoadingCandidates(true);
-      try {
-        const filters: FilterClause[] = [];
-
-        if (anchor) {
-          const anchorDebit = anchor.amount < 0;
-          if (type === 'TRANSFER' || type === 'CC_PAYMENT' || type === 'REFUND') {
-            filters.push({ field: 'type', operator: 'is', value: 'CREDIT' });
-          } else if (type === 'FEE' || type === 'EMI') {
-            filters.push({ field: 'type', operator: 'is', value: 'DEBIT' });
-          } else if (type === 'REVERSAL') {
-            filters.push({
-              field: 'type',
-              operator: 'is',
-              value: anchorDebit ? 'CREDIT' : 'DEBIT',
-            });
-          }
-        }
-
-        const { data } = await api.POST('/api/v1/transactions/search', {
-          body: {
-            filters,
-            search: query.trim() || null,
-          },
-          params: { query: { page: 0, size: 50 } },
-        });
-        if (requestId !== candidateRequestIdRef.current) return;
-        if (data) {
-          setCandidateResults(data.content);
-        }
-      } catch {
-        // Ignore background errors
-      } finally {
-        if (requestId === candidateRequestIdRef.current) {
-          setLoadingCandidates(false);
-        }
-      }
-    },
-    []
-  );
-
-  React.useEffect(() => {
-    if (!open) return;
-    const timer = setTimeout(() => {
-      fetchCandidates(candidateSearch, linkType, anchorTx);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [open, candidateSearch, linkType, anchorTx, fetchCandidates]);
-
-  const filteredCandidates = React.useMemo(() => {
-    const selectedIds = new Set(selectedTransactions.map((t) => t.id));
-    const curAnchorTx = selectedTransactions.find((t) => t.id === anchorId);
-
-    return candidateResults.filter((t) => {
-      if (selectedIds.has(t.id)) return false;
-      if (t.links && t.links.length > 0) return false;
-
-      if (!curAnchorTx) return true;
-
-      const isDebit = t.amount < 0;
-      const isCredit = t.amount >= 0;
-      const anchorDebit = curAnchorTx.amount < 0;
-
-      switch (linkType) {
-        case 'TRANSFER':
-          return isCredit && t.accountId !== curAnchorTx.accountId;
-        case 'CC_PAYMENT': {
-          const acc = getAccount(t.accountId);
-          return isCredit && acc?.type === 'credit_card';
-        }
-        case 'REVERSAL':
-          return isDebit !== anchorDebit && t.accountId === curAnchorTx.accountId;
-        case 'REFUND':
-          return isCredit;
-        case 'FEE':
-        case 'EMI':
-          return isDebit;
-        default:
-          return true;
-      }
-    });
-  }, [candidateResults, selectedTransactions, anchorId, linkType, getAccount]);
+  }, [open, initialTransaction, initialSelectedTransactions, resetCandidateSearch]);
 
   const toggleSelectTransaction = (t: Transaction) => {
     if (selectedTransactions.some((s) => s.id === t.id)) {
@@ -199,6 +173,7 @@ export function useTransactionLink({
   };
 
   const handleSubmit = () => {
+    if (!linkType) return;
     if (selectedTransactions.length < 2) {
       toast.error('Select at least 2 transactions to link');
       return;
@@ -227,29 +202,12 @@ export function useTransactionLink({
     createLinkMutation.mutate(payload);
   };
 
-  const getRuleHint = () => {
-    if (!anchorTx) return 'Select an anchor transaction above.';
-    switch (linkType) {
-      case 'TRANSFER':
-        return 'TRANSFER requires a Credit (income/transfer in) transaction on a different account.';
-      case 'CC_PAYMENT':
-        return 'CC_PAYMENT requires a Credit transaction posted to a Credit Card account.';
-      case 'REVERSAL':
-        return 'REVERSAL requires an opposite-direction transaction on the same account.';
-      case 'REFUND':
-        return 'REFUND requires Credit (refund/income) transactions.';
-      case 'FEE':
-        return 'FEE requires Debit (fee/charge) transactions.';
-      case 'EMI':
-        return 'EMI requires Debit (installment) transactions.';
-      default:
-        return '';
-    }
-  };
-
   return {
+    kind,
+    setKind,
     linkType,
-    setLinkType,
+    disabledKinds,
+    subjectTransaction,
     note,
     setNote,
     alignRefundCategories,
