@@ -39,6 +39,7 @@ export interface UserResponse {
   pictureUrl?: string | null;
   hasPassword?: boolean;
   createdAt: string;
+  admin?: boolean;
 }
 
 export interface DeleteAccountRequest {
@@ -861,6 +862,7 @@ export interface ErrorResponse {
   message: string;
   details?: Record<string, string> | null;
   errorId?: string | null;
+  requestId?: string | null;
   timestamp?: string | null;
 }
 

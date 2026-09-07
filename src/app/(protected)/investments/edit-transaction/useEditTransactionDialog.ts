@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { api, ApiError } from '@/lib/api/client';
 import { UpdateInvestmentTransactionRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import {
   InvestmentTransactionResponse,
   InvestmentTransactionType,
@@ -112,10 +113,7 @@ export function useEditTransactionDialog({
       setOpen(false);
       onSuccess?.();
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to delete transaction'
+      toastError(err, 'Failed to delete transaction'
       );
     }
   };
@@ -149,10 +147,7 @@ export function useEditTransactionDialog({
       setOpen(false);
       onSuccess?.();
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to update trade'
+      toastError(err, 'Failed to update trade'
       );
     }
   };

@@ -5,9 +5,10 @@ import * as React from 'react';
 import { toast } from 'sonner';
 
 import { Account } from '@/lib/account.types';
-import { api, ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import {
   CreateTransactionLinkRequest,
   isRecordKind,
@@ -123,7 +124,7 @@ export function useTransactionLink({
       onSuccess?.();
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof ApiError ? err.response.message : 'An unexpected error occurred');
+      toastError(err, 'An unexpected error occurred');
     },
   });
   const submitting = createLinkMutation.isPending;

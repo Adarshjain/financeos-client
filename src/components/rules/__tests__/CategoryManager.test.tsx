@@ -185,7 +185,7 @@ describe('CategoryManager', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('A category with this name already exists.');
+      expect(toast.error).toHaveBeenCalledWith('A category with this name already exists.', expect.anything());
     });
   });
 
@@ -243,7 +243,7 @@ describe('CategoryManager', () => {
     fireEvent.click(deleteBtn);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Failed to delete category on server');
+      expect(toast.error).toHaveBeenCalledWith('Failed to delete category on server', expect.anything());
     });
   });
 });

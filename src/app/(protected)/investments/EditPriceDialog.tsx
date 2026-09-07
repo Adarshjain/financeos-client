@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { toCalendarDate } from '@/lib/utils';
 
 interface EditPriceDialogProps {
@@ -70,10 +71,7 @@ export function EditPriceDialog({
       setOpen(false);
       onSuccess?.();
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to update price'
+      toastError(err, 'Failed to update price'
       );
     }
   };

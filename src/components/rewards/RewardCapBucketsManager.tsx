@@ -19,6 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ApiError } from '@/lib/api/client';
 import type { CapWindow, CounterScope, RewardCapBucket, RewardType } from '@/lib/rewards.types';
+import { toastError } from '@/lib/toastError';
 import { sanitizeDecimalInput } from '@/lib/utils';
 
 const WINDOW_LABELS: Record<CapWindow, string> = {
@@ -50,8 +51,7 @@ export default function RewardCapBucketsManager({ accountId }: RewardCapBucketsM
   const [windowType, setWindowType] = useState<CapWindow>('CALENDAR_MONTH');
   const [counterScope, setCounterScope] = useState<CounterScope>('ACCOUNT');
 
-  const errorMessage = (e: unknown, fallback: string) =>
-    e instanceof ApiError ? e.response.message : fallback;
+  
 
   const openCreate = () => {
     setEditing(undefined);
@@ -89,7 +89,7 @@ export default function RewardCapBucketsManager({ accountId }: RewardCapBucketsM
       toast.success(editing ? 'Bucket updated' : 'Bucket created');
       setIsCreateOpen(false);
     };
-    const onError = (e: unknown) => toast.error(errorMessage(e, 'Failed to save cap bucket'));
+    const onError = (e: unknown) => toastError(e, 'Failed to save cap bucket');
     if (editing) {
       updateBucket.mutate({ id: editing.id, body }, { onSuccess, onError });
     } else {
@@ -101,7 +101,7 @@ export default function RewardCapBucketsManager({ accountId }: RewardCapBucketsM
     if (!window.confirm(`Delete bucket "${bucket.name}"?`)) return;
     deleteBucket.mutate(bucket.id, {
       onSuccess: () => toast.success('Bucket deleted'),
-      onError: (e) => toast.error(errorMessage(e, 'Failed to delete cap bucket')),
+      onError: (e) => toastError(e, 'Failed to delete cap bucket'),
     });
   };
 

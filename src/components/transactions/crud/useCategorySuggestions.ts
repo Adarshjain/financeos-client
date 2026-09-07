@@ -4,9 +4,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { api, ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
 import { Category } from '@/lib/categories.types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 
 interface UseCategorySuggestionsProps {
   categories: Category[];
@@ -63,9 +64,7 @@ export function useCategorySuggestions({
       setLocalCategories((prev) => [...prev, newCategory]);
       setSelectedCategories((prev) => [...prev, newCategory]);
     } catch (err) {
-      toast.error(
-        'Failed to create category: ' + (err instanceof ApiError ? err.response.message : 'Unknown error')
-      );
+      toastError(err, 'Failed to create category');
     } finally {
       setCreatingCategory(false);
     }

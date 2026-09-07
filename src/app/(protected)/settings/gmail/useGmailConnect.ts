@@ -13,6 +13,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 // migration report.
 import type { GmailSenderRequest, GmailSenderResponse } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import type { SyncSummary } from '@/lib/types';
 
 import { useGmailMutations } from './useGmailMutations';
@@ -90,7 +91,7 @@ export function useGmailConnect() {
       await disconnectMutation.mutateAsync(id);
       toast.success('Gmail account disconnected');
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Failed to disconnect Gmail connection'));
+      toastError(err, 'Failed to disconnect Gmail connection');
     }
   };
 
@@ -117,7 +118,7 @@ export function useGmailConnect() {
         emitJobStarted(data.jobId);
       }
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Failed to retry Gmail attention item'));
+      toastError(err, 'Failed to retry Gmail attention item');
     }
   };
 
@@ -156,9 +157,7 @@ export function useGmailConnect() {
       }
       setIsSenderDialogOpen(false);
     } catch (err) {
-      toast.error(
-        getErrorMessage(err, editingSender ? 'Failed to update Gmail sender' : 'Failed to create Gmail sender')
-      );
+      toastError(err, editingSender ? 'Failed to update Gmail sender' : 'Failed to create Gmail sender');
     }
   };
 
@@ -170,7 +169,7 @@ export function useGmailConnect() {
       await deleteSenderMutation.mutateAsync(id);
       toast.success('Sender deleted');
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Failed to delete Gmail sender'));
+      toastError(err, 'Failed to delete Gmail sender');
     }
   };
 

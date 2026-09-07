@@ -67,3 +67,48 @@ export async function createUser(
 
   return { email, password, cookie };
 }
+
+export async function createAdminUser(
+  _request: APIRequestContext,
+  options?: { password?: string; inviteCode?: string }
+): Promise<CreatedUser> {
+  const email = 'e2e-admin@example.test';
+  const password = options?.password ?? DEFAULT_PASSWORD;
+  const inviteCode = options?.inviteCode ?? INVITE_CODE;
+
+  // 1. Try signup
+  const signupRes = await fetch(`${E2E_API_URL}/api/v1/auth/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email,
+      password,
+      inviteCode,
+    }),
+  });
+
+  if (signupRes.status !== 201 && signupRes.status !== 409) {
+    throw new Error(`Admin signup failed with status ${signupRes.status}: ${await signupRes.text()}`);
+  }
+
+  // 2. Login
+  const loginRes = await fetch(`${E2E_API_URL}/api/v1/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  });
+  expect(loginRes.status, `Admin login failed: ${await loginRes.text()}`).toBe(200);
+
+  const rawCookie = loginRes.headers.get('set-cookie') || '';
+  const match = rawCookie.match(/FINANCEOS_SESSION=([^;]+)/);
+  const cookie = match ? match[1] : undefined;
+  if (!cookie) {
+    throw new Error('FINANCEOS_SESSION cookie not found in admin login response headers');
+  }
+
+  return { email, password, cookie };
+}
+

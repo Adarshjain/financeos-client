@@ -4,9 +4,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { toast } from 'sonner';
 
-import { api, ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
 import type { CreateLoanPaymentRequest, InstallmentDto, LoanResponse } from '@/lib/loan.types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
 
 interface UseLoanPaymentLinkProps {
@@ -147,7 +148,7 @@ export function useLoanPaymentLink({
       onSuccess?.();
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof ApiError ? err.response.message : 'Failed to settle installment');
+      toastError(err, 'Failed to settle installment');
     },
   });
 

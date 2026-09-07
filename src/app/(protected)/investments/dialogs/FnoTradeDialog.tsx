@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Broker } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { CreateFnoTradeRequest, FnoContractType, FnoTradeResponse, OptionType } from '@/lib/types';
 
 export interface FnoTradeDialogProps {
@@ -129,7 +130,7 @@ export function FnoTradeDialog({ mode = 'create', trade, brokerAccounts, trigger
       setOpen(false);
       onSuccess?.();
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.response.message : 'Failed to save FnO trade');
+      toastError(err, 'Failed to save FnO trade');
     }
   };
 

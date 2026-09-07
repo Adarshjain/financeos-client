@@ -8,6 +8,7 @@ import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Button } from '@/components/ui/button';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { Transaction } from '@/lib/transaction.types';
 
 interface DeleteTransactionProps {
@@ -27,7 +28,7 @@ export const DeleteTransaction = ({ transaction, onSuccess }: DeleteTransactionP
       onSuccess?.();
     },
     onError: (error: unknown) => {
-      toast.error(error instanceof ApiError ? error.response.message : (error as Error).message);
+      toastError(error, (error as Error).message);
     },
   });
 

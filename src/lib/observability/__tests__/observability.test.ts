@@ -23,6 +23,7 @@ describe('Observability Unit Tests', () => {
       code: 'INTERNAL_ERROR',
       message: 'Unexpected server error',
       errorId: 'ERR_12345',
+      requestId: null,
       fallbackMessage: 'Fallback message',
     });
   });

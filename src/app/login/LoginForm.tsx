@@ -12,6 +12,7 @@ import { Logo } from '@/components/logo';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
+import { toastErrorResult } from '@/lib/toastError';
 import type { ApiResult, UserResponse } from '@/lib/types';
 
 export function LoginForm() {
@@ -63,7 +64,7 @@ export function LoginForm() {
               window.location.href = result.data.authorizationUrl;
               // Leave pending set: the navigation is in flight.
             } else {
-              toast.error(result.error.message);
+              toastErrorResult(result.error, "An unexpected error occurred");
               setSsoPending(false);
             }
           }}

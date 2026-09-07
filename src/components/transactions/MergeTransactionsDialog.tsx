@@ -20,6 +20,7 @@ import {
 import type {Account} from '@/lib/account.types';
 import {api, ApiError} from '@/lib/api/client';
 import {keys} from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import type {MergeTransactionsResponse, Transaction, TransactionSource} from '@/lib/transaction.types';
 import {cn, formatCurrency, formatDate} from '@/lib/utils';
 
@@ -105,7 +106,7 @@ export function MergeTransactionsDialog({
       onOpenChange(false);
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof ApiError ? err.response.message : 'An error occurred while merging transactions');
+      toastError(err, 'An error occurred while merging transactions');
     },
   });
   const loading = mergeMutation.isPending;

@@ -5,12 +5,20 @@ import type { paths } from '@/lib/api/schema';
 import type { ErrorResponse } from '@/lib/api/types';
 
 export class ApiError extends Error {
+  public requestId?: string;
+  public endpoint: string;
+  public method: string;
+
   constructor(
     public status: number,
     public response: ErrorResponse,
+    options?: { requestId?: string; endpoint?: string; method?: string },
   ) {
     super(response.message);
     this.name = 'ApiError';
+    this.requestId = options?.requestId ?? response.requestId ?? undefined;
+    this.endpoint = options?.endpoint ?? '';
+    this.method = options?.method ?? 'GET';
   }
 }
 
@@ -38,14 +46,17 @@ const browserMiddleware: Middleware = {
   async onResponse({ request, response }) {
     const start = clientRequestTimings.get(request);
     const durationMs = start !== undefined ? Math.round(performance.now() - start) : undefined;
+    const url = new URL(request.url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+    const endpoint = url.pathname;
+    const method = request.method;
+    const requestId = response.headers.get('X-Request-Id') ?? request.headers.get('X-Request-Id') ?? undefined;
 
     // Report to Grafana Faro if available
     const faro = getFaro();
     if (faro && durationMs !== undefined) {
-      const url = new URL(request.url);
       faro.api.pushMeasurement(
         { type: 'api-call', values: { durationMs } },
-        { context: { endpoint: url.pathname, method: request.method, status: String(response.status) } }
+        { context: { endpoint, method, status: String(response.status) } }
       );
     }
 
@@ -64,12 +75,34 @@ const browserMiddleware: Middleware = {
           code: 'UNKNOWN_ERROR',
           message: `Request failed with status ${response.status}`,
           timestamp: new Date().toISOString(),
+          requestId,
         };
       }
-      throw new ApiError(response.status, errorResponse);
+      if (!errorResponse.requestId && requestId) {
+        errorResponse.requestId = requestId;
+      }
+      throw new ApiError(response.status, errorResponse, { requestId, endpoint, method });
     }
 
     return response;
+  },
+
+  async onError({ error, request }) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    const url = new URL(request.url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+    const endpoint = url.pathname;
+    const method = request.method;
+    const requestId = request.headers.get('X-Request-Id') ?? undefined;
+
+    const errorResponse: ErrorResponse = {
+      code: 'NETWORK_ERROR',
+      message: error instanceof Error ? error.message : 'Network error',
+      timestamp: new Date().toISOString(),
+      requestId,
+    };
+    throw new ApiError(0, errorResponse, { requestId, endpoint, method });
   },
 };
 

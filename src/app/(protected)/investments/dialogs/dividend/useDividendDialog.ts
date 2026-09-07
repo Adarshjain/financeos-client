@@ -8,6 +8,7 @@ import { Broker } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
 import { CreateDividendRequest, UpdateDividendRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { Dividend, DividendType, Position } from '@/lib/types';
 import { toCalendarDate } from '@/lib/utils';
 
@@ -153,10 +154,7 @@ export function useDividendDialog({
       setOpen(false);
       onSuccess?.();
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to save dividend'
+      toastError(err, 'Failed to save dividend'
       );
     }
   };

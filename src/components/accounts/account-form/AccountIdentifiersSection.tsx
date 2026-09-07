@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { toastError } from '@/lib/toastError';
 
 import { useAccountIdentifiers } from './useAccountIdentifiers';
 
@@ -88,7 +89,7 @@ export function AccountIdentifiersSection({
       await deleteIdentifier(key);
       toast.success('Identifier alias removed');
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Failed to remove identifier'));
+      toastError(err, 'Failed to remove identifier');
     } finally {
       setDeletingId(null);
     }

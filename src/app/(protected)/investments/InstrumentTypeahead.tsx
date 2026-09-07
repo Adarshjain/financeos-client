@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ApiError } from '@/lib/api/client';
+import { toastError } from '@/lib/toastError';
 import { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
 
 import { CreateInstrumentDialog } from './CreateInstrumentDialog';
@@ -88,10 +89,7 @@ export function InstrumentTypeahead({
       setIsOpen(false);
       toast.success(`Added ${resolved.name}`);
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to resolve instrument'
+      toastError(err, 'Failed to resolve instrument'
       );
     } finally {
       setResolvingKey(null);

@@ -28,6 +28,7 @@ import {
 import { api, ApiError } from '@/lib/api/client';
 import { UpdateDividendRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { Dividend, DividendType } from '@/lib/types';
 
 interface EditDividendDialogProps {
@@ -82,10 +83,7 @@ export function EditDividendDialog({
       setOpen(false);
       onSuccess?.();
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to delete dividend'
+      toastError(err, 'Failed to delete dividend'
       );
     }
   };
@@ -108,10 +106,7 @@ export function EditDividendDialog({
       setOpen(false);
       onSuccess?.();
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to update dividend'
+      toastError(err, 'Failed to update dividend'
       );
     }
   };
