@@ -19,14 +19,18 @@ export function useTradebookSection({ initialData }: UseTradebookSectionProps) {
   const [page, setPage] = useState<number>(initialData.number || 0);
   const [pageSize, setPageSize] = useState<number>(initialData.size || 12);
 
-  // Debounce free-text search input before it drives the query.
+  // Debounce free-text search input before it drives the query. Only a *changed* search
+  // resets the page: the mount run (and re-typing the same text) must not undo a page the
+  // user has already navigated to.
   useEffect(() => {
+    const next = searchInput.trim();
+    if (next === search) return;
     const timer = setTimeout(() => {
-      setSearch(searchInput.trim());
+      setSearch(next);
       setPage(0);
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchInput]);
+  }, [searchInput, search]);
 
   const isDefaultFilters =
     page === (initialData.number || 0) &&
