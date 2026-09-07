@@ -68,9 +68,14 @@
 <tr><td><code>GMAIL_CRON</code>, <code>GMAIL_TIMEZONE</code>, backfill/budget settings</td><td>Sync cadence</td><td>10–22 every 2 h IST</td><td>No</td><td></td></tr>
 <tr><td><code>JOBS_CONCURRENCY</code>, <code>JOBS_POLL_MS</code>, <code>JOBS_QUEUE_LIMIT</code>, retention</td><td>Queue</td><td>2 / 2000 / 100 / 30 d, 7 d</td><td>No</td><td></td></tr>
 <tr><td><code>SPRING_PROFILES_ACTIVE</code></td><td>prod / e2e</td><td>none</td><td>prod</td><td>README wrongly says prod is inert</td></tr>
-<tr><td><code>JAVA_TOOL_OPTIONS</code></td><td>-Xmx512m -XX:+UseSerialGC -XX:TieredStopAtLevel=1</td><td>—</td><td>Set by unit file</td><td></td></tr>
-<tr><td><code>LOKI_*</code></td><td>Fluent Bit output</td><td>—</td><td>Yes for logs</td><td>In Fluent Bit config, not the JVM</td></tr>
+<tr><td><code>ADMIN_EMAILS</code></td><td>Comma-separated email allowlist for admin diagnostics privileges</td><td>unset (open: every signed-in user is an admin)</td><td>No</td><td>Once one email is listed, only those users may call <code>/api/v1/diagnostics/**</code> and use the lookup on <code>/debug</code>. Set it on any deployment that has more than one trusted user.</td></tr>
+<tr><td><code>LOKI_QUERY_URL</code></td><td>Base URL for direct Loki query_range API requests</td><td><code>https://${GRAFANA_LOKI_HOST}</code></td><td>Yes if diagnostics enabled</td><td>Trailing slash stripped; defaults to Grafana Loki host</td></tr>
+<tr><td><code>LOKI_QUERY_USER</code></td><td>Basic auth user for Loki LogQL queries</td><td><code>${GRAFANA_LOKI_USER}</code></td><td>Yes if diagnostics enabled</td><td>Requires logs:read scope</td></tr>
+<tr><td><code>LOKI_QUERY_TOKEN</code></td><td>Basic auth token / key for Loki LogQL queries</td><td><code>${GRAFANA_CLOUD_TOKEN}</code></td><td>Yes if diagnostics enabled</td><td>Fallback to Grafana Cloud token</td></tr>
+<tr><td><code>LOKI_LOOKBACK_DAYS</code></td><td>Search window lookback limit for log queries</td><td>14</td><td>No</td><td>Days before now to search</td></tr>
+<tr><td><code>LOKI_*</code></td><td>Fluent Bit log forwarder output</td><td>—</td><td>Yes for logs</td><td>In Fluent Bit config, not the JVM</td></tr>
 </table></div>
+
 
 <h3 id="s26-client">Client environment variables</h3>
 <div class="tw compact"><table>
