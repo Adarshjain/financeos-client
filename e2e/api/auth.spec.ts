@@ -36,6 +36,7 @@ test.describe('Auth API (@api)', () => {
       'pictureUrl',
       'role',
       'hasPassword',
+      'admin',
     ]);
     for (const key of Object.keys(data)) {
       expect(allowedKeys.has(key), `Unexpected key in UserResponse: ${key}`).toBe(true);

@@ -35,7 +35,7 @@ function extractErrorMessage(e: unknown, fallback: string): string {
 export function toastError(e: unknown, fallback: string): void {
   const message = extractErrorMessage(e, fallback);
   const rec = errorLog.record(e, { message });
-  const ref = refOf(e as Parameters<typeof refOf>[0]) || rec.ref;
+  const ref = rec.ref && rec.ref !== 'unknown' ? rec.ref : (refOf(e as Parameters<typeof refOf>[0]) || undefined);
   const hasRef = ref && ref !== 'unknown';
 
   toast.error(message, {

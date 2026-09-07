@@ -88,6 +88,9 @@ const browserMiddleware: Middleware = {
   },
 
   async onError({ error, request }) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
     const url = new URL(request.url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
     const endpoint = url.pathname;
     const method = request.method;
