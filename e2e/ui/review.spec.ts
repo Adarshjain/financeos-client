@@ -208,8 +208,8 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
     // Click "Link to…" button to open TransactionLinkDialog
     await detailSheet.getByRole('button', { name: /Link to…/i }).click();
 
-    // Link dialog is opened
-    const linkDialog = page.getByRole('dialog', { name: /Link Transactions/i });
+    // Link dialog is opened (titled "Link"; it now also hosts lending/loan record kinds)
+    const linkDialog = page.getByRole('dialog', { name: 'Link', exact: true });
     await expect(linkDialog).toBeVisible();
 
     // Candidate list shows the counterpart transaction: click Add
@@ -227,15 +227,16 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
     const reopenedDetail = page.getByRole('dialog');
     await expect(reopenedDetail).toBeVisible();
 
-    await expect(reopenedDetail.getByText('Linked Transactions')).toBeVisible();
+    // Links now live under one "Links" header with a "Transactions" sub-group
+    await expect(reopenedDetail.getByText('Links', { exact: true })).toBeVisible();
     await expect(
       reopenedDetail.getByText('Transfer in', { exact: true })
     ).toBeVisible();
 
-    // Unlink
+    // Unlink: with no links left the whole Links section disappears
     await reopenedDetail.getByRole('button', { name: 'Unlink' }).click();
     await expect(
-      reopenedDetail.getByText('Linked Transactions')
+      reopenedDetail.getByText('Links', { exact: true })
     ).not.toBeVisible();
   });
 });
