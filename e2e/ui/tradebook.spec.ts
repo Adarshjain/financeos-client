@@ -81,14 +81,18 @@ test.describe('Tradebook UI (@ui)', () => {
     // Refresh tradebook page to load paginated data
     await openTradebook(page);
 
-    // 12 trades at page size 10: page 2 holds the last two rows and Next is exhausted there.
+    // 12 trades at page size 10: page 1 shows ten rows, page 2 the last two, and Next is
+    // exhausted there. Row counts are asserted first so each button check runs against
+    // settled page data rather than the in-flight transition.
+    const rows = page.getByRole('table').locator('tbody tr');
     const nextBtn = page.getByRole('button', { name: 'Next page' });
     const prevBtn = page.getByRole('button', { name: 'Previous page' });
+    await expect(rows).toHaveCount(10);
     await expect(nextBtn).toBeEnabled();
     await expect(prevBtn).toBeDisabled();
     await nextBtn.click();
+    await expect(rows).toHaveCount(2);
     await expect(nextBtn).toBeDisabled();
     await expect(prevBtn).toBeEnabled();
-    await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(2);
   });
 });
