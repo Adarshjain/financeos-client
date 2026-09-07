@@ -43,8 +43,9 @@ export function LoanDetail({ loanId }: LoanDetailProps) {
     setPaymentDate,
     paymentAmount,
     setPaymentAmount,
-    paymentTxId,
-    setPaymentTxId,
+    paymentTx,
+    onSelectPaymentTx,
+    onClearPaymentTx,
     submittingPayment,
     eventType,
     setEventType,
@@ -58,8 +59,9 @@ export function LoanDetail({ loanId }: LoanDetailProps) {
     setAdjustmentMode,
     newEmiOverride,
     setNewEmiOverride,
-    eventTxId,
-    setEventTxId,
+    eventTx,
+    onSelectEventTx,
+    onClearEventTx,
     submittingEvent,
     chargeType,
     setChargeType,
@@ -69,8 +71,9 @@ export function LoanDetail({ loanId }: LoanDetailProps) {
     setChargeDate,
     chargeNotes,
     setChargeNotes,
-    chargeTxId,
-    setChargeTxId,
+    chargeTx,
+    onSelectChargeTx,
+    onClearChargeTx,
     submittingCharge,
     loan,
     hasEventsOrPayments,
@@ -217,8 +220,9 @@ export function LoanDetail({ loanId }: LoanDetailProps) {
         setPaymentDate={setPaymentDate}
         paymentAmount={paymentAmount}
         setPaymentAmount={setPaymentAmount}
-        paymentTxId={paymentTxId}
-        setPaymentTxId={setPaymentTxId}
+        paymentTx={paymentTx}
+        onSelectPaymentTx={onSelectPaymentTx}
+        onClearPaymentTx={onClearPaymentTx}
         submittingPayment={submittingPayment}
         onSettlePayment={handleSettlePayment}
         addEventOpen={addEventOpen}
@@ -235,8 +239,9 @@ export function LoanDetail({ loanId }: LoanDetailProps) {
         setAdjustmentMode={setAdjustmentMode}
         newEmiOverride={newEmiOverride}
         setNewEmiOverride={setNewEmiOverride}
-        eventTxId={eventTxId}
-        setEventTxId={setEventTxId}
+        eventTx={eventTx}
+        onSelectEventTx={onSelectEventTx}
+        onClearEventTx={onClearEventTx}
         submittingEvent={submittingEvent}
         onAddEvent={handleAddEvent}
         addChargeOpen={addChargeOpen}
@@ -249,8 +254,9 @@ export function LoanDetail({ loanId }: LoanDetailProps) {
         setChargeDate={setChargeDate}
         chargeNotes={chargeNotes}
         setChargeNotes={setChargeNotes}
-        chargeTxId={chargeTxId}
-        setChargeTxId={setChargeTxId}
+        chargeTx={chargeTx}
+        onSelectChargeTx={onSelectChargeTx}
+        onClearChargeTx={onClearChargeTx}
         submittingCharge={submittingCharge}
         onAddCharge={handleAddCharge}
       />

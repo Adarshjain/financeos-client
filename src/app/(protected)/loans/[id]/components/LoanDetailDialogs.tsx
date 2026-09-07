@@ -1,5 +1,6 @@
 'use client';
 
+import { Transaction } from '@/lib/transaction.types';
 import {
   AdjustmentMode,
   InstallmentDto,
@@ -19,8 +20,9 @@ interface LoanDetailDialogsProps {
   setPaymentDate: (d: string) => void;
   paymentAmount: string;
   setPaymentAmount: (a: string) => void;
-  paymentTxId: string;
-  setPaymentTxId: (id: string) => void;
+  paymentTx: Transaction | null;
+  onSelectPaymentTx: (t: Transaction) => void;
+  onClearPaymentTx: () => void;
   submittingPayment: boolean;
   onSettlePayment: (e: React.FormEvent) => Promise<void>;
 
@@ -38,8 +40,9 @@ interface LoanDetailDialogsProps {
   setAdjustmentMode: (m: AdjustmentMode) => void;
   newEmiOverride: string;
   setNewEmiOverride: (o: string) => void;
-  eventTxId: string;
-  setEventTxId: (id: string) => void;
+  eventTx: Transaction | null;
+  onSelectEventTx: (t: Transaction) => void;
+  onClearEventTx: () => void;
   submittingEvent: boolean;
   onAddEvent: (e: React.FormEvent) => Promise<void>;
 
@@ -53,8 +56,9 @@ interface LoanDetailDialogsProps {
   setChargeDate: (d: string) => void;
   chargeNotes: string;
   setChargeNotes: (n: string) => void;
-  chargeTxId: string;
-  setChargeTxId: (id: string) => void;
+  chargeTx: Transaction | null;
+  onSelectChargeTx: (t: Transaction) => void;
+  onClearChargeTx: () => void;
   submittingCharge: boolean;
   onAddCharge: (e: React.FormEvent) => Promise<void>;
 }
@@ -67,8 +71,9 @@ export function LoanDetailDialogs({
   setPaymentDate,
   paymentAmount,
   setPaymentAmount,
-  paymentTxId,
-  setPaymentTxId,
+  paymentTx,
+  onSelectPaymentTx,
+  onClearPaymentTx,
   submittingPayment,
   onSettlePayment,
   addEventOpen,
@@ -85,8 +90,9 @@ export function LoanDetailDialogs({
   setAdjustmentMode,
   newEmiOverride,
   setNewEmiOverride,
-  eventTxId,
-  setEventTxId,
+  eventTx,
+  onSelectEventTx,
+  onClearEventTx,
   submittingEvent,
   onAddEvent,
   addChargeOpen,
@@ -99,8 +105,9 @@ export function LoanDetailDialogs({
   setChargeDate,
   chargeNotes,
   setChargeNotes,
-  chargeTxId,
-  setChargeTxId,
+  chargeTx,
+  onSelectChargeTx,
+  onClearChargeTx,
   submittingCharge,
   onAddCharge,
 }: LoanDetailDialogsProps) {
@@ -114,8 +121,9 @@ export function LoanDetailDialogs({
         setPaymentDate={setPaymentDate}
         paymentAmount={paymentAmount}
         setPaymentAmount={setPaymentAmount}
-        paymentTxId={paymentTxId}
-        setPaymentTxId={setPaymentTxId}
+        paymentTx={paymentTx}
+        onSelectPaymentTx={onSelectPaymentTx}
+        onClearPaymentTx={onClearPaymentTx}
         submittingPayment={submittingPayment}
         onSettlePayment={onSettlePayment}
       />
@@ -135,8 +143,9 @@ export function LoanDetailDialogs({
         setAdjustmentMode={setAdjustmentMode}
         newEmiOverride={newEmiOverride}
         setNewEmiOverride={setNewEmiOverride}
-        eventTxId={eventTxId}
-        setEventTxId={setEventTxId}
+        eventTx={eventTx}
+        onSelectEventTx={onSelectEventTx}
+        onClearEventTx={onClearEventTx}
         submittingEvent={submittingEvent}
         onAddEvent={onAddEvent}
       />
@@ -152,8 +161,9 @@ export function LoanDetailDialogs({
         setChargeDate={setChargeDate}
         chargeNotes={chargeNotes}
         setChargeNotes={setChargeNotes}
-        chargeTxId={chargeTxId}
-        setChargeTxId={setChargeTxId}
+        chargeTx={chargeTx}
+        onSelectChargeTx={onSelectChargeTx}
+        onClearChargeTx={onClearChargeTx}
         submittingCharge={submittingCharge}
         onAddCharge={onAddCharge}
       />
