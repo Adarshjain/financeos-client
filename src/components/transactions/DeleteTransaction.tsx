@@ -41,6 +41,12 @@ export const DeleteTransaction = ({ transaction, onSuccess }: DeleteTransactionP
     }
   };
 
+  const obligationRefs = transaction.obligationRefs ?? [];
+  const obligationSuffix =
+    obligationRefs.length > 0
+      ? ` It is linked to ${obligationRefs.length} loan/lending record${obligationRefs.length === 1 ? '' : 's'} (${obligationRefs.map((ref) => ref.label).join(', ')}); the record${obligationRefs.length === 1 ? '' : 's'} will stay but lose the link.`
+      : '';
+
   const trigger = (
     <Button
       variant="outline"
@@ -56,9 +62,9 @@ export const DeleteTransaction = ({ transaction, onSuccess }: DeleteTransactionP
     <ConfirmationDialog
       title="Delete Transaction?"
       description={
-        transaction.source !== 'manual'
+        (transaction.source !== 'manual'
           ? 'This is not a manually created transaction. It is discouraged to delete this'
-          : 'Are you sure you want to delete this transaction?'
+          : 'Are you sure you want to delete this transaction?') + obligationSuffix
       }
       primaryActionText={isDeleting ? 'Deleting...' : 'Delete'}
       trigger={trigger}

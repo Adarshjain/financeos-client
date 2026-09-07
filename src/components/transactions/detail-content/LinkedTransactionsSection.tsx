@@ -18,6 +18,8 @@ interface LinkedTransactionsSectionProps {
   unlinkingId: string | null;
   fetchLinks: () => void;
   handleUnlink: (linkId: string) => void;
+  /** Omit the section's own header when it's nested inside a shared "Links" heading. */
+  hideHeader?: boolean;
 }
 
 export function LinkedTransactionsSection({
@@ -29,6 +31,7 @@ export function LinkedTransactionsSection({
   unlinkingId,
   fetchLinks,
   handleUnlink,
+  hideHeader = false,
 }: LinkedTransactionsSectionProps) {
   const accountName = (accountId: string | undefined) =>
     getAccountName(accounts, accountId);
@@ -37,11 +40,13 @@ export function LinkedTransactionsSection({
 
   return (
     <div className="space-y-2 pt-1">
-      <div className="flex items-center justify-between px-1">
-        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-          <Link2 className="h-3.5 w-3.5 text-indigo-500" /> Linked Transactions
-        </span>
-      </div>
+      {!hideHeader && (
+        <div className="flex items-center justify-between px-1">
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+            <Link2 className="h-3.5 w-3.5 text-indigo-500" /> Linked Transactions
+          </span>
+        </div>
+      )}
 
       {loadingLinks ? (
         <div className="flex justify-center py-4">
