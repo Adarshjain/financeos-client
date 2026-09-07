@@ -5,18 +5,17 @@ import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import type {
   CreateLendingRequest,
   UpdateCounterpartyRequest,
   UpdateLendingRequest,
 } from '@/lib/types';
 
-function errorMessage(e: unknown, fallback: string): string {
-  return e instanceof ApiError ? e.response.message : fallback;
-}
+
 
 function onErrorToast(fallback: string) {
-  return (e: unknown) => toast.error(errorMessage(e, fallback));
+  return (e: unknown) => toastError(e, fallback);
 }
 
 /** Mutations for the counterparty detail page (person profile + their ledger). */

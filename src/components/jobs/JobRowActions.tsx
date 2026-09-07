@@ -9,6 +9,7 @@ import { emitJobStarted } from '@/components/jobs/jobsBus';
 import { Button } from '@/components/ui/button';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import type { JobResponse } from '@/lib/types';
 
 export function JobRowActions({ job }: { job: JobResponse }) {
@@ -21,7 +22,7 @@ export function JobRowActions({ job }: { job: JobResponse }) {
       toast.info('Cancellation requested');
       queryClient.invalidateQueries({ queryKey: keys.jobs.all });
     },
-    onError: (err) => toast.error(err instanceof ApiError ? err.response.message : 'Failed to cancel job'),
+    onError: (err) => toastError(err, 'Failed to cancel job'),
   });
 
   const retryMutation = useMutation({
@@ -32,7 +33,7 @@ export function JobRowActions({ job }: { job: JobResponse }) {
       emitJobStarted(retried.id);
       queryClient.invalidateQueries({ queryKey: keys.jobs.all });
     },
-    onError: (err) => toast.error(err instanceof ApiError ? err.response.message : 'Failed to retry job'),
+    onError: (err) => toastError(err, 'Failed to retry job'),
   });
 
   const loading = cancelMutation.isPending || retryMutation.isPending;

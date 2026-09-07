@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { api, ApiError } from '@/lib/api/client';
 import { CorporateAction, CreateCorporateActionRequest, UpdateCorporateActionRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { Instrument } from '@/lib/types';
 import { toCalendarDate } from '@/lib/utils';
 
@@ -223,7 +224,7 @@ export function useCorporateActionsDialog({ instrument, heldQuantity, initialTyp
       fetchActions();
       onSuccess?.();
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.response.message : 'Failed to save corporate action');
+      toastError(err, 'Failed to save corporate action');
     }
   };
 
@@ -238,7 +239,7 @@ export function useCorporateActionsDialog({ instrument, heldQuantity, initialTyp
       fetchActions();
       onSuccess?.();
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.response.message : 'Failed to delete corporate action');
+      toastError(err, 'Failed to delete corporate action');
     } finally {
       setDeletingId(null);
     }

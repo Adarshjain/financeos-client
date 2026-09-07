@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { api, ApiError } from '@/lib/api/client';
 import { CorporateAction } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { Instrument } from '@/lib/types';
 
 import { SortOrder } from './CorporateActionsFilterBar';
@@ -66,10 +67,7 @@ export function useCorporateActionsSection() {
       await deleteMutation.mutateAsync({ instrumentId, actionId });
       toast.success('Corporate action deleted successfully');
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to delete corporate action'
+      toastError(err, 'Failed to delete corporate action'
       );
     } finally {
       setDeletingId(null);

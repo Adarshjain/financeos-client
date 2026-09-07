@@ -1,1 +1,7 @@
-[]
+[
+  {
+    "route": "/debug",
+    "reason": "Phase 2 of error-ref-debug (tests pending)",
+    "phase": 17
+  }
+]

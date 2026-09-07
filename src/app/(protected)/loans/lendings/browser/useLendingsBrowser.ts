@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { api, ApiError } from '@/lib/api/client';
 import type { Page } from '@/lib/pagination';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { Transaction } from '@/lib/transaction.types';
 import {
   CounterpartyResponse,
@@ -32,9 +33,7 @@ const EMPTY_PAGE: Page<CounterpartyResponse> = {
   empty: true,
 };
 
-function errorMessage(e: unknown, fallback: string): string {
-  return e instanceof ApiError ? e.response.message : fallback;
-}
+
 
 interface UseLendingsBrowserProps {
   initialPage?: number;
@@ -105,7 +104,7 @@ export function useLendingsBrowser({
       api.DELETE('/api/v1/counterparties/{id}', { params: { path: { id } } }),
     onSuccess: invalidateLendings,
     onError: (e) =>
-      toast.error(errorMessage(e, 'Failed to delete counterparty')),
+      toastError(e, 'Failed to delete counterparty'),
   });
 
   const createLendingMutation = useMutation({
@@ -115,7 +114,7 @@ export function useLendingsBrowser({
       invalidateLendings();
       qc.invalidateQueries({ queryKey: keys.transactions.all });
     },
-    onError: (e) => toast.error(errorMessage(e, 'Failed to create lending')),
+    onError: (e) => toastError(e, 'Failed to create lending'),
   });
 
   const handlePageChange = (newPage: number) => setPage(newPage);

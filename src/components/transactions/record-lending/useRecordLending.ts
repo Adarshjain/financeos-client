@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as React from 'react';
 import { toast } from 'sonner';
 
-import { api, ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
 import { suggestCounterparty } from '@/lib/lending.helpers';
 import type {
   CounterpartyResponse,
@@ -13,6 +13,7 @@ import type {
   LendingResponse,
 } from '@/lib/lending.types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
 
 /** Sentinel `Select` value for "+ Add new person", mirroring AddLendingDialog. */
@@ -154,7 +155,7 @@ export function useRecordLending({
       finishAndClose();
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof ApiError ? err.response.message : 'Failed to record lending');
+      toastError(err, 'Failed to record lending');
     },
   });
 
@@ -170,7 +171,7 @@ export function useRecordLending({
       finishAndClose();
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof ApiError ? err.response.message : 'Failed to attach transaction');
+      toastError(err, 'Failed to attach transaction');
     },
     onSettled: () => setAttachingId(null),
   });

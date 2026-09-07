@@ -163,7 +163,7 @@ describe('useEditLendingEntry', () => {
       await result.current.handleUpdateLending(submitEvent());
     });
 
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Custom failure reason'));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Custom failure reason', expect.anything()));
     expect(result.current.editLendingOpen).toBe(true);
   });
 });

@@ -80,9 +80,13 @@ const serverMiddleware: Middleware = {
           code: 'UNKNOWN_ERROR',
           message: `Request failed with status ${response.status}`,
           timestamp: new Date().toISOString(),
+          requestId,
         };
       }
-      throw new ApiError(response.status, errorResponse);
+      if (!errorResponse.requestId && requestId) {
+        errorResponse.requestId = requestId;
+      }
+      throw new ApiError(response.status, errorResponse, { requestId, endpoint: url.pathname, method: request.method });
     }
 
     return response;

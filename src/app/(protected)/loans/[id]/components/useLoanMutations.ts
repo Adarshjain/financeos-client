@@ -4,9 +4,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { api } from '@/lib/api/client';
-import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { Schemas } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import type {
   BatchLoanPaymentRequest,
   CreateLoanChargeRequest,
@@ -15,7 +15,7 @@ import type {
 } from '@/lib/types';
 
 function onErrorToast(fallback: string) {
-  return (e: unknown) => toast.error(getErrorMessage(e, fallback));
+  return (e: unknown) => toastError(e, fallback);
 }
 
 /**

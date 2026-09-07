@@ -298,7 +298,7 @@ describe('TransactionLinkDialog LENDING kind', () => {
     fireEvent.click(saveBtn);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Counterparty ledger is locked');
+      expect(toast.error).toHaveBeenCalledWith('Counterparty ledger is locked', expect.anything());
     });
   });
 });
@@ -478,7 +478,7 @@ describe('TransactionLinkDialog LOAN_PAYMENT kind', () => {
     fireEvent.click(settleBtn);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Installment already settled');
+      expect(toast.error).toHaveBeenCalledWith('Installment already settled', expect.anything());
     });
   });
 });

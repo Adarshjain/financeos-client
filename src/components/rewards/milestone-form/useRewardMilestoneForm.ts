@@ -18,6 +18,7 @@ import {
   RewardMilestoneRequest,
   RewardType,
 } from '@/lib/rewards.types';
+import { toastError } from '@/lib/toastError';
 import { parseCalendarDate, toCalendarDate } from '@/lib/utils';
 
 interface UseRewardMilestoneFormProps {
@@ -151,7 +152,7 @@ export function useRewardMilestoneForm({
       onSaved();
     };
     const onError = (e: unknown) =>
-      toast.error(e instanceof ApiError ? e.response.message : 'Failed to save milestone');
+      toastError(e, 'Failed to save milestone');
     if (isUpdateMode && milestone) {
       updateMilestoneMutation.mutate({ id: milestone.id, body }, { onSuccess, onError });
     } else {

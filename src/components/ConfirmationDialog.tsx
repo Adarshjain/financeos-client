@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { toastError } from '@/lib/toastError';
 
 interface ConfirmationDialogProps {
   title: string;
@@ -35,7 +36,7 @@ export function ConfirmationDialog(props: ConfirmationDialogProps) {
       await props.primaryAction?.();
       setOpen(false);
     } catch (error) {
-      toast.error((error as Error).message);
+      toastError(error, "An unexpected error occurred");
     } finally {
       setRunning(false);
     }

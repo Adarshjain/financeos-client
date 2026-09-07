@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 
 import { ErrorState } from '@/components/ErrorState';
 import { getFaro } from '@/instrumentation-client';
+import { errorLog } from '@/lib/diagnostics/errorLog';
 
 /**
  * Error boundary for routes outside the protected group (login, signup, the
@@ -18,6 +19,13 @@ export default function RootError({
   reset: () => void;
 }) {
   useEffect(() => {
+    errorLog.record(error, {
+      source: 'boundary',
+      digest: error.digest,
+      message: error.message,
+      ref: error.digest,
+    });
+
     const faro = getFaro();
     if (faro) {
       faro.api.pushError(error, {

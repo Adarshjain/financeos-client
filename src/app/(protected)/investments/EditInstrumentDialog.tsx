@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/select';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import {
   CreateInstrumentRequest,
   Instrument,
@@ -121,10 +122,7 @@ export function EditInstrumentDialog({
       toast.success(`Updated instrument ${updated.name}`);
       setOpen(false);
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to update instrument'
+      toastError(err, 'Failed to update instrument'
       );
     }
   };

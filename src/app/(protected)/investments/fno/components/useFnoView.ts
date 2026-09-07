@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Broker } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { FnoTradeListResponse, FnoTradeResponse } from '@/lib/types';
 
 import { FnoMetrics } from './FnoSummaryCards';
@@ -64,10 +65,7 @@ export function useFnoView({ brokerAccounts }: UseFnoViewProps) {
       toast.success(`Deleted trade for ${deletingTrade.tradingSymbol}`);
       setDeletingTrade(null);
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to delete trade'
+      toastError(err, 'Failed to delete trade'
       );
     }
   };

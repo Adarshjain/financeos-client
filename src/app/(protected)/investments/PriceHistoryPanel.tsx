@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { PriceHistoryPoint } from '@/lib/types';
 import { formatDate, formatMoney } from '@/lib/utils';
 
@@ -95,7 +96,7 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
       toast.success('Price updated successfully');
       setEditingId(null);
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.response.message : 'Failed to update price');
+      toastError(err, 'Failed to update price');
     }
   };
 
@@ -105,7 +106,7 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
       await deleteMutation.mutateAsync(priceId);
       toast.success('Price entry deleted');
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.response.message : 'Failed to delete price');
+      toastError(err, 'Failed to delete price');
     } finally {
       setDeletingId(null);
     }

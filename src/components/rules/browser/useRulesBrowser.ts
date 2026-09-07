@@ -12,6 +12,7 @@ import type { Category } from '@/lib/categories.types';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import { keys } from '@/lib/query/keys';
 import type { CategoryRule, MatchType, PagedRules } from '@/lib/rules.types';
+import { toastError } from '@/lib/toastError';
 
 import { RULES_PAGE_SIZE } from './constants';
 import { validatePattern } from './RuleFormDialog';
@@ -27,9 +28,7 @@ const EMPTY_RULES_PAGE: PagedRules = {
   empty: true,
 };
 
-function errorMessage(error: unknown, fallback: string): string {
-  return error instanceof ApiError ? error.response.message : fallback;
-}
+
 
 export function useRulesBrowser() {
   const queryClient = useQueryClient();
@@ -97,7 +96,7 @@ export function useRulesBrowser() {
       toast.success('Category created!');
       queryClient.invalidateQueries({ queryKey: keys.categories.all });
     },
-    onError: (error) => toast.error(errorMessage(error, 'Failed to create category')),
+    onError: (error) => toastError(error, 'Failed to create category'),
   });
 
   const createRuleMutation = useMutation({
@@ -109,13 +108,12 @@ export function useRulesBrowser() {
       queryClient.invalidateQueries({ queryKey: keys.rules.all });
     },
     onError: (error) => {
-      const message = errorMessage(error, 'An unexpected error occurred.');
       const isConflict =
         error instanceof ApiError &&
         (error.response.code === 'CONFLICT' ||
-          message.toLowerCase().includes('already exists') ||
-          message.toLowerCase().includes('duplicate'));
-      toast.error(isConflict ? 'Merchant rule already exists for this key.' : message);
+          (error.response.message || '').toLowerCase().includes('already exists') ||
+          (error.response.message || '').toLowerCase().includes('duplicate'));
+      toastError(error, isConflict ? 'Merchant rule already exists for this key.' : 'An unexpected error occurred.');
     },
   });
 
@@ -127,7 +125,7 @@ export function useRulesBrowser() {
       closeDialogs();
       queryClient.invalidateQueries({ queryKey: keys.rules.all });
     },
-    onError: (error) => toast.error(errorMessage(error, 'An unexpected error occurred.')),
+    onError: (error) => toastError(error, 'An unexpected error occurred.'),
   });
 
   const deleteRuleMutation = useMutation({
@@ -137,7 +135,7 @@ export function useRulesBrowser() {
       setDeletingRule(null);
       queryClient.invalidateQueries({ queryKey: keys.rules.all });
     },
-    onError: (error) => toast.error(errorMessage(error, 'Failed to delete rule.')),
+    onError: (error) => toastError(error, 'Failed to delete rule.'),
   });
 
   const verifyRuleMutation = useMutation({
@@ -146,7 +144,7 @@ export function useRulesBrowser() {
       toast.success('Rule verified — matching transactions cleared from review');
       queryClient.invalidateQueries({ queryKey: keys.rules.all });
     },
-    onError: (error) => toast.error(errorMessage(error, 'Failed to verify rule.')),
+    onError: (error) => toastError(error, 'Failed to verify rule.'),
   });
 
   const handleTabChange = (tab: string) => {

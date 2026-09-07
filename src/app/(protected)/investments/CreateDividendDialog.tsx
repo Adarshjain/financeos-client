@@ -23,6 +23,7 @@ import { Broker } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
 import { CreateDividendRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { Dividend, DividendType, Position } from '@/lib/types';
 import { toCalendarDate } from '@/lib/utils';
 
@@ -107,7 +108,7 @@ export function CreateDividendDialog({
       setInstrumentId('');
       onSuccess?.();
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.response.message : 'Failed to record dividend');
+      toastError(err, 'Failed to record dividend');
     }
   };
 

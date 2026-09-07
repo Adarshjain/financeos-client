@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import {
   CreateInstrumentRequest,
   Instrument,
@@ -122,10 +123,7 @@ export function useCreateInstrumentDialog({
       resetForm();
       onCreated?.(created);
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to create instrument'
+      toastError(err, 'Failed to create instrument'
       );
     }
   };

@@ -5,9 +5,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Account } from '@/lib/account.types';
-import { api, ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import { FilterClause } from '@/lib/reports.types';
+import { toastError } from '@/lib/toastError';
 import { ReviewReason } from '@/lib/transaction.types';
 
 import {
@@ -199,7 +200,7 @@ export function useReviewBrowser(accounts: Account[]) {
       setIsApproveDialogOpen(false);
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof ApiError ? err.response.message : 'An error occurred during batch approval.');
+      toastError(err, 'An error occurred during batch approval.');
     },
   });
 
@@ -232,7 +233,7 @@ export function useReviewBrowser(accounts: Account[]) {
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof ApiError ? err.response.message : 'An error occurred during batch deletion.');
+      toastError(err, 'An error occurred during batch deletion.');
     },
   });
 
