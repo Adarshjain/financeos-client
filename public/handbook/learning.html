@@ -133,7 +133,9 @@
 <tr><td>Review status</td><td>Trust state of a transaction</td><td>NEEDS_REVIEW, AUTO_REVIEWED, MANUALLY_REVIEWED, NA</td></tr>
 <tr><td>Review reason</td><td>Why it needs review</td><td>UNRECONCILED, CATEGORY_UNVERIFIED, DUPLICATE_SUSPECT</td></tr>
 <tr><td>Excluded</td><td>Flag meant to remove a row from reporting</td><td><code>is_excluded</code> (honoured by rewards only)</td></tr>
-<tr><td>Link</td><td>Relationship between two transactions (refund, CC payment, transfer, EMI, fee)</td><td><code>transaction_links</code>, <code>is_anchor</code></td></tr>
+<tr><td>Link</td><td>Relationship between two transactions (refund, CC payment, transfer, EMI, fee) — distinct from an obligation ref, which is one transaction and one ledger/loan row</td><td><code>transaction_links</code>, <code>is_anchor</code></td></tr>
+<tr><td>Obligation ref</td><td>Reverse-lookup from a transaction to the loan/lending record that references it via a direct FK on that record, not a <code>transaction_links</code> row; four kinds: LENDING, LOAN_PAYMENT, LOAN_EVENT, LOAN_CHARGE</td><td><code>ObligationRef</code>, <code>ObligationRefService</code></td></tr>
+<tr><td>Record link kind</td><td>One of the two non-transaction options (Lending, Loan EMI payment) in the "Link…" dialog's type selector, alongside the six transaction↔transaction kinds; posts to <code>/lendings</code> or <code>/loans/{id}/payments</code> instead of <code>/transaction-links</code></td><td><code>RECORD_LINK_KINDS</code>, <code>LinkTypeSelector.tsx</code></td></tr>
 <tr><td>Category / rule</td><td>Label and the pattern that assigns it</td><td><code>categories</code>, <code>category_rules</code> with match type and source USER / LLM</td></tr>
 <tr><td>Statement</td><td>A parsed bank or card statement for a period, with lines and summary</td><td><code>statements</code>, <code>statement_transactions</code>, <code>statement_credit_card_details</code></td></tr>
 <tr><td>Anchor</td><td>The latest statement's closing balance used as the base for balance math</td><td><code>BalanceMath</code></td></tr>
@@ -156,7 +158,8 @@
 <tr><td>XIRR</td><td>Money-weighted annual return</td><td><code>XirrCalculator</code></td></tr>
 <tr><td>F&amp;O</td><td>Futures and options ledger, separate from instruments</td><td><code>fno_trades</code></td></tr>
 <tr><td>Loan</td><td>Amortizing debt with schedule and events</td><td><code>loans</code>, <code>loan_events</code>, <code>loan_payments</code></td></tr>
-<tr><td>Lending</td><td>Informal money lent or borrowed, signed ledger</td><td><code>lendings</code>, <code>lending_entries</code></td></tr>
+<tr><td>Lending</td><td>Informal money lent or borrowed, signed ledger entry per counterparty; optionally linked to the bank transaction behind it</td><td><code>lendings</code>, <code>transaction_id</code> FK</td></tr>
+<tr><td>Split bill</td><td>Several lending ledger entries sharing one bank transaction (e.g. a dinner bill split N ways) — allowed since V86; loan payments/events/charges never share (still 1:1)</td><td><code>lendings.transaction_id</code> plain index (was UNIQUE through V85)</td></tr>
 <tr><td>Report / datasource</td><td>Saved query over a datasource with filters and grouping</td><td><code>reports</code>; SQL and computed datasources</td></tr>
 <tr><td>Dashboard / widget</td><td>Grid of report renderings</td><td><code>dashboards</code>, <code>dashboard_widgets</code></td></tr>
 <tr><td>Chat</td><td>Natural-language questions answered by model-written SQL</td><td><code>ChatOrchestrator</code>, <code>v_chat_*</code>, CHAT_RO</td></tr>
@@ -196,7 +199,7 @@
 <div class="qa"><b>Q3</b> Should a REJECTED statement verdict block ingestion, quarantine the lines, or stay advisory?</div>
 <div class="qa"><b>Q4</b> What is the intended default value of a reward point when none is configured: ₹0.25, ₹0, or "unknown, do not rank"?</div>
 <div class="qa"><b>Q5</b> Should the Card Picker account for annual fees (parked card-fees plan) and milestone proximity the way it does today?</div>
-<div class="qa"><b>Q6</b> Is the ±₹20 / ±7-day EMI match tolerance intentional, or should it be exact as the plan said?</div>
+<div class="qa"><b>Q6</b> Is the ±₹20 / ±7-day match tolerance intentional, or should it be exact as the plan said? Now shared by EMI and lending match suggestions via <code>MatchingConstants</code>, so the answer applies to both.</div>
 <div class="qa"><b>Q7</b> Should a closed account also stop Gmail ingestion and imports, or only card edits?</div>
 <div class="qa"><b>Q8</b> Should merge union categories from both rows?</div>
 <div class="qa"><b>Q9</b> Is a net-worth figure (accounts + holdings − loans ± lendings) wanted? The stub suggests yes; nothing computes it.</div>
