@@ -13,6 +13,7 @@ import {
 import { useLoanMatchActions } from './useLoanMatchActions';
 import { useLoanMutations } from './useLoanMutations';
 import { useLoanQueries } from './useLoanQueries';
+import { useLoanTransactionLinks } from './useLoanTransactionLinks';
 
 interface UseLoanDetailProps {
   loanId: string;
@@ -37,17 +38,16 @@ export function useLoanDetail({ loanId }: UseLoanDetailProps) {
   const mutations = useLoanMutations(loanId);
 
   const [editOpen, setEditOpen] = useState(false);
-  const [addEventOpen, setAddEventOpen] = useState(false);
-  const [addChargeOpen, setAddChargeOpen] = useState(false);
-  const [markPaidOpen, setMarkPaidOpen] = useState(false);
+  const [addEventOpenRaw, setAddEventOpenRaw] = useState(false);
+  const [addChargeOpenRaw, setAddChargeOpenRaw] = useState(false);
+  const [markPaidOpenRaw, setMarkPaidOpenRaw] = useState(false);
   const [selectedInstallment, setSelectedInstallment] =
     useState<InstallmentDto | null>(null);
 
   const [paymentDate, setPaymentDate] = useState('');
   const [paymentAmount, setPaymentAmount] = useState('');
-  const [paymentTxId, setPaymentTxId] = useState('');
 
-  const [eventType, setEventType] = useState<LoanEventType>('rate_change');
+  const [eventType, setEventTypeRaw] = useState<LoanEventType>('rate_change');
   const [effectiveDate, setEffectiveDate] = useState(
     new Date().toISOString().split('T')[0]
   );
@@ -56,7 +56,6 @@ export function useLoanDetail({ loanId }: UseLoanDetailProps) {
   const [adjustmentMode, setAdjustmentMode] =
     useState<AdjustmentMode>('reduce_tenure');
   const [newEmiOverride, setNewEmiOverride] = useState('');
-  const [eventTxId, setEventTxId] = useState('');
 
   const [chargeType, setChargeType] =
     useState<LoanChargeType>('processing_fee');
@@ -65,13 +64,44 @@ export function useLoanDetail({ loanId }: UseLoanDetailProps) {
     new Date().toISOString().split('T')[0]
   );
   const [chargeNotes, setChargeNotes] = useState('');
-  const [chargeTxId, setChargeTxId] = useState('');
+
+  const {
+    paymentTx,
+    onSelectPaymentTx,
+    onClearPaymentTx,
+    chargeTx,
+    onSelectChargeTx,
+    onClearChargeTx,
+    eventTx,
+    onSelectEventTx,
+    onClearEventTx,
+    setMarkPaidOpen,
+    setAddEventOpen,
+    setAddChargeOpen,
+    setEventType,
+  } = useLoanTransactionLinks({
+    paymentAmount,
+    setPaymentAmount,
+    paymentDate,
+    setPaymentDate,
+    chargeAmount,
+    setChargeAmount,
+    chargeDate,
+    setChargeDate,
+    eventAmount,
+    setEventAmount,
+    effectiveDate,
+    setEffectiveDate,
+    setMarkPaidOpenRaw,
+    setAddEventOpenRaw,
+    setAddChargeOpenRaw,
+    setEventTypeRaw,
+  });
 
   const handleOpenMarkPaid = (inst: InstallmentDto) => {
     setSelectedInstallment(inst);
     setPaymentDate(inst.dueDate);
     setPaymentAmount(String(inst.emi));
-    setPaymentTxId('');
     setMarkPaidOpen(true);
   };
 
@@ -83,7 +113,7 @@ export function useLoanDetail({ loanId }: UseLoanDetailProps) {
         installmentSeq: selectedInstallment.seq,
         paymentDate,
         amount: Number(paymentAmount),
-        transactionId: paymentTxId.trim() || undefined,
+        transactionId: paymentTx?.id,
       });
       toast.success(`Installment #${selectedInstallment.seq} marked as paid`);
       setMarkPaidOpen(false);
@@ -119,7 +149,7 @@ export function useLoanDetail({ loanId }: UseLoanDetailProps) {
           newEmiOverride
             ? Number(newEmiOverride)
             : undefined,
-        transactionId: eventTxId.trim() || undefined,
+        transactionId: eventTx?.id,
       });
       toast.success('Event recorded');
       setAddEventOpen(false);
@@ -145,7 +175,7 @@ export function useLoanDetail({ loanId }: UseLoanDetailProps) {
         amount: Number(chargeAmount),
         chargeDate,
         notes: chargeNotes.trim() || undefined,
-        transactionId: chargeTxId.trim() || undefined,
+        transactionId: chargeTx?.id,
       });
       toast.success('Charge added');
       setAddChargeOpen(false);
@@ -191,11 +221,11 @@ export function useLoanDetail({ loanId }: UseLoanDetailProps) {
     error,
     editOpen,
     setEditOpen,
-    addEventOpen,
+    addEventOpen: addEventOpenRaw,
     setAddEventOpen,
-    addChargeOpen,
+    addChargeOpen: addChargeOpenRaw,
     setAddChargeOpen,
-    markPaidOpen,
+    markPaidOpen: markPaidOpenRaw,
     setMarkPaidOpen,
     selectedInstallment,
     matchLoading,
@@ -205,8 +235,9 @@ export function useLoanDetail({ loanId }: UseLoanDetailProps) {
     setPaymentDate,
     paymentAmount,
     setPaymentAmount,
-    paymentTxId,
-    setPaymentTxId,
+    paymentTx,
+    onSelectPaymentTx,
+    onClearPaymentTx,
     submittingPayment: mutations.addPayment.isPending,
     eventType,
     setEventType,
@@ -220,8 +251,9 @@ export function useLoanDetail({ loanId }: UseLoanDetailProps) {
     setAdjustmentMode,
     newEmiOverride,
     setNewEmiOverride,
-    eventTxId,
-    setEventTxId,
+    eventTx,
+    onSelectEventTx,
+    onClearEventTx,
     submittingEvent: mutations.addEvent.isPending,
     chargeType,
     setChargeType,
@@ -231,8 +263,9 @@ export function useLoanDetail({ loanId }: UseLoanDetailProps) {
     setChargeDate,
     chargeNotes,
     setChargeNotes,
-    chargeTxId,
-    setChargeTxId,
+    chargeTx,
+    onSelectChargeTx,
+    onClearChargeTx,
     submittingCharge: mutations.addCharge.isPending,
     loan,
     hasEventsOrPayments,

@@ -29,17 +29,27 @@ interface TransactionPickerProps {
   value: PickerSummaryLike | null;
   onSelect: (t: Transaction) => void;
   onClear: () => void;
-  direction: 'lent' | 'borrowed';
+  direction?: 'lent' | 'borrowed';
+  /** Overrides the direction-derived type filter; `null` disables the type
+   *  filter entirely. See `useTransactionPicker`. */
+  type?: 'DEBIT' | 'CREDIT' | null;
+  /** Loan links are exclusive — hide rows carrying ANY obligation ref (loan
+   *  or lending) and suppress the "also linked to N ledger entries" hint,
+   *  which only makes sense under the default lending (LENDING-shared-ok)
+   *  rule. */
+  excludeAnyObligationRef?: boolean;
+  /** Overrides the default direction-derived empty-state hint text. */
+  ruleHint?: string;
   suggestAmount?: number | null;
   suggestDate?: string | null;
   excludeIds?: string[];
   disabled?: boolean;
 }
 
-function ruleHint(direction: 'lent' | 'borrowed') {
-  return direction === 'lent'
-    ? 'Lent entries link money-out (debit) transactions.'
-    : 'Borrowed entries link money-in (credit) transactions.';
+function defaultRuleHint(direction?: 'lent' | 'borrowed') {
+  if (direction === 'lent') return 'Lent entries link money-out (debit) transactions.';
+  if (direction === 'borrowed') return 'Borrowed entries link money-in (credit) transactions.';
+  return '';
 }
 
 function signedAmountOf(v: PickerSummaryLike): number {
@@ -51,6 +61,9 @@ export function TransactionPicker({
   onSelect,
   onClear,
   direction,
+  type,
+  excludeAnyObligationRef = false,
+  ruleHint: ruleHintProp,
   suggestAmount,
   suggestDate,
   excludeIds,
@@ -70,9 +83,11 @@ export function TransactionPicker({
 
   const { search, setSearch, loading, candidates } = useTransactionPicker({
     direction,
+    type,
     suggestAmount,
     suggestDate,
     excludeIds: effectiveExcludeIds,
+    excludeAnyObligationRef,
     active: showSearch && !disabled,
   });
 
@@ -154,7 +169,7 @@ export function TransactionPicker({
         ) : candidates.length === 0 ? (
           <div className="text-center py-6 px-3 text-xs text-slate-400 space-y-1">
             <p className="font-semibold text-slate-600 dark:text-slate-300">No matching transactions</p>
-            <p className="text-xs text-slate-400 italic">{ruleHint(direction)}</p>
+            <p className="text-xs text-slate-400 italic">{ruleHintProp ?? defaultRuleHint(direction)}</p>
           </div>
         ) : (
           candidates.map((t) => {
@@ -174,7 +189,7 @@ export function TransactionPicker({
                     <span>•</span>
                     <span>{formatDate(t.date)}</span>
                   </div>
-                  {splitCount > 0 && (
+                  {!excludeAnyObligationRef && splitCount > 0 && (
                     <span className="text-2xs text-indigo-500 dark:text-indigo-400">
                       also linked to {splitCount} ledger entr{splitCount === 1 ? 'y' : 'ies'}
                     </span>

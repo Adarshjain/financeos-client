@@ -1,5 +1,6 @@
 'use client';
 
+import { TransactionPicker } from '@/components/transactions/TransactionPicker';
 import {
   Dialog,
   DialogBody,
@@ -18,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Transaction } from '@/lib/transaction.types';
 import { LoanChargeType } from '@/lib/types';
 
 interface AddChargeDialogProps {
@@ -31,8 +33,9 @@ interface AddChargeDialogProps {
   setChargeDate: (d: string) => void;
   chargeNotes: string;
   setChargeNotes: (n: string) => void;
-  chargeTxId: string;
-  setChargeTxId: (id: string) => void;
+  chargeTx: Transaction | null;
+  onSelectChargeTx: (t: Transaction) => void;
+  onClearChargeTx: () => void;
   submittingCharge: boolean;
   onAddCharge: (e: React.FormEvent) => Promise<void>;
 }
@@ -48,8 +51,9 @@ export function AddChargeDialog({
   setChargeDate,
   chargeNotes,
   setChargeNotes,
-  chargeTxId,
-  setChargeTxId,
+  chargeTx,
+  onSelectChargeTx,
+  onClearChargeTx,
   submittingCharge,
   onAddCharge,
 }: AddChargeDialogProps) {
@@ -138,14 +142,16 @@ export function AddChargeDialog({
             </div>
 
             <div className="space-y-1">
-              <Label className="text-xs">
-                Linked Transaction ID (Optional)
-              </Label>
-              <Input
-                placeholder="UUID of transaction"
-                value={chargeTxId}
-                onChange={(e) => setChargeTxId(e.target.value)}
-                className="h-9 text-xs"
+              <Label className="text-xs">Transaction (Optional)</Label>
+              <TransactionPicker
+                value={chargeTx}
+                onSelect={onSelectChargeTx}
+                onClear={onClearChargeTx}
+                type="DEBIT"
+                excludeAnyObligationRef
+                suggestAmount={chargeAmount ? Number(chargeAmount) : null}
+                suggestDate={chargeDate || null}
+                ruleHint="Charges link money-out (debit) transactions"
               />
             </div>
           </form>

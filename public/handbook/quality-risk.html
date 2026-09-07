@@ -405,7 +405,7 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <tr><td>Partial</td><td>is_excluded</td><td>Honoured by rewards, ignored by balances and default reports</td></tr>
 <tr><td>Partial</td><td>Statement verdict</td><td>Badge only; never gates</td></tr>
 <tr><td>Partial</td><td>Loan payments</td><td>Recorded but never reconciled against schedule amounts</td></tr>
-<tr><td>Partial</td><td>Transaction picker parity</td><td>Lending ledger entries adopted a searchable <code>TransactionPicker</code> (all three dialogs); <code>SettlePaymentDialog</code>, <code>AddChargeDialog</code> and <code>RecordEventDialog</code> on the loan side still take a raw transaction-ID text input</td></tr>
+<tr><td>Closed</td><td>Transaction picker parity</td><td>Closed 2026-09-07 — lending ledger entries and the loan-side <code>SettlePaymentDialog</code>, <code>AddChargeDialog</code> and <code>RecordEventDialog</code> all use the shared <code>TransactionPicker</code>; no raw transaction-ID input remains in the client</td></tr>
 </table></div>
 
 <h3 id="s47-incomplete">Incomplete flows</h3>
