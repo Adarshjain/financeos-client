@@ -523,6 +523,7 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <h3 id="s50-playbook">Debugging playbook (§50)</h3>
 <div class="tw"><table>
 <tr><th>Symptom</th><th>First look</th><th>Then</th><th>Likely cause</th></tr>
+<tr><td>Toast or error page shows <code>Ref …</code></td><td>Open <code>/debug?ref=&lt;id&gt;</code></td><td>Read root cause headline, exception class/stack trace, and timeline events; use "Copy raw" for JSON export</td><td>Server exception, database constraint violation, 4xx client rejection, or rate limit</td></tr>
 <tr><td>"My transaction from email did not appear"</td><td>Settings → Gmail → Needs Attention; jobs page for the last GMAIL_SYNC result</td><td>Ledger row for the message id: status and reason; account <code>ingest_from_date</code>; sender allow-list</td><td>Parked (ambiguous), watermark, not a listed sender, LLM cooldown, token revoked</td></tr>
 <tr><td>"Balance is wrong"</td><td>Gap badge on the tile; latest statement closing balance</td><td>Transactions after the statement date incl. excluded ones; duplicates flagged; anchor-day rows</td><td>Excluded rows counted; duplicate alert + statement line; anchor-day inclusion</td></tr>
 <tr><td>"Reward number looks off"</td><td>/rewards lines: reason codes per transaction</td><td>Rule order and priorities; duplicate rules; cap bucket windows; point value; statement cycle flag</td><td>Duplicate additive rule; cycle fallback; ₹0.25 default</td></tr>
@@ -603,7 +604,31 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <li>The free instance sleeps; the first query returns 503 and needs a retry.</li>
 <li>Faro data lives under <code>app_id</code> / <code>kind</code> labels, not <code>service</code>.</li>
 </ul>
+
+<h3 id="s57-diagnostics">Diagnostics lookup</h3>
+<p>The <code>DiagnosticsService</code> correlates error and request references by querying Loki log streams in parallel across three tiers:</p>
+<div class="tw compact"><table>
+<tr><th>Log stream tier</th><th>LogQL selector</th><th>Labels &amp; filters</th></tr>
+<tr><td>Server application &amp; access logs</td><td><code>{service="financeos-server", env="…"} |= "…"</code></td><td>Labels: <code>service</code>, <code>env</code>, <code>level</code>; extracts JSON fields: <code>requestId</code>, <code>errorId</code>, <code>sessionId</code>, <code>route</code>, <code>event</code>, <code>stack_trace</code></td></tr>
+<tr><td>Client / Next.js server logs</td><td><code>{service="financeos-client", env="…"} |= "…"</code></td><td>Labels: <code>service</code>, <code>env</code>, <code>level</code>; extracts JSON payload</td></tr>
+<tr><td>Browser / Faro client logs</td><td><code>{service="financeos-client", kind=~"error|event|log"} |= "…"</code></td><td>Labels: <code>kind</code>; extracts message, URL, and browser context</td></tr>
+<tr><td>Session correlation (±5 min)</td><td><code>{service="financeos-server"} |= "sessionId=…"</code></td><td>Triggered when a valid <code>sessionId</code> is present; matches adjacent session activity</td></tr>
+</table></div>
+
+<p><strong>Root cause rule engine</strong> evaluates the correlated timeline to categorize failures into deterministic kinds and actionable hints:</p>
+<div class="tw compact"><table>
+<tr><th>Kind</th><th>Trigger condition</th><th>Diagnostic hint / resolution</th></tr>
+<tr><td><code>SERVER_EXCEPTION</code></td><td>5xx access log, <code>request.failed</code> with <code>exceptionClass</code>, ORA error code, or Hibernate assertion</td><td>Inspect root stack frame, ORA constraint rules (e.g. ORA-00001 unique violation), or unhandled service exception</td></tr>
+<tr><td><code>RATE_LIMITED</code></td><td>HTTP 429 status or LLM provider quota exhaustion</td><td>Back off and retry after the specified window; check provider cooldown reset time</td></tr>
+<tr><td><code>UPSTREAM_FAILURE</code></td><td>External HTTP 5xx or LLM provider failure</td><td>Verify upstream provider connectivity (Gemini/Groq/OpenRouter/Yahoo/AMFI)</td></tr>
+<tr><td><code>CLIENT_REJECTED</code></td><td>HTTP 400 validation error (<code>ValidationException</code>, <code>MethodArgumentNotValid</code>)</td><td>Review request parameters and validation constraints listed in details</td></tr>
+<tr><td><code>UNAUTHENTICATED</code></td><td>HTTP 401 response from security chain</td><td>User session was missing or expired; authentication required</td></tr>
+<tr><td><code>FORBIDDEN</code></td><td>HTTP 403 response (<code>AccessDeniedException</code>, cross-tenant or admin gate)</td><td>Authenticated user lacks permissions for this resource or operation</td></tr>
+<tr><td><code>INCOMPLETE</code></td><td>HTTP 2xx / 3xx log or timeline entries present without error marker</td><td>Request succeeded on server; inspect client-side events or network disconnects</td></tr>
+<tr><td><code>NOT_FOUND_IN_LOGS</code></td><td>No log entries found for the requested reference within the lookback window</td><td>Verify ref format (8-char errorId or 20-char requestId), check if event aged out past 14-day retention, or verify Loki ingestion lag</td></tr>
+</table></div>
 </section>
+
 <nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/journeys.html"><small>Previous</small>Journeys and flows</a><a class="next" href="/handbook/ops.html"><small>Next</small>Ops and architecture</a></nav>
   </main>
 </div>

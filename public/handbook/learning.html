@@ -164,9 +164,13 @@
 <tr><td>Dashboard / widget</td><td>Grid of report renderings</td><td><code>dashboards</code>, <code>dashboard_widgets</code></td></tr>
 <tr><td>Chat</td><td>Natural-language questions answered by model-written SQL</td><td><code>ChatOrchestrator</code>, <code>v_chat_*</code>, CHAT_RO</td></tr>
 <tr><td>BYOK</td><td>Bring your own LLM key</td><td><code>llm_keys</code></td></tr>
-<tr><td>Cooldown</td><td>Provider/model bucket unavailable until PT midnight after a quota error</td><td><code>FailoverLlmClient</code></td></tr>
 <tr><td>Tenant</td><td>A user; every row has <code>user_id</code></td><td><code>userFilter</code></td></tr>
+<tr><td>Reference (ref)</td><td>A trace or error identifier (errorId, requestId, or digest) used for debugging and log correlation</td><td><code>refOf</code>, <code>isValidRef</code></td></tr>
+<tr><td>errorId</td><td>An 8-character Crockford Base32 identifier generated on unhandled 500 server errors to correlate user reports with server exceptions</td><td><code>ErrorResponse.errorId</code></td></tr>
+<tr><td>requestId</td><td>A 20-character hexadecimal trace identifier attached to every HTTP request, log MDC context, and error envelope</td><td><code>RequestContextFilter</code>, <code>ErrorResponse.requestId</code></td></tr>
+<tr><td>Admin</td><td>A user authorized to perform cross-tenant diagnostics lookups in Loki: everyone while <code>ADMIN_EMAILS</code> is unset, otherwise only the listed emails</td><td><code>AdminService</code>, <code>AdminGuard</code>, <code>UserResponse.admin</code></td></tr>
 </table></div>
+
 
 <h3 id="s66-vocab">Code vs product vocabulary (§66)</h3>
 <div class="tw compact"><table>

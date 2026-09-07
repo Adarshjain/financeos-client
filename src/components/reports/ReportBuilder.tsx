@@ -3,7 +3,6 @@
 // The builder shell: a two-pane layout (configuration left, live preview right)
 // driven by one reducer. Switching report type is non-destructive — shared bits
 // (name, description, filters) and the other types' drafts are preserved.
-
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -30,6 +29,7 @@ import type {
   ReportResponse,
   UpdateReportRequest,
 } from '@/lib/reports.types';
+import { toastError } from '@/lib/toastError';
 
 import { builderReducer, hydrateState, initialBuilderState } from './builderReducer';
 import { PreviewPane } from './PreviewPane';
@@ -106,10 +106,7 @@ export function ReportBuilder({
       toast.success(mode === 'edit' ? 'Report updated' : 'Report created');
       router.push('/reports');
     } catch (e) {
-      toast.error(
-        e instanceof ApiError
-          ? e.response.message
-          : mode === 'edit'
+      toastError(e, mode === 'edit'
             ? 'Failed to update report'
             : 'Failed to create report',
       );

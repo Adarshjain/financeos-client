@@ -10,6 +10,7 @@ import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
 import { Button } from '@/components/ui/button';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import type { EnqueueResponse, PriceRefreshResult } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
@@ -60,10 +61,7 @@ export function RefreshPricesButton() {
         toast.info('Price refresh started in background.');
       }
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to refresh prices'
+      toastError(err, 'Failed to refresh prices'
       );
     }
   };

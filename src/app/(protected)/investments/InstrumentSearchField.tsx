@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ApiError } from '@/lib/api/client';
+import { toastError } from '@/lib/toastError';
 import { Instrument, InstrumentCandidate, InstrumentType } from '@/lib/types';
 
 import {
@@ -77,10 +78,7 @@ export function InstrumentSearchField({
       toast.success(`Added ${resolved.name}`);
       setQuery('');
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to add instrument'
+      toastError(err, 'Failed to add instrument'
       );
     } finally {
       setResolvingKey(null);

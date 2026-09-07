@@ -10,6 +10,7 @@ import type { Schemas } from '@/lib/api/types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import {
   ReviewType,
   Transaction,
@@ -214,7 +215,7 @@ export function useTransactionCRUD({
       onSuccess?.();
     } catch (err) {
       if (err instanceof ApiError) {
-        toast.error(err.response.message);
+        toastError(err, "An unexpected error occurred");
       } else {
         toast.error('Error:\n' + (err as Error).message);
       }

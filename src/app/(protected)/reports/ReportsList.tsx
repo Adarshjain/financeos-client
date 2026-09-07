@@ -11,6 +11,7 @@ import { Card } from '@/components/ui/card';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { ReportType } from '@/lib/reports.types';
+import { toastError } from '@/lib/toastError';
 import { cn, formatDate } from '@/lib/utils';
 
 type BadgeVariant = 'success' | 'info' | 'warning';
@@ -57,7 +58,7 @@ export function ReportsList({ activeType, datasourceLabels }: ReportsListProps) 
       toast.success('Report deleted');
     },
     onError: (e) =>
-      toast.error(e instanceof ApiError ? e.response.message : 'Failed to delete report'),
+      toastError(e, 'Failed to delete report'),
   });
 
   // Awaited (rather than fire-and-forget) so the ConfirmationDialog stays open

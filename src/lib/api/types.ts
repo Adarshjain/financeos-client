@@ -176,3 +176,8 @@ export type UpdateRoutingRequest = Schemas['UpdateRoutingRequest'];
 
 // Errors
 export type ErrorResponse = Schemas['ErrorResponse'];
+
+// Diagnostics
+export type DiagnosticsLookupResponse = Schemas['DiagnosticsLookupResponse'];
+export type RawLogEntry = Schemas['RawLogEntry'];
+

@@ -22,6 +22,7 @@ import type {
 } from '@/lib/dashboards.types';
 import { keys } from '@/lib/query/keys';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
+import { toastError } from '@/lib/toastError';
 
 // Serialize the editable parts of a dashboard so unsaved changes can be detected.
 export function editSignature(
@@ -215,10 +216,7 @@ export function useDashboardEditor({
         setEditing(false);
       }
     } catch (e) {
-      toast.error(
-        e instanceof ApiError
-          ? e.response.message
-          : mode === 'edit'
+      toastError(e, mode === 'edit'
             ? 'Failed to update dashboard'
             : 'Failed to create dashboard'
       );

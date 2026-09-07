@@ -144,7 +144,9 @@ Settings (/settings) → Gmail · Statement Ingest · Background Jobs · LLM Key
 <tr><td><code>/settings/ingest</code></td><td>statement upload</td><td>accounts</td><td>multipart upload → job</td><td>accounts.list</td><td>direct browser → API</td></tr>
 <tr><td><code>/settings/jobs</code></td><td>job history</td><td>jobs(searchParams)</td><td>cancel, retry</td><td>jobs.list(params)</td><td>only URL-driven list</td></tr>
 <tr><td><code>/settings/llm-keys</code></td><td>BYOK and routing</td><td>keys, catalog, options, routing, health</td><td>key add / delete / reorder / test; routing update / reset</td><td>5 keys</td><td></td></tr>
+<tr><td><code>/debug</code></td><td>diagnostics &amp; local error history</td><td>user</td><td>admin lookup, copy raw logs, clear local buffer</td><td>—</td><td>Admin: Loki query tool; Non-admin: developer notice + local ring buffer</td></tr>
 </table></div>
+
 <p>Non-page routes: <code>app/api/chat/route.ts</code> (SSE relay, <code>maxDuration 300</code>), <code>app/serwist/[path]/route.ts</code>, <code>app/manifest.ts</code>.</p>
 
 <h3 id="s07-state">State management map</h3>
@@ -291,6 +293,16 @@ Settings (/settings) → Gmail · Statement Ingest · Background Jobs · LLM Key
 <tr><td>LLM keys per provider, test, routing order per group, health</td><td><code>LlmKeysManager</code>, <code>ProviderKeysCard</code>, <code>RoutingGroupCard</code></td><td>/llm-keys/**, /llm/**</td><td><code>LlmKeyService</code>, <code>LlmRoutingService</code></td></tr>
 <tr><td>Theme, delete account with typed DELETE and password</td><td><code>ThemeSettingsCard</code>, <code>DeleteAccountCard</code></td><td>/auth/me/deletion-summary, /auth/me/delete</td><td><code>AccountDeletionService</code></td></tr>
 </table></div>
+
+<h3 id="s51-debug">Debug · /debug</h3>
+<p>The diagnostics and debug interface provides real-time LogQL correlation and client-side error inspection:</p>
+<ul>
+<li><strong>Who sees what</strong>: Administrators (every signed-in user while <code>ADMIN_EMAILS</code> is unset; only the listed emails once it is set) see the full reference lookup tool powered by Loki queries, including HTTP request details, root cause analysis with diagnostic hints, interactive timeline entries with expandable stack traces, and on-demand raw log export. Non-administrators see a developer notice ("Send this reference to the developer…") and a local ring buffer of errors without Loki querying capabilities.</li>
+<li><strong>Client ring buffer</strong>: <code>errorLog</code> keeps up to 20 newest errors in <code>localStorage</code> under <code>financeos:diagnostics:errors</code> tagged by <code>ownerUserId</code>. It resets on account change or session expiration. Deduplication logic merges consecutive errors with the same reference and error code occurring within 3 seconds rather than appending redundant rows. Users can copy formatted diagnostic reports, share via Web Share API / clipboard, and clear history.</li>
+<li><strong>Toast error contract</strong>: When an API error occurs, <code>toastError</code> and <code>toastErrorResult</code> record the event in the client ring buffer and show a Sonner error toast displaying <code>Ref &lt;ref&gt;</code> with action buttons: <strong>Copy ID</strong> (copies reference to clipboard) and <strong>Debug</strong> (navigates directly to <code>/debug?ref=&lt;encoded&gt;</code>).</li>
+<li><strong>ErrorState and DiagnosticsProvider</strong>: Root error boundaries render <code>ErrorState</code> displaying the page request ID or error digest with Copy ID and Debug links. <code>DiagnosticsProvider</code> wraps the protected layout, injecting <code>pageRequestId</code> from incoming HTTP headers, user admin status, and Faro telemetry <code>sessionId</code>.</li>
+</ul>
+
 
 <h3 id="s17-state">State ownership summary (§17)</h3>
 <div class="tw compact"><table>

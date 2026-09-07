@@ -13,6 +13,7 @@ import {
 } from '@/components/rewards/queries/useRewardRulesQueries';
 import { ApiError } from '@/lib/api/client';
 import { RewardRule, RewardType } from '@/lib/rewards.types';
+import { toastError } from '@/lib/toastError';
 import { formatDate, toCalendarDate } from '@/lib/utils';
 
 interface UseRewardRulesManagerProps {
@@ -62,8 +63,7 @@ export function useRewardRulesManager({ initialAccountId }: UseRewardRulesManage
   const deleteRule = useDeleteRewardRule();
   const reorderRules = useReorderRewardRules();
 
-  const errorMessage = (e: unknown, fallback: string) =>
-    e instanceof ApiError ? e.response.message : fallback;
+  
 
   const saveDefaultRewardType = (type: RewardType) => {
     const previous = defaultRewardType;
@@ -77,7 +77,7 @@ export function useRewardRulesManager({ initialAccountId }: UseRewardRulesManage
             type === 'POINTS' ? 'Card now defaults to reward points' : 'Card now defaults to cash'
           ),
         onError: (e) => {
-          toast.error(errorMessage(e, 'Failed to update reward config'));
+          toastError(e, 'Failed to update reward config');
           setDefaultRewardType(previous);
         },
       }
@@ -97,7 +97,7 @@ export function useRewardRulesManager({ initialAccountId }: UseRewardRulesManage
           toast.success(num != null ? `Point value set to ₹${num}/pt` : 'Point value reset to default (₹0.25/pt)');
           setPointValueInr(data.pointValueInr != null ? String(data.pointValueInr) : '');
         },
-        onError: (e) => toast.error(errorMessage(e, 'Failed to update reward config')),
+        onError: (e) => toastError(e, 'Failed to update reward config'),
       }
     );
   };
@@ -109,7 +109,7 @@ export function useRewardRulesManager({ initialAccountId }: UseRewardRulesManage
     [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
     reorderRules.mutate(
       { accountId, orderedIds: reordered.map((r) => r.id) },
-      { onError: (e) => toast.error(errorMessage(e, 'Failed to reorder reward rules')) }
+      { onError: (e) => toastError(e, 'Failed to reorder reward rules') }
     );
   };
 
@@ -117,7 +117,7 @@ export function useRewardRulesManager({ initialAccountId }: UseRewardRulesManage
     if (!window.confirm(`Delete rule "${rule.name}"? Historical reports will no longer see it.`)) return;
     deleteRule.mutate(rule.id, {
       onSuccess: () => toast.success('Rule deleted'),
-      onError: (e) => toast.error(errorMessage(e, 'Failed to delete reward rule')),
+      onError: (e) => toastError(e, 'Failed to delete reward rule'),
     });
   };
 
@@ -172,7 +172,7 @@ export function useRewardRulesManager({ initialAccountId }: UseRewardRulesManage
           toast.success(`"${rule.name}" ended ${formatDate(today)} — configure its successor`);
           setCloneSource(updated);
         },
-        onError: (e) => toast.error(errorMessage(e, 'Failed to update reward rule')),
+        onError: (e) => toastError(e, 'Failed to update reward rule'),
       }
     );
   };

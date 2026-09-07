@@ -4,6 +4,8 @@ import { useEffect } from 'react';
 
 import { ErrorState } from '@/components/ErrorState';
 import { getFaro } from '@/instrumentation-client';
+import { useDiagnostics } from '@/lib/diagnostics/DiagnosticsProvider';
+import { errorLog } from '@/lib/diagnostics/errorLog';
 
 /**
  * Error boundary for every authenticated route.
@@ -20,17 +22,28 @@ export default function ProtectedError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { pageRequestId } = useDiagnostics();
+
   useEffect(() => {
+    errorLog.record(error, {
+      source: 'boundary',
+      digest: error.digest,
+      message: error.message,
+      ref: pageRequestId ?? error.digest,
+      requestId: pageRequestId,
+    });
+
     const faro = getFaro();
     if (faro) {
       faro.api.pushError(error, {
         context: {
           digest: error.digest || '',
           route: 'protected-error',
+          requestId: pageRequestId || '',
         },
       });
     }
-  }, [error]);
+  }, [error, pageRequestId]);
 
   return <ErrorState error={error} reset={reset} />;
 }

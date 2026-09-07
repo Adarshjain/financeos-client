@@ -1,8 +1,20 @@
-import { QueryClient } from '@tanstack/react-query';
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 import React from 'react';
+
+import { errorLog } from '@/lib/diagnostics/errorLog';
 
 export function makeQueryClient(): QueryClient {
   return new QueryClient({
+    queryCache: new QueryCache({
+      onError: (e) => {
+        errorLog.record(e, { source: 'api' });
+      },
+    }),
+    mutationCache: new MutationCache({
+      onError: (e) => {
+        errorLog.record(e, { source: 'api' });
+      },
+    }),
     defaultOptions: {
       queries: {
         staleTime: 30_000,

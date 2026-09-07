@@ -15,6 +15,7 @@ import { api, ApiError } from '@/lib/api/client';
 import type { DashboardWidget } from '@/lib/dashboards.types';
 import { useDashboards } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { cn, formatDate } from '@/lib/utils';
 
 export function DashboardsList() {
@@ -31,7 +32,7 @@ export function DashboardsList() {
       toast.success('Dashboard deleted');
     },
     onError: (e) =>
-      toast.error(e instanceof ApiError ? e.response.message : 'Failed to delete dashboard'),
+      toastError(e, 'Failed to delete dashboard'),
   });
 
   // Re-reads the dashboard before updating so the mutation can refuse rather
@@ -79,10 +80,7 @@ export function DashboardsList() {
       toast.success(vars.makeDefault ? 'Set as default' : 'Default cleared');
     },
     onError: (e) =>
-      toast.error(
-        e instanceof ApiError
-          ? e.response.message
-          : e instanceof Error
+      toastError(e, e instanceof Error
             ? e.message
             : 'Failed to update default dashboard',
       ),

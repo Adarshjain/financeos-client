@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import type { ReviewReason, Transaction } from '@/lib/transaction.types';
 
 interface ReviewTransactionProps {
@@ -80,7 +81,7 @@ export const ReviewTransaction = ({ transaction, onSuccess }: ReviewTransactionP
       onSuccess?.();
     },
     onError: (error: unknown) => {
-      toast.error(error instanceof ApiError ? error.response.message : (error as Error).message);
+      toastError(error, (error as Error).message);
     },
   });
 

@@ -4,8 +4,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Account, AccountRequest } from '@/lib/account.types';
-import { getErrorMessage } from '@/lib/api/errorMessage';
 import { optionalDecimal, optionalString } from '@/lib/forms';
+import { toastError } from '@/lib/toastError';
 import { AccountType, FinancialPosition } from '@/lib/types';
 import { getAccountTypeLabel } from '@/lib/utils';
 
@@ -89,7 +89,7 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
       onSuccess?.();
       onClose?.();
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Failed to close account'));
+      toastError(error, 'Failed to close account');
     }
   };
 
@@ -101,7 +101,7 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
       onSuccess?.();
       onClose?.();
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Failed to reopen account'));
+      toastError(error, 'Failed to reopen account');
     }
   };
 
@@ -114,7 +114,7 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
       onSuccess?.();
       onClose?.();
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Failed to delete account'));
+      toastError(error, 'Failed to delete account');
     }
   };
 
@@ -231,7 +231,7 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
           return;
         }
       } catch (err) {
-        toast.error(getErrorMessage(err, 'Failed to preview Gmail cleanup'));
+        toastError(err, 'Failed to preview Gmail cleanup');
         return;
       }
     }
@@ -248,7 +248,7 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
       toast.success(isUpdateMode ? 'Account updated successfully!' : 'Account created successfully!');
       onSuccess?.();
     } catch (err) {
-      toast.error(getErrorMessage(err, isUpdateMode ? 'Failed to update account' : 'Failed to create account'));
+      toastError(err, isUpdateMode ? 'Failed to update account' : 'Failed to create account');
     }
   };
 
@@ -257,7 +257,7 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
     try {
       await executeGmailCleanupMutation.mutateAsync({ accountId: account.id, before: confirmCleanup.before });
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Failed to execute Gmail cleanup'));
+      toastError(err, 'Failed to execute Gmail cleanup');
       return;
     }
     try {
@@ -266,7 +266,7 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
       setConfirmCleanup(null);
       onSuccess?.();
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Failed to update account'));
+      toastError(err, 'Failed to update account');
     }
   };
 

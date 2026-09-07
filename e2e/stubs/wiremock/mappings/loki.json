@@ -1,0 +1,156 @@
+{
+  "mappings": [
+    {
+      "priority": 1,
+      "request": {
+        "method": "GET",
+        "urlPath": "/loki/api/v1/query_range",
+        "queryParameters": {
+          "query": {
+            "contains": "errorId=\"E2EERR01\""
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "status": "success",
+          "data": {
+            "resultType": "streams",
+            "result": [
+              {
+                "stream": {
+                  "service": "financeos-server",
+                  "env": "e2e",
+                  "level": "ERROR"
+                },
+                "values": [
+                  [
+                    "{{date (truncateDate (now offset='-1 days') 'first hour of day') format='epoch'}}000000",
+                    "{\"event\":\"request.failed\",\"errorId\":\"E2EERR01\",\"exceptionClass\":\"org.hibernate.AssertionFailure\",\"requestId\":\"e2ereq0000000000001a\",\"route\":\"/api/v1/accounts\",\"userId\":null,\"version\":\"1.0.0-e2e\",\"message\":\"Unexpected 5xx: errorId=E2EERR01, exceptionClass=org.hibernate.AssertionFailure\",\"stack_trace\":\"org.hibernate.AssertionFailure: null identifier (Demo)\\n\\tat com.financeos.core.Accounts.create(Accounts.java:42)\\n\\tat com.financeos.core.Accounts.run(Accounts.java:10)\",\"oraCode\":null}"
+                  ],
+                  [
+                    "{{date (truncateDate (now offset='-1 days') 'first hour of day') format='epoch'}}001000",
+                    "{\"event\":\"http.request\",\"method\":\"POST\",\"route\":\"/api/v1/accounts\",\"status\":500,\"durationMs\":21,\"userId\":null,\"requestId\":\"e2ereq0000000000001a\",\"version\":\"1.0.0-e2e\",\"slow\":false}"
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "priority": 1,
+      "request": {
+        "method": "GET",
+        "urlPath": "/loki/api/v1/query_range",
+        "queryParameters": {
+          "query": {
+            "contains": "requestId=\"e2ereq0000000000001a\""
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "status": "success",
+          "data": {
+            "resultType": "streams",
+            "result": [
+              {
+                "stream": {
+                  "service": "financeos-server",
+                  "env": "e2e",
+                  "level": "ERROR"
+                },
+                "values": [
+                  [
+                    "{{date (truncateDate (now offset='-1 days') 'first hour of day') format='epoch'}}000000",
+                    "{\"event\":\"request.failed\",\"errorId\":\"E2EERR01\",\"exceptionClass\":\"org.hibernate.AssertionFailure\",\"requestId\":\"e2ereq0000000000001a\",\"route\":\"/api/v1/accounts\",\"userId\":null,\"version\":\"1.0.0-e2e\",\"message\":\"Unexpected 5xx: errorId=E2EERR01, exceptionClass=org.hibernate.AssertionFailure\",\"stack_trace\":\"org.hibernate.AssertionFailure: null identifier (Demo)\\n\\tat com.financeos.core.Accounts.create(Accounts.java:42)\\n\\tat com.financeos.core.Accounts.run(Accounts.java:10)\",\"oraCode\":null}"
+                  ],
+                  [
+                    "{{date (truncateDate (now offset='-1 days') 'first hour of day') format='epoch'}}001000",
+                    "{\"event\":\"http.request\",\"method\":\"POST\",\"route\":\"/api/v1/accounts\",\"status\":500,\"durationMs\":21,\"userId\":null,\"requestId\":\"e2ereq0000000000001a\",\"version\":\"1.0.0-e2e\",\"slow\":false}"
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "priority": 1,
+      "request": {
+        "method": "GET",
+        "urlPath": "/loki/api/v1/query_range",
+        "queryParameters": {
+          "query": {
+            "contains": "E2EUNAV1"
+          }
+        }
+      },
+      "response": {
+        "status": 401,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "error": "Unauthorized"
+        }
+      }
+    },
+    {
+      "priority": 5,
+      "request": {
+        "method": "GET",
+        "urlPath": "/loki/api/v1/query_range",
+        "queryParameters": {
+          "query": {
+            "matches": ".*(service=\"financeos-client\"|kind=~).*"
+          }
+        }
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "status": "success",
+          "data": {
+            "resultType": "streams",
+            "result": []
+          }
+        }
+      }
+    },
+    {
+      "priority": 10,
+      "request": {
+        "method": "GET",
+        "urlPath": "/loki/api/v1/query_range"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "status": "success",
+          "data": {
+            "resultType": "streams",
+            "result": []
+          }
+        }
+      }
+    }
+  ]
+}
