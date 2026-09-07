@@ -52,6 +52,7 @@ const TRANSACTION_KEYS = new Set([
   'isEmi',
   'isInternational',
   'links',
+  'obligationRefs',
 ]);
 
 test.describe('Transactions API (@api)', () => {
