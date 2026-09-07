@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/diagnostics/lookup",
+    "reason": "Phase 2 of error-ref-debug (tests pending)",
+    "phase": 17
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/diagnostics/lookup/raw",
+    "reason": "Phase 2 of error-ref-debug (tests pending)",
+    "phase": 17
+  }
+]

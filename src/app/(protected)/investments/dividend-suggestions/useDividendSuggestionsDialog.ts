@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { api, ApiError } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import type {
   AcceptSuggestionsRequest,
   AcceptSuggestionsResponse,
@@ -68,10 +69,7 @@ export function useDividendSuggestionsDialog({
       );
       setHasScanned(true);
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to scan dividends'
+      toastError(err, 'Failed to scan dividends'
       );
     }
   };
@@ -136,10 +134,7 @@ export function useDividendSuggestionsDialog({
       setOpen(false);
       onSuccess?.();
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to record dividends'
+      toastError(err, 'Failed to record dividends'
       );
     }
   };

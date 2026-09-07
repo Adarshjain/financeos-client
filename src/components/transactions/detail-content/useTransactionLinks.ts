@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import type { TransactionLinkResponse } from '@/lib/transaction.types';
 
 export function useTransactionLinks(
@@ -48,7 +49,7 @@ export function useTransactionLinks(
       onCloseAndRefresh();
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof ApiError ? err.response.message : 'Failed to unlink transaction');
+      toastError(err, 'Failed to unlink transaction');
     },
     onSettled: () => setUnlinkingId(null),
   });

@@ -28,6 +28,7 @@ describe('apiResult and error helpers (CD-14)', () => {
         code: 'RESOURCE_NOT_FOUND',
         message: 'Not found',
         timestamp: '2026-07-25T00:00:00Z',
+        requestId: null,
       },
     });
   });

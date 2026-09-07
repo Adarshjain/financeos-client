@@ -11,6 +11,7 @@ import {
   UpdateCardholderRequest,
 } from '@/lib/account.types';
 import { getErrorMessage } from '@/lib/api/errorMessage';
+import { toastError } from '@/lib/toastError';
 
 import { useCardsDialogMutations } from './useCardsDialogMutations';
 import { useCardsDialogState } from './useCardsDialogState';
@@ -150,7 +151,7 @@ export function useCardsDialogHandlers({ accountId, isBank, state, mutations }: 
       await reopenCardholderMutation.mutateAsync(ch.id);
       toast.success('Cardholder reopened');
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Failed to reopen cardholder'));
+      toastError(err, 'Failed to reopen cardholder');
     }
   };
 
@@ -162,7 +163,7 @@ export function useCardsDialogHandlers({ accountId, isBank, state, mutations }: 
       await deleteCardholderMutation.mutateAsync(ch.id);
       toast.success('Cardholder deleted');
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Failed to delete cardholder'));
+      toastError(err, 'Failed to delete cardholder');
     }
   };
 
@@ -225,7 +226,7 @@ export function useCardsDialogHandlers({ accountId, isBank, state, mutations }: 
       await deleteCardPlasticMutation.mutateAsync({ cardholderId: ch.id, cardId: card.id });
       toast.success('Card plastic deleted');
     } catch (err) {
-      toast.error(getErrorMessage(err, 'Failed to delete card plastic'));
+      toastError(err, 'Failed to delete card plastic');
     }
   };
 

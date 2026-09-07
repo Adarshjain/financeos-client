@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import type {
   CreateLoanRequest,
   LoanResponse,
@@ -19,9 +20,7 @@ interface UseLoanFormProps {
   onOpenChange: (open: boolean) => void;
 }
 
-function errorMessage(e: unknown, fallback: string): string {
-  return e instanceof ApiError ? e.response.message : fallback;
-}
+
 
 export function useLoanForm({ loanToEdit, onOpenChange }: UseLoanFormProps) {
   const qc = useQueryClient();
@@ -65,7 +64,7 @@ export function useLoanForm({ loanToEdit, onOpenChange }: UseLoanFormProps) {
     mutationFn: (body: CreateLoanRequest) =>
       api.POST('/api/v1/loans', { body }).then((r) => r.data! as LoanResponse),
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.loans.all }),
-    onError: (e) => toast.error(errorMessage(e, 'Failed to create loan')),
+    onError: (e) => toastError(e, 'Failed to create loan'),
   });
 
   const updateMutation = useMutation({
@@ -74,7 +73,7 @@ export function useLoanForm({ loanToEdit, onOpenChange }: UseLoanFormProps) {
         .PUT('/api/v1/loans/{id}', { params: { path: { id } }, body })
         .then((r) => r.data! as LoanResponse),
     onSuccess: () => qc.invalidateQueries({ queryKey: keys.loans.all }),
-    onError: (e) => toast.error(errorMessage(e, 'Failed to update loan')),
+    onError: (e) => toastError(e, 'Failed to update loan'),
   });
 
   const loading = createMutation.isPending || updateMutation.isPending;

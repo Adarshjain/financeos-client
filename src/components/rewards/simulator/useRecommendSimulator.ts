@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 import { useRecommendCards } from '@/components/rewards/queries/useRewardRecommendMutation';
 import { ApiError } from '@/lib/api/client';
+import { toastError } from '@/lib/toastError';
 import { TransactionChannel } from '@/lib/transaction.types';
 import { toCalendarDate } from '@/lib/utils';
 
@@ -59,8 +60,7 @@ export function useRecommendSimulator() {
           }
         },
         onError: (e) =>
-          toast.error(
-            e instanceof ApiError ? e.response.message : 'Failed to simulate card rewards'
+          toastError(e, 'Failed to simulate card rewards'
           ),
       }
     );

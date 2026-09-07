@@ -6,13 +6,14 @@ import { toast } from 'sonner';
 
 import { emitJobStarted } from '@/components/jobs/jobsBus';
 import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
-import { api, ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type {
   ApplyRuleResult,
   CategoryRule,
   PagedRuleMatches,
 } from '@/lib/rules.types';
+import { toastError } from '@/lib/toastError';
 
 const PAGE_SIZE = 20;
 
@@ -145,9 +146,7 @@ export function useRuleMatches({
         setApplying(false);
       }
     } catch (err) {
-      toast.error(
-        'Failed to apply rule: ' + (err instanceof ApiError ? err.response.message : (err as Error).message)
-      );
+      toastError(err, 'Failed to apply rule');
       setApplying(false);
     }
   };

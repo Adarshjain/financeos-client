@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useCreateRewardRule, useUpdateRewardRule } from '@/components/rewards/queries/useRewardRulesQueries';
 import { ApiError } from '@/lib/api/client';
 import { RewardCapBucket, RewardRule, RewardRuleRequest } from '@/lib/rewards.types';
+import { toastError } from '@/lib/toastError';
 import { toCalendarDate } from '@/lib/utils';
 
 import { numOrNull } from './constants';
@@ -171,7 +172,7 @@ export function useRewardRuleFormSubmit({
       onSaved();
     };
     const onError = (e: unknown) =>
-      toast.error(e instanceof ApiError ? e.response.message : 'Failed to save reward rule');
+      toastError(e, 'Failed to save reward rule');
 
     if (isUpdateMode && rule) {
       updateRuleMutation.mutate({ id: rule.id, body }, { onSuccess, onError });

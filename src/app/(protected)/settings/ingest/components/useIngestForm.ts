@@ -7,9 +7,10 @@ import { toast } from 'sonner';
 import { emitJobStarted } from '@/components/jobs/jobsBus';
 import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
 import { type Account, isAccountClosed } from '@/lib/account.types';
-import { api, ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
 import { multipartBodySerializer } from '@/lib/api/multipart';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 
 import {
   formatFileSize,
@@ -167,11 +168,7 @@ export function useIngestForm({ accounts }: UseIngestFormProps) {
         toast.info('Ingestion job started in background.');
       }
     } catch (err: unknown) {
-      const msg =
-        err instanceof ApiError
-          ? err.response.message
-          : 'An unexpected error occurred.';
-      toast.error(msg);
+      toastError(err, 'Failed to start ingestion job');
     }
   };
 

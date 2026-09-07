@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { CreateInstrumentRequest, Instrument, InstrumentType } from '@/lib/types';
 
 import { InstrumentSearchField } from '../InstrumentSearchField';
@@ -141,7 +142,7 @@ export function InstrumentDialog({
         onCreated?.(saved);
       }
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.response.message : 'Failed to save instrument');
+      toastError(err, 'Failed to save instrument');
     }
   };
 

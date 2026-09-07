@@ -43,7 +43,15 @@ export default function GlobalError({
             </p>
 
             {error.digest && (
-              <p className="text-xs text-muted-foreground">
+              <p
+                className="text-xs text-muted-foreground cursor-pointer hover:underline"
+                onClick={() => {
+                  if (error.digest && navigator?.clipboard) {
+                    navigator.clipboard.writeText(error.digest);
+                  }
+                }}
+                title="Click to copy"
+              >
                 Reference: <span className="font-mono">{error.digest}</span>
               </p>
             )}

@@ -15,8 +15,8 @@ import {
 } from '@/components/ui/dialog';
 import { Account, isAccountClosed } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
-import { getErrorMessage } from '@/lib/api/errorMessage';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 
 interface DeleteAccountProps {
   account: Account;
@@ -51,7 +51,7 @@ export function DeleteAccount({ account }: DeleteAccountProps) {
       toast.success('Account deleted!');
       setOpen(false);
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Failed to delete account'));
+      toastError(error, 'Failed to delete account');
     }
   };
 
@@ -61,7 +61,7 @@ export function DeleteAccount({ account }: DeleteAccountProps) {
       toast.success('Account closed successfully!');
       setOpen(false);
     } catch (error) {
-      toast.error(getErrorMessage(error, 'Failed to close account'));
+      toastError(error, 'Failed to close account');
     }
   };
 

@@ -13,6 +13,7 @@ import type { AccountCard } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
 import type { Category } from '@/lib/categories.types';
 import type { RewardMilestone, RewardType } from '@/lib/rewards.types';
+import { toastError } from '@/lib/toastError';
 import { formatMoney } from '@/lib/utils';
 
 const WINDOW_SHORT: Record<string, string> = {
@@ -57,7 +58,7 @@ export default function RewardMilestonesManager({ accountId, cards, categories, 
     deleteMilestone.mutate(milestone.id, {
       onSuccess: () => toast.success('Milestone deleted'),
       onError: (e) =>
-        toast.error(e instanceof ApiError ? e.response.message : 'Failed to delete milestone'),
+        toastError(e, 'Failed to delete milestone'),
     });
   };
 

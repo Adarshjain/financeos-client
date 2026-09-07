@@ -29,6 +29,7 @@ import { api, ApiError } from '@/lib/api/client';
 import type { Category } from '@/lib/categories.types';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 
 export function CategoryManager() {
   const queryClient = useQueryClient();
@@ -53,7 +54,7 @@ export function CategoryManager() {
       queryClient.invalidateQueries({ queryKey: keys.categories.all });
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.response.message : 'Failed to create category');
+      toastError(error, 'Failed to create category');
     },
   });
 
@@ -70,7 +71,7 @@ export function CategoryManager() {
       queryClient.invalidateQueries({ queryKey: keys.categories.all });
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.response.message : 'Failed to rename category');
+      toastError(error, 'Failed to rename category');
     },
   });
 
@@ -85,7 +86,7 @@ export function CategoryManager() {
       queryClient.invalidateQueries({ queryKey: keys.categories.all });
     },
     onError: (error) => {
-      toast.error(error instanceof ApiError ? error.response.message : 'Failed to delete category');
+      toastError(error, 'Failed to delete category');
     },
   });
 

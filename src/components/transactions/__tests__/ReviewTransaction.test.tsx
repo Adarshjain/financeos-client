@@ -395,7 +395,7 @@ describe('ReviewTransaction', () => {
       fireEvent.click(await openPicker());
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('Review service unavailable');
+        expect(toast.error).toHaveBeenCalledWith('Review service unavailable', expect.anything());
       });
       expect(onSuccess).not.toHaveBeenCalled();
     });
@@ -409,7 +409,7 @@ describe('ReviewTransaction', () => {
       fireEvent.click(approve);
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('Network offline');
+        expect(toast.error).toHaveBeenCalledWith('Network offline', expect.anything());
       });
       expect(onSuccess).not.toHaveBeenCalled();
       // Recoverable: the user can retry rather than being locked out.

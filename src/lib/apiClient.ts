@@ -179,13 +179,29 @@ const API_BASE = process.env.API_BASE_URL || 'http://localhost:6969';
 //     pattern already.
 // ---------------------------------------------------------------------------
 
-async function parseError(response: Response): Promise<ApiError> {
+async function parseError(response: Response, options?: { method?: string }): Promise<ApiError> {
+  const requestId = response.headers.get('X-Request-Id') ?? undefined;
+  let endpoint = '';
+  try {
+    const url = new URL(response.url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+    endpoint = url.pathname;
+  } catch {
+    endpoint = response.url;
+  }
   const err: ErrorResponse = await response.json().catch(() => ({
     code: 'UNKNOWN_ERROR',
     message: `Request failed with status ${response.status}`,
     timestamp: new Date().toISOString(),
+    requestId,
   }));
-  return new ApiError(response.status, err);
+  if (!err.requestId && requestId) {
+    err.requestId = requestId;
+  }
+  return new ApiError(response.status, err, {
+    requestId,
+    endpoint,
+    method: options?.method ?? 'GET',
+  });
 }
 
 function extractSessionCookie(response: Response): string | undefined {

@@ -9,6 +9,7 @@ import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
 import { Broker as BrokerAccount } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import { ImportCommitResult, ReconciliationBroker } from '@/lib/types';
 
 import {
@@ -146,10 +147,7 @@ export function useImportWizard({ brokerAccounts, onSuccess }: UseImportWizardPr
         setStep(2);
       }
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to preview import: ' + (err as Error).message
+      toastError(err, 'Failed to preview import: ' + (err as Error).message
       );
     } finally {
       setIsPreviewing(false);
@@ -195,7 +193,7 @@ export function useImportWizard({ brokerAccounts, onSuccess }: UseImportWizardPr
         }
       }
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.response.message : 'Failed to commit import');
+      toastError(err, 'Failed to commit import');
       setIsCommitting(false);
     }
   };

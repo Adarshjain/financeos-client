@@ -8,6 +8,7 @@ import { Broker } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
 import { CreateInvestmentTransactionRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
+import { toastError } from '@/lib/toastError';
 import {
   Instrument,
   InvestmentTransactionResponse,
@@ -164,10 +165,7 @@ export function useCreateInvestmentForm({
       setFormKey((k) => k + 1);
       onSuccess?.();
     } catch (err) {
-      toast.error(
-        err instanceof ApiError
-          ? err.response.message
-          : 'Failed to record trade'
+      toastError(err, 'Failed to record trade'
       );
     }
   };

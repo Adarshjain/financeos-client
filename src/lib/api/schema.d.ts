@@ -644,6 +644,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/diagnostics/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["lookup"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/diagnostics/lookup/raw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["raw"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/gmail/attention": {
         parameters: {
             query?: never;
@@ -3092,6 +3124,18 @@ export interface components {
             quantity: number;
             symbol: string;
         };
+        DiagnosticsLookupResponse: {
+            errorId?: string | null;
+            found: boolean;
+            rawAvailable: boolean;
+            ref: string;
+            refType: string;
+            request?: components["schemas"]["RequestSummary"];
+            requestId?: string | null;
+            rootCause: components["schemas"]["RootCause"];
+            timeline: components["schemas"]["TimelineEntry"][];
+            truncated: boolean;
+        };
         DividendResponse: {
             amount: number;
             /** Format: uuid */
@@ -3143,6 +3187,7 @@ export interface components {
             } | null;
             errorId?: string | null;
             message: string;
+            requestId?: string | null;
             /** Format: date-time */
             timestamp?: string | null;
         };
@@ -4155,6 +4200,15 @@ export interface components {
             name: string;
             type: string;
         };
+        RawLogEntry: {
+            /** Format: date-time */
+            at: string;
+            labels: {
+                [key: string]: string;
+            };
+            line: string;
+            source: string;
+        };
         RealizedSummaryDto: {
             classifierDeliveryRealized: number;
             classifierIntradayRealized: number;
@@ -4259,6 +4313,21 @@ export interface components {
             type: "KPI" | "CHART" | "TABLE";
             /** Format: date-time */
             updatedAt: string;
+        };
+        RequestSummary: {
+            /** Format: date-time */
+            at: string;
+            /** Format: int64 */
+            durationMs: number;
+            method: string;
+            route: string;
+            slow: boolean;
+            /** Format: int32 */
+            status: number;
+            userAgent?: string | null;
+            userEmail?: string | null;
+            userId?: string | null;
+            version?: string | null;
         };
         RescanRequest: {
             /** Format: date */
@@ -4572,6 +4641,15 @@ export interface components {
         RewardTier: {
             rate: number;
             upTo: number;
+        };
+        RootCause: {
+            detail: string;
+            exceptionClass?: string | null;
+            headline: string;
+            hints: string[];
+            kind: string;
+            oraCode?: string | null;
+            rootFrame?: string | null;
         };
         RoutingEntryDto: {
             hasKey: boolean;
@@ -4928,6 +5006,19 @@ export interface components {
             rate?: number;
             upTo?: number;
         };
+        TimelineEntry: {
+            /** Format: date-time */
+            at: string;
+            event?: string | null;
+            fields: {
+                [key: string]: Record<string, never>;
+            };
+            level: string;
+            logger?: string | null;
+            message: string;
+            source: string;
+            stackTrace?: string | null;
+        };
         TradeSettlementClassificationDto: {
             intradayBuyValue: number;
             intradayQty: number;
@@ -5151,6 +5242,7 @@ export interface components {
             price: number;
         };
         UserResponse: {
+            admin: boolean;
             /** Format: date-time */
             createdAt: string;
             displayName?: string | null;
@@ -6913,6 +7005,74 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    lookup: {
+        parameters: {
+            query: {
+                ref: string;
+                type?: string;
+                since?: string;
+                until?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DiagnosticsLookupResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    raw: {
+        parameters: {
+            query: {
+                ref: string;
+                type?: string;
+                since?: string;
+                until?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RawLogEntry"][];
+                };
             };
             /** @description Error response */
             default: {
