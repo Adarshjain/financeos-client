@@ -73,6 +73,21 @@ export function getSelectedTxns(
   return pagedData.content.filter((t) => selectedIds.includes(t.id));
 }
 
+/** How many of the selected (loaded-page) transactions carry a loan/lending
+ * obligation ref — used to warn before a bulk delete that those records will
+ * lose their link. Unlike `getSelectedTxns` this isn't capped to a pair, since
+ * bulk delete allows any selection size. */
+export function getObligationLinkedCount(
+  pagedData: PagedTransaction | null,
+  selectedIds: string[]
+): number {
+  if (!pagedData || selectedIds.length === 0) return 0;
+  const selectedIdSet = new Set(selectedIds);
+  return pagedData.content.filter(
+    (t) => selectedIdSet.has(t.id) && (t.obligationRefs?.length ?? 0) > 0
+  ).length;
+}
+
 export function getPresentReasons(
   pagedData: PagedTransaction | null,
   selectedIds: string[]

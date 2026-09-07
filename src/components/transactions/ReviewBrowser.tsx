@@ -48,6 +48,7 @@ export function ReviewBrowser() {
     setSummaryData,
     selectedTxns,
     presentReasons,
+    obligationLinkedCount,
     handleReload,
     handlePageChange,
     toggleSelect,
@@ -127,6 +128,7 @@ export function ReviewBrowser() {
           <ReviewBulkActionBar
             selectedCount={selectedIds.length}
             batchActionLoading={batchActionLoading}
+            obligationLinkedCount={obligationLinkedCount}
             onOpenMerge={() => setIsMergeDialogOpen(true)}
             onOpenApprove={() => setIsApproveDialogOpen(true)}
             onBatchDelete={handleBatchDelete}
@@ -151,6 +153,7 @@ export function ReviewBrowser() {
           <ReviewBulkActionBar
             selectedCount={selectedIds.length}
             batchActionLoading={batchActionLoading}
+            obligationLinkedCount={obligationLinkedCount}
             onOpenMerge={() => setIsMergeDialogOpen(true)}
             onOpenApprove={() => setIsApproveDialogOpen(true)}
             onBatchDelete={handleBatchDelete}

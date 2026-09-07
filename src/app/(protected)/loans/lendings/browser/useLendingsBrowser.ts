@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { api, ApiError } from '@/lib/api/client';
 import type { Page } from '@/lib/pagination';
 import { keys } from '@/lib/query/keys';
+import { Transaction } from '@/lib/transaction.types';
 import {
   CounterpartyResponse,
   CreateLendingRequest,
@@ -58,7 +59,30 @@ export function useLendingsBrowser({
   );
   const [expectedReturnDate, setExpectedReturnDate] = useState('');
   const [notes, setNotes] = useState('');
-  const [txId, setTxId] = useState('');
+  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+
+  // Fresh dialog each time it opens or closes; clears any leftover pick from
+  // a cancelled or just-submitted create (both the trigger button and the
+  // dialog's own close/cancel/outside-click route through this setter).
+  const handleSetCreateOpen = (open: boolean) => {
+    setCreateOpen(open);
+    setSelectedTx(null);
+  };
+
+  const handleSetDirection = (dir: LendingDirection) => {
+    setDirection(dir);
+    // The picker's type filter (DEBIT/CREDIT) is direction-derived, so a
+    // previously-selected transaction may no longer be valid.
+    setSelectedTx(null);
+  };
+
+  const handleSelectTx = (t: Transaction) => {
+    setSelectedTx(t);
+    if (!amount) setAmount(String(Math.abs(t.amount)));
+    if (!entryDate) setEntryDate(t.date);
+  };
+
+  const handleClearTx = () => setSelectedTx(null);
 
   const { data } = useQuery({
     queryKey: keys.lendings.counterparties({ page, size: PAGE_SIZE }),
@@ -125,11 +149,11 @@ export function useLendingsBrowser({
         amount: Number(amount),
         entryDate,
         expectedReturnDate: expectedReturnDate || undefined,
-        transactionId: txId.trim() || undefined,
+        transactionId: selectedTx?.id,
         notes: notes.trim() || undefined,
       });
       toast.success('Lending recorded successfully');
-      setCreateOpen(false);
+      handleSetCreateOpen(false);
       setPage(0);
     } catch {
       // onError already surfaced the toast.
@@ -151,13 +175,13 @@ export function useLendingsBrowser({
     search,
     setSearch,
     createOpen,
-    setCreateOpen,
+    setCreateOpen: handleSetCreateOpen,
     selectedCpId,
     setSelectedCpId,
     newCpName,
     setNewCpName,
     direction,
-    setDirection,
+    setDirection: handleSetDirection,
     amount,
     setAmount,
     entryDate,
@@ -166,8 +190,9 @@ export function useLendingsBrowser({
     setExpectedReturnDate,
     notes,
     setNotes,
-    txId,
-    setTxId,
+    selectedTx,
+    onSelectTx: handleSelectTx,
+    onClearTx: handleClearTx,
     loading: createLendingMutation.isPending,
     filteredContent,
     handlePageChange,

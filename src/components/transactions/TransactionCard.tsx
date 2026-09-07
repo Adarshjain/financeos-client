@@ -4,6 +4,7 @@ import {Account} from '@/lib/account.types';
 import {Transaction} from '@/lib/transaction.types';
 import {cn, getAccountName} from '@/lib/utils';
 
+import {ObligationRefBadges} from './ObligationRefBadges';
 import {ReviewReasonBadges} from './ReviewReasonBadges';
 import {TransactionAmount} from './TransactionAmount';
 import {TransactionCategoryBadges} from './TransactionCategoryBadges';
@@ -77,6 +78,7 @@ export const TransactionCard = ({
             <div className="flex flex-col items-start gap-1.5 mt-2.5">
               {showSource && <TransactionSourceBadge source={transaction.source}/>}
               <TransactionLinkBadges links={transaction.links}/>
+              <ObligationRefBadges refs={transaction.obligationRefs}/>
 
               {!isExcluded && <TransactionCategoryBadges categories={transaction.categories}/>}
             </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { TransactionPicker } from '@/components/transactions/TransactionPicker';
 import {
   Dialog,
   DialogBody,
@@ -11,7 +12,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { LendingDirection } from '@/lib/types';
+import { Transaction } from '@/lib/transaction.types';
+import { LendingDirection, LendingTransactionSummary } from '@/lib/types';
 
 interface EditLendingEntryDialogProps {
   open: boolean;
@@ -26,6 +28,9 @@ interface EditLendingEntryDialogProps {
   setLendingExpDate: (d: string) => void;
   lendingNotes: string;
   setLendingNotes: (n: string) => void;
+  editSelectedTx: LendingTransactionSummary | Transaction | null;
+  onSelectEditTx: (t: Transaction) => void;
+  onClearEditTx: () => void;
   submittingEditLending: boolean;
   onUpdateLending: (e: React.FormEvent) => Promise<void>;
 }
@@ -43,9 +48,14 @@ export function EditLendingEntryDialog({
   setLendingExpDate,
   lendingNotes,
   setLendingNotes,
+  editSelectedTx,
+  onSelectEditTx,
+  onClearEditTx,
   submittingEditLending,
   onUpdateLending,
 }: EditLendingEntryDialogProps) {
+  const directionLocked = Boolean(editSelectedTx);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md w-[95vw]">
@@ -63,25 +73,40 @@ export function EditLendingEntryDialog({
             <div className="space-y-1">
               <Label className="text-xs">Direction</Label>
               <div className="flex gap-4 pt-1">
-                <label className="flex items-center gap-1.5 cursor-pointer text-xs">
+                <label
+                  className={`flex items-center gap-1.5 text-xs ${
+                    directionLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                  }`}
+                >
                   <input
                     type="radio"
                     name="editDir"
                     checked={lendingDir === 'lent'}
+                    disabled={directionLocked}
                     onChange={() => setLendingDir('lent')}
                   />
                   <span>I gave money (Lent)</span>
                 </label>
-                <label className="flex items-center gap-1.5 cursor-pointer text-xs">
+                <label
+                  className={`flex items-center gap-1.5 text-xs ${
+                    directionLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+                  }`}
+                >
                   <input
                     type="radio"
                     name="editDir"
                     checked={lendingDir === 'borrowed'}
+                    disabled={directionLocked}
                     onChange={() => setLendingDir('borrowed')}
                   />
                   <span>I received money (Borrowed)</span>
                 </label>
               </div>
+              {directionLocked && (
+                <p className="text-2xs text-slate-400">
+                  Unlink the transaction to change direction.
+                </p>
+              )}
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -103,6 +128,17 @@ export function EditLendingEntryDialog({
                   className="h-9 text-xs"
                 />
               </div>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Linked Transaction</Label>
+              <TransactionPicker
+                value={editSelectedTx}
+                onSelect={onSelectEditTx}
+                onClear={onClearEditTx}
+                direction={lendingDir}
+                suggestAmount={lendingAmount ? Number(lendingAmount) : null}
+                suggestDate={lendingDate || null}
+              />
             </div>
             <div className="space-y-1">
               <Label className="text-xs">Expected Return Date</Label>

@@ -74,5 +74,34 @@ export function useCounterpartyMutations(counterpartyId: string) {
     onError: onErrorToast('Failed to delete lending'),
   });
 
-  return { updateCp, deleteCp, createLending, updateLending, deleteLending };
+  const linkTransaction = useMutation({
+    mutationFn: ({ id, transactionId }: { id: string; transactionId: string }) =>
+      api
+        .PUT('/api/v1/lendings/{id}/transaction', {
+          params: { path: { id } },
+          body: { transactionId },
+        })
+        .then((r) => r.data!),
+    onSuccess: invalidateLendingsAndTransactions,
+    onError: onErrorToast('Failed to link transaction'),
+  });
+
+  const unlinkTransaction = useMutation({
+    mutationFn: (id: string) =>
+      api.DELETE('/api/v1/lendings/{id}/transaction', {
+        params: { path: { id } },
+      }),
+    onSuccess: invalidateLendingsAndTransactions,
+    onError: onErrorToast('Failed to unlink transaction'),
+  });
+
+  return {
+    updateCp,
+    deleteCp,
+    createLending,
+    updateLending,
+    deleteLending,
+    linkTransaction,
+    unlinkTransaction,
+  };
 }

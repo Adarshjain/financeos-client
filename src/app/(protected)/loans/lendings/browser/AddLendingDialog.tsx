@@ -1,5 +1,6 @@
 'use client';
 
+import { TransactionPicker } from '@/components/transactions/TransactionPicker';
 import {
   Dialog,
   DialogBody,
@@ -18,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Transaction } from '@/lib/transaction.types';
 import { CounterpartyResponse, LendingDirection } from '@/lib/types';
 
 interface AddLendingDialogProps {
@@ -38,8 +40,9 @@ interface AddLendingDialogProps {
   setExpectedReturnDate: (date: string) => void;
   notes: string;
   setNotes: (notes: string) => void;
-  txId: string;
-  setTxId: (txId: string) => void;
+  selectedTx: Transaction | null;
+  onSelectTx: (t: Transaction) => void;
+  onClearTx: () => void;
   loading: boolean;
   onCreateLending: (e: React.FormEvent) => Promise<void>;
 }
@@ -62,8 +65,9 @@ export function AddLendingDialog({
   setExpectedReturnDate,
   notes,
   setNotes,
-  txId,
-  setTxId,
+  selectedTx,
+  onSelectTx,
+  onClearTx,
   loading,
   onCreateLending,
 }: AddLendingDialogProps) {
@@ -178,6 +182,18 @@ export function AddLendingDialog({
             </div>
 
             <div className="space-y-1">
+              <Label className="text-xs">Linked Transaction (Optional)</Label>
+              <TransactionPicker
+                value={selectedTx}
+                onSelect={onSelectTx}
+                onClear={onClearTx}
+                direction={direction}
+                suggestAmount={amount ? Number(amount) : null}
+                suggestDate={entryDate || null}
+              />
+            </div>
+
+            <div className="space-y-1">
               <Label htmlFor="expDate" className="text-xs">
                 Expected Return Date (Optional)
               </Label>
@@ -201,19 +217,6 @@ export function AddLendingDialog({
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 className="text-xs"
-              />
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="txId" className="text-xs">
-                Linked Transaction ID (Optional)
-              </Label>
-              <Input
-                id="txId"
-                placeholder="UUID of bank transaction"
-                value={txId}
-                onChange={(e) => setTxId(e.target.value)}
-                className="h-9 text-xs"
               />
             </div>
           </form>

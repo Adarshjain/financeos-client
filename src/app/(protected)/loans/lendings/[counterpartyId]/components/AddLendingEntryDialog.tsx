@@ -1,5 +1,6 @@
 'use client';
 
+import { TransactionPicker } from '@/components/transactions/TransactionPicker';
 import {
   Dialog,
   DialogBody,
@@ -11,6 +12,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Transaction } from '@/lib/transaction.types';
 import { LendingDirection } from '@/lib/types';
 
 interface AddLendingEntryDialogProps {
@@ -27,6 +29,9 @@ interface AddLendingEntryDialogProps {
   setAddExpDate: (d: string) => void;
   addNotes: string;
   setAddNotes: (n: string) => void;
+  addSelectedTx: Transaction | null;
+  onSelectAddTx: (t: Transaction) => void;
+  onClearAddTx: () => void;
   submittingAddEntry: boolean;
   onAddEntry: (e: React.FormEvent) => Promise<void>;
 }
@@ -45,6 +50,9 @@ export function AddLendingEntryDialog({
   setAddExpDate,
   addNotes,
   setAddNotes,
+  addSelectedTx,
+  onSelectAddTx,
+  onClearAddTx,
   submittingAddEntry,
   onAddEntry,
 }: AddLendingEntryDialogProps) {
@@ -109,6 +117,18 @@ export function AddLendingEntryDialog({
                   className="h-9 text-xs"
                 />
               </div>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs">Linked Transaction (Optional)</Label>
+              <TransactionPicker
+                value={addSelectedTx}
+                onSelect={onSelectAddTx}
+                onClear={onClearAddTx}
+                direction={addDir}
+                suggestAmount={addAmount ? Number(addAmount) : null}
+                suggestDate={addEntryDate || null}
+              />
             </div>
 
             <div className="space-y-1">
