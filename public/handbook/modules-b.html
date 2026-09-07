@@ -371,9 +371,10 @@ else                   → award unchanged          MATCHED</div>
 <tr><td>"My EMI has an interest part and a principal part"</td><td><code>Loan</code> stores static terms; <code>LoanScheduleService.compute</code> regenerates every installment on every read</td><td>No installment table; <code>seq</code> is a position</td></tr>
 <tr><td>"I paid installment #7"</td><td><code>LoanPayment</code> stores seq, date, amount, transaction id; split comes from the schedule</td><td>Over- or under-payment is invisible to the split and the tax report</td></tr>
 <tr><td>"Lending is a mini-loan"</td><td>Signed ledger entries (<code>lent</code> +, <code>borrowed</code> −); a repayment is an opposite-direction entry; no status</td><td>V48 dropped <code>lending_repayments</code> and <code>status</code>; running balance is computed only in the client</td></tr>
+<tr><td>"I tie a ledger entry to the bank transaction it came from"</td><td><code>lendings.transaction_id</code> direct FK (nullable, <code>ON DELETE SET NULL</code>); shared <code>TransactionPicker</code> (search, direction- and date-filtered) in all three lending dialogs; ledger table's Transaction column shows account · date and a "Link" button, with a "₹x of ₹y" hint when a "Transaction Matching" panel exists per counterparty (Find Matches / Confirm / Confirm All, shown only when unlinked entries exist)</td><td>Loan settlement (<code>SettlePaymentDialog</code>, <code>AddChargeDialog</code>, <code>RecordEventDialog</code>) never got the same picker — still a raw transaction-ID text input</td></tr>
 <tr><td>"The calendar shows everything I owe"</td><td>Only loan EMIs and lending due dates</td><td>Card dues, SIPs, insurance excluded by design</td></tr>
 </table></div>
-<p><strong>Routes</strong>: <code>/loans</code> (paginated list, summary cards), <code>/loans/[id]</code> (hero header with nominal vs effective APR, schedule grouped by FY, events, charges, match banner), <code>/loans/calendar</code>, <code>/loans/lendings</code>, <code>/loans/lendings/[counterpartyId]</code>. Transaction ids for settlement are typed by hand; there is no picker.</p>
+<p><strong>Routes</strong>: <code>/loans</code> (paginated list, summary cards), <code>/loans/[id]</code> (hero header with nominal vs effective APR, schedule grouped by FY, events, charges, match banner), <code>/loans/calendar</code>, <code>/loans/lendings</code>, <code>/loans/lendings/[counterpartyId]</code>. Loan settlement/charge/event transaction ids are still typed by hand — no picker. Lendings moved off that pattern; see <a href="#m-loans-linking">Lending ↔ transaction linking</a>.</p>
 
 <h3 id="m-loans-emi">Calculation: EMI and amortization</h3>
 <div class="flow">r   = annualRatePct / 1200                        (MathContext DECIMAL64)
@@ -414,36 +415,103 @@ guards: EMI must exceed the month's interest ("non-amortizing"); ≤ 600 install
 <tr><th>Filter</th><th>Value</th><th>Note</th></tr>
 <tr><td>Target installments</td><td>unsettled, due ≤ today + 7 days (all overdue included, unbounded)</td><td></td></tr>
 <tr><td>Type</td><td>DEBIT</td><td></td></tr>
-<tr><td>Amount</td><td>EMI ± ₹20 (<code>MATCH_AMOUNT_TOLERANCE</code>)</td><td>Plan doc says exact match only <span class="c cy">Drift</span> <span class="path">LoanService.java:39</span></td></tr>
-<tr><td>Date</td><td>due date ± 7 days</td><td>hardcoded</td></tr>
+<tr><td>Amount</td><td>EMI ± ₹20 (<code>MatchingConstants.MATCH_AMOUNT_TOLERANCE</code>)</td><td>Plan doc says exact match only <span class="c cy">Drift</span>; the constant was hoisted out of <code>LoanService</code> into <code>domain/obligation/MatchingConstants</code> so lending match-suggestions (below) share the same ±₹20/±7-day tuning <span class="path">MatchingConstants.java:16-19</span></td></tr>
+<tr><td>Date</td><td>due date ± 7 days</td><td><code>MatchingConstants.MATCH_DATE_WINDOW_DAYS</code>, hardcoded to 7</td></tr>
 <tr><td>Account</td><td>loan's payment account, else all accounts</td><td></td></tr>
-<tr><td>Exclusion</td><td>not referenced in loan_events, loan_payments, loan_charges, lendings (native UNION ALL)</td><td><code>TransactionReferenceValidator</code></td></tr>
+<tr><td>Exclusion</td><td>not referenced in loan_events, loan_payments, loan_charges, lendings (native UNION ALL)</td><td><code>TransactionReferenceValidator.getAllReferencedTransactionIds</code>; unlike the lending matcher (below) this one does <em>not</em> also exclude transactions already sitting in a <code>transaction_links</code> group <span class="c cy">Asymmetry</span></td></tr>
 <tr><td>Assignment</td><td>greedy: nearest due date, tie → lower seq; one installment per transaction</td><td>"Confirm All" uses only the first candidate per installment</td></tr>
 </table></div>
+
+<h3 id="m-loans-linking">Lending ↔ transaction linking</h3>
+<p>Lending ledger entries and loan payments/events/charges reference a bank <code>transactions</code> row via a <strong>direct nullable FK</strong> on the referencing table (<code>ON DELETE SET NULL</code>) — never through <code>transaction_links</code>. Loan rows stay 1:1 and mutually exclusive across all four tables (a bank debit is either an EMI or a P2P lend, never both); <code>lendings.transaction_id</code> alone may be shared by several ledger entries since V86 (a plain index replaced the old unique one), so one ₹1,200 dinner debit can carry two ₹400 "lent" entries and the payer's own share stays unlinked. Links are trusted exactly like <a href="modules-a.html#m-transactions-links">txn↔txn links</a>: the server never checks amount or date agreement, only ownership and the rules below — the UI shows an allocated/total hint on splits but nothing is enforced server-side. <span class="path">domain/loan/TransactionReferenceValidator.java</span></p>
+
+<div class="tw"><table class="dt">
+<tr><th>Rule</th><th>Enforced by</th><th>Failure</th></tr>
+<tr><td>Transaction must be owned by the current user</td><td><code>TransactionReferenceValidator.loadOwned</code></td><td>400</td></tr>
+<tr><td>A loan-referenced transaction can never be lending-linked, and a lending-referenced one can never be loan-linked</td><td><code>validateForLoan</code> / <code>validateForLending</code> (each checks the other family)</td><td>400 "already linked to a loan/lending record"</td></tr>
+<tr><td>Direction rule: <code>lent</code> ↔ DEBIT, <code>borrowed</code> ↔ CREDIT (other <code>LENDING</code> refs on the same transaction are fine — split bills)</td><td><code>validateForLending(txnId, direction)</code></td><td>400 naming the required type</td></tr>
+<tr><td>Changing a linked entry's <code>direction</code></td><td><code>LendingService.updateLending</code></td><td>400 "Unlink the transaction before changing the direction of this entry"</td></tr>
+<tr><td>Flipping a referenced transaction's amount sign (DEBIT↔CREDIT) via <span class="m m-put">PUT</span> <code>/transactions/{id}</code></td><td><code>TransactionService.updateTransaction</code> — any obligation ref, not lending-only</td><td>400</td></tr>
+<tr><td>Split-sum vs. the shared transaction's amount</td><td>— not enforced</td><td>none; client shows "₹x of ₹y" only</td></tr>
+</table></div>
+
+<p><strong>API</strong>:</p>
+<div class="tw"><table class="dt">
+<tr><th>Method</th><th>Path</th><th>Behaviour</th></tr>
+<tr><td><span class="m m-post">POST</span></td><td>/lendings</td><td><code>transactionId?</code> validated via <code>validateForLending</code>; direction rule applies at create</td></tr>
+<tr><td><span class="m m-put">PUT</span></td><td>/lendings/{id}/transaction</td><td>attach or replace (relink); re-sending the currently-linked id is a no-op 200 — the ownership check re-sending the currently-linked id short-circuits (no validator call, no save) and returns the entry unchanged, so relinking to the same transaction never self-conflicts</td></tr>
+<tr><td><span class="m m-del">DELETE</span></td><td>/lendings/{id}/transaction</td><td>204, idempotent — an already-unlinked entry is a no-op, not a 404</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/counterparties/{id}/match-suggestions</td><td>operationId <code>getCounterpartyMatchSuggestions</code>; algorithm below</td></tr>
+</table></div>
+<p>Every <code>TransactionResponse</code> also carries <code>obligationRefs</code> (shape, badges and the "Link…" dialog's record kinds are documented once in <a href="modules-a.html#m-transactions-links">M2 · Links and merge</a>, not repeated here). <code>LendingResponse</code> embeds a nullable <code>transaction {id, accountId, accountName, date, description, signedAmount}</code>, fetch-joined in the list queries (<code>findAllWithRefs</code>, <code>findByCounterpartyIdWithRefs</code>) so the association's laziness never triggers the lazy-init 500 the credit-card model hit; the single-entry paths (detail, update, link, unlink) deliberately load with <code>findById</code> and lazy-load inside the transaction (see the 400-vs-404 note under invariants); <code>transactionId</code> stays for compatibility.</p>
+
+<h4>Match suggestions (<code>GET /counterparties/{id}/match-suggestions</code>)</h4>
+<p>Mirrors the loans EMI matching panel with the counterparty's own unlinked entries as targets. For each unlinked entry: candidate type = direction→DEBIT/CREDIT, amount within <code>MatchingConstants.MATCH_AMOUNT_TOLERANCE</code> (±₹20, the same constant the EMI matcher uses), date within <code>MATCH_DATE_WINDOW_DAYS</code> (±7) of <code>entryDate</code>, excluding any transaction already referenced by a loan/lending row (<code>getAllReferencedTransactionIds</code> — deliberately unfiltered by user, an exclusion set only, never surfaced to a client) <em>and</em> excluding transactions already sitting in a <code>transaction_links</code> group (a check the EMI matcher above does not do). Assignment is greedy: each candidate transaction goes to at most one entry — the one whose <code>entryDate</code> is nearest, ties broken toward the earlier entry in <code>(entryDate, createdAt)</code> order. Only entries with ≥1 surviving candidate are returned (the same lesson the loans panel already learned); candidates within an entry are ordered by |amount diff| then |date diff|. Confirming one or all calls the same <span class="m m-put">PUT</span> <code>/lendings/{id}/transaction</code>. <span class="path">LendingService.getMatchSuggestions:217-346</span></p>
+
+<pre class="mermaid">sequenceDiagram
+  participant UI as Link dialog / ledger row
+  participant LC as LendingController
+  participant LS as LendingService
+  participant TRV as TransactionReferenceValidator
+  participant TS as TransactionService
+  participant ORS as ObligationRefService
+  participant DB as Oracle
+
+  rect rgb(235,245,255)
+  Note over UI,DB: Link — create or PUT .../transaction
+  UI->>LC: POST /lendings or PUT /lendings/id/transaction
+  LC->>LS: createLending / linkTransaction
+  LS->>TRV: validateForLending txnId direction
+  TRV->>DB: owned, not loan-referenced, type matches direction
+  TRV-->>LS: Transaction or 400
+  LS->>DB: save lendings.transaction_id
+  LS-->>UI: LendingResponse.transaction populated
+  end
+
+  rect rgb(255,247,235)
+  Note over UI,DB: Unlink — idempotent
+  UI->>LC: DELETE /lendings/id/transaction
+  LC->>LS: unlinkTransaction
+  LS->>DB: transaction_id = null
+  LS-->>UI: 204 even if already null
+  end
+
+  rect rgb(240,255,240)
+  Note over UI,DB: Merge — deleteId absorbed into keepId
+  UI->>TS: POST /transactions/merge
+  TS->>ORS: checkMergeCompatibility kept deleted
+  ORS-->>TS: null ok, or 400 reason
+  TS->>ORS: repoint deleted kept, per table saveAll #38; flush
+  ORS->>DB: UPDATE lendings, loan_payments, loan_events, loan_charges SET transaction_id = keepId
+  TS->>DB: DELETE deleted row, FKs already moved so SET NULL never fires
+  end</pre>
 
 <h3 id="m-loans-states">State machines and data</h3>
 <div class="flow">active ──POST /close (no guard)──► closed          closed ──POST /reopen (blocked if a foreclosure exists)──► active
 active ──foreclosure event──────► foreclosed      foreclosed ──DELETE that event──► active
 foreclosed ──POST /close──► closed   (distinction lost; event row survives)</div>
 <div class="tw compact"><table>
-<tr><th>Table (V47; V48)</th><th>Key constraints</th></tr>
+<tr><th>Table (V47; V48; V86)</th><th>Key constraints</th></tr>
 <tr><td><code>loans</code></td><td>loan_type CHECK (8); rate_type fixed|floating (descriptive only); tenure 1–600; principal NUMBER(19,4); annual_rate_pct NUMBER(9,4); status active|closed|foreclosed; payment_account_id SET NULL (must be bank type, service-checked); no unique name</td></tr>
 <tr><td><code>loan_events</code></td><td>polymorphic: event_type, new_annual_rate_pct, amount, adjustment_mode, new_emi_override; transaction_id globally unique; no updated_at (delete and recreate)</td></tr>
 <tr><td><code>loan_payments</code></td><td><code>uk_loan_payments_seq UNIQUE(loan_id, installment_seq)</code>; transaction_id globally unique</td></tr>
 <tr><td><code>loan_charges</code></td><td>charge_type CHECK (7); transaction_id globally unique</td></tr>
 <tr><td><code>counterparties</code></td><td>UNIQUE(user_id, name) case-sensitive ("Ramesh" and "ramesh" coexist)</td></tr>
-<tr><td><code>lendings</code></td><td>V48 dropped status and <code>lending_repayments</code>, renamed lend_date → entry_date; direction lent|borrowed; counterparty CASCADE; transaction_id unique</td></tr>
+<tr><td><code>lendings</code></td><td>V48 dropped status and <code>lending_repayments</code>, renamed lend_date → entry_date; direction lent|borrowed; counterparty CASCADE; <code>transaction_id</code> nullable FK <code>ON DELETE SET NULL</code> — unique through V85, <strong>V86</strong> drops <code>idx_lendings_txn_uniq</code> and replaces it with a plain <code>idx_lendings_txn</code> so several entries may share one transaction (split bills); idempotent (only drops the unique index if it still exists as UNIQUE, only creates the plain one if missing)</td></tr>
 </table></div>
 
 <h3 id="m-loans-risk">Invariants, concurrency, contradictions</h3>
 <ul>
-<li>Σ principal = principal (structural). One payment per seq (service + DB unique). One loan/lending reference per transaction (service + DB unique). Deleting an event rejects if any payment's seq exceeds the new schedule length, but not if the seq now means a different installment. Foreclosure amount is unreconciled. Close has no zero-balance guard.</li>
+<li>Σ principal = principal (structural). One payment per seq (service + DB unique). One loan/lending reference per transaction was DB-unique across all four tables through V85; <strong>V86</strong> keeps <code>loan_events</code>/<code>loan_payments</code>/<code>loan_charges.transaction_id</code> globally unique in the DB but drops the DB constraint on <code>lendings.transaction_id</code> — split bills (several lending rows, same transaction, same implied direction) are now a service-only rule in <code>TransactionReferenceValidator.validateForLending</code>, not schema-enforced; loan-vs-lending exclusivity is still service-only on both sides, as before. Deleting an event rejects if any payment's seq exceeds the new schedule length, but not if the seq now means a different installment. Foreclosure amount is unreconciled. Close has no zero-balance guard.</li>
 <li>No <code>@Version</code>; TOCTOU windows on payment seq and transaction linking fall through to raw DB constraint errors. Re-posting <code>addPayment</code> without a seq settles the <em>next</em> installment (not idempotent); the UI always passes a seq. Batch re-post is rejected wholesale.</li>
-<li><strong>Contradictions</strong>: ±₹20 tolerance vs plan exact match; client running balance vs server net (same sign convention; same-day order non-deterministic because the API sorts only by entry date); FY boundary configurable on the server (<code>financeos.reports.fiscal-year-start-month</code>) but hardcoded to April in <code>useLoanQueries.ts:63-69</code> and <code>LoanAmortizationSchedule.tsx:27-33</code>; <code>loan.types.ts</code> hand-written while <code>lending.types.ts</code> re-exports generated types; browser "Monthly EMI" sums the current page only; <code>rate_type</code> has no behaviour.</li>
+<li><strong>400-vs-404 lesson</strong> (hit and reverted while building the linking feature, 2026-09-07): <code>LendingService.getLendingAndVerifyOwnership</code> briefly switched from <code>findById</code> (<code>EntityManager.find</code>, which bypasses the Hibernate <code>userFilter</code> that <code>Lending</code> has always carried) to the fetch-joined JPQL <code>findWithRefsById</code> — but that query <em>is</em> <code>@Filter</code>-scoped, so a foreign row is invisible and 404s before the ownership check runs, breaking the established "foreign row → 400 Security Breach" contract the rest of the module relies on (an existing E2E assertion caught it). Reverted to <code>findById</code>; the linked transaction now loads lazily inside the transaction instead. Generalizes: on any <code>@Filter</code> entity, the single-row ownership-check path must use <code>findById</code>, never a filtered fetch-join — list paths (<code>findAllWithRefs</code>, <code>findByCounterpartyIdWithRefs</code>) still use fetch-joins to avoid lazy N+1, since those don't gate on ownership of one specific id.</li>
+<li><strong><code>SET NULL</code> orphaning is observable, not blocked</strong>: deleting a transaction referenced by a loan/lending row is allowed (decision: a duplicate bank row is a legitimate delete) and silently nulls the reference; <code>TransactionService</code> logs <code>OBLIGATION_REF_ORPHANED</code> per orphaned ref on both single and batch delete so the event is at least visible server-side — the delete confirmation UI only warns using the <code>obligationRefs</code> already on the row being deleted, there is no server-side block.</li>
+<li><strong>Split sum is not enforced</strong>: several <code>lendings</code> rows may point at one transaction (V86) with no check that their amounts sum to, or stay under, the transaction's own amount — see <a href="#m-loans-linking">Lending ↔ transaction linking</a>.</li>
+<li><strong>Contradictions</strong>: ±₹20 tolerance vs plan exact match; client running balance vs server net (same sign convention; same-day order non-deterministic because the API sorts only by entry date); FY boundary configurable on the server (<code>financeos.reports.fiscal-year-start-month</code>) but hardcoded to April in <code>useLoanQueries.ts:63-69</code> and <code>LoanAmortizationSchedule.tsx:27-33</code>; <code>loan.types.ts</code> hand-written while <code>lending.types.ts</code> re-exports generated types; browser "Monthly EMI" sums the current page only; <code>rate_type</code> has no behaviour; the EMI matcher does not exclude <code>transaction_links</code> members the way the newer lending matcher does (see the decision table above).</li>
 <li><strong>Dead or suspicious</strong>: <code>LoanRepository.findByStatus(LoanStatus)</code> unpaged overload unreferenced; <code>LendingRepository.existsByCounterparty_Id</code> leftover from pre-V48; duplicate aliases <code>loansApi.addPayment/createPayment</code>, <code>delete/remove</code>; summary aggregation lives in the controller.</li>
 </ul>
-<div class="callout"><p><strong>Tests that do not test the code.</strong> <span class="c ph">High</span> <code>LoanServiceTest</code> and <code>LendingServiceTest</code> never instantiate the services; each test re-implements the condition inline and asserts on its own literal (e.g. constructing a <code>ValidationException</code> by hand). Only <code>LoanScheduleService</code> (10 real tests) and the three report datasource tests provide genuine coverage. Match suggestions, batch payments, close/reopen, event-delete cascade and the obligations endpoint have zero real coverage. <span class="path">src/test/java/com/financeos/domain/loan/LoanServiceTest.java:38-48</span></p></div>
-<p>Observability: <code>LOAN_SCHEDULE_GENERATED</code> on every compute (very frequent) and <code>LOAN_MATCH_ATTEMPTED</code> per candidate with reasons; ownership violations log "Security Breach Attempt". Configuration: only <code>financeos.reports.fiscal-year-start-month</code> (default 4, never set); everything else hardcoded (±₹20, ±7 days, 600, rate (0, 60], batch 1–500, calendar 1–12 months).</p>
+<div class="callout"><p><strong>Tests that do not test the code.</strong> <span class="c ph">High</span> <code>LoanServiceTest</code> and <code>LendingServiceTest</code> (the pre-existing ones) never instantiate the services; each test re-implements the condition inline and asserts on its own literal (e.g. constructing a <code>ValidationException</code> by hand). Only <code>LoanScheduleService</code> (10 real tests) and the three report datasource tests provide genuine coverage. Match suggestions, batch payments, close/reopen, event-delete cascade and the obligations endpoint have zero real coverage. <span class="path">src/test/java/com/financeos/domain/loan/LoanServiceTest.java:38-48</span> The linking feature's own tests do not share this problem: <code>LendingServiceLinkTest</code>, <code>LendingMatchSuggestionsTest</code>, <code>ObligationRefServiceTest</code>, <code>TransactionServiceObligationRefTest</code>, <code>TransactionResponseObligationRefsTest</code> and <code>LendingsDatasourceTest</code> (101 tests total) instantiate the real services against Mockito-mocked repositories.</p></div>
+<p>Observability: <code>LOAN_SCHEDULE_GENERATED</code> on every compute (very frequent) and <code>LOAN_MATCH_ATTEMPTED</code> per candidate with reasons; ownership violations log "Security Breach Attempt". <code>LENDING_LINKED</code>, <code>LENDING_UNLINKED</code>, <code>LENDING_MATCH_ATTEMPTED</code> (same structured fields as the loan match event), plus the transaction-side <code>OBLIGATION_REF_ORPHANED</code> and <code>OBLIGATION_REF_REPOINTED</code> — see <a href="#m-loans-linking">Lending ↔ transaction linking</a>. Configuration: only <code>financeos.reports.fiscal-year-start-month</code> (default 4, never set); everything else hardcoded (±₹20, ±7 days, 600, rate (0, 60], batch 1–500, calendar 1–12 months).</p>
 
 <h3 id="m-loans-unk">Open questions</h3>
 <div class="qa"><b>Product</b> Is the ±₹20 / ±7-day tolerance intentional, or should matching be exact as designed?</div>
@@ -451,6 +519,7 @@ foreclosed ──POST /close──► closed   (distinction lost; event row surv
 <div class="qa"><b>Technical</b> Should an event dated on a due date apply to that installment or the next?</div>
 <div class="qa"><b>Technical</b> Should <code>rate_type = floating</code> enforce anything? Should the client FY boundary track the server setting?</div>
 <div class="qa"><b>Data</b> Should counterparty names be case-insensitively unique?</div>
+<div class="qa"><b>Technical</b> Loan settlement/charge/event dialogs (<code>SettlePaymentDialog</code>, <code>AddChargeDialog</code>, <code>RecordEventDialog</code>) still take a raw transaction-ID text input; lendings just moved to a searchable <code>TransactionPicker</code> — should the loan dialogs get the same picker?</div>
 </section>
 <section class="sec" id="m-reports" data-part="II · Modules">
 <p class="eyebrow">Module</p>
