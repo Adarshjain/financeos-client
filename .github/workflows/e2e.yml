@@ -59,6 +59,10 @@ jobs:
       - name: Checkout client
         uses: actions/checkout@v4
         with:
+          # Explicit: when this reusable workflow is called from financeos-server,
+          # actions/checkout would otherwise default to the CALLER's repository and
+          # check out the server twice (no e2e/ folder -> docker compose fails).
+          repository: Adarshjain/financeos-client
           ref: ${{ inputs.client_ref }}
 
       - name: Checkout server
