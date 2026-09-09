@@ -1,7 +1,6 @@
 import { createAdminUser, createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { E2E_CLIENT_URL } from '../fixtures/config';
-import { lokiRequestCount } from '../fixtures/loki-stubs';
 import { expect, test } from '../fixtures/test';
 import { expectToast, openAccounts } from '../fixtures/ui';
 
@@ -62,7 +61,7 @@ test.describe('Debug & Diagnostics UI (@ui)', () => {
     await expect(page.getByText(/The reference ID was mistyped or incomplete/i)).toBeVisible();
   });
 
-  test('Non-admin journey: /debug shows notice and does not make Loki queries', async ({
+  test('Non-admin journey: /debug shows notice and never calls the diagnostics API', async ({
     page,
     context,
     request,
@@ -70,7 +69,12 @@ test.describe('Debug & Diagnostics UI (@ui)', () => {
     const nonAdmin = await createUser(request, 'non-admin-debug');
     await loginContext(context, nonAdmin.cookie);
 
-    const initialLokiCount = await lokiRequestCount();
+    // Page-scoped, not a global WireMock counter: admin lookups from other workers run
+    // concurrently (fullyParallel), so a shared Loki request count is racy.
+    const diagnosticsCalls: string[] = [];
+    page.on('request', (req) => {
+      if (req.url().includes('/api/v1/diagnostics/')) diagnosticsCalls.push(`${req.method()} ${req.url()}`);
+    });
 
     // Visit /debug as non-admin
     await page.goto(`${E2E_CLIENT_URL}/debug`);
@@ -83,11 +87,11 @@ test.describe('Debug & Diagnostics UI (@ui)', () => {
 
     // Verify lookup form is not present
     await expect(page.getByPlaceholder(/HM6HK5G6/i)).not.toBeVisible();
-    await expect(page.getByRole('button', { name: 'Lookup' })).not.toBeVisible();
+    await expect(page.getByRole('button', { name: 'Look up' })).not.toBeVisible();
 
-    // Verify no new Loki queries were sent
-    const finalLokiCount = await lokiRequestCount();
-    expect(finalLokiCount).toBe(initialLokiCount);
+    // Verify the browser never issued a diagnostics request (the section is not even mounted)
+    await expect(page.getByText(/Recent Failures on This Device/i)).toBeVisible();
+    expect(diagnosticsCalls).toEqual([]);
   });
 
   test('Toast journey: 500 error shows Ref toast with Copy ID & Debug, navigates to /debug, highlights row, persists on reload, clear empties', async ({
