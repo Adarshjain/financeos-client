@@ -353,6 +353,7 @@
 <details class="lvl l3"><summary><span class="lv">API</span>Reports, dashboards, datasources</summary><div class="body"><div class="tw compact"><table>
 <tr><th>Method</th><th>Endpoint</th><th>Purpose</th><th>Caller</th><th>Notes</th></tr>
 <tr><td><span class="m m-get">GET</span></td><td>/report/datasource</td><td>Field catalog for all datasources</td><td>RSC ReportBuilder pages</td><td>Singular path</td></tr>
+<tr><td><span class="m m-get">GET</span></td><td>/report/datasource/{name}/values</td><td>Distinct values of the datasource's dynamic enum fields (filter dropdowns)</td><td>hook <code>useReportDynamicOptions</code></td><td>400 for an unknown datasource; ≤500 values per field</td></tr>
 <tr><td><span class="m m-post">POST</span> <span class="m m-get">GET</span> <span class="m m-put">PUT</span> <span class="m m-delete">DELETE</span></td><td>/reports[/{id}]</td><td>Saved report CRUD</td><td>RSC + hook</td><td>type and datasource immutable</td></tr>
 <tr><td><span class="m m-post">POST</span></td><td>/reports/{id}/data?page&amp;size</td><td>Run saved</td><td>hook DashboardWidgetView, ReportsList; RSC prefetch</td><td>Re-validates definition</td></tr>
 <tr><td><span class="m m-post">POST</span></td><td>/reports/data</td><td>Run ad hoc</td><td>hook PreviewPane; chat report draft preview (action)</td><td></td></tr>
