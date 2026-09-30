@@ -22,7 +22,7 @@ import type {
 } from '@/lib/reports.types';
 
 import type { DynamicOptions } from '../catalog';
-import { enumOptionsFor, valueKind } from '../catalog';
+import { DYNAMIC_OPTIONS_FAILED, enumOptionsFor, valueKind } from '../catalog';
 import { MultiSelect } from '../MultiSelect';
 
 export interface ValueEditorProps {
@@ -45,8 +45,13 @@ export function ValueEditor({
   }
 
   // Dynamic values come from the API; the field is absent until they load.
-  const dynamicLoading = !!field.dynamic && !(field.name in dynamicOptions);
-  const emptyHint = dynamicLoading ? 'Loading values…' : 'No values in your data yet';
+  const dynamicFailed = !!field.dynamic && !!dynamicOptions[DYNAMIC_OPTIONS_FAILED];
+  const dynamicLoading = !!field.dynamic && !dynamicFailed && !(field.name in dynamicOptions);
+  const emptyHint = dynamicFailed
+    ? 'Couldn’t load values — try again shortly'
+    : dynamicLoading ? 'Loading values…' : 'No values in your data yet';
+  // Fields with a stable id store the id; the dropdown shows the label.
+  const byId = field.valueKey === 'id' || !!field.idField;
 
   switch (kind) {
     case 'scalar':
@@ -77,7 +82,7 @@ export function ValueEditor({
     case 'scalarEnum': {
       const options = [
         ...enumOptionsFor(field, dynamicOptions).map((o) => ({
-          value: field.valueKey === 'id' ? (o.id ?? o.name) : o.name,
+          value: byId ? (o.id ?? o.name) : o.name,
           label: o.name,
         })),
       ];
@@ -111,7 +116,7 @@ export function ValueEditor({
       const selected = Array.isArray(value) ? (value as string[]) : [];
       if (field.type === 'enum') {
         const options = enumOptionsFor(field, dynamicOptions).map((o) => ({
-          value: field.valueKey === 'id' ? (o.id ?? o.name) : o.name,
+          value: byId ? (o.id ?? o.name) : o.name,
           label: o.name,
         }));
         return (
