@@ -3212,6 +3212,7 @@ export interface components {
             allowedInReports: ("KPI" | "CHART" | "TABLE")[];
             dynamic: boolean;
             format: string;
+            idField: string;
             label: string;
             name: string;
             /** @enum {string} */
@@ -3899,6 +3900,10 @@ export interface components {
             number: string[];
             string: string[];
         };
+        Option: {
+            label: string;
+            value: string;
+        };
         PageCounterpartyResponse: {
             content: components["schemas"]["CounterpartyResponse"][];
             empty: boolean;
@@ -4298,6 +4303,9 @@ export interface components {
             [key: string]: unknown;
         };
         ReportFieldValuesResponse: {
+            options: {
+                [key: string]: components["schemas"]["Option"][];
+            };
             values: {
                 [key: string]: string[];
             };

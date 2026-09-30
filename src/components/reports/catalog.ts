@@ -13,7 +13,10 @@ import type {
 } from '@/lib/reports.types';
 
 /** Options for dynamic enum fields (category, account), keyed by field name. */
-export type DynamicOptions = Record<string, ComboboxOption[]>;
+/** Present (true) on DynamicOptions when the values request failed. */
+export const DYNAMIC_OPTIONS_FAILED: unique symbol = Symbol('dynamicOptionsFailed');
+
+export type DynamicOptions = Record<string, ComboboxOption[]> & { [DYNAMIC_OPTIONS_FAILED]?: true };
 
 /**
  * The boolean filter field flagging transactions excluded from reports. It is a

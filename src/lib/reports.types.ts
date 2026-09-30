@@ -55,6 +55,11 @@ export interface FieldDefinition {
    * as the filter's serialize value. Defaults to 'name' if not provided.
    */
   valueKey?: 'id' | 'name';
+  /**
+   * Server-side (computed datasources): the field has a stable id, so its filter stores
+   * the option id and the dropdown shows the label. Implies valueKey 'id'.
+   */
+  idField?: string;
 }
 
 /** Operators available per field type. Date operators split absolute vs relative. */
