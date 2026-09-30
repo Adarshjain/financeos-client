@@ -338,7 +338,10 @@ export interface RewardRuleBreakdown {
   capStatus?: RewardCapStatus | null;
 }
 
-/** ₹ totals and percentages cover cash value only — points are reported as points. */
+/**
+ * ₹ totals include points valued at the card's point value (pointsValueInr); a card
+ * without a point value reports its points as points only (pointsValueInr null).
+ */
 export interface RewardSummary {
   basisSpend: number;
   transactionCount: number;
@@ -346,7 +349,7 @@ export interface RewardSummary {
   cashbackInr: number;
   points: number;
   milestonesInr: number;
-  /** Points paid by points-currency milestones (not in the ₹ totals). */
+  /** Points paid by points-currency milestones. */
   milestonesPts: number;
   grossValueInr: number;
   discounts: number;
@@ -354,6 +357,8 @@ export interface RewardSummary {
   effectiveValueInr: number;
   grossPct?: number | null;
   effectivePct?: number | null;
+  /** (points + milestonesPts) × the card's point value; null when the card has none. */
+  pointsValueInr?: number | null;
 }
 
 export interface CardBreakdown {

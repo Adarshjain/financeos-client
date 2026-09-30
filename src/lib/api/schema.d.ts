@@ -1828,6 +1828,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/report/datasource/{name}/values": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["values"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports": {
         parameters: {
             query?: never;
@@ -4281,6 +4297,11 @@ export interface components {
         ReportData: {
             [key: string]: unknown;
         };
+        ReportFieldValuesResponse: {
+            values: {
+                [key: string]: string[];
+            };
+        };
         ReportRef: {
             available: boolean;
             name?: string | null;
@@ -4945,6 +4966,7 @@ export interface components {
             milestonesInr: number;
             milestonesPts: number;
             points: number;
+            pointsValueInr?: number | null;
             /** Format: int32 */
             transactionCount: number;
         };
@@ -10178,6 +10200,37 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ReportCatalogView"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    values: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                name: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReportFieldValuesResponse"];
                 };
             };
             /** @description Error response */

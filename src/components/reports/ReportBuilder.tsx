@@ -50,7 +50,6 @@ export function ReportBuilder({
 }: ReportBuilderProps) {
   const router = useRouter();
   const qc = useQueryClient();
-  const dynamicOptions = useReportDynamicOptions();
 
   const getWorkingCatalog = (dsName: string): DatasourceCatalog => {
     const dsDef = catalog.datasources.find((d) => d.name === dsName) ?? catalog.datasources[0];
@@ -69,6 +68,7 @@ export function ReportBuilder({
   });
 
   const activeCatalog = getWorkingCatalog(state.datasource);
+  const dynamicOptions = useReportDynamicOptions(state.datasource, activeCatalog, state.filters);
 
   const createMutation = useMutation({
     mutationFn: (body: CreateReportRequest) =>

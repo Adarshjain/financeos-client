@@ -108,6 +108,7 @@ export const keys = {
     all: ['reports'] as const,
     list: () => [...keys.reports.all, 'list'] as const,
     catalog: () => [...keys.reports.all, 'catalog'] as const,
+    fieldValues: (datasource: string) => [...keys.reports.all, 'fieldValues', datasource] as const,
     byId: (id: string) => [...keys.reports.all, 'detail', id] as const,
     run: (id: string, params: Record<string, unknown> = {}) => [...keys.reports.all, 'run', id, params] as const,
   },
