@@ -14,15 +14,17 @@ test.describe('Report Datasources API (@api)', () => {
     'loan_tax_summary',
     'lendings',
     'reward_earnings',
+    'reward_milestones',
+    'reward_caps',
   ];
 
-  test('GET /report/datasource lists all 11 datasources in order with fields and operators catalog', async ({
+  test('GET /report/datasource lists all 13 datasources in order with fields and operators catalog', async ({
     api,
   }) => {
     const data = await catalog(api);
 
     expect(data.datasources).toBeDefined();
-    expect(data.datasources.length).toBe(11);
+    expect(data.datasources.length).toBe(13);
 
     const names = data.datasources.map((d) => d.name);
     expect(names).toEqual(EXPECTED_DATASOURCES);
