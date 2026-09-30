@@ -53,6 +53,9 @@ export function useGmailConnect() {
       setMessage({ type: 'error', text: 'Sync job was cancelled.' });
       toast.info('Sync cancelled.');
     }
+    // "Recent sync jobs" only live-polls while its own list shows an active job, so a refetch that
+    // raced the enqueue can leave it empty; refresh it whenever the job settles.
+    qc.invalidateQueries({ queryKey: keys.jobs.all });
     setActiveJobId(null);
   });
 
