@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { DYNAMIC_OPTIONS_FAILED } from '@/components/reports/catalog';
 import type { FieldDefinition } from '@/lib/reports.types';
 
 import { ValueEditor } from '../ValueEditor';
@@ -51,6 +52,49 @@ describe('ValueEditor dynamic enum values', () => {
     expect(screen.queryByText('Loading values…')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('Weekend bonus'));
     expect(onChange).toHaveBeenCalledWith('Weekend bonus');
+  });
+
+  it('stores the option id for a field with an idField and shows its label', () => {
+    const onChange = vi.fn();
+    render(
+      <ValueEditor
+        kind="scalarEnum"
+        field={{ ...ruleField, idField: 'ruleId' } as FieldDefinition}
+        dynamicOptions={{ rule: [{ id: 'rule-2', name: 'Weekend bonus' }] }}
+        value={undefined}
+        onChange={onChange}
+      />,
+    );
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.click(screen.getByText('Weekend bonus'));
+    expect(onChange).toHaveBeenCalledWith('rule-2');
+  });
+
+  it('keeps the label as the value for a dynamic field without an idField', () => {
+    const onChange = vi.fn();
+    render(
+      <ValueEditor
+        kind="scalarEnum"
+        field={ruleField}
+        dynamicOptions={{ rule: [{ id: 'rule-2', name: 'Weekend bonus' }] }}
+        value={undefined}
+        onChange={onChange}
+      />,
+    );
+    fireEvent.click(screen.getByRole('combobox'));
+    fireEvent.click(screen.getByText('Weekend bonus'));
+    expect(onChange).toHaveBeenCalledWith('Weekend bonus');
+  });
+
+  it('says the values could not load when the request failed', () => {
+    const failed = { [DYNAMIC_OPTIONS_FAILED]: true } as never;
+    const { rerender } = render(
+      <ValueEditor kind="scalarEnum" field={ruleField} dynamicOptions={failed} value={undefined} onChange={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('combobox'));
+    expect(screen.getByText('Couldn’t load values — try again shortly')).toBeInTheDocument();
+    rerender(<ValueEditor kind="multi" field={ruleField} dynamicOptions={failed} value={[]} onChange={vi.fn()} />);
+    expect(screen.getAllByText('Couldn’t load values — try again shortly').length).toBeGreaterThan(0);
   });
 
   it('never shows the hint for a static enum', () => {

@@ -8,6 +8,7 @@ vi.mock('@/lib/api/client', async () => {
   return { ...actual, api: { GET: vi.fn(), POST: vi.fn(), PUT: vi.fn(), PATCH: vi.fn(), DELETE: vi.fn() } };
 });
 
+import { DYNAMIC_OPTIONS_FAILED } from '@/components/reports/catalog';
 import { api } from '@/lib/api/client';
 import type { DatasourceCatalog, FilterClause } from '@/lib/reports.types';
 
@@ -41,7 +42,16 @@ describe('useReportDynamicOptions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(api.GET).mockResolvedValue({
-      data: { values: { rule: ['Base 1%', 'Weekend bonus'], card: ['HDFC Regalia'] } },
+      data: {
+        values: { rule: ['Base 1%', 'Weekend bonus'], card: ['HDFC Regalia'] },
+        options: {
+          rule: [
+            { value: 'rule-1', label: 'Base 1%' },
+            { value: 'rule-2', label: 'Weekend bonus' },
+          ],
+          card: [{ value: 'acct-1', label: 'HDFC Regalia' }],
+        },
+      },
     } as never);
   });
 
@@ -58,7 +68,7 @@ describe('useReportDynamicOptions', () => {
     expect(result.current).toEqual({});
   });
 
-  it('fetches the datasource values once a filter uses a dynamic field and maps them to options', async () => {
+  it('fetches the datasource options once a filter uses a dynamic field and maps value to id, label to name', async () => {
     const { result } = renderHook(() => useReportDynamicOptions('reward_earnings', catalog, [ruleFilter]), {
       wrapper: createWrapper(),
     });
@@ -67,10 +77,11 @@ describe('useReportDynamicOptions', () => {
       params: { path: { name: 'reward_earnings' } },
     });
     expect(result.current.rule).toEqual([
-      { id: 'Base 1%', name: 'Base 1%' },
-      { id: 'Weekend bonus', name: 'Weekend bonus' },
+      { id: 'rule-1', name: 'Base 1%' },
+      { id: 'rule-2', name: 'Weekend bonus' },
     ]);
-    expect(result.current.card).toEqual([{ id: 'HDFC Regalia', name: 'HDFC Regalia' }]);
+    expect(result.current.card).toEqual([{ id: 'acct-1', name: 'HDFC Regalia' }]);
+    expect(result.current[DYNAMIC_OPTIONS_FAILED]).toBeUndefined();
   });
 
   it('refetches for a different datasource', async () => {
@@ -82,6 +93,15 @@ describe('useReportDynamicOptions', () => {
     rerender({ ds: 'reward_caps' });
     await waitFor(() => expect(api.GET).toHaveBeenCalledTimes(2));
     expect(vi.mocked(api.GET).mock.calls[1][1]).toEqual({ params: { path: { name: 'reward_caps' } } });
+  });
+
+  it('flags a failed values request instead of staying in the loading state', async () => {
+    vi.mocked(api.GET).mockRejectedValue(new Error('boom'));
+    const { result } = renderHook(() => useReportDynamicOptions('reward_earnings', catalog, [ruleFilter]), {
+      wrapper: createWrapper(),
+    });
+    await waitFor(() => expect(result.current[DYNAMIC_OPTIONS_FAILED]).toBe(true));
+    expect(result.current.rule).toBeUndefined();
   });
 
   it('treats a response without values as no loaded fields', async () => {
