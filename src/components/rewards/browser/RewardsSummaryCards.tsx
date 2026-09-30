@@ -77,7 +77,7 @@ export function RewardsSummaryCards({
                 </p>
                 <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                   {formatMoney(summary.grossValueInr)}
-                  {summary.points + summary.milestonesPts > 0 && (
+                  {summary.points + summary.milestonesPts > 0 && summary.pointsValueInr == null && (
                     <span className="text-sky-600 dark:text-sky-400">
                       {' '}
                       + {summary.points + summary.milestonesPts} pts
@@ -99,7 +99,15 @@ export function RewardsSummaryCards({
                   ]
                     .filter(Boolean)
                     .join(' + ')}
-                  {summary.grossPct != null && ` · ${summary.grossPct}% cash`}
+                  {summary.pointsValueInr != null &&
+                    summary.points + summary.milestonesPts > 0 &&
+                    ` (pts = ${formatMoney(summary.pointsValueInr)})`}
+                  {summary.grossPct != null &&
+                    ` · ${summary.grossPct}% ${
+                      summary.pointsValueInr == null && summary.points + summary.milestonesPts > 0
+                        ? 'cash'
+                        : 'of spend'
+                    }`}
                 </p>
               </div>
               <div>

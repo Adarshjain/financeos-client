@@ -44,6 +44,10 @@ export function ValueEditor({
     return null;
   }
 
+  // Dynamic values come from the API; the field is absent until they load.
+  const dynamicLoading = !!field.dynamic && !(field.name in dynamicOptions);
+  const emptyHint = dynamicLoading ? 'Loading values…' : 'No values in your data yet';
+
   switch (kind) {
     case 'scalar':
       return (
@@ -86,6 +90,9 @@ export function ValueEditor({
             <SelectValue placeholder="Select option…" />
           </SelectTrigger>
           <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+            {options.length === 0 && (
+              <div className="px-2 py-1.5 text-xs text-muted-foreground">{emptyHint}</div>
+            )}
             {options.map((opt) => (
               <SelectItem
                 key={opt.value}
@@ -112,7 +119,7 @@ export function ValueEditor({
             options={options}
             value={selected}
             onChange={(v) => onChange(v)}
-            placeholder="Select values…"
+            placeholder={options.length === 0 ? emptyHint : 'Select values…'}
           />
         );
       }
