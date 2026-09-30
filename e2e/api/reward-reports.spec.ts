@@ -1,5 +1,6 @@
 import type { ApiClient } from '../fixtures/api';
 import { expectStatus } from '../fixtures/api';
+import { createBankAccount } from '../fixtures/seed/accounts';
 import { createCategory } from '../fixtures/seed/categories';
 import { runAdHoc } from '../fixtures/seed/reports';
 import {
@@ -12,6 +13,7 @@ import {
   setRewardConfig,
   spend,
 } from '../fixtures/seed/rewards';
+import { createTransaction } from '../fixtures/seed/transactions';
 import { expectUnauthenticated, secondUser } from '../fixtures/tenancy';
 import { expect, freshUser, test } from '../fixtures/test';
 
@@ -298,8 +300,9 @@ test.describe('Reward reports API (@api)', () => {
     const missed = ms.find((r) => r.milestone === 'Spend 5k')!;
     expect(missed).toMatchObject({ payoutDate: null, progress: 1500, progressPct: 30, payoutValueInr: 0 });
 
-    const achieved = await rawRows(api, 'reward_milestones', ['milestone'], [...inMonth(month, 'windowStart'), { field: 'achieved', operator: 'is', value: true }]);
-    expect(achieved.map((r) => r.milestone)).toEqual(['Spend 1k']);
+    const achieved = await rawRows(api, 'reward_milestones', ['milestone', 'achieved'], [...inMonth(month, 'windowStart'), { field: 'achieved', operator: 'is', value: 'Yes' }]);
+    expect(achieved).toEqual([expect.objectContaining({ milestone: 'Spend 1k', achieved: 'Yes' })]);
+    expect(await chart(api, 'reward_milestones', 'achieved', 'payoutValueInr', inMonth(month, 'windowStart'))).toEqual({ No: 0, Yes: 500 });
 
     const caps = await rawRows(api, 'reward_caps', ['cap', 'capType', 'window', 'windowStart', 'windowEnd', 'cardholder', 'capLimit', 'used', 'remaining', 'utilizationPct', 'usedValueInr'],
       inMonth(month, 'windowStart'));
@@ -317,7 +320,98 @@ test.describe('Reward reports API (@api)', () => {
       utilizationPct: 100,
       usedValueInr: 12,
     });
-    const reached = await rawRows(api, 'reward_caps', ['cap'], [{ field: 'capHit', operator: 'is', value: true }]);
-    expect(reached).toHaveLength(1);
+    const reached = await rawRows(api, 'reward_caps', ['cap', 'capHit'], [{ field: 'capHit', operator: 'is', value: 'Yes' }]);
+    expect(reached).toEqual([expect.objectContaining({ cap: 'Capped 1%', capHit: 'Yes' })]);
+  });
+
+  test('rule, card and milestone filters store stable ids that survive relabelling', async ({ request }) => {
+    const { api } = await freshUser(request, 'reward-reports');
+    const month = fixedMonth();
+    const a = await createRewardCard(api, { name: 'Id Card A' });
+    const rule = await createRewardRule(api, a.account.id, { name: 'Cashback 2%', percentRate: 2 });
+    const milestone = await createMilestone(api, a.account.id, { name: 'Spend 500', threshold: 500, payoutValue: 25 });
+    await spend(api, a.account.id, { amount: 1000, date: day(month, 6) });
+
+    const res = await api.GET('/api/v1/report/datasource/{name}/values', { params: { path: { name: 'reward_earnings' } } });
+    expectStatus(res, 200);
+    expect(res.data!.options.rule).toEqual([{ value: rule.id, label: 'Cashback 2%' }]);
+    expect(res.data!.options.card).toEqual([{ value: a.account.id, label: 'Id Card A' }]);
+    const ms = await api.GET('/api/v1/report/datasource/{name}/values', { params: { path: { name: 'reward_milestones' } } });
+    expect(ms.data!.options.milestone).toEqual([{ value: milestone.id, label: 'Spend 500' }]);
+
+    const saved = await api.POST('/api/v1/reports', {
+      body: {
+        name: 'Rule by id',
+        type: 'KPI',
+        datasource: 'reward_earnings',
+        definition: { measure: 'valueInr', aggregation: 'sum', filters: [{ field: 'rule', operator: 'is', value: rule.id }] },
+      } as never,
+    });
+    expectStatus(saved, 201);
+    const runSaved = async () => {
+      const r = await api.POST('/api/v1/reports/{id}/data', { params: { path: { id: (saved.data as { id: string }).id } } });
+      return Number((r.data as unknown as { value: number }).value);
+    };
+    expect(await runSaved()).toBe(20);
+
+    // A same-named rule on another card relabels "Cashback 2%" to "Cashback 2% · Id Card A".
+    const b = await createRewardCard(api, { name: 'Id Card B' });
+    await createRewardRule(api, b.account.id, { name: 'Cashback 2%', percentRate: 2 });
+    await spend(api, b.account.id, { amount: 500, date: day(month, 7) });
+    expect(await runSaved()).toBe(20);
+    expect(await kpi(api, 'reward_earnings', 'valueInr', [{ field: 'rule', operator: 'is_not', value: rule.id }])).toBe(10);
+    expect(await kpi(api, 'reward_earnings', 'valueInr', [{ field: 'card', operator: 'in', value: [b.account.id] }])).toBe(10);
+    expect(await kpi(api, 'reward_milestones', 'payoutValueInr', [{ field: 'milestone', operator: 'is', value: milestone.id }])).toBe(25);
+  });
+
+  test('pie charts ignore a series split', async ({ request }) => {
+    const { api } = await freshUser(request, 'reward-reports');
+    const month = fixedMonth();
+    const { account } = await createRewardCard(api, { name: 'Pie Card' });
+    await createRewardRule(api, account.id, { name: 'Base 1%', percentRate: 1 });
+    await createRewardRule(api, account.id, { name: 'Stack 2%', stacking: 'ADDITIVE', percentRate: 2, priority: 5 });
+    await spend(api, account.id, { amount: 1000, date: day(month, 8) });
+
+    for (const chartType of ['pie', 'donut']) {
+      const data = (await runAdHoc(api, {
+        type: 'CHART',
+        datasource: 'reward_earnings',
+        definition: { chartType, dimension: { field: 'card' }, series: { field: 'rule' }, measure: { field: 'valueInr', aggregation: 'sum' }, filters: [] },
+      } as never)) as unknown as { categories: string[]; series: Array<{ data: number[] }> };
+      expect(data.categories).toEqual(['Pie Card']);
+      expect(data.series).toHaveLength(1);
+      expect(data.series[0].data).toEqual([30]);
+    }
+  });
+
+  test('transactions reports group by link type and combine card with category', async ({ request }) => {
+    const { api } = await freshUser(request, 'reward-reports');
+    const month = fixedMonth();
+    const bank = await createBankAccount(api, { name: 'Link Bank' });
+    const { account, cards } = await createRewardCard(api, { name: 'Link Card' });
+    const food = await createCategory(api, 'Food');
+    const pay = await createTransaction(api, bank.id, { amount: -500, date: day(month, 3), description: 'Card bill' });
+    const paid = await createTransaction(api, account.id, { amount: 500, date: day(month, 3), description: 'Payment received' });
+    const link = await api.POST('/api/v1/transaction-links', {
+      body: { type: 'CC_PAYMENT', members: [{ transactionId: pay.id, isAnchor: true }, { transactionId: paid.id, isAnchor: false }] } as never,
+    });
+    expectStatus(link, 201);
+    await spend(api, account.id, { amount: 1000, date: day(month, 5), categoryIds: [food.id], cardId: cards[0].id });
+
+    const byLink = await chart(api, 'transactions', 'linkType', 'amount', []);
+    expect(byLink).toEqual({ '(none)': -1000, CC_PAYMENT: 0 });
+    expect(await kpi(api, 'transactions', 'amount', [{ field: 'linkType', operator: 'is', value: 'CC_PAYMENT' }], 'count')).toBe(2);
+
+    const byCardAndCategory = (await runAdHoc(api, {
+      type: 'CHART',
+      datasource: 'transactions',
+      definition: { chartType: 'stackedBar', dimension: { field: 'card' }, series: { field: 'category' }, measure: { field: 'amount', aggregation: 'sum' }, filters: [] },
+    } as never)) as unknown as { categories: string[]; series: Array<{ name: string; data: number[] }> };
+    const food1 = byCardAndCategory.series.find((s) => s.name === 'Food')!;
+    expect(food1.data[byCardAndCategory.categories.indexOf(`Link Card •••• ${cards[0].last4}`)]).toBe(-1000);
+    expect(await kpi(api, 'transactions', 'amount', [
+      { field: 'category', operator: 'is', value: 'Food' },
+      { field: 'card', operator: 'is', value: `Link Card •••• ${cards[0].last4}` },
+    ], 'count')).toBe(1);
   });
 });
