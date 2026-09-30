@@ -510,7 +510,6 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <tr><td>Yahoo/AMFI down</td><td>Provider outage</td><td>Per-instrument failure; prior price kept</td><td>Values stale with no date warning</td><td>Yes</td><td><code>price.refresh.failed</code></td></tr>
 <tr><td>Instrument delisted</td><td>Merger</td><td>null yahooSymbol; at-cost valuation</td><td>"at cost" badge, merger nudge</td><td>No</td><td>—</td></tr>
 <tr><td>Report widget broken</td><td>Deleted report, SQL error</td><td>Per-widget catch</td><td>Widget unavailable</td><td>No</td><td>report.execute error</td></tr>
-<tr><td>KPI NPE</td><td>Computed datasource + null enabled</td><td>500</td><td>Widget error</td><td>No</td><td>NullPointerException stack</td></tr>
 <tr><td>Chat deadline</td><td>Slow models</td><td>Forced final at 180 s; hard stop 270 s</td><td>"Took longer than expected"</td><td>No</td><td><code>chat.deadline</code></td></tr>
 <tr><td>Chat quota</td><td>&gt;30/day or 2 concurrent</td><td>429</td><td>Quota message</td><td>No</td><td>CHAT_QUOTA</td></tr>
 <tr><td>Flyway failure on deploy</td><td>ADB parallel DML, partial DDL</td><td>Boot aborts; previous jar keeps running only if the deploy script does not stop it first</td><td>Downtime</td><td>No</td><td>Flyway validate/migrate error</td></tr>

@@ -177,7 +177,7 @@
 <div class="tw"><table>
 <tr><th>#</th><th>Concept</th><th>Implementation A</th><th>Implementation B</th><th>Conflict</th><th>Impact</th><th>Priority</th></tr>
 <tr><td>C1</td><td>Spend by category</td><td>Reports: <code>TransactionQueryBuilder</code> fan-out LEFT JOIN on transaction_categories</td><td>Chat: <code>v_chat_transactions</code> LISTAGG (one row per transaction) + <code>v_chat_transaction_categories</code></td><td>Multi-category rows counted N times in reports</td><td>Report and chat totals differ; KPIs filtered by category over-count</td><td><span class="c pc">Critical</span></td></tr>
-<tr><td>C2</td><td>Value of an unvalued reward point</td><td>Recommender: ₹0.25 default (<code>DEFAULT_POINT_VALUE_INR</code>)</td><td><code>RewardEarningsDatasource</code>: ₹0</td><td>Different defaults</td><td>Card Picker and reports disagree for the same card</td><td><span class="c ph">High</span></td></tr>
+<tr><td>C2</td><td>Value of an unvalued reward point</td><td>Recommender: ₹0.25 default (<code>DEFAULT_POINT_VALUE_INR</code>)</td><td><code>RewardEarningsDatasource</code> and Rewards summary: ₹0 (both use <code>pointValueInr</code> when set)</td><td>Different defaults</td><td>Card Picker and reports disagree for the same card</td><td><span class="c ph">High</span></td></tr>
 <tr><td>C3</td><td><code>is_excluded</code> meaning</td><td>UI copy "Do not include in reporting and budgets"; reward engine excludes</td><td>Balance queries include; reports include unless filtered</td><td>Partial honouring</td><td>Excluded rows move balances</td><td><span class="c ph">High</span></td></tr>
 <tr><td>C4</td><td>Cost basis of a lot</td><td>Code: traded price only (comment "clean cost basis")</td><td>Plan <span class="path">investment-tracking-plan.md:154-157</span>: include allocated buy charges</td><td>Doc vs code</td><td>P&amp;L gross of fees; only XIRR nets them</td><td><span class="c ph">High</span></td></tr>
 <tr><td>C5</td><td>Transaction source values</td><td><code>TransactionSource</code>: manual, gmail_transaction_alert, gmail_statement, file_upload</td><td><code>DatasourceCatalog</code> report catalog: "gmail", "manual"</td><td>Stale enum copy</td><td>Report and chat filter on source broken for 3 of 4 values</td><td><span class="c ph">High</span></td></tr>
@@ -283,7 +283,7 @@
 <tr><td>Categorization</td><td>User rule &gt; LLM rule; EXACT &gt; STARTS_WITH &gt; CONTAINS &gt; REGEX &gt; MERCHANT_KEY; longer pattern; verified; newer</td><td>LLM suggestion → new rule; else uncategorized + CATEGORY_UNVERIFIED</td></tr>
 <tr><td>Review transitions</td><td>Explicit reviewType in request (if changed) &gt; category edit clears CATEGORY_UNVERIFIED &gt; batch review scoped reasons &gt; merge clears UNRECONCILED, DUPLICATE_SUSPECT</td><td>Stays NEEDS_REVIEW while reasons remain</td></tr>
 <tr><td>Account resolution</td><td>Alias exact &gt; bank/open card exact &gt; fuzzy &gt; closed cards</td><td>Park</td></tr>
-<tr><td>Reward rules</td><td>Exclusive by priority desc (ties by created_at); 0 % blocks; cap exhausted → FALL_THROUGH (next) or STOP; then all additive</td><td>NO_RULE zero line</td></tr>
+<tr><td>Reward rules</td><td>Exclusive by priority desc (ties by created_at); 0 % blocks; cap exhausted → FALL_THROUGH (next) or STOP; then all additive</td><td>NO_RULE zero line only when no rule matched at all</td></tr>
 <tr><td>Reward cap source</td><td>Bucket cap and window &gt; rule's own period cap</td><td>None</td></tr>
 <tr><td>Reward windows</td><td>STATEMENT_CYCLE from statements &gt; CALENDAR_MONTH fallback; ANNIVERSARY_YEAR from account date &gt; CALENDAR_YEAR fallback</td><td>flags</td></tr>
 <tr><td>Reward effective date</td><td>settlement_date &gt; transaction_date</td><td></td></tr>
@@ -416,7 +416,7 @@
 <li><strong>Two tabs edit the same loan</strong>: last write wins, no conflict.</li>
 <li><strong>Anniversary date Feb 29</strong>: clamped to Feb 28 in non-leap years.</li>
 <li><strong>Reward rule with tiers JSON corrupted</strong>: rule skipped with a log warning; transactions earn NO_RULE or fall to the next rule.</li>
-<li><strong>Report KPI on a computed datasource with <code>comparison.enabled</code> null</strong>: NullPointerException → 500.</li>
+<li><strong>Report KPI on a computed datasource with <code>comparison.enabled</code> null</strong>: treated as comparison off (fixed 2026-09-30; was a 500).</li>
 <li><strong>Gmail primary connection disconnected</strong>: manual sync 404s even with another live connection.</li>
 </ul>
 </section>
