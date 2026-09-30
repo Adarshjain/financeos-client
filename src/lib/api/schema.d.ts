@@ -1835,7 +1835,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["values"];
+        get: operations["reportFieldValues"];
         put?: never;
         post?: never;
         delete?: never;
@@ -10213,7 +10213,7 @@ export interface operations {
             };
         };
     };
-    values: {
+    reportFieldValues: {
         parameters: {
             query?: never;
             header?: never;
