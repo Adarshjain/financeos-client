@@ -51,6 +51,10 @@ test.describe('Lendings UI (@ui)', () => {
     // Person action buttons (Edit Person, Delete Person, Add Entry) are visible in mobile viewport
     await page.setViewportSize({ width: 375, height: 667 });
 
+    // The mobile action bar slides off-screen (opacity 0, still "visible" to Playwright) once the
+    // page scrolls down, and clicking it then retries forever. Scrolling up brings it back.
+    const showActionBar = () => page.evaluate(() => window.scrollTo(0, 0));
+
     await expect(page.getByRole('heading', { name: cpName })).toBeVisible();
     await expect(page.getByText(/Ledger History/i).first()).toBeVisible();
 
@@ -78,6 +82,7 @@ test.describe('Lendings UI (@ui)', () => {
     await page.getByRole('button', { name: 'Save Changes' }).click();
 
     // 5. Edit Person: rename
+    await showActionBar();
     await page.getByRole('button', { name: 'Edit Person', exact: true }).filter({ visible: true }).first().click();
     await expect(page.getByRole('heading', { name: 'Edit Person Details' })).toBeVisible();
 
@@ -88,6 +93,7 @@ test.describe('Lendings UI (@ui)', () => {
     await expect(page.getByRole('heading', { name: updatedCpName })).toBeVisible();
 
     // 6. Delete Person with confirm modal
+    await showActionBar();
     await page.getByRole('button', { name: 'Delete Person', exact: true }).filter({ visible: true }).first().click();
     await expect(page.getByRole('heading', { name: 'Delete Counterparty' })).toBeVisible();
     await expect(page.getByText(/permanently deletes their entire ledger history \(2 entries\)/i)).toBeVisible();

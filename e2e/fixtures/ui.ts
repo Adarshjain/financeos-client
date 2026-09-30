@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect } from '@playwright/test';
 
 import { E2E_CLIENT_URL } from './config';
@@ -17,6 +17,17 @@ export async function openAccounts(page: Page): Promise<void> {
 export async function openTransactions(page: Page): Promise<void> {
   await page.goto(`${E2E_CLIENT_URL}/transactions`);
   await expect(page.getByRole('heading', { name: 'Transactions', level: 1 })).toBeVisible();
+}
+
+/**
+ * Click a control whose handler sends an API request, re-clicking until that request goes out.
+ * Server-rendered pages show their buttons before React hydrates, and a click that lands in that
+ * window is silently dropped. Re-clicking is safe because a dropped click sent nothing.
+ */
+export async function clickUntilRequest(page: Page, target: Locator, url: RegExp): Promise<void> {
+  await expect(async () => {
+    await Promise.all([page.waitForRequest(url, { timeout: 2000 }), target.click()]);
+  }).toPass({ timeout: 15000 });
 }
 
 /**

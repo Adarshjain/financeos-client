@@ -8,6 +8,7 @@ import { categorizeScript } from '../fixtures/llm';
 import { createBankAccount } from '../fixtures/seed/accounts';
 import { uploadAndIngest, uploadStatements } from '../fixtures/seed/statements';
 import { expect, test } from '../fixtures/test';
+import { clickUntilRequest } from '../fixtures/ui';
 
 test.describe('Background Jobs UI (@ui)', () => {
   test.describe.configure({ mode: 'serial' });
@@ -83,9 +84,23 @@ test.describe('Background Jobs UI (@ui)', () => {
   test('/settings/jobs: retry a CANCELLED job from row action -> spawns new completing job', async ({
     page,
   }) => {
+    // The retried job waits out the 15s LLM delay holding both worker slots
+    test.slow();
     const api = makeApi(currentUser.cookie);
     const account = await createBankAccount(api, { name: 'Jobs Retry Bank' });
-    const pdf = await genBankPdf(standardBankSpec);
+    // One PDF per upload, each for its own period: a second statement for the same account and
+    // period is skipped as already ingested, so that job never calls the LLM and frees its worker
+    // slot at once.
+    const pdfA = await genBankPdf(standardBankSpec);
+    const pdfB = await genBankPdf({
+      ...standardBankSpec,
+      periodStart: '2026-05-01',
+      periodEnd: '2026-05-31',
+      rows: [
+        { date: '2026-05-08', description: 'RENT TRANSFER', debit: 12000.0 },
+        { date: '2026-05-20', description: 'ELECTRICITY BILL', debit: 2200.0 },
+      ],
+    });
 
     // 1. Create rule first so it's ready to apply
     const { createCategory, createRule } = await import('../fixtures/seed/categories');
@@ -123,14 +138,9 @@ test.describe('Background Jobs UI (@ui)', () => {
       },
     ]);
 
-    await uploadStatements(api, account.id, [
-      { filename: 'ui-slot1.pdf', buffer: pdf },
-      { filename: 'ui-slot2.pdf', buffer: pdf },
-    ]);
-    await uploadStatements(api, account.id, [
-      { filename: 'ui-slot3.pdf', buffer: pdf },
-      { filename: 'ui-slot4.pdf', buffer: pdf },
-    ]);
+    // Each upload is one job; the worker has 2 slots, so two delayed jobs fill it.
+    await uploadStatements(api, account.id, [{ filename: 'ui-slot1.pdf', buffer: pdfA }]);
+    await uploadStatements(api, account.id, [{ filename: 'ui-slot2.pdf', buffer: pdfB }]);
 
     // 3. Trigger apply while slots are full -> queued in PENDING
     const applyRes = await api.POST('/api/v1/rules/{id}/apply', {
@@ -146,18 +156,19 @@ test.describe('Background Jobs UI (@ui)', () => {
 
     await page.goto('/settings/jobs');
 
-    // Wait for CANCELLED badge to show on the page
-    await expect(page.locator('tbody').getByText('CANCELLED').first()).toBeVisible({ timeout: 20000 });
+    const ruleRows = page.locator('tbody tr').filter({ hasText: 'Rule Apply' });
+    const cancelledRow = ruleRows.filter({ hasText: 'CANCELLED' });
+    await expect(cancelledRow).toBeVisible({ timeout: 20000 });
 
-    // Click "Retry" button on the cancelled job row
-    const retryBtn = page.locator('tbody').getByRole('button', { name: /Retry/i }).first();
-    await retryBtn.click();
-
-    // Verify toast or new job completion
+    await clickUntilRequest(
+      page,
+      cancelledRow.getByRole('button', { name: /Retry/i }),
+      /\/api\/v1\/jobs\/[^/]+\/retry/
+    );
     await expect(page.getByText(/Job retried/i)).toBeVisible();
 
-    // Verify a SUCCEEDED row appears
-    await expect(page.locator('tbody').getByText('SUCCEEDED').first()).toBeVisible({ timeout: 25000 });
+    // The retried rule job runs once the delayed ingest jobs free their slots
+    await expect(ruleRows.filter({ hasText: 'SUCCEEDED' })).toBeVisible({ timeout: 25000 });
   });
 
   test('/settings/jobs: cancel a RUNNING job from row action', async ({
@@ -187,8 +198,7 @@ test.describe('Background Jobs UI (@ui)', () => {
     const cancelBtn = page.getByRole('button', { name: /Cancel/i }).first();
     await expect(cancelBtn).toBeVisible({ timeout: 15000 });
 
-    // Click Cancel
-    await cancelBtn.click();
+    await clickUntilRequest(page, cancelBtn, /\/api\/v1\/jobs\/[^/]+\/cancel/);
 
     // Verify cancellation toast
     await expect(page.getByText(/Cancellation requested/i)).toBeVisible();
