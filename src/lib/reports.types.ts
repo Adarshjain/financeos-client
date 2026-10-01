@@ -60,11 +60,17 @@ export interface FieldDefinition {
    * the option id and the dropdown shows the label. Implies valueKey 'id'.
    */
   idField?: string;
+  /**
+   * DATE fields only: the billing-cycle operators ("This billing cycle", "Previous billing
+   * cycle") apply — each credit card's rows are kept to that card's own cycle.
+   */
+  billingCycle?: boolean;
 }
 
 /** Operators available per field type. Date operators split absolute vs relative. */
 export interface OperatorCatalog {
-  date: { absolute: string[]; relative: string[] };
+  /** `cycle`: billing-cycle operators, offered only on fields with `billingCycle`. */
+  date: { absolute: string[]; relative: string[]; cycle?: string[] };
   string: string[];
   number: string[];
   enum: string[];
