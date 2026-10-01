@@ -87,13 +87,17 @@ export function aggsFor(
   return fieldByName(catalog, measureName)?.aggregations ?? [];
 }
 
-/** Operators valid for a field, keyed by its type (date = absolute + relative). */
+/** Operators valid for a field, keyed by its type (date = absolute + relative, + cycle on billing-cycle fields). */
 export function operatorsForField(
   catalog: DatasourceCatalog,
   field: FieldDefinition,
 ): string[] {
   if (field.type === 'date') {
-    return [...catalog.operators.date.absolute, ...catalog.operators.date.relative];
+    return [
+      ...catalog.operators.date.absolute,
+      ...catalog.operators.date.relative,
+      ...(field.billingCycle ? (catalog.operators.date.cycle ?? []) : []),
+    ];
   }
   return catalog.operators[field.type] ?? [];
 }
@@ -102,7 +106,10 @@ export function isRelativeDateOp(
   catalog: DatasourceCatalog,
   operator: string,
 ): boolean {
-  return catalog.operators.date.relative.includes(operator);
+  return (
+    catalog.operators.date.relative.includes(operator) ||
+    (catalog.operators.date.cycle ?? []).includes(operator)
+  );
 }
 
 /** Options for an enum field: static `values` inline, dynamic fetched by name. */

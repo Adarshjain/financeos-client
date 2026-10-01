@@ -3117,6 +3117,7 @@ export interface components {
         };
         DateOperators: {
             absolute: string[];
+            cycle: string[];
             relative: string[];
         };
         DeleteAccountRequest: {
@@ -3210,6 +3211,7 @@ export interface components {
         FieldDef: {
             aggregations: ("sum" | "avg" | "count" | "min" | "max")[];
             allowedInReports: ("KPI" | "CHART" | "TABLE")[];
+            billingCycle: boolean;
             dynamic: boolean;
             format: string;
             idField: string;
