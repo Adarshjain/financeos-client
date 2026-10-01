@@ -285,7 +285,7 @@
 <tr><td>Account resolution</td><td>Alias exact &gt; bank/open card exact &gt; fuzzy &gt; closed cards</td><td>Park</td></tr>
 <tr><td>Reward rules</td><td>Exclusive by priority desc (ties by created_at); 0 % blocks; cap exhausted → FALL_THROUGH (next) or STOP; then all additive</td><td>NO_RULE zero line only when no rule matched at all</td></tr>
 <tr><td>Reward cap source</td><td>Bucket cap and window &gt; rule's own period cap</td><td>None</td></tr>
-<tr><td>Reward windows</td><td>STATEMENT_CYCLE from statements &gt; CALENDAR_MONTH fallback; ANNIVERSARY_YEAR from account date &gt; CALENDAR_YEAR fallback</td><td>flags</td></tr>
+<tr><td>Reward windows</td><td>STATEMENT_CYCLE from statements &gt; projected from the nearest statement &gt; CALENDAR_MONTH fallback (no statements); ANNIVERSARY_YEAR from account date &gt; CALENDAR_YEAR fallback</td><td>flags</td></tr>
 <tr><td>Reward effective date</td><td>settlement_date &gt; transaction_date</td><td></td></tr>
 <tr><td>Price</td><td>MANUAL &gt; feed for the same day; latest date wins; no price → cost</td><td></td></tr>
 <tr><td>Instrument identity</td><td>ISIN &gt; AMFI code &gt; Yahoo symbol &gt; symbol+exchange &gt; alias &gt; catalog &gt; create</td><td></td></tr>
