@@ -123,7 +123,7 @@
 <li><span class="lyr">server</span><code>RewardCalculationService.report</code>: window expansion, fetch, evaluate every transaction, aggregate</li>
 <li><span class="lyr">UI</span>Summary cards, rule breakdown with cap status, milestone progress, lines with reasons</li>
 <li><span class="lyr">decision</span>/rewards/recommend: enter a hypothetical spend → ranked cards with guaranteed and milestone value</li>
-<li><span class="lyr">failure</span>Range too large for milestones → 400; broken tier JSON → rule skipped silently; no statements → cycle fallback flag</li>
+<li><span class="lyr">failure</span>Range too large for milestones → 400; broken tier JSON → rule skipped silently; no statements at all → cycle fallback flag (cycles after the last statement are projected, not flagged)</li>
 </ol>
 
 <h3 id="s11-invest">Journey 6: Import a broker year and see positions</h3>
