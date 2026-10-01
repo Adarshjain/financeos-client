@@ -227,8 +227,11 @@ test.describe('Loans API (@api)', () => {
   });
 
   test('Status recomputation: overdue vs upcoming and settlement via payment', async ({ api }) => {
-    // 2 months ago start date means seqs 1-3 (2 months ago, 1 month ago, current month 1st) are overdue/past, 4+ upcoming
-    const startDate = monthsAgo(2);
+    // Start 3 months back on the 1st: seqs 1-3 fall due strictly before today on any day of the
+    // month, so they are overdue. Seq 4 falls due on the 1st of the current month, which is "due
+    // today" (not yet overdue) on the 1st and overdue afterwards, so it is not asserted. Seq 5
+    // (next month) is upcoming.
+    const startDate = monthsAgo(3);
     const loan = await createLoan(api, {
       name: 'Status Recompute Loan',
       startDate,
@@ -240,7 +243,7 @@ test.describe('Loans API (@api)', () => {
     expect(initialSched.installments[0].status).toBe('overdue');
     expect(initialSched.installments[1].status).toBe('overdue');
     expect(initialSched.installments[2].status).toBe('overdue');
-    expect(initialSched.installments[3].status).toBe('upcoming');
+    expect(initialSched.installments[4].status).toBe('upcoming');
 
     // Settle seq 1
     await pay(api, loan.id, { installmentSeq: 1, amount: 10661.85, paymentDate: startDate });
