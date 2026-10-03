@@ -16,6 +16,7 @@
     "api:sync": "cp ../financeos-server/api-spec.yaml src/lib/api/openapi.yaml && npm run gen:api",
     "gen:api": "node scripts/gen-api.mjs",
     "check:api-surface": "node scripts/check-api-surface.mjs",
+    "handbook:index": "node scripts/build-handbook-index.mjs",
     "prepare": "husky",
     "e2e": "bash e2e/run-local.sh",
     "e2e:build": "bash e2e/run-local.sh --build",

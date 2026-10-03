@@ -679,7 +679,7 @@ Memory path: datasource.rows() (List&lt;Map&gt; from another module's service) �
 <li>Shipped default: chat leads with the Flash chain (fast first token for a wall-clock-bound loop); background leads with the full Gemini chain. Gemini model order comes from <code>llm.providers.gemini.models</code>; <code>model-catalog</code> is display metadata only and must be updated in parallel.</li>
 </ul>
 
-<h3 id="m-llm-chat">Chat orchestration</h3>
+<h3 id="m-llm-orch">Chat orchestration</h3>
 <ol class="trace">
 <li><span class="lyr">UI</span><code>Composer</code> → <code>useChatStream.executeSend</code> builds the transcript (clarify turns serialized as "[You asked the user to clarify]: …", last 10 messages, ≤2000 chars each) → <code>fetch('/api/chat')</code> <span class="path">app/(protected)/chat/lib/useChatStream.ts:71</span></li>
 <li><span class="lyr">proxy</span><code>app/api/chat/route.ts</code> relays the session cookie to <span class="m m-post">POST</span> <code>/api/v1/chat/stream</code> and pipes the SSE body back (<code>maxDuration 300</code>); maps 503 CHAT_DISABLED and 429 CHAT_QUOTA_EXCEEDED / CHAT_BUSY to typed JSON</li>
