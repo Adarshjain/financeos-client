@@ -9,8 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { StatementDetail } from '@/lib/statement.types';
-import { formatDate } from '@/lib/utils';
 
 import { StatementCreditCardSummary } from './detail/StatementCreditCardSummary';
 import { StatementLinkedTransactions } from './detail/StatementLinkedTransactions';
@@ -43,9 +43,11 @@ export function StatementDetailDialog({
           <DialogTitle className="text-lg font-bold tracking-tight text-slate-900 dark:text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 sm:gap-2 pr-6 w-full min-w-0">
             <span className="truncate max-w-full">Statement Details</span>
             {selectedDetail && (
-              <span className="text-xs tabular-nums font-normal text-slate-500 dark:text-slate-400 shrink-0">
-                {formatDate(selectedDetail.periodStart)} –{' '}
-                {formatDate(selectedDetail.periodEnd)}
+              <span
+                className="text-xs tabular-nums font-normal text-slate-500 dark:text-slate-400 shrink-0"
+                title={formatDateRangeFull(selectedDetail.periodStart, selectedDetail.periodEnd)}
+              >
+                {formatDateRange(selectedDetail.periodStart, selectedDetail.periodEnd)}
               </span>
             )}
           </DialogTitle>

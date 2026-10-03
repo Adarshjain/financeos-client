@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { MilestoneStatus } from '@/lib/rewards.types';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 
@@ -43,7 +44,9 @@ function MilestoneRow({ m }: { m: MilestoneStatus }) {
       </div>
       <div className="text-2xs text-slate-400 dark:text-slate-500 mt-0.5">
         {m.windowType === 'ONE_TIME' && 'One-time · '}
-        {formatDate(m.windowStart)} – {formatDate(m.windowEnd)}
+        <span title={formatDateRangeFull(m.windowStart, m.windowEnd)}>
+          {formatDateRange(m.windowStart, m.windowEnd)}
+        </span>
         {m.achieved &&
           m.payoutDate &&
           ` · credited ${formatDate(m.payoutDate)}`}

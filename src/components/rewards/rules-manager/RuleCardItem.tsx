@@ -19,8 +19,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { RewardRule } from '@/lib/rewards.types';
-import { cn, formatDate } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 import { accrualSummary, capSummary, matchSummary } from './helpers';
 
@@ -114,8 +115,16 @@ export function RuleCardItem({
         <div className="text-2xs text-slate-400 dark:text-slate-500 truncate mt-0.5">
           {matchSummary(rule)}
           <span className="mx-1">·</span>
-          {rule.activeFrom ? formatDate(rule.activeFrom) : 'always'} →{' '}
-          {rule.activeTo ? formatDate(rule.activeTo) : 'open'}
+          {/* activeTo is exclusive: the rule stops applying ON that day. */}
+          {rule.activeFrom || rule.activeTo ? (
+            <span
+              title={formatDateRangeFull(rule.activeFrom, rule.activeTo, { endExclusive: true })}
+            >
+              {formatDateRange(rule.activeFrom, rule.activeTo, { endExclusive: true })}
+            </span>
+          ) : (
+            'always'
+          )}
         </div>
       </div>
 
