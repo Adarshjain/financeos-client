@@ -270,7 +270,51 @@ export function validationErrors(
     }
   }
 
+  errors.push(...billingCycleErrors(state, catalog));
   return errors;
+}
+
+/** Fields the definition groups or lists by (dimensions, series, rows, columns). */
+function groupedFieldNames(state: BuilderState): string[] {
+  if (state.type === 'CHART') {
+    const c = state.chart;
+    const isPieDonut = c.chartType === 'pie' || c.chartType === 'donut';
+    return [c.dimensionField, isPieDonut ? undefined : c.seriesField].filter((f): f is string => !!f);
+  }
+  if (state.type === 'TABLE') {
+    const t = state.table;
+    return t.tableMode === 'raw'
+      ? t.raw.columns
+      : [...t.agg.rows, ...t.agg.columns].map((g) => g.field).filter((f): f is string => !!f);
+  }
+  return [];
+}
+
+/**
+ * Billing cycles differ per account, so a billing-cycle filter or grouping needs exactly one
+ * single-value filter on the datasource's account field (the server enforces the same rule).
+ */
+function billingCycleErrors(state: BuilderState, catalog: DatasourceCatalog): string[] {
+  const cycleOps = catalog.operators.date.cycle ?? [];
+  const usesCycle =
+    state.filters.some((f) => cycleOps.includes(f.operator)) ||
+    groupedFieldNames(state).some((name) => {
+      const field = catalog.fields.find((f) => f.name === name);
+      return !!field?.billingCycle && field.type !== 'date';
+    });
+  if (!usesCycle) return [];
+
+  const accountField = catalog.billingCycleAccountField;
+  if (!accountField) return ['Billing cycles are not available for this datasource.'];
+  const label = catalog.fields.find((f) => f.name === accountField)?.label ?? accountField;
+  const accountFilters = state.filters.filter((f) => f.field === accountField);
+  const single = (f: (typeof accountFilters)[number]) =>
+    (f.operator === 'is' && typeof f.value === 'string' && f.value !== '') ||
+    (f.operator === 'in' && Array.isArray(f.value) && f.value.length === 1);
+  if (accountFilters.length !== 1 || !single(accountFilters[0])) {
+    return [`Billing cycles differ per account: add one "${label} is …" filter.`];
+  }
+  return [];
 }
 
 export function isMinimalValid(

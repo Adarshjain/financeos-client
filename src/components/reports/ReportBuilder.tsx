@@ -56,6 +56,7 @@ export function ReportBuilder({
     return {
       fields: dsDef ? dsDef.fields : [],
       operators: catalog.operators,
+      billingCycleAccountField: dsDef?.billingCycleAccountField ?? undefined,
     };
   };
 
