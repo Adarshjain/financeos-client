@@ -4,8 +4,9 @@ import { ChevronRight } from 'lucide-react';
 
 import { StatementVerdictBadge } from '@/components/statements/StatementBadges';
 import { Button } from '@/components/ui/button';
+import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { StatementSummary } from '@/lib/statement.types';
-import { formatDate, formatMoney } from '@/lib/utils';
+import { formatMoney } from '@/lib/utils';
 
 interface StatementsMobileListProps {
   statements: StatementSummary[];
@@ -25,8 +26,11 @@ export function StatementsMobileList({
         >
           <div className="flex items-start justify-between gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-2.5">
             <div>
-              <div className="font-bold text-sm text-slate-900 dark:text-white tabular-nums">
-                {formatDate(s.periodStart)} – {formatDate(s.periodEnd)}
+              <div
+                className="font-bold text-sm text-slate-900 dark:text-white tabular-nums"
+                title={formatDateRangeFull(s.periodStart, s.periodEnd)}
+              >
+                {formatDateRange(s.periodStart, s.periodEnd)}
               </div>
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-2xs uppercase bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-500 dark:text-slate-400">

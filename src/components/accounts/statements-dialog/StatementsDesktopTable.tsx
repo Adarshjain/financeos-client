@@ -12,8 +12,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { StatementSummary } from '@/lib/statement.types';
-import { formatDate, formatMoney } from '@/lib/utils';
+import { formatMoney } from '@/lib/utils';
 
 interface StatementsDesktopTableProps {
   statements: StatementSummary[];
@@ -42,8 +43,11 @@ export function StatementsDesktopTable({
         <TableBody>
           {statements.map((s) => (
             <TableRow key={s.id}>
-              <TableCell className="font-medium whitespace-nowrap">
-                {formatDate(s.periodStart)} – {formatDate(s.periodEnd)}
+              <TableCell
+                className="font-medium whitespace-nowrap"
+                title={formatDateRangeFull(s.periodStart, s.periodEnd)}
+              >
+                {formatDateRange(s.periodStart, s.periodEnd)}
               </TableCell>
               <TableCell>
                 <span className="text-xs uppercase bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-400">

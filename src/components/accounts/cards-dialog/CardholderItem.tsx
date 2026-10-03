@@ -13,6 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, Cardholder, isCardholderClosed } from '@/lib/account.types';
+import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 
 import { RELATIONSHIP_LABELS } from './constants';
@@ -235,8 +236,11 @@ export function CardholderItem({
                   className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-200/60 dark:bg-slate-700/60 text-2xs text-slate-600 dark:text-slate-300"
                 >
                   <span className="font-mono">•••• {hp.last4}</span>
-                  <span className="text-slate-400 text-3xs">
-                    ({formatDate(hp.issuedOn)} – {formatDate(hp.closedOn)})
+                  <span
+                    className="text-slate-400 text-3xs"
+                    title={formatDateRangeFull(hp.issuedOn, hp.closedOn)}
+                  >
+                    ({formatDateRange(hp.issuedOn, hp.closedOn)})
                   </span>
                   <button
                     type="button"

@@ -8,9 +8,10 @@
 
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 
+import { formatComparedRange, formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { formatMeasureValue } from '@/lib/reports.helpers';
 import type { KpiData } from '@/lib/reports.types';
-import { cn, formatDate } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 const directionIcons = {
   up: ArrowUp,
@@ -37,14 +38,15 @@ export function KpiView({ data, className }: { data: KpiData, className?: string
 
   const comparison = data.comparison;
   const Icon = comparison ? directionIcons[comparison.direction] : null;
+  const range = data.meta.dateRange;
   const prevRange = comparison?.previousDateRange ?? null;
-  // Label the compared window when known; otherwise the generic phrase.
-  const comparedLabel = prevRange
-    ? ` vs ${formatDate(prevRange.from)} – ${formatDate(prevRange.to)}`
+  // Full dates for hovers; the visible line uses the compact labels.
+  const fullComparedLabel = prevRange
+    ? `vs ${formatDateRangeFull(prevRange.from, prevRange.to)}`
     : 'vs previous period';
-  // Surface the actual previous value on hover (e.g. "vs 1 May – 31 May: ₹-38,900").
+  // Surface the actual previous value on hover (e.g. "vs 1 May 26 – 31 May 26: ₹-38,900").
   const comparedTitle = comparison
-    ? `${comparedLabel}: ${fmt(comparison.previousValue)}`
+    ? `${fullComparedLabel}: ${fmt(comparison.previousValue)}`
     : undefined;
 
   return (
@@ -69,10 +71,16 @@ export function KpiView({ data, className }: { data: KpiData, className?: string
           </span>
         </div>
       )}
-      {data.meta.dateRange && (
-        <p className="text-xs text-slate-500">
-          {formatDate(data.meta.dateRange.from)} – {formatDate(data.meta.dateRange.to)}
-            {comparedLabel}
+      {range && (
+        <p
+          className="text-xs text-slate-500"
+          title={
+            formatDateRangeFull(range.from, range.to) +
+            (comparison ? ` ${fullComparedLabel}` : '')
+          }
+        >
+          {formatDateRange(range.from, range.to)}
+          {comparison && ` ${formatComparedRange(prevRange, range)}`}
         </p>
       )}
 
