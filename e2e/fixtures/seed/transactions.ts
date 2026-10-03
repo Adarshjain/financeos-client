@@ -1,5 +1,6 @@
 import type { components } from '../../../src/lib/api/schema.d.ts';
 import type { ApiClient } from '../api';
+import { istToday } from '../dates';
 
 export type CreateTransactionRequest = components['schemas']['CreateTransactionRequest'];
 export type UpdateTransactionRequest = components['schemas']['UpdateTransactionRequest'];
@@ -11,9 +12,7 @@ export type CategoryResponse = components['schemas']['CategoryResponse'];
 let seedCounter = 0;
 
 export function todayString(offsetDays: number = 0): string {
-  const d = new Date();
-  d.setDate(d.getDate() + offsetDays);
-  return d.toISOString().slice(0, 10);
+  return istToday(offsetDays);
 }
 
 export async function createCategory(

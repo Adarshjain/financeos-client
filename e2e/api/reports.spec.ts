@@ -1,4 +1,5 @@
 import { expectStatus } from '../fixtures/api';
+import { istNow } from '../fixtures/dates';
 import { createBankAccount, createBrokerAccount } from '../fixtures/seed/accounts';
 import {
   createDividend,
@@ -676,7 +677,7 @@ test.describe('Reports API (@api)', () => {
     test('5. Relative date operators: current_fy and prev_fy against server today', async ({
       api,
     }) => {
-      const now = new Date();
+      const now = istNow();
       const account = await createBankAccount(api, { name: `FY Test Account ${Date.now()}` });
 
       // Today is in current FY

@@ -1,5 +1,6 @@
 import type { components } from '../../../src/lib/api/schema.d.ts';
 import type { ApiClient } from '../api';
+import { istNow } from '../dates';
 import { addCardholder, createCreditCard, ensurePrimaryCardholder } from './accounts';
 import { createTransaction } from './transactions';
 
@@ -25,7 +26,7 @@ let seedCounter = 0;
 
 // Deterministic fixed past calendar month (e.g. 2 full months before current date)
 export function fixedMonth(): { from: string; to: string; year: number; month: number } {
-  const now = new Date();
+  const now = istNow();
   // 2 full calendar months prior
   const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 2, 1));
   const year = d.getUTCFullYear();

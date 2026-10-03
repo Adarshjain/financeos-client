@@ -1,4 +1,5 @@
 import { expectStatus } from '../fixtures/api';
+import { istToday } from '../fixtures/dates';
 import {
   createInstrument,
   generateIsin,
@@ -236,7 +237,7 @@ test.describe('Instruments API (@api)', () => {
       yahooSymbol: symbol,
     });
 
-    const asOfToday = new Date().toISOString().slice(0, 10);
+    const asOfToday = istToday();
     const asOfYesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
 
     // 1. Upsert manual price for yesterday

@@ -2,6 +2,7 @@ import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
+import { istToday } from '../fixtures/dates';
 import { createRewardCard, createRewardRule, fixedMonth, setRewardConfig, spend } from '../fixtures/seed/rewards';
 import { expect, test } from '../fixtures/test';
 
@@ -57,7 +58,7 @@ test.describe('Reward reports UI (@ui)', () => {
       pointsPerSlab: 2,
       pointPrecision: 0,
     });
-    await spend(api, account.id, { amount: 1000, date: new Date().toISOString().slice(0, 10) });
+    await spend(api, account.id, { amount: 1000, date: istToday() });
 
     await page.goto('/rewards');
     await expect(page.getByRole('heading', { name: 'Rewards', exact: true })).toBeVisible();

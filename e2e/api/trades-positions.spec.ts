@@ -1,4 +1,5 @@
 import { expectStatus } from '../fixtures/api';
+import { istToday } from '../fixtures/dates';
 import { createBankAccount } from '../fixtures/seed/accounts';
 import {
   createBroker,
@@ -419,7 +420,7 @@ test.describe('Trades & Positions API (@api)', () => {
       tradeDate: '2026-08-01',
     });
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = istToday();
     await setManualPrice(api, inst.id, {
       price: 888.88,
       asOf: today,

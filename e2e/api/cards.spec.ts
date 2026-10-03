@@ -1,3 +1,4 @@
+import { istToday } from '../fixtures/dates';
 import {
   addCard,
   addCardholder,
@@ -91,7 +92,7 @@ test.describe('Cards and Cardholders API (@api)', () => {
     expect(updateRes.data?.spendLimit).toBe(30000);
 
     // 4. Close cardholder
-    const today = new Date().toISOString().slice(0, 10);
+    const today = istToday();
     const closeRes = await api.POST(
       '/api/v1/accounts/{accountId}/cardholders/{cardholderId}/close',
       {

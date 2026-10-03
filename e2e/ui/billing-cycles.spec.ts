@@ -2,6 +2,7 @@ import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
+import { istToday } from '../fixtures/dates';
 import { createBankAccount, createCreditCard } from '../fixtures/seed/accounts';
 import { createTransaction } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
@@ -14,9 +15,9 @@ test.describe('Billing-cycle reports UI (@ui)', () => {
     await loginContext(context, currentUser.cookie);
   });
 
-  test('a Transactions KPI filtered to "This billing cycle" counts card spend only', async ({ page }) => {
+  test('a Transactions KPI on "This billing cycle" needs one account and then counts that card only', async ({ page }) => {
     const api = makeApi(currentUser.cookie);
-    const today = new Date().toISOString().slice(0, 10);
+    const today = istToday();
     // No statements: the card's cycle is the calendar month. The bank account has no cycle.
     const card = await createCreditCard(api, { name: 'UI Cycle Card' });
     await createTransaction(api, card.id, { amount: -1250, date: today, description: 'Cycle spend' });
@@ -37,6 +38,18 @@ test.describe('Billing-cycle reports UI (@ui)', () => {
 
     await page.getByRole('combobox').filter({ hasText: /None|Select measure/i }).first().click();
     await page.getByRole('option', { name: 'Amount' }).click();
+
+    // Billing cycles differ per account, so the builder asks for exactly one account first.
+    await expect(page.getByText(/Billing cycles differ per account/)).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Preview$|Refresh preview/i }).first()).toBeDisabled();
+
+    await page.getByRole('button', { name: /Add filter rule/i }).click();
+    await page.getByRole('combobox').filter({ hasText: 'Amount' }).last().click();
+    await page.getByRole('option', { name: 'Account', exact: true }).click();
+    await page.getByRole('combobox').filter({ hasText: 'Select option…' }).last().click();
+    await page.getByRole('option', { name: 'UI Cycle Card' }).click();
+
+    await expect(page.getByText(/Billing cycles differ per account/)).toHaveCount(0);
     await page.getByRole('button', { name: /^Preview$|Refresh preview/i }).first().click();
     await expect(page.getByText(/-?₹1,250\.00/).first()).toBeVisible();
   });
