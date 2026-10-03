@@ -484,7 +484,7 @@
 
 <h3 id="s14-notes">Notes</h3>
 <ul>
-<li><strong>Timezones</strong>: crons run in Asia/Kolkata; "today" inside handlers uses <code>LocalDate.now(zone)</code> for price code but bare <code>LocalDate.now()</code> for XIRR, reports and chat quota, which is the JVM default zone. <span class="c cy">Strongly inferred</span> UTC in production.</li>
+<li><strong>Timezones</strong>: crons run in Asia/Kolkata; "today" inside handlers uses <code>LocalDate.now(zone)</code> for price code and <code>AppTime.today()</code> (IST via <code>app.zone</code>) for every other business "today"; the production JVM itself is UTC. <span class="c cg">Fixed 2026-10-03</span></li>
 <li><strong>Tenancy on worker threads</strong>: <code>runJob</code> sets <code>UserContext</code> from the job row; cron price refresh deliberately runs without a user and touches all users' instruments; <code>GmailSyncJobHandler</code> asserts the connection belongs to the job's user.</li>
 <li><strong>Cron-global jobs</strong> (user null) are invisible and uncancellable through the API.</li>
 <li><strong>Notifications</strong>: none server-side. Client toasts on job completion; chat completion may raise a browser notification when the tab is hidden.</li>

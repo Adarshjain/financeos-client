@@ -232,7 +232,7 @@
 <tr><th>Column</th><th>Meaning</th><th>Notes</th></tr>
 <tr><td><code>type</code></td><td>DEBIT | CREDIT</td><td>Zero amount rejected on create and update</td></tr>
 <tr><td><code>amount</code> NUMBER(19,4)</td><td>Unsigned magnitude</td><td>No rounding anywhere in the module; client displays 2 dp via <code>Intl.NumberFormat('en-IN')</code></td></tr>
-<tr><td><code>transaction_date</code>, <code>settlement_date</code></td><td>LocalDate, no zone</td><td>Relative filters use <code>LocalDate.now()</code> in the JVM default zone <span class="c cy">Strongly inferred</span> UTC in prod, no TZ pin found</td></tr>
+<tr><td><code>transaction_date</code>, <code>settlement_date</code></td><td>LocalDate, no zone</td><td>Oracle <code>DATE</code>, midnight only (verified). Relative filters use <code>AppTime.today()</code> (IST via <code>app.zone</code>); production runs on UTC <span class="c cg">Fixed 2026-10-03</span></td></tr>
 <tr><td><code>source</code></td><td>manual | gmail_transaction_alert | gmail_statement | file_upload</td><td>Evolved V1→V20→V24; the report catalog still lists the dead values "gmail"/"manual"</td></tr>
 <tr><td><code>description</code> / <code>sourced_description</code></td><td>User-editable text vs the machine-extracted original</td><td>Rules match only against <code>sourced_description</code>, so manual rows are permanently outside rule matching</td></tr>
 <tr><td><code>review_type</code> + <code>transaction_review_reasons</code></td><td>NEEDS_REVIEW | AUTO_REVIEWED | MANUALLY_REVIEWED | NA and reasons UNRECONCILED | CATEGORY_UNVERIFIED | DUPLICATE_SUSPECT</td><td>Client type union still carries a dead <code>'OTHER'</code></td></tr>
@@ -356,7 +356,7 @@
 
 <h3 id="m-transactions-unk">Open questions</h3>
 <div class="qa"><b>Product</b> Should <code>is_excluded</code> affect account balances, or only rewards and analyst-authored reports?</div>
-<div class="qa"><b>Technical</b> Is the production JVM timezone pinned? If UTC, is the 5.5-hour skew on "today" filters accepted?</div>
+<div class="qa"><b>Technical</b> <s>Is the production JVM timezone pinned?</s> Answered 2026-10-03: production is UTC; "today" now comes from <code>AppTime</code> (IST).</div>
 <div class="qa"><b>Technical</b> Was the report engine's stale <code>source</code> list simply missed when the list endpoint was corrected?</div>
 <div class="qa"><b>Data</b> Do any <code>transaction_review_reasons</code> rows still hold 'OTHER'?</div>
 <div class="qa"><b>Product</b> Should a merge warn before silently dropping a link membership on the deleted side?</div>

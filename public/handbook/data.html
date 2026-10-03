@@ -411,7 +411,7 @@
 <ol class="trace">
 <li><span class="lyr">UI</span><code>KpiView</code> renders <code>data.value</code> formatted by <code>formatMeasureValue</code></li>
 <li><span class="lyr">API</span><span class="m m-post">POST</span> <code>/reports/{id}/data</code> (saved) or <code>/reports/data</code> (preview)</li>
-<li><span class="lyr">engine</span><code>ReportDataService</code> → validate → <code>KpiReportExecutor</code> → <code>TransactionQueryBuilder</code> native SQL: <code>SUM(CASE type='CREDIT' THEN amount ELSE −amount END)</code> WHERE user_id = :uid AND filters (date range from <code>DateRangeResolver</code>, inclusive both ends, JVM-zone today) → optional previous-period comparison</li>
+<li><span class="lyr">engine</span><code>ReportDataService</code> → validate → <code>KpiReportExecutor</code> → <code>TransactionQueryBuilder</code> native SQL: <code>SUM(CASE type='CREDIT' THEN amount ELSE −amount END)</code> WHERE user_id = :uid AND filters (date range from <code>DateRangeResolver</code>, inclusive both ends, IST today via <code>AppTime</code>) → optional previous-period comparison</li>
 <li><span class="lyr">source rows</span><code>transactions</code> joined to accounts, and to categories when referenced (fan-out)</li>
 </ol>
 <p><strong>Provable?</strong> Only if the definition filters <code>type = DEBIT</code> and <code>isExcluded is false</code> (neither is default), and only if no category filter fans out. A KPI filtered by two categories can double count a multi-category transaction. Chat's <code>v_chat_transactions</code> view would give a different total for the same question. <span class="c co">Low confidence for category-filtered totals</span>; high otherwise.</p>
