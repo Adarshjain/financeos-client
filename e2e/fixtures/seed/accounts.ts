@@ -1,5 +1,6 @@
 import type { components } from '../../../src/lib/api/schema.d.ts';
 import type { ApiClient } from '../api';
+import { istToday } from '../dates';
 
 export type BankAccountRequest = components['schemas']['BankAccountRequest'];
 export type BankAccountResponse = components['schemas']['BankAccountResponse'];
@@ -54,7 +55,7 @@ export async function createCreditCard(
     name: `Test Credit Card ${seedCounter}`,
     last4: '4321',
     creditLimit: 100000,
-    anniversaryDate: new Date().toISOString().slice(0, 10),
+    anniversaryDate: istToday(),
     issuer: 'HDFC',
     productName: 'Regalia',
     financialPosition: 'liability',
@@ -148,7 +149,7 @@ export async function ensurePrimaryCardholder(
 
   const body: CreateCardRequest = {
     last4,
-    issuedOn: issuedOn ?? new Date().toISOString().slice(0, 10),
+    issuedOn: issuedOn ?? istToday(),
   };
 
   const res = await api.POST('/api/v1/accounts/{accountId}/cardholders/primary', {
@@ -176,8 +177,8 @@ export async function addCardholder(
     relationship: 'SPOUSE',
     spendLimit: 50000,
     last4: '8888',
-    openedOn: new Date().toISOString().slice(0, 10),
-    issuedOn: new Date().toISOString().slice(0, 10),
+    openedOn: istToday(),
+    issuedOn: istToday(),
     ...overrides,
   };
 
@@ -204,7 +205,7 @@ export async function addCard(
 ): Promise<CardholderResponse> {
   const body: CreateCardRequest = {
     last4,
-    issuedOn: issuedOn ?? new Date().toISOString().slice(0, 10),
+    issuedOn: issuedOn ?? istToday(),
   };
 
   const res = await api.POST('/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards', {

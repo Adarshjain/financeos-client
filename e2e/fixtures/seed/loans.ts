@@ -1,5 +1,6 @@
 import type { components } from '../../../src/lib/api/schema.d.ts';
 import type { ApiClient } from '../api';
+import { istNow } from '../dates';
 
 export type CreateLoanRequest = components['schemas']['CreateLoanRequest'];
 export type UpdateLoanRequest = components['schemas']['UpdateLoanRequest'];
@@ -35,7 +36,7 @@ let seedCounter = 0;
  * Returns ISO date YYYY-MM-01 for N months ago from current system date.
  */
 export function monthsAgo(n: number): string {
-  const now = new Date();
+  const now = istNow();
   const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - n, 1));
   const year = d.getUTCFullYear();
   const month = String(d.getUTCMonth() + 1).padStart(2, '0');
@@ -46,7 +47,7 @@ export function monthsAgo(n: number): string {
  * Returns ISO date YYYY-MM-01 for N months ahead from current system date.
  */
 export function monthsAhead(n: number): string {
-  const now = new Date();
+  const now = istNow();
   const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + n, 1));
   const year = d.getUTCFullYear();
   const month = String(d.getUTCMonth() + 1).padStart(2, '0');
