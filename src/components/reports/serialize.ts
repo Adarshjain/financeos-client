@@ -295,7 +295,7 @@ function groupedFieldNames(state: BuilderState): string[] {
  * single-value filter on the datasource's account field (the server enforces the same rule).
  */
 function billingCycleErrors(state: BuilderState, catalog: DatasourceCatalog): string[] {
-  const cycleOps = catalog.operators.date.cycle ?? [];
+  const cycleOps = catalog.operators?.date?.cycle ?? [];
   const usesCycle =
     state.filters.some((f) => cycleOps.includes(f.operator)) ||
     groupedFieldNames(state).some((name) => {
