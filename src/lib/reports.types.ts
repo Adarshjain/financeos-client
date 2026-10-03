@@ -61,8 +61,9 @@ export interface FieldDefinition {
    */
   idField?: string;
   /**
-   * DATE fields only: the billing-cycle operators ("This billing cycle", "Previous billing
-   * cycle") apply — each credit card's rows are kept to that card's own cycle.
+   * Billing cycles. On a date field: the billing-cycle operators ("This billing cycle",
+   * "Previous billing cycle") apply. On a dimension: it groups by billing cycle. Either way the
+   * report must be filtered to exactly one account (`billingCycleAccountField`).
    */
   billingCycle?: boolean;
 }
@@ -82,6 +83,8 @@ export interface DatasourceDef {
   name: string;
   label: string;
   fields: FieldDefinition[];
+  /** The account field billing-cycle reports must be filtered to; absent = no billing cycles. */
+  billingCycleAccountField?: string | null;
 }
 
 /**
@@ -99,6 +102,11 @@ export interface ReportCatalog {
 export interface DatasourceCatalog {
   fields: FieldDefinition[];
   operators: OperatorCatalog;
+  /**
+   * The account field a billing-cycle report must be filtered to (one value); absent when the
+   * datasource has no billing cycles.
+   */
+  billingCycleAccountField?: string;
 }
 
 // ---------------------------------------------------------------------------

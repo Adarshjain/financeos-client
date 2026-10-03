@@ -4802,6 +4802,7 @@ export interface components {
             stacking?: "EXCLUSIVE" | "ADDITIVE" | null;
         };
         SingleDatasourceView: {
+            billingCycleAccountField: string;
             fields: components["schemas"]["FieldDef"][];
             label: string;
             name: string;
