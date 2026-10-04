@@ -250,7 +250,7 @@ describe('TransactionLinkDialog LENDING kind', () => {
     const cpCombo = screen.getByRole('combobox', { name: /Person \/ Counterparty/i });
     await waitFor(() => expect(cpCombo).toHaveTextContent('Rahul Sharma'));
     expect(screen.getByLabelText(/Amount \(₹\)/)).toHaveValue(500);
-    expect(screen.getByLabelText('Date *')).toHaveValue('2026-07-25');
+    expect(screen.getByLabelText('Date *')).toHaveValue('25/07/2026');
 
     const saveBtn = screen.getByRole('button', { name: 'Save entry' });
     await waitFor(() => expect(saveBtn).not.toBeDisabled());

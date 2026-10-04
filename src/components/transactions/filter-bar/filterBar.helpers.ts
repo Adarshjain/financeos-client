@@ -1,3 +1,4 @@
+import { isoToDisplay } from '@/components/ui/date-input';
 import { Account } from '@/lib/account.types';
 import { FilterClause } from '@/lib/reports.types';
 
@@ -26,7 +27,15 @@ export function getActiveDate(filters: FilterClause[]) {
   if (!clause) return { operator: 'all_time', label: 'All Time' };
   if (clause.operator === 'between' && clause.value && typeof clause.value === 'object') {
     const v = clause.value as { from: string; to: string };
-    return { operator: 'between', label: `${v.from} to ${v.to}`, from: v.from, to: v.to };
+    return {
+      operator: 'between',
+      label: `${isoToDisplay(v.from)} to ${isoToDisplay(v.to)}`,
+      from: v.from,
+      to: v.to,
+    };
+  }
+  if (clause.operator === 'is' && typeof clause.value === 'string') {
+    return { operator: 'is', label: isoToDisplay(clause.value), date: clause.value };
   }
   const preset = DATE_PRESETS.find((p) => p.value === clause.operator);
   return { operator: clause.operator, label: preset?.label ?? clause.operator };
@@ -78,7 +87,9 @@ export function buildActiveBadges(
       const label = preset
         ? preset.label
         : f.operator === 'between' && f.value
-        ? `${(f.value as { from: string; to: string }).from} - ${(f.value as { from: string; to: string }).to}`
+        ? `${isoToDisplay((f.value as { from: string; to: string }).from)} - ${isoToDisplay((f.value as { from: string; to: string }).to)}`
+        : f.operator === 'is' && typeof f.value === 'string'
+        ? isoToDisplay(f.value)
         : f.operator;
       list.push({
         key: 'date',

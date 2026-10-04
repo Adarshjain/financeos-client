@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { DateInput } from '@/components/ui/date-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, Cardholder } from '@/lib/account.types';
@@ -63,9 +64,8 @@ export function ReplaceCardForm({
           <Label htmlFor="rep-issued" className="text-xs">
             New Card Issued Date <span className="text-rose-500">*</span>
           </Label>
-          <Input
+          <DateInput
             id="rep-issued"
-            type="date"
             value={replaceIssuedOn}
             onChange={(e) => setReplaceIssuedOn(e.target.value)}
             required

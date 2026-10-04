@@ -3,6 +3,7 @@
 import { AlertCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { DateInput } from '@/components/ui/date-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -57,9 +58,8 @@ export function IssueCardForm({
           <Label htmlFor="issue-date" className="text-xs">
             Issued On Date <span className="text-rose-500">*</span>
           </Label>
-          <Input
+          <DateInput
             id="issue-date"
-            type="date"
             value={issuedOn}
             onChange={(e) => setIssuedOn(e.target.value)}
             required

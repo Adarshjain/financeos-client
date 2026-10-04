@@ -65,7 +65,7 @@ test.describe('Lendings UI (@ui)', () => {
     // Click "I received money (Borrowed)" radio
     await page.getByLabel('I received money (Borrowed)').check();
     await page.locator('#add-entry-form input[type="number"]').fill('15000');
-    await page.locator('#add-entry-form input[type="date"]').first().fill(monthsAgo(1));
+    await page.locator('#add-entry-form input[data-slot="date-input"]').first().fill(monthsAgo(1));
 
     await page.getByRole('button', { name: 'Add Entry' }).click();
 

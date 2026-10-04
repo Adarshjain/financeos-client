@@ -130,14 +130,14 @@ test.describe('Loans and Obligations UI (@ui)', () => {
     await page.getByRole('option', { name: 'Prepayment', exact: true }).click();
 
     await page.locator('#add-event-form input[type="number"]').fill('30000');
-    await page.locator('#add-event-form input[type="date"]').fill(monthsAgo(1));
+    await page.locator('#add-event-form input[data-slot="date-input"]').fill(monthsAgo(1));
     await page.getByRole('button', { name: 'Record Event' }).click();
 
     // 3. Add Itemized Charge
     await page.getByRole('button', { name: /Add Charge/i }).first().click();
     await expect(page.getByRole('heading', { name: 'Add Itemized Charge' })).toBeVisible();
     await page.locator('#add-charge-form input[type="number"]').fill('2000');
-    await page.locator('#add-charge-form input[type="date"]').fill(startDate);
+    await page.locator('#add-charge-form input[data-slot="date-input"]').fill(startDate);
     await page.getByRole('dialog').getByRole('button', { name: 'Add Charge' }).click();
     await expect(page.getByText('Processing Fee').first()).toBeVisible();
 

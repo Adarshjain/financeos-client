@@ -46,6 +46,7 @@ export function TransactionFilterBar({
     toggleMonitoring,
     handleDateSelect,
     handleApplyCustomDate,
+    handleApplySingleDate,
     handleAccountToggle,
     handleCategoryToggle,
     handleApplyAmount,
@@ -90,6 +91,7 @@ export function TransactionFilterBar({
           activeDate={activeDate}
           onDateSelect={handleDateSelect}
           onApplyCustomDate={handleApplyCustomDate}
+          onApplySingleDate={handleApplySingleDate}
         />
 
         {/* Account Multi-Select Popover Pill */}

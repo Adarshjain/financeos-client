@@ -1,6 +1,7 @@
 'use client';
 
 import { TransactionPicker } from '@/components/transactions/TransactionPicker';
+import { DateInput } from '@/components/ui/date-input';
 import {
   Dialog,
   DialogBody,
@@ -121,8 +122,7 @@ export function AddChargeDialog({
 
             <div className="space-y-1">
               <Label className="text-xs">Charge Date *</Label>
-              <Input
-                type="date"
+              <DateInput
                 value={chargeDate}
                 onChange={(e) => setChargeDate(e.target.value)}
                 required

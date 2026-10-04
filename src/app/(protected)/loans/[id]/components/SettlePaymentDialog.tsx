@@ -1,6 +1,7 @@
 'use client';
 
 import { TransactionPicker } from '@/components/transactions/TransactionPicker';
+import { DateInput } from '@/components/ui/date-input';
 import {
   Dialog,
   DialogBody,
@@ -59,8 +60,7 @@ export function SettlePaymentDialog({
           >
             <div className="space-y-1">
               <Label className="text-xs">Payment Date *</Label>
-              <Input
-                type="date"
+              <DateInput
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
                 required

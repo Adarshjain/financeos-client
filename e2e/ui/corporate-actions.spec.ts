@@ -74,7 +74,7 @@ test.describe('Corporate Actions UI (@ui)', () => {
     await ratioToInput.fill('2');
 
     // Fill Ex-Date
-    const exDateInput = page.locator('input[name="exDate"]');
+    const exDateInput = page.locator('#exDate');
     await exDateInput.fill('2026-06-01');
 
     // Save Corporate Action

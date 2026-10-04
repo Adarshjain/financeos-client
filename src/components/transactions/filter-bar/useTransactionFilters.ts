@@ -116,6 +116,10 @@ export function useTransactionFilters({
     setFilterClause('date', 'between', { from, to });
   };
 
+  const handleApplySingleDate = (date: string) => {
+    setFilterClause('date', 'is', date);
+  };
+
   const handleAccountToggle = (id: string) => {
     let next: string[];
     if (activeAccountIds.includes(id)) {
@@ -192,6 +196,7 @@ export function useTransactionFilters({
     toggleMonitoring,
     handleDateSelect,
     handleApplyCustomDate,
+    handleApplySingleDate,
     handleAccountToggle,
     handleCategoryToggle,
     handleApplyAmount,

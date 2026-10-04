@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
+import { DateInput, DateInputProps } from './date-input';
 import { Input } from './input';
 import { Label } from './label';
 
@@ -16,6 +17,7 @@ export function FormField({
                             error,
                             hint,
                             id,
+                            type,
                             className,
                             ...props
                           }: FormFieldProps) {
@@ -31,15 +33,28 @@ export function FormField({
   return (
     <div className={cn('space-y-1', className)}>
       {label && <Label htmlFor={fieldId}>{label}</Label>}
-      <Input
-        id={fieldId}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={error ? errorId : showHint ? hintId : undefined}
-        className={cn(
-          error && 'border-rose-300 dark:border-rose-700 focus:ring-rose-500',
-        )}
-        {...props}
-      />
+      {type === 'date' ? (
+        <DateInput
+          id={fieldId}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : showHint ? hintId : undefined}
+          className={cn(
+            error && 'border-rose-300 dark:border-rose-700 focus:ring-rose-500',
+          )}
+          {...(props as DateInputProps)}
+        />
+      ) : (
+        <Input
+          id={fieldId}
+          type={type}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : showHint ? hintId : undefined}
+          className={cn(
+            error && 'border-rose-300 dark:border-rose-700 focus:ring-rose-500',
+          )}
+          {...props}
+        />
+      )}
       {showHint && (
         <p id={hintId} className="text-sm text-muted-foreground">
           {hint}

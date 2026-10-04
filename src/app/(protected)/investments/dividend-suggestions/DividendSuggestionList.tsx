@@ -4,6 +4,7 @@ import { Check } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { DateInput } from '@/components/ui/date-input';
 import { Input } from '@/components/ui/input';
 import { DividendSuggestion } from '@/lib/types';
 import { cn, formatDate } from '@/lib/utils';
@@ -145,14 +146,15 @@ export function DividendSuggestionList({
                   <label className="text-2xs font-semibold text-slate-500 block">
                     Pay Date
                   </label>
-                  <Input
-                    type="date"
-                    value={item.payDate}
-                    onChange={(e) =>
-                      onItemChange(index, 'payDate', e.target.value)
-                    }
-                    className="h-7 w-[125px] text-xs font-medium bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
-                  />
+                  <div className="w-[125px]">
+                    <DateInput
+                      value={item.payDate}
+                      onChange={(e) =>
+                        onItemChange(index, 'payDate', e.target.value)
+                      }
+                      className="h-7 text-xs font-medium bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-1">

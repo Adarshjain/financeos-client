@@ -79,7 +79,10 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
     // installment itself when Mark Paid opened; the picker's own prefill-if-empty path is
     // exercised below in the Add Charge / Add Event dialogs, whose fields start empty).
     await expect(page.locator('#settle-payment-form input[type="number"]')).toHaveValue('10661.85');
-    await expect(page.locator('#settle-payment-form input[type="date"]')).toHaveValue(startDate);
+    // The field shows dd/mm/yyyy; startDate is ISO.
+    await expect(page.locator('#settle-payment-form input[data-slot="date-input"]')).toHaveValue(
+      startDate.split('-').reverse().join('/'),
+    );
 
     await page.getByRole('button', { name: 'Confirm Settle' }).click();
     await expect(page.getByRole('button', { name: 'Unlink' }).first()).toBeVisible();
@@ -168,7 +171,7 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
     await eventTypeSelect.click();
     await page.getByRole('option', { name: 'Prepayment', exact: true }).click();
 
-    await page.locator('#add-event-form input[type="date"]').fill(effectiveDate);
+    await page.locator('#add-event-form input[data-slot="date-input"]').fill(effectiveDate);
     await pickTransactionCandidate(page, debitDescription);
     await expect(page.locator('#add-event-form input[type="number"]')).toHaveValue('20000');
 

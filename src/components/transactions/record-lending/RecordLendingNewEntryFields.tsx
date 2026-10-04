@@ -1,5 +1,6 @@
 'use client';
 
+import { DateInput } from '@/components/ui/date-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -46,9 +47,8 @@ export function RecordLendingNewEntryFields({
           <Label htmlFor="lendingEntryDate" className="text-xs">
             Date *
           </Label>
-          <Input
+          <DateInput
             id="lendingEntryDate"
-            type="date"
             value={entryDate}
             onChange={(e) => setEntryDate(e.target.value)}
             required
@@ -61,9 +61,8 @@ export function RecordLendingNewEntryFields({
         <Label htmlFor="lendingExpDate" className="text-xs">
           Expected Return Date (Optional)
         </Label>
-        <Input
+        <DateInput
           id="lendingExpDate"
-          type="date"
           value={expectedReturnDate}
           onChange={(e) => setExpectedReturnDate(e.target.value)}
           className="h-9 text-xs"

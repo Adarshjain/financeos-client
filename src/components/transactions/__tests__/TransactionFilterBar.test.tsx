@@ -182,6 +182,80 @@ describe('TransactionFilterBar', () => {
     expect(onFiltersChange).toHaveBeenCalledWith([]);
   });
 
+  it('applies a single custom date as an `is` clause', async () => {
+    const onFiltersChange = vi.fn();
+    renderWithQuery(
+      <TransactionFilterBar appliedFilters={[]} onFiltersChange={onFiltersChange} search="" onSearchChange={vi.fn()} />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /All Time/i }));
+    expect(screen.getByRole('radio', { name: 'Single Date' })).toHaveAttribute('aria-checked', 'true');
+    const apply = screen.getByRole('button', { name: 'Apply Date' });
+    expect(apply).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText('Date'), { target: { value: '15/08/2026' } });
+    fireEvent.click(apply);
+
+    expect(onFiltersChange).toHaveBeenCalledWith([
+      { field: 'date', operator: 'is', value: '2026-08-15' },
+    ]);
+  });
+
+  it('applies a custom range as a `between` clause and blocks an inverted range', async () => {
+    const onFiltersChange = vi.fn();
+    renderWithQuery(
+      <TransactionFilterBar appliedFilters={[]} onFiltersChange={onFiltersChange} search="" onSearchChange={vi.fn()} />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /All Time/i }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Range' }));
+    const apply = screen.getByRole('button', { name: 'Apply Range' });
+
+    fireEvent.change(screen.getByLabelText('From'), { target: { value: '20/08/2026' } });
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: '10/08/2026' } });
+    expect(apply).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText('To'), { target: { value: '31/08/2026' } });
+    fireEvent.click(apply);
+
+    expect(onFiltersChange).toHaveBeenCalledWith([
+      { field: 'date', operator: 'between', value: { from: '2026-08-20', to: '2026-08-31' } },
+    ]);
+  });
+
+  it('labels an applied single date in dd/mm/yyyy and reopens on it', async () => {
+    renderWithQuery(
+      <TransactionFilterBar
+        appliedFilters={[{ field: 'date', operator: 'is', value: '2026-08-15' }]}
+        onFiltersChange={vi.fn()}
+        search=""
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Date: 15/08/2026')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /^15\/08\/2026/ }));
+    expect(screen.getByRole('radio', { name: 'Single Date' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByLabelText('Date')).toHaveValue('15/08/2026');
+  });
+
+  it('labels an applied range in dd/mm/yyyy and reopens in range mode', async () => {
+    renderWithQuery(
+      <TransactionFilterBar
+        appliedFilters={[{ field: 'date', operator: 'between', value: { from: '2026-08-01', to: '2026-08-31' } }]}
+        onFiltersChange={vi.fn()}
+        search=""
+        onSearchChange={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Date: 01/08/2026 - 31/08/2026')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /01\/08\/2026 to 31\/08\/2026/ }));
+    expect(screen.getByRole('radio', { name: 'Range' })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByLabelText('From')).toHaveValue('01/08/2026');
+    expect(screen.getByLabelText('To')).toHaveValue('31/08/2026');
+  });
+
   it('opens More Filters popover', async () => {
     const onFiltersChange = vi.fn();
 

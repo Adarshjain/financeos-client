@@ -1,5 +1,6 @@
 'use client';
 
+import { DateInput } from '@/components/ui/date-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -98,9 +99,8 @@ export function LoanFinancialFields({
           <Label htmlFor="startDate" className="text-xs">
             Disbursal Date *
           </Label>
-          <Input
+          <DateInput
             id="startDate"
-            type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             disabled={coreDisabled}
@@ -113,9 +113,8 @@ export function LoanFinancialFields({
           <Label htmlFor="firstEmiDate" className="text-xs">
             First EMI Due *
           </Label>
-          <Input
+          <DateInput
             id="firstEmiDate"
-            type="date"
             value={firstEmiDate}
             onChange={(e) => setFirstEmiDate(e.target.value)}
             disabled={coreDisabled}

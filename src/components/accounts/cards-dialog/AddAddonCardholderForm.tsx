@@ -3,6 +3,7 @@
 import { AlertCircle, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import { DateInput } from '@/components/ui/date-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -117,9 +118,8 @@ export function AddAddonCardholderForm({
           <Label htmlFor="ch-opened" className="text-xs">
             Opened On Date
           </Label>
-          <Input
+          <DateInput
             id="ch-opened"
-            type="date"
             value={openedOn}
             onChange={(e) => setOpenedOn(e.target.value)}
           />
@@ -147,9 +147,8 @@ export function AddAddonCardholderForm({
             <Label htmlFor="ch-card-issued" className="text-xs">
               Issued On Date
             </Label>
-            <Input
+            <DateInput
               id="ch-card-issued"
-              type="date"
               value={issuedOn}
               onChange={(e) => setIssuedOn(e.target.value)}
             />
