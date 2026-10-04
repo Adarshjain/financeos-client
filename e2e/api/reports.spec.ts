@@ -1088,7 +1088,7 @@ test.describe('Reports API (@api)', () => {
         definition: {
           measure: 'paidAmount',
           aggregation: 'sum',
-          filters: [{ field: 'loanId', operator: 'exact', value: homeLoan.id }],
+          filters: [{ field: 'loanName', operator: 'is', value: homeLoan.name }],
         },
       })) as any;
       expect(paymentsKpi.value).toBeCloseTo(17769.76, 1);
@@ -1100,7 +1100,7 @@ test.describe('Reports API (@api)', () => {
         definition: {
           mode: 'raw',
           columns: ['financialYear', 'loanName', 'sec24bInterest', 'sec80cPrincipal', 'sec80eInterest'],
-          filters: [{ field: 'loanId', operator: 'exact', value: homeLoan.id }],
+          filters: [{ field: 'loanName', operator: 'is', value: homeLoan.name }],
         },
       })) as any;
       expect(homeTax.rows.length).toBe(1);
@@ -1116,7 +1116,7 @@ test.describe('Reports API (@api)', () => {
         definition: {
           mode: 'raw',
           columns: ['financialYear', 'loanName', 'sec24bInterest', 'sec80cPrincipal', 'sec80eInterest'],
-          filters: [{ field: 'loanId', operator: 'exact', value: eduLoan.id }],
+          filters: [{ field: 'loanName', operator: 'is', value: eduLoan.name }],
         },
       })) as any;
       expect(eduTax.rows.length).toBe(1);
