@@ -11077,6 +11077,10 @@ export interface operations {
             query?: {
                 verified?: boolean;
                 search?: string;
+                source?: string;
+                matchType?: string;
+                applied?: boolean;
+                categoryId?: string;
                 /** @description Zero-based page index (0..N) */
                 page?: number;
                 /** @description The size of the page to be returned */

@@ -25,6 +25,7 @@ import { Category } from '@/lib/categories.types';
 import { CategoryRule, MatchType } from '@/lib/rules.types';
 
 import { MATCH_TYPE_META } from './RuleCard';
+import { RulePatternPreview } from './RulePatternPreview';
 
 export function validatePattern(
   matchType: MatchType,
@@ -134,6 +135,12 @@ export function RuleFormDialog({
                 required
               />
             </div>
+
+            <RulePatternPreview
+              matchType={matchType}
+              merchantKey={merchantKey}
+              editingRuleId={editingRule?.id}
+            />
 
             <div className="space-y-1">
               <Label htmlFor="displayName">Display Name (Optional)</Label>
