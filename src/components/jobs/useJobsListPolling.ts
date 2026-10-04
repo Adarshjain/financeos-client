@@ -8,6 +8,11 @@ import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { JobResponse, JobType } from '@/lib/types';
 
+// After a flow announces a new job, poll quickly for this long even if the list doesn't show
+// an active job yet: the refetch can race the enqueue, and otherwise the panel would sit on
+// the 30s idle interval while the job runs and finishes unseen.
+const STARTED_GRACE_MS = 20_000;
+
 interface UseJobsListPollingOptions {
   types?: JobType[];
   size?: number;
@@ -17,6 +22,7 @@ export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOption
   const queryClient = useQueryClient();
   const [expandedJobIds, setExpandedJobIds] = useState<Set<string>>(new Set());
   const prevActiveJobIdsRef = useRef<Set<string>>(new Set());
+  const lastStartedAtRef = useRef(0);
 
   const typeParam = types?.join(',');
 
@@ -41,7 +47,8 @@ export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOption
       const hasActive = jobList.some(
         (j) => j.status === 'PENDING' || j.status === 'RUNNING'
       );
-      return hasActive ? 4000 : 30000;
+      if (hasActive) return 4000;
+      return Date.now() - lastStartedAtRef.current < STARTED_GRACE_MS ? 2000 : 30000;
     },
     refetchIntervalInBackground: false,
   });
@@ -88,6 +95,7 @@ export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOption
   // Subscribe to job started event on bus
   useEffect(() => {
     return subscribeJobStarted(() => {
+      lastStartedAtRef.current = Date.now();
       queryClient.invalidateQueries({ queryKey: keys.jobs.all });
     });
   }, [queryClient]);

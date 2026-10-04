@@ -37,6 +37,7 @@ export function IngestForm({ initialAccounts }: IngestFormProps) {
     files,
     isDragActive,
     isUploading,
+    isSending,
     uploadableAccounts,
     handleDragOver,
     handleDragLeave,
@@ -141,7 +142,7 @@ export function IngestForm({ initialAccounts }: IngestFormProps) {
                   {isUploading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin text-white" />
-                      Ingesting statements via Gemini...
+                      {isSending ? 'Uploading files…' : 'Processing statements…'}
                     </>
                   ) : (
                     'Upload & Process Statements'
