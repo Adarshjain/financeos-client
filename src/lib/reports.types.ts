@@ -66,6 +66,8 @@ export interface FieldDefinition {
    * report must be filtered to exactly one account (`billingCycleAccountField`).
    */
   billingCycle?: boolean;
+  /** False for grouping/column-only fields (labels, internal ids, counters); absent = filterable. */
+  filterable?: boolean;
 }
 
 /** Operators available per field type. Date operators split absolute vs relative. */

@@ -3213,6 +3213,7 @@ export interface components {
             allowedInReports: ("KPI" | "CHART" | "TABLE")[];
             billingCycle: boolean;
             dynamic: boolean;
+            filterable: boolean;
             format: string;
             idField: string;
             label: string;
