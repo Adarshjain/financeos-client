@@ -1,6 +1,7 @@
 'use client';
 
 import { TransactionPicker } from '@/components/transactions/TransactionPicker';
+import { DateInput } from '@/components/ui/date-input';
 import {
   Dialog,
   DialogBody,
@@ -104,8 +105,7 @@ export function RecordEventDialog({
 
             <div className="space-y-1">
               <Label className="text-xs">Effective Date *</Label>
-              <Input
-                type="date"
+              <DateInput
                 value={effectiveDate}
                 onChange={(e) => setEffectiveDate(e.target.value)}
                 required

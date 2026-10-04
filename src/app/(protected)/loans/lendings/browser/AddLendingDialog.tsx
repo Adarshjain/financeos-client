@@ -1,6 +1,7 @@
 'use client';
 
 import { TransactionPicker } from '@/components/transactions/TransactionPicker';
+import { DateInput } from '@/components/ui/date-input';
 import {
   Dialog,
   DialogBody,
@@ -170,9 +171,8 @@ export function AddLendingDialog({
                 <Label htmlFor="entryDate" className="text-xs">
                   Date *
                 </Label>
-                <Input
+                <DateInput
                   id="entryDate"
-                  type="date"
                   value={entryDate}
                   onChange={(e) => setEntryDate(e.target.value)}
                   required
@@ -197,9 +197,8 @@ export function AddLendingDialog({
               <Label htmlFor="expDate" className="text-xs">
                 Expected Return Date (Optional)
               </Label>
-              <Input
+              <DateInput
                 id="expDate"
-                type="date"
                 value={expectedReturnDate}
                 onChange={(e) => setExpectedReturnDate(e.target.value)}
                 className="h-9 text-xs"

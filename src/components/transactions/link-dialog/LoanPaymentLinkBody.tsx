@@ -2,6 +2,7 @@
 
 import { Loader2 } from 'lucide-react';
 
+import { DateInput } from '@/components/ui/date-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -121,9 +122,8 @@ export function LoanPaymentLinkBody({
           <Label htmlFor="loanPaymentDate" className="text-xs">
             Payment Date *
           </Label>
-          <Input
+          <DateInput
             id="loanPaymentDate"
-            type="date"
             value={paymentDate}
             onChange={(e) => setPaymentDate(e.target.value)}
             required

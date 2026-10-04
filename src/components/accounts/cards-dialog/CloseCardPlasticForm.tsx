@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { DateInput } from '@/components/ui/date-input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/lib/account.types';
 
@@ -42,9 +42,8 @@ export function CloseCardPlasticForm({
           <Label htmlFor="plastic-close-date" className="text-xs">
             Closed On Date
           </Label>
-          <Input
+          <DateInput
             id="plastic-close-date"
-            type="date"
             value={closeDate}
             onChange={(e) => setCloseDate(e.target.value)}
           />

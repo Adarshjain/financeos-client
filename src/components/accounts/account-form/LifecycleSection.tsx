@@ -3,7 +3,7 @@
 import { RotateCw, XCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { DateInput } from '@/components/ui/date-input';
 import { Label } from '@/components/ui/label';
 import { Account } from '@/lib/account.types';
 import { formatDate } from '@/lib/utils';
@@ -90,9 +90,8 @@ export function LifecycleSection({
                   <Label htmlFor="account-close-date" className="text-2xs font-semibold text-amber-900 dark:text-amber-200">
                     Closed On Date
                   </Label>
-                  <Input
+                  <DateInput
                     id="account-close-date"
-                    type="date"
                     value={closeOnDate}
                     onChange={(e) => setCloseOnDate(e.target.value)}
                     className="h-8 text-xs bg-white dark:bg-slate-950"

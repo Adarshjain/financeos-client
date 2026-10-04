@@ -1,5 +1,6 @@
 'use client';
 
+import { DateInput } from '@/components/ui/date-input';
 import { FormField } from '@/components/ui/form-field';
 import {
   Select,
@@ -161,8 +162,7 @@ export function DividendFormFields({
 
       <div className="grid grid-cols-2 gap-3">
         <FormField label="Ex-Date">
-          <input
-            type="date"
+          <DateInput
             value={exDate}
             onChange={(e) => setExDate(e.target.value)}
             className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm"
@@ -170,8 +170,7 @@ export function DividendFormFields({
         </FormField>
 
         <FormField label="Payout / Credit Date" required>
-          <input
-            type="date"
+          <DateInput
             required
             value={payDate}
             onChange={(e) => setPayDate(e.target.value)}

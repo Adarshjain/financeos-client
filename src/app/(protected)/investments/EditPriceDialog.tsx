@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { DateInput } from '@/components/ui/date-input';
 import {
   Dialog,
   DialogBody,
@@ -141,9 +142,8 @@ export function EditPriceDialog({
               >
                 As of Date
               </Label>
-              <Input
+              <DateInput
                 id="asOf"
-                type="date"
                 value={asOf}
                 onChange={(e) => setAsOf(e.target.value)}
                 className="text-xs bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 [color-scheme:light] dark:[color-scheme:dark]"

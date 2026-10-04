@@ -1,8 +1,9 @@
 'use client';
 
-import { Calendar, Hash, Type } from 'lucide-react';
+import { Hash, Type } from 'lucide-react';
 import React from 'react';
 
+import { DateInput } from '@/components/ui/date-input';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -152,10 +153,8 @@ export function ValueEditor({
     case 'absoluteDate':
       return (
         <div className="relative">
-          <Calendar className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-          <Input
-            type="date"
-            className="pl-8 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg h-9 text-xs"
+          <DateInput
+            className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg h-9 text-xs"
             value={typeof value === 'string' ? value : ''}
             onChange={(e) => onChange(e.currentTarget.value)}
           />
@@ -170,10 +169,8 @@ export function ValueEditor({
       return (
         <div className="flex items-center gap-1.5">
           <div className="relative flex-1">
-            <Calendar className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-            <Input
-              type="date"
-              className="pl-8 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg h-9 text-xs"
+            <DateInput
+              className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg h-9 text-xs"
               value={range.from}
               onChange={(e) =>
                 onChange(dateBetween(e.currentTarget.value, range.to))
@@ -184,10 +181,8 @@ export function ValueEditor({
             to
           </span>
           <div className="relative flex-1">
-            <Calendar className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
-            <Input
-              type="date"
-              className="pl-8 bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg h-9 text-xs"
+            <DateInput
+              className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg h-9 text-xs"
               value={range.to}
               onChange={(e) =>
                 onChange(dateBetween(range.from, e.currentTarget.value))

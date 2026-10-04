@@ -2,7 +2,7 @@
 
 import { Calendar, TrendingUp } from 'lucide-react';
 
-import { Input } from '@/components/ui/input';
+import { DateInput } from '@/components/ui/date-input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -60,10 +60,9 @@ export function SyncConfigSection({
             <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
             Ingest From Date
           </Label>
-          <Input
+          <DateInput
             id="ingestFromDate"
             name="ingestFromDate"
-            type="date"
             defaultValue={defaultIngestFromDate}
             className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs h-9 [color-scheme:light] dark:[color-scheme:dark]"
           />

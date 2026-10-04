@@ -2,6 +2,7 @@
 
 import { CreditCard, Eye, EyeOff, Landmark, TrendingUp, Wallet } from 'lucide-react';
 
+import { DateInput } from '@/components/ui/date-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Account } from '@/lib/account.types';
@@ -198,10 +199,9 @@ export function AccountDetailsSection({
             <Label htmlFor="anniversaryDate" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">
               Card Anniversary Date
             </Label>
-            <Input
+            <DateInput
               id="anniversaryDate"
               name="anniversaryDate"
-              type="date"
               defaultValue={creditCard?.anniversaryDate ?? ''}
               required
               className="bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"

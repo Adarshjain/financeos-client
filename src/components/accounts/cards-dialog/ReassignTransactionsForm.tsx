@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { DateInput } from '@/components/ui/date-input';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -83,9 +83,8 @@ export function ReassignTransactionsForm({
           <Label htmlFor="reassign-from" className="text-xs">
             From Date (optional)
           </Label>
-          <Input
+          <DateInput
             id="reassign-from"
-            type="date"
             value={reattributeFrom}
             onChange={(e) => setReattributeFrom(e.target.value)}
           />
@@ -94,9 +93,8 @@ export function ReassignTransactionsForm({
           <Label htmlFor="reassign-to" className="text-xs">
             To Date (optional)
           </Label>
-          <Input
+          <DateInput
             id="reassign-to"
-            type="date"
             value={reattributeTo}
             onChange={(e) => setReattributeTo(e.target.value)}
           />
