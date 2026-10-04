@@ -59,8 +59,9 @@ export function columnsFor(catalog: DatasourceCatalog): FieldDefinition[] {
 }
 
 /** Any field can be filtered, regardless of role / allowedInReports. */
+/** Fields the filter editor offers; grouping-only fields (labels, ids, counters) are left out. */
 export function filterableFields(catalog: DatasourceCatalog): FieldDefinition[] {
-  return catalog.fields;
+  return catalog.fields.filter((f) => f.filterable !== false);
 }
 
 /**
