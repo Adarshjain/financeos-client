@@ -21,6 +21,7 @@ export function RulesBrowser() {
     searchVal,
     setSearchVal,
     activeTab,
+    filters,
     isCreateOpen,
     editingRule,
     matchesRule,
@@ -42,6 +43,8 @@ export function RulesBrowser() {
     formSubmitting,
     categories,
     handleTabChange,
+    handleFilterChange,
+    handleClearFilters,
     handlePageChange,
     handleSizeChange,
     handleCreateCategory,
@@ -57,6 +60,10 @@ export function RulesBrowser() {
     <RulesFilterBar
       activeTab={activeTab}
       onTabChange={handleTabChange}
+      filters={filters}
+      onFilterChange={handleFilterChange}
+      onClearFilters={handleClearFilters}
+      categories={categories}
       searchVal={searchVal}
       setSearchVal={setSearchVal}
       pageNumber={rules.number}
@@ -83,6 +90,11 @@ export function RulesBrowser() {
           <span>New Rule</span>
         </Button>
       </div>
+
+      {/* Desktop filter/search/pagination bar */}
+      <Card className="hidden lg:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-3">
+        {filterBar}
+      </Card>
 
       {/* Rules list content */}
       {rules.content.length === 0 ? (
@@ -112,13 +124,10 @@ export function RulesBrowser() {
 
       <JobsPanel types={['RULE_APPLY']} title="Recent rule application jobs" />
 
-      {/* Desktop filter/search/pagination bar */}
-      <Card className="hidden lg:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-3">
-        {filterBar}
-      </Card>
-
       {/* Mobile PageActionBar Integration */}
-      <PageActionBar>{filterBar}</PageActionBar>
+      <PageActionBar defaultCollapsed trigger={<span>Filters</span>}>
+        {filterBar}
+      </PageActionBar>
 
       <RuleFormDialog
         open={isCreateOpen || !!editingRule}

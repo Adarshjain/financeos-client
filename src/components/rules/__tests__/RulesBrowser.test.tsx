@@ -230,4 +230,128 @@ describe('RulesBrowser', () => {
     });
     expect(toast.success).toHaveBeenCalledWith('Category created!');
   });
+
+  it('the edit dialog previews matches for the rule pattern being edited', async () => {
+    const user = userEvent.setup();
+    mockApiGet();
+    (api.POST as ReturnType<typeof vi.fn>).mockResolvedValue({ data: pagedRules([]) });
+    renderWithQuery(<RulesBrowser />);
+    await waitFor(() => expect(screen.getByText('Swiggy')).toBeInTheDocument());
+
+    await openRuleMenu(user, 'Swiggy');
+    await user.click(await screen.findByText('Edit Rule'));
+    await screen.findByRole('dialog', { name: 'Edit Rule' });
+
+    fireEvent.click(screen.getByRole('button', { name: /Find matching transactions/i }));
+
+    await waitFor(() => {
+      expect(api.POST).toHaveBeenCalledWith('/api/v1/rules/preview-matches', {
+        params: { query: { page: 0, size: 10, sort: [] } },
+        body: { merchantKey: 'SWIGGY', matchType: 'MERCHANT_KEY' },
+      });
+    });
+    expect(await screen.findByText('No transactions match this pattern.')).toBeInTheDocument();
+  });
+
+  describe('filters', () => {
+    const DEFAULT_QUERY = { verified: false, search: undefined, page: 0, size: 50, sort: [] };
+
+    async function renderLoaded() {
+      mockApiGet();
+      renderWithQuery(<RulesBrowser />);
+      await waitFor(() => expect(screen.getByText('Swiggy')).toBeInTheDocument());
+    }
+
+    function pickOption(filterLabel: string, optionText: string) {
+      fireEvent.click(screen.getByRole('combobox', { name: filterLabel }));
+      fireEvent.click(within(screen.getByRole('listbox')).getByText(optionText));
+    }
+
+    function expectLastQuery(query: Record<string, unknown>) {
+      const calls = (api.GET as ReturnType<typeof vi.fn>).mock.calls.filter(([url]) => url === '/api/v1/rules');
+      expect(calls[calls.length - 1][1]).toEqual({ params: { query } });
+    }
+
+    it('places the filter bar above the rule list', async () => {
+      await renderLoaded();
+      const tab = screen.getByRole('button', { name: 'Unverified' });
+      const firstRule = screen.getByText('Swiggy');
+      expect(tab.compareDocumentPosition(firstRule) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('source filter sends source=LLM / USER', async () => {
+      await renderLoaded();
+      pickOption('Source', 'LLM-generated');
+      await waitFor(() => expectLastQuery({ ...DEFAULT_QUERY, source: 'LLM' }));
+      pickOption('Source', 'Created by you');
+      await waitFor(() => expectLastQuery({ ...DEFAULT_QUERY, source: 'USER' }));
+    });
+
+    it('match type filter sends the chosen match type', async () => {
+      await renderLoaded();
+      pickOption('Match type', 'Regex');
+      await waitFor(() => expectLastQuery({ ...DEFAULT_QUERY, matchType: 'REGEX' }));
+    });
+
+    it('category filter lists the user categories and sends categoryId', async () => {
+      await renderLoaded();
+      fireEvent.click(screen.getByRole('combobox', { name: 'Category' }));
+      const listbox = within(screen.getByRole('listbox'));
+      expect(listbox.getByText('Any category')).toBeInTheDocument();
+      expect(listbox.getByText('Food')).toBeInTheDocument();
+      fireEvent.click(listbox.getByText('Groceries'));
+      await waitFor(() => expectLastQuery({ ...DEFAULT_QUERY, categoryId: 'c2' }));
+    });
+
+    it('usage filter sends applied=true / false', async () => {
+      await renderLoaded();
+      pickOption('Usage', 'Never used');
+      await waitFor(() => expectLastQuery({ ...DEFAULT_QUERY, applied: false }));
+      pickOption('Usage', 'Used at least once');
+      await waitFor(() => expectLastQuery({ ...DEFAULT_QUERY, applied: true }));
+    });
+
+    it('sort sends a single Spring sort param', async () => {
+      await renderLoaded();
+      pickOption('Sort', 'Most used');
+      await waitFor(() => expectLastQuery({ ...DEFAULT_QUERY, sort: ['appliedCount,desc'] }));
+    });
+
+    it('filters combine with the verified tab', async () => {
+      await renderLoaded();
+      fireEvent.click(screen.getByRole('button', { name: 'All' }));
+      pickOption('Source', 'LLM-generated');
+      pickOption('Usage', 'Never used');
+      await waitFor(() =>
+        expectLastQuery({ ...DEFAULT_QUERY, verified: undefined, source: 'LLM', applied: false })
+      );
+    });
+
+    it('changing a filter resets to page 0', async () => {
+      mockApiGet(pagedRules([rule1, rule2], { totalElements: 120, totalPages: 3, last: false }));
+      renderWithQuery(<RulesBrowser />);
+      await waitFor(() => expect(screen.getByText('Swiggy')).toBeInTheDocument());
+
+      fireEvent.click(screen.getByRole('button', { name: /next/i }));
+      await waitFor(() => expectLastQuery({ ...DEFAULT_QUERY, page: 1 }));
+
+      pickOption('Source', 'LLM-generated');
+      await waitFor(() => expectLastQuery({ ...DEFAULT_QUERY, source: 'LLM', page: 0 }));
+    });
+
+    it('clear filters is disabled until a filter is set, then restores the default query', async () => {
+      await renderLoaded();
+      const clear = screen.getByRole('button', { name: /Clear filters/i });
+      expect(clear).toBeDisabled();
+
+      pickOption('Match type', 'Exact match');
+      pickOption('Sort', 'Newest');
+      await waitFor(() => expectLastQuery({ ...DEFAULT_QUERY, matchType: 'EXACT', sort: ['createdAt,desc'] }));
+      expect(clear).toBeEnabled();
+
+      fireEvent.click(clear);
+      await waitFor(() => expectLastQuery(DEFAULT_QUERY));
+      expect(clear).toBeDisabled();
+    });
+  });
 });

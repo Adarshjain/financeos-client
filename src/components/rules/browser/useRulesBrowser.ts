@@ -14,8 +14,10 @@ import { keys } from '@/lib/query/keys';
 import type { CategoryRule, MatchType, PagedRules } from '@/lib/rules.types';
 import { toastError } from '@/lib/toastError';
 
-import { RULES_PAGE_SIZE } from './constants';
+import { DEFAULT_RULE_FILTERS, type RuleFilters,RULES_PAGE_SIZE } from './constants';
 import { validatePattern } from './RuleFormDialog';
+
+const toParam = (value: string) => (value === 'all' ? undefined : value);
 
 const EMPTY_RULES_PAGE: PagedRules = {
   content: [],
@@ -28,8 +30,6 @@ const EMPTY_RULES_PAGE: PagedRules = {
   empty: true,
 };
 
-
-
 export function useRulesBrowser() {
   const queryClient = useQueryClient();
 
@@ -37,6 +37,7 @@ export function useRulesBrowser() {
   const [search, setSearchVal] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [activeTab, setActiveTab] = useState('false');
+  const [filters, setFilters] = useState<RuleFilters>(DEFAULT_RULE_FILTERS);
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(RULES_PAGE_SIZE);
 
@@ -67,9 +68,16 @@ export function useRulesBrowser() {
   const isVerifiedParam: boolean | undefined =
     activeTab === 'true' ? true : activeTab === 'all' ? undefined : false;
 
+  // Unset filters stay `undefined` so the default view's query key matches
+  // the one rules/page.tsx prefetches.
   const listParams = {
     verified: isVerifiedParam,
     search: debouncedSearch || undefined,
+    source: toParam(filters.source) as 'LLM' | 'USER' | undefined,
+    matchType: toParam(filters.matchType) as MatchType | undefined,
+    categoryId: toParam(filters.categoryId),
+    applied: filters.applied === 'all' ? undefined : filters.applied === 'true',
+    sort: toParam(filters.sort),
     page,
     size,
   };
@@ -77,8 +85,9 @@ export function useRulesBrowser() {
   const rulesQuery = useQuery({
     queryKey: keys.rules.list(listParams),
     queryFn: async () => {
+      const { sort, ...query } = listParams;
       const { data } = await api.GET('/api/v1/rules', {
-        params: { query: { ...listParams, sort: [] } },
+        params: { query: { ...query, sort: sort ? [sort] : [] } },
       });
       return data as PagedRules;
     },
@@ -149,6 +158,16 @@ export function useRulesBrowser() {
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
+    setPage(0);
+  };
+
+  const handleFilterChange = <K extends keyof RuleFilters>(key: K, value: RuleFilters[K]) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setPage(0);
+  };
+
+  const handleClearFilters = () => {
+    setFilters(DEFAULT_RULE_FILTERS);
     setPage(0);
   };
 
@@ -246,6 +265,7 @@ export function useRulesBrowser() {
     searchVal: search,
     setSearchVal,
     activeTab,
+    filters,
     isCreateOpen,
     editingRule,
     matchesRule,
@@ -267,6 +287,8 @@ export function useRulesBrowser() {
     formSubmitting: createRuleMutation.isPending || updateRuleMutation.isPending,
     categories,
     handleTabChange,
+    handleFilterChange,
+    handleClearFilters,
     handlePageChange,
     handleSizeChange,
     handleCreateCategory,
