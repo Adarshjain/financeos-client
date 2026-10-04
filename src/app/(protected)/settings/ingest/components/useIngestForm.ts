@@ -38,6 +38,8 @@ export function useIngestForm({ accounts }: UseIngestFormProps) {
     } else {
       toast.info('Ingestion cancelled.');
     }
+    // The toast points at the jobs panel, so refresh it now rather than on its next poll tick.
+    qc.invalidateQueries({ queryKey: keys.jobs.all });
     setActiveJobId(null);
   });
 
@@ -52,7 +54,11 @@ export function useIngestForm({ accounts }: UseIngestFormProps) {
         .then((r) => r.data!),
   });
 
-  const isUploading = Boolean(activeJobId) && isPolling;
+  // Two busy phases: the multipart POST itself (can take a while for large PDFs), then the
+  // background job. Both lock the form so the user always sees that something is happening.
+  const isSending = ingestMutation.isPending;
+  const isProcessing = Boolean(activeJobId) && isPolling;
+  const isUploading = isSending || isProcessing;
 
   // Filter accounts to standard bank/credit cards for transaction statement upload (excluding closed)
   const uploadableAccounts = accounts.filter(
@@ -136,6 +142,7 @@ export function useIngestForm({ accounts }: UseIngestFormProps) {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (isUploading) return;
     if (!selectedAccountId) {
       toast.error('Please select an account first.');
       return;
@@ -155,6 +162,9 @@ export function useIngestForm({ accounts }: UseIngestFormProps) {
       return;
     }
 
+    const toastId = toast.loading(
+      `Uploading ${files.length} file${files.length === 1 ? '' : 's'}…`
+    );
     try {
       const response = await ingestMutation.mutateAsync({
         accountId: selectedAccountId,
@@ -165,9 +175,14 @@ export function useIngestForm({ accounts }: UseIngestFormProps) {
         setActiveJobId(jobId);
         emitJobStarted(jobId);
         setFiles([]);
-        toast.info('Ingestion job started in background.');
+        toast.info('Upload complete — processing in the background.', {
+          id: toastId,
+        });
+      } else {
+        toast.dismiss(toastId);
       }
     } catch (err: unknown) {
+      toast.dismiss(toastId);
       toastError(err, 'Failed to start ingestion job');
     }
   };
@@ -178,6 +193,7 @@ export function useIngestForm({ accounts }: UseIngestFormProps) {
     files,
     isDragActive,
     isUploading,
+    isSending,
     uploadableAccounts,
     handleDragOver,
     handleDragLeave,

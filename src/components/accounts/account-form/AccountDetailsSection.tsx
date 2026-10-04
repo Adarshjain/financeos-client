@@ -152,29 +152,7 @@ export function AccountDetailsSection({
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="statementPassword" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">
-              Statement Password (Optional)
-            </Label>
-            <div className="relative">
-              <Input
-                id="statementPassword"
-                name="statementPassword"
-                autoComplete="off"
-                type="text"
-                style={{ WebkitTextSecurity: showPassword ? 'none' : 'disk' } as React.CSSProperties}
-                placeholder="Enter password if PDF statement is protected"
-                className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs [&::placeholder]:[text-security:none]"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
+          <StatementPasswordField showPassword={showPassword} setShowPassword={setShowPassword} />
         </>
       ) : (
         <>
@@ -233,31 +211,48 @@ export function AccountDetailsSection({
             </p>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="statementPassword" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">
-              Statement Password (Optional)
-            </Label>
-            <div className="relative">
-              <Input
-                id="statementPassword"
-                name="statementPassword"
-                autoComplete="off"
-                type="text"
-                style={{ WebkitTextSecurity: showPassword ? 'none' : 'disk' } as React.CSSProperties}
-                placeholder="Enter password if PDF statement is protected"
-                className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs [&::placeholder]:[text-security:none]"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
+          <StatementPasswordField showPassword={showPassword} setShowPassword={setShowPassword} />
         </>
       )}
+    </div>
+  );
+}
+
+interface StatementPasswordFieldProps {
+  showPassword: boolean;
+  setShowPassword: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+// A real password input (masked by default in every browser). `new-password` plus the
+// password-manager ignore attributes keep saved login credentials from being autofilled here.
+function StatementPasswordField({ showPassword, setShowPassword }: StatementPasswordFieldProps) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor="statementPassword" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">
+        Statement Password (Optional)
+      </Label>
+      <div className="relative">
+        <Input
+          id="statementPassword"
+          name="statementPassword"
+          type={showPassword ? 'text' : 'password'}
+          autoComplete="new-password"
+          data-1p-ignore
+          data-lpignore="true"
+          data-bwignore
+          data-form-type="other"
+          placeholder="Enter password if PDF statement is protected"
+          className="pr-10 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword((prev) => !prev)}
+          aria-label={showPassword ? 'Hide statement password' : 'Show statement password'}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none"
+        >
+          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+        </button>
+      </div>
     </div>
   );
 }
