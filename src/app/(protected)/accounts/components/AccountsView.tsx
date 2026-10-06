@@ -69,7 +69,7 @@ export function AccountsView() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 gap-6">
       {/* Bank Accounts Section */}
       <div className="space-y-1">
         <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800/60">
@@ -82,7 +82,7 @@ export function AccountsView() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-2">
+        <div className="grid grid-cols-1 gap-2">
           {bankAccounts.map((account) => (
             <BankAccountTile key={account.id} account={account} />
           ))}
@@ -113,7 +113,7 @@ export function AccountsView() {
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-2">
+        <div className="grid grid-cols-1 gap-2">
           {creditCards.map((account) => (
             <CreditCardTile key={account.id} account={account} />
           ))}
@@ -141,7 +141,7 @@ export function AccountsView() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-2">
+        <div className="grid grid-cols-1 gap-2">
           {brokerAccounts.map((account) => (
             <BrokerTile key={account.id} account={account} />
           ))}
@@ -169,7 +169,7 @@ export function AccountsView() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-2">
+        <div className="grid grid-cols-1 gap-2">
           {genericAccounts.map((account) => (
             <GenericAccountTile key={account.id} account={account} />
           ))}
