@@ -16,7 +16,7 @@ export default async function AccountsPage() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="p-4 pb-24 space-y-3 max-w-7xl mx-auto">
+      <div className="p-4 pb-24 space-y-3 max-w-[550px] mx-auto">
         {/* Header Dashboard section */}
         <div className="flex justify-between items-center gap-4">
           <div className="space-y-1">
