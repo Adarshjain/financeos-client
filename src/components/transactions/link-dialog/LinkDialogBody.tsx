@@ -4,9 +4,11 @@ import type { Account } from '@/lib/account.types';
 
 import type { UseRecordLendingResult } from '../record-lending/useRecordLending';
 import { CandidateSearchList } from './CandidateSearchList';
+import { DividendLinkBody } from './DividendLinkBody';
 import { LendingLinkBody } from './LendingLinkBody';
 import { LoanPaymentLinkBody } from './LoanPaymentLinkBody';
 import { SelectedMembersList } from './SelectedMembersList';
+import type { UseDividendLinkResult } from './useDividendLink';
 import type { UseLoanPaymentLinkResult } from './useLoanPaymentLink';
 import type { UseTransactionLinkResult } from './useTransactionLink';
 
@@ -14,11 +16,12 @@ interface LinkDialogBodyProps {
   linkState: UseTransactionLinkResult;
   lending: UseRecordLendingResult;
   loanPayment: UseLoanPaymentLinkResult;
+  dividend: UseDividendLinkResult;
   accounts: Account[];
 }
 
-/** Routes the dialog body to the txn-link UI or one of the two record-kind bodies. */
-export function LinkDialogBody({ linkState, lending, loanPayment, accounts }: LinkDialogBodyProps) {
+/** Routes the dialog body to the txn-link UI or one of the record-kind bodies. */
+export function LinkDialogBody({ linkState, lending, loanPayment, dividend, accounts }: LinkDialogBodyProps) {
   const { kind, subjectTransaction } = linkState;
 
   if (kind === 'LENDING') {
@@ -67,6 +70,13 @@ export function LinkDialogBody({ linkState, lending, loanPayment, accounts }: Li
         amount={loanPayment.amount}
         setAmount={loanPayment.setAmount}
       />
+    );
+  }
+
+  if (kind === 'DIVIDEND') {
+    if (!subjectTransaction) return null;
+    return (
+      <DividendLinkBody transaction={subjectTransaction} accounts={accounts} dividend={dividend} />
     );
   }
 

@@ -31,6 +31,8 @@ import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { Dividend, DividendType } from '@/lib/types';
 
+import { DividendReceiptSection } from './dividend-receipts/DividendReceiptSection';
+
 interface EditDividendDialogProps {
   dividend: Dividend;
   trigger?: React.ReactNode;
@@ -248,6 +250,14 @@ export function EditDividendDialog({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optional notes"
+            />
+
+            <DividendReceiptSection
+              dividend={dividend}
+              amount={String(amount)}
+              tds={String(tds)}
+              onUseTds={setTds}
+              onSuccess={onSuccess}
             />
 
             <div className="pt-2 border-t border-slate-100 dark:border-slate-800">

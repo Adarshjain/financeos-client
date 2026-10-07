@@ -126,6 +126,7 @@ import type {
   CreateInstrumentRequest,
   CreateInvestmentTransactionRequest,
   Dividend,
+  DividendReceiptSummary,
   DividendSuggestionsResponse,
   DividendSummary,
   DividendType,
@@ -752,6 +753,12 @@ export const dividendsApi = {
       params: { query: { holdingId: filters?.holdingId, brokerAccountId: filters?.brokerAccountId, instrumentId: filters?.instrumentId, type: filters?.type } },
     });
     return data! as DividendSummary;
+  },
+  receiptSummary: async (filters?: { holdingId?: string; brokerAccountId?: string; instrumentId?: string; type?: DividendType }): Promise<DividendReceiptSummary> => {
+    const { data } = await serverApi.GET('/api/v1/investments/dividends/receipts/summary', {
+      params: { query: { holdingId: filters?.holdingId, brokerAccountId: filters?.brokerAccountId, instrumentId: filters?.instrumentId, type: filters?.type } },
+    });
+    return data! as DividendReceiptSummary;
   },
   create: async (data: CreateDividendRequest): Promise<Dividend> => investmentsApi.createDividend(data),
   update: async (id: string, data: UpdateDividendRequest): Promise<Dividend> => investmentsApi.updateDividend(id, data),

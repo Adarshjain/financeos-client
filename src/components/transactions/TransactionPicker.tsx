@@ -38,6 +38,9 @@ interface TransactionPickerProps {
    *  which only makes sense under the default lending (LENDING-shared-ok)
    *  rule. */
   excludeAnyObligationRef?: boolean;
+  /** Which obligation family may already share the picked row (default
+   *  LENDING, i.e. split bills). Pass 'DIVIDEND' when linking a dividend. */
+  shareableKind?: 'LENDING' | 'DIVIDEND';
   /** Overrides the default direction-derived empty-state hint text. */
   ruleHint?: string;
   suggestAmount?: number | null;
@@ -63,6 +66,7 @@ export function TransactionPicker({
   direction,
   type,
   excludeAnyObligationRef = false,
+  shareableKind = 'LENDING',
   ruleHint: ruleHintProp,
   suggestAmount,
   suggestDate,
@@ -88,6 +92,7 @@ export function TransactionPicker({
     suggestDate,
     excludeIds: effectiveExcludeIds,
     excludeAnyObligationRef,
+    shareableKind,
     active: showSearch && !disabled,
   });
 
@@ -191,7 +196,9 @@ export function TransactionPicker({
                   </div>
                   {!excludeAnyObligationRef && splitCount > 0 && (
                     <span className="text-2xs text-indigo-500 dark:text-indigo-400">
-                      also linked to {splitCount} ledger entr{splitCount === 1 ? 'y' : 'ies'}
+                      {shareableKind === 'DIVIDEND'
+                        ? `also linked to ${splitCount} dividend${splitCount === 1 ? '' : 's'}`
+                        : `also linked to ${splitCount} ledger entr${splitCount === 1 ? 'y' : 'ies'}`}
                     </span>
                   )}
                 </div>

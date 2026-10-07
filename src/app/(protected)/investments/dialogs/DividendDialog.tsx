@@ -27,6 +27,9 @@ export interface DividendDialogProps {
   positions?: Position[];
   initialBrokerAccountId?: string;
   initialInstrumentId?: string;
+  initialAmount?: number;
+  initialPayDate?: string;
+  linkTransactionId?: string;
   trigger?: React.ReactNode;
   onSuccess?: () => void;
 }
@@ -38,6 +41,9 @@ export function DividendDialog({
   positions = [],
   initialBrokerAccountId,
   initialInstrumentId,
+  initialAmount,
+  initialPayDate,
+  linkTransactionId,
   trigger,
   onSuccess,
 }: DividendDialogProps) {
@@ -73,6 +79,9 @@ export function DividendDialog({
     positions,
     initialBrokerAccountId,
     initialInstrumentId,
+    initialAmount,
+    initialPayDate,
+    linkTransactionId,
     open,
     setOpen,
     onSuccess,

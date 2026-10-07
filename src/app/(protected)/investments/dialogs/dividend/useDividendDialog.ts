@@ -19,6 +19,11 @@ interface UseDividendDialogProps {
   positions?: Position[];
   initialBrokerAccountId?: string;
   initialInstrumentId?: string;
+  /** Create-mode prefill (e.g. from an unrecorded bank credit). */
+  initialAmount?: number;
+  initialPayDate?: string;
+  /** After a successful create, link the new dividend to this bank credit. */
+  linkTransactionId?: string;
   open: boolean;
   setOpen: (open: boolean) => void;
   onSuccess?: () => void;
@@ -31,6 +36,9 @@ export function useDividendDialog({
   positions = [],
   initialBrokerAccountId,
   initialInstrumentId,
+  initialAmount,
+  initialPayDate,
+  linkTransactionId,
   open,
   setOpen,
   onSuccess,
@@ -67,7 +75,11 @@ export function useDividendDialog({
   );
   const [type, setType] = useState<DividendType>(dividend?.type || 'dividend');
   const [amount, setAmount] = useState(
-    dividend?.amount ? String(dividend.amount) : ''
+    dividend?.amount
+      ? String(dividend.amount)
+      : initialAmount != null
+        ? String(initialAmount)
+        : ''
   );
   const [perUnit, setPerUnit] = useState(
     dividend?.perUnit ? String(dividend.perUnit) : ''
@@ -75,7 +87,7 @@ export function useDividendDialog({
   const [tds, setTds] = useState(dividend?.tds ? String(dividend.tds) : '');
   const [exDate, setExDate] = useState(dividend?.exDate || '');
   const [payDate, setPayDate] = useState(
-    dividend?.payDate || toCalendarDate(new Date())
+    dividend?.payDate || initialPayDate || toCalendarDate(new Date())
   );
   const [notes, setNotes] = useState(dividend?.notes || '');
 
@@ -98,6 +110,8 @@ export function useDividendDialog({
           initialBrokerAccountId || brokerAccounts[0]?.id || ''
         );
         setInstrumentId(initialInstrumentId || '');
+        if (initialAmount != null) setAmount(String(initialAmount));
+        if (initialPayDate) setPayDate(initialPayDate);
       }
     }
   }
@@ -124,6 +138,7 @@ export function useDividendDialog({
     }
 
     try {
+      let linked = false;
       if (isEdit && dividend) {
         const req: UpdateDividendRequest = {
           type,
@@ -147,10 +162,32 @@ export function useDividendDialog({
           payDate,
           notes: notes.trim() || undefined,
         };
-        await createMutation.mutateAsync(req);
+        const created = await createMutation.mutateAsync(req);
+        if (linkTransactionId) {
+          // The dividend exists now; a failed link must not read as a failed create.
+          try {
+            await api.PUT('/api/v1/investments/dividends/{id}/transaction', {
+              params: { path: { id: created.id } },
+              body: { transactionId: linkTransactionId, updateTds: false },
+            });
+            linked = true;
+            await Promise.all([
+              qc.invalidateQueries({ queryKey: keys.investments.all }),
+              qc.invalidateQueries({ queryKey: keys.transactions.all }),
+            ]);
+          } catch (linkErr) {
+            toastError(linkErr, 'Dividend recorded, but linking the bank credit failed');
+          }
+        }
       }
 
-      toast.success(isEdit ? 'Dividend updated' : 'Dividend recorded');
+      toast.success(
+        isEdit
+          ? 'Dividend updated'
+          : linked
+            ? 'Dividend recorded and linked'
+            : 'Dividend recorded'
+      );
       setOpen(false);
       onSuccess?.();
     } catch (err) {

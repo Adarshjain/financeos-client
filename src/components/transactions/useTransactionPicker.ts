@@ -29,6 +29,11 @@ interface UseTransactionPickerProps {
    *  the default lending rule, which still allows a row already shared
    *  across other LENDING refs (split bills). */
   excludeAnyObligationRef?: boolean;
+  /** Which obligation family may already share the row. Lending entries may
+   *  share a credit/debit (split bills); dividend rows may share a credit (an
+   *  interim + special payout paid together). Anything referenced by another
+   *  family is off-limits. Ignored when `excludeAnyObligationRef` is set. */
+  shareableKind?: 'LENDING' | 'DIVIDEND';
   /** Only fetch/debounce while the search UI is actually visible. */
   active: boolean;
 }
@@ -40,6 +45,7 @@ export function useTransactionPicker({
   suggestDate,
   excludeIds,
   excludeAnyObligationRef = false,
+  shareableKind = 'LENDING',
   active,
 }: UseTransactionPickerProps) {
   const [search, setSearch] = React.useState('');
@@ -120,9 +126,10 @@ export function useTransactionPicker({
         // Loan links are exclusive — ANY obligation ref (loan or lending)
         // disqualifies the row.
         if (t.obligationRefs && t.obligationRefs.length > 0) return false;
-      } else if (t.obligationRefs?.some((r) => r.kind !== 'LENDING')) {
-        // A transaction already claimed by a LOAN-side obligation is off-limits;
-        // one already shared across other LENDING entries (split bills) is fine.
+      } else if (t.obligationRefs?.some((r) => r.kind !== shareableKind)) {
+        // A transaction already claimed by another family (loan rows, or
+        // lending vs dividend) is off-limits; one already shared across other
+        // rows of the same shareable family is fine.
         return false;
       }
       return true;
@@ -144,7 +151,7 @@ export function useTransactionPicker({
       }
       return b.date.localeCompare(a.date);
     });
-  }, [results, excludeIds, suggestAmount, suggestDate, excludeAnyObligationRef]);
+  }, [results, excludeIds, suggestAmount, suggestDate, excludeAnyObligationRef, shareableKind]);
 
   return { search, setSearch, loading, candidates };
 }

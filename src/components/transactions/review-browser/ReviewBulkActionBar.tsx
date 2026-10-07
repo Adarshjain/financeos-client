@@ -55,7 +55,7 @@ export function ReviewBulkActionBar({
           title="Delete Transactions?"
           description={`Are you sure you want to permanently delete these ${selectedCount} transaction${selectedCount === 1 ? '' : 's'}? This action is permanent and cannot be undone.${
             obligationLinkedCount > 0
-              ? ` ${obligationLinkedCount} of these are linked to loan/lending records; those records will stay but lose the link.`
+              ? ` ${obligationLinkedCount} of these are linked to loan, lending or dividend records; those records will stay but lose the link.`
               : ''
           }`}
           primaryActionText={batchActionLoading ? 'Deleting...' : 'Delete'}

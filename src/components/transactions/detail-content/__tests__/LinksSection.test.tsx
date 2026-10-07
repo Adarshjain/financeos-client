@@ -72,7 +72,7 @@ function Harness({
   refs?: ObligationRef[];
   onCloseAndRefresh?: () => void;
 }) {
-  const { unlinkingId, handleUnlink, handleUnlinkLoanPayment } = useObligationRefs(onCloseAndRefresh);
+  const { unlinkingId, handleUnlink, handleUnlinkLoanPayment, handleUnlinkDividend } = useObligationRefs(onCloseAndRefresh);
 
   return (
     <LinksSection
@@ -88,6 +88,7 @@ function Harness({
       unlinkingObligationId={unlinkingId}
       onUnlinkLending={handleUnlink}
       onUnlinkLoanPayment={handleUnlinkLoanPayment}
+      onUnlinkDividend={handleUnlinkDividend}
     />
   );
 }
@@ -116,14 +117,14 @@ describe('LinksSection', () => {
     expect(screen.getByText('Transfer Counterpart')).toBeInTheDocument();
   });
 
-  it('shows a "Ledger & loans" group with ref labels, amounts, and an Open link', () => {
+  it('shows a "Ledger, loans & dividends" group with ref labels, amounts, and an Open link', () => {
     renderWithQuery(
       <Harness
         refs={[{ kind: 'LENDING', id: 'r1', parentId: 'cp-1', label: 'Rahul Sharma', amount: 500 }]}
       />,
     );
 
-    expect(screen.getByText('Ledger & loans')).toBeInTheDocument();
+    expect(screen.getByText('Ledger, loans & dividends')).toBeInTheDocument();
     expect(screen.getByText('Rahul Sharma')).toBeInTheDocument();
     expect(screen.getByText('₹500.00')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Open/i })).toHaveAttribute(

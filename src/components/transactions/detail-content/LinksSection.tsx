@@ -21,11 +21,12 @@ interface LinksSectionProps {
   unlinkingObligationId: string | null;
   onUnlinkLending: (lendingId: string) => void;
   onUnlinkLoanPayment: (loanId: string, paymentId: string) => void;
+  onUnlinkDividend: (dividendId: string) => void;
 }
 
 /**
  * The single "Links" entry point for everything that explains a transaction:
- * transaction<->transaction links and ledger/loan obligation refs, grouped
+ * transaction<->transaction links and ledger/loan/dividend obligation refs, grouped
  * under one header instead of two separate sections.
  */
 export function LinksSection({
@@ -41,6 +42,7 @@ export function LinksSection({
   unlinkingObligationId,
   onUnlinkLending,
   onUnlinkLoanPayment,
+  onUnlinkDividend,
 }: LinksSectionProps) {
   const hasTxnLinks = links.length > 0 || Boolean(linksError);
   const hasObligationRefs = obligationRefs.length > 0;
@@ -75,13 +77,14 @@ export function LinksSection({
       {hasObligationRefs && (
         <div className="space-y-2">
           <span className="text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1">
-            Ledger & loans
+            Ledger, loans & dividends
           </span>
           <ObligationRefsSection
             refs={obligationRefs}
             unlinkingId={unlinkingObligationId}
             onUnlinkLending={onUnlinkLending}
             onUnlinkLoanPayment={onUnlinkLoanPayment}
+            onUnlinkDividend={onUnlinkDividend}
             hideHeader
           />
         </div>

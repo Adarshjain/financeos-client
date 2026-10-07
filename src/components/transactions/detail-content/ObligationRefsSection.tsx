@@ -5,6 +5,7 @@ import Link from 'next/link';
 
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Button } from '@/components/ui/button';
+import { obligationRefHref } from '@/lib/obligationRefHref';
 import type { ObligationRef } from '@/lib/transaction.types';
 import { formatMoney } from '@/lib/utils';
 
@@ -13,6 +14,7 @@ interface ObligationRefsSectionProps {
   unlinkingId: string | null;
   onUnlinkLending: (lendingId: string) => void;
   onUnlinkLoanPayment: (loanId: string, paymentId: string) => void;
+  onUnlinkDividend: (dividendId: string) => void;
   /** Omit the section's own header when it's nested inside a shared "Links" heading. */
   hideHeader?: boolean;
 }
@@ -22,6 +24,7 @@ export function ObligationRefsSection({
   unlinkingId,
   onUnlinkLending,
   onUnlinkLoanPayment,
+  onUnlinkDividend,
   hideHeader = false,
 }: ObligationRefsSectionProps) {
   if (refs.length === 0) return null;
@@ -31,17 +34,13 @@ export function ObligationRefsSection({
       {!hideHeader && (
         <div className="flex items-center justify-between px-1">
           <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-            <HandCoins className="h-3.5 w-3.5 text-indigo-500" /> Loan / Lending
+            <HandCoins className="h-3.5 w-3.5 text-indigo-500" /> Loan / Lending / Dividend
           </span>
         </div>
       )}
 
       {refs.map((ref) => {
-        const href = ref.parentId
-          ? ref.kind === 'LENDING'
-            ? `/loans/lendings/${ref.parentId}`
-            : `/loans/${ref.parentId}`
-          : null;
+        const href = ref.parentId ? obligationRefHref(ref.kind, ref.parentId) : null;
         const isUnlinking = unlinkingId === ref.id;
 
         return (
@@ -74,6 +73,17 @@ export function ObligationRefsSection({
                   variant="ghost-destructive"
                   size="micro"
                   onClick={() => onUnlinkLending(ref.id)}
+                  disabled={isUnlinking}
+                >
+                  {isUnlinking ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}
+                  Unlink
+                </Button>
+              )}
+              {ref.kind === 'DIVIDEND' && (
+                <Button
+                  variant="ghost-destructive"
+                  size="micro"
+                  onClick={() => onUnlinkDividend(ref.id)}
                   disabled={isUnlinking}
                 >
                   {isUnlinking ? <Loader2 className="h-3 w-3 animate-spin" /> : <Trash2 className="h-3 w-3" />}

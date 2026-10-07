@@ -58,10 +58,10 @@ export type LinkType = 'TRANSFER' | 'CC_PAYMENT' | 'REFUND' | 'REVERSAL' | 'FEE'
  * fold what used to be a separate "Record as lending" flow (and a new loan-EMI
  * settlement flow) into the same entry point.
  */
-export type LinkKind = LinkType | 'LENDING' | 'LOAN_PAYMENT';
+export type LinkKind = LinkType | 'LENDING' | 'LOAN_PAYMENT' | 'DIVIDEND';
 
 /** The `LinkKind` values that are not a `LinkType` — they don't hit `/transaction-links`. */
-export const RECORD_LINK_KINDS = ['LENDING', 'LOAN_PAYMENT'] as const;
+export const RECORD_LINK_KINDS = ['LENDING', 'LOAN_PAYMENT', 'DIVIDEND'] as const;
 
 export function isRecordKind(kind: LinkKind): kind is (typeof RECORD_LINK_KINDS)[number] {
   return (RECORD_LINK_KINDS as readonly string[]).includes(kind);
@@ -107,12 +107,13 @@ export interface TransactionLinkSummary {
   memberCount: number;
 }
 
-export type ObligationKind = 'LENDING' | 'LOAN_PAYMENT' | 'LOAN_EVENT' | 'LOAN_CHARGE';
+export type ObligationKind = 'LENDING' | 'LOAN_PAYMENT' | 'LOAN_EVENT' | 'LOAN_CHARGE' | 'DIVIDEND';
 
 /**
- * A direct-FK reference from a lending ledger entry or loan row back to this
- * transaction. `parentId` is the id of the page the badge should link to: a
- * counterparty (`/loans/lendings/{parentId}`) for LENDING, a loan
+ * A direct-FK reference from a lending ledger entry, loan row or dividend row
+ * back to this transaction. `parentId` is the id the badge should link to: a
+ * counterparty (`/loans/lendings/{parentId}`) for LENDING, an instrument
+ * (`/investments/dividends?instrumentId={parentId}`) for DIVIDEND, a loan
  * (`/loans/{parentId}`) otherwise.
  */
 export interface ObligationRef {
