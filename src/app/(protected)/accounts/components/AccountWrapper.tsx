@@ -3,7 +3,7 @@ import { CreditCard as CardIcon, FileText } from 'lucide-react';
 import { AccountFormWrapper } from '@/components/accounts/AccountFormWrapper';
 import { CardsDialog } from '@/components/accounts/CardsDialog';
 import { StatementsDialog } from '@/components/accounts/StatementsDialog';
-import { Account, isAccountClosed } from '@/lib/account.types';
+import { Account, isAccountClosed, supportsIngestion } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
@@ -15,6 +15,11 @@ export function AccountWrapper({
   children: React.ReactNode;
 }) {
   const isClosed = isAccountClosed(account);
+  // Statements exist only for account types that can ingest (bank, credit card); cards are a
+  // bank/credit-card concept too. Brokers and Wallet/Cash accounts get no actions row at all.
+  const showStatements = supportsIngestion(account.type);
+  const showCards =
+    account.type === AccountType.CREDIT_CARD || account.type === AccountType.BANK_ACCOUNT;
   return (
     <div
       className={cn(
@@ -31,7 +36,9 @@ export function AccountWrapper({
       </AccountFormWrapper>
 
       {/* Actions Row: Only Statements and Cards */}
+      {showStatements || showCards ? (
       <div className="flex border-t border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-950/20 divide-x divide-slate-100 dark:divide-slate-800/65">
+        {showStatements ? (
         <StatementsDialog
           account={account}
           trigger={
@@ -45,8 +52,8 @@ export function AccountWrapper({
             </button>
           }
         />
-        {account.type === AccountType.CREDIT_CARD ||
-        account.type === AccountType.BANK_ACCOUNT ? (
+        ) : null}
+        {showCards ? (
           <CardsDialog
             account={account}
             trigger={
@@ -62,6 +69,7 @@ export function AccountWrapper({
           />
         ) : null}
       </div>
+      ) : null}
     </div>
   );
 }

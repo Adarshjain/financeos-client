@@ -11,13 +11,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Account } from '@/lib/account.types';
+import { Account, supportsIngestion } from '@/lib/account.types';
+import { AccountType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { financialPositions } from './constants';
 
 interface SyncConfigSectionProps {
   account?: Account;
+  accountType: AccountType;
   defaultIngestFromDate?: string;
   excludeFromNetAsset: boolean;
   setExcludeFromNetAsset: React.Dispatch<React.SetStateAction<boolean>>;
@@ -25,16 +27,20 @@ interface SyncConfigSectionProps {
 
 export function SyncConfigSection({
   account,
+  accountType,
   defaultIngestFromDate,
   excludeFromNetAsset,
   setExcludeFromNetAsset,
 }: SyncConfigSectionProps) {
+  // Only bank and credit card accounts can be fed by Gmail; brokers and Wallet/Cash accounts
+  // have no ingest watermark, so the field (and the "Sync" in the title) is omitted for them.
+  const showIngestFromDate = supportsIngestion(accountType);
   return (
     <div className="bg-white dark:bg-slate-900/60 rounded-xl p-4 border border-slate-100 dark:border-slate-800/80 shadow-sm space-y-2">
       <div className="flex items-center gap-1.5 border-b border-slate-100 dark:border-slate-800/40 pb-2">
         <TrendingUp className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
         <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-          Configurations & Sync
+          {showIngestFromDate ? 'Configurations & Sync' : 'Configuration'}
         </h3>
       </div>
 
@@ -55,6 +61,7 @@ export function SyncConfigSection({
           </Select>
         </div>
 
+        {showIngestFromDate ? (
         <div className="space-y-1.5">
           <Label htmlFor="ingestFromDate" className="text-xs text-slate-600 dark:text-slate-350 font-semibold flex items-center gap-1">
             <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
@@ -70,6 +77,7 @@ export function SyncConfigSection({
             Gmail transactions import from this date. Leave empty to pause Gmail import for this account.
           </p>
         </div>
+        ) : null}
       </div>
 
       <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800/40 my-1"></div>

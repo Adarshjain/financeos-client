@@ -128,6 +128,7 @@ export function AccountForm({ account, onSuccess, onClose, allowedTypes }: Accou
           {/* Card 3: Configurations & Sync */}
           <SyncConfigSection
             account={account}
+            accountType={accountType}
             defaultIngestFromDate={defaultIngestFromDate}
             excludeFromNetAsset={excludeFromNetAsset}
             setExcludeFromNetAsset={setExcludeFromNetAsset}

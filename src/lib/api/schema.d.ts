@@ -2482,8 +2482,6 @@ export interface components {
             financialPosition?: "asset" | "liability" | null;
             /** Format: uuid */
             id: string;
-            /** Format: date */
-            ingestFromDate?: string | null;
             name: string;
             provider?: string | null;
             reconciliationGap?: number | null;
@@ -2505,8 +2503,6 @@ export interface components {
             excludeFromNetAsset?: boolean;
             /** @enum {string} */
             financialPosition?: "asset" | "liability";
-            /** Format: date */
-            ingestFromDate?: string;
             name: string;
             provider: string;
             /**
@@ -3325,8 +3321,6 @@ export interface components {
             excludeFromNetAsset?: boolean;
             /** @enum {string} */
             financialPosition?: "asset" | "liability";
-            /** Format: date */
-            ingestFromDate?: string;
             name: string;
             /**
              * @description discriminator enum property added by openapi-typescript
@@ -3349,8 +3343,6 @@ export interface components {
             financialPosition?: "asset" | "liability" | null;
             /** Format: uuid */
             id: string;
-            /** Format: date */
-            ingestFromDate?: string | null;
             name: string;
             reconciliationGap?: number | null;
             /** Format: uuid */

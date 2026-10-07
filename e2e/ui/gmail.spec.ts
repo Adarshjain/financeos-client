@@ -202,7 +202,9 @@ test.describe('Gmail settings UI (@ui)', () => {
     await expect
       .poll(async () => (await searchAll(api, [{ field: 'accountId', operator: 'is', value: late!.id }])).length)
       .toBe(0);
-    expect(late?.ingestFromDate).toBe(isoDaysAgo(1));
+    // Narrow the union: ingestFromDate exists only on bank/credit-card responses (the codegen'd
+    // broker/generic shapes no longer carry it).
+    expect(late && 'ingestFromDate' in late ? late.ingestFromDate : undefined).toBe(isoDaysAgo(1));
   });
 
   test('disconnecting via the trash icon needs the native confirm and marks the row disconnected', async ({ page }) => {

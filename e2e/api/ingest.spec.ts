@@ -9,7 +9,12 @@ import {
   genCardPdf,
 } from '../fixtures/gen/statements';
 import { scriptCategorize } from '../fixtures/llm';
-import { createBankAccount, createCreditCard } from '../fixtures/seed/accounts';
+import {
+  createBankAccount,
+  createBrokerAccount,
+  createCreditCard,
+  createGenericAccount,
+} from '../fixtures/seed/accounts';
 import { createCategory, createRule } from '../fixtures/seed/categories';
 import {
   getAccountStatements,
@@ -512,6 +517,31 @@ test.describe('Statements Ingestion API', () => {
     expect(r4.fileDetails.length).toBe(2);
     expect(r4.fileDetails[0].status).toBe('SUCCESS');
     expect(r4.fileDetails[1].status).toBe('SUCCESS');
+  });
+
+  test('Upload to a broker or generic (Wallet/Cash) account is rejected with 400', async ({ api }) => {
+    const pdfBuffer = await genBankPdf(standardBankSpec);
+    const expectedMessage = 'Statements can only be uploaded to bank or credit card accounts.';
+
+    const broker = await createBrokerAccount(api, { name: 'No Statements Broker' });
+    const brokerRes = await uploadStatements(api, broker.id, [
+      { filename: 'broker-upload.pdf', buffer: pdfBuffer },
+    ]);
+    expectStatus(brokerRes, 400);
+    expect((brokerRes.error as any)?.code).toBe('VALIDATION_ERROR');
+    expect((brokerRes.error as any)?.message).toBe(expectedMessage);
+
+    const wallet = await createGenericAccount(api, { name: 'No Statements Wallet' });
+    const walletRes = await uploadStatements(api, wallet.id, [
+      { filename: 'wallet-upload.pdf', buffer: pdfBuffer },
+    ]);
+    expectStatus(walletRes, 400);
+    expect((walletRes.error as any)?.code).toBe('VALIDATION_ERROR');
+    expect((walletRes.error as any)?.message).toBe(expectedMessage);
+
+    // Nothing was enqueued: the statements archive of both stays empty.
+    expect(await getAccountStatements(api, broker.id)).toEqual([]);
+    expect(await getAccountStatements(api, wallet.id)).toEqual([]);
   });
 
   test('Tenancy: unauthenticated and cross-user upload forbidden', async ({
