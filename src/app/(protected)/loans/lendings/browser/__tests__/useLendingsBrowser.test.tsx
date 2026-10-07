@@ -10,6 +10,7 @@ vi.mock('@/lib/api/client', async () => {
 });
 
 import { api } from '@/lib/api/client';
+import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 
 import { useLendingsBrowser } from '../useLendingsBrowser';
@@ -107,5 +108,58 @@ describe('useLendingsBrowser', () => {
 
     act(() => result.current.setDirection('borrowed'));
     expect(result.current.selectedTx).toBeNull();
+  });
+});
+
+// The lent/borrowed/net cards on this page are cached under keys.loans.summary()
+// (served by GET /loans/summary), not under the keys.lendings.all prefix.
+describe('useLendingsBrowser — ledger totals (loans summary) invalidation', () => {
+  function createSpyWrapper() {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+    const invalidateSpy = vi.spyOn(queryClient, 'invalidateQueries');
+    function Wrapper({ children }: { children: React.ReactNode }) {
+      return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+    }
+    return { Wrapper, invalidateSpy };
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(api.GET).mockResolvedValue({ data: emptyPage } as never);
+  });
+
+  it('handleCreateLending invalidates lendings, transactions and the loans summary', async () => {
+    vi.mocked(api.POST).mockResolvedValue({ data: { id: 'l1' } } as never);
+    const { Wrapper, invalidateSpy } = createSpyWrapper();
+    const { result } = renderHook(() => useLendingsBrowser(), { wrapper: Wrapper });
+
+    act(() => result.current.setSelectedCpId('cp1'));
+    act(() => result.current.setAmount('1200'));
+
+    await act(async () => {
+      await result.current.handleCreateLending(submitEvent());
+    });
+
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.lendings.all });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.transactions.all });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.loans.summary() });
+  });
+
+  it('handleDeleteCp invalidates lendings and the loans summary', async () => {
+    vi.mocked(api.DELETE).mockResolvedValue({ data: null } as never);
+    const { Wrapper, invalidateSpy } = createSpyWrapper();
+    const { result } = renderHook(() => useLendingsBrowser(), { wrapper: Wrapper });
+
+    await act(async () => {
+      await result.current.handleDeleteCp({ id: 'cp1', name: 'Rahul' } as Parameters<
+        typeof result.current.handleDeleteCp
+      >[0]);
+    });
+
+    expect(api.DELETE).toHaveBeenCalledWith('/api/v1/counterparties/{id}', { params: { path: { id: 'cp1' } } });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.lendings.all });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.loans.summary() });
   });
 });

@@ -12,6 +12,7 @@ import type {
   LendingDirection,
   LendingResponse,
 } from '@/lib/lending.types';
+import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
@@ -141,7 +142,7 @@ export function useRecordLending({
   );
 
   const finishAndClose = () => {
-    queryClient.invalidateQueries({ queryKey: keys.lendings.all });
+    invalidateLendingQueries(queryClient);
     queryClient.invalidateQueries({ queryKey: keys.transactions.all });
     onOpenChange(false);
     onSuccess?.();

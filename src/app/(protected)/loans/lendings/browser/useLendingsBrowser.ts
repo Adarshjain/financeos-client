@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
 import type { Page } from '@/lib/pagination';
+import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { Transaction } from '@/lib/transaction.types';
@@ -96,8 +97,7 @@ export function useLendingsBrowser({
 
   const counterpartiesPage = data ?? EMPTY_PAGE;
 
-  const invalidateLendings = () =>
-    qc.invalidateQueries({ queryKey: keys.lendings.all });
+  const invalidateLendings = () => invalidateLendingQueries(qc);
 
   const deleteCpMutation = useMutation({
     mutationFn: (id: string) =>

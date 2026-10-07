@@ -5,6 +5,7 @@ import * as React from 'react';
 import { toast } from 'sonner';
 
 import { api } from '@/lib/api/client';
+import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
@@ -29,7 +30,7 @@ export function useObligationRefs(onCloseAndRefresh: () => void) {
     onSuccess: () => {
       toast.success('Unlinked from ledger entry');
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: keys.lendings.all });
+      invalidateLendingQueries(queryClient);
       onCloseAndRefresh();
     },
     onError: (err: unknown) => {
