@@ -86,7 +86,7 @@ async function openLinkTypeMenuAndPick(label: string) {
 describe('TransactionLinkDialog title and description', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGet({ '/api/v1/counterparties': pagedOf([]) });
+    mockGet({});
   });
 
   it('renders the "Link" title and the connect-to-anything description', () => {
@@ -111,44 +111,43 @@ describe('TransactionLinkDialog LENDING kind', () => {
     vi.clearAllMocks();
   });
 
-  it('locks direction to "lent" for a DEBIT subject and shows the New entry / Existing entry mode toggle with a "Save entry" footer', async () => {
-    mockGet({ '/api/v1/counterparties': pagedOf([rahulCp]) });
-
-    renderWithQuery(
+  function renderLending(txn: Transaction, extra: { onOpenChange?: () => void; onSuccess?: () => void } = {}) {
+    return renderWithQuery(
       <TransactionLinkDialog
-        initialTransaction={debitTxn}
+        initialTransaction={txn}
         accounts={mockAccounts}
         open={true}
-        onOpenChange={vi.fn()}
+        onOpenChange={extra.onOpenChange ?? vi.fn()}
+        onSuccess={extra.onSuccess}
       />,
     );
+  }
+
+  it('locks direction to "lent" for a DEBIT subject, shows the person picker and keeps "Save entry" disabled until someone is picked', async () => {
+    mockGet({ '/api/v1/counterparties/suggest': { counterparty: null } });
+
+    renderLending(debitTxn);
 
     await openLinkTypeMenuAndPick('Lending (person ledger)');
 
-    expect(await screen.findByText('New entry')).toBeInTheDocument();
-    expect(screen.getByText('Existing entry')).toBeInTheDocument();
-    expect(screen.getByText(/I gave money \(Lent\)/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save entry' })).toBeInTheDocument();
+    expect(await screen.findByText(/I gave money \(Lent\)/)).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /Person/ })).toHaveTextContent('Search or add a person');
+    expect(screen.queryByText('Existing entry')).not.toBeInTheDocument();
+    expect(screen.getByText('New entry')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save entry' })).toBeDisabled();
   });
 
   it('locks direction to "borrowed" for a CREDIT subject', async () => {
-    mockGet({ '/api/v1/counterparties': pagedOf([rahulCp]) });
+    mockGet({ '/api/v1/counterparties/suggest': { counterparty: null } });
 
-    renderWithQuery(
-      <TransactionLinkDialog
-        initialTransaction={creditTxn}
-        accounts={mockAccounts}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    renderLending(creditTxn);
 
     await openLinkTypeMenuAndPick('Lending (person ledger)');
 
     expect(await screen.findByText(/I received money \(Borrowed\)/)).toBeInTheDocument();
   });
 
-  it('Existing mode lists only unlinked, direction-matching entries and Attach PUTs the transaction onto the chosen entry', async () => {
+  it('a suggested person with unlinked, direction-matching entries gets an attach section; Attach PUTs the transaction onto the chosen entry', async () => {
     const unlinkedLent: LendingResponse = {
       id: 'lend-unlinked',
       counterpartyId: 'cp-rahul',
@@ -180,38 +179,28 @@ describe('TransactionLinkDialog LENDING kind', () => {
     };
 
     mockGet({
-      '/api/v1/counterparties': pagedOf([rahulCp]),
+      '/api/v1/counterparties/suggest': { counterparty: rahulCp },
       '/api/v1/lendings': pagedOf([unlinkedLent, alreadyLinkedLent, wrongDirection]),
     });
     (api.PUT as Mock).mockResolvedValue({ data: undefined });
 
     const onOpenChange = vi.fn();
     const onSuccess = vi.fn();
-
-    renderWithQuery(
-      <TransactionLinkDialog
-        initialTransaction={debitTxn}
-        accounts={mockAccounts}
-        open={true}
-        onOpenChange={onOpenChange}
-        onSuccess={onSuccess}
-      />,
-    );
+    renderLending(debitTxn, { onOpenChange, onSuccess });
 
     await openLinkTypeMenuAndPick('Lending (person ledger)');
 
-    // suggestCounterparty pre-selects Rahul Sharma from the description before
-    // we ever touch the picker — just wait for that, then switch to Existing.
-    const cpCombo = screen.getByRole('combobox', { name: /Person \/ Counterparty/i });
-    await waitFor(() => expect(cpCombo).toHaveTextContent('Rahul Sharma'));
+    // "Dinner with Rahul Sharma" matches Rahul server-side: the picker pre-fills
+    // him as a chip and says why.
+    expect(await screen.findByText('Rahul Sharma')).toBeInTheDocument();
+    expect(screen.getByText('Suggested')).toBeInTheDocument();
 
-    fireEvent.click(await screen.findByText('Existing entry'));
-
-    await waitFor(() => {
-      expect(screen.getByText(/Dinner unlinked entry/)).toBeInTheDocument();
-    });
+    expect(await screen.findByText('Attach to an existing entry')).toBeInTheDocument();
+    expect(screen.getByText(/Rahul Sharma has 1 unlinked lent entry\./)).toBeInTheDocument();
+    expect(screen.getByText(/Dinner unlinked entry/)).toBeInTheDocument();
     expect(screen.queryByText(/Already linked entry/)).not.toBeInTheDocument();
     expect(screen.queryByText(/Wrong direction entry/)).not.toBeInTheDocument();
+    expect(screen.getByText('Or record a new entry')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Attach' }));
 
@@ -225,30 +214,37 @@ describe('TransactionLinkDialog LENDING kind', () => {
     });
   });
 
-  it('New mode pre-selects the counterparty via suggestCounterparty and submits POST /api/v1/lendings with the derived fields', async () => {
-    mockGet({ '/api/v1/counterparties': pagedOf([rahulCp]) });
+  it('a suggested person with no unlinked entries gets no attach section', async () => {
+    mockGet({
+      '/api/v1/counterparties/suggest': { counterparty: rahulCp },
+      '/api/v1/lendings': pagedOf([]),
+    });
+
+    renderLending(debitTxn);
+
+    await openLinkTypeMenuAndPick('Lending (person ledger)');
+
+    expect(await screen.findByText('Rahul Sharma')).toBeInTheDocument();
+    await waitFor(() =>
+      expect(api.GET).toHaveBeenCalledWith('/api/v1/lendings', expect.anything()),
+    );
+    await waitFor(() => expect(screen.getByText('New entry')).toBeInTheDocument());
+    expect(screen.queryByText('Attach to an existing entry')).not.toBeInTheDocument();
+  });
+
+  it('pre-selects the suggested counterparty and submits POST /api/v1/lendings with the derived fields', async () => {
+    mockGet({ '/api/v1/counterparties/suggest': { counterparty: rahulCp } });
     (api.POST as Mock).mockResolvedValue({
       data: { id: 'new-lend', counterpartyId: 'cp-rahul', counterpartyName: 'Rahul Sharma' },
     });
 
     const onOpenChange = vi.fn();
     const onSuccess = vi.fn();
-
-    renderWithQuery(
-      <TransactionLinkDialog
-        initialTransaction={debitTxn}
-        accounts={mockAccounts}
-        open={true}
-        onOpenChange={onOpenChange}
-        onSuccess={onSuccess}
-      />,
-    );
+    renderLending(debitTxn, { onOpenChange, onSuccess });
 
     await openLinkTypeMenuAndPick('Lending (person ledger)');
 
-    // suggestCounterparty("Dinner with Rahul Sharma", [Rahul Sharma]) picks Rahul Sharma automatically.
-    const cpCombo = screen.getByRole('combobox', { name: /Person \/ Counterparty/i });
-    await waitFor(() => expect(cpCombo).toHaveTextContent('Rahul Sharma'));
+    expect(await screen.findByText('Rahul Sharma')).toBeInTheDocument();
     expect(screen.getByLabelText(/Amount \(₹\)/)).toHaveValue(500);
     expect(screen.getByLabelText('Date *')).toHaveValue('25/07/2026');
 
@@ -277,19 +273,12 @@ describe('TransactionLinkDialog LENDING kind', () => {
   });
 
   it('shows a toast with the server error message when the new-entry submit fails', async () => {
-    mockGet({ '/api/v1/counterparties': pagedOf([rahulCp]) });
+    mockGet({ '/api/v1/counterparties/suggest': { counterparty: rahulCp } });
     (api.POST as Mock).mockRejectedValue(
       new ApiError(400, { code: 'ERR', message: 'Counterparty ledger is locked', timestamp: '' }),
     );
 
-    renderWithQuery(
-      <TransactionLinkDialog
-        initialTransaction={debitTxn}
-        accounts={mockAccounts}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    renderLending(debitTxn);
 
     await openLinkTypeMenuAndPick('Lending (person ledger)');
 

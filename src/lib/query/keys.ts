@@ -74,10 +74,14 @@ export const keys = {
     /** Paginated lending ledger entries, optionally scoped to one counterparty. */
     list: (params: { counterpartyId?: string; page: number; size: number }) =>
       [...keys.lendings.all, 'list', params] as const,
-    /** Paginated counterparties list. There is no single-counterparty GET endpoint;
-     *  callers find one by id within a (typically large-page) list. */
-    counterparties: (params: { page: number; size: number }) =>
+    /** Paginated counterparties list, optionally narrowed by a name search `q`.
+     *  There is no single-counterparty GET endpoint; callers find one by id
+     *  within a (typically large-page) list. */
+    counterparties: (params: { page: number; size: number; q?: string }) =>
       [...keys.lendings.all, 'counterparties', params] as const,
+    /** Best counterparty name match for a transaction description. */
+    counterpartySuggestion: (text: string) =>
+      [...keys.lendings.all, 'counterparty-suggestion', text] as const,
     /** Upcoming obligations within a rolling window of `months`. */
     obligations: (months: number) => [...keys.lendings.all, 'obligations', months] as const,
     matchSuggestions: (counterpartyId: string) =>

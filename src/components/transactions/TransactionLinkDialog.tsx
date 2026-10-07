@@ -68,14 +68,12 @@ export function TransactionLinkDialog({
 
   let primaryAction: DialogFooterAction;
   if (kind === 'LENDING') {
-    primaryAction =
-      lending.mode === 'existing'
-        ? { label: 'Attach from list', disabled: true }
-        : {
-            label: lending.submitting ? 'Saving...' : 'Save entry',
-            onClick: lending.handleSubmitNew,
-            disabled: !lending.canSubmitNew || lending.submitting,
-          };
+    // Attaching to an existing entry has its own per-row button in the body.
+    primaryAction = {
+      label: lending.submitting ? 'Saving...' : 'Save entry',
+      onClick: lending.handleSubmitNew,
+      disabled: !lending.canSubmitNew || lending.submitting,
+    };
   } else if (kind === 'LOAN_PAYMENT') {
     primaryAction = {
       label: loanPayment.submitting ? 'Settling...' : 'Settle installment',

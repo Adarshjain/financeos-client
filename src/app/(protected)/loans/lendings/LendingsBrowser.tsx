@@ -39,10 +39,8 @@ export function LendingsBrowser() {
     setSearch,
     createOpen,
     setCreateOpen,
-    selectedCpId,
-    setSelectedCpId,
-    newCpName,
-    setNewCpName,
+    party,
+    setParty,
     direction,
     setDirection,
     amount,
@@ -142,11 +140,8 @@ export function LendingsBrowser() {
       <AddLendingDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        counterparties={counterpartiesPage.content}
-        selectedCpId={selectedCpId}
-        setSelectedCpId={setSelectedCpId}
-        newCpName={newCpName}
-        setNewCpName={setNewCpName}
+        party={party}
+        setParty={setParty}
         direction={direction}
         setDirection={setDirection}
         amount={amount}

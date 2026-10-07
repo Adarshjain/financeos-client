@@ -10,6 +10,7 @@ import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
+import type { CounterpartySelection } from '@/lib/lending.types';
 import type { Page } from '@/lib/pagination';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
@@ -50,8 +51,7 @@ export function useLendingsBrowser({
   const [createOpen, setCreateOpen] = useState(false);
 
   // Form state
-  const [selectedCpId, setSelectedCpId] = useState<string>('new');
-  const [newCpName, setNewCpName] = useState('');
+  const [party, setParty] = useState<CounterpartySelection | null>(null);
   const [direction, setDirection] = useState<LendingDirection>('lent');
   const [amount, setAmount] = useState('');
   const [entryDate, setEntryDate] = useState(
@@ -61,12 +61,13 @@ export function useLendingsBrowser({
   const [notes, setNotes] = useState('');
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
 
-  // Fresh dialog each time it opens or closes; clears any leftover pick from
+  // Fresh dialog each time it opens or closes; clears any leftover picks from
   // a cancelled or just-submitted create (both the trigger button and the
   // dialog's own close/cancel/outside-click route through this setter).
   const handleSetCreateOpen = (open: boolean) => {
     setCreateOpen(open);
     setSelectedTx(null);
+    setParty(null);
   };
 
   const handleSetDirection = (dir: LendingDirection) => {
@@ -130,8 +131,8 @@ export function useLendingsBrowser({
 
   const handleCreateLending = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedCpId === 'new' && !newCpName.trim()) {
-      toast.error('Person name is required');
+    if (!party) {
+      toast.error('Pick a person');
       return;
     }
     if (!amount || Number(amount) <= 0) {
@@ -141,9 +142,9 @@ export function useLendingsBrowser({
 
     try {
       await createLendingMutation.mutateAsync({
-        counterpartyId: selectedCpId !== 'new' ? selectedCpId : undefined,
-        newCounterpartyName:
-          selectedCpId === 'new' ? newCpName.trim() : undefined,
+        ...(party.kind === 'new'
+          ? { newCounterpartyName: party.name }
+          : { counterpartyId: party.counterparty.id }),
         direction,
         amount: Number(amount),
         entryDate,
@@ -175,10 +176,8 @@ export function useLendingsBrowser({
     setSearch,
     createOpen,
     setCreateOpen: handleSetCreateOpen,
-    selectedCpId,
-    setSelectedCpId,
-    newCpName,
-    setNewCpName,
+    party,
+    setParty,
     direction,
     setDirection: handleSetDirection,
     amount,
