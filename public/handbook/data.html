@@ -225,7 +225,7 @@
 <tr><td><code>holdings</code> (V35, V40 reset)</td><td>UNIQUE(user, broker_account, instrument)</td><td>Identity row only; quantity, cost and value are derived; <code>user_id</code> nullable</td><td>yes</td></tr>
 <tr><td><code>investment_transactions</code> (V1 → recreated V35, V40)</td><td>UUID</td><td><code>type</code> buy|sell, <code>settlement_type</code> (display hint), <code>quantity NUMBER(19,8) &gt; 0</code>, <code>price ≥ 0</code>, 8 charge columns + <code>total_charges</code> (recomputed in JPA), <code>source</code>, <code>external_ref</code></td><td>yes</td></tr>
 <tr><td><code>trade_settlement_classifications</code> (V40)</td><td>UNIQUE(broker_account, instrument, trade_date)</td><td>Authoritative intraday split: <code>intraday_qty</code>, buy/sell values; <code>instrument_id</code> only in composite index</td><td>yes</td></tr>
-<tr><td><code>dividends</code> (V36)</td><td>UUID</td><td>type dividend|interest|other, amount ≥ 0, per_unit, tds, ex_date, pay_date NOT NULL, source; <code>user_id</code> nullable</td><td>yes</td></tr>
+<tr><td><code>dividends</code> (V36, V89)</td><td>UUID</td><td>type dividend|interest|other, amount ≥ 0, per_unit, tds, ex_date, pay_date NOT NULL, source; <code>user_id</code> nullable; V89: <code>transaction_id</code> FK → transactions ON DELETE SET NULL (plain index <code>idx_dividends_txn</code>, not unique), <code>receipt_status</code> CHECK in (received_untracked, not_received)</td><td>yes</td></tr>
 <tr><td><code>sips</code> (V38)</td><td>UUID</td><td><code>amount NUMBER(19,2)</code> (scale-2 outlier), frequency weekly|monthly, day_of_month, start/end, active</td><td>yes</td></tr>
 <tr><td><code>fno_trades</code> (V44, V46, V79)</td><td>UUID</td><td>Standalone closed round trips: contract fields, quantity, buy/sell values, total_charges, <code>realized_pnl</code> stored (no recompute hook), <code>external_ref</code> (no unique). user FK only since V79.</td><td>yes</td></tr>
 </table></div></div></details>
@@ -247,6 +247,8 @@
 <h3 id="s06-views">Chat views and the allow-list drift</h3>
 <p>V70 created the <code>v_chat_*</code> read-only views, each with <code>WHERE user_id = SYS_CONTEXT('USERENV','CLIENT_IDENTIFIER')</code> (instruments and prices are global), and grants SELECT to <code>chat_ro</code> idempotently. Later card-model migrations replaced <code>v_chat_account_cards</code> / <code>v_chat_card_instances</code> with <code>v_chat_cardholders</code> / <code>v_chat_cards</code> (V82). The migrations define 16 current views; <code>ChatSqlValidator.ALLOWED_VIEWS</code> lists 14 and omits <code>V_CHAT_CARDHOLDERS</code> and <code>V_CHAT_CARDS</code>, while <code>dictionary.md</code> tells the model about them. A query the model writes against those two views is rejected with <code>TABLE_NOT_ALLOWED</code> and it must self-correct. <span class="c cg">Confirmed by grep</span> <span class="path">chat/db/ChatSqlValidator.java:18-33</span></p>
 <p><strong>V86</strong> <code>CREATE OR REPLACE</code>s <code>v_chat_lendings</code> to add a <code>transaction_id</code> column (nullable — several lending rows can now share one, so it is not a join key on its own) and re-grants SELECT to <code>chat_ro</code> idempotently, the same guarded pattern V70 used (skips silently if <code>chat_ro</code> does not exist, e.g. on dev DBs). <code>dictionary.md</code> §9 documents the join to <code>v_chat_transactions.id</code> and states the rule chat needs: money lent/borrowed is not spend or income.</p>
+
+<p><strong>V89</strong> <code>CREATE OR REPLACE</code>s <code>v_chat_dividends</code> to add <code>source</code>, <code>transaction_id</code> and <code>receipt_status</code> (stored manual note only; derived states are not in SQL), with the same guarded <code>chat_ro</code> grant. <code>dictionary.md</code> §6 now separates expected from received dividends.</p>
 
 <h3 id="s06-tenancy">Tenancy at the database level</h3>
 <ul>
@@ -296,6 +298,7 @@
 <tr><td>Investments redesign</td><td>V35–V46</td><td>instruments, holdings, rebuilt trades; dividends and corporate actions; V40 hard reset; F&amp;O attempt and extraction; second TZ fix</td></tr>
 <tr><td>Loans and lendings</td><td>V47–V49</td><td>Full loan schema; lendings redesigned to a ledger; rule match types</td></tr>
 <tr><td>Rewards</td><td>V50–V60</td><td>One axis per migration: inputs, rules, nullable active_from, milestones, tiers, buckets, anniversary, cash vs points, timing, point value, fee treatment</td></tr>
+<tr><td>Dividend receipts</td><td>V89</td><td><code>dividends.transaction_id</code> + <code>receipt_status</code>, <code>v_chat_dividends</code> extended; DDL only, every step guarded on the data dictionary so it is re-runnable</td></tr>
 <tr><td>Jobs</td><td>V61</td><td>Queue built with TZ columns from day one</td></tr>
 <tr><td>Gmail v2 and TZ sweep</td><td>V62–V71</td><td>Sender binding removed; ledger re-scoped; statement dedup per account (V64); cursors, demand, grandfathering; V71 sweep. Idempotent PL/SQL from V63 onward</td></tr>
 <tr><td>Chat and LLM</td><td>V70, V72</td><td>v_chat_* views and grant loop; BYOK keys</td></tr>

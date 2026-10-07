@@ -316,3 +316,136 @@ export async function deleteFnoTrade(
   expectStatus(res, 204);
 }
 
+
+// ---------------------------------------------------------------------------
+// Dividend receipt reconciliation
+// ---------------------------------------------------------------------------
+
+export type ReceiptStatus = DividendResponse['receiptStatus'];
+export type DividendReceiptSummaryResponse = components['schemas']['DividendReceiptSummaryResponse'];
+export type DividendReconciliationResponse = components['schemas']['DividendReconciliationResponse'];
+export type ConfirmDividendMatchesResponse = components['schemas']['ConfirmDividendMatchesResponse'];
+export type UnrecordedDividendCreditsResponse = components['schemas']['UnrecordedDividendCreditsResponse'];
+
+export interface DividendListParams {
+  holdingId?: string;
+  brokerAccountId?: string;
+  instrumentId?: string;
+  type?: 'dividend' | 'interest' | 'other';
+  from?: string;
+  to?: string;
+  receipt?: ReceiptStatus;
+  page?: number;
+  size?: number;
+}
+
+/** GET /investments/dividends — the content rows of one page (size defaults to 100). */
+export async function listDividends(
+  api: ApiClient,
+  params: DividendListParams = {}
+): Promise<DividendResponse[]> {
+  const res = await api.GET('/api/v1/investments/dividends', {
+    params: { query: { size: 100, ...params } },
+  });
+  expectStatus(res, 200);
+  return res.data!.content;
+}
+
+/** PUT /investments/dividends/{id}/transaction */
+export async function linkDividendTransaction(
+  api: ApiClient,
+  dividendId: string,
+  transactionId: string,
+  updateTds = false
+): Promise<DividendResponse> {
+  const res = await api.PUT('/api/v1/investments/dividends/{id}/transaction', {
+    params: { path: { id: dividendId } },
+    body: { transactionId, updateTds },
+  });
+  if (res.error || !res.data || res.response.status !== 200) {
+    throw new Error(
+      `linkDividendTransaction failed (${res.response.status}): ${JSON.stringify(res.error ?? res.data)}`
+    );
+  }
+  return res.data;
+}
+
+/** DELETE /investments/dividends/{id}/transaction (idempotent, 204) */
+export async function unlinkDividendTransaction(api: ApiClient, dividendId: string): Promise<void> {
+  const res = await api.DELETE('/api/v1/investments/dividends/{id}/transaction', {
+    params: { path: { id: dividendId } },
+  });
+  if (res.response.status !== 204) {
+    throw new Error(`unlinkDividendTransaction failed (${res.response.status}): ${JSON.stringify(res.error)}`);
+  }
+}
+
+/** PUT /investments/dividends/{id}/receipt-status — pass null to clear the manual note. */
+export async function setDividendReceiptStatus(
+  api: ApiClient,
+  dividendId: string,
+  status: ReceiptStatus | null
+): Promise<DividendResponse> {
+  const res = await api.PUT('/api/v1/investments/dividends/{id}/receipt-status', {
+    params: { path: { id: dividendId } },
+    body: { status },
+  });
+  if (res.error || !res.data || res.response.status !== 200) {
+    throw new Error(
+      `setDividendReceiptStatus failed (${res.response.status}): ${JSON.stringify(res.error ?? res.data)}`
+    );
+  }
+  return res.data;
+}
+
+/** GET /investments/dividends/receipts/summary */
+export async function dividendReceiptSummary(
+  api: ApiClient,
+  params: { holdingId?: string; brokerAccountId?: string; instrumentId?: string; type?: 'dividend' | 'interest' | 'other' } = {}
+): Promise<DividendReceiptSummaryResponse> {
+  const res = await api.GET('/api/v1/investments/dividends/receipts/summary', {
+    params: { query: params },
+  });
+  expectStatus(res, 200);
+  return res.data!;
+}
+
+/** GET /investments/dividends/reconciliation */
+export async function dividendReconciliation(
+  api: ApiClient,
+  params: { brokerAccountId?: string; from?: string; to?: string } = {}
+): Promise<DividendReconciliationResponse> {
+  const res = await api.GET('/api/v1/investments/dividends/reconciliation', {
+    params: { query: params },
+  });
+  expectStatus(res, 200);
+  return res.data!;
+}
+
+/** POST /investments/dividends/reconciliation/confirm */
+export async function confirmDividendMatches(
+  api: ApiClient,
+  items: Array<{ dividendId: string; transactionId: string; updateTds?: boolean }>
+): Promise<ConfirmDividendMatchesResponse> {
+  const res = await api.POST('/api/v1/investments/dividends/reconciliation/confirm', {
+    body: { items: items.map((i) => ({ updateTds: false, ...i })) } as never,
+  });
+  if (res.error || !res.data || res.response.status !== 200) {
+    throw new Error(
+      `confirmDividendMatches failed (${res.response.status}): ${JSON.stringify(res.error ?? res.data)}`
+    );
+  }
+  return res.data;
+}
+
+/** GET /investments/dividends/reconciliation/unrecorded */
+export async function unrecordedDividendCredits(
+  api: ApiClient,
+  params: { from?: string; to?: string } = {}
+): Promise<UnrecordedDividendCreditsResponse> {
+  const res = await api.GET('/api/v1/investments/dividends/reconciliation/unrecorded', {
+    params: { query: params },
+  });
+  expectStatus(res, 200);
+  return res.data!;
+}

@@ -1028,6 +1028,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/investments/dividends/receipts/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDividendReceiptSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investments/dividends/reconciliation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDividendReconciliation"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investments/dividends/reconciliation/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["confirmDividendMatches"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investments/dividends/reconciliation/unrecorded": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getUnrecordedDividendCredits"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/investments/dividends/suggestions": {
         parameters: {
             query?: never;
@@ -1087,6 +1151,38 @@ export interface paths {
         put: operations["updateDividend"];
         post?: never;
         delete: operations["deleteDividend"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investments/dividends/{id}/receipt-status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["setDividendReceiptStatus"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investments/dividends/{id}/transaction": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["linkDividendTransaction"];
+        post?: never;
+        delete: operations["unlinkDividendTransaction"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2762,6 +2858,20 @@ export interface components {
             rowIndex?: number;
             skip?: boolean;
         };
+        ConfirmDividendMatchItem: {
+            /** Format: uuid */
+            dividendId: string;
+            /** Format: uuid */
+            transactionId: string;
+            updateTds?: boolean;
+        };
+        ConfirmDividendMatchesRequest: {
+            items: components["schemas"]["ConfirmDividendMatchItem"][];
+        };
+        ConfirmDividendMatchesResponse: {
+            linked: components["schemas"]["DividendResponse"][];
+            skipped: components["schemas"]["SkippedDividendMatch"][];
+        };
         CorporateActionResponse: {
             costAllocationPct?: number | null;
             /** Format: date-time */
@@ -3172,6 +3282,57 @@ export interface components {
             timeline: components["schemas"]["TimelineEntry"][];
             truncated: boolean;
         };
+        DividendHoldingHint: {
+            /** Format: uuid */
+            brokerAccountId: string;
+            brokerName: string;
+            /** Format: uuid */
+            holdingId: string;
+            /** Format: uuid */
+            instrumentId: string;
+            instrumentName: string;
+            /** Format: double */
+            nameScore: number;
+            symbol?: string | null;
+        };
+        DividendMatchCandidate: {
+            impliedTds?: number | null;
+            reasons: ("EXACT_GROSS" | "NET_OF_RECORDED_TDS" | "NET_OF_10PCT_TDS" | "AMOUNT_WITHIN_BAND" | "SPLIT_RATIO_SUSPECT" | "DIVIDEND_KEYWORD" | "NAME_MATCH" | "SYMBOL_MATCH")[];
+            /** Format: int32 */
+            score: number;
+            /** @enum {string} */
+            tier: "EXACT" | "NET_OF_TDS" | "FUZZY";
+            transaction: components["schemas"]["TransactionResponse"];
+            variance: number;
+        };
+        DividendReceiptBucket: {
+            /** Format: int64 */
+            count: number;
+            expectedNet: number;
+            receivedAmount: number;
+            /** @enum {string} */
+            status: "received" | "received_untracked" | "not_received" | "awaiting" | "overdue" | "unverifiable";
+        };
+        DividendReceiptSummaryResponse: {
+            buckets: components["schemas"]["DividendReceiptBucket"][];
+            /** Format: date */
+            coverageEnd?: string | null;
+            /** Format: int64 */
+            totalCount: number;
+        };
+        DividendReconciliationItem: {
+            candidates: components["schemas"]["DividendMatchCandidate"][];
+            dividend: components["schemas"]["DividendResponse"];
+        };
+        DividendReconciliationResponse: {
+            /** Format: date */
+            coverageEnd?: string | null;
+            items: components["schemas"]["DividendReconciliationItem"][];
+            /** Format: int32 */
+            unresolvedCount: number;
+            /** Format: int32 */
+            withCandidates: number;
+        };
         DividendResponse: {
             amount: number;
             /** Format: uuid */
@@ -3192,9 +3353,12 @@ export interface components {
             /** Format: date */
             payDate: string;
             perUnit?: number | null;
+            /** @enum {string} */
+            receiptStatus: "received" | "received_untracked" | "not_received" | "awaiting" | "overdue" | "unverifiable";
             source: string;
             symbol: string;
             tds?: number | null;
+            transaction?: components["schemas"]["DividendTransactionSummary"];
             /** @enum {string} */
             type: "dividend" | "interest" | "other";
         };
@@ -3211,6 +3375,17 @@ export interface components {
             totalCount: number;
             totalNet: number;
             totalTds: number;
+        };
+        DividendTransactionSummary: {
+            /** Format: uuid */
+            accountId?: string | null;
+            accountName?: string | null;
+            /** Format: date */
+            date: string;
+            description?: string | null;
+            /** Format: uuid */
+            id: string;
+            signedAmount: number;
         };
         EnqueueResponse: {
             /** Format: uuid */
@@ -3552,10 +3727,10 @@ export interface components {
             exDate: string;
             /** Format: uuid */
             holdingId: string;
-            notes?: string;
+            notes?: string | null;
             /** Format: date */
             payDate: string;
-            perUnit?: number;
+            perUnit?: number | null;
         };
         ItemizedChargesDto: {
             brokerage?: number | null;
@@ -3642,6 +3817,11 @@ export interface components {
             /** Format: uuid */
             id: string;
             signedAmount: number;
+        };
+        LinkDividendTransactionRequest: {
+            /** Format: uuid */
+            transactionId: string;
+            updateTds?: boolean;
         };
         LinkLendingTransactionRequest: {
             /** Format: uuid */
@@ -3905,7 +4085,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             /** @enum {string} */
-            kind: "LENDING" | "LOAN_PAYMENT" | "LOAN_EVENT" | "LOAN_CHARGE";
+            kind: "LENDING" | "LOAN_PAYMENT" | "LOAN_EVENT" | "LOAN_CHARGE" | "DIVIDEND";
             label: string;
             /** Format: uuid */
             parentId?: string | null;
@@ -4776,6 +4956,10 @@ export interface components {
             /** @enum {string} */
             type: "KPI" | "CHART" | "TABLE";
         };
+        SetDividendReceiptStatusRequest: {
+            /** @enum {string|null} */
+            status?: "received" | "received_untracked" | "not_received" | "awaiting" | "overdue" | "unverifiable" | null;
+        };
         SignupRequest: {
             email: string;
             inviteCode: string;
@@ -4862,6 +5046,11 @@ export interface components {
             /** Format: date */
             startDate: string;
             symbol?: string | null;
+        };
+        SkippedDividendMatch: {
+            /** Format: uuid */
+            dividendId: string;
+            reason: string;
         };
         SortObject: {
             ascending: boolean;
@@ -5147,6 +5336,17 @@ export interface components {
         TransactionSearchRequest: {
             filters?: components["schemas"]["FilterClause"][] | null;
             search?: string | null;
+        };
+        UnrecordedDividendCredit: {
+            holdingHints: components["schemas"]["DividendHoldingHint"][];
+            transaction: components["schemas"]["TransactionResponse"];
+        };
+        UnrecordedDividendCreditsResponse: {
+            /** Format: date */
+            from: string;
+            items: components["schemas"]["UnrecordedDividendCredit"][];
+            /** Format: date */
+            to: string;
         };
         UpdateCardholderRequest: {
             personName?: string;
@@ -8047,6 +8247,7 @@ export interface operations {
                 type?: "dividend" | "interest" | "other";
                 from?: string;
                 to?: string;
+                receipt?: "received" | "received_untracked" | "not_received" | "awaiting" | "overdue" | "unverifiable";
                 /** @description Zero-based page index (0..N) */
                 page?: number;
                 /** @description The size of the page to be returned */
@@ -8100,6 +8301,138 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["DividendResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getDividendReceiptSummary: {
+        parameters: {
+            query?: {
+                holdingId?: string;
+                brokerAccountId?: string;
+                instrumentId?: string;
+                type?: "dividend" | "interest" | "other";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DividendReceiptSummaryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getDividendReconciliation: {
+        parameters: {
+            query?: {
+                brokerAccountId?: string;
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DividendReconciliationResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    confirmDividendMatches: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmDividendMatchesRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConfirmDividendMatchesResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getUnrecordedDividendCredits: {
+        parameters: {
+            query?: {
+                from?: string;
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UnrecordedDividendCreditsResponse"];
                 };
             };
             /** @description Error response */
@@ -8247,6 +8580,105 @@ export interface operations {
         };
     };
     deleteDividend: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    setDividendReceiptStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetDividendReceiptStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DividendResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    linkDividendTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkDividendTransactionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DividendResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unlinkDividendTransaction: {
         parameters: {
             query?: never;
             header?: never;

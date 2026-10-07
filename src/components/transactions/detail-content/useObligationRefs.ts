@@ -10,10 +10,11 @@ import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
 /**
- * Unlink actions for the "Ledger & loans" group of obligation refs:
+ * Unlink actions for the "Ledger, loans & dividends" group of obligation refs:
  * - LENDING: detach the transaction from the lending ledger entry (no confirm).
  * - LOAN_PAYMENT: delete the loan payment/settlement (confirmed by the caller
  *   via `ConfirmationDialog`) — the installment goes back to unpaid.
+ * - DIVIDEND: detach the credit from the dividend row (no confirm; idempotent).
  * LOAN_EVENT / LOAN_CHARGE refs have no unlink action here; they're managed
  * from the loan itself.
  */
@@ -69,8 +70,33 @@ export function useObligationRefs(onCloseAndRefresh: () => void) {
     });
   };
 
+  const unlinkDividendMutation = useMutation({
+    mutationFn: (dividendId: string) =>
+      api.DELETE('/api/v1/investments/dividends/{id}/transaction', {
+        params: { path: { id: dividendId } },
+      }),
+    onMutate: (dividendId: string) => setUnlinkingId(dividendId),
+    onSuccess: () => {
+      toast.success('Unlinked from dividend');
+      queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      queryClient.invalidateQueries({ queryKey: keys.investments.all });
+      onCloseAndRefresh();
+    },
+    onError: (err: unknown) => {
+      toastError(err, 'Failed to unlink dividend');
+    },
+    onSettled: () => setUnlinkingId(null),
+  });
+
+  const handleUnlinkDividend = async (dividendId: string) => {
+    await unlinkDividendMutation.mutateAsync(dividendId).catch(() => {
+      // Error toast already shown by the mutation's onError handler.
+    });
+  };
+
   return {
     unlinkingId,
+    handleUnlinkDividend,
     handleUnlink,
     handleUnlinkLoanPayment,
   };

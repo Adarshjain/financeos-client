@@ -294,6 +294,24 @@ export interface InvestmentSummary {
 // Dividends
 export type DividendType = 'dividend' | 'interest' | 'other';
 
+export type DividendReceiptStatus =
+  | 'received'
+  | 'received_untracked'
+  | 'not_received'
+  | 'awaiting'
+  | 'overdue'
+  | 'unverifiable';
+
+/** The bank credit a dividend is linked to (server-derived summary). */
+export interface DividendTransactionSummary {
+  id: string;
+  accountId?: string | null;
+  accountName?: string | null;
+  date: string;
+  description?: string | null;
+  signedAmount: number;
+}
+
 export interface Dividend {
   id: string;
   holdingId?: string;
@@ -311,6 +329,8 @@ export interface Dividend {
   source?: string;
   notes?: string;
   createdAt?: string;
+  receiptStatus?: DividendReceiptStatus;
+  transaction?: DividendTransactionSummary | null;
 }
 
 export type PagedDividendResponse = Page<Dividend>;
@@ -911,3 +931,16 @@ export type {
 export * from './lending.types';
 export * from './loan.types';
 
+
+export interface DividendReceiptBucket {
+  status: DividendReceiptStatus;
+  count: number;
+  expectedNet: number;
+  receivedAmount: number;
+}
+
+export interface DividendReceiptSummary {
+  buckets: DividendReceiptBucket[];
+  coverageEnd?: string | null;
+  totalCount: number;
+}

@@ -1,7 +1,8 @@
-import { HandCoins, Landmark } from 'lucide-react';
+import { Coins, HandCoins, Landmark } from 'lucide-react';
 import Link from 'next/link';
 
 import { Badge } from '@/components/ui/badge';
+import { obligationRefHref } from '@/lib/obligationRefHref';
 import type { ObligationRef } from '@/lib/transaction.types';
 
 interface ObligationRefBadgesProps {
@@ -21,7 +22,8 @@ export function ObligationRefBadges({ refs }: ObligationRefBadgesProps) {
   return (
     <>
       {refs.map((ref) => {
-        const Icon = ref.kind === 'LENDING' ? HandCoins : Landmark;
+        const Icon =
+          ref.kind === 'LENDING' ? HandCoins : ref.kind === 'DIVIDEND' ? Coins : Landmark;
         const badge = (
           <Badge
             variant="secondary"
@@ -36,10 +38,7 @@ export function ObligationRefBadges({ refs }: ObligationRefBadgesProps) {
           return <span key={`${ref.kind}-${ref.id}`}>{badge}</span>;
         }
 
-        const href =
-          ref.kind === 'LENDING'
-            ? `/loans/lendings/${ref.parentId}`
-            : `/loans/${ref.parentId}`;
+        const href = obligationRefHref(ref.kind, ref.parentId);
 
         return (
           <Link

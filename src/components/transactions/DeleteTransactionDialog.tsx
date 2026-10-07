@@ -75,7 +75,7 @@ export function buildDeleteDescription(transaction: Transaction): string {
   const obligationRefs = transaction.obligationRefs ?? [];
   const obligationSuffix =
     obligationRefs.length > 0
-      ? ` It is linked to ${obligationRefs.length} loan/lending record${obligationRefs.length === 1 ? '' : 's'} (${obligationRefs.map((ref) => ref.label).join(', ')}); the record${obligationRefs.length === 1 ? '' : 's'} will stay but lose the link.`
+      ? ` It is linked to ${obligationRefs.length} loan, lending or dividend record${obligationRefs.length === 1 ? '' : 's'} (${obligationRefs.map((ref) => ref.label).join(', ')}); the record${obligationRefs.length === 1 ? '' : 's'} will stay but lose the link.`
       : '';
 
   return (

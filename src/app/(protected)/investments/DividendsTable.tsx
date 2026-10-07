@@ -9,6 +9,7 @@ import { Account, Broker } from '@/lib/account.types';
 import { Dividend } from '@/lib/types';
 import { formatDate, formatMoney } from '@/lib/utils';
 
+import { DividendReceiptCell } from './dividend-receipts/DividendReceiptCell';
 import { EditDividendDialog } from './EditDividendDialog';
 
 interface DividendsTableProps {
@@ -160,6 +161,11 @@ export function DividendsTable({
                   )}
                 </div>
 
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-2xs text-slate-400 font-medium">Receipt</span>
+                  <DividendReceiptCell dividend={div} />
+                </div>
+
                 {/* Amount Breakdown Footer */}
                 <div className="flex items-center justify-between text-xs">
                   {/*<div className="flex items-center gap-3 text-xs">*/}
@@ -216,6 +222,7 @@ export function DividendsTable({
                     <TableHead className="text-right text-xs font-medium whitespace-nowrap">Gross</TableHead>
                     <TableHead className="text-right text-xs font-medium whitespace-nowrap">TDS</TableHead>
                     <TableHead className="text-right text-xs font-medium whitespace-nowrap">Net</TableHead>
+                    <TableHead className="text-xs font-medium">Receipt</TableHead>
                     <TableHead className="text-right text-xs font-medium"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -261,6 +268,9 @@ export function DividendsTable({
                         </TableCell>
                         <TableCell className="py-2.5 text-right font-medium text-xs text-emerald-600 dark:text-emerald-400 tabular-nums">
                           {formatMoney(net)}
+                        </TableCell>
+                        <TableCell className="py-2.5">
+                          <DividendReceiptCell dividend={div} />
                         </TableCell>
                         <TableCell className="py-2.5 text-right">
                           <EditDividendDialog dividend={div} onSuccess={onSuccess} />

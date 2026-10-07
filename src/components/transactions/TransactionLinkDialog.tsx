@@ -18,6 +18,7 @@ import type { Transaction } from '@/lib/transaction.types';
 
 import { LinkDialogBody } from './link-dialog/LinkDialogBody';
 import { LinkTypeSelector } from './link-dialog/LinkTypeSelector';
+import { useDividendLink } from './link-dialog/useDividendLink';
 import { useLoanPaymentLink } from './link-dialog/useLoanPaymentLink';
 import { useTransactionLink } from './link-dialog/useTransactionLink';
 import { useRecordLending } from './record-lending/useRecordLending';
@@ -66,6 +67,13 @@ export function TransactionLinkDialog({
     onSuccess,
   });
 
+  const dividend = useDividendLink({
+    transaction: subjectTransaction,
+    open: open && kind === 'DIVIDEND',
+    onOpenChange,
+    onSuccess,
+  });
+
   let primaryAction: DialogFooterAction;
   if (kind === 'LENDING') {
     // Attaching to an existing entry has its own per-row button in the body.
@@ -80,6 +88,13 @@ export function TransactionLinkDialog({
       onClick: loanPayment.handleSubmit,
       disabled: !loanPayment.canSubmit || loanPayment.submitting,
     };
+  } else if (kind === 'DIVIDEND') {
+    const isNew = dividend.mode === 'new';
+    primaryAction = {
+      label: dividend.submitting ? 'Linking...' : isNew ? 'Record & link' : 'Link dividend',
+      onClick: dividend.handleSubmit,
+      disabled: !dividend.canSubmit || dividend.submitting,
+    };
   } else {
     primaryAction = {
       label: linkState.submitting ? 'Linking...' : 'Link Transactions',
@@ -89,7 +104,7 @@ export function TransactionLinkDialog({
     };
   }
 
-  const anyBusy = linkState.submitting || lending.submitting || loanPayment.submitting;
+  const anyBusy = linkState.submitting || lending.submitting || loanPayment.submitting || dividend.submitting;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -120,6 +135,7 @@ export function TransactionLinkDialog({
             linkState={linkState}
             lending={lending}
             loanPayment={loanPayment}
+            dividend={dividend}
             accounts={accounts}
           />
         </DialogBody>

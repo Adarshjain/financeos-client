@@ -73,7 +73,7 @@ export function getSelectedTxns(
   return pagedData.content.filter((t) => selectedIds.includes(t.id));
 }
 
-/** How many of the selected (loaded-page) transactions carry a loan/lending
+/** How many of the selected (loaded-page) transactions carry a loan, lending or dividend
  * obligation ref — used to warn before a bulk delete that those records will
  * lose their link. Unlike `getSelectedTxns` this isn't capped to a pair, since
  * bulk delete allows any selection size. */

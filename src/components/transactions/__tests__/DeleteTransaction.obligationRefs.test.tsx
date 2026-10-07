@@ -30,18 +30,18 @@ describe('DeleteTransaction obligationRefs warning', () => {
     vi.clearAllMocks();
   });
 
-  it('includes the singular "linked to 1 loan/lending record" sentence when exactly one ref exists', () => {
+  it('includes the singular "linked to 1 loan, lending or dividend record" sentence when exactly one ref exists', () => {
     const refs: ObligationRef[] = [{ kind: 'LENDING', id: 'r1', parentId: 'cp-1', label: 'Rahul Sharma' }];
     openDialog({ ...baseTxn, obligationRefs: refs });
 
     expect(
       screen.getByText(
-        /It is linked to 1 loan\/lending record \(Rahul Sharma\); the record will stay but lose the link\./,
+        /It is linked to 1 loan, lending or dividend record \(Rahul Sharma\); the record will stay but lose the link\./,
       ),
     ).toBeInTheDocument();
   });
 
-  it('includes the plural "linked to N loan/lending records" sentence with all labels when multiple refs exist', () => {
+  it('includes the plural "linked to N loan, lending or dividend records" sentence with all labels when multiple refs exist', () => {
     const refs: ObligationRef[] = [
       { kind: 'LENDING', id: 'r1', parentId: 'cp-1', label: 'Rahul Sharma' },
       { kind: 'LOAN_PAYMENT', id: 'r2', parentId: 'loan-1', label: 'Home Loan EMI #3' },
@@ -50,7 +50,7 @@ describe('DeleteTransaction obligationRefs warning', () => {
 
     expect(
       screen.getByText(
-        /It is linked to 2 loan\/lending records \(Rahul Sharma, Home Loan EMI #3\); the records will stay but lose the link\./,
+        /It is linked to 2 loan, lending or dividend records \(Rahul Sharma, Home Loan EMI #3\); the records will stay but lose the link\./,
       ),
     ).toBeInTheDocument();
   });
@@ -58,7 +58,7 @@ describe('DeleteTransaction obligationRefs warning', () => {
   it('omits the obligation-refs sentence entirely when there are no refs', () => {
     openDialog(baseTxn);
 
-    expect(screen.queryByText(/loan\/lending record/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/loan, lending or dividend record/i)).not.toBeInTheDocument();
     expect(screen.getByText('Are you sure you want to delete this transaction?')).toBeInTheDocument();
   });
 });

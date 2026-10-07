@@ -66,7 +66,7 @@ describe('TransactionDetailContent link/lending actions', () => {
     renderDetail({ ...baseTxn, obligationRefs: refs });
 
     expect(screen.getByText('Links')).toBeInTheDocument();
-    expect(screen.getByText('Ledger & loans')).toBeInTheDocument();
+    expect(screen.getByText('Ledger, loans & dividends')).toBeInTheDocument();
     expect(screen.getByText('Rahul Sharma')).toBeInTheDocument();
   });
 });

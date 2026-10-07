@@ -47,6 +47,7 @@ export const TransactionDetailContent = ({
     unlinkingId: unlinkingObligationId,
     handleUnlink: handleUnlinkObligation,
     handleUnlinkLoanPayment,
+    handleUnlinkDividend,
   } = useObligationRefs(onCloseAndRefresh);
 
   return (
@@ -75,6 +76,7 @@ export const TransactionDetailContent = ({
           unlinkingObligationId={unlinkingObligationId}
           onUnlinkLending={handleUnlinkObligation}
           onUnlinkLoanPayment={handleUnlinkLoanPayment}
+          onUnlinkDividend={handleUnlinkDividend}
         />
 
         <ReviewTransaction

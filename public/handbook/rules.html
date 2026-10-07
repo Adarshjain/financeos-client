@@ -72,6 +72,11 @@
 <tr><td>Reward rule PUT, reorder</td><td>Yes</td><td>full overwrite; complete id list</td><td></td><td>single</td><td>—</td></tr>
 <tr><td>Reward evaluate / report / recommend</td><td>Yes (pure read)</td><td>—</td><td></td><td>read-only</td><td>—</td></tr>
 <tr><td>Trade create</td><td><strong>No</strong></td><td>none (external_ref unused for manual)</td><td></td><td>single + AFTER_COMMIT price event</td><td>Duplicate trade</td></tr>
+<tr><td>Dividend link (<code>PUT /investments/dividends/{id}/transaction</code>)</td><td>Yes</td><td>same transaction id is a no-op</td><td>service</td><td>single</td><td>A different credit relinks (replaces); concurrent links to one credit across families not DB-guarded</td></tr>
+<tr><td>Dividend unlink (<code>DELETE …/transaction</code>)</td><td>Yes</td><td>204 when already unlinked</td><td>service</td><td>single</td><td>—</td></tr>
+<tr><td>Dividend receipt status (<code>PUT …/receipt-status</code>)</td><td>Yes</td><td>full overwrite of the note (null clears)</td><td>service + CHECK</td><td>single</td><td>400 when a credit is linked (unlink first); only the two manual values accepted</td></tr>
+<tr><td>Dividend reconciliation confirm</td><td>Yes per item</td><td>re-confirming the same credit is a no-op; validation or not-found failures go to the <code>skipped</code> list per item</td><td>service</td><td>per item, partial success</td><td>TDS write-back only when tds is null, so a retry never overwrites</td></tr>
+<tr><td>Migration V89</td><td>Yes</td><td>each ALTER guarded on <code>user_tab_columns</code> / <code>user_constraints</code> / <code>user_ind_columns</code>; view is CREATE OR REPLACE</td><td>PL/SQL</td><td>DDL</td><td>—</td></tr>
 <tr><td>Price refresh</td><td>Yes</td><td>(instrument, as_of) upsert; job dedupKey</td><td>DB unique + JobService</td><td>per instrument</td><td>Enqueue dedup non-atomic</td></tr>
 <tr><td>Price refresh event listener</td><td>Yes</td><td>upsert</td><td>REQUIRES_NEW</td><td></td><td>—</td></tr>
 <tr><td>Dividend accept</td><td>Yes</td><td>±7-day dedup re-run at accept</td><td>service</td><td>single</td><td>—</td></tr>

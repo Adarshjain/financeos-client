@@ -32,7 +32,7 @@ interface UseTransactionLinkProps {
 export interface UseTransactionLinkResult {
   kind: LinkKind;
   setKind: (kind: LinkKind) => void;
-  /** `null` when `kind` is a record kind (LENDING / LOAN_PAYMENT). */
+  /** `null` when `kind` is a record kind (LENDING / LOAN_PAYMENT / DIVIDEND). */
   linkType: LinkType | null;
   disabledKinds: Partial<Record<LinkKind, string>>;
   /** The single transaction a LENDING/LOAN_PAYMENT kind would act on, if any. */
@@ -78,8 +78,8 @@ export function useTransactionLink({
   const disabledKinds = React.useMemo<Partial<Record<LinkKind, string>>>(() => {
     const isBulk = !initialTransaction && initialSelectedTransactions.length > 1;
     if (isBulk) {
-      const reason = 'Select a single transaction to record a lending or loan payment';
-      return { LENDING: reason, LOAN_PAYMENT: reason };
+      const reason = 'Select a single transaction to record a lending, loan payment or dividend';
+      return { LENDING: reason, LOAN_PAYMENT: reason, DIVIDEND: reason };
     }
     if (!subjectTransaction) return {};
 
@@ -87,12 +87,17 @@ export function useTransactionLink({
     const refs = subjectTransaction.obligationRefs ?? [];
 
     if (refs.some((r) => r.kind !== 'LENDING')) {
-      result.LENDING = 'Already linked to a loan record';
+      result.LENDING = 'Already linked to a loan or dividend record';
     }
     if (refs.length > 0) {
       result.LOAN_PAYMENT = 'Already linked to a ledger/loan record';
     } else if (subjectTransaction.amount >= 0) {
       result.LOAN_PAYMENT = 'Loan payments must be money-out (debit) transactions';
+    }
+    if (refs.length > 0) {
+      result.DIVIDEND = 'Already linked to a ledger/loan/dividend record';
+    } else if (subjectTransaction.amount < 0) {
+      result.DIVIDEND = 'Dividends must be money-in (credit) transactions';
     }
     return result;
   }, [initialTransaction, initialSelectedTransactions, subjectTransaction]);

@@ -75,10 +75,10 @@ describe('useTransactionLink disabledKinds', () => {
     );
 
     expect(result.current.disabledKinds.LENDING).toBe(
-      'Select a single transaction to record a lending or loan payment',
+      'Select a single transaction to record a lending, loan payment or dividend',
     );
     expect(result.current.disabledKinds.LOAN_PAYMENT).toBe(
-      'Select a single transaction to record a lending or loan payment',
+      'Select a single transaction to record a lending, loan payment or dividend',
     );
   });
 
@@ -99,7 +99,7 @@ describe('useTransactionLink disabledKinds', () => {
       { wrapper: createWrapper() },
     );
 
-    expect(result.current.disabledKinds.LENDING).toMatch(/loan record/i);
+    expect(result.current.disabledKinds.LENDING).toMatch(/loan or dividend record/i);
     expect(result.current.disabledKinds.LOAN_PAYMENT).toMatch(/ledger\/loan record/i);
   });
 
@@ -142,7 +142,7 @@ describe('useTransactionLink disabledKinds', () => {
     expect(result.current.disabledKinds.LENDING).toBeUndefined();
   });
 
-  it('leaves both record kinds enabled for a DEBIT subject with no refs', () => {
+  it('leaves LENDING and LOAN_PAYMENT enabled (only DIVIDEND disabled) for a DEBIT subject with no refs', () => {
     const subject = makeTxn({ id: 't1', amount: -500 });
 
     const { result } = renderHook(
@@ -156,7 +156,9 @@ describe('useTransactionLink disabledKinds', () => {
       { wrapper: createWrapper() },
     );
 
-    expect(result.current.disabledKinds).toEqual({});
+    expect(result.current.disabledKinds).toEqual({
+      DIVIDEND: 'Dividends must be money-in (credit) transactions',
+    });
   });
 });
 

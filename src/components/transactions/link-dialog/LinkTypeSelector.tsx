@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 const RECORD_KIND_LABELS: Record<(typeof RECORD_LINK_KINDS)[number], string> = {
   LENDING: 'Lending (person ledger)',
   LOAN_PAYMENT: 'Loan EMI payment',
+  DIVIDEND: 'Dividend received',
 };
 
 interface LinkTypeSelectorProps {
@@ -77,6 +78,9 @@ export function LinkTypeSelector({
               </SelectItem>
               <SelectItem value="LOAN_PAYMENT" disabled={Boolean(disabledKinds.LOAN_PAYMENT)}>
                 {RECORD_KIND_LABELS.LOAN_PAYMENT}
+              </SelectItem>
+              <SelectItem value="DIVIDEND" disabled={Boolean(disabledKinds.DIVIDEND)}>
+                {RECORD_KIND_LABELS.DIVIDEND}
               </SelectItem>
             </SelectContent>
           </Select>

@@ -1,40 +1,61 @@
 'use client';
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ScanSearch } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { TablePagination } from '@/components/reports/views/TablePagination';
-import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { isAccountOfType } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { usePositions } from '@/lib/query/hooks/useInvestments';
 import { keys } from '@/lib/query/keys';
-import { AccountType, DividendSummary, DividendType, PagedDividendResponse } from '@/lib/types';
-import { cn, formatMoney } from '@/lib/utils';
+import {
+  AccountType,
+  DividendReceiptStatus,
+  DividendReceiptSummary,
+  DividendSummary,
+  DividendType,
+  PagedDividendResponse,
+} from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 import { CreateDividendDialog } from './CreateDividendDialog';
 import { DetectDividendsButton } from './DetectDividendsButton';
+import { DividendFilterSelects } from './dividend-receipts/DividendFilterSelects';
+import { DividendFySummaryCard } from './dividend-receipts/DividendFySummaryCard';
+import { DividendReconcilePanel } from './dividend-receipts/DividendReconcilePanel';
+import { InstrumentFilterChip } from './dividend-receipts/InstrumentFilterChip';
+import { ReceiptFilterSelect } from './dividend-receipts/ReceiptFilterSelect';
+import { ReceiptSummaryCard } from './dividend-receipts/ReceiptSummaryCard';
+import { useReceiptSummary } from './dividend-receipts/useReceiptSummary';
 import { DividendsTable } from './DividendsTable';
 
 interface DividendsSectionProps {
   initialData: PagedDividendResponse;
   initialSummary: DividendSummary;
+  initialReceiptSummary?: DividendReceiptSummary;
 }
 
 export function DividendsSection({
   initialData,
   initialSummary,
+  initialReceiptSummary,
 }: DividendsSectionProps) {
+  const router = useRouter();
+  const instrumentId = useSearchParams().get('instrumentId') || undefined;
   const { data: accounts = [] } = useAccounts();
   const { data: positions = [] } = usePositions();
   const brokerAccounts = accounts.filter(isAccountOfType(AccountType.BROKER));
   const [selectedBrokerFilter, setSelectedBrokerFilter] = useState<string>('all');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>('all');
   const [selectedFyFilter, setSelectedFyFilter] = useState<string>('all');
+  const [selectedReceiptFilter, setSelectedReceiptFilter] = useState<string>('all');
+  const [showReconcile, setShowReconcile] = useState(false);
 
   const [page, setPage] = useState<number>(initialData.number || 0);
   const [pageSize, setPageSize] = useState<number>(initialData.size || 25);
@@ -43,13 +64,20 @@ export function DividendsSection({
     page === (initialData.number || 0) &&
     pageSize === (initialData.size || 25) &&
     selectedBrokerFilter === 'all' &&
-    selectedTypeFilter === 'all';
-  const isDefaultSummaryFilters = selectedBrokerFilter === 'all' && selectedTypeFilter === 'all';
+    selectedTypeFilter === 'all' &&
+    selectedReceiptFilter === 'all' &&
+    !instrumentId;
+  const isDefaultSummaryFilters =
+    selectedBrokerFilter === 'all' && selectedTypeFilter === 'all' && !instrumentId;
 
   const summaryParams = {
     ...(selectedBrokerFilter === 'all' ? {} : { brokerAccountId: selectedBrokerFilter }),
     ...(selectedTypeFilter === 'all' ? {} : { type: selectedTypeFilter as DividendType }),
+    ...(instrumentId ? { instrumentId } : {}),
   };
+
+  const { data: receiptSummary = { buckets: [], coverageEnd: null, totalCount: 0 }, refetch: refetchReceiptSummary } =
+    useReceiptSummary(summaryParams, isDefaultSummaryFilters ? initialReceiptSummary : undefined);
 
   const { data: summary = initialSummary, refetch: refetchSummary } = useQuery({
     queryKey: keys.investments.dividendSummary(summaryParams),
@@ -73,6 +101,8 @@ export function DividendsSection({
     size: pageSize,
     ...(selectedBrokerFilter === 'all' ? {} : { brokerAccountId: selectedBrokerFilter }),
     ...(selectedTypeFilter === 'all' ? {} : { type: selectedTypeFilter as DividendType }),
+    ...(instrumentId ? { instrumentId } : {}),
+    ...(selectedReceiptFilter === 'all' ? {} : { receipt: selectedReceiptFilter as DividendReceiptStatus }),
     ...(fromDate ? { from: fromDate } : {}),
     ...(toDate ? { to: toDate } : {}),
   };
@@ -101,6 +131,7 @@ export function DividendsSection({
   const refreshAll = () => {
     refetchList();
     refetchSummary();
+    refetchReceiptSummary();
   };
 
   const handleBrokerChange = (val: string) => {
@@ -111,6 +142,16 @@ export function DividendsSection({
   const handleTypeChange = (val: string) => {
     setSelectedTypeFilter(val);
     setPage(0);
+  };
+
+  const handleReceiptChange = (val: string) => {
+    setSelectedReceiptFilter(val);
+    setPage(0);
+  };
+
+  const clearInstrument = () => {
+    setPage(0);
+    router.replace('/investments/dividends');
   };
 
   const handleFyChange = (val: string) => {
@@ -132,60 +173,19 @@ export function DividendsSection({
       )}
     >
       <div className={cn('flex flex-row gap-2 flex-wrap items-center', isMobile ? 'w-full' : '')}>
-        {/* Fiscal Year Filter */}
-        <Select value={selectedFyFilter} onValueChange={handleFyChange}>
-          <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold flex-1">
-            <SelectValue placeholder="All Fiscal Years" />
-          </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs">
-            <SelectItem value="all" className="text-xs font-medium">
-              All FYs
-            </SelectItem>
-            {summary.buckets.map((b) => (
-              <SelectItem key={b.label} value={b.label} className="text-xs font-medium">
-                {b.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <DividendFilterSelects
+          fyBuckets={summary.buckets.map((b) => b.label)}
+          brokerAccounts={brokerAccounts}
+          fy={selectedFyFilter}
+          broker={selectedBrokerFilter}
+          type={selectedTypeFilter}
+          onFyChange={handleFyChange}
+          onBrokerChange={handleBrokerChange}
+          onTypeChange={handleTypeChange}
+        />
 
-        {/* Broker Filter */}
-        <Select value={selectedBrokerFilter} onValueChange={handleBrokerChange}>
-          <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold flex-1">
-            <SelectValue placeholder="All Brokers" />
-          </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs">
-            <SelectItem value="all" className="text-xs font-medium">
-              All Brokers
-            </SelectItem>
-            {brokerAccounts.map((b) => (
-              <SelectItem key={b.id} value={b.id} className="text-xs font-medium">
-                {b.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Type Filter */}
-        <Select value={selectedTypeFilter} onValueChange={handleTypeChange}>
-          <SelectTrigger className="h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold flex-1">
-            <SelectValue placeholder="All Types" />
-          </SelectTrigger>
-          <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-xs">
-            <SelectItem value="all" className="text-xs font-medium">
-              All Types
-            </SelectItem>
-            <SelectItem value="dividend" className="text-xs font-medium">
-              Dividend
-            </SelectItem>
-            <SelectItem value="interest" className="text-xs font-medium">
-              Interest
-            </SelectItem>
-            <SelectItem value="other" className="text-xs font-medium">
-              Other
-            </SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Receipt Filter */}
+        <ReceiptFilterSelect value={selectedReceiptFilter} onChange={handleReceiptChange} />
       </div>
 
       {/* Pagination Controls */}
@@ -218,45 +218,42 @@ export function DividendsSection({
           <p className="text-xs text-slate-500 dark:text-slate-400">
             Recorded cash dividends, bank payouts, and yield distribution log
           </p>
+          {instrumentId && (
+            <div className="pt-1">
+              <InstrumentFilterChip
+                label={dividends[0]?.symbol || dividends[0]?.instrumentName}
+                onClear={clearInstrument}
+              />
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setShowReconcile((v) => !v)}>
+            <ScanSearch className="h-3.5 w-3.5" />
+            Reconcile
+          </Button>
           <DetectDividendsButton onSuccess={refreshAll} />
           <CreateDividendDialog brokerAccounts={brokerAccounts} positions={positions} onSuccess={refreshAll} />
         </div>
       </div>
 
-      {/* FY Combined Summary Card */}
-      <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-2.5 sm:p-3">
-        <CardContent className="p-0 grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
-          <div>
-            <p className="text-2xs font-medium text-slate-500 dark:text-slate-400">Gross Income</p>
-            <p className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100 tabular-nums">
-              {formatMoney(displayGross || 0)}
-            </p>
-          </div>
+      <DividendFySummaryCard
+        gross={displayGross}
+        tds={displayTds}
+        net={displayNet}
+        count={displayCount}
+      />
 
-          <div>
-            <p className="text-2xs font-medium text-slate-500 dark:text-slate-400">TDS Deducted</p>
-            <p className="text-xs sm:text-sm font-black text-rose-600 dark:text-rose-400 tabular-nums">
-              {formatMoney(displayTds || 0)}
-            </p>
-          </div>
+      <ReceiptSummaryCard summary={receiptSummary} />
 
-          <div>
-            <p className="text-2xs font-medium text-slate-500 dark:text-slate-400">Net Received</p>
-            <p className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
-              {formatMoney(displayNet || 0)}
-            </p>
-          </div>
-
-          <div>
-            <p className="text-2xs font-medium text-slate-500 dark:text-slate-400">Payout Events</p>
-            <p className="text-xs sm:text-sm font-black text-slate-900 dark:text-slate-100 tabular-nums">
-              {displayCount}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      {showReconcile && (
+        <DividendReconcilePanel
+          brokerAccountId={selectedBrokerFilter === 'all' ? undefined : selectedBrokerFilter}
+          brokerAccounts={brokerAccounts}
+          positions={positions}
+          onChanged={refreshAll}
+        />
+      )}
 
       {/* Desktop Filter / Action Bar */}
       <Card className="hidden lg:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-3">
