@@ -262,4 +262,42 @@ test.describe('Transactions UI (@ui)', () => {
     await expect(page.getByText('Cross Module Bank')).toBeVisible();
     await expect(page.getByText(/3,500/)).toBeVisible();
   });
+
+  test('with no accounts, the page and the create dialog both lead to adding one inline (@mobile)', async ({
+    page,
+  }) => {
+    // Fresh user: no accounts at all.
+    await openTransactions(page);
+
+    // The list's empty state points at the real first step, not at "add a transaction".
+    await expect(page.locator('main').getByText('Add an account to get started')).toBeVisible();
+
+    // The create dialog still opens, and replaces the empty picker with an inline add-account action.
+    const dialog = page.getByRole('dialog');
+    await expect(async () => {
+      await page.getByRole('button', { name: 'Create', exact: true }).click();
+      await expect(dialog).toBeVisible({ timeout: 2000 });
+    }).toPass({ timeout: 15000 });
+
+    const amountInput = page.locator('#amount-input');
+    await amountInput.fill('275.50');
+    await expect(dialog.getByText('No account to record this against yet')).toBeVisible();
+    await dialog.getByRole('button', { name: 'Add account' }).click();
+
+    // Inline account form: broker is not offered, since a transaction cannot be recorded against one.
+    await expect(dialog.getByRole('heading', { name: /Create Account/i })).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Broker' })).toHaveCount(0);
+    await dialog.getByLabel('Account Name').fill('Inline Bank');
+    await dialog.getByLabel('Last 4 Digits').fill('4321');
+    await dialog.getByRole('button', { name: 'Create Account' }).click();
+
+    // Back on the same draft: the amount typed earlier survives and the new account is selected.
+    await expect(dialog.getByRole('combobox', { name: 'Account' })).toContainText('Inline Bank');
+    await expect(amountInput).toHaveValue('275.50');
+    await dialog.getByPlaceholder('Add description or notes...').fill('Inline Account Lunch');
+    await dialog.getByRole('button', { name: 'Save' }).click();
+
+    await expect(page.locator('main').getByText('Inline Account Lunch')).toBeVisible();
+    await expect(page.locator('main').getByText('Inline Bank').first()).toBeVisible();
+  });
 });

@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 
+import { AccountForm } from '@/components/accounts/AccountForm';
 import DayPicker from '@/components/DayPicker';
 import { DialogBody, DialogFooter } from '@/components/ui/dialog';
 import { Transaction } from '@/lib/transaction.types';
@@ -11,6 +12,7 @@ import { AmountHeroSection } from './crud/AmountHeroSection';
 import { DescriptionSection } from './crud/DescriptionSection';
 import { RewardsDetailsSection } from './crud/RewardsDetailsSection';
 import { StatusFlagsSection } from './crud/StatusFlagsSection';
+import { TRANSACTION_ACCOUNT_TYPES } from './crud/transactionCRUD.helpers';
 import { useTransactionCRUD } from './crud/useTransactionCRUD';
 
 interface TransactionCRUDProps {
@@ -39,6 +41,7 @@ export default function TransactionCRUD({
     setCardId,
     selectableAccounts,
     handleAccountChange,
+    selectCreatedAccount,
     isCreditCard,
     cardOptions,
     localCategories,
@@ -77,6 +80,25 @@ export default function TransactionCRUD({
     onSuccess,
   });
 
+  // The account form takes over the dialog body while the user adds an
+  // account; this component (and so the transaction draft held by the hook
+  // above) stays mounted, so Cancel or a successful create lands back on the
+  // half-filled transaction rather than a blank one.
+  const [view, setView] = React.useState<'transaction' | 'account'>('transaction');
+
+  if (view === 'account') {
+    return (
+      <AccountForm
+        allowedTypes={TRANSACTION_ACCOUNT_TYPES}
+        onSuccess={(account) => {
+          if (account) selectCreatedAccount(account);
+          setView('transaction');
+        }}
+        onClose={() => setView('transaction')}
+      />
+    );
+  }
+
   return (
     <>
       <DialogBody className="bg-slate-50/40 dark:bg-slate-950/20 scrollbar-thin">
@@ -111,6 +133,7 @@ export default function TransactionCRUD({
             isUpdateMode={isUpdateMode}
             hasAccountId={!!transaction?.accountId}
             handleAccountChange={handleAccountChange}
+            onAddAccount={() => setView('account')}
             isCreditCard={isCreditCard}
             cardOptions={cardOptions}
             localCategories={localCategories}

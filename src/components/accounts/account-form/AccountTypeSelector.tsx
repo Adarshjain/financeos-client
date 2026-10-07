@@ -1,6 +1,6 @@
 'use client';
 
-import { CreditCard, Landmark, Shield, TrendingUp, Wallet } from 'lucide-react';
+import { Shield } from 'lucide-react';
 
 import { Label } from '@/components/ui/label';
 import { AccountType } from '@/lib/types';
@@ -44,18 +44,41 @@ export function AccountTypeButton({
   );
 }
 
+const ALL_ACCOUNT_TYPES: AccountType[] = [
+  AccountType.BANK_ACCOUNT,
+  AccountType.CREDIT_CARD,
+  AccountType.BROKER,
+  AccountType.GENERIC,
+];
+
+// Tailwind needs the full class name present in source, so no template strings.
+const DESKTOP_COLUMNS: Record<number, string> = {
+  1: 'sm:grid-cols-1',
+  2: 'sm:grid-cols-2',
+  3: 'sm:grid-cols-3',
+  4: 'sm:grid-cols-4',
+};
+
 interface AccountTypeSelectorProps {
   accountType: AccountType;
   setAccountType: (type: AccountType) => void;
   isUpdateMode: boolean;
+  /** Types offered in create mode. Defaults to every type; a host that can
+   * only use some of them (the transaction form cannot record against a
+   * broker account) narrows the list rather than letting the user create an
+   * account it then cannot pick. */
+  allowedTypes?: AccountType[];
 }
 
 export function AccountTypeSelector({
   accountType,
   setAccountType,
   isUpdateMode,
+  allowedTypes,
 }: AccountTypeSelectorProps) {
   if (isUpdateMode) return null;
+
+  const types = ALL_ACCOUNT_TYPES.filter((t) => !allowedTypes || allowedTypes.includes(t));
 
   return (
     <div className="space-y-2">
@@ -63,35 +86,20 @@ export function AccountTypeSelector({
         <Shield className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
         Account Type
       </Label>
-      <div className="grid gap-2 grid-cols-2 sm:grid-cols-4">
-        <AccountTypeButton
-          label={ACCOUNT_TYPE_CONFIG.bank_account.label ?? 'Account'}
-          icon={Landmark}
-          selected={accountType === AccountType.BANK_ACCOUNT}
-          activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.BANK_ACCOUNT].activeClassName}
-          onClick={() => setAccountType(AccountType.BANK_ACCOUNT)}
-        />
-        <AccountTypeButton
-          label={ACCOUNT_TYPE_CONFIG.credit_card.label ?? 'Account'}
-          icon={CreditCard}
-          selected={accountType === AccountType.CREDIT_CARD}
-          activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.CREDIT_CARD].activeClassName}
-          onClick={() => setAccountType(AccountType.CREDIT_CARD)}
-        />
-        <AccountTypeButton
-          label={ACCOUNT_TYPE_CONFIG.broker.label ?? 'Account'}
-          icon={TrendingUp}
-          selected={accountType === AccountType.BROKER}
-          activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.BROKER].activeClassName}
-          onClick={() => setAccountType(AccountType.BROKER)}
-        />
-        <AccountTypeButton
-          label={ACCOUNT_TYPE_CONFIG.generic.label ?? 'Account'}
-          icon={Wallet}
-          selected={accountType === AccountType.GENERIC}
-          activeClassName={ACCOUNT_TYPE_CONFIG[AccountType.GENERIC].activeClassName}
-          onClick={() => setAccountType(AccountType.GENERIC)}
-        />
+      <div className={cn('grid gap-2 grid-cols-2', DESKTOP_COLUMNS[types.length] ?? 'sm:grid-cols-4')}>
+        {types.map((type) => {
+          const config = ACCOUNT_TYPE_CONFIG[type];
+          return (
+            <AccountTypeButton
+              key={type}
+              label={config.label}
+              icon={config.icon}
+              selected={accountType === type}
+              activeClassName={config.activeClassName}
+              onClick={() => setAccountType(type)}
+            />
+          );
+        })}
       </div>
     </div>
   );

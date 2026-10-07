@@ -1,12 +1,15 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
+import { Loader2, PlusIcon } from 'lucide-react';
 import { Fragment } from 'react';
 
+import { AccountFormWrapper } from '@/components/accounts/AccountFormWrapper';
+import { buttonVariants } from '@/components/ui/button';
 import { Account } from '@/lib/account.types';
 import { PagedTransaction } from '@/lib/transaction.types';
 import { formatDate } from '@/lib/utils';
 
+import { getSelectableAccounts, TRANSACTION_ACCOUNT_TYPES } from '../crud/transactionCRUD.helpers';
 import { TransactionCard } from '../TransactionCard';
 
 interface TransactionListFeedProps {
@@ -40,6 +43,34 @@ export function TransactionListFeed({
   }
 
   if (!pagedData || pagedData.content.length === 0) {
+    // Nothing can be recorded without an open bank/card/wallet account, so
+    // that is the step to point at. A filter still wins when such accounts
+    // exist (it may be hiding real transactions), but never when there are
+    // no accounts at all, since then there is nothing for it to hide.
+    const needsAccount =
+      getSelectableAccounts(accounts).length === 0 &&
+      (!hasFiltersOrSearch || accounts.length === 0);
+    if (needsAccount) {
+      return (
+        <div className="text-center py-16 px-4 space-y-3">
+          <div>
+            <p className="text-slate-600 dark:text-slate-400 mb-2 font-medium">
+              Add an account to get started
+            </p>
+            <p className="text-sm text-slate-400 max-w-sm mx-auto">
+              Transactions are recorded against a bank account, credit card or wallet. Add one to start tracking.
+            </p>
+          </div>
+          <AccountFormWrapper
+            triggerClassName={buttonVariants({ size: 'sm' })}
+            allowedTypes={TRANSACTION_ACCOUNT_TYPES}
+          >
+            <PlusIcon data-icon="inline-start" />
+            Add account
+          </AccountFormWrapper>
+        </div>
+      );
+    }
     return (
       <div className="text-center py-16 px-4">
         <p className="text-slate-600 dark:text-slate-400 mb-2 font-medium">
