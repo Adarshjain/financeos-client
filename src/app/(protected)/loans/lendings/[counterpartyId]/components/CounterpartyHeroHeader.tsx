@@ -7,9 +7,10 @@ interface CounterpartyHeroHeaderProps {
   cp: CounterpartyResponse;
 }
 
+/** Name + net chip, and the four gross totals: principal each way, repayments each way. */
 export function CounterpartyHeroHeader({ cp }: CounterpartyHeroHeaderProps) {
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl p-4 sm:p-5 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
       <div>
         <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-3">
           {cp.name}
@@ -29,7 +30,7 @@ export function CounterpartyHeroHeader({ cp }: CounterpartyHeroHeaderProps) {
         {cp.notes && <p className="text-xs text-slate-500 mt-1">{cp.notes}</p>}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div>
           <div className="text-2xs text-slate-500 font-semibold uppercase">
             Total Lent
@@ -44,6 +45,22 @@ export function CounterpartyHeroHeader({ cp }: CounterpartyHeroHeaderProps) {
           </div>
           <div className="text-sm font-bold text-rose-600 dark:text-rose-400 tabular-nums">
             {formatMoney(cp.totalBorrowed)}
+          </div>
+        </div>
+        <div>
+          <div className="text-2xs text-slate-500 font-semibold uppercase">
+            Repaid to you
+          </div>
+          <div className="text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums">
+            {formatMoney(cp.repaidToYou)}
+          </div>
+        </div>
+        <div>
+          <div className="text-2xs text-slate-500 font-semibold uppercase">
+            Repaid by you
+          </div>
+          <div className="text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums">
+            {formatMoney(cp.repaidByYou)}
           </div>
         </div>
       </div>

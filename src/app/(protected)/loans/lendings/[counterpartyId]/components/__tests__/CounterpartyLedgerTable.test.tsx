@@ -12,6 +12,7 @@ function makeEntry(overrides: Partial<LendingEntryWithBalance> = {}): LendingEnt
     counterpartyName: 'Rahul',
     amount: 500,
     direction: 'lent',
+    kind: 'principal',
     entryDate: '2026-01-05',
     createdAt: '2026-01-05T00:00:00Z',
     runningBalance: 500,
@@ -98,5 +99,50 @@ describe('CounterpartyLedgerTable + TransactionLinkCell', () => {
     );
 
     expect(screen.queryByText(/split:/)).not.toBeInTheDocument();
+  });
+});
+
+describe('CounterpartyLedgerTable entry kinds', () => {
+  function renderEntries(entries: LendingEntryWithBalance[]) {
+    return render(
+      <CounterpartyLedgerTable
+        cpName="Rahul"
+        entries={entries}
+        onOpenAddEntry={vi.fn()}
+        onOpenEditEntry={vi.fn()}
+        onDeleteEntry={vi.fn()}
+      />,
+    );
+  }
+
+  it('labels principal entries Lent / Borrowed (mobile card and desktop row)', () => {
+    renderEntries([
+      makeEntry({ id: 'l1', direction: 'lent', kind: 'principal' }),
+      makeEntry({ id: 'l2', direction: 'borrowed', kind: 'principal' }),
+    ]);
+
+    expect(screen.getAllByText('Lent')).toHaveLength(2);
+    expect(screen.getAllByText('Borrowed')).toHaveLength(2);
+    expect(screen.queryByText('I Lent')).not.toBeInTheDocument();
+  });
+
+  it('labels settlements by who repaid and keeps the money-direction sign', () => {
+    renderEntries([
+      makeEntry({ id: 'l1', direction: 'borrowed', kind: 'settlement', amount: 2000 }),
+      makeEntry({ id: 'l2', direction: 'lent', kind: 'settlement', amount: 300 }),
+    ]);
+
+    expect(screen.getAllByText('They repaid')).toHaveLength(2);
+    expect(screen.getAllByText('You repaid')).toHaveLength(2);
+    // Mobile card amount: money in has no sign, money out is negative — same as principal
+    // (the desktop row always shows the unsigned amount, hence two matches for the first).
+    expect(screen.getAllByText('₹2,000.00')).toHaveLength(2);
+    expect(screen.getByText('-₹300.00')).toBeInTheDocument();
+  });
+
+  it('treats a missing kind as principal', () => {
+    renderEntries([makeEntry({ id: 'l1', direction: 'lent', kind: undefined as never })]);
+
+    expect(screen.getAllByText('Lent')).toHaveLength(2);
   });
 });

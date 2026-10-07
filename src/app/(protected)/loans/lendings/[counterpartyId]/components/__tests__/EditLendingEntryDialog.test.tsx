@@ -25,8 +25,8 @@ function renderDialog(editSelectedTx: LendingTransactionSummary | Transaction | 
     <EditLendingEntryDialog
       open={true}
       onOpenChange={vi.fn()}
-      lendingDir="lent"
-      setLendingDir={vi.fn()}
+      lendingEntryType="lent"
+      setLendingEntryType={vi.fn()}
       lendingAmount="500"
       setLendingAmount={vi.fn()}
       lendingDate="2026-01-01"
@@ -50,9 +50,12 @@ describe('EditLendingEntryDialog', () => {
 
     expect(screen.getByText('chip:tx-abc')).toBeInTheDocument();
 
-    const radios = screen.getAllByRole('radio');
-    expect(radios).toHaveLength(2);
-    radios.forEach((radio) => expect(radio).toBeDisabled());
+    // Direction is fixed by the linked DEBIT; principal <-> settlement within it stays open.
+    expect(screen.getAllByRole('radio')).toHaveLength(4);
+    expect(screen.getByLabelText('I lent money')).not.toBeDisabled();
+    expect(screen.getByLabelText('I paid back what I owed')).not.toBeDisabled();
+    expect(screen.getByLabelText('I borrowed money')).toBeDisabled();
+    expect(screen.getByLabelText('They paid me back')).toBeDisabled();
     expect(screen.getByText('Unlink the transaction to change direction.')).toBeInTheDocument();
   });
 
@@ -62,7 +65,7 @@ describe('EditLendingEntryDialog', () => {
     expect(screen.getByText('no-chip')).toBeInTheDocument();
 
     const radios = screen.getAllByRole('radio');
-    expect(radios).toHaveLength(2);
+    expect(radios).toHaveLength(4);
     radios.forEach((radio) => expect(radio).not.toBeDisabled());
     expect(screen.queryByText('Unlink the transaction to change direction.')).not.toBeInTheDocument();
   });

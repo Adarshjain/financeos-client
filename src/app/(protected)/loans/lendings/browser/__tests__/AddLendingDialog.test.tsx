@@ -1,7 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import type { CounterpartySelection } from '@/lib/lending.types';
+import type { CounterpartyResponse, CounterpartySelection } from '@/lib/lending.types';
+import type { LendingEntryType } from '@/lib/lendingEntry';
 import type { Transaction } from '@/lib/transaction.types';
 import type { LendingDirection } from '@/lib/types';
 
@@ -70,8 +71,8 @@ function renderDialog(overrides: Partial<Parameters<typeof AddLendingDialog>[0]>
     onOpenChange: vi.fn(),
     party: null,
     setParty: vi.fn(),
-    direction: 'lent' as LendingDirection,
-    setDirection: vi.fn(),
+    entryType: 'lent' as LendingEntryType,
+    setEntryType: vi.fn(),
     amount: '',
     setAmount: vi.fn(),
     entryDate: '2026-01-01',
@@ -114,21 +115,55 @@ describe('AddLendingDialog (browser)', () => {
     );
   });
 
-  it('passes the current direction through to the picker and lets the radio drive it', () => {
-    const { props, rerender } = renderDialog({ direction: 'lent' });
+  it('derives the picker direction from the entry type and lets the type tiles drive it', () => {
+    const { props, rerender } = renderDialog({ entryType: 'lent' });
 
     expect(screen.getByTestId('transaction-picker-stub')).toHaveAttribute('data-direction', 'lent');
+    expect(screen.getAllByRole('radio')).toHaveLength(4);
 
-    fireEvent.click(screen.getByLabelText(/I received money \(Borrowed\)/i));
-    expect(props.setDirection).toHaveBeenCalledWith('borrowed');
+    fireEvent.click(screen.getByLabelText('I borrowed money'));
+    expect(props.setEntryType).toHaveBeenCalledWith('borrowed');
+
+    rerender(<AddLendingDialog {...props} entryType="repaid_to_me" />);
+    expect(screen.getByTestId('transaction-picker-stub')).toHaveAttribute('data-direction', 'borrowed');
+  });
+
+  it('hides the expected return date for a repayment', () => {
+    const { props, rerender } = renderDialog({ entryType: 'lent' });
+    expect(screen.getByLabelText(/Expected Return Date/)).toBeInTheDocument();
+
+    rerender(<AddLendingDialog {...props} entryType="repaid_by_me" />);
+    expect(screen.queryByLabelText(/Expected Return Date/)).not.toBeInTheDocument();
+  });
+
+  it('warns about a repayment that does not fit the chosen person\'s balance, and stays quiet when it does', () => {
+    const rahul: CounterpartyResponse = {
+      id: 'cp-rahul',
+      name: 'Rahul',
+      netPosition: 0,
+      totalLent: 0,
+      totalBorrowed: 0,
+      repaidToYou: 0,
+      repaidByYou: 0,
+      entryCount: 0,
+    };
+    const { props, rerender } = renderDialog({
+      party: { kind: 'existing', counterparty: rahul },
+      entryType: 'repaid_to_me',
+      amount: '100',
+    });
+    expect(screen.getByText("Rahul doesn't owe you anything right now.")).toBeInTheDocument();
 
     rerender(
       <AddLendingDialog
         {...props}
-        direction="borrowed"
+        party={{ kind: 'existing', counterparty: { ...rahul, netPosition: 1200 } }}
       />,
     );
-    expect(screen.getByTestId('transaction-picker-stub')).toHaveAttribute('data-direction', 'borrowed');
+    expect(screen.queryByText(/doesn't owe you/)).not.toBeInTheDocument();
+
+    rerender(<AddLendingDialog {...props} party={{ kind: 'new', name: 'Kavita' }} />);
+    expect(screen.getByText("Kavita doesn't owe you anything right now.")).toBeInTheDocument();
   });
 
   it('wires the party selection through the CounterpartyPicker with no separate name input', () => {

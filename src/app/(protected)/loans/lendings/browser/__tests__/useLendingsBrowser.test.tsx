@@ -33,6 +33,8 @@ const cp1: CounterpartyResponse = {
   netPosition: 0,
   totalLent: 0,
   totalBorrowed: 0,
+  repaidToYou: 0,
+  repaidByYou: 0,
   entryCount: 0,
 };
 
@@ -156,13 +158,43 @@ describe('useLendingsBrowser', () => {
     expect(result.current.selectedTx).toBeNull();
   });
 
+  it('keeps the selected transaction when switching principal <-> settlement within a direction', () => {
+    const { result } = renderHook(() => useLendingsBrowser(), { wrapper: createWrapper() });
+
+    act(() => result.current.onSelectTx(tx));
+    act(() => result.current.setEntryType('repaid_by_me'));
+
+    expect(result.current.entryType).toBe('repaid_by_me');
+    expect(result.current.selectedTx).not.toBeNull();
+  });
+
+  it('sends direction + kind for a repayment, and resets the type when the dialog opens', async () => {
+    vi.mocked(api.POST).mockResolvedValue({ data: { id: 'l1' } } as never);
+    const { result } = renderHook(() => useLendingsBrowser(), { wrapper: createWrapper() });
+
+    act(() => result.current.setParty({ kind: 'existing', counterparty: cp1 }));
+    act(() => result.current.setEntryType('repaid_to_me'));
+    act(() => result.current.setAmount('700'));
+
+    await act(async () => {
+      await result.current.handleCreateLending(submitEvent());
+    });
+
+    expect(api.POST).toHaveBeenCalledWith('/api/v1/lendings', {
+      body: expect.objectContaining({ direction: 'borrowed', kind: 'settlement', amount: 700 }),
+    });
+
+    act(() => result.current.setCreateOpen(true));
+    expect(result.current.entryType).toBe('lent');
+  });
+
   it('clears the selected transaction when direction changes', () => {
     const { result } = renderHook(() => useLendingsBrowser(), { wrapper: createWrapper() });
 
     act(() => result.current.onSelectTx(tx));
     expect(result.current.selectedTx).not.toBeNull();
 
-    act(() => result.current.setDirection('borrowed'));
+    act(() => result.current.setEntryType('borrowed'));
     expect(result.current.selectedTx).toBeNull();
   });
 });

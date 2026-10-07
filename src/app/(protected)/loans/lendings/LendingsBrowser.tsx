@@ -41,8 +41,8 @@ export function LendingsBrowser() {
     setCreateOpen,
     party,
     setParty,
-    direction,
-    setDirection,
+    entryType,
+    setEntryType,
     amount,
     setAmount,
     entryDate,
@@ -142,8 +142,8 @@ export function LendingsBrowser() {
         onOpenChange={setCreateOpen}
         party={party}
         setParty={setParty}
-        direction={direction}
-        setDirection={setDirection}
+        entryType={entryType}
+        setEntryType={setEntryType}
         amount={amount}
         setAmount={setAmount}
         entryDate={entryDate}

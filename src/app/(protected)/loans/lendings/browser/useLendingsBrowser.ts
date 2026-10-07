@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
 import type { CounterpartySelection } from '@/lib/lending.types';
+import { directionOf, fromEntryType, type LendingEntryType } from '@/lib/lendingEntry';
 import type { Page } from '@/lib/pagination';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
@@ -19,7 +20,6 @@ import { Transaction } from '@/lib/transaction.types';
 import {
   CounterpartyResponse,
   CreateLendingRequest,
-  LendingDirection,
 } from '@/lib/types';
 
 const PAGE_SIZE = 50;
@@ -52,7 +52,7 @@ export function useLendingsBrowser({
 
   // Form state
   const [party, setParty] = useState<CounterpartySelection | null>(null);
-  const [direction, setDirection] = useState<LendingDirection>('lent');
+  const [entryType, setEntryType] = useState<LendingEntryType>('lent');
   const [amount, setAmount] = useState('');
   const [entryDate, setEntryDate] = useState(
     new Date().toISOString().split('T')[0]
@@ -68,13 +68,15 @@ export function useLendingsBrowser({
     setCreateOpen(open);
     setSelectedTx(null);
     setParty(null);
+    setEntryType('lent');
   };
 
-  const handleSetDirection = (dir: LendingDirection) => {
-    setDirection(dir);
+  const handleSetEntryType = (next: LendingEntryType) => {
     // The picker's type filter (DEBIT/CREDIT) is direction-derived, so a
-    // previously-selected transaction may no longer be valid.
-    setSelectedTx(null);
+    // previously-selected transaction may no longer be valid once the money
+    // flows the other way. Switching principal <-> settlement keeps it.
+    if (directionOf(next) !== directionOf(entryType)) setSelectedTx(null);
+    setEntryType(next);
   };
 
   const handleSelectTx = (t: Transaction) => {
@@ -145,7 +147,7 @@ export function useLendingsBrowser({
         ...(party.kind === 'new'
           ? { newCounterpartyName: party.name }
           : { counterpartyId: party.counterparty.id }),
-        direction,
+        ...fromEntryType(entryType),
         amount: Number(amount),
         entryDate,
         expectedReturnDate: expectedReturnDate || undefined,
@@ -178,8 +180,8 @@ export function useLendingsBrowser({
     setCreateOpen: handleSetCreateOpen,
     party,
     setParty,
-    direction,
-    setDirection: handleSetDirection,
+    entryType,
+    setEntryType: handleSetEntryType,
     amount,
     setAmount,
     entryDate,

@@ -120,6 +120,14 @@ export function CounterpartiesList({
                   </span>
                 </div>
               </div>
+              {(cp.repaidToYou > 0 || cp.repaidByYou > 0) && (
+                <div
+                  onClick={() => router.push(`/loans/lendings/${cp.id}`)}
+                  className="text-2xs text-slate-500 dark:text-slate-400 tabular-nums cursor-pointer"
+                >
+                  Repaid: {formatMoney(cp.repaidToYou)} to you · {formatMoney(cp.repaidByYou)} by you
+                </div>
+              )}
             </div>
           ))
         )}
@@ -137,6 +145,8 @@ export function CounterpartiesList({
               <th className="py-3 px-4 text-right text-rose-600 dark:text-rose-400">
                 Total Borrowed
               </th>
+              <th className="py-3 px-4 text-right">Repaid to you</th>
+              <th className="py-3 px-4 text-right">Repaid by you</th>
               <th className="py-3 px-4 text-right">Net Position</th>
               <th className="py-3 px-4 text-center">Entries</th>
               <th className="py-3 px-4 text-right">Actions</th>
@@ -145,7 +155,7 @@ export function CounterpartiesList({
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
             {filteredContent.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-slate-400">
+                <td colSpan={8} className="py-12 text-center text-slate-400">
                   No counterparties found.
                 </td>
               </tr>
@@ -177,6 +187,18 @@ export function CounterpartiesList({
                     className="py-3.5 px-4 text-right font-medium text-rose-600 dark:text-rose-400 tabular-nums cursor-pointer"
                   >
                     {cp.totalBorrowed > 0 ? formatMoney(cp.totalBorrowed) : '—'}
+                  </td>
+                  <td
+                    onClick={() => router.push(`/loans/lendings/${cp.id}`)}
+                    className="py-3.5 px-4 text-right font-medium text-slate-600 dark:text-slate-300 tabular-nums cursor-pointer"
+                  >
+                    {cp.repaidToYou > 0 ? formatMoney(cp.repaidToYou) : '—'}
+                  </td>
+                  <td
+                    onClick={() => router.push(`/loans/lendings/${cp.id}`)}
+                    className="py-3.5 px-4 text-right font-medium text-slate-600 dark:text-slate-300 tabular-nums cursor-pointer"
+                  >
+                    {cp.repaidByYou > 0 ? formatMoney(cp.repaidByYou) : '—'}
                   </td>
                   <td
                     onClick={() => router.push(`/loans/lendings/${cp.id}`)}

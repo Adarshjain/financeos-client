@@ -11,7 +11,11 @@ export type {
 } from '@/lib/api/types';
 import type { Schemas } from '@/lib/api/types';
 
+/** Which way the money moved: lent = money out, borrowed = money in. */
 export type LendingDirection = 'lent' | 'borrowed';
+
+/** principal = new money lent/borrowed; settlement = a repayment clearing an existing balance. */
+export type LendingKind = 'principal' | 'settlement';
 
 export type ObligationItemDto = Schemas['ObligationItemDto'];
 

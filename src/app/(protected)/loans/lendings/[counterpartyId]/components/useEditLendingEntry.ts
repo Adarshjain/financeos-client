@@ -3,12 +3,9 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { fromEntryType, type LendingEntryType, toEntryType } from '@/lib/lendingEntry';
 import { Transaction } from '@/lib/transaction.types';
-import {
-  LendingDirection,
-  LendingResponse,
-  LendingTransactionSummary,
-} from '@/lib/types';
+import { LendingResponse, LendingTransactionSummary } from '@/lib/types';
 
 import { useCounterpartyMutations } from './useCounterpartyMutations';
 
@@ -21,7 +18,7 @@ type EditMutations = Pick<Mutations, 'updateLending' | 'linkTransaction' | 'unli
 export function useEditLendingEntry(mutations: EditMutations) {
   const [editLendingOpen, setEditLendingOpen] = useState(false);
   const [editingLendingId, setEditingLendingId] = useState<string | null>(null);
-  const [lendingDir, setLendingDir] = useState<LendingDirection>('lent');
+  const [lendingEntryType, setLendingEntryType] = useState<LendingEntryType>('lent');
   const [lendingAmount, setLendingAmount] = useState('');
   const [lendingDate, setLendingDate] = useState('');
   const [lendingExpDate, setLendingExpDate] = useState('');
@@ -36,7 +33,7 @@ export function useEditLendingEntry(mutations: EditMutations) {
 
   const handleOpenEditLending = (lending: LendingResponse) => {
     setEditingLendingId(lending.id);
-    setLendingDir(lending.direction);
+    setLendingEntryType(toEntryType(lending.direction, lending.kind));
     setLendingAmount(String(lending.amount));
     setLendingDate(lending.entryDate);
     setLendingExpDate(lending.expectedReturnDate ?? '');
@@ -53,7 +50,7 @@ export function useEditLendingEntry(mutations: EditMutations) {
       await mutations.updateLending.mutateAsync({
         id: editingLendingId,
         body: {
-          direction: lendingDir,
+          ...fromEntryType(lendingEntryType),
           amount: lendingAmount ? Number(lendingAmount) : undefined,
           entryDate: lendingDate || undefined,
           expectedReturnDate: lendingExpDate || undefined,
@@ -86,8 +83,8 @@ export function useEditLendingEntry(mutations: EditMutations) {
   return {
     editLendingOpen,
     setEditLendingOpen,
-    lendingDir,
-    setLendingDir,
+    lendingEntryType,
+    setLendingEntryType,
     lendingAmount,
     setLendingAmount,
     lendingDate,

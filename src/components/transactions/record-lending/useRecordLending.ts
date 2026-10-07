@@ -9,8 +9,15 @@ import type {
   CounterpartySelection,
   CreateLendingRequest,
   LendingDirection,
+  LendingKind,
   LendingResponse,
 } from '@/lib/lending.types';
+import {
+  fromEntryType,
+  type LendingEntryType,
+  suggestedEntryType,
+  toEntryType,
+} from '@/lib/lendingEntry';
 import { useCounterpartySuggestion } from '@/lib/query/hooks/useCounterparties';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
@@ -27,6 +34,9 @@ interface UseRecordLendingProps {
 
 export interface UseRecordLendingResult {
   direction: LendingDirection;
+  /** Direction is locked to the transaction; this picks principal vs settlement within it. */
+  entryType: LendingEntryType;
+  setEntryType: (type: LendingEntryType) => void;
   party: CounterpartySelection | null;
   setParty: (party: CounterpartySelection | null) => void;
   /** Counterparty the description matched, if any — shown as "Suggested" by the picker. */
@@ -63,6 +73,7 @@ export function useRecordLending({
   const direction: LendingDirection = (transaction?.amount ?? -1) < 0 ? 'lent' : 'borrowed';
 
   const [party, setParty] = React.useState<CounterpartySelection | null>(null);
+  const [kind, setKind] = React.useState<LendingKind>('principal');
   const [amount, setAmount] = React.useState('');
   const [entryDate, setEntryDate] = React.useState('');
   const [expectedReturnDate, setExpectedReturnDate] = React.useState('');
@@ -70,11 +81,14 @@ export function useRecordLending({
   const [attachingId, setAttachingId] = React.useState<string | null>(null);
 
   const suggestionAppliedRef = React.useRef(false);
+  const kindTouchedRef = React.useRef(false);
   const prevOpenRef = React.useRef(false);
 
   React.useEffect(() => {
     if (open && !prevOpenRef.current && transaction) {
       setParty(null);
+      setKind('principal');
+      kindTouchedRef.current = false;
       setAmount(Math.abs(transaction.amount).toString());
       setEntryDate(transaction.date);
       setExpectedReturnDate('');
@@ -100,6 +114,20 @@ export function useRecordLending({
     suggestionAppliedRef.current = true;
     setParty((current) => current ?? { kind: 'existing', counterparty: suggestion });
   }, [open, suggestion]);
+
+  // Until the user picks explicitly, default the kind from the person's
+  // balance: money in from someone who owes you is a repayment, not a borrow.
+  React.useEffect(() => {
+    if (kindTouchedRef.current) return;
+    const net = party?.kind === 'existing' ? party.counterparty.netPosition : 0;
+    setKind(fromEntryType(suggestedEntryType(direction, net)).kind);
+  }, [party, direction]);
+
+  const entryType = toEntryType(direction, kind);
+  const setEntryType = (next: LendingEntryType) => {
+    kindTouchedRef.current = true;
+    setKind(fromEntryType(next).kind);
+  };
 
   const existingCounterpartyId = party?.kind === 'existing' ? party.counterparty.id : '';
 
@@ -168,6 +196,7 @@ export function useRecordLending({
     }
     const body: CreateLendingRequest = {
       direction,
+      kind,
       amount: Number(amount),
       entryDate,
       transactionId: transaction.id,
@@ -187,6 +216,8 @@ export function useRecordLending({
 
   return {
     direction,
+    entryType,
+    setEntryType,
     party,
     setParty,
     suggestedId,
