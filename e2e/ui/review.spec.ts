@@ -1,3 +1,5 @@
+import type { Locator } from '@playwright/test';
+
 import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
@@ -8,6 +10,22 @@ import { createBankAccount } from '../fixtures/seed/accounts';
 import { uploadAndIngest } from '../fixtures/seed/statements';
 import { createTransaction } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
+
+/**
+ * Drives SwipeActionRow with synthetic touch pointer events. Playwright has no
+ * touch-drag primitive, and the row only reacts to `pointerType: 'touch'`.
+ */
+async function swipeRow(row: Locator, dx: number) {
+  const box = await row.boundingBox();
+  if (!box) throw new Error('swipe target is not visible');
+  const startX = box.x + box.width / 2;
+  const y = box.y + box.height / 2;
+  const base = { pointerType: 'touch', isPrimary: true, pointerId: 1, bubbles: true, cancelable: true };
+  await row.dispatchEvent('pointerdown', { ...base, clientX: startX, clientY: y, button: 0, buttons: 1 });
+  await row.dispatchEvent('pointermove', { ...base, clientX: startX + dx / 2, clientY: y, buttons: 1 });
+  await row.dispatchEvent('pointermove', { ...base, clientX: startX + dx, clientY: y, buttons: 1 });
+  await row.dispatchEvent('pointerup', { ...base, clientX: startX + dx, clientY: y, button: 0, buttons: 0 });
+}
 
 test.describe('Review & Transaction Links UI (@ui)', () => {
   test.describe.configure({ mode: 'serial' });
@@ -179,6 +197,55 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
 
     // Verify toast on full success
     await expect(page.getByText(/Successfully approved/i)).toBeVisible();
+  });
+
+  test('/transactions/review: swipe approve and swipe delete journey @mobile', async ({
+    page,
+  }) => {
+    const api = makeApi(currentUser.cookie);
+    const account = await createBankAccount(api, {
+      name: 'Review Swipe Account',
+      openingBalance: reviewSeedSpec.opening,
+    });
+
+    const pdfBuffer = await genBankPdf(reviewSeedSpec);
+    await uploadAndIngest(api, account.id, [
+      { filename: 'review-swipe-stmt.pdf', buffer: pdfBuffer },
+    ]);
+
+    await page.goto('/transactions/review');
+    await expect(
+      page.getByRole('heading', { name: 'Review Transactions' })
+    ).toBeVisible();
+
+    // The swipe handlers live on the row content wrapper around each card.
+    const rowFor = (text: string) =>
+      page.locator('[data-slot="swipe-action-row-content"]', { hasText: text });
+
+    // A short drag snaps back and opens nothing.
+    const uberRow = rowFor('UBER TRIP AIRPORT');
+    await expect(uberRow).toBeVisible();
+    await swipeRow(uberRow, 30);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    // Swipe right past the threshold → approve picker → row leaves the queue.
+    await swipeRow(uberRow, 140);
+    const approveDialog = page.getByRole('dialog');
+    await expect(approveDialog).toBeVisible();
+    await expect(approveDialog.getByText('Approve Transaction')).toBeVisible();
+    await approveDialog.getByRole('button', { name: 'Approve' }).click();
+    await expect(page.getByText('Transaction marked as reviewed')).toBeVisible();
+    await expect(page.getByText('UBER TRIP AIRPORT')).toHaveCount(0);
+
+    // Swipe left on one duplicate → delete confirm → one Swiggy row remains.
+    const swiggyRow = rowFor('SWIGGY ORDER BANGALORE').first();
+    await swipeRow(swiggyRow, -140);
+    const deleteDialog = page.getByRole('dialog');
+    await expect(deleteDialog).toBeVisible();
+    await expect(deleteDialog.getByText('Delete Transaction?')).toBeVisible();
+    await deleteDialog.getByRole('button', { name: 'Delete' }).click();
+    await expect(page.getByText('Transaction deleted!')).toBeVisible();
+    await expect(page.getByText('SWIGGY ORDER BANGALORE')).toHaveCount(1);
   });
 
   test('/transactions: link dialog create and unlink flow', async ({

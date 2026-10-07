@@ -1,13 +1,16 @@
 'use client';
 
-import { Loader2 } from 'lucide-react';
-import { Fragment } from 'react';
+import { Check, Loader2, Trash2 } from 'lucide-react';
+import { Fragment, useState } from 'react';
 
 import { Checkbox } from '@/components/ui/checkbox';
+import { SwipeActionRow } from '@/components/ui/swipe-action-row';
 import { Account } from '@/lib/account.types';
-import { PagedTransaction } from '@/lib/transaction.types';
+import { PagedTransaction, Transaction } from '@/lib/transaction.types';
 import { formatDate } from '@/lib/utils';
 
+import { DeleteTransactionDialog } from '../DeleteTransactionDialog';
+import { ReviewTransactionDialog } from '../ReviewTransactionDialog';
 import { TransactionCard } from '../TransactionCard';
 
 interface ReviewListContainerProps {
@@ -22,6 +25,8 @@ interface ReviewListContainerProps {
   onMutate: () => void;
 }
 
+type SwipeTarget = { transaction: Transaction; action: 'approve' | 'delete' };
+
 export function ReviewListContainer({
   loading,
   pagedData,
@@ -33,6 +38,9 @@ export function ReviewListContainer({
   onToggleSelect,
   onMutate,
 }: ReviewListContainerProps) {
+  // One dialog pair for the whole list; a card swipe points it at that card.
+  const [swipeTarget, setSwipeTarget] = useState<SwipeTarget | null>(null);
+
   if (loading && !pagedData) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-slate-400">
@@ -62,6 +70,18 @@ export function ReviewListContainer({
     pagedData.content.every((t) => selectedIds.includes(t.id));
   const isSomePageSelected = pagedData.content.some((t) => selectedIds.includes(t.id));
 
+  const closeSwipeDialog = (open: boolean) => {
+    if (!open) setSwipeTarget(null);
+  };
+
+  // The row is leaving the queue: refresh, and drop it from any bulk
+  // selection so the batch bar never targets an id that is already gone.
+  const handleSwipeSuccess = () => {
+    const id = swipeTarget?.transaction.id;
+    if (id && selectedIds.includes(id)) onToggleSelect(id);
+    onMutate();
+  };
+
   return (
     <div className="space-y-1 px-2">
       {/* Master Checkbox Header */}
@@ -84,6 +104,8 @@ export function ReviewListContainer({
       {pagedData.content.map((transaction, index) => {
         const showDate =
           index === 0 || transaction.date !== pagedData.content[index - 1].date;
+        // Same invariant as ReviewTransaction: nothing to approve without a reason.
+        const canApprove = (transaction.reviewReasons?.length ?? 0) > 0;
         return (
           <Fragment key={transaction.id}>
             {showDate && (
@@ -91,18 +113,52 @@ export function ReviewListContainer({
                 {formatDate(transaction.date)}
               </div>
             )}
-            <TransactionCard
-              accounts={accounts}
-              transaction={transaction}
-              onMutate={onMutate}
-              selectable
-              selected={selectedIds.includes(transaction.id)}
-              onToggleSelect={() => onToggleSelect(transaction.id)}
-              showSource
-            />
+            <SwipeActionRow
+              className="sm:rounded-lg sm:mb-2"
+              leading={
+                canApprove
+                  ? {
+                      label: 'Approve',
+                      icon: Check,
+                      tone: 'success',
+                      onCommit: () => setSwipeTarget({ transaction, action: 'approve' }),
+                    }
+                  : undefined
+              }
+              trailing={{
+                label: 'Delete',
+                icon: Trash2,
+                tone: 'danger',
+                onCommit: () => setSwipeTarget({ transaction, action: 'delete' }),
+              }}
+            >
+              <TransactionCard
+                accounts={accounts}
+                transaction={transaction}
+                className="sm:mb-0"
+                onMutate={onMutate}
+                selectable
+                selected={selectedIds.includes(transaction.id)}
+                onToggleSelect={() => onToggleSelect(transaction.id)}
+                showSource
+              />
+            </SwipeActionRow>
           </Fragment>
         );
       })}
+
+      <ReviewTransactionDialog
+        transaction={swipeTarget?.transaction}
+        open={swipeTarget?.action === 'approve'}
+        onOpenChange={closeSwipeDialog}
+        onSuccess={handleSwipeSuccess}
+      />
+      <DeleteTransactionDialog
+        transaction={swipeTarget?.transaction}
+        open={swipeTarget?.action === 'delete'}
+        onOpenChange={closeSwipeDialog}
+        onSuccess={handleSwipeSuccess}
+      />
     </div>
   );
 }
