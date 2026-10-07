@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
@@ -14,7 +14,8 @@ export function useReceiptSummary(params: Params, initialData: DividendReceiptSu
     queryKey: keys.investments.dividendReceiptSummary(params),
     queryFn: async () =>
       (await api.GET('/api/v1/investments/dividends/receipts/summary', { params: { query: params } }))
-        .data as unknown as DividendReceiptSummary,
+        .data! as DividendReceiptSummary,
     initialData,
+    placeholderData: keepPreviousData,
   });
 }

@@ -35,6 +35,8 @@ import { ReceiptSummaryCard } from './dividend-receipts/ReceiptSummaryCard';
 import { useReceiptSummary } from './dividend-receipts/useReceiptSummary';
 import { DividendsTable } from './DividendsTable';
 
+const EMPTY_FY_SUMMARY: DividendSummary = { buckets: [], totalAmount: 0, totalTds: 0, totalNet: 0, totalCount: 0 };
+
 interface DividendsSectionProps {
   initialData: PagedDividendResponse;
   initialSummary: DividendSummary;
@@ -76,10 +78,14 @@ export function DividendsSection({
     ...(instrumentId ? { instrumentId } : {}),
   };
 
-  const { data: receiptSummary = { buckets: [], coverageEnd: null, totalCount: 0 }, refetch: refetchReceiptSummary } =
-    useReceiptSummary(summaryParams, isDefaultSummaryFilters ? initialReceiptSummary : undefined);
+  // With an instrument deep link the SSR data is for the unfiltered list, so it
+  // must never stand in for the filtered result while that loads.
+  const { data: receiptSummary, refetch: refetchReceiptSummary } = useReceiptSummary(
+    summaryParams,
+    isDefaultSummaryFilters ? initialReceiptSummary : undefined,
+  );
 
-  const { data: summary = initialSummary, refetch: refetchSummary } = useQuery({
+  const { data: summary = instrumentId ? EMPTY_FY_SUMMARY : initialSummary, refetch: refetchSummary } = useQuery({
     queryKey: keys.investments.dividendSummary(summaryParams),
     queryFn: async () =>
       (
@@ -108,8 +114,9 @@ export function DividendsSection({
   };
 
   const {
-    data: dividendsPage = initialData,
+    data: dividendsPage = instrumentId ? undefined : initialData,
     isFetching: isLoading,
+    isPlaceholderData,
     refetch: refetchList,
   } = useQuery({
     queryKey: keys.investments.dividends(queryParams),
@@ -123,9 +130,10 @@ export function DividendsSection({
     placeholderData: keepPreviousData,
   });
 
-  const dividends = dividendsPage.content || [];
-  const totalElements = dividendsPage.totalElements || 0;
-  const totalPages = dividendsPage.totalPages || 1;
+  const dividends = dividendsPage?.content || [];
+  const totalElements = dividendsPage?.totalElements || 0;
+  const totalPages = dividendsPage?.totalPages || 1;
+  const chipRow = dividendsPage && !isPlaceholderData ? dividends[0] : undefined;
   const currentPage = Math.min(page, Math.max(0, totalPages - 1));
 
   const refreshAll = () => {
@@ -221,7 +229,7 @@ export function DividendsSection({
           {instrumentId && (
             <div className="pt-1">
               <InstrumentFilterChip
-                label={dividends[0]?.symbol || dividends[0]?.instrumentName}
+                label={chipRow?.symbol || chipRow?.instrumentName}
                 onClear={clearInstrument}
               />
             </div>
@@ -244,7 +252,7 @@ export function DividendsSection({
         count={displayCount}
       />
 
-      <ReceiptSummaryCard summary={receiptSummary} />
+      {receiptSummary && <ReceiptSummaryCard summary={receiptSummary} />}
 
       {showReconcile && (
         <DividendReconcilePanel

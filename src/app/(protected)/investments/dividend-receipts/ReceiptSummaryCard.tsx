@@ -11,9 +11,10 @@ interface TileProps {
   count: number;
   amount?: number;
   tone: string;
+  note?: string;
 }
 
-function Tile({ label, count, amount, tone }: TileProps) {
+function Tile({ label, count, amount, tone, note }: TileProps) {
   return (
     <div>
       <p className="text-2xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
@@ -21,12 +22,17 @@ function Tile({ label, count, amount, tone }: TileProps) {
         {count}
         {amount !== undefined && <span className="font-semibold"> · {formatMoney(amount)}</span>}
       </p>
+      {note && <p className="text-2xs text-slate-500 dark:text-slate-400">{note}</p>}
     </div>
   );
 }
 
 export function ReceiptSummaryCard({ summary }: { summary: DividendReceiptSummary }) {
   const received = bucketOf(summary, 'received');
+  const untracked = bucketOf(summary, 'received_untracked');
+  const notReceived = bucketOf(summary, 'not_received');
+  const untrackedCount = untracked?.count ?? 0;
+  const notReceivedCount = notReceived?.count ?? 0;
   const awaiting = bucketOf(summary, 'awaiting');
   const overdue = bucketOf(summary, 'overdue');
   const unverifiable = bucketOf(summary, 'unverifiable');
@@ -40,8 +46,9 @@ export function ReceiptSummaryCard({ summary }: { summary: DividendReceiptSummar
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3">
           <Tile
             label="Received"
-            count={received?.count ?? 0}
-            amount={received?.receivedAmount ?? 0}
+            count={(received?.count ?? 0) + untrackedCount}
+            amount={(received?.receivedAmount ?? 0) + (untracked?.receivedAmount ?? 0)}
+            note={untrackedCount > 0 ? `incl. ${untrackedCount} untracked` : undefined}
             tone="text-emerald-600 dark:text-emerald-400"
           />
           <Tile
@@ -54,6 +61,7 @@ export function ReceiptSummaryCard({ summary }: { summary: DividendReceiptSummar
             label="Overdue"
             count={overdue?.count ?? 0}
             amount={overdue?.expectedNet ?? 0}
+            note={notReceivedCount > 0 ? `${notReceivedCount} marked not received` : undefined}
             tone="text-amber-600 dark:text-amber-400"
           />
           <Tile

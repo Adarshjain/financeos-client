@@ -54,4 +54,13 @@ describe('EditDividendDialog receipt section', () => {
     expect(tds.value).toBe('100');
     expect(screen.queryByRole('button', { name: /as TDS/ })).not.toBeInTheDocument();
   });
+
+  it('renders the receipt section outside the edit form (Enter in the picker cannot submit it)', () => {
+    renderWithQuery(<EditDividendDialog dividend={makeDividend({ receiptStatus: 'overdue' })} />);
+    open();
+    const form = document.getElementById('edit-dividend-form')!;
+    expect(form).toBeInTheDocument();
+    expect(form.contains(screen.getByTestId('picker'))).toBe(false);
+    expect(form.contains(screen.getByText('Receipt'))).toBe(false);
+  });
 });

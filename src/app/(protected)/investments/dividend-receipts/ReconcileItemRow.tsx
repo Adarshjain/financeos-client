@@ -88,7 +88,7 @@ export function ReconcileItemRow({
             </div>
           ) : (
             <Select value={selectedId} onValueChange={onSelect}>
-              <SelectTrigger className="h-8 text-xs flex-1 min-w-0">
+              <SelectTrigger aria-label="Candidate transaction" className="h-8 text-xs flex-1 min-w-0">
                 <SelectValue placeholder="Choose transaction" />
               </SelectTrigger>
               <SelectContent>

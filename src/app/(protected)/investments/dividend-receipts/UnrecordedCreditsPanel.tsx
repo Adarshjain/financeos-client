@@ -18,7 +18,7 @@ interface UnrecordedCreditsPanelProps {
 }
 
 export function UnrecordedCreditsPanel({ brokerAccounts, positions, onChanged }: UnrecordedCreditsPanelProps) {
-  const { loading, fetched, items, scan, handleRecorded } = useUnrecordedCredits({ onRecorded: onChanged });
+  const { loading, fetched, isError, items, scan, handleRecorded } = useUnrecordedCredits({ onRecorded: onChanged });
   const { data: accounts = [] } = useAccounts();
 
   return (
@@ -31,7 +31,9 @@ export function UnrecordedCreditsPanel({ brokerAccounts, positions, onChanged }:
         </Button>
       </div>
 
-      {!fetched ? (
+      {isError && !loading ? (
+        <p className="text-2xs text-rose-600 dark:text-rose-400">Could not load credits. Try again.</p>
+      ) : !fetched ? (
         <p className="text-2xs text-slate-500 italic">
           Scan your bank credits for dividend-like money-in that isn&rsquo;t recorded yet.
         </p>

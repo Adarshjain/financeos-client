@@ -77,6 +77,16 @@ describe('UnrecordedCreditsPanel', () => {
     expect(api.GET).toHaveBeenCalledWith(UNRECORDED, { params: { query: {} } });
   });
 
+  it('shows an error line instead of the empty state when the scan fails', async () => {
+    vi.mocked(api.GET).mockImplementation((path: unknown) =>
+      path === UNRECORDED ? Promise.reject(new Error('boom')) : Promise.resolve({ data: accounts } as never),
+    );
+    renderWithQuery(<UnrecordedCreditsPanel brokerAccounts={[]} positions={[]} />);
+    fireEvent.click(scanButton());
+    expect(await screen.findByText('Could not load credits. Try again.')).toBeInTheDocument();
+    expect(screen.queryByText('No unrecorded dividend-like credits in the last year.')).not.toBeInTheDocument();
+  });
+
   it('renders the credit row and one "Record for" trigger per holding hint with prefill props', async () => {
     route([
       credit([

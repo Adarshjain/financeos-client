@@ -36,6 +36,8 @@ export function useUnrecordedCredits({ onRecorded }: UseUnrecordedCreditsProps =
   return {
     loading: query.isFetching,
     fetched: query.isFetched,
+    isError: query.isError,
+    error: query.error,
     items: query.data?.items ?? [],
     scan: query.refetch,
     handleRecorded,

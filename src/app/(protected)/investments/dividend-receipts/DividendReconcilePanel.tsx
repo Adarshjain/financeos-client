@@ -63,7 +63,9 @@ export function DividendReconcilePanel({
         </div>
       </div>
 
-      {!r.fetched ? (
+      {r.isError && !r.loading ? (
+        <p className="text-2xs text-rose-600 dark:text-rose-400">Could not load matches. Try again.</p>
+      ) : !r.fetched ? (
         <p className="text-2xs text-slate-500 italic pt-1">
           Click &ldquo;Find matches&rdquo; to look for bank credits matching your unmatched dividends.
         </p>
@@ -99,7 +101,7 @@ export function DividendReconcilePanel({
 
       {r.meta && (
         <p className="text-2xs text-slate-500 dark:text-slate-400">
-          {r.meta.unresolvedCount} unmatched dividends · {r.meta.withCandidates} with candidates
+          {r.meta.unresolvedCount} unmatched {r.meta.unresolvedCount === 1 ? 'dividend' : 'dividends'} · {r.meta.withCandidates} with candidates
           {r.meta.coverageEnd ? ` · Bank data through ${formatDate(r.meta.coverageEnd)}` : ''}
         </p>
       )}
