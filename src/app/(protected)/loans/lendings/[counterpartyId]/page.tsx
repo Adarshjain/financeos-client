@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { CounterpartyDetail } from '@/app/(protected)/loans/lendings/[counterpartyId]/CounterpartyDetail';
 import { counterpartiesApi, lendingsApi } from '@/lib/apiClient';
+import { requireAuth } from '@/lib/auth';
 import { getQueryClient } from '@/lib/query/client';
 import { keys } from '@/lib/query/keys';
 import type { CounterpartyResponse } from '@/lib/types';
@@ -34,7 +35,10 @@ export default async function PersonDetailPage({
 }: PersonDetailPageProps) {
   const { counterpartyId } = await params;
 
-  const [cpPage, lendingsPage] = await Promise.all([
+  // Same request-cached call the protected layout makes; only the display name
+  // is needed here (it prefills "Your name" in the export).
+  const [user, cpPage, lendingsPage] = await Promise.all([
+    requireAuth(),
     counterpartiesApi.list(0, COUNTERPARTIES_PAGE_SIZE),
     lendingsApi.list(counterpartyId, 0, LENDINGS_PAGE_SIZE),
   ]);
@@ -60,7 +64,7 @@ export default async function PersonDetailPage({
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>
-      <CounterpartyDetail counterpartyId={counterpartyId} />
+      <CounterpartyDetail counterpartyId={counterpartyId} myName={user.displayName ?? null} />
     </HydrationBoundary>
   );
 }

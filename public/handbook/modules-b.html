@@ -487,6 +487,20 @@ guards: EMI must exceed the month's interest ("non-amortizing"); ≤ 600 install
   TS->>DB: DELETE deleted row, FKs already moved so SET NULL never fires
   end</pre>
 
+<h3 id="m-loans-export">Export ledger as text</h3>
+<p>The person page (<code>/loans/lendings/[counterpartyId]</code>) renders the ledger as plain text for sharing — the Web Share API (<code>navigator.share</code>) when the device has it, the clipboard otherwise. Pure client code: <span class="path">lib/lendingExport.ts</span> builds the text from the entries the page already loaded (the first 200); the dialog in <span class="path">[counterpartyId]/components/ExportLedgerDialog.tsx</span> only wires selection, names and toggles into it. Nothing touches the server.</p>
+<div class="tw"><table class="dt">
+<tr><th>Rule</th><th>Behaviour</th></tr>
+<tr><td>Selection</td><td>Every loaded entry by default. Chips: <em>All</em>; <em>Since last settled</em> — the entries after the most recent running-balance zero (if the ledger is square right now, the cycle just settled; hidden when it would equal All); <em>None</em>. Running balances are float sums, so "zero" is <code>|b| &lt; 0.005</code>.</td></tr>
+<tr><td>Wording</td><td>Two optional name fields. A party is its name when given, otherwise a pronoun: <code>Adarsh lent Rahul</code>, <code>I lent Rahul</code>, <code>Adarsh lent you</code>, <code>I lent you</code>; balances read <code>Rahul owes Adarsh ₹…</code> / <code>you owe me ₹…</code>. The app's first-person labels ("You repaid", "They repaid") never appear — the reader is the other side of the ledger.</td></tr>
+<tr><td>Opening balance</td><td>Optional, statement-style. Defaults to the running balance just before the first selected entry (zero when it is the first) and follows the selection until edited; Reset restores the derived value. Present → an <code>Opening balance:</code> line, running balances continue from it, and the last line is <code>Closing balance:</code> = opening ± selected entries. Cleared → no opening line and the last line is <code>Net of listed entries:</code>.</td></tr>
+<tr><td>Content toggles</td><td>Notes (on); expected-return dates (off, principal entries only); totals (on — the four gross lines, zero lines omitted, hidden for a single entry); running balance after each entry (off).</td></tr>
+<tr><td>Never printed</td><td>Entry counts, the linked bank transaction (account, date), the person's private notes, any footer.</td></tr>
+<tr><td>Remembered per device</td><td>"Your name" and the toggles — <code>localStorage</code> key <code>financeos.lendingExport.v1</code>, every access in try/catch. "Their name" always prefills from the person; selection and opening balance never persist.</td></tr>
+<tr><td>Actions</td><td>Footer is always <em>primary + Close</em> (the dialog primitive allows two actions and hides its X when a secondary exists): primary is Share when <code>navigator.share</code> exists, Copy otherwise; on share-capable devices Copy sits beside the preview instead. A dismissed share sheet (<code>AbortError</code>) is silent; any other share failure falls back to Copy. Share/Copy are disabled with nothing selected, Close never is.</td></tr>
+</table></div>
+<p>The same change made the person page's and the loan page's actions viewport-complete: one <code>renderActionBar(isMobile)</code> is rendered in a desktop <code>Card</code> (<code>hidden lg:block</code>) and inside <code>PageActionBar</code> (whose slot is <code>lg:hidden</code>) — the convention every browser page already used. Until then the two detail pages exposed Settle up / Edit / Delete only below 1024px.</p>
+
 <h3 id="m-loans-states">State machines and data</h3>
 <div class="flow">active ──POST /close (no guard)──► closed          closed ──POST /reopen (blocked if a foreclosure exists)──► active
 active ──foreclosure event──────► foreclosed      foreclosed ──DELETE that event──► active

@@ -9,6 +9,8 @@ import { LoanForm } from '@/app/(protected)/loans/LoanForm';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 import { LoanAmortizationSchedule } from './components/LoanAmortizationSchedule';
 import { LoanDetailDialogs } from './components/LoanDetailDialogs';
@@ -98,70 +100,72 @@ export function LoanDetail({ loanId }: LoanDetailProps) {
     return <div className="p-6 text-xs text-slate-500">Loading loan…</div>;
   }
 
-  return (
-    <div className="space-y-2 p-3 pb-32">
-      {/* Top Header Action Bar */}
-      <PageActionBar>
-        <div className="flex items-center gap-2 w-full">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setEditOpen(true)}
-            className="flex-1"
-          >
-            <Edit2 className="h-3.5 w-3.5" /> Edit
-          </Button>
+  // One set of actions, rendered twice: a desktop card (lg+) and the mobile
+  // bottom bar (below lg), so no action exists on one viewport only.
+  const renderActionBar = (isMobile: boolean) => {
+    const grow = isMobile ? 'flex-1' : undefined;
+    return (
+      <div className={cn('flex items-center gap-2 w-full', !isMobile && 'flex-wrap justify-end')}>
+        <Button variant="outline" size="sm" onClick={() => setEditOpen(true)} className={grow}>
+          <Edit2 className="h-3.5 w-3.5" /> Edit
+        </Button>
 
-          {loan.status === 'active' ? (
-            <ConfirmationDialog
-              title="Close Loan"
-              description={`Are you sure you want to mark "${loan.name}" as closed?`}
-              primaryAction={handleCloseLoan}
-              primaryActionText="Close Loan"
-              variant="default"
-              trigger={
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Lock className="h-3.5 w-3.5" /> Close
-                </Button>
-              }
-            />
-          ) : (
-            <ConfirmationDialog
-              title="Reopen Loan"
-              description={`Reopen loan "${loan.name}"?`}
-              primaryAction={handleReopenLoan}
-              primaryActionText="Reopen Loan"
-              variant="default"
-              trigger={
-                <Button variant="outline" size="sm" className="flex-1">
-                  <Unlock className="h-3.5 w-3.5" /> Reopen
-                </Button>
-              }
-            />
-          )}
-
+        {loan.status === 'active' ? (
           <ConfirmationDialog
-            title="Delete Loan"
-            description={`Delete "${loan.name}" and all associated schedule data?`}
-            primaryAction={async () => {
-              try {
-                await deleteLoanMutation.mutateAsync();
-                toast.success('Loan deleted');
-                router.push('/loans');
-              } catch {
-                // onError already surfaced the toast.
-              }
-            }}
-            primaryActionText="Delete Loan"
-            variant="destructive"
+            title="Close Loan"
+            description={`Are you sure you want to mark "${loan.name}" as closed?`}
+            primaryAction={handleCloseLoan}
+            primaryActionText="Close Loan"
+            variant="default"
             trigger={
-              <Button variant="destructive" size="sm" className="flex-1">
-                <Trash2 className="h-3.5 w-3.5" /> Delete
+              <Button variant="outline" size="sm" className={grow}>
+                <Lock className="h-3.5 w-3.5" /> Close
               </Button>
             }
           />
-        </div>
-      </PageActionBar>
+        ) : (
+          <ConfirmationDialog
+            title="Reopen Loan"
+            description={`Reopen loan "${loan.name}"?`}
+            primaryAction={handleReopenLoan}
+            primaryActionText="Reopen Loan"
+            variant="default"
+            trigger={
+              <Button variant="outline" size="sm" className={grow}>
+                <Unlock className="h-3.5 w-3.5" /> Reopen
+              </Button>
+            }
+          />
+        )}
+
+        <ConfirmationDialog
+          title="Delete Loan"
+          description={`Delete "${loan.name}" and all associated schedule data?`}
+          primaryAction={async () => {
+            try {
+              await deleteLoanMutation.mutateAsync();
+              toast.success('Loan deleted');
+              router.push('/loans');
+            } catch {
+              // onError already surfaced the toast.
+            }
+          }}
+          primaryActionText="Delete Loan"
+          variant="destructive"
+          trigger={
+            <Button variant="destructive" size="sm" className={grow}>
+              <Trash2 className="h-3.5 w-3.5" /> Delete
+            </Button>
+          }
+        />
+      </div>
+    );
+  };
+
+  return (
+    <div className="space-y-2 p-3 pb-32">
+      {/* Mobile bottom action bar */}
+      <PageActionBar>{renderActionBar(true)}</PageActionBar>
 
       {/* Back Link */}
       <Link
@@ -173,6 +177,11 @@ export function LoanDetail({ loanId }: LoanDetailProps) {
 
       {/* Header Container */}
       <LoanHeroHeader loan={loan} />
+
+      {/* Desktop action bar */}
+      <Card className="hidden lg:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-3">
+        {renderActionBar(false)}
+      </Card>
 
       {/* Match Suggestions Inline Banner */}
       <LoanMatchSuggestionsBanner
