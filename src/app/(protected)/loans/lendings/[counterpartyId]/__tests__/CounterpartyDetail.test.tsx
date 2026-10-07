@@ -1,10 +1,18 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { LendingResponse } from '@/lib/types';
 
 vi.mock('../components/useCounterpartyDetail', () => ({
   useCounterpartyDetail: vi.fn(),
+}));
+
+// The real PageActionBar only registers its children with a layout slot;
+// render them inline so the action buttons are reachable here.
+vi.mock('@/components/layout/PageActionBarContext', () => ({
+  PageActionBar: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="action-bar">{children}</div>
+  ),
 }));
 
 vi.mock('../components/LendingMatchPanel', () => ({
@@ -23,6 +31,7 @@ function makeEntry(overrides: Partial<LendingEntry> = {}): LendingEntry {
     counterpartyName: 'Rahul',
     amount: 500,
     direction: 'lent',
+    kind: 'principal',
     entryDate: '2026-01-01',
     createdAt: '2026-01-01T00:00:00Z',
     runningBalance: 500,
@@ -39,6 +48,8 @@ function baseHookReturn(entries: LendingEntry[]) {
       netPosition: 0,
       totalLent: 500,
       totalBorrowed: 0,
+      repaidToYou: 0,
+      repaidByYou: 0,
       entryCount: entries.length,
     },
     entriesWithRunningBalance: entries,
@@ -51,8 +62,9 @@ function baseHookReturn(entries: LendingEntry[]) {
     submittingCp: false,
     addEntryOpen: false,
     setAddEntryOpen: vi.fn(),
-    addDir: 'lent',
-    setAddDir: vi.fn(),
+    addEntryType: 'lent',
+    setAddEntryType: vi.fn(),
+    openSettleUp: vi.fn(),
     addAmount: '',
     setAddAmount: vi.fn(),
     addEntryDate: '',
@@ -67,8 +79,8 @@ function baseHookReturn(entries: LendingEntry[]) {
     submittingAddEntry: false,
     editLendingOpen: false,
     setEditLendingOpen: vi.fn(),
-    lendingDir: 'lent',
-    setLendingDir: vi.fn(),
+    lendingEntryType: 'lent',
+    setLendingEntryType: vi.fn(),
     lendingAmount: '',
     setLendingAmount: vi.fn(),
     lendingDate: '',
@@ -114,5 +126,40 @@ describe('CounterpartyDetail', () => {
     render(<CounterpartyDetail counterpartyId="cp1" />);
 
     expect(screen.getByTestId('match-panel')).toBeInTheDocument();
+  });
+});
+
+describe('CounterpartyDetail Settle up', () => {
+  it('offers Settle up while there is a balance and hands the balance to the hook', () => {
+    const hook = baseHookReturn([makeEntry()]);
+    hook.cp.netPosition = 2500;
+    vi.mocked(useCounterpartyDetail).mockReturnValue(hook as never);
+
+    render(<CounterpartyDetail counterpartyId="cp1" />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Settle up/ }));
+    expect(hook.openSettleUp).toHaveBeenCalledWith(2500);
+  });
+
+  it('also offers Settle up when you are the one who owes', () => {
+    const hook = baseHookReturn([makeEntry()]);
+    hook.cp.netPosition = -640;
+    vi.mocked(useCounterpartyDetail).mockReturnValue(hook as never);
+
+    render(<CounterpartyDetail counterpartyId="cp1" />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Settle up/ }));
+    expect(hook.openSettleUp).toHaveBeenCalledWith(-640);
+  });
+
+  it('hides Settle up once the balance is zero', () => {
+    const hook = baseHookReturn([makeEntry()]);
+    hook.cp.netPosition = 0;
+    vi.mocked(useCounterpartyDetail).mockReturnValue(hook as never);
+
+    render(<CounterpartyDetail counterpartyId="cp1" />);
+
+    expect(screen.queryByRole('button', { name: /Settle up/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Edit Person/ })).toBeInTheDocument();
   });
 });

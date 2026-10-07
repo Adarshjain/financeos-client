@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Edit2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Edit2, Handshake, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
@@ -34,8 +34,9 @@ export function CounterpartyDetail({
     submittingCp,
     addEntryOpen,
     setAddEntryOpen,
-    addDir,
-    setAddDir,
+    addEntryType,
+    setAddEntryType,
+    openSettleUp,
     addAmount,
     setAddAmount,
     addEntryDate,
@@ -50,8 +51,8 @@ export function CounterpartyDetail({
     submittingAddEntry,
     editLendingOpen,
     setEditLendingOpen,
-    lendingDir,
-    setLendingDir,
+    lendingEntryType,
+    setLendingEntryType,
     lendingAmount,
     setLendingAmount,
     lendingDate,
@@ -83,6 +84,17 @@ export function CounterpartyDetail({
       {/* Top Header Action Bar */}
       <PageActionBar>
         <div className="flex items-center gap-2 w-full">
+          {cp.netPosition !== 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => openSettleUp(cp.netPosition)}
+              className="flex-1"
+            >
+              <Handshake className="h-3.5 w-3.5" /> Settle up
+            </Button>
+          )}
+
           <Button
             variant="outline"
             size="sm"
@@ -151,8 +163,9 @@ export function CounterpartyDetail({
         open={addEntryOpen}
         onOpenChange={setAddEntryOpen}
         cpName={cp.name}
-        addDir={addDir}
-        setAddDir={setAddDir}
+        netPosition={cp.netPosition}
+        addEntryType={addEntryType}
+        setAddEntryType={setAddEntryType}
         addAmount={addAmount}
         setAddAmount={setAddAmount}
         addEntryDate={addEntryDate}
@@ -172,8 +185,8 @@ export function CounterpartyDetail({
       <EditLendingEntryDialog
         open={editLendingOpen}
         onOpenChange={setEditLendingOpen}
-        lendingDir={lendingDir}
-        setLendingDir={setLendingDir}
+        lendingEntryType={lendingEntryType}
+        setLendingEntryType={setLendingEntryType}
         lendingAmount={lendingAmount}
         setLendingAmount={setLendingAmount}
         lendingDate={lendingDate}

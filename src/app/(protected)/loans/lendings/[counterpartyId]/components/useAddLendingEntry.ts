@@ -3,8 +3,13 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import {
+  directionOf,
+  fromEntryType,
+  type LendingEntryType,
+  settleUpEntry,
+} from '@/lib/lendingEntry';
 import { Transaction } from '@/lib/transaction.types';
-import { LendingDirection } from '@/lib/types';
 
 import { useCounterpartyMutations } from './useCounterpartyMutations';
 
@@ -18,7 +23,7 @@ export function useAddLendingEntry(
   createLending: CreateLendingMutation,
 ) {
   const [addEntryOpen, setAddEntryOpen] = useState(false);
-  const [addDir, setAddDir] = useState<LendingDirection>('lent');
+  const [addEntryType, setAddEntryType] = useState<LendingEntryType>('lent');
   const [addAmount, setAddAmount] = useState('');
   const [addEntryDate, setAddEntryDate] = useState(
     new Date().toISOString().split('T')[0],
@@ -35,11 +40,22 @@ export function useAddLendingEntry(
     setAddSelectedTx(null);
   };
 
-  const handleSetAddDir = (dir: LendingDirection) => {
-    setAddDir(dir);
+  const handleSetAddEntryType = (next: LendingEntryType) => {
     // The picker's type filter (DEBIT/CREDIT) is direction-derived, so a
-    // previously-selected transaction may no longer be valid.
+    // previously-selected transaction may no longer be valid once the money
+    // flows the other way. Switching principal <-> settlement keeps it.
+    if (directionOf(next) !== directionOf(addEntryType)) setAddSelectedTx(null);
+    setAddEntryType(next);
+  };
+
+  /** "Settle up": open the dialog pre-filled with the one repayment that zeroes the balance. */
+  const openSettleUp = (netPosition: number) => {
+    const settle = settleUpEntry(netPosition);
+    if (!settle) return;
     setAddSelectedTx(null);
+    setAddEntryType(settle.entryType);
+    setAddAmount(String(settle.amount));
+    setAddEntryOpen(true);
   };
 
   const handleSelectAddTx = (t: Transaction) => {
@@ -59,7 +75,7 @@ export function useAddLendingEntry(
     try {
       await createLending.mutateAsync({
         counterpartyId,
-        direction: addDir,
+        ...fromEntryType(addEntryType),
         amount: Number(addAmount),
         entryDate: addEntryDate,
         expectedReturnDate: addExpDate || undefined,
@@ -71,6 +87,7 @@ export function useAddLendingEntry(
       setAddAmount('');
       setAddNotes('');
       setAddExpDate('');
+      setAddEntryType('lent');
     } catch {
       // onError already surfaced the toast.
     }
@@ -79,8 +96,9 @@ export function useAddLendingEntry(
   return {
     addEntryOpen,
     setAddEntryOpen: handleSetAddEntryOpen,
-    addDir,
-    setAddDir: handleSetAddDir,
+    addEntryType,
+    setAddEntryType: handleSetAddEntryType,
+    openSettleUp,
     addAmount,
     setAddAmount,
     addEntryDate,

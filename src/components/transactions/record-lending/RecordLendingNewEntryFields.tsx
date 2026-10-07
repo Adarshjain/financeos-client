@@ -14,6 +14,8 @@ interface RecordLendingNewEntryFieldsProps {
   setExpectedReturnDate: (value: string) => void;
   notes: string;
   setNotes: (value: string) => void;
+  /** A repayment has nothing to return, so the expected-return date is hidden for it. */
+  showExpectedReturn?: boolean;
 }
 
 export function RecordLendingNewEntryFields({
@@ -25,6 +27,7 @@ export function RecordLendingNewEntryFields({
   setExpectedReturnDate,
   notes,
   setNotes,
+  showExpectedReturn = true,
 }: RecordLendingNewEntryFieldsProps) {
   return (
     <div className="space-y-3">
@@ -57,17 +60,19 @@ export function RecordLendingNewEntryFields({
         </div>
       </div>
 
-      <div className="space-y-1">
-        <Label htmlFor="lendingExpDate" className="text-xs">
-          Expected Return Date (Optional)
-        </Label>
-        <DateInput
-          id="lendingExpDate"
-          value={expectedReturnDate}
-          onChange={(e) => setExpectedReturnDate(e.target.value)}
-          className="h-9 text-xs"
-        />
-      </div>
+      {showExpectedReturn && (
+        <div className="space-y-1">
+          <Label htmlFor="lendingExpDate" className="text-xs">
+            Expected Return Date (Optional)
+          </Label>
+          <DateInput
+            id="lendingExpDate"
+            value={expectedReturnDate}
+            onChange={(e) => setExpectedReturnDate(e.target.value)}
+            className="h-9 text-xs"
+          />
+        </div>
+      )}
 
       <div className="space-y-1">
         <Label htmlFor="lendingNotes" className="text-xs">

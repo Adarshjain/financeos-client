@@ -54,6 +54,8 @@ const rahulCp: CounterpartyResponse = {
   netPosition: 0,
   totalBorrowed: 0,
   totalLent: 0,
+  repaidToYou: 0,
+  repaidByYou: 0,
   entryCount: 0,
 };
 
@@ -154,6 +156,7 @@ describe('TransactionLinkDialog LENDING kind', () => {
       counterpartyName: 'Rahul Sharma',
       amount: 300,
       direction: 'lent',
+      kind: 'principal',
       entryDate: '2026-07-01',
       createdAt: '2026-07-01T00:00:00Z',
       notes: 'Dinner unlinked entry',
@@ -269,6 +272,62 @@ describe('TransactionLinkDialog LENDING kind', () => {
     await waitFor(() => {
       expect(onOpenChange).toHaveBeenCalledWith(false);
       expect(onSuccess).toHaveBeenCalled();
+    });
+  });
+
+  it('a CREDIT from someone who owes you defaults to "They paid me back" and posts kind settlement with no expected-return field', async () => {
+    mockGet({
+      '/api/v1/counterparties/suggest': { counterparty: { ...rahulCp, netPosition: 1200 } },
+      '/api/v1/lendings': pagedOf([]),
+    });
+    (api.POST as Mock).mockResolvedValue({ data: { id: 'new-lend' } });
+
+    renderLending(creditTxn);
+
+    await openLinkTypeMenuAndPick('Lending (person ledger)');
+
+    expect(await screen.findByText('Rahul Sharma')).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByLabelText('They paid me back')).toBeChecked());
+    expect(screen.getByLabelText('I borrowed money')).not.toBeChecked();
+    // Direction is locked to the CREDIT: the money-out tiles are offered but disabled.
+    expect(screen.getByLabelText('I lent money')).toBeDisabled();
+    expect(screen.getByLabelText('I paid back what I owed')).toBeDisabled();
+    expect(screen.queryByLabelText(/Expected Return Date/)).not.toBeInTheDocument();
+
+    const saveBtn = screen.getByRole('button', { name: 'Save entry' });
+    await waitFor(() => expect(saveBtn).not.toBeDisabled());
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(api.POST).toHaveBeenCalledWith('/api/v1/lendings', {
+        body: expect.objectContaining({ direction: 'borrowed', kind: 'settlement', counterpartyId: 'cp-rahul' }),
+      });
+    });
+  });
+
+  it('a DEBIT to someone with no balance stays a principal "I lent money" entry', async () => {
+    mockGet({ '/api/v1/counterparties/suggest': { counterparty: rahulCp }, '/api/v1/lendings': pagedOf([]) });
+    (api.POST as Mock).mockResolvedValue({ data: { id: 'new-lend' } });
+
+    renderLending(debitTxn);
+
+    await openLinkTypeMenuAndPick('Lending (person ledger)');
+
+    expect(await screen.findByText('Rahul Sharma')).toBeInTheDocument();
+    expect(screen.getByLabelText('I lent money')).toBeChecked();
+    expect(screen.getByLabelText(/Expected Return Date/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByLabelText('I paid back what I owed'));
+    expect(screen.getByText("You don't owe Rahul Sharma anything right now.")).toBeInTheDocument();
+    // The warning never blocks: the entry still saves as a settlement.
+    expect(screen.queryByLabelText(/Expected Return Date/)).not.toBeInTheDocument();
+    const saveBtn = screen.getByRole('button', { name: 'Save entry' });
+    await waitFor(() => expect(saveBtn).not.toBeDisabled());
+    fireEvent.click(saveBtn);
+    await waitFor(() => {
+      expect(api.POST).toHaveBeenCalledWith('/api/v1/lendings', {
+        body: expect.objectContaining({ direction: 'lent', kind: 'settlement' }),
+      });
     });
   });
 

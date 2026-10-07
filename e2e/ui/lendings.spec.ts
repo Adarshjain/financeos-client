@@ -61,8 +61,7 @@ test.describe('Lendings UI (@ui)', () => {
     await page.getByRole('button', { name: /Add Entry/i }).filter({ visible: true }).first().click();
     await expect(page.getByRole('heading', { name: new RegExp(`Add Ledger Entry for ${cpName}`, 'i') })).toBeVisible();
 
-    // Click "I received money (Borrowed)" radio
-    await page.getByLabel('I received money (Borrowed)').check();
+    await page.getByLabel('I borrowed money').check();
     await page.locator('#add-entry-form input[type="number"]').fill('15000');
     await page.locator('#add-entry-form input[data-slot="date-input"]').first().fill(monthsAgo(1));
 
@@ -71,6 +70,20 @@ test.describe('Lendings UI (@ui)', () => {
     // Verify table updated to 2 entries and running balance reflects +₹25,000.00
     await expect(page.getByText(/Ledger History/i).first()).toBeVisible();
     await expect(page.getByText('+₹25,000.00').first()).toBeVisible();
+
+    // 3b. Settle up: they owe ₹25,000, one click pre-fills "They paid me back" for exactly that
+    await showActionBar();
+    await page.getByRole('button', { name: 'Settle up', exact: true }).filter({ visible: true }).first().click();
+    await expect(page.getByRole('heading', { name: new RegExp(`Add Ledger Entry for ${cpName}`, 'i') })).toBeVisible();
+    await expect(page.getByLabel('They paid me back')).toBeChecked();
+    await expect(page.locator('#add-entry-form input[type="number"]')).toHaveValue('25000');
+    await page.getByRole('button', { name: 'Add Entry' }).click();
+
+    // The repayment is neutral in the ledger and lands in "Repaid to you", not "Total Borrowed"
+    await expect(page.getByText('They repaid').first()).toBeVisible();
+    await expect(page.getByText('Repaid to you')).toBeVisible();
+    await expect(page.getByText('₹0.00').first()).toBeVisible(); // net chip: zero carries no sign
+    await expect(page.getByRole('button', { name: 'Settle up', exact: true })).toHaveCount(0);
 
     // 4. Edit Entry
     const editEntryBtn = page.locator('.block.md\\:hidden button:has(svg)').filter({ hasNotText: /Add|Delete|Person/i }).first();
@@ -95,7 +108,7 @@ test.describe('Lendings UI (@ui)', () => {
     await showActionBar();
     await page.getByRole('button', { name: 'Delete Person', exact: true }).filter({ visible: true }).first().click();
     await expect(page.getByRole('heading', { name: 'Delete Counterparty' })).toBeVisible();
-    await expect(page.getByText(/permanently deletes their entire ledger history \(2 entries\)/i)).toBeVisible();
+    await expect(page.getByText(/permanently deletes their entire ledger history \(3 entries\)/i)).toBeVisible();
 
     await page.getByRole('button', { name: 'Delete Person', exact: true }).last().click();
 

@@ -105,9 +105,72 @@ describe('useAddLendingEntry', () => {
     act(() => result.current.onSelectAddTx(tx));
     expect(result.current.addSelectedTx).not.toBeNull();
 
-    act(() => result.current.setAddDir('borrowed'));
+    act(() => result.current.setAddEntryType('borrowed'));
 
     expect(result.current.addSelectedTx).toBeNull();
+  });
+
+  it('keeps the selected transaction when switching lent -> repaid (same direction)', () => {
+    const createLending = fakeCreateLending();
+    const { result } = renderHook(() =>
+      useAddLendingEntry('cp1', createLending as never),
+    );
+
+    act(() => result.current.onSelectAddTx(tx));
+    act(() => result.current.setAddEntryType('repaid_by_me'));
+
+    expect(result.current.addEntryType).toBe('repaid_by_me');
+    expect(result.current.addSelectedTx).not.toBeNull();
+  });
+
+  it('submits direction + kind derived from the entry type', async () => {
+    const createLending = fakeCreateLending();
+    const { result } = renderHook(() =>
+      useAddLendingEntry('cp1', createLending as never),
+    );
+
+    act(() => {
+      result.current.setAddEntryType('repaid_to_me');
+      result.current.setAddAmount('250');
+    });
+    await act(async () => {
+      await result.current.handleAddEntry(submitEvent());
+    });
+
+    expect(createLending.mutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({ counterpartyId: 'cp1', direction: 'borrowed', kind: 'settlement', amount: 250 }),
+    );
+    expect(result.current.addEntryType).toBe('lent');
+  });
+
+  it('openSettleUp pre-fills the repayment that zeroes the balance and opens the dialog', () => {
+    const createLending = fakeCreateLending();
+    const { result } = renderHook(() =>
+      useAddLendingEntry('cp1', createLending as never),
+    );
+
+    act(() => result.current.onSelectAddTx(tx));
+    act(() => result.current.openSettleUp(2500));
+    expect(result.current.addEntryOpen).toBe(true);
+    expect(result.current.addEntryType).toBe('repaid_to_me');
+    expect(result.current.addAmount).toBe('2500');
+    expect(result.current.addSelectedTx).toBeNull();
+
+    act(() => result.current.openSettleUp(-640));
+    expect(result.current.addEntryType).toBe('repaid_by_me');
+    expect(result.current.addAmount).toBe('640');
+  });
+
+  it('openSettleUp does nothing when the balance is already zero', () => {
+    const createLending = fakeCreateLending();
+    const { result } = renderHook(() =>
+      useAddLendingEntry('cp1', createLending as never),
+    );
+
+    act(() => result.current.openSettleUp(0));
+
+    expect(result.current.addEntryOpen).toBe(false);
+    expect(result.current.addEntryType).toBe('lent');
   });
 
   it('resets amount, notes and expected date on a successful submit', async () => {

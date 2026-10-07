@@ -1,6 +1,7 @@
 'use client';
 
 import { CounterpartyPicker } from '@/components/lendings/CounterpartyPicker';
+import { LendingEntryTypePicker } from '@/components/lendings/LendingEntryTypePicker';
 import { TransactionPicker } from '@/components/transactions/TransactionPicker';
 import { DateInput } from '@/components/ui/date-input';
 import {
@@ -14,17 +15,22 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import type { CounterpartySelection } from '@/lib/lending.types';
+import { type CounterpartySelection, selectionName } from '@/lib/lending.types';
+import {
+  directionOf,
+  isSettlementType,
+  type LendingEntryType,
+  settlementWarning,
+} from '@/lib/lendingEntry';
 import { Transaction } from '@/lib/transaction.types';
-import { LendingDirection } from '@/lib/types';
 
 interface AddLendingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   party: CounterpartySelection | null;
   setParty: (party: CounterpartySelection | null) => void;
-  direction: LendingDirection;
-  setDirection: (dir: LendingDirection) => void;
+  entryType: LendingEntryType;
+  setEntryType: (t: LendingEntryType) => void;
   amount: string;
   setAmount: (amt: string) => void;
   entryDate: string;
@@ -45,8 +51,8 @@ export function AddLendingDialog({
   onOpenChange,
   party,
   setParty,
-  direction,
-  setDirection,
+  entryType,
+  setEntryType,
   amount,
   setAmount,
   entryDate,
@@ -61,6 +67,11 @@ export function AddLendingDialog({
   loading,
   onCreateLending,
 }: AddLendingDialogProps) {
+  const settlement = isSettlementType(entryType);
+  // A brand-new person has no balance, so a settlement against them warns too.
+  const partyNet = party?.kind === 'existing' ? party.counterparty.netPosition : 0;
+  const warning = party ? settlementWarning(entryType, Number(amount), partyNet, selectionName(party)) : null;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md w-[95vw]">
@@ -78,29 +89,7 @@ export function AddLendingDialog({
           >
             <CounterpartyPicker id="cpSelect" value={party} onChange={setParty} />
 
-            <div className="space-y-1">
-              <Label className="text-xs">Direction *</Label>
-              <div className="flex gap-4 pt-1">
-                <label className="flex items-center gap-1.5 cursor-pointer font-medium text-emerald-600 dark:text-emerald-400 text-xs">
-                  <input
-                    type="radio"
-                    name="lendingDir"
-                    checked={direction === 'lent'}
-                    onChange={() => setDirection('lent')}
-                  />
-                  <span>I gave money (Lent)</span>
-                </label>
-                <label className="flex items-center gap-1.5 cursor-pointer font-medium text-rose-600 dark:text-rose-400 text-xs">
-                  <input
-                    type="radio"
-                    name="lendingDir"
-                    checked={direction === 'borrowed'}
-                    onChange={() => setDirection('borrowed')}
-                  />
-                  <span>I received money (Borrowed)</span>
-                </label>
-              </div>
-            </div>
+            <LendingEntryTypePicker value={entryType} onChange={setEntryType} name="lendingEntryType" />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -131,6 +120,9 @@ export function AddLendingDialog({
                 />
               </div>
             </div>
+            {warning && (
+              <p className="text-2xs text-amber-600 dark:text-amber-400 px-1">{warning}</p>
+            )}
 
             <div className="space-y-1">
               <Label className="text-xs">Linked Transaction (Optional)</Label>
@@ -138,23 +130,25 @@ export function AddLendingDialog({
                 value={selectedTx}
                 onSelect={onSelectTx}
                 onClear={onClearTx}
-                direction={direction}
+                direction={directionOf(entryType)}
                 suggestAmount={amount ? Number(amount) : null}
                 suggestDate={entryDate || null}
               />
             </div>
 
-            <div className="space-y-1">
-              <Label htmlFor="expDate" className="text-xs">
-                Expected Return Date (Optional)
-              </Label>
-              <DateInput
-                id="expDate"
-                value={expectedReturnDate}
-                onChange={(e) => setExpectedReturnDate(e.target.value)}
-                className="h-9 text-xs"
-              />
-            </div>
+            {!settlement && (
+              <div className="space-y-1">
+                <Label htmlFor="expDate" className="text-xs">
+                  Expected Return Date (Optional)
+                </Label>
+                <DateInput
+                  id="expDate"
+                  value={expectedReturnDate}
+                  onChange={(e) => setExpectedReturnDate(e.target.value)}
+                  className="h-9 text-xs"
+                />
+              </div>
+            )}
 
             <div className="space-y-1">
               <Label htmlFor="notes" className="text-xs">

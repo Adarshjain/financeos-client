@@ -1,5 +1,6 @@
 'use client';
 
+import { LendingEntryTypePicker } from '@/components/lendings/LendingEntryTypePicker';
 import { TransactionPicker } from '@/components/transactions/TransactionPicker';
 import { DateInput } from '@/components/ui/date-input';
 import {
@@ -13,14 +14,20 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  directionOf,
+  entryTypesForDirection,
+  isSettlementType,
+  type LendingEntryType,
+} from '@/lib/lendingEntry';
 import { Transaction } from '@/lib/transaction.types';
-import { LendingDirection, LendingTransactionSummary } from '@/lib/types';
+import { LendingTransactionSummary } from '@/lib/types';
 
 interface EditLendingEntryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  lendingDir: LendingDirection;
-  setLendingDir: (d: LendingDirection) => void;
+  lendingEntryType: LendingEntryType;
+  setLendingEntryType: (t: LendingEntryType) => void;
   lendingAmount: string;
   setLendingAmount: (a: string) => void;
   lendingDate: string;
@@ -39,8 +46,8 @@ interface EditLendingEntryDialogProps {
 export function EditLendingEntryDialog({
   open,
   onOpenChange,
-  lendingDir,
-  setLendingDir,
+  lendingEntryType,
+  setLendingEntryType,
   lendingAmount,
   setLendingAmount,
   lendingDate,
@@ -55,7 +62,11 @@ export function EditLendingEntryDialog({
   submittingEditLending,
   onUpdateLending,
 }: EditLendingEntryDialogProps) {
+  // A linked transaction fixes the money direction (DEBIT <-> lent, CREDIT <->
+  // borrowed); principal <-> settlement within that direction stays editable.
   const directionLocked = Boolean(editSelectedTx);
+  const direction = directionOf(lendingEntryType);
+  const settlement = isSettlementType(lendingEntryType);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -71,44 +82,14 @@ export function EditLendingEntryDialog({
             onSubmit={onUpdateLending}
             className="space-y-3 pt-1 text-xs"
           >
-            <div className="space-y-1">
-              <Label className="text-xs">Direction</Label>
-              <div className="flex gap-4 pt-1">
-                <label
-                  className={`flex items-center gap-1.5 text-xs ${
-                    directionLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="editDir"
-                    checked={lendingDir === 'lent'}
-                    disabled={directionLocked}
-                    onChange={() => setLendingDir('lent')}
-                  />
-                  <span>I gave money (Lent)</span>
-                </label>
-                <label
-                  className={`flex items-center gap-1.5 text-xs ${
-                    directionLocked ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="editDir"
-                    checked={lendingDir === 'borrowed'}
-                    disabled={directionLocked}
-                    onChange={() => setLendingDir('borrowed')}
-                  />
-                  <span>I received money (Borrowed)</span>
-                </label>
-              </div>
-              {directionLocked && (
-                <p className="text-2xs text-slate-400">
-                  Unlink the transaction to change direction.
-                </p>
-              )}
-            </div>
+            <LendingEntryTypePicker
+              value={lendingEntryType}
+              onChange={setLendingEntryType}
+              enabled={directionLocked ? entryTypesForDirection(direction) : undefined}
+              lockedHint="Unlink the transaction to change direction."
+              name="editEntryType"
+              label="Entry type"
+            />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">Amount (₹)</Label>
@@ -135,19 +116,21 @@ export function EditLendingEntryDialog({
                 value={editSelectedTx}
                 onSelect={onSelectEditTx}
                 onClear={onClearEditTx}
-                direction={lendingDir}
+                direction={direction}
                 suggestAmount={lendingAmount ? Number(lendingAmount) : null}
                 suggestDate={lendingDate || null}
               />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Expected Return Date</Label>
-              <DateInput
-                value={lendingExpDate}
-                onChange={(e) => setLendingExpDate(e.target.value)}
-                className="h-9 text-xs"
-              />
-            </div>
+            {!settlement && (
+              <div className="space-y-1">
+                <Label className="text-xs">Expected Return Date</Label>
+                <DateInput
+                  value={lendingExpDate}
+                  onChange={(e) => setLendingExpDate(e.target.value)}
+                  className="h-9 text-xs"
+                />
+              </div>
+            )}
             <div className="space-y-1">
               <Label className="text-xs">Notes</Label>
               <Textarea

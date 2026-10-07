@@ -1,8 +1,15 @@
 'use client';
 
 import { CounterpartyPicker } from '@/components/lendings/CounterpartyPicker';
+import { LendingEntryTypePicker } from '@/components/lendings/LendingEntryTypePicker';
 import type { Account } from '@/lib/account.types';
 import type { CounterpartySelection, LendingDirection, LendingResponse } from '@/lib/lending.types';
+import {
+  entryTypesForDirection,
+  isSettlementType,
+  type LendingEntryType,
+  settlementWarning,
+} from '@/lib/lendingEntry';
 import type { Transaction } from '@/lib/transaction.types';
 import { cn, formatDate, formatMoney, getAccountName } from '@/lib/utils';
 
@@ -13,6 +20,8 @@ interface LendingLinkBodyProps {
   transaction: Transaction;
   accounts: Account[];
   direction: LendingDirection;
+  entryType: LendingEntryType;
+  setEntryType: (type: LendingEntryType) => void;
   party: CounterpartySelection | null;
   setParty: (party: CounterpartySelection | null) => void;
   suggestedId: string | null;
@@ -41,6 +50,8 @@ export function LendingLinkBody({
   transaction,
   accounts,
   direction,
+  entryType,
+  setEntryType,
   party,
   setParty,
   suggestedId,
@@ -63,6 +74,14 @@ export function LendingLinkBody({
   const existingPerson = party?.kind === 'existing' ? party.counterparty : null;
   const showExisting = existingPerson !== null && unlinkedEntries.length > 0;
   const entryWord = unlinkedEntries.length === 1 ? 'entry' : 'entries';
+  const warning = party
+    ? settlementWarning(
+        entryType,
+        Number(amount),
+        existingPerson?.netPosition ?? 0,
+        existingPerson?.name ?? (party.kind === 'new' ? party.name : ''),
+      )
+    : null;
 
   return (
     <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
@@ -104,6 +123,16 @@ export function LendingLinkBody({
         suggestedId={suggestedId}
       />
 
+      <LendingEntryTypePicker
+        value={entryType}
+        onChange={setEntryType}
+        enabled={entryTypesForDirection(direction)}
+        name="linkEntryType"
+      />
+      {warning && (
+        <p className="text-2xs text-amber-600 dark:text-amber-400 px-1">{warning}</p>
+      )}
+
       {existingPerson && loadingExistingEntries && !showExisting && (
         <p className="text-2xs text-slate-400 px-1">Checking for unlinked entries...</p>
       )}
@@ -138,6 +167,7 @@ export function LendingLinkBody({
           setExpectedReturnDate={setExpectedReturnDate}
           notes={notes}
           setNotes={setNotes}
+          showExpectedReturn={!isSettlementType(entryType)}
         />
       </div>
     </div>

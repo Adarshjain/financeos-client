@@ -38,6 +38,7 @@ const lendingWithTx: LendingResponse = {
   counterpartyName: 'Rahul',
   amount: 500,
   direction: 'lent',
+  kind: 'principal',
   entryDate: '2026-01-01',
   createdAt: '2026-01-01T00:00:00Z',
   expectedReturnDate: '2026-02-01',
@@ -70,13 +71,38 @@ describe('useEditLendingEntry', () => {
 
     act(() => result.current.handleOpenEditLending(lendingWithTx));
 
-    expect(result.current.lendingDir).toBe('lent');
+    expect(result.current.lendingEntryType).toBe('lent');
     expect(result.current.lendingAmount).toBe('500');
     expect(result.current.lendingDate).toBe('2026-01-01');
     expect(result.current.lendingExpDate).toBe('2026-02-01');
     expect(result.current.lendingNotes).toBe('trip cash');
     expect(result.current.editSelectedTx).toEqual(lendingWithTx.transaction);
     expect(result.current.editLendingOpen).toBe(true);
+  });
+
+  it('opening a settlement entry seeds the repayment type, and save sends direction + kind', async () => {
+    const mutations = fakeMutations();
+    const { result } = renderHook(() => useEditLendingEntry(mutations as never));
+
+    act(() =>
+      result.current.handleOpenEditLending({
+        ...lendingWithTx,
+        direction: 'borrowed',
+        kind: 'settlement',
+        transaction: undefined,
+        transactionId: undefined,
+      }),
+    );
+    expect(result.current.lendingEntryType).toBe('repaid_to_me');
+
+    act(() => result.current.setLendingEntryType('borrowed'));
+    await act(async () => {
+      await result.current.handleUpdateLending(submitEvent());
+    });
+
+    expect(mutations.updateLending.mutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({ body: expect.objectContaining({ direction: 'borrowed', kind: 'principal' }) }),
+    );
   });
 
   it('save with the link unchanged only calls updateLending, no link/unlink', async () => {

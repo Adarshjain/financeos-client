@@ -24,7 +24,7 @@ global.ResizeObserver = class ResizeObserver {
 window.HTMLElement.prototype.scrollIntoView = vi.fn();
 
 function cp(overrides: Partial<CounterpartyResponse> & { id: string; name: string }): CounterpartyResponse {
-  return { netPosition: 0, totalLent: 0, totalBorrowed: 0, entryCount: 0, ...overrides };
+  return { netPosition: 0, totalLent: 0, totalBorrowed: 0, repaidToYou: 0, repaidByYou: 0, entryCount: 0, ...overrides };
 }
 
 const rahul = cp({ id: 'cp-rahul', name: 'Rahul Sharma', netPosition: 1200, totalLent: 1200, entryCount: 2 });

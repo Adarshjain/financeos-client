@@ -2799,6 +2799,8 @@ export interface components {
             name: string;
             netPosition: number;
             notes?: string | null;
+            repaidByYou: number;
+            repaidToYou: number;
             totalBorrowed: number;
             totalLent: number;
         };
@@ -2926,6 +2928,8 @@ export interface components {
             entryDate: string;
             /** Format: date */
             expectedReturnDate?: string;
+            /** @enum {string} */
+            kind?: "principal" | "settlement";
             newCounterpartyName?: string;
             notes?: string;
             /** Format: uuid */
@@ -3629,6 +3633,8 @@ export interface components {
             expectedReturnDate?: string | null;
             /** Format: uuid */
             id: string;
+            /** @enum {string} */
+            kind: "principal" | "settlement";
             notes?: string | null;
             transaction?: components["schemas"]["LendingTransactionSummary"];
             /** Format: uuid */
@@ -5213,6 +5219,8 @@ export interface components {
             entryDate?: string;
             /** Format: date */
             expectedReturnDate?: string;
+            /** @enum {string} */
+            kind?: "principal" | "settlement";
             notes?: string;
         };
         UpdateLlmKeyPositionRequest: {

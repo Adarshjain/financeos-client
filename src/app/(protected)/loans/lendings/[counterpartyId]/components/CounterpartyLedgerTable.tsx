@@ -7,8 +7,9 @@ import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { ENTRY_TYPE_SHORT, isSettlementType, toEntryType } from '@/lib/lendingEntry';
 import { LendingResponse } from '@/lib/types';
-import { formatDate, formatMoney } from '@/lib/utils';
+import { cn, formatDate, formatMoney } from '@/lib/utils';
 
 import { TransactionLinkCell } from './TransactionLinkCell';
 
@@ -19,6 +20,26 @@ export interface LendingEntryWithBalance extends LendingResponse {
 export interface SplitTotal {
   count: number;
   sum: number;
+}
+
+/** How a row reads: principal keeps the lent/borrowed colours, a repayment is neutral. */
+function rowStyle(item: LendingResponse) {
+  const type = toEntryType(item.direction, item.kind);
+  const settlement = isSettlementType(type);
+  const out = item.direction === 'lent';
+  return {
+    type,
+    settlement,
+    out,
+    label: ENTRY_TYPE_SHORT[type],
+    deleteNoun: settlement ? 'repayment' : item.direction,
+    badgeVariant: (settlement ? 'slate' : out ? 'default' : 'destructive') as 'slate' | 'default' | 'destructive',
+    amountClass: settlement
+      ? 'text-slate-600 dark:text-slate-300'
+      : out
+        ? 'text-rose-600 dark:text-rose-400'
+        : 'text-emerald-600 dark:text-emerald-400',
+  };
 }
 
 /** transactionId -> { count, sum } across the entries in this *loaded* list
@@ -69,23 +90,22 @@ export function CounterpartyLedgerTable({
             No ledger entries recorded for {cpName}.
           </Card>
         ) : (
-          entries.map((item) => (
+          entries.map((item) => {
+            const row = rowStyle(item);
+            return (
             <Card
               key={item.id}
               className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-xl shadow-sm p-3 space-y-2"
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold text-slate-500">
+                <span className="flex items-center gap-2 text-xs font-semibold text-slate-500">
                   {formatDate(item.entryDate)}
+                  <Badge variant={row.badgeVariant} size="xs">
+                    {row.label}
+                  </Badge>
                 </span>
-                <span
-                  className={`font-bold text-sm tabular-nums ${
-                    item.direction === 'lent'
-                      ? 'text-rose-600 dark:text-rose-400'
-                      : 'text-emerald-600 dark:text-emerald-400'
-                  }`}
-                >
-                  {item.direction === 'lent' ? '-' : ''}
+                <span className={cn('font-bold text-sm tabular-nums', row.amountClass)}>
+                  {row.out ? '-' : ''}
                   {formatMoney(item.amount)}
                 </span>
               </div>
@@ -140,7 +160,7 @@ export function CounterpartyLedgerTable({
                   </Button>
                   <ConfirmationDialog
                     title="Delete Ledger Entry"
-                    description={`Delete this ${item.direction} entry of ${formatMoney(
+                    description={`Delete this ${row.deleteNoun} entry of ${formatMoney(
                       item.amount
                     )}?`}
                     primaryAction={() => onDeleteEntry(item.id)}
@@ -159,7 +179,8 @@ export function CounterpartyLedgerTable({
                 </div>
               </div>
             </Card>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -181,7 +202,7 @@ export function CounterpartyLedgerTable({
               <thead>
                 <tr className="bg-slate-50/80 dark:bg-slate-900 border-b border-slate-200/80 dark:border-slate-800 font-semibold text-slate-500 uppercase tracking-wider text-2xs">
                   <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Direction</th>
+                  <th className="py-3 px-4">Type</th>
                   <th className="py-3 px-4 text-right">Amount</th>
                   <th className="py-3 px-4">Transaction</th>
                   <th className="py-3 px-4 text-right">Running Balance</th>
@@ -191,7 +212,9 @@ export function CounterpartyLedgerTable({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                {entries.map((item) => (
+                {entries.map((item) => {
+                  const row = rowStyle(item);
+                  return (
                   <tr
                     key={item.id}
                     className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
@@ -201,17 +224,15 @@ export function CounterpartyLedgerTable({
                     </td>
                     <td className="py-3.5 px-4">
                       <Badge
-                        variant={
-                          item.direction === 'lent' ? 'default' : 'destructive'
-                        }
-                        className="capitalize text-2xs inline-flex items-center gap-1"
+                        variant={row.badgeVariant}
+                        className="text-2xs inline-flex items-center gap-1 whitespace-nowrap"
                       >
-                        {item.direction === 'lent' ? (
+                        {row.out ? (
                           <ArrowUpRight className="h-3 w-3" />
                         ) : (
                           <ArrowDownLeft className="h-3 w-3" />
                         )}
-                        {item.direction === 'lent' ? 'I Lent' : 'I Borrowed'}
+                        {row.label}
                       </Badge>
                     </td>
                     <td className="py-3.5 px-4 text-right font-bold text-slate-900 dark:text-slate-100 tabular-nums">
@@ -259,7 +280,7 @@ export function CounterpartyLedgerTable({
                         <ConfirmationDialog
                           title="Delete Ledger Entry"
                           description={`Delete this ${
-                            item.direction
+                            row.deleteNoun
                           } entry of ${formatMoney(item.amount)}?`}
                           primaryAction={() => onDeleteEntry(item.id)}
                           primaryActionText="Delete Entry"
@@ -277,7 +298,8 @@ export function CounterpartyLedgerTable({
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

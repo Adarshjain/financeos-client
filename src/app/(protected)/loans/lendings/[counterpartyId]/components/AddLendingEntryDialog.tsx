@@ -1,5 +1,6 @@
 'use client';
 
+import { LendingEntryTypePicker } from '@/components/lendings/LendingEntryTypePicker';
 import { TransactionPicker } from '@/components/transactions/TransactionPicker';
 import { DateInput } from '@/components/ui/date-input';
 import {
@@ -13,15 +14,22 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  directionOf,
+  isSettlementType,
+  type LendingEntryType,
+  settlementWarning,
+} from '@/lib/lendingEntry';
 import { Transaction } from '@/lib/transaction.types';
-import { LendingDirection } from '@/lib/types';
 
 interface AddLendingEntryDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   cpName: string;
-  addDir: LendingDirection;
-  setAddDir: (d: LendingDirection) => void;
+  /** Current balance with this person (positive = they owe you); drives the settlement warning. */
+  netPosition: number;
+  addEntryType: LendingEntryType;
+  setAddEntryType: (t: LendingEntryType) => void;
   addAmount: string;
   setAddAmount: (a: string) => void;
   addEntryDate: string;
@@ -41,8 +49,9 @@ export function AddLendingEntryDialog({
   open,
   onOpenChange,
   cpName,
-  addDir,
-  setAddDir,
+  netPosition,
+  addEntryType,
+  setAddEntryType,
   addAmount,
   setAddAmount,
   addEntryDate,
@@ -57,6 +66,9 @@ export function AddLendingEntryDialog({
   submittingAddEntry,
   onAddEntry,
 }: AddLendingEntryDialogProps) {
+  const settlement = isSettlementType(addEntryType);
+  const warning = settlementWarning(addEntryType, Number(addAmount), netPosition, cpName);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md w-[95vw]">
@@ -71,29 +83,11 @@ export function AddLendingEntryDialog({
             onSubmit={onAddEntry}
             className="space-y-3 pt-1 text-xs"
           >
-            <div className="space-y-1">
-              <Label className="text-xs">Direction *</Label>
-              <div className="flex gap-4 pt-1">
-                <label className="flex items-center gap-1.5 cursor-pointer font-medium text-emerald-600 dark:text-emerald-400 text-xs">
-                  <input
-                    type="radio"
-                    name="addDir"
-                    checked={addDir === 'lent'}
-                    onChange={() => setAddDir('lent')}
-                  />
-                  <span>I gave money (Lent)</span>
-                </label>
-                <label className="flex items-center gap-1.5 cursor-pointer font-medium text-rose-600 dark:text-rose-400 text-xs">
-                  <input
-                    type="radio"
-                    name="addDir"
-                    checked={addDir === 'borrowed'}
-                    onChange={() => setAddDir('borrowed')}
-                  />
-                  <span>I received money (Borrowed)</span>
-                </label>
-              </div>
-            </div>
+            <LendingEntryTypePicker
+              value={addEntryType}
+              onChange={setAddEntryType}
+              name="addEntryType"
+            />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -118,6 +112,9 @@ export function AddLendingEntryDialog({
                 />
               </div>
             </div>
+            {warning && (
+              <p className="text-2xs text-amber-600 dark:text-amber-400 px-1">{warning}</p>
+            )}
 
             <div className="space-y-1">
               <Label className="text-xs">Linked Transaction (Optional)</Label>
@@ -125,20 +122,22 @@ export function AddLendingEntryDialog({
                 value={addSelectedTx}
                 onSelect={onSelectAddTx}
                 onClear={onClearAddTx}
-                direction={addDir}
+                direction={directionOf(addEntryType)}
                 suggestAmount={addAmount ? Number(addAmount) : null}
                 suggestDate={addEntryDate || null}
               />
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs">Expected Return Date (Optional)</Label>
-              <DateInput
-                value={addExpDate}
-                onChange={(e) => setAddExpDate(e.target.value)}
-                className="h-9 text-xs"
-              />
-            </div>
+            {!settlement && (
+              <div className="space-y-1">
+                <Label className="text-xs">Expected Return Date (Optional)</Label>
+                <DateInput
+                  value={addExpDate}
+                  onChange={(e) => setAddExpDate(e.target.value)}
+                  className="h-9 text-xs"
+                />
+              </div>
+            )}
 
             <div className="space-y-1">
               <Label className="text-xs">Notes (Optional)</Label>

@@ -34,6 +34,8 @@ const cp1: CounterpartyResponse = {
   netPosition: 0,
   totalLent: 0,
   totalBorrowed: 0,
+  repaidToYou: 0,
+  repaidByYou: 0,
   entryCount: 0,
 };
 
@@ -211,6 +213,7 @@ describe('useRecordLending — party selection and suggestion', () => {
       counterpartyName: 'Rahul Sharma',
       amount: 300,
       direction: 'lent',
+      kind: 'principal',
       entryDate: '2026-04-01',
       createdAt: '2026-04-01T00:00:00Z',
     };
@@ -237,5 +240,81 @@ describe('useRecordLending — party selection and suggestion', () => {
     expect(api.GET).toHaveBeenCalledWith('/api/v1/lendings', {
       params: { query: { counterpartyId: 'cp1', page: 0, size: 50 } },
     });
+  });
+});
+
+describe('useRecordLending — entry kind', () => {
+  const describedTx: Transaction = { ...debitTx, description: 'Paid Rahul Sharma back' };
+
+  function mockGetByPath(handlers: Record<string, unknown>) {
+    vi.mocked(api.GET).mockImplementation(
+      ((path: string) => Promise.resolve({ data: handlers[path] ?? { content: [] } })) as never,
+    );
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('defaults to principal with nobody picked, and to a repayment once the suggested person is owed in that direction', async () => {
+    // A DEBIT (money out) to someone you owe 800 is you paying them back.
+    mockGetByPath({ '/api/v1/counterparties/suggest': { counterparty: { ...cp1, netPosition: -800 } } });
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(
+      () => useRecordLending({ transaction: describedTx, open: true, onOpenChange: vi.fn() }),
+      { wrapper: Wrapper },
+    );
+
+    expect(result.current.entryType).toBe('lent');
+    await waitFor(() => expect(result.current.entryType).toBe('repaid_by_me'));
+    expect(result.current.direction).toBe('lent');
+  });
+
+  it('stays principal when the balance is not in the clearing direction', async () => {
+    mockGetByPath({ '/api/v1/counterparties/suggest': { counterparty: { ...cp1, netPosition: 500 } } });
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(
+      () => useRecordLending({ transaction: describedTx, open: true, onOpenChange: vi.fn() }),
+      { wrapper: Wrapper },
+    );
+
+    await waitFor(() => expect(result.current.party?.kind).toBe('existing'));
+    expect(result.current.entryType).toBe('lent');
+  });
+
+  it('an explicit pick wins over later balance-driven defaults and is sent as kind', async () => {
+    mockGetByPath({});
+    vi.mocked(api.POST).mockResolvedValue({ data: { id: 'l1' } } as never);
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(
+      () => useRecordLending({ transaction: debitTx, open: true, onOpenChange: vi.fn() }),
+      { wrapper: Wrapper },
+    );
+
+    act(() => result.current.setEntryType('repaid_by_me'));
+    act(() => result.current.setParty({ kind: 'existing', counterparty: { ...cp1, netPosition: 900 } }));
+    await waitFor(() => expect(result.current.party?.kind).toBe('existing'));
+    expect(result.current.entryType).toBe('repaid_by_me');
+
+    act(() => result.current.handleSubmitNew());
+    await waitFor(() => expect(api.POST).toHaveBeenCalled());
+    const [, postOpts] = vi.mocked(api.POST).mock.calls[0] as unknown as [string, { body: Record<string, unknown> }];
+    expect(postOpts.body.direction).toBe('lent');
+    expect(postOpts.body.kind).toBe('settlement');
+  });
+
+  it('a new person resets an untouched kind back to principal', async () => {
+    mockGetByPath({});
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(
+      () => useRecordLending({ transaction: debitTx, open: true, onOpenChange: vi.fn() }),
+      { wrapper: Wrapper },
+    );
+
+    act(() => result.current.setParty({ kind: 'existing', counterparty: { ...cp1, netPosition: -100 } }));
+    await waitFor(() => expect(result.current.entryType).toBe('repaid_by_me'));
+
+    act(() => result.current.setParty({ kind: 'new', name: 'Kavita' }));
+    await waitFor(() => expect(result.current.entryType).toBe('lent'));
   });
 });

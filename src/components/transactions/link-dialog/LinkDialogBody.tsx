@@ -28,6 +28,8 @@ export function LinkDialogBody({ linkState, lending, loanPayment, accounts }: Li
         transaction={subjectTransaction}
         accounts={accounts}
         direction={lending.direction}
+        entryType={lending.entryType}
+        setEntryType={lending.setEntryType}
         party={lending.party}
         setParty={lending.setParty}
         suggestedId={lending.suggestedId}
