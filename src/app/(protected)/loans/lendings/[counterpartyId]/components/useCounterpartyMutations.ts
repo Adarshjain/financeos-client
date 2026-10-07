@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
+import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type {
@@ -22,8 +23,7 @@ function onErrorToast(fallback: string) {
 export function useCounterpartyMutations(counterpartyId: string) {
   const qc = useQueryClient();
 
-  const invalidateLendings = () =>
-    qc.invalidateQueries({ queryKey: keys.lendings.all });
+  const invalidateLendings = () => invalidateLendingQueries(qc);
   const invalidateLendingsAndTransactions = () => {
     invalidateLendings();
     qc.invalidateQueries({ queryKey: keys.transactions.all });

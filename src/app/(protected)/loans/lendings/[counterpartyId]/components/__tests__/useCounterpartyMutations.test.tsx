@@ -120,3 +120,44 @@ describe('useCounterpartyMutations', () => {
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.lendings.all });
   });
 });
+
+// The lent/borrowed/net cards on the Lendings Ledger page are cached under
+// keys.loans.summary() (served by GET /loans/summary), which is not under the
+// keys.lendings.all prefix — every ledger mutation must invalidate it too.
+describe('useCounterpartyMutations — ledger totals (loans summary) invalidation', () => {
+  type Mutations = ReturnType<typeof useCounterpartyMutations>;
+  const resolvePut = () => vi.mocked(api.PUT).mockResolvedValue({ data: { id: 'x' } } as never);
+  const resolvePost = () => vi.mocked(api.POST).mockResolvedValue({ data: { id: 'x' } } as never);
+  const resolveDelete = () => vi.mocked(api.DELETE).mockResolvedValue({ data: null } as never);
+
+  const cases: Array<{ name: keyof Mutations; arrange: () => void; fire: (m: Mutations) => void }> = [
+    { name: 'updateCp', arrange: resolvePut, fire: (m) => m.updateCp.mutate({ name: 'Rahul' }) },
+    { name: 'deleteCp', arrange: resolveDelete, fire: (m) => m.deleteCp.mutate() },
+    {
+      name: 'createLending',
+      arrange: resolvePost,
+      fire: (m) =>
+        m.createLending.mutate({ counterpartyId: 'cp1', direction: 'lent', amount: 500, entryDate: '2026-01-01' }),
+    },
+    { name: 'updateLending', arrange: resolvePut, fire: (m) => m.updateLending.mutate({ id: 'l1', body: { amount: 600 } }) },
+    { name: 'deleteLending', arrange: resolveDelete, fire: (m) => m.deleteLending.mutate('l1') },
+    { name: 'linkTransaction', arrange: resolvePut, fire: (m) => m.linkTransaction.mutate({ id: 'l1', transactionId: 't1' }) },
+    { name: 'unlinkTransaction', arrange: resolveDelete, fire: (m) => m.unlinkTransaction.mutate('l1') },
+  ];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it.each(cases)('$name invalidates keys.loans.summary() alongside keys.lendings.all', async ({ name, arrange, fire }) => {
+    arrange();
+    const { Wrapper, invalidateSpy } = createWrapper();
+    const { result } = renderHook(() => useCounterpartyMutations('cp1'), { wrapper: Wrapper });
+
+    fire(result.current);
+
+    await waitFor(() => expect(result.current[name].isSuccess).toBe(true));
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.lendings.all });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: keys.loans.summary() });
+  });
+});

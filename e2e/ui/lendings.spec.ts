@@ -103,4 +103,38 @@ test.describe('Lendings UI (@ui)', () => {
     // Redirected back to Lendings Ledger with 0 counterparties
     await expect(page.getByRole('heading', { name: 'Lendings Ledger (0)' })).toBeVisible();
   });
+
+  test('Lendings Ledger: summary cards (lent / borrowed / net) update after Save Entry without a reload', async ({
+    page,
+  }) => {
+    await page.goto('/loans/lendings');
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('heading', { name: /Lendings Ledger/i })).toBeVisible();
+
+    // "Total Borrowed" / "Net Position" are also row labels in the counterparties
+    // list, so scope to the summary card (the grid holding "Total Lent Out").
+    const summaryCard = page.locator('p:text-is("Total Lent Out")').locator('xpath=../..');
+    const lentOut = summaryCard.locator('p:text-is("Total Lent Out") + p');
+    const borrowed = summaryCard.locator('p:text-is("Total Borrowed") + p');
+    const net = summaryCard.locator('p:text-is("Net Position") + p');
+    await expect(lentOut).toHaveText('₹0.00');
+    await expect(borrowed).toHaveText('₹0.00');
+    await expect(net).toHaveText('+₹0.00');
+
+    // Lend ₹12,500 to a new person from the page's own Add Lending dialog
+    await page.getByRole('button', { name: /Add Lending/i }).first().click();
+    await expect(page.getByRole('heading', { name: 'Add Ledger Entry' })).toBeVisible();
+    await page.locator('#add-lending-form button[role="combobox"]').first().click();
+    await page.getByRole('option', { name: '+ Add New Person', exact: true }).click();
+    await page.locator('#cpName').fill(`Meera Iyer ${Date.now()}`);
+    await page.locator('#amount').fill('12500');
+    await page.locator('#entryDate').fill(monthsAgo(1));
+    await page.getByRole('button', { name: 'Save Entry' }).click();
+
+    // No page.reload() on purpose: the cards must refresh from the mutation alone.
+    await expect(page.getByRole('heading', { name: 'Lendings Ledger (1)' })).toBeVisible();
+    await expect(lentOut).toHaveText('₹12,500.00');
+    await expect(borrowed).toHaveText('₹0.00');
+    await expect(net).toHaveText('+₹12,500.00');
+  });
 });
