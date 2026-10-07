@@ -49,6 +49,11 @@ export const viewport: Viewport = {
      env(safe-area-inset-*) values, so the viewport stays inset and iOS paints
      the safe areas with the solid `themeColor` instead. */
   viewportFit: 'auto',
+  /* Chrome on Android (108+) then shrinks the layout viewport when the
+     on-screen keyboard opens, so bottom-fixed bars (PageActionBarSlot,
+     MobileNav) rise above it with no script. iOS Safari ignores this hint;
+     useKeyboardInset covers it there. */
+  interactiveWidget: 'resizes-content',
 };
 
 export default function RootLayout({

@@ -19,6 +19,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
+import { useKeyboardInset } from './useKeyboardInset';
+
 interface MobileNavProps {
   userEmail?: string;
 }
@@ -26,9 +28,20 @@ interface MobileNavProps {
 export function MobileNav({ userEmail }: MobileNavProps) {
   const pathname = usePathname();
   const { mode, items } = getMobileNavContext(pathname);
+  const keyboardOpen = useKeyboardInset() > 0;
 
   return (
-    <nav className="lg:hidden fixed bottom-2 left-3 right-3 h-12 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-slate-900/70 border rounded-2xl border-slate-200 dark:border-slate-800 z-40 flex items-center shadow-lg overflow-hidden px-1">
+    <nav
+      aria-hidden={keyboardOpen || undefined}
+      inert={keyboardOpen || undefined}
+      className={cn(
+        'lg:hidden fixed bottom-2 left-3 right-3 h-12 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md supports-[backdrop-filter]:bg-white/70 dark:supports-[backdrop-filter]:bg-slate-900/70 border rounded-2xl border-slate-200 dark:border-slate-800 z-40 flex items-center shadow-lg overflow-hidden px-1',
+        'transition-[transform,opacity] duration-300 ease-in-out',
+        // Under an open keyboard the nav is buried anyway; slide it out so
+        // PageActionBarSlot can take its place just above the keyboard.
+        keyboardOpen && 'translate-y-20 opacity-0 pointer-events-none',
+      )}
+    >
       {/* Sticky Left: X (Close to Home) Icon */}
       {mode !== 'default' && (
         <Link

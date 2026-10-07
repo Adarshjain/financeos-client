@@ -5,6 +5,8 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 
 import { cn } from '@/lib/utils';
 
+import { useKeyboardInset } from './useKeyboardInset';
+
 interface PageActionBarConfig {
   content: React.ReactNode | null;
   hideOnScroll?: boolean;
@@ -80,8 +82,14 @@ export function PageActionBar({
  */
 export function PageActionBarSlot() {
   const { config } = useContext(PageActionBarContext);
+  const keyboardInset = useKeyboardInset();
+  const rootRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(config?.defaultCollapsed ?? false);
+  // While a field inside the bar has focus, hide-on-scroll is paused: iOS
+  // scrolls the page to reveal the focused field, which would otherwise read
+  // as a scroll-down and slide the bar away mid-typing.
+  const [hasFocusWithin, setHasFocusWithin] = useState(false);
   const lastScrollY = useRef(0);
 
   const [prevHideOnScroll, setPrevHideOnScroll] = useState(config?.hideOnScroll);
@@ -100,7 +108,10 @@ export function PageActionBarSlot() {
   }
 
   useEffect(() => {
-    if (!config?.hideOnScroll || isCollapsed) return;
+    if (!config?.hideOnScroll || isCollapsed || hasFocusWithin) return;
+    // Resync so a page the browser scrolled while we were paused does not
+    // register as a scroll-down on the first event after resuming.
+    lastScrollY.current = window.scrollY;
 
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -116,15 +127,28 @@ export function PageActionBarSlot() {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [config?.hideOnScroll, isCollapsed]);
+  }, [config?.hideOnScroll, isCollapsed, hasFocusWithin]);
 
   if (!config?.content) return null;
 
+  // Keyboard up: MobileNav slides out, so the bar drops to sit 8px above the
+  // keyboard. Otherwise it stacks above the 48px nav (8px inset + 8px gap);
+  // collapsed, only the toggle shows and it parks on the nav's top edge.
+  const bottom = keyboardInset > 0 ? keyboardInset + 8 : isCollapsed ? 53 : 64;
+
   return (
     <div
+      ref={rootRef}
+      style={{ bottom }}
+      onFocus={() => {
+        setHasFocusWithin(true);
+        setIsVisible(true);
+      }}
+      onBlur={(event) => {
+        if (!rootRef.current?.contains(event.relatedTarget)) setHasFocusWithin(false);
+      }}
       className={cn(
         'lg:hidden fixed left-3 right-3 z-30 flex flex-col items-end transition-all duration-300 ease-in-out',
-        isCollapsed ? 'bottom-[53px]' : 'bottom-16',
         config.hideOnScroll && !isVisible && !isCollapsed
           ? 'translate-y-36 opacity-0 pointer-events-none'
           : 'translate-y-0 opacity-100',
