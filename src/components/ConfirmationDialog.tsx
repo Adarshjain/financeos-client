@@ -1,5 +1,4 @@
 import { JSX, useState } from 'react';
-import { toast } from 'sonner';
 
 import {
   Dialog,
@@ -19,15 +18,26 @@ interface ConfirmationDialogProps {
   secondaryActionText?: string;
   secondaryAction?: () => void;
   primaryAction?: () => void | Promise<void>;
-  trigger: JSX.Element;
+  /** Opens the dialog on click. Omit when driving `open` from the parent. */
+  trigger?: JSX.Element;
+  /** Controlled open state; when provided, `onOpenChange` receives every close. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   loading?: boolean;
   variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
 }
 
 export function ConfirmationDialog(props: ConfirmationDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
   const [running, setRunning] = useState(false);
   const busy = running || props.loading;
+
+  const isControlled = props.open !== undefined;
+  const open = isControlled ? props.open : uncontrolledOpen;
+  const setOpen = (next: boolean) => {
+    if (!isControlled) setUncontrolledOpen(next);
+    props.onOpenChange?.(next);
+  };
 
   const handlePrimary = async () => {
     if (running) return;
@@ -54,9 +64,11 @@ export function ConfirmationDialog(props: ConfirmationDialogProps) {
         if (!busy) setOpen(next);
       }}
     >
-      <DialogTrigger asChild>
-        {props.trigger}
-      </DialogTrigger>
+      {props.trigger && (
+        <DialogTrigger asChild>
+          {props.trigger}
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{props.title}</DialogTitle>
