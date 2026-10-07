@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { Account, AccountRequest } from '@/lib/account.types';
+import { Account, AccountRequest, getIngestFromDate } from '@/lib/account.types';
 import { optionalDecimal, optionalString } from '@/lib/forms';
 import { toastError } from '@/lib/toastError';
 import { AccountType, FinancialPosition } from '@/lib/types';
@@ -64,9 +64,11 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
     }
   }
 
+  // undefined for brokers and Wallet/Cash accounts (no Gmail sync, no watermark field)
+  const accountIngestFromDate = account ? getIngestFromDate(account) : undefined;
   const defaultIngestFromDate = account
-    ? account.ingestFromDate
-      ? account.ingestFromDate.split('T')[0]
+    ? accountIngestFromDate
+      ? accountIngestFromDate.split('T')[0]
       : ''
     : undefined;
 
@@ -196,7 +198,6 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
         excludeFromNetAsset,
         financialPosition,
         description,
-        ingestFromDate,
         type: AccountType.BROKER,
         provider,
         clientId,
@@ -210,7 +211,6 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
         excludeFromNetAsset,
         financialPosition,
         description,
-        ingestFromDate,
         type: AccountType.GENERIC,
       };
     }
@@ -220,12 +220,14 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
       return;
     }
 
+    // Moving the watermark forward orphans Gmail alerts before it; only bank/card accounts
+    // have a watermark, so this never runs for brokers or Wallet/Cash accounts.
     if (
       isUpdateMode &&
       account &&
-      account.ingestFromDate &&
+      accountIngestFromDate &&
       ingestFromDate &&
-      ingestFromDate > account.ingestFromDate.split('T')[0]
+      ingestFromDate > accountIngestFromDate.split('T')[0]
     ) {
       try {
         const preview = await previewGmailCleanupMutation.mutateAsync({ accountId: account.id, before: ingestFromDate });

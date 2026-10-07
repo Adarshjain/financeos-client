@@ -5,13 +5,13 @@ export interface AccountRequestBase {
   excludeFromNetAsset?: boolean;
   financialPosition?: FinancialPosition;
   description?: string;
-  ingestFromDate?: string | null;
 }
 
 export type BankAccountRequest = AccountRequestBase & {
   type: AccountType.BANK_ACCOUNT;
   openingBalance?: number;
   last4?: string;
+  ingestFromDate?: string | null;
   /**
    * Write-only. Verified against the running backend: the value is accepted on
    * create/update but never appears in any account response (list, single GET,
@@ -30,6 +30,7 @@ export type CreditCardRequest = AccountRequestBase & {
   type: AccountType.CREDIT_CARD;
   last4: string;
   creditLimit: number;
+  ingestFromDate?: string | null;
   /** Card membership anniversary (required) — anchors anniversary-year reward windows. */
   anniversaryDate: string;
   statementPassword?: string;
@@ -65,7 +66,6 @@ export interface AccountBase {
   excludeFromNetAsset?: boolean;
   financialPosition?: FinancialPosition;
   description?: string;
-  ingestFromDate?: string | null;
   closedOn?: string | null;
   warnings?: string[];
   balance?: number | null;
@@ -93,6 +93,7 @@ export type BankAccount = AccountBase & {
   type: AccountType.BANK_ACCOUNT;
   openingBalance?: string;
   last4?: string;
+  ingestFromDate?: string | null;
   lastStatementDate?: string | null;
   cardholders?: Cardholder[];
 };
@@ -194,6 +195,7 @@ export type ReplaceCardInstanceRequest = ReplaceCardRequest;
 
 export type CreditCard = AccountBase & {
   type: AccountType.CREDIT_CARD;
+  ingestFromDate?: string | null;
   last4: string;
   creditLimit: number;
   anniversaryDate?: string | null;
@@ -216,6 +218,29 @@ export type GenericAccount = AccountBase & {
 };
 
 export type Account = BankAccount | CreditCard | Broker | GenericAccount;
+
+/**
+ * Account types that can receive statements (file upload) and Gmail transaction alerts, and
+ * therefore carry an ingest watermark (`ingestFromDate`) plus a Statements archive. Brokers are
+ * fed by broker imports and Wallet/Cash (generic) accounts are manual, so neither has either
+ * surface — the server rejects statement uploads to them and omits `ingestFromDate` from their
+ * DTOs.
+ */
+export const INGEST_CAPABLE_ACCOUNT_TYPES: ReadonlySet<AccountType> = new Set([
+  AccountType.BANK_ACCOUNT,
+  AccountType.CREDIT_CARD,
+]);
+
+export function supportsIngestion(type: AccountType): boolean {
+  return INGEST_CAPABLE_ACCOUNT_TYPES.has(type);
+}
+
+/** The Gmail ingest watermark, or `undefined` for account types that have none. */
+export function getIngestFromDate(account: Account): string | null | undefined {
+  return account.type === AccountType.BANK_ACCOUNT || account.type === AccountType.CREDIT_CARD
+    ? account.ingestFromDate
+    : undefined;
+}
 
 /**
  * Type guard for filtering a mixed `Account[]` down to one variant.

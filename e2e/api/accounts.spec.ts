@@ -1,7 +1,9 @@
 import { expectStatus } from '../fixtures/api';
 import {
   createBankAccount,
+  createBrokerAccount,
   createCreditCard,
+  createGenericAccount,
 } from '../fixtures/seed/accounts';
 import { createTransaction } from '../fixtures/seed/transactions';
 import { expectForeign, expectUnauthenticated, secondUser } from '../fixtures/tenancy';
@@ -20,7 +22,6 @@ const COMMON_ACCOUNT_KEYS = [
   'description',
   'financialPosition',
   'excludeFromNetAsset',
-  'ingestFromDate',
   'replacesAccountId',
   'closedOn',
   'balance',
@@ -32,8 +33,11 @@ const COMMON_ACCOUNT_KEYS = [
   'updatedAt',
 ];
 
+// ingestFromDate (Gmail watermark) and lastStatementDate exist only for the two account types
+// that can ingest statements / alerts: bank and credit card.
 const BANK_ACCOUNT_KEYS = new Set([
   ...COMMON_ACCOUNT_KEYS,
+  'ingestFromDate',
   'last4',
   'openingBalance',
   'lastStatementDate',
@@ -42,6 +46,7 @@ const BANK_ACCOUNT_KEYS = new Set([
 
 const CREDIT_CARD_KEYS = new Set([
   ...COMMON_ACCOUNT_KEYS,
+  'ingestFromDate',
   'last4',
   'creditLimit',
   'anniversaryDate',
@@ -63,6 +68,42 @@ const GENERIC_KEYS = new Set([
 ]);
 
 test.describe('Accounts API (@api)', () => {
+  test('broker and generic: ingestFromDate is ignored on create/update and never returned; bank echoes it', async ({
+    api,
+  }) => {
+    // Stale clients may still send the field (Vercel ships the client before the server deploys);
+    // the server drops it silently instead of rejecting the request.
+    const broker = await createBrokerAccount(api, { ingestFromDate: '2026-01-01' } as any);
+    expect((broker as any).ingestFromDate).toBeUndefined();
+    assertNoExtraKeys(broker as any, BROKER_KEYS, 'BrokerAccountResponse');
+
+    const wallet = await createGenericAccount(api, { ingestFromDate: '2026-01-01' } as any);
+    expect((wallet as any).ingestFromDate).toBeUndefined();
+    assertNoExtraKeys(wallet as any, GENERIC_KEYS, 'GenericAccountResponse');
+
+    const brokerUpdate = await api.PUT('/api/v1/accounts/{id}', {
+      params: { path: { id: broker.id } },
+      body: { type: 'broker', name: 'Broker Renamed', provider: 'Groww', ingestFromDate: '2026-02-01' } as any,
+    });
+    expect(brokerUpdate.response.status).toBe(200);
+    expect((brokerUpdate.data as any).name).toBe('Broker Renamed');
+    expect((brokerUpdate.data as any).ingestFromDate).toBeUndefined();
+    assertNoExtraKeys(brokerUpdate.data as any, BROKER_KEYS, 'BrokerAccountResponse');
+
+    const walletUpdate = await api.PUT('/api/v1/accounts/{id}', {
+      params: { path: { id: wallet.id } },
+      body: { type: 'generic', name: 'Wallet Renamed', ingestFromDate: '2026-02-01' } as any,
+    });
+    expect(walletUpdate.response.status).toBe(200);
+    expect((walletUpdate.data as any).name).toBe('Wallet Renamed');
+    expect((walletUpdate.data as any).ingestFromDate).toBeUndefined();
+    assertNoExtraKeys(walletUpdate.data as any, GENERIC_KEYS, 'GenericAccountResponse');
+
+    // Contrast: a bank account keeps the watermark.
+    const bank = await createBankAccount(api, { ingestFromDate: '2026-01-01' });
+    expect(bank.ingestFromDate).toBe('2026-01-01');
+  });
+
   test('create: each type with minimal and full bodies + shape check', async ({ api }) => {
     // 1. Bank Account: minimal body
     const bankMin = await api.POST('/api/v1/accounts', {

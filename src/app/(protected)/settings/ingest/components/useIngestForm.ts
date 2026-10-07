@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import { emitJobStarted } from '@/components/jobs/jobsBus';
 import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
-import { type Account, isAccountClosed } from '@/lib/account.types';
+import { type Account, isAccountClosed, supportsIngestion } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
 import { multipartBodySerializer } from '@/lib/api/multipart';
 import { keys } from '@/lib/query/keys';
@@ -60,11 +60,9 @@ export function useIngestForm({ accounts }: UseIngestFormProps) {
   const isProcessing = Boolean(activeJobId) && isPolling;
   const isUploading = isSending || isProcessing;
 
-  // Filter accounts to standard bank/credit cards for transaction statement upload (excluding closed)
+  // Statements exist only for bank/credit card accounts (server rejects the rest); exclude closed
   const uploadableAccounts = accounts.filter(
-    (acc) =>
-      (acc.type === 'bank_account' || acc.type === 'credit_card') &&
-      !isAccountClosed(acc)
+    (acc) => supportsIngestion(acc.type) && !isAccountClosed(acc)
   );
 
   const handleDragOver = (e: React.DragEvent) => {

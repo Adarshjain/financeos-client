@@ -17,7 +17,8 @@ test.describe('Accounts UI (@ui)', () => {
     await page.getByRole('button', { name: /Add Account|Get Started/i }).first().click();
     await expect(page.getByRole('heading', { name: /Create Account/i })).toBeVisible();
 
-    // Default type is Bank
+    // Default type is Bank — bank accounts can be fed by Gmail, so the watermark field is offered
+    await expect(page.getByLabel('Ingest From Date')).toBeVisible();
     await page.getByLabel('Account Name').fill('HDFC Salary Account');
     await page.getByLabel('Opening Balance').fill('15000');
     await page.getByLabel('Last 4 Digits').fill('1234');
@@ -143,9 +144,17 @@ test.describe('Accounts UI (@ui)', () => {
     // 5. Delete empty account: create a fresh generic account to delete
     await page.getByRole('button', { name: /Add Account/i }).first().click();
     await page.getByRole('button', { name: 'Wallet/Cash' }).click();
+    // Wallet/Cash accounts are manual: no Gmail watermark field, config card loses "& Sync"
+    await expect(page.getByLabel('Ingest From Date')).toHaveCount(0);
+    await expect(page.getByRole('dialog').getByText('Configuration', { exact: true })).toBeVisible();
     await page.getByLabel('Account Name').fill('Temp Petty Cash');
     await page.getByRole('button', { name: 'Create Account' }).click();
     await expect(page.getByText('Temp Petty Cash')).toBeVisible();
+
+    // ...and its tile has no Statements (or Cards) action row
+    const walletTile = page.getByRole('button', { name: /Temp Petty Cash/i }).locator('..');
+    await expect(walletTile.getByRole('button', { name: 'Statements' })).toHaveCount(0);
+    await expect(walletTile.getByRole('button', { name: 'Cards' })).toHaveCount(0);
 
     // Open edit dialog and delete it
     await page.getByText('Temp Petty Cash').click();

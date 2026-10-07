@@ -1,10 +1,12 @@
 import { RefreshCw } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
-import { Account, isAccountClosed, isAccountClosing } from '@/lib/account.types';
+import { Account, getIngestFromDate, isAccountClosed, isAccountClosing } from '@/lib/account.types';
 import { formatDate, getPositionLabel } from '@/lib/utils';
 
 export function AccountMetadataBadges({ account }: { account: Account }) {
+  // undefined for brokers and Wallet/Cash accounts, which have no Gmail sync
+  const ingestFromDate = getIngestFromDate(account);
   return (
     <div className="flex flex-wrap gap-1.5 items-center">
       {isAccountClosed(account) ? (
@@ -27,7 +29,7 @@ export function AccountMetadataBadges({ account }: { account: Account }) {
           Excluded
         </Badge>
       ) : null}
-      {account.ingestFromDate ? (
+      {ingestFromDate ? (
         <Badge
           variant="info"
           className="text-2xs py-0 px-2 font-semibold uppercase flex items-center gap-1"

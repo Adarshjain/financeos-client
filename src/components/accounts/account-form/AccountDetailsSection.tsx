@@ -35,7 +35,8 @@ export function AccountDetailsSection({
           </h3>
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-          Generic accounts track cash, petty cash, manual wallets, or custom assets/liabilities.
+          Wallet/Cash accounts are manual: no statements, no Gmail sync. Use them for cash, petty
+          cash or custom assets/liabilities — the balance is the sum of the transactions you add.
         </p>
       </div>
     );

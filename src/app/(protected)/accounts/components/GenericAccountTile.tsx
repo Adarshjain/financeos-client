@@ -1,7 +1,5 @@
-import { Calendar } from 'lucide-react';
-
 import { GenericAccount } from '@/lib/account.types';
-import { formatDate, formatMoney } from '@/lib/utils';
+import { formatMoney } from '@/lib/utils';
 
 import { AccountMetadataBadges } from './AccountMetadataBadges';
 import { AccountWrapper } from './AccountWrapper';
@@ -34,13 +32,6 @@ export function GenericAccountTile({ account }: { account: GenericAccount }) {
             </span>
           </div>
         </div>
-
-        {account.ingestFromDate ? (
-          <div className="text-2xs text-slate-400 dark:text-slate-500 flex items-center gap-1 mt-1">
-            <Calendar className="w-3 h-3 text-slate-400 dark:text-slate-600" />
-            <span>Gmail Sync Watermark: {formatDate(account.ingestFromDate)}</span>
-          </div>
-        ) : null}
       </div>
     </AccountWrapper>
   );
