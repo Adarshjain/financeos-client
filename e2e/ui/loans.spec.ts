@@ -213,4 +213,17 @@ test.describe('Loans and Obligations UI (@ui)', () => {
     await expect(page.getByRole('heading', { name: 'Obligations Calendar' })).toBeVisible();
   });
 
+  test('Loan Detail: Edit, Close and Delete are reachable at the desktop viewport', async ({ page }) => {
+    const api = makeApi(currentUser.cookie);
+    const loan = await createLoan(api, { name: 'Desktop Actions Loan' });
+
+    // Default 1280-wide viewport: the mobile bar is hidden, the desktop card must carry the actions.
+    await page.goto(`/loans/${loan.id}`);
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('heading', { name: 'Desktop Actions Loan' })).toBeVisible();
+
+    for (const name of ['Edit', 'Close', 'Delete']) {
+      await expect(page.getByRole('button', { name, exact: true }).filter({ visible: true }).first()).toBeVisible();
+    }
+  });
 });

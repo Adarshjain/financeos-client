@@ -1,7 +1,8 @@
+import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
-import { monthsAgo } from '../fixtures/seed/loans';
+import { addLending, createCounterparty, monthsAgo } from '../fixtures/seed/loans';
 import { expect, test } from '../fixtures/test';
 
 test.describe('Lendings UI (@ui)', () => {
@@ -150,5 +151,55 @@ test.describe('Lendings UI (@ui)', () => {
     await expect(lentOut).toHaveText('₹12,500.00');
     await expect(borrowed).toHaveText('₹0.00');
     await expect(net).toHaveText('+₹12,500.00');
+  });
+
+  test('Person Detail: actions reachable at the desktop viewport; export a subset of the ledger as text and copy it', async ({
+    page,
+    context,
+  }) => {
+    const api = makeApi(currentUser.cookie);
+    const cp = await createCounterparty(api, { name: 'Rahul Export' });
+    await addLending(api, { counterpartyId: cp.id, direction: 'lent', amount: 5000, entryDate: monthsAgo(3), notes: 'Dinner split' });
+    await addLending(api, { counterpartyId: cp.id, direction: 'borrowed', amount: 2000, entryDate: monthsAgo(2) });
+    await addLending(api, { counterpartyId: cp.id, direction: 'lent', amount: 1000, entryDate: monthsAgo(1) });
+
+    await page.goto(`/loans/lendings/${cp.id}`);
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('heading', { name: 'Rahul Export' })).toBeVisible();
+
+    // Playwright's default viewport (1280 wide) is above the lg breakpoint: the mobile bar is hidden,
+    // so every action must come from the desktop card — no setViewportSize() here on purpose.
+    for (const name of ['Add Entry', 'Settle up', 'Export', 'Edit Person', 'Delete Person']) {
+      await expect(page.getByRole('button', { name, exact: true }).filter({ visible: true }).first()).toBeVisible();
+    }
+
+    await page.getByRole('button', { name: 'Export', exact: true }).filter({ visible: true }).first().click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog.getByRole('heading', { name: 'Export ledger' })).toBeVisible();
+    await expect(dialog.getByLabel('Their name')).toHaveValue('Rahul Export');
+
+    // E2E users sign up with email + password, so there is no display name: the user is "I / me".
+    const preview = dialog.getByTestId('ledger-export-preview');
+    await expect(preview).toContainText('Lending ledger with Rahul Export');
+    await expect(preview).toContainText('Opening balance: ₹0.00 (settled)');
+    await expect(preview).toContainText('I lent Rahul Export · ₹5,000.00');
+    await expect(preview).toContainText('Rahul Export lent me · ₹2,000.00');
+    await expect(preview).toContainText('Closing balance: Rahul Export owes me ₹4,000.00');
+
+    // Untick the first entry: its line goes, the opening balance becomes the balance before it.
+    await dialog.getByRole('checkbox', { name: /Lent ₹5,000\.00/ }).click();
+    await expect(dialog.getByTestId('export-selected-count')).toHaveText('2 selected');
+    await expect(preview).not.toContainText('I lent Rahul Export · ₹5,000.00');
+    await expect(preview).toContainText('Opening balance: Rahul Export owes me ₹5,000.00');
+    await expect(preview).toContainText('Closing balance: Rahul Export owes me ₹4,000.00');
+    const text = (await preview.textContent()) ?? '';
+    expect(text).not.toMatch(/\d+ of \d+/);
+
+    // Copy puts exactly the preview on the clipboard.
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await dialog.getByRole('button', { name: 'Copy', exact: true }).click();
+    await expect(page.getByText('Ledger copied')).toBeVisible();
+    const copied = await page.evaluate(() => navigator.clipboard.readText());
+    expect(copied).toBe(text);
   });
 });

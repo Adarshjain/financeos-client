@@ -1,5 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { LendingResponse } from '@/lib/types';
 
@@ -21,6 +21,11 @@ vi.mock('../components/LendingMatchPanel', () => ({
 
 import { useCounterpartyDetail } from '../components/useCounterpartyDetail';
 import { CounterpartyDetail } from '../CounterpartyDetail';
+
+// The export dialog remembers "Your name" per device; start every test clean.
+beforeEach(() => {
+  window.localStorage.clear();
+});
 
 type LendingEntry = LendingResponse & { runningBalance: number };
 
@@ -137,7 +142,8 @@ describe('CounterpartyDetail Settle up', () => {
 
     render(<CounterpartyDetail counterpartyId="cp1" />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Settle up/ }));
+    // The actions now render twice (desktop card + mobile bar); either copy works.
+    fireEvent.click(screen.getAllByRole('button', { name: /Settle up/ })[0]);
     expect(hook.openSettleUp).toHaveBeenCalledWith(2500);
   });
 
@@ -148,7 +154,7 @@ describe('CounterpartyDetail Settle up', () => {
 
     render(<CounterpartyDetail counterpartyId="cp1" />);
 
-    fireEvent.click(screen.getByRole('button', { name: /Settle up/ }));
+    fireEvent.click(screen.getAllByRole('button', { name: /Settle up/ })[0]);
     expect(hook.openSettleUp).toHaveBeenCalledWith(-640);
   });
 
@@ -160,6 +166,65 @@ describe('CounterpartyDetail Settle up', () => {
     render(<CounterpartyDetail counterpartyId="cp1" />);
 
     expect(screen.queryByRole('button', { name: /Settle up/ })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Edit Person/ })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /Edit Person/ })[0]).toBeInTheDocument();
+  });
+});
+
+describe('CounterpartyDetail action bar — desktop card + mobile bar', () => {
+  const ACTIONS = ['Add Entry', 'Settle up', 'Export', 'Edit Person', 'Delete Person'] as const;
+
+  it('renders every action in both the desktop card and the mobile bar', () => {
+    const hook = baseHookReturn([makeEntry()]);
+    hook.cp.netPosition = 500;
+    vi.mocked(useCounterpartyDetail).mockReturnValue(hook as never);
+
+    render(<CounterpartyDetail counterpartyId="cp1" />);
+
+    const mobileBar = within(screen.getByTestId('action-bar'));
+    for (const name of ACTIONS) {
+      // The mobile ledger card header keeps its own Add Entry button, hence three.
+      const copies = name === 'Add Entry' ? 3 : 2;
+      expect(screen.getAllByRole('button', { name: new RegExp(`^${name}$`) })).toHaveLength(copies);
+      expect(mobileBar.getByRole('button', { name: new RegExp(`^${name}$`) })).toBeInTheDocument();
+    }
+  });
+
+  it('Add Entry opens the add-entry dialog', () => {
+    const hook = baseHookReturn([makeEntry()]);
+    vi.mocked(useCounterpartyDetail).mockReturnValue(hook as never);
+
+    render(<CounterpartyDetail counterpartyId="cp1" />);
+
+    fireEvent.click(screen.getAllByRole('button', { name: /^Add Entry$/ })[0]);
+    expect(hook.setAddEntryOpen).toHaveBeenCalledWith(true);
+  });
+
+  it('disables Export in both places while the ledger has no entries', () => {
+    vi.mocked(useCounterpartyDetail).mockReturnValue(baseHookReturn([]) as never);
+
+    render(<CounterpartyDetail counterpartyId="cp1" />);
+
+    const exports = screen.getAllByRole('button', { name: /^Export$/ });
+    expect(exports).toHaveLength(2);
+    exports.forEach((b) => {
+      expect(b).toBeDisabled();
+      expect(b).toHaveAttribute('title', 'Add an entry first');
+    });
+  });
+
+  it('Export opens the export dialog with the loaded entries and the person prefilled', () => {
+    vi.mocked(useCounterpartyDetail).mockReturnValue(
+      baseHookReturn([makeEntry({ id: 'l1', amount: 500, runningBalance: 500 })]) as never,
+    );
+
+    render(<CounterpartyDetail counterpartyId="cp1" myName="Adarsh" />);
+    expect(screen.queryByRole('heading', { name: 'Export ledger' })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getAllByRole('button', { name: /^Export$/ })[0]);
+
+    expect(screen.getByRole('heading', { name: 'Export ledger' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Their name')).toHaveValue('Rahul');
+    expect(screen.getByLabelText('Your name')).toHaveValue('Adarsh');
+    expect(screen.getByTestId('ledger-export-preview')).toHaveTextContent('Adarsh lent Rahul · ₹500.00');
   });
 });
