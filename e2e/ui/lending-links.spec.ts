@@ -38,12 +38,12 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
     const searchInput = page.getByPlaceholder('Search by description or amount...');
     await expect(searchInput).toBeVisible();
 
-    // Pick the seeded person
-    const cpSelect = page.locator('#add-lending-form button[role="combobox"]').first();
-    await cpSelect.click();
-    await page.getByRole('option', { name: '+ Add New Person', exact: true }).click();
+    // Add a new person via the picker
     const cpName = `Picker Person ${Date.now()}`;
-    await page.locator('#cpName').fill(cpName);
+    await page.locator('#cpSelect').click();
+    await page.getByPlaceholder('Type a name...').fill(cpName);
+    await page.getByRole('option', { name: new RegExp(`Add .*${cpName}`) }).click();
+    await expect(page.getByText('Will be added when you save')).toBeVisible();
 
     // Search for and select the seeded DEBIT transaction
     await searchInput.fill(debitTxn.description!);
@@ -152,11 +152,11 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
     await page.getByRole('dialog').getByRole('combobox').first().click();
     await page.getByRole('option', { name: 'Lending (person ledger)', exact: true }).click();
 
-    const cpSelect = page.locator('#lendingCpSelect');
-    await cpSelect.click();
-    await page.getByRole('option', { name: '+ Add new person', exact: true }).click();
     const cpName = `Detail Link Person ${Date.now()}`;
-    await page.getByPlaceholder('e.g. Rahul Sharma').fill(cpName);
+    await page.locator('#lendingCpSelect').click();
+    await page.getByPlaceholder('Type a name...').fill(cpName);
+    await page.getByRole('option', { name: new RegExp(`Add .*${cpName}`) }).click();
+    await expect(page.getByText('Will be added when you save')).toBeVisible();
 
     // Amount/date prefill from the subject transaction
     await expect(page.locator('#lendingAmount')).toHaveValue('1200');

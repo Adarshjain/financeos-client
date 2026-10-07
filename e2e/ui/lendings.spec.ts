@@ -21,18 +21,17 @@ test.describe('Lendings UI (@ui)', () => {
     // Page title
     await expect(page.getByRole('heading', { name: /Lendings Ledger/i })).toBeVisible();
 
-    // 1. Add Lending with "+ Add New Person"
+    // 1. Add Lending for a new person via the picker's "Add" row
     await page.getByRole('button', { name: /Add Lending/i }).first().click();
     await expect(page.getByRole('heading', { name: 'Add Ledger Entry' })).toBeVisible();
 
-    // Select "+ Add New Person"
-    const cpSelect = page.locator('#add-lending-form button[role="combobox"]').first();
-    await cpSelect.click();
-    await page.getByRole('option', { name: '+ Add New Person', exact: true }).click();
-
-    // Fill new person name and entry details
     const cpName = `Kavita Rao ${Date.now()}`;
-    await page.locator('#cpName').fill(cpName);
+    await page.locator('#cpSelect').click();
+    await page.getByPlaceholder('Type a name...').fill(cpName);
+    await page.getByRole('option', { name: new RegExp(`Add .*${cpName}`) }).click();
+    await expect(page.getByText('Will be added when you save')).toBeVisible();
+
+    // Fill entry details
     await page.locator('#amount').fill('40000');
     await page.locator('#entryDate').fill(monthsAgo(1));
 
@@ -124,9 +123,11 @@ test.describe('Lendings UI (@ui)', () => {
     // Lend ₹12,500 to a new person from the page's own Add Lending dialog
     await page.getByRole('button', { name: /Add Lending/i }).first().click();
     await expect(page.getByRole('heading', { name: 'Add Ledger Entry' })).toBeVisible();
-    await page.locator('#add-lending-form button[role="combobox"]').first().click();
-    await page.getByRole('option', { name: '+ Add New Person', exact: true }).click();
-    await page.locator('#cpName').fill(`Meera Iyer ${Date.now()}`);
+    const meera = `Meera Iyer ${Date.now()}`;
+    await page.locator('#cpSelect').click();
+    await page.getByPlaceholder('Type a name...').fill(meera);
+    await page.getByRole('option', { name: new RegExp(`Add .*${meera}`) }).click();
+    await expect(page.getByText('Will be added when you save')).toBeVisible();
     await page.locator('#amount').fill('12500');
     await page.locator('#entryDate').fill(monthsAgo(1));
     await page.getByRole('button', { name: 'Save Entry' }).click();

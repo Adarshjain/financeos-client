@@ -1,5 +1,6 @@
 'use client';
 
+import { CounterpartyPicker } from '@/components/lendings/CounterpartyPicker';
 import { TransactionPicker } from '@/components/transactions/TransactionPicker';
 import { DateInput } from '@/components/ui/date-input';
 import {
@@ -12,25 +13,16 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import type { CounterpartySelection } from '@/lib/lending.types';
 import { Transaction } from '@/lib/transaction.types';
-import { CounterpartyResponse, LendingDirection } from '@/lib/types';
+import { LendingDirection } from '@/lib/types';
 
 interface AddLendingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  counterparties: CounterpartyResponse[];
-  selectedCpId: string;
-  setSelectedCpId: (id: string) => void;
-  newCpName: string;
-  setNewCpName: (name: string) => void;
+  party: CounterpartySelection | null;
+  setParty: (party: CounterpartySelection | null) => void;
   direction: LendingDirection;
   setDirection: (dir: LendingDirection) => void;
   amount: string;
@@ -51,11 +43,8 @@ interface AddLendingDialogProps {
 export function AddLendingDialog({
   open,
   onOpenChange,
-  counterparties,
-  selectedCpId,
-  setSelectedCpId,
-  newCpName,
-  setNewCpName,
+  party,
+  setParty,
   direction,
   setDirection,
   amount,
@@ -87,45 +76,7 @@ export function AddLendingDialog({
             onSubmit={onCreateLending}
             className="space-y-3 pt-1 text-xs"
           >
-            <div className="space-y-1">
-              <Label htmlFor="cpSelect" className="text-xs">
-                Person / Counterparty *
-              </Label>
-              <Select
-                value={selectedCpId}
-                onValueChange={(v) => setSelectedCpId(v)}
-              >
-                <SelectTrigger id="cpSelect" className="h-9 text-xs">
-                  <SelectValue placeholder="Select person" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="new" className="text-xs">
-                    + Add New Person
-                  </SelectItem>
-                  {counterparties.map((cp) => (
-                    <SelectItem key={cp.id} value={cp.id} className="text-xs">
-                      {cp.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {selectedCpId === 'new' && (
-              <div className="space-y-1">
-                <Label htmlFor="cpName" className="text-xs">
-                  New Person Name *
-                </Label>
-                <Input
-                  id="cpName"
-                  placeholder="e.g. Rahul Sharma"
-                  value={newCpName}
-                  onChange={(e) => setNewCpName(e.target.value)}
-                  required
-                  className="h-9 text-xs"
-                />
-              </div>
-            )}
+            <CounterpartyPicker id="cpSelect" value={party} onChange={setParty} />
 
             <div className="space-y-1">
               <Label className="text-xs">Direction *</Label>

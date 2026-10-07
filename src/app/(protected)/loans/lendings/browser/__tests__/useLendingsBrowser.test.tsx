@@ -10,6 +10,7 @@ vi.mock('@/lib/api/client', async () => {
 });
 
 import { api } from '@/lib/api/client';
+import type { CounterpartyResponse } from '@/lib/lending.types';
 import { keys } from '@/lib/query/keys';
 import type { Transaction } from '@/lib/transaction.types';
 
@@ -24,6 +25,15 @@ const emptyPage = {
   first: true,
   last: true,
   empty: true,
+};
+
+const cp1: CounterpartyResponse = {
+  id: 'cp1',
+  name: 'Rahul',
+  netPosition: 0,
+  totalLent: 0,
+  totalBorrowed: 0,
+  entryCount: 0,
 };
 
 const tx: Transaction = {
@@ -58,7 +68,7 @@ describe('useLendingsBrowser', () => {
     vi.mocked(api.POST).mockResolvedValue({ data: { id: 'l1' } } as never);
     const { result } = renderHook(() => useLendingsBrowser(), { wrapper: createWrapper() });
 
-    act(() => result.current.setSelectedCpId('cp1'));
+    act(() => result.current.setParty({ kind: 'existing', counterparty: cp1 }));
     act(() => result.current.setAmount('1200'));
     act(() => result.current.onSelectTx(tx));
 
@@ -67,8 +77,54 @@ describe('useLendingsBrowser', () => {
     });
 
     expect(api.POST).toHaveBeenCalledWith('/api/v1/lendings', {
-      body: expect.objectContaining({ transactionId: 'tx-9' }),
+      body: expect.objectContaining({ transactionId: 'tx-9', counterpartyId: 'cp1' }),
     });
+    const [, postOpts] = vi.mocked(api.POST).mock.calls[0] as unknown as [string, { body: Record<string, unknown> }];
+    const body = postOpts.body;
+    expect(body.newCounterpartyName).toBeUndefined();
+  });
+
+  it('sends newCounterpartyName (and no counterpartyId) for a new person', async () => {
+    vi.mocked(api.POST).mockResolvedValue({ data: { id: 'l1' } } as never);
+    const { result } = renderHook(() => useLendingsBrowser(), { wrapper: createWrapper() });
+
+    act(() => result.current.setParty({ kind: 'new', name: 'Kavita Rao' }));
+    act(() => result.current.setAmount('500'));
+
+    await act(async () => {
+      await result.current.handleCreateLending(submitEvent());
+    });
+
+    expect(api.POST).toHaveBeenCalledWith('/api/v1/lendings', {
+      body: expect.objectContaining({ newCounterpartyName: 'Kavita Rao' }),
+    });
+    const [, postOpts] = vi.mocked(api.POST).mock.calls[0] as unknown as [string, { body: Record<string, unknown> }];
+    const body = postOpts.body;
+    expect(body.counterpartyId).toBeUndefined();
+  });
+
+  it('refuses to submit without a person', async () => {
+    const { result } = renderHook(() => useLendingsBrowser(), { wrapper: createWrapper() });
+
+    act(() => result.current.setAmount('500'));
+    await act(async () => {
+      await result.current.handleCreateLending(submitEvent());
+    });
+
+    expect(api.POST).not.toHaveBeenCalled();
+  });
+
+  it('starts with no person and resets the party whenever the create dialog is opened or closed', () => {
+    const { result } = renderHook(() => useLendingsBrowser(), { wrapper: createWrapper() });
+    expect(result.current.party).toBeNull();
+
+    act(() => result.current.setParty({ kind: 'new', name: 'Kavita Rao' }));
+    act(() => result.current.setCreateOpen(true));
+    expect(result.current.party).toBeNull();
+
+    act(() => result.current.setParty({ kind: 'existing', counterparty: cp1 }));
+    act(() => result.current.setCreateOpen(false));
+    expect(result.current.party).toBeNull();
   });
 
   it('resets the selected transaction whenever the create dialog is opened or closed', () => {
@@ -89,7 +145,7 @@ describe('useLendingsBrowser', () => {
     vi.mocked(api.POST).mockResolvedValue({ data: { id: 'l1' } } as never);
     const { result } = renderHook(() => useLendingsBrowser(), { wrapper: createWrapper() });
 
-    act(() => result.current.setSelectedCpId('cp1'));
+    act(() => result.current.setParty({ kind: 'existing', counterparty: cp1 }));
     act(() => result.current.setAmount('1200'));
     act(() => result.current.onSelectTx(tx));
 
@@ -135,7 +191,7 @@ describe('useLendingsBrowser — ledger totals (loans summary) invalidation', ()
     const { Wrapper, invalidateSpy } = createSpyWrapper();
     const { result } = renderHook(() => useLendingsBrowser(), { wrapper: Wrapper });
 
-    act(() => result.current.setSelectedCpId('cp1'));
+    act(() => result.current.setParty({ kind: 'existing', counterparty: cp1 }));
     act(() => result.current.setAmount('1200'));
 
     await act(async () => {

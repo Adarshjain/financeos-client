@@ -5,20 +5,17 @@ import * as React from 'react';
 import { toast } from 'sonner';
 
 import { api } from '@/lib/api/client';
-import { suggestCounterparty } from '@/lib/lending.helpers';
 import type {
-  CounterpartyResponse,
+  CounterpartySelection,
   CreateLendingRequest,
   LendingDirection,
   LendingResponse,
 } from '@/lib/lending.types';
+import { useCounterpartySuggestion } from '@/lib/query/hooks/useCounterparties';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
-
-/** Sentinel `Select` value for "+ Add new person", mirroring AddLendingDialog. */
-export const NEW_COUNTERPARTY_VALUE = 'new';
 
 interface UseRecordLendingProps {
   /** Undefined whenever the LENDING link kind isn't the active/enabled one. */
@@ -30,14 +27,10 @@ interface UseRecordLendingProps {
 
 export interface UseRecordLendingResult {
   direction: LendingDirection;
-  mode: 'new' | 'existing';
-  setMode: (mode: 'new' | 'existing') => void;
-  counterparties: CounterpartyResponse[];
-  loadingCounterparties: boolean;
-  selectedCpId: string;
-  setSelectedCpId: (id: string) => void;
-  newCpName: string;
-  setNewCpName: (name: string) => void;
+  party: CounterpartySelection | null;
+  setParty: (party: CounterpartySelection | null) => void;
+  /** Counterparty the description matched, if any — shown as "Suggested" by the picker. */
+  suggestedId: string | null;
   amount: string;
   setAmount: (value: string) => void;
   entryDate: string;
@@ -46,6 +39,7 @@ export interface UseRecordLendingResult {
   setExpectedReturnDate: (value: string) => void;
   notes: string;
   setNotes: (value: string) => void;
+  /** Unlinked, direction-matching entries of the chosen existing person. */
   unlinkedEntries: LendingResponse[];
   loadingExistingEntries: boolean;
   attachingId: string | null;
@@ -68,9 +62,7 @@ export function useRecordLending({
   // yet (the body isn't rendered in that case, so this value is unused).
   const direction: LendingDirection = (transaction?.amount ?? -1) < 0 ? 'lent' : 'borrowed';
 
-  const [mode, setMode] = React.useState<'new' | 'existing'>('new');
-  const [selectedCpId, setSelectedCpId] = React.useState('');
-  const [newCpName, setNewCpName] = React.useState('');
+  const [party, setParty] = React.useState<CounterpartySelection | null>(null);
   const [amount, setAmount] = React.useState('');
   const [entryDate, setEntryDate] = React.useState('');
   const [expectedReturnDate, setExpectedReturnDate] = React.useState('');
@@ -82,9 +74,7 @@ export function useRecordLending({
 
   React.useEffect(() => {
     if (open && !prevOpenRef.current && transaction) {
-      setMode('new');
-      setSelectedCpId('');
-      setNewCpName('');
+      setParty(null);
       setAmount(Math.abs(transaction.amount).toString());
       setEntryDate(transaction.date);
       setExpectedReturnDate('');
@@ -95,42 +85,33 @@ export function useRecordLending({
     prevOpenRef.current = open;
   }, [open, transaction]);
 
-  const counterpartiesQuery = useQuery({
-    queryKey: keys.lendings.counterparties({ page: 0, size: 200 }),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/counterparties', {
-        params: { query: { page: 0, size: 200 } },
-      });
-      return (data?.content ?? []) as CounterpartyResponse[];
-    },
-    enabled: open,
-  });
-  const counterparties = React.useMemo(
-    () => counterpartiesQuery.data ?? [],
-    [counterpartiesQuery.data],
+  // Name-token match on the description, computed server-side over all of the
+  // user's people. Applied once per dialog open, and only while nothing has
+  // been picked yet, so it never overrides a choice the user already made.
+  const suggestionQuery = useCounterpartySuggestion(
+    transaction?.description ?? transaction?.sourcedDescription,
+    open && Boolean(transaction),
   );
+  const suggestion = suggestionQuery.data ?? null;
+  const suggestedId = open ? (suggestion?.id ?? null) : null;
 
-  // Pre-select a counterparty once per dialog open, when the description text
-  // has an unambiguous single best match.
   React.useEffect(() => {
-    if (!open || !transaction || suggestionAppliedRef.current || counterparties.length === 0) return;
+    if (!open || !suggestion || suggestionAppliedRef.current) return;
     suggestionAppliedRef.current = true;
-    const text = transaction.description ?? transaction.sourcedDescription;
-    const suggestedId = suggestCounterparty(text, counterparties);
-    if (suggestedId) setSelectedCpId(suggestedId);
-  }, [open, counterparties, transaction]);
+    setParty((current) => current ?? { kind: 'existing', counterparty: suggestion });
+  }, [open, suggestion]);
 
-  const hasRealCounterparty = Boolean(selectedCpId) && selectedCpId !== NEW_COUNTERPARTY_VALUE;
+  const existingCounterpartyId = party?.kind === 'existing' ? party.counterparty.id : '';
 
   const existingEntriesQuery = useQuery({
-    queryKey: keys.lendings.list({ counterpartyId: selectedCpId, page: 0, size: 50 }),
+    queryKey: keys.lendings.list({ counterpartyId: existingCounterpartyId, page: 0, size: 50 }),
     queryFn: async () => {
       const { data } = await api.GET('/api/v1/lendings', {
-        params: { query: { counterpartyId: selectedCpId, page: 0, size: 50 } },
+        params: { query: { counterpartyId: existingCounterpartyId, page: 0, size: 50 } },
       });
       return (data?.content ?? []) as LendingResponse[];
     },
-    enabled: open && mode === 'existing' && hasRealCounterparty,
+    enabled: open && Boolean(existingCounterpartyId),
   });
 
   const unlinkedEntries = React.useMemo(
@@ -178,13 +159,10 @@ export function useRecordLending({
   });
 
   const canSubmitNew =
-    Boolean(transaction) &&
-    (selectedCpId === NEW_COUNTERPARTY_VALUE ? newCpName.trim().length > 0 : hasRealCounterparty) &&
-    Number(amount) > 0 &&
-    Boolean(entryDate);
+    Boolean(transaction) && party !== null && Number(amount) > 0 && Boolean(entryDate);
 
   const handleSubmitNew = () => {
-    if (!canSubmitNew || !transaction) {
+    if (!canSubmitNew || !transaction || !party) {
       toast.error('Fill in the required fields');
       return;
     }
@@ -195,9 +173,9 @@ export function useRecordLending({
       transactionId: transaction.id,
       expectedReturnDate: expectedReturnDate || undefined,
       notes: notes.trim() || undefined,
-      ...(selectedCpId === NEW_COUNTERPARTY_VALUE
-        ? { newCounterpartyName: newCpName.trim() }
-        : { counterpartyId: selectedCpId }),
+      ...(party.kind === 'new'
+        ? { newCounterpartyName: party.name }
+        : { counterpartyId: party.counterparty.id }),
     };
     createMutation.mutate(body);
   };
@@ -209,14 +187,9 @@ export function useRecordLending({
 
   return {
     direction,
-    mode,
-    setMode,
-    counterparties,
-    loadingCounterparties: counterpartiesQuery.isLoading,
-    selectedCpId,
-    setSelectedCpId,
-    newCpName,
-    setNewCpName,
+    party,
+    setParty,
+    suggestedId,
     amount,
     setAmount,
     entryDate,

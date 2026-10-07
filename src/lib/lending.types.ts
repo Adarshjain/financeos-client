@@ -19,3 +19,16 @@ export type ObligationItemDto = Schemas['ObligationItemDto'];
 // rather than editing that shared file, which this feature doesn't own.
 export type LendingTransactionSummary = Schemas['LendingTransactionSummary'];
 export type LinkLendingTransactionRequest = Schemas['LinkLendingTransactionRequest'];
+export type CounterpartySuggestionResponse = Schemas['CounterpartySuggestionResponse'];
+
+/**
+ * What the person picker hands back: an existing counterparty, or a name the
+ * server will create (or reuse by exact name) when the entry is saved.
+ */
+export type CounterpartySelection =
+  | { kind: 'existing'; counterparty: Schemas['CounterpartyResponse'] }
+  | { kind: 'new'; name: string };
+
+export function selectionName(selection: CounterpartySelection): string {
+  return selection.kind === 'new' ? selection.name : selection.counterparty.name;
+}
