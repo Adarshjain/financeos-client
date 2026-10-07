@@ -11,6 +11,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Account } from '@/lib/account.types';
+import { AccountType } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import { AccountForm } from './AccountForm';
@@ -19,10 +20,12 @@ interface AccountFormWrapperProps {
   account?: Account;
   /** Classes for the trigger itself — the trigger IS the interactive element, so style it, not a wrapper. */
   triggerClassName?: string;
+  /** Account types offered in create mode; defaults to all of them. */
+  allowedTypes?: AccountType[];
   children: ReactNode;
 }
 
-export function AccountFormWrapper({ account, triggerClassName, children }: AccountFormWrapperProps) {
+export function AccountFormWrapper({ account, triggerClassName, allowedTypes, children }: AccountFormWrapperProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
@@ -56,7 +59,12 @@ export function AccountFormWrapper({ account, triggerClassName, children }: Acco
         <DialogHeader className="sr-only">
           <DialogTitle>Edit Account</DialogTitle>
         </DialogHeader>
-        <AccountForm account={account} onSuccess={handleSuccess} onClose={() => setOpen(false)} />
+        <AccountForm
+          account={account}
+          allowedTypes={allowedTypes}
+          onSuccess={handleSuccess}
+          onClose={() => setOpen(false)}
+        />
       </DialogContent>
     </Dialog>
   );

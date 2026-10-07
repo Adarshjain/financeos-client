@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { isValidMcc } from '@/components/forms/MccInput';
+import type { Account } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
@@ -88,6 +89,19 @@ export function useTransactionCRUD({
     setCardId(getDefaultCardIdForAccount(acc));
   };
 
+  /** Adopts an account the user just created from inside this form. The
+   * create mutation invalidates the accounts query, but that refetch is
+   * async; seeding the cache first lets the picker and card options resolve
+   * right away, and the card default is read off the created account itself
+   * rather than the still-stale `accounts` closure. */
+  const selectCreatedAccount = (account: Account) => {
+    queryClient.setQueryData<Account[]>(keys.accounts.list(), (prev = []) =>
+      prev.some((a) => a.id === account.id) ? prev : [...prev, account]
+    );
+    setAccountId(account.id);
+    setCardId(getDefaultCardIdForAccount(account));
+  };
+
   const [isMonitored, setIsMonitored] = useState(
     transaction?.isTransactionUnderMonitoring ?? false
   );
@@ -164,7 +178,11 @@ export function useTransactionCRUD({
       return;
     }
     if (!accountId) {
-      toast.error('Please select an account');
+      toast.error(
+        selectableAccounts.length === 0
+          ? 'Add an account to save this transaction'
+          : 'Please select an account'
+      );
       return;
     }
     const rawMcc = mcc.trim();
@@ -239,6 +257,7 @@ export function useTransactionCRUD({
     setCardId,
     selectableAccounts,
     handleAccountChange,
+    selectCreatedAccount,
     supportsCards,
     isCreditCard: supportsCards,
     cardOptions,

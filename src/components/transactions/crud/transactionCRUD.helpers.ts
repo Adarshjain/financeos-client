@@ -15,13 +15,21 @@ import { toCalendarDate } from '@/lib/utils';
 
 /** Accounts selectable in the account picker: open non-broker accounts, plus
  * the transaction's own (possibly closed) account so editing never hides it. */
+/** Account types a transaction can be recorded against. Broker accounts are
+ * left out: their activity lives in the investments module. */
+export const TRANSACTION_ACCOUNT_TYPES: AccountType[] = [
+  AccountType.BANK_ACCOUNT,
+  AccountType.CREDIT_CARD,
+  AccountType.GENERIC,
+];
+
 export function getSelectableAccounts(
   accounts: Account[],
   transaction?: Transaction
 ): Account[] {
   return accounts.filter(
     (a) =>
-      (a.type !== AccountType.BROKER && !isAccountClosed(a)) ||
+      (TRANSACTION_ACCOUNT_TYPES.includes(a.type) && !isAccountClosed(a)) ||
       a.id === transaction?.accountId
   );
 }

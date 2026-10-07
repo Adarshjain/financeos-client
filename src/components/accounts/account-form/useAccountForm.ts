@@ -13,7 +13,10 @@ import { useAccountFormMutations } from './useAccountFormMutations';
 
 interface UseAccountFormOptions {
   account?: Account;
-  onSuccess?: () => void;
+  /** Receives the saved account on create/update/close/reopen (nothing after a
+   * delete) so a host can adopt it, e.g. the transaction form selecting an
+   * account it just created inline. */
+  onSuccess?: (account?: Account) => void;
   onClose?: () => void;
   /** Identifier aliases collected in create mode, saved right after the account exists. */
   pendingIdentifiers?: string[];
@@ -86,7 +89,7 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
         toast.success('Account closed successfully');
       }
       setShowDeleteConfirm(false);
-      onSuccess?.();
+      onSuccess?.(closed);
       onClose?.();
     } catch (error) {
       toastError(error, 'Failed to close account');
@@ -96,9 +99,9 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
   const handleReopenAccount = async () => {
     if (!account) return;
     try {
-      await reopenAccountMutation.mutateAsync(account.id);
+      const reopened = await reopenAccountMutation.mutateAsync(account.id);
       toast.success('Account reopened successfully');
-      onSuccess?.();
+      onSuccess?.(reopened);
       onClose?.();
     } catch (error) {
       toastError(error, 'Failed to reopen account');
@@ -237,16 +240,21 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
     }
 
     try {
+      let saved: Account;
       if (isUpdateMode && account) {
-        await updateAccountMutation.mutateAsync({ id: account.id, body: data });
+        saved = await updateAccountMutation.mutateAsync({ id: account.id, body: data });
       } else {
-        const { failedIdentifiers } = await createAccountMutation.mutateAsync({ body: data, identifiers: pendingIdentifiers });
+        const { account: created, failedIdentifiers } = await createAccountMutation.mutateAsync({
+          body: data,
+          identifiers: pendingIdentifiers,
+        });
         if (failedIdentifiers.length > 0) {
           toast.error(`Account created, but these identifiers could not be added: ${failedIdentifiers.join(', ')}`);
         }
+        saved = created;
       }
       toast.success(isUpdateMode ? 'Account updated successfully!' : 'Account created successfully!');
-      onSuccess?.();
+      onSuccess?.(saved);
     } catch (err) {
       toastError(err, isUpdateMode ? 'Failed to update account' : 'Failed to create account');
     }
@@ -261,10 +269,10 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
       return;
     }
     try {
-      await updateAccountMutation.mutateAsync({ id: account.id, body: confirmCleanup.accountData });
+      const updated = await updateAccountMutation.mutateAsync({ id: account.id, body: confirmCleanup.accountData });
       toast.success('Account updated and transactions cleaned up successfully!');
       setConfirmCleanup(null);
-      onSuccess?.();
+      onSuccess?.(updated);
     } catch (err) {
       toastError(err, 'Failed to update account');
     }

@@ -21,11 +21,14 @@ import { useAccountForm } from './account-form/useAccountForm';
 
 interface AccountFormProps {
   account?: Account;
-  onSuccess?: () => void;
+  /** Called with the saved account (see `useAccountForm`). */
+  onSuccess?: (account?: Account) => void;
   onClose?: () => void;
+  /** Account types offered in create mode; defaults to all of them. */
+  allowedTypes?: AccountType[];
 }
 
-export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
+export function AccountForm({ account, onSuccess, onClose, allowedTypes }: AccountFormProps) {
   const [pendingIdentifiers, setPendingIdentifiers] = useState<string[]>([]);
   const {
     isUpdateMode,
@@ -99,6 +102,7 @@ export function AccountForm({ account, onSuccess, onClose }: AccountFormProps) {
             accountType={accountType}
             setAccountType={setAccountType}
             isUpdateMode={isUpdateMode}
+            allowedTypes={allowedTypes}
           />
 
           {/* Card 1: General Info */}
