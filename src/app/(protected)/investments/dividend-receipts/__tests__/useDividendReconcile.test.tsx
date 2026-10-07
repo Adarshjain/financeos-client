@@ -100,6 +100,46 @@ describe('useDividendReconcile', () => {
     expect(result.current.selectedCandidate(item1)?.tier).toBe('FUZZY');
   });
 
+  it('ignores an override that is no longer one of the candidates', async () => {
+    const { result, queryClient } = setup();
+    await fetchMatches(result);
+    act(() => result.current.select('d1', 'tx-b'));
+    expect(result.current.selected.d1).toBe('tx-b');
+
+    vi.mocked(api.GET).mockResolvedValue({
+      data: { items: [{ ...item1, candidates: [item1.candidates[0]] }], coverageEnd: null, unresolvedCount: 1, withCandidates: 1 },
+    } as never);
+    await act(async () => {
+      await result.current.refetch();
+    });
+    await waitFor(() => expect(result.current.items).toHaveLength(1));
+    expect(result.current.selected.d1).toBe('tx-a');
+    expect(queryClient).toBeDefined();
+  });
+
+  it('clears overrides and TDS overrides after a successful confirm', async () => {
+    const { result } = setup();
+    await fetchMatches(result);
+    act(() => result.current.select('d1', 'tx-b'));
+    act(() => result.current.setRecordTds('d3', false));
+    vi.mocked(api.POST).mockResolvedValue({ data: { linked: [], skipped: [] } } as never);
+    await act(async () => {
+      await result.current.confirmOne('d1');
+    });
+    expect(result.current.selected.d1).toBe('tx-a');
+    expect(result.current.recordTds(item3)).toBe(true);
+  });
+
+  it('exposes isError when the query fails', async () => {
+    const { result } = setup();
+    vi.mocked(api.GET).mockRejectedValue(new Error('boom'));
+    await act(async () => {
+      await result.current.refetch();
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.items).toEqual([]);
+  });
+
   it('offers + defaults the TDS checkbox only for implied TDS on a dividend without TDS', async () => {
     const { result } = setup();
     await fetchMatches(result);

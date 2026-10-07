@@ -129,7 +129,7 @@ export function DividendReceiptSection({ dividend, amount, tds, onUseTds, onSucc
       />
 
       {showTdsHint && (
-        <div className="flex items-center gap-2 text-2xs text-slate-500">
+        <div className="flex items-center gap-2 text-2xs text-slate-500 dark:text-slate-400">
           <span>The credit is {formatMoney(gap)} short of the gross amount.</span>
           <Button
             type="button"
@@ -145,7 +145,7 @@ export function DividendReceiptSection({ dividend, amount, tds, onUseTds, onSucc
       <div className="space-y-1.5">
         <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Receipt note</Label>
         <Select value={noteValue} onValueChange={handleStatus} disabled={busy || !!txn}>
-          <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
+          <SelectTrigger aria-label="Receipt note" className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
@@ -160,7 +160,7 @@ export function DividendReceiptSection({ dividend, amount, tds, onUseTds, onSucc
             </SelectItem>
           </SelectContent>
         </Select>
-        {txn && <p className="text-2xs text-slate-400">Unlink to change</p>}
+        {txn && <p className="text-2xs text-slate-400 dark:text-slate-500">Unlink to change</p>}
       </div>
     </div>
   );

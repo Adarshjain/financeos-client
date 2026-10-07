@@ -72,9 +72,9 @@ const receiptSummary = (coverageEnd: string | null = '2026-03-31'): DividendRece
 
 let receiptsPayload: DividendReceiptSummary = receiptSummary();
 
-function route() {
+function route(listPage: () => PagedDividendResponse = page) {
   vi.mocked(api.GET).mockImplementation((path: unknown) => {
-    if (path === LIST) return Promise.resolve({ data: page() } as never);
+    if (path === LIST) return Promise.resolve({ data: listPage() } as never);
     if (path === SUMMARY) return Promise.resolve({ data: fySummary } as never);
     if (path === RECEIPTS) return Promise.resolve({ data: receiptsPayload } as never);
     if (path === '/api/v1/accounts')
@@ -113,6 +113,30 @@ describe('DividendsSection receipt features', () => {
       expect(within(card).getByText('Overdue').nextElementSibling).toHaveTextContent('1 · ₹900.00');
       const unverifiable = within(card).getByText('No bank data').nextElementSibling;
       expect(unverifiable).toHaveTextContent(/^4$/);
+    });
+
+    it('Received includes untracked (count + amount) with a sub-caption; Overdue notes not-received', () => {
+      const withExtras = receiptSummary();
+      withExtras.buckets = withExtras.buckets.map((b) =>
+        b.status === 'received_untracked'
+          ? { ...b, count: 2, receivedAmount: 300 }
+          : b.status === 'not_received'
+            ? { ...b, count: 5 }
+            : b,
+      );
+      receiptsPayload = withExtras;
+      renderSection(withExtras);
+      const card = screen.getByTestId('receipt-summary');
+      expect(within(card).getByText('Received').nextElementSibling).toHaveTextContent('5 · ₹2,950.00');
+      expect(within(card).getByText('incl. 2 untracked')).toBeInTheDocument();
+      expect(within(card).getByText('5 marked not received')).toBeInTheDocument();
+    });
+
+    it('shows no sub-captions when those buckets are empty', () => {
+      renderSection();
+      const card = screen.getByTestId('receipt-summary');
+      expect(within(card).queryByText(/untracked/)).not.toBeInTheDocument();
+      expect(within(card).queryByText(/marked not received/)).not.toBeInTheDocument();
     });
 
     it('shows the coverage caption, or the "no bank transactions" caption when coverage is null', () => {
@@ -205,7 +229,10 @@ describe('DividendsSection receipt features', () => {
     it('with ?instrumentId: passes it to list, FY summary and receipt summary, and shows the chip with the symbol', async () => {
       nav.search = new URLSearchParams('instrumentId=inst-1');
       renderSection();
-      expect(screen.getByRole('button', { name: 'Clear instrument filter' })).toHaveTextContent('Showing INFY');
+      expect(await screen.findByRole('button', { name: 'Clear instrument filter' })).toHaveTextContent('Showing one instrument');
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Clear instrument filter' })).toHaveTextContent('Showing INFY'),
+      );
       await waitFor(() => {
         expect(callsTo(LIST)).toContainEqual(expect.objectContaining({ instrumentId: 'inst-1' }));
         expect(callsTo(SUMMARY)).toContainEqual(expect.objectContaining({ instrumentId: 'inst-1' }));
@@ -213,29 +240,43 @@ describe('DividendsSection receipt features', () => {
       });
     });
 
-    it('falls back to the instrument name, then to a generic label when rows are unknown', () => {
+    it('does not show the unfiltered SSR rows or receipt summary while the filtered fetch is pending', async () => {
       nav.search = new URLSearchParams('instrumentId=inst-1');
-      const named = renderWithQuery(
-        <DividendsSection
-          initialData={page([makeDividend({ symbol: undefined })])}
-          initialSummary={fySummary}
-          initialReceiptSummary={receiptSummary()}
-        />,
-      );
-      expect(screen.getByRole('button', { name: 'Clear instrument filter' })).toHaveTextContent('Showing Infosys Limited');
-      named.unmount();
-      vi.mocked(api.GET).mockResolvedValue({ data: page([]) } as never);
-      renderWithQuery(
-        <DividendsSection initialData={page([])} initialSummary={fySummary} initialReceiptSummary={receiptSummary()} />,
-      );
+      vi.mocked(api.GET).mockImplementation(() => new Promise(() => {}));
+      renderSection();
+      expect(screen.getByTestId('table')).toHaveTextContent('rows:0');
+      expect(screen.queryByTestId('receipt-summary')).not.toBeInTheDocument();
+      expect(screen.queryByText('No bank transactions imported yet')).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Clear instrument filter' })).toHaveTextContent('Showing one instrument');
     });
 
-    it('clearing the chip replaces the URL with the bare dividends route', () => {
+    it('falls back to the instrument name from the filtered rows, then to a generic label when none', async () => {
+      nav.search = new URLSearchParams('instrumentId=inst-1');
+      route(() => page([makeDividend({ symbol: undefined })]));
+      const named = renderSection();
+      await waitFor(() =>
+        expect(screen.getByRole('button', { name: 'Clear instrument filter' })).toHaveTextContent('Showing Infosys Limited'),
+      );
+      named.unmount();
+      route(() => page([]));
+      renderSection();
+      await waitFor(() => expect(screen.getByTestId('table')).toHaveTextContent('rows:0'));
+      expect(screen.getByRole('button', { name: 'Clear instrument filter' })).toHaveTextContent('Showing one instrument');
+    });
+
+    it('clearing the chip replaces the URL with the bare dividends route and resets the page', async () => {
       nav.search = new URLSearchParams('instrumentId=inst-1');
       renderSection();
+      fireEvent.click(screen.getAllByText('go-page-2')[0]);
+      await waitFor(() => expect(callsTo(LIST)).toContainEqual(expect.objectContaining({ instrumentId: 'inst-1', page: 2 })));
       fireEvent.click(screen.getByRole('button', { name: 'Clear instrument filter' }));
       expect(nav.router.replace).toHaveBeenCalledWith('/investments/dividends');
+      // The URL change is mocked, so drop the param like the router would.
+      nav.search = new URLSearchParams();
+      vi.mocked(api.GET).mockClear();
+      fireEvent.click(screen.getByRole('button', { name: /Reconcile/ }));
+      await waitFor(() => expect(callsTo(LIST).length).toBeGreaterThan(0));
+      expect(callsTo(LIST).every((q) => q.page === 0)).toBe(true);
     });
   });
 

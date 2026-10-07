@@ -30,6 +30,12 @@ interface UseDividendLinkProps {
   onSuccess?: () => void;
 }
 
+class LinkAfterCreateError extends Error {
+  constructor(readonly original: unknown) {
+    super('Dividend recorded, but linking failed');
+  }
+}
+
 export function useDividendLink({
   transaction,
   open,
@@ -50,9 +56,12 @@ export function useDividendLink({
   const [tds, setTds] = React.useState('');
   const [notes, setNotes] = React.useState('');
 
+  // Id of a dividend already created by a failed "record & link" attempt; retries only re-link.
+  const createdIdRef = React.useRef<string | null>(null);
   const prevOpenRef = React.useRef(false);
   React.useEffect(() => {
     if (open && !prevOpenRef.current && transaction) {
+      createdIdRef.current = null;
       setMode('existing');
       setSearch('');
       setPickedId(null);
@@ -69,7 +78,7 @@ export function useDividendLink({
   }, [open, transaction]);
 
   const dividendsQuery = useQuery({
-    queryKey: keys.investments.dividends({ receipt: 'unresolved', size: 150 }),
+    queryKey: keys.investments.dividendsUnresolved(),
     queryFn: async () => {
       const pages = await Promise.all(
         UNRESOLVED_RECEIPTS.map((receipt) =>
@@ -94,10 +103,17 @@ export function useDividendLink({
       transaction ? pickBestDividend(allDividends, txnAmount, transaction.date)?.id : undefined,
     [allDividends, transaction, txnAmount],
   );
-  const selectedId = pickedId ?? bestId ?? '';
+  // A selection hidden by the search filter is dropped so it can't be submitted unseen.
+  const candidateId = pickedId ?? bestId ?? '';
+  const selectedId = dividends.some((d) => d.id === candidateId) ? candidateId : '';
   const selected = allDividends.find((d) => d.id === selectedId);
   const tdsGap = impliedTds(selected, txnAmount);
   const recordTds = tdsGap !== null && (tdsChoice ?? true);
+
+  // A different dividend means a different gap: forget the previous TDS choice.
+  React.useEffect(() => {
+    setTdsChoice(null);
+  }, [selectedId]);
 
   const submitMutation = useMutation({
     mutationFn: async () => {
@@ -111,26 +127,33 @@ export function useDividendLink({
           .then((r) => r.data);
       }
       const [brokerAccountId, instrumentId] = holding.split('|');
-      const created = await api
-        .POST('/api/v1/investments/dividends', {
-          body: {
-            brokerAccountId,
-            instrumentId,
-            type,
-            amount: parseFloat(amount),
-            tds: tds ? parseFloat(tds) : undefined,
-            exDate: exDate || undefined,
-            payDate,
-            notes: notes.trim() || undefined,
-          },
-        })
-        .then((r) => r.data!);
-      return api
-        .PUT('/api/v1/investments/dividends/{id}/transaction', {
-          params: { path: { id: created.id } },
-          body: { transactionId, updateTds: false },
-        })
-        .then((r) => r.data);
+      if (!createdIdRef.current) {
+        const created = await api
+          .POST('/api/v1/investments/dividends', {
+            body: {
+              brokerAccountId,
+              instrumentId,
+              type,
+              amount: parseFloat(amount),
+              tds: tds ? parseFloat(tds) : undefined,
+              exDate: exDate || undefined,
+              payDate,
+              notes: notes.trim() || undefined,
+            },
+          })
+          .then((r) => r.data!);
+        createdIdRef.current = created.id;
+      }
+      try {
+        return await api
+          .PUT('/api/v1/investments/dividends/{id}/transaction', {
+            params: { path: { id: createdIdRef.current } },
+            body: { transactionId, updateTds: false },
+          })
+          .then((r) => r.data);
+      } catch (err) {
+        throw new LinkAfterCreateError(err);
+      }
     },
     onSuccess: () => {
       toast.success(mode === 'existing' ? 'Dividend linked' : 'Dividend recorded and linked');
@@ -140,6 +163,12 @@ export function useDividendLink({
       onSuccess?.();
     },
     onError: (err: unknown) => {
+      if (err instanceof LinkAfterCreateError) {
+        // The dividend exists now; keep the dialog open so a retry only re-links.
+        queryClient.invalidateQueries({ queryKey: keys.investments.all });
+        toastError(err, 'Dividend recorded, but linking failed');
+        return;
+      }
       toastError(err, 'Failed to link dividend');
     },
   });

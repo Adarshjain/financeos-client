@@ -60,7 +60,9 @@ export function useDividendReconcile({ brokerAccountId, onLinked }: UseDividendR
   const selected = useMemo(() => {
     const map: Record<string, string> = {};
     for (const it of items) {
-      const chosen = overrides[it.dividend.id] ?? it.candidates[0]?.transaction.id;
+      const override = overrides[it.dividend.id];
+      const valid = override && it.candidates.some((c) => c.transaction.id === override);
+      const chosen = valid ? override : it.candidates[0]?.transaction.id;
       if (chosen) map[it.dividend.id] = chosen;
     }
     return map;
@@ -104,6 +106,9 @@ export function useDividendReconcile({ brokerAccountId, onLinked }: UseDividendR
       qc.invalidateQueries({ queryKey: keys.transactions.all }),
     ]);
     await query.refetch();
+    // Picks made against the previous result must not leak into the refreshed one.
+    setOverrides({});
+    setTdsOverrides({});
     onLinked?.();
   };
 
@@ -137,6 +142,8 @@ export function useDividendReconcile({ brokerAccountId, onLinked }: UseDividendR
   return {
     loading: query.isFetching,
     fetched: query.isFetched,
+    isError: query.isError,
+    error: query.error,
     items,
     meta: query.data
       ? {

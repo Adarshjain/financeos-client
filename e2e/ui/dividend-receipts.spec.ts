@@ -127,12 +127,13 @@ test.describe('Dividend receipt reconciliation UI (@ui)', () => {
     await expect(page.locator('tr').filter({ hasText: old.symbol })).toHaveCount(0);
 
     // ?instrumentId= deep link shows the chip; the x clears it.
-    await page.goto(`${E2E_CLIENT_URL}/investments/dividends?instrumentId=${fresh.inst.id}`);
+    // Deep-link to the OLDER dividend's instrument (not the newest row) so unfiltered SSR data would be caught.
+    await page.goto(`${E2E_CLIENT_URL}/investments/dividends?instrumentId=${old.inst.id}`);
     await expect(page.getByRole('heading', { name: /Dividend Income & Payouts/i, level: 1 })).toBeVisible();
     const chip = page.getByRole('button', { name: 'Clear instrument filter' });
-    await expect(chip).toContainText(`Showing ${fresh.symbol}`);
-    await expect(rowOf(page, fresh.symbol)).toBeVisible();
-    await expect(rowOf(page, old.symbol)).toHaveCount(0);
+    await expect(chip).toContainText(`Showing ${old.symbol}`);
+    await expect(rowOf(page, old.symbol)).toBeVisible();
+    await expect(rowOf(page, fresh.symbol)).toHaveCount(0);
 
     await chip.click();
     await expect(chip).toHaveCount(0);
@@ -207,7 +208,7 @@ test.describe('Dividend receipt reconciliation UI (@ui)', () => {
     await expect(dialog.getByText('Received', { exact: true })).toBeVisible();
     await expect(dialog.getByText(desc)).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Change', exact: true })).toBeVisible();
-    const noteSelect = dialog.getByRole('combobox').last();
+    const noteSelect = dialog.getByRole('combobox', { name: 'Receipt note' });
     await expect(noteSelect).toBeDisabled();
     await expect(dialog.getByText('Unlink to change')).toBeVisible();
 

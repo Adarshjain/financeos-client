@@ -73,7 +73,7 @@ export function DividendFormFields({
   return (
     <form id="dividend-dialog-form" onSubmit={onSubmit} className="space-y-3 py-1">
       <div className="space-y-1.5">
-        <Label className={LABEL}>Broker Account</Label>
+        <Label htmlFor="dividend-broker" className={LABEL}>Broker Account</Label>
         <Select
           value={brokerAccountId}
           onValueChange={(val) => {
@@ -81,7 +81,7 @@ export function DividendFormFields({
             setInstrumentId('');
           }}
         >
-          <SelectTrigger className={SELECT_TRIGGER}>
+          <SelectTrigger id="dividend-broker" className={SELECT_TRIGGER}>
             <SelectValue placeholder="Select broker..." />
           </SelectTrigger>
           <SelectContent className={SELECT_CONTENT}>
@@ -95,9 +95,9 @@ export function DividendFormFields({
       </div>
 
       <div className="space-y-1.5">
-        <Label className={LABEL}>Held Instrument</Label>
+        <Label htmlFor="dividend-instrument" className={LABEL}>Held Instrument</Label>
         <Select value={instrumentId} onValueChange={setInstrumentId}>
-          <SelectTrigger className={SELECT_TRIGGER}>
+          <SelectTrigger id="dividend-instrument" className={SELECT_TRIGGER}>
             <SelectValue
               placeholder={
                 brokerPositions.length === 0
@@ -119,9 +119,9 @@ export function DividendFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <Label className={LABEL}>Type</Label>
+          <Label htmlFor="dividend-type" className={LABEL}>Type</Label>
           <Select value={type} onValueChange={(val) => setType(val as DividendType)}>
-            <SelectTrigger className={SELECT_TRIGGER}>
+            <SelectTrigger id="dividend-type" className={SELECT_TRIGGER}>
               <SelectValue placeholder="Select type" />
             </SelectTrigger>
             <SelectContent className={SELECT_CONTENT}>

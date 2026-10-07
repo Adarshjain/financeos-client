@@ -72,6 +72,25 @@ describe('DividendReconcilePanel', () => {
     expect(api.GET).not.toHaveBeenCalledWith('/api/v1/investments/dividends/reconciliation', expect.anything());
   });
 
+  it('shows an error line instead of the empty state when the query fails', async () => {
+    vi.mocked(api.GET).mockImplementation((path: unknown) =>
+      path === '/api/v1/investments/dividends/reconciliation'
+        ? Promise.reject(new Error('boom'))
+        : Promise.resolve({ data: accounts } as never),
+    );
+    renderPanel();
+    await findMatches();
+    expect(await screen.findByText('Could not load matches. Try again.')).toBeInTheDocument();
+    expect(screen.queryByText('No bank credits match your unmatched dividends.')).not.toBeInTheDocument();
+  });
+
+  it('pluralises the unmatched count', async () => {
+    route([single], { unresolvedCount: 1 });
+    renderPanel();
+    await findMatches();
+    expect(await screen.findByText(/^1 unmatched dividend ·/)).toBeInTheDocument();
+  });
+
   it('renders the row: symbol, broker, expected net, date, badge, candidate summary and footer', async () => {
     route([single], { coverageEnd: '2026-03-31', unresolvedCount: 4 });
     renderPanel();

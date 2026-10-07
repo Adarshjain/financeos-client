@@ -83,7 +83,7 @@ describe('useDividendLink existing mode', () => {
         params: { query: { receipt, page: 0, size: 50 } },
       });
     }
-    expect(queryClient.getQueryData(keys.investments.dividends({ receipt: 'unresolved', size: 150 }))).toBeDefined();
+    expect(queryClient.getQueryData(keys.investments.dividendsUnresolved())).toBeDefined();
   });
 
   it('does not fetch while closed', () => {
@@ -124,6 +124,15 @@ describe('useDividendLink existing mode', () => {
     });
     const third = setup();
     await waitFor(() => expect(third.result.current.selectedId).toBe('near'));
+  });
+
+  it('drops the selection when the search filter hides it', async () => {
+    mockReceipts({ awaiting: [div({ id: 'exact', amount: 900 }), div({ id: 'b', symbol: 'TCS', instrumentName: 'Tata', amount: 4000 })] });
+    const { result } = setup();
+    await waitFor(() => expect(result.current.selectedId).toBe('exact'));
+    act(() => result.current.setSearch('tcs'));
+    expect(result.current.selectedId).toBe('');
+    expect(result.current.canSubmit).toBe(false);
   });
 
   it('an explicit pick overrides the preselection', async () => {
@@ -308,6 +317,27 @@ describe('useDividendLink new mode', () => {
       exDate: undefined,
       payDate: '2026-07-10',
       notes: undefined,
+    });
+  });
+
+  it('retries only the link (no second POST) when linking fails after creation', async () => {
+    (api.POST as Mock).mockResolvedValue({ data: { id: 'new-1' } });
+    (api.PUT as Mock).mockRejectedValueOnce(new Error('link failed')).mockResolvedValue({ data: {} });
+    const { result, onSuccess, onOpenChange } = await setupNew();
+    act(() => result.current.setHolding('b1|i1'));
+    act(() => result.current.handleSubmit());
+    await waitFor(() => expect(toast.error).toHaveBeenCalled());
+    expect(toast.error).toHaveBeenCalledWith('Dividend recorded, but linking failed', expect.anything());
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(api.POST).toHaveBeenCalledTimes(1);
+
+    act(() => result.current.handleSubmit());
+    await waitFor(() => expect(onSuccess).toHaveBeenCalled());
+    expect(api.POST).toHaveBeenCalledTimes(1);
+    expect(api.PUT).toHaveBeenCalledTimes(2);
+    expect(api.PUT).toHaveBeenLastCalledWith('/api/v1/investments/dividends/{id}/transaction', {
+      params: { path: { id: 'new-1' } },
+      body: { transactionId: 't1', updateTds: false },
     });
   });
 

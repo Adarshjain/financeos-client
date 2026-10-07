@@ -431,7 +431,10 @@ test.describe('Dividend receipt reconciliation API (@api)', () => {
     expect(iX?.candidates ?? []).toHaveLength(0);
     const iI = find(recon, dI.id);
     expect(iI?.candidates ?? []).toHaveLength(0);
-    expect(cX.id).toBeDefined();
+    // The neutral credit is not offered to any dividend.
+    for (const it of recon.items) {
+      for (const c of it.candidates) expect(c.transaction.id).not.toBe(cX.id);
+    }
 
     expect(recon.withCandidates).toBe(3);
     expect(recon.unresolvedCount).toBeGreaterThanOrEqual(5);
@@ -443,7 +446,7 @@ test.describe('Dividend receipt reconciliation API (@api)', () => {
     expect(none.unresolvedCount).toBe(0);
     expect(none.withCandidates).toBe(0);
     const mine = await reconcile(api, { brokerAccountId: hE.broker.id });
-    expect(find(mine, dE.id)).toBeDefined();
+    expect(find(mine, dE.id)?.dividend.id).toBe(dE.id);
 
     // Linked dividends drop out of the reconciliation queue.
     await linkDividendTransaction(api, dE.id, cE.id);
@@ -509,7 +512,7 @@ test.describe('Dividend receipt reconciliation API (@api)', () => {
       for (const c of it.candidates) expect(c.transaction.id).not.toBe(linkedA.id);
     }
 
-    // Confirm with partial success: dB<-cG ok (TDS none), dC<-debit skipped, unknown dividend skipped.
+    // Confirm with partial success: dB<-cG ok (TDS none), dC<-debit skipped.
     const debit = await createTransaction(api, bank.id, { amount: -50, date: todayString(-22), description: 'A debit' });
     const res = await confirmDividendMatches(api, [
       { dividendId: dB.id, transactionId: cG.id },
@@ -534,7 +537,7 @@ test.describe('Dividend receipt reconciliation API (@api)', () => {
     expect(confirmed.skipped).toHaveLength(0);
     expect(confirmed.linked[0].tds).toBe(200);
 
-    // Confirm an empty batch is harmless; the already-linked dividend is no longer a reconciliation item.
+    // Already-linked dividends are no longer reconciliation items.
     const afterRecon = await reconcile(api);
     expect(find(afterRecon, dB.id)).toBeUndefined();
     expect(find(afterRecon, dT.id)).toBeUndefined();
@@ -544,10 +547,12 @@ test.describe('Dividend receipt reconciliation API (@api)', () => {
     const foreignRes = await other.api.POST('/api/v1/investments/dividends/reconciliation/confirm', {
       body: { items: [{ dividendId: dC.id, transactionId: debit.id, updateTds: false }] } as never,
     });
-    expect([200, 400, 404]).toContain(foreignRes.response.status);
-    if (foreignRes.response.status === 200) {
-      expect((foreignRes.data as unknown as { linked: unknown[] }).linked).toHaveLength(0);
-    }
+    expect(foreignRes.response.status).toBe(200);
+    const foreignData = foreignRes.data as unknown as { linked: unknown[]; skipped: unknown[] };
+    expect(foreignData.linked).toHaveLength(0);
+    expect(foreignData.skipped).toHaveLength(1); // every submitted item is skipped
+    // The owner's dividend is untouched.
+    expect((await listDividends(api)).find((d) => d.id === dC.id)!.transaction ?? null).toBeNull();
   });
 
   test('unrecorded credits scan: shows DIV credit with holding hint, hides once linked, validates range', async ({
@@ -581,9 +586,9 @@ test.describe('Dividend receipt reconciliation API (@api)', () => {
     expect(hint.brokerAccountId).toBe(h.broker.id);
     expect(hint.instrumentName).toBe(h.name);
     expect(hint.nameScore).toBeGreaterThanOrEqual(0.5);
-    expect(hint.holdingId).toBeDefined();
-    expect(hint.symbol).toBeDefined();
-    expect(hint.brokerName).toBeDefined();
+    expect(hint.holdingId).toEqual(expect.any(String));
+    expect(hint.symbol).toBe(h.symbol);
+    expect(hint.brokerName).toEqual(expect.any(String));
     for (let i = 1; i < row.holdingHints.length; i++) {
       expect(row.holdingHints[i - 1].nameScore).toBeGreaterThanOrEqual(row.holdingHints[i].nameScore);
     }
@@ -631,7 +636,6 @@ test.describe('Dividend receipt reconciliation API (@api)', () => {
     // obligationRefs via search and via the paged list.
     const viaSearch = await findById(api, credit.id);
     const ref = viaSearch!.obligationRefs.find((r) => r.kind === 'DIVIDEND')!;
-    expect(ref).toBeDefined();
     expect(ref.id).toBe(d.id);
     expect(ref.parentId).toBe(h.inst.id);
     expect(ref.label).toBe(`Dividend · ${h.symbol}`);

@@ -102,8 +102,8 @@ describe('TransactionLinkDialog DIVIDEND kind', () => {
 
     const radios = await screen.findAllByRole('radio');
     expect(radios).toHaveLength(2);
-    expect(screen.getByText('awaiting')).toBeInTheDocument();
-    expect(screen.getByText('overdue')).toBeInTheDocument();
+    expect(screen.getByText('Awaiting')).toBeInTheDocument();
+    expect(screen.getByText('Overdue')).toBeInTheDocument();
     // d1 (1000, 10% TDS => 900) is the 0.9 match for a 900 credit.
     const d1 = screen.getByRole('radio', { name: /INFY/ });
     expect(d1).toHaveAttribute('aria-checked', 'true');

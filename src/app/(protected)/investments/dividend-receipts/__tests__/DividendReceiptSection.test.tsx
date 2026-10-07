@@ -152,6 +152,11 @@ describe('DividendReceiptSection', () => {
       );
     });
 
+    it('the select trigger has an accessible name', () => {
+      renderSection(makeDividend({ id: 'd7', receiptStatus: 'overdue' }));
+      expect(screen.getByRole('combobox', { name: 'Receipt note' })).toBeInTheDocument();
+    });
+
     it('choosing "Derived automatically" clears the note (status: null)', async () => {
       renderSection(makeDividend({ id: 'd7', receiptStatus: 'not_received' }));
       expect(screen.getByTestId('select')).toHaveAttribute('data-value', 'not_received');
@@ -225,8 +230,9 @@ describe('DividendReceiptSection', () => {
     });
 
     it('uses the form amount, not the stored one', () => {
-      renderSection(linked(900), { amount: '1200', tds: '' }); // gap 300 = 25% of 1200
+      const { onUseTds } = renderSection(linked(900), { amount: '1200', tds: '' }); // gap 300 = 25% of 1200
       fireEvent.click(screen.getByRole('button', { name: 'Use ₹300.00 as TDS' }));
+      expect(onUseTds).toHaveBeenCalledWith('300');
     });
   });
 });

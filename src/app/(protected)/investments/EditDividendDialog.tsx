@@ -251,7 +251,10 @@ export function EditDividendDialog({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optional notes"
             />
+          </form>
 
+          {/* Outside the form so Enter in the picker's search can't submit the edit. */}
+          <div className="space-y-3 pt-3">
             <DividendReceiptSection
               dividend={dividend}
               amount={String(amount)}
@@ -272,7 +275,7 @@ export function EditDividendDialog({
                 {isDeleting ? 'Deleting...' : 'Delete Payout'}
               </Button>
             </div>
-          </form>
+          </div>
         </DialogBody>
 
         <DialogFooter

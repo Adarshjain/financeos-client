@@ -1,9 +1,11 @@
 'use client';
 
+import { ReceiptStatusBadge } from '@/app/(protected)/investments/dividend-receipts/ReceiptStatusBadge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import type { Account } from '@/lib/account.types';
 import type { Transaction } from '@/lib/transaction.types';
+import type { DividendReceiptStatus } from '@/lib/types';
 import { cn, formatDate, formatMoney, getAccountName } from '@/lib/utils';
 
 import { expectedNet } from './dividendLinkHelpers';
@@ -16,12 +18,6 @@ interface DividendLinkBodyProps {
   dividend: UseDividendLinkResult;
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  awaiting: 'bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800',
-  overdue: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800',
-  unverifiable: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
-};
-
 /** Body for the DIVIDEND link kind: pick an unmatched dividend, or record a new one. */
 export function DividendLinkBody({ transaction, accounts, dividend }: DividendLinkBodyProps) {
   const { mode, setMode } = dividend;
@@ -30,7 +26,7 @@ export function DividendLinkBody({ transaction, accounts, dividend }: DividendLi
     <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
       <div className="p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 space-y-0.5">
         <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
-          {transaction.description ?? transaction.sourcedDescription}
+          {transaction.description || transaction.sourcedDescription}
         </div>
         <div className="flex items-center justify-between text-2xs text-slate-500 dark:text-slate-400">
           <span>
@@ -106,14 +102,7 @@ export function DividendLinkBody({ transaction, accounts, dividend }: DividendLi
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span
-                        className={cn(
-                          'text-2xs font-bold px-1.5 rounded border capitalize',
-                          STATUS_STYLES[d.receiptStatus],
-                        )}
-                      >
-                        {d.receiptStatus}
-                      </span>
+                      <ReceiptStatusBadge status={d.receiptStatus as DividendReceiptStatus} />
                       <span className="text-xs font-bold tabular-nums text-slate-900 dark:text-white">
                         {formatMoney(expectedNet(d))}
                       </span>

@@ -24,12 +24,12 @@ export function DividendReceiptCell({ dividend }: { dividend: Dividend }) {
     <div className="space-y-0.5">
       <ReceiptStatusBadge status={dividend.receiptStatus} />
       {txn && (
-        <p className="text-2xs text-slate-500">
+        <p className="text-2xs text-slate-500 dark:text-slate-400">
           +{formatMoney(txn.signedAmount)} · {txn.accountName || 'Account'} · {formatDate(txn.date)}
         </p>
       )}
       {variance !== null && (
-        <p className="text-2xs text-amber-600">
+        <p className="text-2xs text-amber-600 dark:text-amber-400">
           ±{formatMoney(Math.abs(variance))} vs expected
         </p>
       )}

@@ -51,6 +51,7 @@ export const keys = {
     dividendReceiptSummary: (params: Record<string, unknown> = {}) => [...keys.investments.all, 'dividendReceiptSummary', params] as const,
     dividendReconciliation: (params: Record<string, unknown> = {}) => [...keys.investments.all, 'dividendReconciliation', params] as const,
     dividendUnrecorded: (params: Record<string, unknown> = {}) => [...keys.investments.all, 'dividendUnrecorded', params] as const,
+    dividendsUnresolved: () => [...keys.investments.all, 'dividendsUnresolved'] as const,
     dividendSuggestions: () => [...keys.investments.all, 'dividendSuggestions'] as const,
     fno: (params: Record<string, unknown> = {}) => [...keys.investments.all, 'fno', params] as const,
     sips: () => [...keys.investments.all, 'sips'] as const,
