@@ -95,41 +95,30 @@ export function MobileMenuSheet({ userEmail }: MobileMenuSheetProps) {
           </SheetLink>
 
           {GROUPS.map((group) => (
-            <div key={group.key} className="py-1">
-              <div className="flex items-center gap-3 px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
-                <SheetIcon>{group.icon}</SheetIcon>
-                <span>{group.label}</span>
-              </div>
-              <div className="flex flex-wrap gap-1.5 pl-11 pr-2">
-                {group.items.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={close}
-                    className={cn(
-                      'rounded-lg px-2.5 py-1 text-xs font-semibold',
-                      isNavItemActive(pathname, item.href)
-                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white'
-                        : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
-                    )}
-                  >
-                    {chipLabel(group, item)}
-                  </Link>
-                ))}
-              </div>
-            </div>
+            <SheetGroup
+              key={group.key}
+              label={group.label}
+              icon={group.icon}
+              items={group.items.map((item) => ({
+                href: item.href,
+                label: chipLabel(group, item),
+                active: isNavItemActive(pathname, item.href),
+              }))}
+              onNavigate={close}
+            />
           ))}
 
           <div className="my-2 h-px bg-slate-100 dark:bg-slate-800" />
 
-          <SheetLink
-            href={NAV_ITEMS.settings.href}
-            active={isNavItemActive(pathname, NAV_ITEMS.settings.href)}
-            onClick={close}
-          >
-            <SheetIcon>{NAV_ITEMS.settings.icon}</SheetIcon>
-            <span>{NAV_ITEMS.settings.label}</span>
-          </SheetLink>
+          <SheetGroup
+            label={NAV_ITEMS.settings.label}
+            icon={NAV_ITEMS.settings.icon}
+            items={SETTINGS_ITEMS.map((item) => ({
+              ...item,
+              active: isSettingsItemActive(pathname, item.href),
+            }))}
+            onNavigate={close}
+          />
         </div>
 
         <div className="border-t border-slate-100 dark:border-slate-800 p-4 space-y-3">
@@ -155,6 +144,25 @@ export function MobileMenuSheet({ userEmail }: MobileMenuSheetProps) {
   );
 }
 
+/**
+ * Settings pages, shown as a group in the sheet. Kept out of NAV_ITEMS on purpose: the sidebar
+ * lists Settings as one entry, and NAV_ITEMS drives longest-prefix highlighting there.
+ */
+const SETTINGS_ITEMS: { href: string; label: string }[] = [
+  { href: '/settings', label: 'Profile & appearance' },
+  { href: '/settings/gmail', label: 'Connections' },
+  { href: '/settings/llm-keys', label: 'AI keys' },
+  { href: '/settings/notifications', label: 'Notifications' },
+  { href: '/settings/activity', label: 'Activity' },
+  { href: '/debug', label: 'Debug' },
+];
+
+/** The settings index is active only on itself; every other settings chip also covers its sub-pages. */
+function isSettingsItemActive(pathname: string, href: string): boolean {
+  if (href === '/settings') return pathname === '/settings';
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 /** A group's own landing page reads "All" inside that group (e.g. Transactions > All). */
 function chipLabel(group: NavModule, item: NavItem): string {
   const label = item.shortLabel ?? item.label;
@@ -173,6 +181,45 @@ function SheetIcon({ children }: { children: React.ReactNode }) {
     >
       {children}
     </span>
+  );
+}
+
+function SheetGroup({
+  label,
+  icon,
+  items,
+  onNavigate,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  items: { href: string; label: string; active: boolean }[];
+  onNavigate: () => void;
+}) {
+  return (
+    <div className="py-1">
+      <div className="flex items-center gap-3 px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+        <SheetIcon>{icon}</SheetIcon>
+        <span>{label}</span>
+      </div>
+      <div className="flex flex-wrap gap-1.5 pl-11 pr-2">
+        {items.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={onNavigate}
+            aria-current={item.active ? 'page' : undefined}
+            className={cn(
+              'rounded-lg px-2.5 py-1 text-xs font-semibold',
+              item.active
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white'
+                : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+            )}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
+    </div>
   );
 }
 
