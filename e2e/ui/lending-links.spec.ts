@@ -172,7 +172,8 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
     // Delete confirmation mentions the linked record
     await page.getByRole('dialog').getByRole('button', { name: 'Delete' }).click();
     await expect(page.getByText('Delete Transaction?')).toBeVisible();
-    await expect(page.getByText(/linked to 1 loan\/lending record/i)).toBeVisible();
+    // Copy changed with dividend receipts: the dialog now names all three record kinds.
+    await expect(page.getByText(/linked to 1 loan, lending or dividend record/i)).toBeVisible();
     await page.getByRole('dialog').getByRole('button', { name: 'Cancel' }).last().click();
 
     // Unlink the ledger ref (no confirmation) -> dialog closes
