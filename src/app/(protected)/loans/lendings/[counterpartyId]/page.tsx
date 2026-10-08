@@ -13,6 +13,7 @@ const LENDINGS_PAGE_SIZE = 200;
 
 interface PersonDetailPageProps {
   params: Promise<{ counterpartyId: string }>;
+  searchParams?: Promise<{ export?: string }>;
 }
 
 function findCounterparty(
@@ -32,8 +33,10 @@ export async function generateMetadata({ params }: PersonDetailPageProps) {
 
 export default async function PersonDetailPage({
   params,
+  searchParams,
 }: PersonDetailPageProps) {
   const { counterpartyId } = await params;
+  const openExport = (await searchParams)?.export === '1';
 
   // Same request-cached call the protected layout makes; only the display name
   // is needed here (it prefills "Your name" in the export).
@@ -64,7 +67,7 @@ export default async function PersonDetailPage({
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>
-      <CounterpartyDetail counterpartyId={counterpartyId} myName={user.displayName ?? null} />
+      <CounterpartyDetail counterpartyId={counterpartyId} myName={user.displayName ?? null} openExport={openExport} />
     </HydrationBoundary>
   );
 }

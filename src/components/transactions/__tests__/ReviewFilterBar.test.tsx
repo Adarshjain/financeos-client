@@ -6,6 +6,7 @@ import { ReviewFilterBar } from '@/components/transactions/ReviewFilterBar';
 import type { Account } from '@/lib/account.types';
 import { keys } from '@/lib/query/keys';
 import { AccountType } from '@/lib/types';
+import { formatDate } from '@/lib/utils';
 import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
 
 const mockAccounts: Account[] = [
@@ -209,5 +210,45 @@ describe('ReviewFilterBar (CD-1, CD-5)', () => {
     const oldestOption = screen.getByText('Oldest First');
     fireEvent.click(oldestOption);
     expect(onSortByChange).toHaveBeenCalledWith('date,asc');
+  });
+});
+
+describe('ReviewFilterBar deep-linked period', () => {
+  const baseProps = {
+    appliedAccountIds: ['acc1', 'acc2'],
+    onAccountIdsChange: vi.fn(),
+    onlyUpToLastStatement: true,
+    onOnlyUpToLastStatementChange: vi.fn(),
+    activeReasonFilter: 'ALL',
+    onReasonFilterChange: vi.fn(),
+    search: '',
+    onSearchChange: vi.fn(),
+    sortBy: 'date,desc',
+    onSortByChange: vi.fn(),
+  };
+
+  it('shows the period as a removable badge in the app date format and clears it', () => {
+    const onDateRangeChange = vi.fn();
+    renderWithAccounts(
+      <ReviewFilterBar {...baseProps} dateRange={{ from: '2026-09-01', to: '2026-09-30' }} onDateRangeChange={onDateRangeChange} />,
+    );
+    const badge = screen.getByText(/^Period: /);
+    expect(badge).toHaveTextContent(`Period: ${formatDate('2026-09-01')} – ${formatDate('2026-09-30')}`);
+    fireEvent.click(badge.closest('[role="button"], button') ?? badge);
+    expect(onDateRangeChange).toHaveBeenCalledWith(null);
+  });
+
+  it('Clear all also drops the period', () => {
+    const onDateRangeChange = vi.fn();
+    renderWithAccounts(
+      <ReviewFilterBar {...baseProps} dateRange={{ from: '2026-09-01', to: '2026-09-30' }} onDateRangeChange={onDateRangeChange} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
+    expect(onDateRangeChange).toHaveBeenCalledWith(null);
+  });
+
+  it('shows no period badge without a range', () => {
+    renderWithAccounts(<ReviewFilterBar {...baseProps} />);
+    expect(screen.queryByText(/^Period:/)).toBeNull();
   });
 });

@@ -72,3 +72,17 @@ describe('getObligationLinkedCount', () => {
     expect(getObligationLinkedCount(pagedData, [])).toBe(0);
   });
 });
+
+describe('buildReviewFilters date range', () => {
+  it('adds a between clause for a deep-linked period and nothing without one', async () => {
+    const { buildReviewFilters } = await import('@/components/transactions/review-browser/reviewBrowser.helpers');
+    const base = { activeReasonFilter: 'ALL', appliedAccountIds: ['acc1'], selectableAccountsCount: 1, appliedOnlyUpToLastStatement: false };
+    expect(buildReviewFilters(base).some((f) => f.field === 'date')).toBe(false);
+    expect(buildReviewFilters({ ...base, dateRange: { from: '2026-09-01', to: '2026-09-30' } })).toContainEqual({
+      field: 'date',
+      operator: 'between',
+      value: { from: '2026-09-01', to: '2026-09-30' },
+    });
+    expect(buildReviewFilters({ ...base, dateRange: null }).some((f) => f.field === 'date')).toBe(false);
+  });
+});

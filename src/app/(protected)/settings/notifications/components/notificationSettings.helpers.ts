@@ -31,10 +31,25 @@ export const KIND_GROUPS: KindGroup[] = [
         label: 'Overdue nags',
         description: 'Every day after the due date until the bill is marked paid.',
       },
+      {
+        key: 'STATEMENT_EXPECTED',
+        label: 'Statement missing',
+        description: 'When a card\u2019s next statement is a few days past its usual closing day and has not arrived.',
+      },
     ],
   },
   {
-    title: 'Loans',
+    title: 'Transactions',
+    kinds: [
+      {
+        key: 'STATEMENT_REVIEW_DIGEST',
+        label: 'Unreconciled after a statement',
+        description: 'Once per parsed statement, if transactions in its period still need review. Card statements include the bill.',
+      },
+    ],
+  },
+  {
+    title: 'Loans and lendings',
     kinds: [
       {
         key: 'EMI_DUE_REMINDER',
@@ -45,6 +60,26 @@ export const KIND_GROUPS: KindGroup[] = [
         key: 'EMI_OVERDUE',
         label: 'EMI overdue',
         description: 'Once when an EMI passes its date with no payment recorded, then weekly.',
+      },
+      {
+        key: 'LENDING_RETURN',
+        label: 'Money due back',
+        description: 'On the day money you lent or borrowed is expected back, once when it is late, then weekly.',
+      },
+    ],
+  },
+  {
+    title: 'Rewards',
+    kinds: [
+      {
+        key: 'REWARD_MILESTONE',
+        label: 'Milestones',
+        description: 'A milestone within reach as its window closes, and every milestone you unlock.',
+      },
+      {
+        key: 'REWARD_CAP',
+        label: 'Caps reached',
+        description: 'When a rule or shared cap is used up for its period, so you can switch cards.',
       },
     ],
   },
@@ -60,6 +95,16 @@ export const KIND_GROUPS: KindGroup[] = [
         key: 'GMAIL_ATTENTION',
         label: 'Emails needing attention',
         description: 'A daily digest of imported emails that could not be matched to an account or failed to import.',
+      },
+    ],
+  },
+  {
+    title: 'Imports and jobs',
+    kinds: [
+      {
+        key: 'JOB_FINISHED',
+        label: 'Import finished or failed',
+        description: 'When a statement import, investment import, reconciliation or rule apply you started finishes. Silent while the app is open.',
       },
     ],
   },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parsePushPayload, resolveNotificationUrl } from '@/lib/pushPayload';
+import { parsePushPayload, resolveNotificationUrl, shouldStayQuiet } from '@/lib/pushPayload';
 
 describe('parsePushPayload', () => {
   it('reads the server JSON shape', () => {
@@ -34,5 +34,28 @@ describe('resolveNotificationUrl', () => {
     expect(resolveNotificationUrl('https://evil.example.com/x', origin)).toBe('https://app.example.com/dashboard');
     expect(resolveNotificationUrl('javascript:alert(1)', origin)).toBe('https://app.example.com/dashboard');
     expect(resolveNotificationUrl(undefined, origin)).toBe('https://app.example.com/dashboard');
+  });
+});
+
+describe('quietWhenVisible', () => {
+  it('is only read when the server sent it as true', () => {
+    expect(parsePushPayload('{"title":"Statement import finished","quietWhenVisible":true}')).toEqual({
+      title: 'Statement import finished',
+      body: undefined,
+      url: undefined,
+      tag: undefined,
+      quietWhenVisible: true,
+    });
+    expect(parsePushPayload('{"title":"x","quietWhenVisible":false}')).not.toHaveProperty('quietWhenVisible');
+    expect(parsePushPayload('{"title":"x","quietWhenVisible":"yes"}')).not.toHaveProperty('quietWhenVisible');
+  });
+
+  it('stays quiet only for a quiet push while a window is visible and focused', () => {
+    const quiet = { title: 'x', quietWhenVisible: true };
+    expect(shouldStayQuiet(quiet, [{ visibilityState: 'visible', focused: true }])).toBe(true);
+    expect(shouldStayQuiet(quiet, [{ visibilityState: 'visible', focused: false }])).toBe(false);
+    expect(shouldStayQuiet(quiet, [{ visibilityState: 'hidden', focused: true }])).toBe(false);
+    expect(shouldStayQuiet(quiet, [])).toBe(false);
+    expect(shouldStayQuiet({ title: 'bill' }, [{ visibilityState: 'visible', focused: true }])).toBe(false);
   });
 });

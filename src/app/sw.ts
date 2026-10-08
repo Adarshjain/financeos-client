@@ -3,7 +3,7 @@
 import type { PrecacheEntry, RuntimeCaching, SerwistGlobalConfig } from 'serwist';
 import { CacheFirst, ExpirationPlugin, NetworkOnly, Serwist, StaleWhileRevalidate } from 'serwist';
 
-import { parsePushPayload, resolveNotificationUrl } from '../lib/pushPayload';
+import { parsePushPayload, resolveNotificationUrl, shouldStayQuiet } from '../lib/pushPayload';
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -109,7 +109,19 @@ self.addEventListener('push', (event) => {
     data: { url: payload.url },
     renotify: Boolean(payload.tag),
   };
-  event.waitUntil(self.registration.showNotification(payload.title, options));
+  // "Quiet when visible" pushes (a job the user started) stay silent while a FinanceOS window is
+  // in the foreground: the page already toasts the outcome. Chrome permits skipping the
+  // notification when the site has a visible client, so this costs no "updated in the
+  // background" fallback.
+  event.waitUntil(
+    (async () => {
+      if (payload.quietWhenVisible) {
+        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        if (shouldStayQuiet(payload, clients)) return;
+      }
+      await self.registration.showNotification(payload.title, options);
+    })(),
+  );
 });
 
 self.addEventListener('notificationclick', (event) => {

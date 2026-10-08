@@ -23,13 +23,16 @@ interface CounterpartyDetailProps {
   counterpartyId: string;
   /** Signed-in user's display name; prefills "Your name" in the export. */
   myName?: string | null;
+  /** Open the share-as-text dialog straight away (`?export=1`, from the "money due back" push). */
+  openExport?: boolean;
 }
 
 export function CounterpartyDetail({
   counterpartyId,
   myName = null,
+  openExport = false,
 }: CounterpartyDetailProps) {
-  const [exportOpen, setExportOpen] = useState(false);
+  const [exportOpen, setExportOpen] = useState(openExport);
   const {
     cp,
     entriesWithRunningBalance,

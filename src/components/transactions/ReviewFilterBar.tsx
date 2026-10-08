@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { RemovableBadge } from '@/components/ui/removable-badge';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
+import { formatDate } from '@/lib/utils';
 
 import { REASON_OPTIONS } from './review-filter-bar/constants';
 import { ReviewAccountMultiSelect } from './review-filter-bar/ReviewAccountMultiSelect';
@@ -25,6 +26,9 @@ interface ReviewFilterBarProps {
   onSearchChange: (search: string) => void;
   sortBy: string;
   onSortByChange: (sort: string) => void;
+  /** A statement period from a deep link; shown as a removable badge. */
+  dateRange?: { from: string; to: string } | null;
+  onDateRangeChange?: (range: { from: string; to: string } | null) => void;
 }
 
 export function ReviewFilterBar({
@@ -38,6 +42,8 @@ export function ReviewFilterBar({
   onSearchChange,
   sortBy,
   onSortByChange,
+  dateRange = null,
+  onDateRangeChange,
 }: ReviewFilterBarProps) {
   const { data: accounts = [] } = useAccounts();
   // Investment (broker) accounts don't post manual transactions here; keep
@@ -71,6 +77,7 @@ export function ReviewFilterBar({
     onOnlyUpToLastStatementChange(true);
     onReasonFilterChange('ALL');
     onSearchChange('');
+    onDateRangeChange?.(null);
   };
 
   // Compute active badge items
@@ -105,6 +112,14 @@ export function ReviewFilterBar({
       });
     }
 
+    if (dateRange) {
+      list.push({
+        key: 'period',
+        label: `Period: ${formatDate(dateRange.from)} – ${formatDate(dateRange.to)}`,
+        onRemove: () => onDateRangeChange?.(null),
+      });
+    }
+
     return list;
   }, [
     activeReasonFilter,
@@ -116,6 +131,8 @@ export function ReviewFilterBar({
     onAccountIdsChange,
     onReasonFilterChange,
     onOnlyUpToLastStatementChange,
+    dateRange,
+    onDateRangeChange,
   ]);
 
   const hasActiveFilters =

@@ -13,6 +13,8 @@ interface BuildReviewFiltersParams {
   appliedAccountIds: string[];
   selectableAccountsCount: number;
   appliedOnlyUpToLastStatement: boolean;
+  /** A statement period from a deep link; both bounds inclusive, ISO dates. */
+  dateRange?: { from: string; to: string } | null;
 }
 
 /** The always-NEEDS_REVIEW filter set, plus the reason/account/statement
@@ -22,6 +24,7 @@ export function buildReviewFilters({
   appliedAccountIds,
   selectableAccountsCount,
   appliedOnlyUpToLastStatement,
+  dateRange = null,
 }: BuildReviewFiltersParams): FilterClause[] {
   const list: FilterClause[] = [
     { field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' },
@@ -48,6 +51,14 @@ export function buildReviewFilters({
       field: 'coveredByStatement',
       operator: 'is',
       value: true,
+    });
+  }
+
+  if (dateRange) {
+    list.push({
+      field: 'date',
+      operator: 'between',
+      value: { from: dateRange.from, to: dateRange.to },
     });
   }
 

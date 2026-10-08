@@ -15,6 +15,12 @@ export function rewardEligibleAccounts(accounts: Account[], options?: { includeC
     .sort((a, b) => Number(b.type === AccountType.CREDIT_CARD) - Number(a.type === AccountType.CREDIT_CARD));
 }
 
+/** The account a `?account=` deep link asks for, when it is one of the eligible ones; else the first. */
+export function pickRewardsAccount(eligible: Account[], requested: string | string[] | undefined): Account | undefined {
+  const id = Array.isArray(requested) ? requested[0] : requested;
+  return (id ? eligible.find((a) => a.id === id) : undefined) ?? eligible[0];
+}
+
 /** The card's membership anniversary; null for non-cards and cards predating the field. */
 export function accountAnniversaryDate(account: Account | undefined): string | null {
   return account && account.type === AccountType.CREDIT_CARD ? (account.anniversaryDate ?? null) : null;

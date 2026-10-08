@@ -10,11 +10,17 @@ import { MergeTransactionsDialog } from './MergeTransactionsDialog';
 import { ReviewApproveDialog } from './review-browser/ReviewApproveDialog';
 import { ReviewBatchSummaryDialog } from './review-browser/ReviewBatchSummaryDialog';
 import { ReviewBulkActionBar } from './review-browser/ReviewBulkActionBar';
+import type { ReviewInitialFilters } from './review-browser/reviewDeepLink';
 import { ReviewListContainer } from './review-browser/ReviewListContainer';
 import { useReviewBrowser } from './review-browser/useReviewBrowser';
 import { ReviewFilterBar } from './ReviewFilterBar';
 
-export function ReviewBrowser() {
+interface ReviewBrowserProps {
+  /** Filters from a push deep link (`?account=…&from=…&to=…&reason=…`), parsed by the page. */
+  initialFilters?: ReviewInitialFilters;
+}
+
+export function ReviewBrowser({ initialFilters }: ReviewBrowserProps = {}) {
   const { data: accounts = [] } = useAccounts();
   const {
     selectableAccounts,
@@ -22,6 +28,8 @@ export function ReviewBrowser() {
     setAppliedAccountIds,
     appliedOnlyUpToLastStatement,
     setAppliedOnlyUpToLastStatement,
+    dateRange,
+    setDateRange,
     page,
     setPage,
     size,
@@ -55,7 +63,7 @@ export function ReviewBrowser() {
     handleSelectAllPage,
     handleBatchApprove,
     handleBatchDelete,
-  } = useReviewBrowser(accounts);
+  } = useReviewBrowser(accounts, initialFilters);
 
   const renderActionBar = (isMobile = false) => (
     <div className={cn('flex flex-col gap-2 w-full', isMobile ? 'text-xs' : '')}>
@@ -67,6 +75,12 @@ export function ReviewBrowser() {
           setSelectedIds([]);
         }}
         onlyUpToLastStatement={appliedOnlyUpToLastStatement}
+        dateRange={dateRange}
+        onDateRangeChange={(next) => {
+          setDateRange(next);
+          setPage(0);
+          setSelectedIds([]);
+        }}
         onOnlyUpToLastStatementChange={(nextVal) => {
           setAppliedOnlyUpToLastStatement(nextVal);
           setPage(0);

@@ -1,8 +1,46 @@
 import { expectStatus } from '../fixtures/api';
 import { istToday } from '../fixtures/dates';
-import { createLoan, getLoan } from '../fixtures/seed/loans';
+import { genCardPdf } from '../fixtures/gen/statements';
+import { createCreditCard } from '../fixtures/seed/accounts';
+import { addLending, createLoan, getLoan } from '../fixtures/seed/loans';
+import { createMilestone, createRewardCard, createRewardRule, spend } from '../fixtures/seed/rewards';
+import { getAccountStatements, uploadAndIngest } from '../fixtures/seed/statements';
 import { expectForeign, expectUnauthenticated, secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
+
+/** A synthetic card statement for [periodStart, periodEnd] with the given debit rows (date, description, amount). */
+async function ingestCard(
+  api: Parameters<typeof uploadAndIngest>[0],
+  cardId: string,
+  last4: string,
+  periodStart: string,
+  periodEnd: string,
+  rows: { date: string; description: string; debit: number }[],
+) {
+  const pdf = await genCardPdf({
+    issuer: 'HDFC Bank',
+    cardLast4: last4,
+    statementDate: periodEnd,
+    periodStart,
+    periodEnd,
+    previousBalance: 0,
+    paymentsReceived: 0,
+    financeCharges: 0,
+    creditLimit: 100000,
+    rows,
+  });
+  return uploadAndIngest(api, cardId, [{ filename: `card-${last4}-${periodEnd}.pdf`, buffer: pdf }]);
+}
+
+async function evaluateNow(api: Parameters<typeof uploadAndIngest>[0]) {
+  // Send hour 0 so the scheduled producers run whatever the wall clock says, and the default
+  // offsets restored: the worker user is shared with other specs that change them.
+  expectStatus(await api.PUT('/api/v1/notifications/settings', { body: { sendHour: 0, reminderOffsets: [7, 3, 1, 0] } }), 200);
+  const res = await api.POST('/api/v1/notifications/evaluate');
+  expectStatus(res, 200);
+  expect(res.data!.failed, 'no producer threw').toBe(0);
+  return res.data!;
+}
 
 /**
  * Notification producers beyond card bills (bills.spec covers those): the per-kind switches, the
@@ -70,8 +108,9 @@ test.describe('Notifications API (producers)', () => {
   });
 
   test('the on-demand tick records the EMI reminder for the current installment, idempotently', async ({ api }) => {
-    // Send hour 0 so the scheduled producers run whatever the wall clock says.
-    expectStatus(await api.PUT('/api/v1/notifications/settings', { body: { sendHour: 0 } }), 200);
+    // Send hour 0 so the scheduled producers run whatever the wall clock says; default offsets
+    // restored because the worker user is shared with specs that change them.
+    expectStatus(await api.PUT('/api/v1/notifications/settings', { body: { sendHour: 0, reminderOffsets: [7, 3, 1, 0] } }), 200);
 
     // First EMI due in 3 days → the smallest reached default offset is 3.
     const due = await createLoan(api, { name: 'EMI due soon', firstEmiDate: istToday(3), startDate: istToday(-27) });
@@ -117,5 +156,113 @@ test.describe('Notifications API (producers)', () => {
   test('rejects anonymous callers', async () => {
     await expectUnauthenticated('POST', '/api/v1/notifications/evaluate');
     await expectUnauthenticated('PUT', '/api/v1/notifications/loans/00000000-0000-0000-0000-000000000000/mute', { muted: true });
+  });
+
+  test('money due back: overdue once, then nothing until a week passes; future dates are silent', async ({ api }) => {
+    const late = await addLending(api, {
+      newCounterpartyName: `Rahul ${Date.now()}`,
+      amount: 12000,
+      entryDate: istToday(-30),
+      expectedReturnDate: istToday(-3),
+    });
+    const fine = await addLending(api, {
+      newCounterpartyName: `Priya ${Date.now()}`,
+      amount: 500,
+      entryDate: istToday(-2),
+      expectedReturnDate: istToday(10),
+    });
+
+    await evaluateNow(api);
+
+    const lateNow = await api.GET('/api/v1/lendings/{id}', { params: { path: { id: late.id } } });
+    expectStatus(lateNow, 200);
+    expect(lateNow.data!.returnNotifiedKind).toBe('OVERDUE');
+    expect(lateNow.data!.returnNotifiedOn).toBe(istToday());
+    const fineNow = await api.GET('/api/v1/lendings/{id}', { params: { path: { id: fine.id } } });
+    expect(fineNow.data!.returnNotifiedKind ?? null).toBeNull();
+
+    await evaluateNow(api);
+    expect((await api.GET('/api/v1/lendings/{id}', { params: { path: { id: late.id } } })).data!.returnNotifiedOn).toBe(istToday());
+  });
+
+  test('a statement whose period still has unreconciled transactions gets its digest marker once', async ({ api }) => {
+    const card = await createCreditCard(api, { name: 'Review digest card', last4: '7301' });
+    // Two statements with different periods but one identical row: the second upload flags that
+    // row DUPLICATE_SUSPECT on both sides, which is exactly what the digest counts.
+    const shared = { date: istToday(-20), description: 'AMAZON ONLINE SHOPPING', debit: 4500 };
+    const first = await ingestCard(api, card.id, '7301', istToday(-45), istToday(-16), [shared, { date: istToday(-30), description: 'FUEL STATION', debit: 1500 }]);
+    expect(first.result.totalCreated).toBe(2);
+    const second = await ingestCard(api, card.id, '7301', istToday(-25), istToday(-3), [shared, { date: istToday(-10), description: 'RESTAURANT DINING', debit: 900 }]);
+    expect(second.result.totalDuplicatesFound, 'the shared row is a duplicate suspect').toBeGreaterThan(0);
+
+    await evaluateNow(api);
+
+    const statements = await getAccountStatements(api, card.id);
+    expect(statements).toHaveLength(2);
+    for (const s of statements) {
+      expect(s.reviewNotifiedOn, `statement ${s.periodEnd} evaluated`).toBe(istToday());
+    }
+  });
+
+  test('a user-started import stamps the job with its notification time', async ({ api }) => {
+    const card = await createCreditCard(api, { name: 'Job push card', last4: '7302' });
+    // Two rows: a one-row synthetic card statement parses to a zero-amount line and fails ingest.
+    const { job } = await ingestCard(api, card.id, '7302', istToday(-32), istToday(-3), [
+      { date: istToday(-10), description: 'GROCERY MART', debit: 2200 },
+      { date: istToday(-8), description: 'PHARMACY', debit: 340 },
+    ]);
+    expect(job.status, JSON.stringify(job)).toBe('SUCCEEDED');
+
+    // The push runs after the status commit; give the listener a moment.
+    let notifiedAt: string | null | undefined = job.notifiedAt;
+    for (let i = 0; i < 20 && !notifiedAt; i++) {
+      await new Promise((r) => setTimeout(r, 250));
+      const again = await api.GET('/api/v1/jobs/{id}', { params: { path: { id: job.id } } });
+      notifiedAt = again.data?.notifiedAt;
+    }
+    expect(notifiedAt, 'STATEMENT_INGEST started by the user is announced').toBeTruthy();
+  });
+
+  test("a card whose statement is weeks overdue is flagged once per missed cycle", async ({ api }) => {
+    const card = await createCreditCard(api, { name: 'Missing statement card', last4: '7303' });
+    await ingestCard(api, card.id, '7303', istToday(-100), istToday(-70), [{ date: istToday(-80), description: 'OLD PURCHASE', debit: 100 }]);
+
+    await evaluateNow(api);
+
+    const account = await api.GET('/api/v1/accounts/{id}', { params: { path: { id: card.id } } });
+    expectStatus(account, 200);
+    const flagged = (account.data as { statementExpectedNotifiedFor?: string | null }).statementExpectedNotifiedFor;
+    expect(flagged, 'the projected period end that was announced').toBeTruthy();
+    expect(flagged! > istToday(-70)).toBe(true);
+    expect(flagged! <= istToday(-5), 'past the grace period').toBe(true);
+
+    await evaluateNow(api);
+    const again = await api.GET('/api/v1/accounts/{id}', { params: { path: { id: card.id } } });
+    expect((again.data as { statementExpectedNotifiedFor?: string | null }).statementExpectedNotifiedFor).toBe(flagged);
+  });
+
+  test('rewards: an achieved milestone and an exhausted cap are marked for the current window', async ({ api }) => {
+    const { account, cards } = await createRewardCard(api, { name: 'Alert card' });
+    const rule = await createRewardRule(api, account.id, {
+      name: 'Everything 100%',
+      percentRate: 100,
+      periodCap: 1000,
+      capWindow: 'CALENDAR_MONTH',
+    });
+    const milestone = await createMilestone(api, account.id, { name: 'Spend 1k', threshold: 1000, windowType: 'CALENDAR_MONTH' });
+    await spend(api, account.id, { amount: 1500, date: istToday(), cardId: cards[0]?.id });
+
+    await evaluateNow(api);
+
+    const milestones = await api.GET('/api/v1/reward-milestones', { params: { query: { accountId: account.id } } });
+    expectStatus(milestones, 200);
+    const m = milestones.data!.find((x) => x.id === milestone.id)!;
+    expect(m.notifiedKind).toBe('ACHIEVED');
+    expect(m.notifiedWindowStart).toBe(istToday().slice(0, 8) + '01');
+
+    const rules = await api.GET('/api/v1/reward-rules', { params: { query: { accountId: account.id } } });
+    expectStatus(rules, 200);
+    const r = rules.data!.find((x) => x.id === rule.id)!;
+    expect(r.capNotifiedWindowStart).toBe(istToday().slice(0, 8) + '01');
   });
 });

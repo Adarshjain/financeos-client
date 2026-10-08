@@ -54,6 +54,8 @@ const CREDIT_CARD_KEYS = new Set([
   'productName',
   'lastStatementDate',
   'cardholders',
+  // V92: the projected statement period end already announced as missing (notifications).
+  'statementExpectedNotifiedFor',
 ]);
 
 const BROKER_KEYS = new Set([
