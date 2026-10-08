@@ -166,7 +166,7 @@ test.describe('Loans and Obligations UI (@ui)', () => {
     await expect(page.getByText(/active/i).first()).toBeVisible();
   });
 
-  test('Obligations Calendar: overdue obligations, monthly projection, window filter, and receivable item', async ({
+  test('Obligations moved to /upcoming: /loans/calendar redirects, overdue obligations, window filter, and receivable item', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -192,25 +192,25 @@ test.describe('Loans and Obligations UI (@ui)', () => {
       expectedReturnDate: monthsAhead(1),
     });
 
+    // The old calendar route now lands on the Upcoming page
     await page.goto('/loans/calendar');
-    await page.waitForLoadState('networkidle');
+    await page.waitForURL('**/upcoming');
 
-    // Hero title
-    await expect(page.getByRole('heading', { name: 'Obligations Calendar' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Upcoming', exact: true })).toBeVisible();
 
-    // Overdue obligations card
-    await expect(page.getByText(/Overdue Obligations/i).first()).toBeVisible();
+    // Overdue obligations section
+    await expect(page.getByText(/Overdue \(\d+\)/).first()).toBeVisible();
     await expect(page.getByText(/Calendar Home Loan/i).first()).toBeVisible();
 
     // Counterparty receivable item
-    await expect(page.getByText(/Vikram Joshi \(Receivable\)/i).first()).toBeVisible();
+    await expect(page.getByText(/Vikram Joshi/i).first()).toBeVisible();
 
-    // Switch Schedule Window to 1 Month
-    const windowSelect = page.locator('button[role="combobox"]:visible').first();
+    // Switch the horizon to 1 Month
+    const windowSelect = page.getByRole('combobox', { name: 'Horizon' });
     await windowSelect.click();
     await page.getByRole('option', { name: '1 Month', exact: true }).click();
 
-    await expect(page.getByRole('heading', { name: 'Obligations Calendar' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Upcoming', exact: true })).toBeVisible();
   });
 
   test('Loan Detail: Edit, Close and Delete are reachable at the desktop viewport', async ({ page }) => {

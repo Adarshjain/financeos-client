@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "method": "POST",
+    "path": "/api/v1/inbox/{key}/dismiss",
+    "reason": "Inbox keys are computed item keys, not stored entity ids: dismissing a key the inbox does not list today is valid (state is kept so the row stays hidden if it appears later), so an unknown key is 200, not 404."
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/inbox/{key}/state",
+    "reason": "Undo for an inbox key is idempotent: clearing state for a key that has none is a no-op 200, by design."
+  }
+]

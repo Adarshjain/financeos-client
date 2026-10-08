@@ -19,7 +19,7 @@ import {
 } from '../fixtures/seed/gmail';
 import { searchAll } from '../fixtures/seed/transactions';
 import { expect, test } from '../fixtures/test';
-import { expectToast } from '../fixtures/ui';
+import { expectToast, openAccountEditor } from '../fixtures/ui';
 
 /**
  * /settings/gmail end to end in a real browser: Add Account through the WireMock consent screen and
@@ -186,8 +186,8 @@ test.describe('Gmail settings UI (@ui)', () => {
     test.slow();
     await page.goto('/accounts');
     await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible();
-    await page.getByText('UI Late Account').click();
-    await expect(page.getByLabel('Account Name')).toBeVisible();
+    // The tile body opens the account page now; the edit dialog sits behind the tile's pencil button.
+    await openAccountEditor(page, 'UI Late Account');
 
     // The UBER alert is dated 3 days ago; a watermark of yesterday makes it stale.
     await page.locator('#ingestFromDate').fill(isoDaysAgo(1));
