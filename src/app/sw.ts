@@ -3,6 +3,8 @@
 import type { PrecacheEntry, RuntimeCaching, SerwistGlobalConfig } from 'serwist';
 import { CacheFirst, ExpirationPlugin, NetworkOnly, Serwist, StaleWhileRevalidate } from 'serwist';
 
+import { parsePushPayload, resolveNotificationUrl } from '../lib/pushPayload';
+
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
     __SW_MANIFEST: (PrecacheEntry | string)[] | undefined;
@@ -91,3 +93,41 @@ const serwist = new Serwist({
 });
 
 serwist.addEventListeners();
+
+/*
+ * Web Push. The server sends an encrypted JSON payload ({ title, body, url, tag }); it is shown
+ * as-is, and a tap focuses an open FinanceOS window (navigating it to the target) or opens one.
+ * `tag` lets a newer notification for the same bill replace the older one.
+ */
+self.addEventListener('push', (event) => {
+  const payload = parsePushPayload(event.data?.text());
+  const options: Parameters<typeof self.registration.showNotification>[1] & { renotify?: boolean } = {
+    body: payload.body,
+    tag: payload.tag,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    data: { url: payload.url },
+    renotify: Boolean(payload.tag),
+  };
+  event.waitUntil(self.registration.showNotification(payload.title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const data = event.notification.data as { url?: string } | undefined;
+  const target = resolveNotificationUrl(data?.url, self.location.origin);
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (clients) => {
+      for (const client of clients) {
+        if ('focus' in client) {
+          await client.focus();
+          if ('navigate' in client) {
+            await client.navigate(target);
+          }
+          return;
+        }
+      }
+      await self.clients.openWindow(target);
+    }),
+  );
+});

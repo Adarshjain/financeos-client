@@ -436,6 +436,70 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/bills": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listBills"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bills/{statementId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getBill"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bills/{statementId}/details": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateDetails"];
+        trace?: never;
+    };
+    "/api/v1/bills/{statementId}/mark-paid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["markPaid"];
+        delete: operations["unmarkPaid"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/categories": {
         parameters: {
             query?: never;
@@ -1908,6 +1972,102 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications/accounts/{accountId}/mute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["muteAccount"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/push/public-key": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPublicKey"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/push/subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["subscribe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/push/subscriptions/remove": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["unsubscribe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/push/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["sendTest"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getSettings"];
+        put: operations["updateSettings"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/obligations/upcoming": {
         parameters: {
             query?: never;
@@ -2561,6 +2721,18 @@ export interface components {
             skippedIds: string[];
             succeededIds: string[];
         };
+        BillDigestResponse: {
+            creditLimit?: number | null;
+            feesAndCharges?: number | null;
+            financeCharges?: number | null;
+            paymentsReceived?: number | null;
+            rewardPointsBalance?: number | null;
+            rewardPointsEarned?: number | null;
+            totalPurchases?: number | null;
+            /** Format: int32 */
+            transactionCount?: number | null;
+            utilizationPct?: number | null;
+        };
         BrokerAccountResponse: {
             /** Format: date */
             anchorDate?: string | null;
@@ -2650,6 +2822,40 @@ export interface components {
             windowEnd: string;
             /** Format: date */
             windowStart: string;
+        };
+        CardBillResponse: {
+            /** Format: uuid */
+            accountId: string;
+            accountName: string;
+            /** Format: int64 */
+            daysUntilDue?: number | null;
+            digest?: components["schemas"]["BillDigestResponse"];
+            last4?: string | null;
+            lastNotifiedKind?: string | null;
+            /** Format: date */
+            lastNotifiedOn?: string | null;
+            minimumAmountDue?: number | null;
+            muted: boolean;
+            paidAmount?: number | null;
+            /** Format: date */
+            paidMarkedOn?: string | null;
+            /** @enum {string} */
+            paidSource: "NONE" | "MANUAL" | "LINK";
+            /** Format: date */
+            paymentDueDate?: string | null;
+            /** Format: date */
+            periodEnd?: string | null;
+            /** Format: date */
+            periodStart?: string | null;
+            possiblePayments: components["schemas"]["PossiblePaymentResponse"][];
+            remainingAmount?: number | null;
+            /** Format: date-time */
+            statementCreatedAt?: string | null;
+            /** Format: uuid */
+            statementId: string;
+            /** @enum {string} */
+            status: "NO_DUE" | "DUE_UNKNOWN" | "OPEN" | "PARTIAL" | "PAID" | "OVERDUE";
+            totalAmountDue?: number | null;
         };
         CardBreakdown: {
             basisSpend: number;
@@ -3769,6 +3975,10 @@ export interface components {
             /** @enum {string} */
             type: "STATEMENT_INGEST" | "GMAIL_SYNC" | "PRICE_REFRESH" | "INVESTMENT_IMPORT_COMMIT" | "BROKER_RECONCILE_COMMIT" | "RULE_APPLY";
         };
+        Keys: {
+            auth: string;
+            p256dh: string;
+        };
         LendingMatchSuggestion: {
             amount: number;
             candidates: components["schemas"]["TransactionResponse"][];
@@ -3982,6 +4192,11 @@ export interface components {
             email: string;
             password: string;
         };
+        MarkBillPaidRequest: {
+            amount?: number | null;
+            /** Format: date */
+            paidOn?: string | null;
+        };
         MatchSuggestionsResponse: {
             suggestions: components["schemas"]["InstallmentMatchSuggestion"][];
         };
@@ -4057,6 +4272,21 @@ export interface components {
             notes?: string | null;
             structuredOutput: string;
             trainsOnData: string;
+        };
+        MuteAccountRequest: {
+            muted: boolean;
+        };
+        NotificationSettingsResponse: {
+            devices: components["schemas"]["PushDeviceResponse"][];
+            kinds: {
+                [key: string]: boolean;
+            };
+            mutedAccountIds: string[];
+            pushConfigured: boolean;
+            pushEnabled: boolean;
+            reminderOffsets: number[];
+            /** Format: int32 */
+            sendHour: number;
         };
         OAuthStartResponse: {
             authorizationUrl: string;
@@ -4405,6 +4635,14 @@ export interface components {
         PositionsResponse: {
             positions: components["schemas"]["PositionDto"][];
         };
+        PossiblePaymentResponse: {
+            amount?: number | null;
+            /** Format: date */
+            date?: string | null;
+            description?: string | null;
+            /** Format: uuid */
+            transactionId: string;
+        };
         PreviewMatchesRequest: {
             matchType?: string;
             merchantKey: string;
@@ -4420,6 +4658,25 @@ export interface components {
             models: components["schemas"]["ModelCatalogEntryDto"][];
             name: string;
             type: string;
+        };
+        PushDeviceResponse: {
+            /** Format: date-time */
+            addedAt?: string | null;
+            endpoint: string;
+            userAgent?: string | null;
+        };
+        PushPublicKeyResponse: {
+            configured: boolean;
+            publicKey: string;
+        };
+        PushSubscriptionRequest: {
+            endpoint: string;
+            keys: components["schemas"]["Keys"];
+            userAgent?: string | null;
+        };
+        PushTestResponse: {
+            /** Format: int32 */
+            sent: number;
         };
         RawLogEntry: {
             /** Format: date-time */
@@ -4484,6 +4741,9 @@ export interface components {
             tradeDate: string;
             /** @enum {string} */
             type: "buy" | "sell";
+        };
+        RemovePushSubscriptionRequest: {
+            endpoint: string;
         };
         ReorderRewardRulesRequest: {
             /** Format: uuid */
@@ -5348,6 +5608,12 @@ export interface components {
             /** Format: date */
             to: string;
         };
+        UpdateBillDetailsRequest: {
+            minimumAmountDue?: number | null;
+            /** Format: date */
+            paymentDueDate?: string | null;
+            totalAmountDue?: number | null;
+        };
         UpdateCardholderRequest: {
             personName?: string;
             /** @enum {string} */
@@ -5439,6 +5705,15 @@ export interface components {
             startDate?: string;
             /** Format: int32 */
             tenureMonths?: number;
+        };
+        UpdateNotificationSettingsRequest: {
+            kinds?: {
+                [key: string]: boolean | null;
+            } | null;
+            pushEnabled?: boolean | null;
+            reminderOffsets?: (number | null)[] | null;
+            /** Format: int32 */
+            sendHour?: number | null;
         };
         UpdatePriceRequest: {
             price: number;
@@ -6593,6 +6868,167 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["UserResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    listBills: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CardBillResponse"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getBill: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CardBillResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateDetails: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBillDetailsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CardBillResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    markPaid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["MarkBillPaidRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CardBillResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unmarkPaid: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CardBillResponse"];
                 };
             };
             /** @description Error response */
@@ -10635,6 +11071,227 @@ export interface operations {
                     "*/*": {
                         [key: string]: components["schemas"]["InstallmentDto"][];
                     };
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    muteAccount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MuteAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NotificationSettingsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getPublicKey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PushPublicKeyResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    subscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushSubscriptionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NotificationSettingsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unsubscribe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RemovePushSubscriptionRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NotificationSettingsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    sendTest: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PushTestResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NotificationSettingsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateNotificationSettingsRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NotificationSettingsResponse"];
                 };
             };
             /** @description Error response */

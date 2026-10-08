@@ -43,6 +43,13 @@ export default async function SettingsPage() {
             </div>
           </Link>
           <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800"></div>
+          <Link href="/settings/notifications">
+            <div className="flex justify-between items-center text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-850/30 transition-all cursor-pointer">
+              <span>Notifications</span>
+              <ArrowRight className="w-4 h-4 text-slate-400" />
+            </div>
+          </Link>
+          <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800"></div>
           <Link href="/settings/gmail">
             <div className="flex justify-between items-center text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-850/30 transition-all cursor-pointer">
               <span>Gmail Integration</span>
