@@ -26,7 +26,7 @@ export function getJobTypeLabel(type: JobType): string {
 }
 
 /**
- * Builds a /settings/jobs URL for the given filter state. Shared between the
+ * Builds a /settings/activity URL for the given filter state. Shared between the
  * server-rendered page and the client PageActionBar — a function can't cross
  * the server→client prop boundary, so both sides build URLs from primitives.
  */
@@ -43,7 +43,7 @@ export function buildJobsFilterUrl(
   if (page > 0) q.set('page', String(page));
   if (current.size !== 20) q.set('size', String(current.size));
   const str = q.toString();
-  return `/settings/jobs${str ? `?${str}` : ''}`;
+  return `/settings/activity${str ? `?${str}` : ''}`;
 }
 
 /**

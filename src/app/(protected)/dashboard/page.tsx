@@ -2,12 +2,11 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { LayoutDashboard, MessageSquare, Plus } from 'lucide-react';
 import Link from 'next/link';
 
-import { BillsDueCard } from '@/components/bills/BillsDueCard';
 import { DashboardHome } from '@/components/dashboards/DashboardHome';
+import { RestoreHomeButton } from '@/components/dashboards/RestoreHomeButton';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import type { CardBillResponse } from '@/lib/api/types';
-import { ApiError, billsApi, dashboardsApi } from '@/lib/apiClient';
+import { ApiError, dashboardsApi } from '@/lib/apiClient';
 import { prefetchWidgetData } from '@/lib/dashboards.server';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 import { getQueryClient } from '@/lib/query/client';
@@ -27,30 +26,13 @@ async function loadDashboards(): Promise<DashboardResponse[] | null> {
   }
 }
 
-// The bills card is prefetched so the landing route paints it without a client round trip;
-// a failure here must not take the dashboard down (the card then loads on the client).
-async function loadBills(): Promise<CardBillResponse[] | undefined> {
-  try {
-    return await billsApi.list();
-  } catch {
-    return undefined;
-  }
-}
-
 export default async function DashboardPage() {
-  const [dashboards, bills] = await Promise.all([loadDashboards(), loadBills()]);
+  const dashboards = await loadDashboards();
   const defaultDashboard = dashboards?.find(d => d.isDefault) ?? dashboards?.[0];
 
   if (!defaultDashboard) {
-    const emptyQueryClient = getQueryClient();
-    if (bills) {
-      emptyQueryClient.setQueryData(keys.bills.list(), bills);
-    }
     return (
       <div className="space-y-2 p-4">
-        <HydrationBoundary state={dehydrate(emptyQueryClient)}>
-          <BillsDueCard initialBills={bills} />
-        </HydrationBoundary>
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             Dashboard
@@ -69,12 +51,13 @@ export default async function DashboardPage() {
               You don&apos;t have a default dashboard yet
             </p>
             <p className="max-w-md text-sm text-slate-500">
-              Create a dashboard and mark it as default to see it here, or pick
-              one from your existing dashboards.
+              Restore the default Home dashboard, create your own and mark it
+              as default, or pick one from your existing dashboards.
             </p>
             <div className="mt-2 flex flex-wrap justify-center gap-2">
+              <RestoreHomeButton variant="default" />
               <Link href="/dashboards/new">
-                <Button>
+                <Button variant="secondary">
                   <Plus className="h-4 w-4" />
                   Create dashboard
                 </Button>
@@ -95,20 +78,15 @@ export default async function DashboardPage() {
     );
   }
 
-  // Run the default dashboard's reports here, in parallel, so the landing route
-  // paints with data instead of hydrating and then firing one request per widget.
+  // Run the default dashboard's reports and built-in templates here, in
+  // parallel, so the landing route paints with data instead of hydrating and
+  // then firing one request per widget.
   const queryClient = getQueryClient();
   queryClient.setQueryData(keys.dashboards.list(), dashboards ?? []);
-  if (bills) {
-    queryClient.setQueryData(keys.bills.list(), bills);
-  }
   await prefetchWidgetData(queryClient, defaultDashboard);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <div className="px-4 pt-4 md:px-0 md:pt-0">
-        <BillsDueCard initialBills={bills} />
-      </div>
       <DashboardHome />
     </HydrationBoundary>
   );

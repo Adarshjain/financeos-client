@@ -8,6 +8,10 @@
 // The line's ARROW comes from `direction` (up/down/flat); its COLOR comes from
 // `sentiment` (good = green, bad = red, neutral = muted), which is the server's
 // value judgement driven by the definition's `comparison.higherIsBetter`.
+//
+// `variant="widget"` (dashboard widgets) shows the value large and the
+// comparison as a small pill beside the date range; the default variant is the
+// compact line layout used by the report builder and chat.
 
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 
@@ -28,7 +32,20 @@ const sentimentColors = {
   neutral: 'text-slate-500',
 } as const;
 
-export function KpiView({ data, className }: { data: KpiData, className?: string }) {
+const sentimentPills = {
+  good: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400',
+  bad: 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400',
+  neutral: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+} as const;
+
+interface KpiViewProps {
+  data: KpiData;
+  className?: string;
+  /** `widget`: large value + comparison pill, for dashboard cards. */
+  variant?: 'default' | 'widget';
+}
+
+export function KpiView({ data, className, variant = 'default' }: KpiViewProps) {
   const fmt = (n: number | null) =>
     formatMeasureValue(n, {
       field: data.measure,
@@ -60,37 +77,62 @@ export function KpiView({ data, className }: { data: KpiData, className?: string
     ? `${fullComparedLabel}: ${showPreviousValue ? deltaText : fmt(comparison.previousValue)}`
     : undefined;
 
+  const valueText = data.value === null ? '—' : fmt(data.value);
+  const isWidget = variant === 'widget';
+
+  const comparisonLine = comparison && Icon && (
+    <div
+      className={cn(
+        isWidget
+          ? 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-semibold'
+          : 'flex items-center gap-0.5 text-xs font-medium',
+        isWidget ? sentimentPills[comparison.sentiment] : sentimentColors[comparison.sentiment],
+      )}
+      title={comparedTitle}
+    >
+      <Icon className="h-3 w-3" />
+      <span className="tabular-nums">{showPreviousValue ? previousText : deltaText}</span>
+    </div>
+  );
+  const rangeLine = range && (
+    <p
+      className="text-xs text-slate-500"
+      title={
+        formatDateRangeFull(range.from, range.to) +
+        (comparison ? ` ${fullComparedLabel}` : '')
+      }
+    >
+      {formatDateRange(range.from, range.to)}
+      {comparison && ` ${formatComparedRange(prevRange, range)}`}
+    </p>
+  );
+
+  if (isWidget) {
+    return (
+      <div className={cn('flex flex-col justify-center gap-1.5', className)}>
+        <p
+          className="truncate text-3xl font-semibold tracking-tight text-slate-900 dark:text-white tabular-nums"
+          title={valueText}
+        >
+          {valueText}
+        </p>
+        {(comparisonLine || rangeLine) && (
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            {comparisonLine}
+            {rangeLine}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className={cn("flex flex-col gap-1 pt-1", className)}>
       <p className="text-lg text-slate-900 dark:text-white tabular-nums">
-        {data.value === null ? '—' : fmt(data.value)}
+        {valueText}
       </p>
-
-      {comparison && Icon && (
-        <div
-          className={cn(
-            'flex items-center gap-0.5 text-xs font-medium',
-            sentimentColors[comparison.sentiment],
-          )}
-          title={comparedTitle}
-        >
-          <Icon className="h-3 w-3" />
-          <span className="tabular-nums">{showPreviousValue ? previousText : deltaText}</span>
-        </div>
-      )}
-      {range && (
-        <p
-          className="text-xs text-slate-500"
-          title={
-            formatDateRangeFull(range.from, range.to) +
-            (comparison ? ` ${fullComparedLabel}` : '')
-          }
-        >
-          {formatDateRange(range.from, range.to)}
-          {comparison && ` ${formatComparedRange(prevRange, range)}`}
-        </p>
-      )}
-
+      {comparisonLine}
+      {rangeLine}
     </div>
   );
 }

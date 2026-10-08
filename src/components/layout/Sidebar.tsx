@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOut } from 'lucide-react';
+import { LogOut, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 
 import { logout } from '@/actions/auth';
@@ -12,10 +12,16 @@ export function Sidebar({ userEmail }: { userEmail: string }) {
   return (
     <aside className="hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
       {/* App Logo */}
-      <div className="h-16 flex items-center px-6 border-b border-slate-100 dark:border-slate-800/60">
+      <div className="h-16 flex items-center justify-between gap-2 px-6 border-b border-slate-100 dark:border-slate-800/60">
         <Link href="/dashboard" className="flex items-center gap-2">
           <Logo size="md" />
         </Link>
+        <Button asChild variant="outline" size="sm">
+          <Link href="/chat" aria-label="Chat">
+            <MessageSquare className="h-4 w-4" />
+            Chat
+          </Link>
+        </Button>
       </div>
 
       {/* Main Navigation Tree */}

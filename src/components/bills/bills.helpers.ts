@@ -14,6 +14,8 @@ export function billStatusLabel(status: BillStatus): string {
       return 'Nothing due';
     case 'DUE_UNKNOWN':
       return 'Due date missing';
+    case 'AWAITING_STATEMENT':
+      return 'Awaiting statement';
     case 'OPEN':
     default:
       return 'Due';
@@ -29,6 +31,8 @@ export function billStatusTone(status: BillStatus, daysUntilDue?: number | null)
       return 'success';
     case 'DUE_UNKNOWN':
       return 'info';
+    case 'AWAITING_STATEMENT':
+      return 'slate';
     case 'PARTIAL':
     case 'OPEN':
     default:
@@ -46,6 +50,8 @@ export function billDueText(bill: Pick<CardBillResponse, 'status' | 'daysUntilDu
       return 'Nothing to pay this cycle';
     case 'DUE_UNKNOWN':
       return 'Set the due date to start reminders';
+    case 'AWAITING_STATEMENT':
+      return 'Awaiting statement';
     case 'OVERDUE': {
       const n = days == null ? 1 : Math.max(1, -days);
       return `Overdue by ${n} ${n === 1 ? 'day' : 'days'}`;
@@ -63,7 +69,10 @@ export function billCardLabel(bill: Pick<CardBillResponse, 'accountName' | 'last
   return bill.last4 ? `${bill.accountName} ••${bill.last4}` : bill.accountName;
 }
 
-/** Bills that need attention sort first; the server already orders this way, this is for counts. */
+/**
+ * Bills that still need the user to pay or fill something in. Cards awaiting their next
+ * statement (and paid / nothing-due ones) are not actionable.
+ */
 export function countActionable(bills: CardBillResponse[]): number {
   return bills.filter((b) => b.status === 'OVERDUE' || b.status === 'OPEN' || b.status === 'PARTIAL' || b.status === 'DUE_UNKNOWN').length;
 }

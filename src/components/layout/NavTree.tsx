@@ -5,26 +5,32 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
+import { formatBadge } from '@/components/inbox/inbox.helpers';
 import {
+  INSIGHTS_MODULE,
   INVESTMENTS_MODULE,
   isNavItemActive,
   LOANS_MODULE,
   NAV_ITEMS,
   NavItem,
   NavModule,
-  REPORTS_MODULE,
   REWARDS_MODULE,
   TRANSACTIONS_MODULE,
 } from '@/components/layout/navigation';
+import { useInboxSummary } from '@/lib/query/hooks/useInbox';
 import { cn } from '@/lib/utils';
 
 interface NavTreeProps {
+  /** Count badge for Inbox; omitted/null/0 renders no badge. */
+  inboxCount?: number | null;
   onItemClick?: () => void;
   renderItemWrapper?: (children: React.ReactNode, key: string) => React.ReactNode;
 }
 
-export function NavTree({ onItemClick, renderItemWrapper }: NavTreeProps) {
+export function NavTree({ inboxCount, onItemClick, renderItemWrapper }: NavTreeProps) {
   const pathname = usePathname();
+  const { data: inboxSummary } = useInboxSummary();
+  const inboxBadge = inboxCount ?? inboxSummary?.badge;
 
   const [openTransactions, setOpenTransactions] = useState(
     pathname.startsWith('/transactions') ||
@@ -35,7 +41,9 @@ export function NavTree({ onItemClick, renderItemWrapper }: NavTreeProps) {
     pathname.startsWith('/rewards'),
   );
   const [openReports, setOpenReports] = useState(
-    pathname.startsWith('/reports') || pathname.startsWith('/dashboards'),
+    pathname.startsWith('/reports') ||
+      pathname.startsWith('/dashboards') ||
+      pathname.startsWith('/chat'),
   );
   const [openInvestments, setOpenInvestments] = useState(
     pathname.startsWith('/investments'),
@@ -46,6 +54,7 @@ export function NavTree({ onItemClick, renderItemWrapper }: NavTreeProps) {
 
   const renderLink = (item: NavItem, isTopLevel = false) => {
     const isActive = isNavItemActive(pathname, item.href);
+    const badge = formatBadge(item.href === NAV_ITEMS.inbox.href ? inboxBadge : item.badge);
     const content = (
       <Link
         href={item.href}
@@ -70,6 +79,14 @@ export function NavTree({ onItemClick, renderItemWrapper }: NavTreeProps) {
           {item.icon}
         </span>
         <span>{item.label}</span>
+        {badge ? (
+          <span
+            className="ml-auto rounded-full bg-rose-500 px-1.5 text-2xs font-bold leading-4 text-white"
+            data-testid={item.href === NAV_ITEMS.inbox.href ? 'inbox-nav-badge' : undefined}
+          >
+            {badge}
+          </span>
+        ) : null}
       </Link>
     );
 
@@ -110,15 +127,13 @@ export function NavTree({ onItemClick, renderItemWrapper }: NavTreeProps) {
     <div className="space-y-1">
       {/* Top Level Links */}
       {renderLink(NAV_ITEMS.home, true)}
-      {renderLink(NAV_ITEMS.chat, true)}
+      {renderLink(NAV_ITEMS.inbox, true)}
+      {renderLink(NAV_ITEMS.upcoming, true)}
       {renderLink(NAV_ITEMS.accounts, true)}
 
       {/* Expandable Modules */}
       {renderModule(TRANSACTIONS_MODULE, openTransactions, () =>
         setOpenTransactions(!openTransactions),
-      )}
-      {renderModule(REWARDS_MODULE, openRewards, () =>
-        setOpenRewards(!openRewards),
       )}
       {renderModule(INVESTMENTS_MODULE, openInvestments, () =>
         setOpenInvestments(!openInvestments),
@@ -126,7 +141,10 @@ export function NavTree({ onItemClick, renderItemWrapper }: NavTreeProps) {
       {renderModule(LOANS_MODULE, openLoans, () =>
         setOpenLoans(!openLoans),
       )}
-      {renderModule(REPORTS_MODULE, openReports, () =>
+      {renderModule(REWARDS_MODULE, openRewards, () =>
+        setOpenRewards(!openRewards),
+      )}
+      {renderModule(INSIGHTS_MODULE, openReports, () =>
         setOpenReports(!openReports),
       )}
 

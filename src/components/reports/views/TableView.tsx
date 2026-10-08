@@ -55,6 +55,8 @@ export function TableView({
   loading,
 }: TableViewProps) {
   const { columns, rows, page } = data;
+  // Inside a dashboard widget a single page needs no footer: it only repeats the row count.
+  const showFooter = !fill || page.totalElements > page.size || page.number > 0;
 
   return (
     <div className={fill ? 'flex h-full flex-col' : 'space-y-3'}>
@@ -100,19 +102,21 @@ export function TableView({
         </TableBody>
       </Table>
 
-      <div
-        className={cn(
-          fill &&
-            'shrink-0 rounded-b-lg border border-t-0 border-slate-200 px-3 py-2 dark:border-slate-800'
-        )}
-      >
-        <TablePagination
-          page={page}
-          loading={loading}
-          onPageChange={onPageChange}
-          onSizeChange={onSizeChange}
-        />
-      </div>
+      {showFooter && (
+        <div
+          className={cn(
+            fill &&
+              'shrink-0 rounded-b-lg border border-t-0 border-slate-200 px-3 py-2 dark:border-slate-800'
+          )}
+        >
+          <TablePagination
+            page={page}
+            loading={loading}
+            onPageChange={onPageChange}
+            onSizeChange={onSizeChange}
+          />
+        </div>
+      )}
     </div>
   );
 }

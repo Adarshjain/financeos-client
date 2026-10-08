@@ -6,6 +6,7 @@ import React from 'react';
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import type { BuiltinWidgetResponse, WidgetParams } from '@/lib/dashboards.types';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 
 import { AddWidgetDialog } from '../AddWidgetDialog';
@@ -22,6 +23,7 @@ interface DashboardEditorHeaderProps {
   onDiscardAndExit: () => void;
   onStartEdit: () => void;
   onAddWidget: (report: ReportSummaryResponse) => void;
+  onAddBuiltin: (def: BuiltinWidgetResponse, params: WidgetParams) => void;
   onSave: () => void;
 }
 
@@ -37,6 +39,7 @@ export function DashboardEditorHeader({
   onDiscardAndExit,
   onStartEdit,
   onAddWidget,
+  onAddBuiltin,
   onSave,
 }: DashboardEditorHeaderProps) {
   return (
@@ -82,7 +85,7 @@ export function DashboardEditorHeader({
       <div className="ml-auto flex items-center gap-2">
         {editing ? (
           <>
-            <AddWidgetDialog reports={reports} onAdd={onAddWidget} />
+            <AddWidgetDialog reports={reports} onAdd={onAddWidget} onAddBuiltin={onAddBuiltin} />
             <Button onClick={onSave} disabled={saving} className="flex-1">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {mode === 'edit' ? 'Save' : 'Create'}

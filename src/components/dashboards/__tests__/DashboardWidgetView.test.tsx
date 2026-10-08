@@ -23,6 +23,7 @@ const sampleTableData: TableData = {
 describe('DashboardWidgetView', () => {
   const sampleWidget: WidgetResponse = {
     id: 'widget-1',
+    kind: 'report',
     reportId: 'rep-123',
     title: 'Monthly Expenses',
     layout: { x: 0, y: 0, w: 6, h: 4 },
@@ -33,16 +34,14 @@ describe('DashboardWidgetView', () => {
     },
   };
 
-  it('renders quick edit report icon link in view mode', () => {
+  it('offers report actions through the overflow menu, with no separate Open link, in view mode', () => {
     vi.mocked(api.POST).mockResolvedValue({ data: sampleTableData } as never);
 
     renderWithQuery(<DashboardWidgetView widget={sampleWidget} />);
 
     expect(screen.getByText('Monthly Expenses')).toBeInTheDocument();
-
-    const editLinks = screen.getAllByRole('link', { name: /edit report/i });
-    expect(editLinks.length).toBeGreaterThanOrEqual(1);
-    expect(editLinks[0]).toHaveAttribute('href', '/reports/rep-123');
+    expect(screen.queryByRole('link', { name: /open monthly expenses/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /more actions/i })).toBeInTheDocument();
   });
 
   it('renders quick edit report icon link in edit mode', () => {

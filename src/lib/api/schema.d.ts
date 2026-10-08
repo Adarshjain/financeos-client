@@ -692,6 +692,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/dashboards/builtins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listBuiltins"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/builtins/{key}/data": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["runBuiltin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/dashboards/default": {
         parameters: {
             query?: never;
@@ -702,6 +734,22 @@ export interface paths {
         get: operations["getDefaultDashboard"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/home/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["restoreHome"];
         delete?: never;
         options?: never;
         head?: never;
@@ -927,6 +975,86 @@ export interface paths {
         put?: never;
         post: operations["syncEmails"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox/{key}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["dismiss"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox/{key}/snooze": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["snooze"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/inbox/{key}/state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["clearState"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2212,6 +2340,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/{id}/duplicate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["duplicateReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reward-cap-buckets": {
         parameters: {
             query?: never;
@@ -2824,6 +2968,41 @@ export interface components {
             totalCharges: number;
             unrealized: number;
         };
+        BuiltinDataRequest: {
+            params?: unknown;
+        };
+        BuiltinParamResponse: {
+            defaultValue?: unknown;
+            /** Format: int32 */
+            max?: number | null;
+            /** Format: int32 */
+            min?: number | null;
+            name: string;
+            required: boolean;
+            type: string;
+        };
+        BuiltinRefResponse: {
+            href?: string | null;
+            key: string;
+            kind: string;
+            label: string;
+            /** Format: int32 */
+            minW: number;
+            templateType?: string | null;
+        };
+        BuiltinWidgetResponse: {
+            datasource?: string | null;
+            description: string;
+            href?: string | null;
+            key: string;
+            kind: string;
+            label: string;
+            /** Format: int32 */
+            minW: number;
+            params: components["schemas"]["BuiltinParamResponse"][];
+            templateDefinition?: unknown;
+            templateType?: string | null;
+        };
         BulkReattributeCardRequest: {
             /** Format: uuid */
             accountId: string;
@@ -2868,6 +3047,8 @@ export interface components {
             lastNotifiedOn?: string | null;
             minimumAmountDue?: number | null;
             muted: boolean;
+            /** Format: date */
+            nextStatementExpectedOn?: string | null;
             paidAmount?: number | null;
             /** Format: date */
             paidMarkedOn?: string | null;
@@ -2884,10 +3065,11 @@ export interface components {
             /** Format: date-time */
             statementCreatedAt?: string | null;
             /** Format: uuid */
-            statementId: string;
+            statementId?: string | null;
             /** @enum {string} */
-            status: "NO_DUE" | "DUE_UNKNOWN" | "OPEN" | "PARTIAL" | "PAID" | "OVERDUE";
+            status: "NO_DUE" | "DUE_UNKNOWN" | "OPEN" | "PARTIAL" | "PAID" | "OVERDUE" | "AWAITING_STATEMENT";
             totalAmountDue?: number | null;
+            unbilledAmount?: number | null;
         };
         CardBreakdown: {
             basisSpend: number;
@@ -3478,10 +3660,13 @@ export interface components {
             totalLiabilities: number;
         };
         DashboardWidget: {
+            builtinKey?: string | null;
             id: string;
+            kind?: string | null;
             layout: components["schemas"]["WidgetLayout"];
+            params?: unknown;
             /** Format: uuid */
-            reportId: string;
+            reportId?: string | null;
             title?: string | null;
         };
         DateOperators: {
@@ -3839,6 +4024,86 @@ export interface components {
             parsedRow: components["schemas"]["ParsedRow"];
             /** Format: int32 */
             rowIndex: number;
+        };
+        InboxActionPayloadResponse: {
+            /** Format: uuid */
+            accountId?: string | null;
+            amount?: number | null;
+            /** Format: uuid */
+            connectionId?: string | null;
+            /** Format: uuid */
+            counterpartyId?: string | null;
+            /** Format: date */
+            date?: string | null;
+            /** Format: int32 */
+            installmentSeq?: number | null;
+            /** Format: uuid */
+            jobId?: string | null;
+            /** Format: uuid */
+            loanId?: string | null;
+            /** Format: uuid */
+            statementId?: string | null;
+            /** Format: uuid */
+            transactionId?: string | null;
+        };
+        InboxActionResponse: {
+            href?: string | null;
+            label: string;
+            payload?: components["schemas"]["InboxActionPayloadResponse"];
+            type: string;
+        };
+        InboxItemResponse: {
+            actions: components["schemas"]["InboxActionResponse"][];
+            amount?: number | null;
+            /** Format: int32 */
+            count?: number | null;
+            /** Format: date */
+            date?: string | null;
+            href?: string | null;
+            key: string;
+            kind: string;
+            refs: components["schemas"]["InboxRefsResponse"];
+            rowType: string;
+            section: string;
+            severity: string;
+            /** Format: date */
+            snoozedUntil?: string | null;
+            subtitle?: string | null;
+            title: string;
+        };
+        InboxRefsResponse: {
+            /** Format: uuid */
+            accountId?: string | null;
+            /** Format: uuid */
+            connectionId?: string | null;
+            /** Format: uuid */
+            counterpartyId?: string | null;
+            /** Format: uuid */
+            jobId?: string | null;
+            /** Format: uuid */
+            loanId?: string | null;
+            /** Format: uuid */
+            statementId?: string | null;
+        };
+        InboxResponse: {
+            /** Format: date-time */
+            generatedAt: string;
+            items: components["schemas"]["InboxItemResponse"][];
+            summary: components["schemas"]["InboxSummaryResponse"];
+        };
+        InboxSnoozeRequest: {
+            /** Format: date */
+            until: string;
+        };
+        InboxSummaryResponse: {
+            /** Format: int32 */
+            actNow: number;
+            /** Format: int32 */
+            badge: number;
+            /** Format: int32 */
+            info: number;
+            /** Format: int32 */
+            needsLook: number;
         };
         InstallmentDto: {
             closingBalance: number;
@@ -4354,14 +4619,20 @@ export interface components {
             authorizationUrl: string;
         };
         ObligationItemDto: {
-            amount: number;
+            /** Format: uuid */
+            accountId?: string | null;
+            accountName?: string | null;
+            amount?: number | null;
             /** Format: uuid */
             counterpartyId?: string | null;
             counterpartyName?: string | null;
             /** Format: date */
-            date: string;
+            date?: string | null;
+            /** Format: int64 */
+            daysUntil?: number | null;
             /** @enum {string|null} */
             direction?: "lent" | "borrowed" | null;
+            href?: string | null;
             /** Format: int32 */
             installmentSeq?: number | null;
             /** Format: uuid */
@@ -4369,7 +4640,10 @@ export interface components {
             /** Format: uuid */
             loanId?: string | null;
             loanName?: string | null;
+            /** Format: uuid */
+            statementId?: string | null;
             status: string;
+            title?: string | null;
             type: string;
         };
         ObligationRef: {
@@ -5862,11 +6136,15 @@ export interface components {
             y: number;
         };
         WidgetResponse: {
+            builtin?: components["schemas"]["BuiltinRefResponse"];
+            builtinKey?: string | null;
             id: string;
+            kind: string;
             layout: components["schemas"]["WidgetLayout"];
-            report: components["schemas"]["ReportRef"];
+            params?: unknown;
+            report?: components["schemas"]["ReportRef"];
             /** Format: uuid */
-            reportId: string;
+            reportId?: string | null;
             title?: string | null;
         };
     };
@@ -6954,7 +7232,9 @@ export interface operations {
     };
     listBills: {
         parameters: {
-            query?: never;
+            query?: {
+                accountId?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -7685,7 +7965,103 @@ export interface operations {
             };
         };
     };
+    listBuiltins: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BuiltinWidgetResponse"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    runBuiltin: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["BuiltinDataRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReportData"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getDefaultDashboard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DashboardResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    restoreHome: {
         parameters: {
             query?: never;
             header?: never;
@@ -8269,6 +8645,161 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["EnqueueResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InboxResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InboxSummaryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    dismiss: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InboxResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    snooze: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InboxSnoozeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InboxResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    clearState: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InboxResponse"];
                 };
             };
             /** @description Error response */
@@ -11444,6 +11975,7 @@ export interface operations {
         parameters: {
             query?: {
                 months?: number;
+                kinds?: string;
             };
             header?: never;
             path?: never;
@@ -11747,6 +12279,37 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ReportData"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    duplicateReport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReportResponse"];
                 };
             };
             /** @description Error response */

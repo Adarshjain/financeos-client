@@ -63,15 +63,15 @@ test.describe('Dashboards API (@api)', () => {
     const enrichedW1 = dash.widgets.find((w) => w.id === w1.id)!;
     expect(enrichedW1.reportId).toBe(report1.id);
     expect(enrichedW1.title).toBe('Spend KPI Override');
-    expect(enrichedW1.report.available).toBe(true);
-    expect(enrichedW1.report.name).toBe('Widget Report 1');
-    expect(enrichedW1.report.type).toBe('KPI');
+    expect(enrichedW1.report?.available).toBe(true);
+    expect(enrichedW1.report?.name).toBe('Widget Report 1');
+    expect(enrichedW1.report?.type).toBe('KPI');
 
     const enrichedW2 = dash.widgets.find((w) => w.id === w2.id)!;
     expect(enrichedW2.reportId).toBe(report2.id);
-    expect(enrichedW2.report.available).toBe(true);
-    expect(enrichedW2.report.name).toBe('Widget Report 2');
-    expect(enrichedW2.report.type).toBe('CHART');
+    expect(enrichedW2.report?.available).toBe(true);
+    expect(enrichedW2.report?.name).toBe('Widget Report 2');
+    expect(enrichedW2.report?.type).toBe('CHART');
 
     // PUT full replacement: drops w2, updates name and isDefault
     const putRes = await api.PUT('/api/v1/dashboards/{id}', {
@@ -214,9 +214,9 @@ test.describe('Dashboards API (@api)', () => {
     // Dashboard read still succeeds with available: false
     const afterDeleteGet = await api.GET('/api/v1/dashboards/{id}', { params: { path: { id: dash.id } } });
     expectStatus(afterDeleteGet, 200);
-    expect(afterDeleteGet.data!.widgets[0].report.available).toBe(false);
-    expect(afterDeleteGet.data!.widgets[0].report.name).toBeNull();
-    expect(afterDeleteGet.data!.widgets[0].report.type).toBeNull();
+    expect(afterDeleteGet.data!.widgets[0].report?.available).toBe(false);
+    expect(afterDeleteGet.data!.widgets[0].report?.name).toBeNull();
+    expect(afterDeleteGet.data!.widgets[0].report?.type).toBeNull();
 
     // 2. Foreign (User B) report reference
     const userB = await secondUser(request, 'dash-foreign-rep');
@@ -235,7 +235,7 @@ test.describe('Dashboards API (@api)', () => {
 
     const foreignDashGet = await api.GET('/api/v1/dashboards/{id}', { params: { path: { id: foreignDash.id } } });
     expectStatus(foreignDashGet, 200);
-    expect(foreignDashGet.data!.widgets[0].report.available).toBe(false);
+    expect(foreignDashGet.data!.widgets[0].report?.available).toBe(false);
   });
 
   // ==========================================================================

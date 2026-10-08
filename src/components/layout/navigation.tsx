@@ -1,22 +1,22 @@
 import React from 'react';
 
 import {
+  INSIGHTS_MODULE,
   INVESTMENTS_MODULE,
   LOANS_MODULE,
   NAV_ITEMS,
   NavItem,
   NavModule,
-  REPORTS_MODULE,
   REWARDS_MODULE,
   TRANSACTIONS_MODULE,
 } from './navigation/navItems';
 
 export type { NavItem, NavModule } from './navigation/navItems';
 export {
+  INSIGHTS_MODULE,
   INVESTMENTS_MODULE,
   LOANS_MODULE,
   NAV_ITEMS,
-  REPORTS_MODULE,
   REWARDS_MODULE,
   TRANSACTIONS_MODULE,
 } from './navigation/navItems';
@@ -25,7 +25,7 @@ export type MobileNavContextMode =
   | 'default'
   | 'transactions'
   | 'rewards'
-  | 'reports'
+  | 'insights'
   | 'investments'
   | 'loans';
 
@@ -39,7 +39,6 @@ export function getMobileNavContext(pathname: string): {
       items: [
         NAV_ITEMS.loansOverview,
         NAV_ITEMS.loansLendings,
-        NAV_ITEMS.loansCalendar,
       ],
     };
   }
@@ -50,20 +49,20 @@ export function getMobileNavContext(pathname: string): {
         NAV_ITEMS.investmentsHoldings,
         NAV_ITEMS.investmentsTradebook,
         NAV_ITEMS.investmentsDividends,
-        NAV_ITEMS.investmentsInstruments,
-        NAV_ITEMS.investmentsCorpActions,
         NAV_ITEMS.investmentsFno,
+        NAV_ITEMS.investmentsCorpActions,
       ],
     };
   }
 
   if (
     pathname.startsWith('/reports') ||
-    pathname.startsWith('/dashboards')
+    pathname.startsWith('/dashboards') ||
+    pathname.startsWith('/chat')
   ) {
     return {
-      mode: 'reports',
-      items: [NAV_ITEMS.dashboards, NAV_ITEMS.reports],
+      mode: 'insights',
+      items: [NAV_ITEMS.dashboards, NAV_ITEMS.reports, NAV_ITEMS.chat],
     };
   }
 
@@ -72,8 +71,8 @@ export function getMobileNavContext(pathname: string): {
       mode: 'rewards',
       items: [
         NAV_ITEMS.rewardsOverview,
-        NAV_ITEMS.rewardsRules,
         NAV_ITEMS.rewardsRecommend,
+        NAV_ITEMS.rewardsRules,
       ],
     };
   }
@@ -90,6 +89,7 @@ export function getMobileNavContext(pathname: string): {
         NAV_ITEMS.needsReview,
         NAV_ITEMS.rules,
         NAV_ITEMS.categories,
+        NAV_ITEMS.transactionsImport,
       ],
     };
   }
@@ -98,26 +98,9 @@ export function getMobileNavContext(pathname: string): {
     mode: 'default',
     items: [
       NAV_ITEMS.home,
+      NAV_ITEMS.inbox,
+      NAV_ITEMS.upcoming,
       NAV_ITEMS.transactions,
-      {
-        href: '/investments',
-        label: 'Investments',
-        shortLabel: 'Investments',
-        icon: NAV_ITEMS.investmentsHoldings.icon,
-      },
-      NAV_ITEMS.loansOverview,
-      {
-        href: '/dashboards',
-        label: 'Reports',
-        shortLabel: 'Reports',
-        icon: NAV_ITEMS.reports.icon,
-      },
-      {
-        href: '/rewards',
-        label: 'Rewards',
-        shortLabel: 'Rewards',
-        icon: NAV_ITEMS.rewardsOverview.icon,
-      },
     ],
   };
 }
@@ -142,15 +125,15 @@ export function isNavItemActive(pathname: string, href: string): boolean {
 }
 
 export function getNavigationTree(
-  needsReviewCount?: number | null
+  needsReviewCount?: number | null,
+  inboxCount?: number | null
 ): NavItem[] {
   return [
     NAV_ITEMS.home,
-    NAV_ITEMS.chat,
+    { ...NAV_ITEMS.inbox, badge: inboxCount ?? null },
+    NAV_ITEMS.upcoming,
     NAV_ITEMS.accounts,
-    {
-      ...NAV_ITEMS.transactions,
-    },
+    NAV_ITEMS.transactions,
     {
       ...NAV_ITEMS.needsReview,
       label: needsReviewCount
@@ -159,10 +142,12 @@ export function getNavigationTree(
     },
     NAV_ITEMS.rules,
     NAV_ITEMS.categories,
+    NAV_ITEMS.transactionsImport,
     NAV_ITEMS.investmentsHoldings,
     NAV_ITEMS.loansOverview,
     NAV_ITEMS.dashboards,
     NAV_ITEMS.reports,
+    NAV_ITEMS.chat,
     NAV_ITEMS.rewardsOverview,
     NAV_ITEMS.settings,
   ];

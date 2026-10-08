@@ -141,6 +141,7 @@ const RELATIVE_AMOUNT_OPS = new Set([
   'last_x_days',
   'last_x_months',
   'last_x_years',
+  'next_x_days',
 ]);
 
 export function valueKind(

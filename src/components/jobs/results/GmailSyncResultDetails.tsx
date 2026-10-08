@@ -47,7 +47,7 @@ export function GmailSyncResultDetails({ result }: { result: SyncSummary }) {
       case 'PARSE_FAILED':
       case 'NO_ATTACHMENT':
         return (
-          <Link href="/settings/ingest" className="underline font-bold text-2xs">
+          <Link href="/transactions/import" className="underline font-bold text-2xs">
             Import manually
           </Link>
         );

@@ -11,9 +11,10 @@ describe('invalidateLendingQueries', () => {
 
     await invalidateLendingQueries(qc);
 
-    expect(spy).toHaveBeenCalledTimes(2);
+    expect(spy).toHaveBeenCalledTimes(3);
     expect(spy).toHaveBeenCalledWith({ queryKey: keys.lendings.all });
     expect(spy).toHaveBeenCalledWith({ queryKey: keys.loans.summary() });
+    expect(spy).toHaveBeenCalledWith({ queryKey: keys.obligations.all });
   });
 
   it('leaves loan lists/details alone (scoped to the summary, not keys.loans.all)', async () => {

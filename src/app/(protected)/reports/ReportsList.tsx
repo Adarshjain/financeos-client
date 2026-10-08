@@ -1,18 +1,21 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Hash, LineChart, type LucideIcon, Table2, Trash2 } from 'lucide-react';
+import { Copy, Hash, LineChart, type LucideIcon, Table2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { ReportType } from '@/lib/reports.types';
 import { toastError } from '@/lib/toastError';
 import { cn, formatDate } from '@/lib/utils';
+
+import { useDuplicateReport } from './useDuplicateReport';
 
 type BadgeVariant = 'success' | 'info' | 'warning';
 
@@ -49,6 +52,8 @@ export function ReportsList({ activeType, datasourceLabels }: ReportsListProps) 
     queryFn: async () => (await api.GET('/api/v1/reports')).data ?? [],
   });
   const filtered = activeType ? reports.filter((r) => r.type === activeType) : reports;
+
+  const duplicate = useDuplicateReport();
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) =>
@@ -120,7 +125,16 @@ export function ReportsList({ activeType, datasourceLabels }: ReportsListProps) 
                     {report.name}
                   </Link>
                   <div className="flex items-center gap-1.5">
-
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label="Duplicate report"
+                      title="Duplicate"
+                      disabled={duplicate.isPending}
+                      onClick={() => duplicate.mutate(report.id)}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
                     <ConfirmationDialog
                       title="Delete report"
                       description={

@@ -28,7 +28,8 @@
     "rulesApi",
     "statementsApi",
     "transactionLinksApi",
-    "transactionsApi"
+    "transactionsApi",
+    "inboxApi"
   ],
   "methods": {
     "authApi": [
@@ -338,6 +339,10 @@
       "getTaskGroups",
       "resetRouting",
       "updateRouting"
+    ],
+    "inboxApi": [
+      "list",
+      "summary"
     ]
   }
 }

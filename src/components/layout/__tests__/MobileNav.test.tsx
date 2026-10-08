@@ -8,6 +8,7 @@ vi.mock('next/navigation', () => ({
   usePathname: () => '/dashboard',
 }));
 vi.mock('@/actions/auth', () => ({ logout: vi.fn() }));
+vi.mock('@/lib/query/hooks/useInbox', () => ({ useInboxSummary: () => ({ data: undefined }) }));
 
 import { MobileNav } from '../MobileNav';
 

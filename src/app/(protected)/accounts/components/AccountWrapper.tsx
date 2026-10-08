@@ -1,4 +1,5 @@
-import { CreditCard as CardIcon, FileText } from 'lucide-react';
+import { CreditCard as CardIcon, FileText, Pencil } from 'lucide-react';
+import Link from 'next/link';
 
 import { AccountFormWrapper } from '@/components/accounts/AccountFormWrapper';
 import { CardsDialog } from '@/components/accounts/CardsDialog';
@@ -27,12 +28,18 @@ export function AccountWrapper({
         isClosed && 'opacity-65 bg-slate-50/50 dark:bg-slate-950/20'
       )}
     >
-      {/* Main card body is clickable trigger for editing the account */}
-      <AccountFormWrapper
-        account={account}
-        triggerClassName="p-3.5 flex-1 flex flex-col justify-between gap-2 text-left cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors select-none"
+      {/* Body navigates to the account hub; the edit trigger is a sibling, never nested in the link. */}
+      <Link
+        href={`/accounts/${account.id}`}
+        className="p-3.5 pr-10 flex-1 flex flex-col justify-between gap-2 text-left cursor-pointer hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors select-none"
       >
         {children}
+      </Link>
+      <AccountFormWrapper
+        account={account}
+        triggerClassName="absolute top-2 right-2 h-7 w-7 inline-flex items-center justify-center rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      >
+        <Pencil className="w-3.5 h-3.5" aria-label="Edit account" />
       </AccountFormWrapper>
 
       {/* Actions Row: Only Statements and Cards */}

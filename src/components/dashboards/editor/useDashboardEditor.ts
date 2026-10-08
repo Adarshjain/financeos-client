@@ -6,41 +6,29 @@ import { useState } from 'react';
 import type { Layout } from 'react-grid-layout/legacy';
 import { toast } from 'sonner';
 
-import { api, ApiError } from '@/lib/api/client';
-import {
-  DASHBOARD_GRID_COLUMNS,
-  HALF_WIDTH,
-  newWidget,
-  validateWidgets,
-} from '@/lib/dashboards.helpers';
+import { api } from '@/lib/api/client';
+import { toDashboardWidget, validateWidgets } from '@/lib/dashboards.helpers';
 import type {
+  BuiltinWidgetResponse,
   CreateDashboardRequest,
   DashboardResponse,
-  DashboardWidget,
   UpdateDashboardRequest,
+  WidgetParams,
   WidgetResponse,
 } from '@/lib/dashboards.types';
 import { keys } from '@/lib/query/keys';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 import { toastError } from '@/lib/toastError';
 
-// Serialize the editable parts of a dashboard so unsaved changes can be detected.
-export function editSignature(
-  name: string,
-  description: string,
-  widgets: WidgetResponse[]
-): string {
-  return JSON.stringify({
-    name,
-    description,
-    widgets: widgets.map((w) => ({
-      id: w.id,
-      reportId: w.reportId,
-      title: w.title ?? null,
-      layout: w.layout,
-    })),
-  });
-}
+import {
+  applyLayout,
+  builtinWidgetResponse,
+  editSignature,
+  reportWidgetResponse,
+  toggleWidth,
+} from './dashboardEditor.helpers';
+
+export { editSignature } from './dashboardEditor.helpers';
 
 interface UseDashboardEditorProps {
   mode: 'create' | 'edit';
@@ -80,47 +68,15 @@ export function useDashboardEditor({
 
   const isDirty = editSignature(name, description, widgets) !== baseline;
 
-  const handleLayoutChange = (layout: Layout) => {
-    setWidgets((prev) => {
-      let changed = false;
-      const next = prev.map((w) => {
-        const item = layout.find((l) => l.i === w.id);
-        if (!item) return w;
-        if (
-          item.x === w.layout.x &&
-          item.y === w.layout.y &&
-          item.w === w.layout.w &&
-          item.h === w.layout.h
-        ) {
-          return w;
-        }
-        changed = true;
-        return {
-          ...w,
-          layout: { x: item.x, y: item.y, w: item.w, h: item.h },
-        };
-      });
-      return changed ? next : prev;
-    });
-  };
+  const handleLayoutChange = (layout: Layout) =>
+    setWidgets((prev) => applyLayout(prev, layout));
 
-  const addWidget = (report: ReportSummaryResponse) => {
-    const bottomY = widgets.reduce(
-      (max, w) => Math.max(max, w.layout.y + w.layout.h),
-      0
-    );
-    const widget = newWidget(report.id, { y: bottomY });
-    setWidgets((prev) => [
-      ...prev,
-      {
-        id: widget.id,
-        reportId: widget.reportId,
-        title: widget.title ?? null,
-        layout: widget.layout,
-        report: { name: report.name, type: report.type, available: true },
-      },
-    ]);
-  };
+  const addWidget = (report: ReportSummaryResponse) =>
+    setWidgets((prev) => [...prev, reportWidgetResponse(prev, report)]);
+
+  // Built-ins can be added any number of times (e.g. one bills widget per card).
+  const addBuiltin = (def: BuiltinWidgetResponse, params: WidgetParams) =>
+    setWidgets((prev) => [...prev, builtinWidgetResponse(prev, def, params)]);
 
   const removeWidget = (id: string) =>
     setWidgets((prev) => prev.filter((w) => w.id !== id));
@@ -131,20 +87,7 @@ export function useDashboardEditor({
     );
 
   const toggleWidgetWidth = (id: string) =>
-    setWidgets((prev) =>
-      prev.map((w) => {
-        if (w.id !== id) return w;
-        const isFull = w.layout.w >= DASHBOARD_GRID_COLUMNS;
-        return {
-          ...w,
-          layout: {
-            ...w.layout,
-            w: isFull ? HALF_WIDTH : DASHBOARD_GRID_COLUMNS,
-            x: isFull ? w.layout.x : 0,
-          },
-        };
-      })
-    );
+    setWidgets((prev) => toggleWidth(prev, id));
 
   const startEdit = () => {
     setBaseline(editSignature(name, description, widgets));
@@ -171,17 +114,14 @@ export function useDashboardEditor({
       toast.error('Name the dashboard.');
       return;
     }
-    const requestWidgets: DashboardWidget[] = widgets.map((w) => ({
-      id: w.id,
-      reportId: w.reportId,
-      title: w.title?.trim() || null,
-      layout: w.layout,
-    }));
-    const errors = validateWidgets(requestWidgets);
+    const errors = validateWidgets(
+      widgets.map((w) => ({ ...toDashboardWidget(w), builtin: w.builtin ?? null })),
+    );
     if (errors.length) {
       toast.error(errors[0]);
       return;
     }
+    const requestWidgets = widgets.map(toDashboardWidget);
     const body = {
       name: name.trim(),
       description: description.trim() || undefined,
@@ -233,6 +173,7 @@ export function useDashboardEditor({
     isDirty,
     handleLayoutChange,
     addWidget,
+    addBuiltin,
     removeWidget,
     updateTitle,
     toggleWidgetWidth,

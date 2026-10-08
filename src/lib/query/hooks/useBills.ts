@@ -6,12 +6,18 @@ import { api } from '@/lib/api/client';
 import type { CardBillResponse, MarkBillPaidRequest, UpdateBillDetailsRequest } from '@/lib/api/types';
 import { keys } from '@/lib/query/keys';
 
-/** Every open credit card's current bill, most urgent first (the dashboard "Bills due" card). */
-export function useBills(initialData?: CardBillResponse[]) {
+/**
+ * Every open credit card's current bill (the "Bills due" widget), or one card's when `accountId`
+ * is given. Cards with no live statement come back as AWAITING_STATEMENT with their unbilled spend.
+ */
+export function useBills(initialData?: CardBillResponse[], options: { accountId?: string | null } = {}) {
+  const accountId = options.accountId ?? null;
   return useQuery({
-    queryKey: keys.bills.list(),
+    queryKey: keys.bills.list(accountId ? { accountId } : {}),
     queryFn: async () => {
-      const { data } = await api.GET('/api/v1/bills');
+      const { data } = await api.GET('/api/v1/bills', {
+        params: { query: accountId ? { accountId } : {} },
+      });
       return data ?? [];
     },
     initialData,
@@ -34,13 +40,19 @@ export function useBill(statementId: string | null | undefined, enabled = true) 
 
 /**
  * The three actions on a bill. Each returns the recomputed bill; the list and the per-statement
- * entry are invalidated so the dashboard card and the statements dialog agree.
+ * entry are invalidated so the widget and the statements dialog agree, and so are the inbox,
+ * the upcoming obligations and the template dashboard widgets that surface bills.
  */
 export function useBillMutations() {
   const qc = useQueryClient();
   const settle = (bill: CardBillResponse) => {
-    qc.setQueryData(keys.bills.byStatement(bill.statementId), bill);
-    return qc.invalidateQueries({ queryKey: keys.bills.all });
+    if (bill.statementId) qc.setQueryData(keys.bills.byStatement(bill.statementId), bill);
+    return Promise.all([
+      qc.invalidateQueries({ queryKey: keys.bills.all }),
+      qc.invalidateQueries({ queryKey: keys.inbox.all }),
+      qc.invalidateQueries({ queryKey: keys.obligations.all }),
+      qc.invalidateQueries({ queryKey: [...keys.dashboards.all, 'widget'] }),
+    ]);
   };
 
   const markPaid = useMutation({

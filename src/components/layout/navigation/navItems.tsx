@@ -3,12 +3,16 @@ import {
   BarChart3,
   BookOpen,
   Briefcase,
+  CalendarClock,
   CheckSquare,
   CreditCard,
   DollarSign,
   FolderTree,
   Gift,
   Home,
+  Import,
+  Inbox,
+  Landmark,
   Layers,
   LayoutDashboard,
   MessageSquare,
@@ -25,6 +29,8 @@ export interface NavItem {
   label: string;
   shortLabel?: string;
   icon: React.ReactNode;
+  /** Optional count badge; rendered only when a positive number is set. */
+  badge?: number | null;
 }
 
 export interface NavModule {
@@ -40,6 +46,18 @@ export const NAV_ITEMS = {
     label: 'Home',
     shortLabel: 'Home',
     icon: <Home className="h-5 w-5" />,
+  },
+  inbox: {
+    href: '/inbox',
+    label: 'Inbox',
+    shortLabel: 'Inbox',
+    icon: <Inbox className="h-5 w-5" />,
+  },
+  upcoming: {
+    href: '/upcoming',
+    label: 'Upcoming',
+    shortLabel: 'Upcoming',
+    icon: <CalendarClock className="h-5 w-5" />,
   },
   chat: {
     href: '/chat',
@@ -66,6 +84,12 @@ export const NAV_ITEMS = {
     label: 'Needs Review',
     shortLabel: 'Review',
     icon: <CheckSquare className="h-5 w-5" />,
+  },
+  transactionsImport: {
+    href: '/transactions/import',
+    label: 'Import',
+    shortLabel: 'Import',
+    icon: <Import className="h-5 w-5" />,
   },
   dashboards: {
     href: '/dashboards',
@@ -100,8 +124,8 @@ export const NAV_ITEMS = {
   },
   rewardsRules: {
     href: '/rewards/rules',
-    label: 'Rules',
-    shortLabel: 'Rules',
+    label: 'Earning rules',
+    shortLabel: 'Earning rules',
     icon: <Tags className="h-5 w-5" />,
   },
   rewardsRecommend: {
@@ -154,19 +178,13 @@ export const NAV_ITEMS = {
     href: '/loans',
     label: 'Loans',
     shortLabel: 'Loans',
-    icon: <Wallet className="h-5 w-5" />,
+    icon: <Landmark className="h-5 w-5" />,
   },
   loansLendings: {
     href: '/loans/lendings',
     label: 'Lendings',
     shortLabel: 'Lendings',
     icon: <DollarSign className="h-5 w-5" />,
-  },
-  loansCalendar: {
-    href: '/loans/calendar',
-    label: 'Obligations Calendar',
-    shortLabel: 'Calendar',
-    icon: <Activity className="h-5 w-5" />,
   },
 
   // Settings
@@ -187,6 +205,7 @@ export const TRANSACTIONS_MODULE: NavModule = {
     NAV_ITEMS.needsReview,
     NAV_ITEMS.rules,
     NAV_ITEMS.categories,
+    NAV_ITEMS.transactionsImport,
   ],
 };
 
@@ -196,17 +215,18 @@ export const REWARDS_MODULE: NavModule = {
   icon: <Gift className="h-5 w-5" />,
   items: [
     NAV_ITEMS.rewardsOverview,
-    NAV_ITEMS.rewardsRules,
     NAV_ITEMS.rewardsRecommend,
+    NAV_ITEMS.rewardsRules,
   ],
 };
 
-export const REPORTS_MODULE: NavModule = {
-  key: 'reports',
-  label: 'Reports',
+export const INSIGHTS_MODULE: NavModule = {
+  key: 'insights',
+  label: 'Insights',
   icon: <BarChart3 className="h-5 w-5" />,
-  items: [NAV_ITEMS.dashboards, NAV_ITEMS.reports],
+  items: [NAV_ITEMS.dashboards, NAV_ITEMS.reports, NAV_ITEMS.chat],
 };
+
 
 export const INVESTMENTS_MODULE: NavModule = {
   key: 'investments',
@@ -216,19 +236,17 @@ export const INVESTMENTS_MODULE: NavModule = {
     NAV_ITEMS.investmentsHoldings,
     NAV_ITEMS.investmentsTradebook,
     NAV_ITEMS.investmentsDividends,
-    NAV_ITEMS.investmentsInstruments,
-    NAV_ITEMS.investmentsCorpActions,
     NAV_ITEMS.investmentsFno,
+    NAV_ITEMS.investmentsCorpActions,
   ],
 };
 
 export const LOANS_MODULE: NavModule = {
   key: 'loans',
   label: 'Loans & Lendings',
-  icon: <Wallet className="h-5 w-5" />,
+  icon: <Landmark className="h-5 w-5" />,
   items: [
     NAV_ITEMS.loansOverview,
     NAV_ITEMS.loansLendings,
-    NAV_ITEMS.loansCalendar,
   ],
 };

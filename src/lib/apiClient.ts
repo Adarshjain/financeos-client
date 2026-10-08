@@ -15,7 +15,15 @@ import type {
 } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
 import { serverApi } from '@/lib/api/server';
-import type { CardBillResponse, ErrorResponse, NotificationSettingsResponse, Schemas } from '@/lib/api/types';
+import type {
+  BuiltinWidgetResponse,
+  CardBillResponse,
+  ErrorResponse,
+  InboxResponse,
+  InboxSummaryResponse,
+  NotificationSettingsResponse,
+  Schemas,
+} from '@/lib/api/types';
 import type { CategorizeResponse, Category, CategoryRequest } from '@/lib/categories.types';
 import type {
   CreateDashboardRequest,
@@ -523,6 +531,25 @@ export const dashboardsApi = {
   delete: async (id: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/dashboards/{id}', { params: { path: { id } } });
   },
+  builtins: async (): Promise<BuiltinWidgetResponse[]> => {
+    const { data } = await serverApi.GET('/api/v1/dashboards/builtins');
+    return (data as BuiltinWidgetResponse[]) || [];
+  },
+  builtinData: async (
+    key: string,
+    params: Record<string, unknown> | null | undefined,
+    options?: ReportRunOptions,
+  ): Promise<ReportData> => {
+    const { data } = await serverApi.POST('/api/v1/dashboards/builtins/{key}/data', {
+      params: { path: { key }, query: { page: options?.page, size: options?.size } },
+      body: { params: params ?? {} } as never,
+    });
+    return asReportData(data);
+  },
+  restoreHome: async (): Promise<DashboardResponse> => {
+    const { data } = await serverApi.POST('/api/v1/dashboards/home/restore');
+    return data! as DashboardResponse;
+  },
 };
 
 // ---------------------------------------------------------------------------
@@ -834,8 +861,10 @@ export const lendingsApi = {
 };
 
 export const obligationsApi = {
-  getUpcoming: async (months?: number): Promise<ObligationsResponse> => {
-    const { data } = await serverApi.GET('/api/v1/obligations/upcoming', { params: { query: { months } } });
+  getUpcoming: async (months?: number, kinds?: string[]): Promise<ObligationsResponse> => {
+    const { data } = await serverApi.GET('/api/v1/obligations/upcoming', {
+      params: { query: { months, kinds: kinds && kinds.length ? kinds.join(',') : undefined } },
+    });
     return data! as ObligationsResponse;
   },
 };
@@ -1318,9 +1347,22 @@ export const gmailApi = {
 // ---------------------------------------------------------------------------
 
 export const billsApi = {
-  list: async (): Promise<CardBillResponse[]> => {
-    const { data } = await serverApi.GET('/api/v1/bills');
+  list: async (accountId?: string | null): Promise<CardBillResponse[]> => {
+    const { data } = await serverApi.GET('/api/v1/bills', {
+      params: { query: { accountId: accountId ?? undefined } },
+    });
     return (data as CardBillResponse[]) || [];
+  },
+};
+
+export const inboxApi = {
+  list: async (): Promise<InboxResponse> => {
+    const { data } = await serverApi.GET('/api/v1/inbox');
+    return data! as InboxResponse;
+  },
+  summary: async (): Promise<InboxSummaryResponse> => {
+    const { data } = await serverApi.GET('/api/v1/inbox/summary');
+    return data! as InboxSummaryResponse;
   },
 };
 
