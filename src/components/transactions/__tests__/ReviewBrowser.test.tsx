@@ -1,6 +1,7 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { ReviewInitialFilters } from '@/components/transactions/review-browser/reviewDeepLink';
 import { ReviewBrowser } from '@/components/transactions/ReviewBrowser';
 import type { Account } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
@@ -259,5 +260,46 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
         },
       });
     });
+  });
+});
+
+describe('ReviewBrowser deep-linked filters', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  function renderWithInitial(initial: ReviewInitialFilters) {
+    const queryClient = createTestQueryClient();
+    queryClient.setQueryData(keys.accounts.list(), mockAccounts);
+    return renderWithQuery(<ReviewBrowser initialFilters={initial} />, { queryClient });
+  }
+
+  function emptyPage() {
+    return { data: { content: [], number: 0, size: 50, totalElements: 0, totalPages: 0, first: true, last: true, empty: true } };
+  }
+
+  it('starts narrowed to the linked account, reason and period', async () => {
+    (api.POST as ReturnType<typeof vi.fn>).mockImplementation(async () => emptyPage());
+
+    renderWithInitial({ accountIds: ['acc2'], reason: 'UNRECONCILED', dateRange: { from: '2026-09-01', to: '2026-09-30' } });
+
+    await waitFor(() => expect(api.POST).toHaveBeenCalled());
+    const call = (api.POST as ReturnType<typeof vi.fn>).mock.calls.find((c: any[]) => c[0] === '/api/v1/transactions/search')!;
+    const filters = call[1].body.filters as { field: string; operator: string; value: unknown }[];
+    expect(filters).toContainEqual({ field: 'accountId', operator: 'in', value: ['acc2'] });
+    expect(filters).toContainEqual({ field: 'reviewReason', operator: 'is', value: 'UNRECONCILED' });
+    expect(filters).toContainEqual({ field: 'date', operator: 'between', value: { from: '2026-09-01', to: '2026-09-30' } });
+    expect(screen.getAllByText(/^Period: /).length).toBeGreaterThan(0);
+  });
+
+  it('ignores a linked account that is not one of the user\'s and keeps every account', async () => {
+    (api.POST as ReturnType<typeof vi.fn>).mockImplementation(async () => emptyPage());
+
+    renderWithInitial({ accountIds: ['someone-elses'] });
+
+    await waitFor(() => expect(api.POST).toHaveBeenCalled());
+    const call = (api.POST as ReturnType<typeof vi.fn>).mock.calls.find((c: any[]) => c[0] === '/api/v1/transactions/search')!;
+    const filters = call[1].body.filters as { field: string }[];
+    expect(filters.some((f) => f.field === 'accountId')).toBe(false);
   });
 });

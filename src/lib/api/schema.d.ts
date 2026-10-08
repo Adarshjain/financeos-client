@@ -3422,6 +3422,8 @@ export interface components {
             reconciliationGap?: number | null;
             /** Format: uuid */
             replacesAccountId?: string | null;
+            /** Format: date */
+            statementExpectedNotifiedFor?: string | null;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -3997,6 +3999,8 @@ export interface components {
             finishedAt?: string | null;
             /** Format: uuid */
             id: string;
+            /** Format: date-time */
+            notifiedAt?: string | null;
             /** Format: int32 */
             progressCurrent?: number | null;
             progressNote?: string | null;
@@ -4050,6 +4054,9 @@ export interface components {
             /** @enum {string} */
             kind: "principal" | "settlement";
             notes?: string | null;
+            returnNotifiedKind?: string | null;
+            /** Format: date */
+            returnNotifiedOn?: string | null;
             transaction?: components["schemas"]["LendingTransactionSummary"];
             /** Format: uuid */
             transactionId?: string | null;
@@ -4919,6 +4926,8 @@ export interface components {
             /** Format: uuid */
             accountId: string;
             cap: number;
+            /** Format: date */
+            capNotifiedWindowStart?: string | null;
             /** @enum {string} */
             counterScope: "ACCOUNT" | "PER_CARDHOLDER";
             /** Format: date-time */
@@ -5037,6 +5046,9 @@ export interface components {
             includeMccs: string[];
             minTxnAmount?: number | null;
             name: string;
+            notifiedKind?: string | null;
+            /** Format: date */
+            notifiedWindowStart?: string | null;
             /** @enum {string} */
             payoutTiming: "WINDOW_END" | "ON_ACHIEVEMENT";
             /** @enum {string} */
@@ -5133,6 +5145,8 @@ export interface components {
             /** Format: uuid */
             capBucketId?: string | null;
             capBucketName?: string | null;
+            /** Format: date */
+            capNotifiedWindowStart?: string | null;
             /** @enum {string|null} */
             capWindow?: "DAY" | "CALENDAR_MONTH" | "STATEMENT_CYCLE" | "QUARTER" | "CALENDAR_YEAR" | "ANNIVERSARY_YEAR" | null;
             /** Format: uuid */
@@ -5458,6 +5472,8 @@ export interface components {
             periodEnd?: string | null;
             /** Format: date */
             periodStart?: string | null;
+            /** Format: date */
+            reviewNotifiedOn?: string | null;
             /** @enum {string} */
             source: "gmail" | "file_upload";
             sourceRef?: string | null;

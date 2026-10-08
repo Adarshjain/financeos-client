@@ -22,23 +22,28 @@ import {
   mapBatchSkips,
   togglePageSelection,
 } from './reviewBrowser.helpers';
+import type { ReviewInitialFilters } from './reviewDeepLink';
 
-export function useReviewBrowser(accounts: Account[]) {
+export function useReviewBrowser(accounts: Account[], initialFilters?: ReviewInitialFilters) {
   const queryClient = useQueryClient();
   const selectableAccounts = useMemo(
     () => getSelectableAccounts(accounts),
     [accounts]
   );
 
-  const [appliedAccountIds, setAppliedAccountIds] = useState<string[]>(
-    selectableAccounts.map((a) => a.id)
-  );
+  const [appliedAccountIds, setAppliedAccountIds] = useState<string[]>(() => {
+    const all = selectableAccounts.map((a) => a.id);
+    // A deep link narrows to its accounts when they are real; otherwise start wide as usual.
+    const wanted = initialFilters?.accountIds?.filter((id) => all.includes(id)) ?? [];
+    return wanted.length > 0 ? wanted : all;
+  });
   const [appliedOnlyUpToLastStatement, setAppliedOnlyUpToLastStatement] = useState(true);
+  const [dateRange, setDateRange] = useState<{ from: string; to: string } | null>(initialFilters?.dateRange ?? null);
 
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(50);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [activeReasonFilter, setActiveReasonFilter] = useState<string>('ALL');
+  const [activeReasonFilter, setActiveReasonFilter] = useState<string>(initialFilters?.reason ?? 'ALL');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -69,8 +74,9 @@ export function useReviewBrowser(accounts: Account[]) {
         appliedAccountIds,
         selectableAccountsCount: selectableAccounts.length,
         appliedOnlyUpToLastStatement,
+        dateRange,
       }),
-    [activeReasonFilter, appliedAccountIds, appliedOnlyUpToLastStatement, selectableAccounts.length]
+    [activeReasonFilter, appliedAccountIds, appliedOnlyUpToLastStatement, selectableAccounts.length, dateRange]
   );
 
   const searchParams = {
@@ -262,6 +268,8 @@ export function useReviewBrowser(accounts: Account[]) {
     setAppliedAccountIds,
     appliedOnlyUpToLastStatement,
     setAppliedOnlyUpToLastStatement,
+    dateRange,
+    setDateRange,
     page,
     setPage,
     size,

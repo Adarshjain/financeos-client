@@ -204,8 +204,8 @@ describe('NotificationsSettings loans and groups', () => {
   it('renders the switches grouped by module', async () => {
     render();
     expect(await screen.findByTestId('kind-group-Credit cards')).toBeInTheDocument();
-    expect(within(screen.getByTestId('kind-group-Loans')).getByRole('checkbox', { name: 'EMI reminders' })).toBeInTheDocument();
-    expect(within(screen.getByTestId('kind-group-Loans')).getByRole('checkbox', { name: 'EMI overdue' })).toBeInTheDocument();
+    expect(within(screen.getByTestId('kind-group-Loans and lendings')).getByRole('checkbox', { name: 'EMI reminders' })).toBeInTheDocument();
+    expect(within(screen.getByTestId('kind-group-Loans and lendings')).getByRole('checkbox', { name: 'EMI overdue' })).toBeInTheDocument();
     expect(within(screen.getByTestId('kind-group-Gmail')).getByRole('checkbox', { name: 'Mailbox disconnected' })).toBeInTheDocument();
     expect(within(screen.getByTestId('kind-group-Gmail')).getByRole('checkbox', { name: 'Emails needing attention' })).toBeInTheDocument();
     expect(screen.getByText('Remind me (bills and EMIs)')).toBeInTheDocument();

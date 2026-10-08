@@ -228,3 +228,17 @@ describe('CounterpartyDetail action bar — desktop card + mobile bar', () => {
     expect(screen.getByTestId('ledger-export-preview')).toHaveTextContent('Adarsh lent Rahul · ₹500.00');
   });
 });
+
+describe('CounterpartyDetail export deep link', () => {
+  it('opens the export dialog straight away when asked to (?export=1 from the push)', () => {
+    vi.mocked(useCounterpartyDetail).mockReturnValue(baseHookReturn([makeEntry()]) as never);
+    render(<CounterpartyDetail counterpartyId="cp1" myName="Adarsh" openExport />);
+    expect(screen.getByRole('heading', { name: 'Export ledger' })).toBeInTheDocument();
+  });
+
+  it('stays closed by default', () => {
+    vi.mocked(useCounterpartyDetail).mockReturnValue(baseHookReturn([makeEntry()]) as never);
+    render(<CounterpartyDetail counterpartyId="cp1" myName="Adarsh" />);
+    expect(screen.queryByRole('heading', { name: 'Export ledger' })).not.toBeInTheDocument();
+  });
+});

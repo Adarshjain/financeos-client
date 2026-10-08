@@ -7,6 +7,8 @@ export interface PushPayload {
   body?: string;
   url?: string;
   tag?: string;
+  /** Stay silent while a FinanceOS window is in the foreground (the page already shows the outcome). */
+  quietWhenVisible?: boolean;
 }
 
 const DEFAULT_TITLE = 'FinanceOS';
@@ -23,10 +25,26 @@ export function parsePushPayload(raw: string | null | undefined): PushPayload {
       body: typeof parsed.body === 'string' ? parsed.body : undefined,
       url: typeof parsed.url === 'string' ? parsed.url : undefined,
       tag: typeof parsed.tag === 'string' ? parsed.tag : undefined,
+      ...(parsed.quietWhenVisible === true ? { quietWhenVisible: true } : {}),
     };
   } catch {
     return { title: DEFAULT_TITLE, body: raw };
   }
+}
+
+/** The shape of a window client as far as the quiet rule cares. */
+export interface VisibleClientLike {
+  visibilityState?: string;
+  focused?: boolean;
+}
+
+/**
+ * Whether a push marked `quietWhenVisible` should be swallowed: only when some FinanceOS window
+ * is both visible and focused, i.e. the user is looking at the app right now.
+ */
+export function shouldStayQuiet(payload: PushPayload, clients: readonly VisibleClientLike[]): boolean {
+  if (!payload.quietWhenVisible) return false;
+  return clients.some((c) => c.visibilityState === 'visible' && c.focused === true);
 }
 
 /**
