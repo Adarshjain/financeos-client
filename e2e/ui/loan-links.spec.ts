@@ -93,7 +93,7 @@ test.describe('Loan Detail Dialogs Transaction Picker UI (@ui)', () => {
 
     await page.locator('main').getByText(debitDescription).click();
     await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.getByRole('dialog').getByText('Ledger & loans')).toBeVisible();
+    await expect(page.getByRole('dialog').getByText('Ledger, loans & dividends')).toBeVisible();
     await expect(
       page.getByRole('dialog').getByText(new RegExp(`EMI #1 · ${loanName}`))
     ).toBeVisible();

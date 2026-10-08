@@ -166,7 +166,7 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
 
     // Reopen the transaction detail: Links section shows the ledger ref
     await page.locator('main').getByText('Detail Link Debit').click();
-    await expect(page.getByRole('dialog').getByText('Ledger & loans')).toBeVisible();
+    await expect(page.getByRole('dialog').getByText('Ledger, loans & dividends')).toBeVisible();
     await expect(page.getByRole('dialog').getByText(`Lent · ${cpName}`)).toBeVisible();
 
     // Delete confirmation mentions the linked record
@@ -261,7 +261,7 @@ test.describe('Lending <-> Transaction Links UI (@ui)', () => {
     await expect(page.getByRole('dialog')).toBeVisible();
 
     await expect(
-      page.getByText(/Select a single transaction to record a lending or loan payment/i).first()
+      page.getByText(/Select a single transaction to record a lending, loan payment or dividend/i).first()
     ).toBeVisible();
   });
 
