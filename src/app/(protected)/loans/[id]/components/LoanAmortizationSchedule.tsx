@@ -1,11 +1,12 @@
 'use client';
 
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useEffect } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { InstallmentDto } from '@/lib/types';
-import { formatDate, formatMoney } from '@/lib/utils';
+import { cn, formatDate, formatMoney } from '@/lib/utils';
 
 interface LoanAmortizationScheduleProps {
   schedule: InstallmentDto[];
@@ -14,6 +15,8 @@ interface LoanAmortizationScheduleProps {
   currentFY: string;
   onOpenMarkPaid: (inst: InstallmentDto) => void;
   onUnlinkPayment: (paymentId: string) => void;
+  /** Installment an EMI push deep-linked to (`?installment=N`): its FY opens and the row is highlighted. */
+  highlightSeq?: number | null;
 }
 
 export function LoanAmortizationSchedule({
@@ -23,6 +26,7 @@ export function LoanAmortizationSchedule({
   currentFY,
   onOpenMarkPaid,
   onUnlinkPayment,
+  highlightSeq = null,
 }: LoanAmortizationScheduleProps) {
   const getFYGroupKey = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -31,6 +35,15 @@ export function LoanAmortizationSchedule({
     const fyStart = month >= 3 ? year : year - 1;
     return `FY ${fyStart}-${(fyStart + 1).toString().slice(-2)}`;
   };
+
+  const highlighted = highlightSeq == null ? null : schedule.find((i) => i.seq === highlightSeq) ?? null;
+  const highlightedFY = highlighted ? getFYGroupKey(highlighted.dueDate) : null;
+
+  useEffect(() => {
+    if (highlightSeq == null) return;
+    const el = document.querySelector(`[data-installment-seq="${highlightSeq}"]`);
+    el?.scrollIntoView({ block: 'center' });
+  }, [highlightSeq, schedule.length]);
 
   const fyGroups = schedule.reduce(
     (acc, inst) => {
@@ -57,7 +70,7 @@ export function LoanAmortizationSchedule({
 
       <div className="divide-y divide-slate-100 dark:divide-slate-800">
         {Object.entries(fyGroups).map(([fy, items]) => {
-          const isExpanded = expandedFYs[fy] ?? fy === currentFY;
+          const isExpanded = expandedFYs[fy] ?? (fy === currentFY || fy === highlightedFY);
 
           return (
             <div key={fy}>
@@ -90,7 +103,14 @@ export function LoanAmortizationSchedule({
                   {/* Mobile View: Flat List */}
                   <div className="block md:hidden divide-y divide-slate-100 dark:divide-slate-800">
                     {items.map((inst) => (
-                      <div key={inst.seq} className="p-3.5 space-y-1.5 text-xs">
+                      <div
+                        key={inst.seq}
+                        data-installment-seq={inst.seq}
+                        className={cn(
+                          'p-3.5 space-y-1.5 text-xs',
+                          inst.seq === highlightSeq && 'ring-2 ring-inset ring-amber-400/70 bg-amber-50/40 dark:bg-amber-950/20',
+                        )}
+                      >
                         <div className="flex items-center justify-between font-medium">
                           <span>
                             #{inst.seq} · {formatDate(inst.dueDate)}
@@ -183,13 +203,15 @@ export function LoanAmortizationSchedule({
                         {items.map((inst) => (
                           <tr
                             key={inst.seq}
-                            className={
+                            data-installment-seq={inst.seq}
+                            className={cn(
                               inst.status === 'settled'
                                 ? 'bg-emerald-500/5 dark:bg-emerald-950/20'
                                 : inst.status === 'overdue'
                                   ? 'bg-rose-500/5 dark:bg-rose-950/20'
-                                  : ''
-                            }
+                                  : '',
+                              inst.seq === highlightSeq && 'ring-2 ring-inset ring-amber-400/70',
+                            )}
                           >
                             <td className="py-2.5 px-4 text-center font-mono font-medium">
                               {inst.seq}

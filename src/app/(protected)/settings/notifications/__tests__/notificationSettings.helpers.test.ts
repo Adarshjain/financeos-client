@@ -34,3 +34,23 @@ describe('notificationSettings.helpers', () => {
     expect(isThisDevice('https://a', null)).toBe(false);
   });
 });
+
+describe('notificationSettings.helpers kinds', () => {
+  it('groups every switch by module in display order', async () => {
+    const { KIND_GROUPS, KIND_OPTIONS } = await import('../components/notificationSettings.helpers');
+    expect(KIND_GROUPS.map((g) => g.title)).toEqual(['Credit cards', 'Loans', 'Gmail']);
+    expect(KIND_OPTIONS.map((k) => k.key)).toEqual([
+      'STATEMENT_RECEIVED',
+      'BILL_DUE_REMINDER',
+      'BILL_OVERDUE',
+      'EMI_DUE_REMINDER',
+      'EMI_OVERDUE',
+      'GMAIL_RECONNECT',
+      'GMAIL_ATTENTION',
+    ]);
+    for (const kind of KIND_OPTIONS) {
+      expect(kind.label.length).toBeGreaterThan(0);
+      expect(kind.description.length).toBeGreaterThan(0);
+    }
+  });
+});

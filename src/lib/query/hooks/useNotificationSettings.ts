@@ -70,9 +70,21 @@ export function useNotificationSettingsMutations() {
     },
   });
 
+  const muteLoan = useMutation({
+    mutationFn: ({ loanId, muted }: { loanId: string; muted: boolean }) =>
+      api
+        .PUT('/api/v1/notifications/loans/{loanId}/mute', { params: { path: { loanId } }, body: { muted } })
+        .then((r) => r.data!),
+    onSuccess: (settings) => {
+      store(settings);
+      // Loan responses carry the muted flag too.
+      void qc.invalidateQueries({ queryKey: keys.loans.all });
+    },
+  });
+
   const sendTest = useMutation({
     mutationFn: () => api.POST('/api/v1/notifications/push/test').then((r) => r.data!),
   });
 
-  return { update, subscribe, unsubscribe, mute, sendTest };
+  return { update, subscribe, unsubscribe, mute, muteLoan, sendTest };
 }

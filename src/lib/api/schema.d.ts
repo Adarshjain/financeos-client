@@ -1988,6 +1988,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications/evaluate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["evaluate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications/loans/{loanId}/mute": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["muteLoan"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/notifications/push/public-key": {
         parameters: {
             query?: never;
@@ -3741,6 +3773,8 @@ export interface components {
             /** Format: int32 */
             attemptCount: number;
             /** Format: date-time */
+            attentionNotifiedAt?: string | null;
+            /** Format: date-time */
             discoveredAt: string;
             error?: string | null;
             extractedLast4?: string | null;
@@ -3758,6 +3792,8 @@ export interface components {
         };
         GmailConnectionResponse: {
             /** Format: date-time */
+            authFailedAt?: string | null;
+            /** Format: date-time */
             connectedAt?: string | null;
             email: string;
             /** Format: uuid */
@@ -3766,6 +3802,7 @@ export interface components {
             isPrimary: boolean;
             /** Format: date-time */
             lastSyncedAt?: string | null;
+            needsReconnect: boolean;
         };
         GmailSenderRequest: {
             enabled?: boolean;
@@ -4149,6 +4186,9 @@ export interface components {
             firstEmiDate: string;
             /** Format: uuid */
             id: string;
+            lastNotifiedKind?: string | null;
+            /** Format: date */
+            lastNotifiedOn?: string | null;
             lender?: string | null;
             loanAccountNumber?: string | null;
             /** @enum {string} */
@@ -4157,6 +4197,7 @@ export interface components {
             /** Format: date */
             nextDueDate?: string | null;
             notes?: string | null;
+            notificationsMuted: boolean;
             outstandingPrincipal: number;
             /** Format: uuid */
             paymentAccountId?: string | null;
@@ -4276,12 +4317,26 @@ export interface components {
         MuteAccountRequest: {
             muted: boolean;
         };
+        MuteLoanRequest: {
+            muted: boolean;
+        };
+        NotificationEvaluateResponse: {
+            /** Format: int32 */
+            evaluated: number;
+            /** Format: int32 */
+            failed: number;
+            /** Format: int32 */
+            recorded: number;
+            /** Format: int32 */
+            sent: number;
+        };
         NotificationSettingsResponse: {
             devices: components["schemas"]["PushDeviceResponse"][];
             kinds: {
                 [key: string]: boolean;
             };
             mutedAccountIds: string[];
+            mutedLoanIds: string[];
             pushConfigured: boolean;
             pushEnabled: boolean;
             reminderOffsets: number[];
@@ -11096,6 +11151,70 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["MuteAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NotificationSettingsResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    evaluate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NotificationEvaluateResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    muteLoan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                loanId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MuteLoanRequest"];
             };
         };
         responses: {

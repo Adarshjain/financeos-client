@@ -12,11 +12,13 @@ import { GmailConnect } from '../GmailConnect';
 export default async function GmailSettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ gmail?: string; email?: string; message?: string }>;
+  searchParams: Promise<{ gmail?: string; email?: string; message?: string; focus?: string }>;
 }) {
   const params = await searchParams;
   const isSuccess = params.gmail === 'success';
   const isError = params.gmail === 'error';
+  // The "needs attention" push deep-links here with ?focus=attention.
+  const focusAttention = params.focus === 'attention';
 
   const attentionParams = { page: 0, size: 10, includeRetryable: false };
   const [connections, senders, attention] = await Promise.all([
@@ -68,7 +70,7 @@ export default async function GmailSettingsPage({
 
       {/* Primary Gmail Settings Control Panel */}
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <GmailConnect />
+        <GmailConnect focusAttention={focusAttention} />
       </HydrationBoundary>
     </div>
   );

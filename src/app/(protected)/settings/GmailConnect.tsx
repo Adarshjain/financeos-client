@@ -11,7 +11,7 @@ import { GmailSenderDialog } from './gmail/GmailSenderDialog';
 import { GmailSendersCard } from './gmail/GmailSendersCard';
 import { useGmailConnect } from './gmail/useGmailConnect';
 
-export function GmailConnect() {
+export function GmailConnect({ focusAttention = false }: { focusAttention?: boolean } = {}) {
   const {
     loading,
     connections,
@@ -62,6 +62,7 @@ export function GmailConnect() {
           attentionPage={attentionPage}
           onPageChange={setAttentionPage}
           onRetry={handleRetryAttentionItem}
+          autoScroll={focusAttention}
         />
       )}
 
