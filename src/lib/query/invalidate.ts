@@ -20,5 +20,7 @@ export function invalidateLendingQueries(qc: QueryClient): Promise<void> {
   return Promise.all([
     qc.invalidateQueries({ queryKey: keys.lendings.all }),
     qc.invalidateQueries({ queryKey: keys.loans.summary() }),
+    // Lending returns appear on the Upcoming page and widget.
+    qc.invalidateQueries({ queryKey: keys.obligations.all }),
   ]).then(() => undefined);
 }

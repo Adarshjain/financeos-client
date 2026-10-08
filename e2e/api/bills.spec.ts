@@ -65,7 +65,7 @@ test.describe('Bills API', () => {
     expect(bill!.digest?.creditLimit).toBeCloseTo(100000, 2);
     expect(bill!.lastNotifiedKind, 'the digest marker is recorded even without push').toBe('RECEIVED');
 
-    const one = await api.GET('/api/v1/bills/{statementId}', { params: { path: { statementId: bill!.statementId } } });
+    const one = await api.GET('/api/v1/bills/{statementId}', { params: { path: { statementId: bill!.statementId! } } });
     expectStatus(one, 200);
     expect(one.data!.statementId).toBe(bill!.statementId);
   });
@@ -75,7 +75,7 @@ test.describe('Bills API', () => {
     await ingestCardStatement(api, card.id, '7002');
     const list = await api.GET('/api/v1/bills');
     const bill = list.data!.find((b) => b.accountId === card.id)!;
-    const statementId = bill.statementId;
+    const statementId = bill.statementId!;
 
     const partial = await api.POST('/api/v1/bills/{statementId}/mark-paid', {
       params: { path: { statementId } },
@@ -117,7 +117,7 @@ test.describe('Bills API', () => {
     const card = await createCreditCard(api, { name: 'Bills Card C', last4: '7003' });
     await ingestCardStatement(api, card.id, '7003');
     const list = await api.GET('/api/v1/bills');
-    const statementId = list.data!.find((b) => b.accountId === card.id)!.statementId;
+    const statementId = list.data!.find((b) => b.accountId === card.id)!.statementId!;
 
     expectStatus(await api.POST('/api/v1/bills/{statementId}/mark-paid', { params: { path: { statementId } }, body: { paidOn: istToday(1) } }), 400);
     expectStatus(await api.POST('/api/v1/bills/{statementId}/mark-paid', { params: { path: { statementId } }, body: { amount: 0 } }), 400);
@@ -129,7 +129,7 @@ test.describe('Bills API', () => {
   test('tenancy and authentication', async ({ api, request }) => {
     const card = await createCreditCard(api, { name: 'Bills Card D', last4: '7004' });
     await ingestCardStatement(api, card.id, '7004');
-    const statementId = (await api.GET('/api/v1/bills')).data!.find((b) => b.accountId === card.id)!.statementId;
+    const statementId = (await api.GET('/api/v1/bills')).data!.find((b) => b.accountId === card.id)!.statementId!;
 
     const { api: apiB } = await secondUser(request, 'bills-b');
     const other = await apiB.GET('/api/v1/bills');

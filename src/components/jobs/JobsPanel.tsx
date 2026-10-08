@@ -23,7 +23,7 @@ export function JobsPanel({ types, title }: JobsPanelProps) {
   const hasLocalActiveJob = jobs.some((j) => j.status === 'PENDING' || j.status === 'RUNNING');
 
   const viewAllHref =
-    types.length === 1 ? `/settings/jobs?type=${types[0]}` : '/settings/jobs';
+    types.length === 1 ? `/settings/activity?type=${types[0]}` : '/settings/activity';
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 sm:p-4 space-y-3 shadow-sm">

@@ -1,19 +1,20 @@
-import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { redirect } from 'next/navigation';
 
-import { accountsApi } from '@/lib/apiClient';
-import { getQueryClient, keys } from '@/lib/query';
+export default async function LegacyIngestRedirect({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const qs = toQueryString(await searchParams);
+  redirect(`/transactions/import${qs}`);
+}
 
-import { IngestForm } from './IngestForm';
-
-export default async function IngestPage() {
-  const accounts = await accountsApi.list();
-
-  const queryClient = getQueryClient();
-  queryClient.setQueryData(keys.accounts.list(), accounts);
-
-  return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <IngestForm initialAccounts={accounts} />
-    </HydrationBoundary>
-  );
+function toQueryString(params: Record<string, string | string[] | undefined>): string {
+  const q = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (Array.isArray(value)) value.forEach((v) => q.append(key, v));
+    else if (value !== undefined) q.set(key, value);
+  }
+  const str = q.toString();
+  return str ? `?${str}` : '';
 }

@@ -24,9 +24,10 @@ import { useIngestForm } from './components/useIngestForm';
 
 interface IngestFormProps {
   initialAccounts: Account[];
+  initialAccountId?: string;
 }
 
-export function IngestForm({ initialAccounts }: IngestFormProps) {
+export function IngestForm({ initialAccounts, initialAccountId }: IngestFormProps) {
   // Shared accounts lookup — page.tsx seeds the same key server-side, so this
   // read is free on first paint and stays live for the rest of the session.
   const { data: accounts = initialAccounts } = useAccounts(initialAccounts);
@@ -46,20 +47,20 @@ export function IngestForm({ initialAccounts }: IngestFormProps) {
     removeFile,
     clearAllFiles,
     handleSubmit,
-  } = useIngestForm({ accounts });
+  } = useIngestForm({ accounts, initialAccountId });
 
   return (
     <div className="space-y-4 p-4 max-w-4xl pb-20">
       {/* Header & Navigation */}
       <div className="flex items-center gap-3">
         <Button asChild size="icon-sm" variant="ghost">
-          <Link href="/settings">
+          <Link href="/transactions">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-            Statement Ingestion
+            Import statements
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400">
             Upload PDF or Excel statements to automatically import transactions.

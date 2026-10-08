@@ -11,8 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
-import { api, ApiError } from '@/lib/api/client';
-import type { DashboardWidget } from '@/lib/dashboards.types';
+import { api } from '@/lib/api/client';
+import { toDashboardWidget } from '@/lib/dashboards.helpers';
 import { useDashboards } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
@@ -57,12 +57,7 @@ export function DashboardsList() {
           'This dashboard changed since the page was loaded. Reload and try again — setting the default would otherwise discard those changes.',
         );
       }
-      const widgets: DashboardWidget[] = current.widgets.map((w) => ({
-        id: w.id,
-        reportId: w.reportId,
-        title: w.title ?? '',
-        layout: w.layout,
-      }));
+      const widgets = current.widgets.map(toDashboardWidget);
       return api.PUT('/api/v1/dashboards/{id}', {
         params: { path: { id } },
         body: {

@@ -1,5 +1,8 @@
 'use client';
 
+import Link from 'next/link';
+
+import { Button } from '@/components/ui/button';
 import { isAccountOfType } from '@/lib/account.types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { usePositions } from '@/lib/query/hooks/useInvestments';
@@ -32,6 +35,9 @@ export function HoldingsView({ children }: HoldingsViewProps) {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href="/investments/instruments">Instruments</Link>
+          </Button>
           <CreateInstrumentDialog />
           <RecordTradeDialog />
         </div>

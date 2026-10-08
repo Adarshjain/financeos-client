@@ -38,7 +38,7 @@ export function DashboardView({ dashboard }: DashboardViewProps) {
       widgets={dashboard.widgets}
       editing={false}
       onLayoutChange={() => {}}
-      renderWidget={(w) => <DashboardWidgetView widget={w} />}
+      renderWidget={(w, fit) => <DashboardWidgetView widget={w} fit={fit} />}
     />
   );
 }

@@ -29,11 +29,15 @@ export function BillStatementActions({ statementId }: BillStatementActionsProps)
   if (!bill || typeof bill !== 'object' || !('status' in bill)) {
     return null;
   }
-  const settled = bill.status === 'PAID' || bill.status === 'NO_DUE';
+  const billStatementId = bill.statementId;
+  if (!billStatementId) {
+    return null;
+  }
+  const settled = bill.status === 'PAID' || bill.status === 'NO_DUE' || bill.status === 'AWAITING_STATEMENT';
 
   const submit = async (body: MarkBillPaidRequest) => {
     try {
-      await markPaid.mutateAsync({ statementId: bill.statementId, body });
+      await markPaid.mutateAsync({ statementId: billStatementId, body });
       setOpen(false);
       toast.success('Bill marked as paid');
     } catch (e) {
@@ -43,7 +47,7 @@ export function BillStatementActions({ statementId }: BillStatementActionsProps)
 
   const undo = async () => {
     try {
-      await unmarkPaid.mutateAsync(bill.statementId);
+      await unmarkPaid.mutateAsync(billStatementId);
       toast.success('Payment mark removed');
     } catch (e) {
       toast.error(getErrorMessage(e, 'Could not undo the payment mark'));

@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ReactNode, useState } from 'react';
 
 import {
@@ -28,9 +28,16 @@ interface AccountFormWrapperProps {
 export function AccountFormWrapper({ account, triggerClassName, allowedTypes, children }: AccountFormWrapperProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
 
-  const handleSuccess = () => {
+  const handleSuccess = (saved?: Account) => {
     setOpen(false);
+    // Edit mode reports the saved account; a bare call means the account was deleted. On its own
+    // detail page that route is now a 404, so leave for the list.
+    if (account && !saved && pathname?.startsWith('/accounts/')) {
+      router.replace('/accounts');
+      return;
+    }
     router.refresh();
   };
 

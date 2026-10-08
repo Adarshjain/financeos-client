@@ -45,7 +45,7 @@ test.describe('Dashboards UI (@ui)', () => {
 
     // 4. Click "Add widget" -> Dialog opens
     await page.getByRole('button', { name: /Add widget/i }).click();
-    await expect(page.getByRole('heading', { name: 'Add a report widget' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Add a widget' })).toBeVisible();
 
     // Pick the saved report
     await page.getByRole('button', { name: /Net Cashflow KPI/i }).click();
@@ -57,7 +57,7 @@ test.describe('Dashboards UI (@ui)', () => {
 
     // 6. View mode: dashboard rendered with title and widget
     await expect(page.getByRole('heading', { name: 'Executive Dashboard' })).toBeVisible();
-    await expect(page.locator('link[title="Edit report"], a[title="Edit report"]').first()).toBeVisible();
+    await expect(page.getByRole('button', { name: 'More actions' }).first()).toBeVisible();
     await expect(page.getByText(/Net Cashflow KPI/i).first()).toBeVisible();
 
     // 7. Click "Edit" to enter edit mode

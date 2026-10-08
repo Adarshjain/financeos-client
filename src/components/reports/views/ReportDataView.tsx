@@ -64,7 +64,11 @@ export function ReportDataView({
   loading,
 }: ReportDataViewProps) {
   if (isKpiData(data)) {
-    return <KpiView data={data} className={fill ? 'h-full overflow-auto px-3' : undefined} />;
+    return fill ? (
+      <KpiView data={data} variant="widget" className="h-full overflow-auto px-4 pb-3" />
+    ) : (
+      <KpiView data={data} />
+    );
   }
   if (isChartData(data)) {
     return fill ? (

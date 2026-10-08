@@ -15,6 +15,8 @@ export default async function DashboardPage({
   const [dashboard, reports] = await Promise.all([
     dashboardsApi.getById(id),
     reportsApi.list(),
+    // The Add-widget dialog's built-in catalog; a failure only leaves it to load on the client.
+    qc.prefetchQuery({ queryKey: keys.dashboards.builtins(), queryFn: () => dashboardsApi.builtins() }),
   ]);
 
   qc.setQueryData(keys.reports.list(), reports);

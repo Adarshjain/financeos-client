@@ -115,6 +115,7 @@ export function ChartView({ data, fill }: { data: ChartViewData; fill?: boolean 
               key={s.name}
               type="monotone"
               dataKey={s.name}
+              name={seriesLabel(s.name)}
               stroke={COLORS[i % COLORS.length]}
               dot={false}
               connectNulls
@@ -135,6 +136,7 @@ export function ChartView({ data, fill }: { data: ChartViewData; fill?: boolean 
               key={s.name}
               type="monotone"
               dataKey={s.name}
+              name={seriesLabel(s.name)}
               stroke={COLORS[i % COLORS.length]}
               fill={COLORS[i % COLORS.length]}
               fillOpacity={0.2}
@@ -156,6 +158,7 @@ export function ChartView({ data, fill }: { data: ChartViewData; fill?: boolean 
           <Bar
             key={s.name}
             dataKey={s.name}
+              name={seriesLabel(s.name)}
             stackId={stackId}
             fill={COLORS[i % COLORS.length]}
             radius={stackId ? undefined : [2, 2, 0, 0]}
@@ -221,4 +224,9 @@ function ChartDataTable({ data }: { data: ChartViewData }) {
       </tbody>
     </table>
   );
+}
+
+/** Legend/tooltip label for a series keyed by its measure field, e.g. "spend" -> "Spend". */
+function seriesLabel(name: string): string {
+  return name.length ? name.charAt(0).toUpperCase() + name.slice(1) : name;
 }

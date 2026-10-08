@@ -20,11 +20,16 @@ import {
 
 interface UseIngestFormProps {
   accounts: Account[];
+  /** From `?account=`; honoured only when that account is uploadable. */
+  initialAccountId?: string;
 }
 
-export function useIngestForm({ accounts }: UseIngestFormProps) {
+export function useIngestForm({ accounts, initialAccountId }: UseIngestFormProps) {
   const qc = useQueryClient();
-  const [selectedAccountId, setSelectedAccountId] = useState<string>('');
+  const [selectedAccountId, setSelectedAccountId] = useState<string>(() => {
+    const match = initialAccountId ? accounts.find((a) => a.id === initialAccountId) : undefined;
+    return match && supportsIngestion(match.type) && !isAccountClosed(match) ? match.id : '';
+  });
   const [files, setFiles] = useState<File[]>([]);
   const [isDragActive, setIsDragActive] = useState(false);
   const [activeJobId, setActiveJobId] = useState<string | null>(null);

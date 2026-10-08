@@ -66,6 +66,20 @@ export type DashboardResponse = Schemas['DashboardResponse'];
 export type WidgetResponse = Schemas['WidgetResponse'];
 export type CreateDashboardRequest = Schemas['CreateDashboardRequest'];
 export type UpdateDashboardRequest = Schemas['UpdateDashboardRequest'];
+export type DashboardWidgetRequest = Schemas['DashboardWidget'];
+export type BuiltinWidgetResponse = Schemas['BuiltinWidgetResponse'];
+export type BuiltinParamResponse = Schemas['BuiltinParamResponse'];
+export type BuiltinRefResponse = Schemas['BuiltinRefResponse'];
+export type BuiltinDataRequest = Schemas['BuiltinDataRequest'];
+
+// Inbox
+export type InboxResponse = Schemas['InboxResponse'];
+export type InboxItemResponse = Schemas['InboxItemResponse'];
+export type InboxActionResponse = Schemas['InboxActionResponse'];
+export type InboxActionPayloadResponse = Schemas['InboxActionPayloadResponse'];
+export type InboxRefsResponse = Schemas['InboxRefsResponse'];
+export type InboxSummaryResponse = Schemas['InboxSummaryResponse'];
+export type InboxSnoozeRequest = Schemas['InboxSnoozeRequest'];
 
 // Bills & notifications
 export type CardBillResponse = Schemas['CardBillResponse'];
@@ -91,6 +105,7 @@ export type CounterpartyResponse = Schemas['CounterpartyResponse'];
 export type CreateCounterpartyRequest = Schemas['CreateCounterpartyRequest'];
 export type UpdateCounterpartyRequest = Schemas['UpdateCounterpartyRequest'];
 export type ObligationsResponse = Schemas['ObligationsResponse'];
+export type ObligationItemDto = Schemas['ObligationItemDto'];
 
 // Loans
 export type LoanResponse = Schemas['LoanResponse'];

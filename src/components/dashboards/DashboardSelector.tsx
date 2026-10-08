@@ -22,16 +22,21 @@ interface DashboardViewProps {
 
 export function DashboardSelector({ dashboards, onSelectDashboard, currentDashboard }: DashboardViewProps) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 px-4">
-      <div className="flex items-center gap-1">
+    // The switcher fills the row; the Chat shortcut (phones and tablets only) keeps its natural width.
+    <div className="flex items-center gap-2 px-4">
+      <div className="min-w-0 flex-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 font-black tracking-tight text-slate-900 dark:text-white hover:text-slate-700 dark:hover:text-slate-200 transition-colors focus:outline-none select-none">
-              <span>{currentDashboard.name}</span>
-              <ChevronDown className="w-5 h-5 text-slate-400 mt-1" />
+            <button
+              type="button"
+              aria-label={`Switch dashboard, current: ${currentDashboard.name}`}
+              className="flex h-10 w-full min-w-0 items-center justify-between gap-2 rounded-xl border border-slate-200 bg-white px-3 text-left font-black tracking-tight text-slate-900 shadow-sm transition-colors hover:border-slate-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40 select-none dark:border-slate-800 dark:bg-slate-900 dark:text-white dark:hover:border-slate-700"
+            >
+              <span className="truncate">{currentDashboard.name}</span>
+              <ChevronDown className="h-5 w-5 shrink-0 text-slate-400" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[260px] md:w-[300px] rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-950 p-1.5 shadow-lg shadow-slate-100/10 dark:shadow-none" align="start">
+          <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] rounded-xl border border-slate-200/60 dark:border-slate-800 bg-white dark:bg-slate-950 p-1.5 shadow-lg shadow-slate-100/10 dark:shadow-none" align="start">
             <div className="py-1 px-2.5 text-2xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
               Switch Dashboard
             </div>
@@ -61,12 +66,13 @@ export function DashboardSelector({ dashboards, onSelectDashboard, currentDashbo
             </Link>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button variant="outline" asChild aria-label="Chat with your data">
-          <Link href="/chat">
-            <MessageCircle className="w-4 h-4 text-slate-400" /> Chat
-          </Link>
-        </Button>
       </div>
+      {/* Desktop has Chat in the sidebar header; keep this shortcut for smaller screens. */}
+      <Button variant="outline" asChild aria-label="Chat with your data" className="h-10 shrink-0 lg:hidden">
+        <Link href="/chat">
+          <MessageCircle className="w-4 h-4 text-slate-400" /> Chat
+        </Link>
+      </Button>
     </div>
   );
 }

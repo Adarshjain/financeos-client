@@ -45,6 +45,7 @@ export function DashboardEditor({
     isDirty,
     handleLayoutChange,
     addWidget,
+    addBuiltin,
     removeWidget,
     updateTitle,
     toggleWidgetWidth,
@@ -70,6 +71,7 @@ export function DashboardEditor({
         onDiscardAndExit={discardAndExit}
         onStartEdit={startEdit}
         onAddWidget={addWidget}
+        onAddBuiltin={addBuiltin}
         onSave={save}
       />
 
@@ -81,8 +83,8 @@ export function DashboardEditor({
             </p>
             <p className="text-sm text-slate-500">
               {editing
-                ? 'Add a report widget to get started.'
-                : 'Click Edit to add report widgets.'}
+                ? 'Add a built-in or report widget to get started.'
+                : 'Click Edit to add widgets.'}
             </p>
           </div>
         </Card>
@@ -91,9 +93,10 @@ export function DashboardEditor({
           widgets={widgets}
           editing={editing}
           onLayoutChange={handleLayoutChange}
-          renderWidget={(w) => (
+          renderWidget={(w, fit) => (
             <DashboardWidgetView
               widget={w}
+              fit={fit}
               editing={editing}
               onTitleChange={(t) => updateTitle(w.id, t)}
               onRemove={() => removeWidget(w.id)}

@@ -33,6 +33,14 @@ export const keys = {
     summary: () => [...keys.dashboards.all, 'summary'] as const,
     widget: (id: string, params: Record<string, unknown> = {}) =>
       [...keys.dashboards.all, 'widget', id, params] as const,
+    /** The built-in widget catalog (GET /dashboards/builtins). */
+    builtins: () => [...keys.dashboards.all, 'builtins'] as const,
+  },
+
+  inbox: {
+    all: ['inbox'] as const,
+    list: () => [...keys.inbox.all, 'list'] as const,
+    summary: () => [...keys.inbox.all, 'summary'] as const,
   },
 
   jobs: {
@@ -138,7 +146,9 @@ export const keys = {
 
   bills: {
     all: ['bills'] as const,
-    list: () => [...keys.bills.all, 'list'] as const,
+    /** All cards, or one card when `accountId` is given. */
+    list: (params: { accountId?: string | null } = {}) =>
+      [...keys.bills.all, 'list', params] as const,
     /** A bill is keyed by its statement. */
     byStatement: (statementId: string) => [...keys.bills.all, 'detail', statementId] as const,
   },
@@ -147,5 +157,11 @@ export const keys = {
     all: ['statements'] as const,
     byAccount: (accountId: string) => [...keys.statements.all, 'byAccount', accountId] as const,
     detail: (id: string) => [...keys.statements.all, 'detail', id] as const,
+  },
+
+  obligations: {
+    all: ['obligations'] as const,
+    upcoming: (params: { months: number; kinds?: string[] }) =>
+      [...keys.obligations.all, 'upcoming', params] as const,
   },
 };

@@ -251,6 +251,7 @@ export type ReportDefinition =
 // 3. Requests / responses
 // ---------------------------------------------------------------------------
 
+/** Also used by the report "Duplicate" action (same fields, name suffixed " (copy)"). */
 export interface CreateReportRequest {
   name: string;
   /** Optional free-text description. */
