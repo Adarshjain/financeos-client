@@ -1,6 +1,9 @@
+import { generateKeyPairSync } from 'node:crypto';
+
 import { expectStatus } from '../fixtures/api';
 import { istToday } from '../fixtures/dates';
 import { genCardPdf } from '../fixtures/gen/statements';
+import { addMapping, removeMappings } from '../fixtures/google-stubs';
 import { createCreditCard } from '../fixtures/seed/accounts';
 import { addLending, createLoan, getLoan } from '../fixtures/seed/loans';
 import { createMilestone, createRewardCard, createRewardRule, spend } from '../fixtures/seed/rewards';
@@ -267,5 +270,37 @@ test.describe('Notifications API (producers)', () => {
     expectStatus(rules, 200);
     const r = rules.data!.find((x) => x.id === rule.id)!;
     expect(r.capNotifiedWindowStart).toBe(istToday().slice(0, 8) + '01');
+  });
+
+  test('a test push is encrypted and delivered to a registered device (WireMock plays the push service)', async ({ request }) => {
+    const { api } = await secondUser(request, 'notif-push-test');
+    // A real P-256 point for p256dh, as a browser's PushSubscription would carry.
+    const { publicKey } = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
+    const jwk = publicKey.export({ format: 'jwk' }) as { x: string; y: string };
+    const p256dh = Buffer.concat([Buffer.from([4]), Buffer.from(jwk.x, 'base64url'), Buffer.from(jwk.y, 'base64url')]).toString('base64url');
+    const auth = Buffer.alloc(16, 9).toString('base64url');
+    const pushPath = `/push/e2e-${Date.now()}`;
+    const mapping = await addMapping({
+      name: `push-service${pushPath}`,
+      priority: 1,
+      request: { method: 'POST', urlPath: pushPath },
+      response: { status: 201 },
+    });
+    try {
+      const added = await api.POST('/api/v1/notifications/push/subscriptions', {
+        body: { endpoint: `http://localhost:8089${pushPath}`, keys: { p256dh, auth }, userAgent: 'E2E · Chromium' },
+      });
+      expectStatus(added, 200);
+      expect(added.data!.devices).toHaveLength(1);
+
+      const sent = await api.POST('/api/v1/notifications/push/test');
+      expectStatus(sent, 200);
+      expect(sent.data!.sent, 'the push service accepted the encrypted message').toBe(1);
+
+      const after = await api.GET('/api/v1/notifications/settings');
+      expect(after.data!.devices, 'an accepted push keeps the subscription').toHaveLength(1);
+    } finally {
+      await removeMappings([mapping]);
+    }
   });
 });

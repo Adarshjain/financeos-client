@@ -154,7 +154,7 @@ test.describe('Notification settings API', () => {
     // The bill kinds are a subset now that other producers (Gmail, EMIs) add their own switches.
     expect(defaults.data!.kinds).toMatchObject({ STATEMENT_RECEIVED: true, BILL_DUE_REMINDER: true, BILL_OVERDUE: true });
     expect(defaults.data!.devices).toEqual([]);
-    expect(defaults.data!.pushConfigured, 'the e2e server has no VAPID keys').toBe(false);
+    expect(defaults.data!.pushConfigured, 'the e2e server carries throwaway VAPID keys').toBe(true);
 
     const updated = await api.PUT('/api/v1/notifications/settings', {
       body: { sendHour: 20, reminderOffsets: [1, 14, 1], kinds: { BILL_OVERDUE: false } },
@@ -173,7 +173,9 @@ test.describe('Notification settings API', () => {
 
     const key = await api.GET('/api/v1/notifications/push/public-key');
     expectStatus(key, 200);
-    expect(key.data!.configured).toBe(false);
+    expect(key.data!.configured).toBe(true);
+    expect(key.data!.publicKey).toBeTruthy();
+    // Configured, but this user has no device yet: the test push is refused.
     expectStatus(await api.POST('/api/v1/notifications/push/test'), 400);
   });
 
