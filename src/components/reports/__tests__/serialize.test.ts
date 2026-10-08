@@ -412,3 +412,34 @@ describe('validationErrors — pivot duplicates', () => {
     expect(errors).not.toContain('Each row dimension must be a different field.');
   });
 });
+
+describe('serializeDefinition KPI comparison display', () => {
+  it('sends display only for previous_value', () => {
+    const state = initialBuilderState('KPI');
+    state.kpi = { measure: 'amount', aggregation: 'sum', comparisonEnabled: true, comparisonDisplay: 'previous_value' };
+    const def = serializeDefinition(state, catalog) as any;
+    expect(def.comparison).toEqual({ display: 'previous_value' });
+  });
+
+  it('omits the block for the default change display, explicit or unset', () => {
+    const state = initialBuilderState('KPI');
+    state.kpi = { measure: 'amount', aggregation: 'sum', comparisonEnabled: true, comparisonDisplay: 'change' };
+    expect((serializeDefinition(state, catalog) as any).comparison).toBeUndefined();
+
+    state.kpi = { measure: 'amount', aggregation: 'sum', comparisonEnabled: true };
+    expect((serializeDefinition(state, catalog) as any).comparison).toBeUndefined();
+  });
+
+  it('keeps the display preference next to the other comparison options', () => {
+    const state = initialBuilderState('KPI');
+    state.kpi = {
+      measure: 'amount',
+      aggregation: 'sum',
+      comparisonEnabled: false,
+      higherIsBetter: false,
+      comparisonDisplay: 'previous_value',
+    };
+    const def = serializeDefinition(state, catalog) as any;
+    expect(def.comparison).toEqual({ enabled: false, higherIsBetter: false, display: 'previous_value' });
+  });
+});

@@ -76,3 +76,70 @@ describe('KpiView date line', () => {
     );
   });
 });
+
+describe('KpiView comparison display', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-03T06:00:00Z'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const august = { from: '2026-08-01', to: '2026-08-31' };
+
+  it('shows the previous period value instead of the delta when asked', () => {
+    render(
+      <KpiView data={kpi({ comparison: { ...comparison(august), display: 'previous_value' } })} />,
+    );
+    expect(screen.getByText('prev 800')).toBeInTheDocument();
+    expect(screen.queryByText(/\+25\.0%/)).toBeNull();
+    expect(screen.getByText('Sep vs Aug')).toBeInTheDocument();
+  });
+
+  it('moves the delta into the hover in previous-value mode', () => {
+    render(
+      <KpiView data={kpi({ comparison: { ...comparison(august), display: 'previous_value' } })} />,
+    );
+    const line = screen.getByText('prev 800').parentElement!;
+    expect(line.getAttribute('title')).toBe(
+      `vs ${formatDate('2026-08-01')} – ${formatDate('2026-08-31')}: +200 (+25.0%)`,
+    );
+  });
+
+  it('keeps the arrow and the sentiment colour in previous-value mode', () => {
+    render(
+      <KpiView
+        data={kpi({
+          comparison: { ...comparison(august), direction: 'down', sentiment: 'bad', display: 'previous_value' },
+        })}
+      />,
+    );
+    const line = screen.getByText('prev 800').parentElement!;
+    expect(line.className).toContain('text-rose-600');
+    expect(line.querySelector('svg')).not.toBeNull();
+  });
+
+  it('shows a dash when the previous period had no value', () => {
+    render(
+      <KpiView
+        data={kpi({ comparison: { ...comparison(august), previousValue: null, display: 'previous_value' } })}
+      />,
+    );
+    expect(screen.getByText('prev —')).toBeInTheDocument();
+  });
+
+  it('shows the delta for the change display and when the display is absent', () => {
+    const { unmount } = render(
+      <KpiView data={kpi({ comparison: { ...comparison(august), display: 'change' } })} />,
+    );
+    expect(screen.getByText('+200 (+25.0%)')).toBeInTheDocument();
+    expect(screen.queryByText(/prev/)).toBeNull();
+    unmount();
+
+    render(<KpiView data={kpi({ comparison: comparison(august) })} />);
+    expect(screen.getByText('+200 (+25.0%)')).toBeInTheDocument();
+    expect(screen.queryByText(/prev/)).toBeNull();
+  });
+});
