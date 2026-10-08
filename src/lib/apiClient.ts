@@ -15,7 +15,7 @@ import type {
 } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
 import { serverApi } from '@/lib/api/server';
-import type { ErrorResponse, Schemas } from '@/lib/api/types';
+import type { CardBillResponse, ErrorResponse, NotificationSettingsResponse, Schemas } from '@/lib/api/types';
 import type { CategorizeResponse, Category, CategoryRequest } from '@/lib/categories.types';
 import type {
   CreateDashboardRequest,
@@ -1316,6 +1316,20 @@ export const gmailApi = {
 // ---------------------------------------------------------------------------
 // LLM keys & routing (folded from the WIP `llmApi`)
 // ---------------------------------------------------------------------------
+
+export const billsApi = {
+  list: async (): Promise<CardBillResponse[]> => {
+    const { data } = await serverApi.GET('/api/v1/bills');
+    return (data as CardBillResponse[]) || [];
+  },
+};
+
+export const notificationsApi = {
+  getSettings: async (): Promise<NotificationSettingsResponse> => {
+    const { data } = await serverApi.GET('/api/v1/notifications/settings');
+    return data! as NotificationSettingsResponse;
+  },
+};
 
 export const llmKeysApi = {
   list: async (): Promise<LlmKeyDto[]> => {

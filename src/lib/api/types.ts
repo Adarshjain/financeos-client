@@ -67,6 +67,18 @@ export type WidgetResponse = Schemas['WidgetResponse'];
 export type CreateDashboardRequest = Schemas['CreateDashboardRequest'];
 export type UpdateDashboardRequest = Schemas['UpdateDashboardRequest'];
 
+// Bills & notifications
+export type CardBillResponse = Schemas['CardBillResponse'];
+export type BillStatus = CardBillResponse['status'];
+export type BillPossiblePayment = NonNullable<CardBillResponse['possiblePayments']>[number];
+export type MarkBillPaidRequest = Schemas['MarkBillPaidRequest'];
+export type UpdateBillDetailsRequest = Schemas['UpdateBillDetailsRequest'];
+export type NotificationSettingsResponse = Schemas['NotificationSettingsResponse'];
+export type PushDeviceResponse = Schemas['PushDeviceResponse'];
+export type UpdateNotificationSettingsRequest = Schemas['UpdateNotificationSettingsRequest'];
+export type PushSubscriptionRequest = Schemas['PushSubscriptionRequest'];
+export type PushPublicKeyResponse = Schemas['PushPublicKeyResponse'];
+
 // Jobs
 export type JobResponse = Schemas['JobResponse'];
 export type EnqueueResponse = Schemas['EnqueueResponse'];

@@ -2,6 +2,7 @@
 
 import { FileText, Loader2 } from 'lucide-react';
 
+import { BillStatementActions } from '@/components/bills/BillStatementActions';
 import { Badge } from '@/components/ui/badge';
 import { CardCycleSummary } from '@/lib/statement.types';
 import { cn, formatDate, formatNullableMoney } from '@/lib/utils';
@@ -85,6 +86,7 @@ export function CardCycleSummaryCard({
                 )}
               </div>
             ) : null}
+            <BillStatementActions statementId={cardSummary.statementId} />
           </div>
 
           <div className="md:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">

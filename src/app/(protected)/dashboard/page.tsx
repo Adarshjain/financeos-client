@@ -2,10 +2,12 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 import { LayoutDashboard, MessageSquare, Plus } from 'lucide-react';
 import Link from 'next/link';
 
+import { BillsDueCard } from '@/components/bills/BillsDueCard';
 import { DashboardHome } from '@/components/dashboards/DashboardHome';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ApiError, dashboardsApi } from '@/lib/apiClient';
+import type { CardBillResponse } from '@/lib/api/types';
+import { ApiError, billsApi, dashboardsApi } from '@/lib/apiClient';
 import { prefetchWidgetData } from '@/lib/dashboards.server';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 import { getQueryClient } from '@/lib/query/client';
@@ -25,13 +27,30 @@ async function loadDashboards(): Promise<DashboardResponse[] | null> {
   }
 }
 
+// The bills card is prefetched so the landing route paints it without a client round trip;
+// a failure here must not take the dashboard down (the card then loads on the client).
+async function loadBills(): Promise<CardBillResponse[] | undefined> {
+  try {
+    return await billsApi.list();
+  } catch {
+    return undefined;
+  }
+}
+
 export default async function DashboardPage() {
-  const dashboards = await loadDashboards();
+  const [dashboards, bills] = await Promise.all([loadDashboards(), loadBills()]);
   const defaultDashboard = dashboards?.find(d => d.isDefault) ?? dashboards?.[0];
 
   if (!defaultDashboard) {
+    const emptyQueryClient = getQueryClient();
+    if (bills) {
+      emptyQueryClient.setQueryData(keys.bills.list(), bills);
+    }
     return (
       <div className="space-y-2 p-4">
+        <HydrationBoundary state={dehydrate(emptyQueryClient)}>
+          <BillsDueCard initialBills={bills} />
+        </HydrationBoundary>
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             Dashboard
@@ -80,10 +99,16 @@ export default async function DashboardPage() {
   // paints with data instead of hydrating and then firing one request per widget.
   const queryClient = getQueryClient();
   queryClient.setQueryData(keys.dashboards.list(), dashboards ?? []);
+  if (bills) {
+    queryClient.setQueryData(keys.bills.list(), bills);
+  }
   await prefetchWidgetData(queryClient, defaultDashboard);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
+      <div className="px-4 pt-4 md:px-0 md:pt-0">
+        <BillsDueCard initialBills={bills} />
+      </div>
       <DashboardHome />
     </HydrationBoundary>
   );

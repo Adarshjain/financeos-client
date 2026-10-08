@@ -132,6 +132,15 @@ export const keys = {
     gmailSenders: () => [...keys.settings.all, 'gmailSenders'] as const,
     gmailAttention: (params: Record<string, unknown> = {}) => [...keys.settings.all, 'gmailAttention', params] as const,
     deletionSummary: () => [...keys.settings.all, 'deletionSummary'] as const,
+    notifications: () => [...keys.settings.all, 'notifications'] as const,
+    pushPublicKey: () => [...keys.settings.all, 'pushPublicKey'] as const,
+  },
+
+  bills: {
+    all: ['bills'] as const,
+    list: () => [...keys.bills.all, 'list'] as const,
+    /** A bill is keyed by its statement. */
+    byStatement: (statementId: string) => [...keys.bills.all, 'detail', statementId] as const,
   },
 
   statements: {
