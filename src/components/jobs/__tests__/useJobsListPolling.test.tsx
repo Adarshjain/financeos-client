@@ -110,3 +110,94 @@ describe('useJobsListPolling cadence', () => {
     expect(getCalls()).toBe(afterGrace);
   });
 });
+
+describe('useJobsListPolling auto-expand', () => {
+  const succeededJob = { ...runningJob, status: 'SUCCEEDED' };
+  const otherRunning = { id: 'job-2', type: 'STATEMENT_INGEST', status: 'RUNNING', createdAt: '2026-10-04T10:00:05Z' };
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.clearAllMocks();
+    vi.mocked(api.GET).mockResolvedValue({ data: { content: [] } } as never);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('expands an announced job that first shows up already finished', async () => {
+    const { result } = renderPolling();
+    await advance(0);
+    expect(result.current.expandedJobIds.size).toBe(0);
+
+    // The job finished before the refetch triggered by its announcement came back.
+    vi.mocked(api.GET).mockResolvedValue({ data: { content: [succeededJob] } } as never);
+    await act(async () => {
+      emitJobStarted('job-1');
+    });
+    await advance(10);
+
+    expect(result.current.expandedJobIds.has('job-1')).toBe(true);
+  });
+
+  it('expands a job the list saw running once it finishes', async () => {
+    vi.mocked(api.GET).mockResolvedValue({ data: { content: [runningJob] } } as never);
+    const { result } = renderPolling();
+    await advance(0);
+    expect(result.current.expandedJobIds.has('job-1')).toBe(false);
+
+    vi.mocked(api.GET).mockResolvedValue({ data: { content: [succeededJob] } } as never);
+    await advance(4_000);
+    await advance(10);
+
+    expect(result.current.expandedJobIds.has('job-1')).toBe(true);
+  });
+
+  it('leaves finished jobs it never announced or saw running collapsed', async () => {
+    vi.mocked(api.GET).mockResolvedValue({ data: { content: [succeededJob] } } as never);
+    const { result } = renderPolling();
+    await advance(10);
+
+    expect(result.current.expandedJobIds.size).toBe(0);
+  });
+
+  it('does not re-expand an announced job after the user collapses it', async () => {
+    const { result } = renderPolling();
+    await advance(0);
+    vi.mocked(api.GET).mockResolvedValue({ data: { content: [succeededJob] } } as never);
+    await act(async () => {
+      emitJobStarted('job-1');
+    });
+    await advance(10);
+    expect(result.current.expandedJobIds.has('job-1')).toBe(true);
+
+    act(() => {
+      result.current.toggleExpand('job-1');
+    });
+    expect(result.current.expandedJobIds.has('job-1')).toBe(false);
+
+    // The next poll in the grace window returns the same finished job.
+    await advance(2_000);
+    await advance(10);
+    expect(result.current.expandedJobIds.has('job-1')).toBe(false);
+  });
+
+  it('keeps following a second running job while the first one finishes', async () => {
+    vi.mocked(api.GET).mockResolvedValue({ data: { content: [runningJob, otherRunning] } } as never);
+    const { result } = renderPolling();
+    await advance(0);
+
+    vi.mocked(api.GET).mockResolvedValue({ data: { content: [succeededJob, otherRunning] } } as never);
+    await advance(4_000);
+    await advance(10);
+    expect(result.current.expandedJobIds.has('job-1')).toBe(true);
+    expect(result.current.expandedJobIds.has('job-2')).toBe(false);
+
+    vi.mocked(api.GET).mockResolvedValue({
+      data: { content: [succeededJob, { ...otherRunning, status: 'SUCCEEDED' }] },
+    } as never);
+    await advance(4_000);
+    await advance(10);
+    expect(result.current.expandedJobIds.has('job-2')).toBe(true);
+  });
+});
