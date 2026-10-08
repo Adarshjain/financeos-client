@@ -1,7 +1,7 @@
 import { createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { expect, test } from '../fixtures/test';
-import { expectToast, openAccounts } from '../fixtures/ui';
+import { expectToast, openAccountEditor, openAccounts } from '../fixtures/ui';
 
 test.describe('Accounts UI (@ui)', () => {
   test.beforeEach(async ({ context, request }) => {
@@ -63,9 +63,8 @@ test.describe('Accounts UI (@ui)', () => {
 
     await expect(page.getByText('Regalia Gold')).toBeVisible();
 
-    // 1. Edit Account: click tile body to open edit dialog
-    await page.getByText('Regalia Gold').click();
-    await expect(page.getByLabel('Account Name')).toBeVisible();
+    // 1. Edit Account: the tile body now opens the account page, so use the tile's edit button
+    await openAccountEditor(page, 'Regalia Gold');
     await page.getByLabel('Account Name').fill('Regalia Gold Premium');
 
     // 1b. Email identifier aliases live in the edit dialog: add one (saved immediately), remove it.
@@ -122,7 +121,7 @@ test.describe('Accounts UI (@ui)', () => {
     await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible();
 
     // 3. Close Account: open edit dialog, close account
-    await page.getByText('Regalia Gold Premium').click();
+    await openAccountEditor(page, 'Regalia Gold Premium');
     await page.getByRole('button', { name: 'Close Account' }).click();
     await page.getByRole('button', { name: 'Confirm Close' }).click();
 
@@ -135,7 +134,7 @@ test.describe('Accounts UI (@ui)', () => {
     await expect(page.getByText('Regalia Gold Premium')).toBeVisible();
 
     // 4. Reopen Account
-    await page.getByText('Regalia Gold Premium').click();
+    await openAccountEditor(page, 'Regalia Gold Premium');
     await page.getByRole('button', { name: 'Reopen Account' }).click();
 
     // Account moves back out of closed section
@@ -152,18 +151,18 @@ test.describe('Accounts UI (@ui)', () => {
     await expect(page.getByText('Temp Petty Cash')).toBeVisible();
 
     // ...and its tile has no Statements (or Cards) action row
-    const walletTile = page.getByRole('button', { name: /Temp Petty Cash/i }).locator('..');
+    const walletTile = page.getByRole('link', { name: /Temp Petty Cash/i }).locator('..');
     await expect(walletTile.getByRole('button', { name: 'Statements' })).toHaveCount(0);
     await expect(walletTile.getByRole('button', { name: 'Cards' })).toHaveCount(0);
 
     // Open edit dialog and delete it
-    await page.getByText('Temp Petty Cash').click();
+    await openAccountEditor(page, /Temp Petty Cash/i);
     await page.getByRole('button', { name: 'Delete' }).click();
     await expect(page.getByRole('dialog').getByText('Are you sure you want to delete')).toBeVisible();
     await page.getByRole('button', { name: 'Delete Permanently' }).click();
 
     // Dialog closes and account is gone from the list
     await expect(page.getByRole('dialog')).not.toBeVisible();
-    await expect(page.getByRole('button', { name: /Temp Petty Cash/i })).not.toBeVisible();
+    await expect(page.getByRole('link', { name: /Temp Petty Cash/i })).not.toBeVisible();
   });
 });

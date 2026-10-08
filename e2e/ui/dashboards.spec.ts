@@ -14,7 +14,7 @@ test.describe('Dashboards UI (@ui)', () => {
     await loginContext(context, currentUser.cookie);
   });
 
-  test('Dashboards journey: empty state -> create dashboard -> add widget -> view -> edit expand -> discard modal -> default dashboard on home', async ({
+  test('Dashboards journey: seeded Home -> create dashboard -> add widget -> view -> edit expand -> discard modal -> default dashboard on home', async ({
     page,
   }) => {
     test.slow();
@@ -29,12 +29,14 @@ test.describe('Dashboards UI (@ui)', () => {
       definition: { measure: 'amount', aggregation: 'sum', filters: [] },
     });
 
-    // 1. Dashboards list empty state
+    // 1. Dashboards list: a first visit seeds the default Home dashboard, so it is never empty
     await page.goto('/dashboards');
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByRole('heading', { name: 'Dashboards', exact: true })).toBeVisible();
-    await expect(page.locator('text=No dashboards yet')).toBeVisible();
+    await expect(page.locator('text=No dashboards yet')).toHaveCount(0);
+    await expect(page.locator('main').getByRole('link', { name: 'Home', exact: true })).toBeVisible();
+    await expect(page.locator('main').getByText('Default', { exact: true })).toBeVisible();
 
     // 2. Click "New dashboard"
     await page.getByRole('button', { name: /New dashboard/i }).click();
@@ -93,10 +95,13 @@ test.describe('Dashboards UI (@ui)', () => {
     await backBtn.click();
     await page.waitForURL('**/dashboards');
 
-    // 9. Set as default dashboard from list
-    await page.getByTitle('Set as default').first().click();
+    // 9. Set as default dashboard from list (Home already holds the default, so target our card)
+    const executiveCard = page.locator('div.flex-col.gap-3', {
+      has: page.getByRole('link', { name: 'Executive Dashboard' }),
+    });
+    await executiveCard.getByTitle('Set as default').click();
     await expectToast(page, 'Set as default');
-    await expect(page.getByTitle('Clear default').first()).toBeVisible();
+    await expect(executiveCard.getByTitle('Clear default')).toBeVisible();
 
     // 10. Visit `/dashboard` (landing home) -> renders the default dashboard
     await page.goto('/dashboard');
@@ -106,7 +111,14 @@ test.describe('Dashboards UI (@ui)', () => {
     await expect(page.getByText(/Net Cashflow KPI/i).first()).toBeVisible();
   });
 
-  test('Fresh user on /dashboard sees empty state', async ({ page }) => {
+  test('User with no dashboards on /dashboard sees empty state', async ({ page }) => {
+    // A new user gets Home seeded on first read; delete it to reach the empty state.
+    const api = makeApi(currentUser.cookie);
+    const list = await api.GET('/api/v1/dashboards');
+    for (const d of list.data ?? []) {
+      await api.DELETE('/api/v1/dashboards/{id}', { params: { path: { id: d.id } } });
+    }
+
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 

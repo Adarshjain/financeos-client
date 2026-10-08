@@ -14,17 +14,19 @@ test.describe('UI Smokes', () => {
     await page.getByLabel('Password').fill(user.password);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect(page).toHaveURL(/\/dashboard/);
-    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+    // Home is the seeded dashboard; its switcher is the page's first control
+    await expect(page.getByRole('button', { name: /Switch dashboard, current: Home/ })).toBeVisible();
   });
 
   test('4. @mobile Sign out -> lands on /login; goto /dashboard redirects to login', async ({ page, context, user, isMobile }) => {
     await loginContext(context, user.cookie);
     await page.goto('/dashboard');
-    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Switch dashboard, current: Home/ })).toBeVisible();
 
     if (isMobile) {
+      // The menu is a bottom sheet (a dialog) with a Sign out button, not a dropdown menuitem
       await page.getByLabel('Open navigation menu').click();
-      await page.getByRole('menuitem', { name: 'Sign out' }).click();
+      await page.getByRole('dialog').getByRole('button', { name: 'Sign out' }).click();
     } else {
       await page.getByRole('button', { name: 'Sign out' }).click();
     }

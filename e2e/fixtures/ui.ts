@@ -68,3 +68,16 @@ export async function openFno(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: /Futures & Options/i, level: 1 })).toBeVisible();
 }
 
+
+/**
+ * Open an account's edit dialog from its tile on /accounts. The tile body now links to the account
+ * page; the pencil is a sibling button right after that link. Retried because the dialog trigger is
+ * server-rendered and a click before hydration is dropped.
+ */
+export async function openAccountEditor(page: Page, name: string | RegExp): Promise<void> {
+  const trigger = page.getByRole('link', { name }).first().locator('xpath=following-sibling::button[1]');
+  await expect(async () => {
+    await trigger.click();
+    await expect(page.getByLabel('Account Name')).toBeVisible({ timeout: 2000 });
+  }).toPass({ timeout: 15000 });
+}

@@ -22,10 +22,16 @@ test.describe('Report filter fields API (@api)', () => {
       d.fields.filter((f) => f.filterable === false).map((f) => `${d.name}.${f.name}`),
     );
     expect(notFilterable.sort()).toEqual([
+      'attention.href',
+      'attention.id',
       'lendings.counterpartyId',
       'lendings.transactionId',
       'loan_payments.loanId',
       'loan_tax_summary.loanId',
+      'net_worth.id',
+      'obligations.href',
+      'obligations.id',
+      'obligations.refId',
       'reward_earnings.cycle',
       'reward_earnings.rewardYear',
       'reward_earnings.txnCount',

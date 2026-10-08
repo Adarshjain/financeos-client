@@ -40,7 +40,7 @@ test.describe('Background Jobs UI (@ui)', () => {
     await setLlmMode(api, 'SCHEMA_DEFAULT');
   });
 
-  test('/settings/jobs: list history, filter by status and type', async ({
+  test('/settings/activity: list history, filter by status and type', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -52,11 +52,11 @@ test.describe('Background Jobs UI (@ui)', () => {
       { filename: 'jobs-ui-test.pdf', buffer: pdf },
     ]);
 
-    await page.goto('/settings/jobs');
+    await page.goto('/settings/activity');
 
     // 1. Verify Page Heading
     await expect(
-      page.getByRole('heading', { name: 'Background Jobs History' })
+      page.getByRole('heading', { name: 'Activity', exact: true })
     ).toBeVisible();
 
     // 2. Verify Table contains the job
@@ -81,7 +81,7 @@ test.describe('Background Jobs UI (@ui)', () => {
     await expect(page.locator('tbody').getByText('SUCCEEDED').first()).toBeVisible();
   });
 
-  test('/settings/jobs: retry a CANCELLED job from row action -> spawns new completing job', async ({
+  test('/settings/activity: retry a CANCELLED job from row action -> spawns new completing job', async ({
     page,
   }) => {
     // The retried job waits out the 15s LLM delay holding both worker slots
@@ -154,7 +154,7 @@ test.describe('Background Jobs UI (@ui)', () => {
       params: { path: { id: ruleJobId } },
     });
 
-    await page.goto('/settings/jobs');
+    await page.goto('/settings/activity');
 
     const ruleRows = page.locator('tbody tr').filter({ hasText: 'Rule Apply' });
     const cancelledRow = ruleRows.filter({ hasText: 'CANCELLED' });
@@ -171,7 +171,7 @@ test.describe('Background Jobs UI (@ui)', () => {
     await expect(ruleRows.filter({ hasText: 'SUCCEEDED' })).toBeVisible({ timeout: 25000 });
   });
 
-  test('/settings/jobs: cancel a RUNNING job from row action', async ({
+  test('/settings/activity: cancel a RUNNING job from row action', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -192,7 +192,7 @@ test.describe('Background Jobs UI (@ui)', () => {
       { filename: 'cancel-ui-test.pdf', buffer: pdf },
     ]);
 
-    await page.goto('/settings/jobs');
+    await page.goto('/settings/activity');
 
     // Verify RUNNING status or Cancel button is visible
     const cancelBtn = page.getByRole('button', { name: /Cancel/i }).first();

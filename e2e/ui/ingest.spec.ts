@@ -52,7 +52,7 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
     await setLlmMode(api, 'SCHEMA_DEFAULT');
   });
 
-  test('/settings/ingest: upload statement, progress polling, summary display, duplicate detection, and skipped re-upload', async ({
+  test('/transactions/import: upload statement, progress polling, summary display, duplicate detection, and skipped re-upload', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
@@ -63,11 +63,11 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
 
     const pdfBuffer = await genBankPdf(validBankSpec);
 
-    await page.goto('/settings/ingest');
+    await page.goto('/transactions/import');
 
     // 1. Verify Page Heading and Components
     await expect(
-      page.getByRole('heading', { name: 'Statement Ingestion', exact: true })
+      page.getByRole('heading', { name: 'Import statements', exact: true })
     ).toBeVisible();
     await expect(
       page.getByRole('heading', { name: 'Recent statement ingestion jobs' })
@@ -165,15 +165,15 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
     await expect(skippedCard.getByRole('cell', { name: 'SKIPPED' })).toBeVisible({ timeout: 15000 });
   });
 
-  test('/settings/ingest: client-side rejection for invalid file extension and oversized files with zero requests', async ({
+  test('/transactions/import: client-side rejection for invalid file extension and oversized files with zero requests', async ({
     page,
   }) => {
     const api = makeApi(currentUser.cookie);
     await createBankAccount(api, { name: 'Rejection Bank' });
 
-    await page.goto('/settings/ingest');
+    await page.goto('/transactions/import');
     await expect(
-      page.getByRole('heading', { name: 'Statement Ingestion', exact: true })
+      page.getByRole('heading', { name: 'Import statements', exact: true })
     ).toBeVisible();
 
     let requestCount = 0;
