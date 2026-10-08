@@ -195,7 +195,10 @@ test.describe('Notifications API (producers)', () => {
     const second = await ingestCard(api, card.id, '7301', istToday(-25), istToday(-3), [shared, { date: istToday(-10), description: 'RESTAURANT DINING', debit: 900 }]);
     expect(second.result.totalDuplicatesFound, 'the shared row is a duplicate suspect').toBeGreaterThan(0);
 
-    await evaluateNow(api);
+    const outcome = await evaluateNow(api);
+    // Both statements contain the duplicated row's date, so both digests count it: the count
+    // query really found the DUPLICATE_SUSPECT rows in Oracle, not just stamped the statements.
+    expect(outcome.recorded, 'at least the two digests were recorded').toBeGreaterThanOrEqual(2);
 
     const statements = await getAccountStatements(api, card.id);
     expect(statements).toHaveLength(2);
