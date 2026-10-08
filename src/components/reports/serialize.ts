@@ -94,10 +94,12 @@ export function serializeDefinition(
       filters,
     };
     // Comparison is on by default server-side. Only send the block to turn it
-    // OFF or to express a higher-is-better preference (drives the sentiment).
+    // OFF, to express a higher-is-better preference (drives the sentiment), or
+    // to show the previous period's value instead of the change.
     const comparison: NonNullable<KpiDefinition['comparison']> = {};
     if (!k.comparisonEnabled) comparison.enabled = false;
     if (k.higherIsBetter !== undefined) comparison.higherIsBetter = k.higherIsBetter;
+    if (k.comparisonDisplay === 'previous_value') comparison.display = 'previous_value';
     if (Object.keys(comparison).length > 0) def.comparison = comparison;
     return def;
   }

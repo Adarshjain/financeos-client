@@ -10,6 +10,7 @@ import {
 import type {
   Aggregation,
   ChartDefinition,
+  ComparisonDisplay,
   DatasourceCatalog,
   FilterClause,
   Granularity,
@@ -28,6 +29,8 @@ export interface KpiDraft {
   comparisonEnabled: boolean; // on by default; serialized to { enabled: false } when off
   /** undefined = no preference (neutral); true/false drive the delta sentiment. */
   higherIsBetter?: boolean;
+  /** undefined = the default (`change`); only `previous_value` is serialized. */
+  comparisonDisplay?: ComparisonDisplay;
 }
 
 export interface ChartDraft {
@@ -232,6 +235,7 @@ export function hydrateState(report: ReportResponse): BuilderState {
       aggregation: d.aggregation,
       comparisonEnabled: d.comparison?.enabled !== false,
       higherIsBetter: d.comparison?.higherIsBetter,
+      comparisonDisplay: d.comparison?.display,
     };
   } else if (report.type === 'CHART') {
     if (!isChartDefinition(def)) {

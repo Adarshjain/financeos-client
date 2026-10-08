@@ -165,6 +165,12 @@ export interface MeasureRef {
 // 2a. Type-specific definitions — the `definition` payload by report type
 // ---------------------------------------------------------------------------
 
+/**
+ * What a KPI's comparison line shows: the change against the previous period
+ * (`change`, the default) or that period's own value (`previous_value`).
+ */
+export type ComparisonDisplay = 'change' | 'previous_value';
+
 /** KPI: a single aggregated value, optionally compared to the previous period. */
 export interface KpiDefinition {
   /** A measure field (e.g. `amount`). */
@@ -176,12 +182,14 @@ export interface KpiDefinition {
    * `{ enabled: false }` to turn it off. `higherIsBetter` drives the response
    * `sentiment`: an increase reads `good` when true and `bad` when false; when
    * unset the change is `neutral`. Null in the response when the range is
-   * unbounded / `all_time`.
+   * unbounded / `all_time`. `display` picks what the line shows; omit it for
+   * the default (`change`).
    */
   comparison?: {
     enabled?: boolean;
     higherIsBetter?: boolean;
     period?: 'previous_period';
+    display?: ComparisonDisplay;
   };
 }
 
@@ -303,7 +311,11 @@ export interface ReportRunOptions {
 
 /** Period-over-period comparison block on KPI data. */
 export interface KpiComparison {
-  previousValue: number;
+  /**
+   * Null when the previous period had no rows for an aggregation that yields
+   * nothing without rows (avg/min/max); `change` still treats that as zero.
+   */
+  previousValue: number | null;
   /** The window `previousValue` was computed over; null when the range is unbounded. */
   previousDateRange: { from: string; to: string } | null;
   change: number;
@@ -317,6 +329,11 @@ export interface KpiComparison {
    * Use this — not `direction` — to color the delta.
    */
   sentiment: 'good' | 'bad' | 'neutral';
+  /**
+   * Echo of the definition's `comparison.display`. Absent on responses from a
+   * server that predates it, which the view treats as `change`.
+   */
+  display?: ComparisonDisplay;
 }
 
 /** Resolved metadata echoed back with computed data. */

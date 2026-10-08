@@ -2,7 +2,10 @@
 // by the live preview and by the dashboard. Values are displayed exactly as the
 // API returns them (amount is signed — no client recomputation).
 //
-// The delta's ARROW comes from `direction` (up/down/flat); its COLOR comes from
+// The comparison line shows the delta ("+₹6,100 (+15.7%)") or, when the
+// definition asked for `display: previous_value`, the previous period's value
+// ("prev ₹38,900"); the hover carries whichever of the two is not on the line.
+// The line's ARROW comes from `direction` (up/down/flat); its COLOR comes from
 // `sentiment` (good = green, bad = red, neutral = muted), which is the server's
 // value judgement driven by the definition's `comparison.higherIsBetter`.
 
@@ -26,7 +29,7 @@ const sentimentColors = {
 } as const;
 
 export function KpiView({ data, className }: { data: KpiData, className?: string }) {
-  const fmt = (n: number) =>
+  const fmt = (n: number | null) =>
     formatMeasureValue(n, {
       field: data.measure,
       aggregation: data.aggregation,
@@ -44,9 +47,17 @@ export function KpiView({ data, className }: { data: KpiData, className?: string
   const fullComparedLabel = prevRange
     ? `vs ${formatDateRangeFull(prevRange.from, prevRange.to)}`
     : 'vs previous period';
-  // Surface the actual previous value on hover (e.g. "vs 1 May 26 – 31 May 26: ₹-38,900").
+  // Responses from a server that predates `display` carry none and read as the delta.
+  const showPreviousValue = comparison?.display === 'previous_value';
+  const deltaText = comparison
+    ? signedChange(comparison.change) +
+      (comparison.changePercent !== null ? ` (${signedPercent(comparison.changePercent)})` : '')
+    : '';
+  const previousText = comparison ? `prev ${fmt(comparison.previousValue)}` : '';
+  // The hover carries whichever of the two the line does not show
+  // (e.g. "vs 1 May 26 – 31 May 26: ₹-38,900" under the delta).
   const comparedTitle = comparison
-    ? `${fullComparedLabel}: ${fmt(comparison.previousValue)}`
+    ? `${fullComparedLabel}: ${showPreviousValue ? deltaText : fmt(comparison.previousValue)}`
     : undefined;
 
   return (
@@ -64,11 +75,7 @@ export function KpiView({ data, className }: { data: KpiData, className?: string
           title={comparedTitle}
         >
           <Icon className="h-3 w-3" />
-          <span className="tabular-nums">
-            {signedChange(comparison.change)}
-            {comparison.changePercent !== null &&
-              ` (${signedPercent(comparison.changePercent)})`}
-          </span>
+          <span className="tabular-nums">{showPreviousValue ? previousText : deltaText}</span>
         </div>
       )}
       {range && (

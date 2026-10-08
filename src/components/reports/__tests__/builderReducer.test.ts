@@ -365,3 +365,36 @@ describe('builderReducer (CD-12)', () => {
     expect(hydratedEmpty.table.agg.sort).toEqual([]);
   });
 });
+
+describe('builderReducer KPI comparison display', () => {
+  it('starts with no display preference (the change default)', () => {
+    expect(initialBuilderState().kpi.comparisonDisplay).toBeUndefined();
+  });
+
+  it('KPI_SET stores and clears the display preference', () => {
+    let state = builderReducer(initialBuilderState(), {
+      type: 'KPI_SET',
+      value: { comparisonDisplay: 'previous_value' },
+    });
+    expect(state.kpi.comparisonDisplay).toBe('previous_value');
+    expect(state.kpi.comparisonEnabled).toBe(true);
+
+    state = builderReducer(state, { type: 'KPI_SET', value: { comparisonDisplay: undefined } });
+    expect(state.kpi.comparisonDisplay).toBeUndefined();
+  });
+
+  it('hydrates the display from a saved definition and leaves it unset when absent', () => {
+    const saved = (comparison: Record<string, unknown> | undefined): ReportResponse =>
+      ({
+        id: 'rep-kpi-display',
+        name: 'Spend',
+        datasource: 'transactions',
+        type: 'KPI',
+        definition: { type: 'KPI', measure: 'amount', aggregation: 'sum', comparison, filters: [] },
+      }) as any;
+
+    expect(hydrateState(saved({ display: 'previous_value' })).kpi.comparisonDisplay).toBe('previous_value');
+    expect(hydrateState(saved({ enabled: true, higherIsBetter: true })).kpi.comparisonDisplay).toBeUndefined();
+    expect(hydrateState(saved(undefined)).kpi.comparisonDisplay).toBeUndefined();
+  });
+});
