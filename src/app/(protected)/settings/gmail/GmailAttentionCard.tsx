@@ -7,7 +7,7 @@ import {
   RotateCcw,
   UserPlus,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,11 +31,16 @@ import { AssignAccountDialog } from './AssignAccountDialog';
 type PagedGmailAttention = Schemas['PageGmailAttentionItemResponse'];
 type AttentionItem = PagedGmailAttention['content'][number];
 
+/** Anchor id of the card; the attention push deep-links to `/settings/gmail?focus=attention`. */
+export const ATTENTION_ANCHOR = 'attention';
+
 interface GmailAttentionCardProps {
   attentionData: PagedGmailAttention;
   attentionPage: number;
   onPageChange: (page: number) => void;
   onRetry: (ledgerId: string) => void;
+  /** True when the page was opened from the "needs attention" push: scroll the card into view. */
+  autoScroll?: boolean;
 }
 
 export function GmailAttentionCard({
@@ -43,14 +48,28 @@ export function GmailAttentionCard({
   attentionPage,
   onPageChange,
   onRetry,
+  autoScroll = false,
 }: GmailAttentionCardProps) {
   const [assigningItem, setAssigningItem] = useState<AttentionItem | null>(null);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const hasItems = Boolean(attentionData && attentionData.content.length > 0);
 
-  if (!attentionData || attentionData.content.length === 0) return null;
+  // The "needs attention" push deep-links to /settings/gmail?focus=attention; the page passes
+  // that down because the card renders only once the data is in, after any native scroll.
+  useEffect(() => {
+    if (!hasItems || !autoScroll) return;
+    cardRef.current?.scrollIntoView({ block: 'start' });
+  }, [hasItems, autoScroll]);
+
+  if (!hasItems) return null;
 
   return (
     <>
-      <Card className="border border-amber-200 dark:border-amber-900/50 bg-amber-50/30 dark:bg-amber-950/10">
+      <Card
+        ref={cardRef}
+        id={ATTENTION_ANCHOR}
+        className="scroll-mt-4 border border-amber-200 dark:border-amber-900/50 bg-amber-50/30 dark:bg-amber-950/10"
+      >
         <CardHeader className="p-3 pb-2 flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-sm font-bold flex items-center gap-2 text-amber-800 dark:text-amber-300">
             <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />

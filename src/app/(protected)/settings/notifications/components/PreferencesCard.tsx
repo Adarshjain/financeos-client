@@ -11,7 +11,7 @@ import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { NotificationSettingsResponse, UpdateNotificationSettingsRequest } from '@/lib/api/types';
 import { useNotificationSettingsMutations } from '@/lib/query/hooks/useNotificationSettings';
 
-import { hourLabel, isKindEnabled, KIND_OPTIONS, OFFSET_CHOICES, offsetLabel, toggleOffset } from './notificationSettings.helpers';
+import { hourLabel, isKindEnabled, KIND_GROUPS, OFFSET_CHOICES, offsetLabel, toggleOffset } from './notificationSettings.helpers';
 
 interface PreferencesCardProps {
   settings: NotificationSettingsResponse;
@@ -54,28 +54,33 @@ export function PreferencesCard({ settings }: PreferencesCardProps) {
           <span className="text-xs text-slate-500">(master switch for every device)</span>
         </label>
 
-        <ul className="space-y-2">
-          {KIND_OPTIONS.map((kind) => (
-            <li key={kind.key}>
-              <label className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-200">
-                <Checkbox
-                  className="mt-0.5"
-                  checked={isKindEnabled(settings, kind.key)}
-                  disabled={update.isPending}
-                  onCheckedChange={(v) => save({ kinds: { [kind.key]: v === true } })}
-                  aria-label={kind.label}
-                />
-                <span>
-                  <span className="font-semibold">{kind.label}</span>
-                  <span className="block text-xs text-slate-500 dark:text-slate-400">{kind.description}</span>
-                </span>
-              </label>
-            </li>
-          ))}
-        </ul>
+        {KIND_GROUPS.map((group) => (
+          <div key={group.title} className="space-y-1.5" data-testid={`kind-group-${group.title}`}>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">{group.title}</p>
+            <ul className="space-y-2">
+              {group.kinds.map((kind) => (
+                <li key={kind.key}>
+                  <label className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-200">
+                    <Checkbox
+                      className="mt-0.5"
+                      checked={isKindEnabled(settings, kind.key)}
+                      disabled={update.isPending}
+                      onCheckedChange={(v) => save({ kinds: { [kind.key]: v === true } })}
+                      aria-label={kind.label}
+                    />
+                    <span>
+                      <span className="font-semibold">{kind.label}</span>
+                      <span className="block text-xs text-slate-500 dark:text-slate-400">{kind.description}</span>
+                    </span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
 
         <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Remind me</p>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase">Remind me (bills and EMIs)</p>
           <div className="flex flex-wrap gap-1.5" data-testid="reminder-offsets">
             {choices.map((offset) => {
               const active = offsets.includes(offset);
@@ -116,7 +121,7 @@ export function PreferencesCard({ settings }: PreferencesCardProps) {
               ))}
             </SelectContent>
           </Select>
-          <span className="text-2xs text-slate-400">IST · a statement digest goes out as soon as it arrives</span>
+          <span className="text-2xs text-slate-400">IST · statement digests and mailbox alerts go out as soon as they happen</span>
         </div>
       </CardContent>
     </Card>

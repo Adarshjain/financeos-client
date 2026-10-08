@@ -90,3 +90,65 @@ describe('GmailAttentionCard', () => {
     });
   });
 });
+
+describe('GmailAttentionCard deep link anchor', () => {
+  function stubScroll() {
+    const scroll = vi.fn();
+    const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollIntoView');
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, writable: true, value: scroll });
+    const restore = () => {
+      if (original) Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', original);
+      else delete (HTMLElement.prototype as unknown as { scrollIntoView?: unknown }).scrollIntoView;
+    };
+    return { scroll, restore };
+  }
+
+  it('renders under the #attention anchor', () => {
+    renderWithQuery(
+      <GmailAttentionCard attentionData={mockAttentionData} attentionPage={0} onPageChange={vi.fn()} onRetry={vi.fn()} />
+    );
+    expect(document.getElementById('attention')).not.toBeNull();
+  });
+
+  it('scrolls itself into view when the page was opened from the attention push', () => {
+    const { scroll, restore } = stubScroll();
+    try {
+      renderWithQuery(
+        <GmailAttentionCard attentionData={mockAttentionData} attentionPage={0} onPageChange={vi.fn()} onRetry={vi.fn()} autoScroll />
+      );
+      expect(scroll).toHaveBeenCalledWith({ block: 'start' });
+    } finally {
+      restore();
+    }
+  });
+
+  it('does not scroll on an ordinary visit', () => {
+    const { scroll, restore } = stubScroll();
+    try {
+      renderWithQuery(
+        <GmailAttentionCard attentionData={mockAttentionData} attentionPage={0} onPageChange={vi.fn()} onRetry={vi.fn()} />
+      );
+      expect(scroll).not.toHaveBeenCalled();
+    } finally {
+      restore();
+    }
+  });
+
+  it('never scrolls when there is nothing to show', () => {
+    const { scroll, restore } = stubScroll();
+    try {
+      renderWithQuery(
+        <GmailAttentionCard
+          attentionData={{ ...mockAttentionData, content: [], totalElements: 0 }}
+          attentionPage={0}
+          onPageChange={vi.fn()}
+          onRetry={vi.fn()}
+          autoScroll
+        />
+      );
+      expect(scroll).not.toHaveBeenCalled();
+    } finally {
+      restore();
+    }
+  });
+});

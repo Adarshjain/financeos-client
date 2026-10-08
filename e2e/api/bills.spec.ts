@@ -151,7 +151,8 @@ test.describe('Notification settings API', () => {
     expect(defaults.data!.pushEnabled).toBe(true);
     expect(defaults.data!.sendHour).toBe(9);
     expect(defaults.data!.reminderOffsets).toEqual([7, 3, 1, 0]);
-    expect(defaults.data!.kinds).toEqual({ STATEMENT_RECEIVED: true, BILL_DUE_REMINDER: true, BILL_OVERDUE: true });
+    // The bill kinds are a subset now that other producers (Gmail, EMIs) add their own switches.
+    expect(defaults.data!.kinds).toMatchObject({ STATEMENT_RECEIVED: true, BILL_DUE_REMINDER: true, BILL_OVERDUE: true });
     expect(defaults.data!.devices).toEqual([]);
     expect(defaults.data!.pushConfigured, 'the e2e server has no VAPID keys').toBe(false);
 

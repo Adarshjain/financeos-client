@@ -6,6 +6,7 @@ import { resetLlm, setLlmMode } from '../fixtures/control';
 import { genBankPdf } from '../fixtures/gen/statements';
 import type { GoogleIdentity, Mailbox } from '../fixtures/google-stubs';
 import {
+  addMapping,
   cleanupIdentity,
   listQueries,
   messagesListCount,
@@ -697,5 +698,152 @@ test.describe('Gmail tenancy', () => {
       await resetLlm(apiA);
       await cleanupIdentity(identity);
     }
+  });
+});
+
+test.describe('Gmail token rejection and reconnect', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  let api: ReturnType<typeof makeApi>;
+  let identity: GoogleIdentity;
+  let connectionId: string;
+  let failingRefreshMapping: string | null = null;
+  let unmatchedBefore = 0;
+
+  test.beforeAll(async ({ request }) => {
+    const user = await createUser(request, 'gmail-reconnect');
+    api = makeApi(user.cookie);
+    identity = await registerIdentity();
+    unmatchedBefore = await unmatchedCount();
+    // A sender is what makes a sync actually talk to Google (no senders → the sync returns early),
+    // and an empty mailbox is what lets the repaired sync at the end list nothing and succeed.
+    await createSender(api);
+    await registerMailbox(identity, []);
+    const connection = await connectGmail(api, identity);
+    connectionId = connection.id;
+    await waitForGmailJobsIdle(api);
+    expect(connection.needsReconnect).toBe(false);
+    expect(connection.authFailedAt ?? null).toBeNull();
+  });
+
+  test.afterAll(async () => {
+    if (failingRefreshMapping) await removeMappings([failingRefreshMapping]);
+    await cleanupIdentity(identity);
+    expect(await unmatchedCount(), 'WireMock saw requests no stub matched').toBe(unmatchedBefore);
+  });
+
+  test('a refresh token Google rejects fails the sync as an auth error and flags the mailbox', async () => {
+    test.slow();
+    // Priority 0 beats the identity's own refresh stub: Google now answers invalid_grant, as it does
+    // for a token minted under a Testing-mode consent screen after seven days.
+    failingRefreshMapping = await addMapping({
+      name: `token-refresh-dead-${identity.id}`,
+      priority: 0,
+      request: {
+        method: 'POST',
+        urlPath: '/google/oauth2/token',
+        bodyPatterns: [{ contains: 'grant_type=refresh_token' }, { contains: `refresh_token=${identity.refreshToken}` }],
+      },
+      response: {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+        jsonBody: { error: 'invalid_grant', error_description: 'Token has been expired or revoked.' },
+      },
+    });
+
+    const { job } = await runSync(api);
+    expect(job.status, JSON.stringify(job)).toBe('FAILED');
+    expect(job.errorMessage ?? '').toContain('invalid_grant');
+
+    const [connection] = (await listConnections(api)).filter((c) => c.id === connectionId);
+    expect(connection.isConnected, 'the user still wants this mailbox').toBe(true);
+    expect(connection.needsReconnect).toBe(true);
+    expect(connection.authFailedAt).toBeTruthy();
+  });
+
+  test('a second failure keeps the first failure time', async () => {
+    const before = (await listConnections(api)).find((c) => c.id === connectionId)!.authFailedAt;
+    const { job } = await runSync(api);
+    expect(job.status).toBe('FAILED');
+    const after = (await listConnections(api)).find((c) => c.id === connectionId)!.authFailedAt;
+    expect(after).toBe(before);
+  });
+
+  test('reconnecting the same mailbox repairs it', async () => {
+    await removeMappings([failingRefreshMapping!]);
+    failingRefreshMapping = null;
+
+    const repaired = await connectGmail(api, identity, 1);
+    expect(repaired.id, 'reconnect upserts the existing row').toBe(connectionId);
+    expect(repaired.needsReconnect).toBe(false);
+    expect(repaired.authFailedAt ?? null).toBeNull();
+    await waitForGmailJobsIdle(api);
+
+    const { job } = await runSync(api);
+    expect(job.status, JSON.stringify(job)).toBe('SUCCEEDED');
+  });
+});
+
+test.describe('Gmail attention digest marker', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  let api: ReturnType<typeof makeApi>;
+  let identity: GoogleIdentity;
+  let unmatchedBefore = 0;
+
+  const orphan = alertMail({ last4: '4242', amount: 999, merchant: 'ORPHAN STORE', date: isoDaysAgo(3), sentAt: daysAgo(3) });
+
+  test.beforeAll(async ({ request }) => {
+    const user = await createUser(request, 'gmail-attention');
+    api = makeApi(user.cookie);
+    identity = await registerIdentity();
+    unmatchedBefore = await unmatchedCount();
+    await createSender(api);
+    await connectGmail(api, identity);
+    await waitForGmailJobsIdle(api);
+    await registerMailbox(identity, [orphan]);
+    await scriptExtractions(api, [
+      extractionFor(orphan, { json: extractedTxn({ amount: 999, date: isoDaysAgo(3), last4: '4242', merchant: 'ORPHAN STORE' }) }),
+    ]);
+  });
+
+  test.afterAll(async () => {
+    await resetLlm(api);
+    await cleanupIdentity(identity);
+    expect(await unmatchedCount(), 'WireMock saw requests no stub matched').toBe(unmatchedBefore);
+  });
+
+  test('the on-demand tick stamps new attention items once; a retry clears the stamp', async () => {
+    test.slow();
+    const { job } = await runSync(api);
+    expect(job.status, JSON.stringify(job)).toBe('SUCCEEDED');
+    const [parked] = await attentionItems(api);
+    expect(parked).toMatchObject({ status: 'UNRESOLVED_ACCOUNT', extractedLast4: '4242' });
+    expect(parked.attentionNotifiedAt ?? null, 'not announced yet').toBeNull();
+
+    expectStatus(await api.PUT('/api/v1/notifications/settings', { body: { sendHour: 0 } }), 200);
+    const first = await api.POST('/api/v1/notifications/evaluate');
+    expectStatus(first, 200);
+    expect(first.data!.failed).toBe(0);
+
+    const [announced] = await attentionItems(api);
+    expect(announced.attentionNotifiedAt).toBeTruthy();
+
+    // Second pass: already announced, nothing new.
+    expectStatus(await api.POST('/api/v1/notifications/evaluate'), 200);
+    expect((await attentionItems(api))[0].attentionNotifiedAt).toBe(announced.attentionNotifiedAt);
+
+    // Retrying puts the item back in the queue and clears the stamp, so a second parking is announced again.
+    // Scripted LLM answers are consumed once, so the retry needs its extraction re-armed to park again.
+    await scriptExtractions(api, [
+      extractionFor(orphan, { json: extractedTxn({ amount: 999, date: isoDaysAgo(3), last4: '4242', merchant: 'ORPHAN STORE' }) }),
+    ]);
+    const retry = await api.POST('/api/v1/gmail/attention/{ledgerId}/retry', { params: { path: { ledgerId: parked.id } } });
+    expectStatus(retry, 202);
+    const retried = await waitForJob(api, retry.data!.jobId);
+    expect(retried.status).toBe('SUCCEEDED');
+    const [reparked] = await attentionItems(api);
+    expect(reparked.id).toBe(parked.id);
+    expect(reparked.attentionNotifiedAt ?? null).toBeNull();
   });
 });

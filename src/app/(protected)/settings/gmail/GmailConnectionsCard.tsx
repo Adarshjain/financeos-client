@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, Plus, RefreshCw, Trash2 } from 'lucide-react';
+import { AlertTriangle, Loader2, Plus, RefreshCw, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -89,8 +89,29 @@ export function GmailConnectionsCard({
                         Primary
                       </Badge>
                     )}
+                    {conn.needsReconnect && (
+                      <Badge
+                        variant="destructive"
+                        className="text-2xs py-0 px-1.5 inline-flex items-center gap-1"
+                        data-testid={`needs-reconnect-${conn.id}`}
+                      >
+                        <AlertTriangle className="h-3 w-3" />
+                        Needs reconnect
+                      </Badge>
+                    )}
                   </div>
                   <div className="text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
+                    {conn.needsReconnect && conn.authFailedAt && (
+                      <span className="text-rose-600 dark:text-rose-400">
+                        Google stopped accepting this mailbox on{' '}
+                        {new Date(conn.authFailedAt).toLocaleDateString('en-IN', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                        . Imports are paused until you reconnect.
+                      </span>
+                    )}
                     {conn.connectedAt && (
                       <span>
                         Connected:{' '}
@@ -110,14 +131,28 @@ export function GmailConnectionsCard({
                     )}
                   </div>
                 </div>
-                <Button
-                  variant="ghost-destructive"
-                  size="sm"
-                  aria-label={`Disconnect ${conn.email}`}
-                  onClick={() => onDisconnect(conn.id)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1 shrink-0">
+                  {conn.needsReconnect && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      aria-label={`Reconnect ${conn.email}`}
+                      onClick={onConnect}
+                      disabled={loading !== null}
+                    >
+                      <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                      Reconnect
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost-destructive"
+                    size="sm"
+                    aria-label={`Disconnect ${conn.email}`}
+                    onClick={() => onDisconnect(conn.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

@@ -21,9 +21,11 @@ import { useLoanDetail } from './components/useLoanDetail';
 
 interface LoanDetailProps {
   loanId: string;
+  /** Installment an EMI push deep-linked to (`?installment=N`, parsed by the page). */
+  highlightSeq?: number | null;
 }
 
-export function LoanDetail({ loanId }: LoanDetailProps) {
+export function LoanDetail({ loanId, highlightSeq = null }: LoanDetailProps) {
   const router = useRouter();
 
   const {
@@ -198,6 +200,7 @@ export function LoanDetail({ loanId }: LoanDetailProps) {
         expandedFYs={expandedFYs}
         onToggleFY={toggleFY}
         currentFY={currentFY}
+        highlightSeq={highlightSeq}
         onOpenMarkPaid={handleOpenMarkPaid}
         onUnlinkPayment={handleUnlinkPayment}
       />

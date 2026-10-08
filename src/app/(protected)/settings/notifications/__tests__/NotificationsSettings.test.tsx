@@ -184,3 +184,71 @@ describe('NotificationsSettings', () => {
     expect(await screen.findByText('No device is registered yet.')).toBeInTheDocument();
   });
 });
+
+describe('NotificationsSettings loans and groups', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    pushMocks.isPushSupported.mockReturnValue(true);
+    pushMocks.getCurrentPushSubscription.mockResolvedValue(null);
+    pushMocks.notificationPermission.mockReturnValue('default');
+    vi.mocked(api.GET).mockImplementation(async (path: string) => {
+      if (path === '/api/v1/notifications/push/public-key') return { data: { publicKey: 'BKEY', configured: true } } as never;
+      if (path === '/api/v1/accounts') return { data: cards } as never;
+      if (path === '/api/v1/loans') {
+        return { data: { content: [{ id: 'loan-1', name: 'Home loan' }, { id: 'loan-2', name: 'Car loan' }] } } as never;
+      }
+      return { data: currentSettings } as never;
+    });
+  });
+
+  it('renders the switches grouped by module', async () => {
+    render();
+    expect(await screen.findByTestId('kind-group-Credit cards')).toBeInTheDocument();
+    expect(within(screen.getByTestId('kind-group-Loans')).getByRole('checkbox', { name: 'EMI reminders' })).toBeInTheDocument();
+    expect(within(screen.getByTestId('kind-group-Loans')).getByRole('checkbox', { name: 'EMI overdue' })).toBeInTheDocument();
+    expect(within(screen.getByTestId('kind-group-Gmail')).getByRole('checkbox', { name: 'Mailbox disconnected' })).toBeInTheDocument();
+    expect(within(screen.getByTestId('kind-group-Gmail')).getByRole('checkbox', { name: 'Emails needing attention' })).toBeInTheDocument();
+    expect(screen.getByText('Remind me (bills and EMIs)')).toBeInTheDocument();
+  });
+
+  it('saves a new kind switch like the old ones', async () => {
+    vi.mocked(api.PUT).mockImplementation(async (_path: string, opts: unknown) => {
+      const body = (opts as { body: Partial<NotificationSettingsResponse> }).body;
+      return { data: settings({ ...body, kinds: { ...settings().kinds, ...(body.kinds ?? {}) } }) } as never;
+    });
+    render();
+    fireEvent.click(await screen.findByRole('checkbox', { name: 'EMI overdue' }));
+    await waitFor(() =>
+      expect(api.PUT).toHaveBeenCalledWith('/api/v1/notifications/settings', { body: { kinds: { EMI_OVERDUE: false } } }),
+    );
+  });
+
+  it('lists active loans and mutes one', async () => {
+    vi.mocked(api.PUT).mockResolvedValue({ data: settings({ mutedLoanIds: ['loan-1'] } as Partial<NotificationSettingsResponse>) } as never);
+    render();
+    const list = await screen.findByTestId('loan-mutes');
+    expect(within(list).getByText('Home loan')).toBeInTheDocument();
+    expect(within(list).getByText('Car loan')).toBeInTheDocument();
+
+    fireEvent.click(within(list).getByRole('checkbox', { name: 'Mute Home loan' }));
+    await waitFor(() =>
+      expect(api.PUT).toHaveBeenCalledWith('/api/v1/notifications/loans/{loanId}/mute', {
+        params: { path: { loanId: 'loan-1' } },
+        body: { muted: true },
+      }),
+    );
+    expect(within(list).getByRole('checkbox', { name: 'Mute Home loan' })).toHaveAttribute('data-state', 'checked');
+    expect(within(list).getByRole('checkbox', { name: 'Mute Car loan' })).toHaveAttribute('data-state', 'unchecked');
+  });
+
+  it('says so when there are no active loans', async () => {
+    vi.mocked(api.GET).mockImplementation(async (path: string) => {
+      if (path === '/api/v1/notifications/push/public-key') return { data: { publicKey: 'BKEY', configured: true } } as never;
+      if (path === '/api/v1/accounts') return { data: cards } as never;
+      if (path === '/api/v1/loans') return { data: { content: [] } } as never;
+      return { data: currentSettings } as never;
+    });
+    render();
+    expect(await screen.findByText('No active loans yet.')).toBeInTheDocument();
+  });
+});
