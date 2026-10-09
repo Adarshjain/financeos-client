@@ -130,7 +130,7 @@ export const keys = {
     /** A KPI's underlying rows: `source` names the KPI (saved id / ad-hoc request / built-in key + params). */
     underlying: (source: Record<string, unknown>, params: Record<string, unknown> = {}) =>
       [...keys.reports.all, 'underlying', source, params] as const,
-    /** One row's breakdown (`params` = {size}) or one of its section pages (`params` = {section, page, size}). */
+    /** One row's breakdown (`params` = {size}) or one of its section pages (`params` = {section, page, size, sort}). */
     breakdown: (datasource: string, rowId: string, params: Record<string, unknown> = {}) =>
       [...keys.reports.all, 'breakdown', datasource, rowId, params] as const,
   },

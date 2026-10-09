@@ -113,7 +113,11 @@ export function isRelativeDateOp(
   );
 }
 
-/** Options for an enum field: static `values` inline, dynamic fetched by name. */
+/**
+ * Options for an enum field: static `values` inline, dynamic fetched by name.
+ * A static option's `id` is the stored value and its `name` the display label
+ * (`valueLabels`, else the value itself).
+ */
 export function enumOptionsFor(
   field: FieldDefinition,
   dynamic: DynamicOptions,
@@ -121,7 +125,7 @@ export function enumOptionsFor(
   if (field.dynamic) {
     return dynamic[field.name] ?? [];
   }
-  return (field.values ?? []).map((v) => ({ id: v, name: v }));
+  return (field.values ?? []).map((v) => ({ id: v, name: field.valueLabels?.[v] ?? v }));
 }
 
 /** The editor a (field, operator) pair needs, and the value shape it produces. */

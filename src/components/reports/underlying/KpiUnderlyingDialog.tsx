@@ -4,7 +4,8 @@
 // this period or (when the KPI compares) the previous one, server-sorted and
 // server-paged, with the KPI's filters as chips and the aggregate restated
 // under the table. Rows open a transaction or swap the body to that row's
-// breakdown (Back returns). Download CSV exports every row in the same order.
+// breakdown (Back returns). Download CSV exports every row in the same order;
+// it is offered only on the list — inside a breakdown the footer is just Close.
 //
 // Wide centred dialog on desktop, the standard bottom sheet on mobile; the
 // table scrolls sideways inside the body. Sort, page and period are local to
@@ -67,13 +68,18 @@ export function KpiUnderlyingDialog({ source, kpi, title, open, onOpenChange }: 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl" aria-describedby={undefined}>
-        <UnderlyingContent source={source} kpi={kpi} title={title} />
+        <UnderlyingContent source={source} kpi={kpi} title={title} onClose={() => onOpenChange(false)} />
       </DialogContent>
     </Dialog>
   );
 }
 
-function UnderlyingContent({ source, kpi, title }: Pick<KpiUnderlyingDialogProps, 'source' | 'kpi' | 'title'>) {
+function UnderlyingContent({
+  source,
+  kpi,
+  title,
+  onClose,
+}: Pick<KpiUnderlyingDialogProps, 'source' | 'kpi' | 'title'> & { onClose: () => void }) {
   const [period, setPeriod] = useState<UnderlyingPeriod>('current');
   const [sort, setSort] = useState<SortClause | null>(null);
   const [page, setPage] = useState(0);
@@ -207,7 +213,12 @@ function UnderlyingContent({ source, kpi, title }: Pick<KpiUnderlyingDialogProps
         )}
       </DialogBody>
 
-      <DialogFooter primaryAction={{ label: 'Download CSV', onClick: download }} secondaryAction={{ label: 'Close' }} />
+      {top ? (
+        // The CSV is the KPI's rows, not the open breakdown's: inside one, only Close.
+        <DialogFooter primaryAction={{ label: 'Close', variant: 'outline', onClick: onClose }} />
+      ) : (
+        <DialogFooter primaryAction={{ label: 'Download CSV', onClick: download }} secondaryAction={{ label: 'Close' }} />
+      )}
 
       <UnderlyingTransactionDialog transactionId={transactionId} onClose={() => setTransactionId(null)} />
     </>

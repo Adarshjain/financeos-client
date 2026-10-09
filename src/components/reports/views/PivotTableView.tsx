@@ -5,7 +5,8 @@
 // rows[i].cells[columnKey][measureKey] (missing → blank). When there are no
 // column dimensions the server returns a single column with key "", so it
 // renders as a plain rows × measures table. Header values for date dimensions
-// arrive pre-formatted from the server and are rendered verbatim. Paging/size
+// arrive pre-formatted from the server and are rendered verbatim; static enum
+// values read through the dimension's `valueLabels` when it has them. Paging/size
 // (over row groups) and the runtime sort are driven by the parent — a runtime
 // concern, not part of the saved definition. Sortable headers mirror the
 // server's rule: row dimensions always; measures only with no column dims.
@@ -18,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatMeasureValue } from '@/lib/reports.helpers';
+import { formatMeasureValue, valueLabel } from '@/lib/reports.helpers';
 import type {
   PivotColumn,
   PivotMeasureInfo,
@@ -82,7 +83,10 @@ export function PivotTableView({
   // Join a column combo's values in column-dimension order; rendered as-is.
   const columnLabel = (col: PivotColumn) =>
     columnDimensions
-      .map((cd) => col.values[cd.field])
+      .map((cd) => {
+        const v = col.values[cd.field];
+        return v === undefined || v === null || v === '' ? v : valueLabel(v, cd.valueLabels);
+      })
       .filter((v) => v !== undefined && v !== null && v !== '')
       .join(' · ');
 
@@ -189,7 +193,9 @@ export function PivotTableView({
                     key={rd.field}
                     className="whitespace-nowrap font-medium"
                   >
-                    {row.values[rd.field] ?? '—'}
+                    {row.values[rd.field] != null
+                      ? valueLabel(row.values[rd.field], rd.valueLabels)
+                      : '—'}
                   </TableCell>
                 ))}
                 {columns.flatMap((col) =>

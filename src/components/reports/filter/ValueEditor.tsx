@@ -53,6 +53,8 @@ export function ValueEditor({
     : dynamicLoading ? 'Loading values…' : 'No values in your data yet';
   // Fields with a stable id store the id; the dropdown shows the label.
   const byId = field.valueKey === 'id' || !!field.idField;
+  // Static enum options carry the stored value as their id (their name may be a display label).
+  const storesId = byId || (field.type === 'enum' && !field.dynamic);
 
   switch (kind) {
     case 'scalar':
@@ -83,7 +85,7 @@ export function ValueEditor({
     case 'scalarEnum': {
       const options = [
         ...enumOptionsFor(field, dynamicOptions).map((o) => ({
-          value: byId ? (o.id ?? o.name) : o.name,
+          value: storesId ? (o.id ?? o.name) : o.name,
           label: o.name,
         })),
       ];
@@ -117,7 +119,7 @@ export function ValueEditor({
       const selected = Array.isArray(value) ? (value as string[]) : [];
       if (field.type === 'enum') {
         const options = enumOptionsFor(field, dynamicOptions).map((o) => ({
-          value: byId ? (o.id ?? o.name) : o.name,
+          value: storesId ? (o.id ?? o.name) : o.name,
           label: o.name,
         }));
         return (

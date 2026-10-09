@@ -35,7 +35,7 @@ import {
 } from '@/components/charts/chart-format';
 import { ChartTooltipContent } from '@/components/charts/ChartTooltip';
 import { useElementSize } from '@/components/charts/useElementSize';
-import { isMoneyField } from '@/lib/reports.helpers';
+import { isMoneyField, labelChartData } from '@/lib/reports.helpers';
 import type { ChartData } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
@@ -57,12 +57,14 @@ const ANIMATION_MS = 450;
 // like dashboard widgets) instead of the default fixed height used in flow
 // layouts such as the report builder's preview pane.
 export function ChartView({
-  data,
+  data: raw,
   fill,
 }: {
   data: ChartViewData;
   fill?: boolean;
 }) {
+  // Static enum categories/series read as their labels (e.g. "Bank account").
+  const data = labelChartData(raw);
   const { chartType, categories, series } = data;
 
   if (categories.length === 0 || series.length === 0) {
