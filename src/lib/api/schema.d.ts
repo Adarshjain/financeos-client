@@ -2564,6 +2564,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/rules/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["verifyRules"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/rules/{id}": {
         parameters: {
             query?: never;
@@ -3018,6 +3034,13 @@ export interface components {
         BulkReattributeResponse: {
             /** Format: int32 */
             updatedCount: number;
+        };
+        BulkVerifyRulesRequest: {
+            ruleIds: string[];
+        };
+        BulkVerifyRulesResponse: {
+            /** Format: int32 */
+            verifiedCount: number;
         };
         CapStatus: {
             cap: number;
@@ -13013,6 +13036,39 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PageRuleMatchTransactionResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    verifyRules: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BulkVerifyRulesRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BulkVerifyRulesResponse"];
                 };
             };
             /** @description Error response */

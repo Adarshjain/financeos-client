@@ -12,6 +12,7 @@ import { DeleteRuleDialog } from './browser/DeleteRuleDialog';
 import { RuleCard } from './browser/RuleCard';
 import { RuleFormDialog } from './browser/RuleFormDialog';
 import { RulesFilterBar } from './browser/RulesFilterBar';
+import { RulesSelectionBar } from './browser/RulesSelectionBar';
 import { useRulesBrowser } from './browser/useRulesBrowser';
 
 export function RulesBrowser() {
@@ -54,6 +55,12 @@ export function RulesBrowser() {
     handleSubmitRule,
     handleDeleteRule,
     handleVerifyRule,
+    selectedIds,
+    pageSelectableIds,
+    isBulkVerifying,
+    handleToggleSelect,
+    handleSelectPage,
+    handleBulkVerify,
   } = useRulesBrowser();
 
   const filterBar = (
@@ -96,6 +103,14 @@ export function RulesBrowser() {
         {filterBar}
       </Card>
 
+      <RulesSelectionBar
+        pageSelectableIds={pageSelectableIds}
+        selectedIds={selectedIds}
+        approving={isBulkVerifying}
+        onSelectPage={handleSelectPage}
+        onApprove={handleBulkVerify}
+      />
+
       {/* Rules list content */}
       {rules.content.length === 0 ? (
         <div className="text-center py-20 bg-slate-50/50 dark:bg-slate-900/10 border border-slate-200/50 dark:border-slate-800/40 rounded-2xl p-6">
@@ -117,6 +132,8 @@ export function RulesBrowser() {
               onVerify={handleVerifyRule}
               onEdit={openEditDialog}
               onDelete={setDeletingRule}
+              selected={selectedIds.includes(rule.id)}
+              onToggleSelect={handleToggleSelect}
             />
           ))}
         </div>
