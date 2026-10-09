@@ -59,6 +59,7 @@
 <li><span class="lyr">read</span><a href="/handbook/client.html#s07">§7 Client</a>; open <code>proxy.ts</code>, <code>lib/auth.ts</code>, one <code>*.server.ts</code> prefetch and its hook</li>
 <li><span class="lyr">read</span><a href="/handbook/calculations.html#s10">§10 Calculations</a> for the five formulas; open <code>BalanceMath</code> and <code>RewardCalculationService.evaluate</code></li>
 <li><span class="lyr">read</span><a href="/handbook/server-api.html#s14">§14 Jobs</a> and <a href="/handbook/modules-a.html#m-gmail">M3 Gmail</a>; run a sync locally with WireMock from the E2E fixtures if you have no Gmail credentials</li>
+<li><span class="lyr">trace</span>Open Home (<code>/dashboard</code>) on a fresh user and follow the first <code>GET /dashboards</code> into <code>HomeDashboardSeeder</code>; then open the Inbox and read <code>InboxService.list</code> and one collector (<code>BillInboxCollector</code>), then <code>ObligationsService</code> behind Upcoming. Read <a href="/handbook/quality-risk.html#s25-isolation">the section-isolation bug</a> before touching any composite read</li>
 <li><span class="lyr">read</span><a href="/handbook/rules.html#s45">§45 Contradictions</a> and <a href="/handbook/quality-risk.html#s67-matrix">§67 Priority matrix</a> before changing anything</li>
 </ol>
 
@@ -88,7 +89,7 @@
 <tr><td><span class="path">server/src/main/resources/db/migration/V82__*.sql</span></td><td>The card model as it is now</td></tr>
 <tr><td><span class="path">client/proxy.ts</span> + <span class="path">lib/auth.ts</span></td><td>Client auth gate</td></tr>
 <tr><td><span class="path">client/lib/api/client.ts</span> + <span class="path">keys.ts</span></td><td>Typed fetch and cache keys</td></tr>
-<tr><td><span class="path">client/components/nav/navItems.tsx</span></td><td>Information architecture</td></tr>
+<tr><td><span class="path">client/components/layout/navigation/navItems.tsx</span> + <span class="path">navigation.tsx</span></td><td>Information architecture: sidebar tree, mobile bottom bar per context, menu-sheet groups</td></tr>
 <tr><td><span class="path">client/e2e/**</span> and <span class="path">server/.../e2e/*</span></td><td>How the system is proven</td></tr>
 </table></div>
 
@@ -113,6 +114,12 @@
 <li>Regenerate <code>schema.d.ts</code> after any DTO change or CI fails on drift.</li>
 <li>Radix <code>asChild</code> triggers drop streamed RSC children; use children plus <code>triggerClassName</code>.</li>
 <li>The READMEs describe an older architecture; trust this handbook and the code.</li>
+<li>Catching an exception inside a <code>@Transactional</code> read does not contain it when the failing bean is itself transactional: the shared transaction is already rollback-only. Use <code>SectionRunner</code> for independent sections of a composite read.</li>
+<li>The Inbox must stay read-only: collectors read producers' rows and markers and never call <code>evaluate</code>, or opening the Inbox would push and advance markers.</li>
+<li><code>GET /dashboards</code> writes on a user's first call (Home seeding). Tests and E2E specs that count dashboards see Home; a new user never starts with zero dashboards.</li>
+<li>The "is it in the Inbox" rule lives twice, in the collectors and in the push link builders (<code>BillMessages.href</code>, <code>EmiMessages.href</code>); change both.</li>
+<li>Moved pages keep redirect stubs: <code>/settings/ingest</code> → <code>/transactions/import</code>, <code>/settings/jobs</code> → <code>/settings/activity</code> (query kept), <code>/loans/calendar</code> → <code>/upcoming</code>. Link to the new paths.</li>
+<li>Integration tests share one H2 database across <code>@SpringBootTest</code> classes; delete every row a test creates.</li>
 </ul>
 </section>
 <section class="sec" id="s30" data-part="X · Learning">
@@ -161,7 +168,20 @@
 <tr><td>Lending</td><td>Informal money lent or borrowed, signed ledger entry per counterparty; optionally linked to the bank transaction behind it</td><td><code>lendings</code>, <code>transaction_id</code> FK</td></tr>
 <tr><td>Split bill</td><td>Several lending ledger entries sharing one bank transaction (e.g. a dinner bill split N ways) — allowed since V86; loan payments/events/charges never share (still 1:1)</td><td><code>lendings.transaction_id</code> plain index (was UNIQUE through V85)</td></tr>
 <tr><td>Report / datasource</td><td>Saved query over a datasource with filters and grouping</td><td><code>reports</code>; SQL and computed datasources</td></tr>
-<tr><td>Dashboard / widget</td><td>Grid of report renderings</td><td><code>dashboards</code>, <code>dashboard_widgets</code></td></tr>
+<tr><td>Dashboard / widget</td><td>Grid of widgets on a 100-column layout; a widget is either a saved report or a built-in</td><td><code>dashboards</code> (widgets JSON with <code>kind</code>, <code>reportId</code> or <code>builtinKey</code>, <code>params</code>)</td></tr>
+<tr><td>Home</td><td>The user's default dashboard, seeded once with net worth, Inbox, Bills due, Upcoming and "Spend this month"; editable like any dashboard; restorable</td><td><code>HomeDashboardSeeder</code>, <code>/dashboard</code></td></tr>
+<tr><td>Home seeding</td><td>The one-time creation of Home on a user's first <code>GET /dashboards</code> or <code>/dashboards/default</code>, claimed by a conditional UPDATE so it happens exactly once; Restore Home seeds again on request</td><td><code>users.home_seeded_at</code> (V93), <code>UserRepository.markHomeSeeded</code></td></tr>
+<tr><td>Built-in widget</td><td>A widget defined by the server registry rather than by a saved report; added many times, resized down to its minimum width, removed but not edited</td><td><code>BuiltinWidgetRegistry</code>; keys <code>net_worth</code>, <code>attention</code>, <code>bills_due</code>, <code>upcoming</code></td></tr>
+<tr><td>Template vs component built-in</td><td>A template built-in is a fixed report definition over a datasource, run without a report row (<code>net_worth</code> KPI, <code>upcoming</code> table); a component built-in is drawn by the client from its own endpoint (<code>attention</code> = Inbox, <code>bills_due</code>)</td><td><code>KIND_TEMPLATE</code>, <code>KIND_COMPONENT</code>, <code>POST /dashboards/builtins/{key}/data</code></td></tr>
+<tr><td>Inbox</td><td>Everything that wants the user's attention now, computed on every read from bills, loans, lendings, statements, Gmail, the review queue, jobs and reward markers; grouped into act_now, needs_look and info</td><td><code>InboxService</code>, <code>/inbox</code></td></tr>
+<tr><td>Item row vs summary row</td><td>An item row is one subject with a stable key (a bill, an EMI installment, a counterparty …) and can be snoozed or dismissed; a summary row is a count behind one link (review queue, Gmail attention) and can only be dismissed</td><td><code>ROW_ITEM</code>, <code>ROW_SUMMARY</code>, <code>InboxKinds.isSummaryKey</code></td></tr>
+<tr><td>Snooze / dismiss / undo</td><td>The only Inbox state: hide a row until a later date (it returns on that date), hide it for good, or forget both</td><td><code>inbox_item_state</code> (V94), unique (user, item key)</td></tr>
+<tr><td>Obligation</td><td>Something to pay or act on by a date: an EMI, a lending due back, a card bill, an expected statement; status overdue, due_soon (0–7 days) or upcoming</td><td><code>ObligationsService</code>, <code>GET /obligations/upcoming</code>, <code>obligations</code> datasource</td></tr>
+<tr><td>Upcoming</td><td>The page and widget that list obligations, as a list or a calendar, with totals and mark-paid in place</td><td><code>/upcoming</code>, <code>UpcomingView</code></td></tr>
+<tr><td>Awaiting statement</td><td>Bill state of an open card with no live statement: nothing to pay yet, only unbilled spend and the date the next statement is expected</td><td><code>BillStatus.AWAITING_STATEMENT</code></td></tr>
+<tr><td>Unbilled amount</td><td>Non-excluded debits on a card after the latest statement's period end (since ever without one); credits never reduce it</td><td><code>CardBill.unbilledAmount</code></td></tr>
+<tr><td>Section runner</td><td>Runs one independent section of a composite read in its own <code>REQUIRES_NEW</code> read-only transaction so its failure cannot poison the caller's transaction</td><td><code>SectionRunner</code>, <code>TransactionalSectionRunner</code></td></tr>
+<tr><td>Net worth</td><td>Sum of <code>signedValue</code> over open non-excluded accounts, active loans and counterparty nets, as of today</td><td><code>net_worth</code> datasource</td></tr>
 <tr><td>Chat</td><td>Natural-language questions answered by model-written SQL</td><td><code>ChatOrchestrator</code>, <code>v_chat_*</code>, CHAT_RO</td></tr>
 <tr><td>BYOK</td><td>Bring your own LLM key</td><td><code>llm_keys</code></td></tr>
 <tr><td>Tenant</td><td>A user; every row has <code>user_id</code></td><td><code>userFilter</code></td></tr>
@@ -177,10 +197,15 @@
 <tr><th>Product says</th><th>Code says</th><th>Note</th></tr>
 <tr><td>Card</td><td><code>Account</code> of type CREDIT_CARD (the line) vs <code>Card</code> (the plastic)</td><td>Ambiguous in conversation; ask which</td></tr>
 <tr><td>Review queue</td><td>NEEDS_REVIEW rows</td><td></td></tr>
-<tr><td>Needs attention</td><td>Gmail ledger parked/failed</td><td>Different from review queue</td></tr>
+<tr><td>Needs attention</td><td>Gmail ledger parked/failed</td><td>Different from the review queue and from the Inbox; the <code>attention</code> datasource is also labelled "Needs attention" but covers the whole Inbox</td></tr>
+<tr><td>Inbox</td><td><code>InboxService</code>; built-in key <code>attention</code></td><td>Computed, not stored</td></tr>
+<tr><td>Home</td><td>The default dashboard at <code>/dashboard</code></td><td>Seeded, then an ordinary dashboard</td></tr>
+<tr><td>Upcoming</td><td>Obligations</td><td>Replaces the loans calendar</td></tr>
+<tr><td>Connections</td><td><code>/settings/gmail</code></td><td>Label changed; path kept for the OAuth redirect</td></tr>
+<tr><td>Activity</td><td>Jobs (<code>/settings/activity</code>)</td><td>Formerly the jobs page</td></tr>
 <tr><td>Sync</td><td>GMAIL_SYNC job</td><td></td></tr>
-<tr><td>Upload / ingest</td><td>STATEMENT_INGEST job via <code>/accounts/{id}/ingest</code></td><td></td></tr>
-<tr><td>Import</td><td>Broker file import (reconcile preview/commit)</td><td>Not statements</td></tr>
+<tr><td>Upload / ingest; Transactions → Import</td><td>STATEMENT_INGEST job via <code>/accounts/{id}/ingest</code>; page <code>/transactions/import</code></td><td>The nav item "Import" is statement upload</td></tr>
+<tr><td>Broker import</td><td>Broker file import (reconcile preview/commit) under Investments</td><td>Not statements</td></tr>
 <tr><td>Holdings</td><td>Computed positions</td><td>Not the <code>holdings</code> snapshot table</td></tr>
 <tr><td>Balance</td><td>Anchor + post-anchor sum</td><td>Not a column</td></tr>
 <tr><td>Points</td><td>Reward lines × <code>point_value_inr</code></td><td></td></tr>
@@ -206,12 +231,15 @@
 <div class="qa"><b>Q6</b> Is the ±₹20 / ±7-day match tolerance intentional, or should it be exact as the plan said? Now shared by EMI and lending match suggestions via <code>MatchingConstants</code>, so the answer applies to both.</div>
 <div class="qa"><b>Q7</b> Should a closed account also stop Gmail ingestion and imports, or only card edits?</div>
 <div class="qa"><b>Q8</b> Should merge union categories from both rows?</div>
-<div class="qa"><b>Q9</b> Is a net-worth figure (accounts + holdings − loans ± lendings) wanted? The stub suggests yes; nothing computes it.</div>
+<div class="qa"><b>Q9</b> Net worth is now computed as of today (<code>net_worth</code> datasource). Is a history wanted (stored snapshots or recomputation at past dates), and should the zero-returning <code>/dashboard/summary</code> stub be removed?</div>
 <div class="qa"><b>Q10</b> Should chat transcripts persist per user?</div>
 <div class="qa"><b>Q11</b> Should statement reward points be reconciled against the engine (parked analysis, 5 open questions there)?</div>
 <div class="qa"><b>Q12</b> Should Google SSO remain ungated by the invite code (user decision 2026-08-18) now that OAuth state is known to be unchecked?</div>
 <div class="qa"><b>Q13</b> Should a fractional cash-in-lieu of ₹0 be treated as unknown rather than as a loss?</div>
 <div class="qa"><b>Q14</b> Should the tax datasource apply statutory caps (80C ₹1.5 L, 24(b) ₹2 L) or stay a raw sum?</div>
+<div class="qa"><b>Q31</b> Should Restore Home replace the current Home instead of adding another dashboard named Home?</div>
+<div class="qa"><b>Q32</b> Should SIP instalments and dividend suggestions become Upcoming or Inbox kinds once the SIP module is un-parked?</div>
+<div class="qa"><b>Q33</b> Should an unlinked credit after the statement period count towards the bill automatically, or stay a "possible payment" until confirmed?</div>
 
 <h3 id="s31-eng">Engineering questions</h3>
 <div class="qa"><b>Q15</b> Does the Spring Session JDBC registry ever free the 5-session slots? Needs a test with 6 logins.</div>
@@ -224,6 +252,10 @@
 <div class="qa"><b>Q22</b> Are the prod schema and V85 in sync (memory: "prod schema-drift check pending")?</div>
 <div class="qa"><b>Q23</b> Which PDFBox version is in use, and are its known CVEs relevant to untrusted uploads?</div>
 <div class="qa"><b>Q24</b> Does the deploy script stop the old jar before Flyway runs, or after health passes? Determines downtime on a failed migration.</div>
+<div class="qa"><b>Q34</b> What does the Inbox cost per call for the largest user, and does the 60 s badge poll per tab matter on the 512 MB heap? No measurement exists.</div>
+<div class="qa"><b>Q35</b> Should <code>InboxService.list</code> isolate collectors the way Upcoming isolates sections, so one failing kind does not fail the Inbox, the badge and the Home widget?</div>
+<div class="qa"><b>Q36</b> Should Upcoming and net worth report which sections failed, instead of silently returning fewer rows?</div>
+<div class="qa"><b>Q37</b> Should <span class="path">api-spec.yaml</span> document 201 for the create endpoints that return it?</div>
 
 <h3 id="s31-history">Historical questions (need a person)</h3>
 <div class="qa"><b>Q25</b> Why was the built <code>EmailClassifier</code> abandoned in favour of attachment-filename routing?</div>
@@ -269,12 +301,17 @@
 <tr><td>FR-16</td><td>A user brings their own LLM keys and orders providers</td><td>Full</td><td>BYOK, routing prefs</td></tr>
 <tr><td>FR-17</td><td>Long-running work runs in the background with visible status, retries and cancellation</td><td>Full</td><td>Job queue</td></tr>
 <tr><td>FR-18</td><td>A user can delete their account and all data</td><td>Full</td><td>Verified deletion</td></tr>
-<tr><td>FR-19</td><td>A user sees net worth</td><td>Not</td><td>Stub</td></tr>
+<tr><td>FR-19</td><td>A user sees net worth</td><td>Partial</td><td>As of today only (<code>net_worth</code> datasource, Home KPI); no history</td></tr>
 <tr><td>FR-20</td><td>A user sets budgets</td><td>Not</td><td>Copy only</td></tr>
-<tr><td>FR-21</td><td>A user is notified of upcoming dues</td><td>Partial</td><td>Calendar view only; chat notifications</td></tr>
+<tr><td>FR-21</td><td>A user is notified of upcoming dues</td><td>Full</td><td>Web Push producers; Inbox rows for items due within 7 days or overdue; Upcoming list and calendar</td></tr>
 <tr><td>FR-22</td><td>Statement reward points are compared with computed rewards</td><td>Not</td><td>Parked</td></tr>
 <tr><td>FR-23</td><td>Card fees are tracked and netted</td><td>Not</td><td>Parked</td></tr>
 <tr><td>FR-24</td><td>A user exports data</td><td>Not</td><td>—</td></tr>
+<tr><td>FR-25</td><td>A user lands on an editable Home dashboard that exists from the first visit and can be restored</td><td>Full</td><td><code>HomeDashboardSeeder</code>; seeded once via <code>users.home_seeded_at</code></td></tr>
+<tr><td>FR-26</td><td>A user sees one list of what needs attention, with one-tap actions, snooze, dismiss and undo, reachable from push notifications</td><td>Full</td><td>Inbox; computed on read; <code>?item=</code> deep links</td></tr>
+<tr><td>FR-27</td><td>A user sees what is due (EMIs, lending returns, card bills, expected statements) as a list or calendar and can mark a bill paid in place</td><td>Full</td><td>Upcoming; SIPs excluded (parked)</td></tr>
+<tr><td>FR-28</td><td>A user sees each credit card's bill state, including unbilled spend before a statement arrives</td><td>Full</td><td>Bills due widget; <code>AWAITING_STATEMENT</code> rows</td></tr>
+<tr><td>FR-29</td><td>A user opens one page per account with overview, bills, earning rules, recent transactions, statements and import</td><td>Full</td><td><code>/accounts/[id]</code>; tiles open it, the pencil edits</td></tr>
 </table></div>
 
 <h3 id="s34-nfr">Non-functional requirements</h3>
@@ -299,6 +336,8 @@
 <li>Single household scale: 2 job threads, 512 MB heap, per-user quotas of 30 chat questions.</li>
 <li>Trust hierarchy: statement &gt; upload &gt; alert &gt; manual for merge; USER &gt; LLM for rules; ISIN &gt; symbol for instruments.</li>
 <li>Never lose an ingested fact: provisional rows instead of drops; parked instead of discarded; REJECTED still stored.</li>
+<li>A read never triggers a side effect the user did not ask for: the Inbox never evaluates producers; the only write on a read path is the one-time Home seed.</li>
+<li>Composite reads degrade by section rather than fail: Upcoming and net worth drop a broken section and keep the rest.</li>
 <li>Free-tier resilience: failover, cooldowns, budgets, retries with backoff.</li>
 </ul>
 </section>
@@ -318,12 +357,12 @@
   end
   subgraph OCI VM
     CD[Caddy TLS]
-    API[Spring Boot API /api/v1 · 37 controllers]
+    API[Spring Boot API /api/v1 · 41 controllers]
     JOBS[Job worker ×2 · 3 crons]
     FB[Fluent Bit · Grafana Agent]
   end
   subgraph Oracle ADB
-    DBT[(50 entities · 85 migrations)]
+    DBT[(49 entities · 95 migrations)]
     VW[(v_chat_* views · CHAT_RO)]
   end
   subgraph External
@@ -379,6 +418,17 @@
   Report -->|reads| Loan
   Report -->|reads| RewardRule
   Dashboard -->|shows| Report
+  Dashboard -->|shows| BuiltinWidget
+  BuiltinWidget -->|duplicated into| Report
+  Inbox -->|computed from| Statement
+  Inbox -->|computed from| Loan
+  Inbox -->|computed from| Lending
+  Inbox -->|computed from| Job
+  Inbox -->|computed from| RewardRule
+  User -->|snoozes or dismisses| Inbox
+  Upcoming -->|lists| Loan
+  Upcoming -->|lists| Lending
+  Upcoming -->|lists| Statement
   Chat -->|queries views over| Transaction
   Chat -->|drafts| Report
   Job -->|runs| Email
@@ -392,16 +442,17 @@
 <div class="tw"><table>
 <tr><th>Module</th><th>UI routes</th><th>API (controllers)</th><th>Key services</th><th>Tables</th><th>Jobs / crons</th><th>Key rules</th><th>Top risks</th><th>Sections</th></tr>
 <tr><td>M0 Core / auth</td><td>/login, /signup, /settings</td><td>Auth, Invite, Session, AccountDeletion, Health</td><td>AuthService, InviteCodeService, AccountDeletionService</td><td>users, SPRING_SESSION*</td><td>—</td><td>Invite fail-closed; 365 d session; 5-session cap</td><td>OAuth state; session cap; cookies.txt</td><td><a href="/handbook/server-api.html#s15">§15</a> <a href="/handbook/quality-risk.html#s23">§23</a></td></tr>
-<tr><td>M1 Accounts</td><td>/accounts, /accounts/[id]</td><td>Account, Cardholder, Card, Identifier, Statement</td><td>AccountService, BalanceMath, CardholderService</td><td>accounts, cardholders, cards, account_identifiers, statements*</td><td>—</td><td>Anchor balance; closure semantics</td><td>is_excluded; long alias</td><td><a href="/handbook/modules-a.html#m-accounts">M1</a> <a href="/handbook/calculations.html#s10">§10</a></td></tr>
+<tr><td>M1 Accounts</td><td>/accounts, /accounts/[id] (account page: overview, bills, earning rules, recent transactions, statements, import)</td><td>Account, Cardholder, Card, Identifier, Statement</td><td>AccountService, BalanceMath, CardholderService</td><td>accounts, cardholders, cards, account_identifiers, statements*</td><td>—</td><td>Anchor balance; closure semantics</td><td>is_excluded; long alias</td><td><a href="/handbook/modules-a.html#m-accounts">M1</a> <a href="/handbook/calculations.html#s10">§10</a></td></tr>
 <tr><td>M2 Transactions</td><td>/transactions, /transactions/review</td><td>Transaction, Category, CategoryRule, Link, Merge</td><td>TransactionService, CategorizationService, ReviewStatusManager</td><td>transactions, categories, category_rules, transaction_categories, transaction_links</td><td>—</td><td>USER&gt;LLM; review reasons; merge keep-order</td><td>Bulk reattribute null card; 'OTHER'</td><td><a href="/handbook/modules-a.html#m-transactions">M2</a> <a href="/handbook/calculations.html#s38">§38</a></td></tr>
-<tr><td>M3 Gmail</td><td>/settings/gmail</td><td>Gmail, GmailOAuth, GmailSender</td><td>GmailIngestionService, AccountResolver, GmailTransactionWriter, StatementReconciliationService</td><td>gmail_connections, gmail_message_ledger, gmail_senders, gmail_sync_cursor</td><td>GMAIL_SYNC; cron 10–22/2 h</td><td>Watermark; 4-pass resolve; ±3 d match</td><td>Silent token revoke; classifier dead; Vercel callback</td><td><a href="/handbook/modules-a.html#m-gmail">M3</a> <a href="/handbook/data.html#s12">§12</a></td></tr>
-<tr><td>M4 Statements</td><td>/settings/ingest</td><td>FileUpload, Statement</td><td>StatementParseEngine, FileIngestionService, TransactionMatcher</td><td>statements, statement_transactions, statement_credit_card_details</td><td>STATEMENT_INGEST</td><td>sha256 dedup; verdict; Jaccard 0.70</td><td>REJECTED ingests; PDFs in artifacts</td><td><a href="/handbook/modules-a.html#m-statements">M4</a> <a href="/handbook/rules.html#s43">§43</a></td></tr>
-<tr><td>M5 Jobs</td><td>/jobs</td><td>Job</td><td>JobService, JobWorker, JobJanitor</td><td>jobs, job_artifacts</td><td>All; retention 03:30</td><td>Claim by UPDATE; retry ladder; stale 60 min</td><td>2 threads; artifacts unencrypted</td><td><a href="/handbook/modules-a.html#m-jobs">M5</a> <a href="/handbook/server-api.html#s14">§14</a></td></tr>
+<tr><td>M3 Gmail</td><td>/settings/gmail (labelled Connections)</td><td>Gmail, GmailOAuth, GmailSender</td><td>GmailIngestionService, AccountResolver, GmailTransactionWriter, StatementReconciliationService</td><td>gmail_connections, gmail_message_ledger, gmail_senders, gmail_sync_cursor</td><td>GMAIL_SYNC; cron 10–22/2 h</td><td>Watermark; 4-pass resolve; ±3 d match</td><td>Silent token revoke; classifier dead; Vercel callback</td><td><a href="/handbook/modules-a.html#m-gmail">M3</a> <a href="/handbook/data.html#s12">§12</a></td></tr>
+<tr><td>M4 Statements</td><td>/transactions/import (old /settings/ingest redirects)</td><td>FileUpload, Statement</td><td>StatementParseEngine, FileIngestionService, TransactionMatcher</td><td>statements, statement_transactions, statement_credit_card_details</td><td>STATEMENT_INGEST</td><td>sha256 dedup; verdict; Jaccard 0.70</td><td>REJECTED ingests; PDFs in artifacts</td><td><a href="/handbook/modules-a.html#m-statements">M4</a> <a href="/handbook/rules.html#s43">§43</a></td></tr>
+<tr><td>M5 Jobs</td><td>/settings/activity (old /settings/jobs redirects)</td><td>Job</td><td>JobService, JobWorker, JobJanitor</td><td>jobs, job_artifacts</td><td>All; retention 03:30</td><td>Claim by UPDATE; retry ladder; stale 60 min</td><td>2 threads; artifacts unencrypted</td><td><a href="/handbook/modules-a.html#m-jobs">M5</a> <a href="/handbook/server-api.html#s14">§14</a></td></tr>
 <tr><td>M6 Investments</td><td>/investments/**</td><td>Investment, Instrument, Import, CorporateAction, Dividend, Fno, Price</td><td>InvestmentService, HoldingCalculator, BrokerReconciliationService, PriceRefreshService</td><td>brokers, instruments, investment_transactions, trade_settlement_classifications, corporate_actions, instrument_prices, dividends, fno_trades, holdings</td><td>IMPORT_COMMIT, PRICE_REFRESH; cron 19:00</td><td>FIFO; ISIN-first; classifier authoritative; CA replay</td><td>XIRR untested; duplicate CA; charges</td><td><a href="/handbook/modules-b.html#m-investments">M6</a> <a href="/handbook/calculations.html#s40">§40</a></td></tr>
 <tr><td>M7 Rewards</td><td>/rewards, /rewards/rules, /rewards/recommend</td><td>RewardRule, RewardBucket, RewardMilestone, RewardReport, RewardRecommendation</td><td>RewardCalculationService, RewardRecommendationService</td><td>reward_rules, reward_buckets, reward_milestones, reward_rule_*</td><td>—</td><td>DEBIT only; exclusive chain; PARTIAL_CAP; cycles</td><td>Duplicate rules; ₹0.25 vs ₹0</td><td><a href="/handbook/modules-b.html#m-rewards">M7</a> <a href="/handbook/calculations.html#s37">§37</a></td></tr>
-<tr><td>M8 Loans</td><td>/loans/**, /lendings</td><td>Loan, LoanEvent, LoanPayment, Lending, Obligations</td><td>LoanService, LoanScheduleService, LendingService</td><td>loans, loan_events, loan_payments, lendings, lending_entries</td><td>—</td><td>Annuity; strictly-before events; ±₹20/7 d match</td><td>Hollow tests; unreconciled payments</td><td><a href="/handbook/modules-b.html#m-loans">M8</a></td></tr>
-<tr><td>M9 Reports</td><td>/reports/**, /dashboard, /dashboards</td><td>Report, ReportData, Dashboard</td><td>ReportDataService, executors, datasources, DashboardService</td><td>reports, dashboards, dashboard_widgets</td><td>—</td><td>No default exclusions; FY month 4</td><td>Fan-out; stale sources; summary stub</td><td><a href="/handbook/modules-b.html#m-reports">M9</a> <a href="/handbook/rules.html#s45">§45</a></td></tr>
+<tr><td>M8 Loans</td><td>/loans/**, /loans/lendings (old /loans/calendar redirects to /upcoming)</td><td>Loan, LoanEvent, LoanPayment, Lending, Obligations</td><td>LoanService, LoanScheduleService, LendingService</td><td>loans, loan_events, loan_payments, lendings, lending_entries</td><td>—</td><td>Annuity; strictly-before events; ±₹20/7 d match</td><td>Hollow tests; unreconciled payments</td><td><a href="/handbook/modules-b.html#m-loans">M8</a></td></tr>
+<tr><td>M9 Reports</td><td>/reports/**, /dashboard (Home), /dashboards</td><td>Report, ReportData, Dashboard (incl. built-ins, Home restore)</td><td>ReportDataService, executors, datasources, DashboardService, BuiltinWidgetRegistry, HomeDashboardSeeder</td><td>reports, dashboards, users.home_seeded_at</td><td>—</td><td>No default exclusions; FY month 4; Home seeded once; built-ins remove-only</td><td>Fan-out; stale sources; summary stub</td><td><a href="/handbook/modules-b.html#m-reports">M9</a> <a href="/handbook/rules.html#s45">§45</a></td></tr>
 <tr><td>M10 LLM / chat</td><td>/chat, /settings/llm</td><td>Chat, LlmKey, LlmRouting, LlmHealth, Categorize</td><td>FailoverLlmClient, ChatOrchestrator, ChatSqlValidator, LlmKeyService</td><td>llm_keys, llm_routing_prefs, chat quota state, v_chat_*</td><td>—</td><td>Chain resolution; cooldown PT midnight; 22 prompt rules; 6/180/270 s</td><td>View drift; quota; no persistence</td><td><a href="/handbook/modules-b.html#m-llm-chat">M10</a> <a href="/handbook/server-api.html#s13">§13</a></td></tr>
+<tr><td>Inbox and Upcoming (cross-cutting)</td><td>/inbox, /upcoming</td><td>Inbox, Obligations, Bill</td><td>InboxService and 8 collectors, ObligationsService, CardBillService, SectionRunner</td><td>inbox_item_state; reads bills, loans, lendings, statements, Gmail ledger, jobs, reward markers</td><td>— (reads what the notification tick records)</td><td>Read-only Inbox; snooze returns on the date; push links only to listed rows; section isolation; refunds count as paid</td><td>Inbox cost per read; no per-collector isolation; silent section failures</td><td><a href="/handbook/rules.html#s18-registry">§18 D31–D42</a> <a href="/handbook/quality-risk.html#s25-isolation">§25</a></td></tr>
 </table></div>
 </section>
 <section class="sec" id="s70" data-part="X · Learning">
@@ -418,12 +469,12 @@
 <li><strong>Reports over-count multi-category transactions</strong> because of a join fan-out; chat does not. When two numbers disagree, this is the first suspect. <a href="/handbook/rules.html#s45">§45 C1</a></li>
 <li><strong>Google OAuth never checks <code>state</code>.</strong> This is the one security finding to fix before anything else. <a href="/handbook/quality-risk.html#s23">§23</a></li>
 <li><strong>XIRR has no tests and uses doubles.</strong> Every return figure rests on it. <a href="/handbook/quality-risk.html#s25">§25</a></li>
-<li><strong>Everything asynchronous is a job in the DB</strong> run by two threads in the API JVM; failures surface in job results and the Gmail attention queue, not in alerts. <a href="/handbook/server-api.html#s14">§14</a></li>
+<li><strong>Everything asynchronous is a job in the DB</strong> run by two threads in the API JVM; failures surface in job results, the Gmail attention queue and the Inbox (finished jobs from the last week), not in alerts. <a href="/handbook/server-api.html#s14">§14</a></li>
 <li><strong>The plans directory is intent, the code is truth, and they disagree in known places</strong> (charges in cost basis, EMI match tolerance, is_excluded). The READMEs are stale. <a href="/handbook/rules.html#s45">§45</a> <a href="#s31">§31</a></li>
 </ol>
 
 <h3 id="s70-model">The mental model</h3>
-<p>Picture a single append-mostly ledger of money movements per person, fed by three intakes of decreasing trust: hand entry, bank statements, and LLM-read emails. Around the ledger sit five calculators that never store their answers: a balance calculator anchored to statements, a reward calculator that replays card rules, a portfolio calculator that replays trades and corporate actions in FIFO order, a loan calculator that regenerates amortization schedules, and a report engine that aggregates whatever it is pointed at. A job queue in the same process does the slow intake work on a timer. A model can be asked questions and answers by writing SQL against read-only views that already carry the tenant boundary. The whole thing runs on free tiers, so quotas, cooldowns and small heaps shape many of its behaviours. If a number looks wrong, the question is never "which cache is stale" but always "which source row is wrong, or which formula".</p>
+<p>Picture a single append-mostly ledger of money movements per person, fed by three intakes of decreasing trust: hand entry, bank statements, and LLM-read emails. Around the ledger sit five calculators that never store their answers: a balance calculator anchored to statements, a reward calculator that replays card rules, a portfolio calculator that replays trades and corporate actions in FIFO order, a loan calculator that regenerates amortization schedules, and a report engine that aggregates whatever it is pointed at. A job queue in the same process does the slow intake work on a timer. A model can be asked questions and answers by writing SQL against read-only views that already carry the tenant boundary. Three front doors sit on top of all this, and they are computed too: Home (a seeded dashboard of widgets), the Inbox (what needs attention now) and Upcoming (what falls due). The whole thing runs on free tiers, so quotas, cooldowns and small heaps shape many of its behaviours. If a number looks wrong, the question is never "which cache is stale" but always "which source row is wrong, or which formula".</p>
 
 <h3 id="s69-critique">Self-critique of this handbook (§69)</h3>
 <div class="tw compact"><table>
