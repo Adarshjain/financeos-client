@@ -4,6 +4,7 @@ import { Check, Edit, ListChecks, MoreVertical, Trash2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +57,9 @@ interface RuleCardProps {
   onVerify: (id: string) => void;
   onEdit: (rule: CategoryRule) => void;
   onDelete: (rule: CategoryRule) => void;
+  /** Unverified rules get a checkbox for bulk approve when provided. */
+  selected?: boolean;
+  onToggleSelect?: (id: string) => void;
 }
 
 export function RuleCard({
@@ -64,15 +68,26 @@ export function RuleCard({
   onVerify,
   onEdit,
   onDelete,
+  selected = false,
+  onToggleSelect,
 }: RuleCardProps) {
+  const name = rule.displayName || rule.merchantKey;
   return (
     <div className="relative rounded-2xl border border-slate-200/50 dark:border-slate-800/60 bg-white dark:bg-slate-900/50 p-3 shadow-sm hover:shadow-md hover:border-slate-350 dark:hover:border-slate-700 transition-all duration-300 flex flex-col justify-between">
       {/* Header Info */}
       <div className="space-y-2">
         <div className="flex justify-between items-start gap-2">
-          <div className="min-w-0">
+          {onToggleSelect && !rule.verified && (
+            <Checkbox
+              checked={selected}
+              onCheckedChange={() => onToggleSelect(rule.id)}
+              aria-label={`Select ${name}`}
+              className="mt-1 shrink-0"
+            />
+          )}
+          <div className="min-w-0 flex-1">
             <h3 className="text-slate-900 dark:text-white truncate">
-              {rule.displayName || rule.merchantKey}
+              {name}
             </h3>
             {(rule.displayName || rule.matchType !== 'MERCHANT_KEY') && (
               <span className="text-2xs tabular-nums px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500 mt-1 block w-fit font-medium">

@@ -16,6 +16,7 @@ import { toastError } from '@/lib/toastError';
 
 import { DEFAULT_RULE_FILTERS, type RuleFilters,RULES_PAGE_SIZE } from './constants';
 import { validatePattern } from './RuleFormDialog';
+import { useRuleSelection } from './useRuleSelection';
 
 const toParam = (value: string) => (value === 'all' ? undefined : value);
 
@@ -46,6 +47,9 @@ export function useRulesBrowser() {
   const [editingRule, setEditingRule] = useState<CategoryRule | null>(null);
   const [matchesRule, setMatchesRule] = useState<CategoryRule | null>(null);
   const [deletingRule, setDeletingRule] = useState<CategoryRule | null>(null);
+
+  const selection = useRuleSelection();
+  const { setSelectedIds } = selection;
 
   // Form States
   const [merchantKey, setMerchantKey] = useState('');
@@ -139,8 +143,9 @@ export function useRulesBrowser() {
 
   const deleteRuleMutation = useMutation({
     mutationFn: (id: string) => api.DELETE('/api/v1/rules/{id}', { params: { path: { id } } }),
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       toast.success('Rule deleted successfully');
+      selection.deselect(id);
       setDeletingRule(null);
       queryClient.invalidateQueries({ queryKey: keys.rules.all });
     },
@@ -149,26 +154,37 @@ export function useRulesBrowser() {
 
   const verifyRuleMutation = useMutation({
     mutationFn: (id: string) => api.POST('/api/v1/rules/{id}/verify', { params: { path: { id } } }).then((r) => r.data),
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
       toast.success('Rule verified — matching transactions cleared from review');
+      selection.deselect(id);
       queryClient.invalidateQueries({ queryKey: keys.rules.all });
     },
     onError: (error) => toastError(error, 'Failed to verify rule.'),
   });
 
+  // Cleared on the keystroke, not in the debounce effect: that also fires on mount and would
+  // drop a selection made in the first 300ms.
+  const handleSearchChange = (value: string) => {
+    setSearchVal(value);
+    setSelectedIds([]);
+  };
+
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
     setPage(0);
+    setSelectedIds([]);
   };
 
   const handleFilterChange = <K extends keyof RuleFilters>(key: K, value: RuleFilters[K]) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setPage(0);
+    setSelectedIds([]);
   };
 
   const handleClearFilters = () => {
     setFilters(DEFAULT_RULE_FILTERS);
     setPage(0);
+    setSelectedIds([]);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -263,7 +279,7 @@ export function useRulesBrowser() {
     isFetching: rulesQuery.isFetching,
     rules,
     searchVal: search,
-    setSearchVal,
+    setSearchVal: handleSearchChange,
     activeTab,
     filters,
     isCreateOpen,
@@ -298,5 +314,11 @@ export function useRulesBrowser() {
     handleSubmitRule,
     handleDeleteRule,
     handleVerifyRule,
+    selectedIds: selection.selectedIds,
+    pageSelectableIds: rules.content.filter((r) => !r.verified).map((r) => r.id),
+    isBulkVerifying: selection.isBulkVerifying,
+    handleToggleSelect: selection.toggleSelect,
+    handleSelectPage: selection.selectPage,
+    handleBulkVerify: selection.bulkVerify,
   };
 }
