@@ -70,6 +70,39 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * narrows through the same single cast rather than repeating `as ReportData`
  * at each fetch.
  */
+/**
+ * How a stored enum value reads for people: its label from the server's `valueLabels`
+ * map when present, else the value itself. Display only — data keeps the stored value.
+ */
+export function valueLabel(
+  value: string,
+  labels: Record<string, string> | null | undefined
+): string {
+  return labels?.[value] ?? value;
+}
+
+/**
+ * A chart's categories and series names as people read them: each stored static-enum value
+ * through the server's `valueLabels` / `seriesValueLabels`. Returns the same object when the
+ * chart carries no labels.
+ */
+export function labelChartData<
+  T extends Pick<ChartData, 'categories' | 'series'> &
+    Partial<Pick<ChartData, 'valueLabels' | 'seriesValueLabels'>>,
+>(data: T): T {
+  const { valueLabels, seriesValueLabels } = data;
+  if (!valueLabels && !seriesValueLabels) return data;
+  return {
+    ...data,
+    categories: valueLabels
+      ? data.categories.map((c) => valueLabel(c, valueLabels))
+      : data.categories,
+    series: seriesValueLabels
+      ? data.series.map((s) => ({ ...s, name: valueLabel(s.name, seriesValueLabels) }))
+      : data.series,
+  };
+}
+
 export function asReportData(raw: unknown): ReportData {
   return raw as ReportData;
 }

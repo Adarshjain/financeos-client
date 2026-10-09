@@ -318,6 +318,11 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     // Grouped by side in the default order (largest first within a side).
     const rows = bodyRows(vud);
     await expect(rows).toHaveText([/^Asset$/, /NW Broker/, /NW Savings/, /^Liability$/, /NW Overdrawn/]);
+    // Kind and side cells read as their labels, never the stored values.
+    await expect(rows.filter({ hasText: 'NW Savings' })).toContainText('Bank account');
+    await expect(rows.filter({ hasText: 'NW Broker' })).toContainText('Broker');
+    await expect(rows.filter({ hasText: 'NW Overdrawn' })).toContainText('Liability');
+    await expect(vud.locator('tbody')).not.toContainText('bank_account');
     await expect(vud.getByText('Sum ₹25,799.90', { exact: true })).toBeVisible();
     await expect(vud.getByText('Assets ₹26,299.90')).toBeVisible();
     await expect(vud.getByText('Liabilities ₹500.00')).toBeVisible();
@@ -343,8 +348,26 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     ]);
     const transactions = vud.getByRole('region', { name: 'Transactions' });
     await expect(bodyRows(transactions)).toHaveText([/NW rent/, /NW refund/]);
+    // Inside a breakdown the footer offers only Close: the CSV is the KPI's rows, not this ledger's.
+    await expect(vud.getByRole('button', { name: 'Download CSV' })).toHaveCount(0);
+    await expect(vud.locator('[data-slot="dialog-footer"]').getByRole('button')).toHaveText(['Close']);
+    // Section headers sort the whole section on the server: asc → desc → default.
+    const description = transactions.getByRole('button', { name: 'Description', exact: true });
+    const descriptionHeader = transactions.getByRole('columnheader', { name: 'Description' });
+    await expect(descriptionHeader).toHaveAttribute('aria-sort', 'none');
+    await description.click();
+    await expect(descriptionHeader).toHaveAttribute('aria-sort', 'ascending');
+    await expect(bodyRows(transactions)).toHaveText([/NW refund/, /NW rent/]);
+    await description.click();
+    await expect(descriptionHeader).toHaveAttribute('aria-sort', 'descending');
+    await expect(bodyRows(transactions)).toHaveText([/NW rent/, /NW refund/]);
+    await description.click();
+    await expect(descriptionHeader).toHaveAttribute('aria-sort', 'none');
+    await expect(bodyRows(transactions)).toHaveText([/NW rent/, /NW refund/]);
     await vud.getByRole('button', { name: 'Back' }).click();
     await expect(rows).toHaveText([/^Asset$/, /NW Broker/, /NW Savings/, /^Liability$/, /NW Overdrawn/]);
+    // Back in the list, Download CSV returns.
+    await expect(vud.getByRole('button', { name: 'Download CSV' })).toBeVisible();
 
     // A broker row: cash plus holdings; a holding opens its positions breakdown.
     await rows.filter({ hasText: 'NW Broker' }).click();
@@ -376,6 +399,14 @@ test.describe('KPI underlying data dialog (@ui)', () => {
       vud.getByRole('button', { name: 'Download CSV' }).click(),
     ]);
     expect(download.suggestedFilename()).toBe(`Net worth ${todayFileLabel()}.csv`);
+    // The file prints kind and side by their labels, in the sorted order.
+    const csvBody = fs.readFileSync((await download.path())!).subarray(3).toString('utf8');
+    expect(csvBody.split('\r\n').filter(Boolean)).toEqual([
+      'Name,Kind,Side,Net value',
+      'NW Overdrawn,Bank account,Liability,-500.00',
+      'NW Savings,Bank account,Asset,11300.00',
+      'NW Broker,Broker,Asset,14999.90',
+    ]);
   });
 
   test('a table widget sorts by its headers on the server: paging keeps the sort, a new sort starts at page one, a reload drops it', async ({

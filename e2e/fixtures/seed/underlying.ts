@@ -14,9 +14,13 @@ export type RunReportRequest = components['schemas']['RunReportRequest'];
 export interface RawTable {
   type: string;
   mode: string;
-  columns: Array<{ key: string; label: string; type: string; format: string | null }>;
+  /** `valueLabels` (static enum columns only, else absent): stored value → display label. */
+  columns: Array<{ key: string; label: string; type: string; format: string | null; valueLabels?: Record<string, string> }>;
   rows: Array<Record<string, unknown>>;
   page: { number: number; size: number; totalElements: number; totalPages: number };
+  /** Echo of a runtime sort (breakdown sections); absent in the default order. */
+  sortKey?: string;
+  sortDirection?: 'asc' | 'desc';
 }
 
 export interface UnderlyingQuery {
@@ -25,6 +29,17 @@ export interface UnderlyingQuery {
   size?: number;
   sort?: string;
 }
+
+/** The net_worth `kind` / `side` display labels the catalog, tables, chips and CSV use. */
+export const NET_WORTH_KIND_LABELS: Record<string, string> = {
+  bank_account: 'Bank account',
+  credit_card: 'Credit card',
+  broker: 'Broker',
+  generic: 'Wallet/Cash',
+  loan: 'Loan',
+  lending: 'Lending',
+};
+export const NET_WORTH_SIDE_LABELS: Record<string, string> = { asset: 'Asset', liability: 'Liability' };
 
 /** A filter clause as the report definitions take it. */
 export type Filter = { field: string; operator: string; value?: unknown };
@@ -180,13 +195,13 @@ export async function rowBreakdown(
   return res.data!;
 }
 
-/** GET one page of a breakdown section (throws unless 200). */
+/** GET one page of a breakdown section, optionally sorted (`sort=<column>,<asc|desc>`; throws unless 200). */
 export async function breakdownSection(
   api: ApiClient,
   datasource: string,
   rowId: string,
   section: string,
-  query: { page?: number; size?: number } = {}
+  query: { page?: number; size?: number; sort?: string } = {}
 ): Promise<RawTable> {
   const res = await api.GET('/api/v1/report/datasource/{name}/rows/{rowId}/breakdown/sections/{section}', {
     params: { path: { name: datasource, rowId, section }, query },

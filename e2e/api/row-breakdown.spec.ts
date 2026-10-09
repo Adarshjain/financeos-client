@@ -118,6 +118,64 @@ test.describe('net_worth row breakdown: accounts (@api)', () => {
     expect(sectionOf(await rowBreakdown(api, 'net_worth', bank.id, 500), 'transactions').rows.page.size).toBe(200);
   });
 
+  test('a section sorts over all its rows on the server, echoes the sort, pages within it and refuses anything else', async ({
+    request,
+  }) => {
+    const { api } = await newUser(request, 'bd-section-sort');
+    const bank = await createBankAccount(api, { name: 'BD Sort Bank', openingBalance: 0 });
+    const add = (amount: number, daysAgo: number, description: string) =>
+      createTransaction(api, bank.id, { amount, date: istToday(-daysAgo), description });
+    const b1 = await add(-300, 5, 'bravo');
+    const a1 = await add(800, 4, 'Alpha');
+    const d1 = await add(-50, 3, 'delta');
+    const c1 = await add(-300, 2, 'Charlie');
+    const e1 = await add(1200, 1, 'echo');
+    // Default order: newest first.
+    const defaultIds = [e1.id, c1.id, d1.id, a1.id, b1.id];
+
+    const unsorted = await breakdownSection(api, 'net_worth', bank.id, 'transactions', { size: 10 });
+    expect(unsorted.rows.map((r) => r.id)).toEqual(defaultIds);
+    expect(unsorted.sortKey, 'no echo in the default order').toBeUndefined();
+    expect(unsorted.sortDirection).toBeUndefined();
+    // The embedded first page is that same default order.
+    expect(sectionOf(await rowBreakdown(api, 'net_worth', bank.id, 10), 'transactions').rows.rows.map((r) => r.id)).toEqual(defaultIds);
+
+    // Ascending by amount over the whole section, echoed; ties (-300 twice) keep the default order.
+    const asc = await breakdownSection(api, 'net_worth', bank.id, 'transactions', { size: 10, sort: 'amount,asc' });
+    expect(asc).toMatchObject({ sortKey: 'amount', sortDirection: 'asc' });
+    expect(asc.rows.map((r) => r.amount)).toEqual([-300, -300, -50, 800, 1200]);
+    expect(asc.rows.map((r) => r.id).slice(0, 2)).toEqual([c1.id, b1.id]);
+    const desc = await breakdownSection(api, 'net_worth', bank.id, 'transactions', { size: 10, sort: 'amount,desc' });
+    expect(desc).toMatchObject({ sortKey: 'amount', sortDirection: 'desc' });
+    expect(desc.rows.map((r) => r.amount)).toEqual([1200, 800, -50, -300, -300]);
+    // Text sorts ignore case.
+    const byName = await breakdownSection(api, 'net_worth', bank.id, 'transactions', { size: 10, sort: 'description,asc' });
+    expect(byName.rows.map((r) => r.description)).toEqual(['Alpha', 'bravo', 'Charlie', 'delta', 'echo']);
+
+    // Pages cut the sorted section: together they hold every row once, in order.
+    const pages = [];
+    for (let page = 0; page < 3; page++) {
+      const p = await breakdownSection(api, 'net_worth', bank.id, 'transactions', { page, size: 2, sort: 'amount,asc' });
+      expect(p).toMatchObject({ sortKey: 'amount', sortDirection: 'asc' });
+      expect(p.page).toEqual({ number: page, size: 2, totalElements: 5, totalPages: 3 });
+      pages.push(...p.rows.map((r) => r.id));
+    }
+    expect(pages).toEqual(asc.rows.map((r) => r.id));
+
+    // A key that is not one of the section's columns, or a malformed sort, is a 400.
+    for (const sort of ['nope,asc', 'id,asc', 'amount', 'amount,sideways', 'amount,asc,date,desc']) {
+      const res = await api.GET('/api/v1/report/datasource/{name}/rows/{rowId}/breakdown/sections/{section}', {
+        params: { path: { name: 'net_worth', rowId: bank.id, section: 'transactions' }, query: { sort } },
+      });
+      expect(res.response.status, sort).toBe(400);
+    }
+    // An unknown section is still a 404, sorted or not.
+    const unknown = await api.GET('/api/v1/report/datasource/{name}/rows/{rowId}/breakdown/sections/{section}', {
+      params: { path: { name: 'net_worth', rowId: bank.id, section: 'nope' }, query: { sort: 'amount,asc' } },
+    });
+    expect(unknown.response.status).toBe(404);
+  });
+
   test('an overdrawn account is a liability and its chain runs in that direction', async ({ request }) => {
     const { api } = await newUser(request, 'bd-overdrawn');
     const bank = await createBankAccount(api, { name: 'BD Overdrawn', openingBalance: 100 });
@@ -143,7 +201,8 @@ test.describe('net_worth row breakdown: accounts (@api)', () => {
     await createTransaction(api, wallet.id, { amount: 300, date: istToday(-2), description: 'Top-up' });
 
     const b = await rowBreakdown(api, 'net_worth', wallet.id);
-    expect(b).toMatchObject({ kindLabel: 'Account', subtitle: 'Asset', total: 300 });
+    // The generic account kind reads as the Kind column labels it.
+    expect(b).toMatchObject({ kindLabel: 'Wallet/Cash', subtitle: 'Asset', total: 300 });
     expect(stepsOf(b), 'no start step for a non-bank account with a zero base').toEqual([
       ['add', 'Credits (1)', 300],
       ['equals', 'Balance', 300],

@@ -3,8 +3,10 @@
 // How one listed row's value is made up (net worth account, holding…). Swaps
 // in for the underlying table inside the same dialog; Back returns a level.
 // Each section is its own paginated table: page 0 comes with the breakdown,
-// later pages from the section endpoint. Section rows open a transaction or a
-// nested breakdown (e.g. a broker's holding → its positions breakdown).
+// later pages from the section endpoint. Headers sort the whole section on the
+// server (asc → desc → default; session-only, back to page 1 on change); the
+// embedded page is used only for the unsorted first page. Section rows open a
+// transaction or a nested breakdown (e.g. a broker's holding → its positions).
 
 import { ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
@@ -14,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { asReportData, isRawTableData } from '@/lib/reports.helpers';
-import type { TableRow } from '@/lib/reports.types';
+import type { SortClause, TableRow } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 import { BreakdownSteps } from './BreakdownSteps';
@@ -116,16 +118,24 @@ function BreakdownSectionTable({
 }: BreakdownSectionTableProps) {
   const first = asReportData(section.table);
   const [page, setPage] = useState(0);
+  const [sort, setSort] = useState<SortClause | null>(null);
   const size = isRawTableData(first) ? first.page.size : UNDERLYING_PAGE_SIZE;
-  const later = useBreakdownSection(datasource, rowId, section.key, page, size);
-  const current = page === 0 ? first : later.data;
-  // The last page shown stays up (dimmed) while the next loads, and under the
-  // error when it fails, so the pager never unmounts mid-click. Page 0 has no
-  // query of its own to keep as placeholder data, hence the explicit memory.
+  const embedded = page === 0 && sort == null;
+  const later = useBreakdownSection(datasource, rowId, section.key, page, size, sort);
+  const current = embedded ? first : later.data;
+  // The last page shown stays up (dimmed) while the next page or sort loads,
+  // and under the error when it fails, so the pager and headers never unmount
+  // mid-click. The embedded page has no query of its own to keep as
+  // placeholder data, hence the explicit memory.
   const [lastShown, setLastShown] = useState(first);
   if (current && current !== lastShown) setLastShown(current);
   const table = current ?? lastShown;
-  const pageError = page > 0 ? later.error : null;
+  const pageError = embedded ? null : later.error;
+
+  const changeSort = (next: SortClause | null) => {
+    setSort(next);
+    setPage(0);
+  };
 
   // After a failed page the pager shows the last good page, so asking for the
   // failed page again is a retry.
@@ -144,6 +154,8 @@ function BreakdownSectionTable({
           <TableView
             data={table}
             loading={later.isFetching}
+            sort={sort}
+            onSortChange={changeSort}
             onPageChange={changePage}
             onRowClick={onRowClick}
           />

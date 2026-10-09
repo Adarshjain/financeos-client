@@ -4006,6 +4006,9 @@ export interface components {
             role: "measure" | "dimension" | "filter";
             /** @enum {string} */
             type: "number" | "date" | "string" | "enum" | "boolean";
+            valueLabels: {
+                [key: string]: string;
+            };
             values: string[];
         };
         FilterClause: {
@@ -12379,6 +12382,7 @@ export interface operations {
             query?: {
                 page?: number;
                 size?: number;
+                sort?: string;
             };
             header?: never;
             path: {

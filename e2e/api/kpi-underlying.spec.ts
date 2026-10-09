@@ -7,7 +7,7 @@ import { addLending, createCounterparty } from '../fixtures/seed/loans';
 import { ingestCardStatement } from '../fixtures/seed/nav';
 import { createReport, runSaved } from '../fixtures/seed/reports';
 import { createRewardCard, createRewardRule, fixedMonth, spend } from '../fixtures/seed/rewards';
-import { createTransaction, searchAll } from '../fixtures/seed/transactions';
+import { createCategory, createTransaction, searchAll } from '../fixtures/seed/transactions';
 import {
   csvLines,
   dayOf,
@@ -17,6 +17,8 @@ import {
   kpiBody,
   kpiFigures,
   monthBefore,
+  NET_WORTH_KIND_LABELS,
+  NET_WORTH_SIDE_LABELS,
   PREVIOUS_PERIOD,
   seedSpendMonths,
   startsWithBom,
@@ -510,6 +512,8 @@ test.describe('KPI underlying data: computed datasources (@api)', () => {
     ]);
     const table = tableOf(res);
     expect(table.columns.map((c) => c.key)).toEqual(['name', 'kind', 'side', 'signedValue']);
+    // Kind and side carry their display labels; the rows below keep the stored values.
+    expect(table.columns.map((c) => c.valueLabels ?? null)).toEqual([null, NET_WORTH_KIND_LABELS, NET_WORTH_SIDE_LABELS, null]);
     // Assets first, largest first; then liabilities.
     expect(table.rows).toEqual([
       { id: bank.id, name: 'NWU Bank', kind: 'bank_account', side: 'asset', signedValue: 12000 },
@@ -538,11 +542,218 @@ test.describe('KPI underlying data: computed datasources (@api)', () => {
       kpiBody('net_worth', { measure: 'value', aggregation: 'sum', filters: [{ field: 'side', operator: 'is', value: 'liability' }] })
     );
     expect(liabilities).toMatchObject({ value: 2000, rowCount: 1 });
-    expect(liabilities.filters.map((f) => f.text)).toEqual(['is liability']);
+    // Chips print a static enum value by its label.
+    expect(liabilities.filters.map((f) => f.text)).toEqual(['is Liability']);
     expect(liabilities.summaryLines).toEqual([
       { label: 'Assets', value: 0, format: 'currency' },
       { label: 'Liabilities', value: 2000, format: 'currency' },
     ]);
+    const kinds = await underlyingAdHoc(
+      api,
+      kpiBody('net_worth', {
+        measure: 'value',
+        aggregation: 'sum',
+        filters: [{ field: 'kind', operator: 'in', value: ['bank_account', 'generic'] }],
+      })
+    );
+    expect(kinds.filters.map((f) => [f.fieldLabel, f.text])).toEqual([['Kind', 'in Bank account, Wallet/Cash']]);
+    expect(tableOf(kinds).rows.map((r) => r.kind).sort()).toEqual(['bank_account', 'generic']);
+
+    // The CSV prints every enum cell by its label.
+    const file = await underlyingBuiltinCsv(api, 'net_worth');
+    expect(csvLines(file)).toEqual([
+      'Name,Kind,Side,Net value',
+      'NWU Bank,Bank account,Asset,12000.00',
+      'NWU Asha,Lending,Asset,5000.00',
+      'NWU Wallet,Wallet/Cash,Asset,300.00',
+      'NWU Card,Credit card,Liability,-2000.00',
+    ]);
+  });
+
+  test('in-memory KPIs compare with an empty previous period exactly like SQL ones', async ({ request }) => {
+    const { api } = await newUser(request, 'vud-empty-previous');
+    const current = fixedMonth();
+    // The same two figures now, and nothing the month before, in a SQL (transactions) and an
+    // in-memory (lendings) datasource.
+    const bank = await createBankAccount(api, { name: 'EP Bank', openingBalance: 0 });
+    await createTransaction(api, bank.id, { amount: -5000, date: dayOf(current, 4), description: 'EP big' });
+    await createTransaction(api, bank.id, { amount: -2000, date: dayOf(current, 9), description: 'EP small' });
+    const asha = await createCounterparty(api, { name: 'EP Asha' });
+    await addLending(api, { counterpartyId: asha.id, direction: 'lent', amount: 5000, entryDate: dayOf(current, 4) });
+    await addLending(api, { counterpartyId: asha.id, direction: 'borrowed', amount: 2000, entryDate: dayOf(current, 9) });
+
+    const expected: Record<string, number> = { sum: 7000, avg: 3500, min: 2000, max: 5000, count: 2 };
+    for (const aggregation of ['sum', 'avg', 'min', 'max', 'count']) {
+      const sql = await kpiFigures(
+        api,
+        kpiBody('transactions', { measure: 'spend', aggregation, filters: [debits, inMonth(current)], comparison: PREVIOUS_PERIOD })
+      );
+      const lendingsBody = kpiBody('lendings', {
+        measure: 'amount',
+        aggregation,
+        filters: [inMonth(current, 'entryDate')],
+        comparison: PREVIOUS_PERIOD,
+      });
+      const inMemory = await kpiFigures(api, lendingsBody);
+      expect(Number(inMemory.value), aggregation).toBe(expected[aggregation]);
+      expect(inMemory.value, aggregation).toEqual(sql.value);
+      expect(inMemory.comparison, `${aggregation}: the comparison block is identical`).toEqual(sql.comparison);
+      // Nothing before: no percentage, and the change is the whole current value.
+      expect(inMemory.comparison, aggregation).toMatchObject({ changePercent: null, direction: 'up' });
+      expect(Number((inMemory.comparison as { change: number }).change), aggregation).toBe(expected[aggregation]);
+      if (aggregation === 'sum' || aggregation === 'count') {
+        // A SUM or COUNT of nothing is 0 on both paths.
+        expect(Number(inMemory.previousValue), `${aggregation}: no previous rows, previous value 0`).toBe(0);
+        expect(inMemory.previousValue, aggregation).toEqual(sql.previousValue);
+      } else {
+        expect(inMemory.previousValue, `${aggregation}: no previous rows, no previous value`).toBeNull();
+      }
+      // Its underlying previous period lists nothing.
+      const previous = await underlyingAdHoc(api, lendingsBody, { period: 'previous' });
+      expect(previous, aggregation).toMatchObject({ period: 'previous', rowCount: 0 });
+      expect(tableOf(previous).rows).toEqual([]);
+    }
+  });
+});
+
+test.describe('Category-filtered transactions count each transaction once (@api)', () => {
+  test('KPI, underlying rows, CSV, raw table and chart agree on unique rows', async ({ request }) => {
+    const { api } = await newUser(request, 'vud-category-once');
+    const month = fixedMonth();
+    const bank = await createBankAccount(api, { name: 'CO Bank', openingBalance: 0 });
+    const tag = Date.now().toString(36);
+    const food = await createCategory(api, `CO Food ${tag}`);
+    const travel = await createCategory(api, `CO Travel ${tag}`);
+    // Combo sits in both filtered categories: a join would count it twice.
+    const combo = await createTransaction(api, bank.id, {
+      amount: -500,
+      date: dayOf(month, 5),
+      description: 'CO Combo',
+      categoryIds: [food.id, travel.id],
+    });
+    const single = await createTransaction(api, bank.id, {
+      amount: -200,
+      date: dayOf(month, 6),
+      description: 'CO Single',
+      categoryIds: [food.id],
+    });
+    await createTransaction(api, bank.id, { amount: -900, date: dayOf(month, 7), description: 'CO Other' });
+    const filters: Filter[] = [debits, inMonth(month), { field: 'category', operator: 'in', value: [food.name, travel.name] }];
+
+    for (const [aggregation, value] of [
+      ['sum', 700],
+      ['count', 2],
+      ['avg', 350],
+    ] as const) {
+      const body = kpiBody('transactions', { measure: 'spend', aggregation, filters });
+      const kpi = await kpiFigures(api, body);
+      expect(Number(kpi.value), `${aggregation} counts each transaction once`).toBe(value);
+      const res = await underlyingAdHoc(api, body);
+      expect(res.value, aggregation).toBe(kpi.value);
+      expect(res.rowCount, aggregation).toBe(2);
+      const ids = tableOf(res).rows.map((r) => String(r.id));
+      expect(ids.sort(), `${aggregation}: unique rows`).toEqual([combo.id, single.id].sort());
+      if (aggregation === 'sum') {
+        const sumOfRows = tableOf(res).rows.reduce((acc, r) => acc + Number(r.spend), 0);
+        expect(sumOfRows, 'the value is the sum of the unique rows').toBe(700);
+      }
+    }
+
+    const csv = await underlyingAdHocCsv(api, kpiBody('transactions', { measure: 'spend', aggregation: 'sum', filters }));
+    const lines = csvLines(csv).slice(1);
+    expect(lines).toHaveLength(2);
+    expect(lines.filter((l) => l.includes('CO Combo'))).toHaveLength(1);
+
+    const table = await api.POST('/api/v1/reports/data', {
+      body: {
+        type: 'TABLE',
+        datasource: 'transactions',
+        definition: { mode: 'raw', columns: ['description', 'spend'], filters },
+      } as never,
+    });
+    expectStatus(table, 200);
+    const tableRows = (table.data as unknown as { rows: Array<{ description: string }> }).rows;
+    expect(tableRows.map((r) => r.description).sort()).toEqual(['CO Combo', 'CO Single']);
+
+    const chart = await api.POST('/api/v1/reports/data', {
+      body: {
+        type: 'CHART',
+        datasource: 'transactions',
+        definition: { chartType: 'bar', dimension: { field: 'account' }, measure: { field: 'spend', aggregation: 'sum' }, filters },
+      } as never,
+    });
+    expectStatus(chart, 200);
+    const chartData = chart.data as unknown as { categories: string[]; series: Array<{ data: number[] }>; meta: { rowCount: number } };
+    expect(chartData.categories).toEqual(['CO Bank']);
+    expect(Number(chartData.series[0].data[0])).toBe(700);
+    expect(chartData.meta.rowCount).toBe(2);
+  });
+});
+
+test.describe('net_worth enum labels (@api)', () => {
+  test('kind and side carry display labels in the catalog, raw tables, pivots and charts; values stay stored', async ({ request }) => {
+    const { api } = await newUser(request, 'vud-nw-labels');
+    await createBankAccount(api, { name: 'NWL Bank', openingBalance: 1000 });
+    const card = await createCreditCard(api, { name: 'NWL Card', last4: '4402' });
+    await createTransaction(api, card.id, { amount: -300, description: 'NWL spend' });
+
+    const catalog = await api.GET('/api/v1/report/datasource');
+    expectStatus(catalog, 200);
+    const nw = (catalog.data as unknown as { datasources: Array<{ name: string; fields: Array<Record<string, unknown>> }> }).datasources.find(
+      (d) => d.name === 'net_worth'
+    )!;
+    const field = (name: string) => nw.fields.find((f) => f.name === name)!;
+    expect(field('kind').valueLabels).toEqual(NET_WORTH_KIND_LABELS);
+    expect(field('side').valueLabels).toEqual(NET_WORTH_SIDE_LABELS);
+    expect(field('kind').values).toEqual(expect.arrayContaining(Object.keys(NET_WORTH_KIND_LABELS)));
+    expect(field('name').valueLabels ?? null).toBeNull();
+
+    const run = async (type: string, definition: Record<string, unknown>) => {
+      const res = await api.POST('/api/v1/reports/data', { body: { type, datasource: 'net_worth', definition } as never });
+      expectStatus(res, 200);
+      return res.data as unknown as Record<string, unknown>;
+    };
+
+    const raw = await run('TABLE', { mode: 'raw', columns: ['name', 'kind', 'side', 'value'], filters: [] });
+    const columns = raw.columns as Array<{ key: string; valueLabels?: Record<string, string> }>;
+    expect(columns.map((c) => c.valueLabels ?? null)).toEqual([null, NET_WORTH_KIND_LABELS, NET_WORTH_SIDE_LABELS, null]);
+    const rows = raw.rows as Array<{ name: string; kind: string; side: string }>;
+    expect(rows.map((r) => [r.name, r.kind, r.side]).sort()).toEqual([
+      ['NWL Bank', 'bank_account', 'asset'],
+      ['NWL Card', 'credit_card', 'liability'],
+    ]);
+
+    const pivot = await run('TABLE', {
+      mode: 'aggregated',
+      rows: [{ field: 'kind' }],
+      columns: [{ field: 'side' }],
+      measures: [{ field: 'value', aggregation: 'sum' }],
+      filters: [],
+    });
+    expect((pivot.rowDimensions as Array<{ valueLabels?: unknown }>)[0].valueLabels).toEqual(NET_WORTH_KIND_LABELS);
+    expect((pivot.columnDimensions as Array<{ valueLabels?: unknown }>)[0].valueLabels).toEqual(NET_WORTH_SIDE_LABELS);
+    expect((pivot.rows as Array<{ values: { kind: string } }>).map((r) => r.values.kind).sort()).toEqual(['bank_account', 'credit_card']);
+
+    const chart = await run('CHART', {
+      chartType: 'bar',
+      dimension: { field: 'kind' },
+      series: { field: 'side' },
+      measure: { field: 'value', aggregation: 'sum' },
+      filters: [],
+    });
+    expect(chart.valueLabels).toEqual(NET_WORTH_KIND_LABELS);
+    expect(chart.seriesValueLabels).toEqual(NET_WORTH_SIDE_LABELS);
+    expect([...(chart.categories as string[])].sort()).toEqual(['bank_account', 'credit_card']);
+    expect((chart.series as Array<{ name: string }>).map((s) => s.name).sort()).toEqual(['asset', 'liability']);
+
+    // A field without labels omits them.
+    const byName = await run('CHART', {
+      chartType: 'bar',
+      dimension: { field: 'name' },
+      measure: { field: 'value', aggregation: 'sum' },
+      filters: [],
+    });
+    expect(byName.valueLabels ?? null).toBeNull();
   });
 });
 
@@ -633,7 +844,7 @@ test.describe('KPI underlying data: CSV (@api)', () => {
     const nw = await underlyingBuiltinCsv(api, 'net_worth');
     expect(nw.status).toBe(200);
     expect(nw.contentType).toBe('text/csv;charset=UTF-8');
-    expect(csvLines(nw)).toEqual(['Name,Kind,Side,Net value', `${bank},bank_account,asset,12700.00`]);
+    expect(csvLines(nw)).toEqual(['Name,Kind,Side,Net value', `${bank},Bank account,Asset,12700.00`]);
     expect(csvLines(await underlyingBuiltinCsv(api, 'net_worth', {}, { sort: 'name,asc' }))).toEqual(csvLines(nw));
   });
 

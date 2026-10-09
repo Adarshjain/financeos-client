@@ -68,6 +68,12 @@ export interface FieldDefinition {
   billingCycle?: boolean;
   /** False for grouping/column-only fields (labels, internal ids, counters); absent = filterable. */
   filterable?: boolean;
+  /**
+   * Static enums only: how each stored value reads for people (e.g. `bank_account` →
+   * "Bank account"); null/absent when values read as they are. Display only — filters keep
+   * the stored values.
+   */
+  valueLabels?: Record<string, string> | null;
 }
 
 /** Operators available per field type. Date operators split absolute vs relative. */
@@ -367,6 +373,10 @@ export interface ChartData {
   series: { name: string; data: (number | null)[] }[];
   measure: { field: string; aggregation: Aggregation };
   meta: ReportDataMeta;
+  /** Static enum dimension only: stored category value → display label. */
+  valueLabels?: Record<string, string> | null;
+  /** Static enum series dimension only: stored series name → display label. */
+  seriesValueLabels?: Record<string, string> | null;
 }
 
 export interface TableColumn {
@@ -375,6 +385,8 @@ export interface TableColumn {
   type: string;
   /** Display format hint from the datasource catalog. */
   format?: 'currency' | 'number' | 'percent' | null;
+  /** Static enum columns only: stored value → display label (rows keep stored values). */
+  valueLabels?: Record<string, string> | null;
 }
 
 /** A table row keyed by `column.key`; raw rows also include a hidden `id`. */
@@ -394,6 +406,9 @@ export interface TableData {
   columns: TableColumn[];
   rows: TableRow[];
   page: TablePage;
+  /** Echo of a runtime sort the rows were ordered by (breakdown sections); absent = default order. */
+  sortKey?: string | null;
+  sortDirection?: 'asc' | 'desc' | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -404,6 +419,8 @@ export interface TableData {
 export interface PivotDimensionInfo {
   field: string;
   label: string;
+  /** Static enum dimensions only: stored value → display label. */
+  valueLabels?: Record<string, string> | null;
 }
 
 /** A pivot measure descriptor; `key` is `${field}_${aggregation}`. */

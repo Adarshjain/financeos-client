@@ -18,7 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatMeasureValue } from '@/lib/reports.helpers';
+import { formatMeasureValue, valueLabel } from '@/lib/reports.helpers';
 import type {
   SortClause,
   TableColumn,
@@ -39,7 +39,7 @@ function formatCell(value: unknown, column: TableColumn): string {
   }
   if (column.type === 'date') return formatDate(String(value));
   if (column.type === 'boolean') return value === true || value === 'true' ? 'Yes' : 'No';
-  return String(value);
+  return valueLabel(String(value), column.valueLabels);
 }
 
 /**
@@ -99,9 +99,14 @@ export function SortableTableHead({
   );
 }
 
-/** A group header's label: the value title-cased, underscores as spaces ("credit_card" → "Credit Card"). */
-function groupLabel(value: unknown): string {
+/**
+ * A group header's label: the group column's server label for the value when it has one,
+ * else the value title-cased, underscores as spaces ("credit_card" → "Credit Card").
+ */
+function groupLabel(value: unknown, labels: Record<string, string> | null | undefined): string {
   if (value === null || value === undefined || value === '') return '—';
+  const label = labels?.[String(value)];
+  if (label !== undefined) return label;
   return String(value)
     .replace(/_/g, ' ')
     .replace(/\b\w/g, (ch) => ch.toUpperCase());
@@ -146,6 +151,8 @@ export function TableView({
   groupField,
 }: TableViewProps) {
   const { columns, rows, page } = data;
+  const groupLabels =
+    groupField != null ? columns.find((c) => c.key === groupField)?.valueLabels : undefined;
   // Inside a dashboard widget a single page needs no footer: it only repeats the row count.
   const showFooter = !fill || page.totalElements > page.size || page.number > 0;
 
@@ -194,7 +201,7 @@ export function TableView({
             rows.map((row, i) => {
               const groupHeader =
                 groupField != null && (i === 0 || rows[i - 1][groupField] !== row[groupField])
-                  ? groupLabel(row[groupField])
+                  ? groupLabel(row[groupField], groupLabels)
                   : null;
               // Ids may repeat within a page (one transaction under two matching
               // categories), so keys are always index-qualified.
