@@ -46,13 +46,13 @@
 <p class="eyebrow">Sections 11 and 54</p>
 <h2><span class="n">11</span>End-to-end user journeys and critical paths</h2>
 <div class="exec"><h4>Executive summary</h4>
-<p>The workflows that explain most of the system, each with its sequence, the code involved and failure points. The seven critical paths at the end are the ones whose failure produces wrong financial information or blocks the product. <span class="c cg">Confirmed</span></p></div>
+<p>The workflows that explain most of the system, each with its sequence, the code involved and failure points. The nine critical paths at the end are the ones whose failure produces wrong financial information or blocks the product. <span class="c cg">Confirmed</span></p></div>
 
-<h3 id="s11-login">Journey 1: Open the app and reach the dashboard</h3>
+<h3 id="s11-login">Journey 1: Open the app and land on Home</h3>
 <pre class="mermaid">sequenceDiagram
   participant B as Browser
   participant P as proxy.ts
-  participant L as (protected)/layout.tsx
+  participant L as (protected) layout + dashboard/page.tsx
   participant API as Spring API
   participant DB as Oracle
   B->>P: GET /dashboard (cookie?)
@@ -65,10 +65,23 @@
   P->>L: stamp x-request-id, x-session-id
   L->>API: GET /auth/me (cookie copied)
   API-->>L: user or 401 → redirect /login
-  L->>API: GET /dashboards, POST /reports/{id}/data × widgets (parallel)
+  L->>API: GET /dashboards
+  opt first visit (users.home_seeded_at is null)
+    API->>DB: conditional UPDATE users.home_seeded_at
+    API->>DB: insert report "Spend this month" + dashboard "Home" (default)
+  end
+  API-->>L: dashboards incl. Home
+  par prefetchWidgetData
+    L->>API: POST /dashboards/builtins/net_worth/data
+    L->>API: POST /dashboards/builtins/upcoming/data (days 14)
+    L->>API: POST /reports/{id}/data (Spend this month)
+    L->>API: GET /inbox (Inbox widget present)
+  end
   L-->>B: RSC HTML + dehydrated TanStack cache
-  B->>B: hydrate, no refetch within 30 s</pre>
-<p>Failure points: invalid cookie (one extra hop), API down (error.tsx, not login), widget report broken (only that widget shows unavailable). Code: <span class="path">proxy.ts</span>, <span class="path">lib/auth.ts</span>, <span class="path">actions/auth.ts</span>, <span class="path">AuthService</span>, <span class="path">dashboard/page.tsx</span>, <span class="path">lib/dashboards.server.ts</span>.</p>
+  B->>API: GET /bills (Bills due widget, client-side)
+  B->>API: GET /inbox/summary (nav badge, then every 60 s)
+  B->>B: hydrate, no refetch of seeded keys within 30 s</pre>
+<p>A new user's first <span class="m m-get">GET</span> <code>/dashboards</code> (or <code>/dashboards/default</code>) seeds Home through <code>HomeDashboardSeeder.seedIfNeeded</code>: the conditional UPDATE claims the seed so concurrent first requests seed once, and a failed seed rolls the claim back for the next request. Home holds Net worth, Inbox, Bills due, Upcoming (14 days) and the "Spend this month" chart; the page renders the default dashboard (or the first one) with a full-width switcher. On a phone the widgets stack in one column. Failure points: invalid cookie (one extra hop), API down (error.tsx, not login), one widget's data failing (only that widget shows its error; <code>prefetchQuery</code> swallows the failure and the client retries), the spend report definition failing validation (Home seeds with the four built-ins only, event <code>DASHBOARD_HOME_SPEND_REPORT_SKIPPED</code>), the user deleting every dashboard (empty state with <strong>Restore default Home</strong> → <span class="m m-post">POST</span> <code>/dashboards/home/restore</code>). Code: <span class="path">proxy.ts</span>, <span class="path">lib/auth.ts</span>, <span class="path">actions/auth.ts</span>, <span class="path">AuthService</span>, <span class="path">HomeDashboardSeeder</span>, <span class="path">BuiltinWidgetRegistry</span>, <span class="path">dashboard/page.tsx</span>, <span class="path">lib/dashboards.server.ts</span>. See <a href="/handbook/client.html#s51-dashboard">§51 · Home</a>.</p>
 
 <h3 id="s11-manual">Journey 2: Record a manual transaction</h3>
 <ol class="trace">
@@ -106,12 +119,12 @@
 
 <h3 id="s11-statement">Journey 4: Upload a statement</h3>
 <ol class="trace">
-<li><span class="lyr">UI</span>/settings/ingest: pick a bank or card account, drop PDFs (≤25 MB client cap), submit</li>
+<li><span class="lyr">UI</span>/transactions/import (Transactions → Import; the old /settings/ingest redirects here with its query kept). Also reached from the account page's Import button, an Inbox "Upload" row or an Upcoming expected-statement row, all as <code>?account=&lt;id&gt;</code>, which preselects that account when it accepts uploads. Pick a bank or card account, drop PDFs (≤25 MB client cap), submit</li>
 <li><span class="lyr">client</span>Browser multipart <span class="m m-post">POST</span> <code>/accounts/{id}/ingest</code> via the rewrite (no server action) → 202 {jobId}; <code>emitJobStarted</code>; poll every 1.5 s</li>
 <li><span class="lyr">server</span><code>FileUploadController</code> stages bytes as <code>job_artifacts</code>, enqueues STATEMENT_INGEST, pokes the worker</li>
 <li><span class="lyr">job</span><code>FileIngestionService.ingest</code>: per file parse (password from account) → dedup statement → build rows → dedup transactions (same day, exact, Jaccard ≥ 0.70 → flag) → categorize outside a transaction → save in one write transaction</li>
 <li><span class="lyr">result</span>Job SUCCEEDED with per-file status, created and duplicate counts (details capped at 50)</li>
-<li><span class="lyr">UI</span><code>IngestionResultDetails</code> renders; <code>transactions.all</code> invalidated</li>
+<li><span class="lyr">UI</span><code>IngestionResultDetails</code> renders; <code>transactions.all</code> invalidated; JobsPanel "View all" opens /settings/activity</li>
 <li><span class="lyr">failure</span>Wrong password → that file FAILED; exception in the batch phase → whole job FAILED and nothing saved; verdict REJECTED still ingests</li>
 </ol>
 
@@ -138,7 +151,7 @@
 </ol>
 
 <h3 id="s11-loan">Journey 7: Track a loan</h3>
-<p>/loans → New (terms) → schedule computed to validate → /loans/[id] shows hero and schedule → record events (rate change, prepayment) → Find Matches → Confirm → payments recorded → calendar shows upcoming EMIs → tax report via reports datasource. Failure points: non-amortizing EMI (400), prepayment ≥ outstanding (400), payment without seq retried (settles the next installment). Code: <span class="path">domain/loan/*</span>, <span class="path">app/(protected)/loans/**</span>.</p>
+<p>/loans → New (terms) → schedule computed to validate → /loans/[id] shows hero and schedule → record events (rate change, prepayment) → Find Matches → Confirm → payments recorded → /upcoming lists upcoming EMIs (and the Inbox shows an installment once it is due within 7 days or overdue) → tax report via reports datasource. Failure points: non-amortizing EMI (400), prepayment ≥ outstanding (400), payment without seq retried (settles the next installment). Code: <span class="path">domain/loan/*</span>, <span class="path">app/(protected)/loans/**</span>.</p>
 
 <h3 id="s11-chat">Journey 8: Ask a question and save a report from the answer</h3>
 <p>/chat → question → SSE status and trace events → answer with blocks → a report draft card previews via <code>runAdHocReport</code> → user clicks Save → <code>createReport</code> action → report appears in /reports. Failure points: quota 30/day, 2 concurrent, no keys, deadline. Code: <span class="path">chat/**</span>, <span class="path">app/api/chat/route.ts</span>, <span class="path">app/(protected)/chat/**</span>.</p>
@@ -155,17 +168,69 @@
 <p><strong>Alternative: untracked account.</strong> If the payout went to a bank account FinanceOS does not track, edit the dividend → <strong>Receipt note</strong> → "Received in an untracked account" or "Not received (chasing)" (setting a note is refused with 400 while a credit is linked; clearing it is allowed) → <span class="m m-put">PUT</span> <code>/{id}/receipt-status</code> stores <code>receipt_status</code>. The <strong>Unrecorded credits</strong> panel (<span class="m m-get">GET</span> <code>/reconciliation/unrecorded</code>) is the reverse direction: DIV/IDCW-looking credits from the last 365 days with no dividend row, with holding hints, each offering "Record…" with the dividend dialog prefilled from the credit (amount, date) or, per holding hint, "Record for SYMBOL · broker".</p>
 <p>Server touches: <code>dividends</code> (transaction_id, receipt_status, tds), reads of <code>transactions</code> and the loan, lending and <code>transaction_links</code> tables for exclusion; events <code>DIVIDEND_MATCH_ATTEMPTED</code>, <code>DIVIDEND_LINKED</code>. Failure points: a credit already used by a loan, lending or another family is silently absent from candidates (and refused with 400 if sent directly); dividend amounts after a stock split may be too small to match (the split-ratio fuzzy tier needs a narration clue); a dividend with no bank coverage never turns Overdue. Code: <span class="path">DividendReceiptService</span>, <span class="path">DividendMatcher</span>, <span class="path">DividendReceiptWindows</span>, <span class="path">dividend-receipts/DividendReconcilePanel.tsx</span>.</p>
 
+<h3 id="s11-inbox">Journey 12: Clear the Inbox</h3>
+<pre class="mermaid">sequenceDiagram
+  participant SW as Service worker (push)
+  participant U as User
+  participant UI as /inbox (InboxView)
+  participant API as Spring API
+  participant DB as Oracle
+  SW->>U: bill due in 3 days, link /inbox?item=bill:statementId
+  U->>UI: tap
+  UI->>API: GET /inbox (RSC prefetch)
+  API->>DB: collectors read bills, loans, lendings, statements, gmail, jobs, rewards + inbox_item_state
+  API-->>UI: items + summary (badge = act_now + needs_look)
+  UI->>UI: useDeepLink: row found → scroll + highlight, else "already handled"
+  U->>UI: Mark paid
+  UI->>API: GET /bills/{statementId}
+  U->>UI: confirm (in full, or amount + date)
+  UI->>API: POST /bills/{statementId}/mark-paid
+  API->>DB: statement_credit_card_details.paid_marked_on / amount
+  UI->>UI: invalidate bills, inbox, obligations, dashboard widgets
+  U->>UI: Snooze "Next week" on another row
+  UI->>UI: optimistic hide + toast with Undo
+  UI->>API: POST /inbox/{key}/snooze {until}
+  API->>DB: upsert inbox_item_state.snoozed_until
+  U->>UI: Undo
+  UI->>API: DELETE /inbox/{key}/state
+  API->>DB: delete inbox_item_state row</pre>
+<ol class="trace">
+<li><span class="lyr">push</span>Bill and EMI pushes link to <code>/inbox?item=&lt;key&gt;</code> only when the Inbox lists that row (bill OVERDUE or DUE_UNKNOWN, or OPEN/PARTIAL due within 7 days; EMI due within 7 days or overdue); otherwise they link to <code>/upcoming?bill=&lt;statementId&gt;</code> or <code>/loans/{id}?installment=</code>. Opening the Inbox never evaluates a producer, so it cannot send or suppress a push.</li>
+<li><span class="lyr">UI</span><code>inbox/page.tsx</code> prefetches <code>keys.inbox.list()</code> and copies its summary into <code>keys.inbox.summary()</code>; <code>InboxView</code> groups rows into Act now, Needs a look and Info and shows "N to act · M to look"</li>
+<li><span class="lyr">mark paid</span><code>InboxBillDialogs</code> loads the bill, then opens <code>MarkPaidDialog</code> (paid in full by default; a partial amount must be &gt; 0, the date not in the future). "Confirm payment ₹x" opens the same dialog prefilled from a matched credit. <code>CardBillService.markPaid</code> stores the manual mark; a fully paid bill also records the PAID notification kind so reminders stop. The toast reads "Bill marked as paid" or "Partial payment recorded"</li>
+<li><span class="lyr">refresh</span><code>useBillMutations</code> invalidates <code>bills.all</code>, <code>inbox.all</code>, <code>obligations.all</code> and dashboard widget keys; the refetched Inbox no longer lists the bill once it is PAID (a PARTIAL bill stays, with the remaining amount)</li>
+<li><span class="lyr">snooze</span>Clock menu: Tomorrow, In 3 days, Next week, or Pick a date… (must be after today). <code>useInboxActions</code> removes the row and recounts the badge before the request; the server rejects a date that is not after today and any summary row (400). The row returns on the snooze date</li>
+<li><span class="lyr">dismiss</span>X on any row (summary rows included) sets <code>dismissed_at</code>; the row stays hidden until the state is cleared</li>
+<li><span class="lyr">undo</span>The toast's Undo calls <span class="m m-del">DELETE</span> <code>/inbox/{key}/state</code>, which removes both snooze and dismissal; the list refetches and the row is back</li>
+<li><span class="lyr">failure</span>Snooze or dismiss failing restores the cached list and badge from the snapshot and shows an error toast; a deep link to a handled row shows "That item is already handled" (resolved once, so acting on the row later does not flip the note); a dismissed bill keeps its key when it turns overdue, so it stays hidden; keys contain ":" and must reach the server encoded once (openapi-fetch does it, so callers pass the raw key)</li>
+</ol>
+<p>Code: <span class="path">components/inbox/*</span>, <span class="path">lib/query/hooks/useInbox.ts</span>, <span class="path">useBills.ts</span>, <span class="path">domain/inbox/InboxService.java</span>, <span class="path">InboxKinds.java</span>, <span class="path">domain/inbox/collect/*</span>, <span class="path">BillMessages.java</span>, <span class="path">EmiMessages.java</span>. Tests: <span class="path">e2e/ui/inbox.spec.ts</span>, <span class="path">e2e/api/inbox.spec.ts</span>. See <a href="/handbook/client.html#s51-inbox">§51 · Inbox</a>.</p>
+
+<h3 id="s11-upcoming">Journey 13: See what is due and pay a card bill from Upcoming</h3>
+<ol class="trace">
+<li><span class="lyr">intent</span>See every dated obligation for the next months and settle a credit-card bill</li>
+<li><span class="lyr">UI</span>Nav Upcoming (or a bill push outside the Inbox window: <code>/upcoming?bill=&lt;statementId&gt;</code>, which scrolls to and rings that row; the old /loans/calendar redirects here)</li>
+<li><span class="lyr">client</span><code>upcoming/page.tsx</code> prefetches <code>keys.obligations.upcoming({months: 3})</code>; <code>UpcomingView</code> reads it through <code>useObligations(months)</code>; changing the horizon (1, 3, 6, 12 months) refetches with <code>keepPreviousData</code>; the kind chips filter client-side</li>
+<li><span class="lyr">server</span><span class="m m-get">GET</span> <code>/obligations/upcoming?months=</code> → <code>ObligationsService.upcoming</code>: months clamped to 1..12; EMIs, lending dues, card bills and expected statements each computed in their own read-only <code>REQUIRES_NEW</code> transaction via <code>SectionRunner</code>; status overdue / due_soon (0..7 days) / upcoming; overdue first</li>
+<li><span class="lyr">UI</span>Totals strip (Due next 7 days, This month, Overdue) sums rows that carry an amount; List view groups Overdue, Next 7 days, Later this month and later months; Calendar view shows a Monday-first month with a dot per kind</li>
+<li><span class="lyr">pay</span>Mark paid on a card-bill row → <code>MarkPaidHost</code> loads <span class="m m-get">GET</span> <code>/bills/{statementId}</code> → <code>MarkPaidDialog</code> → <span class="m m-post">POST</span> <code>/bills/{statementId}/mark-paid</code> → <code>useBillMutations</code> invalidates bills, inbox, obligations and dashboard widgets → the row leaves the list on refetch (a partial payment keeps it with the remaining amount)</li>
+<li><span class="lyr">other rows</span>Expected statement → Upload → <code>/transactions/import?account=</code> (Journey 4); EMI → <code>/loans/{id}?installment=</code>; lending → <code>/loans/lendings/{counterpartyId}</code></li>
+<li><span class="lyr">failure</span>One kind failing (say a malformed loan schedule) leaves only that kind empty and logs <code>OBLIGATIONS_SECTION_FAILED</code>; a plain catch around it would not have been enough, because a failing <code>@Transactional</code> collaborator marks the caller's transaction rollback-only and the response then fails at commit (found by <span class="path">ObligationsSectionIsolationIntegrationTest</span>); a bill whose due date the parser missed appears undated and is not counted in the totals; a future paid date is refused with 400</li>
+</ol>
+<p>Bill settlement itself (manual mark, CC_PAYMENT links, REFUND/REVERSAL links, possible payments) is in <a href="/handbook/modules-a.html#m-statements-bills">M4 · Bill payment notifications</a>. Code: <span class="path">app/(protected)/upcoming/*</span>, <span class="path">components/upcoming/*</span>, <span class="path">components/obligations/*</span>, <span class="path">domain/obligations/ObligationsService.java</span>, <span class="path">core/tx/TransactionalSectionRunner.java</span>, <span class="path">CardBillService.java</span>. Tests: <span class="path">e2e/ui/upcoming.spec.ts</span>, <span class="path">e2e/api/obligations.spec.ts</span>. See <a href="/handbook/client.html#s51-upcoming">§51 · Upcoming</a>.</p>
+
 <h3 id="s54-critical">Critical paths (§54)</h3>
 <div class="tw"><table>
 <tr><th>#</th><th>Path</th><th>Components and services</th><th>APIs</th><th>Tables</th><th>External</th><th>Failure points</th><th>Why critical</th></tr>
-<tr><td>P1</td><td>Login → dashboard</td><td>proxy, requireAuth, SecurityConfig, AuthService, DashboardService, ReportDataService</td><td>/auth/login, /auth/me, /dashboards, /reports/{id}/data</td><td>users, SPRING_SESSION, dashboards, reports</td><td>Google (SSO)</td><td>Cookie relay, session cap, OAuth state</td><td>Blocks everything</td></tr>
+<tr><td>P1</td><td>Login → Home</td><td>proxy, requireAuth, SecurityConfig, AuthService, HomeDashboardSeeder, DashboardService, BuiltinWidgetRegistry, ReportDataService</td><td>/auth/login, /auth/me, /dashboards, /dashboards/builtins/{key}/data, /reports/{id}/data, /inbox, /bills</td><td>users (home_seeded_at), SPRING_SESSION, dashboards, reports</td><td>Google (SSO)</td><td>Cookie relay, session cap, OAuth state, seed claim, one widget failing</td><td>Blocks everything</td></tr>
 <tr><td>P2</td><td>Gmail email → transaction → categorization → review</td><td>IngestionScheduler, JobWorker, GmailIngestionService, GeminiExtractor, AccountResolver, GmailTransactionWriter, CategorizationService, ReviewStatusManager</td><td>/gmail/*, /transactions/search, /batch-review</td><td>gmail_*, transactions, categories, category_rules</td><td>Gmail, LLMs</td><td>Quota, ambiguity, watermark, token revoke</td><td>Primary data entry path</td></tr>
 <tr><td>P3</td><td>Statement → reconciliation → balance anchor</td><td>StatementParseEngine, StatementReconciliationService / FileIngestionService, BalanceMath</td><td>/accounts/{id}/ingest, /accounts</td><td>statements, statement_transactions, transactions</td><td>Gmail</td><td>Sign oracle, dedup skips new lines, advisory verdict</td><td>Balances and reward cycles depend on it</td></tr>
 <tr><td>P4</td><td>Transactions + rules → reward report and Card Picker</td><td>RewardCalculationService, RewardRecommendationService</td><td>/rewards/report, /lines, /reward-recommendations</td><td>transactions, links, statements, reward_*</td><td>—</td><td>Duplicate rules, tier JSON, point defaults</td><td>Money decisions at checkout</td></tr>
 <tr><td>P5</td><td>Trades + classifications + CAs + prices → positions → broker balance</td><td>InvestmentService, HoldingValuationService, PriceRefreshService, CorporateActionService</td><td>/investments/*, /instruments/*</td><td>investment_transactions, classifications, corporate_actions, instrument_prices, holdings</td><td>Yahoo, AMFI</td><td>Untested XIRR, duplicate CA, stale price, over-sold</td><td>Wealth figures</td></tr>
-<tr><td>P6</td><td>Loan terms → schedule → outstanding, APR, calendar</td><td>LoanScheduleService, LoanService, ObligationsController</td><td>/loans/*, /obligations/upcoming</td><td>loans, loan_*</td><td>—</td><td>Event boundary rule, month clamp, unreconciled payments</td><td>Debt figures</td></tr>
+<tr><td>P6</td><td>Loan terms → schedule → outstanding, APR, Upcoming</td><td>LoanScheduleService, LoanService, ObligationsService</td><td>/loans/*, /obligations/upcoming</td><td>loans, loan_*</td><td>—</td><td>Event boundary rule, month clamp, unreconciled payments</td><td>Debt figures</td></tr>
 <tr><td>P7</td><td>Ledger → report / chat answer</td><td>ReportDataService, executors, ChatOrchestrator, ChatSqlExecutor</td><td>/reports/data, /chat/stream</td><td>all</td><td>LLMs</td><td>Category fan-out, stale source list, quota</td><td>Insight the user acts on</td></tr>
 <tr><td>P8</td><td>Job queue</td><td>JobService, JobWorker, JobJanitor</td><td>/jobs/*</td><td>jobs, job_artifacts</td><td>—</td><td>Two threads, cooperative cancel, unguarded terminal writes</td><td>Every async path</td></tr>
+<tr><td>P9</td><td>Statement → card bill state → Inbox / Upcoming / Bills due → mark paid</td><td>CardBillService, InboxService + collectors, ObligationsService, SectionRunner, BillNotificationService</td><td>/bills/*, /inbox/*, /obligations/upcoming</td><td>statements, statement_credit_card_details, transaction_links, inbox_item_state</td><td>Web Push</td><td>Settlement precedence, a dismissed key hiding a later overdue state, section isolation, push link outside the Inbox window</td><td>Missed or double-paid card bills</td></tr>
 </table></div>
 </section>
 <nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/rules.html"><small>Previous</small>Rules, decisions and scenarios</a><a class="next" href="/handbook/quality-risk.html"><small>Next</small>Quality and risk</a></nav>

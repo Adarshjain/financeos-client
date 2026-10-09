@@ -181,7 +181,10 @@
 <tr><td>Portfolio value datasource</td><td>Replay FIFO at each month end × price lookups</td><td>Months × trades</td><td>None</td><td><span class="c ph">High</span> for long histories</td></tr>
 <tr><td>Loan detail</td><td>Schedule generation ≤ 600 rows</td><td>Tenure</td><td>Bounded</td><td><span class="c pl">Low</span></td></tr>
 <tr><td>Reports (SQL)</td><td>One aggregate query per widget</td><td>Filtered rows</td><td>Indexes; LIMIT on tables</td><td><span class="c pl">Low</span></td></tr>
-<tr><td>Dashboard</td><td>N widget reports in parallel from RSC</td><td>Widgets</td><td>Parallel fetch; per-widget failure isolation</td><td><span class="c pm">Medium</span> on 512 MB</td></tr>
+<tr><td>Dashboard</td><td>N widget reports and built-in templates in parallel from RSC (<code>prefetchWidgetData</code>); component built-ins fetch their own endpoints</td><td>Widgets</td><td>Parallel fetch; per-widget failure isolation</td><td><span class="c pm">Medium</span> on 512 MB</td></tr>
+<tr><td>Home (seeded default dashboard)</td><td>Net-worth KPI (every account's balance + every active loan's schedule + every counterparty's net), the Inbox, Bills due (every open card's bill with unbilled sum and billing cycles), Upcoming (obligations), one SQL chart</td><td>Accounts, loans, counterparties, cards</td><td>Per-section transactions; nothing cached</td><td><span class="c pm">Medium</span>: the landing page is now the heaviest read</td></tr>
+<tr><td>Inbox list and summary</td><td>All eight collectors (ten kinds) on every call: card bills, loan schedules, lending nets, billing cycles per card, Gmail ledger count, review count, recent jobs, reward markers; the summary computes the full list and counts it</td><td>Accounts, loans, lendings, jobs</td><td>None; snooze/dismiss/undo each return a recomputed list</td><td><span class="c pm">Medium</span>: the nav badge polls <code>/inbox/summary</code> every 60 s per open tab</td></tr>
+<tr><td>Upcoming and the net-worth datasource</td><td>One <code>REQUIRES_NEW</code> read-only transaction per section (4 for obligations, 3 for net worth), each suspending the caller's transaction</td><td>Sections</td><td>Bounded section count</td><td><span class="c pl">Low</span>: holds a second pooled connection while a section runs (Hikari 10)</td></tr>
 <tr><td>Chat</td><td>Up to 6 LLM calls + SQL (5 s timeout each)</td><td>Model latency</td><td>Deadlines, semaphore 2, quota 30</td><td><span class="c pm">Medium</span></td></tr>
 <tr><td>Gmail sync</td><td>Per message: fetch + LLM extract; batch categorize 200</td><td>Emails</td><td>Budgets 100/500 per run; 2 job threads</td><td><span class="c pm">Medium</span></td></tr>
 <tr><td>Statement ingest</td><td>PDFBox parse + balance oracle + dedup (N×M Jaccard against same-day rows)</td><td>Lines × same-day rows</td><td>Same-day window narrows M</td><td><span class="c pl">Low</span></td></tr>
@@ -203,7 +206,7 @@
 <tr><td>VM</td><td>OCI E2.1.Micro, 1 OCPU, 952 MiB</td><td>Swap in active use</td></tr>
 <tr><td>JVM</td><td>-Xmx512m, SerialGC, C1 only (TieredStopAtLevel=1)</td><td>Low throughput ceiling; fast startup</td></tr>
 <tr><td>Threads</td><td>Tomcat default 200 max; jobs 2; scheduler 1</td><td>Job backlog under sync + import</td></tr>
-<tr><td>Startup</td><td>Flyway 85 migrations + Hibernate metadata</td><td>~40–60 s per deploy; double-boot in CI</td></tr>
+<tr><td>Startup</td><td>Flyway 95 migrations + Hibernate metadata</td><td>~40–60 s per deploy; double-boot in CI</td></tr>
 <tr><td>Client</td><td>Vercel Hobby; Next 16 RSC; Recharts dynamic (~390 KB)</td><td>PriceHistoryPanel imports Recharts statically</td></tr>
 </table></div>
 
@@ -230,21 +233,23 @@
 <li>Server pagination everywhere (50/20/25); no full-table client loads (a binding convention from memory).</li>
 <li>Debounced search (250/300 ms); job polling 1.5 s while running, 4 s and 30 s otherwise.</li>
 <li>Faro Web SDK adds ~60 KB; Serwist caches static assets only.</li>
-<li>Filters live in React state, so back-navigation re-fetches with defaults (only /jobs uses URL params).</li>
+<li>Filters live in React state, so back-navigation re-fetches with defaults (URL params are used only by <code>/settings/activity</code> filters and the <code>?item=</code>, <code>?bill=</code> and <code>?account=</code> deep links).</li>
+<li>The Inbox badge polls <code>/inbox/summary</code> every 60 s (staleTime 30 s); the Inbox page refetches on window focus and writes the summary into the cache on every fetch, so the badge and the page agree.</li>
 </ul>
 </section>
 <section class="sec" id="s25" data-part="VIII · Quality &amp; risk">
 <p class="eyebrow">Sections 25 and 59</p>
 <h2><span class="n">25</span>Testing strategy and test-to-rule map</h2>
 <div class="exec"><h4>Executive summary</h4>
-<p>Three tiers exist: 778 server unit test methods (821 executions once parameterised cases expand) (JUnit 5 + Mockito, no Spring context), 84 client vitest suites (jsdom), and ~688 Playwright E2E tests against a real Oracle Free container with WireMock for Gmail, Google, Yahoo, AMFI and a scripted LLM. The E2E suite is the only layer that boots Spring and runs Flyway, and it covers every one of the 196 API operations and 37 routes. Unit coverage is deep for rewards, loans math, categorization and statement parsing, and absent for XIRR and the report SQL builder's category join; the loan service layer's own orchestration tests are still hollow, but the newer lending↔transaction linking code (validator, obligation refs, match suggestions) is genuinely covered. <span class="c cg">Confirmed</span></p></div>
+<p>Four tiers exist: 2238 server tests (JUnit 5 + Mockito unit tests with no Spring context, plus 24 Spring Boot integration test classes on an in-memory H2 database in Oracle mode), 1959 client vitest tests (jsdom), and a Playwright E2E suite (947 passed, 7 skipped in the full run for the navigation redesign) against a real Oracle Free container with WireMock for Gmail, Google, Yahoo, AMFI and a scripted LLM. The E2E suite is the only layer that runs Flyway against Oracle, and it covers every one of the 230 API operations and 44 routes. Unit coverage is deep for rewards, loans math, categorization and statement parsing, and absent for XIRR and the report SQL builder's category join; the loan service layer's own orchestration tests are still hollow, but the newer lending↔transaction linking code (validator, obligation refs, match suggestions) is genuinely covered. <span class="c cg">Confirmed</span></p></div>
 
 <h3 id="s25-tiers">Tiers</h3>
 <div class="tw compact"><table>
 <tr><th>Tier</th><th>Count</th><th>Runner</th><th>What it proves</th><th>What it cannot prove</th></tr>
-<tr><td>Server unit</td><td>137 files, 778 tests (821 executed)</td><td>Maven Surefire, JUnit 5, Mockito, AssertJ</td><td>Pure logic: reward math, FIFO, schedules, parsers, matchers, validators, prompt builders; lending↔transaction linking added 6 files / 101 tests (<code>LendingServiceLinkTest</code>, <code>LendingMatchSuggestionsTest</code>, <code>ObligationRefServiceTest</code>, <code>TransactionServiceObligationRefTest</code>, <code>TransactionResponseObligationRefsTest</code>, <code>LendingsDatasourceTest</code>)</td><td>Anything needing Spring, Flyway, Hibernate filters, SQL (Mockito never boots the context; see memory "verify server boots")</td></tr>
-<tr><td>Client unit</td><td>84 suites</td><td>vitest + Testing Library (jsdom, Node 20)</td><td>Component rendering, hooks, formatters, request builders, nav; lending↔transaction linking added 22 files / 128 tests (picker, link-dialog record kinds, ledger link cell, match panel, obligation ref badges/sections)</td><td>RSC streaming (asChild trigger bug invisible in jsdom), server actions</td></tr>
-<tr><td>E2E</td><td>72 specs, ~688 tests</td><td>Playwright; Docker Oracle Free 23; WireMock; <code>@Profile("e2e")</code></td><td>Every endpoint (196/196 ops), every route (37/37), foreign-id tenancy sweep, migration idempotence (double boot), job flows, Gmail flows with fake Gmail, chat with scripted LLM; <code>api/lending-links.spec.ts</code> (11) + <code>ui/lending-links.spec.ts</code> (7, one <code>@mobile</code>) added in Phase 16</td><td>Real provider behaviour (Yahoo, Gemini), ADB-specific behaviour (ORA-12839), concurrency under load</td></tr>
+<tr><td>Server unit</td><td>246 test classes (2238 tests together with the integration tier)</td><td>Maven Surefire, JUnit 5, Mockito, AssertJ</td><td>Pure logic: reward math, FIFO, schedules, parsers, matchers, validators, prompt builders; lending↔transaction linking added 6 files / 101 tests (<code>LendingServiceLinkTest</code>, <code>LendingMatchSuggestionsTest</code>, <code>ObligationRefServiceTest</code>, <code>TransactionServiceObligationRefTest</code>, <code>TransactionResponseObligationRefsTest</code>, <code>LendingsDatasourceTest</code>)</td><td>Anything needing Spring, Flyway, Hibernate filters, SQL (Mockito never boots the context; see memory "verify server boots")</td></tr>
+<tr><td>Server integration</td><td>24 <code>@SpringBootTest</code> classes</td><td>Spring Boot test + MockMvc, H2 in Oracle mode, schema from entities (<code>ddl-auto=create-drop</code>, Flyway off), one shared in-memory database across classes, <code>@SpyBean</code> to inject failures</td><td>Transactional proxies and rollback, Hibernate tenant filter, JPQL repository queries, entity-level unique constraints, HTTP end to end with a session cookie. The navigation redesign added 7: <code>HomeDashboardSeederIntegrationTest</code>, <code>InboxItemStateRepositoryIntegrationTest</code>, <code>ObligationsSectionIsolationIntegrationTest</code>, <code>NetWorthSectionIsolationIntegrationTest</code>, <code>ReportRepositoryFindFirstIntegrationTest</code>, <code>TransactionRepositoryNavigationQueriesIntegrationTest</code>, <code>GmailProcessedMessageAttentionCountIntegrationTest</code></td><td>Oracle SQL and PL/SQL migrations, true concurrency; rows leak across classes unless each test deletes what it created</td></tr>
+<tr><td>Client unit</td><td>241 test files, 1959 tests</td><td>vitest + Testing Library (jsdom, Node 20)</td><td>Component rendering, hooks, formatters, request builders, nav; lending↔transaction linking added 22 files / 128 tests (picker, link-dialog record kinds, ledger link cell, match panel, obligation ref badges/sections); the navigation redesign added 64 files (navigation tree, menu sheet, legacy redirects, dashboard built-ins and widget chrome, Bills due widget and its state machine, Inbox page/widget/actions/snooze, Upcoming, account page, report duplicate)</td><td>RSC streaming (asChild trigger bug invisible in jsdom), server actions</td></tr>
+<tr><td>E2E</td><td>101 specs; 947 passed, 7 skipped</td><td>Playwright; Docker Oracle Free 23; WireMock; <code>@Profile("e2e")</code></td><td>Every endpoint (230/230 ops), every route (44/44), foreign-id tenancy sweep, migration idempotence (double boot), job flows, Gmail flows with fake Gmail, chat with scripted LLM; <code>api/lending-links.spec.ts</code> (11) + <code>ui/lending-links.spec.ts</code> (7, one <code>@mobile</code>) added in Phase 16; the navigation redesign added API specs <code>inbox</code>, <code>inbox-review-subtitle</code>, <code>builtins</code>, <code>home-seeding</code>, <code>obligations</code>, <code>bills-cards</code>, <code>report-nav</code> and UI specs <code>home</code>, <code>inbox</code>, <code>upcoming</code>, <code>account-detail</code>, <code>navigation</code>, <code>report-next-days</code>, <code>dashboards-default-toggle</code></td><td>Real provider behaviour (Yahoo, Gemini), ADB-specific behaviour (ORA-12839), concurrency under load</td></tr>
 <tr><td>Parity / property</td><td>a few</td><td>within unit</td><td>Balance single vs batch; holding realized vs Σ lots; SQL vs in-memory FY buckets</td><td></td></tr>
 <tr><td>Manual smoke</td><td>memory notes</td><td>Local Oracle + boot</td><td>Migrations apply; live 201s</td><td>Not repeatable</td></tr>
 </table></div>
@@ -253,12 +258,30 @@
 <ol class="trace">
 <li><span class="lyr">CI</span>Server deploy workflow calls the client's reusable E2E workflow; both must be green</li>
 <li><span class="lyr">Boot</span>Oracle Free container → server with <code>e2e</code> profile (crons off, short limits, Swagger on, <code>E2eControlController</code> for time and fixture control) → boot twice to prove Flyway idempotence</li>
-<li><span class="lyr">Coverage</span><code>E2eCoverageFilter</code> records every operation hit; <code>CoverageRegistry</code> compares with the OpenAPI surface; unmatched must be 0 and allowlists are empty</li>
+<li><span class="lyr">Coverage</span><code>E2eCoverageFilter</code> records every operation hit; <code>CoverageRegistry</code> compares with the OpenAPI surface; unmatched must be 0. The coverage gate matches recorded route patterns against OpenAPI paths, which is why the Inbox routes use a plain <code>{key}</code> path variable (server 1ef1d56: the earlier <code>{key:.+}</code> regex made snooze, dismiss and state unmatched)</li>
 <li><span class="lyr">Externals</span>WireMock stubs for Gmail list/get, Google token, Yahoo quote/search, AMFI NAV; <code>ScriptedLlmClient</code> returns canned JSON per prompt kind</li>
-<li><span class="lyr">Tenancy</span>Each spec creates two users and replays every id-bearing call with the other user's id expecting 404</li>
+<li><span class="lyr">Tenancy</span>Each spec creates two users and replays every id-bearing call with the other user's id expecting 404. <span class="path">e2e/coverage/sweep-allowlist.json</span> exempts the Inbox dismiss and state operations, which accept any well-formed key by design</li>
 <li><span class="lyr">Routes</span>Every route in <code>navItems.tsx</code> plus detail pages rendered and asserted</li>
 </ol>
 <p>From Phase 16 (lending↔transaction linking) on, the working agreement changed: Claude implements the phase's tests directly rather than writing an AG prompt for a separate implementer to follow (user decision 2026-09-05, recorded in <span class="path">plans/e2e-phases.md</span>). Phase 16 added one new fixture helper file, <span class="path">e2e/fixtures/seed/lendings.ts</span> (<code>linkLendingTransaction</code>, <code>unlinkLendingTransaction</code>, <code>matchSuggestions</code>, <code>searchTransactions</code>); the existing <span class="path">fixtures/seed/loans.ts</span> needed no changes since <code>addLending</code>, <code>pay</code> and <code>addDays</code> already accepted a <code>transactionId</code>. No product code changed for this phase — it landed tests only, against the lending↔transaction linking product code that had already landed earlier on the same branch (<code>feat/lending-txn-linking</code>, not yet committed).</p>
+
+<h3 id="s25-isolation">The bug the integration tests found: section isolation</h3>
+<p>The first implementation of Upcoming (<code>ObligationsService</code>) and the <code>net_worth</code> datasource wrapped each section in a try/catch so that one broken section (a malformed loan schedule, a failing bill query) would only drop that section's rows. Mockito unit tests passed. The Spring integration tests (<code>ObligationsSectionIsolationIntegrationTest</code>, <code>NetWorthSectionIsolationIntegrationTest</code>) made a <code>@SpyBean</code> collaborator throw and showed the whole read returning 500: the failing collaborator was a <code>@Transactional</code> bean that had joined the caller's read-only transaction, so its interceptor marked that shared transaction rollback-only before the exception reached the catch, and the commit then threw <code>UnexpectedRollbackException</code>. Fix (server 9be54db): every section runs through <code>SectionRunner</code>; the Spring implementation <code>TransactionalSectionRunner</code> opens a <code>REQUIRES_NEW</code> read-only transaction per section, so a failure rolls back only that section. Unit tests use <code>SectionRunner.DIRECT</code>. <span class="c cg">Confirmed</span></p>
+<pre class="mermaid">sequenceDiagram
+  participant C as ObligationsController
+  participant O as ObligationsService (tx A, read-only)
+  participant R as TransactionalSectionRunner
+  participant B as CardBillService (@Transactional)
+  C->>O: upcoming(user, months, kinds)
+  O->>R: run(emi section)
+  R->>R: suspend A, open tx B1 (REQUIRES_NEW)
+  R-->>O: EMI rows, B1 commits
+  O->>R: run(card bill section)
+  R->>B: listBills (joins tx B2)
+  B--xR: exception, B2 marked rollback-only
+  R-->>O: B2 rolled back, exception rethrown
+  O->>O: catch, log obligations.section.failed, no rows
+  O-->>C: remaining sections, tx A commits cleanly</pre>
 
 <h3 id="s59-map">Test-to-rule map (§59)</h3>
 <div class="tw"><table>
@@ -280,6 +303,15 @@
 <tr><td>Obligation-ref reverse lookup, merge compatibility check, FK re-pointing</td><td><code>ObligationRefServiceTest</code>, <code>TransactionServiceObligationRefTest</code>, <code>TransactionResponseObligationRefsTest</code>; E2E merge re-point and merge-rejected cases</td><td>Deep</td></tr>
 <tr><td>Lending match-suggestions (tolerance, window, exclusions, greedy assignment)</td><td><code>LendingMatchSuggestionsTest</code>; E2E match-suggestions case</td><td>Good</td></tr>
 <tr><td>Lendings report datasource fields (<code>isLinked</code>, <code>transactionId</code>, <code>transactionAccount</code>) and transactions' <code>isLendingLeg</code>/<code>isLoanLeg</code></td><td><code>LendingsDatasourceTest</code>; E2E report datasource catalog case</td><td>Good</td></tr>
+<tr><td>Home seeded once; failed seed rolls back the claim and the next visit seeds; restore reuses the spend report</td><td><code>HomeDashboardSeederTest</code>, <code>HomeDashboardSeederIntegrationTest</code> (rollback, once-only, HTTP retry, one Home after repeated visits); E2E <code>api/home-seeding.spec.ts</code>, <code>ui/home.spec.ts</code></td><td>Good; concurrent first visits untested</td></tr>
+<tr><td>Built-in registry: params, min widths, template definitions, component 400, widget JSON kind/builtinKey/params</td><td><code>BuiltinWidgetRegistryTest</code>, <code>DashboardValidatorBuiltinTest</code>, <code>DashboardServiceBuiltinTest</code>, <code>DashboardWidgetTest</code>; client <code>AddWidgetDialog</code>, <code>DashboardWidgetBuiltins</code>, <code>dashboards.builtins.helpers</code> tests; E2E <code>api/builtins.spec.ts</code></td><td>Deep</td></tr>
+<tr><td>Inbox: collectors per kind, read-only listing, ordering, badge counts, snooze/dismiss/undo rules, key validation</td><td><code>InboxServiceTest</code>, one test class per collector, <code>InboxKindsTest</code>, <code>InboxRowsTest</code>, <code>InboxControllerTest</code>, <code>InboxItemStateTest</code>, <code>InboxItemStateRepositoryIntegrationTest</code> (unique key per user); client Inbox view/rows/widget/snooze/actions tests; E2E <code>api/inbox.spec.ts</code>, <code>ui/inbox.spec.ts</code></td><td>Deep</td></tr>
+<tr><td>Push link targets (Inbox row only when listed)</td><td><code>BillMessagesTest</code>, <code>EmiMessagesTest</code>; client <code>InboxView</code> "already handled" case</td><td>Good</td></tr>
+<tr><td>Upcoming: kinds, status (overdue / due_soon / upcoming), months clamp, ordering, section isolation</td><td><code>ObligationsServiceTest</code>, <code>ObligationsControllerTest</code>, <code>ObligationsDatasourceTest</code>, <code>ObligationsSectionIsolationIntegrationTest</code>; E2E <code>api/obligations.spec.ts</code>, <code>ui/upcoming.spec.ts</code></td><td>Deep</td></tr>
+<tr><td>Bills: AWAITING_STATEMENT rows, unbilled = debits only, refunds and reversals count as paid, next expected statement</td><td><code>CardBillServiceTest</code>, <code>BillControllerTest</code>, <code>TransactionRepositoryNavigationQueriesIntegrationTest</code>; client <code>billCardState</code>, <code>BillsDueWidget</code> tests; E2E <code>api/bills-cards.spec.ts</code></td><td>Deep</td></tr>
+<tr><td>Net worth rows, side and sign rules, section isolation</td><td><code>NetWorthDatasourceTest</code>, <code>NetWorthSectionIsolationIntegrationTest</code>; E2E <code>api/report-nav.spec.ts</code></td><td>Deep</td></tr>
+<tr><td>Report additions: <code>next_x_days</code> = [today, today+N−1], <code>spend</code> measure, duplicate, <code>attention</code> datasource</td><td><code>DateRangeResolverNextXDaysTest</code>, <code>ReportDefinitionValidatorNextXDaysTest</code>, <code>TransactionQueryBuilderSpendTest</code>, <code>ReportServiceTest</code>, <code>AttentionDatasourceTest</code>; E2E <code>api/report-nav.spec.ts</code>, <code>ui/report-next-days.spec.ts</code></td><td>Good</td></tr>
+<tr><td>Navigation, menu sheet and legacy redirects</td><td>Client <code>navigation</code>, <code>NavTree</code>, <code>MobileNavBar</code>, <code>MobileMenuSheet</code>, <code>legacyRedirects</code> tests; E2E <code>ui/navigation.spec.ts</code></td><td>Good</td></tr>
 <tr><td>Report SQL builder</td><td><code>TransactionQueryBuilderTest</code> covers filters, not the category join cardinality</td><td>Gap (fan-out untested)</td></tr>
 <tr><td>KPI comparison</td><td>SQL executor tested; in-memory null-enabled path untested</td><td>Gap</td></tr>
 <tr><td>Chat SQL validator</td><td><code>ChatSqlValidatorTest</code> (allow-list, forbidden keywords)</td><td>Good; drift vs migrations untested</td></tr>
@@ -301,7 +333,8 @@
 <li><strong>Duplicate corporate action</strong> application.</li>
 <li><strong>Statement PDF variety</strong>: the parser's heuristics have few real fixtures (memory: "needs sample PDFs for parity goldens").</li>
 <li><strong>Timezone edges</strong>: <code>AppTime</code> pinned to a fixed clock around 18:30 UTC (the IST date change).</li>
-<li><strong>Concurrency</strong>: double-submit of imports, concurrent loan edits, session cap behaviour.</li>
+<li><strong>Concurrency</strong>: double-submit of imports, concurrent loan edits, session cap behaviour, two first visits seeding Home at the same moment, two tabs writing the first state row for one Inbox key.</li>
+<li><strong>Inbox collector failure</strong>: <code>InboxService.list</code> has no per-collector isolation; no test asserts what one failing collector does to the Inbox, the badge or the <code>attention</code> datasource (today: the whole read fails).</li>
 </ol>
 
 <h3 id="s25-run">How to run</h3>
@@ -327,7 +360,7 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <tr><td>AI4</td><td>Reimplementation instead of reuse</td><td>KPI comparison ×2; sign convention ×3; FY ×4; reward matcher client twin</td><td>Each agent solved the local problem</td><td>Silent divergence (already observed)</td><td><span class="c ph">High</span></td></tr>
 <tr><td>AI5</td><td>Join without cardinality thought</td><td>Category LEFT JOIN fan-out in reports; unused <code>SqlPredicates.category()</code> that would have been correct</td><td>Correct helper written, wrong one used</td><td>Over-counted spend</td><td><span class="c pc">Critical</span></td></tr>
 <tr><td>AI6</td><td>Stale catalog copies</td><td>Report <code>source</code> values, <code>ALLOWED_VIEWS</code> vs migrations, client <code>SyncSummary</code> shape, dictionary.md</td><td>Enum changed in one place</td><td>Broken filters; model self-correction</td><td><span class="c ph">High</span></td></tr>
-<tr><td>AI7</td><td>Stub left as production endpoint</td><td><code>/dashboard/summary</code> returns zeros</td><td>Placeholder never removed</td><td>Misleading if ever called</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>AI7</td><td>Stub left as production endpoint</td><td><code>/dashboard/summary</code> returns zeros, now alongside the real <code>net_worth</code> datasource</td><td>Placeholder never removed</td><td>Misleading if ever called</td><td><span class="c pm">Medium</span></td></tr>
 <tr><td>AI8</td><td>Defaults that silently change meaning</td><td>Point value ₹0.25 vs ₹0; cash-in-lieu ₹0 = loss; direction default DEBIT; verdict else REJECTED</td><td>Reasonable-looking fallbacks</td><td>Wrong money with no warning</td><td><span class="c ph">High</span></td></tr>
 <tr><td>AI9</td><td>Plan and code disagree</td><td>Charges in cost basis; EMI exact match; is_excluded semantics</td><td>Agent deviated without updating the plan</td><td>Reader trusts the document</td><td><span class="c ph">High</span></td></tr>
 <tr><td>AI10</td><td>Idempotence assumed</td><td>Duplicate corporate actions double-apply; duplicate additive rules; bulk reattribute with null card</td><td>Happy-path only</td><td>Double counting</td><td><span class="c ph">High</span></td></tr>
@@ -338,6 +371,8 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <tr><td>AI15</td><td>Secret in tree</td><td><code>cookies.txt</code></td><td>Debug artefact committed</td><td>Session exposure</td><td><span class="c ph">High</span></td></tr>
 <tr><td>AI16</td><td>Config that does nothing</td><td><code>llm.cooldown-ms</code>, <code>fiscal-year-start-month</code> never set</td><td>Wired but unused</td><td>False sense of control</td><td><span class="c pl">Low</span></td></tr>
 <tr><td>AI17</td><td>Validator drift from schema</td><td>ATM channel CHECK vs enum (fixed in V84)</td><td>Enum extended, CHECK not</td><td>Insert failure (fixed)</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>AI18</td><td>Catch that does not isolate</td><td>Upcoming and net worth first wrapped sections in try/catch inside one transaction (fixed with <code>SectionRunner</code>, see <a href="#s25-isolation">§25</a>)</td><td>Looks resilient in a Mockito test; only a Spring test shows the rollback-only marker</td><td>500 on the landing page (fixed before merge)</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>AI19</td><td>Rule mirrored in two places</td><td>Push link "is it in the Inbox" rule copied from the collectors (<a href="/handbook/rules.html#s45">§45 C36</a>)</td><td>Each side solved locally</td><td>A push opens an Inbox without the row (handled by an "already handled" message)</td><td><span class="c pl">Low</span></td></tr>
 </table></div>
 
 <h3 id="s46-dead">H. Dead, unreachable and stale code</h3>
@@ -367,15 +402,16 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <p class="eyebrow">Section 47</p>
 <h2><span class="n">47</span>Missing-feature and gap analysis</h2>
 <div class="exec"><h4>Executive summary</h4>
-<p>What a personal-finance product of this shape usually has and FinanceOS does not, what exists only as UI or only as API, and what half-built paths remain. This is an inventory, not a roadmap: several gaps are deliberate per plan documents (net worth, budgets, statement reward reconciliation, chat persistence). <span class="c cg">Confirmed</span> for existence; "expected" is the author's judgement.</p></div>
+<p>What a personal-finance product of this shape usually has and FinanceOS does not, what exists only as UI or only as API, and what half-built paths remain. This is an inventory, not a roadmap: several gaps are deliberate per plan documents or decisions (budgets, statement reward reconciliation, chat persistence, SIPs, dividend suggestions outside the Inbox). <span class="c cg">Confirmed</span> for existence; "expected" is the author's judgement.</p></div>
 
 <h3 id="s47-absent">Expected but absent</h3>
 <div class="tw"><table>
 <tr><th>Capability</th><th>State</th><th>Evidence</th><th>Impact</th></tr>
-<tr><td>Net worth / dashboard summary</td><td>Stub returning zeros; no accounts datasource</td><td><code>DashboardController.summary</code>, spec doc</td><td>No single figure across accounts, loans, holdings</td></tr>
+<tr><td>Net-worth history</td><td>Net worth exists as of today only (<code>net_worth</code> datasource, Home KPI); nothing stores or recomputes past values</td><td><code>NetWorthDatasource</code> (rows as of <code>AppTime.today()</code>)</td><td>No trend line; KPI comparison against a previous period has nothing to compare</td></tr>
 <tr><td>Budgets</td><td>None (UI copy mentions "budgets" in the excluded flag)</td><td>grep</td><td>Copy promises a feature that does not exist</td></tr>
-<tr><td>Recurring transaction detection / subscriptions</td><td>None</td><td>—</td><td>Loans have schedules; nothing else recurs</td></tr>
-<tr><td>Goals, savings targets, SIP tracking</td><td>None (SIPs explicitly deferred in reports gaps)</td><td>memory</td><td></td></tr>
+<tr><td>Recurring transaction detection / subscriptions</td><td>None</td><td>—</td><td>Loans, card bills and expected statements appear in Upcoming; subscriptions and other recurring debits do not</td></tr>
+<tr><td>Goals, savings targets, SIP tracking</td><td>Goals none; SIP module parked (server <code>SipController</code> and <code>domain/investment/sip</code> exist, no client page, not an Upcoming or Inbox kind)</td><td>code; navigation redesign decision</td><td>SIP instalments never show as due</td></tr>
+<tr><td>Dividend suggestions in the Inbox</td><td>Not an Inbox kind by decision; suggestions stay a live scan on the Dividends page</td><td><code>InboxKinds.ALL</code></td><td>Unlinked dividend credits only surface when the user opens Dividends</td></tr>
 <tr><td>Multi-currency</td><td>INR only; no currency column on transactions</td><td>schema</td><td>International spends stored in INR as billed</td></tr>
 <tr><td>Password reset / email verification</td><td>None; change password only when logged in</td><td>AuthController</td><td>Lost password = admin intervention</td></tr>
 <tr><td>Session management UI, global logout</td><td>None</td><td>—</td><td>Weak revocation</td></tr>
@@ -383,7 +419,7 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <tr><td>Import of bank CSV (non-statement)</td><td>None; only PDF/XLSX statements and broker files</td><td>parsers</td><td></td></tr>
 <tr><td>Transaction attachments / receipts</td><td>None</td><td>—</td><td></td></tr>
 <tr><td>Split transactions</td><td>Multi-category tagging exists, no amount split</td><td>schema</td><td>Fan-out bug makes multi-category worse</td></tr>
-<tr><td>Notifications (due dates, anomalies)</td><td>Only browser notification on chat completion</td><td>client</td><td>Card due dates computed but never alert</td></tr>
+<tr><td>Anomaly alerts</td><td>None; due dates are covered (Web Push producers plus the Inbox and Upcoming)</td><td><code>domain/notification</code>, <code>InboxService</code></td><td>Unusual spend is never flagged</td></tr>
 <tr><td>Statement reward points reconciliation</td><td>Parsed, stored, never compared</td><td>analysis parked 2026-09-02</td><td>Engine accuracy never validated</td></tr>
 <tr><td>Card fees timeline</td><td>Planned, parked</td><td>plans/card-fees-plan.md</td><td>Reward net ignores fees</td></tr>
 <tr><td>Chat persistence</td><td>Deferred</td><td>memory</td><td>Transcript lost on refresh</td></tr>
@@ -396,7 +432,7 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <h3 id="s47-halves">UI without backend, backend without UI</h3>
 <div class="tw compact"><table>
 <tr><th>Direction</th><th>Item</th><th>Note</th></tr>
-<tr><td>Backend only</td><td><code>GET /dashboards/default</code>, <code>POST /gmail/rescan</code>, <code>GET /dashboard/summary</code>, plain equity import mode</td><td>No client caller</td></tr>
+<tr><td>Backend only</td><td><code>GET /dashboards/default</code> (now also seeds Home), <code>POST /gmail/rescan</code>, <code>GET /dashboard/summary</code>, plain equity import mode, SIP endpoints</td><td>No client caller</td></tr>
 <tr><td>Backend only</td><td><code>EmailClassifier</code> prompt</td><td>Never invoked</td></tr>
 <tr><td>Backend only</td><td>Reward line reason codes beyond the top few</td><td>UI shows codes without explanation text for some</td></tr>
 <tr><td>UI only</td><td>Client <code>SyncSummary</code> attention outcomes, 'OTHER' review reason, budgets copy</td><td>Server never produces them</td></tr>
@@ -438,6 +474,9 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <tr><td>Categories</td><td><span class="c cy">Medium</span></td><td>USER rules reliable; LLM rules until verified</td><td>Approve CATEGORY_UNVERIFIED</td></tr>
 <tr><td>Bank balance</td><td><span class="c cy">Medium</span></td><td>Anchor math sound; excluded rows counted; gap badge helps</td><td>Look at the gap badge</td></tr>
 <tr><td>Card dues and cycle</td><td><span class="c cg">High</span></td><td>Straight from statement summary</td><td>Nothing</td></tr>
+<tr><td>Bill paid state and unbilled spend</td><td><span class="c cy">Medium-High</span></td><td>Deep tests; paid needs a manual mark or a CC_PAYMENT/refund link, so an unlinked payment shows as still due</td><td>Link the payment or mark paid</td></tr>
+<tr><td>Inbox and Upcoming</td><td><span class="c cy">Medium-High</span></td><td>Computed from the same rows the producers use; reward rows depend on the alert pass having recorded markers; a failed Upcoming section silently drops its rows</td><td>Check the server log for <code>obligations.section.failed</code> if something is missing</td></tr>
+<tr><td>Net worth (today)</td><td><span class="c cy">Medium</span></td><td>Inherits balance caveats (excluded rows counted), loan outstanding from the schedule, holdings at last price; a failed section is skipped</td><td>Compare with account tiles</td></tr>
 <tr><td>Reward earned (report)</td><td><span class="c cy">Medium</span></td><td>Deep tests; depends on rule entry; no issuer reconciliation; duplicate rules double</td><td>Compare with statement points</td></tr>
 <tr><td>Card Picker ranking</td><td><span class="c cy">Medium</span></td><td>Same engine; ₹0.25 default; fees ignored</td><td>Set point values</td></tr>
 <tr><td>Holdings quantities and cost</td><td><span class="c cy">Medium-High</span></td><td>FIFO tested; classifications sound; charges excluded (documented in code)</td><td>Check for duplicate CAs</td></tr>
@@ -510,6 +549,11 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <tr><td>Yahoo/AMFI down</td><td>Provider outage</td><td>Per-instrument failure; prior price kept</td><td>Values stale with no date warning</td><td>Yes</td><td><code>price.refresh.failed</code></td></tr>
 <tr><td>Instrument delisted</td><td>Merger</td><td>null yahooSymbol; at-cost valuation</td><td>"at cost" badge, merger nudge</td><td>No</td><td>—</td></tr>
 <tr><td>Report widget broken</td><td>Deleted report, SQL error</td><td>Per-widget catch</td><td>Widget unavailable</td><td>No</td><td>report.execute error</td></tr>
+<tr><td>Upcoming section fails</td><td>Malformed loan schedule, bill query error</td><td>Section runs in its own transaction; caught; contributes no rows</td><td>Upcoming list and widget without that kind; no indicator</td><td>Yes</td><td><code>obligations.section.failed</code> with <code>kind</code></td></tr>
+<tr><td>Net-worth section or row fails</td><td>Loan or lending service error; one account's balance throws</td><td>Section skipped (own transaction) or row skipped</td><td>Net worth lower or higher than reality</td><td>Yes</td><td><code>report.net_worth.section_failed</code>, <code>report.net_worth.row_skipped</code></td></tr>
+<tr><td>Inbox collector fails</td><td>Any collector throws</td><td>No per-collector isolation</td><td>Inbox page, widget, badge and <code>attention</code> reports error</td><td>No</td><td>500 access log</td></tr>
+<tr><td>Home seeding fails</td><td>Dashboard insert error on first visit</td><td>Claim rolled back</td><td><code>/dashboard</code> error page; next visit seeds</td><td>No</td><td>5xx on <code>GET /dashboards</code></td></tr>
+<tr><td>Push opens a handled item</td><td>Row snoozed, dismissed or resolved since the push</td><td>Client resolves <code>?item=</code> against the list</td><td>"That item is already handled"</td><td>No</td><td>—</td></tr>
 <tr><td>Chat deadline</td><td>Slow models</td><td>Forced final at 180 s; hard stop 270 s</td><td>"Took longer than expected"</td><td>No</td><td><code>chat.deadline</code></td></tr>
 <tr><td>Chat quota</td><td>&gt;30/day or 2 concurrent</td><td>429</td><td>Quota message</td><td>No</td><td>CHAT_QUOTA</td></tr>
 <tr><td>Flyway failure on deploy</td><td>ADB parallel DML, partial DDL</td><td>Boot aborts; previous jar keeps running only if the deploy script does not stop it first</td><td>Downtime</td><td>No</td><td>Flyway validate/migrate error</td></tr>
@@ -523,7 +567,7 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <div class="tw"><table>
 <tr><th>Symptom</th><th>First look</th><th>Then</th><th>Likely cause</th></tr>
 <tr><td>Toast or error page shows <code>Ref …</code></td><td>Open <code>/debug?ref=&lt;id&gt;</code></td><td>Read root cause headline, exception class/stack trace, and timeline events; use "Copy raw" for JSON export</td><td>Server exception, database constraint violation, 4xx client rejection, or rate limit</td></tr>
-<tr><td>"My transaction from email did not appear"</td><td>Settings → Gmail → Needs Attention; jobs page for the last GMAIL_SYNC result</td><td>Ledger row for the message id: status and reason; account <code>ingest_from_date</code>; sender allow-list</td><td>Parked (ambiguous), watermark, not a listed sender, LLM cooldown, token revoked</td></tr>
+<tr><td>"My transaction from email did not appear"</td><td>Settings → Connections (<code>/settings/gmail</code>) → Needs Attention; Settings → Activity (<code>/settings/activity</code>) for the last GMAIL_SYNC result</td><td>Ledger row for the message id: status and reason; account <code>ingest_from_date</code>; sender allow-list</td><td>Parked (ambiguous), watermark, not a listed sender, LLM cooldown, token revoked</td></tr>
 <tr><td>"Balance is wrong"</td><td>Gap badge on the tile; latest statement closing balance</td><td>Transactions after the statement date incl. excluded ones; duplicates flagged; anchor-day rows</td><td>Excluded rows counted; duplicate alert + statement line; anchor-day inclusion</td></tr>
 <tr><td>"Reward number looks off"</td><td>/rewards lines: reason codes per transaction</td><td>Rule order and priorities; duplicate rules; cap bucket windows; point value; statement cycle flag</td><td>Duplicate additive rule; cycle fallback; ₹0.25 default</td></tr>
 <tr><td>"Holding quantity or cost is wrong"</td><td>Trade list for the instrument; corporate actions list</td><td>Classifications for straddle days; duplicate CA; over-sold warning in logs</td><td>Duplicate CA; missing tax P&amp;L at import; sell exceeding holdings truncated</td></tr>
@@ -536,14 +580,18 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <tr><td>"Login loops"</td><td>Cookie on the client origin; /auth/me response</td><td>Session cap (5); cookie relay from the API origin</td><td>Session registry never frees; relay misconfigured</td></tr>
 <tr><td>"Chat says it cannot query cards"</td><td>Trace: TABLE_NOT_ALLOWED</td><td><code>ALLOWED_VIEWS</code> vs migrations</td><td>Validator drift (C14)</td></tr>
 <tr><td>"Deploy failed at boot"</td><td>Flyway error in the service log</td><td>ADB session: parallel DML, partial objects</td><td>Non-idempotent migration or ORA-12839</td></tr>
-<tr><td>Everything slow</td><td>Grafana: heap, swap, job queue depth</td><td>Running jobs; dashboard widget count; portfolio_value reports</td><td>512 MB heap under sync + import</td></tr>
+<tr><td>"Upcoming is missing a bill or an EMI"</td><td>Server log for <code>obligations.section.failed</code></td><td>The bill's status (PAID, NO_DUE, muted) and the loan's schedule; the <code>months</code> window (1–12)</td><td>Failed section; bill already paid by a refund link; outside the window</td></tr>
+<tr><td>"Inbox badge or row is wrong"</td><td><code>GET /inbox</code> response: section, severity, key</td><td><code>inbox_item_state</code> for that key (snoozed until / dismissed); reward marker <code>notified_on</code>; bill <code>daysUntilDue</code></td><td>Snoozed or dismissed earlier; item outside the 7-day window; reward marker not recorded yet</td></tr>
+<tr><td>"Home is empty or missing"</td><td><code>users.home_seeded_at</code></td><td>Dashboards list: is any default? Home deleted?</td><td>Home deleted after seeding (never re-seeds); use Restore Home</td></tr>
+<tr><td>Everything slow</td><td>Grafana: heap, swap, job queue depth</td><td>Running jobs; dashboard widget count; portfolio_value reports; open tabs polling the Inbox badge</td><td>512 MB heap under sync + import</td></tr>
 </table></div>
 
 <h3 id="s16-where">Where to look</h3>
 <ul>
 <li><strong>Request correlation</strong>: copy <code>X-Request-Id</code> from the browser network tab, search Loki <code>{job="financeos"} |= "&lt;id&gt;"</code>.</li>
-<li><strong>Jobs</strong>: /jobs page shows payload, result JSON, attempts, error; rows purge after 30 days.</li>
-<li><strong>Gmail ledger</strong>: per-message status via Settings → Gmail → Needs Attention; full table only in DB.</li>
+<li><strong>Jobs</strong>: Settings → Activity (<code>/settings/activity</code>; the old <code>/settings/jobs</code> redirects there with its query) shows payload, result JSON, attempts, error; rows purge after 30 days.</li>
+<li><strong>Gmail ledger</strong>: per-message status via Settings → Connections → Needs Attention; full table only in DB.</li>
+<li><strong>Inbox</strong>: computed, so there is nothing to inspect but the response and <code>inbox_item_state</code>; the push link for a row is <code>/inbox?item=&lt;key&gt;</code>.</li>
 <li><strong>LLM</strong>: /settings/llm health panel (provider status, cooldown until, last error).</li>
 <li><strong>DB</strong>: connect with the wallet as the app user; <code>v_chat_*</code> views are handy read models.</li>
 <li><strong>Client</strong>: Faro errors and console logs in Grafana under app_id/kind labels.</li>
@@ -568,6 +616,7 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <tr><td>Job results</td><td><code>jobs.result_json</code></td><td>per-file statuses, counts, reasons (≤50 details)</td><td>DB</td><td>30 d (janitor)</td></tr>
 <tr><td>Gmail ledger</td><td><code>gmail_message_ledger</code></td><td>status, reason, attempts, next_attempt_at</td><td>DB</td><td>Until account delete</td></tr>
 <tr><td>LLM health</td><td><code>llm_provider_state</code> in memory + /llm/health</td><td>status, cooldownUntil, lastError</td><td>API → settings panel</td><td>Process lifetime</td></tr>
+<tr><td>Navigation redesign events</td><td>Structured <code>event</code> field (<code>Events</code>)</td><td><code>inbox.item.snoozed</code>, <code>inbox.item.dismissed</code>, <code>inbox.item.state_cleared</code> (with <code>itemKey</code>); <code>obligations.section.failed</code> (with <code>kind</code>); <code>report.net_worth.section_failed</code>, <code>report.net_worth.row_skipped</code>; <code>dashboard.home.seeded</code> (with <code>trigger</code> first_visit or restore, widget count), <code>dashboard.home.spend_report.skipped</code>; <code>report.duplicated</code></td><td>Loki</td><td>14 d</td></tr>
 <tr><td>Audit</td><td><code>AuditLogger.mutation</code></td><td>before/after amounts for single-transaction CRUD and merge</td><td>Loki</td><td>14 d</td></tr>
 </table></div>
 
@@ -595,6 +644,8 @@ cd financeos-client && npm run e2e   # boots Oracle Free + server e2e profile + 
 <li>Gmail per-message failures are counted, not alerted, until they reach FAILED_PERMANENT.</li>
 <li>Price refresh success per instrument is logged but not surfaced in the UI (no "as of" date on values).</li>
 <li>Audit coverage is limited to single-transaction mutations.</li>
+<li>Section failures in Upcoming and net worth are logged but not returned: the response carries no "partial" flag, so the client cannot say that a kind is missing.</li>
+<li>Inbox listing is not logged or measured; its cost per call and the 60 s badge polling are invisible except as access-log durations.</li>
 </ul>
 
 <h3 id="s57-gotchas">Grafana gotchas (from memory)</h3>

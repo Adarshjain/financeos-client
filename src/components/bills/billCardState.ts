@@ -13,7 +13,7 @@ export interface BillCardState {
   phase: BillCardPhase;
   /** What is left to pay on the statement; null in the awaiting phase or when unknown. */
   toPay: number | null;
-  /** Card spend since the last statement closed (net of refunds); null when unknown. */
+  /** Card spend (debits) since the last statement closed; credits never reduce it. Null when unknown. */
   unbilled: number | null;
   /** Awaiting with no unbilled spend: collapses into the "Nothing pending" group. */
   nothingPending: boolean;

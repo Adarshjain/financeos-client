@@ -135,10 +135,10 @@
 <h3 id="s27-stages">Stages</h3>
 <div class="tw"><table>
 <tr><th>Stage</th><th>Tool</th><th>Gate</th><th>Notes</th></tr>
-<tr><td>Client CI</td><td>GitHub Actions: <code>npm ci</code>, lint, tsc, vitest, <code>check-api-surface.mjs</code>, schema drift check</td><td>Must pass</td><td>Node 20</td></tr>
+<tr><td>Client CI</td><td>GitHub Actions: <code>npm ci</code>, lint, tsc, vitest, <code>check-api-surface.mjs</code>, schema drift check</td><td>Must pass</td><td>Node 20; 1959 vitest unit tests after the navigation redesign (client d92c84f)</td></tr>
 <tr><td>Client deploy</td><td>Vercel Git integration</td><td>Build success</td><td>Hobby: no log drains; <code>API_ORIGIN</code> env required</td></tr>
-<tr><td>Server CI</td><td>Maven test + package (Java 21)</td><td>Must pass</td><td>Surefire ~660 tests</td></tr>
-<tr><td>Cross-repo E2E</td><td><code>workflow_call</code> into the client repo with the jar artefact</td><td>651 tests, coverage 193/193, unmatched 0</td><td>Oracle Free container ~2 min start</td></tr>
+<tr><td>Server CI</td><td>Maven test + package (Java 21)</td><td>Must pass</td><td>Surefire, 2238 tests after the navigation redesign (unit + Spring/H2 integration, server 9be54db)</td></tr>
+<tr><td>Cross-repo E2E</td><td><code>workflow_call</code> into the client repo with the jar artefact</td><td>947 passed, 7 skipped; coverage 230/230 operations and 44/44 routes, unmatched 0 (client fbf53be)</td><td>Oracle Free container ~2 min start</td></tr>
 <tr><td>Idempotence</td><td>Boot jar twice against the same DB</td><td>Second boot clean</td><td>Catches non-idempotent migrations</td></tr>
 <tr><td>Deploy</td><td>SSH + scp + systemctl</td><td>Health 200</td><td>Downtime ≈ JVM start (40–60 s)</td></tr>
 <tr><td>Migrations</td><td>Flyway at boot (<code>ddl-auto: none</code>)</td><td>Boot fails on error</td><td>V82 needed manual recovery on ADB (ORA-12839)</td></tr>
@@ -171,7 +171,7 @@
 <p class="eyebrow">Sections 60, 61 and 62</p>
 <h2><span class="n">60</span>Evolution, architectural decisions and domain boundaries</h2>
 <div class="exec"><h4>Executive summary</h4>
-<p>The 85 migrations and the plans directory tell the system's history: a bank-transaction tracker (V1–V25) that grew Gmail ingestion, statements and review workflow (V26–V40), then investments, F&amp;O and loans (V41–V50), then a full rewards engine (V51–V61), then LLM plumbing, chat and account lifecycle (V62–V85). Three areas were redesigned rather than extended: the credit-card model (three times), lendings (repayments → ledger), and the client data path (server-first → TanStack). <span class="c cg">Confirmed</span> from migration files; dates from memory notes where present.</p></div>
+<p>The 95 migrations and the plans directory tell the system's history. It began as a bank-transaction tracker (V1–V25) and grew Gmail ingestion, statements and the review workflow (V26–V40). Investments, F&amp;O and loans followed (V41–V50), then a full rewards engine (V51–V61), then LLM plumbing, chat and account lifecycle (V62–V85). The latest band adds lending links, notification markers and the navigation redesign (V86–V95). Four areas were redesigned rather than extended: the credit-card model (three times), lendings (repayments → ledger), the client data path (server-first → TanStack), and navigation (feature menus → Home, Inbox and Upcoming, with built-in widgets). <span class="c cg">Confirmed</span> from migration files; dates from memory notes where present.</p></div>
 
 <h3 id="s60-timeline">Timeline by migration band</h3>
 <div class="tw"><table>
@@ -183,6 +183,8 @@
 <tr><td>V51–V61</td><td>Rewards</td><td>reward_rules, buckets, milestones, lines (compute-on-read, no lines table), V52 nullable active_from, V59 point_value_inr, V60 fee treatment</td><td></td></tr>
 <tr><td>V62–V72</td><td>Gmail hardening and LLM</td><td>V62 drop sender→account, V63 ledger cascade (idempotent PL/SQL begins), V65–67 timestamps (TZ bug), V70 chat views + CHAT_RO, V72 BYOK keys</td><td></td></tr>
 <tr><td>V73–V85</td><td>Card model and lifecycle</td><td>V73–75 add-on cards, V76–78 LLM routing, V79 account deletion, V80 card instances, V82 cardholder/card rebuild, V83 grace/due removal, V84 ATM channel, V85 identifier aliases</td><td>Credit card model ×2</td></tr>
+<tr><td>V86–V92</td><td>Lending links and notifications</td><td>V86 lending↔transaction links (split bills), V87 lending kind principal|settlement, V88 broker/generic ingest fields cleared, V89 dividend receipts, V90 bill paid marks + <code>user_notification_settings</code>, V91–V92 producer markers on their own rows (no notification table)</td><td></td></tr>
+<tr><td>V93–V95</td><td>Navigation redesign</td><td>V93 <code>users.home_seeded_at</code> (one-shot Home seed gate), V94 <code>inbox_item_state</code> (snooze/dismiss per item key, the only stored Inbox data), V95 <code>notified_on</code> / <code>cap_notified_on</code> on reward milestones, rules and cap buckets (Inbox recency). DDL only, idempotent. See <a href="/handbook/data.html#s06-evolution">migration evolution</a>.</td><td>Navigation</td></tr>
 </table></div>
 
 <h3 id="s60-redesigns">Redesigns and why</h3>
@@ -196,6 +198,8 @@
 <tr><td>LLM</td><td>Single Gemini client → failover client → user routing prefs + BYOK</td><td>V72, V76–78</td><td>Free-tier quotas</td></tr>
 <tr><td>Statement parsing</td><td>Python parser → Java port</td><td>plans/statement-parser-port-plan.md</td><td>One runtime</td></tr>
 <tr><td>Gmail sender mapping</td><td>sender → account (dropped V62) → last4/alias resolver</td><td>V62 comment</td><td>One sender serves many accounts</td></tr>
+<tr><td>Navigation redesign</td><td><strong>Before</strong>: feature-first menus. <code>/dashboard</code> showed a hard-coded Bills Due card over the default dashboard, the obligations calendar lived at <code>/loans/calendar</code>, statement import at <code>/settings/ingest</code>, and job history at <code>/settings/jobs</code>. <strong>After</strong>: Home (<code>/dashboard</code>, a seeded dashboard of built-in widgets), Inbox (<code>/inbox</code>, badge), Upcoming (<code>/upcoming</code>, list and calendar), Accounts and the account page <code>/accounts/[id]</code>, plus groups Transactions (incl. Import at <code>/transactions/import</code>), Investments, Loans &amp; Lendings, Rewards, Insights, and Settings (incl. Activity at <code>/settings/activity</code>). The old routes redirect. On mobile, a bottom bar (Home, Inbox, Upcoming, Transactions) plus a bottom-sheet menu with chips for every group, Settings included, replaces the old context-dependent bottom bar (its items changed with the section) and the dropdown that rendered the full nav tree.</td><td>Server 9e02b6c, 9be54db, 1ef1d56; client 7dace73, d92c84f, fbf53be</td><td>The push producers (V90–V92) had no in-app surface, and the things that needed action were spread across four menus. The Inbox gives every push kind a row the push can deep-link to. Upcoming gathers every dated obligation in one place. Home turns the hard-coded card into widgets the user can rearrange. Screens: <a href="/handbook/client.html#s51-dashboard">Home</a>, <a href="/handbook/client.html#s51-inbox">Inbox</a>, <a href="/handbook/client.html#s51-upcoming">Upcoming</a>. <span class="c cy">Strongly inferred</span> from the commit messages and the replaced files.</td></tr>
+<tr><td>Home dashboard content</td><td>Hard-coded <code>BillsDueCard</code> + user dashboard → seeded "Home" dashboard of built-in widgets (net worth, Inbox, bills due, upcoming) + a seeded "Spend this month" report</td><td><code>HomeDashboardSeeder</code>, <code>BuiltinWidgetRegistry</code>; client <code>BillsDueCard.tsx</code> deleted</td><td>One widget system for everything on Home; restorable defaults</td></tr>
 </table></div>
 
 <h3 id="s61-adr">Architectural decision records, reconstructed (§61)</h3>
@@ -216,6 +220,9 @@
 <tr><td>ADR-13</td><td>Idempotent PL/SQL migrations</td><td>Oracle DDL auto-commit</td><td>Verbose migrations; double-boot check</td><td><span class="c cg">Confirmed</span></td></tr>
 <tr><td>ADR-14</td><td>Two-source broker reconciliation</td><td>Intraday corrupts FIFO</td><td>Requires tax P&amp;L export</td><td><span class="c cg">Confirmed</span></td></tr>
 <tr><td>ADR-15</td><td>Cardholder → Card split</td><td>Reissue breaks scoping</td><td>Third model; migrations V80–V82</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>ADR-16</td><td>Built-in dashboard widgets come from a code registry (<code>BuiltinWidgetRegistry</code>), not from report rows seeded per user</td><td>Home needs the same widgets for every user, some are not reports at all (Inbox, Bills due render their own component), and seeded rows would freeze each user's copy of the definition</td><td>Widget JSON stores only <code>kind: builtin</code>, <code>builtinKey</code>, <code>params</code>. Templates run through <code>ReportDataService.runDefinition</code> on every read, so a server release changes every user's widget at once. Built-ins can only be removed (not edited) and must keep <code>minW</code>. Users who want to change one use "Duplicate as my report". Only "Spend this month" is seeded as a real report so that the user can edit it. A key removed from the registry leaves stored widgets with no ref.</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>ADR-17</td><td>The Inbox is computed on read from the producers' own rows; only the user's snooze and dismiss are stored (<code>inbox_item_state</code>), with no notifications table</td><td>V90–V92 already chose markers on producer rows over a notification log. A stored inbox would need its own lifecycle in step with bills, EMIs, statements and jobs</td><td>The Inbox is never stale and never needs a backfill. Listing is strictly read-only: it never calls a producer's <code>evaluate</code> and never advances a marker, so opening it cannot send a push. In exchange, each kind's "is this due" rule exists twice (collector and push producer), push links copy the collector window (<code>BillMessages.href</code>, <code>EmiMessages.href</code>), the summary endpoint costs a full list, and state rows for vanished items are never pruned.</td><td><span class="c cg">Confirmed</span></td></tr>
+<tr><td>ADR-18</td><td>Composite reads (Upcoming obligations, <code>net_worth</code>) run each section through <code>SectionRunner</code>, in its own <code>REQUIRES_NEW</code> read-only transaction</td><td>A plain try/catch was not enough. When a <code>@Transactional</code> collaborator throws inside the shared transaction, its interceptor marks that transaction rollback-only, and the caller's commit then fails with <code>UnexpectedRollbackException</code> (HTTP 500). The integration tests in 9be54db found this.</td><td>One failing section drops only its own rows and logs an event. Each section takes its own pooled connection while the outer transaction is suspended. The tenant filter is re-enabled by the collaborators' own <code>@Transactional</code> boundaries. <code>SectionRunner.DIRECT</code> runs sections inline in plain unit tests, so only the Spring/H2 integration tests prove the isolation. The Inbox does not use it.</td><td><span class="c cg">Confirmed</span></td></tr>
 </table></div>
 
 <h3 id="s62-domains">Domain boundaries (§62)</h3>
@@ -247,6 +254,12 @@
     RP[reports · dashboards]
     C[chat]
   end
+  subgraph Attention
+    N[notification producers · push]
+    OB[obligations · card bills]
+    IN[inbox · inbox_item_state]
+    HM[home seeding · built-in registry]
+  end
   LLM[llm client · keys · routing]
   G --> X
   F --> X
@@ -269,8 +282,23 @@
   C --> LLM
   L --> X
   A --> X
-  I --> A</pre>
+  I --> A
+  S --> OB
+  L --> OB
+  LE --> OB
+  OB --> N
+  OB --> IN
+  N --> IN
+  J --> IN
+  R --> IN
+  G --> IN
+  X --> IN
+  OB --> RP
+  IN --> RP
+  A --> RP
+  HM --> RP</pre>
 <p><strong>Well-separated</strong>: Wealth (its own brokers table, no coupling to bank transactions except the broker's balance), Debt (loans link to transactions only through payments), Core. <strong>Leaky</strong>: Insight reads every domain's tables directly through SQL (reports) and views (chat), so any schema change ripples into <code>DatasourceCatalog</code>, the executors and the <code>v_chat_*</code> views. <strong>Shared kernel</strong>: <code>transactions</code> is touched by Gmail, files, statements, categorization, rewards, loans and merge; it is the coupling point of the system.</p>
+<p><strong>Attention</strong> (navigation redesign, server 9e02b6c) is a read-side layer over the other domains and owns almost no data. <code>domain/obligations</code> (<code>ObligationsService</code>) merges loan schedules, lending dues, card bills (<code>CardBillService</code> in <code>domain/notification/bill</code>) and expected statements. <code>domain/inbox</code> owns <code>inbox_item_state</code> and the collectors. The collectors reuse the push producers' static rules (<code>BillNotificationService.isStale</code>, <code>EmiNotificationService.currentInstallment</code>, <code>LendingReturnNotificationService.dueObligations</code>, <code>StatementExpectedNotificationService.overduePeriodEnd</code>, <code>JobNotificationService.NOTIFIED_TYPES</code>) but never call <code>evaluate</code>. <code>domain/dashboard</code> owns <code>BuiltinWidgetRegistry</code> and <code>HomeDashboardSeeder</code>. The <code>net_worth</code>, <code>obligations</code> and <code>attention</code> datasources plug the layer into reports, so Insight now depends on it. The boundary leaks in two places. Inbox collectors depend on notification internals, so changing a producer's rule changes the Inbox. <code>BillMessages</code> and <code>EmiMessages</code> import <code>InboxKinds</code> to build push links, so the dependency also runs back from notifications to the Inbox. <span class="c cg">Confirmed</span> from imports.</p>
 </section>
 <section class="sec" id="s20" data-part="IX · Ops &amp; architecture">
 <p class="eyebrow">Sections 20, 28 and 53</p>
@@ -312,6 +340,21 @@
   DS --> LSS
   DS --> RC
   DB[DashboardService] --> RD
+  DB --> BWR[BuiltinWidgetRegistry]
+  HDS[HomeDashboardSeeder] --> DB
+  HDS --> RPS[ReportService]
+  RD --> NWD[NetWorthDatasource] --> SRN[SectionRunner]
+  NWD --> AS
+  NWD --> LS
+  RD --> OBD[ObligationsDatasource] --> OBS[ObligationsService] --> SRN
+  OBS --> LS
+  OBS --> CBS[CardBillService]
+  RD --> ATD[AttentionDatasource] --> INS[InboxService]
+  INS --> COL[8 InboxCollectors]
+  COL --> CBS
+  COL --> LS
+  COL --> NP[notification producers static rules]
+  NP --> CBS
   CO[ChatOrchestrator] --> LLM
   CO --> CV[ChatSqlValidator] --> CE[ChatSqlExecutor / CHAT_RO]
   CO --> RD
@@ -324,7 +367,8 @@
 <li><code>lib/api/client.ts</code> (openapi-fetch) ← every <code>use*Queries.ts</code> hook ← components; <code>lib/api/keys.ts</code> is imported by 59 files for invalidation.</li>
 <li><code>schema.d.ts</code> (generated) ← client, hooks, and the surface checker; regenerate on any server DTO change.</li>
 <li><code>components/ui/*</code> primitives (dialog, button, table) ← everything; the dialog rebuild touched 40+ files.</li>
-<li><code>navItems.tsx</code> ← sidebar, E2E route coverage.</li>
+<li><code>navItems.tsx</code> ← <code>navigation.tsx</code> (groups) ← <code>NavTree</code> (sidebar), <code>MobileNav</code> (bottom bar) and <code>MobileMenuSheet</code> (bottom-sheet chips, Settings group), plus E2E route coverage. The Inbox badge in all three comes from <code>useInboxSummary</code>.</li>
+<li><code>DashboardWidgetView</code> → <code>useWidgetData</code> (report data or <span class="m m-post">POST</span> <code>/dashboards/builtins/{key}/data</code>) or a component built-in (<code>BillsDueWidget</code>, <code>InboxWidget</code>). The same <code>BillsDueWidget</code> and Inbox row components are reused on the account page, <code>/inbox</code> and <code>/upcoming</code>.</li>
 </ul>
 
 <h3 id="s28-impact">Change impact analysis (§28)</h3>
@@ -337,11 +381,15 @@
 <tr><td>Reward rule schema (predicates, tiers)</td><td>Validation, <code>resolveTxnFacts</code>, recommender, client rule form + tester, reward_earnings datasource</td><td>Reward suite (~120)</td><td><span class="c ph">High</span></td></tr>
 <tr><td>Balance formula</td><td><code>BalanceMath</code> single + batch, account tiles, broker balance path</td><td>Parity test</td><td><span class="c pm">Medium</span></td></tr>
 <tr><td>FIFO / corporate action logic</td><td><code>HoldingCalculator</code>, valuation, portfolio_value datasource, realized_lots datasource, XIRR flows, reconciliation preview</td><td>Holding + CA tests; E2E investments</td><td><span class="c ph">High</span></td></tr>
-<tr><td>Loan schedule math</td><td><code>LoanScheduleService</code>, tax datasource, calendar, client schedule table</td><td>Schedule tests; E2E loans</td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Loan schedule math</td><td><code>LoanScheduleService</code>, tax datasource, <code>ObligationsService</code> EMI rows (Upcoming page and widget), <code>EmiInboxCollector</code>, net worth loan rows, client schedule table</td><td>Schedule tests; E2E loans</td><td><span class="c pm">Medium</span></td></tr>
 <tr><td>Adding an LLM provider</td><td>yml providers, <code>FailoverLlmClient</code> adapter, <code>LlmKeyService</code> fallback set, routing options, model catalog, client settings, E2E scripted client</td><td>Failover tests</td><td><span class="c pm">Medium</span></td></tr>
 <tr><td>Adding a chat view</td><td>Migration, <code>ALLOWED_VIEWS</code>, dictionary.md, CHAT_RO grant script, prompt rules</td><td>Validator test; chat E2E</td><td><span class="c pm">Medium</span> (drift already)</td></tr>
-<tr><td>Adding an endpoint</td><td>Controller, OpenAPI (automatic), regenerate <code>schema.d.ts</code>, client hook, E2E spec (coverage gate fails otherwise), foreign-id sweep</td><td>E2E coverage 193→194</td><td><span class="c pl">Low</span> (gates catch it)</td></tr>
-<tr><td>Adding a route</td><td><code>navItems.tsx</code>, page, prefetch, E2E route list</td><td>Route coverage 37→38</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Adding an endpoint</td><td>Controller, OpenAPI (automatic), regenerate <code>schema.d.ts</code>, client hook, E2E spec (coverage gate fails otherwise), foreign-id sweep (or a <code>sweep-allowlist.json</code> entry with a reason, as for the Inbox key routes). Use a plain <code>{key}</code> path variable: a regex variable such as <code>{key:.+}</code> records a route pattern that differs from the OpenAPI path, and the gate cannot match it (1ef1d56).</td><td>E2E coverage 230/230 operations</td><td><span class="c pl">Low</span> (gates catch it)</td></tr>
+<tr><td>Adding a route</td><td><code>navItems.tsx</code>, the group in <code>navigation.tsx</code> (sidebar and menu sheet), page, prefetch, E2E route list; when moving a page, leave a redirect page at the old path (pattern: <code>settings/ingest</code>, <code>settings/jobs</code> keep the query; <code>loans/calendar</code>)</td><td>Route coverage 44/44</td><td><span class="c pl">Low</span></td></tr>
+<tr><td>Adding an Inbox kind</td><td><code>InboxKinds</code> (constant, <code>ALL</code>, key builder, <code>label</code>, <code>landingHref</code>), a new <code>InboxCollector</code> bean, the producer's static "is due" rule shared with the push, the push link in its <code>*Messages</code> (inbox only while the collector would list the row), the <code>attention</code> datasource enum values, the client row and action components</td><td><code>InboxKindsTest</code>, collector test, <code>InboxServiceTest</code>, E2E inbox specs</td><td><span class="c pm">Medium</span>: a collector that throws takes down the whole Inbox and its badge</td></tr>
+<tr><td>A built-in widget</td><td><code>BuiltinWidgetRegistry</code> entry (key, minW, template or component, href, params), the client <code>widgetMeta</code> + picker and, for a component, its renderer in <code>DashboardWidgetView</code>; if it belongs on Home, the <code>HomeDashboardSeeder</code> layout. Never rename or remove a key: stored widget JSON references it.</td><td><code>BuiltinWidgetRegistryTest</code>, <code>DashboardValidatorBuiltinTest</code>, E2E <code>builtins.spec</code>, <code>home.spec</code></td><td><span class="c pm">Medium</span></td></tr>
+<tr><td>Card bill rules (<code>CardBillService</code>)</td><td>Bills due widget states (<code>billCardState.ts</code>), Upcoming <code>card_bill</code> rows, <code>BillInboxCollector</code>, <code>BillMessages.href</code> window, bill push producer</td><td><code>CardBillServiceTest</code>, <code>BillsDueWidget.test</code>, E2E <code>bills-cards.spec</code></td><td><span class="c ph">High</span>: four surfaces read one formula</td></tr>
+<tr><td>A section of Upcoming or net worth</td><td>Route it through <code>SectionRunner</code>; keep its collaborators <code>@Transactional</code> so the tenant filter is enabled on the new session</td><td>The two <code>*SectionIsolationIntegrationTest</code> classes (H2); unit tests use <code>SectionRunner.DIRECT</code> and cannot catch this</td><td><span class="c pm">Medium</span></td></tr>
 <tr><td>Session or cookie settings</td><td>Spring config, client <code>setSessionCookie</code>, proxy.ts, OAuth relay</td><td>Login E2E</td><td><span class="c pm">Medium</span></td></tr>
 <tr><td>A migration</td><td>Idempotent PL/SQL, TZ-aware types, no parallel DML, double-boot CI</td><td>CI double boot; local Oracle boot</td><td><span class="c ph">High</span> if not idempotent</td></tr>
 <tr><td>A dialog or button primitive</td><td>Every render-graph child and class-pattern look-alike (memory: verify pattern, not import)</td><td>Client unit + visual check</td><td><span class="c pm">Medium</span></td></tr>
@@ -361,6 +409,12 @@
 <tr><td>Job worker thread death</td><td>Uploads, imports, sync stuck</td><td>Stale detection after 60 min</td><td>Synchronous reads</td></tr>
 <tr><td>CHAT_RO credentials</td><td>Chat SQL</td><td>—</td><td>Reports (use the app user)</td></tr>
 <tr><td><code>ENCRYPTION_KEY</code> lost</td><td>Gmail tokens, statement passwords undecryptable</td><td>Re-connect and re-enter</td><td>Ledger data</td></tr>
+<tr><td>One Inbox collector throws (e.g. a malformed loan schedule in <code>EmiInboxCollector</code>)</td><td><span class="m m-get">GET</span> <code>/inbox</code> and <code>/inbox/summary</code> (no per-collector isolation), so the Inbox page, the Inbox widget on Home, the nav badge and the <code>attention</code> datasource all fail</td><td>—</td><td>Upcoming, Bills due, net worth (isolated sections)</td></tr>
+<tr><td>One Upcoming section throws (EMI, lending, card bill or statement)</td><td>—</td><td>That kind silently vanishes from <code>/upcoming</code>, its totals and the Upcoming widget; <code>obligations.section.failed</code> logged</td><td>Other kinds</td></tr>
+<tr><td>One net worth section or row throws</td><td>—</td><td>The KPI omits that section or row with no visible error; <code>report.net_worth.section_failed</code> / <code>row_skipped</code> logged</td><td>Other sections</td></tr>
+<tr><td>Home seeding fails mid-way</td><td>That <span class="m m-get">GET</span> <code>/dashboards</code> (or <code>/dashboards/default</code>) request, because the controller does not catch the error</td><td>The seeder transaction rolls back, including the <code>home_seeded_at</code> claim, so the next request retries. An invalid "Spend this month" definition only skips that report (<code>dashboard.home.spend_report.skipped</code>), and the four built-ins still seed.</td><td>Existing dashboards</td></tr>
+<tr><td>A built-in key disappears from the registry</td><td>Saving any dashboard that still holds it (validator rejects the unknown key)</td><td>Stored widget renders with no built-in ref</td><td>Report widgets</td></tr>
+<tr><td>A push producer's rule and the Inbox collector's rule drift apart</td><td>—</td><td>A push opens <code>/inbox?item=</code> for a row the Inbox does not list (or the reverse)</td><td>Upcoming deep links (<code>/upcoming?bill=</code>, loan page)</td></tr>
 </table></div>
 </section>
 <nav class="pager" aria-label="Parts"><a class="prev" href="/handbook/quality-risk.html"><small>Previous</small>Quality and risk</a><a class="next" href="/handbook/learning.html"><small>Next</small>Learning</a></nav>
