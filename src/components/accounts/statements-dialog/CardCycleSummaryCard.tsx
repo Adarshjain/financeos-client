@@ -3,9 +3,10 @@
 import { FileText, Loader2 } from 'lucide-react';
 
 import { BillStatementActions } from '@/components/bills/BillStatementActions';
-import { Badge } from '@/components/ui/badge';
 import { CardCycleSummary } from '@/lib/statement.types';
 import { cn, formatDate, formatNullableMoney } from '@/lib/utils';
+
+import { CycleDueBadge } from './CycleDueBadge';
 
 interface CardCycleSummaryCardProps {
   cardSummary: CardCycleSummary | null;
@@ -66,26 +67,7 @@ export function CardCycleSummaryCard({
             <div className="text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums">
               {formatNullableMoney(cardSummary.totalAmountDue)}
             </div>
-            {cardSummary.daysUntilDue !== null && cardSummary.daysUntilDue !== undefined ? (
-              <div className="pt-1">
-                {cardSummary.daysUntilDue > 0 ? (
-                  <Badge
-                    variant={cardSummary.daysUntilDue <= 3 ? 'warning' : 'secondary'}
-                    className="text-2xs"
-                  >
-                    Due in {cardSummary.daysUntilDue} days
-                  </Badge>
-                ) : cardSummary.daysUntilDue === 0 ? (
-                  <Badge variant="warning" className="text-2xs bg-amber-500 text-white">
-                    Due today
-                  </Badge>
-                ) : (
-                  <Badge variant="destructive" className="text-2xs">
-                    {Math.abs(cardSummary.daysUntilDue)} days overdue
-                  </Badge>
-                )}
-              </div>
-            ) : null}
+            <CycleDueBadge statementId={cardSummary.statementId} summaryDaysUntilDue={cardSummary.daysUntilDue} />
             <BillStatementActions statementId={cardSummary.statementId} />
           </div>
 
