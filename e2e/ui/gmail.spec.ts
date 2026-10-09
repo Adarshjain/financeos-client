@@ -186,7 +186,7 @@ test.describe('Gmail settings UI (@ui)', () => {
     test.slow();
     await page.goto('/accounts');
     await expect(page.getByRole('heading', { name: 'Accounts', level: 1 })).toBeVisible();
-    // The tile body opens the account page now; the edit dialog sits behind the tile's pencil button.
+    // The tile body opens the account page; the edit dialog sits behind its Edit button.
     await openAccountEditor(page, 'UI Late Account');
 
     // The UBER alert is dated 3 days ago; a watermark of yesterday makes it stale.

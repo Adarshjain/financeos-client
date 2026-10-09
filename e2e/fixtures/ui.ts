@@ -70,12 +70,14 @@ export async function openFno(page: Page): Promise<void> {
 
 
 /**
- * Open an account's edit dialog from its tile on /accounts. The tile body now links to the account
- * page; the pencil is a sibling button right after that link. Retried because the dialog trigger is
- * server-rendered and a click before hydration is dropped.
+ * Open an account's edit dialog from /accounts: the tile body links to the account page, whose Edit
+ * button opens the dialog. Leaves the page on /accounts/<id>. The Edit click is retried because the
+ * dialog trigger is server-rendered and a click before hydration is dropped.
  */
 export async function openAccountEditor(page: Page, name: string | RegExp): Promise<void> {
-  const trigger = page.getByRole('link', { name }).first().locator('xpath=following-sibling::button[1]');
+  await page.getByRole('link', { name }).first().click();
+  await expect(page).toHaveURL(/\/accounts\/[^/?#]+$/);
+  const trigger = page.getByRole('button', { name: 'Edit', exact: true });
   await expect(async () => {
     await trigger.click();
     await expect(page.getByLabel('Account Name')).toBeVisible({ timeout: 2000 });
