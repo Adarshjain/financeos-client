@@ -2,11 +2,6 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('next/link', () => ({ default: ({ href, children, ...r }: any) => <a href={href} {...r}>{children}</a> }));
-vi.mock('@/components/accounts/AccountFormWrapper', () => ({
-  AccountFormWrapper: ({ children, triggerClassName }: any) => (
-    <button data-testid="edit" className={triggerClassName}>{children}</button>
-  ),
-}));
 vi.mock('@/components/accounts/StatementsDialog', () => ({ StatementsDialog: ({ trigger }: any) => trigger }));
 vi.mock('@/components/accounts/CardsDialog', () => ({ CardsDialog: ({ trigger }: any) => trigger }));
 
@@ -21,12 +16,13 @@ describe('AccountWrapper navigation', () => {
     expect(link).toHaveAttribute('href', '/accounts/acc-9');
   });
 
-  it('edit is a separate button that is not nested inside the link, and not wrapping the body', () => {
-    render(<AccountWrapper account={acct('bank_account')}><span>tile body</span></AccountWrapper>);
-    const edit = screen.getByTestId('edit');
-    expect(edit.closest('a')).toBeNull();
-    expect(edit.contains(screen.getByText('tile body'))).toBe(false);
-    expect(edit.querySelector('[aria-label="Edit account"]')).not.toBeNull();
+  it('the tile has no edit control: editing lives on the account page', () => {
+    for (const t of ['bank_account', 'credit_card', 'generic', 'broker']) {
+      const r = render(<AccountWrapper account={acct(t)}><span>tile body</span></AccountWrapper>);
+      expect(screen.queryByLabelText(/Edit account/i)).toBeNull();
+      expect(screen.queryByRole('button', { name: /Edit/i })).toBeNull();
+      r.unmount();
+    }
   });
 
   it('nested interactive elements: no button or link inside the body link', () => {
