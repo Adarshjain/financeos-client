@@ -27,7 +27,7 @@ export function ChatChartCard({ chart }: ChatChartCardProps) {
           {chart.title}
         </h4>
       ) : null}
-      <div className="h-56 w-full">
+      <div className="h-56 w-full [--chart-surface:var(--surface)]">
         <ChartView data={chart} fill />
       </div>
     </div>
