@@ -5527,6 +5527,7 @@ export interface components {
             amount: number;
             /** Format: uuid */
             appliedRuleId?: string | null;
+            appliedRuleName?: string | null;
             categories: components["schemas"]["CategoryResponse"][];
             /** Format: date */
             date: string;

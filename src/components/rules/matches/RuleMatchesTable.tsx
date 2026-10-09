@@ -2,6 +2,7 @@
 
 import React from 'react';
 
+import { RuleLinkLabel } from '@/components/rules/RuleLinkLabel';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import type { CategoryRule, RuleMatchTransaction } from '@/lib/rules.types';
@@ -85,11 +86,7 @@ export function RuleMatchesTable({
                   </td>
                   <td className="p-2 align-top text-slate-700 dark:text-slate-300 break-all">
                     {txn.sourcedDescription}
-                    {txn.appliedRuleId === rule.id && (
-                      <span className="ml-1.5 text-2xs text-slate-400">
-                        (already this rule)
-                      </span>
-                    )}
+                    <RuleLinkLabel txn={txn} ruleId={rule.id} />
                   </td>
                   <td
                     className={cn(

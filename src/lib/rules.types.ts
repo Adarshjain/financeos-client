@@ -52,6 +52,7 @@ export interface RuleMatchTransaction {
   categories: Category[];
   reviewType: string | null;
   appliedRuleId: string | null;
+  appliedRuleName: string | null;
 }
 
 export interface ApplyRuleRequest {
