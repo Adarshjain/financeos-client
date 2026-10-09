@@ -71,6 +71,7 @@ export function RuleMatchesDialog({
             Transactions whose sourced description matches this rule. Manually
             reviewed transactions are excluded. Applying sets the rule&apos;s
             categories and keeps them in sync with future edits to the rule.
+            Editing the rule only updates transactions already linked to it.
           </p>
 
           {/* Select-all banner */}

@@ -5,6 +5,7 @@ import { ListChecks } from 'lucide-react';
 import { useState } from 'react';
 
 import { TablePagination } from '@/components/reports/views/TablePagination';
+import { RuleLinkLabel } from '@/components/rules/RuleLinkLabel';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api/client';
@@ -101,9 +102,7 @@ export function RulePatternPreview({ matchType, merchantKey, editingRuleId }: Ru
                   <div className="flex justify-between gap-2 text-xs">
                     <span className="text-slate-700 dark:text-slate-300 break-all">
                       {txn.sourcedDescription}
-                      {editingRuleId && txn.appliedRuleId === editingRuleId && (
-                        <span className="ml-1.5 text-2xs text-slate-400">(already this rule)</span>
-                      )}
+                      <RuleLinkLabel txn={txn} ruleId={editingRuleId} />
                     </span>
                     <span
                       className={cn(
