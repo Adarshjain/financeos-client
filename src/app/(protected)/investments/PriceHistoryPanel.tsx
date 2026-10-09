@@ -3,9 +3,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Edit2, Loader2, Trash2, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { toast } from 'sonner';
 
+import { formatCompact, niceTicks, seriesColor, SURFACE_COLOR } from '@/components/charts/chart-format';
+import { ChartTooltipContent } from '@/components/charts/ChartTooltip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +16,9 @@ import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { PriceHistoryPoint } from '@/lib/types';
 import { formatDate, formatMoney } from '@/lib/utils';
+
+const PRICE_COLOR = seriesColor(0);
+const AXIS_TICK = { fontSize: 10, fill: 'hsl(var(--muted-foreground))' };
 
 export interface PriceHistoryPanelProps {
   instrument: {
@@ -76,6 +81,12 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
         source: pt.source || 'Auto',
       }));
   }, [points]);
+
+  // Prices don't start at zero: ticks hug the observed range.
+  const yTicks = useMemo(() => {
+    const prices = chartData.map((d) => d.price);
+    return niceTicks(Math.min(...prices), Math.max(...prices), 4);
+  }, [chartData]);
 
   const handleStartEdit = (pt: PriceHistoryPoint) => {
     if (!pt.id) return;
@@ -148,33 +159,56 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
       ) : (
         <>
           {/* Chart */}
-          <div className="h-48 w-full pt-2 text-slate-500 dark:text-slate-400">
+          <div className="h-48 w-full pt-2">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={chartData} margin={{ top: 8, right: 4, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                    <stop offset="0%" stopColor={PRICE_COLOR} stopOpacity={0.28} />
+                    <stop offset="100%" stopColor={PRICE_COLOR} stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: 'currentColor' }} />
-                <YAxis tick={{ fontSize: 10, fill: 'currentColor' }} domain={['auto', 'auto']} />
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload;
-                      return (
-                        <div className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white p-2 rounded text-xs shadow border border-slate-200 dark:border-slate-800">
-                          <div>{data.date}</div>
-                          <div className="font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(data.price)}</div>
-                          <div className="text-2xs text-slate-400">Source: {data.source}</div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
+                <CartesianGrid vertical={false} stroke="hsl(var(--chart-grid))" />
+                <XAxis
+                  dataKey="date"
+                  tick={AXIS_TICK}
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  minTickGap={16}
+                  interval="preserveStartEnd"
                 />
-                <Area type="monotone" dataKey="price" stroke="#3B82F6" strokeWidth={2} fillOpacity={1} fill="url(#priceGradient)" />
+                <YAxis
+                  width="auto"
+                  tick={AXIS_TICK}
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={4}
+                  ticks={yTicks}
+                  domain={[yTicks[0], yTicks[yTicks.length - 1]]}
+                  tickFormatter={(v: number) => formatCompact(v, true)}
+                />
+                <Tooltip
+                  cursor={{ stroke: 'hsl(var(--muted-foreground))', strokeOpacity: 0.4, strokeWidth: 1 }}
+                  content={
+                    <ChartTooltipContent
+                      format={formatMoney}
+                      footer={(payload) => `Source: ${String(payload[0]?.payload?.source ?? '')}`}
+                    />
+                  }
+                />
+                <Area
+                  type="monotone"
+                  dataKey="price"
+                  name="Price"
+                  stroke={PRICE_COLOR}
+                  strokeWidth={2}
+                  fillOpacity={1}
+                  fill="url(#priceGradient)"
+                  dot={chartData.length === 1 ? { r: 4, strokeWidth: 0, fill: PRICE_COLOR } : false}
+                  activeDot={{ r: 4, strokeWidth: 2, stroke: SURFACE_COLOR }}
+                  animationDuration={450}
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
