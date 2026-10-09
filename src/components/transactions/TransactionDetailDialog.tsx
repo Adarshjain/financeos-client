@@ -10,10 +10,20 @@ import { TransactionDetailContent } from './TransactionDetailContent';
 import { TransactionEditContent } from './TransactionEditContent';
 
 interface TransactionDetailDialogProps {
-  transaction: Transaction;
+  /** Null while the caller is still loading it; `placeholder` shows meanwhile. */
+  transaction: Transaction | null;
   accounts: Account[];
   onMutate?: () => void;
-  trigger: React.ReactNode;
+  /** Opens the dialog on click. Omit it to drive the dialog only through `open`. */
+  trigger?: React.ReactNode;
+  /** Controlled open state; when absent the dialog keeps its own. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /**
+   * Shown in the same dialog while `transaction` is null (loading, or why it
+   * failed), so the sheet opens once and its content fills in place.
+   */
+  placeholder?: React.ReactNode;
 }
 
 export const TransactionDetailDialog = ({
@@ -21,8 +31,16 @@ export const TransactionDetailDialog = ({
   accounts,
   onMutate,
   trigger,
+  open,
+  onOpenChange,
+  placeholder,
 }: TransactionDetailDialogProps) => {
-  const [showDetails, setShowDetails] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const showDetails = open ?? internalOpen;
+  const setShowDetails = (next: boolean) => {
+    if (open === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
   const [isEditing, setIsEditing] = useState(false);
 
   const [dragOffset, setDragOffset] = useState(0);
@@ -81,12 +99,12 @@ export const TransactionDetailDialog = ({
   return (
     <Dialog
       open={showDetails}
-      onOpenChange={(open) => {
-        setShowDetails(open);
-        if (!open) setIsEditing(false);
+      onOpenChange={(next) => {
+        setShowDetails(next);
+        if (!next) setIsEditing(false);
       }}
     >
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {trigger !== undefined && <DialogTrigger asChild>{trigger}</DialogTrigger>}
 
       <DialogContent
         className="sm:max-w-lg bg-slate-50 dark:bg-slate-950"
@@ -97,9 +115,12 @@ export const TransactionDetailDialog = ({
           transform: transformStyle,
           transition: transitionStyle,
         }}
-        showCloseButton={false}
+        // The details carry their own close; a placeholder has none.
+        showCloseButton={transaction === null}
       >
-        {isEditing ? (
+        {transaction === null ? (
+          placeholder
+        ) : isEditing ? (
           <TransactionEditContent
             transaction={transaction}
             onSuccess={() => {

@@ -18,7 +18,7 @@ import {
   isPivotTableData,
   isRawTableData,
 } from '@/lib/reports.helpers';
-import type { ReportData } from '@/lib/reports.types';
+import type { ReportData, SortClause } from '@/lib/reports.types';
 
 import { KpiView } from './KpiView';
 import { PivotTableView } from './PivotTableView';
@@ -54,6 +54,11 @@ interface ReportDataViewProps {
   onSizeChange?: (size: number) => void;
   /** Disables table/pivot paging controls while a page fetch is in flight. */
   loading?: boolean;
+  /** Table/pivot runtime header sort — like paging, never part of the definition. */
+  sort?: SortClause | null;
+  onSortChange?: (sort: SortClause | null) => void;
+  /** KPI only: makes the value a button that opens the underlying data. */
+  onKpiValueClick?: () => void;
 }
 
 export function ReportDataView({
@@ -62,12 +67,20 @@ export function ReportDataView({
   onPageChange,
   onSizeChange,
   loading,
+  sort,
+  onSortChange,
+  onKpiValueClick,
 }: ReportDataViewProps) {
   if (isKpiData(data)) {
     return fill ? (
-      <KpiView data={data} variant="widget" className="h-full overflow-auto px-4 pb-3" />
+      <KpiView
+        data={data}
+        variant="widget"
+        className="h-full overflow-auto px-4 pb-3"
+        onValueClick={onKpiValueClick}
+      />
     ) : (
-      <KpiView data={data} />
+      <KpiView data={data} onValueClick={onKpiValueClick} />
     );
   }
   if (isChartData(data)) {
@@ -80,10 +93,30 @@ export function ReportDataView({
     );
   }
   if (isRawTableData(data)) {
-    return <TableView data={data} fill={fill} loading={loading} onPageChange={onPageChange} onSizeChange={onSizeChange} />;
+    return (
+      <TableView
+        data={data}
+        fill={fill}
+        loading={loading}
+        onPageChange={onPageChange}
+        onSizeChange={onSizeChange}
+        sort={sort}
+        onSortChange={onSortChange}
+      />
+    );
   }
   if (isPivotTableData(data)) {
-    return <PivotTableView data={data} fill={fill} loading={loading} onPageChange={onPageChange} onSizeChange={onSizeChange} />;
+    return (
+      <PivotTableView
+        data={data}
+        fill={fill}
+        loading={loading}
+        onPageChange={onPageChange}
+        onSizeChange={onSizeChange}
+        sort={sort}
+        onSortChange={onSortChange}
+      />
+    );
   }
   return null;
 }

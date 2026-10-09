@@ -28,9 +28,11 @@ interface WidgetViewHeaderProps {
   widget: WidgetResponse;
   available: boolean;
   onExpand: () => void;
+  /** KPI widgets with their value loaded: the menu's "View underlying data". */
+  onViewUnderlying?: () => void;
 }
 
-export function WidgetViewHeader({ widget, available, onExpand }: WidgetViewHeaderProps) {
+export function WidgetViewHeader({ widget, available, onExpand, onViewUnderlying }: WidgetViewHeaderProps) {
   const href = widgetHref(widget, available);
   const title = widgetTitle(widget);
   return (
@@ -52,7 +54,9 @@ export function WidgetViewHeader({ widget, available, onExpand }: WidgetViewHead
           </Link>
         </Button>
       )}
-      {available && <WidgetActionsMenu widget={widget} onExpand={onExpand} />}
+      {available && (
+        <WidgetActionsMenu widget={widget} onExpand={onExpand} onViewUnderlying={onViewUnderlying} />
+      )}
     </div>
   );
 }

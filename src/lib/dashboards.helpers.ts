@@ -8,6 +8,7 @@ import type {
   WidgetParams,
   WidgetResponse,
 } from '@/lib/dashboards.types';
+import type { SortClause } from '@/lib/reports.types';
 
 /** The dashboard grid is always 100 columns wide. */
 export const DASHBOARD_GRID_COLUMNS = 100;
@@ -123,10 +124,30 @@ export function widgetParams(widget: Pick<WidgetResponse, 'params'>): WidgetPara
   return stableParams(widget.params);
 }
 
+/** A runtime header sort as the run endpoints' `sort` query param: `key,dir`. */
+export function sortQueryValue(sort: SortClause): string {
+  return `${sort.key},${sort.direction}`;
+}
+
+/**
+ * The paging half of a widget's query params (TABLE only): page and size, plus
+ * the runtime sort ONLY when one is set — so an unsorted key stays identical
+ * to the server prefetch's, which never sorts.
+ */
+function tableQueryParams(
+  isTable: boolean,
+  page: number,
+  size: number,
+  sort: SortClause | null,
+): Record<string, unknown> {
+  if (!isTable) return {};
+  return { page, size, ...(sort ? { sort: sortQueryValue(sort) } : {}) };
+}
+
 /**
  * The `params` half of `keys.dashboards.widget(widget.id, params)` — everything
  * a widget's report-run query depends on besides its own id: which report it
- * runs, and (for TABLE reports only) the page being viewed.
+ * runs, and (for TABLE reports only) the page being viewed and its runtime sort.
  *
  * Shared by `DashboardWidgetView`'s `useQuery` and the landing page's server
  * prefetch (`prefetchWidgetData`) so both sides always compute byte-identical
@@ -141,11 +162,12 @@ export function widgetQueryParams(
   isTable: boolean,
   page: number,
   size: number,
+  sort: SortClause | null = null,
 ): Record<string, unknown> {
   return {
     reportId,
     isTable,
-    ...(isTable ? { page, size } : {}),
+    ...tableQueryParams(isTable, page, size, sort),
   };
 }
 
@@ -160,12 +182,13 @@ export function builtinWidgetQueryParams(
   isTable: boolean,
   page: number,
   size: number,
+  sort: SortClause | null = null,
 ): Record<string, unknown> {
   return {
     builtinKey,
     params: stableParams(params),
     isTable,
-    ...(isTable ? { page, size } : {}),
+    ...tableQueryParams(isTable, page, size, sort),
   };
 }
 

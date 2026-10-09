@@ -12,6 +12,9 @@
 // `variant="widget"` (dashboard widgets) shows the value large and the
 // comparison as a small pill beside the date range; the default variant is the
 // compact line layout used by the report builder and chat.
+//
+// `onValueClick` turns the value into a button (same typography, a dotted
+// underline on hover/focus) that opens the KPI's underlying data.
 
 import { ArrowDown, ArrowUp, Minus } from 'lucide-react';
 
@@ -43,9 +46,11 @@ interface KpiViewProps {
   className?: string;
   /** `widget`: large value + comparison pill, for dashboard cards. */
   variant?: 'default' | 'widget';
+  /** Makes the value a button that opens the KPI's underlying data. */
+  onValueClick?: () => void;
 }
 
-export function KpiView({ data, className, variant = 'default' }: KpiViewProps) {
+export function KpiView({ data, className, variant = 'default', onValueClick }: KpiViewProps) {
   const fmt = (n: number | null) =>
     formatMeasureValue(n, {
       field: data.measure,
@@ -107,15 +112,35 @@ export function KpiView({ data, className, variant = 'default' }: KpiViewProps) 
     </p>
   );
 
+  // The value as a plain paragraph, or — when tappable — a button wearing the
+  // same typography, sized to its text so only the figure is the target.
+  const renderValue = (typography: string, title?: string) =>
+    onValueClick ? (
+      <button
+        type="button"
+        onClick={onValueClick}
+        aria-label="View underlying data"
+        title={title}
+        className={cn(
+          typography,
+          'max-w-full self-start text-left decoration-dotted underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none',
+        )}
+      >
+        {valueText}
+      </button>
+    ) : (
+      <p className={typography} title={title}>
+        {valueText}
+      </p>
+    );
+
   if (isWidget) {
     return (
       <div className={cn('flex flex-col justify-center gap-1.5', className)}>
-        <p
-          className="truncate text-3xl font-semibold tracking-tight text-slate-900 dark:text-white tabular-nums"
-          title={valueText}
-        >
-          {valueText}
-        </p>
+        {renderValue(
+          'truncate text-3xl font-semibold tracking-tight text-slate-900 dark:text-white tabular-nums',
+          valueText,
+        )}
         {(comparisonLine || rangeLine) && (
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
             {comparisonLine}
@@ -128,9 +153,7 @@ export function KpiView({ data, className, variant = 'default' }: KpiViewProps) 
 
   return (
     <div className={cn("flex flex-col gap-1 pt-1", className)}>
-      <p className="text-lg text-slate-900 dark:text-white tabular-nums">
-        {valueText}
-      </p>
+      {renderValue('text-lg text-slate-900 dark:text-white tabular-nums')}
       {comparisonLine}
       {rangeLine}
     </div>

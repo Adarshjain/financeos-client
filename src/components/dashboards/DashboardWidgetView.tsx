@@ -15,6 +15,11 @@
 // In edit mode the same component renders the real content but swaps its
 // header for the grid drag handle, gaining a title-override input and a
 // remove button.
+//
+// A KPI widget (saved report or template built-in, net worth included) opens
+// "View underlying data" from a tap on its value — on the card and in the
+// full-page view — and from the overflow menu. The dialog mounts only while
+// open, so nothing is fetched until it is asked for.
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Pencil, X } from 'lucide-react';
@@ -23,6 +28,8 @@ import { type ReactNode, useState } from 'react';
 
 import { BillsDueWidget } from '@/components/bills/BillsDueWidget';
 import { InboxWidget } from '@/components/inbox/InboxWidget';
+import { KpiUnderlyingDialog } from '@/components/reports/underlying/KpiUnderlyingDialog';
+import type { UnderlyingSource } from '@/components/reports/underlying/underlying.types';
 import { DEFAULT_TABLE_PAGE_SIZE } from '@/components/reports/views/TablePagination';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -35,6 +42,7 @@ import {
   widgetTitle,
 } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
+import type { KpiData, SortClause } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 import { WidgetEditHeader, WidgetViewHeader } from './DashboardWidgetHeader';
@@ -61,6 +69,15 @@ interface DashboardWidgetViewProps {
 
 const UNAVAILABLE_BUILTIN = 'This widget is no longer available.';
 
+/** What "View underlying data" runs: the saved report, or the template built-in with this widget's params. */
+function underlyingSourceOf(widget: WidgetResponse, isBuiltin: boolean, isTemplate: boolean): UnderlyingSource | null {
+  if (isBuiltin) {
+    const key = widget.builtinKey ?? widget.builtin?.key ?? null;
+    return isTemplate && key ? { kind: 'builtin', key, params: widgetParams(widget) } : null;
+  }
+  return widget.reportId ? { kind: 'saved', reportId: widget.reportId } : null;
+}
+
 export function DashboardWidgetView({
   widget,
   editing = false,
@@ -75,16 +92,29 @@ export function DashboardWidgetView({
   const [page, setPage] = useState(0);
   // Page size is a runtime concern, driven by the table footer's control.
   const [size, setSize] = useState(DEFAULT_TABLE_PAGE_SIZE);
+  // Header sort is session-only too (null = the report's own order).
+  const [sort, setSort] = useState<SortClause | null>(null);
+  const [underlyingOpen, setUnderlyingOpen] = useState(false);
 
-  const { available, isBuiltin, isTemplate, data, loading, error } = useWidgetData(widget, page, size);
+  const { available, isBuiltin, isTemplate, data, loading, error } = useWidgetData(widget, page, size, sort);
   const kind = widgetVisualKind(widget);
   // Dim only a refetch over data already on screen; the first load shows a skeleton.
   const refetching = loading && data != null;
   // Only a saved report widget ever links to /reports/<id> (never a built-in).
   const editReportId = available && !isBuiltin ? (widget.reportId ?? null) : null;
+  // Underlying data needs the KPI as shown (it heads the dialog), so it is offered once the value is in.
+  const kpiData: KpiData | null = data?.type === 'KPI' ? data : null;
+  const underlyingSource = available && kind === 'kpi' ? underlyingSourceOf(widget, isBuiltin, isTemplate) : null;
+  const openUnderlying =
+    !editing && kpiData && underlyingSource ? () => setUnderlyingOpen(true) : undefined;
 
   const handleSizeChange = (s: number) => {
     setSize(s);
+    setPage(0);
+  };
+
+  const handleSortChange = (s: SortClause | null) => {
+    setSort(s);
     setPage(0);
   };
 
@@ -107,6 +137,9 @@ export function DashboardWidgetView({
         loading={loading}
         onPageChange={setPage}
         onSizeChange={handleSizeChange}
+        sort={sort}
+        onSortChange={handleSortChange}
+        onKpiValueClick={openUnderlying}
         unavailableMessage={isBuiltin ? UNAVAILABLE_BUILTIN : undefined}
       />
     );
@@ -133,7 +166,12 @@ export function DashboardWidgetView({
             onToggleWidth={onToggleWidth}
           />
         ) : (
-          <WidgetViewHeader widget={widget} available={available} onExpand={() => setIsFullPage(true)} />
+          <WidgetViewHeader
+            widget={widget}
+            available={available}
+            onExpand={() => setIsFullPage(true)}
+            onViewUnderlying={openUnderlying}
+          />
         )}
 
         <div
@@ -186,6 +224,16 @@ export function DashboardWidgetView({
           </DialogPrimitive.Content>
         </DialogPortal>
       </Dialog>
+
+      {underlyingOpen && kpiData && underlyingSource && (
+        <KpiUnderlyingDialog
+          source={underlyingSource}
+          kpi={kpiData}
+          title={widgetTitle(widget)}
+          open
+          onOpenChange={setUnderlyingOpen}
+        />
+      )}
     </>
   );
 }
