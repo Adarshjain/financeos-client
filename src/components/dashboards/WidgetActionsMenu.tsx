@@ -2,10 +2,11 @@
 
 // The widget header's single overflow menu (view mode): "Edit report" for a
 // saved-report widget, "Duplicate as my report" for a built-in template (with
-// this widget's params), and "View full page" for any available widget. Always
+// this widget's params), "View full page" for any available widget, then
+// "View underlying data" for a KPI widget whose value has loaded. Always
 // visible, so it works on touch where hover affordances do not.
 
-import { Copy, Loader2, Maximize2, MoreHorizontal, Pencil } from 'lucide-react';
+import { Copy, Loader2, Maximize2, MoreHorizontal, Pencil, TableProperties } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,8 @@ import { useDuplicateBuiltin } from './useDuplicateBuiltin';
 interface WidgetActionsMenuProps {
   widget: WidgetResponse;
   onExpand: () => void;
+  /** KPI widgets only: "View underlying data" (omitted = no item). */
+  onViewUnderlying?: () => void;
 }
 
 interface MenuProps extends WidgetActionsMenuProps {
@@ -33,13 +36,13 @@ interface MenuProps extends WidgetActionsMenuProps {
 const itemIconClass = 'h-3.5 w-3.5 text-slate-400';
 
 /** The overflow menu for any widget; template built-ins also get "Duplicate as my report". */
-export function WidgetActionsMenu({ widget, onExpand }: WidgetActionsMenuProps) {
+export function WidgetActionsMenu({ widget, ...actions }: WidgetActionsMenuProps) {
   const builtin = isBuiltinWidget(widget) ? widget.builtin : null;
   const builtinKey = widget.builtinKey ?? builtin?.key ?? null;
   if (builtin?.kind === 'template' && builtinKey) {
-    return <TemplateActionsMenu widget={widget} builtinKey={builtinKey} onExpand={onExpand} />;
+    return <TemplateActionsMenu widget={widget} builtinKey={builtinKey} {...actions} />;
   }
-  return <Menu widget={widget} onExpand={onExpand} />;
+  return <Menu widget={widget} {...actions} />;
 }
 
 // Only template widgets mount the duplicate mutation (and the router it navigates with).
@@ -56,7 +59,7 @@ function TemplateActionsMenu({ builtinKey, ...props }: WidgetActionsMenuProps & 
   );
 }
 
-function Menu({ widget, onExpand, duplicate }: MenuProps) {
+function Menu({ widget, onExpand, onViewUnderlying, duplicate }: MenuProps) {
   const reportId = !isBuiltinWidget(widget) ? (widget.reportId ?? null) : null;
 
   return (
@@ -98,6 +101,12 @@ function Menu({ widget, onExpand, duplicate }: MenuProps) {
           <Maximize2 className={itemIconClass} />
           View full page
         </DropdownMenuItem>
+        {onViewUnderlying && (
+          <DropdownMenuItem className="text-xs" onSelect={onViewUnderlying}>
+            <TableProperties className={itemIconClass} />
+            View underlying data
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

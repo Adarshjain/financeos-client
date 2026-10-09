@@ -14,6 +14,9 @@
 // ever surfaces the result for the key this component is currently pointed
 // at, so an out-of-order response for an old key lands in a cache entry
 // nobody's subscribed to.
+//
+// A KPI result's value opens "View underlying data" for the exact request that
+// produced it (`runKey.request`); the dialog mounts only while open.
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Loader2, RefreshCw } from 'lucide-react';
@@ -24,11 +27,12 @@ import { Button } from '@/components/ui/button';
 import { api, ApiError } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import { asReportData } from '@/lib/reports.helpers';
-import type { DatasourceCatalog, RunReportRequest } from '@/lib/reports.types';
+import type { DatasourceCatalog, KpiData, RunReportRequest, SortClause } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 import type { BuilderState } from './builderReducer';
 import { buildRunRequest, validationErrors } from './serialize';
+import { KpiUnderlyingDialog } from './underlying/KpiUnderlyingDialog';
 import { ReportDataView } from './views/ReportDataView';
 import { DEFAULT_TABLE_PAGE_SIZE } from './views/TablePagination';
 
@@ -45,6 +49,8 @@ interface RunKey {
   request: RunReportRequest;
   page: number;
   size: number;
+  /** Runtime header sort (tables only); null = the definition's own order. */
+  sort: SortClause | null;
 }
 
 export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewPaneProps) {
@@ -71,6 +77,7 @@ export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewP
   const [size, setSize] = useState(DEFAULT_TABLE_PAGE_SIZE);
   // The last run the user actually asked for. Null until the first run.
   const [runKey, setRunKey] = useState<RunKey | null>(null);
+  const [underlyingOpen, setUnderlyingOpen] = useState(false);
 
   // Reset paging when the definition changes (render-time derived-state pattern).
   const [lastSignature, setLastSignature] = useState(defSignature);
@@ -86,7 +93,15 @@ export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewP
     queryKey: keys.reports.run(state.reportId ?? 'draft', { runKey, isTable }),
     queryFn: async () => {
       const { data } = await api.POST('/api/v1/reports/data', {
-        params: { query: isTable ? { page: runKey!.page, size: runKey!.size } : {} },
+        params: {
+          query: isTable
+            ? {
+                page: runKey!.page,
+                size: runKey!.size,
+                ...(runKey!.sort ? { sort: `${runKey!.sort.key},${runKey!.sort.direction}` } : {}),
+              }
+            : {},
+        },
         body: { ...runKey!.request, definition: { ...runKey!.request.definition } },
       });
       return asReportData(data);
@@ -108,12 +123,26 @@ export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewP
   // Worth (re)loading: valid, not already loading, and nothing fresh on screen.
   const canPreview = valid && !loading && (data === null || isStale || query.isError);
 
-  const startRun = (pageToLoad: number, sizeToLoad: number) => {
+  const startRun = (pageToLoad: number, sizeToLoad: number, sortToLoad: SortClause | null) => {
     if (!valid) return;
-    setRunKey({ signature: defSignature, request, page: pageToLoad, size: sizeToLoad });
+    setRunKey({ signature: defSignature, request, page: pageToLoad, size: sizeToLoad, sort: sortToLoad });
   };
 
-  const runPreview = () => startRun(page, size);
+  // Header sort is a runtime concern too, never written into the definition,
+  // and it belongs to the run: the header shows the sort the rows on screen
+  // were run with, and further runs keep it only while the definition is
+  // unchanged (a sort key may not exist in an edited one). Reverting an edit
+  // therefore brings the shown rows' sort back with them.
+  const shownSort = runKey?.sort ?? null;
+  const runSort = runKey && runKey.signature === defSignature ? runKey.sort : null;
+
+  const runPreview = () => startRun(page, size, runSort);
+
+  // The KPI on screen and the request that produced it. A placeholder (an older
+  // run's data kept while a newer one loads) does not match `runKey`, so it
+  // offers no underlying data.
+  const kpiData: KpiData | null = data?.type === 'KPI' && !query.isPlaceholderData ? data : null;
+  const underlyingRequest = kpiData && runKey ? runKey.request : null;
 
   // Edit mode: the saved definition is known-good, so load it once on mount.
   // Guarded by a ref (not effect deps) so later config changes never re-trigger it.
@@ -121,20 +150,25 @@ export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewP
   useEffect(() => {
     if (autoRunOnMount && valid && !autoRanRef.current) {
       autoRanRef.current = true;
-      startRun(page, size);
+      startRun(page, size, null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handlePageChange = (p: number) => {
     setPage(p);
-    startRun(p, size);
+    startRun(p, size, runSort);
   };
 
   const handleSizeChange = (s: number) => {
     setSize(s);
     setPage(0);
-    startRun(0, s);
+    startRun(0, s, runSort);
+  };
+
+  const handleSortChange = (s: SortClause | null) => {
+    setPage(0);
+    startRun(0, size, s);
   };
 
   return (
@@ -193,6 +227,9 @@ export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewP
               loading={loading}
               onPageChange={handlePageChange}
               onSizeChange={handleSizeChange}
+              sort={shownSort}
+              onSortChange={handleSortChange}
+              onKpiValueClick={underlyingRequest ? () => setUnderlyingOpen(true) : undefined}
             />
           </div>
 
@@ -210,6 +247,16 @@ export function PreviewPane({ state, catalog, autoRunOnMount = false }: PreviewP
             </div>
           )}
         </div>
+      )}
+
+      {underlyingOpen && kpiData && underlyingRequest && (
+        <KpiUnderlyingDialog
+          source={{ kind: 'adhoc', request: underlyingRequest }}
+          kpi={kpiData}
+          title={state.name.trim() || 'Untitled report'}
+          open
+          onOpenChange={setUnderlyingOpen}
+        />
       )}
     </div>
   );

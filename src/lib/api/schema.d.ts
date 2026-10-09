@@ -724,6 +724,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/dashboards/builtins/{key}/underlying": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["builtinUnderlying"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/builtins/{key}/underlying/csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["builtinUnderlyingCsv"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/dashboards/default": {
         parameters: {
             query?: never;
@@ -2260,6 +2292,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/report/datasource/{name}/rows/{rowId}/breakdown": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["rowBreakdown"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/report/datasource/{name}/rows/{rowId}/breakdown/sections/{section}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["rowBreakdownSection"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/report/datasource/{name}/values": {
         parameters: {
             query?: never;
@@ -2308,6 +2372,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/reports/underlying": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adHocUnderlying"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/underlying/csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["adHocUnderlyingCsv"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/reports/{id}": {
         parameters: {
             query?: never;
@@ -2350,6 +2446,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["duplicateReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/{id}/underlying": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["savedUnderlying"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/reports/{id}/underlying/csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["savedUnderlyingCsv"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2779,7 +2907,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["getTransaction"];
         put: operations["updateTransaction"];
         post?: never;
         delete: operations["deleteTransaction"];
@@ -2924,6 +3052,20 @@ export interface components {
             /** Format: int32 */
             transactionCount?: number | null;
             utilizationPct?: number | null;
+        };
+        BreakdownSectionData: {
+            key: string;
+            label: string;
+            rowAction?: string | null;
+            rowBreakdownDatasource?: string | null;
+            table: components["schemas"]["ReportData"];
+        };
+        BreakdownStep: {
+            amount?: number | null;
+            detail?: string | null;
+            format?: string | null;
+            label: string;
+            op: string;
         };
         BrokerAccountResponse: {
             /** Format: date */
@@ -4308,6 +4450,29 @@ export interface components {
             auth: string;
             p256dh: string;
         };
+        KpiUnderlyingResponse: {
+            aggregation: string;
+            datasource: string;
+            filters: components["schemas"]["UnderlyingFilterChip"][];
+            format?: string | null;
+            groupField?: string | null;
+            measure: string;
+            measureLabel: string;
+            notCounted: components["schemas"]["UnderlyingExcludedItem"][];
+            period: string;
+            previousAvailable: boolean;
+            previousRange?: components["schemas"]["UnderlyingRange"];
+            range?: components["schemas"]["UnderlyingRange"];
+            rowAction?: string | null;
+            /** Format: int64 */
+            rowCount: number;
+            sortDirection?: string | null;
+            sortKey?: string | null;
+            summaryLines: components["schemas"]["UnderlyingSummaryLine"][];
+            table: components["schemas"]["ReportData"];
+            value?: number | null;
+            winnerOnly: boolean;
+        };
         LendingMatchSuggestion: {
             amount: number;
             candidates: components["schemas"]["TransactionResponse"][];
@@ -5530,6 +5695,21 @@ export interface components {
             providerName: string;
             trainsOnData: string;
         };
+        RowBreakdownResponse: {
+            /** Format: date */
+            asOf: string;
+            datasource: string;
+            format?: string | null;
+            kindLabel?: string | null;
+            notes: string[];
+            rowId: string;
+            sections: components["schemas"]["BreakdownSectionData"][];
+            steps: components["schemas"]["BreakdownStep"][];
+            subtitle?: string | null;
+            title: string;
+            total: number;
+            totalLabel: string;
+        };
         RuleBreakdown: {
             /** @enum {string} */
             accrualType: "PERCENT" | "SLAB";
@@ -5965,6 +6145,31 @@ export interface components {
         TransactionSearchRequest: {
             filters?: components["schemas"]["FilterClause"][] | null;
             search?: string | null;
+        };
+        UnderlyingExcludedItem: {
+            id: string;
+            kind: string;
+            name: string;
+            reason: string;
+            reasonLabel: string;
+            value?: number | null;
+        };
+        UnderlyingFilterChip: {
+            field: string;
+            fieldLabel: string;
+            operator: string;
+            text: string;
+        };
+        UnderlyingRange: {
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            to: string;
+        } | null;
+        UnderlyingSummaryLine: {
+            format?: string | null;
+            label: string;
+            value: number;
         };
         UnrecordedDividendCredit: {
             holdingHints: components["schemas"]["DividendHoldingHint"][];
@@ -8023,6 +8228,7 @@ export interface operations {
             query?: {
                 page?: number;
                 size?: number;
+                sort?: string;
             };
             header?: never;
             path: {
@@ -8043,6 +8249,84 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ReportData"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    builtinUnderlying: {
+        parameters: {
+            query?: {
+                period?: string;
+                page?: number;
+                size?: number;
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["BuiltinDataRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["KpiUnderlyingResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    builtinUnderlyingCsv: {
+        parameters: {
+            query?: {
+                period?: string;
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["BuiltinDataRequest"];
+            };
+        };
+        responses: {
+            /** @description The underlying rows as CSV */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": Blob;
                 };
             };
             /** @description Error response */
@@ -12056,6 +12340,76 @@ export interface operations {
             };
         };
     };
+    rowBreakdown: {
+        parameters: {
+            query?: {
+                size?: number;
+            };
+            header?: never;
+            path: {
+                name: string;
+                rowId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RowBreakdownResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    rowBreakdownSection: {
+        parameters: {
+            query?: {
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path: {
+                name: string;
+                rowId: string;
+                section: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ReportData"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     reportFieldValues: {
         parameters: {
             query?: never;
@@ -12156,6 +12510,7 @@ export interface operations {
             query?: {
                 page?: number;
                 size?: number;
+                sort?: string;
             };
             header?: never;
             path?: never;
@@ -12174,6 +12529,80 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ReportData"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    adHocUnderlying: {
+        parameters: {
+            query?: {
+                period?: string;
+                page?: number;
+                size?: number;
+                sort?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RunReportRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["KpiUnderlyingResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    adHocUnderlyingCsv: {
+        parameters: {
+            query?: {
+                period?: string;
+                sort?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RunReportRequest"];
+            };
+        };
+        responses: {
+            /** @description The underlying rows as CSV */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": Blob;
                 };
             };
             /** @description Error response */
@@ -12287,6 +12716,7 @@ export interface operations {
             query?: {
                 page?: number;
                 size?: number;
+                sort?: string;
             };
             header?: never;
             path: {
@@ -12334,6 +12764,76 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ReportResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    savedUnderlying: {
+        parameters: {
+            query?: {
+                period?: string;
+                page?: number;
+                size?: number;
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["KpiUnderlyingResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    savedUnderlyingCsv: {
+        parameters: {
+            query?: {
+                period?: string;
+                sort?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The underlying rows as CSV */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/csv": Blob;
                 };
             };
             /** @description Error response */
@@ -13595,6 +14095,37 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PageTransactionResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getTransaction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TransactionResponse"];
                 };
             };
             /** @description Error response */

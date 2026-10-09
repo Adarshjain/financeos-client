@@ -97,9 +97,12 @@ function yy(year: number): string {
   return String(year % 100).padStart(2, '0');
 }
 
-/** " 25" for a year other than the current one, else nothing. */
-function yearSuffix(year: number, today: Date): string {
-  return year === today.getFullYear() ? '' : ` ${yy(year)}`;
+/**
+ * " 25" for a year other than the current one, else nothing. A null `today`
+ * (filenames, which must not depend on when they were made) always prints it.
+ */
+function yearSuffix(year: number, today: Date | null): string {
+  return today && year === today.getFullYear() ? '' : ` ${yy(year)}`;
 }
 
 function fyStartOf(d: Date): Date {
@@ -113,12 +116,12 @@ function fyLabel(fyStart: Date): string {
   return `FY${yy(endYear)}`;
 }
 
-function dayLabel(d: Date, today: Date): string {
+function dayLabel(d: Date, today: Date | null): string {
   return `${d.getDate()} ${MONTHS[d.getMonth()]}${yearSuffix(d.getFullYear(), today)}`;
 }
 
 /** Rule 1: whole calendar year, fiscal year, fiscal quarter, month(s). */
-function namedPeriod(from: Date, to: Date, today: Date): string | null {
+function namedPeriod(from: Date, to: Date, today: Date | null): string | null {
   if (from.getDate() !== 1 || !isMonthEnd(to)) return null;
 
   if (from.getMonth() === 0 && to.getMonth() === 11 && from.getFullYear() === to.getFullYear()) {
@@ -164,7 +167,7 @@ function toDateLabel(from: Date, today: Date): string {
 }
 
 /** Rule 4: print the parts both ends share once. */
-function compressed(from: Date, to: Date, today: Date): string {
+function compressed(from: Date, to: Date, today: Date | null): string {
   if (from.getFullYear() !== to.getFullYear()) {
     return `${from.getDate()} ${MONTHS[from.getMonth()]} ${yy(from.getFullYear())} – ` +
       `${to.getDate()} ${MONTHS[to.getMonth()]} ${yy(to.getFullYear())}`;
@@ -216,6 +219,26 @@ export function formatDateRange(from: DateInput, to: DateInput, options?: DateRa
   if (!end) return `since ${dayLabel(start!, today)}`;
   if (!start) return `until ${dayLabel(end, today)}`;
   return describe(start, end, today).label;
+}
+
+/**
+ * formatDateRange() for a file name: the same compact rules minus everything
+ * relative to today (no Today/Yesterday, no MTD/FYTD/YTD/Last…, no "→ today"),
+ * and the year is always printed, so the name stays true whenever the file is
+ * opened: "Sep 26", "1–9 Oct 26", "Q2 FY27", "since 1 Oct 26", "All time".
+ */
+export function formatDateRangeForFilename(
+  from: DateInput,
+  to: DateInput,
+  options?: Pick<DateRangeOptions, 'endExclusive'>,
+): string {
+  const start = toDay(from);
+  const end = lastDay(to, options);
+  if (!start && !end) return 'All time';
+  if (!end) return `since ${dayLabel(start!, null)}`;
+  if (!start) return `until ${dayLabel(end, null)}`;
+  if (sameDay(start, end)) return dayLabel(start, null);
+  return namedPeriod(start, end, null) ?? compressed(start, end, null);
 }
 
 /** Both ends written out in full, for a tooltip behind formatDateRange(). */

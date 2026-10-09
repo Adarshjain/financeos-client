@@ -8,6 +8,8 @@
 // Keys are `keys.dashboards.widget(widget.id, …QueryParams(…))` — the SAME
 // shape the landing page's server prefetch builds (`prefetchWidgetData` in
 // `@/lib/dashboards.server`), so a prefetched widget hydrates with no fetch.
+// The runtime header sort joins the key (and the `sort` query param) only when
+// set, so the unsorted first page still hydrates from the prefetch.
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
@@ -16,14 +18,21 @@ import {
   builtinWidgetQueryParams,
   isBuiltinWidget,
   isWidgetAvailable,
+  sortQueryValue,
   widgetParams,
   widgetQueryParams,
 } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 import { keys } from '@/lib/query/keys';
 import { asReportData } from '@/lib/reports.helpers';
+import type { SortClause } from '@/lib/reports.types';
 
-export function useWidgetData(widget: WidgetResponse, page: number, size: number) {
+export function useWidgetData(
+  widget: WidgetResponse,
+  page: number,
+  size: number,
+  sort: SortClause | null = null,
+) {
   const builtin = isBuiltinWidget(widget);
   const available = isWidgetAvailable(widget);
   const isTemplate = builtin && widget.builtin?.kind === 'template';
@@ -38,11 +47,13 @@ export function useWidgetData(widget: WidgetResponse, page: number, size: number
     queryKey: keys.dashboards.widget(
       widget.id,
       builtin
-        ? builtinWidgetQueryParams(builtinKey, params, isTable, page, size)
-        : widgetQueryParams(reportId, isTable, page, size),
+        ? builtinWidgetQueryParams(builtinKey, params, isTable, page, size, sort)
+        : widgetQueryParams(reportId, isTable, page, size, sort),
     ),
     queryFn: async () => {
-      const pageQuery = isTable ? { page, size } : {};
+      const pageQuery = isTable
+        ? { page, size, ...(sort ? { sort: sortQueryValue(sort) } : {}) }
+        : {};
       if (builtin) {
         const { data } = await api.POST('/api/v1/dashboards/builtins/{key}/data', {
           params: { path: { key: builtinKey }, query: pageQuery },

@@ -6,8 +6,9 @@
 // column dimensions the server returns a single column with key "", so it
 // renders as a plain rows × measures table. Header values for date dimensions
 // arrive pre-formatted from the server and are rendered verbatim. Paging/size
-// (over row groups) are driven by the parent — a runtime concern, not part of
-// the saved definition.
+// (over row groups) and the runtime sort are driven by the parent — a runtime
+// concern, not part of the saved definition. Sortable headers mirror the
+// server's rule: row dimensions always; measures only with no column dims.
 
 import {
   Table,
@@ -22,10 +23,12 @@ import type {
   PivotColumn,
   PivotMeasureInfo,
   PivotTableData,
+  SortClause,
 } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 import { TablePagination } from './TablePagination';
+import { SortableTableHead } from './TableView';
 
 // Format a measure cell the same way the KPI/raw-table views do — now
 // literally the same code rather than a third hand-rolled copy.
@@ -53,6 +56,10 @@ interface PivotTableViewProps {
   onSizeChange?: (size: number) => void;
   /** Disables the paging controls while a page fetch is in flight. */
   loading?: boolean;
+  /** The runtime sort (null = the report's own order); marks the active header. */
+  sort?: SortClause | null;
+  /** Makes the sortable headers sort toggles; omitted, headers are plain labels. */
+  onSortChange?: (sort: SortClause | null) => void;
 }
 
 export function PivotTableView({
@@ -61,6 +68,8 @@ export function PivotTableView({
   onPageChange,
   onSizeChange,
   loading,
+  sort,
+  onSortChange,
 }: PivotTableViewProps) {
   const { rowDimensions, columnDimensions, measures, columns, rows, page } =
     data;
@@ -95,15 +104,27 @@ export function PivotTableView({
           )}
         >
           <TableRow>
-            {rowDimensions.map((rd) => (
-              <TableHead
-                key={rd.field}
-                rowSpan={twoRowHeader ? 2 : 1}
-                className="whitespace-nowrap align-bottom"
-              >
-                {rd.label}
-              </TableHead>
-            ))}
+            {rowDimensions.map((rd) =>
+              onSortChange ? (
+                <SortableTableHead
+                  key={rd.field}
+                  label={rd.label}
+                  sortKey={rd.field}
+                  sort={sort}
+                  onSortChange={onSortChange}
+                  rowSpan={twoRowHeader ? 2 : 1}
+                  className="whitespace-nowrap align-bottom"
+                />
+              ) : (
+                <TableHead
+                  key={rd.field}
+                  rowSpan={twoRowHeader ? 2 : 1}
+                  className="whitespace-nowrap align-bottom"
+                >
+                  {rd.label}
+                </TableHead>
+              )
+            )}
             {hasColumnDims
               ? columns.map((col) => (
                   <TableHead
@@ -114,14 +135,26 @@ export function PivotTableView({
                     {columnLabel(col)}
                   </TableHead>
                 ))
-              : measures.map((m) => (
-                  <TableHead
-                    key={m.key}
-                    className="whitespace-nowrap text-right"
-                  >
-                    {m.label}
-                  </TableHead>
-                ))}
+              : measures.map((m) =>
+                  onSortChange ? (
+                    <SortableTableHead
+                      key={m.key}
+                      label={m.label}
+                      sortKey={m.key}
+                      sort={sort}
+                      onSortChange={onSortChange}
+                      align="right"
+                      className="whitespace-nowrap text-right"
+                    />
+                  ) : (
+                    <TableHead
+                      key={m.key}
+                      className="whitespace-nowrap text-right"
+                    >
+                      {m.label}
+                    </TableHead>
+                  )
+                )}
           </TableRow>
           {twoRowHeader && (
             <TableRow>

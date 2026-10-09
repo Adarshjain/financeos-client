@@ -6,7 +6,7 @@ import { AlertCircle, EyeOff, type LucideIcon } from 'lucide-react';
 
 import { ReportDataView } from '@/components/reports/views/ReportDataView';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { ReportData } from '@/lib/reports.types';
+import type { ReportData, SortClause } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 import type { WidgetVisualKind } from './widgetMeta';
@@ -70,6 +70,11 @@ export interface WidgetReportContentProps {
   loading?: boolean;
   /** Placeholder copy when `available` is false. */
   unavailableMessage?: string;
+  /** Table/pivot runtime header sort (session-only). */
+  sort?: SortClause | null;
+  onSortChange?: (sort: SortClause | null) => void;
+  /** KPI only: makes the value a button that opens the underlying data. */
+  onKpiValueClick?: () => void;
 }
 
 export function WidgetReportContent({
@@ -81,9 +86,23 @@ export function WidgetReportContent({
   onSizeChange,
   loading,
   unavailableMessage = 'This report is no longer available.',
+  sort,
+  onSortChange,
+  onKpiValueClick,
 }: WidgetReportContentProps) {
   if (!available) return <WidgetUnavailable message={unavailableMessage} />;
   if (error) return <WidgetMessage icon={AlertCircle} message={error} tone="danger" />;
   if (!data) return <WidgetSkeleton kind={kind} />;
-  return <ReportDataView data={data} fill loading={loading} onPageChange={onPageChange} onSizeChange={onSizeChange} />;
+  return (
+    <ReportDataView
+      data={data}
+      fill
+      loading={loading}
+      onPageChange={onPageChange}
+      onSizeChange={onSizeChange}
+      sort={sort}
+      onSortChange={onSortChange}
+      onKpiValueClick={onKpiValueClick}
+    />
+  );
 }
