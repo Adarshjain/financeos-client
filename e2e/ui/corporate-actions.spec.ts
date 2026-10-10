@@ -81,8 +81,8 @@ test.describe('Corporate Actions UI (@ui)', () => {
     await page.getByRole('button', { name: 'Save Corporate Action' }).click();
     await expectToast(page, /Recorded split/i);
 
-    // 2. Verify row in the table. Corporate actions are shared, so other specs' rows can be listed too:
-    // everything below is scoped to this instrument's row.
+    // 2. Verify row in the table. Corporate actions are per user, so this user's list has only this
+    // row; scoping everything below to the instrument's row keeps the steps unambiguous all the same.
     const row = page.getByRole('row').filter({ hasText: inst.name });
     await expect(row).toHaveCount(1);
     await expect(row).toContainText('1 → 2');

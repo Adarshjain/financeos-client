@@ -22,7 +22,7 @@ export default async function CorporateActionsPage() {
             Corporate Actions ({corporateActions.length})
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            Stock splits, bonus issues, rights issues, and ticker adjustments
+            Your stock splits, bonus issues, demergers and mergers
           </p>
         </div>
       </div>

@@ -15,6 +15,8 @@ import { useInstrumentsSection } from './instruments-section/useInstrumentsSecti
 export function InstrumentsSection() {
   const {
     instruments,
+    totalElements,
+    totalPages,
     isLoading,
     isFetching,
     isError,
@@ -22,8 +24,8 @@ export function InstrumentsSection() {
     setPage,
     pageSize,
     setPageSize,
-    hasPrev,
-    hasNext,
+    sortDir,
+    toggleSort,
     typeFilter,
     search,
     handleSearchChange,
@@ -33,6 +35,17 @@ export function InstrumentsSection() {
 
   return (
     <div className="space-y-2 pb-32">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            {totalElements === undefined ? 'Instruments' : `Instruments (${totalElements.toLocaleString('en-IN')})`}
+          </h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400">
+            Tracked stocks, ETFs, mutual funds, ISIN codes, and exchange tickers
+          </p>
+        </div>
+      </div>
+
       {/* Desktop Action Bar Container */}
       <Card className="hidden lg:block bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-3">
         <InstrumentsFilterBar
@@ -40,10 +53,11 @@ export function InstrumentsSection() {
           onSearchChange={handleSearchChange}
           typeFilter={typeFilter}
           onTypeFilterChange={handleTypeFilterChange}
+          sortDir={sortDir}
+          toggleSort={toggleSort}
           currentPage={page}
           pageSize={pageSize}
-          hasPrev={hasPrev}
-          hasNext={hasNext}
+          totalPages={totalPages}
           loading={isFetching}
           onPageChange={setPage}
           onSizeChange={setPageSize}
@@ -57,10 +71,11 @@ export function InstrumentsSection() {
           onSearchChange={handleSearchChange}
           typeFilter={typeFilter}
           onTypeFilterChange={handleTypeFilterChange}
+          sortDir={sortDir}
+          toggleSort={toggleSort}
           currentPage={page}
           pageSize={pageSize}
-          hasPrev={hasPrev}
-          hasNext={hasNext}
+          totalPages={totalPages}
           loading={isFetching}
           onPageChange={setPage}
           onSizeChange={setPageSize}

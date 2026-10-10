@@ -129,9 +129,9 @@ export function CorporateActionsDialog({
           <div className="p-3 rounded-lg bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2 min-w-0">
             <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
             <div className="min-w-0 break-words">
-              <span className="font-semibold">Note:</span> Position quantities
-              and cost bases auto-adjust when corporate actions are added or
-              updated.
+              <span className="font-semibold">Note:</span> Corporate actions
+              you record are yours: your position quantities and cost bases
+              adjust when you add or update one; other users are not affected.
             </div>
           </div>
 

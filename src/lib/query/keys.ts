@@ -74,7 +74,7 @@ export const keys = {
     dividendSuggestions: () => [...keys.investments.all, 'dividendSuggestions'] as const,
     fno: (params: Record<string, unknown> = {}) => [...keys.investments.all, 'fno', params] as const,
     sips: () => [...keys.investments.all, 'sips'] as const,
-    /** One server page of the instrument catalog (GET /instruments is paged; see useInstruments). */
+    /** One server page (with its total) of the instrument catalog: GET /instruments is paged and sorted; see useInstruments. */
     instruments: (params: Record<string, unknown> = {}) => [...keys.investments.all, 'instruments', params] as const,
     corporateActions: () => [...keys.investments.all, 'corporateActions'] as const,
     corporateActionsByInstrument: (instrumentId: string) => [...keys.investments.all, 'corporateActions', instrumentId] as const,

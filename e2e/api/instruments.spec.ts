@@ -189,7 +189,7 @@ test.describe('Instruments API (@api)', () => {
       },
     });
     expectStatus(listRes, 200);
-    expect(listRes.data?.some((i) => i.id === created.id)).toBe(true);
+    expect(listRes.data?.items.some((i) => i.id === created.id)).toBe(true);
 
     // PUT /instruments/{id}
     const updatedName = `${name} (Updated)`;

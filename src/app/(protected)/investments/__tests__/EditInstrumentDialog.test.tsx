@@ -62,6 +62,25 @@ describe('EditInstrumentDialog — per-account edits', () => {
     expect(screen.getByText(/moves your\s+holdings, trades and prices/)).toBeInTheDocument();
   });
 
+  it('says the user\'s corporate actions move with the holding (no longer a reason to refuse)', () => {
+    open();
+    expect(screen.getByText(/Your corporate actions\s+on it move with the holding/)).toBeInTheDocument();
+    expect(screen.queryByText(/not possible while/)).toBeNull();
+  });
+
+  it('shows the self-reference refusal (400) inline, keeps the dialog open and toasts nothing', async () => {
+    const msg =
+      "Can't switch Acme Ltd to Acme Spinoff: your demerger of Acme Ltd into Acme Spinoff on 2026-01-10 would then be from Acme Spinoff into itself. Edit or delete that corporate action first.";
+    vi.mocked(api.PUT).mockRejectedValue(new ApiError(400, { code: 'VALIDATION_ERROR', message: msg }));
+    open();
+    fireEvent.change(screen.getByLabelText('ISIN (Optional)'), { target: { value: 'INE999Z01019' } });
+    save();
+    expect(await screen.findByRole('alert')).toHaveTextContent(msg);
+    expect(screen.getByRole('button', { name: 'Save Changes' })).toBeInTheDocument();
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
   it('caps every text input at the server limit', () => {
     open();
     const limits: Record<string, number> = {
@@ -241,7 +260,7 @@ describe('EditInstrumentDialog — per-account edits', () => {
 
   it('shows the corporate-action refusal (400) inline and keeps the dialog open', async () => {
     const msg =
-      "Can't switch the price feed of Acme Ltd for one account: Acme Ltd is part of a corporate action (split of Acme Ltd 1:2). Enter a manual price instead.";
+      "Can't switch Acme Ltd to Acme Other: your split of Acme Other 1:2 on 2026-01-10 would also apply to the shares moved from Acme Ltd. That would change your quantities and cost, and a switch keeps them as they are. Edit or delete that corporate action first.";
     vi.mocked(api.PUT).mockRejectedValue(new ApiError(400, { code: 'VALIDATION_ERROR', message: msg }));
     open();
     fireEvent.change(screen.getByLabelText('ISIN (Optional)'), { target: { value: 'INE999Z01019' } });
@@ -251,7 +270,7 @@ describe('EditInstrumentDialog — per-account edits', () => {
   });
 
   it('says the holding was merged into the existing one, with the merge note as the toast description', async () => {
-    const note = 'Both holdings had sells. Their trades are now one history, so realised gains may differ.';
+    const note = "The two holdings' trades are now one history, so realised gains and the lots still open differ from before.";
     vi.mocked(api.PUT).mockResolvedValue({
       data: { ...inst, id: 'inst-2', name: 'Acme Other', isin: 'INE999Z01019', mergedHoldings: true, mergeNote: note },
     } as never);

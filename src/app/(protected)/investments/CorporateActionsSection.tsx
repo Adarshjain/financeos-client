@@ -73,7 +73,7 @@ export function CorporateActionsSection() {
             </h3>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
               Record stock splits, bonus share issues, demergers, and mergers to
-              automatically adjust holding positions and cost bases.
+              adjust your holding positions and cost bases.
             </p>
           </div>
           <Button

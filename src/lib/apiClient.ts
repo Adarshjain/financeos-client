@@ -30,6 +30,7 @@ import type {
   DashboardResponse,
   UpdateDashboardRequest,
 } from '@/lib/dashboards.types';
+import type { InstrumentListPage, InstrumentListQuery } from '@/lib/instrumentList';
 import type { EnqueueResponse, JobResponse, PagedJobResponse } from '@/lib/jobs.types';
 import type {
   CounterpartyResponse,
@@ -668,12 +669,18 @@ export const investmentsApi = {
   deleteCorporateAction: async (instrumentId: string, id: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', { params: { path: { instrumentId, id } } });
   },
-  /** One page (by name) of the catalog; GET /instruments never returns the whole table. */
-  getInstruments: async (params?: { query?: string; type?: InstrumentType; page?: number; size?: number }): Promise<Instrument[]> => {
+  /** One page (sorted by name) of the catalog with its total; GET /instruments never returns the whole table. */
+  getInstruments: async (params?: {
+    query?: string;
+    type?: InstrumentType;
+    sort?: InstrumentListQuery['sort'];
+    page?: number;
+    size?: number;
+  }): Promise<InstrumentListPage> => {
     const { data } = await serverApi.GET('/api/v1/instruments', {
-      params: { query: { search: params?.query, type: params?.type, page: params?.page, size: params?.size } },
+      params: { query: { search: params?.query, type: params?.type, sort: params?.sort, page: params?.page, size: params?.size } },
     });
-    return (data as Instrument[]) || [];
+    return (data as InstrumentListPage | undefined) ?? { items: [], page: params?.page ?? 0, size: params?.size ?? 0, totalElements: 0, totalPages: 0 };
   },
   getInstrument: async (id: string): Promise<Instrument> => {
     const { data } = await serverApi.GET('/api/v1/instruments/{id}', { params: { path: { id } } });
@@ -721,7 +728,7 @@ export const investmentsApi = {
     return data! as ImportCommitResult;
   },
   /** First page (≤ 50) of the catalog matching `q`: GET /instruments is paged. */
-  search: async (q?: string): Promise<Instrument[]> => investmentsApi.getInstruments({ query: q }),
+  search: async (q?: string): Promise<Instrument[]> => (await investmentsApi.getInstruments({ query: q })).items,
   listTransactions: async (page = 0, size = 50, filters?: { brokerAccountId?: string; instrumentId?: string; holdingId?: string; search?: string }): Promise<PagedInvestmentTransactionResponse> =>
     investmentsApi.getTrades({ page, size, brokerAccountId: filters?.brokerAccountId, instrumentId: filters?.instrumentId }),
   createTransaction: async (body: CreateInvestmentTransactionRequest): Promise<InvestmentTransactionResponse> => investmentsApi.createTrade(body),
@@ -732,9 +739,9 @@ export const investmentsApi = {
 export const instrumentsApi = {
   /** First page (≤ 50) of the catalog matching `q`; use `list` to page. */
   search: async (q?: string): Promise<Instrument[]> => investmentsApi.search(q),
-  /** One page of the catalog (see instrumentListQuery). */
-  list: async (params: { search?: string; type?: InstrumentType; page: number; size: number }): Promise<Instrument[]> =>
-    investmentsApi.getInstruments({ query: params.search, type: params.type, page: params.page, size: params.size }),
+  /** One page of the catalog with its total (see instrumentListQuery). */
+  list: async (params: InstrumentListQuery): Promise<InstrumentListPage> =>
+    investmentsApi.getInstruments({ query: params.search, type: params.type, sort: params.sort, page: params.page, size: params.size }),
   catalogSearch: async (query: string, type?: InstrumentType): Promise<InstrumentCandidate[]> => {
     const { data } = await serverApi.GET('/api/v1/instruments/catalog-search', { params: { query: { q: query, type } } });
     return (data as InstrumentCandidate[]) || [];

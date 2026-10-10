@@ -4514,6 +4514,17 @@ export interface components {
             /** @enum {string} */
             type: "stock" | "mutual_fund" | "etf";
         };
+        InstrumentListPage: {
+            items: components["schemas"]["InstrumentResponse"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
         InstrumentPriceResponse: {
             /** Format: date */
             asOf: string;
@@ -9483,6 +9494,7 @@ export interface operations {
             query?: {
                 search?: string;
                 type?: "stock" | "mutual_fund" | "etf";
+                sort?: string;
                 page?: number;
                 size?: number;
             };
@@ -9498,7 +9510,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["InstrumentResponse"][];
+                    "*/*": components["schemas"]["InstrumentListPage"];
                 };
             };
             /** @description Error response */

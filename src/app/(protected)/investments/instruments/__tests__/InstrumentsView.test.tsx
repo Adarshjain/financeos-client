@@ -37,26 +37,33 @@ const instrumentB: Instrument = {
   currency: 'INR',
 };
 
+/** A one-page GET /instruments answer. */
+function pageOf(items: Instrument[]) {
+  return { items, page: 0, size: 50, totalElements: items.length, totalPages: 1 };
+}
+
 describe('InstrumentsView — Query Cache Invalidation Loop', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('updates live when keys.investments.all is invalidated after instrument creation/update', async () => {
-    vi.mocked(api.GET).mockResolvedValue({ data: [instrumentA] } as never);
+    vi.mocked(api.GET).mockResolvedValue({ data: pageOf([instrumentA]) } as never);
 
     const { queryClient } = renderWithQuery(<InstrumentsView />);
 
+    expect(await screen.findByRole('heading', { name: 'Instruments (1)' })).toBeInTheDocument();
     expect((await screen.findAllByText('Reliance Industries Limited')).length).toBeGreaterThan(0);
     expect(screen.queryByText('HDFC Bank Limited')).toBeNull();
 
     // Change mock to return both instruments after invalidation
-    vi.mocked(api.GET).mockResolvedValue({ data: [instrumentA, instrumentB] } as never);
+    vi.mocked(api.GET).mockResolvedValue({ data: pageOf([instrumentA, instrumentB]) } as never);
 
     await queryClient.invalidateQueries({ queryKey: keys.investments.all });
 
     await waitFor(() => {
       expect(screen.getAllByText('HDFC Bank Limited').length).toBeGreaterThan(0);
     });
+    expect(screen.getByRole('heading', { name: 'Instruments (2)' })).toBeInTheDocument();
   });
 });
