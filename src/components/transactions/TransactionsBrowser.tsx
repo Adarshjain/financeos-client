@@ -1,7 +1,6 @@
 'use client';
 
-import { Link2, PlusIcon } from 'lucide-react';
-import Link from 'next/link';
+import { Link2, PlusIcon, X } from 'lucide-react';
 
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { PagedSection } from '@/components/reports/views/PagedSection';
@@ -17,14 +16,7 @@ import { TransactionFilterBar } from './TransactionFilterBar';
 import { TransactionFormWrapper } from './TransactionFormWrapper';
 import { TransactionLinkDialog } from './TransactionLinkDialog';
 
-interface TransactionsBrowserProps {
-  /** `null`/absent means the count could not be determined, not zero. */
-  needsReviewCount?: number | null;
-}
-
-export function TransactionsBrowser({
-  needsReviewCount,
-}: TransactionsBrowserProps) {
+export function TransactionsBrowser() {
   const { data: accounts = [] } = useAccounts();
   const {
     appliedFilters,
@@ -32,7 +24,6 @@ export function TransactionsBrowser({
     search,
     setSearch,
     sort,
-    localReviewCount,
     selectedTxnIds,
     setSelectedTxnIds,
     isSelectionMode,
@@ -47,8 +38,14 @@ export function TransactionsBrowser({
     toggleSelect,
     selectedTransactions,
     handleReload,
-    handleSort,
-  } = useTransactionsBrowser(needsReviewCount);
+    handleSortFieldChange,
+    handleSortDirectionToggle,
+  } = useTransactionsBrowser();
+
+  const exitSelection = () => {
+    setSelectedTxnIds(new Set());
+    setIsSelectionMode(false);
+  };
 
   const renderActionBar = (isMobile = false) => (
     <div className={cn('flex flex-col gap-2 w-full', isMobile ? 'text-xs' : '')}>
@@ -70,35 +67,33 @@ export function TransactionsBrowser({
 
   return (
     <div className="space-y-1 pb-16">
-      {/* Page Header with Review and Create buttons */}
+      {/* Page Header: Link (pick transactions to link) and Create */}
       <div className="flex justify-between items-center px-4 pt-2.5 pb-0.5">
         <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
           Transactions
         </h1>
         <div className="flex items-center gap-2">
-          {selectedTxnIds.size > 0 ? (
-            <Button
-              variant="outline"
-              onClick={() => setBulkLinkOpen(true)}
-              className="border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300"
-            >
-              <Link2 className="h-3.5 w-3.5" />
-              <span>Link ({selectedTxnIds.size})</span>
-            </Button>
+          {isSelectionMode ? (
+            <>
+              <Button variant="outline" size="sm" onClick={exitSelection}>
+                <X className="h-3.5 w-3.5" />
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                disabled={selectedTxnIds.size === 0}
+                onClick={() => setBulkLinkOpen(true)}
+              >
+                <Link2 className="h-3.5 w-3.5" />
+                <span>Link ({selectedTxnIds.size})</span>
+              </Button>
+            </>
           ) : (
             <>
-              {localReviewCount != null && localReviewCount > 0 && (
-                <Link href="/transactions/review">
-                  <Button variant="outline" className="relative">
-                    <span>Review</span>
-                    {localReviewCount !== null && localReviewCount > 0 && (
-                      <span className="flex h-4 min-w-[1rem] px-1 items-center justify-center rounded-md bg-amber-500 text-2xs font-bold text-white">
-                        {localReviewCount}
-                      </span>
-                    )}
-                  </Button>
-                </Link>
-              )}
+              <Button variant="outline" size="sm" onClick={() => setIsSelectionMode(true)}>
+                <Link2 className="h-3.5 w-3.5" />
+                <span>Link</span>
+              </Button>
               <TransactionFormWrapper
                 onSuccess={handleReload}
                 trigger={
@@ -123,23 +118,19 @@ export function TransactionsBrowser({
         {renderActionBar(true)}
       </PageActionBar>
 
-      {/* Sort Toolbar */}
-      <TransactionSortToolbar
-        sort={sort}
-        onSort={handleSort}
-        isSelectionMode={isSelectionMode}
-        setIsSelectionMode={setIsSelectionMode}
-        selectedTxnIds={selectedTxnIds}
-        setSelectedTxnIds={setSelectedTxnIds}
-        loading={loading}
-        pagedData={pagedData}
-      />
-
-      {/* Transactions List, paged above and below */}
+      {/* Sort bar carrying the top pager, the list, and the bottom pager */}
       <PagedSection
-        className="px-2"
-        topClassName="px-2 pb-1"
-        bottomClassName="px-2 pt-2"
+        topClassName="justify-end sm:justify-between"
+        bottomClassName="px-4 pt-2"
+        renderTop={(pager) => (
+          <TransactionSortToolbar
+            sort={sort}
+            onSortFieldChange={handleSortFieldChange}
+            onToggleSortDirection={handleSortDirectionToggle}
+            loading={loading}
+            pager={pager}
+          />
+        )}
         page={{
           number: pagedData?.number ?? 0,
           size: pagedData?.size ?? size,
@@ -153,17 +144,20 @@ export function TransactionsBrowser({
         }}
         loading={loading}
         unit="txn"
+        phoneCompact
       >
-        <TransactionListFeed
-          loading={loading}
-          pagedData={pagedData}
-          hasFiltersOrSearch={appliedFilters.length > 0 || search.trim() !== ''}
-          accounts={accounts}
-          isSelectionMode={isSelectionMode}
-          selectedTxnIds={selectedTxnIds}
-          onReload={handleReload}
-          onToggleSelect={toggleSelect}
-        />
+        <div className="px-2 pt-1">
+          <TransactionListFeed
+            loading={loading}
+            pagedData={pagedData}
+            hasFiltersOrSearch={appliedFilters.length > 0 || search.trim() !== ''}
+            accounts={accounts}
+            isSelectionMode={isSelectionMode}
+            selectedTxnIds={selectedTxnIds}
+            onReload={handleReload}
+            onToggleSelect={toggleSelect}
+          />
+        </div>
       </PagedSection>
 
       <TransactionLinkDialog
@@ -172,7 +166,7 @@ export function TransactionsBrowser({
         open={bulkLinkOpen}
         onOpenChange={setBulkLinkOpen}
         onSuccess={() => {
-          setSelectedTxnIds(new Set());
+          exitSelection();
           handleReload();
         }}
       />

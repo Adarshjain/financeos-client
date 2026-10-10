@@ -6,7 +6,6 @@ export const keys = {
     all: ['transactions'] as const,
     lists: () => [...keys.transactions.all, 'list'] as const,
     search: (params: Record<string, unknown> = {}) => [...keys.transactions.lists(), params] as const,
-    reviewCount: () => [...keys.transactions.all, 'reviewCount'] as const,
     cardOptions: () => [...keys.transactions.all, 'cardOptions'] as const,
     byId: (id: string) => [...keys.transactions.all, 'detail', id] as const,
     links: (transactionId: string) => [...keys.transactions.all, 'links', transactionId] as const,

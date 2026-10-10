@@ -48,11 +48,7 @@ describe('TransactionsBrowser (CD-2a, CD-6)', () => {
   it('clears loading state and shows toast on fetch rejection (CD-2a)', async () => {
     (api.POST as any).mockRejectedValue(new Error('Network error'));
 
-    renderWithAccounts(
-      <TransactionsBrowser
-        needsReviewCount={5}
-      />,
-    );
+    renderWithAccounts(<TransactionsBrowser />);
 
     await waitFor(() => {
       expect(screen.queryByText('Loading transactions...')).not.toBeInTheDocument();
@@ -61,7 +57,7 @@ describe('TransactionsBrowser (CD-2a, CD-6)', () => {
     expect(screen.getByText('No transactions found')).toBeInTheDocument();
   });
 
-  it('renders badge count and updates after search fetch (CD-6)', async () => {
+  it('has no Review button: Link and Create head the page (CD-6)', async () => {
     (api.POST as any).mockResolvedValue({
       data: {
         content: [mockTxn],
@@ -75,16 +71,14 @@ describe('TransactionsBrowser (CD-2a, CD-6)', () => {
       },
     });
 
-    renderWithAccounts(
-      <TransactionsBrowser
-        needsReviewCount={12}
-      />,
-    );
+    renderWithAccounts(<TransactionsBrowser />);
 
     await waitFor(() => {
-      expect(screen.getByText('Review')).toBeInTheDocument();
-      expect(screen.getByText('12')).toBeInTheDocument();
+      expect(screen.getByText('Coffee')).toBeInTheDocument();
     });
+    expect(screen.queryByText('Review')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Link$/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Create/i })).toBeInTheDocument();
   });
 
   it('toggles sort direction and selection mode', async () => {
@@ -107,13 +101,9 @@ describe('TransactionsBrowser (CD-2a, CD-6)', () => {
       expect(screen.getByText('Coffee')).toBeInTheDocument();
     });
 
-    // Click Date sort button
-    const dateSortBtn = screen.getByRole('button', { name: /Date/i });
-    fireEvent.click(dateSortBtn);
-
-    // Click Amount sort button
-    const amountSortBtns = screen.getAllByRole('button', { name: /Amount/i });
-    fireEvent.click(amountSortBtns[amountSortBtns.length - 1]);
+    // Flip the sort direction
+    fireEvent.click(screen.getByRole('button', { name: 'Sort descending' }));
+    expect(screen.getByRole('button', { name: 'Sort ascending' })).toBeInTheDocument();
 
     // Click Link selection mode button
     const linkModeBtns = screen.getAllByRole('button', { name: /^Link$/i });
