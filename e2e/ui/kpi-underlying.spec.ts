@@ -155,9 +155,9 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     // The header carries the figure: nothing under the rows restates it or counts them.
     await expect(vud.getByText(/^Sum /)).toHaveCount(0);
     await expect(vud.getByText(/27 rows/)).toHaveCount(0);
-    await expect(vud.getByText('1 / 2')).toBeVisible();
+    await expect(vud.getByRole('button', { name: 'Page 1' })).toHaveAttribute('aria-current', 'page');
     await vud.getByRole('button', { name: 'Next page' }).click();
-    await expect(vud.getByText('2 / 2')).toBeVisible();
+    await expect(vud.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
     await expect(rows).toHaveCount(2);
     await expect(rows.nth(0)).toContainText(rowName(2));
     await expect(rows.nth(1)).toContainText(rowName(1));
@@ -166,14 +166,14 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     const spendHeader = vud.getByRole('columnheader', { name: 'Spend' });
     await vud.getByRole('button', { name: 'Spend', exact: true }).click();
     await expect(spendHeader).toHaveAttribute('aria-sort', 'ascending');
-    await expect(vud.getByText('1 / 2')).toBeVisible();
+    await expect(vud.getByRole('button', { name: 'Page 1' })).toHaveAttribute('aria-current', 'page');
     // Ascending spend: 100 (row 7), 110 (row 11), 120 (row 15) …
     await expect(rows.nth(0)).toContainText(rowName(7));
     await expect(rows.nth(1)).toContainText(rowName(11));
     await expect(rows.nth(2)).toContainText(rowName(15));
     // … and the sort holds on the next page: 350 (row 26), 360 (row 3).
     await vud.getByRole('button', { name: 'Next page' }).click();
-    await expect(vud.getByText('2 / 2')).toBeVisible();
+    await expect(vud.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
     await expect(rows).toHaveCount(2);
     await expect(rows.nth(0)).toContainText(rowName(26));
     await expect(rows.nth(1)).toContainText(rowName(3));
@@ -181,7 +181,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
 
     await vud.getByRole('button', { name: 'Spend', exact: true }).click();
     await expect(spendHeader).toHaveAttribute('aria-sort', 'descending');
-    await expect(vud.getByText('1 / 2')).toBeVisible();
+    await expect(vud.getByRole('button', { name: 'Page 1' })).toHaveAttribute('aria-current', 'page');
     await expect(rows.first()).toContainText(rowName(3));
     await vud.getByRole('button', { name: 'Spend', exact: true }).click();
     await expect(spendHeader).toHaveAttribute('aria-sort', 'none');
@@ -456,7 +456,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     // The saved order (description asc), 50 to a page.
     await expect(rows).toHaveCount(50);
     await expect(rows.first()).toContainText(name(1));
-    await expect(card.getByText('1 / 2')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Page 1' })).toHaveAttribute('aria-current', 'page');
 
     const amountHeader = card.getByRole('columnheader', { name: 'Amount' });
     await expect(amountHeader).toHaveAttribute('aria-sort', 'none');
@@ -466,7 +466,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await expect(rows.nth(49)).toContainText(name(ascending[49]));
 
     await card.getByRole('button', { name: 'Next page' }).click();
-    await expect(card.getByText('2 / 2')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
     await expect(rows).toHaveCount(5);
     await expect(rows).toHaveText(ascending.slice(50).map((k) => new RegExp(name(k))));
     await expect(amountHeader).toHaveAttribute('aria-sort', 'ascending');
@@ -474,7 +474,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     // A new sort goes back to page one.
     await card.getByRole('button', { name: 'Amount', exact: true }).click();
     await expect(amountHeader).toHaveAttribute('aria-sort', 'descending');
-    await expect(card.getByText('1 / 2')).toBeVisible();
+    await expect(card.getByRole('button', { name: 'Page 1' })).toHaveAttribute('aria-current', 'page');
     await expect(rows.first()).toContainText(name(ascending[54]));
 
     // The sort is for this visit only: the report keeps its saved order.
