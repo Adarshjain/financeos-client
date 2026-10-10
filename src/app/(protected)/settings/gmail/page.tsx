@@ -33,25 +33,22 @@ export default async function GmailSettingsPage({
   queryClient.setQueryData(keys.settings.gmailAttention(attentionParams), attention);
 
   return (
-    <div className="space-y-2 p-4">
-      {/* Page Title & Back Button */}
+    <div className="space-y-4 p-4 max-w-4xl">
       <div className="flex items-center gap-3">
-        <Button asChild size="icon-sm">
+        <Button asChild size="icon-sm" variant="ghost">
           <Link href="/settings">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Gmail Integration</h1>
-        </div>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Gmail Integration</h1>
       </div>
 
       {/* Query Param Status Banners (from the OAuth callback redirect) */}
       {isSuccess && (
-        <Alert variant="default" className="border-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/10 dark:border-emerald-900/30">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          <AlertTitle className="text-emerald-800 dark:text-emerald-400 font-medium">Successfully Connected</AlertTitle>
-          <AlertDescription className="text-emerald-700 dark:text-emerald-500 text-sm mt-1">
+        <Alert variant="success">
+          <CheckCircle2 className="h-4 w-4" />
+          <AlertTitle className="font-semibold">Successfully Connected</AlertTitle>
+          <AlertDescription className="text-sm mt-1">
             Your Gmail account <strong>{params.email}</strong> has been successfully linked.
             We will now process transaction alerts and statements from this account.
           </AlertDescription>
@@ -61,7 +58,7 @@ export default async function GmailSettingsPage({
       {isError && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle className="font-medium">Connection Error</AlertTitle>
+          <AlertTitle className="font-semibold">Connection Error</AlertTitle>
           <AlertDescription className="text-sm mt-1">
             {params.message || 'An unexpected error occurred during Google authorization.'}
           </AlertDescription>

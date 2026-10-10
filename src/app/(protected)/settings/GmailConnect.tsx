@@ -42,10 +42,10 @@ export function GmailConnect({ focusAttention = false }: { focusAttention?: bool
   } = useGmailConnect();
 
   return (
-    <div className="space-y-2 pb-20">
+    <div className="space-y-4 pb-20">
       {/* Status Alerts */}
       {message && (
-        <Alert variant={message.type === 'success' ? 'default' : 'destructive'}>
+        <Alert variant={message.type === 'success' ? 'success' : 'destructive'}>
           {message.type === 'success' ? (
             <CheckCircle2 className="h-4 w-4" />
           ) : (
