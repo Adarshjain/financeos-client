@@ -1,7 +1,7 @@
 // Instrument edits are per account: PUT /instruments/{id} stores the caller's own display overrides
-// (or, for an identifier change, moves only the caller's holdings to another catalog instrument —
-// only the identifiers that changed pick it; clearing without a new one, or any corporate action on
-// either instrument, is a 400),
+// (or, for an identifier change, moves only the caller's holdings — and their own corporate actions —
+// to another catalog instrument; only the identifiers that changed pick it; clearing without a new one,
+// or a demerger / merger of theirs that would then point from an instrument into itself, is a 400),
 // PATCH pins the caller's asset class, DELETE /overrides resets to the catalog, manual prices belong
 // to their author, and POST /instruments/resolve never changes an existing row.
 
@@ -18,6 +18,8 @@ import {
   type ImportPreviewResponse,
   type InstrumentRequest,
   type InstrumentResponse,
+  listAllCorporateActions,
+  listInstrumentCorporateActions,
   positions,
   refreshPrices,
   resolveInstrument,
@@ -134,6 +136,15 @@ async function positionOf(api: ApiClient, holdingId: string) {
   return (await positions(api)).positions.find((p) => p.holdingId === holdingId);
 }
 
+type Position = Awaited<ReturnType<typeof positions>>['positions'][number];
+
+/** The figures a move must leave as they were (prices aside: the new row's feed is its own). */
+function costFigures(p: Position | undefined) {
+  expect(p, 'the position is listed').toBeDefined();
+  const { quantity, avgCost, invested, buyQty, buyValue, realizedGainLoss } = p!;
+  return { quantity, avgCost, invested, buyQty, buyValue, realizedGainLoss };
+}
+
 test.describe('Instrument edits per account (@api)', () => {
   test('PUT display fields are the caller\'s overrides: another user and the catalog row are unaffected', async ({
     api,
@@ -157,7 +168,7 @@ test.describe('Instrument edits per account (@api)', () => {
     expect((await getInstrument(api, inst.id)).name).toBe(myName);
     const mine = await api.GET('/api/v1/instruments', { params: { query: { search: myName } } });
     expectStatus(mine, 200);
-    expect(mine.data!.some((i) => i.id === inst.id && i.name === myName)).toBe(true);
+    expect(mine.data!.items.some((i) => i.id === inst.id && i.name === myName)).toBe(true);
 
     // User B sees the catalog: their GET, their search by the new name, their search by the catalog name.
     const b = await getInstrument(apiB, inst.id);
@@ -167,10 +178,10 @@ test.describe('Instrument edits per account (@api)', () => {
     expect(b.overriddenFields).toEqual([]);
     const bByMyName = await apiB.GET('/api/v1/instruments', { params: { query: { search: myName } } });
     expectStatus(bByMyName, 200);
-    expect(bByMyName.data!.some((i) => i.id === inst.id)).toBe(false);
+    expect(bByMyName.data!.items.some((i) => i.id === inst.id)).toBe(false);
     const bByCatalogName = await apiB.GET('/api/v1/instruments', { params: { query: { search: inst.name } } });
     expectStatus(bByCatalogName, 200);
-    expect(bByCatalogName.data!.find((i) => i.id === inst.id)?.name).toBe(inst.name);
+    expect(bByCatalogName.data!.items.find((i) => i.id === inst.id)?.name).toBe(inst.name);
 
     // A type override is the caller's too, and the type filter follows it for them only.
     const retyped = await put(api, inst.id, bodyOf(inst, { name: myName, exchange: 'BSE', type: 'etf' }));
@@ -178,7 +189,7 @@ test.describe('Instrument edits per account (@api)', () => {
     expect(retyped.data!.type).toBe('etf');
     expect(retyped.data!.overriddenFields).toContain('type');
     const etfs = await api.GET('/api/v1/instruments', { params: { query: { search: myName, type: 'etf' } } });
-    expect(etfs.data!.some((i) => i.id === inst.id)).toBe(true);
+    expect(etfs.data!.items.some((i) => i.id === inst.id)).toBe(true);
     expect((await getInstrument(apiB, inst.id)).type).toBe('stock');
 
     // Sending the catalog values again clears each override (case-insensitive for the codes).
@@ -322,10 +333,12 @@ test.describe('Instrument edits per account (@api)', () => {
     expect(created.data!.id).not.toBe(source.id);
     expect(created.data!.isin).toBe(freshIsin);
     expect(created.data!.yahooSymbol).toBe(freshYahoo);
-    // The ticker (symbol + exchange) is unique in the catalog and stays with the row that has it; the
-    // user did not change it, so it is not carried to the new row as an override either.
-    expect(created.data!.symbol ?? null).toBeNull();
-    expect(created.data!.overriddenFields).not.toContain('symbol');
+    // The ticker (symbol + exchange) is unique in the catalog and stays with the row that has it, so the
+    // new row has none; the user keeps seeing the ticker they had, as their own override.
+    expect(created.data!.symbol).toBe(target.symbol);
+    expect(created.data!.exchange).toBe('NSE');
+    expect(created.data!.overriddenFields).toContain('symbol');
+    expect((await getInstrument(apiB, created.data!.id)).symbol ?? null).toBeNull();
     expect((await positionOf(api, holdingA))?.instrument.id).toBe(created.data!.id);
     // The target itself is unchanged for everyone.
     expect((await getInstrument(apiB, target.id)).isin).toBe(target.isin);
@@ -382,28 +395,149 @@ test.describe('Instrument edits per account (@api)', () => {
     expect((await positionOf(api, holdingId))?.instrument.id).toBe(inst.id);
   });
 
-  test('an identifier edit is refused (400, naming it) when either instrument is part of a corporate action', async ({
+  test('an identifier edit carries the caller\'s own split to the new instrument: their position is identical, others untouched', async ({
     api,
+    request,
   }) => {
-    // The source has a split.
-    const split = await freshStock(api, 'CAS');
-    const splitHolding = await holdingOf(api, split.id);
-    await createCorporateAction(api, split.id, { type: 'split', ratioFrom: 1, ratioTo: 2, exDate: istToday(-10) });
-    const fromSplit = await put(api, split.id, bodyOf(split, { isin: generateIsin() }));
-    expectStatus(fromSplit, 400);
-    expect(fromSplit.error?.message).toContain('corporate action');
-    expect(fromSplit.error?.message).toContain(`split of ${split.name}`);
-    expect((await positionOf(api, splitHolding))?.instrument.id).toBe(split.id);
+    const { api: apiB } = await secondUser(request, 'inst-ca-carry-b');
+    const source = await freshStock(api, 'CAS');
+    const holding = await holdingOf(api, source.id);
+    const holdingB = await holdingOf(apiB, source.id);
+    const split = await createCorporateAction(api, source.id, { type: 'split', ratioFrom: 1, ratioTo: 2, exDate: istToday(-10) });
+    const before = await positionOf(api, holding);
+    expect(before?.quantity).toBe(20);
+    const beforeB = await positionOf(apiB, holdingB);
+    expect(beforeB?.quantity).toBe(10);
 
-    // The target has one (a bonus), the source none.
-    const plain = await freshStock(api, 'CAP');
-    const plainHolding = await holdingOf(api, plain.id);
-    const target = await freshStock(api, 'CAT');
-    await createCorporateAction(api, target.id, { type: 'bonus', ratioFrom: 1, ratioTo: 1, exDate: istToday(-10) });
-    const toBonus = await put(api, plain.id, bodyOf(plain, { isin: target.isin! }));
-    expectStatus(toBonus, 400);
-    expect(toBonus.error?.message).toContain(`bonus on ${target.name}`);
-    expect((await positionOf(api, plainHolding))?.instrument.id).toBe(plain.id);
+    const moved = await put(api, source.id, bodyOf(source, { isin: generateIsin(), yahooSymbol: generateYahooSymbol('CAS2') }));
+    expectStatus(moved, 200);
+    const targetId = moved.data!.id;
+    expect(targetId).not.toBe(source.id);
+
+    // Same position on the new instrument: the split moved with it.
+    const after = await positionOf(api, holding);
+    expect(after?.instrument.id).toBe(targetId);
+    expect(costFigures(after)).toEqual(costFigures(before));
+    expect((await listInstrumentCorporateActions(api, targetId)).map((ca) => ca.id)).toEqual([split.id]);
+    expect(await listInstrumentCorporateActions(api, source.id)).toEqual([]);
+    const mine = (await listAllCorporateActions(api)).find((ca) => ca.id === split.id);
+    expect(mine?.instrumentId).toBe(targetId);
+
+    // The other holder had no corporate action and still has none; their position is as it was.
+    expect(await listInstrumentCorporateActions(apiB, source.id)).toEqual([]);
+    expect(await listInstrumentCorporateActions(apiB, targetId)).toEqual([]);
+    const afterB = await positionOf(apiB, holdingB);
+    expect(afterB?.instrument.id).toBe(source.id);
+    expect(costFigures(afterB)).toEqual(costFigures(beforeB));
+  });
+
+  test('a demerger moves with its child: repointing the child keeps both positions identical', async ({ api }) => {
+    const parent = await freshStock(api, 'DMP');
+    const child = await freshStock(api, 'DMC');
+    const parentHolding = await holdingOf(api, parent.id);
+    const demerger = await createCorporateAction(api, parent.id, {
+      type: 'demerger',
+      ratioFrom: 2,
+      ratioTo: 1,
+      targetInstrumentId: child.id,
+      costAllocationPct: 20,
+      exDate: istToday(-10),
+    });
+    const all = (await positions(api)).positions;
+    const childBefore = all.find((p) => p.instrument.id === child.id);
+    expect(childBefore?.quantity).toBe(5);
+    const parentBefore = await positionOf(api, parentHolding);
+
+    const moved = await put(api, child.id, bodyOf(child, { isin: generateIsin(), yahooSymbol: generateYahooSymbol('DMC2') }));
+    expectStatus(moved, 200);
+    const newChildId = moved.data!.id;
+    expect(newChildId).not.toBe(child.id);
+
+    const ca = (await listAllCorporateActions(api)).find((c) => c.id === demerger.id);
+    expect(ca?.instrumentId).toBe(parent.id);
+    expect(ca?.targetInstrumentId).toBe(newChildId);
+    const childAfter = (await positions(api)).positions.find((p) => p.holdingId === childBefore!.holdingId);
+    expect(childAfter?.instrument.id).toBe(newChildId);
+    expect(costFigures(childAfter)).toEqual(costFigures(childBefore));
+    expect(costFigures(await positionOf(api, parentHolding))).toEqual(costFigures(parentBefore));
+  });
+
+  test('a move is refused (400) only when the caller\'s own demerger would point from an instrument into itself', async ({
+    api,
+    request,
+  }) => {
+    const parent = await freshStock(api, 'SRP');
+    const child = await freshStock(api, 'SRC');
+    const parentHolding = await holdingOf(api, parent.id);
+    const demerger = await createCorporateAction(api, parent.id, {
+      type: 'demerger',
+      ratioFrom: 1,
+      ratioTo: 1,
+      targetInstrumentId: child.id,
+      costAllocationPct: 30,
+      exDate: istToday(-10),
+    });
+    const before = await positionOf(api, parentHolding);
+
+    // Parent onto the child (by the child's ISIN): the demerger would be child → child.
+    const parentIntoChild = await put(api, parent.id, bodyOf(parent, { isin: child.isin! }));
+    expectStatus(parentIntoChild, 400);
+    expect(parentIntoChild.error?.message).toContain('into itself');
+    expect(parentIntoChild.error?.message).toContain('Edit or delete that corporate action first.');
+    // And the child onto the parent.
+    const childIntoParent = await put(api, child.id, bodyOf(child, { isin: parent.isin! }));
+    expectStatus(childIntoParent, 400);
+    expect(childIntoParent.error?.message).toContain('into itself');
+
+    // Nothing moved.
+    expect((await positionOf(api, parentHolding))?.instrument.id).toBe(parent.id);
+    expect(costFigures(await positionOf(api, parentHolding))).toEqual(costFigures(before));
+    const ca = (await listAllCorporateActions(api)).find((c) => c.id === demerger.id);
+    expect([ca?.instrumentId, ca?.targetInstrumentId]).toEqual([parent.id, child.id]);
+
+    // Corporate actions are per user: A's demerger never blocks B, who holds the parent with none of
+    // their own and moves onto the child freely.
+    const { api: apiB } = await secondUser(request, 'inst-ca-self-b');
+    const holdingB = await holdingOf(apiB, parent.id);
+    const bMoved = await put(apiB, parent.id, bodyOf(parent, { isin: child.isin! }));
+    expectStatus(bMoved, 200);
+    expect(bMoved.data!.id).toBe(child.id);
+    expect((await positionOf(apiB, holdingB))?.instrument.id).toBe(child.id);
+    // A's demerger is untouched by B's move.
+    const caAfter = (await listAllCorporateActions(api)).find((c) => c.id === demerger.id);
+    expect([caAfter?.instrumentId, caAfter?.targetInstrumentId]).toEqual([parent.id, child.id]);
+  });
+
+  test('after a move onto a new row the ticker stays the caller\'s own: same symbol and exchange, others see none', async ({
+    api,
+    request,
+  }) => {
+    const { api: apiB } = await secondUser(request, 'inst-ticker-b');
+    const inst = await freshStock(api, 'TKK');
+    const holding = await holdingOf(api, inst.id);
+
+    // A new ISIN and Yahoo symbol no row has: a new catalog row, which can't take the ticker (the
+    // source row keeps it, tickers are unique).
+    const moved = await put(api, inst.id, bodyOf(inst, { isin: generateIsin(), yahooSymbol: generateYahooSymbol('TKK2') }));
+    expectStatus(moved, 200);
+    const newId = moved.data!.id;
+    expect(newId).not.toBe(inst.id);
+    expect(moved.data!.symbol).toBe(inst.symbol);
+    expect(moved.data!.exchange).toBe(inst.exchange);
+    expect(moved.data!.overridden).toBe(true);
+    expect(moved.data!.overriddenFields).toContain('symbol');
+
+    // Everywhere the caller reads it: GET, the list, their position.
+    expect((await getInstrument(api, newId)).symbol).toBe(inst.symbol);
+    const listed = await api.GET('/api/v1/instruments', { params: { query: { search: moved.data!.yahooSymbol! } } });
+    expectStatus(listed, 200);
+    expect(listed.data!.items.find((i) => i.id === newId)?.symbol).toBe(inst.symbol);
+    expect((await positionOf(api, holding))?.instrument.symbol).toBe(inst.symbol);
+
+    // Another user sees the catalog row, which has no ticker; the source row keeps its own.
+    expect((await getInstrument(apiB, newId)).symbol ?? null).toBeNull();
+    expect((await getInstrument(apiB, newId)).overridden).toBe(false);
+    expect((await getInstrument(apiB, inst.id)).symbol).toBe(inst.symbol);
   });
 
   test('moving onto an instrument already held in the same broker merges the holdings and says so', async ({ api }) => {

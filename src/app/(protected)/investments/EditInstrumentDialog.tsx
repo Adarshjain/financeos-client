@@ -168,8 +168,8 @@ export function EditInstrumentDialog({ instrument, trigger, onUpdated }: EditIns
           <DialogTitle className="text-base font-bold">Edit Instrument</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
             Edits apply to your account only. Changing the ISIN, AMFI code or Yahoo symbol moves your
-            holdings, trades and prices to the instrument with that identifier — not possible while
-            either instrument is part of a corporate action.
+            holdings, trades and prices to the instrument with that identifier. Your corporate actions
+            on it move with the holding.
           </DialogDescription>
         </DialogHeader>
 

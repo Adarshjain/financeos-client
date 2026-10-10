@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, Plus, Search, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Plus, Search, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { INSTRUMENT_PAGE_SIZES } from '@/lib/instrumentList';
+import { INSTRUMENT_PAGE_SIZES, type InstrumentSortDir } from '@/lib/instrumentList';
 import { cn } from '@/lib/utils';
 
 import { CreateInstrumentDialog } from '../CreateInstrumentDialog';
@@ -21,10 +21,11 @@ interface InstrumentsFilterBarProps {
   onSearchChange: (s: string) => void;
   typeFilter: string;
   onTypeFilterChange: (t: string) => void;
+  sortDir: InstrumentSortDir;
+  toggleSort: () => void;
   currentPage: number;
   pageSize: number;
-  hasPrev: boolean;
-  hasNext: boolean;
+  totalPages: number;
   loading?: boolean;
   onPageChange: (p: number) => void;
   onSizeChange: (s: number) => void;
@@ -36,10 +37,11 @@ export function InstrumentsFilterBar({
   onSearchChange,
   typeFilter,
   onTypeFilterChange,
+  sortDir,
+  toggleSort,
   currentPage,
   pageSize,
-  hasPrev,
-  hasNext,
+  totalPages,
   loading = false,
   onPageChange,
   onSizeChange,
@@ -74,7 +76,7 @@ export function InstrumentsFilterBar({
       </div>
 
       {/* Filter & Action Controls */}
-      <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
+      <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto shrink-0 justify-between sm:justify-end">
         {/* Type Filter */}
         <Select value={typeFilter} onValueChange={onTypeFilterChange}>
           <SelectTrigger className="h-8 text-xs w-[125px] bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold">
@@ -87,6 +89,21 @@ export function InstrumentsFilterBar({
             <SelectItem value="etf">ETF</SelectItem>
           </SelectContent>
         </Select>
+
+        {/* Name order, sorted on the server */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={toggleSort}
+          title="Sort by name"
+        >
+          {sortDir === 'asc' ? (
+            <ArrowUp className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+          ) : (
+            <ArrowDown className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+          )}
+          <span>{sortDir === 'asc' ? 'Name A–Z' : 'Name Z–A'}</span>
+        </Button>
 
         {/* Add Instrument Dialog Trigger */}
         <CreateInstrumentDialog
@@ -101,8 +118,7 @@ export function InstrumentsFilterBar({
       <InstrumentsPager
         currentPage={currentPage}
         pageSize={pageSize}
-        hasPrev={hasPrev}
-        hasNext={hasNext}
+        totalPages={totalPages}
         loading={loading}
         onPageChange={onPageChange}
         onSizeChange={onSizeChange}
@@ -111,23 +127,18 @@ export function InstrumentsFilterBar({
   );
 }
 
-/**
- * Prev/next over the server pages. GET /instruments returns no total, so there is no page count:
- * Next is offered while the current page came back full.
- */
+/** Page size plus prev/next over the server pages, with the page count from GET /instruments. */
 function InstrumentsPager({
   currentPage,
   pageSize,
-  hasPrev,
-  hasNext,
+  totalPages,
   loading,
   onPageChange,
   onSizeChange,
 }: {
   currentPage: number;
   pageSize: number;
-  hasPrev: boolean;
-  hasNext: boolean;
+  totalPages: number;
   loading: boolean;
   onPageChange: (p: number) => void;
   onSizeChange: (s: number) => void;
@@ -149,25 +160,26 @@ function InstrumentsPager({
           ))}
         </SelectContent>
       </Select>
-      {(hasPrev || hasNext) && (
+      {/* Also shown on a page past the end (rows deleted meanwhile), so the user can step back. */}
+      {(totalPages > 1 || currentPage > 0) && (
         <div className="flex items-center gap-1.5">
           <Button
             variant="outline"
             size="icon-sm"
             aria-label="Previous page"
-            disabled={!hasPrev || loading}
+            disabled={currentPage <= 0 || loading}
             onClick={() => onPageChange(currentPage - 1)}
           >
             <ChevronLeft className="h-4 w-4 text-slate-500" />
           </Button>
           <span className="tabular-nums text-xs font-semibold px-2 text-slate-700 dark:text-slate-300">
-            Page {currentPage + 1}
+            {currentPage + 1} / {Math.max(totalPages, currentPage + 1)}
           </span>
           <Button
             variant="outline"
             size="icon-sm"
             aria-label="Next page"
-            disabled={!hasNext || loading}
+            disabled={currentPage >= totalPages - 1 || loading}
             onClick={() => onPageChange(currentPage + 1)}
           >
             <ChevronRight className="h-4 w-4 text-slate-500" />

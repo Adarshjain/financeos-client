@@ -4,13 +4,15 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-import { api, ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
 import { CorporateAction, CreateCorporateActionRequest, UpdateCorporateActionRequest } from '@/lib/api/types';
 import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { Instrument } from '@/lib/types';
 import { toCalendarDate } from '@/lib/utils';
+
+import { CORPORATE_ACTION_GONE_MESSAGE, isCorporateActionGone } from './corporateActionGone';
 
 // The generated request enum only has the 4 lowercase action kinds (no legacy
 // uppercase/actionType variants) — `@/lib/types`'s `CorporateActionType` is wider
@@ -225,7 +227,14 @@ export function useCorporateActionsDialog({ instrument, heldQuantity, initialTyp
       fetchActions();
       onSuccess?.();
     } catch (err) {
-      toastError(err, 'Failed to save corporate action');
+      if (editingActionId && isCorporateActionGone(err)) {
+        // The action being edited was deleted meanwhile (or isn't this user's): leave edit mode.
+        toast.info(CORPORATE_ACTION_GONE_MESSAGE);
+        resetForm();
+        await invalidateInvestmentQueries(qc);
+      } else {
+        toastError(err, 'Failed to save corporate action');
+      }
     }
   };
 
@@ -240,7 +249,13 @@ export function useCorporateActionsDialog({ instrument, heldQuantity, initialTyp
       fetchActions();
       onSuccess?.();
     } catch (err) {
-      toastError(err, 'Failed to delete corporate action');
+      if (isCorporateActionGone(err)) {
+        toast.info(CORPORATE_ACTION_GONE_MESSAGE);
+        if (editingActionId === actionId) resetForm();
+        await invalidateInvestmentQueries(qc);
+      } else {
+        toastError(err, 'Failed to delete corporate action');
+      }
     } finally {
       setDeletingId(null);
     }

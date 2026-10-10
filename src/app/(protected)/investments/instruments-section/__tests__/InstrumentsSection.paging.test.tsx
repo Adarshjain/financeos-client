@@ -14,7 +14,7 @@ vi.mock('@/app/(protected)/investments/CreateInstrumentDialog', () => ({ CreateI
 
 import { InstrumentsSection } from '@/app/(protected)/investments/InstrumentsSection';
 import { api } from '@/lib/api/client';
-import { hasNextInstrumentPage, instrumentListQuery } from '@/lib/instrumentList';
+import { type InstrumentListPage, instrumentListQuery } from '@/lib/instrumentList';
 import type { Instrument } from '@/lib/types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
@@ -22,12 +22,20 @@ function inst(i: number): Instrument {
   return { id: `inst-${i}`, name: `Instrument ${i}`, type: 'stock', currency: 'INR' };
 }
 const rows = (from: number, n: number) => Array.from({ length: n }, (_, k) => inst(from + k));
+/** One GET /instruments page: `items` on page `page` of a list of `total` rows in pages of `size`. */
+const pageOf = (items: Instrument[], total = items.length, page = 0, size = 50): InstrumentListPage => ({
+  items,
+  page,
+  size,
+  totalElements: total,
+  totalPages: Math.ceil(total / size),
+});
 
-type Query = { search?: string; type?: string; page?: number; size?: number };
+type Query = { search?: string; type?: string; sort?: string; page?: number; size?: number };
 const lastQuery = (): Query =>
   (vi.mocked(api.GET).mock.calls.at(-1)?.[1] as unknown as { params: { query: Query } }).params.query;
 
-describe('instrumentListQuery / hasNextInstrumentPage', () => {
+describe('instrumentListQuery', () => {
   it('defaults to the first page of 50 and drops a blank search', () => {
     expect(instrumentListQuery()).toEqual({ page: 0, size: 50 });
     expect(instrumentListQuery({ search: '   ' })).toEqual({ page: 0, size: 50 });
@@ -43,11 +51,9 @@ describe('instrumentListQuery / hasNextInstrumentPage', () => {
     expect(instrumentListQuery({ size: 0 })).toEqual({ page: 0, size: 1 });
   });
 
-  it('offers a next page only when the page came back full', () => {
-    expect(hasNextInstrumentPage(50, 50)).toBe(true);
-    expect(hasNextInstrumentPage(53, 50)).toBe(true);
-    expect(hasNextInstrumentPage(49, 50)).toBe(false);
-    expect(hasNextInstrumentPage(0, 50)).toBe(false);
+  it('sends a sort only for name descending (ascending is the server default)', () => {
+    expect(instrumentListQuery({ sortDir: 'asc' })).toEqual({ page: 0, size: 50 });
+    expect(instrumentListQuery({ sortDir: 'desc', page: 2 })).toEqual({ sort: 'name,desc', page: 2, size: 50 });
   });
 });
 
@@ -60,16 +66,16 @@ describe('InstrumentsSection — server-side paging', () => {
   });
 
   it('asks the server for the first page of 50 only, never the whole catalog', async () => {
-    vi.mocked(api.GET).mockResolvedValue({ data: rows(1, 3) } as never);
+    vi.mocked(api.GET).mockResolvedValue({ data: pageOf(rows(1, 3)) } as never);
     renderWithQuery(<InstrumentsSection />);
     expect((await screen.findAllByText('Instrument 1')).length).toBeGreaterThan(0);
     expect(api.GET).toHaveBeenCalledWith('/api/v1/instruments', { params: { query: { page: 0, size: 50 } } });
     expect(screen.queryByRole('button', { name: 'Next page' })).toBeNull();
   });
 
-  it('pages forward and back on the server while the page is full', async () => {
+  it('pages forward and back on the server up to the last page', async () => {
     vi.mocked(api.GET).mockImplementation((async (_path: string, opts: { params: { query: Query } }) => ({
-      data: opts.params.query.page === 0 ? rows(1, 50) : rows(51, 7),
+      data: opts.params.query.page === 0 ? pageOf(rows(1, 50), 57) : pageOf(rows(51, 7), 57, 1),
     })) as never);
     renderWithQuery(<InstrumentsSection />);
     expect((await screen.findAllByText('Instrument 50')).length).toBeGreaterThan(0);
@@ -78,17 +84,21 @@ describe('InstrumentsSection — server-side paging', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
     expect((await screen.findAllByText('Instrument 57')).length).toBeGreaterThan(0);
     expect(lastQuery()).toEqual({ page: 1, size: 50 });
-    expect(screen.getByText('Page 2')).toBeInTheDocument();
+    expect(screen.getByText('2 / 2')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Previous page' }));
     expect((await screen.findAllByText('Instrument 1')).length).toBeGreaterThan(0);
-    expect(screen.getByText('Page 1')).toBeInTheDocument();
+    expect(screen.getByText('1 / 2')).toBeInTheDocument();
   });
 
   it('sends the search to the server (debounced) and goes back to the first page', async () => {
     vi.mocked(api.GET).mockImplementation((async (_path: string, opts: { params: { query: Query } }) => ({
-      data: opts.params.query.search ? [inst(999)] : opts.params.query.page === 0 ? rows(1, 50) : rows(51, 2),
+      data: opts.params.query.search
+        ? pageOf([inst(999)])
+        : opts.params.query.page === 0
+          ? pageOf(rows(1, 50), 52)
+          : pageOf(rows(51, 2), 52, 1),
     })) as never);
     renderWithQuery(<InstrumentsSection />);
     expect((await screen.findAllByText('Instrument 1')).length).toBeGreaterThan(0);
@@ -101,7 +111,7 @@ describe('InstrumentsSection — server-side paging', () => {
   });
 
   it('sends the type filter to the server and offers only the server types', async () => {
-    vi.mocked(api.GET).mockResolvedValue({ data: rows(1, 2) } as never);
+    vi.mocked(api.GET).mockResolvedValue({ data: pageOf(rows(1, 2)) } as never);
     renderWithQuery(<InstrumentsSection />);
     expect((await screen.findAllByText('Instrument 1')).length).toBeGreaterThan(0);
     expect(screen.queryByRole('option', { name: 'Other' })).toBeNull();
@@ -110,7 +120,7 @@ describe('InstrumentsSection — server-side paging', () => {
   });
 
   it('changes the page size on the server (capped list of sizes) and resets to the first page', async () => {
-    vi.mocked(api.GET).mockResolvedValue({ data: rows(1, 2) } as never);
+    vi.mocked(api.GET).mockResolvedValue({ data: pageOf(rows(1, 2)) } as never);
     renderWithQuery(<InstrumentsSection />);
     expect((await screen.findAllByText('Instrument 1')).length).toBeGreaterThan(0);
     expect(screen.queryByRole('option', { name: '500 / page' })).toBeNull();
@@ -119,14 +129,14 @@ describe('InstrumentsSection — server-side paging', () => {
   });
 
   it('shows the empty-catalog state only for an unfiltered empty first page', async () => {
-    vi.mocked(api.GET).mockResolvedValue({ data: [] } as never);
+    vi.mocked(api.GET).mockResolvedValue({ data: pageOf([]) } as never);
     renderWithQuery(<InstrumentsSection />);
     expect(await screen.findByText('No instruments recorded yet')).toBeInTheDocument();
   });
 
   it('shows "no match" (not the empty-catalog state) when a search finds nothing', async () => {
     vi.mocked(api.GET).mockImplementation((async (_path: string, opts: { params: { query: Query } }) => ({
-      data: opts.params.query.search ? [] : rows(1, 2),
+      data: opts.params.query.search ? pageOf([]) : pageOf(rows(1, 2)),
     })) as never);
     renderWithQuery(<InstrumentsSection />);
     expect((await screen.findAllByText('Instrument 1')).length).toBeGreaterThan(0);
@@ -143,7 +153,8 @@ describe('InstrumentsSection — server-side paging', () => {
 
   it('says "No more instruments" on an empty later page', async () => {
     vi.mocked(api.GET).mockImplementation((async (_path: string, opts: { params: { query: Query } }) => ({
-      data: opts.params.query.page === 0 ? rows(1, 50) : [],
+      // The list shrank after the first page loaded: the second page comes back empty.
+      data: opts.params.query.page === 0 ? pageOf(rows(1, 50), 51) : pageOf([], 50, 1),
     })) as never);
     renderWithQuery(<InstrumentsSection />);
     expect((await screen.findAllByText('Instrument 1')).length).toBeGreaterThan(0);

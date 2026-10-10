@@ -3,10 +3,10 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { api } from '@/lib/api/client';
-import { type InstrumentListParams, instrumentListQuery } from '@/lib/instrumentList';
+import { type InstrumentListPage, type InstrumentListParams, instrumentListQuery } from '@/lib/instrumentList';
 import { keys } from '@/lib/query/keys';
 import type { TaxHarvestResponse } from '@/lib/taxHarvest.types';
-import type { Instrument, InvestmentSummary, Position } from '@/lib/types';
+import type { InvestmentSummary, Position } from '@/lib/types';
 
 /**
  * Narrow raw positions payload array at boundary from unknown.
@@ -16,10 +16,10 @@ function asPositions(raw: unknown): Position[] {
 }
 
 /**
- * Narrow raw instruments payload array at boundary from unknown.
+ * Narrow the raw GET /instruments page at the boundary (a missing body reads as an empty page).
  */
-function asInstruments(raw: unknown): Instrument[] {
-  return (raw ?? []) as Instrument[];
+function asInstrumentPage(raw: unknown, size: number): InstrumentListPage {
+  return (raw ?? { items: [], page: 0, size, totalElements: 0, totalPages: 0 }) as InstrumentListPage;
 }
 
 export function usePositions(initialData?: Position[]) {
@@ -34,17 +34,17 @@ export function usePositions(initialData?: Position[]) {
 }
 
 /**
- * One server page of the instrument catalog (GET /instruments is paged by name; an empty search
- * returns only the first page, never the whole table). Keeps the previous page on screen while the
- * next one loads.
+ * One server page of the instrument catalog with its total (GET /instruments is paged and sorted by
+ * name on the server; an empty search returns only the first page, never the whole table). Keeps the
+ * previous page on screen while the next one loads.
  */
-export function useInstruments(params: InstrumentListParams = {}, initialData?: Instrument[]) {
+export function useInstruments(params: InstrumentListParams = {}, initialData?: InstrumentListPage) {
   const query = instrumentListQuery(params);
-  return useQuery<Instrument[]>({
+  return useQuery<InstrumentListPage>({
     queryKey: keys.investments.instruments({ ...query }),
     queryFn: async () => {
       const { data } = await api.GET('/api/v1/instruments', { params: { query } });
-      return asInstruments(data);
+      return asInstrumentPage(data, query.size);
     },
     initialData,
     placeholderData: keepPreviousData,
