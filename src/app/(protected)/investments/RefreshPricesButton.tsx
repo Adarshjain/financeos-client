@@ -9,7 +9,7 @@ import { emitJobStarted } from '@/components/jobs/jobsBus';
 import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
 import { Button } from '@/components/ui/button';
 import { api, ApiError } from '@/lib/api/client';
-import { keys } from '@/lib/query/keys';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { toastError } from '@/lib/toastError';
 import type { EnqueueResponse, PriceRefreshResult } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
@@ -35,7 +35,7 @@ export function RefreshPricesButton() {
         } else {
           toast.success(message);
         }
-        qc.invalidateQueries({ queryKey: keys.investments.all });
+        invalidateInvestmentQueries(qc);
       } else if (job.status === 'FAILED') {
         toast.error(job.errorMessage || 'Failed to refresh prices.');
       } else if (job.status === 'CANCELLED') {

@@ -8,6 +8,7 @@ import { emitJobStarted } from '@/components/jobs/jobsBus';
 import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
 import { Broker as BrokerAccount } from '@/lib/account.types';
 import { ApiError } from '@/lib/api/client';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { ImportCommitResult, ReconciliationBroker } from '@/lib/types';
@@ -73,7 +74,7 @@ export function useImportWizard({ brokerAccounts, onSuccess }: UseImportWizardPr
     if (job.status === 'SUCCEEDED' && job.result) {
       setCommitResult(job.result);
       setStep(3);
-      qc.invalidateQueries({ queryKey: keys.investments.all });
+      invalidateInvestmentQueries(qc);
       qc.invalidateQueries({ queryKey: keys.accounts.all }); // broker balances derive from holdings
       onSuccess?.();
     } else if (job.status === 'FAILED') {

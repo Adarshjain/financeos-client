@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
 import { CorporateAction, CreateCorporateActionRequest, UpdateCorporateActionRequest } from '@/lib/api/types';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { Instrument } from '@/lib/types';
@@ -88,7 +89,7 @@ export function useCorporateActionsDialog({ instrument, heldQuantity, initialTyp
           body,
         })
         .then((r) => r.data! as CorporateAction),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const updateMutation = useMutation({
     mutationFn: (vars: { id: string; body: UpdateCorporateActionRequest }) =>
@@ -100,14 +101,14 @@ export function useCorporateActionsDialog({ instrument, heldQuantity, initialTyp
           body: vars.body,
         })
         .then((r) => r.data! as CorporateAction),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const deleteMutation = useMutation({
     mutationFn: (id: string) =>
       api.DELETE('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', {
         params: { path: { instrumentId: activeInstrumentId as string, id } },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 

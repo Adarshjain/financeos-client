@@ -57,3 +57,21 @@ export function useCounterpartySuggestion(text: string | null | undefined, enabl
     enabled: enabled && trimmed.length > 0,
   });
 }
+
+// --- Dashboard widgets (investments & loans group) ---
+
+/**
+ * One page of people with a nonzero balance, largest |net| first (lending_balances
+ * widget). Under keys.lendings.all, so invalidateLendingQueries refreshes it.
+ */
+export function useOutstandingCounterparties(size: number) {
+  return useQuery({
+    queryKey: keys.lendings.counterparties({ page: 0, size, outstanding: true, sort: 'net' }),
+    queryFn: async () => {
+      const { data } = await api.GET('/api/v1/counterparties', {
+        params: { query: { page: 0, size, outstanding: true, sort: ['net'] } },
+      });
+      return (data ?? { ...EMPTY_PAGE, size }) as Page<CounterpartyResponse>;
+    },
+  });
+}

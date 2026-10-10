@@ -6,14 +6,15 @@ import { type Account, isAccountClosed } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 import { formatMoney, formatNullableMoney } from '@/lib/utils';
 
-const TYPE_LABEL: Record<string, string> = {
+/** How each account type reads for people (also the account_tile widget's subtitle). */
+export const TYPE_LABEL: Record<string, string> = {
   [AccountType.BANK_ACCOUNT]: 'Bank account',
   [AccountType.CREDIT_CARD]: 'Credit card',
   [AccountType.BROKER]: 'Broker',
   [AccountType.GENERIC]: 'Wallet / Cash',
 };
 
-const TYPE_ICON: Record<string, ReactNode> = {
+export const TYPE_ICON: Record<string, ReactNode> = {
   [AccountType.BANK_ACCOUNT]: <Landmark />,
   [AccountType.CREDIT_CARD]: <CreditCard />,
   [AccountType.BROKER]: <Briefcase />,
@@ -21,7 +22,7 @@ const TYPE_ICON: Record<string, ReactNode> = {
 };
 
 /** Label and amount for the headline figure; a card shows what is owed as a positive amount. */
-function headline(account: Account): { label: string; value: string } {
+export function headline(account: Account): { label: string; value: string } {
   if (account.type === AccountType.BROKER) {
     return { label: 'Portfolio value', value: formatMoney(account.balance ?? 0) };
   }

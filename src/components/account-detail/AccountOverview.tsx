@@ -2,6 +2,7 @@ import { Info } from 'lucide-react';
 
 import { type Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
+import { formatUtilisation, utilisationBarWidth, utilisationToneClasses } from '@/lib/utilisation';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 
 import { SectionCard } from './SectionCard';
@@ -42,8 +43,10 @@ export function AccountOverview({ account }: { account: Account }) {
   }
 
   const card = account.type === AccountType.CREDIT_CARD ? account : null;
-  const limit = card?.creditLimit ?? 0;
-  const utilization = card && limit > 0 ? (Math.abs(card.balance ?? 0) / limit) * 100 : 0;
+  // The limit the utilisation is measured against (credit limit, else the latest statement's).
+  const limit = card?.effectiveCreditLimit ?? null;
+  // Live owed ÷ limit, computed by the server (a card in credit is 0%, not "utilised").
+  const utilization = card?.utilizationPct ?? null;
   const cardholders = card?.cardholders ?? [];
   if (card && (card.issuer || card.productName)) {
     rows.unshift(['Card', [card.issuer, card.productName].filter(Boolean).join(' ')]);
@@ -57,19 +60,18 @@ export function AccountOverview({ account }: { account: Account }) {
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-xs text-slate-500 dark:text-slate-400">Credit limit</span>
               <span className="text-sm font-semibold tabular-nums text-slate-900 dark:text-white">
-                {formatMoney(limit)}
+                {limit != null ? formatMoney(limit) : 'Not set'}
               </span>
             </div>
             <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200/70 dark:bg-slate-700">
               <div
-                className={cn(
-                  'h-full rounded-full',
-                  utilization > 70 ? 'bg-rose-500' : utilization > 30 ? 'bg-amber-500' : 'bg-emerald-500'
-                )}
-                style={{ width: `${Math.min(utilization, 100)}%` }}
+                className={cn('h-full rounded-full', utilisationToneClasses(utilization).bar)}
+                style={{ width: utilisationBarWidth(utilization) }}
               />
             </div>
-            <div className="mt-1.5 text-2xs text-slate-500 dark:text-slate-400">Utilisation {utilization.toFixed(1)}%</div>
+            <div className="mt-1.5 text-2xs text-slate-500 dark:text-slate-400">
+              Utilisation {formatUtilisation(utilization)}
+            </div>
           </div>
         ) : null}
 

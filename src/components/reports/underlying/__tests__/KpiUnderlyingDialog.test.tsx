@@ -400,7 +400,7 @@ describe('KpiUnderlyingDialog', () => {
       respond = () => Promise.resolve({ data: response({ rowAction: 'transaction' }) });
       render();
       fireEvent.click(await screen.findByText('Fuel'));
-      expect(screen.getByTestId('txn-dialog')).toHaveTextContent('t2');
+      expect(await screen.findByTestId('txn-dialog')).toHaveTextContent('t2');
     });
   });
 

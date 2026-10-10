@@ -8,16 +8,18 @@
 // no props need to be threaded through here for that.
 
 import { Card } from '@/components/ui/card';
-import type { DashboardResponse } from '@/lib/dashboards.types';
+import type { DashboardResponse, WidgetParams } from '@/lib/dashboards.types';
 
 import { DashboardGrid } from './DashboardGrid';
 import { DashboardWidgetView } from './DashboardWidgetView';
 
 interface DashboardViewProps {
   dashboard: DashboardResponse;
+  /** Persists a built-in's new params from its "Widget settings" (omitted = no settings item). */
+  onWidgetParamsChange?: (widgetId: string, params: WidgetParams) => Promise<void>;
 }
 
-export function DashboardView({ dashboard }: DashboardViewProps) {
+export function DashboardView({ dashboard, onWidgetParamsChange }: DashboardViewProps) {
   if (dashboard.widgets.length === 0) {
     return (
       <Card>
@@ -38,7 +40,13 @@ export function DashboardView({ dashboard }: DashboardViewProps) {
       widgets={dashboard.widgets}
       editing={false}
       onLayoutChange={() => {}}
-      renderWidget={(w, fit) => <DashboardWidgetView widget={w} fit={fit} />}
+      renderWidget={(w, fit) => (
+        <DashboardWidgetView
+          widget={w}
+          fit={fit}
+          onParamsChange={onWidgetParamsChange ? (params) => onWidgetParamsChange(w.id, params) : undefined}
+        />
+      )}
     />
   );
 }

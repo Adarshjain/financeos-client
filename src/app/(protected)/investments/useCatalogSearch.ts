@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
 import { api } from '@/lib/api/client';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type {
   Instrument,
@@ -50,7 +51,7 @@ export function useResolveInstrumentMutation() {
         .POST('/api/v1/instruments/resolve', { body: req })
         .then((r) => r.data! as Instrument),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: keys.investments.all });
+      invalidateInvestmentQueries(qc);
     },
   });
 }

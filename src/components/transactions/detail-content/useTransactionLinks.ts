@@ -5,6 +5,7 @@ import * as React from 'react';
 import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
+import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { TransactionLinkResponse } from '@/lib/transaction.types';
@@ -46,6 +47,7 @@ export function useTransactionLinks(
     onSuccess: () => {
       toast.success('Link removed successfully');
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      void invalidateMoneyQueries(queryClient);
       onCloseAndRefresh();
     },
     onError: (err: unknown) => {

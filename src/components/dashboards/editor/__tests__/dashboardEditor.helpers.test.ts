@@ -28,7 +28,7 @@ const builtin = (id: string, minW: number, layout = { x: 0, y: 0, w: 50, h: 10 }
   params: { b: 1, a: null },
   title: null,
   layout,
-  builtin: { key: 'net_worth', label: 'NW', minW, kind: 'template' },
+  builtin: { category: 'overview', key: 'net_worth', label: 'NW', minW, kind: 'template' },
 });
 
 describe('editSignature', () => {
@@ -65,7 +65,7 @@ describe('adding widgets', () => {
     expect(reportWidgetResponse([], { id: 'r', name: 'n', type: 'KPI' } as ReportSummaryResponse).layout.y).toBe(0);
   });
   it('builds a built-in widget with its ref and params, below the rest', () => {
-    const def = { key: 'bills_due', label: 'Bills due', description: '', kind: 'component', minW: 100, params: [], href: '/bills', templateType: null } as BuiltinWidgetResponse;
+    const def = { category: 'overview', key: 'bills_due', label: 'Bills due', description: '', kind: 'component', minW: 100, params: [], href: '/bills', templateType: null } as BuiltinWidgetResponse;
     const w = builtinWidgetResponse([report('1', 0, 10)], def, { accountId: 'a1' });
     expect(w).toMatchObject({
       kind: 'builtin',
@@ -76,7 +76,7 @@ describe('adding widgets', () => {
     expect(w.layout).toMatchObject({ y: 10, w: 100, h: 28 });
   });
   it('allows the same built-in twice with distinct ids', () => {
-    const def = { key: 'net_worth', label: 'NW', description: '', kind: 'template', minW: 50, params: [] } as BuiltinWidgetResponse;
+    const def = { category: 'overview', key: 'net_worth', label: 'NW', description: '', kind: 'template', minW: 50, params: [] } as BuiltinWidgetResponse;
     const a = builtinWidgetResponse([], def, {});
     const b = builtinWidgetResponse([a], def, {});
     expect(a.id).not.toBe(b.id);
@@ -120,8 +120,11 @@ describe('canToggleWidth / toggleWidth', () => {
     const out = toggleWidth([builtin('b', 50, { x: 50, y: 0, w: 50, h: 10 })], 'b');
     expect(out[0].layout).toMatchObject({ x: 0, w: 100 });
   });
-  it('collapses full to half, or to the minimum when that is wider', () => {
+  it('collapses full to quarter when a built-in\'s minimum allows it, else to half, or to the minimum when that is wider', () => {
+    // A saved report never gets the quarter stop: its grid floor is not a built-in's minW.
     expect(toggleWidth([report('r')].map((w) => ({ ...w, layout: { ...w.layout, w: 100 } })), 'r')[0].layout.w).toBe(50);
+    expect(toggleWidth([builtin('b', 25, { x: 0, y: 0, w: 100, h: 10 })], 'b')[0].layout.w).toBe(25);
+    expect(toggleWidth([builtin('b', 50, { x: 0, y: 0, w: 100, h: 10 })], 'b')[0].layout.w).toBe(50);
     expect(toggleWidth([builtin('b', 70, { x: 0, y: 0, w: 100, h: 10 })], 'b')[0].layout.w).toBe(70);
   });
   it('leaves non-toggleable widgets and other ids untouched', () => {

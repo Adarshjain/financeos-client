@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { Broker } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { FnoTradeListResponse, FnoTradeResponse } from '@/lib/types';
@@ -29,7 +30,7 @@ export function useFnoView({ brokerAccounts }: UseFnoViewProps) {
   const deleteMutation = useMutation({
     mutationFn: (id: string) =>
       api.DELETE('/api/v1/investments/fno/{id}', { params: { path: { id } } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
 
   // Filter States
@@ -55,7 +56,7 @@ export function useFnoView({ brokerAccounts }: UseFnoViewProps) {
   const isDeleting = deleteMutation.isPending;
 
   const handleRefresh = () => {
-    qc.invalidateQueries({ queryKey: keys.investments.all });
+    invalidateInvestmentQueries(qc);
   };
 
   const handleDeleteConfirm = async () => {

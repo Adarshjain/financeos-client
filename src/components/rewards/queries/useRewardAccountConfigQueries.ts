@@ -4,6 +4,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 
 import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
+import { invalidateRewardQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { RewardAccountConfigRequest } from '@/lib/rewards.types';
 
@@ -33,6 +34,6 @@ export function useUpdateRewardAccountConfig() {
   return useMutation({
     mutationFn: (body: RewardAccountConfigRequest) =>
       api.PUT('/api/v1/reward-config', { body: toRequestBody(body) }).then((r) => r.data!),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rewards.all }),
+    onSuccess: () => invalidateRewardQueries(qc),
   });
 }

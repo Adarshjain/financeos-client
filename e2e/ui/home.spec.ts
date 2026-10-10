@@ -282,12 +282,16 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
       await expect(addDialog().getByRole('heading', { name: 'Add a widget' })).toBeVisible();
     };
 
-    // Built-ins without params are added at once, and can be added again.
+    // Built-ins without params go through the details step (preview, no settings), and can be added again.
     await openPicker();
     await expect(addDialog().getByText('Built-in').first()).toBeVisible();
     await addDialog().getByRole('button', { name: /^Net worth/ }).click();
+    await addDialog().getByRole('button', { name: 'Add widget' }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     await openPicker();
     await addDialog().getByRole('button', { name: /^Inbox/ }).click();
+    await addDialog().getByRole('button', { name: 'Add widget' }).click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
 
     // Upcoming takes a number of days, bounded 1 to 90 and prefilled with 14.
     await openPicker();

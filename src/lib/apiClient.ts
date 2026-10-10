@@ -668,9 +668,10 @@ export const investmentsApi = {
   deleteCorporateAction: async (instrumentId: string, id: string): Promise<void> => {
     await serverApi.DELETE('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', { params: { path: { instrumentId, id } } });
   },
-  getInstruments: async (params?: { query?: string; type?: InstrumentType; limit?: number }): Promise<Instrument[]> => {
+  /** One page (by name) of the catalog; GET /instruments never returns the whole table. */
+  getInstruments: async (params?: { query?: string; type?: InstrumentType; page?: number; size?: number }): Promise<Instrument[]> => {
     const { data } = await serverApi.GET('/api/v1/instruments', {
-      params: { query: { search: params?.query, type: params?.type } },
+      params: { query: { search: params?.query, type: params?.type, page: params?.page, size: params?.size } },
     });
     return (data as Instrument[]) || [];
   },
@@ -719,6 +720,7 @@ export const investmentsApi = {
     const { data } = await serverApi.POST('/api/v1/investments/imports/reconcile/commit', { body: body as Schemas['ReconcileCommitRequest'] });
     return data! as ImportCommitResult;
   },
+  /** First page (≤ 50) of the catalog matching `q`: GET /instruments is paged. */
   search: async (q?: string): Promise<Instrument[]> => investmentsApi.getInstruments({ query: q }),
   listTransactions: async (page = 0, size = 50, filters?: { brokerAccountId?: string; instrumentId?: string; holdingId?: string; search?: string }): Promise<PagedInvestmentTransactionResponse> =>
     investmentsApi.getTrades({ page, size, brokerAccountId: filters?.brokerAccountId, instrumentId: filters?.instrumentId }),
@@ -728,7 +730,11 @@ export const investmentsApi = {
 };
 
 export const instrumentsApi = {
+  /** First page (≤ 50) of the catalog matching `q`; use `list` to page. */
   search: async (q?: string): Promise<Instrument[]> => investmentsApi.search(q),
+  /** One page of the catalog (see instrumentListQuery). */
+  list: async (params: { search?: string; type?: InstrumentType; page: number; size: number }): Promise<Instrument[]> =>
+    investmentsApi.getInstruments({ query: params.search, type: params.type, page: params.page, size: params.size }),
   catalogSearch: async (query: string, type?: InstrumentType): Promise<InstrumentCandidate[]> => {
     const { data } = await serverApi.GET('/api/v1/instruments/catalog-search', { params: { query: { q: query, type } } });
     return (data as InstrumentCandidate[]) || [];

@@ -3,6 +3,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/lib/api/client';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 
 import type { UnrecordedCredits } from './types';
@@ -26,7 +27,7 @@ export function useUnrecordedCredits({ onRecorded }: UseUnrecordedCreditsProps =
 
   const handleRecorded = async () => {
     await Promise.all([
-      qc.invalidateQueries({ queryKey: keys.investments.all }),
+      invalidateInvestmentQueries(qc),
       qc.invalidateQueries({ queryKey: keys.transactions.all }),
     ]);
     await query.refetch();

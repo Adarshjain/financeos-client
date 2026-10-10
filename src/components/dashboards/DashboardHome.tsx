@@ -4,28 +4,34 @@ import { useState } from 'react';
 
 import { DashboardSelector } from '@/components/dashboards/DashboardSelector';
 import { DashboardView } from '@/components/dashboards/DashboardView';
-import type { DashboardResponse } from '@/lib/dashboards.types';
-import { useDashboards } from '@/lib/query/hooks/useDashboards';
+import type { DashboardResponse, WidgetParams } from '@/lib/dashboards.types';
+import { useDashboards, useSaveWidgetParams } from '@/lib/query/hooks/useDashboards';
 
 export function DashboardHome() {
   const { data: dashboards = [] } = useDashboards();
-  const initial = dashboards.find((d) => d.isDefault) ?? dashboards[0];
-  const [currentDashboard, setCurrentDashboard] = useState<DashboardResponse | undefined>(() => initial);
+  // Track the pick by id so the shown dashboard follows the cache (e.g. after Widget settings saves).
+  const [currentId, setCurrentId] = useState<string | null>(null);
+  const saveParams = useSaveWidgetParams();
 
-  const activeDashboard = currentDashboard ?? initial;
+  const activeDashboard =
+    dashboards.find((d) => d.id === currentId) ?? dashboards.find((d) => d.isDefault) ?? dashboards[0];
 
   if (!activeDashboard) {
     return null;
   }
 
+  const saveWidgetParams = async (widgetId: string, params: WidgetParams) => {
+    await saveParams.mutateAsync({ dashboard: activeDashboard, widgetId, params });
+  };
+
   return (
     <div className="py-4 pb-20">
       <DashboardSelector
         dashboards={dashboards}
-        onSelectDashboard={setCurrentDashboard}
+        onSelectDashboard={(d: DashboardResponse) => setCurrentId(d.id)}
         currentDashboard={activeDashboard}
       />
-      <DashboardView dashboard={activeDashboard} />
+      <DashboardView dashboard={activeDashboard} onWidgetParamsChange={saveWidgetParams} />
     </div>
   );
 }

@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Broker } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
-import { keys } from '@/lib/query/keys';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { toastError } from '@/lib/toastError';
 import { CreateFnoTradeRequest, FnoContractType, FnoTradeResponse, OptionType } from '@/lib/types';
 
@@ -30,7 +30,7 @@ export function FnoTradeDialog({ mode = 'create', trade, brokerAccounts, trigger
   const qc = useQueryClient();
   const createMutation = useMutation({
     mutationFn: (body: CreateFnoTradeRequest) => api.POST('/api/v1/investments/fno', { body }).then((r) => r.data! as FnoTradeResponse),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const updateMutation = useMutation({
     mutationFn: (body: CreateFnoTradeRequest) =>
@@ -40,7 +40,7 @@ export function FnoTradeDialog({ mode = 'create', trade, brokerAccounts, trigger
           body,
         })
         .then((r) => r.data! as FnoTradeResponse),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 

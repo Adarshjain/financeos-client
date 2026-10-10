@@ -33,7 +33,7 @@ const report = (id: string, type: string, x = 0, y = 0): WidgetResponse => ({
 });
 const builtin = (id: string, key: string, kind: string, templateType: string | null, minW = 50, x = 0, y = 0): WidgetResponse => ({
   id, kind: 'builtin', reportId: null, builtinKey: key, params: {}, title: null, layout: { x, y, w: 100, h: 10 },
-  builtin: { key, label: key, minW, kind, templateType },
+  builtin: { category: 'overview', key, label: key, minW, kind, templateType },
 });
 
 describe('stackOrder / DashboardStack', () => {

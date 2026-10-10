@@ -508,9 +508,10 @@ test.describe('Row breakdown: not found and refused (@api)', () => {
     await addLending(api, { counterpartyId: settled.id, direction: 'borrowed', amount: 100, entryDate: istToday(-4) });
     const bank = await createBankAccount(api, { name: 'BD Open', openingBalance: 50 });
 
-    // Rows that are not counted in net worth have no breakdown.
-    expect(await breakdownStatus(api, 'net_worth', hidden.id)).toBe(404);
-    expect(await breakdownStatus(api, 'net_worth', closed.id)).toBe(404);
+    // An account net worth leaves out (excluded, closed) is still explained, flagged not counted
+    // (see widget-insights.spec.ts); a settled counterparty is no row.
+    expect(await breakdownStatus(api, 'net_worth', hidden.id)).toBe(200);
+    expect(await breakdownStatus(api, 'net_worth', closed.id)).toBe(200);
     expect(await breakdownStatus(api, 'net_worth', settled.id)).toBe(404);
     expect(await breakdownStatus(api, 'net_worth', randomUUID())).toBe(404);
     expect(await breakdownStatus(api, 'net_worth', 'not-a-uuid')).toBe(404);
@@ -520,7 +521,7 @@ test.describe('Row breakdown: not found and refused (@api)', () => {
     // Unknown section of a real row.
     expect(await sectionStatus(api, 'net_worth', bank.id, 'holdings')).toBe(404);
     expect(await sectionStatus(api, 'net_worth', bank.id, 'nope')).toBe(404);
-    expect(await sectionStatus(api, 'net_worth', hidden.id, 'transactions')).toBe(404);
+    expect(await sectionStatus(api, 'net_worth', hidden.id, 'holdings')).toBe(404);
 
     // A datasource without a breakdown, and an unknown datasource.
     const plain = await api.GET('/api/v1/report/datasource/{name}/rows/{rowId}/breakdown', {

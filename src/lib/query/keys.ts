@@ -19,6 +19,9 @@ export const keys = {
     cycleSummary: (id: string) => [...keys.accounts.all, 'cycleSummary', id] as const,
     cardholders: (accountId: string) => [...keys.accounts.all, 'cardholders', accountId] as const,
     identifiers: (accountId: string) => [...keys.accounts.all, 'identifiers', accountId] as const,
+    // --- Dashboard widgets (cards & spending group) ---
+    /** End-of-day balances for the last `days` days (GET /accounts/{id}/balance-series); under `all` so balance changes refresh it. */
+    balanceSeries: (id: string, days: number) => [...keys.accounts.all, 'balanceSeries', id, days] as const,
   },
 
   categories: {
@@ -35,6 +38,14 @@ export const keys = {
       [...keys.dashboards.all, 'widget', id, params] as const,
     /** The built-in widget catalog (GET /dashboards/builtins). */
     builtins: () => [...keys.dashboards.all, 'builtins'] as const,
+  },
+
+  // --- Dashboard widgets (cards & spending group) ---
+  /** Derived insights; invalidated by `invalidateMoneyQueries` after transaction/account changes. */
+  insights: {
+    all: ['insights'] as const,
+    /** GET /insights/emergency-fund. */
+    emergencyFund: () => [...keys.insights.all, 'emergencyFund'] as const,
   },
 
   inbox: {
@@ -63,11 +74,16 @@ export const keys = {
     dividendSuggestions: () => [...keys.investments.all, 'dividendSuggestions'] as const,
     fno: (params: Record<string, unknown> = {}) => [...keys.investments.all, 'fno', params] as const,
     sips: () => [...keys.investments.all, 'sips'] as const,
-    instruments: (query?: string) => [...keys.investments.all, 'instruments', query] as const,
+    /** One server page of the instrument catalog (GET /instruments is paged; see useInstruments). */
+    instruments: (params: Record<string, unknown> = {}) => [...keys.investments.all, 'instruments', params] as const,
     corporateActions: () => [...keys.investments.all, 'corporateActions'] as const,
     corporateActionsByInstrument: (instrumentId: string) => [...keys.investments.all, 'corporateActions', instrumentId] as const,
     priceHistory: (instrumentId: string) => [...keys.investments.all, 'priceHistory', instrumentId] as const,
     catalogSearch: (query: string, type?: InstrumentType) => [...keys.investments.all, 'catalogSearch', query, type] as const,
+    // --- Dashboard widgets (investments & loans group) ---
+    /** The tax_harvest widget: a financial year's booked gains + one page of open lots (GET /investments/tax/harvest). */
+    taxHarvest: (params: { fy?: number; page: number; size: number }) =>
+      [...keys.investments.all, 'taxHarvest', params] as const,
   },
 
   loans: {
@@ -86,10 +102,11 @@ export const keys = {
     /** Paginated lending ledger entries, optionally scoped to one counterparty. */
     list: (params: { counterpartyId?: string; page: number; size: number }) =>
       [...keys.lendings.all, 'list', params] as const,
-    /** Paginated counterparties list, optionally narrowed by a name search `q`.
+    /** Paginated counterparties list, optionally narrowed by a name search `q`,
+     *  to nonzero balances (`outstanding`) and ordered by |net| (`sort: 'net'`).
      *  There is no single-counterparty GET endpoint; callers find one by id
      *  within a (typically large-page) list. */
-    counterparties: (params: { page: number; size: number; q?: string }) =>
+    counterparties: (params: { page: number; size: number; q?: string; outstanding?: boolean; sort?: 'net' }) =>
       [...keys.lendings.all, 'counterparties', params] as const,
     /** Best counterparty name match for a transaction description. */
     counterpartySuggestion: (text: string) =>

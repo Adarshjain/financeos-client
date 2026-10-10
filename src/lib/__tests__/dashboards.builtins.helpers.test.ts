@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
 import {
-  builtinDefinitionWithParams,
   builtinWidgetQueryParams,
   DASHBOARD_GRID_COLUMNS,
   HALF_WIDTH,
@@ -18,6 +17,7 @@ import {
 import type { BuiltinWidgetResponse, DashboardWidget, WidgetResponse } from '../dashboards.types';
 
 const def = (over: Partial<BuiltinWidgetResponse> = {}): BuiltinWidgetResponse => ({
+  category: 'overview',
   key: 'net_worth',
   label: 'Net worth',
   description: 'd',
@@ -35,7 +35,7 @@ const builtinWidget = (over: Partial<WidgetResponse> = {}): WidgetResponse => ({
   params: { days: 14 },
   title: null,
   layout: { x: 0, y: 0, w: 100, h: 24 },
-  builtin: { key: 'upcoming', label: 'Upcoming', minW: 100, kind: 'template', href: '/upcoming' },
+  builtin: { category: 'overview', key: 'upcoming', label: 'Upcoming', minW: 100, kind: 'template', href: '/upcoming' },
   ...over,
 });
 
@@ -166,30 +166,6 @@ describe('widgetTitle', () => {
     const rep = { id: 'r', kind: 'report', title: null, layout: { x: 0, y: 0, w: 1, h: 1 }, report: { name: 'Rep', type: 'KPI', available: true } } as WidgetResponse;
     expect(widgetTitle(rep)).toBe('Rep');
     expect(widgetTitle({ ...rep, report: undefined })).toBe('Untitled');
-  });
-});
-
-describe('builtinDefinitionWithParams', () => {
-  const template = () => ({
-    filters: [
-      { field: 'dueDate', operator: 'next_x_days', value: { amount: 14 } },
-      { field: 'kind', operator: 'in', value: ['emi'] },
-    ],
-  });
-  it('substitutes days into the next_x_days filter without mutating the catalog', () => {
-    const d = def({ key: 'upcoming', templateDefinition: template() });
-    const out = builtinDefinitionWithParams(d, { days: 30 }) as ReturnType<typeof template>;
-    expect(out.filters[0].value).toEqual({ amount: 30 });
-    expect(out.filters[1].value).toEqual(['emi']);
-    expect((d.templateDefinition as ReturnType<typeof template>).filters[0].value).toEqual({ amount: 14 });
-  });
-  it('leaves the definition alone for other keys, non-numeric days, or no filters', () => {
-    expect(builtinDefinitionWithParams(def({ key: 'net_worth', templateDefinition: template() }), { days: 30 })).toEqual(template());
-    expect(builtinDefinitionWithParams(def({ key: 'upcoming', templateDefinition: template() }), { days: '30' })).toEqual(template());
-    expect(builtinDefinitionWithParams(def({ key: 'upcoming', templateDefinition: { a: 1 } }), { days: 3 })).toEqual({ a: 1 });
-  });
-  it('returns {} when there is no template definition', () => {
-    expect(builtinDefinitionWithParams(def({ key: 'upcoming' }), { days: 3 })).toEqual({});
   });
 });
 

@@ -1,4 +1,5 @@
 import { makeApi } from '../fixtures/api';
+import { E2E_CLIENT_URL } from '../fixtures/config';
 import type { GoogleIdentity } from '../fixtures/google-stubs';
 import { cleanupIdentity, registerIdentity } from '../fixtures/google-stubs';
 import { expect, test } from '../fixtures/test';
@@ -36,7 +37,7 @@ test.describe('Google SSO UI (@ui)', () => {
     await expect(page.getByText(identity.name).first()).toBeVisible();
 
     // The same session is valid for the API, and the sign-in doubled as a Gmail connect.
-    const cookies = await page.context().cookies('http://localhost:6970');
+    const cookies = await page.context().cookies(E2E_CLIENT_URL);
     const session = cookies.find((c) => c.name === 'FINANCEOS_SESSION')?.value;
     expect(session).toBeTruthy();
     const connections = await makeApi(session).GET('/api/v1/gmail/connections');

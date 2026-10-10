@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
-import { keys } from '@/lib/query/keys';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { toastError } from '@/lib/toastError';
 import {
   CreateInstrumentRequest,
@@ -36,7 +36,7 @@ export function useCreateInstrumentDialog({
       api
         .POST('/api/v1/instruments', { body })
         .then((r) => r.data! as Instrument),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const isSubmitting = createMutation.isPending;
 

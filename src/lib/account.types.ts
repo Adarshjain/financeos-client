@@ -204,6 +204,13 @@ export type CreditCard = AccountBase & {
   replacesAccountId?: string | null;
   issuer?: string | null;
   productName?: string | null;
+  /** Live owed ÷ limit in percent (server-computed, 1 decimal); null without a positive limit. */
+  utilizationPct?: number | null;
+  /**
+   * The limit utilisation is measured against (server): the card's credit limit,
+   * else the latest statement's; null when neither is positive.
+   */
+  effectiveCreditLimit?: number | null;
 };
 
 export type Broker = AccountBase & {

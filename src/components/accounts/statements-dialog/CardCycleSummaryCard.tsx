@@ -4,6 +4,7 @@ import { FileText, Loader2 } from 'lucide-react';
 
 import { BillStatementActions } from '@/components/bills/BillStatementActions';
 import { CardCycleSummary } from '@/lib/statement.types';
+import { formatUtilisation, utilisationBarWidth, utilisationToneClasses } from '@/lib/utilisation';
 import { cn, formatDate, formatNullableMoney } from '@/lib/utils';
 
 import { CycleDueBadge } from './CycleDueBadge';
@@ -99,34 +100,22 @@ export function CardCycleSummaryCard({
                 <span
                   className={cn(
                     'font-bold tabular-nums',
-                    cardSummary.utilizationPct !== null && cardSummary.utilizationPct !== undefined
-                      ? cardSummary.utilizationPct < 30
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : cardSummary.utilizationPct < 70
-                          ? 'text-amber-600 dark:text-amber-400'
-                          : 'text-rose-600 dark:text-rose-400'
+                    cardSummary.utilizationPct != null
+                      ? utilisationToneClasses(cardSummary.utilizationPct).text
                       : 'text-slate-700 dark:text-slate-300'
                   )}
                 >
-                  {cardSummary.utilizationPct !== null && cardSummary.utilizationPct !== undefined
-                    ? `${cardSummary.utilizationPct}%`
-                    : '—'}
+                  {formatUtilisation(cardSummary.utilizationPct)}
                 </span>
               </div>
-              {cardSummary.utilizationPct !== null && cardSummary.utilizationPct !== undefined ? (
+              {cardSummary.utilizationPct != null ? (
                 <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mt-1.5">
                   <div
                     className={cn(
                       'h-full rounded-full transition-all duration-300',
-                      cardSummary.utilizationPct < 30
-                        ? 'bg-emerald-500'
-                        : cardSummary.utilizationPct < 70
-                          ? 'bg-amber-500'
-                          : 'bg-rose-500'
+                      utilisationToneClasses(cardSummary.utilizationPct).bar
                     )}
-                    style={{
-                      width: `${Math.min(100, Math.max(0, Number(cardSummary.utilizationPct)))}%`,
-                    }}
+                    style={{ width: utilisationBarWidth(cardSummary.utilizationPct) }}
                   />
                 </div>
               ) : null}

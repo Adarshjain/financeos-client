@@ -1,7 +1,8 @@
 'use client';
 
 // How one listed row's value is made up (net worth account, holding…). Swaps
-// in for the underlying table inside the same dialog; Back returns a level.
+// in for the underlying table inside the same dialog (or heads its own, see
+// RowBreakdownDialog); Back returns a level.
 // Each section is its own paginated table: page 0 comes with the breakdown,
 // later pages from the section endpoint. Headers sort the whole section on the
 // server (asc → desc → default; session-only, back to page 1 on change); the
@@ -32,7 +33,8 @@ export interface BreakdownRowHandlers {
 interface RowBreakdownViewProps extends BreakdownRowHandlers {
   datasource: string;
   rowId: string;
-  onBack: () => void;
+  /** Back a level; unset at the root of a standalone breakdown (no Back button). */
+  onBack?: () => void;
 }
 
 export function RowBreakdownView({
@@ -48,10 +50,12 @@ export function RowBreakdownView({
 
   return (
     <div className="space-y-4">
-      <Button variant="ghost" size="xs" className="-ml-2" onClick={onBack}>
-        <ChevronLeft />
-        Back
-      </Button>
+      {onBack && (
+        <Button variant="ghost" size="xs" className="-ml-2" onClick={onBack}>
+          <ChevronLeft />
+          Back
+        </Button>
+      )}
 
       {error ? (
         <p className="text-xs text-rose-600 dark:text-rose-400">
@@ -76,6 +80,16 @@ export function RowBreakdownView({
               <span className="font-semibold tabular-nums">{formatAmount(data.total, data.format)}</span>
             </p>
           </div>
+
+          {/* An item the datasource's total leaves out (e.g. an excluded or closed account): explained, not counted. */}
+          {data.notCounted && (
+            <p
+              className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+              data-testid="breakdown-not-counted"
+            >
+              {data.notCountedReason ? `${data.notCountedReason} — ` : ''}shown for reference, left out of the total.
+            </p>
+          )}
 
           <BreakdownSteps steps={data.steps} />
 

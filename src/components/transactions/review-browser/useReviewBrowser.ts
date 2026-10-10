@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { Account } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
+import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { FilterClause } from '@/lib/reports.types';
 import { toastError } from '@/lib/toastError';
@@ -237,6 +238,7 @@ export function useReviewBrowser(accounts: Account[], initialFilters?: ReviewIni
       }
       setSelectedIds([]);
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      void invalidateMoneyQueries(queryClient);
     },
     onError: (err: unknown) => {
       toastError(err, 'An error occurred during batch deletion.');

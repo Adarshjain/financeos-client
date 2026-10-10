@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { Transaction } from '@/lib/transaction.types';
@@ -158,14 +159,14 @@ export function useDividendLink({
     onSuccess: () => {
       toast.success(mode === 'existing' ? 'Dividend linked' : 'Dividend recorded and linked');
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: keys.investments.all });
+      invalidateInvestmentQueries(queryClient);
       onOpenChange(false);
       onSuccess?.();
     },
     onError: (err: unknown) => {
       if (err instanceof LinkAfterCreateError) {
         // The dividend exists now; keep the dialog open so a retry only re-links.
-        queryClient.invalidateQueries({ queryKey: keys.investments.all });
+        invalidateInvestmentQueries(queryClient);
         toastError(err, 'Dividend recorded, but linking failed');
         return;
       }

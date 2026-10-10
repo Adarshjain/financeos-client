@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Broker } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
 import { CreateDividendRequest, UpdateDividendRequest } from '@/lib/api/types';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { Dividend, DividendType, Position } from '@/lib/types';
@@ -50,7 +51,7 @@ export function useDividendDialog({
       api
         .POST('/api/v1/investments/dividends', { body })
         .then((r) => r.data! as Dividend),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const updateMutation = useMutation({
     mutationFn: (body: UpdateDividendRequest) =>
@@ -60,7 +61,7 @@ export function useDividendDialog({
           body,
         })
         .then((r) => r.data! as Dividend),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
 
@@ -172,7 +173,7 @@ export function useDividendDialog({
             });
             linked = true;
             await Promise.all([
-              qc.invalidateQueries({ queryKey: keys.investments.all }),
+              invalidateInvestmentQueries(qc),
               qc.invalidateQueries({ queryKey: keys.transactions.all }),
             ]);
           } catch (linkErr) {

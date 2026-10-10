@@ -4,6 +4,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 
 import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
+import { invalidateRewardQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { RewardMilestoneRequest } from '@/lib/rewards.types';
 
@@ -47,7 +48,7 @@ export function useCreateRewardMilestone() {
   return useMutation({
     mutationFn: (body: RewardMilestoneRequest) =>
       api.POST('/api/v1/reward-milestones', { body: toRequestBody(body) }).then((r) => r.data!),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rewards.all }),
+    onSuccess: () => invalidateRewardQueries(qc),
   });
 }
 
@@ -58,7 +59,7 @@ export function useUpdateRewardMilestone() {
       api
         .PUT('/api/v1/reward-milestones/{id}', { params: { path: { id } }, body: toRequestBody(body) })
         .then((r) => r.data!),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rewards.all }),
+    onSuccess: () => invalidateRewardQueries(qc),
   });
 }
 
@@ -67,6 +68,6 @@ export function useDeleteRewardMilestone() {
   return useMutation({
     mutationFn: (id: string) =>
       api.DELETE('/api/v1/reward-milestones/{id}', { params: { path: { id } } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rewards.all }),
+    onSuccess: () => invalidateRewardQueries(qc),
   });
 }

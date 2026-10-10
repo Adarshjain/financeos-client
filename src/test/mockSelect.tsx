@@ -55,4 +55,12 @@ function SelectItem({ value, children }: { value: string; children?: React.React
   );
 }
 
-export const selectMock = { Select, SelectTrigger, SelectValue, SelectContent, SelectItem };
+function SelectGroup({ children }: { children?: React.ReactNode }) {
+  return <div role="group">{children}</div>;
+}
+
+function SelectLabel({ children }: { children?: React.ReactNode }) {
+  return <div>{children}</div>;
+}
+
+export const selectMock = { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup, SelectLabel };

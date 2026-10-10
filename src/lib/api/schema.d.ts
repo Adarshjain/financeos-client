@@ -196,6 +196,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/{id}/balance-series": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getBalanceSeries"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/{id}/card-summary": {
         parameters: {
             query?: never;
@@ -603,6 +619,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
+        /** @description People with ledger totals, paged. q narrows by name; outstanding=true keeps only nonzero net positions; sort=net orders by absolute net position, largest first (then name). */
         get: operations["getCounterparties"];
         put?: never;
         post: operations["createCounterparty"];
@@ -718,6 +735,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["runBuiltin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/dashboards/builtins/{key}/definition": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["resolveBuiltinDefinition"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1092,6 +1125,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/insights/emergency-fund": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["emergencyFund"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/instruments": {
         parameters: {
             query?: never;
@@ -1151,6 +1200,22 @@ export interface paths {
         put: operations["update_1"];
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["updateInstrumentAssetClass"];
+        trace?: never;
+    };
+    "/api/v1/instruments/{id}/overrides": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["resetInstrumentOverrides"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1580,6 +1645,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/investments/tax/harvest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["harvest"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2955,6 +3036,11 @@ export interface components {
             /** Format: int32 */
             reactivatedCount: number;
         };
+        BalancePointResponse: {
+            balance: number;
+            /** Format: date */
+            date: string;
+        };
         BankAccountRequest: {
             description?: string;
             excludeFromNetAsset?: boolean;
@@ -3129,26 +3215,44 @@ export interface components {
         BuiltinDataRequest: {
             params?: unknown;
         };
+        BuiltinDefinitionResponse: {
+            datasource: string;
+            definition: unknown;
+            key: string;
+            label: string;
+            type: string;
+            /** Format: date */
+            windowAsOf?: string | null;
+        };
         BuiltinParamResponse: {
             defaultValue?: unknown;
+            itemPattern?: string | null;
             /** Format: int32 */
             max?: number | null;
             /** Format: int32 */
+            maxItems?: number | null;
+            /** Format: int32 */
             min?: number | null;
             name: string;
+            options?: (string | null)[] | null;
+            ref?: string | null;
             required: boolean;
             type: string;
         };
         BuiltinRefResponse: {
+            category: string;
             href?: string | null;
             key: string;
             kind: string;
             label: string;
             /** Format: int32 */
             minW: number;
+            subtitle?: string | null;
             templateType?: string | null;
+            view?: string | null;
         };
         BuiltinWidgetResponse: {
+            category: string;
             datasource?: string | null;
             description: string;
             href?: string | null;
@@ -3158,8 +3262,12 @@ export interface components {
             /** Format: int32 */
             minW: number;
             params: components["schemas"]["BuiltinParamResponse"][];
+            requires?: string | null;
+            subtitle?: string | null;
             templateDefinition?: unknown;
             templateType?: string | null;
+            unavailableReason?: string | null;
+            view?: string | null;
         };
         BulkReattributeCardRequest: {
             /** Format: uuid */
@@ -3469,7 +3577,7 @@ export interface components {
             /** Format: uuid */
             instrumentId: string;
             instrumentName: string;
-            instrumentSymbol: string;
+            instrumentSymbol?: string | null;
             notes?: string | null;
             /** Format: int32 */
             ratioFrom: number;
@@ -3753,6 +3861,7 @@ export interface components {
             createdAt: string;
             creditLimit?: number | null;
             description?: string | null;
+            effectiveCreditLimit?: number | null;
             excludeFromNetAsset: boolean;
             /** @enum {string|null} */
             financialPosition?: "asset" | "liability" | null;
@@ -3778,6 +3887,7 @@ export interface components {
             type: "credit_card";
             /** Format: date-time */
             updatedAt: string;
+            utilizationPct?: number | null;
             warnings: string[];
         };
         CreditCardRequest: {
@@ -3946,7 +4056,7 @@ export interface components {
             /** @enum {string} */
             receiptStatus: "received" | "received_untracked" | "not_received" | "awaiting" | "overdue" | "unverifiable";
             source: string;
-            symbol: string;
+            symbol?: string | null;
             tds?: number | null;
             transaction?: components["schemas"]["DividendTransactionSummary"];
             /** @enum {string} */
@@ -3976,6 +4086,16 @@ export interface components {
             /** Format: uuid */
             id: string;
             signedAmount: number;
+        };
+        EmergencyFundResponse: {
+            accounts: components["schemas"]["LiquidAccount"][];
+            band?: string | null;
+            /** Format: int32 */
+            historyMonths: number;
+            liquidBalance: number;
+            medianOutflow: number;
+            months: components["schemas"]["MonthOutflow"][];
+            monthsCovered?: number | null;
         };
         EnqueueResponse: {
             /** Format: uuid */
@@ -4174,6 +4294,83 @@ export interface components {
         GoogleAuthStartResponse: {
             authorizationUrl: string;
         };
+        HarvestLosses: {
+            longTerm: number;
+            shortTerm: number;
+            total: number;
+        };
+        HarvestOpenLot: {
+            /** @enum {string} */
+            assetClass: "EQUITY" | "DEBT" | "HYBRID" | "GOLD" | "INTERNATIONAL" | "OTHER";
+            broker: string;
+            /** Format: date */
+            buyDate: string;
+            cost: number;
+            costPerUnit: number;
+            /** Format: int32 */
+            daysToLongTerm?: number | null;
+            gain: number;
+            grandfathered: boolean;
+            /** Format: uuid */
+            holdingId: string;
+            instrument: string;
+            /** Format: uuid */
+            instrumentId: string;
+            /** Format: date */
+            longTermOn?: string | null;
+            price?: number | null;
+            quantity: number;
+            /** @enum {string} */
+            taxClass: "EQUITY_ORIENTED" | "SPECIFIED_DEBT" | "OTHER";
+            term: string;
+            value: number;
+        };
+        HarvestOpenLotPage: {
+            items: components["schemas"]["HarvestOpenLot"][];
+            /** Format: int32 */
+            page: number;
+            /** Format: int32 */
+            size: number;
+            /** Format: int64 */
+            totalElements: number;
+            /** Format: int32 */
+            totalPages: number;
+        };
+        HarvestOtherGains: {
+            longTerm: number;
+            shortTerm: number;
+            total: number;
+        };
+        HarvestRealised: {
+            exemptionLeft: number;
+            exemptionLimit: number;
+            exemptionUsed: number;
+            ltcg: number;
+            ltcl: number;
+            ltclCarriedForward: number;
+            netEquityLtcg: number;
+            netLtcg: number;
+            netStcg: number;
+            otherGains: components["schemas"]["HarvestOtherGains"];
+            slabGains: number;
+            stcg: number;
+            stcl: number;
+            stclCarriedForward: number;
+            taxableLtcg: number;
+        };
+        HarvestSummary: {
+            harvestableLosses: components["schemas"]["HarvestLosses"];
+            harvestableLtcg: number;
+            turningLongTermSoon: components["schemas"]["HarvestTurningLongTerm"];
+            unrealisedLongTermEquityGain: number;
+        };
+        HarvestTurningLongTerm: {
+            /** Format: int32 */
+            count: number;
+            gain: number;
+            /** Format: int32 */
+            withinDays: number;
+        };
         ImportCommitRequest: {
             /** Format: uuid */
             brokerAccountId: string;
@@ -4321,6 +4518,7 @@ export interface components {
             /** Format: date */
             asOf: string;
             close: number;
+            editable: boolean;
             /** Format: uuid */
             id: string;
             /** @enum {string} */
@@ -4339,6 +4537,10 @@ export interface components {
         };
         InstrumentResponse: {
             amfiCode?: string | null;
+            /** @enum {string} */
+            assetClass: "EQUITY" | "DEBT" | "HYBRID" | "GOLD" | "INTERNATIONAL" | "OTHER";
+            /** @enum {string|null} */
+            assetClassSource?: "AMFI" | "RULE" | "MANUAL" | null;
             /** Format: date-time */
             createdAt: string;
             currency: string;
@@ -4351,8 +4553,15 @@ export interface components {
             lastPriceAsOf?: string | null;
             /** @enum {string|null} */
             lastPriceSource?: "AMFI" | "YAHOO" | "MANUAL" | null;
+            mergeNote?: string | null;
+            mergedHoldings: boolean;
             name: string;
+            overridden: boolean;
+            overriddenFields: string[];
+            schemeCategory?: string | null;
             symbol?: string | null;
+            /** @enum {string} */
+            taxClass: "EQUITY_ORIENTED" | "SPECIFIED_DEBT" | "OTHER";
             /** @enum {string} */
             type: "stock" | "mutual_fund" | "etf";
             /** Format: date-time */
@@ -4536,6 +4745,13 @@ export interface components {
         LinkLendingTransactionRequest: {
             /** Format: uuid */
             transactionId: string;
+        };
+        LiquidAccount: {
+            balance: number;
+            /** Format: uuid */
+            id: string;
+            name: string;
+            type: string;
         };
         LlmBucketHealthDto: {
             /** Format: int32 */
@@ -4776,6 +4992,11 @@ export interface components {
             notes?: string | null;
             structuredOutput: string;
             trainsOnData: string;
+        };
+        MonthOutflow: {
+            beforeHistory: boolean;
+            month: string;
+            outflow: number;
         };
         MuteAccountRequest: {
             muted: boolean;
@@ -5122,6 +5343,8 @@ export interface components {
         };
         PositionDto: {
             absoluteReturnPercent?: number | null;
+            /** @enum {string|null} */
+            assetClass?: "EQUITY" | "DEBT" | "HYBRID" | "GOLD" | "INTERNATIONAL" | "OTHER" | null;
             avgBuy?: number | null;
             avgCost: number;
             avgSell?: number | null;
@@ -5131,6 +5354,8 @@ export interface components {
             buyQty?: number | null;
             buyValue?: number | null;
             currentValue?: number | null;
+            dayChange?: number | null;
+            dayChangePct?: number | null;
             dividends?: number | null;
             /** Format: uuid */
             holdingId: string;
@@ -5147,11 +5372,16 @@ export interface components {
             mergedIntoName?: string | null;
             netQty?: number | null;
             notes?: string | null;
+            previousClose?: number | null;
+            /** Format: date */
+            previousCloseAsOf?: string | null;
             provider: string;
             quantity: number;
             realizedGainLoss?: number | null;
             sellQty?: number | null;
             sellValue?: number | null;
+            /** @enum {string|null} */
+            taxClass?: "EQUITY_ORIENTED" | "SPECIFIED_DEBT" | "OTHER" | null;
             totalCharges?: number | null;
             unclosed?: boolean | null;
             unrealizedGainLoss?: number | null;
@@ -5704,6 +5934,8 @@ export interface components {
             datasource: string;
             format?: string | null;
             kindLabel?: string | null;
+            notCounted: boolean;
+            notCountedReason?: string | null;
             notes: string[];
             rowId: string;
             sections: components["schemas"]["BreakdownSectionData"][];
@@ -6017,6 +6249,12 @@ export interface components {
             absoluteReturnPercent: number;
             byBroker: components["schemas"]["BrokerSummaryDto"][];
             byInstrumentType: components["schemas"]["InstrumentTypeSummaryDto"][];
+            dayChange?: number | null;
+            dayChangePct?: number | null;
+            /** Format: date */
+            previousPriceAsOf?: string | null;
+            /** Format: date */
+            priceAsOf?: string | null;
             totalCharges: number;
             totalCurrentValue: number;
             totalDividends: number;
@@ -6045,6 +6283,17 @@ export interface components {
             unresolvedInstruments: number;
             /** Format: int32 */
             warningsCount: number;
+        };
+        TaxHarvestResponse: {
+            /** Format: int32 */
+            fy: number;
+            /** Format: date */
+            fyEnd: string;
+            /** Format: date */
+            fyStart: string;
+            openLots: components["schemas"]["HarvestOpenLotPage"];
+            realised: components["schemas"]["HarvestRealised"];
+            summary?: components["schemas"]["HarvestSummary"];
         };
         TestKeyRequest: {
             model?: string;
@@ -6233,6 +6482,10 @@ export interface components {
             tds?: number;
             /** @enum {string} */
             type: "dividend" | "interest" | "other";
+        };
+        UpdateInstrumentAssetClassRequest: {
+            /** @enum {string|null} */
+            assetClass?: "EQUITY" | "DEBT" | "HYBRID" | "GOLD" | "INTERNATIONAL" | "OTHER" | null;
         };
         UpdateInvestmentTransactionRequest: {
             charges?: components["schemas"]["ItemizedChargesDto"];
@@ -6946,6 +7199,39 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getBalanceSeries: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BalancePointResponse"][];
+                };
             };
             /** @description Error response */
             default: {
@@ -7914,6 +8200,7 @@ export interface operations {
         parameters: {
             query?: {
                 q?: string;
+                outstanding?: boolean;
                 /** @description Zero-based page index (0..N) */
                 page?: number;
                 /** @description The size of the page to be returned */
@@ -8252,6 +8539,41 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ReportData"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    resolveBuiltinDefinition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["BuiltinDataRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["BuiltinDefinitionResponse"];
                 };
             };
             /** @description Error response */
@@ -9124,11 +9446,42 @@ export interface operations {
             };
         };
     };
+    emergencyFund: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EmergencyFundResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     search: {
         parameters: {
             query?: {
                 search?: string;
                 type?: "stock" | "mutual_fund" | "etf";
+                page?: number;
+                size?: number;
             };
             header?: never;
             path?: never;
@@ -9299,6 +9652,72 @@ export interface operations {
                 "application/json": components["schemas"]["InstrumentRequest"];
             };
         };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InstrumentResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    updateInstrumentAssetClass: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateInstrumentAssetClassRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InstrumentResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    resetInstrumentOverrides: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description OK */
             200: {
@@ -10567,6 +10986,39 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SummaryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    harvest: {
+        parameters: {
+            query?: {
+                fy?: number;
+                page?: number;
+                size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TaxHarvestResponse"];
                 };
             };
             /** @description Error response */

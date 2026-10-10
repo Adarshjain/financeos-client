@@ -69,13 +69,28 @@ export interface Instrument {
   lastPrice?: string | number | null;
   lastPriceAsOf?: string | null;
   lastPriceSource?: PriceSource | null;
+  /** The class the allocation widget and tax figures use; the caller's own override when they set one. */
+  assetClass?: AssetClass | null;
+  assetClassSource?: 'AMFI' | 'RULE' | 'MANUAL' | null;
+  /** Whether the signed-in user has edited this instrument for their account (display fields or asset class). */
+  overridden?: boolean;
+  /** Which fields the user's edits replace: name | symbol | exchange | currency | type | assetClass. */
+  overriddenFields?: string[];
+  /** PUT answer only: an identifier edit merged the user's holding into one they already had there. */
+  mergedHoldings?: boolean;
+  /** PUT answer only: set when both merged holdings had sells (realised figures may change). */
+  mergeNote?: string | null;
 }
+
+export type AssetClass = 'EQUITY' | 'DEBT' | 'HYBRID' | 'GOLD' | 'INTERNATIONAL' | 'OTHER';
 
 export interface PriceHistoryPoint {
   id?: string;
   asOf: string;
   close: string | number;
   source: string;
+  /** True only for the signed-in user's own MANUAL prices — the only rows they may edit or delete. */
+  editable?: boolean;
 }
 
 export interface PriceRefreshFailure {
@@ -250,6 +265,13 @@ export interface Position {
   avgSell?: number | string | null;
   netQty?: number | string | null;
   unclosed?: boolean | null;
+  /** The price before the latest one, and the move since (whole holding ₹ and %); null without two prices. */
+  previousClose?: number | string | null;
+  previousCloseAsOf?: string | null;
+  dayChange?: number | string | null;
+  dayChangePct?: number | string | null;
+  assetClass?: 'EQUITY' | 'DEBT' | 'HYBRID' | 'GOLD' | 'INTERNATIONAL' | 'OTHER' | null;
+  taxClass?: 'EQUITY_ORIENTED' | 'SPECIFIED_DEBT' | 'OTHER' | null;
 }
 
 export interface InvestmentPositionResponse {
@@ -289,6 +311,12 @@ export interface InvestmentSummary {
   absoluteReturnPercent?: string | number;
   byBroker: BrokerSummary[];
   byInstrumentType: InstrumentTypeSummary[];
+  /** Open holdings' move between the two latest evening prices (₹ and %); null without two prices. */
+  dayChange?: string | number | null;
+  dayChangePct?: string | number | null;
+  /** The latest price date, and the one before it the day change is measured from. */
+  priceAsOf?: string | null;
+  previousPriceAsOf?: string | null;
 }
 
 // Dividends

@@ -1,7 +1,7 @@
 'use client';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import * as React from 'react';
 
 import { Button, type ButtonProps } from '@/components/ui/button';
@@ -166,6 +166,8 @@ export type DialogFooterAction = {
   onClick?: () => void | Promise<void>;
   variant?: ButtonProps['variant'];
   disabled?: boolean;
+  /** Primary only: work in flight — the button is disabled and shows a spinner before its label. */
+  pending?: boolean;
   type?: 'button' | 'submit';
   form?: string;
 };
@@ -216,7 +218,7 @@ function DialogFooter({
   const primaryVariant = primaryAction.variant ?? 'default';
 
   const secondaryDisabled = secondaryAction?.disabled || running;
-  const primaryDisabled = primaryAction.disabled || running;
+  const primaryDisabled = primaryAction.disabled || primaryAction.pending || running;
 
   const secondaryBtn = secondaryAction ? (
     secondaryAction.onClick ? (
@@ -255,7 +257,9 @@ function DialogFooter({
       form={primaryAction.form}
       onClick={primaryAction.onClick ? handlePrimaryClick : undefined}
       className="w-full sm:w-auto"
+      aria-busy={primaryAction.pending || undefined}
     >
+      {primaryAction.pending && <Loader2 className="animate-spin" aria-hidden />}
       {primaryAction.label}
     </Button>
   );
