@@ -19,6 +19,12 @@ interface PagedSectionProps extends PagerProps {
   topClassName?: string;
   /** Layout for the bottom pager. */
   bottomClassName?: string;
+  /**
+   * Places the top pager inside the page's own toolbar instead of on a row of
+   * its own: called with the pager (null while there is nothing to page), and
+   * the toolbar always renders.
+   */
+  renderTop?: (pager: ReactNode | null) => ReactNode;
 }
 
 export function PagedSection({
@@ -26,6 +32,7 @@ export function PagedSection({
   className,
   topClassName,
   bottomClassName,
+  renderTop,
   ...pager
 }: PagedSectionProps) {
   const topRef = useRef<HTMLDivElement>(null);
@@ -35,16 +42,27 @@ export function PagedSection({
 
   return (
     <div className={className}>
-      {hasRows && (
+      {renderTop ? (
         <div ref={topRef} className="scroll-mt-4">
-          <TablePagination {...pager} className={topClassName} />
+          {renderTop(
+            hasRows ? (
+              <TablePagination {...pager} className={topClassName} />
+            ) : null
+          )}
         </div>
+      ) : (
+        hasRows && (
+          <div ref={topRef} className="scroll-mt-4">
+            <TablePagination {...pager} className={topClassName} />
+          </div>
+        )
       )}
       {children}
       {hasRows && multiPage && (
         <TablePagination
           {...pager}
           onSizeChange={undefined}
+          phoneCompact={false}
           onPageChange={(n) => {
             pager.onPageChange?.(n);
             topRef.current?.scrollIntoView({

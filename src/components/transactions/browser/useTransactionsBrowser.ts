@@ -6,11 +6,10 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { FilterClause } from '@/lib/reports.types';
-import type { PagedTransaction } from '@/lib/transaction.types';
 
 import { TRANSACTIONS_CATALOG } from '../catalog';
 
-export function useTransactionsBrowser(needsReviewCount?: number | null) {
+export function useTransactionsBrowser() {
   const queryClient = useQueryClient();
   const [appliedFilters, setAppliedFilters] = useState<FilterClause[]>([]);
   const [search, setSearch] = useState('');
@@ -113,24 +112,6 @@ export function useTransactionsBrowser(needsReviewCount?: number | null) {
     placeholderData: keepPreviousData,
   });
 
-  const { data: reviewCountData } = useQuery({
-    queryKey: keys.transactions.reviewCount(),
-    queryFn: async () => {
-      const { data } = await api.POST('/api/v1/transactions/search', {
-        body: {
-          filters: [{ field: 'reviewType', operator: 'is', value: 'NEEDS_REVIEW' }],
-        },
-        params: {
-          query: { page: 0, size: 1 },
-        },
-      });
-      return data?.totalElements ?? null;
-    },
-    initialData: needsReviewCount ?? undefined,
-  });
-
-  const localReviewCount = reviewCountData ?? needsReviewCount ?? null;
-
   const toggleSelect = (id: string) => {
     setSelectedTxnIds((prev) => {
       const next = new Set(prev);
@@ -151,14 +132,15 @@ export function useTransactionsBrowser(needsReviewCount?: number | null) {
     queryClient.invalidateQueries({ queryKey: keys.transactions.all });
   };
 
-  const handleSort = (field: string) => {
-    const currentField = sort.split(',')[0];
-    const currentDir = sort.split(',')[1];
-    let nextDir = 'desc';
-    if (currentField === field) {
-      nextDir = currentDir === 'desc' ? 'asc' : 'desc';
-    }
-    setSort(`${field},${nextDir}`);
+  // A newly picked field starts newest / largest first.
+  const handleSortFieldChange = (field: string) => {
+    setSort(`${field},desc`);
+    setPage(0);
+  };
+
+  const handleSortDirectionToggle = () => {
+    const [field, dir] = sort.split(',');
+    setSort(`${field},${dir === 'desc' ? 'asc' : 'desc'}`);
     setPage(0);
   };
 
@@ -168,7 +150,6 @@ export function useTransactionsBrowser(needsReviewCount?: number | null) {
     search,
     setSearch,
     sort,
-    localReviewCount,
     selectedTxnIds,
     setSelectedTxnIds,
     isSelectionMode,
@@ -184,6 +165,7 @@ export function useTransactionsBrowser(needsReviewCount?: number | null) {
     toggleSelect,
     selectedTransactions,
     handleReload,
-    handleSort,
+    handleSortFieldChange,
+    handleSortDirectionToggle,
   };
 }
