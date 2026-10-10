@@ -1,6 +1,7 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 import { instrumentsApi } from '@/lib/apiClient';
+import { instrumentListQuery } from '@/lib/instrumentList';
 import { getQueryClient, keys } from '@/lib/query';
 import { Instrument } from '@/lib/types';
 
@@ -8,9 +9,10 @@ import { InstrumentsView } from './InstrumentsView';
 
 export default async function InstrumentsPage() {
   const qc = getQueryClient();
-  const instrumentsData = await instrumentsApi.search().catch(() => [] as Instrument[]);
-  const instruments: Instrument[] = instrumentsData || [];
-  qc.setQueryData(keys.investments.instruments(), instruments);
+  // Only the first server page (what useInstrumentsSection asks for on load), never the whole catalog.
+  const firstPage = instrumentListQuery();
+  const instruments = await instrumentsApi.list(firstPage).catch(() => null as Instrument[] | null);
+  if (instruments) qc.setQueryData(keys.investments.instruments({ ...firstPage }), instruments);
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>

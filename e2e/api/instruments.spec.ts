@@ -81,7 +81,7 @@ test.describe('Instruments API (@api)', () => {
     expect(searchLocal.data!.length).toBeLessThanOrEqual(25);
   });
 
-  test('Resolve and dedup: by existingInstrumentId, ISIN overwrite/alias, symbol+exchange backfill, create new', async ({
+  test('Resolve and dedup: by existingInstrumentId, ISIN and symbol+exchange matches reuse the row unchanged, create new', async ({
     api,
   }) => {
     // 1. New instrument creation
@@ -106,7 +106,7 @@ test.describe('Instruments API (@api)', () => {
     });
     expect(resolvedById.id).toBe(inst1.id);
 
-    // 3. Resolve by ISIN with symbol change -> overwrites symbol and creates alias
+    // 3. Resolve by ISIN with a different symbol -> the same row, left as it is (resolve never edits a shared row)
     const sym1New = generateYahooSymbol('RS1NEW');
     const resolvedByIsin = await resolveInstrument(api, {
       type: 'stock',
@@ -122,9 +122,9 @@ test.describe('Instruments API (@api)', () => {
       params: { path: { id: inst1.id } },
     });
     expectStatus(checkInst, 200);
-    expect(checkInst.data?.symbol).toBe(sym1New);
+    expect(checkInst.data?.symbol).toBe(sym1);
 
-    // 4. Resolve by symbol + exchange backfills blank ISIN
+    // 4. Resolve by symbol + exchange matches a row without an ISIN, which is not backfilled
     const sym2 = generateYahooSymbol('RS2');
     const inst2 = await resolveInstrument(api, {
       type: 'stock',
@@ -144,7 +144,7 @@ test.describe('Instruments API (@api)', () => {
       isin: isin2Backfill,
     });
     expect(backfilled.id).toBe(inst2.id);
-    expect(backfilled.isin).toBe(isin2Backfill);
+    expect(backfilled.isin ?? null).toBeNull();
   });
 
   test('Instrument CRUD, list filters, direct create ISIN dedup, and 404 for unknown id', async ({
@@ -313,7 +313,7 @@ test.describe('Instruments API (@api)', () => {
     });
     expectStatus(delRes, 204);
 
-    // 7. Editing an AUTO (YAHOO/AMFI) price row -> 400
+    // 7. Editing an AUTO (YAHOO/AMFI) price row -> 404 (only the caller's own MANUAL rows are theirs to change)
     // Create an auto price row via price refresh
     const autoInst = await resolveInstrument(api, {
       type: 'stock',
@@ -340,7 +340,7 @@ test.describe('Instruments API (@api)', () => {
         },
         body: { price: 3000.00 },
       });
-      expectStatus(tryEditAuto, 400);
+      expectStatus(tryEditAuto, 404);
 
       const tryDelAuto = await api.DELETE('/api/v1/instruments/{instrumentId}/prices/{priceId}', {
         params: {
@@ -350,7 +350,7 @@ test.describe('Instruments API (@api)', () => {
           },
         },
       });
-      expectStatus(tryDelAuto, 400);
+      expectStatus(tryDelAuto, 404);
     }
   });
 

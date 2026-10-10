@@ -1,23 +1,18 @@
 import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
-import { corporateActionsApi, instrumentsApi } from '@/lib/apiClient';
+import { corporateActionsApi } from '@/lib/apiClient';
 import { getQueryClient } from '@/lib/query/client';
 import { keys } from '@/lib/query/keys';
-import { CorporateAction, Instrument } from '@/lib/types';
+import { CorporateAction } from '@/lib/types';
 
 import { CorporateActionsSection } from '../CorporateActionsSection';
 
 export default async function CorporateActionsPage() {
   const qc = getQueryClient();
-  const [corporateActionsData, instrumentsData] = await Promise.all([
-    corporateActionsApi.listAll().catch(() => [] as CorporateAction[]),
-    instrumentsApi.search().catch(() => [] as Instrument[]),
-  ]);
+  const corporateActionsData = await corporateActionsApi.listAll().catch(() => [] as CorporateAction[]);
 
   const corporateActions: CorporateAction[] = corporateActionsData || [];
-  const instruments: Instrument[] = instrumentsData || [];
   qc.setQueryData(keys.investments.corporateActions(), corporateActions);
-  qc.setQueryData(keys.investments.instruments(), instruments);
 
   return (
     <div className="pb-20 p-3 sm:p-6 space-y-2 max-w-7xl mx-auto w-full min-w-0 overflow-x-hidden">

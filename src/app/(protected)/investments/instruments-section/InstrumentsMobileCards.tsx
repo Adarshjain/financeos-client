@@ -9,6 +9,7 @@ import { Instrument } from '@/lib/types';
 import { formatDate, formatMoney } from '@/lib/utils';
 
 import { EditInstrumentDialog } from '../EditInstrumentDialog';
+import { InstrumentOverrideBadge, ResetInstrumentButton } from './InstrumentOverrideControls';
 
 export function getTypeBadge(type: string) {
   const formatted = type ? type.replace('_', ' ').toUpperCase() : 'OTHER';
@@ -71,6 +72,7 @@ export function InstrumentsMobileCards({
               )}
             </div>
             <div className="flex items-center gap-1 shrink-0">
+              <ResetInstrumentButton instrument={inst} />
               <EditInstrumentDialog
                 instrument={inst}
                 trigger={
@@ -114,6 +116,7 @@ export function InstrumentsMobileCards({
                   </span>
                 )}
               </div>
+              <InstrumentOverrideBadge instrument={inst} />
             </div>
 
             {/* Last Price Info Footer */}

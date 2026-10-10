@@ -1,15 +1,7 @@
 'use client';
 
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  Plus,
-  Search,
-  X,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Search, X } from 'lucide-react';
 
-import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -19,23 +11,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { INSTRUMENT_PAGE_SIZES } from '@/lib/instrumentList';
 import { cn } from '@/lib/utils';
 
 import { CreateInstrumentDialog } from '../CreateInstrumentDialog';
-
-export type SortOrder = 'none' | 'asc' | 'desc';
 
 interface InstrumentsFilterBarProps {
   search: string;
   onSearchChange: (s: string) => void;
   typeFilter: string;
   onTypeFilterChange: (t: string) => void;
-  sortOrder: SortOrder;
-  toggleSort: () => void;
   currentPage: number;
   pageSize: number;
-  totalElements: number;
-  totalPages: number;
+  hasPrev: boolean;
+  hasNext: boolean;
+  loading?: boolean;
   onPageChange: (p: number) => void;
   onSizeChange: (s: number) => void;
   isMobile?: boolean;
@@ -46,12 +36,11 @@ export function InstrumentsFilterBar({
   onSearchChange,
   typeFilter,
   onTypeFilterChange,
-  sortOrder,
-  toggleSort,
   currentPage,
   pageSize,
-  totalElements,
-  totalPages,
+  hasPrev,
+  hasNext,
+  loading = false,
   onPageChange,
   onSizeChange,
   isMobile = false,
@@ -96,36 +85,8 @@ export function InstrumentsFilterBar({
             <SelectItem value="stock">Stock</SelectItem>
             <SelectItem value="mutual_fund">Mutual Fund</SelectItem>
             <SelectItem value="etf">ETF</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
           </SelectContent>
         </Select>
-
-        {/* Sort Button */}
-        <Button
-          variant={sortOrder === 'none' ? 'outline' : 'secondary'}
-          size="sm"
-          onClick={toggleSort}
-          title="Sort by Name"
-        >
-          {sortOrder === 'asc' && (
-            <>
-              <ArrowUp className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 mr-1" />
-              <span>Name A-Z</span>
-            </>
-          )}
-          {sortOrder === 'desc' && (
-            <>
-              <ArrowDown className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 mr-1" />
-              <span>Name Z-A</span>
-            </>
-          )}
-          {sortOrder === 'none' && (
-            <>
-              <ArrowUpDown className="w-3.5 h-3.5 text-slate-400 mr-1" />
-              <span>Sort</span>
-            </>
-          )}
-        </Button>
 
         {/* Add Instrument Dialog Trigger */}
         <CreateInstrumentDialog
@@ -137,18 +98,82 @@ export function InstrumentsFilterBar({
           }
         />
       </div>
-      <TablePagination
-        page={{
-          number: currentPage,
-          size: pageSize,
-          totalElements,
-          totalPages,
-        }}
+      <InstrumentsPager
+        currentPage={currentPage}
+        pageSize={pageSize}
+        hasPrev={hasPrev}
+        hasNext={hasNext}
+        loading={loading}
         onPageChange={onPageChange}
         onSizeChange={onSizeChange}
-        unit="instrument"
-        className="flex flex-row"
       />
+    </div>
+  );
+}
+
+/**
+ * Prev/next over the server pages. GET /instruments returns no total, so there is no page count:
+ * Next is offered while the current page came back full.
+ */
+function InstrumentsPager({
+  currentPage,
+  pageSize,
+  hasPrev,
+  hasNext,
+  loading,
+  onPageChange,
+  onSizeChange,
+}: {
+  currentPage: number;
+  pageSize: number;
+  hasPrev: boolean;
+  hasNext: boolean;
+  loading: boolean;
+  onPageChange: (p: number) => void;
+  onSizeChange: (s: number) => void;
+}) {
+  return (
+    <div className="flex items-center gap-2 text-sm text-slate-500">
+      <Select value={String(pageSize)} onValueChange={(val) => onSizeChange(Number(val))} disabled={loading}>
+        <SelectTrigger
+          aria-label="Instruments per page"
+          className="w-[110px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none h-8"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
+          {INSTRUMENT_PAGE_SIZES.map((s) => (
+            <SelectItem key={s} value={String(s)} className="text-xs">
+              {s} / page
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {(hasPrev || hasNext) && (
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="outline"
+            size="icon-sm"
+            aria-label="Previous page"
+            disabled={!hasPrev || loading}
+            onClick={() => onPageChange(currentPage - 1)}
+          >
+            <ChevronLeft className="h-4 w-4 text-slate-500" />
+          </Button>
+          <span className="tabular-nums text-xs font-semibold px-2 text-slate-700 dark:text-slate-300">
+            Page {currentPage + 1}
+          </span>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            aria-label="Next page"
+            disabled={!hasNext || loading}
+            onClick={() => onPageChange(currentPage + 1)}
+          >
+            <ChevronRight className="h-4 w-4 text-slate-500" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -13,14 +13,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { CorporateAction } from '@/lib/api/types';
-import { Instrument } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
 import { getActionBadge } from './CorporateActionsMobileCards';
 
 interface CorporateActionsTableProps {
   sortedActions: CorporateAction[];
-  instrumentMap: Map<string, Instrument>;
   openEditDialog: (act: CorporateAction) => void;
   handleDelete: (instrumentId: string, actionId: string) => Promise<void>;
   deletingId: string | null;
@@ -28,7 +26,6 @@ interface CorporateActionsTableProps {
 
 export function CorporateActionsTable({
   sortedActions,
-  instrumentMap,
   openEditDialog,
   handleDelete,
   deletingId,
@@ -56,10 +53,9 @@ export function CorporateActionsTable({
             </TableHeader>
             <TableBody>
               {sortedActions.map((act) => {
-                const inst = instrumentMap.get(act.instrumentId);
                 const instName =
-                  act.instrumentName || inst?.name || 'Instrument';
-                const instSymbol = act.instrumentSymbol || inst?.symbol;
+                  act.instrumentName || 'Instrument';
+                const instSymbol = act.instrumentSymbol;
 
                 return (
                   <TableRow

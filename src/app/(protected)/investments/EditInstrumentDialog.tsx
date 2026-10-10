@@ -1,6 +1,5 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Edit } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -16,58 +15,56 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { FormField } from '@/components/ui/form-field';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { api, ApiError } from '@/lib/api/client';
-import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
-import {
-  CreateInstrumentRequest,
-  Instrument,
-  InstrumentCandidate,
-  InstrumentType,
-} from '@/lib/types';
+import { AssetClass, Instrument, InstrumentCandidate } from '@/lib/types';
 
+import { EditInstrumentFields, type EditInstrumentValues } from './instrument-form/EditInstrumentFields';
+import {
+  assetClassSelection,
+  AUTO_ASSET_CLASS,
+  identifierClearError,
+  type InstrumentFormErrors,
+  instrumentFormErrors,
+} from './instrument-form/instrumentEdit';
+import { useUpdateInstrument } from './instrument-form/useInstrumentEdit';
 import { InstrumentSearchField } from './InstrumentSearchField';
 
 interface EditInstrumentDialogProps {
   instrument: Instrument;
   trigger?: React.ReactNode;
+  /**
+   * Called with the saved instrument. After an ISIN / AMFI code / Yahoo symbol
+   * change its id is the instrument the user's holdings moved to — a view keyed
+   * by the old id should follow it.
+   */
+  onUpdated?: (instrument: Instrument, previousId: string) => void;
 }
 
-export function EditInstrumentDialog({
-  instrument,
-  trigger,
-}: EditInstrumentDialogProps) {
+const NO_ERRORS: InstrumentFormErrors = { fields: {}, form: null };
+
+function valuesOf(instrument: Instrument): EditInstrumentValues {
+  return {
+    type: instrument.type || 'stock',
+    name: instrument.name || '',
+    symbol: instrument.symbol || '',
+    exchange: instrument.exchange || '',
+    isin: instrument.isin || '',
+    amfiCode: instrument.amfiCode || '',
+    yahooSymbol: instrument.yahooSymbol || '',
+    currency: instrument.currency || 'INR',
+    assetClass: assetClassSelection(instrument),
+  };
+}
+
+export function EditInstrumentDialog({ instrument, trigger, onUpdated }: EditInstrumentDialogProps) {
   const [open, setOpen] = useState(false);
-  const qc = useQueryClient();
-  const updateInstrumentMutation = useMutation({
-    mutationFn: (body: CreateInstrumentRequest) =>
-      api
-        .PUT('/api/v1/instruments/{id}', {
-          params: { path: { id: instrument.id } },
-          body,
-        })
-        .then((r) => r.data! as Instrument),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
-  });
+  const updateInstrumentMutation = useUpdateInstrument(instrument.id);
   const isSubmitting = updateInstrumentMutation.isPending;
 
-  const [type, setType] = useState<InstrumentType>(instrument.type || 'stock');
-  const [name, setName] = useState(instrument.name || '');
-  const [symbol, setSymbol] = useState(instrument.symbol || '');
-  const [exchange, setExchange] = useState(instrument.exchange || '');
-  const [isin, setIsin] = useState(instrument.isin || '');
-  const [amfiCode, setAmfiCode] = useState(instrument.amfiCode || '');
-  const [yahooSymbol, setYahooSymbol] = useState(instrument.yahooSymbol || '');
-  const [currency, setCurrency] = useState(instrument.currency || 'INR');
+  const [values, setValues] = useState<EditInstrumentValues>(() => valuesOf(instrument));
+  const [errors, setErrors] = useState<InstrumentFormErrors>(NO_ERRORS);
+  const onChange = (patch: Partial<EditInstrumentValues>) => setValues((v) => ({ ...v, ...patch }));
 
   // Reset the form from `instrument` whenever the dialog transitions to open.
   // Adjusted during render (React's documented alternative to an effect for
@@ -77,53 +74,79 @@ export function EditInstrumentDialog({
   if (open !== prevOpen) {
     setPrevOpen(open);
     if (open) {
-      setType(instrument.type || 'stock');
-      setName(instrument.name || '');
-      setSymbol(instrument.symbol || '');
-      setExchange(instrument.exchange || '');
-      setIsin(instrument.isin || '');
-      setAmfiCode(instrument.amfiCode || '');
-      setYahooSymbol(instrument.yahooSymbol || '');
-      setCurrency(instrument.currency || 'INR');
+      setValues(valuesOf(instrument));
+      setErrors(NO_ERRORS);
     }
   }
 
   const handlePicked = (c: InstrumentCandidate) => {
-    setType(c.type);
-    setName(c.name);
-    setSymbol(c.symbol || '');
-    setExchange(c.exchange || '');
-    setIsin(c.isin || '');
-    setAmfiCode(c.amfiCode || '');
-    setYahooSymbol(c.yahooSymbol || '');
-    if (c.currency) setCurrency(c.currency);
+    onChange({
+      type: c.type,
+      name: c.name,
+      symbol: c.symbol || '',
+      exchange: c.exchange || '',
+      isin: c.isin || '',
+      amfiCode: c.amfiCode || '',
+      yahooSymbol: c.yahooSymbol || '',
+      ...(c.currency ? { currency: c.currency } : {}),
+    });
     toast.success(`Filled from “${c.name}” — review and save`);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      toast.error('Instrument name is required');
+    if (!values.name.trim()) {
+      setErrors({ fields: { name: 'Name is required' }, form: null });
       return;
     }
+    const clearError = identifierClearError(instrument, values);
+    if (clearError) {
+      setErrors({ fields: { [clearError.field]: clearError.message }, form: null });
+      return;
+    }
+    setErrors(NO_ERRORS);
+
+    const initialAssetClass = assetClassSelection(instrument);
+    const assetClass =
+      values.assetClass === initialAssetClass
+        ? undefined
+        : values.assetClass === AUTO_ASSET_CLASS
+          ? null
+          : (values.assetClass as AssetClass);
 
     try {
-      const updated = await updateInstrumentMutation.mutateAsync({
-        type,
-        name: name.trim(),
-        symbol: symbol.trim() || undefined,
-        exchange: exchange.trim() || undefined,
-        isin: isin.trim() || undefined,
-        amfiCode: amfiCode.trim() || undefined,
-        yahooSymbol: yahooSymbol.trim() || undefined,
-        currency: currency.trim() || undefined,
+      const { instrument: updated, moved, merged, mergeNote } = await updateInstrumentMutation.mutateAsync({
+        body: {
+          type: values.type,
+          name: values.name.trim(),
+          symbol: values.symbol.trim() || undefined,
+          exchange: values.exchange.trim() || undefined,
+          isin: values.isin.trim() || undefined,
+          amfiCode: values.amfiCode.trim() || undefined,
+          yahooSymbol: values.yahooSymbol.trim() || undefined,
+          currency: values.currency.trim() || undefined,
+        },
+        assetClass,
       });
 
-      toast.success(`Updated instrument ${updated.name}`);
+      if (merged) {
+        toast.success(`Merged your holding into your existing ${updated.name} holding`, {
+          description: mergeNote ?? undefined,
+        });
+      } else {
+        toast.success(
+          moved ? `Moved your holdings to ${updated.name}` : `Updated ${updated.name} for your account`
+        );
+      }
       setOpen(false);
+      onUpdated?.(updated, instrument.id);
     } catch (err) {
-      toastError(err, 'Failed to update instrument'
-      );
+      const inline = instrumentFormErrors(err);
+      if (inline) {
+        setErrors(inline);
+      } else {
+        toastError(err, 'Failed to update instrument');
+      }
     }
   };
 
@@ -142,13 +165,11 @@ export function EditInstrumentDialog({
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="text-base font-bold">
-            Edit Instrument
-          </DialogTitle>
+          <DialogTitle className="text-base font-bold">Edit Instrument</DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
-            Search the live AMFI / Yahoo catalog to auto-fill pricing
-            identifiers, or edit the fields below by hand. Saving keeps this
-            instrument and its holdings.
+            Edits apply to your account only. Changing the ISIN, AMFI code or Yahoo symbol moves your
+            holdings, trades and prices to the instrument with that identifier — not possible while
+            either instrument is part of a corporate action.
           </DialogDescription>
         </DialogHeader>
 
@@ -158,7 +179,7 @@ export function EditInstrumentDialog({
               Search catalog to auto-fill
             </Label>
             <InstrumentSearchField
-              type={type}
+              type={values.type}
               onPick={handlePicked}
               placeholder="Search AMFI / Yahoo to fix or fill identifiers…"
             />
@@ -167,102 +188,15 @@ export function EditInstrumentDialog({
           <form
             id="edit-instrument-form"
             onSubmit={handleSubmit}
+            noValidate
             className="space-y-3 py-1 border-t border-slate-100 dark:border-slate-800"
           >
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Type
-                </Label>
-                <Select
-                  value={type}
-                  onValueChange={(val) => setType(val as InstrumentType)}
-                >
-                  <SelectTrigger className="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-xs">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                    <SelectItem value="stock" className="text-xs">
-                      Stock
-                    </SelectItem>
-                    <SelectItem value="mutual_fund" className="text-xs">
-                      Mutual Fund
-                    </SelectItem>
-                    <SelectItem value="etf" className="text-xs">
-                      ETF
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <FormField
-                label="Exchange"
-                name="exchange"
-                type="text"
-                value={exchange}
-                onChange={(e) => setExchange(e.target.value)}
-                placeholder="e.g. NSE, BSE"
-              />
-            </div>
-
-            <FormField
-              label="Instrument Name"
-              name="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Reliance Industries Ltd"
-              required
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                label="Symbol / Ticker"
-                name="symbol"
-                type="text"
-                value={symbol}
-                onChange={(e) => setSymbol(e.target.value)}
-                placeholder="e.g. RELIANCE"
-              />
-
-              <FormField
-                label="Currency"
-                name="currency"
-                type="text"
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                placeholder="INR"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                label="ISIN (Optional)"
-                name="isin"
-                type="text"
-                value={isin}
-                onChange={(e) => setIsin(e.target.value)}
-                placeholder="INE002A01018"
-              />
-
-              <FormField
-                label="AMFI Code (For Mutual Funds)"
-                name="amfiCode"
-                type="text"
-                value={amfiCode}
-                onChange={(e) => setAmfiCode(e.target.value)}
-                placeholder="e.g. 120503"
-              />
-            </div>
-
-            <FormField
-              label="Yahoo Symbol (For Stocks/ETFs)"
-              name="yahooSymbol"
-              type="text"
-              value={yahooSymbol}
-              onChange={(e) => setYahooSymbol(e.target.value)}
-              placeholder="e.g. RELIANCE.NS"
-            />
+            <EditInstrumentFields values={values} onChange={onChange} errors={errors.fields} />
+            {errors.form && (
+              <p role="alert" className="text-xs text-rose-600 dark:text-rose-400">
+                {errors.form}
+              </p>
+            )}
           </form>
         </DialogBody>
 

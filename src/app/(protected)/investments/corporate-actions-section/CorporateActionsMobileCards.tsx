@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { CorporateAction } from '@/lib/api/types';
-import { Instrument } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
 
 import { CorporateActionKind } from '../corporate-actions/useCorporateActionsDialog';
@@ -46,7 +45,6 @@ export function getActionBadge(type: CorporateActionKind) {
 
 interface CorporateActionsMobileCardsProps {
   sortedActions: CorporateAction[];
-  instrumentMap: Map<string, Instrument>;
   openEditDialog: (act: CorporateAction) => void;
   handleDelete: (instrumentId: string, actionId: string) => Promise<void>;
   deletingId: string | null;
@@ -54,7 +52,6 @@ interface CorporateActionsMobileCardsProps {
 
 export function CorporateActionsMobileCards({
   sortedActions,
-  instrumentMap,
   openEditDialog,
   handleDelete,
   deletingId,
@@ -62,9 +59,8 @@ export function CorporateActionsMobileCards({
   return (
     <div className="block md:hidden grid grid-cols-1 gap-2 sm:gap-4">
       {sortedActions.map((act) => {
-        const inst = instrumentMap.get(act.instrumentId);
-        const instName = act.instrumentName || inst?.name || 'Instrument';
-        const instSymbol = act.instrumentSymbol || inst?.symbol;
+        const instName = act.instrumentName || 'Instrument';
+        const instSymbol = act.instrumentSymbol;
 
         return (
           <Card
