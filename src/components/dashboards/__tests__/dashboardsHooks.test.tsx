@@ -24,6 +24,7 @@ import { keys } from '@/lib/query/keys';
 import { createTestQueryClient, renderWithQuery } from '@/test/renderWithQuery';
 
 const upcomingDef: BuiltinWidgetResponse = {
+  category: 'overview',
   key: 'upcoming', label: 'Upcoming', description: 'Obligations', kind: 'template', minW: 100,
   templateType: 'TABLE', datasource: 'obligations',
   templateDefinition: { filters: [{ field: 'dueDate', operator: 'next_x_days', value: { amount: 14 } }] },
@@ -36,47 +37,76 @@ function wrapperFor(qc = createTestQueryClient()) {
 }
 
 describe('useDuplicateBuiltin', () => {
+  const resolved = (over: Record<string, unknown> = {}) => ({
+    key: 'upcoming', label: 'Upcoming', type: 'TABLE', datasource: 'obligations',
+    definition: { filters: [{ field: 'dueDate', operator: 'next_x_days', value: { amount: 30 } }] },
+    windowAsOf: null,
+    ...over,
+  });
+  const serve = (definition: unknown, report: unknown = { id: 'rep-new', name: 'Upcoming' }) =>
+    vi.mocked(api.POST).mockImplementation(((url: string) =>
+      Promise.resolve({ data: url === '/api/v1/reports' ? report : definition })) as never);
+
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.mocked(api.GET).mockResolvedValue({ data: [upcomingDef, { ...upcomingDef, key: 'attention', kind: 'component', templateType: null }] } as never);
-    vi.mocked(api.POST).mockResolvedValue({ data: { id: 'rep-new', name: 'Upcoming' } } as never);
   });
 
-  it('creates a report from the catalog template with the widget params substituted', async () => {
+  it('asks the server to resolve the template with the widget params, then saves that definition named after the built-in', async () => {
+    serve(resolved());
     const { qc, Wrapper } = wrapperFor();
     const spy = vi.spyOn(qc, 'invalidateQueries');
     const { result } = renderHook(() => useDuplicateBuiltin(), { wrapper: Wrapper });
     await act(async () => { await result.current.mutateAsync({ builtinKey: 'upcoming', params: { days: 30 } }); });
-    expect(api.POST).toHaveBeenCalledWith('/api/v1/reports', {
+    expect(api.POST).toHaveBeenNthCalledWith(1, '/api/v1/dashboards/builtins/{key}/definition', {
+      params: { path: { key: 'upcoming' } },
+      body: { params: { days: 30 } },
+    });
+    expect(api.POST).toHaveBeenNthCalledWith(2, '/api/v1/reports', {
       body: {
-        name: 'Upcoming', description: 'Obligations', type: 'TABLE', datasource: 'obligations',
+        name: 'Upcoming', type: 'TABLE', datasource: 'obligations',
         definition: { filters: [{ field: 'dueDate', operator: 'next_x_days', value: { amount: 30 } }] },
       },
     });
+    // The catalog is no longer needed to duplicate.
+    expect(api.GET).not.toHaveBeenCalled();
     expect(spy).toHaveBeenCalledWith({ queryKey: keys.reports.all });
-    expect(toast.success).toHaveBeenCalledWith('Saved "Upcoming" to your reports', expect.objectContaining({ action: expect.anything() }));
+    expect(toast.success).toHaveBeenCalledWith('Saved "Upcoming" to your reports', { action: expect.anything() });
     const action = toast.success.mock.calls[0][1].action;
     action.onClick();
     expect(router.push).toHaveBeenCalledWith('/reports/rep-new');
   });
 
-  it('refuses a component built-in or unknown key and reports the error', async () => {
+  it('a copy fixed to a reward window says so (dd/mm/yyyy) in the toast', async () => {
+    serve(resolved({ key: 'cap_headroom', label: 'Cap headroom', windowAsOf: '2026-10-01' }), { id: 'r2', name: 'Cap headroom' });
+    const { Wrapper } = wrapperFor();
+    const { result } = renderHook(() => useDuplicateBuiltin(), { wrapper: Wrapper });
+    await act(async () => { await result.current.mutateAsync({ builtinKey: 'cap_headroom', params: {} }); });
+    expect(toast.success).toHaveBeenCalledWith('Saved "Cap headroom" to your reports', {
+      description: 'This copy is fixed to the window open on 01/10/2026.',
+      action: expect.anything(),
+    });
+  });
+
+  it('a refused resolve (component built-in, unknown key) reports the error and saves nothing', async () => {
+    vi.mocked(api.POST).mockRejectedValue(new Error('Not a template'));
     const { Wrapper } = wrapperFor();
     const { result } = renderHook(() => useDuplicateBuiltin(), { wrapper: Wrapper });
     await act(async () => { await result.current.mutateAsync({ builtinKey: 'attention', params: {} }).catch(() => {}); });
-    await act(async () => { await result.current.mutateAsync({ builtinKey: 'nope', params: {} }).catch(() => {}); });
-    expect(api.POST).not.toHaveBeenCalled();
-    expect(toastError).toHaveBeenCalledTimes(2);
+    expect(api.POST).toHaveBeenCalledTimes(1);
+    expect(toastError).toHaveBeenCalledTimes(1);
     expect(toastError.mock.calls[0][1]).toBe('Failed to duplicate as a report');
   });
 
-  it('errors when the server returns no report', async () => {
-    vi.mocked(api.POST).mockResolvedValue({ data: undefined } as never);
+  it('errors when the server returns no definition or no report', async () => {
     const { Wrapper } = wrapperFor();
+    serve(undefined);
     const { result } = renderHook(() => useDuplicateBuiltin(), { wrapper: Wrapper });
     await act(async () => { await result.current.mutateAsync({ builtinKey: 'upcoming', params: {} }).catch(() => {}); });
+    expect(api.POST).toHaveBeenCalledTimes(1);
+    serve(resolved(), null);
+    await act(async () => { await result.current.mutateAsync({ builtinKey: 'upcoming', params: {} }).catch(() => {}); });
     expect(toast.success).not.toHaveBeenCalled();
-    expect(toastError).toHaveBeenCalled();
+    expect(toastError).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -117,7 +147,7 @@ describe('RestoreHomeButton', () => {
 const L = { x: 0, y: 0, w: 100, h: 24 };
 const builtinWidget: WidgetResponse = {
   id: 'b1', kind: 'builtin', reportId: null, builtinKey: 'upcoming', params: { days: 7, z: null }, title: ' T ', layout: L,
-  builtin: { key: 'upcoming', label: 'Upcoming', minW: 100, kind: 'template', templateType: 'TABLE', href: '/upcoming' },
+  builtin: { category: 'overview', key: 'upcoming', label: 'Upcoming', minW: 100, kind: 'template', templateType: 'TABLE', href: '/upcoming' },
 };
 const reportWidget: WidgetResponse = {
   id: 'r1', kind: 'report', reportId: 'rep', title: null, layout: { x: 0, y: 24, w: 50, h: 10 },

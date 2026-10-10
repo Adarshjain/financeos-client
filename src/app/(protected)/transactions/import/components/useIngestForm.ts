@@ -9,6 +9,7 @@ import { useJobStatusPolling } from '@/components/jobs/useJobStatusPolling';
 import { type Account, isAccountClosed, supportsIngestion } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
 import { multipartBodySerializer } from '@/lib/api/multipart';
+import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
@@ -38,6 +39,8 @@ export function useIngestForm({ accounts, initialAccountId }: UseIngestFormProps
     if (job.status === 'SUCCEEDED') {
       toast.success('Statement ingestion completed — see results below.');
       qc.invalidateQueries({ queryKey: keys.transactions.all });
+      // Imported transactions move balances, the emergency fund and dashboard widgets too.
+      void invalidateMoneyQueries(qc);
     } else if (job.status === 'FAILED') {
       toast.error(job.errorMessage || 'Ingestion failed.');
     } else {

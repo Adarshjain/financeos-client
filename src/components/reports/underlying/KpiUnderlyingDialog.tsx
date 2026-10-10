@@ -10,6 +10,9 @@
 // Wide centred dialog on desktop, the standard bottom sheet on mobile; the
 // table scrolls sideways inside the body. Sort, page and period are local to
 // one opening (the content unmounts on close, so the next opening starts fresh).
+// Without a `kpi` (opened from a widget that shows no KPI tile, e.g. a legend
+// or a heatmap day) the header figure and range come from the response itself,
+// with a skeleton until the first page loads.
 // The table dims while a page or sort loads; a failed one keeps the last good
 // table under the error so the pager and headers can still move on or retry.
 
@@ -32,6 +35,7 @@ import type { KpiData, SortClause, TableRow } from '@/lib/reports.types';
 import { toastError } from '@/lib/toastError';
 import { cn } from '@/lib/utils';
 
+import { LazyUnderlyingTransactionDialog } from './LazyUnderlyingTransactionDialog';
 import { RowBreakdownView } from './RowBreakdownView';
 import {
   formatKpiValue,
@@ -40,7 +44,6 @@ import {
   underlyingCsvFilename,
 } from './underlying.helpers';
 import type {
-  BreakdownFrame,
   KpiUnderlyingResponse,
   UnderlyingPeriod,
   UnderlyingSource,
@@ -51,13 +54,13 @@ import {
   UnderlyingPeriodTabs,
   UnderlyingSummary,
 } from './UnderlyingParts';
-import { UnderlyingTransactionDialog } from './UnderlyingTransactionDialog';
+import { useBreakdownStack } from './useBreakdownStack';
 import { fetchUnderlyingCsv, useKpiUnderlying } from './useKpiUnderlying';
 
 export interface KpiUnderlyingDialogProps {
   source: UnderlyingSource;
-  /** The KPI as shown on the tile; its value and ranges head the dialog. */
-  kpi: KpiData;
+  /** The KPI as shown on the tile; its value and ranges head the dialog. Absent: headed from the response. */
+  kpi?: KpiData;
   /** Report / widget name. */
   title: string;
   open: boolean;
@@ -83,8 +86,7 @@ function UnderlyingContent({
   const [period, setPeriod] = useState<UnderlyingPeriod>('current');
   const [sort, setSort] = useState<SortClause | null>(null);
   const [page, setPage] = useState(0);
-  const [stack, setStack] = useState<BreakdownFrame[]>([]);
-  const [transactionId, setTransactionId] = useState<string | null>(null);
+  const nav = useBreakdownStack();
 
   const query = useKpiUnderlying(source, { period, page, size: UNDERLYING_PAGE_SIZE, sort });
   // The last page that loaded. A failed page or sort fetch leaves the query with
@@ -95,11 +97,29 @@ function UnderlyingContent({
   // While another period loads, the kept page belongs to the old period: hide it.
   const data = shown && shown.period === period ? shown : null;
 
-  const comparison = kpi.comparison;
   const isPrevious = period === 'previous';
-  const headerValue = isPrevious ? (comparison?.previousValue ?? null) : kpi.value;
-  const headerRange = isPrevious ? (comparison?.previousDateRange ?? null) : kpi.meta.dateRange;
-  const fmt = (value: number | null) => formatKpiValue(value, kpi);
+  // Headless (no kpi): the figure for the period on screen is the response's own aggregate.
+  const head = kpi
+    ? {
+        value: isPrevious ? (kpi.comparison?.previousValue ?? null) : kpi.value,
+        range: isPrevious ? (kpi.comparison?.previousDateRange ?? null) : kpi.meta.dateRange,
+        hasPrevious: kpi.comparison != null,
+        previousRange: kpi.comparison?.previousDateRange ?? null,
+        previousValue: kpi.comparison?.previousValue ?? null,
+      }
+    : {
+        value: data?.value ?? null,
+        range: data?.range ?? null,
+        hasPrevious: shown?.previousAvailable === true,
+        previousRange: shown?.previousRange ?? null,
+        previousValue: isPrevious ? (data?.value ?? null) : null,
+      };
+  const headerRange = head.range;
+  // The format: the tile's KPI, else the response (which echoes the KPI's measure and format).
+  const formatSource = kpi ?? shown;
+  const fmt = (value: number | null) => (formatSource ? formatKpiValue(value, formatSource) : '');
+  // Only a headless dialog waits for the figure; a failed load leaves it blank.
+  const headerLoading = !kpi && !data && !query.isError;
 
   const changePeriod = (next: UnderlyingPeriod) => {
     setPeriod(next);
@@ -128,11 +148,11 @@ function UnderlyingContent({
   const onRowClick = (row: TableRow) => {
     if (row.id == null) return;
     const id = String(row.id);
-    if (data?.rowAction === 'transaction') setTransactionId(id);
-    else if (data?.rowAction === 'breakdown') setStack([{ datasource: data.datasource, rowId: id }]);
+    if (data?.rowAction === 'transaction') nav.openTransaction(id);
+    else if (data?.rowAction === 'breakdown') nav.push({ datasource: data.datasource, rowId: id });
   };
   const rowsClickable = data?.rowAction === 'transaction' || data?.rowAction === 'breakdown';
-  const top = stack[stack.length - 1];
+  const top = nav.top;
   const table = data ? asReportData(data.table) : null;
 
   return (
@@ -140,9 +160,13 @@ function UnderlyingContent({
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
         <div className="flex flex-wrap items-baseline justify-center gap-x-2 gap-y-1 sm:justify-start">
-          <span className="text-2xl font-semibold tracking-tight text-slate-900 tabular-nums dark:text-white">
-            {fmt(headerValue)}
-          </span>
+          {headerLoading ? (
+            <Skeleton className="h-8 w-32" data-testid="underlying-header-loading" />
+          ) : (
+            <span className="text-2xl font-semibold tracking-tight text-slate-900 tabular-nums dark:text-white">
+              {fmt(head.value)}
+            </span>
+          )}
           {headerRange && (
             <span className="text-xs text-slate-500" title={formatDateRangeFull(headerRange.from, headerRange.to)}>
               {formatDateRange(headerRange.from, headerRange.to)}
@@ -154,21 +178,21 @@ function UnderlyingContent({
       <DialogBody className="space-y-4">
         {top ? (
           <RowBreakdownView
-            key={`${stack.length}:${top.rowId}`}
+            key={`${nav.stack.length}:${top.rowId}`}
             datasource={top.datasource}
             rowId={top.rowId}
-            onBack={() => setStack((s) => s.slice(0, -1))}
-            onOpenTransaction={setTransactionId}
-            onOpenBreakdown={(frame) => setStack((s) => [...s, frame])}
+            onBack={nav.pop}
+            onOpenTransaction={nav.openTransaction}
+            onOpenBreakdown={nav.push}
           />
         ) : (
           <>
-            {comparison && (
+            {head.hasPrevious && (
               <UnderlyingPeriodTabs
                 period={period}
                 onPeriodChange={changePeriod}
-                previousRange={comparison.previousDateRange}
-                previousValueText={comparison.previousValue != null ? fmt(comparison.previousValue) : null}
+                previousRange={head.previousRange}
+                previousValueText={head.previousValue != null ? fmt(head.previousValue) : null}
               />
             )}
             {query.isError && !data ? (
@@ -220,7 +244,7 @@ function UnderlyingContent({
         <DialogFooter primaryAction={{ label: 'Download CSV', onClick: download }} secondaryAction={{ label: 'Close' }} />
       )}
 
-      <UnderlyingTransactionDialog transactionId={transactionId} onClose={() => setTransactionId(null)} />
+      <LazyUnderlyingTransactionDialog transactionId={nav.transactionId} onClose={nav.closeTransaction} />
     </>
   );
 }

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import { api } from '@/lib/api/client';
+import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { Transaction } from '@/lib/transaction.types';
@@ -38,7 +39,7 @@ export const DeleteTransactionDialog = ({
     onSuccess: () => {
       toast.success('Transaction deleted!');
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: keys.accounts.all });
+      void invalidateMoneyQueries(queryClient);
       onSuccess?.();
     },
     onError: (error: unknown) => {

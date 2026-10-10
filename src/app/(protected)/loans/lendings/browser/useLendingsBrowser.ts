@@ -9,18 +9,13 @@ import {
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { api, ApiError } from '@/lib/api/client';
-import type { CounterpartySelection } from '@/lib/lending.types';
-import { directionOf, fromEntryType, type LendingEntryType } from '@/lib/lendingEntry';
+import { useAddLendingForm } from '@/components/lendings/useAddLendingForm';
+import { api } from '@/lib/api/client';
 import type { Page } from '@/lib/pagination';
 import { invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
-import { Transaction } from '@/lib/transaction.types';
-import {
-  CounterpartyResponse,
-  CreateLendingRequest,
-} from '@/lib/types';
+import { CounterpartyResponse } from '@/lib/types';
 
 const PAGE_SIZE = 50;
 
@@ -48,44 +43,8 @@ export function useLendingsBrowser({
 
   const [page, setPage] = useState(initialPage);
   const [search, setSearch] = useState('');
-  const [createOpen, setCreateOpen] = useState(false);
-
-  // Form state
-  const [party, setParty] = useState<CounterpartySelection | null>(null);
-  const [entryType, setEntryType] = useState<LendingEntryType>('lent');
-  const [amount, setAmount] = useState('');
-  const [entryDate, setEntryDate] = useState(
-    new Date().toISOString().split('T')[0]
-  );
-  const [expectedReturnDate, setExpectedReturnDate] = useState('');
-  const [notes, setNotes] = useState('');
-  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
-
-  // Fresh dialog each time it opens or closes; clears any leftover picks from
-  // a cancelled or just-submitted create (both the trigger button and the
-  // dialog's own close/cancel/outside-click route through this setter).
-  const handleSetCreateOpen = (open: boolean) => {
-    setCreateOpen(open);
-    setSelectedTx(null);
-    setParty(null);
-    setEntryType('lent');
-  };
-
-  const handleSetEntryType = (next: LendingEntryType) => {
-    // The picker's type filter (DEBIT/CREDIT) is direction-derived, so a
-    // previously-selected transaction may no longer be valid once the money
-    // flows the other way. Switching principal <-> settlement keeps it.
-    if (directionOf(next) !== directionOf(entryType)) setSelectedTx(null);
-    setEntryType(next);
-  };
-
-  const handleSelectTx = (t: Transaction) => {
-    setSelectedTx(t);
-    if (!amount) setAmount(String(Math.abs(t.amount)));
-    if (!entryDate) setEntryDate(t.date);
-  };
-
-  const handleClearTx = () => setSelectedTx(null);
+  // The create dialog's form; a new entry returns the list to its first page.
+  const form = useAddLendingForm({ onCreated: () => setPage(0) });
 
   const { data } = useQuery({
     queryKey: keys.lendings.counterparties({ page, size: PAGE_SIZE }),
@@ -110,53 +69,12 @@ export function useLendingsBrowser({
       toastError(e, 'Failed to delete counterparty'),
   });
 
-  const createLendingMutation = useMutation({
-    mutationFn: (body: CreateLendingRequest) =>
-      api.POST('/api/v1/lendings', { body }).then((r) => r.data!),
-    onSuccess: () => {
-      invalidateLendings();
-      qc.invalidateQueries({ queryKey: keys.transactions.all });
-    },
-    onError: (e) => toastError(e, 'Failed to create lending'),
-  });
-
   const handlePageChange = (newPage: number) => setPage(newPage);
 
   const handleDeleteCp = async (cp: CounterpartyResponse) => {
     try {
       await deleteCpMutation.mutateAsync(cp.id);
       toast.success(`Deleted ${cp.name}`);
-    } catch {
-      // onError already surfaced the toast.
-    }
-  };
-
-  const handleCreateLending = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!party) {
-      toast.error('Pick a person');
-      return;
-    }
-    if (!amount || Number(amount) <= 0) {
-      toast.error('Amount must be greater than zero');
-      return;
-    }
-
-    try {
-      await createLendingMutation.mutateAsync({
-        ...(party.kind === 'new'
-          ? { newCounterpartyName: party.name }
-          : { counterpartyId: party.counterparty.id }),
-        ...fromEntryType(entryType),
-        amount: Number(amount),
-        entryDate,
-        expectedReturnDate: expectedReturnDate || undefined,
-        transactionId: selectedTx?.id,
-        notes: notes.trim() || undefined,
-      });
-      toast.success('Lending recorded successfully');
-      handleSetCreateOpen(false);
-      setPage(0);
     } catch {
       // onError already surfaced the toast.
     }
@@ -176,27 +94,27 @@ export function useLendingsBrowser({
     counterpartiesPage,
     search,
     setSearch,
-    createOpen,
-    setCreateOpen: handleSetCreateOpen,
-    party,
-    setParty,
-    entryType,
-    setEntryType: handleSetEntryType,
-    amount,
-    setAmount,
-    entryDate,
-    setEntryDate,
-    expectedReturnDate,
-    setExpectedReturnDate,
-    notes,
-    setNotes,
-    selectedTx,
-    onSelectTx: handleSelectTx,
-    onClearTx: handleClearTx,
-    loading: createLendingMutation.isPending,
+    createOpen: form.open,
+    setCreateOpen: form.setOpen,
+    party: form.party,
+    setParty: form.setParty,
+    entryType: form.entryType,
+    setEntryType: form.setEntryType,
+    amount: form.amount,
+    setAmount: form.setAmount,
+    entryDate: form.entryDate,
+    setEntryDate: form.setEntryDate,
+    expectedReturnDate: form.expectedReturnDate,
+    setExpectedReturnDate: form.setExpectedReturnDate,
+    notes: form.notes,
+    setNotes: form.setNotes,
+    selectedTx: form.selectedTx,
+    onSelectTx: form.onSelectTx,
+    onClearTx: form.onClearTx,
+    loading: form.loading,
     filteredContent,
     handlePageChange,
     handleDeleteCp,
-    handleCreateLending,
+    handleCreateLending: form.handleCreateLending,
   };
 }

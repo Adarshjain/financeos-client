@@ -6,7 +6,11 @@ import { api } from '@/lib/api/client';
 import type { BuiltinWidgetResponse } from '@/lib/dashboards.types';
 import { keys } from '@/lib/query/keys';
 
-/** The catalog only changes with a server release; keep it for the session's working set. */
+/**
+ * The entries only change with a server release; their per-user
+ * `unavailableReason` can change sooner, so the Add-widget picker
+ * invalidates the catalog each time it opens.
+ */
 export const BUILTINS_STALE_TIME = 10 * 60 * 1000;
 
 /** GET /dashboards/builtins — shared by the hook and imperative `fetchQuery` callers. */

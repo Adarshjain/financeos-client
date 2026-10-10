@@ -29,12 +29,14 @@ async function upcomingTitles(api: ApiClient, params?: unknown): Promise<string[
 }
 
 test.describe('Built-in widget catalog (@api)', () => {
-  test('GET /dashboards/builtins lists the four built-ins with their templates, widths and params', async ({ request }) => {
+  test('GET /dashboards/builtins lists the original four built-ins first with their templates, widths and params', async ({ request }) => {
     const { api } = await newUser(request, 'builtins-catalog');
     const res = await api.GET('/api/v1/dashboards/builtins');
     expectStatus(res, 200);
     const list = res.data!;
-    expect(list.map((b) => b.key)).toEqual(['net_worth', 'attention', 'upcoming', 'bills_due']);
+    // The widget expansion appends fourteen more (covered in builtin-widgets.spec.ts).
+    expect(list.map((b) => b.key).slice(0, 4)).toEqual(['net_worth', 'attention', 'upcoming', 'bills_due']);
+    expect(list).toHaveLength(18);
 
     const byKey = Object.fromEntries(list.map((b) => [b.key, b]));
     expect(byKey.net_worth).toMatchObject({
@@ -55,7 +57,9 @@ test.describe('Built-in widget catalog (@api)', () => {
     expect(byKey.attention.datasource ?? null).toBeNull();
 
     expect(byKey.upcoming).toMatchObject({ label: 'Upcoming', kind: 'template', minW: 100, templateType: 'TABLE', datasource: 'obligations', href: '/upcoming' });
-    expect(byKey.upcoming.params).toEqual([{ name: 'days', type: 'int', required: false, defaultValue: 14, min: 1, max: 90 }]);
+    expect(byKey.upcoming.params).toEqual([
+      { name: 'days', type: 'int', required: false, defaultValue: 14, min: 1, max: 90, ref: null, options: null, maxItems: null, itemPattern: null },
+    ]);
     const def = byKey.upcoming.templateDefinition as { filters: Array<{ field: string; operator: string; value: { amount: number } }> };
     expect(def.filters).toEqual([{ field: 'dueDate', operator: 'next_x_days', value: { amount: 14 } }]);
 

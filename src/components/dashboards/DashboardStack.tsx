@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 
 import type { WidgetResponse } from '@/lib/dashboards.types';
 
-import { widgetVisualKind } from './widgetMeta';
+import { phoneSlot } from './widgetMeta';
 
 export type WidgetFit = 'fill' | 'content';
 
@@ -26,11 +26,11 @@ export function DashboardStack({ widgets, renderWidget }: DashboardStackProps) {
   return (
     <div className="flex flex-col gap-3 px-4 pt-3" data-testid="dashboard-stack">
       {stackOrder(widgets).map((w) => {
-        const kind = widgetVisualKind(w);
-        // Component built-ins (Inbox, Bills due) size to their content, capped with internal scroll.
-        if (kind === 'component') return <div key={w.id}>{renderWidget(w, 'content')}</div>;
+        const slot = phoneSlot(w);
+        // Content-sized slots (Inbox, Bills due) are capped with internal scroll by the widget itself.
+        if (slot.fit === 'content') return <div key={w.id}>{renderWidget(w, 'content')}</div>;
         return (
-          <div key={w.id} className={kind === 'kpi' ? 'h-[140px]' : 'h-80'}>
+          <div key={w.id} className={slot.className}>
             {renderWidget(w, 'fill')}
           </div>
         );

@@ -11,8 +11,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { isBuiltinWidget, widgetTitle } from '@/lib/dashboards.helpers';
-import type { WidgetResponse } from '@/lib/dashboards.types';
+import type { WidgetParams, WidgetResponse } from '@/lib/dashboards.types';
 
+import { nextWidth, widthToggleLabel } from './editor/dashboardEditor.helpers';
 import { WidgetActionsMenu } from './WidgetActionsMenu';
 import { widgetHref, WidgetIcon, WidgetSubtitle } from './widgetMeta';
 
@@ -30,9 +31,17 @@ interface WidgetViewHeaderProps {
   onExpand: () => void;
   /** KPI widgets with their value loaded: the menu's "View underlying data". */
   onViewUnderlying?: () => void;
+  /** Built-ins: saves new params from the menu's "Widget settings". */
+  onParamsChange?: (params: WidgetParams) => Promise<void>;
 }
 
-export function WidgetViewHeader({ widget, available, onExpand, onViewUnderlying }: WidgetViewHeaderProps) {
+export function WidgetViewHeader({
+  widget,
+  available,
+  onExpand,
+  onViewUnderlying,
+  onParamsChange,
+}: WidgetViewHeaderProps) {
   const href = widgetHref(widget, available);
   const title = widgetTitle(widget);
   return (
@@ -55,7 +64,12 @@ export function WidgetViewHeader({ widget, available, onExpand, onViewUnderlying
         </Button>
       )}
       {available && (
-        <WidgetActionsMenu widget={widget} onExpand={onExpand} onViewUnderlying={onViewUnderlying} />
+        <WidgetActionsMenu
+          widget={widget}
+          onExpand={onExpand}
+          onViewUnderlying={onViewUnderlying}
+          onParamsChange={onParamsChange}
+        />
       )}
     </div>
   );
@@ -64,9 +78,6 @@ export function WidgetViewHeader({ widget, available, onExpand, onViewUnderlying
 interface WidgetEditHeaderProps {
   widget: WidgetResponse;
   available: boolean;
-  isFullWidth: boolean;
-  /** False for a widget whose minimum width is the whole grid. */
-  canToggleWidth?: boolean;
   onTitleChange?: (title: string | null) => void;
   onRemove?: () => void;
   onToggleWidth?: () => void;
@@ -76,18 +87,15 @@ interface WidgetEditHeaderProps {
 export function WidgetEditHeader({
   widget,
   available,
-  isFullWidth,
-  canToggleWidth = true,
   onTitleChange,
   onRemove,
   onToggleWidth,
 }: WidgetEditHeaderProps) {
   const reportId = available && !isBuiltinWidget(widget) ? (widget.reportId ?? null) : null;
-  const widthTitle = !canToggleWidth
-    ? 'This widget needs the full width'
-    : isFullWidth
-      ? 'Collapse to half width'
-      : 'Expand to full width';
+  // The toggle cycles ¼ → ½ → full (see widthStops); its label names the next stop.
+  const next = nextWidth(widget);
+  const widthTitle = widthToggleLabel(widget);
+  const collapses = next != null && next < widget.layout.w;
   return (
     <div className="dashboard-drag-handle flex shrink-0 cursor-move items-center gap-1.5 border-b border-slate-100 bg-slate-50/70 px-3 py-2 dark:border-slate-800 dark:bg-slate-800/40">
       <span className={`${chipClass} cursor-grab active:cursor-grabbing`} aria-hidden="true">
@@ -126,11 +134,11 @@ export function WidgetEditHeader({
         onClick={onToggleWidth}
         onMouseDown={stopDrag}
         onTouchStart={stopDrag}
-        disabled={!canToggleWidth}
+        disabled={next == null}
         title={widthTitle}
         aria-label={widthTitle}
       >
-        {isFullWidth ? (
+        {collapses ? (
           <ChevronsRightLeft className="text-slate-500" />
         ) : (
           <SeparatorVertical className="text-slate-500" />

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Account, isAccountClosed } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
+import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
@@ -30,14 +31,14 @@ export function DeleteAccount({ account }: DeleteAccountProps) {
 
   const deleteAccountMutation = useMutation({
     mutationFn: (id: string) => api.DELETE('/api/v1/accounts/{id}', { params: { path: { id } } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.accounts.all }),
+    onSuccess: () => invalidateMoneyQueries(qc),
   });
 
   const closeAccountMutation = useMutation({
     mutationFn: (id: string) =>
       api.POST('/api/v1/accounts/{id}/close', { params: { path: { id } } }).then((r) => r.data as Account),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: keys.accounts.all });
+      void invalidateMoneyQueries(qc);
       qc.invalidateQueries({ queryKey: keys.transactions.all });
     },
   });

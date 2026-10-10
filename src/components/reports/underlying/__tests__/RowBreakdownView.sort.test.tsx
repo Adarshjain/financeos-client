@@ -52,6 +52,7 @@ const breakdown = (): RowBreakdownResponse =>
     datasource: 'net_worth',
     rowId: 'a1',
     title: 'HDFC Savings',
+    notCounted: false,
     total: 1000,
     totalLabel: 'Balance',
     format: 'currency',

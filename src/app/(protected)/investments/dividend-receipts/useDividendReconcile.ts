@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { api } from '@/lib/api/client';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
@@ -102,7 +103,7 @@ export function useDividendReconcile({ brokerAccountId, onLinked }: UseDividendR
       toast.error(`+${skipped.length - MAX_SKIPPED_TOASTS} more`);
     }
     await Promise.all([
-      qc.invalidateQueries({ queryKey: keys.investments.all }),
+      invalidateInvestmentQueries(qc),
       qc.invalidateQueries({ queryKey: keys.transactions.all }),
     ]);
     await query.refetch();

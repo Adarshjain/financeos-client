@@ -45,6 +45,7 @@ const breakdown = (over: Partial<RowBreakdownResponse> = {}): RowBreakdownRespon
   rowId: 'a1',
   title: 'HDFC Savings',
   subtitle: 'Asset',
+  notCounted: false,
   kindLabel: 'Bank account',
   total: 15000,
   totalLabel: 'Balance',
@@ -91,6 +92,29 @@ describe('RowBreakdownView', () => {
     expect(await screen.findByText('Asset · Bank account')).toBeInTheDocument();
     const total = screen.getByText('Balance', { selector: 'p' });
     expect(total).toHaveTextContent(`Balance ${formatAmount(15000, 'currency')}`);
+  });
+
+  it('a counted row has no not-counted note', async () => {
+    mockBreakdown(Promise.resolve({ data: breakdown() }));
+    renderWithQuery(<RowBreakdownView datasource="net_worth" rowId="a1" {...handlers()} />);
+    await screen.findByText('HDFC Savings');
+    expect(screen.queryByTestId('breakdown-not-counted')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ['Excluded from net worth', 'Excluded from net worth — shown for reference, left out of the total.'],
+    ['Closed', 'Closed — shown for reference, left out of the total.'],
+    [null, 'shown for reference, left out of the total.'],
+  ])('a not-counted row (%s) still shows its breakdown with a neutral note', async (reason, text) => {
+    mockBreakdown(Promise.resolve({
+      data: breakdown({ subtitle: 'Not counted in net worth', notCounted: true, notCountedReason: reason }),
+    }));
+    renderWithQuery(<RowBreakdownView datasource="net_worth" rowId="a1" {...handlers()} />);
+    const note = await screen.findByTestId('breakdown-not-counted');
+    expect(note).toHaveTextContent(text);
+    expect(note.className).not.toMatch(/rose/);
+    expect(screen.getByText('Not counted in net worth · Bank account')).toBeInTheDocument();
+    expect(screen.getByText('Salary')).toBeInTheDocument();
   });
 
   it('omits the subtitle line when there is neither subtitle nor kind', async () => {

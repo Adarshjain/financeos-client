@@ -42,12 +42,12 @@ const kpi: KpiData = {
 const template = (over: Partial<WidgetResponse> = {}): WidgetResponse => ({
   id: 'w-up', kind: 'builtin', reportId: null, builtinKey: 'upcoming',
   params: { days: 14, junk: null }, title: null, layout: L,
-  builtin: { key: 'upcoming', label: 'Upcoming', minW: 100, kind: 'template', templateType: 'TABLE', href: '/upcoming' },
+  builtin: { category: 'overview', key: 'upcoming', label: 'Upcoming', minW: 100, kind: 'template', templateType: 'TABLE', href: '/upcoming' },
   ...over,
 });
 const component = (key: string, params: Record<string, unknown> = {}, over: Partial<WidgetResponse> = {}): WidgetResponse => ({
   id: `w-${key}`, kind: 'builtin', reportId: null, builtinKey: key, params, title: null, layout: L,
-  builtin: { key, label: key === 'attention' ? 'Inbox' : 'Bills due', minW: 100, kind: 'component', templateType: null, href: key === 'attention' ? '/inbox' : null },
+  builtin: { category: 'overview', key, label: key === 'attention' ? 'Inbox' : 'Bills due', minW: 100, kind: 'component', templateType: null, href: key === 'attention' ? '/inbox' : null },
   ...over,
 });
 
@@ -70,7 +70,7 @@ describe('DashboardWidgetView built-ins', () => {
     vi.mocked(api.POST).mockResolvedValue({ data: kpi } as never);
     const w = template({
       id: 'w-nw', builtinKey: 'net_worth', params: {},
-      builtin: { key: 'net_worth', label: 'Net worth', minW: 50, kind: 'template', templateType: 'KPI', href: '/accounts' },
+      builtin: { category: 'overview', key: 'net_worth', label: 'Net worth', minW: 50, kind: 'template', templateType: 'KPI', href: '/accounts' },
     });
     renderWithQuery(<DashboardWidgetView widget={w} />);
     await waitFor(() => expect(api.POST).toHaveBeenCalled());
@@ -160,7 +160,7 @@ describe('DashboardWidgetView built-ins', () => {
       bills.unmount();
       renderWithQuery(
         <DashboardWidgetView
-          widget={template({ id: 'nw', builtinKey: 'net_worth', params: {}, builtin: { key: 'net_worth', label: 'Net worth', minW: 50, kind: 'template', templateType: 'KPI', href: '/accounts' } })}
+          widget={template({ id: 'nw', builtinKey: 'net_worth', params: {}, builtin: { category: 'overview', key: 'net_worth', label: 'Net worth', minW: 50, kind: 'template', templateType: 'KPI', href: '/accounts' } })}
         />,
       );
       expect(screen.getByText('All accounts')).toBeInTheDocument();
@@ -257,7 +257,7 @@ describe('DashboardWidgetView built-ins', () => {
       const onTitle = vi.fn();
       const w = template({
         id: 'nw', builtinKey: 'net_worth', params: {}, layout: { ...L, w: 50 },
-        builtin: { key: 'net_worth', label: 'Net worth', minW: 50, kind: 'template', templateType: 'KPI', href: '/accounts' },
+        builtin: { category: 'overview', key: 'net_worth', label: 'Net worth', minW: 50, kind: 'template', templateType: 'KPI', href: '/accounts' },
       });
       vi.mocked(api.POST).mockResolvedValue({ data: kpi } as never);
       renderWithQuery(<DashboardWidgetView widget={w} editing onToggleWidth={onToggle} onRemove={onRemove} onTitleChange={onTitle} />);
@@ -272,7 +272,7 @@ describe('DashboardWidgetView built-ins', () => {
     it('a full-width toggleable widget offers collapse', () => {
       const w = template({
         id: 'nw', builtinKey: 'net_worth', params: {}, layout: { ...L, w: 100 },
-        builtin: { key: 'net_worth', label: 'Net worth', minW: 50, kind: 'template', templateType: 'KPI', href: null },
+        builtin: { category: 'overview', key: 'net_worth', label: 'Net worth', minW: 50, kind: 'template', templateType: 'KPI', href: null },
       });
       vi.mocked(api.POST).mockResolvedValue({ data: kpi } as never);
       renderWithQuery(<DashboardWidgetView widget={w} editing />);

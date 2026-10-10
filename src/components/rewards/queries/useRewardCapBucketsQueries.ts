@@ -3,6 +3,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { api } from '@/lib/api/client';
+import { invalidateRewardQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { RewardCapBucketRequest } from '@/lib/rewards.types';
 
@@ -23,7 +24,7 @@ export function useCreateRewardCapBucket() {
   return useMutation({
     mutationFn: (body: RewardCapBucketRequest) =>
       api.POST('/api/v1/reward-cap-buckets', { body }).then((r) => r.data!),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rewards.all }),
+    onSuccess: () => invalidateRewardQueries(qc),
   });
 }
 
@@ -34,7 +35,7 @@ export function useUpdateRewardCapBucket() {
       api
         .PUT('/api/v1/reward-cap-buckets/{id}', { params: { path: { id } }, body })
         .then((r) => r.data!),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rewards.all }),
+    onSuccess: () => invalidateRewardQueries(qc),
   });
 }
 
@@ -43,6 +44,6 @@ export function useDeleteRewardCapBucket() {
   return useMutation({
     mutationFn: (id: string) =>
       api.DELETE('/api/v1/reward-cap-buckets/{id}', { params: { path: { id } } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rewards.all }),
+    onSuccess: () => invalidateRewardQueries(qc),
   });
 }

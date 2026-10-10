@@ -33,7 +33,7 @@ const builtin = (id: string, key: string, kind: string, templateType: string | n
   params,
   title: null,
   layout: L,
-  builtin: { key, label: key, minW: 50, kind, templateType },
+  builtin: { category: 'overview', key, label: key, minW: 50, kind, templateType },
 });
 
 describe('prefetchWidgetData', () => {

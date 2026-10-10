@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
-import { keys } from '@/lib/query/keys';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { toastError } from '@/lib/toastError';
 import type {
   AcceptSuggestionsRequest,
@@ -44,7 +44,7 @@ export function useDividendSuggestionsDialog({
           body: body as Schemas['AcceptSuggestionsRequest'],
         })
         .then((r) => r.data! as AcceptSuggestionsResponse),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const isScanning = scanMutation.isPending;
   const isSubmitting = acceptMutation.isPending;

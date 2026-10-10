@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Account, AccountRequest, CloseAccountRequest } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
 import { Schemas } from '@/lib/api/types';
+import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { GmailCleanupPreview, GmailCleanupResult } from '@/lib/types';
 
@@ -15,7 +16,8 @@ import { GmailCleanupPreview, GmailCleanupResult } from '@/lib/types';
  */
 export function useAccountFormMutations() {
   const qc = useQueryClient();
-  const invalidateAccounts = () => qc.invalidateQueries({ queryKey: keys.accounts.all });
+  // Balances, the emergency fund (liquid accounts) and dashboard widgets all follow the account list.
+  const invalidateAccounts = () => invalidateMoneyQueries(qc);
   const invalidateAccountsAndTransactions = () => {
     invalidateAccounts();
     qc.invalidateQueries({ queryKey: keys.transactions.all });

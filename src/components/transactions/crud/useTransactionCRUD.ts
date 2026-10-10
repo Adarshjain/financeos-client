@@ -10,6 +10,7 @@ import { api, ApiError } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useCategories } from '@/lib/query/hooks/useCategories';
+import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import {
@@ -152,7 +153,7 @@ export function useTransactionCRUD({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: keys.accounts.all });
+      void invalidateMoneyQueries(queryClient);
     },
   });
 
@@ -166,7 +167,7 @@ export function useTransactionCRUD({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: keys.accounts.all });
+      void invalidateMoneyQueries(queryClient);
     },
   });
 

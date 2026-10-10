@@ -85,7 +85,12 @@ export function DashboardEditorHeader({
       <div className="ml-auto flex items-center gap-2">
         {editing ? (
           <>
-            <AddWidgetDialog reports={reports} onAdd={onAddWidget} onAddBuiltin={onAddBuiltin} />
+            <AddWidgetDialog
+              reports={reports}
+              onAdd={onAddWidget}
+              onAddBuiltin={onAddBuiltin}
+              hasUnsavedChanges={isDirty}
+            />
             <Button onClick={onSave} disabled={saving} className="flex-1">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {mode === 'edit' ? 'Save' : 'Create'}

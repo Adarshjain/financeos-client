@@ -18,7 +18,7 @@ function asAccount(raw: unknown): Account | null {
   return (raw ?? null) as Account | null;
 }
 
-export function useAccounts(initialData?: Account[]) {
+export function useAccounts(initialData?: Account[], { enabled = true }: { enabled?: boolean } = {}) {
   const query = useQuery<Account[]>({
     queryKey: keys.accounts.list(),
     queryFn: async () => {
@@ -26,6 +26,7 @@ export function useAccounts(initialData?: Account[]) {
       return asAccounts(data);
     },
     initialData,
+    enabled,
   });
 
   return query;

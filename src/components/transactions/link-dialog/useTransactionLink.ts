@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Account } from '@/lib/account.types';
 import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
+import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import {
@@ -125,6 +126,8 @@ export function useTransactionLink({
     onSuccess: () => {
       toast.success('Transactions linked successfully');
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
+      // A TRANSFER/REVERSAL link moves the emergency fund's outflow and the spending calendar.
+      void invalidateMoneyQueries(queryClient);
       onOpenChange(false);
       onSuccess?.();
     },

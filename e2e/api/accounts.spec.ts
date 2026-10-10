@@ -56,6 +56,9 @@ const CREDIT_CARD_KEYS = new Set([
   'cardholders',
   // V92: the projected statement period end already announced as missing (notifications).
   'statementExpectedNotifiedFor',
+  // Widgets: live utilisation (owed ÷ limit) and the limit it uses (account's, else the latest statement's).
+  'utilizationPct',
+  'effectiveCreditLimit',
 ]);
 
 const BROKER_KEYS = new Set([

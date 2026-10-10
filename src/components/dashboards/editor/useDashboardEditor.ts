@@ -16,6 +16,7 @@ import type {
   WidgetParams,
   WidgetResponse,
 } from '@/lib/dashboards.types';
+import { useSaveWidgetParams } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 import { toastError } from '@/lib/toastError';
@@ -48,6 +49,8 @@ export function useDashboardEditor({
   );
   const [isDefault, setIsDefault] = useState(dashboard?.isDefault ?? false);
   const [editing, setEditing] = useState(mode === 'create');
+  // The last saved version: Discard returns to it (not to the page's initial load).
+  const [saved, setSaved] = useState<DashboardResponse | undefined>(dashboard);
   const [baseline, setBaseline] = useState(() =>
     editSignature(
       dashboard?.name ?? '',
@@ -64,6 +67,7 @@ export function useDashboardEditor({
     mutationFn: ({ id, body }: { id: string; body: UpdateDashboardRequest }) =>
       api.PUT('/api/v1/dashboards/{id}', { params: { path: { id } }, body }).then((r) => r.data!),
   });
+  const paramsMutation = useSaveWidgetParams();
   const saving = createMutation.isPending || updateMutation.isPending;
 
   const isDirty = editSignature(name, description, widgets) !== baseline;
@@ -89,6 +93,27 @@ export function useDashboardEditor({
   const toggleWidgetWidth = (id: string) =>
     setWidgets((prev) => toggleWidth(prev, id));
 
+  /**
+   * "Widget settings" (view mode): save one widget's new params straight away
+   * — the dashboard as shown, with only that widget changed — and take the
+   * saved dashboard as the new baseline. Rejects on failure (the dialog
+   * reports it and stays open). Not offered while editing or creating.
+   */
+  const saveWidgetParams = async (widgetId: string, params: WidgetParams) => {
+    if (!dashboard || mode !== 'edit') return;
+    const data = await paramsMutation.mutateAsync({
+      dashboard: { id: dashboard.id, name, description, isDefault, widgets },
+      widgetId,
+      params,
+    });
+    setSaved(data);
+    setWidgets(data.widgets);
+    setName(data.name);
+    setDescription(data.description ?? '');
+    setIsDefault(data.isDefault);
+    setBaseline(editSignature(data.name, data.description ?? '', data.widgets));
+  };
+
   const startEdit = () => {
     setBaseline(editSignature(name, description, widgets));
     setEditing(true);
@@ -99,9 +124,9 @@ export function useDashboardEditor({
       router.push('/dashboards');
       return;
     }
-    const n = dashboard?.name ?? '';
-    const d = dashboard?.description ?? '';
-    const ws = dashboard?.widgets ?? [];
+    const n = saved?.name ?? '';
+    const d = saved?.description ?? '';
+    const ws = saved?.widgets ?? [];
     setName(n);
     setDescription(d);
     setWidgets(ws);
@@ -142,6 +167,7 @@ export function useDashboardEditor({
       if (mode === 'create') {
         router.push(`/dashboards/${data.id}`);
       } else {
+        setSaved(data);
         setWidgets(data.widgets);
         setName(data.name);
         setDescription(data.description ?? '');
@@ -177,6 +203,7 @@ export function useDashboardEditor({
     removeWidget,
     updateTitle,
     toggleWidgetWidth,
+    saveWidgetParams,
     startEdit,
     discardAndExit,
     save,

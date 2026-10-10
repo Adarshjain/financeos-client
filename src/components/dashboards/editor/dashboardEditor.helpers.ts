@@ -9,6 +9,7 @@ import {
   isBuiltinWidget,
   newBuiltinWidget,
   newWidget,
+  QUARTER_WIDTH,
   widgetMinW,
   widgetParams,
 } from '@/lib/dashboards.helpers';
@@ -86,6 +87,9 @@ export function builtinWidgetResponse(
       kind: def.kind,
       templateType: def.templateType ?? null,
       href: def.href ?? null,
+      category: def.category,
+      subtitle: def.subtitle ?? null,
+      view: def.view ?? null,
     },
   };
 }
@@ -107,24 +111,54 @@ export function applyLayout(prev: WidgetResponse[], layout: Layout): WidgetRespo
   return changed ? next : prev;
 }
 
-/** Whether a widget can be toggled between half and full width (its minimum leaves room). */
-export function canToggleWidth(widget: WidgetResponse): boolean {
-  return widgetMinW(widget) < DASHBOARD_GRID_COLUMNS;
+/**
+ * The widths the toggle cycles through, narrowest first: ¼ → ½ → full for a
+ * built-in whose minimum allows a quarter, ½ (or its minimum, if wider) → full
+ * otherwise (saved reports included: their grid floor is not a quarter stop),
+ * and none for a widget whose minimum is the whole grid.
+ */
+export function widthStops(widget: WidgetResponse): number[] {
+  const minW = widgetMinW(widget);
+  if (minW >= DASHBOARD_GRID_COLUMNS) return [];
+  if (isBuiltinWidget(widget) && minW <= QUARTER_WIDTH) return [QUARTER_WIDTH, HALF_WIDTH, DASHBOARD_GRID_COLUMNS];
+  return [Math.max(HALF_WIDTH, minW), DASHBOARD_GRID_COLUMNS];
 }
 
-/** Toggle one widget between half (or its minimum, if wider) and full width. */
+/** Whether a widget's width can be toggled (its minimum leaves room). */
+export function canToggleWidth(widget: WidgetResponse): boolean {
+  return widthStops(widget).length > 0;
+}
+
+/** The width the toggle moves a widget to: the next wider stop, wrapping from full back to the narrowest. */
+export function nextWidth(widget: WidgetResponse): number | null {
+  const stops = widthStops(widget);
+  if (stops.length === 0) return null;
+  return stops.find((w) => w > widget.layout.w) ?? stops[0];
+}
+
+const WIDTH_NAMES: Record<number, string> = {
+  [QUARTER_WIDTH]: 'quarter',
+  [HALF_WIDTH]: 'half',
+  [DASHBOARD_GRID_COLUMNS]: 'full',
+};
+
+/** The width toggle's label: "Expand to half width", "Collapse to quarter width", … */
+export function widthToggleLabel(widget: WidgetResponse): string {
+  const next = nextWidth(widget);
+  if (next == null) return 'This widget needs the full width';
+  const name = WIDTH_NAMES[next] ?? 'minimum';
+  return `${next > widget.layout.w ? 'Expand' : 'Collapse'} to ${name} width`;
+}
+
+/** Move one widget to its next width stop (see `nextWidth`), keeping it inside the grid. */
 export function toggleWidth(prev: WidgetResponse[], id: string): WidgetResponse[] {
   return prev.map((w) => {
-    if (w.id !== id || !canToggleWidth(w)) return w;
-    const isFull = w.layout.w >= DASHBOARD_GRID_COLUMNS;
-    const half = Math.max(HALF_WIDTH, widgetMinW(w));
+    if (w.id !== id) return w;
+    const width = nextWidth(w);
+    if (width == null) return w;
     return {
       ...w,
-      layout: {
-        ...w.layout,
-        w: isFull ? half : DASHBOARD_GRID_COLUMNS,
-        x: isFull ? Math.min(w.layout.x, DASHBOARD_GRID_COLUMNS - half) : 0,
-      },
+      layout: { ...w.layout, w: width, x: Math.min(w.layout.x, DASHBOARD_GRID_COLUMNS - width) },
     };
   });
 }

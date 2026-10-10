@@ -4,13 +4,9 @@
 // runs its report and renders the data) and EDIT (drag/resize/add/remove +
 // title overrides). Saving sends the FULL widget set via create/updateDashboard.
 
-import { useQuery } from '@tanstack/react-query';
-
 import { Card } from '@/components/ui/card';
-import { api } from '@/lib/api/client';
 import type { DashboardResponse } from '@/lib/dashboards.types';
-import { keys } from '@/lib/query/keys';
-import type { ReportSummaryResponse } from '@/lib/reports.types';
+import { useReportsList } from '@/lib/query/hooks/useReports';
 
 import { DashboardGrid } from './DashboardGrid';
 import { DashboardWidgetView } from './DashboardWidgetView';
@@ -26,13 +22,7 @@ export function DashboardEditor({
   mode,
   dashboard,
 }: DashboardEditorProps) {
-  const { data: reportsData } = useQuery<ReportSummaryResponse[]>({
-    queryKey: keys.reports.list(),
-    queryFn: async () => {
-      const { data } = await api.GET('/api/v1/reports');
-      return (data ?? []) as ReportSummaryResponse[];
-    },
-  });
+  const { data: reportsData } = useReportsList();
 
   const reports = reportsData ?? [];
   const {
@@ -49,6 +39,7 @@ export function DashboardEditor({
     removeWidget,
     updateTitle,
     toggleWidgetWidth,
+    saveWidgetParams,
     startEdit,
     discardAndExit,
     save,
@@ -101,6 +92,9 @@ export function DashboardEditor({
               onTitleChange={(t) => updateTitle(w.id, t)}
               onRemove={() => removeWidget(w.id)}
               onToggleWidth={() => toggleWidgetWidth(w.id)}
+              onParamsChange={
+                !editing && mode === 'edit' ? (params) => saveWidgetParams(w.id, params) : undefined
+              }
             />
           )}
         />

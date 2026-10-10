@@ -4,6 +4,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 
 import { api } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
+import { invalidateRewardQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import type { ReorderRewardRulesRequest, RewardRuleRequest } from '@/lib/rewards.types';
 
@@ -71,7 +72,7 @@ export function useCreateRewardRule() {
   return useMutation({
     mutationFn: (body: RewardRuleRequest) =>
       api.POST('/api/v1/reward-rules', { body: toRequestBody(body) }).then((r) => r.data!),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rewards.all }),
+    onSuccess: () => invalidateRewardQueries(qc),
   });
 }
 
@@ -82,7 +83,7 @@ export function useUpdateRewardRule() {
       api
         .PUT('/api/v1/reward-rules/{id}', { params: { path: { id } }, body: toRequestBody(body) })
         .then((r) => r.data!),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rewards.all }),
+    onSuccess: () => invalidateRewardQueries(qc),
   });
 }
 
@@ -91,7 +92,7 @@ export function useDeleteRewardRule() {
   return useMutation({
     mutationFn: (id: string) =>
       api.DELETE('/api/v1/reward-rules/{id}', { params: { path: { id } } }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rewards.all }),
+    onSuccess: () => invalidateRewardQueries(qc),
   });
 }
 
@@ -100,6 +101,6 @@ export function useReorderRewardRules() {
   return useMutation({
     mutationFn: (body: ReorderRewardRulesRequest) =>
       api.POST('/api/v1/reward-rules/reorder', { body }).then((r) => r.data ?? []),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.rewards.all }),
+    onSuccess: () => invalidateRewardQueries(qc),
   });
 }

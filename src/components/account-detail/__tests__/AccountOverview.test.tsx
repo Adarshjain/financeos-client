@@ -45,31 +45,49 @@ describe('AccountOverview', () => {
     expect(screen.getByText(formatMoney(0))).toBeInTheDocument();
   });
 
-  it('credit card shows limit, utilisation from absolute balance, and issuer + product', () => {
-    render(<AccountOverview account={acct({ type: 'credit_card', creditLimit: 100000, balance: -25000, issuer: 'HDFC', productName: 'Regalia' })} />);
+  it('credit card shows limit, the server utilisation, and issuer + product', () => {
+    render(<AccountOverview account={acct({ type: 'credit_card', creditLimit: 100000, effectiveCreditLimit: 100000, balance: -25000, utilizationPct: 25, issuer: 'HDFC', productName: 'Regalia' })} />);
     expect(screen.getByText(formatMoney(100000))).toBeInTheDocument();
     expect(screen.getByText('Utilisation 25.0%')).toBeInTheDocument();
     expect(screen.getByText('HDFC Regalia')).toBeInTheDocument();
     expect(screen.queryByText('No further details.')).toBeNull();
   });
 
-  it('utilisation bar colour thresholds: green, amber above 30, rose above 70', () => {
-    const bar = (b: number) => {
-      const { container, unmount } = render(<AccountOverview account={acct({ type: 'credit_card', creditLimit: 100, balance: b })} />);
+  it('shows the effective limit the percent is measured against: the statement limit when the card has none', () => {
+    render(<AccountOverview account={acct({ type: 'credit_card', creditLimit: 0, effectiveCreditLimit: 80000, balance: -20000, utilizationPct: 25 })} />);
+    expect(screen.getByText(formatMoney(80000))).toBeInTheDocument();
+    expect(screen.queryByText(formatMoney(0))).toBeNull();
+    expect(screen.getByText('Utilisation 25.0%')).toBeInTheDocument();
+  });
+
+  it('no limit at all: "Not set" next to an unknown utilisation', () => {
+    render(<AccountOverview account={acct({ type: 'credit_card', creditLimit: 0, effectiveCreditLimit: null, balance: -20000, utilizationPct: null })} />);
+    expect(screen.getByText('Not set')).toBeInTheDocument();
+  });
+
+  it('a card in credit shows the server 0%, not the absolute balance', () => {
+    render(<AccountOverview account={acct({ type: 'credit_card', creditLimit: 100000, balance: 25000, utilizationPct: 0 })} />);
+    expect(screen.getByText('Utilisation 0.0%')).toBeInTheDocument();
+  });
+
+  it('utilisation bar colour thresholds: green below 30, amber from 30, rose from 70', () => {
+    const bar = (pct: number) => {
+      const { container, unmount } = render(<AccountOverview account={acct({ type: 'credit_card', creditLimit: 100, balance: -pct, utilizationPct: pct })} />);
       const cls = container.querySelector('.h-1\\.5 > div')!.className;
       unmount();
       return cls;
     };
-    expect(bar(30)).toContain('bg-emerald-500');
-    expect(bar(31)).toContain('bg-amber-500');
-    expect(bar(70)).toContain('bg-amber-500');
-    expect(bar(71)).toContain('bg-rose-500');
+    expect(bar(29.9)).toContain('bg-emerald-500');
+    expect(bar(30)).toContain('bg-amber-500');
+    expect(bar(69.9)).toContain('bg-amber-500');
+    expect(bar(70)).toContain('bg-rose-500');
   });
 
-  it('zero limit yields 0% utilisation and caps the bar at 100%', () => {
-    const { container, rerender } = render(<AccountOverview account={acct({ type: 'credit_card', creditLimit: 0, balance: -500 })} />);
-    expect(screen.getByText('Utilisation 0.0%')).toBeInTheDocument();
-    rerender(<AccountOverview account={acct({ type: 'credit_card', creditLimit: 100, balance: -500 })} />);
+  it('no server utilisation (no limit) shows a dash and an empty bar; over 100% caps the bar', () => {
+    const { container, rerender } = render(<AccountOverview account={acct({ type: 'credit_card', creditLimit: 0, balance: -500, utilizationPct: null })} />);
+    expect(screen.getByText('Utilisation —')).toBeInTheDocument();
+    expect((container.querySelector('.h-1\\.5 > div') as HTMLElement).style.width).toBe('0%');
+    rerender(<AccountOverview account={acct({ type: 'credit_card', creditLimit: 100, balance: -500, utilizationPct: 500 })} />);
     expect((container.querySelector('.h-1\\.5 > div') as HTMLElement).style.width).toBe('100%');
   });
 

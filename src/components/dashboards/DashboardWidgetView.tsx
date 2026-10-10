@@ -1,8 +1,9 @@
 'use client';
 
 // Dashboard widget: renders a saved report (report widgets) or a built-in
-// (template built-ins run through the built-in data endpoint; component
-// built-ins such as bills_due and attention render their own component),
+// (template built-ins run through the built-in data endpoint and render by
+// templateType or a registered custom view; component built-ins such as
+// bills_due and attention render their registry body, see builtins/registry),
 // inside a rounded card frame. Unavailable widgets (deleted / not-owned report,
 // unknown built-in) render a placeholder and never fetch. Data loading lives in
 // `useWidgetData`; the header chromes live in `DashboardWidgetHeader`.
@@ -26,27 +27,19 @@ import { Pencil, X } from 'lucide-react';
 import Link from 'next/link';
 import { type ReactNode, useState } from 'react';
 
-import { BillsDueWidget } from '@/components/bills/BillsDueWidget';
-import { InboxWidget } from '@/components/inbox/InboxWidget';
-import { KpiUnderlyingDialog } from '@/components/reports/underlying/KpiUnderlyingDialog';
+import { LazyKpiUnderlyingDialog } from '@/components/reports/underlying/LazyUnderlyingDialogs';
 import type { UnderlyingSource } from '@/components/reports/underlying/underlying.types';
 import { DEFAULT_TABLE_PAGE_SIZE } from '@/components/reports/views/TablePagination';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Dialog, DialogOverlay, DialogPortal, DialogTitle } from '@/components/ui/dialog';
-import {
-  BUILTIN_ATTENTION,
-  BUILTIN_BILLS_DUE,
-  DASHBOARD_GRID_COLUMNS,
-  widgetParams,
-  widgetTitle,
-} from '@/lib/dashboards.helpers';
-import type { WidgetResponse } from '@/lib/dashboards.types';
+import { widgetParams, widgetTitle } from '@/lib/dashboards.helpers';
+import type { WidgetParams, WidgetResponse } from '@/lib/dashboards.types';
 import type { KpiData, SortClause } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
+import { builtinEntryOf, templateViewOf } from './builtins/registry';
 import { WidgetEditHeader, WidgetViewHeader } from './DashboardWidgetHeader';
-import { canToggleWidth } from './editor/dashboardEditor.helpers';
 import { useWidgetData } from './useWidgetData';
 import { widgetVisualKind } from './widgetMeta';
 import { WidgetReportContent, WidgetUnavailable } from './WidgetStates';
@@ -57,8 +50,10 @@ interface DashboardWidgetViewProps {
   editing?: boolean;
   onTitleChange?: (title: string | null) => void;
   onRemove?: () => void;
-  /** Toggle the widget between half and full grid width (edit mode only). */
+  /** Move the widget to its next width stop, ¼ → ½ → full (edit mode only). */
   onToggleWidth?: () => void;
+  /** View mode: persists a built-in's new params from "Widget settings" (omitted = no settings item). */
+  onParamsChange?: (params: WidgetParams) => Promise<void>;
   /**
    * `fill` (default) fills a fixed-height parent (grid cell, fixed stack slot);
    * `content` sizes to the content, capped with internal scroll (the mobile
@@ -84,10 +79,9 @@ export function DashboardWidgetView({
   onTitleChange,
   onRemove,
   onToggleWidth,
+  onParamsChange,
   fit = 'fill',
 }: DashboardWidgetViewProps) {
-  const isFullWidth = widget.layout.w >= DASHBOARD_GRID_COLUMNS;
-
   const [isFullPage, setIsFullPage] = useState(false);
   const [page, setPage] = useState(0);
   // Page size is a runtime concern, driven by the table footer's control.
@@ -120,13 +114,26 @@ export function DashboardWidgetView({
 
   const renderBody = (): ReactNode => {
     if (isBuiltin && !isTemplate) {
-      const key = available ? widget.builtin?.key : null;
-      if (key === BUILTIN_BILLS_DUE) {
-        const accountId = widgetParams(widget).accountId;
-        return <BillsDueWidget accountId={typeof accountId === 'string' ? accountId : null} className="h-full" />;
-      }
-      if (key === BUILTIN_ATTENTION) return <InboxWidget className="h-full" />;
+      const Body = available ? builtinEntryOf(widget)?.Body : undefined;
+      if (Body) return <Body widget={widget} params={widgetParams(widget)} className="h-full" />;
       return <WidgetUnavailable message={UNAVAILABLE_BUILTIN} />;
+    }
+    // A template built-in with a custom view renders its loaded data through it;
+    // the shared skeleton / error / unavailable states stay below.
+    const TemplateView = available && !error && data ? templateViewOf(widget) : null;
+    if (TemplateView && data) {
+      return (
+        <TemplateView
+          widget={widget}
+          data={data}
+          loading={loading}
+          onPageChange={setPage}
+          onSizeChange={handleSizeChange}
+          sort={sort}
+          onSortChange={handleSortChange}
+          onKpiValueClick={openUnderlying}
+        />
+      );
     }
     return (
       <WidgetReportContent
@@ -159,8 +166,6 @@ export function DashboardWidgetView({
           <WidgetEditHeader
             widget={widget}
             available={available}
-            isFullWidth={isFullWidth}
-            canToggleWidth={canToggleWidth(widget)}
             onTitleChange={onTitleChange}
             onRemove={onRemove}
             onToggleWidth={onToggleWidth}
@@ -171,6 +176,7 @@ export function DashboardWidgetView({
             available={available}
             onExpand={() => setIsFullPage(true)}
             onViewUnderlying={openUnderlying}
+            onParamsChange={onParamsChange}
           />
         )}
 
@@ -226,7 +232,7 @@ export function DashboardWidgetView({
       </Dialog>
 
       {underlyingOpen && kpiData && underlyingSource && (
-        <KpiUnderlyingDialog
+        <LazyKpiUnderlyingDialog
           source={underlyingSource}
           kpi={kpiData}
           title={widgetTitle(widget)}

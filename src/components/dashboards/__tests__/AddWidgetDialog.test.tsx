@@ -15,17 +15,21 @@ import type { ReportSummaryResponse } from '@/lib/reports.types';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 const netWorth: BuiltinWidgetResponse = {
+  category: 'overview',
   key: 'net_worth', label: 'Net worth', description: 'All accounts', kind: 'template', minW: 50, params: [],
 };
 const upcoming: BuiltinWidgetResponse = {
+  category: 'overview',
   key: 'upcoming', label: 'Upcoming', description: 'Obligations ahead', kind: 'template', minW: 100,
   params: [{ name: 'days', type: 'int', required: false, min: 1, max: 90, defaultValue: 14 }],
 };
 const bills: BuiltinWidgetResponse = {
+  category: 'overview',
   key: 'bills_due', label: 'Bills due', description: 'Card bills', kind: 'component', minW: 100,
-  params: [{ name: 'accountId', type: 'uuid', required: false }],
+  params: [{ name: 'accountId', type: 'uuid', ref: 'credit_card', required: false }],
 };
 const hidden: BuiltinWidgetResponse = {
+  category: 'overview',
   key: 'x', label: 'Other', description: '', kind: 'template', minW: 50,
   params: [{ name: 'note', type: 'string', required: false }],
 };
@@ -59,11 +63,15 @@ describe('AddWidgetDialog', () => {
     seed();
   });
 
-  it('lists catalog built-ins with a Built-in badge and the reports section', async () => {
+  it('lists built-ins with label and full description (no badges) and the reports section', async () => {
     await open();
     expect(await screen.findByText('Net worth')).toBeInTheDocument();
     expect(screen.getByText('Obligations ahead')).toBeInTheDocument();
-    expect(screen.getAllByText('Built-in').length).toBeGreaterThanOrEqual(4);
+    // "Built-in" is only the section heading now, never a per-card badge.
+    expect(screen.getAllByText('Built-in')).toHaveLength(1);
+    expect(screen.getByText('Built-in').tagName).toBe('H3');
+    expect(screen.queryByText(/Half/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Added/)).not.toBeInTheDocument();
     expect(screen.getByText('Spend this month')).toBeInTheDocument();
   });
 
@@ -83,16 +91,22 @@ describe('AddWidgetDialog', () => {
     expect(await screen.findByRole('link', { name: 'Create one' })).toHaveAttribute('href', '/reports/new');
   });
 
-  it('adds a param-less built-in immediately with empty params and closes', async () => {
+  it('a param-less built-in opens its details step; Add widget adds it with empty params and closes', async () => {
     const { user, onAddBuiltin } = await open();
     await user.click(await screen.findByText('Net worth'));
+    expect(onAddBuiltin).not.toHaveBeenCalled();
+    expect(screen.getByRole('heading', { name: 'Net worth' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Add widget' }));
     expect(onAddBuiltin).toHaveBeenCalledWith(netWorth, {});
     await waitFor(() => expect(screen.queryByText('Add a widget')).not.toBeInTheDocument());
   });
 
-  it('skips the params step for a built-in with only non-editable params', async () => {
+  it('a built-in with only non-editable params shows no fields and adds with empty params', async () => {
     const { user, onAddBuiltin } = await open();
     await user.click(await screen.findByText('Other'));
+    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('select')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Add widget' }));
     expect(onAddBuiltin).toHaveBeenCalledWith(hidden, {});
   });
 
@@ -176,7 +190,9 @@ describe('AddWidgetDialog', () => {
       const { user, onAddBuiltin } = await open();
       await user.click(await screen.findByText('Net worth'));
       await user.click(screen.getByRole('button', { name: 'Add widget' }));
+      await user.click(screen.getByRole('button', { name: 'Add widget' }));
       await user.click(await screen.findByText('Net worth'));
+      await user.click(screen.getByRole('button', { name: 'Add widget' }));
       expect(onAddBuiltin).toHaveBeenCalledTimes(2);
     });
   });

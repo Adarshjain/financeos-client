@@ -15,6 +15,8 @@ export const DASHBOARD_GRID_COLUMNS = 100;
 
 // Half the grid — a new widget defaults to half width.
 export const HALF_WIDTH = Math.round(DASHBOARD_GRID_COLUMNS / 2);
+// A quarter of the grid — the narrowest stop of the width toggle, for small tiles.
+export const QUARTER_WIDTH = Math.round(DASHBOARD_GRID_COLUMNS / 4);
 // Rows are 12px tall (see DashboardGrid); 24 rows ≈ 290px — tall enough for a
 // chart or a few table rows to render without cramping.
 const DEFAULT_WIDGET_HEIGHT = 24;
@@ -52,9 +54,17 @@ export function newWidget(
   };
 }
 
+/** A new built-in's width: full when its minimum is the whole grid, a quarter when it allows one, else half. */
+function newBuiltinWidth(minW: number): number {
+  if (minW >= DASHBOARD_GRID_COLUMNS) return DASHBOARD_GRID_COLUMNS;
+  if (minW <= QUARTER_WIDTH) return QUARTER_WIDTH;
+  return Math.max(HALF_WIDTH, minW);
+}
+
 /**
  * Mint a new built-in widget. Width is full for a built-in whose minimum is the
- * whole grid, half otherwise; `layout` overrides any of `{x,y,w,h}`.
+ * whole grid, a quarter for one whose minimum allows it, half otherwise;
+ * `layout` overrides any of `{x,y,w,h}`.
  */
 export function newBuiltinWidget(
   def: BuiltinWidgetResponse,
@@ -70,7 +80,7 @@ export function newBuiltinWidget(
     layout: {
       x: 0,
       y: 0,
-      w: def.minW >= DASHBOARD_GRID_COLUMNS ? DASHBOARD_GRID_COLUMNS : HALF_WIDTH,
+      w: newBuiltinWidth(def.minW),
       h: def.key === BUILTIN_BILLS_DUE ? BILLS_DUE_WIDGET_HEIGHT : DEFAULT_WIDGET_HEIGHT,
       ...layout,
     },
@@ -204,29 +214,6 @@ export function toDashboardWidget(widget: WidgetResponse): DashboardWidget {
     title: widget.title?.trim() || null,
     layout: widget.layout,
   };
-}
-
-/**
- * A built-in template's definition with the widget's params applied, for
- * "Duplicate as my report": `upcoming`'s next-x-days horizon takes `days`.
- */
-export function builtinDefinitionWithParams(
-  def: BuiltinWidgetResponse,
-  params: WidgetParams,
-): unknown {
-  const definition: unknown = def.templateDefinition == null
-    ? {}
-    : JSON.parse(JSON.stringify(def.templateDefinition));
-  const days = params.days;
-  if (def.key !== BUILTIN_UPCOMING || typeof days !== 'number') return definition;
-  const filters = (definition as { filters?: unknown }).filters;
-  if (!Array.isArray(filters)) return definition;
-  for (const filter of filters as Array<Record<string, unknown>>) {
-    if (filter?.field === 'dueDate' && filter.operator === 'next_x_days') {
-      filter.value = { amount: days };
-    }
-  }
-  return definition;
 }
 
 /** Whether a layout fits the grid: x 0..C-1, w 1..C, x+w ≤ C (C = column count), y/h ≥ 0/1. */

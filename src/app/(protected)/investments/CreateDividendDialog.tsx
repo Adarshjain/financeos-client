@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Broker } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
 import { CreateDividendRequest } from '@/lib/api/types';
-import { keys } from '@/lib/query/keys';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { toastError } from '@/lib/toastError';
 import { Dividend, DividendType, Position } from '@/lib/types';
 import { toCalendarDate } from '@/lib/utils';
@@ -49,7 +49,7 @@ export function CreateDividendDialog({
   const createMutation = useMutation({
     mutationFn: (body: CreateDividendRequest) =>
       api.POST('/api/v1/investments/dividends', { body }).then((r) => r.data! as Dividend),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const isSubmitting = createMutation.isPending;
 

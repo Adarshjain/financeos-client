@@ -5,7 +5,7 @@ import * as React from 'react';
 import { toast } from 'sonner';
 
 import { api } from '@/lib/api/client';
-import { invalidateLendingQueries } from '@/lib/query/invalidate';
+import { invalidateInvestmentQueries,invalidateLendingQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 
@@ -79,7 +79,7 @@ export function useObligationRefs(onCloseAndRefresh: () => void) {
     onSuccess: () => {
       toast.success('Unlinked from dividend');
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: keys.investments.all });
+      invalidateInvestmentQueries(queryClient);
       onCloseAndRefresh();
     },
     onError: (err: unknown) => {

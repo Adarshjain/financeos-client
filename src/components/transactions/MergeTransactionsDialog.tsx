@@ -18,7 +18,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import type {Account} from '@/lib/account.types';
-import {api, ApiError} from '@/lib/api/client';
+import {api} from '@/lib/api/client';
+import { invalidateMoneyQueries } from '@/lib/query/invalidate';
 import {keys} from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type {MergeTransactionsResponse, Transaction, TransactionSource} from '@/lib/transaction.types';
@@ -101,7 +102,7 @@ export function MergeTransactionsDialog({
         toast.success('Transactions merged and resolved');
       }
       queryClient.invalidateQueries({ queryKey: keys.transactions.all });
-      queryClient.invalidateQueries({ queryKey: keys.accounts.all });
+      void invalidateMoneyQueries(queryClient);
       onSuccess();
       onOpenChange(false);
     },

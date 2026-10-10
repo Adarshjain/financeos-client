@@ -60,7 +60,7 @@ const savedKpi: WidgetResponse = {
 const netWorth: WidgetResponse = {
   id: 'w-nw', kind: 'builtin', reportId: null, builtinKey: 'net_worth', params: { scope: 'all', junk: null },
   title: null, layout: L,
-  builtin: { key: 'net_worth', label: 'Net worth', minW: 50, kind: 'template', templateType: 'KPI', href: '/accounts' },
+  builtin: { category: 'overview', key: 'net_worth', label: 'Net worth', minW: 50, kind: 'template', templateType: 'KPI', href: '/accounts' },
 };
 const tableWidget: WidgetResponse = {
   id: 'w-table', kind: 'report', reportId: 'rep-2', title: 'Bills', layout: L,
@@ -68,7 +68,7 @@ const tableWidget: WidgetResponse = {
 };
 const attention: WidgetResponse = {
   id: 'w-att', kind: 'builtin', reportId: null, builtinKey: 'attention', params: {}, title: null, layout: L,
-  builtin: { key: 'attention', label: 'Inbox', minW: 50, kind: 'component', templateType: null, href: '/inbox' },
+  builtin: { category: 'overview', key: 'attention', label: 'Inbox', minW: 50, kind: 'component', templateType: null, href: '/inbox' },
 };
 
 const valueButton = () => screen.findByRole('button', { name: 'View underlying data' });

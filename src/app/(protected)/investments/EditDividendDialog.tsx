@@ -27,7 +27,7 @@ import {
 } from '@/components/ui/select';
 import { api, ApiError } from '@/lib/api/client';
 import { UpdateDividendRequest } from '@/lib/api/types';
-import { keys } from '@/lib/query/keys';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { toastError } from '@/lib/toastError';
 import { Dividend, DividendType } from '@/lib/types';
 
@@ -51,7 +51,7 @@ export function EditDividendDialog({
       api.DELETE('/api/v1/investments/dividends/{id}', {
         params: { path: { id: dividend.id } },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const updateMutation = useMutation({
     mutationFn: (body: UpdateDividendRequest) =>
@@ -61,7 +61,7 @@ export function EditDividendDialog({
           body,
         })
         .then((r) => r.data! as Dividend),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const isDeleting = deleteMutation.isPending;
   const isSubmitting = updateMutation.isPending;

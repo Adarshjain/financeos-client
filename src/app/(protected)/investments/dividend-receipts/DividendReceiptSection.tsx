@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { api } from '@/lib/api/client';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import type { Dividend } from '@/lib/types';
@@ -37,7 +38,7 @@ export function DividendReceiptSection({ dividend, amount, tds, onUseTds, onSucc
 
   const afterChange = async () => {
     await Promise.all([
-      qc.invalidateQueries({ queryKey: keys.investments.all }),
+      invalidateInvestmentQueries(qc),
       qc.invalidateQueries({ queryKey: keys.transactions.all }),
     ]);
     onSuccess?.();

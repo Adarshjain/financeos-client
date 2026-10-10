@@ -39,9 +39,11 @@ export function AccountsView() {
   const closedBrokerAccounts = closed.filter(isAccountOfType(AccountType.BROKER));
   const closedGenericAccounts = closed.filter(isAccountOfType(AccountType.GENERIC));
 
-  // Open cards only — a closed card contributes no available limit.
+  // Open cards only — a closed card contributes no available limit. Each card
+  // counts the limit its utilisation uses: the account's own, else the latest
+  // statement's (effectiveCreditLimit).
   const totalCreditLimit = creditCards.reduce(
-    (sum, a) => sum + (a.creditLimit || 0),
+    (sum, a) => sum + (a.effectiveCreditLimit ?? (a.creditLimit || 0)),
     0
   );
 

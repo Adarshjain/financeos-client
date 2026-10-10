@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
 import { UpdateInvestmentTransactionRequest } from '@/lib/api/types';
-import { keys } from '@/lib/query/keys';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { toastError } from '@/lib/toastError';
 import {
   InvestmentTransactionResponse,
@@ -39,7 +39,7 @@ export function useEditTransactionDialog({
       api.DELETE('/api/v1/investments/transactions/{id}', {
         params: { path: { id: transaction.id } },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const updateMutation = useMutation({
     mutationFn: (body: UpdateInvestmentTransactionRequest) =>
@@ -49,7 +49,7 @@ export function useEditTransactionDialog({
           body,
         })
         .then((r) => r.data! as InvestmentTransactionResponse),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const isDeleting = deleteMutation.isPending;
   const isSubmitting = updateMutation.isPending;

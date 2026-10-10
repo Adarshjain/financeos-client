@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Broker } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
 import { CreateInvestmentTransactionRequest } from '@/lib/api/types';
-import { keys } from '@/lib/query/keys';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { toastError } from '@/lib/toastError';
 import {
   Instrument,
@@ -51,7 +51,7 @@ export function useCreateInvestmentForm({
       api
         .POST('/api/v1/investments/transactions', { body })
         .then((r) => r.data! as InvestmentTransactionResponse),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const isSubmitting = createMutation.isPending;
   const [formKey, setFormKey] = useState(0);

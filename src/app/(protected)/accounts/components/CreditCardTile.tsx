@@ -1,10 +1,32 @@
 import { Calendar } from 'lucide-react';
 
 import { CreditCard } from '@/lib/account.types';
+import { formatUtilisation, utilisationBarWidth, utilisationToneClasses } from '@/lib/utilisation';
 import { cn, formatDate, formatMoney, formatNullableMoney } from '@/lib/utils';
 
 import { AccountMetadataBadges } from './AccountMetadataBadges';
 import { AccountWrapper } from './AccountWrapper';
+
+/** The card's live utilisation (server-computed): figure and bar on the shared 30/70 scale. */
+function CardUtilisation({ pct }: { pct: number | null | undefined }) {
+  const tone = utilisationToneClasses(pct);
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-2xs">
+        <span className="text-slate-400 dark:text-slate-500">Utilization</span>
+        <span className={cn('font-bold tabular-nums', pct == null ? 'text-slate-600 dark:text-slate-300' : tone.text)}>
+          {formatUtilisation(pct)}
+        </span>
+      </div>
+      <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+        <div
+          className={cn('h-full rounded-full transition-all duration-300', tone.bar)}
+          style={{ width: utilisationBarWidth(pct) }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export function CreditCardTile({ account }: { account: CreditCard }) {
   return (
@@ -62,39 +84,11 @@ export function CreditCardTile({ account }: { account: CreditCard }) {
           <div className="flex justify-between items-baseline">
             <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Credit Limit</span>
             <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight tabular-nums">
-              {formatMoney(account.creditLimit)}
+              {account.effectiveCreditLimit != null ? formatMoney(account.effectiveCreditLimit) : 'Not set'}
             </span>
           </div>
 
-          {(() => {
-            const balance = account.balance ?? 0;
-            const limit = account.creditLimit || 0;
-            const utilization = limit > 0 ? (Math.abs(balance) / limit) * 100 : 0;
-            return (
-              <div className="space-y-1">
-                <div className="flex justify-between text-2xs">
-                  <span className="text-slate-400 dark:text-slate-500">Utilization</span>
-                  <span
-                    className={cn(
-                      'font-bold tabular-nums',
-                      utilization > 50 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-300'
-                    )}
-                  >
-                    {utilization.toFixed(1)}%
-                  </span>
-                </div>
-                <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div
-                    className={cn(
-                      'h-full rounded-full transition-all duration-300',
-                      utilization > 70 ? 'bg-rose-500' : utilization > 30 ? 'bg-amber-500' : 'bg-emerald-500'
-                    )}
-                    style={{ width: `${Math.min(utilization, 100)}%` }}
-                  />
-                </div>
-              </div>
-            );
-          })()}
+          <CardUtilisation pct={account.utilizationPct} />
         </div>
 
         {account.ingestFromDate ? (
