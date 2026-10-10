@@ -249,7 +249,7 @@ describe('RulesBrowser bulk approve', () => {
     await waitForInitialDebounce();
 
     fireEvent.click(selectBox('Swiggy'));
-    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Next page' })[0]);
     await waitFor(() => expect(screen.getByText('Ola')).toBeInTheDocument());
 
     expect(screen.getByText('1 selected')).toBeInTheDocument();
@@ -269,7 +269,7 @@ describe('RulesBrowser bulk approve', () => {
     await waitForInitialDebounce();
 
     fireEvent.click(selectBox('Swiggy'));
-    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Next page' })[0]);
     await waitFor(() => expect(screen.getByText('Irctc')).toBeInTheDocument());
 
     expect(selectAll()).toBeDisabled();

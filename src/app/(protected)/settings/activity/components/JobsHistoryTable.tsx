@@ -1,10 +1,10 @@
 'use client';
 
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
-import React from 'react';
+import { useRouter } from 'next/navigation';
 
 import { buildJobsFilterUrl, buildJobsQueryParams } from '@/components/jobs/jobUtils';
+import { PagedSection } from '@/components/reports/views/PagedSection';
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { JobResponse } from '@/lib/types';
@@ -27,6 +27,7 @@ interface JobsHistoryTableProps {
  * which drove a full page-refresh polling loop.
  */
 export function JobsHistoryTable({ page, size, statusFilter, typeFilter }: JobsHistoryTableProps) {
+  const router = useRouter();
   const queryParams = buildJobsQueryParams({ page, size, statusFilter, typeFilter });
 
   const { data } = useQuery({
@@ -48,45 +49,23 @@ export function JobsHistoryTable({ page, size, statusFilter, typeFilter }: JobsH
 
   const jobs: JobResponse[] = data?.content ?? [];
   const totalPages = data?.totalPages ?? 0;
+  const totalElements = data?.totalElements ?? 0;
 
-  const createFilterUrl = (newStatus?: string, newType?: string, newPage = 0) =>
-    buildJobsFilterUrl({ statusFilter, typeFilter, size }, { newStatus, newType, newPage });
-
-  const renderPagination = () =>
-    totalPages > 1 && (
-      <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-800 text-2xs bg-slate-50/50 dark:bg-slate-900/50">
-        <span className="text-slate-500">
-          Page {page + 1} of {totalPages}
-        </span>
-        <div className="flex items-center gap-2">
-          <Link
-            href={createFilterUrl(undefined, undefined, Math.max(0, page - 1))}
-            className={`px-2.5 py-1 rounded border text-2xs font-medium ${
-              page === 0
-                ? 'pointer-events-none opacity-40 text-slate-400 border-slate-200 dark:border-slate-800'
-                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            Previous
-          </Link>
-          <Link
-            href={createFilterUrl(undefined, undefined, Math.min(totalPages - 1, page + 1))}
-            className={`px-2.5 py-1 rounded border text-2xs font-medium ${
-              page >= totalPages - 1
-                ? 'pointer-events-none opacity-40 text-slate-400 border-slate-200 dark:border-slate-800'
-                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            Next
-          </Link>
-        </div>
-      </div>
-    );
+  // The page lives in the URL (?page=), so paging navigates; the pager scrolls itself.
+  const goToPage = (newPage: number) =>
+    router.push(buildJobsFilterUrl({ statusFilter, typeFilter, size }, { newPage }), { scroll: false });
 
   return (
-    <>
-      <JobsMobileList jobs={jobs} totalPages={totalPages} renderPagination={renderPagination} />
-      <JobsDesktopTable jobs={jobs} renderPagination={renderPagination} />
-    </>
+    <PagedSection
+      className="space-y-2"
+      topClassName="px-1"
+      bottomClassName="px-1"
+      page={{ number: page, size, totalElements, totalPages }}
+      onPageChange={goToPage}
+      unit="job"
+    >
+      <JobsMobileList jobs={jobs} />
+      <JobsDesktopTable jobs={jobs} />
+    </PagedSection>
   );
 }

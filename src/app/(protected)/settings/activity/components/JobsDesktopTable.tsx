@@ -15,12 +15,10 @@ import {
 
 interface JobsDesktopTableProps {
   jobs: JobResponse[];
-  renderPagination: () => React.ReactNode;
 }
 
 export function JobsDesktopTable({
   jobs,
-  renderPagination,
 }: JobsDesktopTableProps) {
   return (
     <div className="hidden sm:block bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
@@ -120,8 +118,6 @@ export function JobsDesktopTable({
           </tbody>
         </table>
       </div>
-
-      {renderPagination()}
     </div>
   );
 }

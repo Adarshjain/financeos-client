@@ -15,6 +15,6 @@ describe('TablePagination showCount', () => {
     render(<TablePagination page={page} showCount={false} />);
     expect(screen.queryByText(/30 rows?/)).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Next page' })).toBeInTheDocument();
-    expect(screen.getByText('1 / 2')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Page 1' })).toHaveAttribute('aria-current', 'page');
   });
 });

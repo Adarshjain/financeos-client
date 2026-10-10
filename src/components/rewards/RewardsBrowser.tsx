@@ -78,9 +78,6 @@ export default function RewardsBrowser({
       report={report}
       loading={loading}
       isMobile={isMobile}
-      lines={lines}
-      onPageChange={handlePageChange}
-      onSizeChange={handleSizeChange}
     />
   );
 

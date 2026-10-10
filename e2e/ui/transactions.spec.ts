@@ -43,12 +43,12 @@ test.describe('Transactions UI (@ui)', () => {
     // Pagination controls render (size=50 default, total=60 -> 2 pages)
     const paginationTotal = page.getByText(/60 txns/i).first();
     if (await paginationTotal.isVisible()) {
-      await expect(page.getByText('1 / 2').first()).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Page 1' }).first()).toHaveAttribute('aria-current', 'page');
 
       // Click Next Page
       const nextBtn = page.locator('button:has(svg.lucide-chevron-right)').first();
       await nextBtn.click();
-      await expect(page.getByText('2 / 2').first()).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Page 2' }).first()).toHaveAttribute('aria-current', 'page');
 
       // Check URL state
       // PRODUCT-GAP: TransactionsBrowser uses local React state (useState) and does not synchronize

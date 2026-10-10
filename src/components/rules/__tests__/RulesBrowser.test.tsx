@@ -332,7 +332,7 @@ describe('RulesBrowser', () => {
       renderWithQuery(<RulesBrowser />);
       await waitFor(() => expect(screen.getByText('Swiggy')).toBeInTheDocument());
 
-      fireEvent.click(screen.getByRole('button', { name: /next/i }));
+      fireEvent.click(screen.getAllByRole('button', { name: /next/i })[0]);
       await waitFor(() => expectLastQuery({ ...DEFAULT_QUERY, page: 1 }));
 
       pickOption('Source', 'LLM-generated');

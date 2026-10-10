@@ -85,8 +85,9 @@ test.describe('Tradebook UI (@ui)', () => {
     // exhausted there. Row counts are asserted first so each button check runs against
     // settled page data rather than the in-flight transition.
     const rows = page.getByRole('table').locator('tbody tr');
-    const nextBtn = page.getByRole('button', { name: 'Next page' });
-    const prevBtn = page.getByRole('button', { name: 'Previous page' });
+    // The pager sits above and below the list; drive the top one.
+    const nextBtn = page.getByRole('button', { name: 'Next page' }).first();
+    const prevBtn = page.getByRole('button', { name: 'Previous page' }).first();
     await expect(rows).toHaveCount(10);
     await expect(nextBtn).toBeEnabled();
     await expect(prevBtn).toBeDisabled();

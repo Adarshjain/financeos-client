@@ -3,7 +3,7 @@
 import { Activity, Download } from 'lucide-react';
 
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
-import { TablePagination } from '@/components/reports/views/TablePagination';
+import { PagedSection } from '@/components/reports/views/PagedSection';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { isAccountOfType } from '@/lib/account.types';
@@ -117,26 +117,6 @@ export function FnoView() {
             hasActiveFilters={hasActiveFilters}
             clearFilters={clearFilters}
           />
-
-          {/* Action Bar Pagination */}
-          {sortedTrades.length > 0 && (
-            <div className="shrink-0 pt-1 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
-              <TablePagination
-                page={{
-                  number: pageClamped - 1,
-                  size: pageSize,
-                  totalElements: sortedTrades.length,
-                  totalPages: totalPages,
-                }}
-                onPageChange={(p) => setCurrentPage(p + 1)}
-                onSizeChange={(s) => {
-                  setPageSize(s);
-                  setCurrentPage(1);
-                }}
-                unit="trade"
-              />
-            </div>
-          )}
         </div>
       </Card>
 
@@ -157,81 +137,81 @@ export function FnoView() {
             clearFilters={clearFilters}
             isMobile
           />
-
-          {sortedTrades.length > 0 && (
-            <TablePagination
-              page={{
-                number: pageClamped - 1,
-                size: pageSize,
-                totalElements: sortedTrades.length,
-                totalPages: totalPages,
-              }}
-              onPageChange={(p) => setCurrentPage(p + 1)}
-              onSizeChange={(s) => {
-                setPageSize(s);
-                setCurrentPage(1);
-              }}
-              unit="trade"
-              className="w-full px-0.5 pt-0.5"
-            />
-          )}
         </div>
       </PageActionBar>
 
-      {/* Main Trade Content Area */}
-      {paginatedTrades.length === 0 ? (
-        <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-8 text-center shadow-sm">
-          <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-2">
-            <Activity className="w-5 h-5" />
-          </div>
-          {hasActiveFilters ? (
-            <div>
-              <p className="text-xs font-semibold text-slate-900 dark:text-white">
-                No trades match active filters
-              </p>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Try clearing filters or search keyword.
-              </p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearFilters}
-                className="mt-2"
-              >
-                Clear Filters
-              </Button>
+      {/* Main Trade Content Area, paged above and below */}
+      <PagedSection
+        className="space-y-2"
+        topClassName="px-1"
+        bottomClassName="px-1"
+        page={{
+          number: pageClamped - 1,
+          size: pageSize,
+          totalElements: sortedTrades.length,
+          totalPages: totalPages,
+        }}
+        onPageChange={(p) => setCurrentPage(p + 1)}
+        onSizeChange={(s) => {
+          setPageSize(s);
+          setCurrentPage(1);
+        }}
+        unit="trade"
+      >
+        {paginatedTrades.length === 0 ? (
+          <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-8 text-center shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-2">
+              <Activity className="w-5 h-5" />
             </div>
-          ) : (
-            <div>
-              <p className="text-xs font-semibold text-slate-900 dark:text-white">
-                No FnO trades recorded yet
-              </p>
-              <p className="text-xs text-slate-500 mt-0.5 max-w-xs mx-auto">
-                Log F&O trades manually or import broker Tax P&L statements.
-              </p>
-            </div>
-          )}
-        </Card>
-      ) : (
-        <>
-          <FnoMobileCards
-            trades={paginatedTrades}
-            brokerAccounts={brokerAccounts}
-            onRefresh={handleRefresh}
-            onSelectDeleteTrade={setDeletingTrade}
-            getBrokerName={getBrokerName}
-          />
+            {hasActiveFilters ? (
+              <div>
+                <p className="text-xs font-semibold text-slate-900 dark:text-white">
+                  No trades match active filters
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Try clearing filters or search keyword.
+                </p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="mt-2"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            ) : (
+              <div>
+                <p className="text-xs font-semibold text-slate-900 dark:text-white">
+                  No FnO trades recorded yet
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5 max-w-xs mx-auto">
+                  Log F&O trades manually or import broker Tax P&L statements.
+                </p>
+              </div>
+            )}
+          </Card>
+        ) : (
+          <>
+            <FnoMobileCards
+              trades={paginatedTrades}
+              brokerAccounts={brokerAccounts}
+              onRefresh={handleRefresh}
+              onSelectDeleteTrade={setDeletingTrade}
+              getBrokerName={getBrokerName}
+            />
 
-          <FnoDesktopTable
-            trades={paginatedTrades}
-            brokerAccounts={brokerAccounts}
-            onRefresh={handleRefresh}
-            onSelectDeleteTrade={setDeletingTrade}
-            getBrokerName={getBrokerName}
-            onToggleSort={toggleSort}
-          />
-        </>
-      )}
+            <FnoDesktopTable
+              trades={paginatedTrades}
+              brokerAccounts={brokerAccounts}
+              onRefresh={handleRefresh}
+              onSelectDeleteTrade={setDeletingTrade}
+              getBrokerName={getBrokerName}
+              onToggleSort={toggleSort}
+            />
+          </>
+        )}
+      </PagedSection>
 
       {/* Delete Confirmation Dialog */}
       <DeleteFnoTradeDialog

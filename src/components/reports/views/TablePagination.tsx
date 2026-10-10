@@ -1,8 +1,10 @@
 'use client';
 
-// Shared table footer: total count (optional), a page-size control, and prev/next paging.
-// Used by both the raw TableView and the PivotTableView. Page/size are a runtime
-// concern (query params), never part of the saved report definition.
+// Shared pager: the rows on screen out of the total (optional), a page-size control,
+// and numbered paging (first, last, and the pages around the current one). Used by
+// every paged list and table; full pages wrap their list in `PagedSection` to get it
+// above and below. Page/size are a runtime concern (query params), never part of a
+// saved report definition.
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
@@ -14,7 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { pageItems } from '@/lib/pagination';
 import type { TablePage } from '@/lib/reports.types';
+import { BELOW_SM_QUERY, useMediaQuery } from '@/lib/useMediaQuery';
 import { cn } from '@/lib/utils';
 
 /** Server default is 50, max 1000. */
@@ -31,6 +35,8 @@ interface TablePaginationProps {
   className?: string;
   /** Off: no total row count, only the paging controls (the underlying-data dialog). */
   showCount?: boolean;
+  /** Page sizes to offer, when the endpoint caps them lower than the defaults. */
+  pageSizeOptions?: number[];
 }
 
 export function TablePagination({
@@ -41,21 +47,42 @@ export function TablePagination({
   loading = false,
   className,
   showCount = true,
+  pageSizeOptions = PAGE_SIZE_OPTIONS,
 }: TablePaginationProps) {
   // Always offer the current size, even if it isn't one of the presets.
-  const sizes = PAGE_SIZE_OPTIONS.includes(page.size)
-    ? PAGE_SIZE_OPTIONS
-    : [...PAGE_SIZE_OPTIONS, page.size].sort((a, b) => a - b);
+  const sizes = pageSizeOptions.includes(page.size)
+    ? pageSizeOptions
+    : [...pageSizeOptions, page.size].sort((a, b) => a - b);
   const sizeOptions = sizes.map((s) => ({ value: String(s), label: `${s} / page` }));
 
+  // Phones get one page number fewer each side so the row fits a 320px screen.
+  const isPhone = useMediaQuery(BELOW_SM_QUERY);
+  // A page past the end (rows deleted since it was opened) still counts, so the
+  // pager stays up and you can step back from it.
+  const pageCount = Math.max(page.totalPages, page.number + 1);
+  const multiPage = pageCount > 1;
+  const from = page.number * page.size + 1;
+  const to = Math.min((page.number + 1) * page.size, page.totalElements);
+  const count = (
+    <span>
+      {page.totalElements.toLocaleString('en-IN')} {unit}
+      {page.totalElements === 1 ? '' : 's'}
+    </span>
+  );
+
   return (
-    <div className={cn("flex flex-wrap items-center justify-between gap-2 text-sm text-slate-500", className)}>
-      {showCount && (
-        <span>
-          {page.totalElements.toLocaleString('en-IN')} {unit}
-          {page.totalElements === 1 ? '' : 's'}
-        </span>
-      )}
+    <div className={cn('flex flex-wrap items-center justify-between gap-2 text-sm text-slate-500', className)}>
+      {showCount &&
+        (multiPage && from <= to ? (
+          <span>
+            <span className="tabular-nums">
+              {from.toLocaleString('en-IN')}–{to.toLocaleString('en-IN')}
+            </span>{' '}
+            of {count}
+          </span>
+        ) : (
+          count
+        ))}
       <div className={cn('flex items-center gap-2', !showCount && 'ml-auto')}>
         {onSizeChange && (
           <Select
@@ -63,7 +90,10 @@ export function TablePagination({
             onValueChange={(val) => onSizeChange(Number(val))}
             disabled={loading}
           >
-            <SelectTrigger className="w-[110px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none h-8">
+            <SelectTrigger
+              aria-label="Rows per page"
+              className="w-[110px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none h-8"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
@@ -75,8 +105,8 @@ export function TablePagination({
             </SelectContent>
           </Select>
         )}
-        {page.totalPages > 1 && (
-          <div className="flex items-center gap-1.5">
+        {multiPage && (
+          <nav aria-label="Pagination" className="flex items-center gap-1">
             <Button
               variant="outline"
               size="icon-sm"
@@ -86,9 +116,26 @@ export function TablePagination({
             >
               <ChevronLeft className="h-4 w-4 text-slate-500" />
             </Button>
-            <span className="tabular-nums text-xs font-semibold px-2 text-slate-700 dark:text-slate-300">
-              {page.number + 1} / {page.totalPages}
-            </span>
+            {pageItems(page.number, pageCount, isPhone ? 0 : 1).map((item, i) =>
+              item === 'gap' ? (
+                <span key={`gap-${i}`} aria-hidden className="w-5 text-center text-xs text-slate-400">
+                  …
+                </span>
+              ) : (
+                <Button
+                  key={item}
+                  variant={item === page.number ? 'default' : 'ghost'}
+                  size="icon-sm"
+                  className="w-auto min-w-8 px-1.5 tabular-nums"
+                  aria-label={`Page ${item + 1}`}
+                  aria-current={item === page.number ? 'page' : undefined}
+                  disabled={loading}
+                  onClick={() => item !== page.number && onPageChange?.(item)}
+                >
+                  {(item + 1).toLocaleString('en-IN')}
+                </Button>
+              ),
+            )}
             <Button
               variant="outline"
               size="icon-sm"
@@ -98,7 +145,7 @@ export function TablePagination({
             >
               <ChevronRight className="h-4 w-4 text-slate-500" />
             </Button>
-          </div>
+          </nav>
         )}
       </div>
     </div>

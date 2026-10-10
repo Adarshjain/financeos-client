@@ -267,7 +267,7 @@ describe('DividendsSection receipt features', () => {
     it('clearing the chip replaces the URL with the bare dividends route and resets the page', async () => {
       nav.search = new URLSearchParams('instrumentId=inst-1');
       renderSection();
-      fireEvent.click(screen.getAllByText('go-page-2')[0]);
+      fireEvent.click((await screen.findAllByText('go-page-2'))[0]);
       await waitFor(() => expect(callsTo(LIST)).toContainEqual(expect.objectContaining({ instrumentId: 'inst-1', page: 2 })));
       fireEvent.click(screen.getByRole('button', { name: 'Clear instrument filter' }));
       expect(nav.router.replace).toHaveBeenCalledWith('/investments/dividends');
