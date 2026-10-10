@@ -8,10 +8,9 @@ import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
 import type { JobResponse, JobType } from '@/lib/types';
 
-// After a flow announces a new job, poll quickly for this long even if the list doesn't show
-// an active job yet: the refetch can race the enqueue, and otherwise the panel would sit on
-// the 30s idle interval while the job runs and finishes unseen.
-const STARTED_GRACE_MS = 20_000;
+// One steady cadence whether or not a job is active, so a job enqueued by another tab or a
+// background trigger shows up within a poll, not only the ones this page announced.
+const POLL_INTERVAL_MS = 5_000;
 
 interface UseJobsListPollingOptions {
   types?: JobType[];
@@ -27,7 +26,6 @@ export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOption
   // arrives already terminal and the active→terminal transition below never fires for it.
   // Announced ids therefore expand on their first terminal sighting, whatever came before.
   const announcedJobIdsRef = useRef<Set<string>>(new Set());
-  const lastStartedAtRef = useRef(0);
 
   const typeParam = types?.join(',');
 
@@ -47,14 +45,7 @@ export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOption
       });
       return data ?? null;
     },
-    refetchInterval: (queryState) => {
-      const jobList = queryState.state.data?.content || [];
-      const hasActive = jobList.some(
-        (j) => j.status === 'PENDING' || j.status === 'RUNNING'
-      );
-      if (hasActive) return 4000;
-      return Date.now() - lastStartedAtRef.current < STARTED_GRACE_MS ? 2000 : 30000;
-    },
+    refetchInterval: POLL_INTERVAL_MS,
     refetchIntervalInBackground: false,
   });
 
@@ -105,7 +96,6 @@ export function useJobsListPolling({ types, size = 5 }: UseJobsListPollingOption
   useEffect(() => {
     return subscribeJobStarted((jobId) => {
       announcedJobIdsRef.current.add(jobId);
-      lastStartedAtRef.current = Date.now();
       queryClient.invalidateQueries({ queryKey: keys.jobs.all });
     });
   }, [queryClient]);

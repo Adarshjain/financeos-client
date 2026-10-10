@@ -22,8 +22,7 @@ interface JobsHistoryTableProps {
 /**
  * Owns the live jobs-history list: seeded from the server prefetch (same
  * query key as the page's `queryClient.setQueryData`), then keeps itself
- * fresh via `refetchInterval` while any visible job is still PENDING/RUNNING
- * — the client-side replacement for the old `AutoRefreshOnActive` component,
+ * fresh via a steady 5s `refetchInterval` — the client-side replacement for the old `AutoRefreshOnActive` component,
  * which drove a full page-refresh polling loop.
  */
 export function JobsHistoryTable({ page, size, statusFilter, typeFilter }: JobsHistoryTableProps) {
@@ -39,11 +38,7 @@ export function JobsHistoryTable({ page, size, statusFilter, typeFilter }: JobsH
       return data ?? { content: [], totalPages: 0, totalElements: 0 };
     },
     placeholderData: keepPreviousData,
-    refetchInterval: (query) => {
-      const jobList = query.state.data?.content ?? [];
-      const hasActive = jobList.some((j) => j.status === 'PENDING' || j.status === 'RUNNING');
-      return hasActive ? 4000 : false;
-    },
+    refetchInterval: 5_000,
     refetchIntervalInBackground: false,
   });
 
