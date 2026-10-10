@@ -8,11 +8,13 @@
 // server (asc → desc → default; session-only, back to page 1 on change); the
 // embedded page is used only for the unsorted first page. Section rows open a
 // transaction or a nested breakdown (e.g. a broker's holding → its positions).
+// No row count under a section (paging only when there is more than one page);
+// on phones the rows are cards with a Sort select in place of the headers.
 
 import { ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
 
-import { TableView } from '@/components/reports/views/TableView';
+import { ResponsiveTableView } from '@/components/reports/views/ResponsiveTableView';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getErrorMessage } from '@/lib/api/errorMessage';
@@ -165,13 +167,14 @@ function BreakdownSectionTable({
       <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-500">{section.label}</h4>
       {isRawTableData(table) ? (
         <div className={cn(later.isFetching && 'opacity-60 transition-opacity')}>
-          <TableView
+          <ResponsiveTableView
             data={table}
             loading={later.isFetching}
             sort={sort}
             onSortChange={changeSort}
             onPageChange={changePage}
             onRowClick={onRowClick}
+            hideRowCount
           />
         </div>
       ) : (

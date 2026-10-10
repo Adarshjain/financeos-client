@@ -52,6 +52,7 @@ const response: KpiUnderlyingResponse = {
   filters: [],
   rowAction: 'breakdown',
   groupField: null,
+  groupTotals: {},
   notCounted: [],
   sortKey: null,
   sortDirection: null,
@@ -114,6 +115,15 @@ describe('KpiUnderlyingDialog footer', () => {
     const buttons = within(footer()).getAllByRole('button').map((b) => b.textContent);
     expect(buttons).toEqual(['Close']);
     expect(within(footer()).queryByRole('button', { name: 'Download CSV' })).not.toBeInTheDocument();
+  });
+
+  it('has no corner close button in either view, the footer Close is the only one', async () => {
+    render();
+    await screen.findByText('Axis Card');
+    expect(screen.getAllByRole('button', { name: 'Close' })).toHaveLength(1);
+    fireEvent.click(await screen.findByText('HDFC Savings'));
+    await screen.findByText('HDFC Savings breakdown');
+    expect(screen.getAllByRole('button', { name: 'Close' })).toHaveLength(1);
   });
 
   it('closes the dialog from the breakdown footer Close', async () => {

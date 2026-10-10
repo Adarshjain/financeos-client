@@ -27,3 +27,6 @@ export function useMediaQuery(query: string, serverValue = false): boolean {
 
 /** Below Tailwind's `md` breakpoint (768px). */
 export const BELOW_MD_QUERY = '(max-width: 767.98px)';
+
+/** Below Tailwind's `sm` breakpoint (640px): phones. */
+export const BELOW_SM_QUERY = '(max-width: 639.98px)';

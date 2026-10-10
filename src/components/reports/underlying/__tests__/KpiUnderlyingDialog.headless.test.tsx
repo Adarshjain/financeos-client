@@ -45,6 +45,7 @@ const response = (over: Partial<KpiUnderlyingResponse> = {}, description = 'Nift
   filters: [],
   rowAction: null,
   groupField: null,
+  groupTotals: {},
   notCounted: [],
   sortKey: null,
   sortDirection: null,
@@ -92,8 +93,8 @@ describe('KpiUnderlyingDialog without a kpi', () => {
     release();
     expect(await screen.findByText('Nifty ETF')).toBeInTheDocument();
     expect(screen.queryByTestId('underlying-header-loading')).not.toBeInTheDocument();
-    // The header figure and the summary under the table both restate the aggregate.
-    expect(screen.getAllByText(money(125000), { exact: false }).length).toBeGreaterThanOrEqual(2);
+    // Only the header carries the aggregate: nothing restates it under the rows.
+    expect(screen.getAllByText(money(125000), { exact: false })).toHaveLength(1);
     expect(screen.getByText('Sep', { selector: 'span[title]' })).toBeInTheDocument();
   });
 

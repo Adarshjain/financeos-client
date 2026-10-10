@@ -29,7 +29,8 @@ import { cn, formatDate } from '@/lib/utils';
 
 import { TablePagination } from './TablePagination';
 
-function formatCell(value: unknown, column: TableColumn): string {
+/** One cell as the table prints it (also the mobile cards' text): a dash when empty. */
+export function formatCell(value: unknown, column: TableColumn): string {
   if (value === null || value === undefined || value === '') return '—';
   if (column.type === 'number') {
     const n = typeof value === 'number' ? value : Number(value);
@@ -103,7 +104,7 @@ export function SortableTableHead({
  * A group header's label: the group column's server label for the value when it has one,
  * else the value title-cased, underscores as spaces ("credit_card" → "Credit Card").
  */
-function groupLabel(value: unknown, labels: Record<string, string> | null | undefined): string {
+export function groupLabel(value: unknown, labels: Record<string, string> | null | undefined): string {
   if (value === null || value === undefined || value === '') return '—';
   const label = labels?.[String(value)];
   if (label !== undefined) return label;
@@ -137,6 +138,23 @@ interface TableViewProps {
   onRowClick?: (row: ReportTableRow) => void;
   /** Inserts a full-width group header row whenever `row[groupField]` changes within the page. */
   groupField?: string | null;
+  /** While grouped, leaves the group column out: its value already heads each group. */
+  hideGroupColumn?: boolean;
+  /**
+   * While grouped: each group's total over the whole data set (keyed by the stored group value),
+   * printed in the group header under `groupTotalKey`'s column, formatted like that column.
+   */
+  groupTotals?: Record<string, number> | null;
+  groupTotalKey?: string | null;
+  /** Leaves the row count out of the footer; paging stays (shown only when there is more than one page). */
+  hideRowCount?: boolean;
+}
+
+/** The group total for a group value, or undefined when there is none. */
+export function groupTotal(totals: Record<string, number> | null | undefined, value: unknown): number | undefined {
+  if (!totals || value === null || value === undefined) return undefined;
+  const total = totals[String(value)];
+  return typeof total === 'number' ? total : undefined;
 }
 
 export function TableView({
@@ -149,12 +167,22 @@ export function TableView({
   onSortChange,
   onRowClick,
   groupField,
+  hideGroupColumn,
+  groupTotals,
+  groupTotalKey,
+  hideRowCount,
 }: TableViewProps) {
-  const { columns, rows, page } = data;
-  const groupLabels =
-    groupField != null ? columns.find((c) => c.key === groupField)?.valueLabels : undefined;
+  const { rows, page } = data;
+  const groupColumn = groupField != null ? data.columns.find((c) => c.key === groupField) : undefined;
+  const groupLabels = groupColumn?.valueLabels;
+  const columns =
+    groupField != null && hideGroupColumn ? data.columns.filter((c) => c.key !== groupField) : data.columns;
+  // The group header's total sits in this column; the label spans the columns before it.
+  const totalIndex = groupTotals && groupTotalKey ? columns.findIndex((c) => c.key === groupTotalKey) : -1;
+  const multiPage = page.totalElements > page.size || page.number > 0;
   // Inside a dashboard widget a single page needs no footer: it only repeats the row count.
-  const showFooter = !fill || page.totalElements > page.size || page.number > 0;
+  // Without the count, a single page has nothing to show at all.
+  const showFooter = hideRowCount ? multiPage || !!onSizeChange : !fill || multiPage;
 
   return (
     <div className={fill ? 'flex h-full flex-col' : 'space-y-3'}>
@@ -208,14 +236,12 @@ export function TableView({
               return (
                 <Fragment key={`${String(row.id ?? '')}:${i}`}>
                   {groupHeader !== null && (
-                    <TableRow className="hover:bg-transparent">
-                      <TableCell
-                        colSpan={columns.length || 1}
-                        className="bg-slate-50 py-2 text-xs font-semibold text-slate-600 dark:bg-slate-800/60 dark:text-slate-300"
-                      >
-                        {groupHeader}
-                      </TableCell>
-                    </TableRow>
+                    <GroupHeaderRow
+                      label={groupHeader}
+                      columns={columns}
+                      totalIndex={totalIndex}
+                      total={groupTotal(groupTotals, groupField != null ? row[groupField] : undefined)}
+                    />
                   )}
                   <TableRow
                     {...(onRowClick && {
@@ -263,9 +289,53 @@ export function TableView({
             loading={loading}
             onPageChange={onPageChange}
             onSizeChange={onSizeChange}
+            showCount={!hideRowCount}
           />
         </div>
       )}
     </div>
+  );
+}
+
+const GROUP_CELL = 'bg-slate-50 py-2 text-xs font-semibold text-slate-600 dark:bg-slate-800/60 dark:text-slate-300';
+
+/**
+ * A group's header row: the label across the full width, or — with a total — the label across the
+ * columns before the total's column, the total right-aligned in it, and blanks after.
+ */
+function GroupHeaderRow({
+  label,
+  columns,
+  totalIndex,
+  total,
+}: {
+  label: string;
+  columns: TableColumn[];
+  totalIndex: number;
+  total: number | undefined;
+}) {
+  if (totalIndex < 0 || total === undefined) {
+    return (
+      <TableRow className="hover:bg-transparent">
+        <TableCell colSpan={columns.length || 1} className={GROUP_CELL}>
+          {label}
+        </TableCell>
+      </TableRow>
+    );
+  }
+  const after = columns.length - totalIndex - 1;
+  return (
+    <TableRow className="hover:bg-transparent" data-group-header="">
+      {totalIndex > 0 && (
+        <TableCell colSpan={totalIndex} className={GROUP_CELL}>
+          {label}
+        </TableCell>
+      )}
+      <TableCell className={cn(GROUP_CELL, 'whitespace-nowrap tabular-nums')}>
+        {totalIndex === 0 && <span className="mr-2">{label}</span>}
+        {formatCell(total, columns[totalIndex])}
+      </TableCell>
+      {after > 0 && <TableCell colSpan={after} className={GROUP_CELL} />}
+    </TableRow>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 // The small read-only pieces around the underlying-data table: period tabs,
-// filter chips, the "Not counted" disclosure and the summary under the table.
+// filter chips, the "Not counted" disclosure and the winner note under the rows.
 
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
@@ -12,11 +12,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { cn } from '@/lib/utils';
 
-import {
-  aggregationLabel,
-  formatAmount,
-  formatKpiValue,
-} from './underlying.helpers';
+import { formatAmount } from './underlying.helpers';
 import type {
   KpiUnderlyingResponse,
   UnderlyingExcludedItem,
@@ -118,27 +114,15 @@ export function NotCountedDisclosure({ items, format }: NotCountedProps) {
 }
 
 /**
- * Under the table: "Sum ₹4,500" (or "Max ₹900" plus a note for a winner-only
- * MIN/MAX), then any datasource totals such as Assets / Liabilities. The row
- * count is the table footer's.
+ * Under a winner-only MIN/MAX list: why only these rows are listed. Nothing for
+ * any other aggregation — the header carries the figure, and no row count or
+ * total is restated under the rows.
  */
-export function UnderlyingSummary({ data }: { data: KpiUnderlyingResponse }) {
-  const aggregate = `${aggregationLabel(data.aggregation)} ${formatKpiValue(data.value, data)}`;
+export function UnderlyingWinnerNote({ data }: { data: Pick<KpiUnderlyingResponse, 'winnerOnly' | 'rowCount'> }) {
+  if (!data.winnerOnly || data.rowCount === 0) return null;
   return (
-    <div className="space-y-1 text-xs text-slate-600 dark:text-slate-300">
-      <p className="font-medium tabular-nums">
-        {aggregate}
-      </p>
-      {data.winnerOnly && data.rowCount > 0 && (
-        <p className="text-slate-500">
-          {data.rowCount === 1 ? 'Showing the row that sets this value' : 'Showing the rows that set this value'}
-        </p>
-      )}
-      {data.summaryLines.map((line) => (
-        <p key={line.label} className="tabular-nums">
-          {line.label} {formatAmount(line.value, line.format)}
-        </p>
-      ))}
-    </div>
+    <p className="text-xs text-slate-500">
+      {data.rowCount === 1 ? 'Showing the row that sets this value' : 'Showing the rows that set this value'}
+    </p>
   );
 }

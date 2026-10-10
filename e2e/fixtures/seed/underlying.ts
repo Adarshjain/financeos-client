@@ -1,7 +1,10 @@
 import type { components } from '../../../src/lib/api/schema.d.ts';
 import type { ApiClient } from '../api';
+import { genBankPdf } from '../gen/statements';
 import { createBankAccount } from './accounts';
+import { uniqueSeedSuffix } from './investments';
 import { fixedMonth } from './rewards';
+import { uploadAndIngest } from './statements';
 import { createCategory, createTransaction } from './transactions';
 
 export type KpiUnderlyingResponse = components['schemas']['KpiUnderlyingResponse'];
@@ -317,3 +320,30 @@ export function inMonth(month: { from: string; to: string }, field = 'date'): Fi
 
 /** The comparison block that turns on the previous period. */
 export const PREVIOUS_PERIOD = { enabled: true, period: 'previous_period', higherIsBetter: false } as const;
+
+/** The statement month {@link seedStatementOnlyRows} ingests, and the rows it holds (statement text, debit). */
+export const STATEMENT_ONLY_MONTH = { from: '2026-04-01', to: '2026-04-30' } as const;
+export const STATEMENT_ONLY_ROWS = [
+  { date: '2026-04-03', description: 'BLUE TOKAI COFFEE', debit: 450 },
+  { date: '2026-04-11', description: 'AMAZON PAY INDIA', debit: 1299 },
+  { date: '2026-04-18', description: 'ZOMATO ORDER', debit: 380 },
+] as const;
+
+/**
+ * A bank account whose transactions come from an ingested statement, so each one carries only
+ * the statement's text (`sourcedDescription`) and no typed `description` — like most real rows.
+ */
+export async function seedStatementOnlyRows(api: ApiClient): Promise<{ id: string; name: string }> {
+  const account = await createBankAccount(api, { name: `VUD Statement ${uniqueSeedSuffix()}` });
+  const pdf = await genBankPdf({
+    bank: 'HDFC Bank',
+    accountLast10: '4455667788',
+    periodStart: STATEMENT_ONLY_MONTH.from,
+    periodEnd: STATEMENT_ONLY_MONTH.to,
+    opening: 10000,
+    rows: STATEMENT_ONLY_ROWS.map((r) => ({ ...r })),
+  });
+  const { job } = await uploadAndIngest(api, account.id, [{ filename: 'vud-statement.pdf', buffer: pdf }]);
+  if (job.status !== 'SUCCEEDED') throw new Error(`seedStatementOnlyRows: ingest ${job.status}`);
+  return account;
+}

@@ -18,7 +18,6 @@ export type UnderlyingPeriod = 'current' | 'previous';
 export type KpiUnderlyingResponse = components['schemas']['KpiUnderlyingResponse'];
 export type UnderlyingFilterChip = components['schemas']['UnderlyingFilterChip'];
 export type UnderlyingExcludedItem = components['schemas']['UnderlyingExcludedItem'];
-export type UnderlyingSummaryLine = components['schemas']['UnderlyingSummaryLine'];
 
 export type RowBreakdownResponse = components['schemas']['RowBreakdownResponse'];
 export type BreakdownStep = components['schemas']['BreakdownStep'];

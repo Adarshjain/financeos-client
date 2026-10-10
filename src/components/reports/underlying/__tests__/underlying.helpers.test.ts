@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-  aggregationLabel,
   asFormat,
   formatAmount,
   formatKpiValue,
@@ -50,24 +49,6 @@ describe('sourceKey', () => {
       key: 'net_worth',
       params: { a: 1 },
     });
-  });
-});
-
-describe('aggregationLabel', () => {
-  it('names every aggregation', () => {
-    expect(aggregationLabel('sum')).toBe('Sum');
-    expect(aggregationLabel('avg')).toBe('Average');
-    expect(aggregationLabel('count')).toBe('Count');
-    expect(aggregationLabel('min')).toBe('Min');
-    expect(aggregationLabel('max')).toBe('Max');
-  });
-
-  it('is case-insensitive', () => {
-    expect(aggregationLabel('SUM')).toBe('Sum');
-  });
-
-  it('passes an unknown aggregation through', () => {
-    expect(aggregationLabel('median')).toBe('median');
   });
 });
 

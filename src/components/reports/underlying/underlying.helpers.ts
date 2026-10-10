@@ -34,19 +34,6 @@ export function sourceKey(source: UnderlyingSource): Record<string, unknown> {
   }
 }
 
-const AGGREGATION_LABELS: Record<string, string> = {
-  sum: 'Sum',
-  avg: 'Average',
-  count: 'Count',
-  min: 'Min',
-  max: 'Max',
-};
-
-/** "Sum" / "Average" / "Count" / "Min" / "Max" for a wire aggregation. */
-export function aggregationLabel(aggregation: string): string {
-  return AGGREGATION_LABELS[aggregation.toLowerCase()] ?? aggregation;
-}
-
 /** A value formatted exactly like the KPI tile shows it. */
 export function formatKpiValue(
   value: number | null | undefined,

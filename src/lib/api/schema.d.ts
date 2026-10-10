@@ -4668,6 +4668,9 @@ export interface components {
             filters: components["schemas"]["UnderlyingFilterChip"][];
             format?: string | null;
             groupField?: string | null;
+            groupTotals: {
+                [key: string]: number;
+            };
             measure: string;
             measureLabel: string;
             notCounted: components["schemas"]["UnderlyingExcludedItem"][];
