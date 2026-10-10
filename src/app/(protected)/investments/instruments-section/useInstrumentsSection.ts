@@ -1,23 +1,34 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
-import { Instrument } from '@/lib/types';
+import { hasNextInstrumentPage, INSTRUMENT_PAGE_SIZE } from '@/lib/instrumentList';
+import { useInstruments } from '@/lib/query/hooks/useInvestments';
+import { InstrumentType } from '@/lib/types';
+import { useDebouncedValue } from '@/lib/useDebouncedValue';
 
-import { SortOrder } from './InstrumentsFilterBar';
+export type InstrumentTypeFilter = 'all' | InstrumentType;
 
-interface UseInstrumentsSectionProps {
-  instruments: Instrument[];
-}
+const SEARCH_DEBOUNCE_MS = 300;
 
-export function useInstrumentsSection({
-  instruments,
-}: UseInstrumentsSectionProps) {
+/**
+ * The instruments page's server-paged catalog: search, type and page/size all go to
+ * GET /instruments (sorted by name there), so the page never loads the whole table.
+ */
+export function useInstrumentsSection() {
   const [page, setPage] = useState<number>(0);
-  const [pageSize, setPageSize] = useState<number>(24);
-  const [sortOrder, setSortOrder] = useState<SortOrder>('none');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [pageSize, setPageSize] = useState<number>(INSTRUMENT_PAGE_SIZE);
+  const [typeFilter, setTypeFilter] = useState<InstrumentTypeFilter>('all');
   const [search, setSearch] = useState<string>('');
+  const debouncedSearch = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
+
+  const query = useInstruments({
+    search: debouncedSearch,
+    type: typeFilter === 'all' ? undefined : typeFilter,
+    page,
+    size: pageSize,
+  });
+  const instruments = query.data ?? [];
 
   const handleSearchChange = (val: string) => {
     setSearch(val);
@@ -25,71 +36,35 @@ export function useInstrumentsSection({
   };
 
   const handleTypeFilterChange = (val: string) => {
-    setTypeFilter(val);
+    setTypeFilter(val as InstrumentTypeFilter);
     setPage(0);
   };
 
-  const toggleSort = () => {
-    setSortOrder((prev) => {
-      if (prev === 'none') return 'asc';
-      if (prev === 'asc') return 'desc';
-      return 'none';
-    });
+  const handleSizeChange = (size: number) => {
+    setPageSize(size);
     setPage(0);
   };
 
-  const filteredInstruments = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return instruments.filter((inst) => {
-      const matchesSearch =
-        !query ||
-        !!inst.name?.toLowerCase().includes(query) ||
-        !!inst.symbol?.toLowerCase().includes(query) ||
-        !!inst.yahooSymbol?.toLowerCase().includes(query) ||
-        !!inst.amfiCode?.toLowerCase().includes(query) ||
-        !!inst.isin?.toLowerCase().includes(query);
-
-      const matchesType = typeFilter === 'all' || inst.type === typeFilter;
-
-      return matchesSearch && matchesType;
-    });
-  }, [instruments, search, typeFilter]);
-
-  const sortedInstruments = useMemo(() => {
-    if (sortOrder === 'none') return filteredInstruments;
-
-    return [...filteredInstruments].sort((a, b) => {
-      const nameA = (a.name || '').toLowerCase();
-      const nameB = (b.name || '').toLowerCase();
-      const cmp = nameA.localeCompare(nameB);
-      return sortOrder === 'asc' ? cmp : -cmp;
-    });
-  }, [filteredInstruments, sortOrder]);
-
-  const totalElements = sortedInstruments.length;
-  const totalPages = Math.ceil(totalElements / pageSize) || 1;
-  const currentPage = Math.min(page, Math.max(0, totalPages - 1));
-
-  const pagedInstruments = useMemo(() => {
-    const start = currentPage * pageSize;
-    return sortedInstruments.slice(start, start + pageSize);
-  }, [sortedInstruments, currentPage, pageSize]);
+  const filtered = debouncedSearch.trim() !== '' || typeFilter !== 'all';
+  // Only an unfiltered first page that came back empty means the catalog itself is empty.
+  const catalogEmpty =
+    query.isSuccess && !query.isPlaceholderData && !filtered && page === 0 && instruments.length === 0;
 
   return {
+    instruments,
+    isLoading: query.isPending,
+    isFetching: query.isFetching,
+    isError: query.isError,
     page,
     setPage,
     pageSize,
-    setPageSize,
-    sortOrder,
+    setPageSize: handleSizeChange,
+    hasPrev: page > 0,
+    hasNext: hasNextInstrumentPage(instruments.length, pageSize),
     typeFilter,
     search,
     handleSearchChange,
     handleTypeFilterChange,
-    toggleSort,
-    totalElements,
-    totalPages,
-    currentPage,
-    sortedInstruments,
-    pagedInstruments,
+    catalogEmpty,
   };
 }

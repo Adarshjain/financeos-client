@@ -17,6 +17,7 @@ import { Instrument } from '@/lib/types';
 import { formatDate, formatMoney } from '@/lib/utils';
 
 import { EditInstrumentDialog } from '../EditInstrumentDialog';
+import { InstrumentOverrideBadge, ResetInstrumentButton } from './InstrumentOverrideControls';
 import { getIdentifier, getTypeBadge } from './InstrumentsMobileCards';
 
 interface InstrumentsTableProps {
@@ -67,6 +68,7 @@ export function InstrumentsTable({
                         {inst.symbol}
                       </div>
                     )}
+                    <InstrumentOverrideBadge instrument={inst} />
                   </TableCell>
                   <TableCell className="py-2.5 text-xs whitespace-nowrap">
                     {getTypeBadge(inst.type)}
@@ -114,7 +116,8 @@ export function InstrumentsTable({
                       <span className="text-slate-400 italic">No price</span>
                     )}
                   </TableCell>
-                  <TableCell className="py-2.5 text-right">
+                  <TableCell className="py-2.5 text-right whitespace-nowrap">
+                    <ResetInstrumentButton instrument={inst} />
                     <EditInstrumentDialog
                       instrument={inst}
                       trigger={

@@ -6,11 +6,18 @@ import { toast } from 'sonner';
 
 import { api, ApiError } from '@/lib/api/client';
 import { CorporateAction } from '@/lib/api/types';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
-import { Instrument } from '@/lib/types';
 
 import { SortOrder } from './CorporateActionsFilterBar';
+
+/** The instrument a corporate-action dialog opens on, as the action response names it. */
+interface DialogInstrument {
+  id: string;
+  name: string;
+  symbol?: string | null;
+}
 
 export function useCorporateActionsSection() {
   const qc = useQueryClient();
@@ -25,14 +32,6 @@ export function useCorporateActionsSection() {
     [corporateActionsData]
   );
 
-  const { data: instrumentsData } = useQuery({
-    queryKey: keys.investments.instruments(),
-    queryFn: async () =>
-      (await api.GET('/api/v1/instruments', { params: { query: {} } }))
-        .data! as Instrument[],
-  });
-  const instruments = useMemo(() => instrumentsData ?? [], [instrumentsData]);
-
   const deleteMutation = useMutation({
     mutationFn: (vars: { instrumentId: string; actionId: string }) =>
       api.DELETE('/api/v1/instruments/{instrumentId}/corporate-actions/{id}', {
@@ -40,7 +39,7 @@ export function useCorporateActionsSection() {
           path: { instrumentId: vars.instrumentId, id: vars.actionId },
         },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
 
   const [search, setSearch] = useState<string>('');
@@ -50,7 +49,7 @@ export function useCorporateActionsSection() {
 
   // Dialog state for adding/editing corporate actions
   const [activeDialogInstrument, setActiveDialogInstrument] =
-    useState<Instrument | null>(null);
+    useState<DialogInstrument | null>(null);
   const [activeEditAction, setActiveEditAction] =
     useState<CorporateAction | null>(null);
   const [dialogOpen, setDialogOpen] = useState<boolean>(false);
@@ -82,18 +81,11 @@ export function useCorporateActionsSection() {
     });
   };
 
-  // Build a lookup map of instruments for fast name/symbol fallback if needed
-  const instrumentMap = useMemo(() => {
-    const map = new Map<string, Instrument>();
-    instruments.forEach((inst) => map.set(inst.id, inst));
-    return map;
-  }, [instruments]);
-
   const filteredActions = useMemo(() => {
     return corporateActions.filter((act) => {
-      const inst = instrumentMap.get(act.instrumentId);
-      const name = act.instrumentName || inst?.name || '';
-      const symbol = act.instrumentSymbol || inst?.symbol || '';
+      // The response names both instruments, so no catalog lookup is needed.
+      const name = act.instrumentName || '';
+      const symbol = act.instrumentSymbol || '';
       const notes = act.notes || '';
       const targetName = act.targetInstrumentName || '';
       const targetSymbol = act.targetInstrumentSymbol || '';
@@ -110,7 +102,7 @@ export function useCorporateActionsSection() {
 
       return matchesSearch && matchesType;
     });
-  }, [corporateActions, search, typeFilter, instrumentMap]);
+  }, [corporateActions, search, typeFilter]);
 
   const sortedActions = useMemo(() => {
     if (sortOrder === 'none') return filteredActions;
@@ -129,21 +121,17 @@ export function useCorporateActionsSection() {
   };
 
   const openEditDialog = (act: CorporateAction) => {
-    const inst = instrumentMap.get(act.instrumentId) || {
+    setActiveDialogInstrument({
       id: act.instrumentId,
       name: act.instrumentName || 'Instrument',
       symbol: act.instrumentSymbol,
-      type: 'stock',
-      currency: 'INR',
-    };
-    setActiveDialogInstrument(inst);
+    });
     setActiveEditAction(act);
     setDialogOpen(true);
   };
 
   return {
     corporateActions,
-    instruments,
     isLoadingActions,
     search,
     typeFilter,
@@ -157,7 +145,6 @@ export function useCorporateActionsSection() {
     handleSearchChange,
     handleDelete,
     toggleSort,
-    instrumentMap,
     sortedActions,
     openCreateDialog,
     openEditDialog,

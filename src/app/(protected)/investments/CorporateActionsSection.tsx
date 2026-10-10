@@ -27,7 +27,6 @@ export function CorporateActionsSection() {
     handleSearchChange,
     handleDelete,
     toggleSort,
-    instrumentMap,
     sortedActions,
     openCreateDialog,
     openEditDialog,
@@ -95,7 +94,6 @@ export function CorporateActionsSection() {
         <>
           <CorporateActionsMobileCards
             sortedActions={sortedActions}
-            instrumentMap={instrumentMap}
             openEditDialog={openEditDialog}
             handleDelete={handleDelete}
             deletingId={deletingId}
@@ -103,7 +101,6 @@ export function CorporateActionsSection() {
 
           <CorporateActionsTable
             sortedActions={sortedActions}
-            instrumentMap={instrumentMap}
             openEditDialog={openEditDialog}
             handleDelete={handleDelete}
             deletingId={deletingId}

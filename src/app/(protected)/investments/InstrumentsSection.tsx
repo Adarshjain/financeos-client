@@ -5,7 +5,6 @@ import { Layers, Plus } from 'lucide-react';
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Instrument } from '@/lib/types';
 
 import { CreateInstrumentDialog } from './CreateInstrumentDialog';
 import { InstrumentsFilterBar } from './instruments-section/InstrumentsFilterBar';
@@ -13,29 +12,24 @@ import { InstrumentsMobileCards } from './instruments-section/InstrumentsMobileC
 import { InstrumentsTable } from './instruments-section/InstrumentsTable';
 import { useInstrumentsSection } from './instruments-section/useInstrumentsSection';
 
-interface InstrumentsSectionProps {
-  instruments: Instrument[];
-}
-
-export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
+export function InstrumentsSection() {
   const {
+    instruments,
+    isLoading,
+    isFetching,
+    isError,
+    page,
     setPage,
     pageSize,
     setPageSize,
-    sortOrder,
+    hasPrev,
+    hasNext,
     typeFilter,
     search,
     handleSearchChange,
     handleTypeFilterChange,
-    toggleSort,
-    totalElements,
-    totalPages,
-    currentPage,
-    sortedInstruments,
-    pagedInstruments,
-  } = useInstrumentsSection({
-    instruments,
-  });
+    catalogEmpty,
+  } = useInstrumentsSection();
 
   return (
     <div className="space-y-2 pb-32">
@@ -46,17 +40,13 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
           onSearchChange={handleSearchChange}
           typeFilter={typeFilter}
           onTypeFilterChange={handleTypeFilterChange}
-          sortOrder={sortOrder}
-          toggleSort={toggleSort}
-          currentPage={currentPage}
+          currentPage={page}
           pageSize={pageSize}
-          totalElements={totalElements}
-          totalPages={totalPages}
+          hasPrev={hasPrev}
+          hasNext={hasNext}
+          loading={isFetching}
           onPageChange={setPage}
-          onSizeChange={(newSize) => {
-            setPageSize(newSize);
-            setPage(0);
-          }}
+          onSizeChange={setPageSize}
         />
       </Card>
 
@@ -67,23 +57,27 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
           onSearchChange={handleSearchChange}
           typeFilter={typeFilter}
           onTypeFilterChange={handleTypeFilterChange}
-          sortOrder={sortOrder}
-          toggleSort={toggleSort}
-          currentPage={currentPage}
+          currentPage={page}
           pageSize={pageSize}
-          totalElements={totalElements}
-          totalPages={totalPages}
+          hasPrev={hasPrev}
+          hasNext={hasNext}
+          loading={isFetching}
           onPageChange={setPage}
-          onSizeChange={(newSize) => {
-            setPageSize(newSize);
-            setPage(0);
-          }}
+          onSizeChange={setPageSize}
           isMobile
         />
       </PageActionBar>
 
       {/* Main Instrument Cards Display */}
-      {instruments.length === 0 ? (
+      {isLoading ? (
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center text-xs text-slate-500">
+          Loading instruments…
+        </Card>
+      ) : isError ? (
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center text-xs text-rose-600 dark:text-rose-400">
+          Couldn&apos;t load instruments. Try again.
+        </Card>
+      ) : catalogEmpty ? (
         <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center space-y-2">
           <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center mx-auto text-blue-600 dark:text-blue-400">
             <Layers className="w-6 h-6" />
@@ -106,14 +100,14 @@ export function InstrumentsSection({ instruments }: InstrumentsSectionProps) {
             }
           />
         </Card>
-      ) : sortedInstruments.length === 0 ? (
+      ) : instruments.length === 0 ? (
         <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center text-xs text-slate-500">
-          No instruments match your search or filter.
+          {page > 0 ? 'No more instruments.' : 'No instruments match your search or filter.'}
         </Card>
       ) : (
         <>
-          <InstrumentsMobileCards pagedInstruments={pagedInstruments} />
-          <InstrumentsTable pagedInstruments={pagedInstruments} />
+          <InstrumentsMobileCards pagedInstruments={instruments} />
+          <InstrumentsTable pagedInstruments={instruments} />
         </>
       )}
     </div>

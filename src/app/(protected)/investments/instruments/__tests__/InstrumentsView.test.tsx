@@ -47,8 +47,7 @@ describe('InstrumentsView — Query Cache Invalidation Loop', () => {
 
     const { queryClient } = renderWithQuery(<InstrumentsView />);
 
-    expect(await screen.findByText('Instruments (1)')).toBeInTheDocument();
-    expect(screen.getAllByText('Reliance Industries Limited').length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Reliance Industries Limited')).length).toBeGreaterThan(0);
     expect(screen.queryByText('HDFC Bank Limited')).toBeNull();
 
     // Change mock to return both instruments after invalidation
@@ -57,8 +56,7 @@ describe('InstrumentsView — Query Cache Invalidation Loop', () => {
     await queryClient.invalidateQueries({ queryKey: keys.investments.all });
 
     await waitFor(() => {
-      expect(screen.getByText('Instruments (2)')).toBeInTheDocument();
+      expect(screen.getAllByText('HDFC Bank Limited').length).toBeGreaterThan(0);
     });
-    expect(screen.getAllByText('HDFC Bank Limited').length).toBeGreaterThan(0);
   });
 });

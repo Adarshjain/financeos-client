@@ -397,8 +397,9 @@ test.describe('Trades & Positions API (@api)', () => {
     expect(failed3.some((f) => f.reason?.includes('AMFI') || f.reason?.includes('100003'))).toBe(true);
   });
 
-  test('Manual price for today blocks price refresh (skipped), yesterday manual price does not', async ({
+  test('A manual price for today is the owner\'s own: the feed refresh still runs and the manual price keeps counting for them', async ({
     api,
+    request,
   }) => {
     const broker = await createBroker(api);
     const symbol = generateYahooSymbol('MANSKP');
@@ -426,18 +427,27 @@ test.describe('Trades & Positions API (@api)', () => {
       asOf: today,
     });
 
+    // Manual prices belong to their author (V98), so they no longer block the shared feed refresh.
     const job = await refreshPrices(api, inst.id);
     expect(job.status).toBe('SUCCEEDED');
     const detail = (job.result as any) ?? {};
-    expect(detail.skipped).toBeGreaterThanOrEqual(1);
+    expect(detail.skipped).toBe(0);
 
-    // Latest price remains manual
+    // One row per date in the owner's history: their manual price for today wins over the feed's.
     const prices = await api.GET('/api/v1/instruments/{id}/prices', {
       params: { path: { id: inst.id } },
     });
     expectStatus(prices, 200);
     expect(prices.data?.[0]?.close).toBe(888.88);
     expect(prices.data?.[0]?.source).toBe('MANUAL');
+    // The feed price was stored all the same: a holder without a manual price sees it.
+    const { api: apiB } = await secondUser(request, 'trades-manual-feed-b');
+    const forB = await apiB.GET('/api/v1/instruments/{id}', { params: { path: { id: inst.id } } });
+    expect(forB.data?.lastPriceSource).toBe('YAHOO');
+    expect(forB.data?.lastPrice).toBe(999.99);
+    const instrument = await api.GET('/api/v1/instruments/{id}', { params: { path: { id: inst.id } } });
+    expect(instrument.data?.lastPrice).toBe(888.88);
+    expect(instrument.data?.lastPriceSource).toBe('MANUAL');
   });
 
   test('Refresh without instrumentId refreshes only actively held instruments (sold out untouched)', async ({

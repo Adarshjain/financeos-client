@@ -81,12 +81,15 @@ test.describe('Corporate Actions UI (@ui)', () => {
     await page.getByRole('button', { name: 'Save Corporate Action' }).click();
     await expectToast(page, /Recorded split/i);
 
-    // 2. Verify row in the table
-    await expect(page.getByText('1 → 2').filter({ visible: true }).first()).toBeVisible();
+    // 2. Verify row in the table. Corporate actions are shared, so other specs' rows can be listed too:
+    // everything below is scoped to this instrument's row.
+    const row = page.getByRole('row').filter({ hasText: inst.name });
+    await expect(row).toHaveCount(1);
+    await expect(row).toContainText('1 → 2');
     await expect(page.getByText('Stock Split').filter({ visible: true }).first()).toBeVisible();
 
     // 3. Edit to change ratio to 1 -> 5
-    const editBtn = page.getByTitle('Edit Corporate Action').filter({ visible: true }).first();
+    const editBtn = row.getByTitle('Edit Corporate Action');
     await editBtn.click();
 
     await expect(page.getByText('Edit Corporate Action')).toBeVisible();
@@ -94,7 +97,7 @@ test.describe('Corporate Actions UI (@ui)', () => {
     await page.getByRole('button', { name: 'Update Corporate Action' }).click();
     await expectToast(page, /Updated split/i);
 
-    await expect(page.getByText('1 → 5').filter({ visible: true }).first()).toBeVisible();
+    await expect(row).toContainText('1 → 5');
 
     // 4. Verify Demerger form shows cost-allocation field
     const addAnotherBtn = page.getByRole('button', { name: /Record Action/i }).filter({ visible: true }).first();
@@ -110,12 +113,12 @@ test.describe('Corporate Actions UI (@ui)', () => {
 
     // 5. Delete the action
     page.once('dialog', (dialog) => dialog.accept());
-    const deleteBtn = page.getByTitle('Delete Corporate Action').filter({ visible: true }).first();
+    const deleteBtn = row.getByTitle('Delete Corporate Action');
     await deleteBtn.click();
     await expectToast(page, /Corporate action deleted/i);
 
     // Verify row removed
-    await expect(page.getByText('1 → 5').filter({ visible: true })).not.toBeVisible();
+    await expect(row).toHaveCount(0);
   });
 
 });

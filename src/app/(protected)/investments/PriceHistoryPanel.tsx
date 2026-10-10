@@ -11,7 +11,8 @@ import { ChartTooltipContent } from '@/components/charts/ChartTooltip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { api, ApiError } from '@/lib/api/client';
+import { api } from '@/lib/api/client';
+import { invalidateInvestmentQueries } from '@/lib/query/invalidate';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { PriceHistoryPoint } from '@/lib/types';
@@ -56,7 +57,7 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
         },
         body: { price: vars.price },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
   const isUpdating = updateMutation.isPending;
 
@@ -65,7 +66,7 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
       api.DELETE('/api/v1/instruments/{instrumentId}/prices/{priceId}', {
         params: { path: { instrumentId: instrument.id, priceId } },
       }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: keys.investments.all }),
+    onSuccess: () => invalidateInvestmentQueries(qc),
   });
 
   const sortedPoints = useMemo(() => {
@@ -222,7 +223,8 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
 
             <div className="divide-y divide-slate-100 dark:divide-slate-800/80 border border-slate-200/80 dark:border-slate-800 rounded-lg overflow-hidden max-h-56 overflow-y-auto">
               {sortedPoints.map((pt) => {
-                const isManual = pt.source?.toUpperCase() === 'MANUAL';
+                // Only the signed-in user's own MANUAL prices can change; feed prices never.
+                const canEdit = pt.editable === true && !!pt.id;
                 const isEditingThis = editingId === pt.id;
                 const isDeletingThis = deletingId === pt.id;
 
@@ -260,7 +262,7 @@ export function PriceHistoryPanel({ instrument }: PriceHistoryPanelProps) {
                         <span className="font-bold text-slate-900 dark:text-slate-100 tabular-nums">{formatMoney(pt.close)}</span>
                       )}
 
-                      {isManual && pt.id && !isEditingThis && (
+                      {canEdit && !isEditingThis && (
                         <div className="flex items-center gap-0.5 border-l border-slate-200 dark:border-slate-800 pl-1.5 ml-1">
                           <Button size="icon-xs" title="Edit manual price" onClick={() => handleStartEdit(pt)} className="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400">
                             <Edit2 className="w-3 h-3" />
