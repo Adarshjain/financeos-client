@@ -42,29 +42,33 @@ describe('useJobsListPolling cadence', () => {
     vi.useRealTimers();
   });
 
-  it('polls an idle list only every 30s', async () => {
+  it('polls an idle list every 5s', async () => {
     renderPolling();
     await advance(0);
     expect(getCalls()).toBe(1);
 
-    await advance(29_000);
+    await advance(4_999);
     expect(getCalls()).toBe(1);
-    await advance(1_000);
+    await advance(1);
     expect(getCalls()).toBe(2);
+    await advance(5_000);
+    expect(getCalls()).toBe(3);
   });
 
-  it('polls every 4s while the list shows an active job', async () => {
+  it('polls every 5s while the list shows an active job', async () => {
     vi.mocked(api.GET).mockResolvedValue({ data: { content: [runningJob] } } as never);
     renderPolling();
     await advance(0);
 
-    await advance(4_000);
+    await advance(4_999);
+    expect(getCalls()).toBe(1);
+    await advance(1);
     expect(getCalls()).toBe(2);
-    await advance(4_000);
+    await advance(5_000);
     expect(getCalls()).toBe(3);
   });
 
-  it('polls every 2s right after a job is announced, even before the list shows it', async () => {
+  it('refetches at once when a job is announced, then keeps the 5s cadence', async () => {
     renderPolling();
     await advance(0);
     expect(getCalls()).toBe(1);
@@ -75,39 +79,10 @@ describe('useJobsListPolling cadence', () => {
     await advance(0);
     expect(getCalls()).toBe(2);
 
-    await advance(2_000);
+    await advance(4_999);
+    expect(getCalls()).toBe(2);
+    await advance(1);
     expect(getCalls()).toBe(3);
-    await advance(2_000);
-    expect(getCalls()).toBe(4);
-  });
-
-  it('picks up the announced job once it appears, then follows it at the active cadence', async () => {
-    renderPolling();
-    await advance(0);
-    await act(async () => {
-      emitJobStarted('job-1');
-    });
-    await advance(0);
-
-    vi.mocked(api.GET).mockResolvedValue({ data: { content: [runningJob] } } as never);
-    await advance(2_000);
-    const afterSeen = getCalls();
-
-    await advance(4_000);
-    expect(getCalls()).toBe(afterSeen + 1);
-  });
-
-  it('falls back to the idle cadence once the grace window passes with nothing active', async () => {
-    renderPolling();
-    await advance(0);
-    await act(async () => {
-      emitJobStarted('job-1');
-    });
-    await advance(20_000);
-    const afterGrace = getCalls();
-
-    await advance(10_000);
-    expect(getCalls()).toBe(afterGrace);
   });
 });
 
@@ -147,7 +122,7 @@ describe('useJobsListPolling auto-expand', () => {
     expect(result.current.expandedJobIds.has('job-1')).toBe(false);
 
     vi.mocked(api.GET).mockResolvedValue({ data: { content: [succeededJob] } } as never);
-    await advance(4_000);
+    await advance(5_000);
     await advance(10);
 
     expect(result.current.expandedJobIds.has('job-1')).toBe(true);
@@ -176,8 +151,8 @@ describe('useJobsListPolling auto-expand', () => {
     });
     expect(result.current.expandedJobIds.has('job-1')).toBe(false);
 
-    // The next poll in the grace window returns the same finished job.
-    await advance(2_000);
+    // The next poll returns the same finished job.
+    await advance(5_000);
     await advance(10);
     expect(result.current.expandedJobIds.has('job-1')).toBe(false);
   });
@@ -188,7 +163,7 @@ describe('useJobsListPolling auto-expand', () => {
     await advance(0);
 
     vi.mocked(api.GET).mockResolvedValue({ data: { content: [succeededJob, otherRunning] } } as never);
-    await advance(4_000);
+    await advance(5_000);
     await advance(10);
     expect(result.current.expandedJobIds.has('job-1')).toBe(true);
     expect(result.current.expandedJobIds.has('job-2')).toBe(false);
@@ -196,7 +171,7 @@ describe('useJobsListPolling auto-expand', () => {
     vi.mocked(api.GET).mockResolvedValue({
       data: { content: [succeededJob, { ...otherRunning, status: 'SUCCEEDED' }] },
     } as never);
-    await advance(4_000);
+    await advance(5_000);
     await advance(10);
     expect(result.current.expandedJobIds.has('job-2')).toBe(true);
   });
