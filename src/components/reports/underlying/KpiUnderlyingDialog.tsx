@@ -2,13 +2,16 @@
 
 // "View underlying data" for a KPI: the rows its value is computed from, for
 // this period or (when the KPI compares) the previous one, server-sorted and
-// server-paged, with the KPI's filters as chips and the aggregate restated
-// under the table. Rows open a transaction or swap the body to that row's
+// server-paged, with the KPI's filters as chips. No row count or aggregate
+// under the rows (the header carries the figure); grouped rows (net worth's
+// Asset / Liability) carry each group's total in their header, and the group
+// column itself is left out while grouped. Rows open a transaction or swap the body to that row's
 // breakdown (Back returns). Download CSV exports every row in the same order;
 // it is offered only on the list — inside a breakdown the footer is just Close.
 //
-// Wide centred dialog on desktop, the standard bottom sheet on mobile; the
-// table scrolls sideways inside the body. Sort, page and period are local to
+// Wide centred dialog on desktop with the rows as a table that scrolls
+// sideways inside the body; the standard bottom sheet on phones with the rows
+// as cards (ResponsiveTableView). Sort, page and period are local to
 // one opening (the content unmounts on close, so the next opening starts fresh).
 // Without a `kpi` (opened from a widget that shows no KPI tile, e.g. a legend
 // or a heatmap day) the header figure and range come from the response itself,
@@ -18,7 +21,7 @@
 
 import { useState } from 'react';
 
-import { TableView } from '@/components/reports/views/TableView';
+import { ResponsiveTableView } from '@/components/reports/views/ResponsiveTableView';
 import {
   Dialog,
   DialogBody,
@@ -52,7 +55,7 @@ import {
   NotCountedDisclosure,
   UnderlyingFilterChips,
   UnderlyingPeriodTabs,
-  UnderlyingSummary,
+  UnderlyingWinnerNote,
 } from './UnderlyingParts';
 import { useBreakdownStack } from './useBreakdownStack';
 import { fetchUnderlyingCsv, useKpiUnderlying } from './useKpiUnderlying';
@@ -70,7 +73,7 @@ export interface KpiUnderlyingDialogProps {
 export function KpiUnderlyingDialog({ source, kpi, title, open, onOpenChange }: KpiUnderlyingDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl" aria-describedby={undefined}>
+      <DialogContent className="sm:max-w-4xl" aria-describedby={undefined} showCloseButton={false}>
         <UnderlyingContent source={source} kpi={kpi} title={title} onClose={() => onOpenChange(false)} />
       </DialogContent>
     </Dialog>
@@ -213,7 +216,7 @@ function UnderlyingContent({
                   <p className="py-6 text-center text-sm text-slate-500">No rows in this period</p>
                 ) : (
                   <div className={cn(query.isFetching && 'opacity-60 transition-opacity')}>
-                    <TableView
+                    <ResponsiveTableView
                       data={table}
                       sort={sort}
                       onSortChange={changeSort}
@@ -222,6 +225,9 @@ function UnderlyingContent({
                       onRowClick={rowsClickable ? onRowClick : undefined}
                       // Group headers only make sense in the grouped default order.
                       groupField={data.sortKey == null ? data.groupField : null}
+                      groupTotals={data.groupTotals}
+                      valueKey={data.measure}
+                      hideRowCount
                     />
                   </div>
                 )}
@@ -230,7 +236,7 @@ function UnderlyingContent({
                     {getErrorMessage(query.error, 'Failed to load the underlying data')}
                   </p>
                 )}
-                <UnderlyingSummary data={data} />
+                <UnderlyingWinnerNote data={data} />
               </>
             )}
           </>

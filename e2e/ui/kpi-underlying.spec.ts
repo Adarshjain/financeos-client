@@ -38,6 +38,11 @@ function istMonth(offset = 0): { year: number; month: number } {
   return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1 };
 }
 
+/** A day of a month as the app prints dates: "2 Oct 26". */
+function dayLabel(m: { year: number; month: number }, day: number): string {
+  return `${day} ${MONTHS[m.month - 1]} ${yy(m.year)}`;
+}
+
 /** Today as a one-day file label: "9 Oct 26". */
 function todayFileLabel(): string {
   const [y, m, d] = istToday().split('-').map(Number);
@@ -118,7 +123,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await loginContext(context, currentUser.cookie);
   });
 
-  test('a KPI widget value opens its rows: chips, summary, server paging, header sort, previous period and a CSV in the same order', async ({
+  test('a KPI widget value opens its rows: chips, no count or sum under them, server paging, header sort, previous period and a CSV in the same order', async ({
     page,
   }) => {
     test.slow();
@@ -147,8 +152,9 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await expect(rows).toHaveCount(25);
     await expect(rows.first()).toContainText(rowName(27));
     await expect(rows.last()).toContainText(rowName(3));
-    await expect(vud.getByText('Sum ₹6,210.00', { exact: true })).toBeVisible();
-    await expect(vud.getByText(/^27 rows/)).toHaveCount(1);
+    // The header carries the figure: nothing under the rows restates it or counts them.
+    await expect(vud.getByText(/^Sum /)).toHaveCount(0);
+    await expect(vud.getByText(/27 rows/)).toHaveCount(0);
     await expect(vud.getByText('1 / 2')).toBeVisible();
     await vud.getByRole('button', { name: 'Next page' }).click();
     await expect(vud.getByText('2 / 2')).toBeVisible();
@@ -187,7 +193,6 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await previousTab.click();
     await expect(previousTab).toHaveAttribute('aria-selected', 'true');
     await expect(vud.getByText('₹500.00', { exact: true })).toBeVisible();
-    await expect(vud.getByText('Sum ₹500.00', { exact: true })).toBeVisible();
     await expect(rows).toHaveCount(3);
     await expect(rows.nth(0)).toContainText('VUD prev 3');
     await expect(rows.nth(2)).toContainText('VUD prev 1');
@@ -197,7 +202,8 @@ test.describe('KPI underlying data dialog (@ui)', () => {
 
     // Back on this period, sorted by spend descending: the CSV holds every row in that order.
     await vud.getByRole('tab', { name: 'This period' }).click();
-    await expect(vud.getByText('Sum ₹6,210.00', { exact: true })).toBeVisible();
+    await expect(vud.getByText('₹6,210.00', { exact: true })).toBeVisible();
+    await expect(rows).toHaveCount(25);
     await vud.getByRole('button', { name: 'Spend', exact: true }).click();
     await vud.getByRole('button', { name: 'Spend', exact: true }).click();
     await expect(spendHeader).toHaveAttribute('aria-sort', 'descending');
@@ -233,7 +239,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await page.getByRole('menuitem', { name: 'View underlying data' }).click();
 
     const vud = page.getByRole('dialog', { name: 'VUD Menu' });
-    await expect(vud.getByText('Sum ₹870.00', { exact: true })).toBeVisible();
+    await expect(vud.getByText('₹870.00', { exact: true })).toBeVisible();
     await expect(bodyRows(vud)).toHaveCount(3);
 
     await bodyRows(vud).filter({ hasText: rowName(2) }).click();
@@ -244,7 +250,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog').getByRole('button', { name: 'Edit', exact: true })).toHaveCount(0);
     // Closing the transaction returns to the rows.
-    await expect(vud.getByText('Sum ₹870.00', { exact: true })).toBeVisible();
+    await expect(bodyRows(vud)).toHaveCount(3);
   });
 
   test('a this-month KPI names its CSV after the report and the month, for each period, and lists an empty month as such', async ({
@@ -281,7 +287,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     expect(previous[0].suggestedFilename()).toBe(`VUD This Month ${monthFileLabel(istMonth(-1))}.csv`);
   });
 
-  test('net worth: grouped asset and liability rows, what is not counted, and each row breaks down to its ledger', async ({ page }) => {
+  test('net worth: asset and liability groups with their totals in the header rows, what is not counted, and each row breaks down to its ledger', async ({ page }) => {
     test.slow();
     const savings = await createBankAccount(api, { name: 'NW Savings', openingBalance: 10000 });
     await createTransaction(api, savings.id, { amount: 2500, date: istToday(-5), description: 'NW refund' });
@@ -315,17 +321,23 @@ test.describe('KPI underlying data dialog (@ui)', () => {
 
     const vud = page.getByRole('dialog', { name: 'Net worth' });
     await expect(vud.getByText('₹25,799.90', { exact: true })).toBeVisible();
-    // Grouped by side in the default order (largest first within a side).
+    // Grouped by side in the default order (largest first within a side). Each group's header
+    // row carries the side's total (all rows, not just the page) in the Net value column, and the
+    // Side column itself is left out while grouped: the header already says it.
     const rows = bodyRows(vud);
-    await expect(rows).toHaveText([/^Asset$/, /NW Broker/, /NW Savings/, /^Liability$/, /NW Overdrawn/]);
-    // Kind and side cells read as their labels, never the stored values.
+    const grouped = [/^Asset₹26,299\.90$/, /NW Broker/, /NW Savings/, /^Liability-₹500\.00$/, /NW Overdrawn/];
+    await expect(rows).toHaveText(grouped);
+    await expect(vud.getByRole('columnheader')).toHaveText(['Name', 'Kind', 'Net value']);
+    await expect(rows.first().getByRole('cell').last()).toHaveText('₹26,299.90');
+    // Kind cells read as their labels, never the stored values.
     await expect(rows.filter({ hasText: 'NW Savings' })).toContainText('Bank account');
     await expect(rows.filter({ hasText: 'NW Broker' })).toContainText('Broker');
-    await expect(rows.filter({ hasText: 'NW Overdrawn' })).toContainText('Liability');
     await expect(vud.locator('tbody')).not.toContainText('bank_account');
-    await expect(vud.getByText('Sum ₹25,799.90', { exact: true })).toBeVisible();
-    await expect(vud.getByText('Assets ₹26,299.90')).toBeVisible();
-    await expect(vud.getByText('Liabilities ₹500.00')).toBeVisible();
+    // No sum, totals or row count under the rows.
+    await expect(vud.getByText(/^Sum /)).toHaveCount(0);
+    await expect(vud.getByText(/^Assets /)).toHaveCount(0);
+    await expect(vud.getByText(/^Liabilities /)).toHaveCount(0);
+    await expect(vud.getByText(/^3 rows/)).toHaveCount(0);
 
     // What the total leaves out, collapsed until asked for.
     const notCounted = vud.getByRole('button', { name: 'Not counted (2)' });
@@ -365,7 +377,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await expect(descriptionHeader).toHaveAttribute('aria-sort', 'none');
     await expect(bodyRows(transactions)).toHaveText([/NW rent/, /NW refund/]);
     await vud.getByRole('button', { name: 'Back' }).click();
-    await expect(rows).toHaveText([/^Asset$/, /NW Broker/, /NW Savings/, /^Liability$/, /NW Overdrawn/]);
+    await expect(rows).toHaveText(grouped);
     // Back in the list, Download CSV returns.
     await expect(vud.getByRole('button', { name: 'Download CSV' })).toBeVisible();
 
@@ -388,10 +400,13 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await expect(vud.getByRole('heading', { name: 'NW Broker', level: 3 })).toBeVisible();
     await vud.getByRole('button', { name: 'Back' }).click();
 
-    // A user sort replaces the grouped order, so the group headers go.
+    // A user sort replaces the grouped order, so the group headers go and the Side column returns.
     await vud.getByRole('button', { name: 'Net value', exact: true }).click();
     await expect(vud.getByRole('columnheader', { name: 'Net value' })).toHaveAttribute('aria-sort', 'ascending');
     await expect(rows).toHaveText([/NW Overdrawn/, /NW Savings/, /NW Broker/]);
+    await expect(vud.getByRole('columnheader')).toHaveText(['Name', 'Kind', 'Side', 'Net value']);
+    await expect(rows.filter({ hasText: 'NW Overdrawn' })).toContainText('Liability');
+    await expect(rows.filter({ hasText: 'NW Savings' })).toContainText('Asset');
 
     // Net worth has no date range: the CSV is named for today.
     const [download] = await Promise.all([
@@ -482,13 +497,13 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await value.click();
 
     const vud = page.getByRole('dialog', { name: 'VUD Builder' });
-    await expect(vud.getByText('Sum ₹870.00', { exact: true })).toBeVisible();
+    await expect(vud.getByText('₹870.00', { exact: true })).toBeVisible();
     await expect(bodyRows(vud)).toHaveText([new RegExp(rowName(3)), new RegExp(rowName(2)), new RegExp(rowName(1))]);
     await vud.getByRole('button', { name: 'Close' }).click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 
-  test('@mobile the dialog is a bottom sheet on a phone (centred on desktop); the previous period and a transaction open from it', async ({
+  test('@mobile the dialog is a bottom sheet with the rows as cards on a phone (centred with a table on desktop); sort, the previous period and a transaction open from it', async ({
     page,
     isMobile,
   }) => {
@@ -499,7 +514,9 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await page.goto(`/dashboards/${board.id}`);
     await widgetCard(page, 'VUD Phone').getByRole('button', { name: 'View underlying data' }).click();
     const vud = page.getByRole('dialog', { name: 'VUD Phone' });
-    await expect(vud.getByText('Sum ₹870.00', { exact: true })).toBeVisible();
+    await expect(vud.getByText('₹870.00', { exact: true })).toBeVisible();
+    await expect(vud.getByText(/^Sum /)).toHaveCount(0);
+    await expect(vud.getByText(/3 rows/)).toHaveCount(0);
 
     // Phone: anchored to the bottom edge (4px inset), full width. Desktop: centred.
     // Polled, so the open animation has settled.
@@ -511,12 +528,41 @@ test.describe('KPI underlying data dialog (@ui)', () => {
         : { centreOffset: Math.abs(Math.round(box.x + box.width / 2 - viewport.width / 2)) };
     };
     await expect.poll(geometry).toEqual(isMobile ? { gapBelow: 4, gapLeft: 4, gapRight: 4 } : { centreOffset: 0 });
-    // The wide table scrolls inside the dialog; the page itself never scrolls sideways.
+    // The page itself never scrolls sideways.
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 
+    if (isMobile) {
+      // Cards, not a table: the description titles each card, the spend is the bold figure, and
+      // the other filled columns (date, account) make the muted line under it.
+      await expect(vud.locator('table')).toHaveCount(0);
+      const cards = vud.getByRole('button', { name: /^VUD row / });
+      await expect(cards).toHaveText([new RegExp(rowName(3)), new RegExp(rowName(2)), new RegExp(rowName(1))]);
+      const card = cards.filter({ hasText: rowName(2) });
+      await expect(card.getByText('₹290.00', { exact: true })).toHaveCSS('font-weight', '600');
+      await expect(card.getByText(`${dayLabel(seed.current, 2)} · ${seed.account.name}`, { exact: true })).toBeVisible();
+
+      // No headers to click: the Sort select and the direction toggle sort on the server.
+      await vud.getByRole('combobox', { name: 'Sort' }).click();
+      await page.getByRole('option', { name: 'Spend', exact: true }).click();
+      // Ascending spend: 220 (row 1), 290 (row 2), 360 (row 3).
+      await expect(cards).toHaveText([new RegExp(rowName(1)), new RegExp(rowName(2)), new RegExp(rowName(3))]);
+      await vud.getByRole('button', { name: 'Sort ascending' }).click();
+      await expect(cards).toHaveText([new RegExp(rowName(3)), new RegExp(rowName(2)), new RegExp(rowName(1))]);
+      await expect(vud.getByRole('button', { name: 'Sort descending' })).toBeVisible();
+      await vud.getByRole('combobox', { name: 'Sort' }).click();
+      await page.getByRole('option', { name: 'Default order' }).click();
+      await expect(vud.getByRole('button', { name: /^Sort (a|de)scending$/ })).toHaveCount(0);
+    } else {
+      await expect(bodyRows(vud)).toHaveCount(3);
+      await expect(vud.getByRole('combobox', { name: 'Sort' })).toHaveCount(0);
+    }
+
     await vud.getByRole('tab', { name: /^Previous · / }).click();
-    await expect(vud.getByText('Sum ₹500.00', { exact: true })).toBeVisible();
-    await bodyRows(vud).filter({ hasText: 'VUD prev 3' }).click();
+    await expect(vud.getByText('₹500.00', { exact: true })).toBeVisible();
+    const previousRow = isMobile
+      ? vud.getByRole('button', { name: /^VUD prev 3/ })
+      : bodyRows(vud).filter({ hasText: 'VUD prev 3' });
+    await previousRow.click();
     const detail = page.getByRole('dialog').filter({ hasText: 'VUD prev 3' });
     await expect(detail.getByText('-₹400.00')).toBeVisible();
     await expect(detail.getByRole('button', { name: 'Edit' })).toBeVisible();

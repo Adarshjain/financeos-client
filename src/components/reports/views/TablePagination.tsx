@@ -1,6 +1,6 @@
 'use client';
 
-// Shared table footer: total count, a page-size control, and prev/next paging.
+// Shared table footer: total count (optional), a page-size control, and prev/next paging.
 // Used by both the raw TableView and the PivotTableView. Page/size are a runtime
 // concern (query params), never part of the saved report definition.
 
@@ -29,6 +29,8 @@ interface TablePaginationProps {
   unit?: string;
   loading?: boolean;
   className?: string;
+  /** Off: no total row count, only the paging controls (the underlying-data dialog). */
+  showCount?: boolean;
 }
 
 export function TablePagination({
@@ -37,7 +39,8 @@ export function TablePagination({
   onSizeChange,
   unit = 'row',
   loading = false,
-    className
+  className,
+  showCount = true,
 }: TablePaginationProps) {
   // Always offer the current size, even if it isn't one of the presets.
   const sizes = PAGE_SIZE_OPTIONS.includes(page.size)
@@ -47,11 +50,13 @@ export function TablePagination({
 
   return (
     <div className={cn("flex flex-wrap items-center justify-between gap-2 text-sm text-slate-500", className)}>
-      <span>
-        {page.totalElements.toLocaleString('en-IN')} {unit}
-        {page.totalElements === 1 ? '' : 's'}
-      </span>
-      <div className="flex items-center gap-2">
+      {showCount && (
+        <span>
+          {page.totalElements.toLocaleString('en-IN')} {unit}
+          {page.totalElements === 1 ? '' : 's'}
+        </span>
+      )}
+      <div className={cn('flex items-center gap-2', !showCount && 'ml-auto')}>
         {onSizeChange && (
           <Select
             value={String(page.size)}

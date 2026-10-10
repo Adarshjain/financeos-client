@@ -21,7 +21,10 @@ import {
   NET_WORTH_SIDE_LABELS,
   PREVIOUS_PERIOD,
   seedSpendMonths,
+  seedStatementOnlyRows,
   startsWithBom,
+  STATEMENT_ONLY_MONTH,
+  STATEMENT_ONLY_ROWS,
   tableOf,
   underlyingAdHoc,
   underlyingAdHocCsv,
@@ -68,6 +71,7 @@ test.describe('KPI underlying data: transactions (@api)', () => {
       summaryLines: [],
       rowAction: 'transaction',
       groupField: null,
+      groupTotals: {},
       notCounted: [],
       sortKey: null,
       sortDirection: null,
@@ -356,6 +360,51 @@ test.describe('KPI underlying data: transactions (@api)', () => {
     expect(previous.filters.map((f) => f.text)).toEqual(['is VUD Cycle Card', 'Previous billing cycle']);
   });
 
+  test('rows that only carry statement text list it as their description: rows, description filters, sort and CSV', async ({
+    request,
+  }) => {
+    const { api } = await newUser(request, 'vud-sourced');
+    const account = await seedStatementOnlyRows(api);
+    // Precondition: the ingested rows have statement text and no typed description.
+    const ingested = await searchAll(api, [{ field: 'accountId', operator: 'is', value: account.id }]);
+    expect(ingested.map((t) => [t.description ?? null, t.sourcedDescription]).sort()).toEqual(
+      STATEMENT_ONLY_ROWS.map((r) => [null, r.description]).sort()
+    );
+
+    const filters: Filter[] = [
+      { field: 'account', operator: 'is', value: account.name },
+      inMonth(STATEMENT_ONLY_MONTH),
+    ];
+    const body = (extra: Filter[] = []) => kpiBody('transactions', { measure: 'spend', aggregation: 'sum', filters: [...filters, ...extra] });
+
+    // Newest first, each row named by its statement text.
+    const res = await underlyingAdHoc(api, body());
+    expect(res).toMatchObject({ value: 2129, rowCount: 3 });
+    expect(descriptions(res)).toEqual(['ZOMATO ORDER', 'AMAZON PAY INDIA', 'BLUE TOKAI COFFEE']);
+
+    // Description filters match the same text.
+    expect(descriptions(await underlyingAdHoc(api, body([{ field: 'description', operator: 'contains', value: 'TOKAI' }])))).toEqual([
+      'BLUE TOKAI COFFEE',
+    ]);
+    expect(
+      descriptions(await underlyingAdHoc(api, body([{ field: 'description', operator: 'starts_with', value: 'AMAZON' }])))
+    ).toEqual(['AMAZON PAY INDIA']);
+    expect(descriptions(await underlyingAdHoc(api, body([{ field: 'description', operator: 'exact', value: 'ZOMATO ORDER' }])))).toEqual([
+      'ZOMATO ORDER',
+    ]);
+
+    // Sorting by description sorts the shown text.
+    expect(descriptions(await underlyingAdHoc(api, body(), { sort: 'description,asc' }))).toEqual([
+      'AMAZON PAY INDIA',
+      'BLUE TOKAI COFFEE',
+      'ZOMATO ORDER',
+    ]);
+
+    // The CSV prints it too.
+    const lines = csvLines(await underlyingAdHocCsv(api, body(), { sort: 'description,asc' }));
+    expect(lines.slice(1).map((l) => l.split(',')[1])).toEqual(['AMAZON PAY INDIA', 'BLUE TOKAI COFFEE', 'ZOMATO ORDER']);
+  });
+
   test('only KPI definitions have underlying data', async ({ request }) => {
     const { api } = await newUser(request, 'vud-non-kpi');
     const table = await createReport(api, {
@@ -506,6 +555,8 @@ test.describe('KPI underlying data: computed datasources (@api)', () => {
       { label: 'Assets', value: 17300, format: 'currency' },
       { label: 'Liabilities', value: 2000, format: 'currency' },
     ]);
+    // Each side's figure for its group header: the KPI's own sum of signedValue over that side.
+    expect(res.groupTotals).toEqual({ asset: 17300, liability: -2000 });
     expect([...res.notCounted].sort((a, b) => a.name.localeCompare(b.name))).toEqual([
       { id: closed.id, name: 'NWU Closed', kind: 'bank_account', reason: 'closed', reasonLabel: `Closed on ${ddmmyyyy(istToday(-1))}`, value: 400 },
       { id: hidden.id, name: 'NWU Hidden', kind: 'bank_account', reason: 'excluded', reasonLabel: 'Excluded from net worth', value: 777 },
@@ -525,11 +576,14 @@ test.describe('KPI underlying data: computed datasources (@api)', () => {
     // A user sort replaces the grouped order and is echoed (the client stops grouping on it).
     const sorted = await underlyingBuiltin(api, 'net_worth', undefined, { sort: 'signedValue,asc' });
     expect(sorted).toMatchObject({ sortKey: 'signedValue', sortDirection: 'asc', groupField: 'side' });
+    expect(sorted.groupTotals).toEqual(res.groupTotals);
     expect(tableOf(sorted).rows.map((r) => r.name)).toEqual(['NWU Card', 'NWU Wallet', 'NWU Asha', 'NWU Bank']);
     // Summary lines cover every listed row, not just the page.
     const firstPage = await underlyingBuiltin(api, 'net_worth', {}, { size: 1 });
     expect(tableOf(firstPage).rows).toHaveLength(1);
     expect(firstPage.summaryLines).toEqual(res.summaryLines);
+    // So do the group totals.
+    expect(firstPage.groupTotals).toEqual(res.groupTotals);
 
     const builtinPrevious = await api.POST('/api/v1/dashboards/builtins/{key}/underlying', {
       params: { path: { key: 'net_worth' }, query: { period: 'previous' } },
@@ -548,6 +602,8 @@ test.describe('KPI underlying data: computed datasources (@api)', () => {
       { label: 'Assets', value: 0, format: 'currency' },
       { label: 'Liabilities', value: 2000, format: 'currency' },
     ]);
+    // Only groups with listed rows have a total, in the KPI's measure (value: positive).
+    expect(liabilities.groupTotals).toEqual({ liability: 2000 });
     const kinds = await underlyingAdHoc(
       api,
       kpiBody('net_worth', {

@@ -79,6 +79,7 @@ const response = (over: Partial<KpiUnderlyingResponse> = {}, tableRows: Record<s
   filters: [],
   rowAction: null,
   groupField: null,
+  groupTotals: {},
   notCounted: [],
   sortKey: null,
   sortDirection: null,
@@ -261,31 +262,32 @@ describe('KpiUnderlyingDialog', () => {
     });
   });
 
-  describe('summary', () => {
-    it('states the aggregate, leaving the row count to the table footer alone', async () => {
+  describe('under the rows', () => {
+    it('restates neither the aggregate nor the row count', async () => {
       render();
-      expect(await screen.findByText(`Sum ${money(4500)}`)).toBeInTheDocument();
-      expect(screen.getAllByText(/^30 rows/)).toHaveLength(1);
+      await screen.findByText('Coffee');
+      expect(screen.queryByText(`Sum ${money(4500)}`)).not.toBeInTheDocument();
+      expect(screen.queryByText(/^30 rows/)).not.toBeInTheDocument();
       expect(screen.queryByText(/sets this value/)).not.toBeInTheDocument();
     });
 
-    it('for a winner-only MAX shows just the aggregate and the singular note', async () => {
+    it('for a winner-only MAX shows only the singular note', async () => {
       respond = () =>
         Promise.resolve({ data: response({ aggregation: 'max', winnerOnly: true, rowCount: 1, value: 2000 }, [rows[2]]) });
       render({ kpi: kpi({ aggregation: 'max', value: 2000 }) });
-      expect(await screen.findByText(`Max ${money(2000)}`)).toBeInTheDocument();
-      expect(screen.getByText('Showing the row that sets this value')).toBeInTheDocument();
+      expect(await screen.findByText('Showing the row that sets this value')).toBeInTheDocument();
+      expect(screen.queryByText(`Max ${money(2000)}`)).not.toBeInTheDocument();
     });
 
     it('for tied MIN winners uses the plural note', async () => {
       respond = () =>
         Promise.resolve({ data: response({ aggregation: 'min', winnerOnly: true, rowCount: 2, value: 1000 }, rows.slice(0, 2)) });
       render({ kpi: kpi({ aggregation: 'min', value: 1000 }) });
-      expect(await screen.findByText(`Min ${money(1000)}`)).toBeInTheDocument();
-      expect(screen.getByText('Showing the rows that set this value')).toBeInTheDocument();
+      expect(await screen.findByText('Showing the rows that set this value')).toBeInTheDocument();
+      expect(screen.queryByText(`Min ${money(1000)}`)).not.toBeInTheDocument();
     });
 
-    it('adds the datasource summary lines', async () => {
+    it('leaves the datasource summary lines out', async () => {
       respond = () =>
         Promise.resolve({
           data: response({
@@ -296,8 +298,9 @@ describe('KpiUnderlyingDialog', () => {
           }),
         });
       render();
-      expect(await screen.findByText(`Assets ${money(2500)}`)).toBeInTheDocument();
-      expect(screen.getByText(`Liabilities ${money(2000)}`)).toBeInTheDocument();
+      await screen.findByText('Coffee');
+      expect(screen.queryByText(`Assets ${money(2500)}`)).not.toBeInTheDocument();
+      expect(screen.queryByText(`Liabilities ${money(2000)}`)).not.toBeInTheDocument();
     });
   });
 
@@ -349,7 +352,7 @@ describe('KpiUnderlyingDialog', () => {
       expect(await screen.findByText('Page failed')).toHaveClass('text-rose-600');
       expect(screen.getByText('Coffee')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Amount' })).toBeInTheDocument();
-      expect(screen.getByText(`Sum ${money(4500)}`)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Next page' })).toBeInTheDocument();
 
       respond = (q) =>
         Promise.resolve({ data: q.page === 1 ? response({}, [{ id: 't9', description: 'Page two' }], 1) : response() });
