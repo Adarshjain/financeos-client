@@ -18,11 +18,11 @@ import { WidgetActionsMenu } from './WidgetActionsMenu';
 import { widgetHref, WidgetIcon, WidgetSubtitle } from './widgetMeta';
 
 // Keep header controls from starting a grid drag/resize.
-function stopDrag(e: React.MouseEvent | React.TouchEvent) {
+export function stopDrag(e: React.MouseEvent | React.TouchEvent) {
   e.stopPropagation();
 }
 
-const chipClass =
+export const chipClass =
   'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400';
 
 interface WidgetViewHeaderProps {

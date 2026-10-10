@@ -5,10 +5,12 @@
 // title overrides). Saving sends the FULL widget set via create/updateDashboard.
 
 import { Card } from '@/components/ui/card';
+import { isTextWidget } from '@/lib/dashboards.helpers';
 import type { DashboardResponse } from '@/lib/dashboards.types';
 import { useReportsList } from '@/lib/query/hooks/useReports';
 
 import { DashboardGrid } from './DashboardGrid';
+import { DashboardTextWidget } from './DashboardTextWidget';
 import { DashboardWidgetView } from './DashboardWidgetView';
 import { DashboardEditorHeader } from './editor/DashboardEditorHeader';
 import { useDashboardEditor } from './editor/useDashboardEditor';
@@ -36,6 +38,8 @@ export function DashboardEditor({
     handleLayoutChange,
     addWidget,
     addBuiltin,
+    addHeader,
+    updateHeader,
     removeWidget,
     updateTitle,
     toggleWidgetWidth,
@@ -63,6 +67,7 @@ export function DashboardEditor({
         onStartEdit={startEdit}
         onAddWidget={addWidget}
         onAddBuiltin={addBuiltin}
+        onAddHeader={addHeader}
         onSave={save}
       />
 
@@ -74,7 +79,7 @@ export function DashboardEditor({
             </p>
             <p className="text-sm text-slate-500">
               {editing
-                ? 'Add a built-in or report widget to get started.'
+                ? 'Add a built-in or report widget, or a header, to get started.'
                 : 'Click Edit to add widgets.'}
             </p>
           </div>
@@ -84,19 +89,28 @@ export function DashboardEditor({
           widgets={widgets}
           editing={editing}
           onLayoutChange={handleLayoutChange}
-          renderWidget={(w, fit) => (
-            <DashboardWidgetView
-              widget={w}
-              fit={fit}
-              editing={editing}
-              onTitleChange={(t) => updateTitle(w.id, t)}
-              onRemove={() => removeWidget(w.id)}
-              onToggleWidth={() => toggleWidgetWidth(w.id)}
-              onParamsChange={
-                !editing && mode === 'edit' ? (params) => saveWidgetParams(w.id, params) : undefined
-              }
-            />
-          )}
+          renderWidget={(w, fit) =>
+            isTextWidget(w) ? (
+              <DashboardTextWidget
+                widget={w}
+                editing={editing}
+                onChange={(change) => updateHeader(w.id, change)}
+                onRemove={() => removeWidget(w.id)}
+              />
+            ) : (
+              <DashboardWidgetView
+                widget={w}
+                fit={fit}
+                editing={editing}
+                onTitleChange={(t) => updateTitle(w.id, t)}
+                onRemove={() => removeWidget(w.id)}
+                onToggleWidth={() => toggleWidgetWidth(w.id)}
+                onParamsChange={
+                  !editing && mode === 'edit' ? (params) => saveWidgetParams(w.id, params) : undefined
+                }
+              />
+            )
+          }
         />
       )}
     </div>

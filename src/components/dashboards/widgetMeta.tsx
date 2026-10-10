@@ -7,7 +7,7 @@
 import { BarChart3, Gauge, LayoutGrid, type LucideIcon, Table2 } from 'lucide-react';
 import { createElement } from 'react';
 
-import { isBuiltinWidget } from '@/lib/dashboards.helpers';
+import { isBuiltinWidget, isTextWidget } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 
 import { SubtitleText } from './builtins/BuiltinSubtitle';
@@ -28,11 +28,13 @@ const KPI_SLOT: PhoneSlot = { fit: 'fill', className: 'h-[140px]' };
 const TALL_SLOT: PhoneSlot = { fit: 'fill', className: 'h-80' };
 
 /**
- * A widget's slot in the phone stack: the built-in's own, else by content
- * shape — component built-ins size to their content, KPIs get 140px, charts
+ * A widget's slot in the phone stack: content-sized for a section header,
+ * the built-in's own, else by content shape — component built-ins size to their content, KPIs get 140px, charts
  * and tables 320px.
  */
 export function phoneSlot(widget: WidgetResponse): PhoneSlot {
+  // A section header is one or two lines of text: it sizes to them.
+  if (isTextWidget(widget)) return { fit: 'content' };
   const own = builtinEntryOf(widget)?.phone;
   if (own) return own;
   const kind = widgetVisualKind(widget);

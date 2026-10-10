@@ -24,6 +24,7 @@ interface DashboardEditorHeaderProps {
   onStartEdit: () => void;
   onAddWidget: (report: ReportSummaryResponse) => void;
   onAddBuiltin: (def: BuiltinWidgetResponse, params: WidgetParams) => void;
+  onAddHeader: () => void;
   onSave: () => void;
 }
 
@@ -40,6 +41,7 @@ export function DashboardEditorHeader({
   onStartEdit,
   onAddWidget,
   onAddBuiltin,
+  onAddHeader,
   onSave,
 }: DashboardEditorHeaderProps) {
   return (
@@ -85,6 +87,9 @@ export function DashboardEditorHeader({
       <div className="ml-auto flex items-center gap-2">
         {editing ? (
           <>
+            <Button variant="outline" onClick={onAddHeader}>
+              Add header
+            </Button>
             <AddWidgetDialog
               reports={reports}
               onAdd={onAddWidget}

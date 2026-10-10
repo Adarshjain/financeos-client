@@ -26,7 +26,9 @@ import {
   builtinWidgetResponse,
   editSignature,
   reportWidgetResponse,
+  textWidgetResponse,
   toggleWidth,
+  updateTextWidget,
 } from './dashboardEditor.helpers';
 
 export { editSignature } from './dashboardEditor.helpers';
@@ -81,6 +83,13 @@ export function useDashboardEditor({
   // Built-ins can be added any number of times (e.g. one bills widget per card).
   const addBuiltin = (def: BuiltinWidgetResponse, params: WidgetParams) =>
     setWidgets((prev) => [...prev, builtinWidgetResponse(prev, def, params)]);
+
+  // A new header lands at the bottom with an empty title (its input takes focus); drag it into place.
+  const addHeader = () =>
+    setWidgets((prev) => [...prev, textWidgetResponse(prev)]);
+
+  const updateHeader = (id: string, change: { title?: string; description?: string }) =>
+    setWidgets((prev) => updateTextWidget(prev, id, change));
 
   const removeWidget = (id: string) =>
     setWidgets((prev) => prev.filter((w) => w.id !== id));
@@ -200,6 +209,8 @@ export function useDashboardEditor({
     handleLayoutChange,
     addWidget,
     addBuiltin,
+    addHeader,
+    updateHeader,
     removeWidget,
     updateTitle,
     toggleWidgetWidth,

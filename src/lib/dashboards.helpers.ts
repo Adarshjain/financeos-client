@@ -24,6 +24,13 @@ const DEFAULT_WIDGET_HEIGHT = 24;
 const BILLS_DUE_WIDGET_HEIGHT = 28;
 /** The grid's own floor for any widget's width. */
 const GRID_MIN_WIDTH = 2;
+// A section header's height in grid rows: 5 rows = 53px for the title alone,
+// 6 rows = 66px with a description line under it. Headers cannot be resized.
+const TEXT_WIDGET_HEIGHT = 5;
+const TEXT_WIDGET_HEIGHT_WITH_DESCRIPTION = 6;
+/** Server limits for a section header (see DashboardValidator). */
+export const TEXT_TITLE_MAX = 120;
+export const TEXT_DESCRIPTION_MAX = 300;
 
 export const BUILTIN_BILLS_DUE = 'bills_due';
 /** The Inbox built-in: a component widget rendering the most urgent inbox rows. */
@@ -87,9 +94,55 @@ export function newBuiltinWidget(
   };
 }
 
+/**
+ * Mint a new section header: full width, at the given layout's row. Its
+ * height follows from whether it has a description (see `textWidgetHeight`).
+ */
+export function newTextWidget(
+  title: string,
+  description: string,
+  layout?: Partial<WidgetLayout>
+): DashboardWidget {
+  return {
+    id: crypto.randomUUID(),
+    kind: 'text',
+    title,
+    params: textParams(description),
+    layout: {
+      y: 0,
+      ...layout,
+      x: 0,
+      w: DASHBOARD_GRID_COLUMNS,
+      h: textWidgetHeight(description),
+    },
+  };
+}
+
+/** A section header's fixed height in grid rows: one more row when it has a description. */
+export function textWidgetHeight(description: string): number {
+  return description.trim() ? TEXT_WIDGET_HEIGHT_WITH_DESCRIPTION : TEXT_WIDGET_HEIGHT;
+}
+
+/** A section header's params as saved: `{description}` when there is one, else null. */
+function textParams(description: string): WidgetParams | null {
+  const trimmed = description.trim();
+  return trimmed ? { description: trimmed } : null;
+}
+
 /** Whether a widget references a built-in (vs a saved report). */
 export function isBuiltinWidget(widget: Pick<WidgetResponse, 'kind'>): boolean {
   return widget.kind === 'builtin';
+}
+
+/** Whether a widget is a section header (static text, no data). */
+export function isTextWidget(widget: Pick<WidgetResponse, 'kind'>): boolean {
+  return widget.kind === 'text';
+}
+
+/** A section header's description line ('' when it has none). */
+export function textDescription(widget: Pick<WidgetResponse, 'params'>): string {
+  const value = widgetParams(widget).description;
+  return typeof value === 'string' ? value : '';
 }
 
 /**
@@ -98,12 +151,14 @@ export function isBuiltinWidget(widget: Pick<WidgetResponse, 'kind'>): boolean {
  * Render the widget only when this is true; otherwise show a placeholder.
  */
 export function isWidgetAvailable(widget: WidgetResponse): boolean {
+  if (isTextWidget(widget)) return true;
   if (isBuiltinWidget(widget)) return widget.builtin != null;
   return Boolean(widget.reportId) && widget.report?.available === true;
 }
 
-/** Display title: the override, else the built-in label, else the report name. */
+/** Display title: the override, else the built-in label, else the report name. A header's title is its text. */
 export function widgetTitle(widget: WidgetResponse): string {
+  if (isTextWidget(widget)) return widget.title?.trim() || 'Untitled section';
   return (
     widget.title?.trim() ||
     widget.builtin?.label ||
@@ -112,8 +167,9 @@ export function widgetTitle(widget: WidgetResponse): string {
   );
 }
 
-/** The narrowest this widget may be laid out (a built-in's own minimum, else the grid floor). */
-export function widgetMinW(widget: { builtin?: { minW: number } | null }): number {
+/** The narrowest this widget may be laid out (the whole grid for a header, a built-in's own minimum, else the grid floor). */
+export function widgetMinW(widget: { kind?: string | null; builtin?: { minW: number } | null }): number {
+  if (widget.kind === 'text') return DASHBOARD_GRID_COLUMNS;
   return widget.builtin?.minW ?? GRID_MIN_WIDTH;
 }
 
@@ -204,6 +260,17 @@ export function builtinWidgetQueryParams(
 
 /** The save-request shape of a widget (`DashboardWidget`), from its response shape. */
 export function toDashboardWidget(widget: WidgetResponse): DashboardWidget {
+  if (isTextWidget(widget)) {
+    return {
+      id: widget.id,
+      kind: 'text',
+      reportId: null,
+      builtinKey: null,
+      params: textParams(textDescription(widget)),
+      title: widget.title?.trim() || null,
+      layout: widget.layout,
+    };
+  }
   const builtin = isBuiltinWidget(widget);
   return {
     id: widget.id,
@@ -239,8 +306,9 @@ type ValidatableWidget = DashboardWidget & { builtin?: { minW: number; label?: s
 
 /**
  * Reasons a widget set can't be saved: out-of-bounds layouts, duplicate ids,
- * a built-in narrower than its minimum, or a built-in the server no longer
- * knows. The server enforces the same rules and returns 400; check client-side first.
+ * a built-in narrower than its minimum, a built-in the server no longer
+ * knows, or a section header without a title, too long, or not full width.
+ * The server enforces the same rules and returns 400; check client-side first.
  */
 export function validateWidgets(widgets: ValidatableWidget[]): string[] {
   const errors: string[] = [];
@@ -258,11 +326,31 @@ export function validateWidgets(widgets: ValidatableWidget[]): string[] {
     if (widget.kind === 'builtin' && 'builtin' in widget && widget.builtin == null) {
       errors.push(`Widget ${i + 1} is no longer available — remove it to save.`);
     }
+    if (widget.kind === 'text') {
+      errors.push(...textWidgetErrors(widget));
+      return;
+    }
     const minW = widgetMinW(widget);
     if (widget.kind === 'builtin' && widget.layout.w < minW) {
       const label = widget.builtin?.label ?? `Widget ${i + 1}`;
       errors.push(`${label} must be at least ${minW} of ${DASHBOARD_GRID_COLUMNS} columns wide.`);
     }
   });
+  return errors;
+}
+
+function textWidgetErrors(widget: DashboardWidget): string[] {
+  const errors: string[] = [];
+  const title = widget.title?.trim() ?? '';
+  if (!title) errors.push('Give every header a title.');
+  if (title.length > TEXT_TITLE_MAX) {
+    errors.push(`Header titles can be at most ${TEXT_TITLE_MAX} characters.`);
+  }
+  if (textDescription(widget).length > TEXT_DESCRIPTION_MAX) {
+    errors.push(`Header descriptions can be at most ${TEXT_DESCRIPTION_MAX} characters.`);
+  }
+  if (widget.layout.x !== 0 || widget.layout.w !== DASHBOARD_GRID_COLUMNS) {
+    errors.push('Headers must span the full width.');
+  }
   return errors;
 }

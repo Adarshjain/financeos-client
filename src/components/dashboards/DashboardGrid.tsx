@@ -6,7 +6,8 @@
 // drag handle. Below the md breakpoint, view mode stacks the widgets in one
 // column instead (see DashboardStack); edit mode always keeps the grid. The
 // server render and hydration use the grid, then the stack takes over after
-// mount on a phone.
+// mount on a phone. Section headers (text widgets) are pinned to the full
+// width and their own height: they drag, but never resize.
 
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -14,7 +15,7 @@ import 'react-resizable/css/styles.css';
 import type { ReactNode } from 'react';
 import RGL, { type Layout, WidthProvider } from 'react-grid-layout/legacy';
 
-import { DASHBOARD_GRID_COLUMNS, widgetMinW } from '@/lib/dashboards.helpers';
+import { DASHBOARD_GRID_COLUMNS, isTextWidget, widgetMinW } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 import { BELOW_MD_QUERY, useMediaQuery } from '@/lib/useMediaQuery';
 
@@ -49,16 +50,31 @@ export function DashboardGrid({
     return <DashboardStack widgets={widgets} renderWidget={renderWidget} />;
   }
 
-  const layout: Layout = widgets.map((w) => ({
-    i: w.id,
-    x: w.layout.x,
-    y: w.layout.y,
-    w: w.layout.w,
-    h: w.layout.h,
-    // Built-ins carry their own minimum (e.g. full width for bills/upcoming).
-    minW: Math.min(widgetMinW(w), DASHBOARD_GRID_COLUMNS),
-    minH: 1,
-  }));
+  const layout: Layout = widgets.map((w) =>
+    isTextWidget(w)
+      ? {
+          i: w.id,
+          x: 0,
+          y: w.layout.y,
+          w: DASHBOARD_GRID_COLUMNS,
+          h: w.layout.h,
+          minW: DASHBOARD_GRID_COLUMNS,
+          maxW: DASHBOARD_GRID_COLUMNS,
+          minH: w.layout.h,
+          maxH: w.layout.h,
+          isResizable: false,
+        }
+      : {
+          i: w.id,
+          x: w.layout.x,
+          y: w.layout.y,
+          w: w.layout.w,
+          h: w.layout.h,
+          // Built-ins carry their own minimum (e.g. full width for bills/upcoming).
+          minW: Math.min(widgetMinW(w), DASHBOARD_GRID_COLUMNS),
+          minH: 1,
+        },
+  );
 
   return (
     <GridLayout
