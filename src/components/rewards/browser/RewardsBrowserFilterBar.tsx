@@ -2,7 +2,6 @@
 
 import { CalendarDays, Loader2 } from 'lucide-react';
 
-import { TablePagination } from '@/components/reports/views/TablePagination';
 import { DatePicker } from '@/components/ui/date-picker';
 import {
   Select,
@@ -12,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Account } from '@/lib/account.types';
-import { PagedRewardLines, RewardReport } from '@/lib/rewards.types';
+import { RewardReport } from '@/lib/rewards.types';
 import { cn, formatDate, toCalendarDate } from '@/lib/utils';
 
 import { RANGE_PRESET_LABELS, RANGE_PRESETS, RangePreset } from './helpers';
@@ -32,9 +31,6 @@ interface RewardsBrowserFilterBarProps {
   report: RewardReport | null;
   loading: boolean;
   isMobile?: boolean;
-  lines: PagedRewardLines | null;
-  onPageChange: (p: number) => void;
-  onSizeChange: (s: number) => void;
 }
 
 export function RewardsBrowserFilterBar({
@@ -52,9 +48,6 @@ export function RewardsBrowserFilterBar({
   report,
   loading,
   isMobile = false,
-  lines,
-  onPageChange,
-  onSizeChange,
 }: RewardsBrowserFilterBarProps) {
   const selectTriggerClass =
     'h-8 text-xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg font-semibold flex-1 min-w-32';
@@ -158,25 +151,6 @@ export function RewardsBrowserFilterBar({
           <Loader2 className="w-4 h-4 animate-spin text-slate-400 shrink-0" />
         )}
       </div>
-
-      {/* Mobile: pagination lives in the PAB, under the filter row */}
-      {isMobile && lines && (
-        <div className="w-full border-t border-slate-100 dark:border-slate-800 pt-2">
-          <TablePagination
-            page={{
-              number: lines.number,
-              size: lines.size,
-              totalElements: lines.totalElements,
-              totalPages: lines.totalPages,
-            }}
-            onPageChange={onPageChange}
-            onSizeChange={onSizeChange}
-            unit="line"
-            loading={loading}
-            className="text-xs"
-          />
-        </div>
-      )}
     </div>
   );
 }

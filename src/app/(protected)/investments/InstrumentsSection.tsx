@@ -3,8 +3,10 @@
 import { Layers, Plus } from 'lucide-react';
 
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
+import { PagedSection } from '@/components/reports/views/PagedSection';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { INSTRUMENT_PAGE_SIZES } from '@/lib/instrumentList';
 
 import { CreateInstrumentDialog } from './CreateInstrumentDialog';
 import { InstrumentsFilterBar } from './instruments-section/InstrumentsFilterBar';
@@ -55,12 +57,6 @@ export function InstrumentsSection() {
           onTypeFilterChange={handleTypeFilterChange}
           sortDir={sortDir}
           toggleSort={toggleSort}
-          currentPage={page}
-          pageSize={pageSize}
-          totalPages={totalPages}
-          loading={isFetching}
-          onPageChange={setPage}
-          onSizeChange={setPageSize}
         />
       </Card>
 
@@ -73,58 +69,64 @@ export function InstrumentsSection() {
           onTypeFilterChange={handleTypeFilterChange}
           sortDir={sortDir}
           toggleSort={toggleSort}
-          currentPage={page}
-          pageSize={pageSize}
-          totalPages={totalPages}
-          loading={isFetching}
-          onPageChange={setPage}
-          onSizeChange={setPageSize}
           isMobile
         />
       </PageActionBar>
 
-      {/* Main Instrument Cards Display */}
-      {isLoading ? (
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center text-xs text-slate-500">
-          Loading instruments…
-        </Card>
-      ) : isError ? (
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center text-xs text-rose-600 dark:text-rose-400">
-          Couldn&apos;t load instruments. Try again.
-        </Card>
-      ) : catalogEmpty ? (
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center space-y-2">
-          <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center mx-auto text-blue-600 dark:text-blue-400">
-            <Layers className="w-6 h-6" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
-              No instruments recorded yet
-            </h3>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">
-              Add stocks, mutual funds, ETFs, and other assets to build your
-              master registry and track market prices.
-            </p>
-          </div>
-          <CreateInstrumentDialog
-            trigger={
-              <Button size="sm" variant="blue" className="mt-2">
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add First Instrument</span>
-              </Button>
-            }
-          />
-        </Card>
-      ) : instruments.length === 0 ? (
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center text-xs text-slate-500">
-          {page > 0 ? 'No more instruments.' : 'No instruments match your search or filter.'}
-        </Card>
-      ) : (
-        <>
-          <InstrumentsMobileCards pagedInstruments={instruments} />
-          <InstrumentsTable pagedInstruments={instruments} />
-        </>
-      )}
+      {/* Main Instrument Cards Display, paged above and below */}
+      <PagedSection
+        className="space-y-2"
+        topClassName="px-1"
+        bottomClassName="px-1"
+        page={{ number: page, size: pageSize, totalElements: totalElements ?? 0, totalPages }}
+        loading={isFetching}
+        onPageChange={setPage}
+        onSizeChange={setPageSize}
+        pageSizeOptions={INSTRUMENT_PAGE_SIZES}
+        unit="instrument"
+      >
+        {isLoading ? (
+          <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center text-xs text-slate-500">
+            Loading instruments…
+          </Card>
+        ) : isError ? (
+          <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center text-xs text-rose-600 dark:text-rose-400">
+            Couldn&apos;t load instruments. Try again.
+          </Card>
+        ) : catalogEmpty ? (
+          <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center space-y-2">
+            <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center mx-auto text-blue-600 dark:text-blue-400">
+              <Layers className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
+                No instruments recorded yet
+              </h3>
+              <p className="text-xs text-slate-500 max-w-md mx-auto">
+                Add stocks, mutual funds, ETFs, and other assets to build your
+                master registry and track market prices.
+              </p>
+            </div>
+            <CreateInstrumentDialog
+              trigger={
+                <Button size="sm" variant="blue" className="mt-2">
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add First Instrument</span>
+                </Button>
+              }
+            />
+          </Card>
+        ) : instruments.length === 0 ? (
+          <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-sm rounded-xl p-8 text-center text-xs text-slate-500">
+            {page > 0 ? 'No more instruments.' : 'No instruments match your search or filter.'}
+          </Card>
+        ) : (
+          <>
+            <InstrumentsMobileCards pagedInstruments={instruments} />
+            <InstrumentsTable pagedInstruments={instruments} />
+          </>
+        )}
+      </PagedSection>
     </div>
   );
 }

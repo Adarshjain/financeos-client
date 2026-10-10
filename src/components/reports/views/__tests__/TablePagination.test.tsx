@@ -23,15 +23,12 @@ describe('TablePagination (CD-13)', () => {
     );
 
     expect(screen.getByText('75 transactions')).toBeInTheDocument();
-    expect(screen.getByText('2 / 5')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-current', 'page');
 
-    const buttons = screen.getAllByRole('button');
-    // Prev button (index 0)
-    fireEvent.click(buttons[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Previous page' }));
     expect(onPageChange).toHaveBeenCalledWith(0);
 
-    // Next button (index 1)
-    fireEvent.click(buttons[1]);
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
     expect(onPageChange).toHaveBeenCalledWith(2);
   });
 

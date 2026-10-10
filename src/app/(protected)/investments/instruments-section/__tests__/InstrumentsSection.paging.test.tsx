@@ -79,17 +79,17 @@ describe('InstrumentsSection — server-side paging', () => {
     })) as never);
     renderWithQuery(<InstrumentsSection />);
     expect((await screen.findAllByText('Instrument 50')).length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: 'Previous page' })).toBeDisabled();
+    expect(screen.getAllByRole('button', { name: 'Previous page' })[0]).toBeDisabled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Next page' })[0]);
     expect((await screen.findAllByText('Instrument 57')).length).toBeGreaterThan(0);
     expect(lastQuery()).toEqual({ page: 1, size: 50 });
-    expect(screen.getByText('2 / 2')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Next page' })).toBeDisabled();
+    expect(screen.getAllByRole('button', { name: 'Page 2' })[0]).toHaveAttribute('aria-current', 'page');
+    expect(screen.getAllByRole('button', { name: 'Next page' })[0]).toBeDisabled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Previous page' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Previous page' })[0]);
     expect((await screen.findAllByText('Instrument 1')).length).toBeGreaterThan(0);
-    expect(screen.getByText('1 / 2')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Page 1' })[0]).toHaveAttribute('aria-current', 'page');
   });
 
   it('sends the search to the server (debounced) and goes back to the first page', async () => {
@@ -102,7 +102,7 @@ describe('InstrumentsSection — server-side paging', () => {
     })) as never);
     renderWithQuery(<InstrumentsSection />);
     expect((await screen.findAllByText('Instrument 1')).length).toBeGreaterThan(0);
-    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Next page' })[0]);
     expect((await screen.findAllByText('Instrument 52')).length).toBeGreaterThan(0);
 
     fireEvent.change(screen.getByPlaceholderText('Search by ticker, name, ISIN...'), { target: { value: 'reli' } });
@@ -159,7 +159,7 @@ describe('InstrumentsSection — server-side paging', () => {
     renderWithQuery(<InstrumentsSection />);
     expect((await screen.findAllByText('Instrument 1')).length).toBeGreaterThan(0);
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+      fireEvent.click(screen.getAllByRole('button', { name: 'Next page' })[0]);
     });
     expect(await screen.findByText('No more instruments.')).toBeInTheDocument();
   });

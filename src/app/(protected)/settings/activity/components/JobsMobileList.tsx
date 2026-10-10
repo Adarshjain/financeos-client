@@ -15,14 +15,10 @@ import {
 
 interface JobsMobileListProps {
   jobs: JobResponse[];
-  totalPages: number;
-  renderPagination: () => React.ReactNode;
 }
 
 export function JobsMobileList({
   jobs,
-  totalPages,
-  renderPagination,
 }: JobsMobileListProps) {
   return (
     <div className="sm:hidden space-y-2">
@@ -103,11 +99,6 @@ export function JobsMobileList({
             </div>
           );
         })
-      )}
-      {totalPages > 1 && (
-        <div className="bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-          {renderPagination()}
-        </div>
       )}
     </div>
   );

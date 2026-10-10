@@ -57,7 +57,8 @@ describe('InstrumentsSection — count and server-side name sort', () => {
     serve(['Alpha', 'Mid'], 1234, 25);
     renderWithQuery(<InstrumentsSection />);
     expect(await screen.findByRole('heading', { name: 'Instruments (1,234)' })).toBeInTheDocument();
-    expect(screen.getByText('1 / 25')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Page 1' })[0]).toHaveAttribute('aria-current', 'page');
+    expect(screen.getAllByRole('button', { name: 'Page 25' }).length).toBeGreaterThan(0);
   });
 
   it('shows no count until the first answer, and (0) for an empty catalog', async () => {
@@ -102,19 +103,20 @@ describe('InstrumentsSection — count and server-side name sort', () => {
     serve(['Alpha', 'Mid'], 120, 3);
     renderWithQuery(<InstrumentsSection />);
     expect((await screen.findAllByText('Alpha')).length).toBeGreaterThan(0);
-    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Next page' })[0]);
     await waitFor(() => expect(lastQuery()).toEqual({ page: 1, size: 50 }));
     fireEvent.click(screen.getByRole('option', { name: 'ETF' }));
     fireEvent.change(screen.getByPlaceholderText('Search by ticker, name, ISIN...'), { target: { value: 'al' } });
     await waitFor(() => expect(lastQuery()).toEqual({ search: 'al', type: 'etf', page: 0, size: 50 }));
 
-    fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Next page' })[0]);
     await waitFor(() => expect(lastQuery()).toEqual({ search: 'al', type: 'etf', page: 1, size: 50 }));
     fireEvent.click(screen.getByRole('button', { name: 'Name A–Z' }));
     await waitFor(() =>
       expect(lastQuery()).toEqual({ search: 'al', type: 'etf', sort: 'name,desc', page: 0, size: 50 })
     );
-    expect(screen.getByText('1 / 3')).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Page 1' })[0]).toHaveAttribute('aria-current', 'page');
+    expect(screen.getAllByRole('button', { name: 'Page 3' }).length).toBeGreaterThan(0);
   });
 
   it('hides prev/next when everything fits on one page', async () => {

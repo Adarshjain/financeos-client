@@ -2,7 +2,6 @@
 
 import { Search, X } from 'lucide-react';
 
-import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -20,12 +19,6 @@ interface TradebookFilterBarProps {
   selectedBrokerFilter: string;
   onBrokerFilterChange: (b: string) => void;
   brokerAccounts: Broker[];
-  currentPage: number;
-  pageSize: number;
-  totalElements: number;
-  totalPages: number;
-  onPageChange: (p: number) => void;
-  onSizeChange: (s: number) => void;
   isMobile?: boolean;
 }
 
@@ -35,12 +28,6 @@ export function TradebookFilterBar({
   selectedBrokerFilter,
   onBrokerFilterChange,
   brokerAccounts,
-  currentPage,
-  pageSize,
-  totalElements,
-  totalPages,
-  onPageChange,
-  onSizeChange,
   isMobile = false,
 }: TradebookFilterBarProps) {
   return (
@@ -92,20 +79,6 @@ export function TradebookFilterBar({
           </SelectContent>
         </Select>
       </div>
-
-      {/* Integrated Pagination Controls */}
-      <TablePagination
-        page={{
-          number: currentPage,
-          size: pageSize,
-          totalElements,
-          totalPages,
-        }}
-        onPageChange={onPageChange}
-        onSizeChange={onSizeChange}
-        unit="trade"
-        className="flex flex-row"
-      />
     </div>
   );
 }

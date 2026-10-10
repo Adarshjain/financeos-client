@@ -3,6 +3,7 @@
 import { Layers, Loader2 } from 'lucide-react';
 
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
+import { PagedSection } from '@/components/reports/views/PagedSection';
 import { Card } from '@/components/ui/card';
 import { isAccountOfType } from '@/lib/account.types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
@@ -49,15 +50,6 @@ export function TradebookSection({ initialData }: TradebookSectionProps) {
           selectedBrokerFilter={selectedBrokerFilter}
           onBrokerFilterChange={handleBrokerFilterChange}
           brokerAccounts={brokerAccounts}
-          currentPage={currentPage}
-          pageSize={pageSize}
-          totalElements={totalElements}
-          totalPages={totalPages}
-          onPageChange={setPage}
-          onSizeChange={(newSize) => {
-            setPageSize(newSize);
-            setPage(0);
-          }}
         />
       </Card>
 
@@ -69,15 +61,6 @@ export function TradebookSection({ initialData }: TradebookSectionProps) {
           selectedBrokerFilter={selectedBrokerFilter}
           onBrokerFilterChange={handleBrokerFilterChange}
           brokerAccounts={brokerAccounts}
-          currentPage={currentPage}
-          pageSize={pageSize}
-          totalElements={totalElements}
-          totalPages={totalPages}
-          onPageChange={setPage}
-          onSizeChange={(newSize) => {
-            setPageSize(newSize);
-            setPage(0);
-          }}
           isMobile
         />
       </PageActionBar>
@@ -102,29 +85,43 @@ export function TradebookSection({ initialData }: TradebookSectionProps) {
           </div>
         </Card>
       ) : (
-        <div className="relative">
-          {isLoading && (
-            <div className="absolute right-3 top-3 z-10 text-slate-400 bg-white/80 dark:bg-slate-900/80 p-1.5 rounded-full shadow-sm">
-              <Loader2 className="w-4 h-4 animate-spin text-emerald-600 dark:text-emerald-400" />
-            </div>
-          )}
+        <PagedSection
+          className="space-y-2"
+          topClassName="px-1"
+          bottomClassName="px-1"
+          page={{ number: currentPage, size: pageSize, totalElements, totalPages }}
+          onPageChange={setPage}
+          onSizeChange={(newSize) => {
+            setPageSize(newSize);
+            setPage(0);
+          }}
+          loading={isLoading}
+          unit="trade"
+        >
+          <div className="relative">
+            {isLoading && (
+              <div className="absolute right-3 top-3 z-10 text-slate-400 bg-white/80 dark:bg-slate-900/80 p-1.5 rounded-full shadow-sm">
+                <Loader2 className="w-4 h-4 animate-spin text-emerald-600 dark:text-emerald-400" />
+              </div>
+            )}
 
-          <TradebookMobileCards
-            transactions={transactions}
-            brokerAccounts={brokerAccounts}
-            accounts={accounts}
-            isLoading={isLoading}
-            onSuccess={fetchPage}
-          />
+            <TradebookMobileCards
+              transactions={transactions}
+              brokerAccounts={brokerAccounts}
+              accounts={accounts}
+              isLoading={isLoading}
+              onSuccess={fetchPage}
+            />
 
-          <TradebookTable
-            transactions={transactions}
-            brokerAccounts={brokerAccounts}
-            accounts={accounts}
-            isLoading={isLoading}
-            onSuccess={fetchPage}
-          />
-        </div>
+            <TradebookTable
+              transactions={transactions}
+              brokerAccounts={brokerAccounts}
+              accounts={accounts}
+              isLoading={isLoading}
+              onSuccess={fetchPage}
+            />
+          </div>
+        </PagedSection>
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, Plus, Search, X } from 'lucide-react';
+import { ArrowDown, ArrowUp, Plus, Search, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { INSTRUMENT_PAGE_SIZES, type InstrumentSortDir } from '@/lib/instrumentList';
+import type { InstrumentSortDir } from '@/lib/instrumentList';
 import { cn } from '@/lib/utils';
 
 import { CreateInstrumentDialog } from '../CreateInstrumentDialog';
@@ -23,12 +23,6 @@ interface InstrumentsFilterBarProps {
   onTypeFilterChange: (t: string) => void;
   sortDir: InstrumentSortDir;
   toggleSort: () => void;
-  currentPage: number;
-  pageSize: number;
-  totalPages: number;
-  loading?: boolean;
-  onPageChange: (p: number) => void;
-  onSizeChange: (s: number) => void;
   isMobile?: boolean;
 }
 
@@ -39,12 +33,6 @@ export function InstrumentsFilterBar({
   onTypeFilterChange,
   sortDir,
   toggleSort,
-  currentPage,
-  pageSize,
-  totalPages,
-  loading = false,
-  onPageChange,
-  onSizeChange,
   isMobile = false,
 }: InstrumentsFilterBarProps) {
   return (
@@ -115,77 +103,6 @@ export function InstrumentsFilterBar({
           }
         />
       </div>
-      <InstrumentsPager
-        currentPage={currentPage}
-        pageSize={pageSize}
-        totalPages={totalPages}
-        loading={loading}
-        onPageChange={onPageChange}
-        onSizeChange={onSizeChange}
-      />
-    </div>
-  );
-}
-
-/** Page size plus prev/next over the server pages, with the page count from GET /instruments. */
-function InstrumentsPager({
-  currentPage,
-  pageSize,
-  totalPages,
-  loading,
-  onPageChange,
-  onSizeChange,
-}: {
-  currentPage: number;
-  pageSize: number;
-  totalPages: number;
-  loading: boolean;
-  onPageChange: (p: number) => void;
-  onSizeChange: (s: number) => void;
-}) {
-  return (
-    <div className="flex items-center gap-2 text-sm text-slate-500">
-      <Select value={String(pageSize)} onValueChange={(val) => onSizeChange(Number(val))} disabled={loading}>
-        <SelectTrigger
-          aria-label="Instruments per page"
-          className="w-[110px] bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 shadow-none h-8"
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
-          {INSTRUMENT_PAGE_SIZES.map((s) => (
-            <SelectItem key={s} value={String(s)} className="text-xs">
-              {s} / page
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {/* Also shown on a page past the end (rows deleted meanwhile), so the user can step back. */}
-      {(totalPages > 1 || currentPage > 0) && (
-        <div className="flex items-center gap-1.5">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label="Previous page"
-            disabled={currentPage <= 0 || loading}
-            onClick={() => onPageChange(currentPage - 1)}
-          >
-            <ChevronLeft className="h-4 w-4 text-slate-500" />
-          </Button>
-          <span className="tabular-nums text-xs font-semibold px-2 text-slate-700 dark:text-slate-300">
-            {currentPage + 1} / {Math.max(totalPages, currentPage + 1)}
-          </span>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label="Next page"
-            disabled={currentPage >= totalPages - 1 || loading}
-            onClick={() => onPageChange(currentPage + 1)}
-          >
-            <ChevronRight className="h-4 w-4 text-slate-500" />
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

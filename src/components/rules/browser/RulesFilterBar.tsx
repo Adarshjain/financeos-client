@@ -2,7 +2,6 @@
 
 import { Search, X } from 'lucide-react';
 
-import { TablePagination } from '@/components/reports/views/TablePagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -77,13 +76,6 @@ interface RulesFilterBarProps {
   categories: Category[];
   searchVal: string;
   setSearchVal: (s: string) => void;
-  pageNumber: number;
-  pageSize: number;
-  totalElements: number;
-  totalPages: number;
-  isPending: boolean;
-  onPageChange: (newPage: number) => void;
-  onSizeChange: (newSize: number) => void;
 }
 
 export function RulesFilterBar({
@@ -95,13 +87,6 @@ export function RulesFilterBar({
   categories,
   searchVal,
   setSearchVal,
-  pageNumber,
-  pageSize,
-  totalElements,
-  totalPages,
-  isPending,
-  onPageChange,
-  onSizeChange,
 }: RulesFilterBarProps) {
   const categoryOptions = [
     { value: 'all', label: 'Any category' },
@@ -194,20 +179,6 @@ export function RulesFilterBar({
           Clear filters
         </Button>
       </div>
-
-      <TablePagination
-        page={{
-          number: pageNumber,
-          size: pageSize,
-          totalElements,
-          totalPages,
-        }}
-        loading={isPending}
-        onPageChange={onPageChange}
-        onSizeChange={onSizeChange}
-        unit="rule"
-        className="w-full px-1"
-      />
     </div>
   );
 }

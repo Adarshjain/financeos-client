@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
-import { TablePagination } from '@/components/reports/views/TablePagination';
+import { PagedSection } from '@/components/reports/views/PagedSection';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { isAccountOfType } from '@/lib/account.types';
@@ -195,23 +195,6 @@ export function DividendsSection({
         {/* Receipt Filter */}
         <ReceiptFilterSelect value={selectedReceiptFilter} onChange={handleReceiptChange} />
       </div>
-
-      {/* Pagination Controls */}
-      <TablePagination
-        page={{
-          number: currentPage,
-          size: pageSize,
-          totalElements,
-          totalPages,
-        }}
-        onPageChange={(newPage) => setPage(newPage)}
-        onSizeChange={(newSize) => {
-          setPageSize(newSize);
-          setPage(0);
-        }}
-        unit="dividend"
-        className="flex flex-row ml-auto"
-      />
     </div>
   );
 
@@ -271,24 +254,37 @@ export function DividendsSection({
       {/* Mobile PageActionBar Integration */}
       <PageActionBar>{renderActionBar(true)}</PageActionBar>
 
-      {/* Main Table Display */}
-      <div className="relative">
-        {isLoading && (
-          <div className="absolute right-3 top-3 z-10 text-slate-400 bg-white/80 dark:bg-slate-900/80 p-1.5 rounded-full shadow-sm">
-            <Loader2 className="w-4 h-4 animate-spin text-emerald-600 dark:text-emerald-400" />
-          </div>
-        )}
+      {/* Main Table Display, paged above and below */}
+      <PagedSection
+        className="space-y-2"
+        topClassName="px-1"
+        bottomClassName="px-1"
+        page={{ number: currentPage, size: pageSize, totalElements, totalPages }}
+        onPageChange={(newPage) => setPage(newPage)}
+        onSizeChange={(newSize) => {
+          setPageSize(newSize);
+          setPage(0);
+        }}
+        unit="dividend"
+      >
+        <div className="relative">
+          {isLoading && (
+            <div className="absolute right-3 top-3 z-10 text-slate-400 bg-white/80 dark:bg-slate-900/80 p-1.5 rounded-full shadow-sm">
+              <Loader2 className="w-4 h-4 animate-spin text-emerald-600 dark:text-emerald-400" />
+            </div>
+          )}
 
-        <div className={cn(isLoading && 'opacity-60 transition-opacity')}>
-          <DividendsTable
-            dividends={dividends}
-            accounts={accounts}
-            brokerAccounts={brokerAccounts}
-            totalElements={totalElements}
-            onSuccess={refreshAll}
-          />
+          <div className={cn(isLoading && 'opacity-60 transition-opacity')}>
+            <DividendsTable
+              dividends={dividends}
+              accounts={accounts}
+              brokerAccounts={brokerAccounts}
+              totalElements={totalElements}
+              onSuccess={refreshAll}
+            />
+          </div>
         </div>
-      </div>
+      </PagedSection>
     </div>
   );
 }

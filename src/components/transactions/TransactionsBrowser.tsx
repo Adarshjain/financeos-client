@@ -4,7 +4,7 @@ import { Link2, PlusIcon } from 'lucide-react';
 import Link from 'next/link';
 
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
-import { TablePagination } from '@/components/reports/views/TablePagination';
+import { PagedSection } from '@/components/reports/views/PagedSection';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
@@ -39,7 +39,6 @@ export function TransactionsBrowser({
     setIsSelectionMode,
     bulkLinkOpen,
     setBulkLinkOpen,
-    page,
     setPage,
     size,
     setSize,
@@ -66,25 +65,6 @@ export function TransactionsBrowser({
           setPage(0);
         }}
       />
-
-      {/* Pagination Footer */}
-      {pagedData && pagedData.totalElements > 0 && (
-        <TablePagination
-          page={{
-            number: pagedData.number,
-            size: pagedData.size,
-            totalElements: pagedData.totalElements,
-            totalPages: pagedData.totalPages,
-          }}
-          onPageChange={setPage}
-          onSizeChange={(newSize) => {
-            setSize(newSize);
-            setPage(0);
-          }}
-          loading={loading}
-          unit="txn"
-        />
-      )}
     </div>
   );
 
@@ -155,8 +135,25 @@ export function TransactionsBrowser({
         pagedData={pagedData}
       />
 
-      {/* Transactions List */}
-      <div className="px-2">
+      {/* Transactions List, paged above and below */}
+      <PagedSection
+        className="px-2"
+        topClassName="px-2 pb-1"
+        bottomClassName="px-2 pt-2"
+        page={{
+          number: pagedData?.number ?? 0,
+          size: pagedData?.size ?? size,
+          totalElements: pagedData?.totalElements ?? 0,
+          totalPages: pagedData?.totalPages ?? 0,
+        }}
+        onPageChange={setPage}
+        onSizeChange={(newSize) => {
+          setSize(newSize);
+          setPage(0);
+        }}
+        loading={loading}
+        unit="txn"
+      >
         <TransactionListFeed
           loading={loading}
           pagedData={pagedData}
@@ -167,7 +164,7 @@ export function TransactionsBrowser({
           onReload={handleReload}
           onToggleSelect={toggleSelect}
         />
-      </div>
+      </PagedSection>
 
       <TransactionLinkDialog
         initialSelectedTransactions={selectedTransactions}

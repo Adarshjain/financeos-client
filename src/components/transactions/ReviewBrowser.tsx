@@ -1,7 +1,7 @@
 'use client';
 
 import { PageActionBar } from '@/components/layout/PageActionBarContext';
-import { TablePagination } from '@/components/reports/views/TablePagination';
+import { PagedSection } from '@/components/reports/views/PagedSection';
 import { Card } from '@/components/ui/card';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { cn } from '@/lib/utils';
@@ -103,27 +103,6 @@ export function ReviewBrowser({ initialFilters }: ReviewBrowserProps = {}) {
           setPage(0);
         }}
       />
-
-      {pagedData && pagedData.totalElements > 0 && (
-        <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
-          <TablePagination
-            page={{
-              number: pagedData.number,
-              size: pagedData.size,
-              totalElements: pagedData.totalElements,
-              totalPages: pagedData.totalPages,
-            }}
-            onPageChange={handlePageChange}
-            onSizeChange={(newSize) => {
-              setSize(newSize);
-              setPage(0);
-              setSelectedIds([]);
-            }}
-            unit="transaction"
-            loading={loading}
-          />
-        </div>
-      )}
     </div>
   );
 
@@ -200,18 +179,37 @@ export function ReviewBrowser({ initialFilters }: ReviewBrowserProps = {}) {
         </div>
       )}
 
-      {/* List Container */}
-      <ReviewListContainer
+      {/* List Container, paged above and below */}
+      <PagedSection
+        topClassName="px-4 pb-1"
+        bottomClassName="px-4 pt-2"
+        page={{
+          number: pagedData?.number ?? page,
+          size: pagedData?.size ?? size,
+          totalElements: pagedData?.totalElements ?? 0,
+          totalPages: pagedData?.totalPages ?? 0,
+        }}
+        onPageChange={handlePageChange}
+        onSizeChange={(newSize) => {
+          setSize(newSize);
+          setPage(0);
+          setSelectedIds([]);
+        }}
+        unit="transaction"
         loading={loading}
-        pagedData={pagedData}
-        selectedIds={selectedIds}
-        appliedAccountCount={appliedAccountIds.length}
-        selectableAccountCount={selectableAccounts.length}
-        accounts={accounts}
-        onSelectAllPage={handleSelectAllPage}
-        onToggleSelect={toggleSelect}
-        onMutate={handleReload}
-      />
+      >
+        <ReviewListContainer
+          loading={loading}
+          pagedData={pagedData}
+          selectedIds={selectedIds}
+          appliedAccountCount={appliedAccountIds.length}
+          selectableAccountCount={selectableAccounts.length}
+          accounts={accounts}
+          onSelectAllPage={handleSelectAllPage}
+          onToggleSelect={toggleSelect}
+          onMutate={handleReload}
+        />
+      </PagedSection>
 
       {/* Approve Dialog */}
       <ReviewApproveDialog
