@@ -1,5 +1,6 @@
 // Pure state transforms behind useDashboardEditor: dirty-check signature,
-// appending new widgets, and min-width-aware layout/width changes.
+// appending new widgets and section headers, header text edits, and
+// min-width-aware layout/width changes.
 
 import type { Layout } from 'react-grid-layout/legacy';
 
@@ -7,9 +8,13 @@ import {
   DASHBOARD_GRID_COLUMNS,
   HALF_WIDTH,
   isBuiltinWidget,
+  isTextWidget,
   newBuiltinWidget,
+  newTextWidget,
   newWidget,
   QUARTER_WIDTH,
+  textDescription,
+  textWidgetHeight,
   widgetMinW,
   widgetParams,
 } from '@/lib/dashboards.helpers';
@@ -30,6 +35,9 @@ export function editSignature(
     name,
     description,
     widgets: widgets.map((w) => {
+      if (isTextWidget(w)) {
+        return { id: w.id, kind: 'text', description: textDescription(w), title: w.title ?? null, layout: w.layout };
+      }
       const builtin = isBuiltinWidget(w);
       return {
         id: w.id,
@@ -94,6 +102,42 @@ export function builtinWidgetResponse(
   };
 }
 
+/** A new, untitled section header, placed below the current set, in response shape. */
+export function textWidgetResponse(widgets: WidgetResponse[]): WidgetResponse {
+  const widget = newTextWidget('', '', { y: bottomRow(widgets) });
+  return {
+    id: widget.id,
+    kind: 'text',
+    reportId: null,
+    builtinKey: null,
+    params: null,
+    title: '',
+    layout: widget.layout,
+  };
+}
+
+/**
+ * Edit a section header's title and/or description. The height follows the
+ * description (one more row while it has text); the description is kept as
+ * typed and trimmed on save.
+ */
+export function updateTextWidget(
+  prev: WidgetResponse[],
+  id: string,
+  change: { title?: string; description?: string }
+): WidgetResponse[] {
+  return prev.map((w) => {
+    if (w.id !== id || !isTextWidget(w)) return w;
+    const description = change.description ?? textDescription(w);
+    return {
+      ...w,
+      title: change.title ?? w.title ?? '',
+      params: description ? { description } : null,
+      layout: { ...w.layout, h: textWidgetHeight(description) },
+    };
+  });
+}
+
 /** Apply a grid layout change, never letting a widget shrink below its minimum width. */
 export function applyLayout(prev: WidgetResponse[], layout: Layout): WidgetResponse[] {
   let changed = false;
@@ -102,11 +146,13 @@ export function applyLayout(prev: WidgetResponse[], layout: Layout): WidgetRespo
     if (!item) return w;
     const width = Math.min(DASHBOARD_GRID_COLUMNS, Math.max(item.w, widgetMinW(w)));
     const x = Math.min(item.x, DASHBOARD_GRID_COLUMNS - width);
-    if (x === w.layout.x && item.y === w.layout.y && width === w.layout.w && item.h === w.layout.h) {
+    // A header's height is fixed by its text, never by the grid.
+    const h = isTextWidget(w) ? w.layout.h : item.h;
+    if (x === w.layout.x && item.y === w.layout.y && width === w.layout.w && h === w.layout.h) {
       return w;
     }
     changed = true;
-    return { ...w, layout: { x, y: item.y, w: width, h: item.h } };
+    return { ...w, layout: { x, y: item.y, w: width, h } };
   });
   return changed ? next : prev;
 }

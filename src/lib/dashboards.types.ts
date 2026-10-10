@@ -11,8 +11,8 @@ export type BuiltinWidgetResponse = components['schemas']['BuiltinWidgetResponse
 export type BuiltinParamResponse = components['schemas']['BuiltinParamResponse'];
 export type BuiltinRefResponse = components['schemas']['BuiltinRefResponse'];
 
-/** Widget kinds as the server resolves them (`kind` is always set on responses). */
-export type WidgetKind = 'report' | 'builtin';
+/** Widget kinds as the server resolves them (`kind` is always set on responses). `text` is a section header. */
+export type WidgetKind = 'report' | 'builtin' | 'text';
 
 /** A built-in widget's params: a flat JSON object of declared names only. */
 export type WidgetParams = Record<string, unknown>;
