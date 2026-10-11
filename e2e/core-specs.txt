@@ -1,0 +1,16 @@
+# Specs run on every PR and merge to main (client push, server CI and server Deploy).
+# Everything else runs only in the nightly full suite, which reports to Slack.
+# One path per line, relative to the client repo; lines starting with # are ignored.
+e2e/api/smoke.spec.ts
+e2e/ui/smoke.spec.ts
+e2e/api/auth.spec.ts
+e2e/ui/auth.spec.ts
+e2e/api/error-shapes.spec.ts
+e2e/api/accounts.spec.ts
+e2e/api/transactions.spec.ts
+e2e/api/ingest.spec.ts
+e2e/ui/ingest.spec.ts
+e2e/api/statements.spec.ts
+e2e/api/jobs.spec.ts
+e2e/ui/jobs.spec.ts
+e2e/api/gmail.spec.ts

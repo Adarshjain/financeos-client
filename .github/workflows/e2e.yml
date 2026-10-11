@@ -11,6 +11,10 @@ on:
         type: string
         default: ''
         description: financeos-client ref (empty = event default)
+      suite:
+        type: string
+        default: core
+        description: core (e2e/core-specs.txt) or full
   pull_request:
   push:
     branches: [main]
@@ -20,11 +24,17 @@ on:
         type: string
         default: main
         description: financeos-server ref to test against
+      suite:
+        type: choice
+        options: [full, core]
+        default: full
+        description: full suite or only e2e/core-specs.txt
   schedule:
     - cron: '30 1 * * *'
 
+# The event is part of the group so a push to main never cancels the nightly run (or vice versa).
 concurrency:
-  group: e2e-${{ github.workflow }}-${{ github.ref }}-${{ inputs.server_ref || 'main' }}
+  group: e2e-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}-${{ inputs.server_ref || 'main' }}
   cancel-in-progress: true
 
 permissions:
@@ -72,12 +82,14 @@ jobs:
           path: server
 
       - name: Print resolved refs
+        id: refs
         env:
           CLIENT_REF: ${{ inputs.client_ref || github.ref }}
           SERVER_REF: ${{ inputs.server_ref || needs.refs.outputs.server_ref || github.event.inputs.server_ref || 'main' }}
         run: |
           echo "Client ref: $CLIENT_REF ($(git rev-parse HEAD))"
           echo "Server ref: $SERVER_REF ($(git -C server rev-parse HEAD))"
+          echo "server_sha=$(git -C server rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Docker Hub login (optional)
         env:
@@ -137,11 +149,34 @@ jobs:
         run: bash e2e/scripts/start-client.sh
 
       - name: Run Playwright E2E tests
-        # Nightly runs are the flake detector: no retries, so a test that only passes on its second
-        # attempt fails the schedule instead of hiding behind a green PR run.
+        # PRs and merges to main (incl. the server's CI and Deploy) run only e2e/core-specs.txt. The
+        # nightly schedule runs everything with the coverage gates, which need the whole suite, and no
+        # retries, so a test that only passes on its second attempt fails the night instead of hiding.
         env:
+          SUITE: ${{ (github.event_name == 'schedule' || inputs.suite == 'full') && 'full' || 'core' }}
           E2E_RETRIES: ${{ github.event_name == 'schedule' && '0' || '' }}
-        run: npx playwright test --config e2e/playwright.config.ts
+        run: |
+          echo "E2E suite: $SUITE"
+          if [ "$SUITE" = "full" ]; then
+            npx playwright test --config e2e/playwright.config.ts
+          else
+            specs=()
+            while IFS= read -r spec; do specs+=("$spec"); done < <(grep -vE '^[[:space:]]*(#|$)' e2e/core-specs.txt)
+            # An empty list would make Playwright run everything; fail instead.
+            if [ "${#specs[@]}" -eq 0 ]; then echo "e2e/core-specs.txt lists no specs" >&2; exit 1; fi
+            # The coverage gates need the whole suite, so the core run skips them.
+            E2E_SKIP_GATES=1 npx playwright test --config e2e/playwright.config.ts "${specs[@]}"
+          fi
+
+      - name: Report nightly result to Slack
+        if: always() && github.event_name == 'schedule'
+        continue-on-error: true
+        env:
+          # Empty when the secret is unset; slack-e2e-report.sh then warns and exits 0.
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          E2E_OUTCOME: ${{ job.status }}
+          SERVER_SHA: ${{ steps.refs.outputs.server_sha }}
+        run: .github/scripts/slack-e2e-report.sh e2e/test-results/junit.xml
 
       - name: Upload E2E report & logs
         if: always()
