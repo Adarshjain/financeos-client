@@ -2,19 +2,18 @@
 
 // A section header on a dashboard: static text spanning the full grid width.
 // View mode: the title with a hairline running to the right edge, and an
-// optional muted description under it. Edit mode: a dashed bar that is the
-// grid drag handle, with inline title and description inputs and a remove
-// button. No width toggle and no resize: a header is always full width and its
+// optional muted description under it. Edit mode: a dashed bar with the grid
+// drag grip, inline title and description inputs and a remove button. No width toggle and no resize: a header is always full width and its
 // height follows from whether it has a description (see `textWidgetHeight`).
 
-import { GripVertical, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TEXT_DESCRIPTION_MAX, TEXT_TITLE_MAX, textDescription } from '@/lib/dashboards.helpers';
 import type { WidgetResponse } from '@/lib/dashboards.types';
 
-import { chipClass, stopDrag } from './DashboardWidgetHeader';
+import { DragGrip } from './DashboardWidgetHeader';
 
 interface DashboardTextWidgetProps {
   widget: WidgetResponse;
@@ -30,12 +29,10 @@ export function DashboardTextWidget({ widget, editing = false, onChange, onRemov
   if (editing) {
     return (
       <div
-        className="dashboard-drag-handle flex h-full cursor-move items-center gap-1.5 rounded-xl border border-dashed border-emerald-500/50 bg-slate-50/70 px-3 dark:bg-slate-800/40"
+        className="flex h-full items-center gap-1.5 rounded-xl border border-dashed border-emerald-500/50 bg-slate-50/70 px-3 dark:bg-slate-800/40"
         data-testid="dashboard-header-edit"
       >
-        <span className={`${chipClass} cursor-grab active:cursor-grabbing`} aria-hidden="true">
-          <GripVertical className="h-4 w-4" />
-        </span>
+        <DragGrip />
         <Input
           className="h-8 min-w-0 flex-1 border-0 bg-transparent px-1.5 text-base font-semibold text-slate-900 shadow-none focus-visible:ring-0 dark:text-slate-100"
           placeholder="Section title"
@@ -45,8 +42,6 @@ export function DashboardTextWidget({ widget, editing = false, onChange, onRemov
           autoFocus={!title}
           value={title}
           onChange={(e) => onChange?.({ title: e.currentTarget.value })}
-          onMouseDown={stopDrag}
-          onTouchStart={stopDrag}
         />
         <Input
           className="h-8 min-w-0 flex-1 border-0 bg-transparent px-1.5 text-sm text-slate-500 shadow-none focus-visible:ring-0 dark:text-slate-400"
@@ -55,8 +50,6 @@ export function DashboardTextWidget({ widget, editing = false, onChange, onRemov
           maxLength={TEXT_DESCRIPTION_MAX}
           value={description}
           onChange={(e) => onChange?.({ description: e.currentTarget.value })}
-          onMouseDown={stopDrag}
-          onTouchStart={stopDrag}
         />
         <Button
           type="button"
@@ -64,8 +57,6 @@ export function DashboardTextWidget({ widget, editing = false, onChange, onRemov
           size="icon-xs"
           className="shrink-0"
           onClick={onRemove}
-          onMouseDown={stopDrag}
-          onTouchStart={stopDrag}
           title="Remove header"
           aria-label="Remove header"
         >

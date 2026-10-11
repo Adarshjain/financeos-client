@@ -53,6 +53,40 @@ describe('DashboardWidgetView', () => {
     expect(editLink).toHaveAttribute('href', '/reports/rep-123');
   });
 
+  it('edit mode: drags by the grip only, never by the title input or the controls', () => {
+    vi.mocked(api.POST).mockResolvedValue({ data: sampleTableData } as never);
+
+    renderWithQuery(<DashboardWidgetView widget={sampleWidget} editing={true} />);
+
+    const widget = screen.getByTestId('dashboard-widget');
+    expect(widget.querySelectorAll('.dashboard-drag-handle')).toHaveLength(1);
+    expect(screen.getByLabelText('Widget title').closest('.dashboard-drag-handle')).toBeNull();
+    expect(screen.getByRole('link', { name: /edit report/i }).closest('.dashboard-drag-handle')).toBeNull();
+    expect(screen.getByRole('button', { name: /remove widget/i }).closest('.dashboard-drag-handle')).toBeNull();
+  });
+
+  it('edit mode: lays a shield over the content and makes the content inert', () => {
+    vi.mocked(api.POST).mockResolvedValue({ data: sampleTableData } as never);
+
+    renderWithQuery(<DashboardWidgetView widget={sampleWidget} editing={true} />);
+
+    const shield = screen.getByTestId('dashboard-widget-shield');
+    expect(shield).toHaveClass('absolute', 'inset-0');
+    const content = shield.previousElementSibling as HTMLElement;
+    expect(content).toHaveAttribute('inert');
+    // The header controls stay usable: they are outside the inert content.
+    expect(screen.getByLabelText('Widget title').closest('[inert]')).toBeNull();
+  });
+
+  it('view mode: no shield and nothing inert', () => {
+    vi.mocked(api.POST).mockResolvedValue({ data: sampleTableData } as never);
+
+    renderWithQuery(<DashboardWidgetView widget={sampleWidget} />);
+
+    expect(screen.queryByTestId('dashboard-widget-shield')).not.toBeInTheDocument();
+    expect(screen.getByTestId('dashboard-widget').querySelector('[inert]')).toBeNull();
+  });
+
   it('does not render edit link when report is unavailable', () => {
     const unavailableWidget: WidgetResponse = {
       ...sampleWidget,

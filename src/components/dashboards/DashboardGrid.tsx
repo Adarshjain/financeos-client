@@ -2,8 +2,10 @@
 
 // Thin wrapper over react-grid-layout (legacy/v1-compatible API). Maps widgets
 // onto the DASHBOARD_GRID_COLUMNS-wide grid; drag/resize are enabled only in
-// edit mode. The header of each edit card (`.dashboard-drag-handle`) is the
-// drag handle. Below the md breakpoint, view mode stacks the widgets in one
+// edit mode. Only the grip chip of each edit card (`.dashboard-drag-handle`)
+// starts a drag: the library cancels the touchstart of anything inside the
+// handle, so inputs there could never be focused on a phone. Near the top or
+// bottom of the viewport a drag scrolls the page (see dragAutoScroll). Below the md breakpoint, view mode stacks the widgets in one
 // column instead (see DashboardStack); edit mode always keeps the grid. The
 // server render and hydration use the grid, then the stack takes over after
 // mount on a phone. Section headers (text widgets) are pinned to the full
@@ -20,6 +22,7 @@ import type { WidgetResponse } from '@/lib/dashboards.types';
 import { BELOW_MD_QUERY, useMediaQuery } from '@/lib/useMediaQuery';
 
 import { DashboardStack, type WidgetFit } from './DashboardStack';
+import { useDragAutoScroll } from './dragAutoScroll';
 
 const GridLayout = WidthProvider(RGL);
 
@@ -28,6 +31,10 @@ const GridLayout = WidthProvider(RGL);
 // sit ~14px apart. The vertical margin is part of every widget's saved height
 // (h rows × 1px + (h − 1) × 12px), so it must not change.
 const GRID_MARGIN: [number, number] = [6, 12];
+// On a phone the 99 gaps alone (594px) are wider than the screen: the columns
+// went negative, the cards overflowed and the browser zoomed the page out. The
+// cells' own padding is the only gutter there.
+const PHONE_GRID_MARGIN: [number, number] = [0, GRID_MARGIN[1]];
 // Plus the cell's own 4px padding, the cards line up with the page's 16px gutter.
 const GRID_CONTAINER_PADDING: [number, number] = [12, 12];
 
@@ -45,6 +52,7 @@ export function DashboardGrid({
   renderWidget,
 }: DashboardGridProps) {
   const isPhone = useMediaQuery(BELOW_MD_QUERY);
+  const autoScroll = useDragAutoScroll();
 
   if (isPhone && !editing) {
     return <DashboardStack widgets={widgets} renderWidget={renderWidget} />;
@@ -82,11 +90,13 @@ export function DashboardGrid({
       layout={layout}
       cols={DASHBOARD_GRID_COLUMNS}
       rowHeight={1}
-      margin={GRID_MARGIN}
+      margin={isPhone ? PHONE_GRID_MARGIN : GRID_MARGIN}
       containerPadding={GRID_CONTAINER_PADDING}
       isDraggable={editing}
       isResizable={editing}
       draggableHandle=".dashboard-drag-handle"
+      onDragStart={autoScroll.start}
+      onDragStop={autoScroll.stop}
       onLayoutChange={onLayoutChange}
     >
       {widgets.map((w) => (

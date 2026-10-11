@@ -14,8 +14,8 @@
 // first paint there needs no client fetch at all.
 //
 // In edit mode the same component renders the real content but swaps its
-// header for the grid drag handle, gaining a title-override input and a
-// remove button.
+// header for the edit chrome (drag grip, title-override input, remove button),
+// and lays an inert shield over the content so nothing in it reacts.
 //
 // A KPI widget (saved report or template built-in, net worth included) opens
 // "View underlying data" from a tap on its value — on the card and in the
@@ -182,13 +182,23 @@ export function DashboardWidgetView({
 
         <div
           className={cn(
-            'min-h-0 flex-1 overflow-hidden transition-opacity',
+            'relative min-h-0 flex-1 overflow-hidden transition-opacity',
             // Content-sized: a flex column so the built-in's own list shrinks and scrolls under the cap.
             fit === 'content' && 'flex flex-col',
             refetching && 'opacity-60',
           )}
         >
-          {renderBody()}
+          {editing ? (
+            <>
+              <div inert className="h-full">
+                {renderBody()}
+              </div>
+              {/* A layer over the content: taps and clicks in it (links, rows, KPI values, pagers) do nothing while arranging. */}
+              <div className="absolute inset-0 z-10" aria-hidden="true" data-testid="dashboard-widget-shield" />
+            </>
+          ) : (
+            renderBody()
+          )}
         </div>
       </Card>
 

@@ -186,9 +186,15 @@ describe('DashboardTextWidget', () => {
     expect(screen.getByTestId('dashboard-header').querySelector('p')).toBeNull();
   });
 
-  it('edit: is the drag handle, with title and description inputs and no width toggle', () => {
+  it('edit: drags by the grip only, with title and description inputs and no width toggle', () => {
     render(<DashboardTextWidget widget={header('h', 'Spending', 'Desc')} editing />);
-    expect(screen.getByTestId('dashboard-header-edit')).toHaveClass('dashboard-drag-handle');
+    const handles = screen.getByTestId('dashboard-header-edit').querySelectorAll('.dashboard-drag-handle');
+    expect(handles).toHaveLength(1);
+    expect(handles[0]).toBe(screen.getByTestId('dashboard-drag-handle'));
+    // Inputs and the remove button sit outside the handle, so a touch on them is never taken for a drag.
+    expect(screen.getByLabelText('Header title').closest('.dashboard-drag-handle')).toBeNull();
+    expect(screen.getByLabelText('Header description').closest('.dashboard-drag-handle')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Remove header' }).closest('.dashboard-drag-handle')).toBeNull();
     expect(screen.getByLabelText('Header title')).toHaveValue('Spending');
     expect(screen.getByLabelText('Header description')).toHaveValue('Desc');
     expect(screen.queryByRole('button', { name: /width/i })).not.toBeInTheDocument();

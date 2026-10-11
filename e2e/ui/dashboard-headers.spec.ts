@@ -79,6 +79,36 @@ test.describe('Dashboard section headers UI (@ui)', () => {
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
   });
 
+  test('@mobile an existing header title and description can be edited by tapping into them', async ({ page, isMobile }) => {
+    const dashboard = await seedDashboard('Header edit', true);
+    await page.goto(`/dashboards/${dashboard.id}`);
+    await page.waitForLoadState('networkidle');
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+
+    // Typed with the keyboard, not fill(): the input must really take focus from a tap.
+    const title = page.getByLabel('Header title');
+    if (isMobile) await title.tap();
+    else await title.click();
+    await expect(title).toBeFocused();
+    await page.keyboard.press('End');
+    await page.keyboard.type(' 2026');
+    await expect(title).toHaveValue('Spending 2026');
+
+    const description = page.getByLabel('Header description');
+    if (isMobile) await description.tap();
+    else await description.click();
+    await expect(description).toBeFocused();
+    await page.keyboard.press('End');
+    await page.keyboard.type(' and UPI');
+    await expect(description).toHaveValue('Cards only and UPI');
+
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expectToast(page, 'Dashboard saved');
+    const header = page.getByTestId('dashboard-header');
+    await expect(header.getByRole('heading', { level: 2, name: 'Spending 2026' })).toBeVisible();
+    await expect(header.getByText('Cards only and UPI')).toBeVisible();
+  });
+
   test('@mobile a saved header renders as a full-width heading above the widgets', async ({ page, isMobile }) => {
     const dashboard = await seedDashboard('Header view', true);
     await page.goto(`/dashboards/${dashboard.id}`);
