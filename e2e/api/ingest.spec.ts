@@ -561,6 +561,30 @@ test.describe('Statements Ingestion API', () => {
     );
   });
 
+  test('PDF with bytes before the %PDF- header (HSBC preamble) parses', async ({ api }) => {
+    const encryptedPdf = await genBankPdf({
+      ...standardBankSpec,
+      password: 'hsbcPassword123',
+    });
+    const preamble = Buffer.from(
+      '%%PDF: \xc3\xe4\xe2\xe3\xd6\xd4\xc5\xd9m\n' +
+        '%%PUSHDATA: IN;HSBC;043-000000;;USER@EXAMPLE.COM;27FEB2026;;043-XXXXXX;MR TEST USER;#END#%%\n',
+      'latin1'
+    );
+    const account = await createBankAccount(api, {
+      name: 'HSBC Preamble Account',
+      openingBalance: standardBankSpec.opening,
+      statementPassword: 'hsbcPassword123',
+    });
+
+    const { job, result } = await uploadAndIngest(api, account.id, [
+      { filename: '27FEB2026.pdf', buffer: Buffer.concat([preamble, encryptedPdf]) },
+    ]);
+    expect(job.status).toBe('SUCCEEDED');
+    expect(result.fileDetails[0].status).toBe('SUCCESS');
+    expect(result.totalCreated).toBe(5);
+  });
+
   test('Bad inputs: unsupported file type, small file, no table PDF, multi-file upload', async ({
     api,
   }) => {
