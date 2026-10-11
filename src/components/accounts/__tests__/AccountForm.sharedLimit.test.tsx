@@ -189,7 +189,7 @@ describe('AccountForm: shared credit limit', () => {
   it('only credit cards fetch the pools and show the picker', () => {
     renderWithQuery(<AccountForm />);
 
-    expect(screen.queryByText('Shared Credit Limit')).toBeNull();
+    expect(screen.queryByText('Shared Limit', { exact: true })).toBeNull();
     expect(vi.mocked(api.GET).mock.calls.map((c) => c[0])).not.toContain('/api/v1/accounts');
   });
 });
