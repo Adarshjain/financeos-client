@@ -585,7 +585,7 @@ test.describe('Direct Broker Imports API (@api)', () => {
     expect(pos?.quantity).toBe(25);
   });
 
-  test('Validation: non-broker 400, unknown broker 404 (foreign broker preview has no tenancy check — see comment)', async ({
+  test('Validation: non-broker 400, unknown and foreign broker 404', async ({
     api,
     request,
   }) => {
@@ -624,10 +624,21 @@ test.describe('Direct Broker Imports API (@api)', () => {
     });
     expectStatus(unknownRes, 404);
 
-    // 3. Foreign broker account note: ImportService uses accountRepository.findById
-    // without user tenancy check on preview; test unauthenticated 401s next
+    // 3. Another user's broker account reads as not found, like an unknown id
     const { api: apiB } = await secondUser(request);
     const brokerB = await createBroker(apiB);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const foreignRes = await (api as any).POST('/api/v1/investments/imports/preview', {
+      params: {
+        query: {
+          source: 'zerodha_tradebook',
+          brokerAccountId: brokerB.id,
+        },
+      },
+      body: formData,
+      bodySerializer: (b: unknown) => b,
+    });
+    expectStatus(foreignRes, 404);
 
     // 4. Unauthenticated 401
     await expectUnauthenticated('POST', '/api/v1/investments/imports/preview');
