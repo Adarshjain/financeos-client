@@ -2,8 +2,9 @@
 // chip saying what the widget is, a sentence-case title with an optional muted
 // subtitle, an explicit "Open" drill-through when the widget has a
 // destination, and one always-visible overflow menu. Edit mode: the same row
-// shape, with the grid drag handle in the chip's slot, a title-override input,
-// and the width toggle / remove controls.
+// shape, with the grid drag handle (`DragGrip`, the only part that starts a
+// drag) in the chip's slot, a title-override input, and the width toggle /
+// remove controls.
 
 import { ChevronRight, ChevronsRightLeft, GripVertical, Pencil, SeparatorVertical, Trash2 } from 'lucide-react';
 import Link from 'next/link';
@@ -17,13 +18,21 @@ import { nextWidth, widthToggleLabel } from './editor/dashboardEditor.helpers';
 import { WidgetActionsMenu } from './WidgetActionsMenu';
 import { widgetHref, WidgetIcon, WidgetSubtitle } from './widgetMeta';
 
-// Keep header controls from starting a grid drag/resize.
-export function stopDrag(e: React.MouseEvent | React.TouchEvent) {
-  e.stopPropagation();
-}
-
 export const chipClass =
   'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400';
+
+/** The grid drag handle of an edit card: the only element a widget or header can be moved by. */
+export function DragGrip() {
+  return (
+    <span
+      className={`dashboard-drag-handle ${chipClass} cursor-grab touch-none active:cursor-grabbing`}
+      title="Drag to move"
+      data-testid="dashboard-drag-handle"
+    >
+      <GripVertical className="h-4 w-4" aria-hidden="true" />
+    </span>
+  );
+}
 
 interface WidgetViewHeaderProps {
   widget: WidgetResponse;
@@ -83,7 +92,7 @@ interface WidgetEditHeaderProps {
   onToggleWidth?: () => void;
 }
 
-/** Edit-mode chrome: drag-handle header, title-override input, edit-report link, width toggle, remove. */
+/** Edit-mode chrome: drag grip, title-override input, edit-report link, width toggle, remove. */
 export function WidgetEditHeader({
   widget,
   available,
@@ -97,18 +106,14 @@ export function WidgetEditHeader({
   const widthTitle = widthToggleLabel(widget);
   const collapses = next != null && next < widget.layout.w;
   return (
-    <div className="dashboard-drag-handle flex shrink-0 cursor-move items-center gap-1.5 border-b border-slate-100 bg-slate-50/70 px-3 py-2 dark:border-slate-800 dark:bg-slate-800/40">
-      <span className={`${chipClass} cursor-grab active:cursor-grabbing`} aria-hidden="true">
-        <GripVertical className="h-4 w-4" />
-      </span>
+    <div className="flex shrink-0 items-center gap-1.5 border-b border-slate-100 bg-slate-50/70 px-3 py-2 dark:border-slate-800 dark:bg-slate-800/40">
+      <DragGrip />
       <Input
         className="h-8 min-w-0 flex-1 border-0 bg-transparent px-1.5 text-sm font-semibold text-slate-900 shadow-none focus-visible:ring-0 dark:text-slate-100"
         placeholder={widget.builtin?.label ?? widget.report?.name ?? 'Widget'}
         aria-label="Widget title"
         value={widget.title ?? ''}
         onChange={(e) => onTitleChange?.(e.currentTarget.value || null)}
-        onMouseDown={stopDrag}
-        onTouchStart={stopDrag}
       />
       {reportId && (
         <Button
@@ -118,8 +123,6 @@ export function WidgetEditHeader({
           asChild
           title="Edit report"
           aria-label="Edit report"
-          onMouseDown={stopDrag}
-          onTouchStart={stopDrag}
         >
           <Link href={`/reports/${reportId}`}>
             <Pencil className="text-slate-500" />
@@ -132,8 +135,6 @@ export function WidgetEditHeader({
         size="icon-xs"
         className="shrink-0"
         onClick={onToggleWidth}
-        onMouseDown={stopDrag}
-        onTouchStart={stopDrag}
         disabled={next == null}
         title={widthTitle}
         aria-label={widthTitle}
@@ -150,8 +151,6 @@ export function WidgetEditHeader({
         size="icon-xs"
         className="shrink-0"
         onClick={onRemove}
-        onMouseDown={stopDrag}
-        onTouchStart={stopDrag}
         title="Remove widget"
         aria-label="Remove widget"
       >

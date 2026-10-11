@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const phone = vi.hoisted(() => ({ value: false }));
 vi.mock('@/lib/useMediaQuery', () => ({ BELOW_MD_QUERY: 'q', useMediaQuery: () => phone.value }));
-const grid = vi.hoisted(() => ({ props: null as null | { layout: Array<Record<string, unknown>>; isDraggable: boolean; isResizable: boolean; cols: number } }));
+const grid = vi.hoisted(() => ({ props: null as null | { layout: Array<Record<string, unknown>>; isDraggable: boolean; isResizable: boolean; cols: number; margin: [number, number]; draggableHandle: string; onDragStart: unknown; onDragStop: unknown } }));
 vi.mock('react-grid-layout/legacy', () => ({
   __esModule: true,
   default: (props: { children: ReactNode }) => {
@@ -98,6 +98,23 @@ describe('DashboardGrid', () => {
     unmount();
     render(<DashboardGrid widgets={widgets} editing onLayoutChange={vi.fn()} renderWidget={() => null} />);
     expect(screen.getByTestId('rgl')).toBeInTheDocument();
+  });
+
+  it('drags by the grip and auto-scrolls while a drag runs', () => {
+    render(<DashboardGrid widgets={widgets} editing onLayoutChange={vi.fn()} renderWidget={() => null} />);
+    expect(grid.props!.draggableHandle).toBe('.dashboard-drag-handle');
+    expect(grid.props!.onDragStart).toEqual(expect.any(Function));
+    expect(grid.props!.onDragStop).toEqual(expect.any(Function));
+  });
+
+  it('keeps the 12px row gap everywhere but drops the column gap on a phone, where 99 gaps outgrow the screen', () => {
+    phone.value = false;
+    const { unmount } = render(<DashboardGrid widgets={widgets} editing onLayoutChange={vi.fn()} renderWidget={() => null} />);
+    expect(grid.props!.margin).toEqual([6, 12]);
+    unmount();
+    phone.value = true;
+    render(<DashboardGrid widgets={widgets} editing onLayoutChange={vi.fn()} renderWidget={() => null} />);
+    expect(grid.props!.margin).toEqual([0, 12]);
   });
 });
 

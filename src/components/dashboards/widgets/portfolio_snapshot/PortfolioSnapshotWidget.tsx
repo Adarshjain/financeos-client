@@ -15,7 +15,6 @@ import type { InvestmentSummary } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 import {
-  dayMonth,
   DrillValue,
   fullDate,
   gainTone,
