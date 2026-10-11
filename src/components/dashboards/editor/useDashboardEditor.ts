@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Layout } from 'react-grid-layout/legacy';
 import { toast } from 'sonner';
 
@@ -16,7 +16,7 @@ import type {
   WidgetParams,
   WidgetResponse,
 } from '@/lib/dashboards.types';
-import { useSaveWidgetParams } from '@/lib/query/hooks/useDashboards';
+import { storeSavedDashboard, useSaveWidgetParams } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';
 import type { ReportSummaryResponse } from '@/lib/reports.types';
 import { toastError } from '@/lib/toastError';
@@ -26,9 +26,9 @@ import {
   builtinWidgetResponse,
   editSignature,
   reportWidgetResponse,
-  textWidgetResponse,
   toggleWidth,
   updateTextWidget,
+  withHeaderOnTop,
 } from './dashboardEditor.helpers';
 
 export { editSignature } from './dashboardEditor.helpers';
@@ -36,11 +36,21 @@ export { editSignature } from './dashboardEditor.helpers';
 interface UseDashboardEditorProps {
   mode: 'create' | 'edit';
   dashboard?: DashboardResponse;
+  /** Edit mode only: open already editing (the list's Edit button, Home's Edit dashboard). */
+  startEditing?: boolean;
+  /**
+   * Leaving edit mode (save, discard, back) hands control back to the caller
+   * instead of showing the dashboard here — Home edits in place and returns
+   * to its own view. Without it, back from the view goes to /dashboards.
+   */
+  onExit?: () => void;
 }
 
 export function useDashboardEditor({
   mode,
   dashboard,
+  startEditing = false,
+  onExit,
 }: UseDashboardEditorProps) {
   const router = useRouter();
   const qc = useQueryClient();
@@ -50,7 +60,7 @@ export function useDashboardEditor({
     dashboard?.widgets ?? []
   );
   const [isDefault, setIsDefault] = useState(dashboard?.isDefault ?? false);
-  const [editing, setEditing] = useState(mode === 'create');
+  const [editing, setEditing] = useState(mode === 'create' || startEditing);
   // The last saved version: Discard returns to it (not to the page's initial load).
   const [saved, setSaved] = useState<DashboardResponse | undefined>(dashboard);
   const [baseline, setBaseline] = useState(() =>
@@ -60,6 +70,15 @@ export function useDashboardEditor({
       dashboard?.widgets ?? []
     )
   );
+
+  // The list's Edit links with ?edit=1: open editing once, then drop the flag so a reload after saving shows the dashboard.
+  useEffect(() => {
+    if (!startEditing) return;
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has('edit')) return;
+    url.searchParams.delete('edit');
+    window.history.replaceState(null, '', url);
+  }, [startEditing]);
 
   const createMutation = useMutation({
     mutationFn: (body: CreateDashboardRequest) =>
@@ -84,9 +103,8 @@ export function useDashboardEditor({
   const addBuiltin = (def: BuiltinWidgetResponse, params: WidgetParams) =>
     setWidgets((prev) => [...prev, builtinWidgetResponse(prev, def, params)]);
 
-  // A new header lands at the bottom with an empty title (its input takes focus); drag it into place.
-  const addHeader = () =>
-    setWidgets((prev) => [...prev, textWidgetResponse(prev)]);
+  // A new header lands on top with an empty title (its input takes focus), pushing the rest down; drag it into place.
+  const addHeader = () => setWidgets(withHeaderOnTop);
 
   const updateHeader = (id: string, change: { title?: string; description?: string }) =>
     setWidgets((prev) => updateTextWidget(prev, id, change));
@@ -129,8 +147,13 @@ export function useDashboardEditor({
   };
 
   const discardAndExit = () => {
-    if (mode === 'create' || !editing) {
+    if (mode === 'create') {
       router.push('/dashboards');
+      return;
+    }
+    if (!editing) {
+      if (onExit) onExit();
+      else router.push('/dashboards');
       return;
     }
     const n = saved?.name ?? '';
@@ -141,6 +164,7 @@ export function useDashboardEditor({
     setWidgets(ws);
     setBaseline(editSignature(n, d, ws));
     setEditing(false);
+    onExit?.();
   };
 
   const save = async () => {
@@ -169,6 +193,8 @@ export function useDashboardEditor({
           ? await updateMutation.mutateAsync({ id: dashboard.id, body })
           : await createMutation.mutateAsync(body);
 
+      // The caches take the saved dashboard first, so a caller showing it (Home) has no stale frame before the refetch.
+      if (mode === 'edit') storeSavedDashboard(qc, data);
       qc.invalidateQueries({ queryKey: keys.dashboards.all });
       toast.success(
         mode === 'edit' ? 'Dashboard saved' : 'Dashboard created'
@@ -189,6 +215,7 @@ export function useDashboardEditor({
           )
         );
         setEditing(false);
+        onExit?.();
       }
     } catch (e) {
       toastError(e, mode === 'edit'

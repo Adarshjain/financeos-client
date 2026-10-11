@@ -18,11 +18,17 @@ import { useDashboardEditor } from './editor/useDashboardEditor';
 interface DashboardEditorProps {
   mode: 'create' | 'edit';
   dashboard?: DashboardResponse;
+  /** Open already editing (edit mode only). */
+  startEditing?: boolean;
+  /** Leaving edit mode returns control to the caller (Home's in-place edit). */
+  onExit?: () => void;
 }
 
 export function DashboardEditor({
   mode,
   dashboard,
+  startEditing,
+  onExit,
 }: DashboardEditorProps) {
   const { data: reportsData } = useReportsList();
 
@@ -50,6 +56,8 @@ export function DashboardEditor({
   } = useDashboardEditor({
     mode,
     dashboard,
+    startEditing,
+    onExit,
   });
 
   return (

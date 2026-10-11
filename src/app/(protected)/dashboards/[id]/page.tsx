@@ -7,10 +7,14 @@ import { keys } from '@/lib/query/keys';
 
 export default async function DashboardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ edit?: string }>;
 }) {
   const { id } = await params;
+  // The list's Edit button links with ?edit=1 to open straight into edit mode.
+  const startEditing = (await searchParams)?.edit === '1';
   const qc = getQueryClient();
   const [dashboard, reports] = await Promise.all([
     dashboardsApi.getById(id),
@@ -23,7 +27,7 @@ export default async function DashboardPage({
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>
-      <DashboardEditor key={id} mode="edit" dashboard={dashboard} />
+      <DashboardEditor key={id} mode="edit" dashboard={dashboard} startEditing={startEditing} />
     </HydrationBoundary>
   );
 }

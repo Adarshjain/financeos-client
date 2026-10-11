@@ -102,9 +102,9 @@ export function builtinWidgetResponse(
   };
 }
 
-/** A new, untitled section header, placed below the current set, in response shape. */
-export function textWidgetResponse(widgets: WidgetResponse[]): WidgetResponse {
-  const widget = newTextWidget('', '', { y: bottomRow(widgets) });
+/** A new, untitled section header at the top row, in response shape. */
+export function textWidgetResponse(): WidgetResponse {
+  const widget = newTextWidget('', '', { y: 0 });
   return {
     id: widget.id,
     kind: 'text',
@@ -114,6 +114,13 @@ export function textWidgetResponse(widgets: WidgetResponse[]): WidgetResponse {
     title: '',
     layout: widget.layout,
   };
+}
+
+/** The widgets with a new, untitled header on top: every existing widget moves down by its height. */
+export function withHeaderOnTop(widgets: WidgetResponse[]): WidgetResponse[] {
+  const header = textWidgetResponse();
+  const shift = header.layout.h;
+  return [header, ...widgets.map((w) => ({ ...w, layout: { ...w.layout, y: w.layout.y + shift } }))];
 }
 
 /**

@@ -156,19 +156,26 @@ test.describe('Home dashboard and built-in widgets (@ui)', () => {
     const wrapper = (await trigger.locator('xpath=..').boundingBox())!;
     const row = (await trigger.locator('xpath=../..').boundingBox())!;
     expect(Math.abs(t.width - wrapper.width)).toBeLessThan(2);
+    // The dashboard menu sits right after the switcher.
+    const actions = (await page.getByRole('button', { name: 'Dashboard actions' }).boundingBox())!;
+    const actionsGap = actions.x - (t.x + t.width);
+    expect(actionsGap).toBeGreaterThanOrEqual(0);
+    expect(actionsGap).toBeLessThan(16);
     const chat = page.getByRole('link', { name: 'Chat with your data' });
     if (isMobile) {
-      // Phones and tablets keep the Chat button; the switcher takes everything else.
+      // Phones and tablets keep the Chat button after the menu; the switcher takes everything else.
       await expect(chat).toBeVisible();
       const c = (await chat.boundingBox())!;
-      const gap = c.x - (t.x + t.width);
+      const gap = c.x - (actions.x + actions.width);
       expect(gap).toBeGreaterThanOrEqual(0);
       expect(gap).toBeLessThan(16);
       expect(c.x + c.width).toBeGreaterThan(row.x + row.width - 20);
     } else {
-      // Desktop has Chat in the sidebar header, so the switcher spans the whole row.
+      // Desktop has Chat in the sidebar header, so the switcher spans the row up to the menu.
       await expect(chat).toHaveCount(0);
-      expect(t.width).toBeGreaterThan(row.width - 40);
+      expect(actions.x + actions.width).toBeGreaterThan(row.x + row.width - 20);
+      // Only the row's padding (2 × 16px) and the gap (8px) besides the menu.
+      expect(t.width).toBeGreaterThan(row.width - 60 - actions.width);
     }
 
     // The menu is as wide as the trigger and lists every dashboard.

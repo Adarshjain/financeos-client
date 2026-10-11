@@ -38,6 +38,7 @@ import {
   textWidgetResponse,
   updateTextWidget,
   widthStops,
+  withHeaderOnTop,
 } from '@/components/dashboards/editor/dashboardEditor.helpers';
 import { DashboardEditorHeader } from '@/components/dashboards/editor/DashboardEditorHeader';
 import { useDashboardEditor } from '@/components/dashboards/editor/useDashboardEditor';
@@ -56,9 +57,22 @@ const report = (id: string, y = 0): WidgetResponse => ({
 });
 
 describe('section header editor transforms', () => {
-  it('a new header is untitled, full width, 5 rows tall, below every widget', () => {
-    const w = textWidgetResponse([report('a', 0), report('b', 10)]);
-    expect(w).toMatchObject({ kind: 'text', title: '', params: null, layout: { x: 0, y: 20, w: 100, h: 5 } });
+  it('a new header is untitled, full width, 5 rows tall, on the top row', () => {
+    const w = textWidgetResponse();
+    expect(w).toMatchObject({ kind: 'text', title: '', params: null, layout: { x: 0, y: 0, w: 100, h: 5 } });
+  });
+
+  it('a header on top moves every existing widget down by its height, keeping their column and size', () => {
+    const [added, a, b] = withHeaderOnTop([report('a', 0), { ...report('b', 10), layout: { x: 50, y: 10, w: 50, h: 8 } }]);
+    expect(added).toMatchObject({ kind: 'text', layout: { x: 0, y: 0, w: 100, h: 5 } });
+    expect(a).toMatchObject({ id: 'a', layout: { x: 0, y: 5, w: 50, h: 10 } });
+    expect(b).toMatchObject({ id: 'b', layout: { x: 50, y: 15, w: 50, h: 8 } });
+  });
+
+  it('a header on an empty dashboard is its only widget, on the top row', () => {
+    const widgets = withHeaderOnTop([]);
+    expect(widgets).toHaveLength(1);
+    expect(widgets[0]).toMatchObject({ kind: 'text', layout: { y: 0 } });
   });
 
   it('editing the title keeps the description and height', () => {
@@ -118,13 +132,14 @@ describe('useDashboardEditor headers', () => {
     return renderHook(() => useDashboardEditor({ mode: d ? 'edit' : 'create', dashboard: d }), { wrapper: Wrapper });
   };
 
-  it('addHeader appends an untitled header and marks the dashboard dirty', () => {
+  it('addHeader puts an untitled header on top, moves the rest down and marks the dashboard dirty', () => {
     const { result } = mount(dashboard([report('r')]));
     act(() => result.current.startEdit());
     expect(result.current.isDirty).toBe(false);
     act(() => result.current.addHeader());
-    const added = result.current.widgets[1];
-    expect(added).toMatchObject({ kind: 'text', title: '', layout: { x: 0, y: 10, w: 100, h: 5 } });
+    const [added, moved] = result.current.widgets;
+    expect(added).toMatchObject({ kind: 'text', title: '', layout: { x: 0, y: 0, w: 100, h: 5 } });
+    expect(moved).toMatchObject({ id: 'r', layout: { y: 5 } });
     expect(result.current.isDirty).toBe(true);
   });
 

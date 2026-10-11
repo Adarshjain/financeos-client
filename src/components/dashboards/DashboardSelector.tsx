@@ -2,6 +2,7 @@
 
 import { Check, ChevronDown, Eye, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,11 +19,13 @@ interface DashboardViewProps {
   dashboards: DashboardResponse[];
   currentDashboard: DashboardResponse;
   onSelectDashboard: (dashboard: DashboardResponse) => void;
+  /** Controls right after the switcher (Home's dashboard menu). */
+  actions?: ReactNode;
 }
 
-export function DashboardSelector({ dashboards, onSelectDashboard, currentDashboard }: DashboardViewProps) {
+export function DashboardSelector({ dashboards, onSelectDashboard, currentDashboard, actions }: DashboardViewProps) {
   return (
-    // The switcher fills the row; the Chat shortcut (phones and tablets only) keeps its natural width.
+    // The switcher fills the row; the actions and the Chat shortcut (phones and tablets only) keep their natural width.
     <div className="flex items-center gap-2 px-4">
       <div className="min-w-0 flex-1">
         <DropdownMenu>
@@ -67,6 +70,7 @@ export function DashboardSelector({ dashboards, onSelectDashboard, currentDashbo
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      {actions}
       {/* Desktop has Chat in the sidebar header; keep this shortcut for smaller screens. */}
       <Button variant="outline" asChild aria-label="Chat with your data" className="h-10 shrink-0 lg:hidden">
         <Link href="/chat">

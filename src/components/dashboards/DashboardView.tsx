@@ -30,7 +30,7 @@ export function DashboardView({ dashboard, onWidgetParamsChange }: DashboardView
             This dashboard has no widgets yet
           </p>
           <p className="text-sm text-slate-500">
-            Open it to add report widgets.
+            Use Add widget in the menu next to the switcher.
           </p>
         </div>
       </Card>

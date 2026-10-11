@@ -66,6 +66,28 @@ test.describe('Dashboard section headers UI (@ui)', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'Investments' })).toHaveCount(0);
   });
 
+  test('a new header lands on top and pushes the existing widgets down', async ({ page }) => {
+    const dashboard = await seedDashboard('Header on top');
+    await page.goto(`/dashboards/${dashboard.id}`);
+    await page.waitForLoadState('networkidle');
+
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    await page.getByRole('button', { name: 'Add header', exact: true }).click();
+    await page.getByLabel('Header title').fill('Summary');
+    await page.getByRole('button', { name: 'Save', exact: true }).click();
+    await expectToast(page, 'Dashboard saved');
+
+    const saved = await makeApi(currentUser.cookie).GET('/api/v1/dashboards/{id}', { params: { path: { id: dashboard.id } } });
+    const header = saved.data!.widgets.find((w) => w.kind === 'text')!;
+    const kpi = saved.data!.widgets.find((w) => w.kind !== 'text')!;
+    expect(header.layout.y).toBe(0);
+    expect(kpi.layout.y).toBe(header.layout.h);
+    // The heading renders above the KPI.
+    const headingBox = (await page.getByRole('heading', { level: 2, name: 'Summary' }).boundingBox())!;
+    const kpiBox = (await page.getByTestId('dashboard-widget').first().boundingBox())!;
+    expect(headingBox.y).toBeLessThan(kpiBox.y);
+  });
+
   test('saving with an untitled header is blocked', async ({ page }) => {
     const dashboard = await seedDashboard('Untitled header');
     await page.goto(`/dashboards/${dashboard.id}`);
