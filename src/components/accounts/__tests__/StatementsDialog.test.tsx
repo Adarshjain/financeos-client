@@ -190,4 +190,43 @@ describe('StatementsDialog & Balance Anchoring Math (CD-11)', () => {
       expect(screen.getAllByText('Statement Details')[0]).toBeInTheDocument();
     });
   });
+
+  it('deletes a statement from its detail view and returns to the refreshed list', async () => {
+    let deleted = false;
+    vi.mocked(api.GET).mockImplementation(((url: string) => {
+      if (url === '/api/v1/accounts/{accountId}/statements') {
+        return Promise.resolve({ data: deleted ? [] : statementsListResponse });
+      }
+      if (url === '/api/v1/accounts/{id}/card-summary') {
+        return Promise.resolve({ data: cardSummaryResponse });
+      }
+      if (url === '/api/v1/statements/{statementId}') {
+        return Promise.resolve({ data: statementDetailResponse });
+      }
+      if (url === '/api/v1/accounts/{accountId}/statements/{statementId}/deletion-preview') {
+        return Promise.resolve({ data: { transactionsToDelete: 1, transactionsKept: 0, linkedToRecords: 0, alertsToReopen: 0 } });
+      }
+      return Promise.resolve({ data: undefined });
+    }) as typeof api.GET);
+    vi.mocked(api.DELETE).mockImplementation((() => {
+      deleted = true;
+      return Promise.resolve({ data: { transactionsDeleted: 1, transactionsKept: 0, alertsReopened: 0, duplicateFlagsCleared: 0 } });
+    }) as unknown as typeof api.DELETE);
+
+    renderWithQuery(<StatementsDialog account={mockCardAccount} trigger={<button>Open Statements</button>} />);
+    fireEvent.click(screen.getByText('Open Statements'));
+    fireEvent.click((await screen.findAllByRole('button', { name: /View details/i }))[0]);
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete statement' }));
+
+    expect(await screen.findByText('1 transaction')).toBeInTheDocument();
+    const confirm = screen.getAllByRole('button', { name: 'Delete statement' }).at(-1)!;
+    await waitFor(() => expect(confirm).toBeEnabled());
+    fireEvent.click(confirm);
+
+    await waitFor(() => expect(screen.queryByText('Statement Details')).not.toBeInTheDocument());
+    expect(api.DELETE).toHaveBeenCalledWith('/api/v1/accounts/{accountId}/statements/{statementId}', {
+      params: { path: { accountId: 'card-1', statementId: 'stmt-1' } },
+    });
+    expect(await screen.findByText('No statement history found')).toBeInTheDocument();
+  });
 });

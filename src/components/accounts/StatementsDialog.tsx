@@ -124,11 +124,13 @@ export function StatementsDialog({ account, trigger }: StatementsDialogProps) {
 
           {/* Drill-down Dialog */}
           <StatementDetailDialog
+            accountId={account.id}
             selectedStatementId={selectedStatementId}
             onClose={() => setSelectedStatementId(null)}
             isLoadingDetail={isLoadingDetail}
             detailError={detailError}
             selectedDetail={selectedDetail}
+            onDeleted={() => setSelectedStatementId(null)}
           />
         </DialogBody>
       </DialogContent>

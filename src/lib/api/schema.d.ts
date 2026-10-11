@@ -180,6 +180,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/{accountId}/statements/{statementId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteStatement"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/statements/{statementId}/deletion-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["previewStatementDeletion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/{id}": {
         parameters: {
             query?: never;
@@ -6195,6 +6227,26 @@ export interface components {
             totalAmountDue?: number | null;
             totalPurchases?: number | null;
         };
+        StatementDeletionPreviewResponse: {
+            /** Format: int32 */
+            alertsToReopen: number;
+            /** Format: int32 */
+            linkedToRecords: number;
+            /** Format: int32 */
+            transactionsKept: number;
+            /** Format: int32 */
+            transactionsToDelete: number;
+        };
+        StatementDeletionResponse: {
+            /** Format: int32 */
+            alertsReopened: number;
+            /** Format: int32 */
+            duplicateFlagsCleared: number;
+            /** Format: int32 */
+            transactionsDeleted: number;
+            /** Format: int32 */
+            transactionsKept: number;
+        };
         StatementDetailResponse: {
             accountNumberMasked?: string | null;
             bankName?: string | null;
@@ -7178,6 +7230,70 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["StatementSummaryResponse"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteStatement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StatementDeletionResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    previewStatementDeletion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["StatementDeletionPreviewResponse"];
                 };
             };
             /** @description Error response */

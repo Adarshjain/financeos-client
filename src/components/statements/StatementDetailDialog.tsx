@@ -1,7 +1,9 @@
 'use client';
 
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogBody,
@@ -12,25 +14,33 @@ import {
 import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { StatementDetail } from '@/lib/statement.types';
 
+import { DeleteStatementDialog } from './delete/DeleteStatementDialog';
 import { StatementCreditCardSummary } from './detail/StatementCreditCardSummary';
 import { StatementLinkedTransactions } from './detail/StatementLinkedTransactions';
 import { StatementMetadataHeader } from './detail/StatementMetadataHeader';
 
 export interface StatementDetailDialogProps {
+  accountId: string;
   selectedStatementId: string | null;
   onClose: () => void;
   isLoadingDetail: boolean;
   detailError: string | null;
   selectedDetail: StatementDetail | null;
+  /** The statement was deleted; the caller closes this dialog. */
+  onDeleted: () => void;
 }
 
 export function StatementDetailDialog({
+  accountId,
   selectedStatementId,
   onClose,
   isLoadingDetail,
   detailError,
   selectedDetail,
+  onDeleted,
 }: StatementDetailDialogProps) {
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+
   if (!selectedStatementId) return null;
 
   return (
@@ -80,6 +90,29 @@ export function StatementDetailDialog({
               <StatementLinkedTransactions
                 lines={selectedDetail.lines}
                 linesSkipped={selectedDetail.linesSkipped}
+              />
+
+              <div className="flex justify-end pt-1">
+                <Button
+                  type="button"
+                  variant="destructive-outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => setConfirmingDelete(true)}
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Delete statement
+                </Button>
+              </div>
+
+              <DeleteStatementDialog
+                accountId={accountId}
+                statementId={selectedDetail.id}
+                source={selectedDetail.source}
+                periodLabel={formatDateRange(selectedDetail.periodStart, selectedDetail.periodEnd)}
+                open={confirmingDelete}
+                onOpenChange={setConfirmingDelete}
+                onDeleted={onDeleted}
               />
             </div>
           ) : null}
