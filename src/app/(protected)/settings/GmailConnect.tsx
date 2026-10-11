@@ -19,6 +19,9 @@ export function GmailConnect({ focusAttention = false }: { focusAttention?: bool
     attentionData,
     attentionPage,
     setAttentionPage,
+    archivedData,
+    archivedPage,
+    setArchivedPage,
     message,
     isSyncing,
     isSenderDialogOpen,
@@ -35,6 +38,8 @@ export function GmailConnect({ focusAttention = false }: { focusAttention?: bool
     handleDisconnect,
     handleSync,
     handleRetryAttentionItem,
+    handleArchiveAttentionItem,
+    handleUnarchiveAttentionItem,
     openAddSenderDialog,
     openEditSenderDialog,
     handleSenderSubmit,
@@ -55,13 +60,19 @@ export function GmailConnect({ focusAttention = false }: { focusAttention?: bool
         </Alert>
       )}
 
-      {/* Needs Attention Card */}
-      {attentionData && attentionData.content.length > 0 && (
+      {/* Needs Attention Card. Kept mounted while the lists refetch (it renders nothing when both
+          are empty) so archiving the last item does not remount it collapsed. */}
+      {attentionData && (
         <GmailAttentionCard
           attentionData={attentionData}
           attentionPage={attentionPage}
           onPageChange={setAttentionPage}
           onRetry={handleRetryAttentionItem}
+          archivedData={archivedData}
+          archivedPage={archivedPage}
+          onArchivedPageChange={setArchivedPage}
+          onArchive={handleArchiveAttentionItem}
+          onUnarchive={handleUnarchiveAttentionItem}
           autoScroll={focusAttention}
         />
       )}

@@ -885,6 +885,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/gmail/attention/{ledgerId}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["archiveAttentionItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/gmail/attention/{ledgerId}/assign": {
         parameters: {
             query?: never;
@@ -911,6 +927,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["retryAttentionItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/gmail/attention/{ledgerId}/unarchive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["unarchiveAttentionItem"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4245,10 +4277,16 @@ export interface components {
             warnings: string[];
         };
         GmailAttentionItemResponse: {
+            /** Format: uuid */
+            accountId?: string | null;
+            accountName?: string | null;
+            /** Format: date-time */
+            archivedAt?: string | null;
             /** Format: int32 */
             attemptCount: number;
             /** Format: date-time */
             attentionNotifiedAt?: string | null;
+            connectionEmail: string;
             /** Format: date-time */
             discoveredAt: string;
             error?: string | null;
@@ -4260,6 +4298,8 @@ export interface components {
             internalDate?: string | null;
             /** Format: date-time */
             nextRetryAt?: string | null;
+            /** Format: date-time */
+            processedAt?: string | null;
             senderAddress?: string | null;
             /** @enum {string} */
             status: "DISCOVERED" | "PROCESSING" | "CREATED" | "RECONCILED" | "SKIPPED_NOT_TRANSACTION" | "SKIPPED_BEFORE_WATERMARK" | "SKIPPED_SENDER_DISABLED" | "SKIPPED_DUPLICATE" | "SKIPPED_MESSAGE_GONE" | "UNRESOLVED_ACCOUNT" | "ACCOUNT_NOT_OPTED_IN" | "FAILED_RETRYABLE" | "FAILED_PERMANENT" | "CLEANED_UP";
@@ -8906,6 +8946,7 @@ export interface operations {
                 page?: number;
                 size?: number;
                 includeRetryable?: boolean;
+                archived?: boolean;
             };
             header?: never;
             path?: never;
@@ -8921,6 +8962,35 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["PageGmailAttentionItemResponse"];
                 };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    archiveAttentionItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ledgerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Error response */
             default: {
@@ -8987,6 +9057,35 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["EnqueueResponse"];
                 };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unarchiveAttentionItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ledgerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Error response */
             default: {

@@ -212,6 +212,14 @@ export async function attentionItems(
   return res.data?.content ?? [];
 }
 
+export async function archivedAttentionItems(api: ApiClient): Promise<GmailAttentionItemResponse[]> {
+  const res = await api.GET('/api/v1/gmail/attention', {
+    params: { query: { page: 0, size: 50, archived: true } },
+  });
+  expectStatus(res, 200);
+  return res.data?.content ?? [];
+}
+
 // ---------------------------------------------------------------------------
 // Synthetic mail
 // ---------------------------------------------------------------------------

@@ -63,6 +63,8 @@ describe('GmailAttentionCard', () => {
         onRetry={vi.fn()}
       />
     );
+    // The card is collapsed by default.
+    fireEvent.click(screen.getByRole('button', { name: /Needs Attention/i }));
 
     const assignButtons = screen.getAllByRole('button', { name: /Assign/i });
     expect(assignButtons).toHaveLength(1);
@@ -80,6 +82,8 @@ describe('GmailAttentionCard', () => {
         onRetry={vi.fn()}
       />
     );
+    // The card is collapsed by default.
+    fireEvent.click(screen.getByRole('button', { name: /Needs Attention/i }));
 
     const assignBtn = screen.getByRole('button', { name: /Assign/i });
     fireEvent.click(assignBtn);
