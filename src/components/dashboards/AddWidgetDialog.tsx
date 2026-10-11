@@ -7,10 +7,12 @@
 // description appears. Picking a built-in opens its details step (preview on
 // sample data + settings) before it is added; built-ins may be added more than
 // once. One the user cannot use yet is dimmed with the server's reason.
+// Uncontrolled it renders its own "Add widget" button; Home's dashboard menu
+// opens it controlled (`open` / `onOpenChange`) with no button.
 
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogBody, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -37,11 +39,24 @@ interface AddWidgetDialogProps {
   onAddBuiltin: (def: BuiltinWidgetResponse, params: WidgetParams) => void;
   /** The dashboard being edited has unsaved changes (leaving for the report builder confirms first). */
   hasUnsavedChanges?: boolean;
+  /** Controlled open state (no trigger button is rendered). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function AddWidgetDialog({ reports, onAdd, onAddBuiltin, hasUnsavedChanges = false }: AddWidgetDialogProps) {
+export function AddWidgetDialog({
+  reports,
+  onAdd,
+  onAddBuiltin,
+  hasUnsavedChanges = false,
+  open: controlledOpen,
+  onOpenChange,
+}: AddWidgetDialogProps) {
   const qc = useQueryClient();
-  const [open, setOpen] = useState(false);
+  const controlled = controlledOpen !== undefined;
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const open = controlled ? controlledOpen : uncontrolledOpen;
+  const setOpen = (next: boolean) => (controlled ? onOpenChange?.(next) : setUncontrolledOpen(next));
   const [pending, setPending] = useState<BuiltinWidgetResponse | null>(null);
   const [category, setCategory] = useState<PickerCategory>('all');
   const [query, setQuery] = useState('');
@@ -58,6 +73,11 @@ export function AddWidgetDialog({ reports, onAdd, onAddBuiltin, hasUnsavedChange
     setCategory('all');
     setQuery('');
   };
+
+  // Opened from outside: re-check availability the same way the trigger does.
+  useEffect(() => {
+    if (controlled && controlledOpen) qc.invalidateQueries({ queryKey: keys.dashboards.builtins() });
+  }, [controlled, controlledOpen, qc]);
 
   const categories = useMemo(() => visibleCategories(builtins), [builtins]);
   const shownBuiltins = filterBuiltins(builtins, category, query);
@@ -78,9 +98,11 @@ export function AddWidgetDialog({ reports, onAdd, onAddBuiltin, hasUnsavedChange
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button variant="outline">Add widget</Button>
-      </DialogTrigger>
+      {!controlled && (
+        <DialogTrigger asChild>
+          <Button variant="outline">Add widget</Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{pending ? pending.label : 'Add a widget'}</DialogTitle>

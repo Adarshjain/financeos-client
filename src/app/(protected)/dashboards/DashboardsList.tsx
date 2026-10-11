@@ -3,7 +3,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { LayoutDashboard, Loader2, Pencil, Star, Trash2 } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { ConfirmationDialog } from '@/components/ConfirmationDialog';
@@ -12,8 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { api } from '@/lib/api/client';
-import { toDashboardWidget } from '@/lib/dashboards.helpers';
-import { useDashboards } from '@/lib/query/hooks/useDashboards';
+import { useDashboards, useSetDefaultDashboard } from '@/lib/query/hooks/useDashboards';
 import { keys } from '@/lib/query/keys';
 import { toastError } from '@/lib/toastError';
 import { cn, formatDate } from '@/lib/utils';
@@ -21,8 +19,6 @@ import { cn, formatDate } from '@/lib/utils';
 export function DashboardsList() {
   const qc = useQueryClient();
   const { data: dashboards = [] } = useDashboards();
-  // The dashboard whose default state is mid-flight (disables its toggle).
-  const [defaultPendingId, setDefaultPendingId] = useState<string | null>(null);
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) =>
@@ -35,51 +31,8 @@ export function DashboardsList() {
       toastError(e, 'Failed to delete dashboard'),
   });
 
-  // Re-reads the dashboard before updating so the mutation can refuse rather
-  // than clobber a dashboard that changed since this list was rendered — it
-  // passes along the `updatedAt` this list was rendered with as the guard.
-  const setDefaultMutation = useMutation({
-    mutationFn: async ({
-      id,
-      makeDefault,
-      updatedAt,
-    }: {
-      id: string;
-      makeDefault: boolean;
-      updatedAt: string;
-    }) => {
-      const { data: current } = await api.GET('/api/v1/dashboards/{id}', {
-        params: { path: { id } },
-      });
-      if (!current) throw new Error('Dashboard not found');
-      if (current.updatedAt !== updatedAt) {
-        throw new Error(
-          'This dashboard changed since the page was loaded. Reload and try again — setting the default would otherwise discard those changes.',
-        );
-      }
-      const widgets = current.widgets.map(toDashboardWidget);
-      return api.PUT('/api/v1/dashboards/{id}', {
-        params: { path: { id } },
-        body: {
-          name: current.name,
-          description: current.description ?? undefined,
-          isDefault: makeDefault,
-          widgets,
-        },
-      });
-    },
-    onMutate: ({ id }) => setDefaultPendingId(id),
-    onSettled: () => setDefaultPendingId(null),
-    onSuccess: (_res, vars) => {
-      qc.invalidateQueries({ queryKey: keys.dashboards.all });
-      toast.success(vars.makeDefault ? 'Set as default' : 'Default cleared');
-    },
-    onError: (e) =>
-      toastError(e, e instanceof Error
-            ? e.message
-            : 'Failed to update default dashboard',
-      ),
-  });
+  // Re-reads the dashboard first and refuses rather than clobber one that changed since this list rendered.
+  const setDefaultMutation = useSetDefaultDashboard();
 
   // Awaited (rather than fire-and-forget) so the ConfirmationDialog stays open
   // and busy for the duration of the request, closing only once it settles —
@@ -112,13 +65,16 @@ export function DashboardsList() {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
       {dashboards.map((d) => {
-        const pending = defaultPendingId === d.id;
+        // The dashboard whose default state is mid-flight (disables its toggle).
+        const pending = setDefaultMutation.isPending && setDefaultMutation.variables?.id === d.id;
         return (
-          <Card key={d.id} className="flex flex-col gap-3 p-4">
+          // The title link stretches over the whole card, so a click anywhere opens the dashboard;
+          // the star, Edit and Delete sit above it (relative z-10) and keep their own actions.
+          <Card key={d.id} className="relative flex flex-col gap-3 p-4">
             <div className="flex items-start gap-2">
               <Link
                 href={`/dashboards/${d.id}`}
-                className="flex flex-1 items-center gap-2 font-semibold text-slate-900 hover:underline dark:text-white"
+                className="flex flex-1 items-center gap-2 font-semibold text-slate-900 after:absolute after:inset-0 after:rounded-[inherit] hover:underline dark:text-white"
               >
                 <LayoutDashboard className="h-4 w-4 shrink-0 text-slate-400" />
                 {d.name}
@@ -127,6 +83,7 @@ export function DashboardsList() {
               <Button
                 variant="ghost"
                 size="icon-xs"
+                className="relative z-10"
                 disabled={pending}
                 title={d.isDefault ? 'Clear default' : 'Set as default'}
                 aria-pressed={d.isDefault}
@@ -155,13 +112,13 @@ export function DashboardsList() {
               {d.widgets.length} widget{d.widgets.length === 1 ? '' : 's'} · Updated{' '}
               {formatDate(d.updatedAt)}
             </p>
-            <div className="mt-auto flex gap-2">
-              <Link href={`/dashboards/${d.id}`} className="flex-1">
-                <Button variant="secondary" size="sm" className="w-full">
+            <div className="relative z-10 mt-auto flex gap-2">
+              <Button variant="secondary" size="sm" className="flex-1" asChild>
+                <Link href={`/dashboards/${d.id}?edit=1`}>
                   <Pencil className="h-4 w-4" />
-                  Open
-                </Button>
-              </Link>
+                  Edit
+                </Link>
+              </Button>
               <ConfirmationDialog
                 title="Delete dashboard"
                 description={
