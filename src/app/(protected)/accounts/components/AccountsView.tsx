@@ -11,6 +11,7 @@ import { AccountFormWrapper } from '@/components/accounts/AccountFormWrapper';
 import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { isAccountClosed, isAccountOfType } from '@/lib/account.types';
+import { sumCreditLimits } from '@/lib/creditLimitPools';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
 import { formatMoney } from '@/lib/utils';
@@ -39,13 +40,10 @@ export function AccountsView() {
   const closedBrokerAccounts = closed.filter(isAccountOfType(AccountType.BROKER));
   const closedGenericAccounts = closed.filter(isAccountOfType(AccountType.GENERIC));
 
-  // Open cards only — a closed card contributes no available limit. Each card
-  // counts the limit its utilisation uses: the account's own, else the latest
-  // statement's (effectiveCreditLimit).
-  const totalCreditLimit = creditCards.reduce(
-    (sum, a) => sum + (a.effectiveCreditLimit ?? (a.creditLimit || 0)),
-    0
-  );
+  // Open cards only — a closed card contributes no available limit. A shared limit
+  // counts once however many open cards draw on it; any other card counts the limit
+  // its utilisation uses: the account's own, else the latest statement's.
+  const totalCreditLimit = sumCreditLimits(creditCards);
 
   if (accounts.length === 0) {
     return (

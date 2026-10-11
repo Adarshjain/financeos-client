@@ -59,6 +59,8 @@ const CREDIT_CARD_KEYS = new Set([
   // Widgets: live utilisation (owed ÷ limit) and the limit it uses (account's, else the latest statement's).
   'utilizationPct',
   'effectiveCreditLimit',
+  // V102: the shared credit limit the card draws on (null when it has its own limit only).
+  'limitPool',
 ]);
 
 const BROKER_KEYS = new Set([
