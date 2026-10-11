@@ -30,6 +30,7 @@ import {
   gmailCallback,
   GOOGLE_AUTH_URL,
   isoDaysAgo,
+  issuedGmailState,
   listConnections,
   otpMail,
   runSync,
@@ -118,6 +119,23 @@ test.describe('Gmail connect, senders and empty sync', () => {
     expect(rejected).toContain('gmail=error&message=');
     expect(decodeURIComponent(rejected.replace(/\+/g, ' '))).toContain('No refresh token received from Google');
     expect(await listConnections(api)).toHaveLength(1);
+  });
+
+  test('callback only accepts a state issued to this user: another user\'s, a forged and a missing state connect nothing', async ({ request }) => {
+    // An attacker starts Gmail connect for their own mailbox and sends the callback link to this user.
+    const { api: attackerApi } = await secondUser(request, 'gmail-state-attacker');
+    const attackerMailbox = await registerIdentity();
+    extras.push(attackerMailbox);
+    const attackersState = await issuedGmailState(attackerApi);
+    const before = await listConnections(api);
+
+    for (const state of [attackersState, 'forged.1.nonce.signature', '']) {
+      const location = await gmailCallback(api, { code: attackerMailbox.codes[0], state });
+      expect(location, `state "${state}"`).toBe(`${SETTINGS_GMAIL_URL}?gmail=error&message=invalid_state`);
+    }
+
+    expect(await listConnections(api)).toEqual(before);
+    expect(await listConnections(attackerApi)).toHaveLength(0);
   });
 
   test('senders CRUD', async () => {

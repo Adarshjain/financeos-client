@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 import { authApi } from '@/lib/apiClient';
 import { validationError } from '@/lib/apiResult';
-import { clearSessionCookie, setSessionCookie } from '@/lib/auth';
+import { clearSessionCookie, rememberSsoState, setSessionCookie, takeSsoState } from '@/lib/auth';
 import { createDomainAction } from '@/lib/domainApi';
 import { optionalString } from '@/lib/forms';
 import type {
@@ -86,10 +86,17 @@ export async function logout(): Promise<void> {
 
 export const startGoogleSSO = createDomainAction(
   { fallbackError: 'Failed to start Google SSO' },
-  () => authApi.startGoogleAuth()
+  async () => {
+    const response = await authApi.startGoogleAuth();
+    await rememberSsoState(response.authorizationUrl);
+    return response;
+  }
 );
 
-export const handleGoogleCallbackAction = createDomainAction(
+/** Shown when the callback's state is not the one this browser's sign-in started with. */
+const SSO_STATE_MISMATCH = 'Google sign-in expired or was not started here. Please try again.';
+
+const completeGoogleSSO = createDomainAction(
   { fallbackError: 'Failed to complete Google SSO' },
   async (code: string | undefined, state: string | undefined, error: string | undefined) => {
     const { user, sessionCookie } = await authApi.handleGoogleCallback({ code, state, error });
@@ -99,3 +106,20 @@ export const handleGoogleCallbackAction = createDomainAction(
     return user;
   }
 );
+
+/**
+ * Completes Google sign-in only for the sign-in this browser started: the callback's state must equal
+ * the one remembered by {@link startGoogleSSO}, so a sign-in link started by someone else cannot sign
+ * this browser into their account.
+ */
+export async function handleGoogleCallbackAction(
+  code: string | undefined,
+  state: string | undefined,
+  error: string | undefined
+): Promise<ApiResult<UserResponse>> {
+  const expected = await takeSsoState();
+  if (!state || state !== expected) {
+    return validationError(SSO_STATE_MISMATCH);
+  }
+  return completeGoogleSSO(code, state, error);
+}

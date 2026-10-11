@@ -2,6 +2,7 @@ import { makeApi } from '../fixtures/api';
 import { E2E_CLIENT_URL } from '../fixtures/config';
 import type { GoogleIdentity } from '../fixtures/google-stubs';
 import { cleanupIdentity, registerIdentity } from '../fixtures/google-stubs';
+import { issuedSsoState } from '../fixtures/seed/gmail';
 import { expect, test } from '../fixtures/test';
 
 /**
@@ -40,6 +41,8 @@ test.describe('Google SSO UI (@ui)', () => {
     const cookies = await page.context().cookies(E2E_CLIENT_URL);
     const session = cookies.find((c) => c.name === 'FINANCEOS_SESSION')?.value;
     expect(session).toBeTruthy();
+    // The state remembered at start was used up by the callback.
+    expect(cookies.find((c) => c.name === 'FINANCEOS_SSO_STATE')).toBeUndefined();
     const connections = await makeApi(session).GET('/api/v1/gmail/connections');
     expect(connections.data?.map((c) => c.email)).toEqual([identity.email]);
   });
@@ -56,5 +59,21 @@ test.describe('Google SSO UI (@ui)', () => {
     await expect(page.getByText('Redirecting to login...')).toBeVisible();
     await page.waitForURL(/\/login\?error=/, { timeout: 15_000 });
     await expect(page.getByRole('button', { name: 'Sign in with Google' })).toBeVisible();
+  });
+
+  test('a sign-in callback link this browser did not start signs nobody in', async ({ page }) => {
+    // Someone else starts sign-in with their own Google account and sends this browser the callback link.
+    identity = await registerIdentity();
+    const theirState = await issuedSsoState();
+
+    await page.goto(
+      `/auth/google/callback?code=${encodeURIComponent(identity.codes[0])}&state=${encodeURIComponent(theirState)}`
+    );
+
+    await expect(page.getByRole('heading', { name: 'Authentication Failed' })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText('Google sign-in expired or was not started here. Please try again.')).toBeVisible();
+    await page.waitForURL(/\/login\?error=/, { timeout: 15_000 });
+    const cookies = await page.context().cookies(E2E_CLIENT_URL);
+    expect(cookies.find((c) => c.name === 'FINANCEOS_SESSION')).toBeUndefined();
   });
 });

@@ -68,7 +68,8 @@ describe('auth server actions (WP-3)', () => {
     const res1 = await startGoogleSSO();
     expect(res1.success).toBe(true);
 
-    const res2 = await handleGoogleCallbackAction('code', 'state', undefined);
+    // The callback must carry the state remembered at start; the shared cookie mock returns this value.
+    const res2 = await handleGoogleCallbackAction('code', 'mock-session-cookie', undefined);
     expect(res2.success).toBe(true);
   });
 });
