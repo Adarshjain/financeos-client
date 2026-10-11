@@ -3905,6 +3905,7 @@ export interface components {
             last4?: string | null;
             /** Format: date */
             lastStatementDate?: string | null;
+            limitPool?: components["schemas"]["CreditLimitPoolResponse"];
             name: string;
             productName?: string | null;
             reconciliationGap?: number | null;
@@ -3925,7 +3926,7 @@ export interface components {
         CreditCardRequest: {
             /** Format: date */
             anniversaryDate: string;
-            creditLimit: number;
+            creditLimit?: number | null;
             description?: string;
             excludeFromNetAsset?: boolean;
             /** @enum {string} */
@@ -3934,6 +3935,7 @@ export interface components {
             ingestFromDate?: string;
             issuer?: string;
             last4: string;
+            limitPool?: components["schemas"]["CreditLimitPoolRequest"];
             name: string;
             productName?: string;
             /** Format: uuid */
@@ -3944,6 +3946,25 @@ export interface components {
              * @enum {string}
              */
             type: "credit_card";
+        };
+        CreditLimitPoolRequest: {
+            creditLimit?: number | null;
+            /** Format: uuid */
+            id?: string | null;
+            name?: string | null;
+        };
+        CreditLimitPoolResponse: {
+            available: number;
+            creditLimit: number;
+            /** Format: uuid */
+            id: string;
+            /** Format: int32 */
+            memberCount: number;
+            name: string;
+            /** Format: int32 */
+            openMemberCount: number;
+            owed: number;
+            utilizationPct?: number | null;
         };
         DashboardResponse: {
             /** Format: date-time */

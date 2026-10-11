@@ -28,6 +28,17 @@ function CardUtilisation({ pct }: { pct: number | null | undefined }) {
   );
 }
 
+/** Which shared limit a pooled card draws on, how many accounts share it, and the card's own cap. */
+function SharedLimitNote({ card }: { card: CreditCard }) {
+  const pool = card.limitPool!;
+  const parts = [
+    pool.name,
+    `${pool.memberCount} ${pool.memberCount === 1 ? 'account' : 'accounts'}`,
+    card.creditLimit != null ? `own cap ${formatMoney(card.creditLimit)}` : null,
+  ].filter(Boolean);
+  return <div className="text-2xs text-slate-400 dark:text-slate-500 text-right">{parts.join(' · ')}</div>;
+}
+
 export function CreditCardTile({ account }: { account: CreditCard }) {
   return (
     <AccountWrapper account={account} key={account.id}>
@@ -82,11 +93,14 @@ export function CreditCardTile({ account }: { account: CreditCard }) {
           </div>
 
           <div className="flex justify-between items-baseline">
-            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">Credit Limit</span>
+            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+              {account.limitPool ? 'Shared Limit' : 'Credit Limit'}
+            </span>
             <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight tabular-nums">
               {account.effectiveCreditLimit != null ? formatMoney(account.effectiveCreditLimit) : 'Not set'}
             </span>
           </div>
+          {account.limitPool ? <SharedLimitNote card={account} /> : null}
 
           <CardUtilisation pct={account.utilizationPct} />
         </div>

@@ -5,14 +5,22 @@ import { CreditCard, Eye, EyeOff, Landmark, TrendingUp, Wallet } from 'lucide-re
 import { DateInput } from '@/components/ui/date-input';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Account } from '@/lib/account.types';
+import { Account, CreditLimitPool } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
+
+import { LIMIT_POOL_NONE, LimitPoolChoice, SharedLimitField } from './SharedLimitField';
 
 interface AccountDetailsSectionProps {
   account?: Account;
   accountType: AccountType;
   showPassword: boolean;
   setShowPassword: React.Dispatch<React.SetStateAction<boolean>>;
+  /** Credit cards: the user's shared limits to pick from. */
+  limitPools?: CreditLimitPool[];
+  /** Credit cards: the picked shared limit ('none' when the card has its own limit only). */
+  limitPoolChoice?: LimitPoolChoice;
+  /** Credit cards: shows the shared-limit picker when given. */
+  onLimitPoolChoiceChange?: (choice: LimitPoolChoice) => void;
 }
 
 export function AccountDetailsSection({
@@ -20,10 +28,14 @@ export function AccountDetailsSection({
   accountType,
   showPassword,
   setShowPassword,
+  limitPools = [],
+  limitPoolChoice = LIMIT_POOL_NONE,
+  onLimitPoolChoiceChange,
 }: AccountDetailsSectionProps) {
   const bankAccount = account?.type === AccountType.BANK_ACCOUNT ? account : undefined;
   const creditCard = account?.type === AccountType.CREDIT_CARD ? account : undefined;
   const brokerAccount = account?.type === AccountType.BROKER ? account : undefined;
+  const pooled = limitPoolChoice !== LIMIT_POOL_NONE;
 
   if (accountType === AccountType.GENERIC) {
     return (
@@ -178,7 +190,7 @@ export function AccountDetailsSection({
 
             <div className="space-y-1.5">
               <Label htmlFor="creditLimit" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">
-                Credit Limit
+                {pooled ? 'Own Limit (Optional)' : 'Credit Limit'}
               </Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">₹</span>
@@ -188,13 +200,27 @@ export function AccountDetailsSection({
                   type="number"
                   step="0.01"
                   placeholder="50,000"
-                  defaultValue={creditCard?.creditLimit}
-                  required
+                  defaultValue={creditCard?.creditLimit ?? undefined}
+                  required={!pooled}
                   className="pl-6 bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 rounded-lg text-xs"
                 />
               </div>
+              {pooled ? (
+                <p className="text-2xs text-slate-400 dark:text-slate-500">
+                  Leave empty to let this card use the whole shared limit.
+                </p>
+              ) : null}
             </div>
           </div>
+
+          {onLimitPoolChoiceChange ? (
+            <SharedLimitField
+              pools={limitPools}
+              choice={limitPoolChoice}
+              onChoiceChange={onLimitPoolChoiceChange}
+              currentPoolId={creditCard?.limitPool?.id}
+            />
+          ) : null}
 
           <div className="space-y-1.5">
             <Label htmlFor="anniversaryDate" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">

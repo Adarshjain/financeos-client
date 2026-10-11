@@ -5,6 +5,8 @@ import { useState } from 'react';
 
 import { DialogBody, DialogFooter } from '@/components/ui/dialog';
 import { Account } from '@/lib/account.types';
+import { distinctLimitPools } from '@/lib/creditLimitPools';
+import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
 
 import { AccountDetailsSection } from './account-form/AccountDetailsSection';
@@ -38,6 +40,8 @@ export function AccountForm({ account, onSuccess, onClose, allowedTypes }: Accou
     setExcludeFromNetAsset,
     showPassword,
     setShowPassword,
+    limitPoolChoice,
+    setLimitPoolChoice,
     isSubmitting,
     showDeleteConfirm,
     setShowDeleteConfirm,
@@ -57,6 +61,10 @@ export function AccountForm({ account, onSuccess, onClose, allowedTypes }: Accou
     handleSubmit,
     handleConfirmCleanup,
   } = useAccountForm({ account, onSuccess, onClose, pendingIdentifiers });
+  // The shared limits a card can join come from the (cached) accounts list: every pool has an account.
+  const { data: allAccounts } = useAccounts(undefined, { enabled: accountType === AccountType.CREDIT_CARD });
+  // The edited account goes first so its own pool is offered even before the list loads.
+  const limitPools = distinctLimitPools([...(account ? [account] : []), ...(allAccounts ?? [])]);
 
   return (
     <>
@@ -114,6 +122,9 @@ export function AccountForm({ account, onSuccess, onClose, allowedTypes }: Accou
             accountType={accountType}
             showPassword={showPassword}
             setShowPassword={setShowPassword}
+            limitPools={limitPools}
+            limitPoolChoice={limitPoolChoice}
+            onLimitPoolChoiceChange={setLimitPoolChoice}
           />
 
           {/* Card 2b: Email Identifier Aliases (Bank and Card accounts). In create

@@ -9,7 +9,13 @@ import { toastError } from '@/lib/toastError';
 import { AccountType, FinancialPosition } from '@/lib/types';
 import { getAccountTypeLabel } from '@/lib/utils';
 
+import { LIMIT_POOL_NEW, LIMIT_POOL_NONE, LimitPoolChoice } from './SharedLimitField';
 import { useAccountFormMutations } from './useAccountFormMutations';
+
+/** The shared limit an account starts the form with: its pool's id, else none. */
+function initialLimitPoolChoice(account?: Account): LimitPoolChoice {
+  return account?.type === AccountType.CREDIT_CARD && account.limitPool ? account.limitPool.id : LIMIT_POOL_NONE;
+}
 
 interface UseAccountFormOptions {
   account?: Account;
@@ -41,6 +47,7 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
     account?.excludeFromNetAsset || false
   );
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [limitPoolChoice, setLimitPoolChoice] = useState<LimitPoolChoice>(() => initialLimitPoolChoice(account));
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [confirmCleanup, setConfirmCleanup] = useState<{
     count: number;
@@ -62,6 +69,7 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
     if (account) {
       setExcludeFromNetAsset(account.excludeFromNetAsset || false);
     }
+    setLimitPoolChoice(initialLimitPoolChoice(account));
   }
 
   // undefined for brokers and Wallet/Cash accounts (no Gmail sync, no watermark field)
@@ -155,17 +163,18 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
       const last4 = optionalString(formData, 'last4');
       const creditLimit = optionalDecimal(formData, 'creditLimit');
       const anniversaryDate = optionalString(formData, 'anniversaryDate');
+      const pooled = limitPoolChoice !== LIMIT_POOL_NONE;
+      const poolName = pooled ? optionalString(formData, 'limitPoolName') : undefined;
+      const poolLimit = pooled ? optionalDecimal(formData, 'limitPoolLimit') : undefined;
 
-      if (
-        last4 === undefined ||
-        creditLimit === undefined ||
-        anniversaryDate === undefined
-      ) {
-        const missing = [
-          last4 === undefined ? 'last 4 digits' : null,
-          creditLimit === undefined ? 'credit limit' : null,
-          anniversaryDate === undefined ? 'anniversary date' : null,
-        ].filter((field): field is string => field !== null);
+      const missing = [
+        last4 === undefined ? 'last 4 digits' : null,
+        !pooled && creditLimit === undefined ? 'credit limit' : null,
+        anniversaryDate === undefined ? 'anniversary date' : null,
+        pooled && poolName === undefined ? 'shared limit name' : null,
+        pooled && poolLimit === undefined ? 'shared limit amount' : null,
+      ].filter((field): field is string => field !== null);
+      if (missing.length > 0 || last4 === undefined || anniversaryDate === undefined) {
         toast.error(`Credit card needs ${missing.join(', ')}.`);
         return;
       }
@@ -178,7 +187,10 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
         ingestFromDate,
         type: AccountType.CREDIT_CARD,
         last4,
-        creditLimit,
+        creditLimit: creditLimit ?? null,
+        limitPool: pooled
+          ? { id: limitPoolChoice === LIMIT_POOL_NEW ? null : limitPoolChoice, name: poolName, creditLimit: poolLimit }
+          : null,
         anniversaryDate,
         ...(statementPasswordVal ? { statementPassword: statementPasswordVal } : {}),
       };
@@ -288,6 +300,8 @@ export function useAccountForm({ account, onSuccess, onClose, pendingIdentifiers
     setExcludeFromNetAsset,
     showPassword,
     setShowPassword,
+    limitPoolChoice,
+    setLimitPoolChoice,
     isSubmitting,
     showDeleteConfirm,
     setShowDeleteConfirm,

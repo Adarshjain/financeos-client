@@ -51,6 +51,15 @@ export function AccountOverview({ account }: { account: Account }) {
   if (card && (card.issuer || card.productName)) {
     rows.unshift(['Card', [card.issuer, card.productName].filter(Boolean).join(' ')]);
   }
+  const pool = card?.limitPool ?? null;
+  if (pool) {
+    rows.push([
+      'Shared with',
+      `${pool.name} · ${pool.memberCount} ${pool.memberCount === 1 ? 'account' : 'accounts'}`,
+    ]);
+    rows.push(['Shared limit available', formatMoney(pool.available)]);
+    if (card?.creditLimit != null) rows.push(['Own limit', formatMoney(card.creditLimit)]);
+  }
 
   return (
     <SectionCard icon={<Info />} title="Overview" data-testid="account-overview">
@@ -58,7 +67,7 @@ export function AccountOverview({ account }: { account: Account }) {
         {card ? (
           <div className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800/50">
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-xs text-slate-500 dark:text-slate-400">Credit limit</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">{pool ? 'Shared credit limit' : 'Credit limit'}</span>
               <span className="text-sm font-semibold tabular-nums text-slate-900 dark:text-white">
                 {limit != null ? formatMoney(limit) : 'Not set'}
               </span>

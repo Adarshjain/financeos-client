@@ -26,10 +26,37 @@ export type BankAccountRequest = AccountRequestBase & {
   statementPassword?: string;
 };
 
+/**
+ * The shared limit a credit card account draws on, sent with the account. With `id`: join that
+ * pool (a `name` or `creditLimit` also renames or re-limits it for every account in it). Without:
+ * create a pool from `name` + `creditLimit`. Sending `null` takes the account out of any pool.
+ */
+export interface CreditLimitPoolRequest {
+  id?: string | null;
+  name?: string | null;
+  creditLimit?: number | null;
+}
+
+/** A shared limit with live usage across all of its accounts (server-computed). */
+export interface CreditLimitPool {
+  id: string;
+  name: string;
+  creditLimit: number;
+  /** What every account in the pool owes now, closed ones included. */
+  owed: number;
+  available: number;
+  utilizationPct?: number | null;
+  memberCount: number;
+  /** Accounts in the pool that are not closed; a pool counts towards total limit while any is open. */
+  openMemberCount: number;
+}
+
 export type CreditCardRequest = AccountRequestBase & {
   type: AccountType.CREDIT_CARD;
   last4: string;
-  creditLimit: number;
+  /** Required unless `limitPool` is set; for a pooled account an optional cap inside the pool. */
+  creditLimit?: number | null;
+  limitPool?: CreditLimitPoolRequest | null;
   ingestFromDate?: string | null;
   /** Card membership anniversary (required) — anchors anniversary-year reward windows. */
   anniversaryDate: string;
@@ -197,20 +224,26 @@ export type CreditCard = AccountBase & {
   type: AccountType.CREDIT_CARD;
   ingestFromDate?: string | null;
   last4: string;
-  creditLimit: number;
+  /** The account's own limit; null for a pooled account that can use the whole pool. */
+  creditLimit: number | null;
   anniversaryDate?: string | null;
   lastStatementDate?: string | null;
   cardholders?: Cardholder[];
   replacesAccountId?: string | null;
   issuer?: string | null;
   productName?: string | null;
-  /** Live owed ÷ limit in percent (server-computed, 1 decimal); null without a positive limit. */
+  /**
+   * Live owed ÷ limit in percent (server-computed, 1 decimal); for a pooled card, what all of
+   * the pool's accounts owe ÷ the shared limit. Null without a positive limit.
+   */
   utilizationPct?: number | null;
   /**
-   * The limit utilisation is measured against (server): the card's credit limit,
-   * else the latest statement's; null when neither is positive.
+   * The limit utilisation is measured against (server): the shared limit for a pooled
+   * card, else the card's credit limit, else the latest statement's; null when none is positive.
    */
   effectiveCreditLimit?: number | null;
+  /** The shared limit this account draws on; null when it has its own limit only. */
+  limitPool?: CreditLimitPool | null;
 };
 
 export type Broker = AccountBase & {
