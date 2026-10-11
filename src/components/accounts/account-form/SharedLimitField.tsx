@@ -35,7 +35,7 @@ export function SharedLimitField({ pools, choice, onChoiceChange, currentPoolId 
   return (
     <div className="space-y-1.5">
       <Label htmlFor="limitPool" className="text-xs text-slate-600 dark:text-slate-350 font-semibold">
-        Shared Credit Limit
+        Shared Limit
       </Label>
       <Select value={choice} onValueChange={onChoiceChange}>
         <SelectTrigger id="limitPool" className={`h-9 ${inputClass}`}>

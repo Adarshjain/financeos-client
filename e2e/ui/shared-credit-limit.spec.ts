@@ -6,7 +6,7 @@ import { expect, test } from '../fixtures/test';
 import { openAccountEditor, openAccounts } from '../fixtures/ui';
 
 async function pickSharedLimit(page: Page, option: string | RegExp) {
-  await page.getByRole('combobox', { name: 'Shared Credit Limit' }).click();
+  await page.getByRole('combobox', { name: 'Shared Limit' }).click();
   await page.getByRole('option', { name: option }).click();
 }
 
@@ -52,7 +52,7 @@ test.describe('Shared credit limit UI (@ui)', () => {
 
     // 4. One card leaves the pool and gets its own limit back.
     await openAccountEditor(page, 'HDFC Millennia');
-    await expect(page.getByRole('combobox', { name: 'Shared Credit Limit' })).toContainText('HDFC shared');
+    await expect(page.getByRole('combobox', { name: 'Shared Limit' })).toContainText('HDFC shared');
     await pickSharedLimit(page, 'None, this card has its own limit');
     await page.getByLabel('Credit Limit').fill('100000');
     await page.getByRole('button', { name: 'Save Changes' }).click();
