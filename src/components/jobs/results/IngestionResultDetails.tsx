@@ -27,6 +27,10 @@ export function IngestionResultDetails({ result }: { result: FileIngestionResult
     return <FileSpreadsheet className="h-4 w-4 text-emerald-500 shrink-0" />;
   };
 
+  // Warnings (statement didn't reconcile, account mismatch) must be seen without
+  // expanding File Details.
+  const warnedFiles = (result.fileDetails ?? []).filter((file) => file.warning);
+
   const getStatusBadgeVariant = (status: string) => {
     if (status === 'SUCCESS') return 'success';
     if (status === 'SKIPPED') return 'warning';
@@ -158,6 +162,22 @@ export function IngestionResultDetails({ result }: { result: FileIngestionResult
                 )}
               </div>
             )}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {warnedFiles.length > 0 && (
+        <Alert variant="warning" iconLayout="inline" className="rounded-md p-2 sm:p-2.5 border-amber-200/80 bg-amber-50/30 dark:bg-amber-950/20 dark:border-amber-900/40">
+          <AlertTitle className="text-amber-800 dark:text-amber-400 font-semibold text-2xs flex items-center gap-1.5 mb-1">
+            <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>Check {warnedFiles.length === 1 ? 'this statement' : 'these statements'}</span>
+          </AlertTitle>
+          <AlertDescription className="text-amber-700 dark:text-amber-500 text-2xs mt-0.5 space-y-1 w-full">
+            {warnedFiles.map((file: FileSummary, idx: number) => (
+              <div key={idx}>
+                <span className="font-semibold break-all">{file.filename}:</span> <span>{file.warning}</span>
+              </div>
+            ))}
           </AlertDescription>
         </Alert>
       )}
