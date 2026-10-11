@@ -100,4 +100,72 @@ describe('IngestionResultDetails Component', () => {
     expect(screen.getAllByText('Uber Ride').length).toBeGreaterThan(0);
     expect(screen.getByText('…and 1 more')).toBeInTheDocument();
   });
+  it('shows file warnings up front without expanding File Details', () => {
+    const result: FileIngestionResult = {
+      filesProcessed: 2,
+      totalCreated: 6,
+      totalDuplicatesFound: 0,
+      fileDetails: [
+        {
+          filename: '27FEB2026.pdf',
+          status: 'SUCCESS',
+          linesParsed: 1,
+          errorMessage: null,
+          warning: "Statement totals don't add up: the transactions found don't take the opening balance to the closing balance. Some may be missing or wrong; check them against the statement.",
+          created: 1,
+          duplicates: 0,
+        },
+        {
+          filename: '26JUN2026.pdf',
+          status: 'SUCCESS',
+          linesParsed: 5,
+          errorMessage: null,
+          warning: null,
+          created: 5,
+          duplicates: 0,
+        },
+      ],
+    };
+
+    render(<IngestionResultDetails result={result} />);
+
+    expect(screen.getByText('Check this statement')).toBeInTheDocument();
+    expect(screen.getByText('27FEB2026.pdf:')).toBeInTheDocument();
+    expect(screen.getByText(/Statement totals don't add up/)).toBeInTheDocument();
+    expect(screen.queryByText('26JUN2026.pdf:')).not.toBeInTheDocument();
+  });
+
+  it('titles the warning for several statements in the plural', () => {
+    const warning = 'Warning: statement account number does not match this account';
+    const result: FileIngestionResult = {
+      filesProcessed: 2,
+      totalCreated: 2,
+      totalDuplicatesFound: 0,
+      fileDetails: [
+        { filename: 'a.pdf', status: 'SUCCESS', linesParsed: 1, errorMessage: null, warning, created: 1, duplicates: 0 },
+        { filename: 'b.pdf', status: 'SUCCESS', linesParsed: 1, errorMessage: null, warning, created: 1, duplicates: 0 },
+      ],
+    };
+
+    render(<IngestionResultDetails result={result} />);
+
+    expect(screen.getByText('Check these statements')).toBeInTheDocument();
+    expect(screen.getByText('a.pdf:')).toBeInTheDocument();
+    expect(screen.getByText('b.pdf:')).toBeInTheDocument();
+  });
+
+  it('shows no warning alert when no file has a warning', () => {
+    const result: FileIngestionResult = {
+      filesProcessed: 1,
+      totalCreated: 5,
+      totalDuplicatesFound: 0,
+      fileDetails: [
+        { filename: 'statement.pdf', status: 'SUCCESS', linesParsed: 5, errorMessage: null, created: 5, duplicates: 0 },
+      ],
+    };
+
+    render(<IngestionResultDetails result={result} />);
+
+    expect(screen.queryByText(/Check (this|these) statement/)).not.toBeInTheDocument();
+  });
 });
