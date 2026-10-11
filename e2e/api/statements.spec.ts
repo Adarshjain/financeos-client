@@ -198,4 +198,81 @@ test.describe('Statements API', () => {
     });
     expectStatus(detailRes, 400);
   });
+
+  test('DELETE /accounts/{accountId}/statements/{statementId} removes the statement and its rows so the file can be uploaded again', async ({
+    api,
+  }) => {
+    const account = await createBankAccount(api, {
+      name: 'Statements Delete Bank',
+      openingBalance: bankSpec.opening,
+    });
+    const pdfBuffer = await genBankPdf(bankSpec);
+    await uploadAndIngest(api, account.id, [{ filename: 'apr-delete.pdf', buffer: pdfBuffer }]);
+    const [summary] = await getAccountStatements(api, account.id);
+    const createdIds = (await getStatement(api, summary.id)).lines.map((l) => l.transactionId);
+    expect(createdIds.length).toBe(5);
+
+    const previewRes = await api.GET('/api/v1/accounts/{accountId}/statements/{statementId}/deletion-preview', {
+      params: { path: { accountId: account.id, statementId: summary.id } },
+    });
+    expectStatus(previewRes, 200);
+    expect(previewRes.data).toEqual({ transactionsToDelete: 5, transactionsKept: 0, linkedToRecords: 0, alertsToReopen: 0 });
+
+    const deleteRes = await api.DELETE('/api/v1/accounts/{accountId}/statements/{statementId}', {
+      params: { path: { accountId: account.id, statementId: summary.id } },
+    });
+    expectStatus(deleteRes, 200);
+    expect(deleteRes.data).toEqual({ transactionsDeleted: 5, transactionsKept: 0, alertsReopened: 0, duplicateFlagsCleared: 0 });
+
+    expect(await getAccountStatements(api, account.id)).toEqual([]);
+    for (const id of createdIds) {
+      const txnRes = await api.GET('/api/v1/transactions/{id}', { params: { path: { id } } });
+      expectStatus(txnRes, 404);
+    }
+
+    // The same file is no longer "already ingested".
+    const { result } = await uploadAndIngest(api, account.id, [{ filename: 'apr-delete.pdf', buffer: pdfBuffer }]);
+    expect(result.fileDetails[0].status).toBe('SUCCESS');
+    expect(result.totalCreated).toBe(5);
+    expect((await getAccountStatements(api, account.id)).length).toBe(1);
+  });
+
+  test('Tenancy: statement deletion answers 404 for another user and for another account, and changes nothing', async ({
+    api,
+    request,
+  }) => {
+    await expectUnauthenticated(
+      'DELETE',
+      '/api/v1/accounts/00000000-0000-0000-0000-000000000000/statements/00000000-0000-0000-0000-000000000000'
+    );
+    await expectUnauthenticated(
+      'GET',
+      '/api/v1/accounts/00000000-0000-0000-0000-000000000000/statements/00000000-0000-0000-0000-000000000000/deletion-preview'
+    );
+
+    const account = await createBankAccount(api, { name: 'Delete Tenancy Bank', openingBalance: bankSpec.opening });
+    const otherAccount = await createBankAccount(api, { name: 'Delete Tenancy Other', openingBalance: 0 });
+    const pdfBuffer = await genBankPdf(bankSpec);
+    await uploadAndIngest(api, account.id, [{ filename: 'apr-delete-tenancy.pdf', buffer: pdfBuffer }]);
+    const [summary] = await getAccountStatements(api, account.id);
+    const { api: userB } = await secondUser(request);
+
+    const paths = [
+      { accountId: account.id, statementId: summary.id, caller: userB },
+      { accountId: otherAccount.id, statementId: summary.id, caller: api },
+    ];
+    for (const { accountId, statementId, caller } of paths) {
+      const previewRes = await caller.GET('/api/v1/accounts/{accountId}/statements/{statementId}/deletion-preview', {
+        params: { path: { accountId, statementId } },
+      });
+      expectStatus(previewRes, 404);
+      const deleteRes = await caller.DELETE('/api/v1/accounts/{accountId}/statements/{statementId}', {
+        params: { path: { accountId, statementId } },
+      });
+      expectStatus(deleteRes, 404);
+    }
+
+    const detail = await getStatement(api, summary.id);
+    expect(detail.lines.length).toBe(5);
+  });
 });
