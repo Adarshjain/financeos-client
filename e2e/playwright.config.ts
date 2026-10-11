@@ -8,6 +8,14 @@ import { E2E_CLIENT_URL } from './fixtures/config';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// The nightly run splits the suite across parallel jobs (see .github/workflows/e2e.yml) and gives chat
+// its own job: a project's dependencies always run in full (file filters and shards do not narrow
+// them), so the ui-chat -> api dependency would drag the whole api project along.
+//   E2E_CHAT=exclude  everything except chat (api/chat.spec.ts and the ui-chat projects)
+//   E2E_CHAT=only     only chat: api/chat.spec.ts, then the chat UI journeys
+const chatMode = process.env.E2E_CHAT;
+const isChatProject = (name: string) => name.startsWith('ui-chat');
+
 export default defineConfig({
   testDir: '.',
   outputDir: 'test-results',
@@ -30,10 +38,11 @@ export default defineConfig({
   },
   globalSetup: path.resolve(__dirname, './global-setup.ts'),
   globalTeardown: path.resolve(__dirname, './global-teardown.ts'),
-  projects: [
+  projects: ([
     {
       name: 'api',
-      testMatch: /api\/.*\.spec\.ts/,
+      testMatch: chatMode === 'only' ? /api\/chat\.spec\.ts/ : /api\/.*\.spec\.ts/,
+      ...(chatMode === 'exclude' ? { testIgnore: /api\/chat\.spec\.ts/ } : {}),
     },
     {
       name: 'ui-desktop',
@@ -76,5 +85,9 @@ export default defineConfig({
       },
       grep: /@mobile/,
     },
-  ],
+  ]).filter((project) => {
+    if (chatMode === 'exclude') return !isChatProject(project.name);
+    if (chatMode === 'only') return project.name === 'api' || isChatProject(project.name);
+    return true;
+  }),
 });

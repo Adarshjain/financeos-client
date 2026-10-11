@@ -15,8 +15,7 @@ bash e2e/scripts/stop-client.sh
 mkdir -p e2e/logs
 
 if [[ "${SKIP_CLIENT_BUILD:-0}" != "1" ]]; then
-  echo "Building Next.js client for production..."
-  NEXT_PUBLIC_FARO_URL="" NEXT_PUBLIC_FARO_APP_KEY="" npm run build
+  bash e2e/scripts/build-client.sh
 fi
 
 echo "Starting Next.js production client on port 6970..."

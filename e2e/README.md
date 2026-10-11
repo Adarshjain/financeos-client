@@ -72,7 +72,7 @@ npm run e2e:down
 
 > **Note on Coverage Gates:** `E2E_SKIP_GATES=1` is automatically set by `run-local.sh` when `--api` or `--browser` is passed, and by the npm scripts `e2e:api`, `e2e:browser`, and `e2e:ui`. The full test run (`npm run e2e`) and the nightly CI run enforce all coverage gates.
 
-> **CI suites:** PRs and merges to main (client push, server CI and server Deploy) run only the specs listed in `e2e/core-specs.txt`, with gates skipped. The nightly schedule (01:30 UTC) runs the full suite with gates and no retries, and posts the result with any failing tests to Slack. A manual `workflow_dispatch` run defaults to the full suite.
+> **CI suites:** PRs and merges to main (client push, server CI and server Deploy) run only the specs listed in `e2e/core-specs.txt`, with gates skipped. The nightly schedule (01:30 UTC) runs the full suite with gates and no retries, split across five parallel jobs (api, ui 1-3/3, chat; each with its own stack). Each job runs with `E2E_COVERAGE_DUMP=1`, so its teardown writes its server's API hits instead of gating; a final report job merges the blob reports (`e2e/playwright.merge.config.ts`), runs the gates once over every job (`npx tsx e2e/coverage/merge-gate.ts <job-dirs>`) and posts the result with any failing tests to Slack. `E2E_CHAT=exclude|only` keeps chat in its own job. A manual `workflow_dispatch` run defaults to the full suite.
 
 ---
 
