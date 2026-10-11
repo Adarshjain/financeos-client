@@ -22,10 +22,12 @@ export interface FileDetail {
 }
 
 export interface DuplicateDetail {
-  fileDescription: string;
-  matchedDescription: string;
   date: string;
   amount: number;
+  description: string;
+  filename: string;
+  transactionId: string;
+  matchedTransactionId: string | null;
 }
 
 export interface FileIngestionResult {

@@ -25,16 +25,18 @@ test.describe('Statement Ingestion & Statements Archive UI (@ui)', () => {
     ],
   };
 
+  // Overlaps the April statement and repeats its utility bill row: rows of one statement are never
+  // compared with each other, so the repeat across statements is what gets flagged.
   const duplicateBankSpec: BankSpec = {
     bank: 'HDFC Bank',
     accountLast10: '5566778899',
-    periodStart: '2026-05-01',
-    periodEnd: '2026-05-31',
-    opening: 61300.0,
+    periodStart: '2026-04-16',
+    periodEnd: '2026-05-15',
+    opening: 62800.0,
     rows: [
+      { date: '2026-04-20', description: 'UTILITY BILL PAYMENT', debit: 1500.0 },
       { date: '2026-05-05', description: 'SWIGGY ORDER BANGALORE', debit: 450.0 },
-      { date: '2026-05-05', description: 'SWIGGY ORDER BANGALORE', debit: 450.0 },
-      { date: '2026-05-18', description: 'CAFE COFFEE DAY', debit: 320.0 },
+      { date: '2026-05-12', description: 'CAFE COFFEE DAY', debit: 320.0 },
     ],
   };
 

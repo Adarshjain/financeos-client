@@ -21,7 +21,7 @@ import {
   uploadAndIngest,
   uploadStatements,
 } from '../fixtures/seed/statements';
-import { searchAll } from '../fixtures/seed/transactions';
+import { createTransaction, findById, searchAll } from '../fixtures/seed/transactions';
 import { expectUnauthenticated, secondUser } from '../fixtures/tenancy';
 import { expect, test } from '../fixtures/test';
 
@@ -191,15 +191,15 @@ test.describe('Statements Ingestion API', () => {
     expect(stmts.length).toBe(2);
   });
 
-  test('Transaction duplicates within a file flagged as DUPLICATE_SUSPECT', async ({
+  test('Identical rows on one statement are separate charges and never flagged as duplicates', async ({
     api,
   }) => {
     const account = await createBankAccount(api, {
-      name: 'Duplicate Rows Bank',
+      name: 'Same Statement Rows Bank',
       openingBalance: 50000.0,
     });
 
-    const duplicateRowsSpec: BankSpec = {
+    const spec: BankSpec = {
       bank: 'HDFC Bank',
       accountLast10: '1234567890',
       periodStart: '2026-04-01',
@@ -212,27 +212,135 @@ test.describe('Statements Ingestion API', () => {
       ],
     };
 
-    const pdfBuffer = await genBankPdf(duplicateRowsSpec);
     const { result } = await uploadAndIngest(api, account.id, [
-      { filename: 'dups-statement.pdf', buffer: pdfBuffer },
+      { filename: 'same-day-twice.pdf', buffer: await genBankPdf(spec) },
     ]);
 
     expect(result.fileDetails[0].status).toBe('SUCCESS');
     expect(result.totalCreated).toBe(3);
-    expect(result.totalDuplicatesFound).toBeGreaterThanOrEqual(1);
-    expect(result.duplicateDetails && result.duplicateDetails.length > 0).toBe(true);
+    expect(result.totalDuplicatesFound).toBe(0);
 
     const txns = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },
     ]);
     expect(txns.length).toBe(3);
+    for (const t of txns) {
+      expect(t.reviewReasons ?? []).not.toContain('DUPLICATE_SUSPECT');
+    }
+  });
 
-    const dupTxns = txns.filter((t) => (t.sourcedDescription || t.description) === 'COFFEE SHOP CAFE');
-    expect(dupTxns.length).toBe(2);
-    // At least one of the duplicate transactions should be marked for review
-    const suspect = dupTxns.find((t) => t.reviewType === 'NEEDS_REVIEW');
-    expect(suspect).toBeDefined();
-    expect(suspect?.reviewReasons).toContain('DUPLICATE_SUSPECT');
+  test('A row repeated by an overlapping statement is DUPLICATE_SUSPECT on both copies; a different reference number is not', async ({
+    api,
+  }) => {
+    const account = await createBankAccount(api, {
+      name: 'Overlapping Statements Bank',
+      openingBalance: 50000.0,
+    });
+
+    const april: BankSpec = {
+      bank: 'HDFC Bank',
+      accountLast10: '1234567891',
+      periodStart: '2026-04-01',
+      periodEnd: '2026-04-30',
+      opening: 50000.0,
+      rows: [
+        { date: '2026-04-10', description: 'COFFEE SHOP CAFE', debit: 250.0 },
+        { date: '2026-04-15', description: 'UPI/DR/411122/RENT PAYMENT', debit: 500.0 },
+      ],
+    };
+    // Starts mid-April: repeats the coffee row exactly, and has a same-day, same-amount rent payment
+    // whose narration differs only in its reference number.
+    const overlap: BankSpec = {
+      ...april,
+      periodStart: '2026-04-10',
+      periodEnd: '2026-05-09',
+      rows: [
+        { date: '2026-04-10', description: 'COFFEE SHOP CAFE', debit: 250.0 },
+        { date: '2026-04-15', description: 'UPI/DR/499988/RENT PAYMENT', debit: 500.0 },
+      ],
+    };
+
+    await uploadAndIngest(api, account.id, [
+      { filename: 'april.pdf', buffer: await genBankPdf(april) },
+    ]);
+    const { result } = await uploadAndIngest(api, account.id, [
+      { filename: 'april-may.pdf', buffer: await genBankPdf(overlap) },
+    ]);
+
+    expect(result.fileDetails[0].status).toBe('SUCCESS');
+    expect(result.totalCreated).toBe(2);
+    expect(result.totalDuplicatesFound).toBe(1);
+    expect(result.duplicateDetails?.map((d) => d.description)).toEqual(['COFFEE SHOP CAFE']);
+
+    const txns = await searchAll(api, [
+      { field: 'accountId', operator: 'is', value: account.id },
+    ]);
+    expect(txns.length).toBe(4);
+    const coffee = txns.filter((t) => t.sourcedDescription === 'COFFEE SHOP CAFE');
+    expect(coffee).toHaveLength(2);
+    for (const t of coffee) {
+      expect(t.reviewType).toBe('NEEDS_REVIEW');
+      expect(t.reviewReasons).toContain('DUPLICATE_SUSPECT');
+    }
+    const rent = txns.filter((t) => (t.sourcedDescription ?? '').includes('RENT PAYMENT'));
+    expect(rent).toHaveLength(2);
+    for (const t of rent) {
+      expect(t.reviewReasons ?? []).not.toContain('DUPLICATE_SUSPECT');
+    }
+  });
+
+  test('A manual entry is a duplicate of a statement row only when it names the same counterparty', async ({
+    api,
+  }) => {
+    const account = await createBankAccount(api, {
+      name: 'Manual vs Statement Bank',
+      openingBalance: 50000.0,
+    });
+
+    // Same day and amount as the statement rows below.
+    const swiggy = await createTransaction(api, account.id, {
+      date: '2026-04-10',
+      amount: -450,
+      description: 'Swiggy Limited',
+    });
+    const zomato = await createTransaction(api, account.id, {
+      date: '2026-04-12',
+      amount: -300,
+      description: 'UPI/DR/900001/ZOMATO/HDFC',
+    });
+
+    const spec: BankSpec = {
+      bank: 'HDFC Bank',
+      accountLast10: '1234567892',
+      periodStart: '2026-04-01',
+      periodEnd: '2026-04-30',
+      opening: 50000.0,
+      rows: [
+        // Names Swiggy at a word start ("Limited" is ignored) -> duplicate of the manual entry.
+        { date: '2026-04-10', description: 'UPI/DR/412345/SWIGGY/YESB', debit: 450.0 },
+        // Same text as the manual entry except the reference number -> a different payment.
+        { date: '2026-04-12', description: 'UPI/DR/900002/ZOMATO/HDFC', debit: 300.0 },
+      ],
+    };
+
+    const { result } = await uploadAndIngest(api, account.id, [
+      { filename: 'manual-vs-statement.pdf', buffer: await genBankPdf(spec) },
+    ]);
+
+    expect(result.totalCreated).toBe(2);
+    expect(result.totalDuplicatesFound).toBe(1);
+    expect(result.duplicateDetails?.map((d) => d.description)).toEqual(['UPI/DR/412345/SWIGGY/YESB']);
+
+    expect((await findById(api, swiggy.id))?.reviewReasons).toContain('DUPLICATE_SUSPECT');
+    expect((await findById(api, zomato.id))?.reviewReasons ?? []).not.toContain('DUPLICATE_SUSPECT');
+
+    const txns = await searchAll(api, [
+      { field: 'accountId', operator: 'is', value: account.id },
+    ]);
+    const swiggyRow = txns.find((t) => t.sourcedDescription === 'UPI/DR/412345/SWIGGY/YESB');
+    const zomatoRow = txns.find((t) => t.sourcedDescription === 'UPI/DR/900002/ZOMATO/HDFC');
+    expect(swiggyRow?.reviewReasons).toContain('DUPLICATE_SUSPECT');
+    expect(zomatoRow?.reviewReasons ?? []).not.toContain('DUPLICATE_SUSPECT');
   });
 
   test('In-job categorization: rule takes precedence and LLM runs for remaining rows', async ({
