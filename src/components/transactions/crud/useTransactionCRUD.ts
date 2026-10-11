@@ -8,6 +8,7 @@ import { isValidMcc } from '@/components/forms/MccInput';
 import type { Account } from '@/lib/account.types';
 import { api, ApiError } from '@/lib/api/client';
 import type { Schemas } from '@/lib/api/types';
+import type { Category } from '@/lib/categories.types';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { useCategories } from '@/lib/query/hooks/useCategories';
 import { invalidateMoneyQueries } from '@/lib/query/invalidate';
@@ -32,6 +33,9 @@ import {
 } from './transactionCRUD.helpers';
 import { useCategorySuggestions } from './useCategorySuggestions';
 
+/** Stable fallback while categories load: a fresh `[]` per render re-fires the category sync effect forever. */
+const NO_CATEGORIES: Category[] = [];
+
 interface UseTransactionCRUDProps {
   transaction?: Transaction;
   onSuccess?: () => void;
@@ -43,7 +47,7 @@ export function useTransactionCRUD({
 }: UseTransactionCRUDProps) {
   const queryClient = useQueryClient();
   const { data: accounts = [] } = useAccounts();
-  const { data: categories = [] } = useCategories();
+  const { data: categories = NO_CATEGORIES } = useCategories();
   const isUpdateMode = !!transaction;
 
   const [amount, setAmount] = useState<string>(

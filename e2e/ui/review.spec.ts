@@ -38,13 +38,30 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
     periodEnd: '2026-04-30',
     opening: 50000.0,
     rows: [
-      // Duplicate pair (both get DUPLICATE_SUSPECT and CATEGORY_UNVERIFIED)
-      { date: '2026-04-05', description: 'SWIGGY ORDER BANGALORE', debit: 450.0 },
+      // Repeated by the overlapping statement (both copies get DUPLICATE_SUSPECT and CATEGORY_UNVERIFIED)
       { date: '2026-04-05', description: 'SWIGGY ORDER BANGALORE', debit: 450.0 },
       // Single row (gets only CATEGORY_UNVERIFIED)
       { date: '2026-04-12', description: 'UBER TRIP AIRPORT', debit: 1250.0 },
     ],
   };
+
+  // Rows of one statement are never compared, so the duplicate pair spans two overlapping statements.
+  // The parser needs two rows to place the amount column; the extra row is the oldest, so it sorts
+  // last and the row positions below are unchanged.
+  const overlapSeedSpec: BankSpec = {
+    ...reviewSeedSpec,
+    periodStart: '2026-04-02',
+    periodEnd: '2026-05-01',
+    rows: [
+      { date: '2026-04-03', description: 'NETFLIX SUBSCRIPTION', debit: 649.0 },
+      { date: '2026-04-05', description: 'SWIGGY ORDER BANGALORE', debit: 450.0 },
+    ],
+  };
+
+  const seedFiles = async (name: string) => [
+    { filename: `${name}.pdf`, buffer: await genBankPdf(reviewSeedSpec) },
+    { filename: `${name}-overlap.pdf`, buffer: await genBankPdf(overlapSeedSpec) },
+  ];
 
   test.beforeEach(async ({ context, request }) => {
     currentUser = await createUser(request, 'ui-review');
@@ -83,10 +100,7 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
       openingBalance: reviewSeedSpec.opening,
     });
 
-    const pdfBuffer = await genBankPdf(reviewSeedSpec);
-    await uploadAndIngest(api, account.id, [
-      { filename: 'review-ui-stmt.pdf', buffer: pdfBuffer },
-    ]);
+    await uploadAndIngest(api, account.id, await seedFiles('review-ui-stmt'));
 
     await page.goto('/transactions/review');
 
@@ -170,10 +184,7 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
       openingBalance: reviewSeedSpec.opening,
     });
 
-    const pdfBuffer = await genBankPdf(reviewSeedSpec);
-    await uploadAndIngest(api, account.id, [
-      { filename: 'review-mobile-stmt.pdf', buffer: pdfBuffer },
-    ]);
+    await uploadAndIngest(api, account.id, await seedFiles('review-mobile-stmt'));
 
     await page.goto('/transactions/review');
 
@@ -208,10 +219,7 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
       openingBalance: reviewSeedSpec.opening,
     });
 
-    const pdfBuffer = await genBankPdf(reviewSeedSpec);
-    await uploadAndIngest(api, account.id, [
-      { filename: 'review-swipe-stmt.pdf', buffer: pdfBuffer },
-    ]);
+    await uploadAndIngest(api, account.id, await seedFiles('review-swipe-stmt'));
 
     await page.goto('/transactions/review');
     await expect(

@@ -22,6 +22,8 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     await setLlmMode(api, 'SCHEMA_DEFAULT');
   });
 
+  // Rows of one statement are never compared with each other, so the duplicates come from an
+  // overlapping statement that repeats the Blue Tokai and Amazon rows (same date, same narration).
   const reviewBankSpec: BankSpec = {
     bank: 'HDFC Bank',
     accountLast10: '9988776655',
@@ -29,18 +31,31 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     periodEnd: '2026-04-30',
     opening: 50000.0,
     rows: [
-      // Duplicate pair 1 (also gets CATEGORY_UNVERIFIED via LLM categorization) -> TWO REASONS
-      { date: '2026-04-05', description: 'BLUE TOKAI COFFEE ROASTERS', debit: 650.0 },
+      // Repeated in the overlapping statement (also gets CATEGORY_UNVERIFIED via LLM categorization) -> TWO REASONS
       { date: '2026-04-05', description: 'BLUE TOKAI COFFEE ROASTERS', debit: 650.0 },
 
       // Single row (gets CATEGORY_UNVERIFIED via LLM categorization) -> ONE REASON
       { date: '2026-04-12', description: 'UBER TRIP MUMBAI AIRPORT', debit: 1250.0 },
 
-      // Duplicate pair 2 -> TWO REASONS
-      { date: '2026-04-20', description: 'AMAZON PAY INDIA PURCHASE', debit: 3499.0 },
+      // Repeated in the overlapping statement -> TWO REASONS
       { date: '2026-04-20', description: 'AMAZON PAY INDIA PURCHASE', debit: 3499.0 },
     ],
   };
+
+  const overlapBankSpec: BankSpec = {
+    ...reviewBankSpec,
+    periodStart: '2026-04-05',
+    periodEnd: '2026-05-04',
+    rows: [
+      { date: '2026-04-05', description: 'BLUE TOKAI COFFEE ROASTERS', debit: 650.0 },
+      { date: '2026-04-20', description: 'AMAZON PAY INDIA PURCHASE', debit: 3499.0 },
+    ],
+  };
+
+  const reviewFiles = async (name: string) => [
+    { filename: `${name}.pdf`, buffer: await genBankPdf(reviewBankSpec) },
+    { filename: `${name}-overlap.pdf`, buffer: await genBankPdf(overlapBankSpec) },
+  ];
 
   test('Ingest-produced review reasons: DUPLICATE_SUSPECT and CATEGORY_UNVERIFIED populated with reviewType=NEEDS_REVIEW', async ({
     api,
@@ -48,13 +63,9 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     const account = await createBankAccount(api, {
       name: 'Ingest Review Account',
     });
-    const pdf = await genBankPdf(reviewBankSpec);
-
-    const { job, result } = await uploadAndIngest(api, account.id, [
-      { filename: 'review-stmt.pdf', buffer: pdf },
-    ]);
+    const { job, result } = await uploadAndIngest(api, account.id, await reviewFiles('review-stmt'));
     expect(job.status).toBe('SUCCEEDED');
-    expect(result.filesProcessed).toBe(1);
+    expect(result.filesProcessed).toBe(2);
     expect(result.totalCreated).toBe(5);
     expect(result.totalDuplicatesFound).toBe(4);
 
@@ -95,11 +106,7 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     const account = await createBankAccount(api, {
       name: 'Batch Review Account',
     });
-    const pdf = await genBankPdf(reviewBankSpec);
-
-    await uploadAndIngest(api, account.id, [
-      { filename: 'batch-review-stmt.pdf', buffer: pdf },
-    ]);
+    await uploadAndIngest(api, account.id, await reviewFiles('batch-review-stmt'));
 
     const txns = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },
@@ -184,11 +191,7 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     const account = await createBankAccount(api, {
       name: 'Search Filter Account',
     });
-    const pdf = await genBankPdf(reviewBankSpec);
-
-    await uploadAndIngest(api, account.id, [
-      { filename: 'search-stmt.pdf', buffer: pdf },
-    ]);
+    await uploadAndIngest(api, account.id, await reviewFiles('search-stmt'));
 
     // 1. Search with reviewType = NEEDS_REVIEW -> all 5 rows returned
     const needsReviewRows = await searchAll(api, [
@@ -242,11 +245,7 @@ test.describe('Transaction Review & Ingested Review Reasons API', () => {
     const account = await createBankAccount(api, {
       name: 'Merge Review Account',
     });
-    const pdf = await genBankPdf(reviewBankSpec);
-
-    await uploadAndIngest(api, account.id, [
-      { filename: 'merge-stmt.pdf', buffer: pdf },
-    ]);
+    await uploadAndIngest(api, account.id, await reviewFiles('merge-stmt'));
 
     const txns = await searchAll(api, [
       { field: 'accountId', operator: 'is', value: account.id },

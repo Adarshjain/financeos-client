@@ -31,27 +31,43 @@ test.describe('Inbox API: review summary subtitle (@api)', () => {
     opening: 50000.0,
     rows: [
       { date: '2026-04-05', description: 'BLUE TOKAI COFFEE ROASTERS', debit: 650.0 },
-      { date: '2026-04-05', description: 'BLUE TOKAI COFFEE ROASTERS', debit: 650.0 },
       { date: '2026-04-12', description: 'UBER TRIP MUMBAI AIRPORT', debit: 1250.0 },
+    ],
+  };
+
+  // Rows of one statement are never compared, so an overlapping statement repeats the Blue Tokai row
+  // to make both copies DUPLICATE_SUSPECT. The parser needs two rows to place the amount column, so
+  // it also carries a Netflix row, reviewed away first below.
+  const overlap: BankSpec = {
+    ...spec,
+    periodStart: '2026-04-05',
+    periodEnd: '2026-05-04',
+    rows: [
+      { date: '2026-04-05', description: 'BLUE TOKAI COFFEE ROASTERS', debit: 650.0 },
+      { date: '2026-04-25', description: 'NETFLIX SUBSCRIPTION', debit: 649.0 },
     ],
   };
 
   test('the subtitle splits category-flagged rows from other review reasons and follows the queue as it drains', async ({ request }) => {
     const { api } = await newUser(request, 'inbox-review-subtitle');
     const account = await createBankAccount(api, { name: 'Subtitle Account' });
-    await uploadAndIngest(api, account.id, [{ filename: 'subtitle.pdf', buffer: await genBankPdf(spec) }]);
+    await uploadAndIngest(api, account.id, [
+      { filename: 'subtitle.pdf', buffer: await genBankPdf(spec) },
+      { filename: 'subtitle-overlap.pdf', buffer: await genBankPdf(overlap) },
+    ]);
 
     const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: account.id }]);
     const tokai = txns.filter((t) => (t.sourcedDescription || t.description || '').includes('BLUE TOKAI'));
     const uber = txns.find((t) => (t.sourcedDescription || t.description || '').includes('UBER'))!;
+    const netflix = txns.find((t) => (t.sourcedDescription || t.description || '').includes('NETFLIX'))!;
     expect(tokai).toHaveLength(2);
     expect(tokai[0].reviewReasons).toEqual(expect.arrayContaining(['DUPLICATE_SUSPECT', 'CATEGORY_UNVERIFIED']));
     expect(uber.reviewReasons).toContain('CATEGORY_UNVERIFIED');
 
     // Every waiting row is category-flagged: no "other" tail.
     const full = inboxRow(await getInbox(api), 'review')!;
-    expect(full.count).toBe(3);
-    expect(full.subtitle).toBe('3 flagged for category');
+    expect(full.count).toBe(4);
+    expect(full.subtitle).toBe('4 flagged for category');
 
     const review = async (ids: string[], reason: string) => {
       const res = await api.POST('/api/v1/transactions/batch-review', {
@@ -60,6 +76,11 @@ test.describe('Inbox API: review summary subtitle (@api)', () => {
       expectStatus(res, 200);
       expect(res.data!.succeededIds).toEqual(ids);
     };
+
+    await review([netflix.id], 'CATEGORY_UNVERIFIED');
+    const three = inboxRow(await getInbox(api), 'review')!;
+    expect(three.count).toBe(3);
+    expect(three.subtitle).toBe('3 flagged for category');
 
     // tokai[0] fully reviewed (leaves the queue); tokai[1] keeps only DUPLICATE_SUSPECT; uber keeps CATEGORY_UNVERIFIED.
     await review([tokai[0].id], 'DUPLICATE_SUSPECT');
