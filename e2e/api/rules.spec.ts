@@ -3,7 +3,7 @@ import { createBankAccount } from '../fixtures/seed/accounts';
 import { createCategory, createRule, RuleResponse } from '../fixtures/seed/categories';
 import { createTransaction } from '../fixtures/seed/transactions';
 import { expectForeign, secondUser } from '../fixtures/tenancy';
-import { expect, test } from '../fixtures/test';
+import { expect, freshUser, test } from '../fixtures/test';
 
 const UNKNOWN_UUID = '00000000-0000-0000-0000-000000000000';
 
@@ -66,8 +66,11 @@ test.describe('Rules API', () => {
   });
 
   test('sourced-only matching in preview-matches: manual transactions do not match', async ({
-    api,
+    request,
   }) => {
+    // preview-matches searches all of the user's transactions and the last assertion expects none,
+    // so this needs a user no other spec in the worker has ingested SWIGGY rows for.
+    const { api } = await freshUser(request, 'rules-preview');
     const account = await createBankAccount(api, { name: 'Rule Preview Account' });
 
     // Create a manual transaction whose description contains 'SWIGGY'
