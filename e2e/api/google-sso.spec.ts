@@ -35,7 +35,8 @@ test.describe('Google SSO API', () => {
     expect(scope.split(' ')).toEqual(
       expect.arrayContaining(['openid', 'email', 'profile', 'https://www.googleapis.com/auth/gmail.readonly'])
     );
-    expect(url.searchParams.get('state')).toMatch(/^[A-Za-z0-9]{8}\.[0-9a-f-]{36}$/);
+    // flowId.expiresAt.nonce.signature — signed by the server, checked on the callback.
+    expect(url.searchParams.get('state')).toMatch(/^[0-9a-f]{8}\.\d+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
     expect(url.searchParams.get('access_type')).toBe('offline');
     expect(url.searchParams.get('prompt')).toBe('consent');
   });
@@ -91,14 +92,24 @@ test.describe('Google SSO API', () => {
     expectStatus(login, 200);
   });
 
-  test('FINDING: the state parameter is not validated on the callback', async () => {
+  test('the callback refuses a state the server never issued, and a Gmail connect state, before exchanging the code', async ({ request }) => {
     const identity = await registerIdentity();
     identities.push(identity);
+    const signedIn = await createUser(request, 'sso-state');
+    const gmailState = new URL(
+      (await makeApi(signedIn.cookie).GET('/api/v1/gmail/oauth/start')).data!.authorizationUrl
+    ).searchParams.get('state')!;
 
-    // A state the server never issued is accepted. Documented as a server finding (CSRF hardening);
-    // the assertion pins today's behaviour so a fix shows up as a deliberate test change.
-    const res = await ssoCallback({ code: identity.codes[0], state: 'never-issued.by-this-server' });
-    expect(res.status).toBe(200);
+    for (const state of ['abcd1234.never-issued-by-this-server', gmailState]) {
+      const res = await ssoCallback({ code: identity.codes[0], state });
+      expect(res.status, `state "${state}"`).toBe(400);
+      expect(res.error?.message).toBe('Google sign-in expired or was not started here. Please try again.');
+      expect(res.cookie).toBeUndefined();
+    }
+
+    // The code was never spent: the same code still signs in with a state from a real start.
+    const res = await ssoCallback({ code: identity.codes[0] });
+    expect(res.status, JSON.stringify(res.error)).toBe(200);
     expect(res.user?.email).toBe(identity.email);
   });
 

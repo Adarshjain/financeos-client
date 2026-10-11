@@ -1,7 +1,6 @@
 /**
  * Gmail / Google SSO seed helpers. Google itself is WireMock — see `../google-stubs.ts`.
  */
-import { randomUUID } from 'node:crypto';
 
 import type { components } from '../../../src/lib/api/schema.d.ts';
 import type { ApiClient, JobResponse } from '../api';
@@ -58,9 +57,19 @@ export function isoDaysAgo(n: number): string {
 // Google SSO (API level)
 // ---------------------------------------------------------------------------
 
-export function ssoState(): string {
-  const alnum = Math.random().toString(36).slice(2, 10).padEnd(8, 'x');
-  return `${alnum}.${randomUUID()}`;
+/** The signed state the server issues when sign-in starts (the callback only accepts one of these). */
+export async function issuedSsoState(): Promise<string> {
+  const res = await makeApi().GET('/api/v1/auth/google/start');
+  expectStatus(res, 200);
+  return stateOf(res.data!.authorizationUrl);
+}
+
+function stateOf(authorizationUrl: string): string {
+  const state = new URL(authorizationUrl).searchParams.get('state');
+  if (!state) {
+    throw new Error(`No state in ${authorizationUrl}`);
+  }
+  return state;
 }
 
 export interface SsoCallbackResult {
@@ -70,13 +79,16 @@ export interface SsoCallbackResult {
   error?: { code?: string; message?: string };
 }
 
-/** Plays Google's redirect into the server callback (what the client page's server action does). */
+/**
+ * Plays Google's redirect into the server callback (what the client page's server action does). The
+ * state defaults to a freshly issued one, as after a real start.
+ */
 export async function ssoCallback(
   params: { code?: string; state?: string; error?: string }
 ): Promise<SsoCallbackResult> {
   const url = new URL(`${E2E_API_URL}/api/v1/auth/google/callback`);
   if (params.code !== undefined) url.searchParams.set('code', params.code);
-  url.searchParams.set('state', params.state ?? ssoState());
+  url.searchParams.set('state', params.state ?? (await issuedSsoState()));
   if (params.error !== undefined) url.searchParams.set('error', params.error);
   const res = await fetch(url, { redirect: 'manual' });
   const text = await res.text();
@@ -110,13 +122,24 @@ export async function ssoLogin(
 // Gmail connect (API level)
 // ---------------------------------------------------------------------------
 
-/** Plays Google's redirect into the server's Gmail callback; returns the Location it 302s to. */
+/** The signed state the server issues to this user when Gmail connect starts. */
+export async function issuedGmailState(api: ApiClient): Promise<string> {
+  const res = await api.GET('/api/v1/gmail/oauth/start');
+  expectStatus(res, 200);
+  return stateOf(res.data!.authorizationUrl);
+}
+
+/**
+ * Plays Google's redirect into the server's Gmail callback; returns the Location it 302s to. The state
+ * defaults to one freshly issued to this user, as after a real start.
+ */
 export async function gmailCallback(
   api: ApiClient,
   params: { code?: string; state?: string; error?: string }
 ): Promise<string> {
+  const state = params.state ?? (await issuedGmailState(api));
   const res = await api.GET('/api/v1/gmail/oauth/callback', {
-    params: { query: { ...params, state: params.state ?? randomUUID() } },
+    params: { query: { ...params, state } },
     redirect: 'manual',
   });
   expectStatus(res, 302);

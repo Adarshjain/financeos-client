@@ -83,3 +83,31 @@ export async function clearSessionCookie(): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.delete('FINANCEOS_SESSION');
 }
+
+const SSO_STATE_COOKIE = 'FINANCEOS_SSO_STATE';
+
+/**
+ * Remembers the `state` of a Google sign-in this browser started, so the callback can prove the
+ * redirect it receives belongs to that sign-in and not to a link someone else started (login CSRF).
+ * Lives as long as the server-issued state (10 minutes).
+ */
+export async function rememberSsoState(authorizationUrl: string): Promise<void> {
+  const state = new URL(authorizationUrl).searchParams.get('state');
+  if (!state) return;
+  const cookieStore = await cookies();
+  cookieStore.set(SSO_STATE_COOKIE, state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 60 * 10,
+  });
+}
+
+/** The remembered sign-in state, removed so it can be used once. */
+export async function takeSsoState(): Promise<string | undefined> {
+  const cookieStore = await cookies();
+  const state = cookieStore.get(SSO_STATE_COOKIE)?.value;
+  cookieStore.delete(SSO_STATE_COOKIE);
+  return state;
+}
