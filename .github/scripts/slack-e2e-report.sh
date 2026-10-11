@@ -2,8 +2,9 @@
 # Posts the nightly E2E result to Slack: pass/fail, counts, and the failing tests (from Playwright's
 # JUnit report) with a link to the run.
 # Usage: slack-e2e-report.sh <junit.xml>
-# Requires SLACK_WEBHOOK_URL. Optional: E2E_OUTCOME (job.status: success|failure|cancelled),
-# SERVER_SHA (the financeos-server commit under test).
+# Requires SLACK_WEBHOOK_URL. Optional: E2E_OUTCOME (success|failure|cancelled), CLIENT_SHA and
+# SERVER_SHA (the commits under test; client defaults to the checkout), E2E_NOTES (newline-separated
+# reasons shown under a failure, e.g. a failed coverage gate).
 set -euo pipefail
 
 junit="${1:?usage: slack-e2e-report.sh <junit.xml>}"
@@ -59,11 +60,17 @@ case "$outcome" in
 esac
 
 run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-client_sha="$(git rev-parse --short=7 HEAD 2>/dev/null || echo "${GITHUB_SHA:0:7}")"
+client_sha="${CLIENT_SHA:-$(git rev-parse HEAD 2>/dev/null || echo "$GITHUB_SHA")}"
+client_sha="${client_sha:0:7}"
 server_sha="${SERVER_SHA:0:7}"
 
 text="$emoji *$title* — $summary"
 text="$text"$'\n'"client \`$client_sha\` · server \`${server_sha:-?}\` · <$run_url|view run>"
+if [ "$outcome" != "success" ] && [ "$outcome" != "cancelled" ] && [ -n "${E2E_NOTES:-}" ]; then
+  while IFS= read -r note; do
+    [ -n "$note" ] && text="$text"$'\n'":warning: $note"
+  done <<< "$E2E_NOTES"
+fi
 if [ -n "$details" ]; then
   text="$text"$'\n'"$details"
 fi
