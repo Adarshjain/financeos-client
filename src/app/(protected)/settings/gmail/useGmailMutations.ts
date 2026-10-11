@@ -37,6 +37,22 @@ export function useGmailMutations() {
     onSuccess: invalidateAttention,
   });
 
+  // Archiving also changes the Inbox's Gmail attention count.
+  const invalidateAttentionAndInbox = () =>
+    Promise.all([invalidateAttention(), qc.invalidateQueries({ queryKey: keys.inbox.all })]);
+
+  const archiveAttentionMutation = useMutation({
+    mutationFn: (ledgerId: string) =>
+      api.POST('/api/v1/gmail/attention/{ledgerId}/archive', { params: { path: { ledgerId } } }),
+    onSuccess: invalidateAttentionAndInbox,
+  });
+
+  const unarchiveAttentionMutation = useMutation({
+    mutationFn: (ledgerId: string) =>
+      api.POST('/api/v1/gmail/attention/{ledgerId}/unarchive', { params: { path: { ledgerId } } }),
+    onSuccess: invalidateAttentionAndInbox,
+  });
+
   const assignAttentionMutation = useMutation({
     mutationFn: ({ ledgerId, body }: { ledgerId: string; body: AssignAttentionRequest }) =>
       api
@@ -66,6 +82,8 @@ export function useGmailMutations() {
     syncMutation,
     disconnectMutation,
     retryAttentionMutation,
+    archiveAttentionMutation,
+    unarchiveAttentionMutation,
     assignAttentionMutation,
     createSenderMutation,
     updateSenderMutation,

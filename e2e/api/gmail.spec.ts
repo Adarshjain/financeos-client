@@ -18,6 +18,7 @@ import {
 import { createBankAccount } from '../fixtures/seed/accounts';
 import {
   alertMail,
+  archivedAttentionItems,
   attentionItems,
   BANK_SENDER,
   connectGmail,
@@ -37,6 +38,7 @@ import {
   statementMail,
   waitForGmailJobsIdle,
 } from '../fixtures/seed/gmail';
+import { getInbox, inboxRow } from '../fixtures/seed/nav';
 import { getAccountStatements } from '../fixtures/seed/statements';
 import { searchAll } from '../fixtures/seed/transactions';
 import { expectForeign, secondUser } from '../fixtures/tenancy';
@@ -304,6 +306,56 @@ test.describe('Gmail sync journey', () => {
     // 15-minute overlap behind the previous listing, allowing for the run so far.
     expect(afterEpoch).toBeGreaterThan(nowEpoch - 15 * 60 - 10 * 60);
     expect(afterEpoch).toBeLessThan(nowEpoch);
+  });
+
+  test('archive hides a parked item from the list and the Inbox; unarchive restores it; a retry drops the archive', async ({ request }) => {
+    test.slow();
+    const archive = (ledgerId: string, client = api) =>
+      client.POST('/api/v1/gmail/attention/{ledgerId}/archive', { params: { path: { ledgerId } } });
+    const unarchive = (ledgerId: string, client = api) =>
+      client.POST('/api/v1/gmail/attention/{ledgerId}/unarchive', { params: { path: { ledgerId } } });
+    const inboxCount = async () => inboxRow(await getInbox(api), 'gmail-attention')?.count ?? 0;
+
+    const [active] = await attentionItems(api);
+    expect(active).toMatchObject({ id: unresolvedLedgerId, archivedAt: null, connectionEmail: identity.email, accountId: null, accountName: null });
+    expect(await inboxCount()).toBe(1);
+
+    expectStatus(await archive(unresolvedLedgerId), 204);
+    expect(await attentionItems(api)).toHaveLength(0);
+    const [archived] = await archivedAttentionItems(api);
+    expect(archived.id).toBe(unresolvedLedgerId);
+    expect(archived.archivedAt).toBeTruthy();
+    expect(await inboxCount()).toBe(0);
+
+    // Archiving twice keeps the first timestamp.
+    expectStatus(await archive(unresolvedLedgerId), 204);
+    expect((await archivedAttentionItems(api))[0].archivedAt).toBe(archived.archivedAt);
+
+    expectStatus(await archive(randomUUID()), 404);
+    expectStatus(await unarchive(randomUUID()), 404);
+    const { api: apiB } = await secondUser(request, 'gmail-archive-b');
+    expect([400, 404]).toContain((await unarchive(unresolvedLedgerId, apiB)).response.status);
+    expect([400, 404]).toContain((await archive(unresolvedLedgerId, apiB)).response.status);
+    expect(await archivedAttentionItems(apiB)).toHaveLength(0);
+
+    expectStatus(await unarchive(unresolvedLedgerId), 204);
+    expect((await attentionItems(api)).map((i) => i.id)).toEqual([unresolvedLedgerId]);
+    expect(await archivedAttentionItems(api)).toHaveLength(0);
+    expect(await inboxCount()).toBe(1);
+
+    // A retry of an archived item that parks again shows it again.
+    expectStatus(await archive(unresolvedLedgerId), 204);
+    await scriptExtractions(api, [
+      extractionFor(uber, { json: extractedTxn({ amount: 640, date: isoDaysAgo(3), last4: '9999', merchant: 'UBER' }) }),
+    ]);
+    const retry = await api.POST('/api/v1/gmail/attention/{ledgerId}/retry', {
+      params: { path: { ledgerId: unresolvedLedgerId } },
+    });
+    expectStatus(retry, 202);
+    expect((await waitForJob(api, retry.data!.jobId)).status).toBe('SUCCEEDED');
+    const [reparked] = await attentionItems(api);
+    expect(reparked).toMatchObject({ id: unresolvedLedgerId, status: 'UNRESOLVED_ACCOUNT', archivedAt: null });
+    expect(await archivedAttentionItems(api)).toHaveLength(0);
   });
 
   test('parked alert: retry surfaces not-opted-in, opting the account in re-activates and imports it', async () => {

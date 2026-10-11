@@ -1,3 +1,5 @@
+import type { Page } from '@playwright/test';
+
 import { makeApi } from '../fixtures/api';
 import type { CreatedUser } from '../fixtures/auth';
 import { createUser } from '../fixtures/auth';
@@ -26,6 +28,13 @@ import { expectToast, openAccountEditor } from '../fixtures/ui';
  * the server callback, sender allowlist dialog, manual sync, the Needs Attention card with Retry,
  * disconnect, and the account form's Gmail cleanup confirmation. One serial journey per user.
  */
+/** Expands the Needs Attention card, which is collapsed by default. */
+async function openAttention(page: Page) {
+  const header = page.getByRole('button', { name: /^Needs Attention/ });
+  if ((await header.getAttribute('aria-expanded')) !== 'true') await header.click();
+  await expect(header).toHaveAttribute('aria-expanded', 'true');
+}
+
 test.describe('Gmail settings UI (@ui)', () => {
   test.describe.configure({ mode: 'serial' });
 
@@ -119,12 +128,21 @@ test.describe('Gmail settings UI (@ui)', () => {
 
     await page.reload();
     await expect(page.getByText('Needs Attention (2)')).toBeVisible();
-    await expect(page.getByText('Unresolved', { exact: true })).toHaveCount(2);
-    await expect(page.getByText(/No account matching ••9999/)).toBeVisible();
-    await expect(page.getByText(/No account matching ••7741/)).toBeVisible();
+    // The card is collapsed by default.
+    await expect(page.getByTestId('attention-item')).toHaveCount(0);
+    await openAttention(page);
+    await expect(page.getByText('No matching account', { exact: true })).toHaveCount(2);
+    await expect(page.getByText(/account or card ending ••9999/)).toBeVisible();
+    await expect(page.getByText(/account or card ending ••7741/)).toBeVisible();
+
+    // Details show the raw ledger fields behind the plain-words summary.
+    const uberRow = page.getByTestId('attention-item').filter({ hasText: /ending ••9999/ });
+    await uberRow.getByRole('button', { name: 'Details' }).click();
+    await expect(uberRow.getByText(BANK_SENDER).first()).toBeVisible();
+    await expect(uberRow.getByRole('link', { name: 'Open in Gmail' })).toHaveAttribute('href', /^https:\/\/mail\.google\.com\/mail\/\?authuser=/);
 
     // Assign & Remember: the customer-ID alert is mapped to the bank account and re-processed.
-    const customerIdRow = page.locator('div').filter({ hasText: /No account matching ••7741/ }).filter({ has: page.getByRole('button', { name: 'Assign' }) }).last();
+    const customerIdRow = page.getByTestId('attention-item').filter({ hasText: /ending ••7741/ });
     await customerIdRow.getByRole('button', { name: 'Assign' }).click();
     await expect(page.getByRole('heading', { name: 'Assign Account Identifier' })).toBeVisible();
     await page.locator('#target-account').click();
@@ -134,7 +152,8 @@ test.describe('Gmail settings UI (@ui)', () => {
     await waitForGmailJobsIdle(api);
     await page.reload();
     await expect(page.getByText('Needs Attention (1)')).toBeVisible();
-    await expect(page.getByText(/No account matching ••7741/)).not.toBeVisible();
+    await openAttention(page);
+    await expect(page.getByText(/ending ••7741/)).not.toBeVisible();
     const aliased = await searchAll(api, [{ field: 'accountId', operator: 'is', value: bankAccountId }]);
     expect(aliased.map((t) => t.sourcedDescription)).toEqual(['CUSTOMER ID ALERT']);
 
@@ -151,9 +170,23 @@ test.describe('Gmail settings UI (@ui)', () => {
     await waitForGmailJobsIdle(api);
     await page.reload();
     await expect(page.getByText('Needs Attention (1)')).toBeVisible();
-    await expect(page.getByText('Not Opted In', { exact: true })).toBeVisible();
-    await expect(page.getByText(/Waiting for account ending ••9999/)).toBeVisible();
+    await openAttention(page);
+    await expect(page.getByText('Gmail import off', { exact: true })).toBeVisible();
+    await expect(page.getByText('Matched UI Late Account, but Gmail import is not turned on for it.')).toBeVisible();
     expect((await attentionItems(api))[0].status).toBe('ACCOUNT_NOT_OPTED_IN');
+
+    // Archive tucks the item away behind its own collapsed section; Unarchive brings it back.
+    await page.getByRole('button', { name: 'Archive', exact: true }).click();
+    await expectToast(page, 'Item archived');
+    await expect(page.getByText('Needs Attention (0)')).toBeVisible();
+    await expect(page.getByText('Nothing needs attention right now.')).toBeVisible();
+    await page.getByRole('button', { name: 'Archived (1)' }).click();
+    await expect(page.getByText('Matched UI Late Account, but Gmail import is not turned on for it.')).toBeVisible();
+    await page.getByRole('button', { name: 'Unarchive' }).click();
+    await expectToast(page, 'Item moved back to Needs Attention');
+    await expect(page.getByText('Needs Attention (1)')).toBeVisible();
+    await expect(page.getByRole('button', { name: /^Archived/ })).not.toBeVisible();
+    expect((await attentionItems(api)).map((i) => i.archivedAt)).toEqual([null]);
   });
 
   test('opting the account in clears Needs Attention; the sender can be edited to Disabled', async ({ page }) => {

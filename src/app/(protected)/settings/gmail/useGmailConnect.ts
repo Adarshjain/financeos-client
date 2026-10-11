@@ -27,12 +27,33 @@ import { useGmailQueries } from './useGmailQueries';
 export function useGmailConnect() {
   const qc = useQueryClient();
   const [attentionPage, setAttentionPage] = useState(0);
-  const { connections, senders, attentionData, loading: readsLoading } = useGmailQueries({ attentionPage });
+  const [archivedPage, setArchivedPage] = useState(0);
+  const { connections, senders, attentionData, archivedData, loading: readsLoading } = useGmailQueries({
+    attentionPage,
+    archivedPage,
+  });
+
+  // Archiving, unarchiving or retrying the last row of a later page leaves that page empty; step
+  // back to the new last page instead of showing an empty list.
+  const attentionPages = attentionData?.totalPages;
+  const archivedPages = archivedData?.totalPages;
+  React.useEffect(() => {
+    if (attentionPages != null && attentionPage > 0 && attentionPage >= attentionPages) {
+      setAttentionPage(Math.max(0, attentionPages - 1));
+    }
+  }, [attentionPage, attentionPages]);
+  React.useEffect(() => {
+    if (archivedPages != null && archivedPage > 0 && archivedPage >= archivedPages) {
+      setArchivedPage(Math.max(0, archivedPages - 1));
+    }
+  }, [archivedPage, archivedPages]);
   const {
     startOAuthMutation,
     syncMutation,
     disconnectMutation,
     retryAttentionMutation,
+    archiveAttentionMutation,
+    unarchiveAttentionMutation,
     createSenderMutation,
     updateSenderMutation,
     deleteSenderMutation,
@@ -125,6 +146,24 @@ export function useGmailConnect() {
     }
   };
 
+  const handleArchiveAttentionItem = async (ledgerId: string) => {
+    try {
+      await archiveAttentionMutation.mutateAsync(ledgerId);
+      toast.success('Item archived');
+    } catch (err) {
+      toastError(err, 'Failed to archive Gmail attention item');
+    }
+  };
+
+  const handleUnarchiveAttentionItem = async (ledgerId: string) => {
+    try {
+      await unarchiveAttentionMutation.mutateAsync(ledgerId);
+      toast.success('Item moved back to Needs Attention');
+    } catch (err) {
+      toastError(err, 'Failed to unarchive Gmail attention item');
+    }
+  };
+
   const openAddSenderDialog = () => {
     setEditingSender(null);
     setSenderName('');
@@ -183,6 +222,9 @@ export function useGmailConnect() {
     attentionData,
     attentionPage,
     setAttentionPage,
+    archivedData,
+    archivedPage,
+    setArchivedPage,
     message,
     isSyncing,
     isSenderDialogOpen,
@@ -199,6 +241,8 @@ export function useGmailConnect() {
     handleDisconnect,
     handleSync,
     handleRetryAttentionItem,
+    handleArchiveAttentionItem,
+    handleUnarchiveAttentionItem,
     openAddSenderDialog,
     openEditSenderDialog,
     handleSenderSubmit,
