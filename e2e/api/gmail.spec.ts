@@ -178,7 +178,7 @@ test.describe('Gmail connect, senders and empty sync', () => {
 
     const { job, summary } = await runSync(api);
     expect(job.status).toBe('SUCCEEDED');
-    expect(summary).toEqual({
+    expect(summary).toMatchObject({
       discovered: 0,
       processed: 0,
       created: 0,
@@ -188,6 +188,11 @@ test.describe('Gmail connect, senders and empty sync', () => {
       failedRetryable: 0,
       failedPermanent: 0,
       backlogRemaining: 0,
+      listed: 0,
+      senders: [],
+      statusCounts: {},
+      messages: [],
+      messagesTruncated: 0,
     });
     expect(await messagesListCount(identity)).toBe(before);
   });
@@ -260,7 +265,7 @@ test.describe('Gmail sync journey', () => {
     test.slow();
     const { job, summary } = await runSync(api);
     expect(job.status, JSON.stringify(job)).toBe('SUCCEEDED');
-    expect(summary).toEqual({
+    expect(summary).toMatchObject({
       discovered: 5,
       processed: 5,
       created: 1,
@@ -270,7 +275,19 @@ test.describe('Gmail sync journey', () => {
       failedRetryable: 0,
       failedPermanent: 0,
       backlogRemaining: 0,
+      listed: 5,
+      statusCounts: {
+        CREATED: 1,
+        RECONCILED: 1,
+        SKIPPED_NOT_TRANSACTION: 1,
+        SKIPPED_BEFORE_WATERMARK: 1,
+        UNRESOLVED_ACCOUNT: 1,
+      },
+      messagesTruncated: 0,
     });
+    // Every processed email is listed, problems first.
+    expect(summary.messages).toHaveLength(5);
+    expect(summary.messages[0].status).toBe('UNRESOLVED_ACCOUNT');
 
     const txns = await searchAll(api, [{ field: 'accountId', operator: 'is', value: accountId }]);
     const alert = txns.find((t) => t.source === 'gmail_transaction_alert');
