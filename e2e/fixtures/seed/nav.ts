@@ -4,7 +4,7 @@ import type { components } from '../../../src/lib/api/schema.d.ts';
 import type { ApiClient } from '../api';
 import { expectStatus } from '../api';
 import { istToday } from '../dates';
-import { genCardPdf } from '../gen/statements';
+import { genCardPdf, type Row } from '../gen/statements';
 import { createLoan } from './loans';
 import { uploadAndIngest } from './statements';
 
@@ -21,10 +21,17 @@ export function shiftDate(date: string, days: number): string {
 }
 
 /**
- * A synthetic card statement that closed three days ago with a 6000 total (4500 + 1500).
+ * A synthetic card statement that closed three days ago with a 6000 total (4500 + 1500). Its last
+ * line is dated on the close, so everything dated after the close is unbilled; pass {@code rows} for
+ * another shape (e.g. a statement that lists nothing on its closing day).
  * Returns the resulting bill row.
  */
-export async function ingestCardStatement(api: ApiClient, cardId: string, last4: string): Promise<CardBillResponse> {
+export async function ingestCardStatement(
+  api: ApiClient,
+  cardId: string,
+  last4: string,
+  rows?: Row[]
+): Promise<CardBillResponse> {
   const periodEnd = istToday(-3);
   const pdf = await genCardPdf({
     issuer: 'HDFC Bank',
@@ -36,9 +43,9 @@ export async function ingestCardStatement(api: ApiClient, cardId: string, last4:
     paymentsReceived: 0,
     financeCharges: 0,
     creditLimit: 100000,
-    rows: [
+    rows: rows ?? [
       { date: istToday(-20), description: 'AMAZON ONLINE SHOPPING', debit: 4500 },
-      { date: istToday(-10), description: 'RESTAURANT DINING', debit: 1500 },
+      { date: periodEnd, description: 'RESTAURANT DINING', debit: 1500 },
     ],
   });
   const { result } = await uploadAndIngest(api, cardId, [{ filename: `card-${last4}.pdf`, buffer: pdf }]);

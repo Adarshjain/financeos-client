@@ -328,7 +328,7 @@ test.describe('KPI underlying data: transactions (@api)', () => {
   test('a billing-cycle KPI lists this cycle and the statement before it', async ({ request }) => {
     const { api } = await newUser(request, 'vud-cycle');
     const card = await createCreditCard(api, { name: 'VUD Cycle Card', last4: '8473' });
-    // The statement closes 3 days ago with two lines: 4500 (20 days ago) and 1500 (10 days ago).
+    // The statement closes 3 days ago with two lines: 4500 (20 days ago) and 1500 (on the close).
     await ingestCardStatement(api, card.id, '8473');
     await createTransaction(api, card.id, { amount: -700, date: istToday(-1), description: 'Cycle spend' });
     const body = kpiBody('transactions', {
@@ -354,7 +354,7 @@ test.describe('KPI underlying data: transactions (@api)', () => {
     const previous = await underlyingAdHoc(api, body, { period: 'previous' });
     expect(previous).toMatchObject({ value: kpi.previousValue, rowCount: 2, range: { from: istToday(-32), to: istToday(-3) } });
     expect(tableOf(previous).rows.map((r) => [r.date, r.amount])).toEqual([
-      [istToday(-10), -1500],
+      [istToday(-3), -1500],
       [istToday(-20), -4500],
     ]);
     expect(previous.filters.map((f) => f.text)).toEqual(['is VUD Cycle Card', 'Previous billing cycle']);

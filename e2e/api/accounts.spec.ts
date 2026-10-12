@@ -1,10 +1,12 @@
 import { expectStatus } from '../fixtures/api';
+import { istToday } from '../fixtures/dates';
 import {
   createBankAccount,
   createBrokerAccount,
   createCreditCard,
   createGenericAccount,
 } from '../fixtures/seed/accounts';
+import { ingestCardStatement } from '../fixtures/seed/nav';
 import { createTransaction } from '../fixtures/seed/transactions';
 import { expectForeign, expectUnauthenticated, secondUser } from '../fixtures/tenancy';
 import { expect, freshUser,test } from '../fixtures/test';
@@ -428,6 +430,29 @@ test.describe('Accounts API (@api)', () => {
     });
     expect(getRes.response.status).toBe(200);
     expect(getRes.data?.balance).toBe(12345.67);
+  });
+
+  test('balance: a card purchase dated on the statement close is unbilled when the statement lists nothing that day', async ({
+    api,
+  }) => {
+    const card = await createCreditCard(api, { name: 'Posting-lag Card', last4: '8421' });
+    // An issuer that cuts by posting date: the lines stop the day before the close; 6000 owed.
+    await ingestCardStatement(api, card.id, '8421', [
+      { date: istToday(-20), description: 'AMAZON ONLINE SHOPPING', debit: 4500 },
+      { date: istToday(-4), description: 'RESTAURANT DINING', debit: 1500 },
+    ]);
+    await createTransaction(api, card.id, { amount: -999, date: istToday(-3), description: 'Bought on the close, posted after it' });
+    await createTransaction(api, card.id, { amount: -777, date: istToday(-4), description: 'Dated on the last billed day' });
+
+    const single = await api.GET('/api/v1/accounts/{id}', { params: { path: { id: card.id } } });
+    expectStatus(single, 200);
+    expect(single.data?.balance, 'closing balance plus the purchase on the close; the last billed day stays billed').toBe(-6999);
+    expect(single.data?.balanceAnchored).toBe(true);
+    expect(single.data?.anchorDate, 'the anchor is still the statement period end').toBe(istToday(-3));
+
+    const list = await api.GET('/api/v1/accounts');
+    expectStatus(list, 200);
+    expect(list.data!.find((a) => a.id === card.id)?.balance, 'the list computes the same balance').toBe(-6999);
   });
 
   test('identifiers: add (whitespace normalised), idempotent re-add, cross-account conflict, validation, delete', async ({ api }) => {
