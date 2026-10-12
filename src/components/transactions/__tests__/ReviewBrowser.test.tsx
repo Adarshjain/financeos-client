@@ -130,9 +130,9 @@ describe('ReviewBrowser (CD-1, CD-2a, CD-2b, CD-3)', () => {
       expect(screen.getByText('Unverified Merchant')).toBeInTheDocument();
     });
 
-    // Click Category reason segment pill
-    const categoryFilterBtn = screen.getByRole('button', { name: 'Category' });
-    fireEvent.click(categoryFilterBtn);
+    // Pick Category from the reason dropdown
+    fireEvent.click(screen.getByRole('button', { name: 'All Reasons' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Category unverified' }));
 
     await waitFor(() => {
       const calls = (api.POST as ReturnType<typeof vi.fn>).mock.calls;

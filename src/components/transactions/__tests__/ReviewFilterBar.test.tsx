@@ -47,7 +47,7 @@ describe('ReviewFilterBar (CD-1, CD-5)', () => {
     );
 
     expect(screen.getByPlaceholderText('Search by description...')).toBeInTheDocument();
-    expect(screen.getByText('All')).toBeInTheDocument();
+    expect(screen.getByText('All Reasons')).toBeInTheDocument();
     expect(screen.getByText('Up to Statement')).toBeInTheDocument();
     expect(screen.getByText('Accounts')).toBeInTheDocument();
   });
@@ -112,6 +112,7 @@ describe('ReviewFilterBar (CD-1, CD-5)', () => {
       />,
     );
 
+    fireEvent.click(screen.getByText('All Reasons'));
     fireEvent.click(screen.getByText('Unreconciled'));
     expect(onReasonFilterChange).toHaveBeenCalledWith('UNRECONCILED');
   });

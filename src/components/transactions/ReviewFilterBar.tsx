@@ -12,7 +12,7 @@ import { formatDate } from '@/lib/utils';
 
 import { REASON_OPTIONS } from './review-filter-bar/constants';
 import { ReviewAccountMultiSelect } from './review-filter-bar/ReviewAccountMultiSelect';
-import { ReviewReasonSegmentControl } from './review-filter-bar/ReviewReasonSegmentControl';
+import { ReviewReasonPopover } from './review-filter-bar/ReviewReasonPopover';
 import { ReviewSortPopover } from './review-filter-bar/ReviewSortPopover';
 
 interface ReviewFilterBarProps {
@@ -165,8 +165,8 @@ export function ReviewFilterBar({
 
       {/* Quick Filter Pills Bar */}
       <div className="flex flex-wrap items-center gap-1.5 pb-1 pt-2">
-        {/* Reason Segment Control Pill */}
-        <ReviewReasonSegmentControl
+        {/* Reason Popover Pill */}
+        <ReviewReasonPopover
           activeReasonFilter={activeReasonFilter}
           onReasonFilterChange={onReasonFilterChange}
         />
