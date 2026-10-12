@@ -14,7 +14,7 @@ import { AmountRangeFilter } from './filter-bar/AmountRangeFilter';
 import { CategoryMultiSelect } from './filter-bar/CategoryMultiSelect';
 import { DatePresetsPopover } from './filter-bar/DatePresetsPopover';
 import { MoreFiltersDropdown } from './filter-bar/MoreFiltersDropdown';
-import { TypeSegmentControl } from './filter-bar/TypeSegmentControl';
+import { TypeFilterPopover } from './filter-bar/TypeFilterPopover';
 import { useTransactionFilters } from './filter-bar/useTransactionFilters';
 
 interface TransactionFilterBarProps {
@@ -37,6 +37,7 @@ export function TransactionFilterBar({
     activeDate,
     activeAccountIds,
     selectableAccounts,
+    isAllAccountsSelected,
     activeCategories,
     isMonitoringActive,
     hasAmountFilter,
@@ -48,6 +49,7 @@ export function TransactionFilterBar({
     handleApplyCustomDate,
     handleApplySingleDate,
     handleAccountToggle,
+    handleToggleAllAccounts,
     handleCategoryToggle,
     handleApplyAmount,
     handleClearAll,
@@ -83,8 +85,8 @@ export function TransactionFilterBar({
 
       {/* Quick Filter Pills Bar */}
       <div className="flex flex-wrap items-center gap-1.5 pb-1 pt-1.5">
-        {/* Type Segment Control Pill */}
-        <TypeSegmentControl activeType={activeType} onTypeChange={handleTypeChange} />
+        {/* Type Popover Pill */}
+        <TypeFilterPopover activeType={activeType} onTypeChange={handleTypeChange} />
 
         {/* Date Presets Popover Pill */}
         <DatePresetsPopover
@@ -99,7 +101,9 @@ export function TransactionFilterBar({
           accounts={accounts}
           selectableAccounts={selectableAccounts}
           activeAccountIds={activeAccountIds}
+          isAllAccountsSelected={isAllAccountsSelected}
           onAccountToggle={handleAccountToggle}
+          onToggleAllAccounts={handleToggleAllAccounts}
         />
 
         {/* Category Multi-Select Popover Pill */}
