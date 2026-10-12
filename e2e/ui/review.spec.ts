@@ -256,6 +256,41 @@ test.describe('Review & Transaction Links UI (@ui)', () => {
     await expect(page.getByText('SWIGGY ORDER BANGALORE')).toHaveCount(1);
   });
 
+  test('/transactions/review: reason dropdown filters the list and All Reasons restores it @mobile', async ({
+    page,
+  }) => {
+    const api = makeApi(currentUser.cookie);
+    const account = await createBankAccount(api, {
+      name: 'Review Reason Filter Account',
+      openingBalance: reviewSeedSpec.opening,
+    });
+    await uploadAndIngest(api, account.id, await seedFiles('review-ui-reason'));
+
+    // The pill opens the menu (aria-haspopup); the options render in a portal and linger while it animates closed.
+    const reasonPill = (name: string) =>
+      page.getByRole('button', { name, exact: true }).and(page.locator('[aria-haspopup="dialog"]'));
+    const pickReason = (name: string) => page.getByRole('dialog').getByRole('button', { name, exact: true }).click();
+
+    await page.goto('/transactions/review');
+    await expect(page.getByText('UBER TRIP AIRPORT')).toHaveCount(1);
+    await expect(page.getByText('SWIGGY ORDER BANGALORE')).toHaveCount(2);
+
+    // Only the Swiggy pair is a possible duplicate; Uber is flagged for its category alone.
+    await reasonPill('All Reasons').click();
+    await pickReason('Possible duplicate');
+
+    await expect(reasonPill('Possible duplicate')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Remove filter: Reason: Possible duplicate' })).toBeVisible();
+    await expect(page.getByText('UBER TRIP AIRPORT')).toHaveCount(0);
+    await expect(page.getByText('SWIGGY ORDER BANGALORE')).toHaveCount(2);
+
+    await reasonPill('Possible duplicate').click();
+    await pickReason('All Reasons');
+
+    await expect(reasonPill('All Reasons')).toBeVisible();
+    await expect(page.getByText('UBER TRIP AIRPORT')).toHaveCount(1);
+  });
+
   test('/transactions: link dialog create and unlink flow', async ({
     page,
   }) => {
