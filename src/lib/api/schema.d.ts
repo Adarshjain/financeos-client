@@ -3181,7 +3181,7 @@ export interface components {
             items: components["schemas"]["BatchLoanPaymentItem"][];
         };
         BatchReviewRequest: {
-            reviewReasons?: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT")[];
+            reviewReasons?: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
             /** @enum {string} */
             reviewType: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA";
             transactionIds: string[];
@@ -5063,7 +5063,7 @@ export interface components {
         MergeTransactionsResponse: {
             /** Format: uuid */
             keptId: string;
-            remainingReasons: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT")[];
+            remainingReasons: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
             /** @enum {string|null} */
             reviewType?: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA" | null;
         };
@@ -6508,7 +6508,7 @@ export interface components {
             mcc?: string | null;
             monitoringReason?: string | null;
             obligationRefs: components["schemas"]["ObligationRef"][];
-            reviewReasons: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT")[];
+            reviewReasons: ("UNRECONCILED" | "CATEGORY_UNVERIFIED" | "DUPLICATE_SUSPECT" | "DATE_CORRECTED")[];
             /** @enum {string|null} */
             reviewType?: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA" | null;
             /** Format: date-time */
