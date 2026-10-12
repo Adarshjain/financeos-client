@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Account, CreditCard, CreditLimitPool } from '@/lib/account.types';
-import { distinctLimitPools, sumCreditLimits } from '@/lib/creditLimitPools';
+import { distinctLimitPools, sumCreditLimits, sumCreditUsage } from '@/lib/creditLimitPools';
 import { AccountType } from '@/lib/types';
 
 const pool = (id: string, creditLimit: number): CreditLimitPool => ({
@@ -68,5 +68,47 @@ describe('sumCreditLimits', () => {
 
   it('is zero for no cards', () => {
     expect(sumCreditLimits([])).toBe(0);
+  });
+});
+
+describe('sumCreditUsage', () => {
+  const owing = (p: CreditLimitPool, owed: number): CreditLimitPool => ({ ...p, owed });
+
+  it("counts a shared limit's owed once, plus each unpooled card's negative balance", () => {
+    const hdfc = owing(pool('hdfc', 500000), 120000);
+    const usage = sumCreditUsage([
+      card('a', { limitPool: hdfc, balance: -100000 }),
+      card('b', { limitPool: hdfc, balance: -20000 }),
+      card('solo', { creditLimit: 100000, effectiveCreditLimit: 100000, balance: -30000 }),
+    ]);
+
+    expect(usage).toEqual({ limit: 600000, owed: 150000, utilizationPct: 25 });
+  });
+
+  it('a card in credit or with no balance owes nothing', () => {
+    expect(
+      sumCreditUsage([
+        card('credit', { creditLimit: 100000, balance: 5000 }),
+        card('unknown', { creditLimit: 100000, balance: null }),
+      ])
+    ).toEqual({ limit: 200000, owed: 0, utilizationPct: 0 });
+  });
+
+  it("a card with no limit adds to owed but not to the utilisation", () => {
+    expect(
+      sumCreditUsage([
+        card('limited', { creditLimit: 100000, balance: -10000 }),
+        card('no-limit', { creditLimit: null, effectiveCreditLimit: null, balance: -40000 }),
+      ])
+    ).toEqual({ limit: 100000, owed: 50000, utilizationPct: 10 });
+  });
+
+  it('has no utilisation when no card has a limit', () => {
+    expect(sumCreditUsage([card('none', { creditLimit: null, balance: -1000 })])).toEqual({
+      limit: 0,
+      owed: 1000,
+      utilizationPct: null,
+    });
+    expect(sumCreditUsage([])).toEqual({ limit: 0, owed: 0, utilizationPct: null });
   });
 });
