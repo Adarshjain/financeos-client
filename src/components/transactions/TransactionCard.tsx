@@ -39,9 +39,9 @@ export const TransactionCard = ({
   const trigger = (
         <div
             className={cn(
-                'py-2 px-2 flex items-start justify-between relative gap-2 cursor-pointer transition-colors',
+                'p-3 flex items-start justify-between relative gap-2 cursor-pointer transition-colors',
                 'border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden',
-                'sm:rounded-lg sm:mb-2 sm:shadow-sm sm:p-3',
+                'rounded-lg mb-2 shadow-sm',
                 transaction.isTransactionUnderMonitoring
                     ? 'bg-orange-50/50 dark:bg-orange-950/10 border-l-4 border-l-amber-500'
                     : '',
