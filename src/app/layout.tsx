@@ -2,18 +2,23 @@ import './globals.css';
 
 import { SerwistProvider } from '@serwist/turbopack/react';
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import { Toaster } from 'sonner';
 
 import { FaroRouteTracker } from '@/components/FaroRouteTracker';
 import { QueryProvider } from '@/components/QueryProvider';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
-const inter = Inter({
-  subsets: ['latin'],
+// Inter is self-hosted: next/font/google fetches it from Google at build time, and Turbopack
+// fails the build on some Google responses (vercel/next.js#99114). One variable file, weights
+// 300–700, covering Google's latin + latin-ext subsets (latin-ext carries ₹). Built from
+// google/fonts ofl/inter/Inter[opsz,wght].ttf with opsz pinned to 14, as Google serves it;
+// licence in ./fonts/Inter-OFL.txt.
+const inter = localFont({
+  src: './fonts/Inter-latin-ext.woff2',
   variable: '--font-sans',
   display: 'swap',
-  weight: ['300', '400', '500', '600', '700'],
+  weight: '300 700',
 });
 
 const isDev = process.env.NODE_ENV === 'development';
