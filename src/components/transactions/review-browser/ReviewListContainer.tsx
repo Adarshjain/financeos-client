@@ -114,7 +114,7 @@ export function ReviewListContainer({
               </div>
             )}
             <SwipeActionRow
-              className="sm:rounded-lg sm:mb-2"
+              className="rounded-lg mb-2"
               leading={
                 canApprove
                   ? {
@@ -135,7 +135,7 @@ export function ReviewListContainer({
               <TransactionCard
                 accounts={accounts}
                 transaction={transaction}
-                className="sm:mb-0"
+                className="mb-0"
                 onMutate={onMutate}
                 selectable
                 selected={selectedIds.includes(transaction.id)}

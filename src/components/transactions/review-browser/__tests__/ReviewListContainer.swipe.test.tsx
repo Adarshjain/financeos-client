@@ -91,8 +91,11 @@ describe('ReviewListContainer swipe actions', () => {
 
     const row = rowFor('Swiggy order');
     expect(row.parentElement).toHaveAttribute('data-slot', 'swipe-action-row');
-    expect(row.parentElement?.className).toContain('sm:mb-2');
-    expect(row.firstElementChild?.className).toContain('sm:mb-0');
+    const rowClasses = row.parentElement?.className.split(' ') ?? [];
+    expect(rowClasses).toEqual(expect.arrayContaining(['rounded-lg', 'mb-2']));
+    const cardClasses = row.firstElementChild?.className.split(' ') ?? [];
+    expect(cardClasses).toContain('mb-0');
+    expect(cardClasses).not.toContain('mb-2');
   });
 
   it('swipe right opens the approve picker for that card with its reasons pre-checked', () => {

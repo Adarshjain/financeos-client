@@ -53,7 +53,7 @@ export function AccountRecentTransactions({ account }: { account: Account }) {
               transaction={t}
               accounts={[account]}
               // Flat rows inside the section: no per-row card chrome, a hairline between rows.
-              className="px-4 py-3 sm:mb-0 sm:rounded-none sm:px-5 sm:py-3 sm:shadow-none border-slate-100 last:border-b-0 dark:border-slate-800"
+              className="px-4 py-3 mb-0 rounded-none shadow-none sm:px-5 border-slate-100 last:border-b-0 dark:border-slate-800"
               onMutate={() => qc.invalidateQueries({ queryKey: keys.transactions.all })}
             />
           ))}
