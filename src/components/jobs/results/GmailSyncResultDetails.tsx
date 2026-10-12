@@ -1,126 +1,110 @@
-import { AlertTriangle, ChevronDown, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
-import React, { useState } from 'react';
+import React from 'react';
 
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import type { SyncMessageOutcome, SyncSummary } from '@/lib/types';
-import { formatDate } from '@/lib/utils';
+import type { SyncSummary } from '@/lib/types';
 
-function formatFromHeader(from: string): string {
-  if (!from) return '—';
-  const match = from.match(/<([^>]+)>/);
-  return match ? match[1] : from;
+import { LegacyAttention } from './gmail-sync/LegacyAttention';
+import { describeCounts, PARKED_STATUSES, SKIPPED_STATUSES } from './gmail-sync/syncLabels';
+import { SyncMessageList } from './gmail-sync/SyncMessageList';
+import { SyncRunContext } from './gmail-sync/SyncRunContext';
+
+function Stat({ label, value, tone }: { label: string; value: number; tone: string }) {
+  return (
+    <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
+      <div className={`font-black text-sm sm:text-base ${tone}`}>{value}</div>
+      <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">{label}</div>
+    </div>
+  );
+}
+
+const NEUTRAL = 'text-slate-800 dark:text-slate-200';
+const CREATED = 'text-emerald-600 dark:text-emerald-400';
+const RECONCILED = 'text-blue-600 dark:text-blue-400';
+const PARKED = 'text-amber-600 dark:text-amber-400';
+const FAILED = 'text-rose-600 dark:text-rose-400';
+
+/** Why the run's skipped/parked/failed emails ended up there, and what is still queued. */
+function Breakdown({ result }: { result: SyncSummary }) {
+  const counts = result.statusCounts ?? {};
+  const skipped = describeCounts(counts, SKIPPED_STATUSES);
+  const parked = describeCounts(counts, PARKED_STATUSES);
+  const retryable = result.failedRetryable ?? 0;
+  const permanent = result.failedPermanent ?? 0;
+  const backlog = result.backlogRemaining ?? 0;
+  const hitBudget = result.budget !== undefined && result.budget > 0 && (result.processed ?? 0) >= result.budget;
+
+  return (
+    <div className="space-y-0.5 text-2xs text-slate-600 dark:text-slate-400">
+      {skipped && (
+        <div>
+          <span className="font-semibold">Skipped ({result.skipped}):</span> {skipped}
+        </div>
+      )}
+      {parked && (
+        <div>
+          <span className="font-semibold">Parked ({result.parked ?? 0}):</span> {parked}
+        </div>
+      )}
+      {retryable + permanent > 0 && (
+        <div>
+          <span className="font-semibold">Failed ({retryable + permanent}):</span> {retryable} will retry · {permanent}{' '}
+          permanent
+        </div>
+      )}
+      {backlog > 0 && (
+        <div>
+          {hitBudget
+            ? `Hit the ${result.budget}-email limit for this run; ${backlog} still queued, the next sync continues.`
+            : `${backlog} still queued (retries wait for their scheduled time).`}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function GmailSyncResultDetails({ result }: { result: SyncSummary }) {
-  const [attentionExpanded, setAttentionExpanded] = useState(false);
-
   const isLegacy = result.discovered === undefined;
+  const hasRunDetail = result.statusCounts !== undefined;
 
   const hasSkippedBreakdown =
     (result.alreadyProcessed !== undefined && result.alreadyProcessed > 0) ||
     (result.nonTransaction !== undefined && result.nonTransaction > 0);
 
-  const getActionCell = (outcome: SyncMessageOutcome) => {
-    switch (outcome.outcome) {
-      case 'ACCOUNT_UNRESOLVED':
-        return (
-          <Link href="/accounts" className="underline font-bold text-2xs">
-            {outcome.accountLast4
-              ? `Add or fix account ending ${outcome.accountLast4}`
-              : 'Add or fix account'}
-          </Link>
-        );
-      case 'DECRYPT_FAILED':
-        return (
-          <Link href="/accounts" className="underline font-bold text-2xs">
-            Set the statement password on the account
-          </Link>
-        );
-      case 'PARSE_FAILED':
-      case 'NO_ATTACHMENT':
-        return (
-          <Link href="/transactions/import" className="underline font-bold text-2xs">
-            Import manually
-          </Link>
-        );
-      case 'EXTRACTION_FAILED':
-      case 'ERROR':
-      default:
-        return <span className="text-slate-500 text-2xs">Will retry on next sync</span>;
-    }
-  };
-
   return (
     <div className="space-y-2.5 text-2xs pt-1">
-      <span className="font-semibold text-slate-800 dark:text-slate-200 block">
-        Gmail Sync Summary
-      </span>
+      <span className="font-semibold text-slate-800 dark:text-slate-200 block">Gmail Sync Summary</span>
+
+      {hasRunDetail && <SyncRunContext result={result} />}
 
       {isLegacy ? (
         <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5 sm:gap-2">
-          <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-            <div className="font-black text-slate-800 dark:text-slate-200 text-sm sm:text-base">{result.fetched ?? 0}</div>
-            <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Fetched</div>
-          </div>
-          <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-            <div className="font-black text-emerald-600 dark:text-emerald-400 text-sm sm:text-base">{result.created ?? 0}</div>
-            <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Created</div>
-          </div>
-          <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-            <div className="font-black text-blue-600 dark:text-blue-400 text-sm sm:text-base">{result.reconciled ?? 0}</div>
-            <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Reconciled</div>
-          </div>
-          <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-            <div className="font-black text-slate-600 dark:text-slate-400 text-sm sm:text-base">{result.skipped ?? 0}</div>
-            <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Skipped</div>
-          </div>
-          <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center col-span-3 sm:col-span-1">
-            <div className="font-black text-rose-600 dark:text-rose-400 text-sm sm:text-base">{result.failed ?? 0}</div>
-            <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Failed</div>
+          <Stat label="Fetched" value={result.fetched ?? 0} tone={NEUTRAL} />
+          <Stat label="Created" value={result.created ?? 0} tone={CREATED} />
+          <Stat label="Reconciled" value={result.reconciled ?? 0} tone={RECONCILED} />
+          <Stat label="Skipped" value={result.skipped ?? 0} tone="text-slate-600 dark:text-slate-400" />
+          <div className="col-span-3 sm:col-span-1">
+            <Stat label="Failed" value={result.failed ?? 0} tone={FAILED} />
           </div>
         </div>
       ) : (
         <>
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2">
-            <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-              <div className="font-black text-slate-800 dark:text-slate-200 text-sm sm:text-base">{result.discovered ?? 0}</div>
-              <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Discovered</div>
-            </div>
-            <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-              <div className="font-black text-slate-800 dark:text-slate-200 text-sm sm:text-base">{result.processed ?? 0}</div>
-              <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Processed</div>
-            </div>
-            <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-              <div className="font-black text-emerald-600 dark:text-emerald-400 text-sm sm:text-base">{result.created ?? 0}</div>
-              <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Created</div>
-            </div>
-            <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-              <div className="font-black text-blue-600 dark:text-blue-400 text-sm sm:text-base">{result.reconciled ?? 0}</div>
-              <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Reconciled</div>
-            </div>
-            <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-              <div className="font-black text-amber-600 dark:text-amber-400 text-sm sm:text-base">{result.parked ?? 0}</div>
-              <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Parked</div>
-            </div>
-            <div className="p-1.5 sm:p-2 bg-white dark:bg-slate-900 rounded-md border border-slate-200/70 dark:border-slate-800 text-center">
-              <div className="font-black text-rose-600 dark:text-rose-400 text-sm sm:text-base">{result.failedPermanent ?? result.failed ?? 0}</div>
-              <div className="text-2xs text-slate-400 uppercase tracking-wider font-semibold">Failed</div>
-            </div>
+            <Stat label="Discovered" value={result.discovered ?? 0} tone={NEUTRAL} />
+            <Stat label="Processed" value={result.processed ?? 0} tone={NEUTRAL} />
+            <Stat label="Created" value={result.created ?? 0} tone={CREATED} />
+            <Stat label="Reconciled" value={result.reconciled ?? 0} tone={RECONCILED} />
+            <Stat label="Parked" value={result.parked ?? 0} tone={PARKED} />
+            <Stat label="Failed" value={result.failedPermanent ?? result.failed ?? 0} tone={FAILED} />
           </div>
 
-          <div className="text-2xs text-slate-500 flex flex-wrap gap-x-3 gap-y-1">
-            <span>Skipped: {result.skipped ?? 0}</span>
-            <span>Retryable: {result.failedRetryable ?? 0}</span>
-            <span>Backlog remaining: {result.backlogRemaining ?? 0}</span>
-          </div>
+          {hasRunDetail ? (
+            <Breakdown result={result} />
+          ) : (
+            <div className="text-2xs text-slate-500 flex flex-wrap gap-x-3 gap-y-1">
+              <span>Skipped: {result.skipped ?? 0}</span>
+              <span>Retryable: {result.failedRetryable ?? 0}</span>
+              <span>Backlog remaining: {result.backlogRemaining ?? 0}</span>
+            </div>
+          )}
         </>
       )}
 
@@ -130,111 +114,9 @@ export function GmailSyncResultDetails({ result }: { result: SyncSummary }) {
         </div>
       )}
 
-      {result.attention && result.attention.length > 0 && (
-        <div className="space-y-1.5 pt-1">
-          <button
-            type="button"
-            onClick={() => setAttentionExpanded(!attentionExpanded)}
-            className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200 hover:underline focus:outline-none"
-          >
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-            <span>Needs attention ({result.attention.length})</span>
-            {attentionExpanded ? (
-              <ChevronDown className="h-3.5 w-3.5 text-slate-500" />
-            ) : (
-              <ChevronRight className="h-3.5 w-3.5 text-slate-500" />
-            )}
-          </button>
+      {result.messages && <SyncMessageList messages={result.messages} truncated={result.messagesTruncated ?? 0} />}
 
-          {attentionExpanded && (
-            <div className="border border-slate-200/70 dark:border-slate-800 rounded-md overflow-hidden bg-white dark:bg-slate-900">
-              {/* Mobile Card List (< sm) */}
-              <div className="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800/60">
-                {result.attention.map((item: SyncMessageOutcome, idx: number) => (
-                  <div key={idx} className="p-2.5 space-y-1.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[180px]" title={item.from}>
-                        {formatFromHeader(item.from)}
-                      </span>
-                      <span className="text-slate-400 text-2xs tabular-nums shrink-0">
-                        {formatDate(item.receivedAt)}
-                      </span>
-                    </div>
-                    <div className="text-slate-700 dark:text-slate-300 font-medium">
-                      <div className="truncate" title={item.subject}>
-                        {item.subject || '—'}
-                      </div>
-                      {item.attachmentFilename && (
-                        <div className="text-slate-400 text-2xs truncate">
-                          File: {item.attachmentFilename}
-                        </div>
-                      )}
-                    </div>
-                    <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between gap-2">
-                      <span className={item.outcome === 'ERROR' ? 'text-rose-600 dark:text-rose-400 font-medium text-2xs' : 'text-slate-600 dark:text-slate-400 text-2xs'}>
-                        {item.reason}
-                      </span>
-                      <div className="shrink-0">
-                        {getActionCell(item)}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Desktop Table (>= sm) */}
-              <div className="hidden sm:block overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-slate-50/60 dark:bg-slate-900/60">
-                      <TableHead className="py-1.5 px-2 text-2xs whitespace-nowrap">From</TableHead>
-                      <TableHead className="py-1.5 px-2 text-2xs">Subject</TableHead>
-                      <TableHead className="py-1.5 px-2 text-2xs whitespace-nowrap">Date</TableHead>
-                      <TableHead className="py-1.5 px-2 text-2xs">Problem</TableHead>
-                      <TableHead className="py-1.5 px-2 text-2xs whitespace-nowrap">Action</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {result.attention.map((item: SyncMessageOutcome, idx: number) => (
-                      <TableRow key={idx} className="border-b border-slate-100 dark:border-slate-900">
-                        <TableCell className="py-1.5 px-2 text-2xs text-slate-700 dark:text-slate-300 truncate max-w-[120px]" title={item.from}>
-                          {formatFromHeader(item.from)}
-                        </TableCell>
-                        <TableCell className="py-1.5 px-2 text-2xs text-slate-700 dark:text-slate-300">
-                          <div className="truncate max-w-[140px]" title={item.subject}>
-                            {item.subject || '—'}
-                          </div>
-                          {item.attachmentFilename && (
-                            <div className="text-slate-400 text-2xs truncate max-w-[140px]">
-                              {item.attachmentFilename}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="py-1.5 px-2 text-2xs tabular-nums text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                          {formatDate(item.receivedAt)}
-                        </TableCell>
-                        <TableCell className="py-1.5 px-2 text-2xs">
-                          <span className={item.outcome === 'ERROR' ? 'text-rose-600 dark:text-rose-400 font-medium' : 'text-slate-700 dark:text-slate-300'}>
-                            {item.reason}
-                          </span>
-                        </TableCell>
-                        <TableCell className="py-1.5 px-2 text-2xs whitespace-nowrap">
-                          {getActionCell(item)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              {result.attentionTruncated ? (
-                <div className="py-1 px-2 text-2xs text-slate-500 italic bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-900">
-                  …and {result.attentionTruncated} more
-                </div>
-              ) : null}
-            </div>
-          )}
-        </div>
-      )}
+      <LegacyAttention result={result} />
     </div>
   );
 }

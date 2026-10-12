@@ -99,11 +99,28 @@ export interface PriceRefreshFailure {
   reason: string;
 }
 
+export interface PriceRefreshItem {
+  instrumentId: string;
+  instrumentName?: string;
+  close: number | string;
+  priceDate: string;
+  source: string;
+}
+
+export interface PriceRefreshSkip {
+  instrumentId: string;
+  instrumentName?: string;
+  reason: string;
+}
+
 export interface PriceRefreshResult {
   refreshed: number;
   skipped: number;
   failed: PriceRefreshFailure[];
   asOf: string;
+  // Absent on results stored before the per-instrument detail was added.
+  refreshedItems?: PriceRefreshItem[];
+  skippedItems?: PriceRefreshSkip[];
 }
 
 export interface CreateInstrumentRequest {
@@ -598,6 +615,28 @@ export interface ImportCommitSkipped {
   reason: string;
 }
 
+/** RULE_APPLY job result. Only appliedCount exists on results stored before the detail was added. */
+export interface RuleApplyResult {
+  appliedCount: number;
+  ruleId?: string | null;
+  ruleName?: string | null;
+  matchType?: string | null;
+  pattern?: string | null;
+  categories?: string[];
+  allMatches?: boolean;
+  requested?: number;
+  skippedManuallyReviewed?: number;
+  skippedNoLongerMatching?: number;
+  notFound?: number;
+  transactions?: Array<{
+    id: string;
+    date?: string | null;
+    amount?: number | string | null;
+    type?: string | null;
+    description?: string | null;
+  }>;
+}
+
 export interface ImportCommitResult {
   committed: number;
   skipped: number;
@@ -850,6 +889,50 @@ export interface SyncMessageOutcome {
   accountLast4?: string | null;
 }
 
+export type GmailProcessedStatus =
+  | 'DISCOVERED'
+  | 'PROCESSING'
+  | 'CREATED'
+  | 'RECONCILED'
+  | 'SKIPPED_NOT_TRANSACTION'
+  | 'SKIPPED_BEFORE_WATERMARK'
+  | 'SKIPPED_SENDER_DISABLED'
+  | 'SKIPPED_DUPLICATE'
+  | 'SKIPPED_MESSAGE_GONE'
+  | 'UNRESOLVED_ACCOUNT'
+  | 'ACCOUNT_NOT_OPTED_IN'
+  | 'FAILED_RETRYABLE'
+  | 'FAILED_PERMANENT'
+  | 'CLEANED_UP';
+
+export interface SyncTxnRef {
+  id: string;
+  date?: string | null;
+  amount?: number | string | null;
+  description?: string | null;
+  type?: string | null;
+}
+
+/** What happened to one email in a Gmail sync run. */
+export interface SyncMessageResult {
+  ledgerId: string;
+  gmailMessageId: string;
+  receivedAt?: string | null;
+  sender?: string | null;
+  subject?: string | null;
+  status: GmailProcessedStatus;
+  accountId?: string | null;
+  accountName?: string | null;
+  last4?: string | null;
+  attachmentFilename?: string | null;
+  error?: string | null;
+  attemptCount: number;
+  nextRetryAt?: string | null;
+  createdCount: number;
+  matchedCount: number;
+  transactions: SyncTxnRef[];
+}
+
 export interface SyncSummary {
   discovered?: number;
   processed?: number;
@@ -860,6 +943,16 @@ export interface SyncSummary {
   failedRetryable?: number;
   failedPermanent?: number;
   backlogRemaining?: number;
+  // Run detail (absent on results stored before it was added)
+  mailbox?: string | null;
+  listed?: number;
+  searchedSince?: string | null;
+  backfilledTo?: string | null;
+  senders?: string[];
+  budget?: number;
+  statusCounts?: Partial<Record<GmailProcessedStatus, number>>;
+  messages?: SyncMessageResult[];
+  messagesTruncated?: number;
   // Legacy / fallback fields
   fetched?: number;
   failed?: number;
