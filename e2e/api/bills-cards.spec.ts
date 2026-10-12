@@ -143,6 +143,22 @@ test.describe('Bills API: unbilled spend and the next statement (@api)', () => {
     expect(paid.data!.nextStatementExpectedOn).toBe(row.nextStatementExpectedOn);
   });
 
+  test('unbilledAmount starts after the last billed line when the statement lists nothing on its close', async ({ request }) => {
+    const { api } = await newUser(request, 'bills-unbilled-lag');
+    const card = await createCreditCard(api, { name: 'Lagged Unbilled Card', last4: '8415' });
+    const bill = await ingestCardStatement(api, card.id, '8415', [
+      { date: istToday(-20), description: 'AMAZON ONLINE SHOPPING', debit: 4500 },
+      { date: istToday(-4), description: 'RESTAURANT DINING', debit: 1500 },
+    ]);
+    await createTransaction(api, card.id, { amount: -999, date: istToday(-3), description: 'On the close' });
+    await createTransaction(api, card.id, { amount: -777, date: istToday(-4), description: 'On the last billed day' });
+    await createTransaction(api, card.id, { amount: -800, date: istToday(-1), description: 'After close' });
+
+    const row = (await api.GET('/api/v1/bills', { params: { query: { accountId: card.id } } })).data![0];
+    expect(row.statementId).toBe(bill.statementId);
+    expect(Number(row.unbilledAmount), 'the close-day purchase is unbilled; the last billed day is not').toBeCloseTo(1799, 2);
+  });
+
   test('a card that gets its first statement stops being awaiting', async ({ request }) => {
     const { api } = await newUser(request, 'bills-first');
     const card = await createCreditCard(api, { name: 'First Card', last4: '8411' });

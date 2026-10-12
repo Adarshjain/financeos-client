@@ -265,6 +265,32 @@ test.describe('net_worth row breakdown: accounts (@api)', () => {
     expect((await breakdownSection(api, 'net_worth', card.id, 'transactions')).page.totalElements).toBe(2);
   });
 
+  test('a card whose statement lists nothing on its closing day: purchases dated on the close are unbilled', async ({ request }) => {
+    const { api } = await newUser(request, 'bd-card-lag');
+    const card = await createCreditCard(api, { name: 'BD Lagged Card', last4: '8472' });
+    // The issuer cuts by posting date: the last line is the day before the close.
+    await ingestCardStatement(api, card.id, '8472', [
+      { date: istToday(-20), description: 'AMAZON ONLINE SHOPPING', debit: 4500 },
+      { date: istToday(-4), description: 'RESTAURANT DINING', debit: 1500 },
+    ]);
+    const onClose = await createTransaction(api, card.id, { amount: -999, date: istToday(-3), description: 'On the close' });
+    await createTransaction(api, card.id, { amount: -777, date: istToday(-4), description: 'On the last billed day' });
+    const ending = ddmmyyyy(istToday(-3));
+    const since = ddmmyyyy(istToday(-4));
+
+    const b = await rowBreakdown(api, 'net_worth', card.id);
+    expect(b).toMatchObject({ total: 6999, totalLabel: 'Outstanding' });
+    expect(stepsOf(b)).toEqual([
+      ['start', `Owed on statement ending ${ending}`, 6000],
+      ['add', `Spends since ${since} (1)`, 999],
+      ['equals', 'Outstanding', 6999],
+    ]);
+    expectReconciles(b);
+    const tx = sectionOf(b, 'transactions');
+    expect(tx).toMatchObject({ label: `Transactions after ${since}`, rowAction: 'transaction' });
+    expect(tx.rows.rows.map((r) => r.id), 'only the purchase on the close is unbilled').toEqual([onClose.id]);
+  });
+
   test('a broker: cash plus holdings at market value, each holding opening its positions breakdown', async ({ request }) => {
     const { api } = await newUser(request, 'bd-broker');
     const broker = await createBrokerAccount(api, { name: 'BD Broker', cashBalance: 5000 });
