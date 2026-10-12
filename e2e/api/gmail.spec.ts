@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { expectStatus, makeApi, waitForJob } from '../fixtures/api';
 import { createUser } from '../fixtures/auth';
-import { resetLlm, setLlmMode } from '../fixtures/control';
+import { llmCalls, resetLlm, setLlmMode } from '../fixtures/control';
 import { genBankPdf } from '../fixtures/gen/statements';
 import type { GoogleIdentity, Mailbox } from '../fixtures/google-stubs';
 import {
@@ -626,6 +626,78 @@ test.describe('Gmail extraction failure paths', () => {
     // Backoff: nothing is due yet, so a second sync processes nothing but reports the backlog.
     const again = await runSync(api);
     expect(again.summary).toMatchObject({ discovered: 0, processed: 0, backlogRemaining: 3 });
+  });
+});
+
+test.describe('Gmail alert date later than the email', () => {
+  test.describe.configure({ mode: 'serial' });
+
+  let api: ReturnType<typeof makeApi>;
+  let identity: GoogleIdentity;
+
+  // Sent at 12:00 UTC (17:30 IST), so the IST sent day equals isoDaysAgo(n).
+  const misread = alertMail({ last4: '7106', amount: 209.7, merchant: 'MISREAD DATE', date: isoDaysAgo(6), sentAt: daysAgo(6) });
+  const sameDay = alertMail({ last4: '7106', amount: 408, merchant: 'SAME DAY', date: isoDaysAgo(6), sentAt: daysAgo(6) });
+  const earlier = alertMail({ last4: '7106', amount: 55, merchant: 'EARLIER DAY', date: isoDaysAgo(8), sentAt: daysAgo(6) });
+
+  test.beforeAll(async ({ request }) => {
+    const user = await createUser(request, 'gmail-date-cap');
+    api = makeApi(user.cookie);
+    identity = await registerIdentity();
+    await createBankAccount(api, { name: 'E2E Date Cap Bank', last4: '7106', ingestFromDate: isoDaysAgo(60) });
+    await createSender(api);
+    await connectGmail(api, identity);
+    await waitForGmailJobsIdle(api);
+    await registerMailbox(identity, [misread, sameDay, earlier]);
+    await scriptExtractions(api, [
+      // The model reads a date five days after the email was sent.
+      extractionFor(misread, { json: extractedTxn({ amount: 209.7, date: isoDaysAgo(1), last4: '7106', merchant: 'MISREAD DATE' }) }),
+      extractionFor(sameDay, { json: extractedTxn({ amount: 408, date: isoDaysAgo(6), last4: '7106', merchant: 'SAME DAY' }) }),
+      extractionFor(earlier, { json: extractedTxn({ amount: 55, date: isoDaysAgo(8), last4: '7106', merchant: 'EARLIER DAY' }) }),
+    ]);
+  });
+
+  test.afterAll(async () => {
+    await resetLlm(api);
+    await cleanupIdentity(identity);
+  });
+
+  test('a date after the sent day is capped to it and flagged; same-day and earlier dates are kept', async () => {
+    test.slow();
+    const { summary } = await runSync(api);
+    expect(summary).toMatchObject({ created: 3 });
+
+    const byMerchant = new Map((await searchAll(api)).map((t) => [t.sourcedDescription, t]));
+
+    const capped = byMerchant.get('MISREAD DATE')!;
+    expect(capped.date).toBe(isoDaysAgo(6));
+    expect(capped.reviewType).toBe('NEEDS_REVIEW');
+    expect(capped.reviewReasons).toContain('DATE_CORRECTED');
+    expect(capped.reviewReasons).toContain('UNRECONCILED');
+
+    for (const [merchant, date] of [['SAME DAY', isoDaysAgo(6)], ['EARLIER DAY', isoDaysAgo(8)]] as const) {
+      const kept = byMerchant.get(merchant)!;
+      expect(kept.date, merchant).toBe(date);
+      expect(kept.reviewReasons, merchant).not.toContain('DATE_CORRECTED');
+    }
+  });
+
+  test('the extraction prompt tells the model the day the email was sent', async () => {
+    const prompt = (await llmCalls(api, 'email-extract')).find((c) => c.prompt.includes(`Subject: ${misread.subject}`))?.prompt;
+    expect(prompt).toContain(`Email sent on: ${isoDaysAgo(6)} `);
+  });
+
+  test('changing the date yourself clears the flag; the transaction stays in review for reconciliation', async () => {
+    const capped = (await searchAll(api)).find((t) => t.sourcedDescription === 'MISREAD DATE')!;
+    const res = await api.PUT('/api/v1/transactions/{id}', {
+      params: { path: { id: capped.id } },
+      body: { date: isoDaysAgo(7), amount: -209.7, description: capped.description ?? 'MISREAD DATE', reviewType: 'NEEDS_REVIEW' },
+    });
+    expectStatus(res, 200);
+    expect(res.data!.date).toBe(isoDaysAgo(7));
+    expect(res.data!.reviewReasons).not.toContain('DATE_CORRECTED');
+    expect(res.data!.reviewReasons).toContain('UNRECONCILED');
+    expect(res.data!.reviewType).toBe('NEEDS_REVIEW');
   });
 });
 

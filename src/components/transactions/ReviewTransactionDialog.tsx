@@ -59,7 +59,7 @@ export const ReviewTransactionDialog = ({
         body: {
           transactionIds: [transactionId],
           reviewType: 'MANUALLY_REVIEWED',
-          reviewReasons: reasonsToApprove as ('UNRECONCILED' | 'CATEGORY_UNVERIFIED' | 'DUPLICATE_SUSPECT')[],
+          reviewReasons: reasonsToApprove as ('UNRECONCILED' | 'CATEGORY_UNVERIFIED' | 'DUPLICATE_SUSPECT' | 'DATE_CORRECTED')[],
         },
       });
       return data;
