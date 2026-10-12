@@ -120,13 +120,7 @@ export function useTransactionFilters({
     setFilterClause('date', 'is', date);
   };
 
-  const handleAccountToggle = (id: string) => {
-    let next: string[];
-    if (activeAccountIds.includes(id)) {
-      next = activeAccountIds.filter((item) => item !== id);
-    } else {
-      next = [...activeAccountIds, id];
-    }
+  const setAccountIds = (next: string[]) => {
     if (next.length === 0) {
       removeFilter('accountId');
     } else if (next.length === 1) {
@@ -134,6 +128,22 @@ export function useTransactionFilters({
     } else {
       setFilterClause('accountId', 'in', next);
     }
+  };
+
+  const handleAccountToggle = (id: string) => {
+    setAccountIds(
+      activeAccountIds.includes(id)
+        ? activeAccountIds.filter((item) => item !== id)
+        : [...activeAccountIds, id]
+    );
+  };
+
+  const isAllAccountsSelected =
+    selectableAccounts.length > 0 &&
+    selectableAccounts.every((a) => activeAccountIds.includes(a.id));
+
+  const handleToggleAllAccounts = () => {
+    setAccountIds(isAllAccountsSelected ? [] : selectableAccounts.map((a) => a.id));
   };
 
   const handleCategoryToggle = (name: string) => {
@@ -187,6 +197,7 @@ export function useTransactionFilters({
     activeDate,
     activeAccountIds,
     selectableAccounts,
+    isAllAccountsSelected,
     activeCategories,
     isMonitoringActive,
     hasAmountFilter: Boolean(getFilter('amount')),
@@ -198,6 +209,7 @@ export function useTransactionFilters({
     handleApplyCustomDate,
     handleApplySingleDate,
     handleAccountToggle,
+    handleToggleAllAccounts,
     handleCategoryToggle,
     handleApplyAmount,
     handleClearAll,

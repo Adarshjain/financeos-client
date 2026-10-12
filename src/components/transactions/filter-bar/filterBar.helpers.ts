@@ -1,6 +1,7 @@
 import { isoToDisplay } from '@/components/ui/date-input';
 import { Account } from '@/lib/account.types';
 import { FilterClause } from '@/lib/reports.types';
+import { getAccountTypeLabel } from '@/lib/utils';
 
 import {
   ACCOUNT_TYPE_OPTIONS,
@@ -161,4 +162,27 @@ export function buildActiveBadges(
   });
 
   return list;
+}
+
+export interface AccountTypeGroup {
+  type: string;
+  label: string;
+  accounts: Account[];
+}
+
+/** Buckets accounts under title-cased type headings, in ACCOUNT_TYPE_OPTIONS
+ * order; any type not listed there trails in first-seen order. */
+export function groupAccountsByType(accounts: Account[]): AccountTypeGroup[] {
+  const groups = new Map<string, AccountTypeGroup>();
+  for (const opt of ACCOUNT_TYPE_OPTIONS) {
+    groups.set(opt.value, { type: opt.value, label: opt.label, accounts: [] });
+  }
+  for (const acc of accounts) {
+    const type = acc.type ?? 'other';
+    if (!groups.has(type)) {
+      groups.set(type, { type, label: getAccountTypeLabel(type), accounts: [] });
+    }
+    groups.get(type)!.accounts.push(acc);
+  }
+  return [...groups.values()].filter((g) => g.accounts.length > 0);
 }

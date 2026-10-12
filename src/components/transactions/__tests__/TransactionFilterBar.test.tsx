@@ -53,9 +53,9 @@ describe('TransactionFilterBar', () => {
     fireEvent.change(searchInput, { target: { value: 'coffee' } });
     expect(onSearchChange).toHaveBeenCalledWith('coffee');
 
-    // Type segment buttons
-    const expensesBtn = screen.getByRole('button', { name: 'Expenses' });
-    fireEvent.click(expensesBtn);
+    // Type dropdown
+    fireEvent.click(screen.getByRole('button', { name: 'All Types' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Expenses' }));
     expect(onFiltersChange).toHaveBeenCalledWith([
       { field: 'type', operator: 'is', value: 'DEBIT' },
     ]);
@@ -81,7 +81,7 @@ describe('TransactionFilterBar', () => {
     ]);
   });
 
-  it('handles Income, All segment buttons and active filter badges', async () => {
+  it('handles Income, All Types dropdown options and active filter badges', async () => {
     const onFiltersChange = vi.fn();
 
     const { rerender } = renderWithQuery(
@@ -93,16 +93,16 @@ describe('TransactionFilterBar', () => {
       />,
     );
 
-    // Income button
-    const incomeBtn = screen.getByRole('button', { name: 'Income' });
-    fireEvent.click(incomeBtn);
+    // Income option (pill shows the active Expenses type)
+    fireEvent.click(screen.getByRole('button', { name: 'Expenses' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Income' }));
     expect(onFiltersChange).toHaveBeenCalledWith([
       { field: 'type', operator: 'is', value: 'CREDIT' },
     ]);
 
-    // All button clears type filter
-    const allBtn = screen.getByRole('button', { name: 'All' });
-    fireEvent.click(allBtn);
+    // All Types clears type filter
+    fireEvent.click(screen.getByRole('button', { name: 'Expenses' }));
+    fireEvent.click(screen.getByRole('button', { name: 'All Types' }));
     expect(onFiltersChange).toHaveBeenCalledWith([]);
 
     // Rerender with active filters to test badges and Clear all button
