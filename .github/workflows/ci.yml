@@ -1,8 +1,8 @@
 name: CI
 
+# main runs this through deploy.yml, which deploys only when it passes.
 on:
-  push:
-    branches: [main]
+  workflow_call:
   pull_request:
 
 # A superseded run on the same branch has no value once a newer commit exists.
