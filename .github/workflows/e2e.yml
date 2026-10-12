@@ -15,9 +15,8 @@ on:
         type: string
         default: core
         description: core (e2e/core-specs.txt) or full
+  # main runs this through deploy.yml, which deploys only when it passes.
   pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       server_ref:

@@ -1,0 +1,107 @@
+name: Deploy
+
+# Production deploys go out from here, and only after CI and E2E pass on the pushed commit.
+# Vercel's own git deploys are off for main (vercel.json), so a push never reaches production on
+# its own. Branches other than main still get Vercel preview deploys.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  # Empty when the secret is unset; slack-notify.sh then warns and exits 0.
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  DEPLOY_COMPONENT: Client
+  # The CLI the Vercel builder itself runs; bump together with it.
+  VERCEL_CLI: vercel@62.7.0
+
+permissions:
+  contents: read
+
+jobs:
+  start:
+    runs-on: ubuntu-latest
+    outputs:
+      start_ts: ${{ steps.notify-start.outputs.start_ts }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Notify Slack — started
+        id: notify-start
+        continue-on-error: true
+        run: |
+          start_ts=$(date +%s)
+          echo "start_ts=$start_ts" >> "$GITHUB_OUTPUT"
+          DEPLOY_START_TS="$start_ts" .github/scripts/slack-notify.sh started
+
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  # This commit's client against the deployed server's main.
+  e2e:
+    uses: ./.github/workflows/e2e.yml
+    with:
+      server_ref: main
+      client_ref: ${{ github.sha }}
+    secrets: inherit
+
+  deploy:
+    needs: [start, ci, e2e]
+    runs-on: ubuntu-latest
+    if: always()
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - name: Check upstream CI and E2E status
+        run: |
+          if [ "${{ needs.ci.result }}" != "success" ] || [ "${{ needs.e2e.result }}" != "success" ]; then
+            echo "Upstream job did not pass: ci=${{ needs.ci.result }}, e2e=${{ needs.e2e.result }}. Skipping deployment."
+            exit 1
+          fi
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::error::VERCEL_TOKEN, VERCEL_ORG_ID and VERCEL_PROJECT_ID repository secrets are required."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # Production project settings and environment variables, as a git deploy would get them.
+      - name: Pull Vercel settings
+        run: npx --yes "$VERCEL_CLI" pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build
+        run: npx --yes "$VERCEL_CLI" build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy to production
+        id: deploy
+        run: |
+          url=$(npx --yes "$VERCEL_CLI" deploy --prebuilt --prod --token="$VERCEL_TOKEN")
+          echo "Deployed: $url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Notify Slack — result
+        if: always()
+        continue-on-error: true
+        env:
+          DEPLOY_START_TS: ${{ needs.start.outputs.start_ts }}
+          DEPLOY_LINK_URL: ${{ steps.deploy.outputs.url }}
+          DEPLOY_LINK_LABEL: ${{ steps.deploy.outputs.url && 'view deployment' || '' }}
+          DEPLOY_FAILURE_HINT: Production still serves the previous deployment; it can be promoted back from the Vercel dashboard.
+        run: |
+          status="${{ job.status }}"
+          if [ "${{ needs.ci.result }}" = "cancelled" ] || [ "${{ needs.e2e.result }}" = "cancelled" ]; then
+            status="cancelled"
+          fi
+          [ -n "$DEPLOY_LINK_URL" ] || unset DEPLOY_LINK_URL DEPLOY_LINK_LABEL
+          .github/scripts/slack-notify.sh "$status"
