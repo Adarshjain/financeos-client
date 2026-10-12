@@ -11,9 +11,10 @@ import { AccountFormWrapper } from '@/components/accounts/AccountFormWrapper';
 import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { isAccountClosed, isAccountOfType } from '@/lib/account.types';
-import { sumCreditLimits } from '@/lib/creditLimitPools';
+import { sumCreditUsage } from '@/lib/creditLimitPools';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
+import { formatUtilisation, utilisationToneClasses } from '@/lib/utilisation';
 import { formatMoney } from '@/lib/utils';
 
 import { BankAccountTile } from './BankAccountTile';
@@ -42,8 +43,9 @@ export function AccountsView() {
 
   // Open cards only — a closed card contributes no available limit. A shared limit
   // counts once however many open cards draw on it; any other card counts the limit
-  // its utilisation uses: the account's own, else the latest statement's.
-  const totalCreditLimit = sumCreditLimits(creditCards);
+  // its utilisation uses: the account's own, else the latest statement's. Outstanding and
+  // utilisation are measured the same way, so the percent agrees with the tiles.
+  const creditUsage = sumCreditUsage(creditCards);
 
   if (accounts.length === 0) {
     return (
@@ -108,9 +110,18 @@ export function AccountsView() {
               {creditCards.length}
             </span>
           </div>
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold tabular-nums">
-            Total Limit: {formatMoney(totalCreditLimit)}
-          </span>
+          <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400 font-semibold tabular-nums">
+            <span>Total Limit: {formatMoney(creditUsage.limit)}</span>
+            <span>Outstanding: {formatMoney(creditUsage.owed)}</span>
+            {creditUsage.utilizationPct != null && (
+              <span
+                title="Utilisation across all cards"
+                className={utilisationToneClasses(creditUsage.utilizationPct).text}
+              >
+                {formatUtilisation(creditUsage.utilizationPct)}
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-2">
