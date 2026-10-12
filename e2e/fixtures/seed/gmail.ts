@@ -28,6 +28,15 @@ export interface SyncSummary {
   failedRetryable: number;
   failedPermanent: number;
   backlogRemaining: number;
+  mailbox: string | null;
+  listed: number;
+  searchedSince: string | null;
+  backfilledTo: string | null;
+  senders: string[];
+  budget: number;
+  statusCounts: Record<string, number>;
+  messages: Array<{ ledgerId: string; gmailMessageId: string; status: string; [key: string]: unknown }>;
+  messagesTruncated: number;
 }
 
 export const GOOGLE_AUTH_URL = `${E2E_WIREMOCK_URL}/google/o/oauth2/v2/auth`;
