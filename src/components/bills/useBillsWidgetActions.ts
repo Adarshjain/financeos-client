@@ -4,7 +4,7 @@ import React from 'react';
 import { toast } from 'sonner';
 
 import { getErrorMessage } from '@/lib/api/errorMessage';
-import type { BillPossiblePayment, CardBillResponse, MarkBillPaidRequest, UpdateBillDetailsRequest } from '@/lib/api/types';
+import type { CardBillResponse, MarkBillPaidRequest, UpdateBillDetailsRequest } from '@/lib/api/types';
 import { useBillMutations } from '@/lib/query/hooks/useBills';
 
 export interface BillRowActions {
@@ -12,7 +12,6 @@ export interface BillRowActions {
   onMarkPaid: (bill: CardBillResponse) => void;
   onUnmarkPaid: (bill: CardBillResponse) => void;
   onSetDetails: (bill: CardBillResponse) => void;
-  onConfirmPayment: (bill: CardBillResponse, payment: BillPossiblePayment) => void;
 }
 
 /**
@@ -22,7 +21,6 @@ export interface BillRowActions {
 export function useBillsWidgetActions() {
   const { markPaid, unmarkPaid, updateDetails } = useBillMutations();
   const [paidTarget, setPaidTarget] = React.useState<CardBillResponse | null>(null);
-  const [paidPrefill, setPaidPrefill] = React.useState<{ amount: number; paidOn: string } | null>(null);
   const [detailsTarget, setDetailsTarget] = React.useState<CardBillResponse | null>(null);
 
   const busy = markPaid.isPending || unmarkPaid.isPending || updateDetails.isPending;
@@ -31,12 +29,6 @@ export function useBillsWidgetActions() {
     busy,
     onMarkPaid: (bill) => {
       if (!bill.statementId) return;
-      setPaidPrefill(null);
-      setPaidTarget(bill);
-    },
-    onConfirmPayment: (bill, payment) => {
-      if (!bill.statementId) return;
-      setPaidPrefill({ amount: payment.amount ?? 0, paidOn: payment.date ?? '' });
       setPaidTarget(bill);
     },
     onSetDetails: (bill) => {
@@ -88,7 +80,6 @@ export function useBillsWidgetActions() {
       bill: paidTarget,
       submitting: markPaid.isPending,
       onSubmit: submitMarkPaid,
-      prefill: paidPrefill,
     },
     detailsDialog: {
       open: detailsTarget !== null,

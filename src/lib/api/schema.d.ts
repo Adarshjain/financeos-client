@@ -3390,14 +3390,13 @@ export interface components {
             /** Format: date */
             paidMarkedOn?: string | null;
             /** @enum {string} */
-            paidSource: "NONE" | "MANUAL" | "LINK";
+            paidSource: "NONE" | "MANUAL" | "CREDITS";
             /** Format: date */
             paymentDueDate?: string | null;
             /** Format: date */
             periodEnd?: string | null;
             /** Format: date */
             periodStart?: string | null;
-            possiblePayments: components["schemas"]["PossiblePaymentResponse"][];
             remainingAmount?: number | null;
             /** Format: date-time */
             statementCreatedAt?: string | null;
@@ -5498,14 +5497,6 @@ export interface components {
         };
         PositionsResponse: {
             positions: components["schemas"]["PositionDto"][];
-        };
-        PossiblePaymentResponse: {
-            amount?: number | null;
-            /** Format: date */
-            date?: string | null;
-            description?: string | null;
-            /** Format: uuid */
-            transactionId: string;
         };
         PreviewMatchesRequest: {
             matchType?: string;

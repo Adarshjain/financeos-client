@@ -21,13 +21,11 @@ import { type BillActionType, isBillAction } from './inbox.helpers';
 export interface PendingBillAction {
   type: BillActionType;
   statementId: string;
-  /** confirm_payment: the matched payment to prefill. */
-  prefill?: { amount: number; paidOn: string } | null;
 }
 
 /**
- * The dialog a row's bill action opens (mark paid, confirm payment prefilled with the matched
- * payment, set details), or null when the action is not a bill action or names no statement.
+ * The dialog a row's bill action opens (mark paid, set details), or null when the action is not a
+ * bill action or names no statement.
  */
 export function toPendingBillAction(
   item: InboxItemResponse,
@@ -35,12 +33,7 @@ export function toPendingBillAction(
 ): PendingBillAction | null {
   const statementId = action.payload?.statementId ?? item.refs.statementId;
   if (!statementId || !isBillAction(action.type)) return null;
-  const payload = action.payload;
-  const prefill =
-    action.type === 'confirm_payment' && payload?.amount != null
-      ? { amount: payload.amount, paidOn: payload.date ?? '' }
-      : null;
-  return { type: action.type, statementId, prefill };
+  return { type: action.type, statementId };
 }
 
 interface InboxBillDialogsProps {
@@ -49,16 +42,16 @@ interface InboxBillDialogsProps {
 }
 
 /**
- * Hosts the shared bill dialogs for inbox rows: mark paid (optionally prefilled from a possible
- * payment) and set details. The bill is loaded by statement id when a dialog opens.
+ * Hosts the shared bill dialogs for inbox rows: mark paid and set details. The bill is loaded by
+ * statement id when a dialog opens.
  */
 export function InboxBillDialogs({ pending, onClose }: InboxBillDialogsProps) {
   const qc = useQueryClient();
   const { data: bill, error } = useBill(pending?.statementId, pending !== null);
   const { markPaid, updateDetails } = useBillMutations();
-  const isMarkPaid = pending?.type === 'mark_paid' || pending?.type === 'confirm_payment';
-  // The dialogs open once the bill is in, so "paid in full" vs a partial prefill is decided
-  // against the real outstanding amount rather than a still-loading bill.
+  const isMarkPaid = pending?.type === 'mark_paid';
+  // The dialogs open once the bill is in, so "paid in full" is offered against the real
+  // outstanding amount rather than a still-loading bill.
   const ready = pending !== null && bill != null && bill.statementId === pending.statementId;
 
   React.useEffect(() => {
@@ -104,7 +97,6 @@ export function InboxBillDialogs({ pending, onClose }: InboxBillDialogsProps) {
         bill={isMarkPaid ? (bill ?? null) : null}
         submitting={markPaid.isPending}
         onSubmit={submitMarkPaid}
-        prefill={pending?.type === 'confirm_payment' ? pending.prefill : null}
       />
       <BillDetailsDialog
         open={ready && pending?.type === 'set_details'}

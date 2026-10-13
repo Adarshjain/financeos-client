@@ -22,7 +22,7 @@ import { InboxBillDialogs, type PendingBillAction } from '../InboxBillDialogs';
 
 const billA = { statementId: 'A', status: 'OPEN', accountName: 'Card A' };
 const billB = { statementId: 'B', status: 'OPEN', accountName: 'Card B' };
-const pend = (statementId: string, type: PendingBillAction['type'] = 'mark_paid'): PendingBillAction => ({ type, statementId, prefill: null });
+const pend = (statementId: string, type: PendingBillAction['type'] = 'mark_paid'): PendingBillAction => ({ type, statementId });
 
 describe('InboxBillDialogs stale-bill guard', () => {
   beforeEach(() => vi.resetAllMocks());

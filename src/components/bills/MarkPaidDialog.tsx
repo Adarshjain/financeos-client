@@ -26,15 +26,13 @@ interface MarkPaidDialogProps {
   bill: CardBillResponse | null;
   submitting: boolean;
   onSubmit: (body: MarkBillPaidRequest) => void | Promise<void>;
-  /** Prefill from a "possible payment" the user is confirming. */
-  prefill?: { amount: number; paidOn: string } | null;
 }
 
 /**
  * "Mark as paid": in full by default, or a partial amount. The date defaults to today and can
  * never be in the future (the server rejects it too).
  */
-export function MarkPaidDialog({ open, onOpenChange, bill, submitting, onSubmit, prefill }: MarkPaidDialogProps) {
+export function MarkPaidDialog({ open, onOpenChange, bill, submitting, onSubmit }: MarkPaidDialogProps) {
   const today = toCalendarDate(new Date());
   const remaining = bill?.remainingAmount ?? bill?.totalAmountDue ?? null;
   const [inFull, setInFull] = React.useState(true);
@@ -44,19 +42,12 @@ export function MarkPaidDialog({ open, onOpenChange, bill, submitting, onSubmit,
 
   React.useEffect(() => {
     if (!open) return;
-    if (prefill) {
-      const coversRemaining = remaining != null && prefill.amount >= remaining;
-      setInFull(coversRemaining);
-      setAmount(coversRemaining ? '' : String(prefill.amount));
-      setPaidOn(prefill.paidOn || today);
-    } else {
-      setInFull(true);
-      setAmount('');
-      setPaidOn(today);
-    }
+    setInFull(true);
+    setAmount('');
+    setPaidOn(today);
     setError(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, prefill?.amount, prefill?.paidOn]);
+  }, [open]);
 
   const submit = async () => {
     const body: MarkBillPaidRequest = {};
