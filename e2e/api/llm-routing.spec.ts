@@ -182,4 +182,112 @@ test.describe('LLM Routing API', () => {
     ]);
   });
 
+  test('Custom model rows: probe with own key, save with knobs, read back, duplicates and bad knobs rejected', async ({
+    request,
+  }) => {
+    const user = await newUser(request, 'llm-routing-custom');
+
+    // 1. No key for the provider yet -> the probe says which key to add (200, ok=false)
+    const noKey = await user.api.POST('/api/v1/llm/routing/test-model', {
+      body: { provider: 'gemini', model: 'gemini-e2e-custom' },
+    });
+    expectStatus(noKey, 200);
+    expect(noKey.data?.ok).toBe(false);
+    expect(noKey.data?.error).toContain('Add a Google Gemini API key first.');
+
+    // 2. With a key the probe reaches the (stubbed) provider with the typed model and succeeds
+    await user.api.POST('/api/v1/llm-keys', { body: { provider: 'gemini', key: 'e2e-gemini-good' } });
+    const probe = await user.api.POST('/api/v1/llm/routing/test-model', {
+      body: { provider: 'gemini', model: 'gemini-e2e-custom', reasoningEffort: 'low', maxOutputTokens: 512 },
+    });
+    expectStatus(probe, 200);
+    expect(probe.data?.ok).toBe(true);
+    expect(probe.data?.message).toContain('gemini-e2e-custom');
+
+    // 3. Validation on the probe: unknown provider / bad knob -> 400
+    const badProvider = await user.api.POST('/api/v1/llm/routing/test-model', {
+      body: { provider: 'anthropic', model: 'claude' },
+    });
+    expectStatus(badProvider, 400);
+    const badEffort = await user.api.POST('/api/v1/llm/routing/test-model', {
+      body: { provider: 'gemini', model: 'gemini-e2e-custom', reasoningEffort: 'turbo' },
+    });
+    expectStatus(badEffort, 400);
+
+    // 4. Save the custom row first in the default group, with its knobs, plus every menu option
+    const custom = {
+      optionId: 'custom',
+      provider: 'Gemini',
+      model: ' gemini-e2e-custom ',
+      structuredOutput: 'JSON-SCHEMA',
+      reasoningEffort: 'LOW',
+      maxOutputTokens: 512,
+      providerPin: null,
+    };
+    const menu = [
+      { optionId: 'gemini-chain' },
+      { optionId: 'groq' },
+      { optionId: 'openrouter-free' },
+      { optionId: 'openrouter-glm' },
+      { optionId: 'gemini-flash-chain' },
+    ];
+    const putRes = await user.api.PUT('/api/v1/llm/routing/{group}', {
+      params: { path: { group: 'default' } },
+      body: { entries: [custom, ...menu] },
+    });
+    expectStatus(putRes, 200);
+    expect(putRes.data?.usingDefaults).toBe(false);
+    const saved = putRes.data!.entries[0];
+    expect(saved.custom).toBe(true);
+    expect(saved.optionId).toBe('custom');
+    expect(saved.provider).toBe('gemini');
+    expect(saved.model).toBe('gemini-e2e-custom');
+    expect(saved.optionLabel).toBe('gemini-e2e-custom');
+    expect(saved.hasKey).toBe(true);
+    expect(saved.structuredOutput).toBe('json-schema');
+    expect(saved.reasoningEffort).toBe('low');
+    expect(saved.maxOutputTokens).toBe(512);
+    expect(putRes.data?.entries.map((e) => e.optionId)).toEqual([
+      'custom',
+      'gemini-chain',
+      'groq',
+      'openrouter-free',
+      'openrouter-glm',
+      'gemini-flash-chain',
+    ]);
+
+    // GET /routing reads the same row back; chat is untouched
+    const routing = await user.api.GET('/api/v1/llm/routing');
+    expectStatus(routing, 200);
+    expect(routing.data?.default.entries[0].custom).toBe(true);
+    expect(routing.data?.default.entries[0].model).toBe('gemini-e2e-custom');
+    expect(routing.data?.chat.usingDefaults).toBe(true);
+
+    // Health lists the typed model under the Gemini key
+    const health = await user.api.GET('/api/v1/llm/health');
+    expectStatus(health, 200);
+    expect(health.data?.some((h) => h.model === 'gemini-e2e-custom' && h.provider === 'gemini')).toBe(true);
+
+    // 5. The same model twice (any case) -> 400; a custom row never excuses a missing menu option
+    const dup = await user.api.PUT('/api/v1/llm/routing/{group}', {
+      params: { path: { group: 'default' } },
+      body: { entries: [custom, { ...custom, model: 'GEMINI-E2E-CUSTOM' }, ...menu] },
+    });
+    expectStatus(dup, 400);
+    expect(JSON.stringify(dup.error)).toContain('Duplicate custom model');
+    const partial = await user.api.PUT('/api/v1/llm/routing/{group}', {
+      params: { path: { group: 'default' } },
+      body: { entries: [custom, ...menu.slice(1)] },
+    });
+    expectStatus(partial, 400);
+    expect(JSON.stringify(partial.error)).toContain('Missing: gemini-chain');
+
+    // 6. Removing the custom row is just a save without it
+    const without = await user.api.PUT('/api/v1/llm/routing/{group}', {
+      params: { path: { group: 'default' } },
+      body: { entries: menu },
+    });
+    expectStatus(without, 200);
+    expect(without.data?.entries.some((e) => e.custom)).toBe(false);
+  });
 });

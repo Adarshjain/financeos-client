@@ -2005,6 +2005,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/llm/routing/test-model": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["testModel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/llm/routing/{group}": {
         parameters: {
             query?: never;
@@ -6003,7 +6019,10 @@ export interface components {
             rootFrame?: string | null;
         };
         RoutingEntryDto: {
+            custom: boolean;
             hasKey: boolean;
+            /** Format: int32 */
+            maxOutputTokens?: number | null;
             model?: string | null;
             optionId: string;
             optionLabel: string;
@@ -6011,9 +6030,19 @@ export interface components {
             position: number;
             provider: string;
             providerName: string;
+            providerPin?: string | null;
+            reasoningEffort?: string | null;
+            structuredOutput?: string | null;
         };
         RoutingEntryRequest: {
+            /** Format: int32 */
+            maxOutputTokens?: number | null;
+            model?: string | null;
             optionId: string;
+            provider?: string | null;
+            providerPin?: string | null;
+            reasoningEffort?: string | null;
+            structuredOutput?: string | null;
         };
         RoutingOptionDto: {
             available: boolean;
@@ -6420,6 +6449,15 @@ export interface components {
             error?: string | null;
             message?: string | null;
             ok: boolean;
+        };
+        TestModelRequest: {
+            /** Format: int32 */
+            maxOutputTokens?: number | null;
+            model: string;
+            provider: string;
+            providerPin?: string | null;
+            reasoningEffort?: string | null;
+            structuredOutput?: string | null;
         };
         TierRequest: {
             rate?: number;
@@ -12035,6 +12073,39 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["RoutingOptionDto"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    testModel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TestModelRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TestKeyResponse"];
                 };
             };
             /** @description Error response */
