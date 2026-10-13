@@ -379,18 +379,20 @@ describe('KpiUnderlyingDialog', () => {
       await waitFor(() => expect(screen.queryByText('Sort failed')).not.toBeInTheDocument());
     });
 
-    it('draws group headers in the default order', async () => {
+    it('draws one table per group in the default order', async () => {
       respond = () => Promise.resolve({ data: response({ groupField: 'side' }) });
       render();
-      expect(await screen.findByText('Asset')).toBeInTheDocument();
-      expect(screen.getByText('Liability')).toBeInTheDocument();
+      expect(await screen.findByRole('region', { name: 'Asset' })).toBeInTheDocument();
+      expect(screen.getByRole('region', { name: 'Liability' })).toBeInTheDocument();
+      expect(screen.getAllByRole('table')).toHaveLength(2);
     });
 
-    it('drops group headers once the rows are sorted by a column', async () => {
+    it('keeps one table per group once the rows are sorted by a column', async () => {
       respond = () => Promise.resolve({ data: response({ groupField: 'side', sortKey: 'amount', sortDirection: 'asc' }) });
       render();
       await screen.findByText('Coffee');
-      expect(screen.queryByText('Asset')).not.toBeInTheDocument();
+      expect(screen.getByRole('region', { name: 'Asset' })).toBeInTheDocument();
+      expect(screen.getAllByRole('table')).toHaveLength(2);
     });
 
     it('leaves rows inert without a row action', async () => {

@@ -4,11 +4,13 @@ import {
   asFormat,
   formatAmount,
   formatKpiValue,
+  partitionByGroup,
   sanitizeFilename,
   saveBlob,
   sortParam,
   sourceKey,
   underlyingCsvFilename,
+  underlyingSubtitleKey,
 } from '../underlying.helpers';
 
 describe('asFormat', () => {
@@ -143,5 +145,59 @@ describe('saveBlob', () => {
     expect(revokeObjectURL).not.toHaveBeenCalled();
     vi.runAllTimers();
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:x');
+  });
+});
+
+describe('underlyingSubtitleKey', () => {
+  it("folds net worth's kind into the name column", () => {
+    expect(underlyingSubtitleKey('net_worth')).toBe('kind');
+  });
+
+  it('folds nothing for any other datasource', () => {
+    expect(underlyingSubtitleKey('transactions')).toBeNull();
+  });
+});
+
+describe('partitionByGroup', () => {
+  const rows = [
+    { id: 'l1', side: 'liability', value: 5 },
+    { id: 'a1', side: 'asset', value: 10 },
+    { id: 'a2', side: 'asset', value: 2 },
+    { id: 'l2', side: 'liability', value: 1 },
+  ];
+
+  it("orders the groups as the totals do, each group's rows in page order", () => {
+    expect(partitionByGroup(rows, 'side', { asset: 12, liability: 6 })).toEqual([
+      { value: 'asset', rows: [rows[1], rows[2]] },
+      { value: 'liability', rows: [rows[0], rows[3]] },
+    ]);
+  });
+
+  it('leaves out a group the totals name but the page has no rows of', () => {
+    expect(partitionByGroup(rows, 'side', { asset: 12, other: 0, liability: 6 }).map((g) => g.value)).toEqual([
+      'asset',
+      'liability',
+    ]);
+  });
+
+  it('appends groups the totals do not name, in order of first appearance', () => {
+    const extra = [{ id: 'x', side: 'other', value: 1 }, ...rows, { id: 'y', side: 'more', value: 1 }];
+    expect(partitionByGroup(extra, 'side', { liability: 6 }).map((g) => g.value)).toEqual(['liability', 'other', 'asset', 'more']);
+  });
+
+  it('falls back to first appearance without totals', () => {
+    expect(partitionByGroup(rows, 'side', null).map((g) => g.value)).toEqual(['liability', 'asset']);
+    expect(partitionByGroup(rows, 'side', {}).map((g) => g.value)).toEqual(['liability', 'asset']);
+  });
+
+  it('collects rows without a group value under one empty-keyed group', () => {
+    const blank = [{ id: 'n1', side: null }, { id: 'n2' }, { id: 'a', side: 'asset' }];
+    const groups = partitionByGroup(blank, 'side', { asset: 1 });
+    expect(groups.map((g) => g.value)).toEqual(['asset', null]);
+    expect(groups[1].rows.map((r) => r.id)).toEqual(['n1', 'n2']);
+  });
+
+  it('is empty for an empty page', () => {
+    expect(partitionByGroup([], 'side', { asset: 12 })).toEqual([]);
   });
 });

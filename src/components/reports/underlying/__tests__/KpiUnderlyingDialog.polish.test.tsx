@@ -103,46 +103,70 @@ beforeEach(() => {
 
 afterEach(() => vi.unstubAllGlobals());
 
+const region = (name: string) => screen.getByRole('region', { name });
+const bodyRows = (scope: HTMLElement) => within(scope).getAllByRole('row').slice(1);
+const cellText = (row: HTMLElement) => within(row).getAllByRole('cell').map((c) => c.textContent);
+
 describe('VUD grouped rows (desktop)', () => {
-  it('leaves the Side column out while grouped and heads each group with its total in the value column', async () => {
+  it('draws one table per side headed by its total, the kind beside the name, and neither a Side nor a Kind column', async () => {
     render();
     await screen.findByText('Savings');
-    const table = screen.getByRole('table');
-    expect(within(table).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Name', 'Kind', 'Value']);
-    const rows = within(table).getAllByRole('row').slice(1);
-    const cellText = (i: number) => within(rows[i]).getAllByRole('cell').map((c) => c.textContent);
-    expect(cellText(0)).toEqual(['Asset', '₹16,000.00']);
-    expect(cellText(3)).toEqual(['Liability', '₹500.00']);
+    expect(screen.getAllByRole('region').map((r) => r.getAttribute('aria-label'))).toEqual(['Asset', 'Liability']);
+    const asset = region('Asset');
+    expect(within(asset).getByRole('heading', { level: 3 })).toHaveTextContent('Asset');
+    expect(within(asset).getByText('₹16,000.00')).toBeInTheDocument();
+    expect(within(asset).getAllByRole('columnheader').map((h) => h.textContent)).toEqual(['Name', 'Value']);
+    expect(bodyRows(asset).map(cellText)).toEqual([
+      ['Savings Bank account', '₹10,000.00'],
+      ['Broker Broker', '₹6,000.00'],
+    ]);
+    const liability = region('Liability');
+    expect(within(liability).getByRole('heading', { level: 3 }).nextElementSibling).toHaveTextContent('₹500.00');
+    expect(bodyRows(liability).map(cellText)).toEqual([['Card Credit card', '₹500.00']]);
+    expect(screen.queryByRole('columnheader', { name: 'Side' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Kind' })).not.toBeInTheDocument();
   });
 
-  it('shows the Side column again, without group headers, once a header sorts the rows', async () => {
+  it('keeps the tables split once a header sorts the rows, every table marking the sort', async () => {
     render();
     await screen.findByText('Savings');
+    const sorted = [nwRows[2], nwRows[1], nwRows[0]];
     respond = (q) =>
-      Promise.resolve({ data: q.sort ? response({ sortKey: 'value', sortDirection: 'asc' }) : response() });
-    fireEvent.click(screen.getByRole('button', { name: 'Value' }));
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Side' })).toBeInTheDocument());
-    expect(screen.queryByText('₹16,000.00')).not.toBeInTheDocument();
-    expect(screen.getAllByRole('row')).toHaveLength(4);
+      Promise.resolve({
+        data: q.sort
+          ? response({ sortKey: 'value', sortDirection: 'asc', table: { ...response().table, rows: sorted } })
+          : response(),
+      });
+    fireEvent.click(within(region('Liability')).getByRole('button', { name: 'Value' }));
+    await waitFor(() => expect(underlyingCalls().at(-1)).toMatchObject({ page: 0, sort: 'value,asc' }));
+    await waitFor(() =>
+      expect(bodyRows(region('Asset')).map((r) => cellText(r)[0])).toEqual(['Broker Broker', 'Savings Bank account']),
+    );
+    expect(within(region('Asset')).getByRole('columnheader', { name: 'Value' })).toHaveAttribute('aria-sort', 'ascending');
+    expect(within(region('Liability')).getByRole('columnheader', { name: 'Value' })).toHaveAttribute('aria-sort', 'ascending');
+    expect(within(region('Asset')).getByText('₹16,000.00')).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'Side' })).not.toBeInTheDocument();
   });
 
-  it('prints no count, no aggregate and no summary lines under the rows, but still pages', async () => {
+  it('prints no count, no aggregate and no summary lines under the rows, but still pages — with one pager', async () => {
     render();
     await screen.findByText('Savings');
     expect(screen.queryByText(/30 rows/)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Sum /)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Assets /)).not.toBeInTheDocument();
     expect(screen.queryByText(/^Liabilities /)).not.toBeInTheDocument();
+    expect(screen.getAllByRole('navigation', { name: 'Pagination' })).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
     await waitFor(() => expect(underlyingCalls().at(-1)).toMatchObject({ page: 1 }));
   });
 
-  it('draws plain group headers when the response carries no totals', async () => {
+  it('heads each table plainly when the response carries no totals', async () => {
     respond = () => Promise.resolve({ data: response({ groupTotals: {} }) });
     render();
     await screen.findByText('Savings');
-    const first = within(screen.getByRole('table')).getAllByRole('row')[1];
-    expect(within(first).getAllByRole('cell').map((c) => c.textContent)).toEqual(['Asset']);
+    expect(within(region('Asset')).getByRole('heading', { level: 3 })).toHaveTextContent('Asset');
+    expect(screen.queryByText('₹16,000.00')).not.toBeInTheDocument();
+    expect(bodyRows(region('Asset'))).toHaveLength(2);
   });
 });
 
@@ -197,16 +221,17 @@ describe('VUD rupee figures', () => {
 describe('VUD on a phone', () => {
   beforeEach(() => stubPhone(true));
 
-  it('lists the rows as cards under group headings with their totals, the measure as the figure', async () => {
+  it('lists the rows as cards under a heading per side with its total, the measure as the figure, the kind beside the name', async () => {
     render();
     const asset = await screen.findByRole('region', { name: 'Asset' });
     expect(screen.queryByRole('table')).not.toBeInTheDocument();
     expect(within(asset).getByText('₹16,000.00')).toBeInTheDocument();
     const savings = within(asset).getByRole('button', { name: /Savings/ });
     expect(within(savings).getByText('₹10,000.00')).toHaveClass('font-semibold');
-    // The meta line: the remaining columns, the group column left out.
-    expect(within(savings).getByText('Bank account')).toBeInTheDocument();
+    expect(within(savings).getByText('Bank account')).toHaveClass('text-slate-500');
+    expect(within(savings).queryByText(/·/)).not.toBeInTheDocument();
     expect(within(screen.getByRole('region', { name: 'Liability' })).getByText('Card')).toBeInTheDocument();
+    expect(screen.getAllByRole('combobox', { name: 'Sort' })).toHaveLength(1);
   });
 
   it('opens a row breakdown from a card', async () => {
@@ -228,11 +253,14 @@ describe('VUD on a phone', () => {
           ? response({ sortKey: 'value', sortDirection: String(q.sort).endsWith('desc') ? 'desc' : 'asc' })
           : response(),
       });
+    // Neither the side (the section) nor the kind (beside the name) is on offer.
+    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual(['Default order', 'Name', 'Value']);
     fireEvent.click(screen.getByRole('option', { name: 'Value' }));
     await waitFor(() => expect(underlyingCalls().at(-1)).toEqual({ period: 'current', page: 0, size: 25, sort: 'value,asc' }));
-    // Sorted: no group headings; the side is back on each card's meta line.
-    await waitFor(() => expect(screen.queryByRole('region', { name: 'Asset' })).not.toBeInTheDocument());
-    expect(within(screen.getByRole('button', { name: /Savings/ })).getByText('Asset · Bank account')).toBeInTheDocument();
+    // Sorted: the sides keep their own card lists.
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Sort ascending' })).toBeInTheDocument());
+    expect(screen.getByRole('region', { name: 'Asset' })).toBeInTheDocument();
+    expect(within(screen.getByRole('button', { name: /Savings/ })).queryByText(/Asset/)).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Sort ascending' }));
     await waitFor(() => expect(underlyingCalls().at(-1)).toMatchObject({ page: 0, sort: 'value,desc' }));
     fireEvent.click(screen.getByRole('option', { name: 'Default order' }));
