@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 
 import { AccountFormWrapper } from '@/components/accounts/AccountFormWrapper';
+import { formatCompact } from '@/components/charts/chart-format';
 import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { isAccountClosed, isAccountOfType } from '@/lib/account.types';
@@ -15,7 +16,6 @@ import { sumCreditUsage } from '@/lib/creditLimitPools';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
 import { formatUtilisation, utilisationToneClasses } from '@/lib/utilisation';
-import { formatMoney } from '@/lib/utils';
 
 import { BankAccountTile } from './BankAccountTile';
 import { BrokerTile } from './BrokerTile';
@@ -74,7 +74,7 @@ export function AccountsView() {
     <div className="grid grid-cols-1 gap-6">
       {/* Bank Accounts Section */}
       <div className="space-y-1">
-        <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800/60">
+        <div className="flex items-center justify-between pb-1">
           <div className="flex items-center gap-2">
             <Landmark className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">Bank Accounts</h2>
@@ -102,7 +102,7 @@ export function AccountsView() {
 
       {/* Credit Cards Section */}
       <div className="space-y-1">
-        <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800/60">
+        <div className="pb-1 space-y-0.5">
           <div className="flex items-center gap-2">
             <CardIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
             <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">Credit Cards</h2>
@@ -110,9 +110,9 @@ export function AccountsView() {
               {creditCards.length}
             </span>
           </div>
-          <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400 font-semibold tabular-nums">
-            <span>Total Limit: {formatMoney(creditUsage.limit)}</span>
-            <span>Outstanding: {formatMoney(creditUsage.owed)}</span>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500 dark:text-slate-400 font-semibold tabular-nums">
+            <span>Total Limit: {formatCompact(creditUsage.limit, true)}</span>
+            <span>Outstanding: {formatCompact(creditUsage.owed, true)}</span>
             {creditUsage.utilizationPct != null && (
               <span
                 title="Utilisation across all cards"
@@ -142,7 +142,7 @@ export function AccountsView() {
 
       {/* Broker Accounts Section */}
       <div className="space-y-1">
-        <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800/60">
+        <div className="flex items-center justify-between pb-1">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">Brokers</h2>
@@ -170,7 +170,7 @@ export function AccountsView() {
 
       {/* Generic / Other Accounts Section */}
       <div className="space-y-1">
-        <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-slate-800/60">
+        <div className="flex items-center justify-between pb-1">
           <div className="flex items-center gap-2">
             <Wallet className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200">Other Accounts</h2>

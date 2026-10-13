@@ -84,7 +84,7 @@ describe('AccountsPage credit card tile — real payload, real child components'
     // no global toggle anywhere
     expect(screen.queryByText(/Show Closed/i)).toBeNull();
     // closed card's limit is excluded from the section total (only Random Card's 20L)
-    expect(screen.getByText(/Total Limit/)).toHaveTextContent('20,00,000');
+    expect(screen.getByText(/Total Limit/)).toHaveTextContent('Total Limit: ₹20L');
   });
 
   it('renders Cards button for bank accounts', async () => {

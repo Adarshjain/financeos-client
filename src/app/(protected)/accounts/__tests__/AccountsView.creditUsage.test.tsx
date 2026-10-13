@@ -14,7 +14,6 @@ vi.mock('@/lib/api/client', async () => {
 import { AccountsView } from '@/app/(protected)/accounts/components/AccountsView';
 import { api } from '@/lib/api/client';
 import { AccountType } from '@/lib/types';
-import { formatMoney } from '@/lib/utils';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 function card(id: string, extra: Record<string, unknown>) {
@@ -44,10 +43,31 @@ describe('AccountsView — credit cards outstanding and utilisation', () => {
 
     renderWithQuery(<AccountsView />);
 
-    expect(await screen.findByText(`Outstanding: ${formatMoney(40000)}`)).toBeInTheDocument();
+    expect(await screen.findByText('Outstanding: ₹40K')).toBeInTheDocument();
     const pct = screen.getByText('10.0%');
     expect(pct).toHaveAttribute('title', 'Utilisation across all cards');
     expect(pct).toHaveClass('text-emerald-600');
+  });
+
+  it('shortens amounts to lakhs and thousands, and shows an amount under a thousand as is', async () => {
+    vi.mocked(api.GET).mockResolvedValue({
+      data: [card('a', { creditLimit: 153000, effectiveCreditLimit: 153000, balance: -950 })],
+    } as never);
+
+    renderWithQuery(<AccountsView />);
+
+    expect(await screen.findByText('Total Limit: ₹1.53L')).toBeInTheDocument();
+    expect(screen.getByText('Outstanding: ₹950')).toBeInTheDocument();
+  });
+
+  it('shortens a thousands-scale amount to K', async () => {
+    vi.mocked(api.GET).mockResolvedValue({
+      data: [card('a', { creditLimit: 1200, effectiveCreditLimit: 1200, balance: -600 })],
+    } as never);
+
+    renderWithQuery(<AccountsView />);
+
+    expect(await screen.findByText('Total Limit: ₹1.2K')).toBeInTheDocument();
   });
 
   it('tones a high utilisation rose', async () => {
@@ -67,7 +87,7 @@ describe('AccountsView — credit cards outstanding and utilisation', () => {
 
     renderWithQuery(<AccountsView />);
 
-    expect(await screen.findByText(`Outstanding: ${formatMoney(5000)}`)).toBeInTheDocument();
+    expect(await screen.findByText('Outstanding: ₹5K')).toBeInTheDocument();
     expect(screen.queryByTitle('Utilisation across all cards')).not.toBeInTheDocument();
   });
 });
