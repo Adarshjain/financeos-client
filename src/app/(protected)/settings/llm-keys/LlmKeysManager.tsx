@@ -78,8 +78,23 @@ export function LlmKeysManager() {
     handleSaveRouting,
     handleResetRouting,
     handleMoveDraftItem,
+    handleRemoveDraftItem,
+    handleAddCustomModel,
+    chatAddError,
+    defaultAddError,
+    testingChat,
+    testingDefault,
     toggleCustomizingProvider,
   } = useLlmKeysManager();
+
+  // Which providers a typed model can be probed with: the fixed provider list, keyed or not.
+  const providerOptions = PROVIDERS.map((p) => ({
+    id: p.id,
+    name: p.name,
+    hasKey: keys.some(
+      (k) => k.provider.toLowerCase() === p.id.toLowerCase() && k.status === 'ACTIVE'
+    ),
+  }));
 
   if (loading) {
     return (
@@ -183,6 +198,11 @@ export function LlmKeysManager() {
               onMoveDraftItem={(idx, delta) =>
                 handleMoveDraftItem('chat', idx, delta)
               }
+              onRemoveDraftItem={(idx) => handleRemoveDraftItem('chat', idx)}
+              onAddCustomModel={(input) => handleAddCustomModel('chat', input)}
+              providers={providerOptions}
+              testing={testingChat}
+              addError={chatAddError}
             />
 
             <RoutingGroupCard
@@ -203,6 +223,11 @@ export function LlmKeysManager() {
               onMoveDraftItem={(idx, delta) =>
                 handleMoveDraftItem('default', idx, delta)
               }
+              onRemoveDraftItem={(idx) => handleRemoveDraftItem('default', idx)}
+              onAddCustomModel={(input) => handleAddCustomModel('default', input)}
+              providers={providerOptions}
+              testing={testingDefault}
+              addError={defaultAddError}
             />
           </div>
         )}

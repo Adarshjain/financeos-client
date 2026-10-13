@@ -84,4 +84,56 @@ test.describe('LLM Settings UI (@ui)', () => {
     await expect(reloadedChatCard.getByText('Default')).toBeVisible();
     await expect(reloadedChatCard.getByRole('button', { name: /Reset/i })).not.toBeVisible();
   });
+
+  test('Custom model row: type a model, Test & add probes it, it persists in the order, and can be removed', async ({
+    page,
+  }) => {
+    await page.goto('/settings/llm-keys');
+    await page.waitForLoadState('networkidle');
+
+    // Without a key the add row only hints; add a Gemini key first
+    const defaultCard = page.locator('.border', { has: page.getByText('Reading emails, extracting transactions') }).first();
+    await defaultCard.getByRole('button', { name: /Customise/i }).click();
+    await expect(defaultCard.getByText('Add an API key to type in a model of your own.')).toBeVisible();
+    await defaultCard.getByRole('button', { name: 'Cancel' }).click();
+
+    const geminiCard = page.locator('.border', { has: page.getByText('Gemini', { exact: true }) }).first();
+    await geminiCard.getByRole('button', { name: /Add Key/i }).click();
+    await page.getByPlaceholder('Paste API key').fill('e2e-gemini-good');
+    await page.getByRole('button', { name: 'Save Key' }).click();
+    await expect(page.getByText('•••• good')).toBeVisible();
+
+    // Type a model id and probe it; the row joins the draft at the bottom
+    await defaultCard.getByRole('button', { name: /Customise/i }).click();
+    await defaultCard.getByLabel('Model id').fill('gemini-e2e-custom');
+    await defaultCard.getByRole('button', { name: /Test & add/i }).click();
+    await expect(defaultCard.getByRole('button', { name: 'Remove gemini-e2e-custom' })).toBeVisible();
+    await expect(defaultCard.getByLabel('Model id')).toHaveValue('');
+
+    // The same model again is refused client-side
+    await defaultCard.getByLabel('Model id').fill('gemini-e2e-custom');
+    await defaultCard.getByRole('button', { name: /Test & add/i }).click();
+    await expect(defaultCard.getByText('That model is already in this list.')).toBeVisible();
+
+    // Move it to the top and save
+    const upButtons = defaultCard.locator('button:has(svg.lucide-arrow-up)');
+    const rows = await upButtons.count();
+    for (let i = rows - 1; i > 0; i -= 1) {
+      await upButtons.nth(i).click();
+    }
+    await defaultCard.getByRole('button', { name: 'Save' }).click();
+    await expect(defaultCard.getByText('Custom')).toBeVisible();
+    await expect(defaultCard.getByText('gemini-e2e-custom')).toBeVisible();
+    await expect(defaultCard.getByText('#1')).toBeVisible();
+
+    // Survives a reload, then can be removed from the draft
+    await page.reload();
+    await page.waitForLoadState('networkidle');
+    const reloaded = page.locator('.border', { has: page.getByText('Reading emails, extracting transactions') }).first();
+    await expect(reloaded.getByText('gemini-e2e-custom')).toBeVisible();
+    await reloaded.getByRole('button', { name: /Edit/i }).click();
+    await reloaded.getByRole('button', { name: 'Remove gemini-e2e-custom' }).click();
+    await reloaded.getByRole('button', { name: 'Save' }).click();
+    await expect(reloaded.getByText('gemini-e2e-custom')).not.toBeVisible();
+  });
 });

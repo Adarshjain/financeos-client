@@ -7,6 +7,7 @@ import {
   Loader2,
   RotateCcw,
   Sliders,
+  X,
 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,10 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type { Schemas } from '@/lib/api/types';
+
+import { CustomModelRow, type ProviderOption } from './CustomModelRow';
+import { RoutingEntryList } from './RoutingEntryList';
+import { type CustomModelInput, draftEntryKey, isCustomEntry } from './useLlmRoutingEditor';
 
 // The spec marks a few RoutingEntryDto/RoutingOptionDto fields (`model`,
 // `notes`) optional+nullable, where the hand-written llmKey.types.ts versions
@@ -36,13 +41,19 @@ interface RoutingGroupCardProps {
   draft: RoutingEntryRequest[];
   saving: boolean;
   resetting: boolean;
+  /** A custom model is being probed for this group. */
+  testing: boolean;
+  addError: string | null;
   health: LlmBucketHealthDto[];
   routingOptions: RoutingOptionDto[];
+  providers: ProviderOption[];
   onStartCustomizing: () => void;
   onCancelEditing: () => void;
   onSaveRouting: () => void;
   onResetRouting: () => void;
   onMoveDraftItem: (index: number, delta: number) => void;
+  onRemoveDraftItem: (index: number) => void;
+  onAddCustomModel: (input: CustomModelInput) => Promise<boolean>;
 }
 
 export function RoutingGroupCard({
@@ -51,22 +62,28 @@ export function RoutingGroupCard({
   draft,
   saving,
   resetting,
+  testing,
+  addError,
   health,
   routingOptions,
+  providers,
   onStartCustomizing,
   onCancelEditing,
   onSaveRouting,
   onResetRouting,
   onMoveDraftItem,
+  onRemoveDraftItem,
+  onAddCustomModel,
 }: RoutingGroupCardProps) {
+  const providerName = (id: string | null | undefined) =>
+    providers.find((p) => p.id === (id ?? '').toLowerCase())?.name ?? id ?? '';
+
   return (
     <Card className="border border-slate-200 dark:border-slate-800">
       <CardHeader className="py-3 px-4 flex flex-row items-center justify-between space-y-0">
         <div>
           <div className="flex items-center gap-2">
-            <CardTitle className="text-sm font-semibold">
-              {groupDto.displayName}
-            </CardTitle>
+            <CardTitle className="text-sm font-semibold">{groupDto.displayName}</CardTitle>
             {groupDto.usingDefaults ? (
               <Badge variant="secondary" className="text-2xs font-normal">
                 Default
@@ -80,9 +97,7 @@ export function RoutingGroupCard({
               </Badge>
             )}
           </div>
-          <CardDescription className="text-2xs mt-0.5">
-            {groupDto.description}
-          </CardDescription>
+          <CardDescription className="text-2xs mt-0.5">{groupDto.description}</CardDescription>
         </div>
 
         {!editing ? (
@@ -110,18 +125,13 @@ export function RoutingGroupCard({
           </div>
         ) : (
           <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="xs"
-              disabled={saving}
-              onClick={onCancelEditing}
-            >
+            <Button variant="ghost" size="xs" disabled={saving} onClick={onCancelEditing}>
               Cancel
             </Button>
             <Button
               variant="default"
               size="xs"
-              disabled={saving || draft.length === 0}
+              disabled={saving || testing || draft.length === 0}
               onClick={onSaveRouting}
             >
               {saving ? (
@@ -137,77 +147,20 @@ export function RoutingGroupCard({
 
       <CardContent className="px-4 py-2 border-t border-slate-100 dark:border-slate-800">
         {!editing ? (
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {groupDto.entries.map((entry) => {
-              const cooled = health.find(
-                (h) =>
-                  h.provider.toLowerCase() === entry.provider.toLowerCase() &&
-                  (h.model === entry.model || !entry.model) &&
-                  h.inCooldown
-              );
-
-              return (
-                <div
-                  key={entry.position}
-                  className="flex items-center justify-between py-2 text-xs"
-                >
-                  <div className="flex items-start gap-2">
-                    <span className="font-mono text-2xs text-slate-400 pt-0.5">
-                      #{entry.position}
-                    </span>
-                    <div className="flex flex-col">
-                      <span
-                        className={`font-medium ${
-                          entry.hasKey
-                            ? 'text-slate-900 dark:text-white'
-                            : 'text-slate-400 dark:text-slate-500'
-                        }`}
-                      >
-                        {entry.optionLabel}
-                      </span>
-                      {!entry.hasKey && (
-                        <span className="text-2xs text-slate-400 dark:text-slate-500">
-                          Not configured
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    {cooled && cooled.cooldownUntil && (
-                      <Badge
-                        variant="outline"
-                        className="text-2xs border-amber-300 text-amber-700 dark:text-amber-400"
-                      >
-                        Cooldown until{' '}
-                        {new Date(cooled.cooldownUntil).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </Badge>
-                    )}
-                    {entry.hasKey && (
-                      <Badge
-                        variant="outline"
-                        className="text-2xs border-emerald-300 text-emerald-700 dark:text-emerald-400"
-                      >
-                        Ready
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <RoutingEntryList entries={groupDto.entries} health={health} />
         ) : (
           <div className="space-y-1.5 py-1">
             {draft.map((item, idx) => {
-              const option = routingOptions.find((o) => o.id === item.optionId);
-              const hasKey = option?.available ?? false;
+              const custom = isCustomEntry(item);
+              const option = custom ? undefined : routingOptions.find((o) => o.id === item.optionId);
+              const hasKey = custom
+                ? providers.some((p) => p.id === (item.provider ?? '').toLowerCase() && p.hasKey)
+                : (option?.available ?? false);
+              const label = custom ? (item.model ?? '') : option?.label || item.optionId;
 
               return (
                 <div
-                  key={item.optionId}
+                  key={draftEntryKey(item)}
                   className="flex items-center gap-2 bg-slate-50 dark:bg-slate-900/50 p-2 rounded-md border border-slate-200 dark:border-slate-800"
                 >
                   <div className="flex flex-col gap-0.5">
@@ -231,29 +184,42 @@ export function RoutingGroupCard({
                     </Button>
                   </div>
 
-                  <span className="font-mono text-2xs text-slate-400">
-                    #{idx + 1}
-                  </span>
+                  <span className="font-mono text-2xs text-slate-400">#{idx + 1}</span>
 
                   <div className="flex flex-col flex-1 min-w-0">
                     <span
-                      className={`text-xs font-medium truncate ${
-                        hasKey
-                          ? 'text-slate-900 dark:text-white'
-                          : 'text-slate-400 dark:text-slate-500'
+                      className={`text-xs font-medium truncate ${custom ? 'font-mono' : ''} ${
+                        hasKey ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'
                       }`}
                     >
-                      {option?.label || item.optionId}
+                      {label}
                     </span>
-                    {!hasKey && (
-                      <span className="text-2xs text-slate-400 dark:text-slate-500">
-                        Not configured
+                    {custom && (
+                      <span className="text-2xs text-slate-500 dark:text-slate-400">
+                        {providerName(item.provider)}
                       </span>
                     )}
+                    {!hasKey && (
+                      <span className="text-2xs text-slate-400 dark:text-slate-500">Not configured</span>
+                    )}
                   </div>
+
+                  {custom && (
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      className="h-5 w-5 p-0"
+                      aria-label={`Remove ${item.model ?? 'model'}`}
+                      onClick={() => onRemoveDraftItem(idx)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
                 </div>
               );
             })}
+
+            <CustomModelRow providers={providers} testing={testing} error={addError} onAdd={onAddCustomModel} />
           </div>
         )}
       </CardContent>
