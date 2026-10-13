@@ -12,7 +12,6 @@ function bill(over: Partial<CardBillResponse> & { accountId: string }): CardBill
     status: 'OPEN',
     muted: false,
     paidSource: 'NONE',
-    possiblePayments: [],
     ...over,
   } as CardBillResponse;
 }

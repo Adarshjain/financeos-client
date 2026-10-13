@@ -13,7 +13,7 @@ export interface BillCardState {
   phase: BillCardPhase;
   /** What is left to pay on the statement; null in the awaiting phase or when unknown. */
   toPay: number | null;
-  /** Card spend (debits) since the last statement closed; credits never reduce it. Null when unknown. */
+  /** What the card owes beyond the bill: debits since the last billed day, less any credits beyond the bill. Null when unknown. */
   unbilled: number | null;
   /** Awaiting with no unbilled spend: collapses into the "Nothing pending" group. */
   nothingPending: boolean;
@@ -28,7 +28,7 @@ export interface BillsWidgetModel {
   nothingPending: BillCardState[];
   /** Sum of `toPay` across arrived and overdue cards. */
   toPayTotal: number;
-  /** Sum of positive unbilled spend across every card. */
+  /** Sum of positive unbilled spend across every card. With `toPayTotal`, what the accounts page shows as outstanding. */
   unbilledTotal: number;
 }
 

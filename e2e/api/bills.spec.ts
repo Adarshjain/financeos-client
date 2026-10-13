@@ -3,7 +3,7 @@ import { generateKeyPairSync } from 'node:crypto';
 import { expectStatus } from '../fixtures/api';
 import { istToday } from '../fixtures/dates';
 import { genCardPdf } from '../fixtures/gen/statements';
-import { createBankAccount, createCreditCard } from '../fixtures/seed/accounts';
+import { createCreditCard } from '../fixtures/seed/accounts';
 import { ingestCardStatement as ingestCardStatementWithRows } from '../fixtures/seed/nav';
 import { uploadAndIngest } from '../fixtures/seed/statements';
 import { createTransaction } from '../fixtures/seed/transactions';
@@ -145,11 +145,10 @@ test.describe('Bills API', () => {
     await expectUnauthenticated('GET', '/api/v1/notifications/settings');
   });
 
-  test('a linked payment dated on the statement day settles the bill, and to pay + unbilled is the accounts outstanding', async ({
+  test('a credit dated on the statement day settles the bill, linked or not, and to pay + unbilled is the accounts outstanding', async ({
     api,
   }) => {
     const card = await createCreditCard(api, { name: 'Posting-lag Bill Card', last4: '7006' });
-    const bank = await createBankAccount(api, { name: 'Bill Pay Bank' });
     const periodEnd = istToday(-3);
     // The issuer cuts by posting date: the statement's lines stop the day before the close; 6000 owed.
     await ingestCardStatementWithRows(api, card.id, '7006', [
@@ -157,30 +156,19 @@ test.describe('Bills API', () => {
       { date: istToday(-4), description: 'RESTAURANT DINING', debit: 1500 },
     ]);
     await createTransaction(api, card.id, { amount: -999, date: periodEnd, description: 'Bought on the close, posted after it' });
-    const cardCredit = await createTransaction(api, card.id, { amount: 6000, date: periodEnd, description: 'Payment received on the close' });
-    const bankDebit = await createTransaction(api, bank.id, { amount: -6000, date: periodEnd, description: 'Card bill paid' });
-
-    const unlinked = (await api.GET('/api/v1/bills')).data!.find((b) => b.accountId === card.id)!;
-    expect(['OPEN', 'OVERDUE'], 'an unlinked credit is only a possible payment').toContain(unlinked.status);
-    expect(unlinked.remainingAmount).toBe(6000);
-    expect(unlinked.possiblePayments.map((p) => p.transactionId)).toEqual([cardCredit.id]);
-
-    expectStatus(
-      await api.POST('/api/v1/transaction-links', {
-        body: { type: 'CC_PAYMENT', members: [{ transactionId: bankDebit.id, isAnchor: true }, { transactionId: cardCredit.id, isAnchor: false }] },
-      }),
-      201,
-    );
+    await createTransaction(api, card.id, { amount: -250, date: istToday(-2), description: 'Excluded, still owed', isTransactionExcluded: true });
+    await createTransaction(api, card.id, { amount: 6000, date: periodEnd, description: 'Payment received on the close' });
 
     const paid = (await api.GET('/api/v1/bills')).data!.find((b) => b.accountId === card.id)!;
-    expect(paid.status, 'linked, the payment on the period end settles the bill').toBe('PAID');
-    expect(paid.paidSource).toBe('LINK');
+    expect(paid.status, 'the payment on the period end settles the bill without a link').toBe('PAID');
+    expect(paid.paidSource).toBe('CREDITS');
+    expect(paid.paidAmount).toBe(6000);
     expect(paid.remainingAmount).toBe(0);
-    expect(paid.unbilledAmount, 'the purchase on the close is unbilled').toBe(999);
+    expect(paid.unbilledAmount, 'the close-day purchase plus the excluded one').toBe(1249);
 
     const account = await api.GET('/api/v1/accounts/{id}', { params: { path: { id: card.id } } });
     expectStatus(account, 200);
-    expect(account.data?.balance, 'closing 6000 − payment 6000 + purchase 999').toBe(-999);
+    expect(account.data?.balance, 'closing 6000 − payment 6000 + purchases 999 + 250').toBe(-1249);
     expect(paid.remainingAmount! + paid.unbilledAmount!, 'to pay + unbilled is what the accounts page shows as outstanding').toBe(
       -account.data!.balance!,
     );

@@ -14,13 +14,13 @@ async function linkPair(api: Parameters<typeof createTransaction>[0], type: 'REF
 }
 
 test.describe('Bills API: cards without a statement (@api)', () => {
-  test('an open card with no statement is an AWAITING_STATEMENT row carrying only the spend so far', async ({ request }) => {
+  test('an open card with no statement is an AWAITING_STATEMENT row carrying what it owes so far', async ({ request }) => {
     const { api } = await newUser(request, 'bills-awaiting');
     const card = await createCreditCard(api, { name: 'Awaiting Card', last4: '8401' });
     await createTransaction(api, card.id, { amount: -1200, date: istToday(-5), description: 'Awaiting spend 1' });
     await createTransaction(api, card.id, { amount: -300, date: istToday(-1), description: 'Awaiting spend 2' });
-    await createTransaction(api, card.id, { amount: -500, date: istToday(-1), description: 'Excluded spend', isTransactionExcluded: true });
-    await createTransaction(api, card.id, { amount: 900, date: istToday(-1), description: 'Credit that never reduces it' });
+    await createTransaction(api, card.id, { amount: -500, date: istToday(-1), description: 'Excluded spend, still owed', isTransactionExcluded: true });
+    await createTransaction(api, card.id, { amount: 900, date: istToday(-1), description: 'Credit that reduces it' });
 
     const res = await api.GET('/api/v1/bills', { params: { query: { accountId: card.id } } });
     expectStatus(res, 200);
@@ -34,14 +34,13 @@ test.describe('Bills API: cards without a statement (@api)', () => {
       paidSource: 'NONE',
       muted: false,
     });
-    expect(Number(row.unbilledAmount)).toBeCloseTo(1500, 2);
+    expect(Number(row.unbilledAmount), 'debits 2000 less the 900 credit: the negative balance').toBeCloseTo(1100, 2);
     expect(row.statementId ?? null).toBeNull();
     expect(row.paymentDueDate ?? null).toBeNull();
     expect(row.totalAmountDue ?? null).toBeNull();
     expect(row.remainingAmount ?? null).toBeNull();
     expect(row.daysUntilDue ?? null).toBeNull();
     expect(row.nextStatementExpectedOn ?? null).toBeNull();
-    expect(row.possiblePayments).toEqual([]);
   });
 
   test('a card with no transactions at all has zero unbilled spend', async ({ request }) => {
@@ -113,7 +112,7 @@ test.describe('Bills API: accountId filter and ordering (@api)', () => {
 });
 
 test.describe('Bills API: unbilled spend and the next statement (@api)', () => {
-  test('unbilledAmount is the included debits after the statement close; credits and excluded debits never count', async ({ request }) => {
+  test('unbilledAmount is every debit after the statement close, excluded ones included; credits within the bill pay the bill instead', async ({ request }) => {
     const { api } = await newUser(request, 'bills-unbilled');
     const card = await createCreditCard(api, { name: 'Unbilled Card', last4: '8410' });
     const bill = await ingestCardStatement(api, card.id, '8410');
@@ -128,18 +127,20 @@ test.describe('Bills API: unbilled spend and the next statement (@api)', () => {
 
     const row = (await api.GET('/api/v1/bills', { params: { query: { accountId: card.id } } })).data![0];
     expect(row.statementId).toBe(bill.statementId);
-    expect(Number(row.unbilledAmount)).toBeCloseTo(1000, 2);
+    expect(Number(row.unbilledAmount), '800 + 200 + the excluded 50; the close-day purchase is billed').toBeCloseTo(1050, 2);
+    expect(row.paidSource).toBe('CREDITS');
+    expect(Number(row.paidAmount), 'the credit after the close pays the bill').toBeCloseTo(300, 2);
     expect(row.nextStatementExpectedOn, 'the next close is projected after this one').toBeTruthy();
     expect(row.nextStatementExpectedOn! > close).toBe(true);
 
     const single = await api.GET('/api/v1/bills/{statementId}', { params: { path: { statementId: bill.statementId! } } });
     expectStatus(single, 200);
-    expect(Number(single.data!.unbilledAmount)).toBeCloseTo(1000, 2);
+    expect(Number(single.data!.unbilledAmount)).toBeCloseTo(1050, 2);
     expect(single.data!.nextStatementExpectedOn).toBe(row.nextStatementExpectedOn);
 
     const paid = await api.POST('/api/v1/bills/{statementId}/mark-paid', { params: { path: { statementId: bill.statementId! } }, body: {} });
     expectStatus(paid, 200);
-    expect(Number(paid.data!.unbilledAmount), 'mutations return the enriched bill too').toBeCloseTo(1000, 2);
+    expect(Number(paid.data!.unbilledAmount), 'mutations return the enriched bill too').toBeCloseTo(1050, 2);
     expect(paid.data!.nextStatementExpectedOn).toBe(row.nextStatementExpectedOn);
   });
 
@@ -173,57 +174,54 @@ test.describe('Bills API: unbilled spend and the next statement (@api)', () => {
   });
 });
 
-test.describe('Bills API: refunds and reversals pay the open bill (@api)', () => {
-  test('a REFUND-linked credit after the close counts as paid; an unlinked credit is only a possible payment', async ({ request }) => {
-    const { api } = await newUser(request, 'bills-refund');
-    const card = await createCreditCard(api, { name: 'Refund Card', last4: '8412' });
+test.describe('Bills API: every credit after the close pays the open bill (@api)', () => {
+  test('refund, reversal and plain credits after the close all count, excluded ones too; links change nothing', async ({ request }) => {
+    const { api } = await newUser(request, 'bills-credits');
+    const card = await createCreditCard(api, { name: 'Credits Card', last4: '8412' });
     const bill = await ingestCardStatement(api, card.id, '8412');
 
     const purchase = await createTransaction(api, card.id, { amount: -2500, date: istToday(-2), description: 'Online purchase' });
     const refund = await createTransaction(api, card.id, { amount: 2500, date: istToday(-1), description: 'Online refund' });
     await linkPair(api, 'REFUND', purchase.id, refund.id);
-    const stray = await createTransaction(api, card.id, { amount: 300, date: istToday(-1), description: 'Unlinked credit' });
+    await createTransaction(api, card.id, { amount: 300, date: istToday(-1), description: 'Plain credit' });
+    await createTransaction(api, card.id, { amount: 40, date: istToday(-1), description: 'Excluded cashback', isTransactionExcluded: true });
 
     const row = (await api.GET('/api/v1/bills/{statementId}', { params: { path: { statementId: bill.statementId! } } })).data!;
-    expect(row.paidSource).toBe('LINK');
-    expect(Number(row.paidAmount)).toBeCloseTo(2500, 2);
-    expect(Number(row.remainingAmount)).toBeCloseTo(3500, 2);
-    expect(row.possiblePayments.map((p) => p.transactionId)).toEqual([stray.id]);
-    expect(Number(row.unbilledAmount), 'the purchase is unbilled spend; the refund never reduces it').toBeCloseTo(2500, 2);
+    expect(row.paidSource).toBe('CREDITS');
+    expect(Number(row.paidAmount)).toBeCloseTo(2840, 2);
+    expect(Number(row.remainingAmount)).toBeCloseTo(3160, 2);
+    expect(Number(row.unbilledAmount), 'the purchase is unbilled spend; the credits go to the bill').toBeCloseTo(2500, 2);
   });
 
-  test('REVERSAL and CC_PAYMENT links add up towards the same bill', async ({ request }) => {
-    const { api } = await newUser(request, 'bills-reversal');
-    const bank = await createBankAccount(api, { name: 'Reversal Bank' });
-    const card = await createCreditCard(api, { name: 'Reversal Card', last4: '8413' });
-    const bill = await ingestCardStatement(api, card.id, '8413');
-    const read = async () => (await api.GET('/api/v1/bills/{statementId}', { params: { path: { statementId: bill.statementId! } } })).data!;
-
-    const charge = await createTransaction(api, card.id, { amount: -700, date: istToday(-2), description: 'Mistaken charge' });
-    const reversed = await createTransaction(api, card.id, { amount: 700, date: istToday(-1), description: 'Charge reversed' });
-    await linkPair(api, 'REVERSAL', charge.id, reversed.id);
-    let row = await read();
-    expect(row.paidSource).toBe('LINK');
-    expect(Number(row.paidAmount)).toBeCloseTo(700, 2);
-
-    const payDebit = await createTransaction(api, bank.id, { amount: -1000, date: istToday(-1), description: 'Card bill payment' });
-    const payCredit = await createTransaction(api, card.id, { amount: 1000, date: istToday(-1), description: 'Payment received' });
-    await linkPair(api, 'CC_PAYMENT', payDebit.id, payCredit.id);
-    row = await read();
-    expect(Number(row.paidAmount)).toBeCloseTo(1700, 2);
-    expect(Number(row.remainingAmount)).toBeCloseTo(4300, 2);
-  });
-
-  test('a REFUND-linked credit dated before the close does not count', async ({ request }) => {
-    const { api } = await newUser(request, 'bills-refund-before');
+  test('credits dated on or before the last billed day belong to the statement and do not count', async ({ request }) => {
+    const { api } = await newUser(request, 'bills-credit-before');
     const card = await createCreditCard(api, { name: 'Early Refund Card', last4: '8414' });
     const bill = await ingestCardStatement(api, card.id, '8414');
     const purchase = await createTransaction(api, card.id, { amount: -400, date: istToday(-9), description: 'Early purchase' });
     const refund = await createTransaction(api, card.id, { amount: 400, date: istToday(-8), description: 'Early refund' });
     await linkPair(api, 'REFUND', purchase.id, refund.id);
+    await createTransaction(api, card.id, { amount: 100, date: istToday(-3), description: 'Credit on the close, listed by the statement' });
 
     const row = (await api.GET('/api/v1/bills/{statementId}', { params: { path: { statementId: bill.statementId! } } })).data!;
     expect(row.paidSource).toBe('NONE');
     expect(Number(row.remainingAmount)).toBeCloseTo(6000, 2);
+  });
+
+  test('a credit beyond the bill comes off the unbilled spend, and the bill owes what GET /accounts owes', async ({ request }) => {
+    const { api } = await newUser(request, 'bills-overpaid');
+    const card = await createCreditCard(api, { name: 'Overpaid Card', last4: '8413' });
+    const bill = await ingestCardStatement(api, card.id, '8413');
+    await createTransaction(api, card.id, { amount: -700, date: istToday(-2), description: 'New spend' });
+    await createTransaction(api, card.id, { amount: 6500, date: istToday(-1), description: 'Paid 500 too much' });
+
+    const row = (await api.GET('/api/v1/bills/{statementId}', { params: { path: { statementId: bill.statementId! } } })).data!;
+    expect(row.status).toBe('PAID');
+    expect(Number(row.remainingAmount)).toBe(0);
+    expect(Number(row.unbilledAmount), '700 less the 500 paid beyond the bill').toBeCloseTo(200, 2);
+
+    const account = await api.GET('/api/v1/accounts/{id}', { params: { path: { id: card.id } } });
+    expectStatus(account, 200);
+    expect(Number(account.data!.balance)).toBeCloseTo(-200, 2);
+    expect(Number(row.remainingAmount) + Number(row.unbilledAmount)).toBeCloseTo(-Number(account.data!.balance), 2);
   });
 });

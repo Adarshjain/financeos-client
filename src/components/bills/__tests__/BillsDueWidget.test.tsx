@@ -21,12 +21,11 @@ vi.mock('../MarkPaidDialog', () => ({
   MarkPaidDialog: (p: {
     open: boolean;
     bill: { statementId?: string | null } | null;
-    prefill?: { amount: number; paidOn: string } | null;
     onSubmit: (b: object) => void;
     onOpenChange: (o: boolean) => void;
   }) =>
     p.open ? (
-      <div data-testid="mark-paid-dialog" data-statement={p.bill?.statementId} data-prefill={JSON.stringify(p.prefill ?? null)}>
+      <div data-testid="mark-paid-dialog" data-statement={p.bill?.statementId}>
         <button onClick={() => p.onSubmit({ amount: 5 })}>submit-paid</button>
         <button onClick={() => p.onOpenChange(false)}>close-paid</button>
       </div>
@@ -60,7 +59,6 @@ function bill(over: Partial<CardBillResponse> & { accountId: string }): CardBill
     status: 'OPEN',
     muted: false,
     paidSource: 'NONE',
-    possiblePayments: [],
     ...over,
   } as CardBillResponse;
 }
@@ -292,14 +290,13 @@ describe('BillsDueWidget', () => {
   });
 
   describe('actions', () => {
-    it('Mark paid opens the dialog for that statement with no prefill; submit calls the API and toasts', async () => {
+    it('Mark paid opens the dialog for that statement; submit calls the API and toasts', async () => {
       seed([open]);
       vi.mocked(api.POST).mockResolvedValue({ data: { ...open, status: 'PAID', statementId: 's-open' } } as never);
       renderWithQuery(<BillsDueWidget />);
       fireEvent.click(await screen.findByRole('button', { name: /Mark paid/ }));
       const dialog = screen.getByTestId('mark-paid-dialog');
       expect(dialog).toHaveAttribute('data-statement', 's-open');
-      expect(dialog).toHaveAttribute('data-prefill', 'null');
 
       fireEvent.click(screen.getByText('submit-paid'));
       await waitFor(() =>
@@ -337,24 +334,6 @@ describe('BillsDueWidget', () => {
       fireEvent.click(await screen.findByRole('button', { name: /Mark paid/ }));
       fireEvent.click(screen.getByText('close-paid'));
       expect(screen.queryByTestId('mark-paid-dialog')).not.toBeInTheDocument();
-    });
-
-    it('Confirm on a possible payment opens mark-paid prefilled with its amount and date', async () => {
-      seed([bill({ ...open, possiblePayments: [{ transactionId: 't1', amount: 1500, date: '2026-10-06', description: 'NEFT' }] })]);
-      renderWithQuery(<BillsDueWidget />);
-      const list = await screen.findByTestId('possible-payments');
-      expect(list).toHaveTextContent(/Looks like a payment/);
-      fireEvent.click(within(list).getByRole('button', { name: 'Confirm' }));
-      expect(screen.getByTestId('mark-paid-dialog')).toHaveAttribute('data-prefill', JSON.stringify({ amount: 1500, paidOn: '2026-10-06' }));
-    });
-
-    it('a later Mark paid after Confirm clears the prefill', async () => {
-      seed([bill({ ...open, possiblePayments: [{ transactionId: 't1', amount: 1500, date: '2026-10-06' }] })]);
-      renderWithQuery(<BillsDueWidget />);
-      fireEvent.click(await screen.findByRole('button', { name: 'Confirm' }));
-      fireEvent.click(screen.getByText('close-paid'));
-      fireEvent.click(screen.getByRole('button', { name: /Mark paid/ }));
-      expect(screen.getByTestId('mark-paid-dialog')).toHaveAttribute('data-prefill', 'null');
     });
 
     it('Set details opens the details dialog; submit PATCHes and toasts', async () => {
@@ -403,9 +382,9 @@ describe('BillsDueWidget', () => {
       await waitFor(() => expect(toastMock.success).toHaveBeenCalledWith('Payment mark removed'));
     });
 
-    it('no Undo for a LINK-sourced partial, or a MANUAL one with nothing paid', async () => {
+    it('no Undo for a CREDITS-sourced partial, or a MANUAL one with nothing paid', async () => {
       seed([
-        bill({ ...open, accountId: 'l', status: 'PARTIAL', paidSource: 'LINK', paidAmount: 500 }),
+        bill({ ...open, accountId: 'l', status: 'PARTIAL', paidSource: 'CREDITS', paidAmount: 500 }),
         bill({ ...open, accountId: 'm', status: 'PARTIAL', paidSource: 'MANUAL', paidAmount: 0 }),
       ]);
       renderWithQuery(<BillsDueWidget />);
@@ -434,10 +413,10 @@ describe('BillsDueWidget', () => {
       );
     });
 
-    it('MANUAL PAID card inside Nothing pending offers Undo paid; LINK paid and statement-less do not', async () => {
+    it('MANUAL PAID card inside Nothing pending offers Undo paid; CREDITS paid and statement-less do not', async () => {
       seed([
         bill({ accountId: 'm', accountName: 'M', statementId: 's-m', status: 'PAID', paidSource: 'MANUAL' }),
-        bill({ accountId: 'l', accountName: 'L', statementId: 's-l', status: 'PAID', paidSource: 'LINK' }),
+        bill({ accountId: 'l', accountName: 'L', statementId: 's-l', status: 'PAID', paidSource: 'CREDITS' }),
         bill({ accountId: 'n', accountName: 'N', status: 'PAID', paidSource: 'MANUAL', statementId: null }),
       ]);
       vi.mocked(api.DELETE).mockResolvedValue({ data: {} } as never);

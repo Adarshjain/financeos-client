@@ -122,9 +122,9 @@ describe('row helpers', () => {
     expect(severityStripeClass('whatever')).toMatch(/slate/);
   });
 
-  it('isBillAction only for mark_paid, confirm_payment, set_details', () => {
-    for (const t of ['mark_paid', 'confirm_payment', 'set_details']) expect(isBillAction(t)).toBe(true);
-    for (const t of ['open', 'snooze', 'dismiss', 'review', 'reconnect']) expect(isBillAction(t)).toBe(false);
+  it('isBillAction only for mark_paid and set_details', () => {
+    for (const t of ['mark_paid', 'set_details']) expect(isBillAction(t)).toBe(true);
+    for (const t of ['open', 'snooze', 'dismiss', 'review', 'reconnect', 'confirm_payment']) expect(isBillAction(t)).toBe(false);
   });
 
   it('primaryActions drops snooze and dismiss, keeps order', () => {

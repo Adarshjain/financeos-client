@@ -23,7 +23,7 @@ export function severityStripeClass(severity: string): string {
 }
 
 /** Actions the row renders as buttons; snooze and dismiss get their own controls. */
-export const BILL_ACTION_TYPES = ['mark_paid', 'confirm_payment', 'set_details'] as const;
+export const BILL_ACTION_TYPES = ['mark_paid', 'set_details'] as const;
 export type BillActionType = (typeof BILL_ACTION_TYPES)[number];
 
 export function isBillAction(type: string): type is BillActionType {

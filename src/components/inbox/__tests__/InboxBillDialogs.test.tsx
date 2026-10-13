@@ -11,12 +11,11 @@ vi.mock('@/components/bills/MarkPaidDialog', () => ({
   MarkPaidDialog: (p: {
     open: boolean;
     bill: { statementId?: string | null } | null;
-    prefill?: unknown;
     onSubmit: (b: object) => void;
     onOpenChange: (o: boolean) => void;
   }) =>
     p.open ? (
-      <div data-testid="mark-paid" data-statement={p.bill?.statementId} data-prefill={JSON.stringify(p.prefill ?? null)}>
+      <div data-testid="mark-paid" data-statement={p.bill?.statementId}>
         <button onClick={() => p.onSubmit({ amount: 9 })}>do-paid</button>
         <button onClick={() => p.onOpenChange(false)}>x-paid</button>
       </div>
@@ -46,13 +45,13 @@ import { InboxBillDialogs, type PendingBillAction, toPendingBillAction } from '.
 import { action, item } from './fixtures';
 
 describe('toPendingBillAction', () => {
-  it('maps mark_paid and set_details with the payload statement id, no prefill', () => {
+  it('maps mark_paid and set_details with the payload statement id', () => {
     const row = item({ key: 'k' });
     expect(toPendingBillAction(row, action({ type: 'mark_paid', payload: { statementId: 's1' } }))).toEqual({
-      type: 'mark_paid', statementId: 's1', prefill: null,
+      type: 'mark_paid', statementId: 's1',
     });
     expect(toPendingBillAction(row, action({ type: 'set_details', payload: { statementId: 's2' } }))).toEqual({
-      type: 'set_details', statementId: 's2', prefill: null,
+      type: 'set_details', statementId: 's2',
     });
   });
 
@@ -74,33 +73,14 @@ describe('toPendingBillAction', () => {
     const row = item({ key: 'k', refs: { statementId: 's' } });
     expect(toPendingBillAction(row, action({ type: 'open', payload: { statementId: 's' } }))).toBeNull();
     expect(toPendingBillAction(row, action({ type: 'snooze' }))).toBeNull();
-  });
-
-  it('confirm_payment prefills amount and date from the payload', () => {
-    const row = item({ key: 'k' });
-    const out = toPendingBillAction(row, action({ type: 'confirm_payment', payload: { statementId: 's', amount: 1500, date: '2026-10-06' } }));
-    expect(out).toEqual({ type: 'confirm_payment', statementId: 's', prefill: { amount: 1500, paidOn: '2026-10-06' } });
-  });
-
-  it('confirm_payment without a date prefills an empty date; a zero amount still prefills', () => {
-    const row = item({ key: 'k' });
-    expect(toPendingBillAction(row, action({ type: 'confirm_payment', payload: { statementId: 's', amount: 0 } }))?.prefill).toEqual({ amount: 0, paidOn: '' });
-  });
-
-  it('confirm_payment without an amount has no prefill', () => {
-    const row = item({ key: 'k' });
-    expect(toPendingBillAction(row, action({ type: 'confirm_payment', payload: { statementId: 's' } }))?.prefill).toBeNull();
-  });
-
-  it('mark_paid never prefills even if the payload carries an amount', () => {
-    const row = item({ key: 'k' });
-    expect(toPendingBillAction(row, action({ type: 'mark_paid', payload: { statementId: 's', amount: 5 } }))?.prefill).toBeNull();
+    expect(toPendingBillAction(row, action({ type: 'confirm_payment', payload: { statementId: 's', amount: 5 } })),
+      'the server no longer offers it: credits settle the bill on their own').toBeNull();
   });
 });
 
 describe('InboxBillDialogs', () => {
   const bill = { statementId: 's1', status: 'OPEN', accountName: 'HDFC', paymentDueDate: '2026-10-12' } as CardBillResponse;
-  const pend = (over: Partial<PendingBillAction> = {}): PendingBillAction => ({ type: 'mark_paid', statementId: 's1', prefill: null, ...over });
+  const pend = (over: Partial<PendingBillAction> = {}): PendingBillAction => ({ type: 'mark_paid', statementId: 's1', ...over });
 
   beforeEach(() => {
     vi.resetAllMocks();
@@ -122,16 +102,6 @@ describe('InboxBillDialogs', () => {
     resolve({ data: bill });
     expect(await screen.findByTestId('mark-paid')).toHaveAttribute('data-statement', 's1');
     expect(api.GET).toHaveBeenCalledWith('/api/v1/bills/{statementId}', { params: { path: { statementId: 's1' } } });
-  });
-
-  it('confirm_payment opens mark paid with the prefill', async () => {
-    renderWithQuery(<InboxBillDialogs pending={pend({ type: 'confirm_payment', prefill: { amount: 10, paidOn: '2026-10-06' } })} onClose={vi.fn()} />);
-    expect(await screen.findByTestId('mark-paid')).toHaveAttribute('data-prefill', JSON.stringify({ amount: 10, paidOn: '2026-10-06' }));
-  });
-
-  it('mark_paid does not pass a prefill', async () => {
-    renderWithQuery(<InboxBillDialogs pending={pend({ prefill: { amount: 10, paidOn: 'x' } })} onClose={vi.fn()} />);
-    expect(await screen.findByTestId('mark-paid')).toHaveAttribute('data-prefill', 'null');
   });
 
   it('set_details opens the details dialog, not mark paid', async () => {

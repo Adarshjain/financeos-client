@@ -84,7 +84,6 @@ export type InboxSnoozeRequest = Schemas['InboxSnoozeRequest'];
 // Bills & notifications
 export type CardBillResponse = Schemas['CardBillResponse'];
 export type BillStatus = CardBillResponse['status'];
-export type BillPossiblePayment = NonNullable<CardBillResponse['possiblePayments']>[number];
 export type MarkBillPaidRequest = Schemas['MarkBillPaidRequest'];
 export type UpdateBillDetailsRequest = Schemas['UpdateBillDetailsRequest'];
 export type NotificationSettingsResponse = Schemas['NotificationSettingsResponse'];
