@@ -48,7 +48,7 @@ test.describe('Shared credit limit UI (@ui)', () => {
     // 3. Both tiles show the shared limit; the section total counts it once.
     await expect(page.getByText('HDFC shared · 2 accounts')).toHaveCount(2);
     await expect(page.getByText('Shared Limit', { exact: true })).toHaveCount(2);
-    await expect(page.getByText(/Total Limit: ₹5,00,000/)).toBeVisible();
+    await expect(page.getByText('Total Limit: ₹5L')).toBeVisible();
 
     // 4. One card leaves the pool and gets its own limit back.
     await openAccountEditor(page, 'HDFC Millennia');
@@ -60,6 +60,6 @@ test.describe('Shared credit limit UI (@ui)', () => {
 
     await openAccounts(page);
     await expect(page.getByText('HDFC shared · 1 account')).toHaveCount(1);
-    await expect(page.getByText(/Total Limit: ₹6,00,000/)).toBeVisible();
+    await expect(page.getByText('Total Limit: ₹6L')).toBeVisible();
   });
 });

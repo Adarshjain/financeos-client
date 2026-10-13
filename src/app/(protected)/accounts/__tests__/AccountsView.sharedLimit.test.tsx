@@ -14,7 +14,6 @@ vi.mock('@/lib/api/client', async () => {
 import { AccountsView } from '@/app/(protected)/accounts/components/AccountsView';
 import { api } from '@/lib/api/client';
 import { AccountType } from '@/lib/types';
-import { formatMoney } from '@/lib/utils';
 import { renderWithQuery } from '@/test/renderWithQuery';
 
 const pool = (id: string, creditLimit: number) => ({
@@ -47,6 +46,6 @@ describe('AccountsView — total limit with shared limits', () => {
 
     renderWithQuery(<AccountsView />);
 
-    expect(await screen.findByText(`Total Limit: ${formatMoney(600000)}`)).toBeInTheDocument();
+    expect(await screen.findByText('Total Limit: ₹6L')).toBeInTheDocument();
   });
 });
