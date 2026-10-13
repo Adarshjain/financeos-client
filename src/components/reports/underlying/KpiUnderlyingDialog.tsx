@@ -3,11 +3,13 @@
 // "View underlying data" for a KPI: the rows its value is computed from, for
 // this period or (when the KPI compares) the previous one, server-sorted and
 // server-paged, with the KPI's filters as chips. No row count or aggregate
-// under the rows (the header carries the figure); grouped rows (net worth's
-// Asset / Liability) carry each group's total in their header, and the group
-// column itself is left out while grouped. Rows open a transaction or swap the body to that row's
-// breakdown (Back returns). Download CSV exports every row in the same order;
-// it is offered only on the list — inside a breakdown the footer is just Close.
+// under the rows (the header carries the figure). Grouped rows (net worth's
+// Asset / Liability) make one table per group, each headed by the group's
+// total, sharing one sort and one pager (UnderlyingGroupTables); a datasource
+// may fold a column into the name (net worth's kind). Rows open a transaction
+// or swap the body to that row's breakdown (Back returns). Download CSV
+// exports every row in the same order; it is offered only on the list —
+// inside a breakdown the footer is just Close.
 //
 // Wide centred dialog on desktop with the rows as a table that scrolls
 // sideways inside the body; the standard bottom sheet on phones with the rows
@@ -45,12 +47,14 @@ import {
   saveBlob,
   UNDERLYING_PAGE_SIZE,
   underlyingCsvFilename,
+  underlyingSubtitleKey,
 } from './underlying.helpers';
 import type {
   KpiUnderlyingResponse,
   UnderlyingPeriod,
   UnderlyingSource,
 } from './underlying.types';
+import { UnderlyingGroupTables } from './UnderlyingGroupTables';
 import {
   NotCountedDisclosure,
   UnderlyingFilterChips,
@@ -157,6 +161,7 @@ function UnderlyingContent({
   const rowsClickable = data?.rowAction === 'transaction' || data?.rowAction === 'breakdown';
   const top = nav.top;
   const table = data ? asReportData(data.table) : null;
+  const subtitleKey = data ? underlyingSubtitleKey(data.datasource) : null;
 
   return (
     <>
@@ -216,19 +221,32 @@ function UnderlyingContent({
                   <p className="py-6 text-center text-sm text-slate-500">No rows in this period</p>
                 ) : (
                   <div className={cn(query.isFetching && 'opacity-60 transition-opacity')}>
-                    <ResponsiveTableView
-                      data={table}
-                      sort={sort}
-                      onSortChange={changeSort}
-                      onPageChange={changePage}
-                      loading={query.isFetching}
-                      onRowClick={rowsClickable ? onRowClick : undefined}
-                      // Group headers only make sense in the grouped default order.
-                      groupField={data.sortKey == null ? data.groupField : null}
-                      groupTotals={data.groupTotals}
-                      valueKey={data.measure}
-                      hideRowCount
-                    />
+                    {data.groupField ? (
+                      <UnderlyingGroupTables
+                        table={table}
+                        groupField={data.groupField}
+                        groupTotals={data.groupTotals}
+                        valueKey={data.measure}
+                        subtitleKey={subtitleKey}
+                        sort={sort}
+                        onSortChange={changeSort}
+                        onPageChange={changePage}
+                        loading={query.isFetching}
+                        onRowClick={rowsClickable ? onRowClick : undefined}
+                      />
+                    ) : (
+                      <ResponsiveTableView
+                        data={table}
+                        sort={sort}
+                        onSortChange={changeSort}
+                        onPageChange={changePage}
+                        loading={query.isFetching}
+                        onRowClick={rowsClickable ? onRowClick : undefined}
+                        valueKey={data.measure}
+                        subtitleKey={subtitleKey}
+                        hideRowCount
+                      />
+                    )}
                   </div>
                 )}
                 {query.isError && (

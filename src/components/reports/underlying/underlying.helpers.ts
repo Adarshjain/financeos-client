@@ -3,12 +3,48 @@
 
 import { formatDateRangeForFilename, todayInAppZone } from '@/lib/date-range';
 import { formatMeasureValue } from '@/lib/reports.helpers';
-import type { SortClause } from '@/lib/reports.types';
+import type { SortClause, TableRow } from '@/lib/reports.types';
 
 import type { UnderlyingSource } from './underlying.types';
 
 /** Rows per page in the dialog's tables. */
 export const UNDERLYING_PAGE_SIZE = 25;
+
+/** Per datasource, the column printed beside the name instead of in its own (net worth: the kind). */
+const SUBTITLE_KEYS: Record<string, string> = { net_worth: 'kind' };
+
+/** The column a datasource's underlying rows fold into their first column, or null. */
+export function underlyingSubtitleKey(datasource: string): string | null {
+  return SUBTITLE_KEYS[datasource] ?? null;
+}
+
+/** One group of a page's rows: the stored group value (its label comes from the column) and the rows in page order. */
+export interface UnderlyingGroup {
+  value: unknown;
+  rows: TableRow[];
+}
+
+/**
+ * A page's rows split by `groupField`, each group keeping the page's order. Groups come in the
+ * server's `groupTotals` order (net worth: assets, then liabilities) whatever the page's sort,
+ * then any group the totals do not name in order of first appearance.
+ */
+export function partitionByGroup(
+  rows: TableRow[],
+  groupField: string,
+  groupTotals: Record<string, number> | null | undefined,
+): UnderlyingGroup[] {
+  const groups = new Map<string, UnderlyingGroup>();
+  for (const key of Object.keys(groupTotals ?? {})) groups.set(key, { value: key, rows: [] });
+  for (const row of rows) {
+    const value = row[groupField];
+    const key = String(value ?? '');
+    const group = groups.get(key);
+    if (group) group.rows.push(row);
+    else groups.set(key, { value, rows: [row] });
+  }
+  return [...groups.values()].filter((g) => g.rows.length > 0);
+}
 
 type Format = 'currency' | 'number' | 'percent';
 

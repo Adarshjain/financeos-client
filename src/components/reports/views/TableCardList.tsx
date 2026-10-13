@@ -18,12 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { SortClause, TableData, TableRow } from '@/lib/reports.types';
+import type { SortClause, TableColumn, TableData, TableRow } from '@/lib/reports.types';
 import { cn } from '@/lib/utils';
 
 import { cardLayout, cardMetaLine } from './tableCards.helpers';
+import { TitleCell } from './tableCells';
 import { TablePagination } from './TablePagination';
-import { formatCell, groupLabel, groupTotal } from './TableView';
+import { formatCell, groupLabel, groupTotal, subtitleText } from './TableView';
 
 /** The sort select's value for the report's own order. */
 const DEFAULT_ORDER = '__default__';
@@ -44,6 +45,10 @@ export interface TableCardListProps {
   valueKey?: string | null;
   /** Leaves the row count out of the pager. */
   hideRowCount?: boolean;
+  /** A column printed as a muted label beside the title instead of on the meta line; not offered for sorting. */
+  subtitleKey?: string | null;
+  /** Leaves the pager out altogether: the parent draws one for several lists sharing a page. */
+  hidePagination?: boolean;
 }
 
 interface CardGroup {
@@ -75,17 +80,21 @@ export function TableCardList({
   groupTotals,
   valueKey,
   hideRowCount,
+  subtitleKey,
+  hidePagination,
 }: TableCardListProps) {
   const { rows, page } = data;
   const groupColumn = groupField != null ? data.columns.find((c) => c.key === groupField) : undefined;
-  const cardColumns = groupField != null ? data.columns.filter((c) => c.key !== groupField) : data.columns;
+  const subtitleColumn = subtitleKey != null ? data.columns.find((c) => c.key === subtitleKey) : undefined;
+  const sortColumns = subtitleColumn ? data.columns.filter((c) => c !== subtitleColumn) : data.columns;
+  const cardColumns = sortColumns.filter((c) => groupField == null || c.key !== groupField);
   const layout = cardLayout(cardColumns, valueKey);
   const totalColumn = layout.value;
   const multiPage = page.totalElements > page.size || page.number > 0;
 
   return (
     <div className="space-y-3">
-      {onSortChange && <CardSortBar data={data} sort={sort ?? null} onSortChange={onSortChange} />}
+      {onSortChange && <CardSortBar columns={sortColumns} sort={sort ?? null} onSortChange={onSortChange} />}
 
       {rows.length === 0 ? (
         <p className="py-8 text-center text-sm text-slate-500">No rows for this configuration.</p>
@@ -97,7 +106,7 @@ export function TableCardList({
               {group.rows.map((row, i) => (
                 // Ids may repeat within a page, so keys are index-qualified.
                 <li key={`${String(row.id ?? '')}:${group.start + i}`}>
-                  <RowCard row={row} layout={layout} onRowClick={onRowClick} />
+                  <RowCard row={row} layout={layout} subtitle={subtitleColumn} onRowClick={onRowClick} />
                 </li>
               ))}
             </ul>
@@ -118,7 +127,7 @@ export function TableCardList({
         })
       )}
 
-      {(multiPage || !hideRowCount) && (
+      {!hidePagination && (multiPage || !hideRowCount) && (
         <TablePagination page={page} loading={loading} onPageChange={onPageChange} showCount={!hideRowCount} />
       )}
     </div>
@@ -128,10 +137,12 @@ export function TableCardList({
 function RowCard({
   row,
   layout,
+  subtitle,
   onRowClick,
 }: {
   row: TableRow;
   layout: ReturnType<typeof cardLayout>;
+  subtitle?: TableColumn;
   onRowClick?: (row: TableRow) => void;
 }) {
   const meta = cardMetaLine(row, layout.meta);
@@ -139,7 +150,10 @@ function RowCard({
     <>
       <span className="flex items-start justify-between gap-3">
         <span className="min-w-0 break-words text-sm text-slate-900 dark:text-white">
-          {layout.title ? formatCell(row[layout.title.key], layout.title) : '—'}
+          <TitleCell
+            text={layout.title ? formatCell(row[layout.title.key], layout.title) : '—'}
+            subtitle={subtitleText(row, subtitle)}
+          />
         </span>
         {layout.value && (
           <span className="shrink-0 text-sm font-semibold text-slate-900 tabular-nums dark:text-white">
@@ -166,13 +180,16 @@ function RowCard({
   );
 }
 
-/** "Sort [column ▾] [↑]": the column select (incl. "Default order") and, while sorted, the direction toggle. */
-function CardSortBar({
-  data,
+/**
+ * "Sort [column ▾] [↑]": the column select (incl. "Default order") and, while sorted, the direction
+ * toggle. Exported for a parent that draws one bar over several card lists sharing a sort.
+ */
+export function CardSortBar({
+  columns,
   sort,
   onSortChange,
 }: {
-  data: TableData;
+  columns: TableColumn[];
   sort: SortClause | null;
   onSortChange: (sort: SortClause | null) => void;
 }) {
@@ -189,7 +206,7 @@ function CardSortBar({
           <SelectItem value={DEFAULT_ORDER} className="text-xs">
             Default order
           </SelectItem>
-          {data.columns.map((c) => (
+          {columns.map((c) => (
             <SelectItem key={c.key} value={c.key} className="text-xs">
               {c.label}
             </SelectItem>

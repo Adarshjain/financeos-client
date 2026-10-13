@@ -12,6 +12,7 @@ import { formatCompact } from '@/components/charts/chart-format';
 import { buttonVariants } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { isAccountClosed, isAccountOfType } from '@/lib/account.types';
+import { sumBalances } from '@/lib/accountTotals';
 import { sumCreditUsage } from '@/lib/creditLimitPools';
 import { useAccounts } from '@/lib/query/hooks/useAccounts';
 import { AccountType } from '@/lib/types';
@@ -46,6 +47,9 @@ export function AccountsView() {
   // its utilisation uses: the account's own, else the latest statement's. Outstanding and
   // utilisation are measured the same way, so the percent agrees with the tiles.
   const creditUsage = sumCreditUsage(creditCards);
+  // Open accounts only, like the tiles in the section: what the bank accounts and wallets hold.
+  const bankTotal = sumBalances(bankAccounts);
+  const walletTotal = sumBalances(genericAccounts);
 
   if (accounts.length === 0) {
     return (
@@ -82,6 +86,11 @@ export function AccountsView() {
               {bankAccounts.length}
             </span>
           </div>
+          {bankAccounts.length > 0 && (
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold tabular-nums">
+              Total: {formatCompact(bankTotal, true)}
+            </span>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-2">
@@ -178,6 +187,11 @@ export function AccountsView() {
               {genericAccounts.length}
             </span>
           </div>
+          {genericAccounts.length > 0 && (
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold tabular-nums">
+              Total: {formatCompact(walletTotal, true)}
+            </span>
+          )}
         </div>
 
         <div className="grid grid-cols-1 gap-2">

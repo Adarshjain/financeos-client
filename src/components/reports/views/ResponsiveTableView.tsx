@@ -23,6 +23,8 @@ export interface ResponsiveTableViewProps
     | 'groupField'
     | 'groupTotals'
     | 'hideRowCount'
+    | 'subtitleKey'
+    | 'hidePagination'
   > {
   /**
    * The rows' figure: on cards the bold value, on the table the column a group total sits in.

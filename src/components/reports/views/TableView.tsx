@@ -27,6 +27,7 @@ import type {
 } from '@/lib/reports.types';
 import { cn, formatDate } from '@/lib/utils';
 
+import { TitleCell } from './tableCells';
 import { TablePagination } from './TablePagination';
 
 /** One cell as the table prints it (also the mobile cards' text): a dash when empty. */
@@ -41,6 +42,14 @@ export function formatCell(value: unknown, column: TableColumn): string {
   if (column.type === 'date') return formatDate(String(value));
   if (column.type === 'boolean') return value === true || value === 'true' ? 'Yes' : 'No';
   return valueLabel(String(value), column.valueLabels);
+}
+
+/** A subtitle column's text for a row, or null when it is empty (nothing to print beside the title). */
+export function subtitleText(row: ReportTableRow, column: TableColumn | null | undefined): string | null {
+  if (!column) return null;
+  const value = row[column.key];
+  if (value === null || value === undefined || value === '') return null;
+  return formatCell(value, column);
 }
 
 /**
@@ -148,6 +157,13 @@ interface TableViewProps {
   groupTotalKey?: string | null;
   /** Leaves the row count out of the footer; paging stays (shown only when there is more than one page). */
   hideRowCount?: boolean;
+  /**
+   * A column printed as a muted label beside the first column's value instead of in its own
+   * column (net worth: the kind beside the name).
+   */
+  subtitleKey?: string | null;
+  /** Leaves the pager out altogether: the parent draws one for several tables sharing a page. */
+  hidePagination?: boolean;
 }
 
 /** The group total for a group value, or undefined when there is none. */
@@ -171,18 +187,24 @@ export function TableView({
   groupTotals,
   groupTotalKey,
   hideRowCount,
+  subtitleKey,
+  hidePagination,
 }: TableViewProps) {
   const { rows, page } = data;
   const groupColumn = groupField != null ? data.columns.find((c) => c.key === groupField) : undefined;
   const groupLabels = groupColumn?.valueLabels;
-  const columns =
-    groupField != null && hideGroupColumn ? data.columns.filter((c) => c.key !== groupField) : data.columns;
+  const subtitleColumn = subtitleKey != null ? data.columns.find((c) => c.key === subtitleKey) : undefined;
+  // The group column heads each group and the subtitle column rides beside the first: neither stands alone.
+  const hidden = new Set<string>();
+  if (groupField != null && hideGroupColumn) hidden.add(groupField);
+  if (subtitleColumn) hidden.add(subtitleColumn.key);
+  const columns = hidden.size > 0 ? data.columns.filter((c) => !hidden.has(c.key)) : data.columns;
   // The group header's total sits in this column; the label spans the columns before it.
   const totalIndex = groupTotals && groupTotalKey ? columns.findIndex((c) => c.key === groupTotalKey) : -1;
   const multiPage = page.totalElements > page.size || page.number > 0;
   // Inside a dashboard widget a single page needs no footer: it only repeats the row count.
   // Without the count, a single page has nothing to show at all.
-  const showFooter = hideRowCount ? multiPage || !!onSizeChange : !fill || multiPage;
+  const showFooter = !hidePagination && (hideRowCount ? multiPage || !!onSizeChange : !fill || multiPage);
 
   return (
     <div className={fill ? 'flex h-full flex-col' : 'space-y-3'}>
@@ -250,25 +272,33 @@ export function TableView({
                         'cursor-pointer hover:bg-slate-50 has-[:focus-visible]:bg-slate-50 dark:hover:bg-slate-800/60 dark:has-[:focus-visible]:bg-slate-800/60',
                     })}
                   >
-                    {columns.map((c, ci) => (
-                      <TableCell key={c.key} className="whitespace-nowrap">
-                        {onRowClick && ci === 0 ? (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              // The row's own click handler would fire it a second time.
-                              e.stopPropagation();
-                              onRowClick(row);
-                            }}
-                            className="rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
-                          >
-                            {formatCell(row[c.key], c)}
-                          </button>
+                    {columns.map((c, ci) => {
+                      const content =
+                        ci === 0 ? (
+                          <TitleCell text={formatCell(row[c.key], c)} subtitle={subtitleText(row, subtitleColumn)} />
                         ) : (
                           formatCell(row[c.key], c)
-                        )}
-                      </TableCell>
-                    ))}
+                        );
+                      return (
+                        <TableCell key={c.key} className="whitespace-nowrap">
+                          {onRowClick && ci === 0 ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                // The row's own click handler would fire it a second time.
+                                e.stopPropagation();
+                                onRowClick(row);
+                              }}
+                              className="rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background"
+                            >
+                              {content}
+                            </button>
+                          ) : (
+                            content
+                          )}
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 </Fragment>
               );
