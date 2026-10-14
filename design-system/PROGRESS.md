@@ -7,7 +7,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | Phase | What | Status |
 | --- | --- | --- |
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
-| 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Not started |
+| 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
 | 2 | New component library in Storybook, one component at a time, owner-reviewed | Not started |
 | 3 | Pages: rebuild and swap in one page or big component at a time | Not started |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
@@ -127,6 +127,16 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-14 · Phase 1 · Antigravity · Built foundations for design system:
+  - Tokens: loaded `design-system/tokens.css` globally in `src/app/layout.tsx`.
+  - Tailwind names: added fixed keys in `tailwind.config.ts` mapping to `var(--ds-*)` for `backgroundColor`, `textColor`, `borderColor`, `colors` (including `series-1`...`series-5`, `series-rest`), `fontSize` (12 type styles with size, line-height, weight, and letter-spacing), `fontFamily` (`font-text` for Figtree and `font-display` for Bricolage Grotesque), `spacing` (`space-2`...`space-48`), `borderRadius` (`rounded-ds-xs`...`rounded-ds-pill`), `boxShadow` (`shadow-pop`...`shadow-raise`), `height` and `minHeight` (`control-sm`...`tab-bar`), `width` and `minWidth` (`rail`), `zIndex` (`z-sticky`...`z-overlay`), `transitionDuration` (`fast`, `base`, `sheet`).
+  - Fonts: self-hosted woff2 files for Figtree (latin + latin-ext, ₹, tabular figures) and Bricolage Grotesque (latin + latin-ext, ₹, tabular figures) in `src/app/fonts/`, loaded with `next/font/local` into `--ds-font-text` and `--ds-font-display` in `src/app/layout.tsx`. Inter remains in place for old UI.
+  - Storybook: installed `storybook@10.6.2`, `@storybook/nextjs-vite@10.6.2`, and `@storybook/addon-a11y@10.6.2` (Vite-based Next.js framework). Added scripts `storybook` and `build-storybook`. Configured global theme decorator (toggling `.dark` class), custom viewports (phone 390px, desktop 1440px), tokens, globals, and self-hosted fonts in `.storybook/preview.tsx` and `.storybook/preview.css`.
+  - Foundations stories: created `DS/Foundations` stories in `src/components/ds/Foundations/Foundations.stories.tsx` (Colours, Typography, Spacing, Radii, Shadows, AllVariants), exported via `src/components/ds/index.ts`.
+  - Check hook: added `node design-system/tools/check-ui.mjs --staged` to `.husky/pre-commit`.
+  - Ignored `storybook-static/` in `.gitignore` and `eslint.config.js`.
+
+  Checks: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build-storybook`, `node design-system/tools/check-ui.mjs`. All passed. Open questions: none. Deviations: none.
 - 2026-10-14 · Phase 0 · Claude · Switched to the owner's build approach:
   - `tokens.css` variables now use the `--ds-` prefix;
   - the Tailwind names avoid the old theme's keys;

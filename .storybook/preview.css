@@ -1,0 +1,20 @@
+@font-face {
+  font-family: 'Figtree';
+  src: url('../src/app/fonts/Figtree-latin-ext.woff2') format('woff2');
+  font-weight: 300 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('../src/app/fonts/BricolageGrotesque-latin-ext.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --ds-font-text: 'Figtree', system-ui, -apple-system, sans-serif;
+  --ds-font-display: 'Bricolage Grotesque', system-ui, -apple-system, sans-serif;
+}

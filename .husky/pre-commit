@@ -1,1 +1,2 @@
 npm run lint:fix
+node design-system/tools/check-ui.mjs --staged

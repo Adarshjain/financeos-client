@@ -1,3 +1,4 @@
+import '../../design-system/tokens.css';
 import './globals.css';
 
 import { SerwistProvider } from '@serwist/turbopack/react';
@@ -19,6 +20,22 @@ const inter = localFont({
   variable: '--font-sans',
   display: 'swap',
   weight: '300 700',
+});
+
+// Design system fonts: Figtree for interface text, Bricolage Grotesque for display.
+// Self-hosted variable woff2 covering latin + latin-ext subsets (including ₹ and tabular numbers).
+const figtree = localFont({
+  src: './fonts/Figtree-latin-ext.woff2',
+  variable: '--ds-font-text',
+  display: 'swap',
+  weight: '500 800',
+});
+
+const bricolageGrotesque = localFont({
+  src: './fonts/BricolageGrotesque-latin-ext.woff2',
+  variable: '--ds-font-display',
+  display: 'swap',
+  weight: '600 800',
 });
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -67,7 +84,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${inter.variable} ${figtree.variable} ${bricolageGrotesque.variable}`}
+      suppressHydrationWarning
+    >
       <body
         className="font-sans antialiased min-h-screen bg-background text-foreground"
         suppressHydrationWarning
