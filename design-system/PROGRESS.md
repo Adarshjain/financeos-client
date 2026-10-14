@@ -71,7 +71,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 21 | Toast | Ready for review |
 | 22 | Skeleton | Ready for review |
 | 23 | EmptyState | Ready for review |
-| 24 | Dialog | Not started |
+| 24 | Dialog | Ready for review |
 | 25 | Sheet | Not started |
 | 26 | ConfirmSheet | Not started |
 | 27 | AppBar | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built Dialog component:
+  - Created `src/components/ds/Dialog/Dialog.tsx`: Dialog, DialogShell, DialogBody, DialogFooter, DialogContent, DialogTrigger, DialogClose, and DialogPortal based on Radix Dialog. Supports desktop modal widths (small 440, default 640, large 760, extra large 920), `radius-xl`, `shadow-dialog`, top-right close control (`X`), scrollable body container, right-aligned sunken footer with optional far-left destructive action, and `srTitle` accessibility support for headerless dialogs.
+  - Created `src/components/ds/Dialog/Dialog.stories.tsx`: `DS/Overlays/Dialog` stories for SmallForm, LargeList, DefaultDialog, ExtraLarge, InteractiveModal, and AllVariants.
+  - Created `src/components/ds/Dialog/Dialog.test.tsx`: 5 unit tests covering title/description rendering, maxWidth sizing across all four width steps, close button callback, footer layout and left actions, and Radix overlay trigger interactions.
+  - Exported Dialog primitives and DialogShell from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built EmptyState component:
   - Created `src/components/ds/EmptyState/EmptyState.tsx`: EmptyState and OfflineIllustration supporting empty screen states with `screen-title` headline in display font, one-sentence description in `ink-3`, call-to-action button, compact single-line mode for cards/panels, and custom SVG offline illustration with sleeping rupee coin and cloud using design-system tokens.
