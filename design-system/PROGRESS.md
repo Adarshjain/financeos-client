@@ -76,7 +76,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 26 | ConfirmSheet | Ready for review |
 | 27 | AppBar | Ready for review |
 | 28 | TabBar | Ready for review |
-| 29 | Pager | Not started |
+| 29 | Pager | Ready for review |
 | 30 | SelectionBar | Not started |
 | 31 | SwipeActions | Not started |
 | 32 | DateGroupHeader | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built Pager component:
+  - Created `src/components/ds/Pager/Pager.tsx`: Pager list pagination component for server-side paging across table cards and card grids. Displays visible range ("1–50 of 182 transactions"), rows-per-page select control, previous/next chevron buttons, numbered pages with active page highlight and gap ellipsis. Supports desktop and phone variants (phone omits unit and page-size select, showing one neighbor fewer), and single-page mode (showing count and page size only, without navigation arrows).
+  - Created `src/components/ds/Pager/Pager.stories.tsx`: `DS/Navigation/Pager` stories for Desktop, Phone, SinglePage, MiddlePage, Interactive, and AllVariants.
+  - Created `src/components/ds/Pager/Pager.test.tsx`: 8 unit tests covering range and total calculations, zero total elements, active page aria-current attribute, boundary button disabled states (previous on page 0, next on last page), page change callbacks, page size change callback, single-page arrow omission, and phone responsive variant.
+  - Exported Pager from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built TabBar component:
   - Created `src/components/ds/TabBar/TabBar.tsx`: TabBar phone bottom navigation fixed in canonical order (Home, Inbox, Upcoming, Transactions, More). Displays 20px Lucide stroke icons with `text-tab-label` bold labels, highlights active tab with `brand-strong`, supports count notification bubbles (`danger` for Inbox, `warning` for Transactions review count), and formats counts above 99 as "99+". Supports hidden state under selection mode and virtual keyboards.
