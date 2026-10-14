@@ -51,7 +51,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 1 | Button | Ready for review |
 | 2 | Badge | Ready for review |
 | 3 | CategoryChip | Ready for review |
-| 4 | StatusWords | Not started |
+| 4 | StatusWords | Ready for review |
 | 5 | Kbd | Not started |
 | 6 | Avatar | Not started |
 | 7 | ProgressBar | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-14 · Phase 2 · Antigravity · Built StatusWords component:
+  - Created `src/components/ds/StatusWords/StatusWords.tsx`: `StatusWord` and `StatusWords` supporting tones (amber/review, blue/link, grey/provenance, green/verified), 10px chain glyph (`Link2`) for link tone, middle dot (` · `) item separation, support for `items` array prop, prefix, and children composition.
+  - Created `src/components/ds/StatusWords/StatusWords.stories.tsx`: `DS/Data display/StatusWords` stories for NeedsReview, Linked, Provenance, Verified, ContextLine, and AllVariants.
+  - Created `src/components/ds/StatusWords/StatusWords.test.tsx`: 4 unit tests covering tone styles, link chain icon, multiple item rendering with separator dot, and children composition.
+  - Exported StatusWords and StatusWord from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-14 · Phase 2 · Antigravity · Built CategoryChip component:
   - Created `src/components/ds/CategoryChip/CategoryChip.tsx`: variants (default, count, unset), pill shape (`rounded-ds-pill`), 20px height (`h-space-20`), text style (`text-caption font-semibold`), interactive button/slot support.
