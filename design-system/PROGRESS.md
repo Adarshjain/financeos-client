@@ -84,7 +84,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 34 | KpiTile | Ready for review |
 | 35 | Widget | Ready for review |
 | 36 | RuleCard | Ready for review |
-| 37 | DateTile | Not started |
+| 37 | DateTile | Ready for review |
 | 38 | DropZone | Not started |
 | 39 | AuthPanel | Not started |
 
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built DateTile component:
+  - Created `src/components/ds/DateTile/DateTile.tsx`: DateTile shape components for Upcoming lists and monthly calendar view. Implements `DateTile` (40px fixed width, 800 weight day number, and 10px uppercase month overline in `ink-4`) and `MonthCalendar` (7-column grid with weekday headers M T W T F S S, day cells with `min-h-app-bar`, `brand-tint` highlight on today, selection ring, event indicator bars for bills in `warning`, money in in `positive`, and EMIs in `info`, and day selection callback with keyboard accessibility).
+  - Created `src/components/ds/DateTile/DateTile.stories.tsx`: `DS/Data display/DateTile` stories for Tile, Calendar, Interactive, and AllVariants.
+  - Created `src/components/ds/DateTile/DateTile.test.tsx`: 5 unit tests covering DateTile day/month rendering, MonthCalendar weekdays/days grid, today cell highlight, event indicator bar styling, and day selection click and keyboard handlers.
+  - Exported DateTile and MonthCalendar from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built RuleCard component:
   - Created `src/components/ds/RuleCard/RuleCard.tsx`: RuleCard record card component for categorization rules (3 columns desktop, 1 column phone). Features header with rule name (`heading`), match type & bold pattern (`label`), and top-right used count, status line (amber Unverified or green/brand-strong Verified, source, MCC), category chips in `cats` row, and actions (Approve button on unverified, kebab options dropdown menu with Find matches, Edit rule, Delete rule). In selectionMode, selected cards turn `brand-tint` with `brand` border and ring, with trailing `Eye` icon control replacing action buttons.
