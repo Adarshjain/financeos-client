@@ -10,6 +10,7 @@ export * from './ListRow/ListRow';
 export * from './Menu/Menu';
 export * from './ProgressBar/ProgressBar';
 export * from './SearchField/SearchField';
+export * from './SectionBand/SectionBand';
 export * from './SegmentedControl/SegmentedControl';
 export * from './Select/Select';
 export * from './StatusWords/StatusWords';

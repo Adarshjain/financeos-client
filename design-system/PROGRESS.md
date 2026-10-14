@@ -65,7 +65,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 15 | Menu | Ready for review |
 | 16 | Card | Ready for review |
 | 17 | ListRow | Ready for review |
-| 18 | SectionBand | Not started |
+| 18 | SectionBand | Ready for review |
 | 19 | Callout | Not started |
 | 20 | Banner | Not started |
 | 21 | Toast | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built SectionBand component:
+  - Created `src/components/ds/SectionBand/SectionBand.tsx`: SectionBand supporting form section bands (`sec`) with `overline` caption in `ink-4` on `bg-sunken`, uppercase styling, optional trailing action element, border controls, and `danger` variant for closing/destructive sections.
+  - Created `src/components/ds/SectionBand/SectionBand.stories.tsx`: `DS/Data display/SectionBand` stories for DefaultBand, DangerBand, and AllVariants.
+  - Created `src/components/ds/SectionBand/SectionBand.test.tsx`: 6 unit tests covering title rendering, children fallback, default styling tokens, danger tone styling, border overrides, and trailing actions.
+  - Exported SectionBand from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built ListRow component:
   - Created `src/components/ds/ListRow/ListRow.tsx`: ListRow, ListField (`fld`), ListRowDateTile (`dtile`), and ListRowIconTile (`av`/`avr`) supporting leading elements (badge, date tile, avatar, icon tile), primary line (`body-strong`), secondary line (`caption` in `ink-3`), trailing amounts (tabular 700 with positive credit `+`), actions, chevrons, kebabs, highlighted row outline (`2px brand` on `brand-tint`), disabled states, and detail sheet label/value pairs.
