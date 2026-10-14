@@ -5,6 +5,7 @@ export * from './CategoryChip/CategoryChip';
 export * from './FilterChip/FilterChip';
 export * from './Foundations/Foundations';
 export * from './Kbd/Kbd';
+export * from './Menu/Menu';
 export * from './ProgressBar/ProgressBar';
 export * from './SearchField/SearchField';
 export * from './SegmentedControl/SegmentedControl';
