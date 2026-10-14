@@ -4,6 +4,13 @@ These rules apply to **every** agent and tool that changes the FinanceOS client 
 
 The goal is narrow: build **exactly** the design that was planned. Not a better one, not a different one, not a partial one.
 
+**How the build works** (the owner's plan):
+1. A **new** component library is built in `src/components/ds/`, beside the existing UI, in **Storybook**. The owner reviews each component there.
+2. Pages are then rebuilt **one page or one big component at a time** from the approved components, and swapped in.
+3. Old components become dead code as pages move over. They are deleted only at the end, once everything is migrated.
+
+Existing components are **never modified** to become the new design.
+
 ---
 
 ## 0. Sources of truth, in this order
@@ -23,6 +30,8 @@ Never use as a source: "how apps usually do it", shadcn / MUI / Material / iOS d
 3. Never remove or weaken an existing feature. If a design seems to leave out something the code does, keep the feature and log it as an open question (§2).
 4. No refactors outside the task. No new dependencies and no upgrades unless the owner approves them in `PROGRESS.md`.
 5. Do not touch `financeos-server` during UI phases.
+6. **Never modify existing components** (`src/components/ui/` and every feature folder) to restyle them. New code lives in `src/components/ds/`. In Phase 3, the only edits to old code allowed are the ones that swap the page being migrated over to new components.
+7. **Never delete old code before Phase 4.** In Phase 4, delete a file only after proving nothing imports it.
 
 ## 2. When something is unclear: stop, don't guess
 
@@ -30,7 +39,7 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 
 ## 3. Tokens: colour, space, shape, depth
 
-1. Every colour comes from a token, through the Tailwind names defined in Phase 1 (see `PROGRESS.md`). Not allowed in components:
+1. Every colour comes from a token, through the Tailwind names fixed in `PROGRESS.md` (Phase 1). In the app the CSS variables are `--ds-<token name>` (generated in `design-system/tokens.css`), so they never clash with the existing theme. Not allowed in new components:
    - hex, `rgb()` or `hsl()` literals;
    - Tailwind palette classes (`slate-*`, `gray-*`, `emerald-*`, `rose-*`, `red-*`, `blue-*`…);
    - arbitrary values (`bg-[#…]`, `p-[13px]`, `text-[11px]`, `w-[372px]`).
@@ -50,15 +59,29 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 
 ## 5. Components
 
-1. Build screens from the design-system components (`design-system/components/<Name>/README.md`), implemented in `src/components/ui` and the shared component folders. A component's **Variants** section is complete: a variant that is not listed does not exist.
-2. A new look is a new documented variant. It is added to the component README with the owner's approval first, then coded. `className` is for layout only (width, margin, flex and grid placement), never for colour, type, border, radius or shadow.
-3. These existing structural rules still hold:
+1. Each design-system component (`design-system/components/<Name>/README.md`) is built as a **new** component in `src/components/ds/<Name>/`:
+   - `<Name>.tsx`, `<Name>.stories.tsx` and `<Name>.test.tsx`;
+   - exported from `src/components/ds/index.ts`.
+
+   Its **Variants** section is complete: build every variant listed, and nothing that isn't.
+2. New components may use the libraries already in the repo: Radix, cmdk, Sonner, lucide-react. They must **never import from `src/components/ui/`** or any other old component, so the old code can be deleted later.
+3. A new look is a new documented variant. It is added to the component README with the owner's approval first, then coded. Props carry variants. `className` is for layout only (width, margin, flex and grid placement), never colour, type, border, radius or shadow.
+4. A component may be used in a page only after its status in `PROGRESS.md` is **Approved**.
+5. These structural rules carry over to the new components:
    - **Buttons**: only the Button component's variants and sizes.
-   - **Dialogs**: `DialogContent` is an unpadded shell, `DialogBody` is the only scroll container, and `DialogFooter` is config-driven (`primaryAction` plus an optional `secondaryAction`, at most two). Headerless dialogs pass `srTitle`. Never hand-roll footers, padding or scroll.
-   - **Dates**: `DateInput` / `FormField type="date"`, dd/mm/yyyy. Never `<input type="date">`.
+   - **Dialog and Sheet**: an unpadded shell; the body is the only scroll container; the footer is config-driven with at most two actions (Delete goes in the body); headerless dialogs take an `srTitle`.
+   - **Dates**: the new date input shows and accepts dd/mm/yyyy. Never `<input type="date">`.
    - **Lists**: real server-side pagination, with the Pager above and below the list.
-4. On phone, every dialog is a bottom sheet: drag handle, no ×, swipe down or tap the scrim to close, footer pinned. Desktop dialogs keep ×.
-5. Destructive actions confirm first with a **ConfirmSheet** that says what goes and what stays. Reversible actions confirm afterwards with a **Toast** that has Undo.
+6. On phone, every dialog is a bottom sheet: drag handle, no ×, swipe down or tap the scrim to close, footer pinned. Desktop dialogs keep ×.
+7. Destructive actions confirm first with a **ConfirmSheet** that says what goes and what stays. Reversible actions confirm afterwards with a **Toast** that has Undo.
+
+## 5a. Storybook
+
+1. Each component gets one story per variant in its README, named exactly as the README names it, plus an **All variants** story that shows them side by side for review. Story titles are `DS/<Group>/<Name>`, using the README's group (Navigation, Actions, Inputs, Data display, Feedback, Overlays, Screens).
+2. Every story can be viewed in light and dark and at phone (390px) and desktop (1440px) widths, through the global toolbar set up in Phase 1.
+3. Stories use realistic FinanceOS content: ₹ amounts with Indian grouping, real-looking merchants and accounts like the boards. Never lorem ipsum.
+4. The accessibility check must show no violations for any story.
+5. No stories for old components.
 
 ## 6. Icons
 
@@ -102,7 +125,7 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 ## 10. Checks before you call anything done
 
 1. `npm run typecheck`, `npm run lint` and `npm test`, plus `npm run e2e` when a flow changed. Use Node 20 (`~/.nvm/versions/node/v20.19.5/bin`); Node 18 breaks vitest.
-2. `node design-system/tools/check-ui.mjs` must pass. It scans the lines you added for forbidden colours, palette classes, arbitrary values, raw Tailwind font sizes, native date inputs and Google fonts.
+2. `npm run build-storybook` succeeds, and `node design-system/tools/check-ui.mjs` must pass. It scans the lines you added for forbidden colours, palette classes, arbitrary values, raw Tailwind font sizes, native date inputs and Google fonts.
 3. Tests:
    - Cover every use case of the change.
    - Write no padding tests.
@@ -112,6 +135,8 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 ## 11. How to work
 
 1. **Start**: read this file, then `PROGRESS.md`, the README of every component you will touch, and the boards for your screens.
+   - **Phase 2**: build one component at a time, set it to **Ready for review**, and stop. The owner approves it or asks for changes.
+   - **Phase 3**: put the new files' paths in `design-system/checked-paths.txt` and add a row to the migration map in `PROGRESS.md`. The row lists the page, its new files, and the old files it no longer uses.
 2. **Commit**: small commits on `main` with explicit paths (`git add <paths>`). Never `git add -A`, never push, never force-push, never rewrite history. Start each message with `ui(ds):`.
 3. **Finish**: update `PROGRESS.md` with:
    - the phase status;
@@ -125,7 +150,7 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 
 A task is done only when all of these hold:
 
-- It matches the boards and the component READMEs exactly.
+- It matches the boards and the component READMEs exactly, and for Phase 2 the owner has approved it in Storybook.
 - It uses only tokens and type styles.
 - No feature was lost.
 - All checks in §10 pass.
