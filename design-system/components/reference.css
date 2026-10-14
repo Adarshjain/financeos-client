@@ -3,7 +3,8 @@
 .fos,.fos *{box-sizing:border-box}
 .fos{font-family:var(--font-text);font-size:13px;line-height:18px;color:var(--ink);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
 .fos :focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
-.fos a{color:var(--brand);text-decoration:none;font-weight:600}
+.fos a{color:var(--brand);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:2px;font-weight:600}
+.fos a[class]{text-decoration:none}
 @media (prefers-reduced-motion:reduce){.fos *{transition:none!important;animation:none!important}}
 
 /* ---------- Button ---------- */
@@ -30,7 +31,7 @@
 
 /* ---------- Badges, category chips, status words ---------- */
 .badge{display:inline-flex;align-items:center;height:20px;padding:0 7px;border-radius:var(--radius-sm);font:700 11px/1 var(--font-text);white-space:nowrap}
-.b-green{background:var(--brand-tint);color:var(--brand-strong)}.b-amber{background:var(--warning-tint);color:var(--warning)}.b-rose{background:var(--danger-tint);color:var(--danger)}.b-blue{background:var(--info-tint);color:var(--info)}.b-grey{background:var(--line-soft);color:var(--neutral-ink)}
+.b-green{background:var(--positive-tint);color:var(--positive-strong)}.b-amber{background:var(--warning-tint);color:var(--warning)}.b-rose{background:var(--danger-tint);color:var(--danger)}.b-blue{background:var(--info-tint);color:var(--info)}.b-grey{background:var(--line-soft);color:var(--neutral-ink)}
 .cat{display:inline-flex;align-items:center;height:22px;padding:0 var(--space-8);border-radius:var(--radius-pill);border:1px solid var(--line);background:var(--bg-subtle);font:600 11px/1 var(--font-text);color:var(--ink-2);white-space:nowrap}
 .cat-set{border-style:dashed;border-color:var(--warning-border);color:var(--warning);background:var(--bg-surface)}
 .cat-n{background:var(--bg-surface);color:var(--ink-3);padding:0 7px}
@@ -211,10 +212,10 @@
 .toast{display:flex;align-items:center;gap:var(--space-10);padding:var(--space-10) var(--space-14);background:var(--ink);color:var(--bg-surface);border-radius:var(--radius-lg);font:600 13px/18px var(--font-text);box-shadow:var(--shadow-pop)}
 .toast .tk{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:var(--radius-sm);font:800 11px/1 var(--font-text);background:var(--brand-tint);color:var(--brand-strong);flex:none}
 .toast .tk.err{background:var(--danger-tint);color:var(--danger)}
-.toast a{margin-left:auto;color:var(--brand-border);font-weight:700;white-space:nowrap}
+.toast a{margin-left:auto;color:var(--line);font-weight:700;white-space:nowrap}
 .banner{display:flex;gap:var(--space-10);align-items:flex-start;padding:var(--space-10) var(--space-12);border-radius:var(--radius-lg);font:500 12px/18px var(--font-text)}
 .banner svg{flex:none;margin-top:1px;width:16px;height:16px}
-.banner.err{background:var(--danger-tint);color:var(--danger-ink)}.banner.ok{background:var(--brand-tint);color:var(--brand-strong)}.banner.info{background:var(--info-tint);color:var(--info-ink)}.banner.warn{background:var(--warning-tint);color:var(--warning-ink)}
+.banner.err{background:var(--danger-tint);color:var(--danger-ink)}.banner.ok{background:var(--positive-tint);color:var(--positive-strong)}.banner.info{background:var(--info-tint);color:var(--info-ink)}.banner.warn{background:var(--warning-tint);color:var(--warning-ink)}
 .hl{box-shadow:inset 0 0 0 2px var(--brand);background:var(--brand-tint)}
 /* ---------- Dashboard widget ---------- */
 .w{background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-lg);min-width:0;display:flex;flex-direction:column}

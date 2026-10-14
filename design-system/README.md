@@ -1,4 +1,4 @@
-FinanceOS is a personal money app for India, used mostly on phones: accounts, cards, transactions, investments, loans and lendings in one place. The interface is calm and dense, with one green for action and status told in words. Build every screen from these tokens and components; do not introduce new colours, sizes or radii.
+FinanceOS is a personal money app for India, used mostly on phones: accounts, cards, transactions, investments, loans and lendings in one place. The interface is calm and dense, in ink with colour kept for meaning, and status told in words. Build every screen from these tokens and components; do not introduce new colours, sizes or radii.
 
 ## Content fundamentals
 
@@ -17,7 +17,9 @@ FinanceOS is a personal money app for India, used mostly on phones: accounts, ca
 - Grounds: `bg-canvas` behind everything, `bg-surface` for cards, sheets, bars and inputs, `bg-sunken` for table headers, section bands and dialog footers, `bg-subtle` for sticky date bands and category chips.
 - Text: `ink` for primary text and amounts, `ink-2` for labels, `ink-3` for secondary lines, `ink-4` for icons, placeholders and overlines. `ink-faint` is for non-text marks only.
 - Lines: `line` around cards and bars, `line-soft` between rows, `line-strong` around controls, `line-handle` for the sheet handle and switch track.
-- **One action colour.** `brand` green is for the primary button, the current tab, links, switches and the current page; its tint `brand-tint` marks selection. Nothing decorative is green.
+- **Ink is the action colour.** `brand` is near-black ink (near-white in dark mode): primary buttons, the current tab, links, switches, progress and the current page; `brand-tint` (a light grey) marks selection. Colour is reserved for meaning, so the screen is monochrome until something needs you (amber), is linked (blue), brings money in or succeeded (green), or is dangerous (rose).
+- **Success is green, not brand.** Badges and words that mean done or good (Paid, Done, Verified, Auto ingested) use `positive-tint` and `positive-strong`.
+- Links are ink with a subtle underline (`line-strong`), so they stay recognisable without a colour.
 - **Status is a word in a colour, not a tag.** `warning` (amber) means it needs you, `info` (blue) means it is connected to something, `ink-3` (grey) is provenance, `positive` is money in, `danger` is destructive or failed. The word always carries the meaning; colour supports it.
 - Charts use `chart-1` … `chart-5` and `chart-rest` for "Everything else", always with a label or legend.
 - Both themes are defined. Every text colour holds 4.5:1 on its documented grounds in light and dark. `line-strong` is the one known miss (1.4:1); controls also carry a label, fill or icon.

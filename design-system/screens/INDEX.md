@@ -13,6 +13,7 @@ Every board of the FinanceOS redesign canvas (https://claude.ai/artifact/2nScEY5
 
 - **01 · Principles** — `ds-01-principles.dc.html` · `shots/ds-01-principles.webp`
 - **02 · Colour** — `ds-02-color.dc.html` · `shots/ds-02-color.webp`
+- **02 · Colour options (Ink locked)** — `ds-02b-palettes.dc.html` · `shots/ds-02b-palettes.webp`
 - **03 · Typography** — `ds-03-type.dc.html` · `shots/ds-03-type.webp`
 - **04 · Space, shape and depth** — `ds-04-layout.dc.html` · `shots/ds-04-layout.webp`
 - **05 · Navigation** — `ds-05-navigation.dc.html` · `shots/ds-05-navigation.webp`

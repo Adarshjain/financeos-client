@@ -75,6 +75,8 @@ const config: Config = {
         'on-brand': 'var(--ds-on-brand)',
         'focus-ring': 'var(--ds-focus-ring)',
         positive: 'var(--ds-positive)',
+        'positive-strong': 'var(--ds-positive-strong)',
+        'positive-tint': 'var(--ds-positive-tint)',
         danger: 'var(--ds-danger)',
         'danger-tint': 'var(--ds-danger-tint)',
         'danger-border': 'var(--ds-danger-border)',
