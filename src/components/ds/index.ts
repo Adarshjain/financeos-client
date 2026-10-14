@@ -11,4 +11,5 @@ export * from './SegmentedControl/SegmentedControl';
 export * from './Select/Select';
 export * from './StatusWords/StatusWords';
 export * from './Switch/Switch';
+export * from './Tabs/Tabs';
 export * from './TextField/TextField';

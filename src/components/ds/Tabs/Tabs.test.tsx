@@ -1,0 +1,153 @@
+import { fireEvent, render, screen } from '@testing-library/react';
+import React, { useState } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './Tabs';
+
+describe('Tabs', () => {
+  it('renders tablist and tabs from items', () => {
+    render(
+      <Tabs
+        defaultValue="rules"
+        items={[
+          { value: 'all', label: 'All' },
+          { value: 'rules', label: 'Rules' },
+          { value: 'categories', label: 'Categories' },
+        ]}
+      />,
+    );
+    expect(screen.getByRole('tablist')).toBeInTheDocument();
+    const rulesTab = screen.getByRole('tab', { name: 'Rules' });
+    expect(rulesTab).toBeInTheDocument();
+    expect(rulesTab).toHaveAttribute('aria-selected', 'true');
+
+    const allTab = screen.getByRole('tab', { name: 'All' });
+    expect(allTab).toHaveAttribute('aria-selected', 'false');
+  });
+
+  it('changes tab on click and calls onValueChange', () => {
+    const handleValueChange = vi.fn();
+    render(
+      <Tabs
+        defaultValue="all"
+        onValueChange={handleValueChange}
+        items={[
+          { value: 'all', label: 'All' },
+          { value: 'rules', label: 'Rules' },
+        ]}
+      />,
+    );
+    const rulesTab = screen.getByRole('tab', { name: 'Rules' });
+    fireEvent.click(rulesTab);
+
+    expect(rulesTab).toHaveAttribute('aria-selected', 'true');
+    expect(handleValueChange).toHaveBeenCalledWith('rules');
+  });
+
+  it('works in controlled mode', () => {
+    const ControlledTabs = () => {
+      const [val, setVal] = useState('one');
+      return (
+        <Tabs
+          value={val}
+          onValueChange={setVal}
+          items={[
+            { value: 'one', label: 'One' },
+            { value: 'two', label: 'Two' },
+          ]}
+        />
+      );
+    };
+
+    render(<ControlledTabs />);
+    const twoTab = screen.getByRole('tab', { name: 'Two' });
+    expect(twoTab).toHaveAttribute('aria-selected', 'false');
+
+    fireEvent.click(twoTab);
+    expect(twoTab).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('renders tab counts', () => {
+    render(
+      <Tabs
+        items={[
+          { value: 'tradebook', label: 'Tradebook', count: 38 },
+        ]}
+      />,
+    );
+    expect(screen.getByText(/Tradebook/)).toBeInTheDocument();
+    expect(screen.getByText(/38/)).toBeInTheDocument();
+  });
+
+  it('navigates with arrow keys and Home/End', () => {
+    render(
+      <Tabs
+        defaultValue="first"
+        items={[
+          { value: 'first', label: 'First' },
+          { value: 'second', label: 'Second' },
+          { value: 'third', label: 'Third' },
+        ]}
+      />,
+    );
+    const tablist = screen.getByRole('tablist');
+    const firstTab = screen.getByRole('tab', { name: 'First' });
+    firstTab.focus();
+
+    fireEvent.keyDown(tablist, { key: 'ArrowRight' });
+    expect(screen.getByRole('tab', { name: 'Second' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+
+    fireEvent.keyDown(tablist, { key: 'End' });
+    expect(screen.getByRole('tab', { name: 'Third' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+
+    fireEvent.keyDown(tablist, { key: 'Home' });
+    expect(screen.getByRole('tab', { name: 'First' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+  });
+
+  it('renders TabsContent matching the active tab', () => {
+    render(
+      <Tabs defaultValue="tab1">
+        <TabsList>
+          <TabsTrigger value="tab1">Tab 1</TabsTrigger>
+          <TabsTrigger value="tab2">Tab 2</TabsTrigger>
+        </TabsList>
+        <TabsContent value="tab1">Content 1</TabsContent>
+        <TabsContent value="tab2">Content 2</TabsContent>
+      </Tabs>,
+    );
+    expect(screen.getByText('Content 1')).toBeInTheDocument();
+    expect(screen.queryByText('Content 2')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Tab 2' }));
+    expect(screen.queryByText('Content 1')).not.toBeInTheDocument();
+    expect(screen.getByText('Content 2')).toBeInTheDocument();
+  });
+
+  it('prevents interaction on disabled tab', () => {
+    const handleValueChange = vi.fn();
+    render(
+      <Tabs
+        defaultValue="active"
+        onValueChange={handleValueChange}
+        items={[
+          { value: 'active', label: 'Active' },
+          { value: 'disabled', label: 'Disabled', disabled: true },
+        ]}
+      />,
+    );
+    const disabledTab = screen.getByRole('tab', { name: 'Disabled' });
+    expect(disabledTab).toBeDisabled();
+
+    fireEvent.click(disabledTab);
+    expect(handleValueChange).not.toHaveBeenCalled();
+  });
+});
