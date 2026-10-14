@@ -80,7 +80,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 30 | SelectionBar | Ready for review |
 | 31 | SwipeActions | Ready for review |
 | 32 | DateGroupHeader | Ready for review |
-| 33 | TransactionRow | Not started |
+| 33 | TransactionRow | Ready for review |
 | 34 | KpiTile | Not started |
 | 35 | Widget | Not started |
 | 36 | RuleCard | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built TransactionRow component:
+  - Created `src/components/ds/TransactionRow/TransactionRow.tsx`: TransactionRow phone list row component. Implements 2-line layout: line 1 with merchant description (`heading`) and amount (tabular, auto credit detection with `positive` tone and + sign) with optional running balance (`caption`), line 2 with context line ordered canonically (account name first, plastic `••7741`, amber review reasons, notes, blue link/record words with chain glyph, grey provenance) and CategoryChip (first category chip, `+n` chip, or dashed amber "Set category" chip when empty). Supports states: selected (`brand-tint` with 4px brand stripe), monitored (`watch-tint` with 4px watch stripe), excluded (60% opacity), and selectionMode with trailing `Eye` icon control.
+  - Created `src/components/ds/TransactionRow/TransactionRow.stories.tsx`: `DS/Data display/TransactionRow` stories for Default, Credit, ReviewDuplicate, TransferLink, MonitoredUnset, SelectedSelectionMode, Excluded, and AllVariants.
+  - Created `src/components/ds/TransactionRow/TransactionRow.test.tsx`: 7 unit tests covering description/amount/balance/account/provenance rendering, credit positive styling, review reasons and plastic info, empty categories "Set category" click callback, selection mode eye button callback, selected/monitored/excluded states, and row click callback.
+  - Exported TransactionRow from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built DateGroupHeader component:
   - Created `src/components/ds/DateGroupHeader/DateGroupHeader.tsx`: DateGroupHeader component supporting day variant (sticky phone band on `bg-subtle`, 800 weight label, and `text-caption` font-semibold weekday in `ink-3`, with `z-sticky`) and month variant (desktop table month band in `bg-sunken`, `text-overline` uppercase `ink-4`, with formatted transaction summary count and amount).
