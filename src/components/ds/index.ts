@@ -18,6 +18,7 @@ export * from './ListRow/ListRow';
 export * from './Menu/Menu';
 export * from './Pager/Pager';
 export * from './ProgressBar/ProgressBar';
+export * from './RuleCard/RuleCard';
 export * from './SearchField/SearchField';
 export * from './SectionBand/SectionBand';
 export * from './SegmentedControl/SegmentedControl';
