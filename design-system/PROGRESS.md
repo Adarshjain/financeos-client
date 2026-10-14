@@ -74,7 +74,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 24 | Dialog | Ready for review |
 | 25 | Sheet | Ready for review |
 | 26 | ConfirmSheet | Ready for review |
-| 27 | AppBar | Not started |
+| 27 | AppBar | Ready for review |
 | 28 | TabBar | Not started |
 | 29 | Pager | Not started |
 | 30 | SelectionBar | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built AppBar component (phone and desktop variants):
+  - Created `src/components/ds/AppBar/AppBar.tsx`: AppBar (phone app bar replacing body H1 titles, supporting brand mark or detail screen back button, crumb, title with truncation, and Ask the data / Search / Add control actions), BrandMark (tokenized ₹ symbol), DesktopTopBar (desktop top bar with page title, shortcut Add button, Ask the data, Notifications), and DesktopRail (desktop navigation rail with search shortcut, grouped navigation with status badges, and user profile footer).
+  - Created `src/components/ds/AppBar/AppBar.stories.tsx`: `DS/Navigation/AppBar` stories for TopLevel, DetailScreen, WithoutCrumb, DesktopTopBar, DesktopRail, and AllVariants.
+  - Created `src/components/ds/AppBar/AppBar.test.tsx`: 6 unit tests covering BrandMark rendering, phone AppBar top-level and detail back navigation, action callbacks (ask, search, add), DesktopTopBar actions, and DesktopRail navigation.
+  - Exported AppBar, BrandMark, DesktopTopBar, DesktopRail from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built ConfirmSheet component:
   - Created `src/components/ds/ConfirmSheet/ConfirmSheet.tsx`: ConfirmSheet and ConfirmSheetShell for destructive action confirmations and unsaved changes confirmation. Displays object name title, description explaining what goes and stays, bulleted impact list, loading state during impact check, optional gentler alternative action (e.g. "Close instead"), cancel button, and filled-danger confirm action (`variant="danger-filled"`).

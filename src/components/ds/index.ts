@@ -1,3 +1,4 @@
+export * from './AppBar/AppBar';
 export * from './Avatar/Avatar';
 export * from './Badge/Badge';
 export * from './Banner/Banner';
