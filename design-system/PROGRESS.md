@@ -70,7 +70,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 20 | Banner | Ready for review |
 | 21 | Toast | Ready for review |
 | 22 | Skeleton | Ready for review |
-| 23 | EmptyState | Not started |
+| 23 | EmptyState | Ready for review |
 | 24 | Dialog | Not started |
 | 25 | Sheet | Not started |
 | 26 | ConfirmSheet | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built EmptyState component:
+  - Created `src/components/ds/EmptyState/EmptyState.tsx`: EmptyState and OfflineIllustration supporting empty screen states with `screen-title` headline in display font, one-sentence description in `ink-3`, call-to-action button, compact single-line mode for cards/panels, and custom SVG offline illustration with sleeping rupee coin and cloud using design-system tokens.
+  - Created `src/components/ds/EmptyState/EmptyState.stories.tsx`: `DS/Feedback/EmptyState` stories for FirstRun, NothingMatches, AllClear, CouldntLoad, Offline, NothingOnThisDay, and AllVariants.
+  - Created `src/components/ds/EmptyState/EmptyState.test.tsx`: 4 unit tests covering title/description rendering, illustration elements, action button integration, and compact mode.
+  - Exported EmptyState and OfflineIllustration from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built Skeleton component:
   - Created `src/components/ds/Skeleton/Skeleton.tsx`: Skeleton loading placeholder shaped like content using `bg-line-soft`, `rounded-ds-xs` (or `rounded-ds-pill` for avatars/circles), `animate-pulse` with `motion-reduce:animate-none`, and configurable dimensions.
