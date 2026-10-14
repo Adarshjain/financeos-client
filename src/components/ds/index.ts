@@ -6,6 +6,7 @@ export * from './Foundations/Foundations';
 export * from './Kbd/Kbd';
 export * from './ProgressBar/ProgressBar';
 export * from './SearchField/SearchField';
+export * from './SegmentedControl/SegmentedControl';
 export * from './Select/Select';
 export * from './StatusWords/StatusWords';
 export * from './Switch/Switch';
