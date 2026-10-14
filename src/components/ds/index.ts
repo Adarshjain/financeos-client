@@ -30,3 +30,4 @@ export * from './TabBar/TabBar';
 export * from './Tabs/Tabs';
 export * from './TextField/TextField';
 export * from './Toast/Toast';
+export * from './DateGroupHeader/DateGroupHeader';
