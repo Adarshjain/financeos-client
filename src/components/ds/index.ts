@@ -2,6 +2,7 @@ export * from './Avatar/Avatar';
 export * from './Badge/Badge';
 export * from './Button/Button';
 export * from './CategoryChip/CategoryChip';
+export * from './FilterChip/FilterChip';
 export * from './Foundations/Foundations';
 export * from './Kbd/Kbd';
 export * from './ProgressBar/ProgressBar';
