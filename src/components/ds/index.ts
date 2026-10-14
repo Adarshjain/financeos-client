@@ -8,6 +8,7 @@ export * from './Card/Card';
 export * from './CategoryChip/CategoryChip';
 export * from './ConfirmSheet/ConfirmSheet';
 export * from './DateGroupHeader/DateGroupHeader';
+export * from './DateTile/DateTile';
 export * from './Dialog/Dialog';
 export * from './EmptyState/EmptyState';
 export * from './FilterChip/FilterChip';
