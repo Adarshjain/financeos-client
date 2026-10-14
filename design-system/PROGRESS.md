@@ -53,7 +53,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 3 | CategoryChip | Ready for review |
 | 4 | StatusWords | Ready for review |
 | 5 | Kbd | Ready for review |
-| 6 | Avatar | Not started |
+| 6 | Avatar | Ready for review |
 | 7 | ProgressBar | Not started |
 | 8 | TextField | Not started |
 | 9 | SearchField | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-14 · Phase 2 · Antigravity · Built Avatar component:
+  - Created `src/components/ds/Avatar/Avatar.tsx`: identity marks for accounts (`av` 32px rounded square in `bg-canvas`), people (`avr` circle in `bg-brand-tint` with `text-brand-strong`), and institution logos (`logo` rounded square in `bg-brand`), sizes (sm/24px, md/28-32px, xl/44px), image fallback support.
+  - Created `src/components/ds/Avatar/Avatar.stories.tsx`: `DS/Data display/Avatar` stories for Account, Person, Logo, Sizes, WithImage, and AllVariants.
+  - Created `src/components/ds/Avatar/Avatar.test.tsx`: 7 unit tests covering initials, account/person/logo variants, sizes, and image error fallback.
+  - Exported Avatar from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-14 · Phase 2 · Antigravity · Built Kbd component:
   - Created `src/components/ds/Kbd/Kbd.tsx`: desktop keyboard shortcut key hints, `<kbd>` element, `border-b-2`, `bg-surface`, `border-line-strong`, `text-ink-2`, `rounded-ds-xs`, caption text style (`text-caption font-bold`).
