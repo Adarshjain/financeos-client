@@ -79,7 +79,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 29 | Pager | Ready for review |
 | 30 | SelectionBar | Ready for review |
 | 31 | SwipeActions | Ready for review |
-| 32 | DateGroupHeader | Not started |
+| 32 | DateGroupHeader | Ready for review |
 | 33 | TransactionRow | Not started |
 | 34 | KpiTile | Not started |
 | 35 | Widget | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built DateGroupHeader component:
+  - Created `src/components/ds/DateGroupHeader/DateGroupHeader.tsx`: DateGroupHeader component supporting day variant (sticky phone band on `bg-subtle`, 800 weight label, and `text-caption` font-semibold weekday in `ink-3`, with `z-sticky`) and month variant (desktop table month band in `bg-sunken`, `text-overline` uppercase `ink-4`, with formatted transaction summary count and amount).
+  - Created `src/components/ds/DateGroupHeader/DateGroupHeader.stories.tsx`: `DS/Data display/DateGroupHeader` stories for Day, Month, and AllVariants.
+  - Created `src/components/ds/DateGroupHeader/DateGroupHeader.test.tsx`: 5 unit tests covering day variant rendering with weekday, month variant rendering with summary, custom children, and sticky prop behavior.
+  - Exported DateGroupHeader from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built SwipeActions component:
   - Created `src/components/ds/SwipeActions/SwipeActions.tsx`: SwipeActions phone row gestures for list triage (Transactions, Inbox). Reveals 96px action panels on swipe: swipe right reveals leftAction (Approve, Snooze in `brand` tone), swipe left reveals rightAction (Delete, Dismiss in `danger` tone). Supports touch/pointer drag gestures with threshold snapping and spring back, action callbacks, disabled action states, and controlled/uncontrolled revealed states.
