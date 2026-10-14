@@ -69,7 +69,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 19 | Callout | Ready for review |
 | 20 | Banner | Ready for review |
 | 21 | Toast | Ready for review |
-| 22 | Skeleton | Not started |
+| 22 | Skeleton | Ready for review |
 | 23 | EmptyState | Not started |
 | 24 | Dialog | Not started |
 | 25 | Sheet | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built Skeleton component:
+  - Created `src/components/ds/Skeleton/Skeleton.tsx`: Skeleton loading placeholder shaped like content using `bg-line-soft`, `rounded-ds-xs` (or `rounded-ds-pill` for avatars/circles), `animate-pulse` with `motion-reduce:animate-none`, and configurable dimensions.
+  - Created `src/components/ds/Skeleton/Skeleton.stories.tsx`: `DS/Feedback/Skeleton` stories for Rows, Figure, WidgetRows, Table, and AllVariants.
+  - Created `src/components/ds/Skeleton/Skeleton.test.tsx`: 3 unit tests covering default token classes, circle avatar placeholders, custom width/height styles, and aria-hidden attributes.
+  - Exported Skeleton from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built Toast component:
   - Created `src/components/ds/Toast/Toast.tsx`: Toast confirmation and failure feedback component and `showToast` sonner-based helper with `bg-brand` ground, `text-on-brand`, `shadow-pop`, `rounded-ds-lg`, inline Undo action button, status/alert ARIA roles, and zero icons as required by design-system rules.

@@ -15,6 +15,7 @@ export * from './SearchField/SearchField';
 export * from './SectionBand/SectionBand';
 export * from './SegmentedControl/SegmentedControl';
 export * from './Select/Select';
+export * from './Skeleton/Skeleton';
 export * from './StatusWords/StatusWords';
 export * from './Switch/Switch';
 export * from './Tabs/Tabs';
