@@ -82,7 +82,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 32 | DateGroupHeader | Ready for review |
 | 33 | TransactionRow | Ready for review |
 | 34 | KpiTile | Ready for review |
-| 35 | Widget | Not started |
+| 35 | Widget | Ready for review |
 | 36 | RuleCard | Not started |
 | 37 | DateTile | Not started |
 | 38 | DropZone | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built Widget component:
+  - Created `src/components/ds/Widget/Widget.tsx`: Widget dashboard tile component with title, subtitle, and dropdown kebab options menu (`MoreVertical` icon with `DropdownMenu` items). Handles states: loading (flexible skeleton placeholders), failed (inline error with Retry button), unavailable (report deleted notice with Remove button), and normal children rendering (figures, rows, charts, tables).
+  - Created `src/components/ds/Widget/Widget.stories.tsx`: `DS/Data display/Widget` stories for Figure, RowsLoading, Failed, Unavailable, WithMenu, and AllVariants.
+  - Created `src/components/ds/Widget/Widget.test.tsx`: 5 unit tests covering title/subtitle/body rendering, menu trigger button, loading skeleton state, failed state retry callback, and unavailable state remove callback.
+  - Exported Widget from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built KpiTile component:
   - Created `src/components/ds/KpiTile/KpiTile.tsx`: KpiTile single-figure metric card component for Home and dashboard grids (2 cols phone, 3-4 cols desktop). Displays uppercase overline label, tabular value (figure size 22px or hero size 30px with display font), delta with directional sentiment (`good` positive green, `bad` danger red, `neutral`), optional context elements (ProgressBar, badges, breakdown context line), loading skeleton state, and failed state with `border-danger-border`, danger label, and retry button callback.

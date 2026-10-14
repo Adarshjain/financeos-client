@@ -33,3 +33,4 @@ export * from './Tabs/Tabs';
 export * from './TextField/TextField';
 export * from './Toast/Toast';
 export * from './TransactionRow/TransactionRow';
+export * from './Widget/Widget';
