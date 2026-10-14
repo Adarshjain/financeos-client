@@ -2,7 +2,7 @@ import { Slot } from '@radix-ui/react-slot';
 import { Loader2 } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '../cn';
 
 export type ButtonVariant =
   | 'primary'
