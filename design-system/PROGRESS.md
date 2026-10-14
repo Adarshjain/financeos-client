@@ -77,7 +77,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 27 | AppBar | Ready for review |
 | 28 | TabBar | Ready for review |
 | 29 | Pager | Ready for review |
-| 30 | SelectionBar | Not started |
+| 30 | SelectionBar | Ready for review |
 | 31 | SwipeActions | Not started |
 | 32 | DateGroupHeader | Not started |
 | 33 | TransactionRow | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built SelectionBar component:
+  - Created `src/components/ds/SelectionBar/SelectionBar.tsx`: SelectionBar bulk action toolbar supporting desktop floating pill (`shadow-pop`, bordered actions, summary, clear button, and global Escape key listener) and phone bottom docked sheet (`shadow-dock`, top header row with select-all link and clear button, and multi-column action grid with sub-label hints). Supports disabled actions with explanatory summary and destructive variant actions.
+  - Created `src/components/ds/SelectionBar/SelectionBar.stories.tsx`: `DS/Actions/SelectionBar` stories for Desktop, PhoneDocked, SingleAction (rules), ActionDisabled, Interactive, and AllVariants.
+  - Created `src/components/ds/SelectionBar/SelectionBar.test.tsx`: 7 unit tests covering count and summary rendering, action clicks, disabled action states, clear via button and Escape key, phone docked select-all and hints, and zero count null rendering.
+  - Exported SelectionBar from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built Pager component:
   - Created `src/components/ds/Pager/Pager.tsx`: Pager list pagination component for server-side paging across table cards and card grids. Displays visible range ("1–50 of 182 transactions"), rows-per-page select control, previous/next chevron buttons, numbered pages with active page highlight and gap ellipsis. Supports desktop and phone variants (phone omits unit and page-size select, showing one neighbor fewer), and single-page mode (showing count and page size only, without navigation arrows).
