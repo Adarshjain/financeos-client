@@ -19,3 +19,4 @@ export * from './StatusWords/StatusWords';
 export * from './Switch/Switch';
 export * from './Tabs/Tabs';
 export * from './TextField/TextField';
+export * from './Toast/Toast';

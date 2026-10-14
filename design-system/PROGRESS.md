@@ -68,7 +68,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 18 | SectionBand | Ready for review |
 | 19 | Callout | Ready for review |
 | 20 | Banner | Ready for review |
-| 21 | Toast | Not started |
+| 21 | Toast | Ready for review |
 | 22 | Skeleton | Not started |
 | 23 | EmptyState | Not started |
 | 24 | Dialog | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built Toast component:
+  - Created `src/components/ds/Toast/Toast.tsx`: Toast confirmation and failure feedback component and `showToast` sonner-based helper with `bg-brand` ground, `text-on-brand`, `shadow-pop`, `rounded-ds-lg`, inline Undo action button, status/alert ARIA roles, and zero icons as required by design-system rules.
+  - Created `src/components/ds/Toast/Toast.stories.tsx`: `DS/Feedback/Toast` stories for Confirmation, Undo, MarkPaid, Failure, and AllVariants.
+  - Created `src/components/ds/Toast/Toast.test.tsx`: 5 unit tests covering message rendering, token styling, undo button interaction and callback, status vs alert ARIA roles, and `showToast` sonner integration.
+  - Exported Toast and showToast from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built Banner component:
   - Created `src/components/ds/Banner/Banner.tsx`: Banner supporting form/list inline messages across all tones (`err` on `danger-tint` with `danger-ink` and alert role, `ok` on `brand-tint` with `brand-strong` and status role, `info` on `info-tint` with `info-ink`, and `warn` on `warning-tint` with `warning-ink`), optional trailing action element, and zero icons as required by design-system rules.
