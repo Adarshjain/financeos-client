@@ -101,6 +101,10 @@ const config: Config = {
         'series-4': 'var(--ds-chart-4)',
         'series-5': 'var(--ds-chart-5)',
         'series-rest': 'var(--ds-chart-rest)',
+        'line-handle': 'var(--ds-line-handle)',
+        'line-soft': 'var(--ds-line-soft)',
+        'line-strong': 'var(--ds-line-strong)',
+        line: 'var(--ds-line)',
       },
       backgroundColor: {
         canvas: 'var(--ds-bg-canvas)',
