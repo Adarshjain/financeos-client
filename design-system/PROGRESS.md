@@ -50,7 +50,7 @@ Build in this order, one component per step. After each one, set its status to *
 | --- | --- | --- |
 | 1 | Button | Ready for review |
 | 2 | Badge | Ready for review |
-| 3 | CategoryChip | Not started |
+| 3 | CategoryChip | Ready for review |
 | 4 | StatusWords | Not started |
 | 5 | Kbd | Not started |
 | 6 | Avatar | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-14 · Phase 2 · Antigravity · Built CategoryChip component:
+  - Created `src/components/ds/CategoryChip/CategoryChip.tsx`: variants (default, count, unset), pill shape (`rounded-ds-pill`), 20px height (`h-space-20`), text style (`text-caption font-semibold`), interactive button/slot support.
+  - Created `src/components/ds/CategoryChip/CategoryChip.stories.tsx`: `DS/Data display/CategoryChip` stories for Default, Count, Unset, Interactive, and AllVariants (including in transaction row context).
+  - Created `src/components/ds/CategoryChip/CategoryChip.test.tsx`: 5 tests covering default chip, count chip (+2), unset chip (Set category), click interaction, and asChild slot.
+  - Exported CategoryChip from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-14 · Phase 2 · Antigravity · Built Badge component:
   - Created `src/components/ds/Badge/Badge.tsx`: 5 tones (green, amber, rose, blue, grey), 20px height (`h-space-20`), `rounded-ds-sm`, caption text style (`text-caption font-bold`).
