@@ -83,7 +83,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 33 | TransactionRow | Ready for review |
 | 34 | KpiTile | Ready for review |
 | 35 | Widget | Ready for review |
-| 36 | RuleCard | Not started |
+| 36 | RuleCard | Ready for review |
 | 37 | DateTile | Not started |
 | 38 | DropZone | Not started |
 | 39 | AuthPanel | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built RuleCard component:
+  - Created `src/components/ds/RuleCard/RuleCard.tsx`: RuleCard record card component for categorization rules (3 columns desktop, 1 column phone). Features header with rule name (`heading`), match type & bold pattern (`label`), and top-right used count, status line (amber Unverified or green/brand-strong Verified, source, MCC), category chips in `cats` row, and actions (Approve button on unverified, kebab options dropdown menu with Find matches, Edit rule, Delete rule). In selectionMode, selected cards turn `brand-tint` with `brand` border and ring, with trailing `Eye` icon control replacing action buttons.
+  - Created `src/components/ds/RuleCard/RuleCard.stories.tsx`: `DS/Data display/RuleCard` stories for Unverified, Selected, Verified, SelectionModeNotSelected, and AllVariants.
+  - Created `src/components/ds/RuleCard/RuleCard.test.tsx`: 5 unit tests covering name/pattern/count rendering, unverified status and approve button callback, verified status omitting approve button, selection mode eye icon callback, and selected state styles.
+  - Exported RuleCard from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built Widget component:
   - Created `src/components/ds/Widget/Widget.tsx`: Widget dashboard tile component with title, subtitle, and dropdown kebab options menu (`MoreVertical` icon with `DropdownMenu` items). Handles states: loading (flexible skeleton placeholders), failed (inline error with Retry button), unavailable (report deleted notice with Remove button), and normal children rendering (figures, rows, charts, tables).
