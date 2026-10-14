@@ -23,6 +23,7 @@ export * from './Sheet/Sheet';
 export * from './Skeleton/Skeleton';
 export * from './StatusWords/StatusWords';
 export * from './Switch/Switch';
+export * from './TabBar/TabBar';
 export * from './Tabs/Tabs';
 export * from './TextField/TextField';
 export * from './Toast/Toast';

@@ -75,7 +75,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 25 | Sheet | Ready for review |
 | 26 | ConfirmSheet | Ready for review |
 | 27 | AppBar | Ready for review |
-| 28 | TabBar | Not started |
+| 28 | TabBar | Ready for review |
 | 29 | Pager | Not started |
 | 30 | SelectionBar | Not started |
 | 31 | SwipeActions | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built TabBar component:
+  - Created `src/components/ds/TabBar/TabBar.tsx`: TabBar phone bottom navigation fixed in canonical order (Home, Inbox, Upcoming, Transactions, More). Displays 20px Lucide stroke icons with `text-tab-label` bold labels, highlights active tab with `brand-strong`, supports count notification bubbles (`danger` for Inbox, `warning` for Transactions review count), and formats counts above 99 as "99+". Supports hidden state under selection mode and virtual keyboards.
+  - Created `src/components/ds/TabBar/TabBar.stories.tsx`: `DS/Navigation/TabBar` stories for HomeActive, TransactionsActive, HighCounts (99+), NoCounts, Interactive, and AllVariants.
+  - Created `src/components/ds/TabBar/TabBar.test.tsx`: 6 unit tests covering canonical 5-tab ordering, active tab aria-selected state, tab change callback, count badge display with danger and warning styles, 99+ threshold formatting, and hidden state rendering.
+  - Exported TabBar from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built AppBar component (phone and desktop variants):
   - Created `src/components/ds/AppBar/AppBar.tsx`: AppBar (phone app bar replacing body H1 titles, supporting brand mark or detail screen back button, crumb, title with truncation, and Ask the data / Search / Add control actions), BrandMark (tokenized ₹ symbol), DesktopTopBar (desktop top bar with page title, shortcut Add button, Ask the data, Notifications), and DesktopRail (desktop navigation rail with search shortcut, grouped navigation with status badges, and user profile footer).
