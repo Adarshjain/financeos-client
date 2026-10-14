@@ -10,6 +10,7 @@ export * from './ConfirmSheet/ConfirmSheet';
 export * from './DateGroupHeader/DateGroupHeader';
 export * from './DateTile/DateTile';
 export * from './Dialog/Dialog';
+export * from './DropZone/DropZone';
 export * from './EmptyState/EmptyState';
 export * from './FilterChip/FilterChip';
 export * from './Foundations/Foundations';

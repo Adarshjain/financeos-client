@@ -85,7 +85,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 35 | Widget | Ready for review |
 | 36 | RuleCard | Ready for review |
 | 37 | DateTile | Ready for review |
-| 38 | DropZone | Not started |
+| 38 | DropZone | Ready for review |
 | 39 | AuthPanel | Not started |
 
 The desktop rail and top bar are part of the app shell. Build them with AppBar (phone and desktop variants), following the desktop boards.
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built DropZone component:
+  - Created `src/components/ds/DropZone/DropZone.tsx`: DropZone file import component for statements and documents. Implements dashed drop container with upload icon tile (`44px` with `brand-tint` and `brand` icon), heading, format & size hint, and Choose files action button triggering hidden native multi-file input. Supports active drag-over state (`border-brand bg-brand-tint` with dynamic drag hint), staged queued files card (file name, size, error message in danger tone, and remove trash button), and recent imports list with positive/warning/danger status words.
+  - Created `src/components/ds/DropZone/DropZone.stories.tsx`: `DS/Inputs/DropZone` stories for Idle, DraggingOver, Queued, TooLarge, WithRecentImports, and AllVariants.
+  - Created `src/components/ds/DropZone/DropZone.test.tsx`: 5 unit tests covering idle rendering, dragging over state hiding choose button, queued files removal callback, file error styling, and recent imports status display.
+  - Exported DropZone from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built DateTile component:
   - Created `src/components/ds/DateTile/DateTile.tsx`: DateTile shape components for Upcoming lists and monthly calendar view. Implements `DateTile` (40px fixed width, 800 weight day number, and 10px uppercase month overline in `ink-4`) and `MonthCalendar` (7-column grid with weekday headers M T W T F S S, day cells with `min-h-app-bar`, `brand-tint` highlight on today, selection ring, event indicator bars for bills in `warning`, money in in `positive`, and EMIs in `info`, and day selection callback with keyboard accessibility).
