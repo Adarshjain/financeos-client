@@ -34,6 +34,8 @@ export function FoundationsColours() {
 
   const status = [
     { name: 'positive', label: 'Positive (money in)', className: 'bg-positive text-on-brand' },
+    { name: 'positive-strong', label: 'Positive strong (hover/accent)', className: 'bg-positive-strong text-on-brand' },
+    { name: 'positive-tint', label: 'Positive tint', className: 'bg-positive-tint text-positive-strong border border-line' },
     { name: 'danger', label: 'Danger (destructive)', className: 'bg-danger text-on-brand' },
     { name: 'danger-tint', label: 'Danger tint', className: 'bg-danger-tint text-danger-ink border border-danger-border' },
     { name: 'warning', label: 'Warning (needs you)', className: 'bg-warning text-on-brand' },
