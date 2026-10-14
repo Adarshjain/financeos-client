@@ -49,7 +49,7 @@ Build in this order, one component per step. After each one, set its status to *
 | # | Component | Status |
 | --- | --- | --- |
 | 1 | Button | Ready for review |
-| 2 | Badge | Not started |
+| 2 | Badge | Ready for review |
 | 3 | CategoryChip | Not started |
 | 4 | StatusWords | Not started |
 | 5 | Kbd | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-14 · Phase 2 · Antigravity · Built Badge component:
+  - Created `src/components/ds/Badge/Badge.tsx`: 5 tones (green, amber, rose, blue, grey), 20px height (`h-space-20`), `rounded-ds-sm`, caption text style (`text-caption font-bold`).
+  - Created `src/components/ds/Badge/Badge.stories.tsx`: `DS/Data display/Badge` stories for Green, Amber, Rose, Blue, Grey, StatementVerdicts, DueStates, AccountStates, and AllVariants.
+  - Created `src/components/ds/Badge/Badge.test.tsx`: 5 tests covering rendering, default tone, all 5 tone classes, variant alias, and className merge.
+  - Exported Badge from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-14 · Phase 2 · Antigravity · Built Button component:
   - Created `src/components/ds/Button/Button.tsx`: variants (primary, secondary, danger, danger-outline, danger-filled, ghost), sizes (sm/26px, md/32px, xl/44px), states (default, hover, focus-ring, loading with spinner/label, disabled), iconOnly support with square aspect ratio and aria-label, count pill support, asChild support with Radix Slot.
