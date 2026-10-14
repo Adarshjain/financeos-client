@@ -130,6 +130,15 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- **2026-10-15 · Phase 2 Complete (Overnight batch summary):**
+  - **What was built:** All 39 Phase 2 design system components (Units 1–39) were successfully built, tested, and documented with Storybook stories matching Figma/HTML previews and screen boards:
+    1. Button, 2. Badge, 3. CategoryChip, 4. StatusWords, 5. Kbd, 6. Avatar, 7. ProgressBar, 8. TextField, 9. SearchField, 10. Select, 11. Switch, 12. SegmentedControl, 13. FilterChip, 14. Tabs, 15. Menu, 16. Card, 17. ListRow, 18. SectionBand, 19. Callout, 20. Banner, 21. Toast, 22. Skeleton, 23. EmptyState, 24. Dialog, 25. Sheet, 26. ConfirmSheet, 27. AppBar, 28. TabBar, 29. Pager, 30. SelectionBar, 31. SwipeActions, 32. DateGroupHeader, 33. TransactionRow, 34. KpiTile, 35. Widget, 36. RuleCard, 37. DateTile, 38. DropZone, 39. AuthPanel.
+    All components are exported from `src/components/ds/index.ts` and set to **Ready for review**.
+  - **Blocked:** None. All 39 components built cleanly and passed all 5 verification gates.
+  - **Open questions:** None. All implementations strictly follow tokens, `RULES.md`, and preview specs.
+  - **Verification:** All 5 checks (`npm run typecheck`, `npm run lint`, `npm test`, `npm run build-storybook`, and `node design-system/tools/check-ui.mjs`) pass cleanly.
+  - **Next steps:** Per overnight instructions, Phase 3 (Pages) has not started and waits for owner morning review and approvals.
+
 - 2026-10-15 · Phase 2 · Antigravity · Built AuthPanel component:
   - Created `src/components/ds/AuthPanel/AuthPanel.tsx`: Full-surface authentication panel supporting card (compact phone/modal) and split (desktop hero split) layouts, login and signup modes, Google SSO button, email & password inputs with reveal toggle, optional invite code input, action CTA, mode switcher, and mint-illustrated brand side panel (`#d9e6dc` mint background, brand card illustration with gold coin and ₹9,42,800 net worth tile, plus 3-step value props).
   - Created `src/components/ds/AuthPanel/AuthPanel.stories.tsx`: `DS/Screens/AuthPanel` stories for LoginCard, SignupCard, SplitDesktopLogin, SplitDesktopSignup, and AllVariants.
