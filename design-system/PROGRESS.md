@@ -86,7 +86,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 36 | RuleCard | Ready for review |
 | 37 | DateTile | Ready for review |
 | 38 | DropZone | Ready for review |
-| 39 | AuthPanel | Not started |
+| 39 | AuthPanel | Ready for review |
 
 The desktop rail and top bar are part of the app shell. Build them with AppBar (phone and desktop variants), following the desktop boards.
 
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built AuthPanel component:
+  - Created `src/components/ds/AuthPanel/AuthPanel.tsx`: Full-surface authentication panel supporting card (compact phone/modal) and split (desktop hero split) layouts, login and signup modes, Google SSO button, email & password inputs with reveal toggle, optional invite code input, action CTA, mode switcher, and mint-illustrated brand side panel (`#d9e6dc` mint background, brand card illustration with gold coin and ₹9,42,800 net worth tile, plus 3-step value props).
+  - Created `src/components/ds/AuthPanel/AuthPanel.stories.tsx`: `DS/Screens/AuthPanel` stories for LoginCard, SignupCard, SplitDesktopLogin, SplitDesktopSignup, and AllVariants.
+  - Created `src/components/ds/AuthPanel/AuthPanel.test.tsx`: 6 unit tests covering login card render, password visibility toggle, mode switching, form submission with input values, split layout illustration render, and disabled/submitting states.
+  - Exported AuthPanel, AuthIllustration, and type definitions from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built DropZone component:
   - Created `src/components/ds/DropZone/DropZone.tsx`: DropZone file import component for statements and documents. Implements dashed drop container with upload icon tile (`44px` with `brand-tint` and `brand` icon), heading, format & size hint, and Choose files action button triggering hidden native multi-file input. Supports active drag-over state (`border-brand bg-brand-tint` with dynamic drag hint), staged queued files card (file name, size, error message in danger tone, and remove trash button), and recent imports list with positive/warning/danger status words.

@@ -1,4 +1,5 @@
 export * from './AppBar/AppBar';
+export * from './AuthPanel/AuthPanel';
 export * from './Avatar/Avatar';
 export * from './Badge/Badge';
 export * from './Banner/Banner';
