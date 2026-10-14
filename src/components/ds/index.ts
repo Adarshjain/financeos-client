@@ -5,5 +5,6 @@ export * from './CategoryChip/CategoryChip';
 export * from './Foundations/Foundations';
 export * from './Kbd/Kbd';
 export * from './ProgressBar/ProgressBar';
+export * from './SearchField/SearchField';
 export * from './StatusWords/StatusWords';
 export * from './TextField/TextField';
