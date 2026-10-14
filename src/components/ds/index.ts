@@ -1,6 +1,7 @@
 export * from './Avatar/Avatar';
 export * from './Badge/Badge';
 export * from './Button/Button';
+export * from './Callout/Callout';
 export * from './Card/Card';
 export * from './CategoryChip/CategoryChip';
 export * from './FilterChip/FilterChip';

@@ -66,7 +66,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 16 | Card | Ready for review |
 | 17 | ListRow | Ready for review |
 | 18 | SectionBand | Ready for review |
-| 19 | Callout | Not started |
+| 19 | Callout | Ready for review |
 | 20 | Banner | Not started |
 | 21 | Toast | Not started |
 | 22 | Skeleton | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built Callout component:
+  - Created `src/components/ds/Callout/Callout.tsx`: Callout, Note, and warning-banner inline feedback messages with support for action links, bold prefix titles, `warning-tint` ground with `warning-ink` text (needs action), `bg-canvas` ground with `ink-2` text (neutral note), and `warning-banner` styling.
+  - Created `src/components/ds/Callout/Callout.stories.tsx`: `DS/Feedback/Callout` stories for ActOnIt, NoteVariant, WarningBannerStyle, and AllVariants.
+  - Created `src/components/ds/Callout/Callout.test.tsx`: 5 unit tests covering title/message rendering, callout token styling, Note component styling, warning-banner variant, and action links.
+  - Exported Callout and Note from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built SectionBand component:
   - Created `src/components/ds/SectionBand/SectionBand.tsx`: SectionBand supporting form section bands (`sec`) with `overline` caption in `ink-4` on `bg-sunken`, uppercase styling, optional trailing action element, border controls, and `danger` variant for closing/destructive sections.
