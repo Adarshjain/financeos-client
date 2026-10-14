@@ -73,7 +73,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 23 | EmptyState | Ready for review |
 | 24 | Dialog | Ready for review |
 | 25 | Sheet | Ready for review |
-| 26 | ConfirmSheet | Not started |
+| 26 | ConfirmSheet | Ready for review |
 | 27 | AppBar | Not started |
 | 28 | TabBar | Not started |
 | 29 | Pager | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built ConfirmSheet component:
+  - Created `src/components/ds/ConfirmSheet/ConfirmSheet.tsx`: ConfirmSheet and ConfirmSheetShell for destructive action confirmations and unsaved changes confirmation. Displays object name title, description explaining what goes and stays, bulleted impact list, loading state during impact check, optional gentler alternative action (e.g. "Close instead"), cancel button, and filled-danger confirm action (`variant="danger-filled"`).
+  - Created `src/components/ds/ConfirmSheet/ConfirmSheet.stories.tsx`: `DS/Overlays/ConfirmSheet` stories for DeleteStatement, DiscardEdits, WithAlternative, LoadingPreview, Interactive, and AllVariants.
+  - Created `src/components/ds/ConfirmSheet/ConfirmSheet.test.tsx`: 5 unit tests covering title/description/impact rendering, confirm/cancel callbacks, alternative button callback, impact check loading state, and modal open/close interaction.
+  - Exported ConfirmSheet and ConfirmSheetShell from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built Sheet component:
   - Created `src/components/ds/Sheet/Sheet.tsx`: Sheet, SheetShell, SheetHeader, SheetBody, SheetFooter, SheetHandle, SheetContent, SheetTrigger, SheetClose, and SheetPortal based on Radix Dialog. Supports phone bottom sheets with `rounded-t-ds-sheet`, `shadow-sheet`, drag handle (`bg-line-handle`), title/subtitle header, scrollable body container, and full-width/side-by-side sticky footer buttons.
