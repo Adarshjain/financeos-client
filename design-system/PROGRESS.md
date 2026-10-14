@@ -67,7 +67,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 17 | ListRow | Ready for review |
 | 18 | SectionBand | Ready for review |
 | 19 | Callout | Ready for review |
-| 20 | Banner | Not started |
+| 20 | Banner | Ready for review |
 | 21 | Toast | Not started |
 | 22 | Skeleton | Not started |
 | 23 | EmptyState | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built Banner component:
+  - Created `src/components/ds/Banner/Banner.tsx`: Banner supporting form/list inline messages across all tones (`err` on `danger-tint` with `danger-ink` and alert role, `ok` on `brand-tint` with `brand-strong` and status role, `info` on `info-tint` with `info-ink`, and `warn` on `warning-tint` with `warning-ink`), optional trailing action element, and zero icons as required by design-system rules.
+  - Created `src/components/ds/Banner/Banner.stories.tsx`: `DS/Feedback/Banner` stories for ErrorBanner, SuccessBanner, InfoBanner, WarningBanner, WithAction, and AllVariants.
+  - Created `src/components/ds/Banner/Banner.test.tsx`: 6 unit tests covering content rendering, error tone with alert role and danger tokens, ok tone with status role and brand tokens, info tone, warn tone, and trailing action elements.
+  - Exported Banner from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built Callout component:
   - Created `src/components/ds/Callout/Callout.tsx`: Callout, Note, and warning-banner inline feedback messages with support for action links, bold prefix titles, `warning-tint` ground with `warning-ink` text (needs action), `bg-canvas` ground with `ink-2` text (neutral note), and `warning-banner` styling.
