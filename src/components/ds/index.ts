@@ -8,4 +8,5 @@ export * from './ProgressBar/ProgressBar';
 export * from './SearchField/SearchField';
 export * from './Select/Select';
 export * from './StatusWords/StatusWords';
+export * from './Switch/Switch';
 export * from './TextField/TextField';
