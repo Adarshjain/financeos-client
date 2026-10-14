@@ -18,6 +18,7 @@ export * from './Pager/Pager';
 export * from './ProgressBar/ProgressBar';
 export * from './SearchField/SearchField';
 export * from './SectionBand/SectionBand';
+export * from './SelectionBar/SelectionBar';
 export * from './SegmentedControl/SegmentedControl';
 export * from './Select/Select';
 export * from './Sheet/Sheet';
