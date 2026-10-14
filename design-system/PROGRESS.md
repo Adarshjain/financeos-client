@@ -78,7 +78,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 28 | TabBar | Ready for review |
 | 29 | Pager | Ready for review |
 | 30 | SelectionBar | Ready for review |
-| 31 | SwipeActions | Not started |
+| 31 | SwipeActions | Ready for review |
 | 32 | DateGroupHeader | Not started |
 | 33 | TransactionRow | Not started |
 | 34 | KpiTile | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built SwipeActions component:
+  - Created `src/components/ds/SwipeActions/SwipeActions.tsx`: SwipeActions phone row gestures for list triage (Transactions, Inbox). Reveals 96px action panels on swipe: swipe right reveals leftAction (Approve, Snooze in `brand` tone), swipe left reveals rightAction (Delete, Dismiss in `danger` tone). Supports touch/pointer drag gestures with threshold snapping and spring back, action callbacks, disabled action states, and controlled/uncontrolled revealed states.
+  - Created `src/components/ds/SwipeActions/SwipeActions.stories.tsx`: `DS/Actions/SwipeActions` stories for ApproveRevealed, DeleteRevealed, SnoozeRevealed, DismissRevealed, Interactive, and AllVariants.
+  - Created `src/components/ds/SwipeActions/SwipeActions.test.tsx`: 5 unit tests covering row children rendering, revealed left/right action panels and callbacks, pointer swipe drag interaction, and disabled action states.
+  - Exported SwipeActions from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built SelectionBar component:
   - Created `src/components/ds/SelectionBar/SelectionBar.tsx`: SelectionBar bulk action toolbar supporting desktop floating pill (`shadow-pop`, bordered actions, summary, clear button, and global Escape key listener) and phone bottom docked sheet (`shadow-dock`, top header row with select-all link and clear button, and multi-column action grid with sub-label hints). Supports disabled actions with explanatory summary and destructive variant actions.
