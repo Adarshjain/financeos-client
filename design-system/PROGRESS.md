@@ -81,7 +81,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 31 | SwipeActions | Ready for review |
 | 32 | DateGroupHeader | Ready for review |
 | 33 | TransactionRow | Ready for review |
-| 34 | KpiTile | Not started |
+| 34 | KpiTile | Ready for review |
 | 35 | Widget | Not started |
 | 36 | RuleCard | Not started |
 | 37 | DateTile | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built KpiTile component:
+  - Created `src/components/ds/KpiTile/KpiTile.tsx`: KpiTile single-figure metric card component for Home and dashboard grids (2 cols phone, 3-4 cols desktop). Displays uppercase overline label, tabular value (figure size 22px or hero size 30px with display font), delta with directional sentiment (`good` positive green, `bad` danger red, `neutral`), optional context elements (ProgressBar, badges, breakdown context line), loading skeleton state, and failed state with `border-danger-border`, danger label, and retry button callback.
+  - Created `src/components/ds/KpiTile/KpiTile.stories.tsx`: `DS/Data display/KpiTile` stories for Hero, DeltaBadDirection, WithBar, WithBadges, Loading, Failed, and AllVariants.
+  - Created `src/components/ds/KpiTile/KpiTile.test.tsx`: 7 unit tests covering default/hero typography, good/bad delta styling, progress bar and context, badges, loading skeleton rendering, and failed state retry callback.
+  - Exported KpiTile from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built TransactionRow component:
   - Created `src/components/ds/TransactionRow/TransactionRow.tsx`: TransactionRow phone list row component. Implements 2-line layout: line 1 with merchant description (`heading`) and amount (tabular, auto credit detection with `positive` tone and + sign) with optional running balance (`caption`), line 2 with context line ordered canonically (account name first, plastic `••7741`, amber review reasons, notes, blue link/record words with chain glyph, grey provenance) and CategoryChip (first category chip, `+n` chip, or dashed amber "Set category" chip when empty). Supports states: selected (`brand-tint` with 4px brand stripe), monitored (`watch-tint` with 4px watch stripe), excluded (60% opacity), and selectionMode with trailing `Eye` icon control.
