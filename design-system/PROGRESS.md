@@ -63,7 +63,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 13 | FilterChip | Ready for review |
 | 14 | Tabs | Ready for review |
 | 15 | Menu | Ready for review |
-| 16 | Card | Not started |
+| 16 | Card | Ready for review |
 | 17 | ListRow | Not started |
 | 18 | SectionBand | Not started |
 | 19 | Callout | Not started |
@@ -129,6 +129,13 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built Card component:
+  - Created `src/components/ds/Card/Card.tsx`: Card, CardHeader, CardContent, CardFooter with support for variants (`outline`, `tint`, `sunken`, `glass`, `hero`), padding options (`sm`, `md`, `lg`, `none`), clickable states (actionable cards with hover/keyboard focus), header with title, subtitle, prefix, and actions, and footer with alignment.
+  - Created `src/components/ds/Card/Card.stories.tsx`: `DS/Layout/Card` stories for Outline, Tint, Sunken, Glass, Hero, Interactive, WithHeaderAndFooter, and AllVariants.
+  - Created `src/components/ds/Card/Card.test.tsx`: 6 unit tests covering rendering, variants, click handlers, keyboard activation, and child compositions.
+  - Exported Card, CardHeader, CardContent, CardFooter from `src/components/ds/index.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built Menu component:
   - Created `src/components/ds/Menu/Menu.tsx`: Menu, MenuItem, MenuSeparator, MenuGroup, and full DropdownMenu suite (DropdownMenu, Trigger, Content, Item, Separator, Label) supporting action menus, destructive actions (`danger`), active state with checkmark (`brand-tint`), snooze presets with date hints, disabled items with reasons, section group headers, and switcher footer links.
