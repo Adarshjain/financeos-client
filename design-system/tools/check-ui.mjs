@@ -8,13 +8,24 @@
 //   node design-system/tools/check-ui.mjs                 # working tree + staged vs HEAD, plus new files
 //   node design-system/tools/check-ui.mjs --base main~3   # everything added since a ref
 //   node design-system/tools/check-ui.mjs --staged        # only what is staged (for the pre-commit hook)
+//   node design-system/tools/check-ui.mjs --all           # ignore checked-paths.txt, check all of src/
 //   node design-system/tools/check-ui.mjs --self-test     # prove the rules catch what they should
+//
+// Only files under the prefixes in design-system/checked-paths.txt are checked (the new
+// component library, then each migrated page). `--all` checks every file under src/.
 //
 // A line may opt out with a comment containing `ds-allow: <reason>`. Opt-outs are printed as
 // warnings and must be listed as deviations in design-system/PROGRESS.md with an owner decision.
 
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
+
+const SCOPE = existsSync('design-system/checked-paths.txt')
+  ? readFileSync('design-system/checked-paths.txt', 'utf8')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l && !l.startsWith('#'))
+  : ['src/'];
 
 const PALETTE =
   'slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black';
@@ -135,11 +146,12 @@ function addedLines(base, staged) {
   return out;
 }
 
-function check(lines) {
+function check(lines, all = false) {
   const errors = [];
   const allowed = [];
   for (const { file, line, text } of lines) {
     if (!SCAN_EXT.test(file) || SKIP.some((re) => re.test(file))) continue;
+    if (!all && !SCOPE.some((p) => file.startsWith(p))) continue;
     for (const r of RULES) {
       if (!r.re.test(text)) continue;
       const hit = {
@@ -182,14 +194,14 @@ function selfTest() {
   ];
   let fail = 0;
   for (const [rule, text] of bad) {
-    const { errors } = check([{ file: 'src/x.tsx', line: 1, text }]);
+    const { errors } = check([{ file: 'src/x.tsx', line: 1, text }], true);
     if (!errors.some((e) => e.rule === rule)) {
       console.log(`MISSED ${rule}: ${text}`);
       fail++;
     }
   }
   for (const text of good) {
-    const { errors } = check([{ file: 'src/x.tsx', line: 1, text }]);
+    const { errors } = check([{ file: 'src/x.tsx', line: 1, text }], true);
     if (errors.length) {
       console.log(`FALSE POSITIVE ${errors.map((e) => e.rule)}: ${text}`);
       fail++;
@@ -207,7 +219,10 @@ const args = process.argv.slice(2);
 if (args.includes('--self-test')) selfTest();
 const bi = args.indexOf('--base');
 const base = bi >= 0 ? args[bi + 1] : 'HEAD';
-const { errors, allowed } = check(addedLines(base, args.includes('--staged')));
+const { errors, allowed } = check(
+  addedLines(base, args.includes('--staged')),
+  args.includes('--all')
+);
 for (const a of allowed)
   console.log(
     `warning  ${a.file}:${a.line}  ${a.rule} (ds-allow) — list it under Deviations in PROGRESS.md\n         ${a.text}`

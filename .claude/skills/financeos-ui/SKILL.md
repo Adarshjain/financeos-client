@@ -12,16 +12,19 @@ The rules in `design-system/RULES.md` are binding. Follow them exactly; when a r
 2. Read `design-system/PROGRESS.md`. Find the phase marked "In progress" or the task the owner named. If none is in progress, ask the owner which phase to start; don't pick one.
 3. For each component you will touch, read `design-system/components/<Name>/README.md`. Its Variants list is complete.
 4. For each screen, open its boards from `design-system/screens/INDEX.md`. Read the `*.dc.html` markup, look at `shots/*.webp`, and include the matching `*-states` board.
-5. Read the current code for that screen or component, so you keep every existing behaviour.
+5. Read the current code for that screen or component, so you keep every existing behaviour. Read old components only; never edit them to restyle them (RULES §1).
 
 ## Build
+- New components go in `src/components/ds/<Name>/` with `<Name>.tsx`, `<Name>.stories.tsx` (one story per README variant plus "All variants") and `<Name>.test.tsx`. They never import from `src/components/ui/`.
+- Phase 2: one component per step, then set it to "Ready for review" in PROGRESS.md and stop for the owner's Storybook review.
+- Phase 3: build the page from Approved components only; add its paths to `design-system/checked-paths.txt` and a row to the migration map.
 - Use tokens and type styles only (RULES §3 and §4) and existing components and variants only (§5). Add an icon only when it is a control, navigation or progress (§6).
 - Anything unclear, missing or contradictory: add it to Open questions in PROGRESS.md and carry on with the rest (§2). Never guess.
 - Never re-add anything in RULES §9.
 - Commit in small steps on `main` with explicit paths. Never push.
 
 ## Finish
-1. Run `npm run typecheck`, `npm run lint`, `npm test` (Node 20) and `node design-system/tools/check-ui.mjs`; also `npm run e2e` when a flow changed.
+1. Run `npm run typecheck`, `npm run lint`, `npm test` (Node 20), `npm run build-storybook` (from Phase 1 on) and `node design-system/tools/check-ui.mjs`; also `npm run e2e` when a flow changed.
 2. Compare every changed screen with its board at 390px and 1440px, in light and dark.
 3. Update PROGRESS.md: status, files, checks, open questions, deviations ("none" or each one with its owner decision).
 4. Report what was done, what is open, and what you could not verify.
