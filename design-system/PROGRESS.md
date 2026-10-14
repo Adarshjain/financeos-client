@@ -72,7 +72,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 22 | Skeleton | Ready for review |
 | 23 | EmptyState | Ready for review |
 | 24 | Dialog | Ready for review |
-| 25 | Sheet | Not started |
+| 25 | Sheet | Ready for review |
 | 26 | ConfirmSheet | Not started |
 | 27 | AppBar | Not started |
 | 28 | TabBar | Not started |
@@ -129,6 +129,14 @@ _(none yet)_
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Built Sheet component:
+  - Created `src/components/ds/Sheet/Sheet.tsx`: Sheet, SheetShell, SheetHeader, SheetBody, SheetFooter, SheetHandle, SheetContent, SheetTrigger, SheetClose, and SheetPortal based on Radix Dialog. Supports phone bottom sheets with `rounded-t-ds-sheet`, `shadow-sheet`, drag handle (`bg-line-handle`), title/subtitle header, scrollable body container, and full-width/side-by-side sticky footer buttons.
+  - Created `src/components/ds/Sheet/Sheet.stories.tsx`: `DS/Overlays/Sheet` stories for Form, Detail, Picker, ResultSummary, InteractiveModal, and AllVariants.
+  - Created `src/components/ds/Sheet/Sheet.test.tsx`: 4 unit tests covering SheetShell title/subtitle/body rendering, drag handle presence, footer layout, and Radix bottom-sheet overlay interaction.
+  - Exported Sheet primitives and SheetShell from `src/components/ds/index.ts`.
+  - Added line color tokens (`line-handle`, `line-soft`, `line-strong`, `line`) to `tailwind.config.ts`.
+  - Checks: npm run typecheck, npm run lint, npm test, npm run build-storybook, node design-system/tools/check-ui.mjs. All passed. Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Built Dialog component:
   - Created `src/components/ds/Dialog/Dialog.tsx`: Dialog, DialogShell, DialogBody, DialogFooter, DialogContent, DialogTrigger, DialogClose, and DialogPortal based on Radix Dialog. Supports desktop modal widths (small 440, default 640, large 760, extra large 920), `radius-xl`, `shadow-dialog`, top-right close control (`X`), scrollable body container, right-aligned sunken footer with optional far-left destructive action, and `srTitle` accessibility support for headerless dialogs.
