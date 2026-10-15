@@ -54,7 +54,7 @@ Build in this order, one component per step. After each one, set its status to *
 | # | Component | Status |
 | --- | --- | --- |
 | 1 | Icon | Ready for review |
-| 2 | Popover | Not started |
+| 2 | Popover | Ready for review |
 | 3 | Dialog | Changes requested |
 | 4 | AppBar | Changes requested |
 | 5 | TabBar | Changes requested |
@@ -164,6 +164,17 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 4a · Popover:
+  - Created new `Popover` component in `src/components/ds/Popover/Popover.tsx` based on `@radix-ui/react-popover`: floating surface with `bg-surface border border-line rounded-ds-lg shadow-pop p-space-4 z-overlay`, `animate-in fade-in-0 slide-in-from-top-1 duration-base`, supporting `width="match"` (`w-popover-trigger`) and `width="content"` (`min-w-popover-trigger`). Exported primitives `PopoverRoot`, `PopoverTrigger`, `PopoverContent`, `PopoverPortal`, `PopoverClose`, `PopoverAnchor` and unified `Popover`.
+  - Created `src/components/ds/Popover/Popover.stories.tsx` with `AllVariants` as first export, driven by args with Controls for `width`, `align`, `side`.
+  - Created `src/components/ds/Popover/Popover.test.tsx` testing open/close, `match` width trigger sizing, `content` width sizing, controlled state, and Escape to close.
+  - Exported `Popover` from `src/components/ds/index.ts`.
+  - Files deleted: none.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/Popover` (5 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Stories compared: `DS/Overlays/Popover/AllVariants`, `DS/Overlays/Popover/MatchTriggerWidth`, `DS/Overlays/Popover/ContentWidth` against `Popover/preview.html` and `ds-05-foundations.dc.html` at 390px and 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 3 · Checkbox:
   - Created new `Checkbox` component in `src/components/ds/Checkbox/Checkbox.tsx` based on `@radix-ui/react-checkbox`: 16px box (`w-space-16 h-space-16`), `rounded-ds-xs`, 2px `line-strong` border (`bg-surface`); active = `brand` fill and border with Icon `Check` (`sm`); mixed = `brand` fill and border with Icon `Minus` (`sm`); disabled = `disabled:opacity-50 disabled:cursor-not-allowed`.
