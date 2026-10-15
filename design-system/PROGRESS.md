@@ -75,7 +75,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 20 | Checkbox | Ready for review |
 | 21 | Switch | Ready for review |
 | 22 | SegmentedControl | Ready for review |
-| 23 | DropZone | Changes requested |
+| 23 | DropZone | Ready for review |
 | 24 | Card | Changes requested |
 | 25 | ListRow | Ready for review |
 | 26 | SectionHeader | Ready for review |
@@ -199,6 +199,17 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 13i · DropZone:
+  - Updated `DropZone` in `src/components/ds/DropZone/DropZone.tsx`:
+    - Replaced raw SVG Upload icon with `Icon` `Upload` (`size="lg"`).
+    - Replaced raw SVG Trash2 icon with `Icon` `Trash2` (`size="sm"`) inside DS `Button` ghost iconOnly remove button.
+    - Made the whole drop box clickable to trigger native file input selection with `cursor-pointer`.
+    - Handled click propagation on internal Choose files and remove buttons.
+  - Updated `src/components/ds/DropZone/DropZone.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`Idle`, `DraggingOver`, `Queued`, `TooLarge`, `WithDropError`, `WithRecentImports`) with controls.
+  - Verified `src/components/ds/DropZone/DropZone.test.tsx`: 8 unit tests passing.
+  - Stories compared: AllVariants, Idle, DraggingOver, Queued, TooLarge against `design-system/components/DropZone/preview.html` and import screens at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 13h · SearchField:
   - Updated `SearchField` in `src/components/ds/SearchField/SearchField.tsx`:

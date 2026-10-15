@@ -1,9 +1,11 @@
 import { Trash2, Upload } from 'lucide-react';
 import React, { forwardRef, useRef, useState } from 'react';
 
+import { Banner } from '../Banner/Banner';
 import { Button } from '../Button/Button';
 import { Card } from '../Card/Card';
 import { cn } from '../cn';
+import { Icon } from '../Icon/Icon';
 
 export interface QueuedFile {
   id: string;
@@ -128,11 +130,12 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
         {/* Drop zone box */}
         {showDropArea ? (
           <div
+            onClick={handleChooseFiles}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={cn(
-              'border border-dashed rounded-ds-xl px-space-16 py-space-20 flex flex-col items-center text-center gap-space-6 select-none transition-colors duration-fast',
+              'border border-dashed rounded-ds-xl px-space-16 py-space-20 flex flex-col items-center text-center gap-space-6 select-none transition-colors duration-fast cursor-pointer',
               activeDragging
                 ? 'border-brand bg-brand-tint'
                 : hasError
@@ -148,7 +151,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
                   : 'bg-brand-tint text-brand',
               )}
             >
-              <Upload className="w-space-20 h-space-20" aria-hidden="true" />
+              <Icon icon={Upload} size="lg" />
             </div>
 
             <div>
@@ -166,7 +169,14 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
             </div>
 
             {!activeDragging && (
-              <Button size="sm" variant="primary" onClick={handleChooseFiles}>
+              <Button
+                size="sm"
+                variant="primary"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleChooseFiles();
+                }}
+              >
                 {buttonLabel}
               </Button>
             )}
@@ -201,12 +211,12 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
                     variant="ghost"
                     iconOnly
                     aria-label={`Remove ${f.name}`}
-                    onClick={() => onRemoveFile(f)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveFile(f);
+                    }}
                   >
-                    <Trash2
-                      className="w-space-14 h-space-14"
-                      aria-hidden="true"
-                    />
+                    <Icon icon={Trash2} size="sm" />
                   </Button>
                 )}
               </div>
