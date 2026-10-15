@@ -200,6 +200,13 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 · Antigravity · Unit 14 · Remove AuthPanel:
+  - Removed `AuthPanel` component (`src/components/ds/AuthPanel/AuthPanel.tsx`, `AuthPanel.stories.tsx`, `AuthPanel.test.tsx`) per owner decision on component restructure (pages are not DS components; auth moves to a page in Phase 3).
+  - Removed `export * from './AuthPanel/AuthPanel'` from `src/components/ds/index.ts`.
+  - Confirmed no other files in `src/components/ds/` or project import `AuthPanel`.
+  - Result: completely eliminated the remaining raw-button errors and ds-allow hex-color warnings from `check-ui.mjs`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 423 test suites passing), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` (clean). Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 · Antigravity · Unit 13j · Card:
   - Verified `CardSection` in `src/components/ds/Card/Card.tsx` uses `SectionHeader` with `variant="band"`, matching design-system/components/Card/README.md and preview.html.
   - Updated `src/components/ds/Card/Card.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`TitleSubtitleLink`, `WithAnAction`, `WithRows`, `WithAPager`, `WithSectionBands`, `Empty`) with controls, replaced raw buttons in pager story with DS `Pager` component.
