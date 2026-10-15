@@ -322,14 +322,14 @@ textarea.inp{height:72px;padding:var(--space-8) var(--space-12);resize:none;alig
 .cal2{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-16)}
 textarea.inp.one{height:var(--control-lg);min-height:var(--control-lg);resize:vertical;padding-top:var(--space-8)}
 .tabs-u .tab{border-radius:0}
-
 /* ---------- TabBar floating pill (proposal, 2026-10-15) ---------- */
 .ppill-scene{position:relative;height:184px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg-canvas);padding:12px 14px}
 .ppill-scene .row{background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-lg);height:44px;margin-bottom:8px}
-.ppill{position:absolute;left:12px;right:12px;bottom:12px;display:flex;gap:2px;padding:6px;background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-pill);box-shadow:var(--shadow-dock)}
-.ppill .pi{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 5px;border-radius:var(--radius-pill);font:700 10px/12px var(--font-text);color:var(--ink-4);position:relative}
-.ppill .pi svg{width:20px;height:20px}
-.ppill .pi-on{background:var(--brand-tint);color:var(--brand-strong)}
-.ppill .pi .dot{position:absolute;top:1px;left:calc(50% + 5px);min-width:16px;height:16px;padding:0 4px;border-radius:var(--radius-pill);font:800 10px/16px var(--font-text);text-align:center;color:var(--on-brand);background:var(--danger);box-shadow:0 0 0 2px var(--bg-surface)}
-.ppill .pi .dot.amber{background:var(--warning)}
-.ppill .pi-on .dot{box-shadow:0 0 0 2px var(--brand-tint)}
+.ppill{position:absolute;left:12px;right:12px;bottom:12px;display:flex;padding:8px 4px;background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-pill);box-shadow:var(--shadow-dock)}
+.ppill .pi{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:var(--space-4);font:700 10px/12px var(--font-text);color:var(--ink-4)}
+.ppill .ind{position:relative;display:flex;align-items:center;justify-content:center;width:48px;height:28px;border-radius:var(--radius-pill)}
+.ppill .ind svg{width:20px;height:20px}
+.ppill .pi-on{color:var(--brand-strong)}.ppill .pi-on .ind{background:var(--brand-tint)}
+.ppill .pi .lab{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ppill .dot{position:absolute;top:-4px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:var(--radius-pill);font:800 10px/16px var(--font-text);text-align:center;color:var(--on-brand);background:var(--danger);box-shadow:0 0 0 2px var(--bg-surface)}
+.ppill .dot.amber{background:var(--warning)}
