@@ -144,6 +144,21 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 15) · Callout component fixes:
+  - Fixed Callout in `src/components/ds/Callout/Callout.tsx`:
+    - Updated `warning-banner` variant: provided distinct banner layout with `justify-between gap-space-10` and trailing action container (`shrink-0`), distinguishing it from the inline `callout` flow with inline title/action.
+  - Updated `src/components/ds/Callout/Callout.test.tsx`:
+    - Added unit test asserting `warning-banner` applies `justify-between gap-space-10` and places action element in a `.shrink-0` trailing container.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/Callout` (5 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `Callout/preview.html` and `ds-09-feedback.webp`:
+    - `DS/Feedback/Callout/ActOnIt`
+    - `DS/Feedback/Callout/NoteVariant`
+    - `DS/Feedback/Callout/WarningBannerStyle`
+    - `DS/Feedback/Callout/AllVariants`
+    Verified bold inline headline on Act on it, neutral canvas ground on Note, and distinct trailing action layout on Warning banner style.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 14) · Avatar component fixes:
   - Fixed Avatar in `src/components/ds/Avatar/Avatar.tsx`:
     - Updated person avatar sizing: changed `md` person from `h-space-28` to standard `h-control-md aspect-square text-caption` (32px, `control-md`), matching the account avatar per owner decision (2026-10-15).
