@@ -144,6 +144,38 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 4 · Select component fixes:
+  - Fixed Select in `src/components/ds/Select/Select.tsx`:
+    - Responsive phone Sheet picker morphology: below the phone breakpoint (`< sm`), Select opens as a bottom sheet (`Sheet`, `SheetContent`, `SheetBody`) with drag handle, title, scrolling options list, and swipe-down-to-dismiss (Sheet README "picker" variant); on desktop (`sm:`), it renders the anchored floating popover menu. Supports `forceSheet` prop.
+    - Desktop keyboard model: ArrowDown and ArrowUp navigate between enabled options, Home/End jump to first/last option, Enter selects the highlighted option or creates from query, Escape closes the menu.
+    - Removed double focus ring from embedded SearchField: applied `containerClassName="focus-within:ring-0 focus-within:ring-offset-0 focus-within:border-brand"` to eliminate ring-offset double borders.
+    - Semantic ARIA structure: trigger has `role="combobox"`, `aria-expanded`, `aria-haspopup="listbox"`, `aria-controls`, and `aria-invalid={hasError ? 'true' : undefined}`; `role="listbox"` is scoped strictly to the options container (excluding search input and footer action buttons); individual options have `role="option"`.
+    - Error state: displays error message below trigger in `font-text text-caption font-medium text-danger mt-space-6` matching board.
+  - Created `src/components/ds/useMediaQuery.ts`: responsive media query and `useIsPhone()` hook (`< 640px`) with clean SSR hydration via `useSyncExternalStore`.
+  - Updated `src/components/ds/Select/Select.stories.tsx`:
+    - Added the 4 missing variants to the **All variants** story grid: Multi · with search, With an action row, Search · create from typing, and No results, displaying all 10 open variants + 10 closed states.
+  - Updated `src/components/ds/Select/Select.test.tsx`:
+    - Updated trigger query to `combobox` role following ARIA combobox pattern.
+    - Added tests verifying keyboard navigation (ArrowDown, ArrowUp, Enter, Escape).
+    - Added tests verifying `aria-invalid="true"` on error and mobile Sheet picker rendering/opening.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 3,466 tests passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs --staged` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px (mobile bottom sheet picker) and 1440px (desktop floating dropdown) in light and dark against `Select/preview.html`:
+    - `DS/Inputs/Select/SingleSelect`
+    - `DS/Inputs/Select/SingleWithSearchAndIcons`
+    - `DS/Inputs/Select/MultiSelect`
+    - `DS/Inputs/Select/MultiWithSearch`
+    - `DS/Inputs/Select/SectionedList`
+    - `DS/Inputs/Select/WithAnActionRow`
+    - `DS/Inputs/Select/SearchCreateFromTyping`
+    - `DS/Inputs/Select/NoResults`
+    - `DS/Inputs/Select/WithDescriptions`
+    - `DS/Inputs/Select/DisabledOption`
+    - `DS/Inputs/Select/ClosedFieldStates`
+    - `DS/Inputs/Select/All variants`
+    Verified single border on SearchField without double ring, responsive phone bottom sheet picker, error text with red border, and all 10 open variants displayed in AllVariants matching preview.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 3 · ConfirmSheet component fixes:
   - Fixed ConfirmSheet in `src/components/ds/ConfirmSheet/ConfirmSheet.tsx`:
     - Inherits all Sheet fixes: swipe-down dismiss (> 80px), `px-space-16`, `max-h-dvh`, and `z-scrim`/`z-overlay`.

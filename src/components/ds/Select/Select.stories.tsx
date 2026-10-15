@@ -499,9 +499,56 @@ export const AllVariants: Story = {
           </div>
           <div>
             <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
+              Multi · with search
+            </span>
+            <SelectMenu
+              multiple
+              searchable
+              searchValue="food"
+              options={categoryOptions}
+              value={['food']}
+              onCreate={() => {}}
+              createLabel={(q) => `Create "${q}"`}
+            />
+          </div>
+          <div>
+            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
               Sectioned list
             </span>
             <SelectMenu groups={sectionedGroups} value="regalia" />
+          </div>
+          <div>
+            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
+              With an action row
+            </span>
+            <SelectMenu
+              options={sharedLimitOptions}
+              value="hdfc_pool"
+              actionRow="+ New shared limit…"
+            />
+          </div>
+          <div>
+            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
+              Search · create from typing
+            </span>
+            <SelectMenu
+              searchable
+              searchValue="Rahul S"
+              options={counterpartyOptions}
+              onCreate={() => {}}
+              createLabel={(q) => `+ Add "${q}"`}
+            />
+          </div>
+          <div>
+            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
+              No results
+            </span>
+            <SelectMenu
+              searchable
+              searchValue="xyz bank"
+              options={bankOptions}
+              emptyText={(q) => `No banks match "${q}".`}
+            />
           </div>
           <div>
             <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
