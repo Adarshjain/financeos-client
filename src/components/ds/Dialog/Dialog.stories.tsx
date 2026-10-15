@@ -29,10 +29,6 @@ const meta: Meta<typeof DialogShell> = {
       options: ['modal', 'side-panel'],
       description: 'Centred modal vs desktop side panel (both render as sheet on phone)',
     },
-    forcePhone: {
-      control: 'boolean',
-      description: 'Force phone sheet presentation',
-    },
     showClose: {
       control: 'boolean',
     },
@@ -103,28 +99,26 @@ export const AllVariants: Story = {
 
       <div>
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Phone sheet · tertiary moves into the body
+          Phone sheet · same footer, tertiary left
         </div>
         <div className="bg-scrim p-space-16 max-w-sm rounded-ds-lg">
           <DialogShell
             size="sm"
-            forcePhone
             title="Edit rule"
             description="Swiggy · Food & dining"
             onClose={() => {}}
-            tertiaryLabel="Delete rule"
             tertiary={
-              <Button size="xl" variant="danger-filled" className="w-full">
+              <Button variant="danger">
                 Delete rule
               </Button>
             }
             secondary={
-              <Button size="xl" variant="secondary" className="w-full">
+              <Button variant="secondary">
                 Cancel
               </Button>
             }
             primary={
-              <Button size="xl" variant="primary" className="w-full">
+              <Button variant="primary">
                 Save
               </Button>
             }
@@ -329,29 +323,30 @@ export const DesktopXl: Story = {
 
 export const PhoneSheet: Story = {
   name: 'Phone sheet',
+  parameters: {
+    viewport: { defaultViewport: 'phone' },
+  },
   args: {
     size: 'sm',
-    forcePhone: true,
     title: 'Edit rule',
     description: 'Swiggy · Food & dining',
-    tertiaryLabel: 'Delete rule',
   },
   render: (args) => (
     <div className="bg-scrim p-space-16 max-w-sm rounded-ds-lg">
       <DialogShell
         {...args}
         tertiary={
-          <Button size="xl" variant="danger-filled" className="w-full">
+          <Button variant="danger">
             Delete rule
           </Button>
         }
         secondary={
-          <Button size="xl" variant="secondary" className="w-full">
+          <Button variant="secondary">
             Cancel
           </Button>
         }
         primary={
-          <Button size="xl" variant="primary" className="w-full">
+          <Button variant="primary">
             Save
           </Button>
         }
