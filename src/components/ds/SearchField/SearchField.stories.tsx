@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React, { useState } from 'react';
+import React from 'react';
 
 import { SearchField } from './SearchField';
 
@@ -10,51 +10,24 @@ const meta = {
     layout: 'padded',
   },
   tags: ['autodocs'],
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['filter', 'sheet'],
+    },
+    disabled: { control: 'boolean' },
+    clearable: { control: 'boolean' },
+    label: { control: 'text' },
+    placeholder: { control: 'text' },
+    helper: { control: 'text' },
+  },
 } satisfies Meta<typeof SearchField>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Empty: Story = {
-  args: {
-    placeholder: 'Search merchant keys or names…',
-  },
-};
-
-function TypingWithAClearXDemo() {
-  const [val, setVal] = useState('swiggy');
-  return (
-    <div className="max-w-md">
-      <SearchField
-        value={val}
-        placeholder="Search merchant keys or names…"
-        onValueChange={setVal}
-      />
-    </div>
-  );
-}
-
-export const TypingWithAClearX: Story = {
-  render: () => <TypingWithAClearXDemo />,
-};
-
-export const LabelledInsideASheet: Story = {
-  args: {
-    variant: 'sheet',
-    label: 'Find the other side',
-    placeholder: 'Amount, merchant or date',
-  },
-};
-
-export const NoResults: Story = {
-  args: {
-    defaultValue: 'xyz',
-    placeholder: 'Search merchant keys or names…',
-    helper: 'No transactions match "xyz".',
-  },
-};
-
 export const AllVariants: Story = {
+  name: 'All variants',
   render: () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-space-16 p-space-16 max-w-2xl bg-canvas rounded-ds-lg border border-line">
@@ -100,3 +73,36 @@ export const AllVariants: Story = {
     );
   },
 };
+
+export const Empty: Story = {
+  args: {
+    placeholder: 'Search merchant keys or names…',
+  },
+};
+
+export const TypingWithAClearX: Story = {
+  name: 'Typing with a clear ×',
+  args: {
+    defaultValue: 'swiggy',
+    placeholder: 'Search merchant keys or names…',
+  },
+};
+
+export const LabelledInsideASheet: Story = {
+  name: 'In a sheet · labelled',
+  args: {
+    variant: 'sheet',
+    label: 'Find the other side',
+    placeholder: 'Amount, merchant or date',
+  },
+};
+
+export const NoResults: Story = {
+  name: 'No results',
+  args: {
+    defaultValue: 'xyz',
+    placeholder: 'Search merchant keys or names…',
+    helper: 'No transactions match "xyz".',
+  },
+};
+

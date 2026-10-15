@@ -200,6 +200,16 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 · Antigravity · Unit 13h · SearchField:
+  - Updated `SearchField` in `src/components/ds/SearchField/SearchField.tsx`:
+    - Replaced raw `<button>` clear element with DS `Button` component (`variant="ghost"`, `size="sm"`, `iconOnly`) wrapping `Icon` `X` (`size="sm"`), eliminating raw-button violation.
+    - Magnifier icon rendered through `Icon` `Search` (`size="sm"`).
+    - Integrated with shared `FieldFrame` component for label, helper, and error support.
+  - Updated `src/components/ds/SearchField/SearchField.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`Empty`, `TypingWithAClearX`, `LabelledInsideASheet`, `NoResults`) with controls.
+  - Verified `src/components/ds/SearchField/SearchField.test.tsx`: 7 unit tests passing.
+  - Stories compared: AllVariants, Empty, TypingWithAClearX, LabelledInsideASheet, NoResults against `design-system/components/SearchField/preview.html` and search screens at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 · Antigravity · Unit 13g · Pager:
   - Updated `Pager` in `src/components/ds/Pager/Pager.tsx`:
     - Replaced all raw `<button>` elements with DS `Button` component:
