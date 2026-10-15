@@ -12,6 +12,30 @@ const financeOSItems: TabBarItem[] = [
   { id: 'more', label: 'More', icon: 'more', href: '/more' },
 ];
 
+function Scene({
+  children,
+  title,
+}: {
+  children: React.ReactNode;
+  title?: string;
+}) {
+  return (
+    <div className="flex flex-col gap-space-8 max-w-sm w-full">
+      {title && (
+        <div className="font-text text-overline uppercase text-ink-4 mt-space-4">
+          {title}
+        </div>
+      )}
+      <div className="relative h-48 border border-line rounded-ds-lg overflow-hidden bg-canvas p-space-12 pb-tab-bar-clearance">
+        <div className="bg-surface border border-line rounded-ds-lg h-control-xl mb-space-8" />
+        <div className="bg-surface border border-line rounded-ds-lg h-control-xl mb-space-8" />
+        <div className="bg-surface border border-line rounded-ds-lg h-control-xl" />
+        {children}
+      </div>
+    </div>
+  );
+}
+
 const meta: Meta<typeof TabBar> = {
   title: 'DS/Navigation/TabBar',
   component: TabBar,
@@ -32,12 +56,18 @@ const meta: Meta<typeof TabBar> = {
   render: function Render(args) {
     const [{ current }, updateArgs] = useArgs();
     return (
-      <div className="max-w-md bg-canvas p-space-16 rounded-ds-lg">
-        <TabBar
-          {...args}
-          current={current ?? args.current}
-          onSelect={(id) => updateArgs({ current: id })}
-        />
+      <div className="flex flex-col gap-space-12 max-w-sm w-full">
+        <p className="font-text text-caption text-ink-3">
+          Pages keep <code className="font-text font-bold text-ink">pb-tab-bar-clearance</code> under the bar.
+        </p>
+        <Scene>
+          <TabBar
+            {...args}
+            className="absolute inset-x-space-12 bottom-space-12"
+            current={current ?? args.current}
+            onSelect={(id) => updateArgs({ current: id })}
+          />
+        </Scene>
       </div>
     );
   },
@@ -49,76 +79,62 @@ type Story = StoryObj<typeof TabBar>;
 export const AllVariants: Story = {
   name: 'All variants',
   render: () => (
-    <div className="space-y-space-24 max-w-md">
-      <div>
-        <h4 className="font-text text-label font-bold text-ink-3 mb-space-8">
-          Home Active (with counts)
-        </h4>
-        <div className="bg-canvas p-space-16 rounded-ds-lg">
-          <TabBar items={financeOSItems} current="home" />
-        </div>
-      </div>
+    <div className="flex flex-col gap-space-16 max-w-sm w-full">
+      <p className="font-text text-caption text-ink-3">
+        Pages keep <code className="font-text font-bold text-ink">pb-tab-bar-clearance</code> under the bar.
+      </p>
 
-      <div>
-        <h4 className="font-text text-label font-bold text-ink-3 mb-space-8">
-          Transactions Active
-        </h4>
-        <div className="bg-canvas p-space-16 rounded-ds-lg">
-          <TabBar items={financeOSItems} current="transactions" />
-        </div>
-      </div>
+      <Scene title="Home current">
+        <TabBar
+          items={financeOSItems}
+          current="home"
+          className="absolute inset-x-space-12 bottom-space-12"
+        />
+      </Scene>
 
-      <div>
-        <h4 className="font-text text-label font-bold text-ink-3 mb-space-8">
-          High Counts (99+)
-        </h4>
-        <div className="bg-canvas p-space-16 rounded-ds-lg">
-          <TabBar
-            items={financeOSItems.map((item) =>
-              item.id === 'inbox'
-                ? { ...item, count: 150 }
-                : item.id === 'transactions'
-                  ? { ...item, count: 200 }
-                  : item,
-            )}
-            current="inbox"
-          />
-        </div>
-      </div>
+      <Scene title="Transactions current">
+        <TabBar
+          items={financeOSItems}
+          current="transactions"
+          className="absolute inset-x-space-12 bottom-space-12"
+        />
+      </Scene>
 
-      <div>
-        <h4 className="font-text text-label font-bold text-ink-3 mb-space-8">
-          Upcoming (no counts)
-        </h4>
-        <div className="bg-canvas p-space-16 rounded-ds-lg">
-          <TabBar
-            items={financeOSItems.map(({ count: _c, countTone: _t, ...rest }) => rest)}
-            current="upcoming"
-          />
-        </div>
-      </div>
+      <Scene title="Count over 99">
+        <TabBar
+          items={financeOSItems.map((item) =>
+            item.id === 'inbox'
+              ? { ...item, count: 120 }
+              : item.id === 'transactions'
+                ? { ...item, count: 104 }
+                : item,
+          )}
+          current="inbox"
+          className="absolute inset-x-space-12 bottom-space-12"
+        />
+      </Scene>
     </div>
   ),
 };
 
-export const HomeActive: Story = {
-  name: 'HomeActive',
+export const HomeCurrent: Story = {
+  name: 'Home current',
   args: {
     items: financeOSItems,
     current: 'home',
   },
 };
 
-export const TransactionsActive: Story = {
-  name: 'TransactionsActive',
+export const TransactionsCurrent: Story = {
+  name: 'Transactions current',
   args: {
     items: financeOSItems,
     current: 'transactions',
   },
 };
 
-export const HighCounts: Story = {
-  name: 'HighCounts',
+export const CountOver99: Story = {
+  name: 'Count over 99',
   args: {
     items: financeOSItems.map((item) =>
       item.id === 'inbox'
@@ -128,13 +144,5 @@ export const HighCounts: Story = {
           : item,
     ),
     current: 'inbox',
-  },
-};
-
-export const NoCounts: Story = {
-  name: 'NoCounts',
-  args: {
-    items: financeOSItems.map(({ count: _c, countTone: _t, ...rest }) => rest),
-    current: 'upcoming',
   },
 };

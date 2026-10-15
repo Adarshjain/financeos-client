@@ -220,6 +220,25 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 1 · TabBar is now a floating pill (owner decision 2026-10-15):
+  - Rebuilt TabBar in `src/components/ds/TabBar/TabBar.tsx` as a floating pill per Phase 1 contract:
+    - Bar: `fixed inset-x-space-12 bottom-safe-12 z-dock bg-surface border border-line rounded-ds-pill shadow-dock py-space-8 px-space-4 lg:hidden flex items-center select-none`.
+    - Item: equal-width link with icon (`lg`, 20px) over label (`text-tab-label`), `gap-space-2`.
+    - Inactive item is `text-ink-faint`; current is `text-ink` with label `font-extrabold`. Removed all background, indicator, dot, and underline behind items.
+    - Pressed state is `active:text-ink-3`; nothing moves.
+    - Counts: Badge `count` pinned to top-right corner with `ring-2 ring-surface`.
+  - Rebuilt `src/components/ds/TabBar/TabBar.stories.tsx` showing Home current, Transactions current, and a count over 99 (120/104) floating over list rows in a scene with story note: `Pages keep pb-tab-bar-clearance under the bar.`
+  - Added unit test coverage in `src/components/ds/TabBar/TabBar.test.tsx` verifying pill classes, active/inactive item styling, lack of background/indicator, and `ring-2 ring-surface` count badge.
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 335 problems (0 errors, 335 warnings)`
+    - `npm test`: `Test Files  427 passed (427) | Tests  3542 passed (3542)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `node design-system/tools/check-ui.mjs`: `design-system check: clean`
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `TabBar/preview.html` and phone boards `P-*.dc.html` / `shots/`. At 390px the floating pill matches `preview.html` in light and dark; at 1440px the bar is hidden by `lg:hidden`.
+  - Done when: at 390 the stories match `preview.html` in light and dark, and at 1440 the bar isn't visible.
+  - Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 8 · No domain defaults:
   - Made `matchType` a required prop in `RuleCardProps` (`matchType: React.ReactNode`) in `src/components/ds/RuleCard/RuleCard.tsx` and removed the domain default (`matchType = 'Contains'`) from the component destructuring.
   - Updated `src/components/ds/RuleCard/RuleCard.test.tsx` to explicitly supply `matchType` across all test cases.

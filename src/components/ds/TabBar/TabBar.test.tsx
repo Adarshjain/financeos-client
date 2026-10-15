@@ -87,4 +87,50 @@ describe('TabBar', () => {
     const { container } = render(<TabBar items={sampleItems} current="home" hidden />);
     expect(container.firstChild).toBeNull();
   });
+
+  it('renders floating pill container with Phase 1 classes and lg:hidden', () => {
+    render(<TabBar items={sampleItems} current="home" />);
+    const nav = screen.getByRole('navigation', { name: 'Primary' });
+
+    expect(nav).toHaveClass(
+      'fixed',
+      'inset-x-space-12',
+      'bottom-safe-12',
+      'z-dock',
+      'bg-surface',
+      'border',
+      'border-line',
+      'rounded-ds-pill',
+      'shadow-dock',
+      'py-space-8',
+      'px-space-4',
+      'lg:hidden',
+    );
+  });
+
+  it('styles active item with text-ink and font-extrabold label, inactive with text-ink-faint', () => {
+    render(<TabBar items={sampleItems} current="home" />);
+    const homeTab = screen.getByRole('tab', { name: /Home/i });
+    const inboxTab = screen.getByRole('tab', { name: /Inbox/i });
+
+    expect(homeTab).toHaveClass('text-ink');
+    expect(homeTab).not.toHaveClass('bg-hover', 'bg-pressed', 'border-t', 'border-b');
+    expect(screen.getByText('Home')).toHaveClass('font-extrabold');
+
+    expect(inboxTab).toHaveClass('text-ink-faint');
+    expect(screen.getByText('Inbox')).not.toHaveClass('font-extrabold');
+  });
+
+  it('renders count badge with ring-2 ring-surface pinned to top-right', () => {
+    render(<TabBar items={sampleItems} current="home" />);
+    const badge = screen.getByText('4');
+
+    expect(badge).toHaveClass(
+      'absolute',
+      '-top-space-4',
+      '-right-space-8',
+      'ring-2',
+      'ring-surface',
+    );
+  });
 });
