@@ -32,21 +32,24 @@ describe('Avatar component', () => {
     expect(el).toHaveClass('rounded-ds-sm', 'bg-brand', 'text-on-brand');
   });
 
-  it('renders sizes sm, md, xl', () => {
+  it('renders unified sizes sm, md, lg across variants', () => {
     const { rerender } = render(<Avatar size="sm" variant="account">HD</Avatar>);
-    expect(screen.getByText('HD')).toHaveClass('h-space-24');
+    expect(screen.getByText('HD')).toHaveClass('h-space-24', 'w-space-24');
 
     rerender(<Avatar size="md" variant="account">HD</Avatar>);
-    expect(screen.getByText('HD')).toHaveClass('h-control-md');
+    expect(screen.getByText('HD')).toHaveClass('h-control-md', 'w-control-md');
 
     rerender(<Avatar size="md" variant="person">PN</Avatar>);
-    expect(screen.getByText('PN')).toHaveClass('h-control-md');
+    expect(screen.getByText('PN')).toHaveClass('h-control-md', 'w-control-md');
 
     rerender(<Avatar size="md" variant="logo">SB</Avatar>);
-    expect(screen.getByText('SB')).toHaveClass('h-space-24', 'text-overline');
+    expect(screen.getByText('SB')).toHaveClass('h-control-md', 'w-control-md');
 
-    rerender(<Avatar size="xl" variant="account">HD</Avatar>);
-    expect(screen.getByText('HD')).toHaveClass('h-control-xl');
+    rerender(<Avatar size="lg" variant="account">HD</Avatar>);
+    expect(screen.getByText('HD')).toHaveClass('h-control-xl', 'w-control-xl');
+
+    rerender(<Avatar size="xl" variant="person">AM</Avatar>);
+    expect(screen.getByText('AM')).toHaveClass('h-control-xl', 'w-control-xl');
   });
 
   it('renders image when src is provided and falls back on error', () => {

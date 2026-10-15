@@ -88,7 +88,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 33 | StatusWords | Ready for review |
 | 34 | ProgressBar | Ready for review |
 | 35 | DateTile | Ready for review |
-| 36 | Avatar | Changes requested |
+| 36 | Avatar | Ready for review |
 | 37 | Kbd | Ready for review |
 | 38 | Banner | Ready for review |
 | 39 | Toast | Ready for review |
@@ -191,6 +191,15 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 11a · Avatar:
+  - Updated `Avatar` in `src/components/ds/Avatar/Avatar.tsx`:
+    - Unified size scale to sm 24 (`h-space-24 w-space-24 text-tab-label font-bold`), md 32 (`h-control-md w-control-md text-label font-bold`), lg 44 (`h-control-xl w-control-xl text-heading font-extrabold`) across all variants (account, person, logo). Supported `xl` as alias to `lg` for backwards compatibility.
+    - Preserved shape and fill variants: account (`rounded-ds-md bg-canvas text-ink-2`), person (`rounded-ds-pill bg-brand-tint text-brand-strong`), logo (`rounded-ds-sm bg-brand text-on-brand` with image `src` and fallback to initials on error).
+  - Updated `src/components/ds/Avatar/Avatar.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`Account`, `Person`, `Logo`, `Small`, `Large`, `WithImage`) with controls.
+  - Updated `src/components/ds/Avatar/Avatar.test.tsx`: 7 unit tests (updated existing test `renders unified sizes sm, md, lg across variants` to verify the unified 24/32/44 scale).
+  - Stories compared: Account, Person, Logo, Small, Large, WithImage against `design-system/components/Avatar/preview.html` and screens at 390/1440 light/dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 10d · TabBar:
   - Rebuilt `TabBar` in `src/components/ds/TabBar/TabBar.tsx`:

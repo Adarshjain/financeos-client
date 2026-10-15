@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
 
 import { Avatar } from './Avatar';
 
@@ -8,128 +9,149 @@ const meta: Meta<typeof Avatar> = {
   parameters: {
     layout: 'padded',
   },
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['account', 'person', 'logo'],
+      description: 'The identity mark shape and fill: account (rounded square), person (circle), logo (brand square)',
+    },
+    size: {
+      control: 'select',
+      options: ['sm', 'md', 'lg'],
+      description: 'The size scale: sm (24px), md (32px), lg (44px)',
+    },
+    initials: {
+      control: 'text',
+      description: 'Initials fallback text',
+    },
+    src: {
+      control: 'text',
+      description: 'Image URL for logo or person',
+    },
+    alt: {
+      control: 'text',
+      description: 'Image alt text',
+    },
+  },
 };
 
 export default meta;
 type Story = StoryObj<typeof Avatar>;
 
-export const Account: Story = {
+export const AllVariants: Story = {
+  name: 'All variants',
   render: () => (
-    <div className="flex items-center gap-space-8">
-      <Avatar variant="account">HD</Avatar>
-      <Avatar variant="account">AX</Avatar>
-      <Avatar variant="account">IC</Avatar>
-      <Avatar variant="account">SB</Avatar>
+    <div className="space-y-space-24 max-w-lg font-text">
+      <div>
+        <h3 className="font-text text-overline uppercase text-ink-4 mb-space-8">
+          Account (sm, md, lg)
+        </h3>
+        <div className="flex items-center gap-space-8 p-space-12 rounded-ds-lg border border-line bg-surface">
+          <Avatar variant="account" size="sm">HD</Avatar>
+          <Avatar variant="account" size="md">HD</Avatar>
+          <Avatar variant="account" size="lg">HD</Avatar>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="font-text text-overline uppercase text-ink-4 mb-space-8">
+          Person (sm, md, lg)
+        </h3>
+        <div className="flex items-center gap-space-8 p-space-12 rounded-ds-lg border border-line bg-surface">
+          <Avatar variant="person" size="sm">PN</Avatar>
+          <Avatar variant="person" size="md">PN</Avatar>
+          <Avatar variant="person" size="lg">PN</Avatar>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="font-text text-overline uppercase text-ink-4 mb-space-8">
+          Logo (sm, md, lg fallback to brand initials)
+        </h3>
+        <div className="flex items-center gap-space-8 p-space-12 rounded-ds-lg border border-line bg-surface">
+          <Avatar variant="logo" size="sm">HD</Avatar>
+          <Avatar variant="logo" size="md">HD</Avatar>
+          <Avatar variant="logo" size="lg">HD</Avatar>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="font-text text-overline uppercase text-ink-4 mb-space-8">
+          With Image (logo & person)
+        </h3>
+        <div className="flex items-center gap-space-8 p-space-12 rounded-ds-lg border border-line bg-surface">
+          <Avatar
+            variant="person"
+            size="md"
+            initials="AM"
+            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=128&h=128&q=80"
+            alt="Arjun Mehta"
+          />
+          <Avatar
+            variant="person"
+            size="lg"
+            initials="AM"
+            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=128&h=128&q=80"
+            alt="Arjun Mehta"
+          />
+        </div>
+      </div>
     </div>
   ),
+};
+
+export const Account: Story = {
+  name: 'Account',
+  args: {
+    variant: 'account',
+    initials: 'HD',
+    size: 'md',
+  },
 };
 
 export const Person: Story = {
-  render: () => (
-    <div className="flex items-center gap-space-8">
-      <Avatar variant="person">PN</Avatar>
-      <Avatar variant="person">RS</Avatar>
-      <Avatar variant="person">AM</Avatar>
-    </div>
-  ),
+  name: 'Person',
+  args: {
+    variant: 'person',
+    initials: 'PN',
+    size: 'md',
+  },
 };
 
 export const Logo: Story = {
-  render: () => (
-    <div className="flex items-center gap-space-8">
-      <Avatar variant="logo" style={{ background: '#004c8f' }}>HD</Avatar> {/* ds-allow: bank brand colour from preview */}
-      <Avatar variant="logo" style={{ background: '#97144d' }}>AX</Avatar> {/* ds-allow: bank brand colour from preview */}
-      <Avatar variant="logo" style={{ background: '#22409a' }}>SB</Avatar> {/* ds-allow: bank brand colour from preview */}
-    </div>
-  ),
+  name: 'Logo',
+  args: {
+    variant: 'logo',
+    initials: 'HD',
+    size: 'md',
+  },
 };
 
-export const Sizes: Story = {
-  render: () => (
-    <div className="space-y-space-16">
-      <div className="flex items-center gap-space-8">
-        <Avatar size="sm" variant="account">
-          HD
-        </Avatar>
-        <Avatar size="md" variant="account">
-          HD
-        </Avatar>
-        <Avatar size="xl" variant="account">
-          HD
-        </Avatar>
-      </div>
-      <div className="flex items-center gap-space-8">
-        <Avatar size="sm" variant="person">
-          AM
-        </Avatar>
-        <Avatar size="md" variant="person">
-          AM
-        </Avatar>
-        <Avatar size="xl" variant="person">
-          AM
-        </Avatar>
-      </div>
-    </div>
-  ),
+export const Small: Story = {
+  name: 'Small',
+  args: {
+    variant: 'account',
+    initials: 'HD',
+    size: 'sm',
+  },
+};
+
+export const Large: Story = {
+  name: 'Large',
+  args: {
+    variant: 'person',
+    initials: 'PN',
+    size: 'lg',
+  },
 };
 
 export const WithImage: Story = {
+  name: 'WithImage',
   args: {
     variant: 'person',
+    size: 'md',
     initials: 'AM',
     src: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=128&h=128&q=80',
     alt: 'Arjun Mehta',
   },
-};
-
-export const AllVariants: Story = {
-  render: () => (
-    <div className="space-y-space-24 max-w-lg font-text">
-      <div>
-        <h3 className="text-overline uppercase text-ink-4 mb-space-8">
-          Identity marks
-        </h3>
-        <div className="flex items-center gap-space-8 p-space-12 rounded-ds-lg border border-line bg-surface">
-          <Avatar variant="account">HD</Avatar>
-          <Avatar variant="account">AX</Avatar>
-          <Avatar variant="person">PN</Avatar>
-          <Avatar variant="person">RS</Avatar>
-          <Avatar variant="logo" style={{ background: '#004c8f' }}>HD</Avatar> {/* ds-allow: bank brand colour from preview */}
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-overline uppercase text-ink-4 mb-space-8">
-          In profile context (44px)
-        </h3>
-        <div className="flex items-center gap-space-12 p-space-14 rounded-ds-lg border border-line bg-surface">
-          <Avatar size="xl" variant="person">
-            AM
-          </Avatar>
-          <div>
-            <div className="text-heading text-ink">Arjun Mehta</div>
-            <div className="text-caption text-ink-3">
-              arjun.mehta@example.test · signed in with Google
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-overline uppercase text-ink-4 mb-space-8">
-          In account row context (32px)
-        </h3>
-        <div className="flex items-center gap-space-12 p-space-14 rounded-ds-lg border border-line bg-surface">
-          <Avatar size="md" variant="account">
-            HD
-          </Avatar>
-          <div>
-            <div className="text-body-strong text-ink">HDFC Regalia</div>
-            <div className="text-caption text-ink-3">••7741 · Credit card</div>
-          </div>
-          <div className="ml-auto text-body-strong text-ink">₹1,249.00</div>
-        </div>
-      </div>
-    </div>
-  ),
 };
