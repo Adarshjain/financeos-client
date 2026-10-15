@@ -9,7 +9,7 @@ const meta: Meta<typeof Badge> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['grey', 'green', 'amber', 'rose', 'blue', 'count'],
+      options: ['default', 'count'],
     },
     tone: {
       control: 'select',

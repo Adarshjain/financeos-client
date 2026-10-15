@@ -55,8 +55,8 @@ describe('Badge component', () => {
     expect(screen.getByText('99+')).toBeInTheDocument();
   });
 
-  it('supports variant alias for tone', () => {
-    render(<Badge variant="green">Success</Badge>);
+  it('renders specified tone', () => {
+    render(<Badge tone="green">Success</Badge>);
     expect(screen.getByText('Success')).toHaveClass('bg-positive-tint', 'text-positive-strong');
   });
 
