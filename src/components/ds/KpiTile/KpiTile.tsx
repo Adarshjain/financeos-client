@@ -91,6 +91,7 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
       return (
         <div
           ref={ref}
+          role="alert"
           className={cn(
             'bg-surface border border-danger-border rounded-ds-lg px-space-16 py-space-14 min-w-0 flex flex-col select-none',
             className,
@@ -112,7 +113,7 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
                     <button
                       type="button"
                       onClick={onRetry}
-                      className="underline hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                      className="text-ink font-bold underline hover:text-ink-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring cursor-pointer"
                     >
                       Retry
                     </button>
@@ -198,6 +199,7 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
               value={progressBar.value}
               max={progressBar.max}
               tone={progressBar.tone}
+              aria-label={typeof label === 'string' ? `${label} progress` : 'Progress'}
             />
           </div>
         )}
