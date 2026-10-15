@@ -1,6 +1,7 @@
 import { ChevronDown, X } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
+import { Badge } from '../Badge/Badge';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 
@@ -45,13 +46,11 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
 
     const countNode =
       count !== undefined && count !== null ? (
-        <span className="inline-flex items-center justify-center min-w-space-16 h-space-16 px-space-6 rounded-ds-pill bg-ink text-on-brand font-text font-bold text-tab-label leading-none select-none shrink-0">
-          {count}
-        </span>
+        <Badge variant="count" count={count} />
       ) : null;
 
     const dropdownNode = hasDropdown ? (
-      <Icon icon={ChevronDown} size="sm" className="text-ink-4 shrink-0" />
+      <Icon icon={ChevronDown} size="sm" className="text-current shrink-0" />
     ) : null;
 
     const toneClasses = cn(
