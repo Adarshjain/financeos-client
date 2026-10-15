@@ -97,7 +97,7 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 
 ## 6. Icons
 
-1. Lucide (`lucide-react`) only, 2px stroke, drawn through the Icon component at `sm` 14, `md` 16 or `lg` 20 (the `icon-*` tokens). Never type a glyph (▾ ✕ ✓ › ‹) as an icon, and every icon inside one control is the same size.
+1. New components draw icons only through the **Icon** component: **Phosphor** (`@phosphor-icons/react`, SSR entry) in the **bold** weight, picked by registry name from `design-system/icons.json`, at `sm` 14, `md` 16 or `lg` 20 (the `icon-*` tokens). Never import Lucide or Phosphor directly in a design-system component, never type a glyph (▾ ✕ ✓ › ‹) as an icon, and every icon inside one control is the same size. A new icon goes into the registry with the owner's approval first. Old components keep Lucide until Phase 4. (Migration: Icon still wraps Lucide until the round after the restructure switches it to Phosphor; until then keep using Icon as it is.)
 2. An icon is allowed only when it **is** a control (close, more, back, chevron, search, delete), navigation (tab bar, rail) or progress (spinner).
 3. No icons in toasts, banners, empty states, badges, section headers or card titles. No emoji.
 
