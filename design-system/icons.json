@@ -1,0 +1,117 @@
+[
+ {
+  "name": "chevron-down",
+  "phosphor": "caret-down",
+  "use": "Select and dropdown chip caret; Pager size"
+ },
+ {
+  "name": "chevron-up",
+  "phosphor": "caret-up",
+  "use": "Open caret"
+ },
+ {
+  "name": "chevron-left",
+  "phosphor": "caret-left",
+  "use": "Previous page; back; calendar previous month"
+ },
+ {
+  "name": "chevron-right",
+  "phosphor": "caret-right",
+  "use": "Row disclosure; next page; calendar next month"
+ },
+ {
+  "name": "close",
+  "phosphor": "x",
+  "use": "Close dialog; remove chip; clear search"
+ },
+ {
+  "name": "check",
+  "phosphor": "check",
+  "use": "Selected option; checkbox; approve"
+ },
+ {
+  "name": "search",
+  "phosphor": "magnifying-glass",
+  "use": "Search fields and buttons"
+ },
+ {
+  "name": "add",
+  "phosphor": "plus",
+  "use": "The + add button"
+ },
+ {
+  "name": "more",
+  "phosphor": "dots-three-vertical",
+  "use": "⋮ menus on rows and cards"
+ },
+ {
+  "name": "delete",
+  "phosphor": "trash",
+  "use": "Delete actions; swipe left"
+ },
+ {
+  "name": "link",
+  "phosphor": "link",
+  "use": "Link to… actions; linked status"
+ },
+ {
+  "name": "chat",
+  "phosphor": "chat-centered",
+  "use": "Ask the data"
+ },
+ {
+  "name": "view",
+  "phosphor": "eye",
+  "use": "Open detail during selection"
+ },
+ {
+  "name": "calendar",
+  "phosphor": "calendar-blank",
+  "use": "DateField; Upcoming tab"
+ },
+ {
+  "name": "upload",
+  "phosphor": "upload-simple",
+  "use": "Import, Choose files"
+ },
+ {
+  "name": "merge",
+  "phosphor": "git-merge",
+  "use": "Merge transactions"
+ },
+ {
+  "name": "home",
+  "phosphor": "house",
+  "use": "Home navigation"
+ },
+ {
+  "name": "inbox",
+  "phosphor": "tray",
+  "use": "Inbox navigation"
+ },
+ {
+  "name": "transactions",
+  "phosphor": "list-bullets",
+  "use": "Transactions navigation"
+ },
+ {
+  "name": "menu",
+  "phosphor": "list",
+  "use": "More tab"
+ },
+ {
+  "name": "accounts",
+  "phosphor": "wallet",
+  "use": "Accounts navigation"
+ },
+ {
+  "name": "settings",
+  "phosphor": "gear-six",
+  "use": "Settings"
+ },
+ {
+  "name": "notifications",
+  "phosphor": "bell",
+  "use": "Notifications"
+ }
+]
