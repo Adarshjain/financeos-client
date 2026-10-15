@@ -38,6 +38,7 @@ export * from './Tabs/Tabs';
 export * from './TextArea/TextArea';
 export * from './TextField/TextField';
 export * from './Toast/Toast';
+export * from './TopBar/TopBar';
 export * from './TransactionRow/TransactionRow';
 export * from './useSheetDrag';
 export * from './Widget/Widget';
