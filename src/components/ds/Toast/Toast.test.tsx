@@ -18,13 +18,51 @@ describe('Toast', () => {
     expect(screen.getByText('Dashboard deleted')).toBeInTheDocument();
   });
 
-  it('applies ink background, on-brand text, and shadow-pop tokens', () => {
+  it('applies dark ink background and shadow-pop for neutral tone default', () => {
     const { container } = render(<Toast message="Snoozed" />);
     expect(container.firstChild).toHaveClass(
       'bg-ink',
       'text-on-brand',
       'shadow-pop',
       'rounded-ds-lg',
+    );
+  });
+
+  it('reuses Banner tone styles with shadow-pop for other tones', () => {
+    const { container: cSuccess } = render(
+      <Toast tone="success" message="Success" />,
+    );
+    expect(cSuccess.firstChild).toHaveClass(
+      'bg-positive-tint',
+      'text-positive-strong',
+      'shadow-pop',
+    );
+
+    const { container: cDanger } = render(
+      <Toast tone="danger" message="Error" />,
+    );
+    expect(cDanger.firstChild).toHaveClass(
+      'bg-danger-tint',
+      'text-danger-ink',
+      'shadow-pop',
+    );
+
+    const { container: cWarning } = render(
+      <Toast tone="warning" message="Warning" />,
+    );
+    expect(cWarning.firstChild).toHaveClass(
+      'bg-warning-tint',
+      'text-warning-ink',
+      'shadow-pop',
+    );
+
+    const { container: cInfo } = render(
+      <Toast tone="info" message="Info" />,
+    );
+    expect(cInfo.firstChild).toHaveClass(
+      'bg-info-tint',
+      'text-info-ink',
+      'shadow-pop',
     );
   });
 
@@ -44,17 +82,22 @@ describe('Toast', () => {
     expect(handleUndo).toHaveBeenCalledTimes(1);
   });
 
-  it('renders status role by default and alert role when isError is true', () => {
+  it('renders status role by default and alert role when tone is danger', () => {
     const { rerender } = render(<Toast message="Success" />);
     expect(screen.getByRole('status')).toBeInTheDocument();
 
-    rerender(<Toast message="Couldn't snooze." isError />);
+    rerender(<Toast message="Couldn't snooze." tone="danger" />);
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+
+    rerender(<Toast message="Failed again" isError />);
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
   it('wires onUndo in showToast to invoke callback and dismiss the toast', () => {
     const handleUndo = vi.fn();
-    let renderCustomToast: ((id: string | number) => React.ReactNode) | undefined;
+    let renderCustomToast:
+      | ((id: string | number) => React.ReactNode)
+      | undefined;
 
     vi.mocked(sonnerToast.custom).mockImplementationOnce((fn, opts) => {
       renderCustomToast = fn as any;
@@ -66,7 +109,6 @@ describe('Toast', () => {
     expect(sonnerToast.custom).toHaveBeenCalled();
     expect(renderCustomToast).toBeDefined();
 
-    // Render the element created by the showToast renderer
     const { getByRole } = render(<>{renderCustomToast!('toast-id-42')}</>);
     const undoButton = getByRole('button', { name: 'Undo' });
     fireEvent.click(undoButton);
@@ -75,8 +117,10 @@ describe('Toast', () => {
     expect(sonnerToast.dismiss).toHaveBeenCalledWith('toast-id-42');
   });
 
-  it('passes custom duration, undoLabel and isError to showToast', () => {
-    let renderCustomToast: ((id: string | number) => React.ReactNode) | undefined;
+  it('passes custom duration, undoLabel and tone to showToast', () => {
+    let renderCustomToast:
+      | ((id: string | number) => React.ReactNode)
+      | undefined;
 
     vi.mocked(sonnerToast.custom).mockImplementationOnce((fn, opts) => {
       renderCustomToast = fn as any;
@@ -86,7 +130,7 @@ describe('Toast', () => {
 
     showToast("Couldn't snooze.", {
       duration: 3000,
-      isError: true,
+      tone: 'danger',
       onUndo: () => {},
       undoLabel: 'Retry',
     });
