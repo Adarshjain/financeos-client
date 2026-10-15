@@ -1,7 +1,9 @@
 import { MoreVertical } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
+import { Button } from '../Button/Button';
 import { cn } from '../cn';
+import { Icon } from '../Icon/Icon';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,16 +67,16 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
+              <Button
                 type="button"
+                size="sm"
+                variant="ghost"
+                iconOnly
                 aria-label="Widget options"
-                className="p-space-2 text-ink-4 hover:text-ink rounded-ds-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                className="text-ink-4 hover:text-ink shrink-0"
               >
-                <MoreVertical
-                  className="w-space-14 h-space-14"
-                  aria-hidden="true"
-                />
-              </button>
+                <Icon icon={MoreVertical} size="sm" />
+              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {menuItems.map((item, idx) => (
@@ -119,13 +121,15 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
                     {onRetry && (
                       <>
                         {' '}
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={onRetry}
-                          className="text-ink font-bold underline hover:text-ink-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring cursor-pointer"
+                          className="inline-flex h-auto p-0 text-ink font-bold underline hover:text-ink-2 hover:bg-transparent"
                         >
                           Retry
-                        </button>
+                        </Button>
                       </>
                     )}
                   </>
@@ -151,13 +155,15 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
                   <>
                     {onRemove ? (
                       <>
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={onRemove}
-                          className="text-ink font-bold underline hover:text-ink-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring cursor-pointer"
+                          className="inline-flex h-auto p-0 text-ink font-bold underline hover:text-ink-2 hover:bg-transparent"
                         >
                           Remove
-                        </button>
+                        </Button>
                         {' the widget or pick another report.'}
                       </>
                     ) : (

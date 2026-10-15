@@ -9,10 +9,59 @@ const meta: Meta<typeof Widget> = {
   parameters: {
     layout: 'padded',
   },
+  argTypes: {
+    title: { control: 'text' },
+    subtitle: { control: 'text' },
+    loading: { control: 'boolean' },
+    error: { control: 'boolean' },
+    unavailable: { control: 'boolean' },
+  },
 };
 
 export default meta;
 type Story = StoryObj<typeof Widget>;
+
+export const AllVariants: Story = {
+  render: () => (
+    <div className="grid grid-cols-2 gap-space-12 max-w-xl">
+      <Widget
+        title="Spend this month"
+        subtitle="vs Sep"
+        menuItems={[
+          { label: 'Edit report', onSelect: () => {} },
+          { label: 'View full page', onSelect: () => {} },
+        ]}
+      >
+        <div className="font-text text-figure font-extrabold text-ink tabular-nums">
+          ₹97,044
+        </div>
+        <div className="text-label font-bold text-danger mt-space-4">
+          ▲ 28%
+        </div>
+      </Widget>
+
+      <Widget
+        title="Upcoming"
+        subtitle="Next 14 days"
+        loading
+      />
+
+      <Widget
+        title="Portfolio"
+        subtitle="Value and day change"
+        error={true}
+        onRetry={() => {}}
+      />
+
+      <Widget
+        title="Card spend by month"
+        subtitle="Report"
+        unavailable={true}
+        onRemove={() => {}}
+      />
+    </div>
+  ),
+};
 
 export const Figure: Story = {
   args: {
@@ -78,46 +127,4 @@ export const WithMenu: Story = {
       </div>
     ),
   },
-};
-
-export const AllVariants: Story = {
-  render: () => (
-    <div className="grid grid-cols-2 gap-space-12 max-w-xl">
-      <Widget
-        title="Spend this month"
-        subtitle="vs Sep"
-        menuItems={[
-          { label: 'Edit report', onSelect: () => {} },
-          { label: 'View full page', onSelect: () => {} },
-        ]}
-      >
-        <div className="font-text text-figure font-extrabold text-ink tabular-nums">
-          ₹97,044
-        </div>
-        <div className="text-label font-bold text-danger mt-space-4">
-          ▲ 28%
-        </div>
-      </Widget>
-
-      <Widget
-        title="Upcoming"
-        subtitle="Next 14 days"
-        loading
-      />
-
-      <Widget
-        title="Portfolio"
-        subtitle="Value and day change"
-        error={true}
-        onRetry={() => {}}
-      />
-
-      <Widget
-        title="Card spend by month"
-        subtitle="Report"
-        unavailable={true}
-        onRemove={() => {}}
-      />
-    </div>
-  ),
 };
