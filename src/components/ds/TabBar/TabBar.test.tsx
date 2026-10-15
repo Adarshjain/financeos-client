@@ -2,23 +2,19 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { formatBadgeCount, TabBar } from './TabBar';
+import { TabBar, type TabBarItem } from './TabBar';
 
-describe('formatBadgeCount', () => {
-  it('formats counts properly', () => {
-    expect(formatBadgeCount(undefined)).toBeNull();
-    expect(formatBadgeCount(0)).toBeNull();
-    expect(formatBadgeCount(-5)).toBeNull();
-    expect(formatBadgeCount(4)).toBe('4');
-    expect(formatBadgeCount(99)).toBe('99');
-    expect(formatBadgeCount(100)).toBe('99+');
-    expect(formatBadgeCount(999)).toBe('99+');
-  });
-});
+const sampleItems: TabBarItem[] = [
+  { id: 'home', label: 'Home', icon: 'home', href: '/' },
+  { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox', count: 4, countTone: 'danger' },
+  { id: 'upcoming', label: 'Upcoming', icon: 'calendar', href: '/upcoming' },
+  { id: 'transactions', label: 'Transactions', icon: 'transactions', href: '/transactions', count: 25, countTone: 'warning' },
+  { id: 'more', label: 'More', icon: 'more', href: '/more' },
+];
 
 describe('TabBar', () => {
-  it('renders 5 tabs as links in canonical order', () => {
-    render(<TabBar activeTab="home" />);
+  it('renders up to 5 items as links in order', () => {
+    render(<TabBar items={sampleItems} current="home" />);
 
     const tabs = screen.getAllByRole('tab');
     expect(tabs).toHaveLength(5);
@@ -33,8 +29,20 @@ describe('TabBar', () => {
     expect(tabs[4]).toHaveTextContent('More');
   });
 
+  it('limits visible items to at most 5', () => {
+    const sixItems: TabBarItem[] = [
+      ...sampleItems,
+      { id: 'extra', label: 'Extra', icon: 'settings', href: '/extra' },
+    ];
+    render(<TabBar items={sixItems} current="home" />);
+
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs).toHaveLength(5);
+    expect(screen.queryByText('Extra')).not.toBeInTheDocument();
+  });
+
   it('marks active tab with aria-selected="true" and aria-current="page"', () => {
-    render(<TabBar activeTab="transactions" />);
+    render(<TabBar items={sampleItems} current="transactions" />);
 
     const transactionsTab = screen.getByRole('tab', { name: /Transactions/i });
     expect(transactionsTab).toHaveAttribute('aria-selected', 'true');
@@ -45,50 +53,38 @@ describe('TabBar', () => {
     expect(homeTab).not.toHaveAttribute('aria-current');
   });
 
-  it('calls onTabChange when a tab is clicked', () => {
-    const handleTabChange = vi.fn();
-    render(<TabBar activeTab="home" onTabChange={handleTabChange} />);
+  it('calls onSelect when a tab is clicked', () => {
+    const handleSelect = vi.fn();
+    render(<TabBar items={sampleItems} current="home" onSelect={handleSelect} />);
 
     fireEvent.click(screen.getByRole('tab', { name: /Upcoming/i }));
-    expect(handleTabChange).toHaveBeenCalledWith('upcoming');
+    expect(handleSelect).toHaveBeenCalledWith('upcoming');
 
     fireEvent.click(screen.getByRole('tab', { name: /More/i }));
-    expect(handleTabChange).toHaveBeenCalledWith('more');
+    expect(handleSelect).toHaveBeenCalledWith('more');
   });
 
-  it('renders count badges on Inbox and Transactions positioned without covering glyphs', () => {
-    render(
-      <TabBar
-        activeTab="home"
-        inboxCount={9}
-        transactionsCount={25}
-      />,
-    );
+  it('renders count badges on items with counts', () => {
+    render(<TabBar items={sampleItems} current="home" />);
 
-    const inboxBadge = screen.getByText('9');
+    const inboxBadge = screen.getByText('4');
     expect(inboxBadge).toBeInTheDocument();
-    expect(inboxBadge).toHaveClass('left-space-14');
-    expect(inboxBadge).toHaveClass('h-space-16');
-    expect(inboxBadge).toHaveClass('min-w-space-16');
 
     const txBadge = screen.getByText('25');
     expect(txBadge).toBeInTheDocument();
-    expect(txBadge).toHaveClass('left-space-14');
   });
 
   it('renders 99+ when count exceeds 99', () => {
-    render(
-      <TabBar
-        activeTab="home"
-        inboxCount={150}
-      />,
-    );
+    const highCountItems: TabBarItem[] = [
+      { id: 'inbox', label: 'Inbox', icon: 'inbox', count: 150, countTone: 'danger' },
+    ];
+    render(<TabBar items={highCountItems} current="inbox" />);
 
     expect(screen.getByText('99+')).toBeInTheDocument();
   });
 
   it('returns null when hidden is true', () => {
-    const { container } = render(<TabBar activeTab="home" hidden />);
+    const { container } = render(<TabBar items={sampleItems} current="home" hidden />);
     expect(container.firstChild).toBeNull();
   });
 });

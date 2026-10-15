@@ -6,15 +6,8 @@ import { Badge } from '../Badge/Badge';
 import { cn } from '../cn';
 import { Icon, type IconName } from '../Icon/Icon';
 
-export type TabBarTabId =
-  | 'home'
-  | 'inbox'
-  | 'upcoming'
-  | 'transactions'
-  | 'more';
-
-export interface TabBarItemDef {
-  id: TabBarTabId;
+export interface TabBarItem {
+  id: string;
   label: string;
   icon: IconName;
   href?: string;
@@ -22,45 +15,24 @@ export interface TabBarItemDef {
   countTone?: 'danger' | 'warning';
 }
 
-export function formatBadgeCount(count?: number): string | null {
-  if (count === undefined || count <= 0) return null;
-  if (count > 99) return '99+';
-  return String(count);
-}
-
-export interface TabBarProps extends React.HTMLAttributes<HTMLElement> {
-  activeTab?: TabBarTabId;
-  onTabChange?: (tab: TabBarTabId) => void;
-  inboxCount?: number;
-  transactionsCount?: number;
+export interface TabBarProps extends Omit<React.HTMLAttributes<HTMLElement>, 'onSelect'> {
+  items: TabBarItem[];
+  current?: string;
+  onSelect?: (id: string) => void;
   hidden?: boolean;
-  getHref?: (tabId: TabBarTabId) => string;
 }
-
-const defaultHrefs: Record<TabBarTabId, string> = {
-  home: '/',
-  inbox: '/inbox',
-  upcoming: '/upcoming',
-  transactions: '/transactions',
-  more: '/more',
-};
 
 /**
- * The phone tab bar: Home · Inbox · Upcoming · Transactions · More,
- * always in that order. Shown on every top-level phone screen;
- * hidden while a list is in selection mode and under the keyboard.
- *
+ * The phone tab bar: bottom navigation drawing the items the app gives it (at most 5).
  * Built from: Icon, Badge (count). Items are links with the current one marked.
  */
 export const TabBar = forwardRef<HTMLElement, TabBarProps>(
   (
     {
-      activeTab = 'home',
-      onTabChange,
-      inboxCount,
-      transactionsCount,
+      items = [],
+      current,
+      onSelect,
       hidden = false,
-      getHref,
       className,
       ...props
     },
@@ -68,25 +40,7 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
   ) => {
     if (hidden) return null;
 
-    const tabs: TabBarItemDef[] = [
-      { id: 'home', label: 'Home', icon: 'home' },
-      {
-        id: 'inbox',
-        label: 'Inbox',
-        icon: 'inbox',
-        count: inboxCount,
-        countTone: 'danger',
-      },
-      { id: 'upcoming', label: 'Upcoming', icon: 'calendar' },
-      {
-        id: 'transactions',
-        label: 'Transactions',
-        icon: 'transactions',
-        count: transactionsCount,
-        countTone: 'warning',
-      },
-      { id: 'more', label: 'More', icon: 'menu' },
-    ];
+    const visibleItems = items.slice(0, 5);
 
     return (
       <nav
@@ -98,21 +52,22 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
         )}
         {...props}
       >
-        {tabs.map((tab) => {
-          const isActive = activeTab === tab.id;
-          const href = getHref ? getHref(tab.id) : tab.href || defaultHrefs[tab.id];
+        {visibleItems.map((item) => {
+          const isActive = current === item.id;
+          const Tag = item.href ? 'a' : 'button';
 
           return (
-            <a
-              key={tab.id}
-              href={href}
+            <Tag
+              key={item.id}
+              href={item.href}
+              type={item.href ? undefined : 'button'}
               role="tab"
               aria-selected={isActive}
               aria-current={isActive ? 'page' : undefined}
               onClick={(e) => {
-                if (onTabChange) {
+                if (onSelect) {
                   e.preventDefault();
-                  onTabChange(tab.id);
+                  onSelect(item.id);
                 }
               }}
               className={cn(
@@ -123,18 +78,18 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
               )}
             >
               <div className="relative inline-flex items-center justify-center">
-                <Icon name={tab.icon} size="lg" />
-                {tab.count !== undefined && tab.count > 0 ? (
+                <Icon name={item.icon} size="lg" />
+                {item.count !== undefined && item.count > 0 ? (
                   <Badge
                     variant="count"
-                    tone={tab.countTone}
-                    count={tab.count}
+                    tone={item.countTone}
+                    count={item.count}
                     className="absolute -top-space-4 left-space-14 pointer-events-none"
                   />
                 ) : null}
               </div>
-              <span className="truncate max-w-full">{tab.label}</span>
-            </a>
+              <span className="truncate max-w-full">{item.label}</span>
+            </Tag>
           );
         })}
       </nav>

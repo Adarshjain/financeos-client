@@ -1,7 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React, { useState } from 'react';
+import React from 'react';
+import { useArgs } from 'storybook/preview-api';
 
-import { TabBar, TabBarTabId } from './TabBar';
+import { TabBar, type TabBarItem } from './TabBar';
+
+const financeOSItems: TabBarItem[] = [
+  { id: 'home', label: 'Home', icon: 'home', href: '/' },
+  { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox', count: 4, countTone: 'danger' },
+  { id: 'upcoming', label: 'Upcoming', icon: 'calendar', href: '/upcoming' },
+  { id: 'transactions', label: 'Transactions', icon: 'transactions', href: '/transactions', count: 25, countTone: 'warning' },
+  { id: 'more', label: 'More', icon: 'more', href: '/more' },
+];
 
 const meta: Meta<typeof TabBar> = {
   title: 'DS/Navigation/TabBar',
@@ -10,23 +19,27 @@ const meta: Meta<typeof TabBar> = {
     layout: 'padded',
   },
   argTypes: {
-    activeTab: {
+    current: {
       control: 'select',
       options: ['home', 'inbox', 'upcoming', 'transactions', 'more'],
       description: 'The active tab ID',
-    },
-    inboxCount: {
-      control: 'number',
-      description: 'Count badge for Inbox (danger tone)',
-    },
-    transactionsCount: {
-      control: 'number',
-      description: 'Count badge for Transactions (warning tone)',
     },
     hidden: {
       control: 'boolean',
       description: 'Whether the tab bar is hidden (e.g. during selection mode)',
     },
+  },
+  render: function Render(args) {
+    const [{ current }, updateArgs] = useArgs();
+    return (
+      <div className="max-w-md bg-canvas p-space-16 rounded-ds-lg">
+        <TabBar
+          {...args}
+          current={current ?? args.current}
+          onSelect={(id) => updateArgs({ current: id })}
+        />
+      </div>
+    );
   },
 };
 
@@ -42,7 +55,7 @@ export const AllVariants: Story = {
           Home Active (with counts)
         </h4>
         <div className="bg-canvas p-space-16 rounded-ds-lg">
-          <TabBar activeTab="home" inboxCount={4} transactionsCount={25} />
+          <TabBar items={financeOSItems} current="home" />
         </div>
       </div>
 
@@ -51,11 +64,7 @@ export const AllVariants: Story = {
           Transactions Active
         </h4>
         <div className="bg-canvas p-space-16 rounded-ds-lg">
-          <TabBar
-            activeTab="transactions"
-            inboxCount={4}
-            transactionsCount={25}
-          />
+          <TabBar items={financeOSItems} current="transactions" />
         </div>
       </div>
 
@@ -64,7 +73,16 @@ export const AllVariants: Story = {
           High Counts (99+)
         </h4>
         <div className="bg-canvas p-space-16 rounded-ds-lg">
-          <TabBar activeTab="inbox" inboxCount={150} transactionsCount={200} />
+          <TabBar
+            items={financeOSItems.map((item) =>
+              item.id === 'inbox'
+                ? { ...item, count: 150 }
+                : item.id === 'transactions'
+                  ? { ...item, count: 200 }
+                  : item,
+            )}
+            current="inbox"
+          />
         </div>
       </div>
 
@@ -73,7 +91,10 @@ export const AllVariants: Story = {
           Upcoming (no counts)
         </h4>
         <div className="bg-canvas p-space-16 rounded-ds-lg">
-          <TabBar activeTab="upcoming" />
+          <TabBar
+            items={financeOSItems.map(({ count: _c, countTone: _t, ...rest }) => rest)}
+            current="upcoming"
+          />
         </div>
       </div>
     </div>
@@ -83,85 +104,37 @@ export const AllVariants: Story = {
 export const HomeActive: Story = {
   name: 'HomeActive',
   args: {
-    activeTab: 'home',
-    inboxCount: 4,
-    transactionsCount: 25,
+    items: financeOSItems,
+    current: 'home',
   },
-  decorators: [
-    (Story) => (
-      <div className="max-w-md bg-canvas p-space-16 rounded-ds-lg">
-        <Story />
-      </div>
-    ),
-  ],
 };
 
 export const TransactionsActive: Story = {
   name: 'TransactionsActive',
   args: {
-    activeTab: 'transactions',
-    inboxCount: 4,
-    transactionsCount: 25,
+    items: financeOSItems,
+    current: 'transactions',
   },
-  decorators: [
-    (Story) => (
-      <div className="max-w-md bg-canvas p-space-16 rounded-ds-lg">
-        <Story />
-      </div>
-    ),
-  ],
 };
 
 export const HighCounts: Story = {
   name: 'HighCounts',
   args: {
-    activeTab: 'inbox',
-    inboxCount: 120,
-    transactionsCount: 104,
-  },
-  decorators: [
-    (Story) => (
-      <div className="max-w-md bg-canvas p-space-16 rounded-ds-lg">
-        <Story />
-      </div>
+    items: financeOSItems.map((item) =>
+      item.id === 'inbox'
+        ? { ...item, count: 120 }
+        : item.id === 'transactions'
+          ? { ...item, count: 104 }
+          : item,
     ),
-  ],
+    current: 'inbox',
+  },
 };
 
 export const NoCounts: Story = {
   name: 'NoCounts',
   args: {
-    activeTab: 'upcoming',
+    items: financeOSItems.map(({ count: _c, countTone: _t, ...rest }) => rest),
+    current: 'upcoming',
   },
-  decorators: [
-    (Story) => (
-      <div className="max-w-md bg-canvas p-space-16 rounded-ds-lg">
-        <Story />
-      </div>
-    ),
-  ],
-};
-
-const InteractiveTabBar = (args: React.ComponentProps<typeof TabBar>) => {
-  const [active, setActive] = useState<TabBarTabId>(args.activeTab || 'home');
-
-  return (
-    <div className="max-w-md bg-canvas p-space-16 rounded-ds-lg">
-      <TabBar
-        {...args}
-        activeTab={active}
-        onTabChange={setActive}
-      />
-    </div>
-  );
-};
-
-export const Interactive: Story = {
-  name: 'Interactive',
-  args: {
-    activeTab: 'home',
-    inboxCount: 9,
-    transactionsCount: 25,
-  },
-  render: (args) => <InteractiveTabBar {...args} />,
 };

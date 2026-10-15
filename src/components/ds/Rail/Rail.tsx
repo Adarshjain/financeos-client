@@ -6,21 +6,23 @@ import { Avatar } from '../Avatar/Avatar';
 import { Badge } from '../Badge/Badge';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
-import { Icon } from '../Icon/Icon';
+import { Icon, type IconName } from '../Icon/Icon';
 import { Kbd } from '../Kbd/Kbd';
 import { Logo } from '../Logo/Logo';
 
-export interface RailNavItem {
-  href: string;
+export interface RailItem {
+  id?: string;
   label: string;
-  icon?: React.ReactNode;
+  icon?: IconName;
+  href?: string;
   count?: number | string;
   countTone?: 'danger' | 'warning' | 'ink';
+  onSelect?: () => void;
 }
 
 export interface RailGroup {
   label?: string;
-  items: RailNavItem[];
+  items: RailItem[];
 }
 
 export interface RailUser {
@@ -30,101 +32,41 @@ export interface RailUser {
   initials?: string;
 }
 
-export interface RailProps extends React.HTMLAttributes<HTMLElement> {
-  items?: RailGroup[];
-  current?: string;
-  onNavigate?: (href: string) => void;
+export interface RailSearchConfig {
   onSearch?: () => void;
-  user?: RailUser;
-  brandHref?: string;
+  shortcut?: string;
+  label?: string;
 }
 
-export const defaultRailGroups: RailGroup[] = [
-  {
-    items: [
-      { href: '/', label: 'Home', icon: <Icon name="home" size="lg" /> },
-      {
-        href: '/inbox',
-        label: 'Inbox',
-        icon: <Icon name="inbox" size="lg" />,
-        count: 9,
-        countTone: 'danger',
-      },
-      {
-        href: '/upcoming',
-        label: 'Upcoming',
-        icon: <Icon name="calendar" size="lg" />,
-      },
-    ],
-  },
-  {
-    label: 'Money',
-    items: [
-      {
-        href: '/accounts',
-        label: 'Accounts',
-        icon: <Icon name="accounts" size="lg" />,
-      },
-      {
-        href: '/transactions',
-        label: 'Transactions',
-        icon: <Icon name="transactions" size="lg" />,
-        count: 25,
-        countTone: 'warning',
-      },
-    ],
-  },
-  {
-    label: 'Grow',
-    items: [
-      {
-        href: '/investments',
-        label: 'Investments',
-        icon: <Icon name="transactions" size="lg" />,
-      },
-      {
-        href: '/rewards',
-        label: 'Rewards',
-        icon: <Icon name="notifications" size="lg" />,
-      },
-    ],
-  },
-  {
-    label: 'Owe & lend',
-    items: [
-      {
-        href: '/loans',
-        label: 'Loans & lendings',
-        icon: <Icon name="accounts" size="lg" />,
-      },
-    ],
-  },
-  {
-    label: 'Insights',
-    items: [
-      {
-        href: '/chat',
-        label: 'Ask the data',
-        icon: <Icon name="chat" size="lg" />,
-      },
-    ],
-  },
-];
+export interface RailProps extends Omit<React.HTMLAttributes<HTMLElement>, 'onSelect'> {
+  groups?: RailGroup[];
+  current?: string;
+  search?: RailSearchConfig | (() => void);
+  footer?: RailItem[];
+  user?: RailUser;
+  brandHref?: string;
+  onNavigate?: (href: string) => void;
+  onSelect?: (idOrHref: string) => void;
+}
 
 /**
  * Desktop left navigation, 240px (`w-rail`).
  * Brand row, search shortcut with ⌘K, navigation sections with overline headers,
  * and user profile pinned at the bottom.
+ *
+ * Takes all groups, items, routes, search config and user from props.
  */
 export const Rail = forwardRef<HTMLElement, RailProps>(
   (
     {
-      items = defaultRailGroups,
-      current = '/',
-      onNavigate,
-      onSearch,
+      groups = [],
+      current,
+      search,
+      footer,
       user,
-      brandHref = '/',
+      brandHref,
+      onNavigate,
+      onSelect,
       className,
       ...props
     },
@@ -153,39 +95,47 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
         {...props}
       >
         {/* Brand row */}
-        <a
-          href={brandHref}
-          onClick={(e) => {
-            if (onNavigate) {
-              e.preventDefault();
-              onNavigate(brandHref);
-            }
-          }}
-          className="flex items-center px-space-6 py-space-10 text-ink rounded-ds-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring mb-space-8"
-        >
-          <Logo variant="full" size="sm" />
-        </a>
+        {brandHref ? (
+          <a
+            href={brandHref}
+            onClick={(e) => {
+              if (onNavigate) {
+                e.preventDefault();
+                onNavigate(brandHref);
+              }
+            }}
+            className="flex items-center px-space-6 py-space-10 text-ink rounded-ds-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring mb-space-8 no-underline"
+          >
+            <Logo variant="full" size="sm" />
+          </a>
+        ) : (
+          <div className="flex items-center px-space-6 py-space-10 text-ink rounded-ds-md mb-space-8">
+            <Logo variant="full" size="sm" />
+          </div>
+        )}
 
         {/* Search button */}
-        {onSearch ? (
+        {search ? (
           <Button
             type="button"
             variant="secondary"
             size="md"
-            onClick={onSearch}
-            className="w-full justify-start text-ink-3 bg-sunken border-line-soft hover:bg-hover active:bg-hover font-medium px-space-10 mb-space-12 gap-space-8"
+            onClick={typeof search === 'function' ? search : search.onSearch}
+            className="w-full justify-start text-ink-3 bg-sunken border-line-soft hover:bg-hover active:bg-pressed font-medium px-space-10 mb-space-12 gap-space-8"
           >
             <Icon name="search" size="md" className="shrink-0 text-ink-3" />
-            <span className="text-label text-ink-3">Search</span>
+            <span className="text-label text-ink-3">
+              {typeof search === 'object' && search.label ? search.label : 'Search'}
+            </span>
             <span className="ml-auto">
-              <Kbd>⌘K</Kbd>
+              <Kbd>{typeof search === 'object' && search.shortcut ? search.shortcut : '⌘K'}</Kbd>
             </span>
           </Button>
         ) : null}
 
         {/* Grouped navigation items */}
         <div className="flex-1 space-y-space-12 overflow-y-auto">
-          {items.map((group, gIdx) => (
+          {groups.map((group, gIdx) => (
             <div key={gIdx} className="space-y-space-2">
               {group.label ? (
                 <div className="px-space-8 py-space-4 text-overline font-extrabold text-ink-4 uppercase tracking-wider">
@@ -194,19 +144,28 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
               ) : null}
 
               {group.items.map((item) => {
-                const isCurrent = current === item.href;
+                const isCurrent = current === item.href || (item.id && current === item.id);
+                const Tag = item.href ? 'a' : 'button';
+
                 return (
-                  <a
-                    key={item.href}
+                  <Tag
+                    key={item.id || item.href || item.label}
                     href={item.href}
+                    type={item.href ? undefined : 'button'}
                     onClick={(e) => {
-                      if (onNavigate) {
+                      if (item.onSelect) {
+                        if (!item.href) e.preventDefault();
+                        item.onSelect();
+                      } else if (onSelect) {
+                        e.preventDefault();
+                        onSelect(item.id || item.href || '');
+                      } else if (onNavigate && item.href) {
                         e.preventDefault();
                         onNavigate(item.href);
                       }
                     }}
                     className={cn(
-                      'flex items-center gap-space-8 px-space-8 py-space-6 rounded-ds-md text-body font-semibold transition-colors duration-fast',
+                      'w-full flex items-center gap-space-8 px-space-8 py-space-6 rounded-ds-md text-body font-semibold transition-colors duration-fast text-left no-underline cursor-pointer',
                       isCurrent
                         ? 'bg-brand-tint text-brand-strong'
                         : 'text-ink-2 hover:bg-hover hover:text-ink active:bg-pressed',
@@ -219,7 +178,7 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
                           isCurrent ? 'text-brand-strong' : 'text-ink-3',
                         )}
                       >
-                        {item.icon}
+                        <Icon name={item.icon} size="lg" />
                       </span>
                     ) : null}
 
@@ -239,40 +198,62 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
                         />
                       )
                     ) : null}
-                  </a>
+                  </Tag>
                 );
               })}
             </div>
           ))}
         </div>
 
-        {/* Pinned settings and user profile footer */}
-        <div className="mt-auto pt-space-12 border-t border-line-soft flex items-center justify-between">
-          <a
-            href="/settings"
-            onClick={(e) => {
-              if (onNavigate) {
-                e.preventDefault();
-                onNavigate('/settings');
-              }
-            }}
-            className={cn(
-              'flex items-center gap-space-8 px-space-8 py-space-6 rounded-ds-md text-body font-semibold transition-colors duration-fast text-ink-2 hover:bg-hover hover:text-ink active:bg-pressed',
-              current === '/settings' && 'bg-brand-tint text-brand-strong',
-            )}
-          >
-            <Icon name="settings" size="lg" />
-            <span>Settings</span>
-          </a>
+        {/* Pinned footer and user profile */}
+        {(footer || user) && (
+          <div className="mt-auto pt-space-12 border-t border-line-soft flex items-center justify-between">
+            <div className="flex items-center gap-space-4 min-w-0">
+              {footer?.map((item) => {
+                const isCurrent = current === item.href || (item.id && current === item.id);
+                const Tag = item.href ? 'a' : 'button';
 
-          <Avatar
-            size="sm"
-            src={user?.avatar}
-            initials={derivedInitials}
-          >
-            {derivedInitials}
-          </Avatar>
-        </div>
+                return (
+                  <Tag
+                    key={item.id || item.href || item.label}
+                    href={item.href}
+                    type={item.href ? undefined : 'button'}
+                    onClick={(e) => {
+                      if (item.onSelect) {
+                        if (!item.href) e.preventDefault();
+                        item.onSelect();
+                      } else if (onSelect) {
+                        e.preventDefault();
+                        onSelect(item.id || item.href || '');
+                      } else if (onNavigate && item.href) {
+                        e.preventDefault();
+                        onNavigate(item.href);
+                      }
+                    }}
+                    className={cn(
+                      'flex items-center gap-space-8 px-space-8 py-space-6 rounded-ds-md text-body font-semibold transition-colors duration-fast text-ink-2 hover:bg-hover hover:text-ink active:bg-pressed no-underline cursor-pointer',
+                      isCurrent && 'bg-brand-tint text-brand-strong',
+                    )}
+                  >
+                    {item.icon ? <Icon name={item.icon} size="lg" /> : null}
+                    <span>{item.label}</span>
+                  </Tag>
+                );
+              })}
+            </div>
+
+            {user && (
+              <Avatar
+                variant="person"
+                size="sm"
+                src={user.avatar}
+                initials={derivedInitials}
+              >
+                {derivedInitials}
+              </Avatar>
+            )}
+          </div>
+        )}
       </nav>
     );
   },
