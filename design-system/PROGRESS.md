@@ -8,7 +8,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | --- | --- | --- |
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
-| 2 | New component library in Storybook, one component at a time, owner-reviewed | Not started |
+| 2 | New component library in Storybook, one component at a time, owner-reviewed | In progress (all 39 built; owner review and the fix round pending) |
 | 3 | Pages: rebuild and swap in one page or big component at a time | Not started |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
@@ -19,7 +19,7 @@ Goal: everything the new components need, with **no visible change to the existi
 
 1. **Tokens.** Load `design-system/tokens.css` globally, as an addition. Every variable is `--ds-*`, light on `:root` and dark on `.dark`. Do not change or remove any existing CSS variable or Tailwind key.
 2. **Tailwind names.** Add these keys. They are fixed; do not choose others. Each maps to `var(--ds-<token>)`.
-   - `backgroundColor`: `canvas`, `surface`, `sunken`, `subtle`, `hover` (tokens `bg-*`) → `bg-canvas`, `bg-surface`…
+   - `backgroundColor`: `canvas`, `surface`, `sunken`, `subtle`, `hover` (tokens `bg-*`) → `bg-canvas`, `bg-surface`…; plus `ink` (token `ink`) → `bg-ink`, only for count bubbles.
    - `textColor`: `ink`, `ink-2`, `ink-3`, `ink-4`, `ink-faint` → `text-ink`…
    - `borderColor`: `line`, `line-soft`, `line-strong`, `line-handle` → `border-line`…
    - `colors` (every utility): `brand`, `brand-strong`, `brand-tint`, `brand-border`, `on-brand`, `focus-ring`, `positive`, `positive-strong`, `positive-tint`, `danger`, `danger-tint`, `danger-border`, `danger-ink`, `warning`, `warning-tint`, `warning-border`, `warning-ink`, `watch`, `watch-tint`, `info`, `info-tint`, `info-ink`, `neutral-ink`, `illus-mint`, `illus-gold`, `illus-gold-edge`, `scrim`.
@@ -30,6 +30,8 @@ Goal: everything the new components need, with **no visible change to the existi
    - `borderRadius`: `rounded-ds-xs`, `ds-sm`, `ds-md`, `ds-lg`, `ds-xl`, `ds-sheet`, `ds-pill` (`sm`, `md` and `lg` are already taken by the old theme).
    - `boxShadow`: `shadow-pop`, `shadow-dialog`, `shadow-sheet`, `shadow-dock`, `shadow-raise`.
    - `height` and `minHeight`: `control-sm`, `control-md`, `control-lg`, `control-xl`, `chip`, `app-bar`, `tab-bar`.
+   - `width` and `minWidth`: `control-sm`, `control-md`, `control-lg`, `control-xl`, `chip`, `rail`.
+   - There is no `space-0`, `space-18`, `text-small`, `rounded-ds-circle`, `z-1` or `font-inherit`. Tailwind silently drops a class name it does not know, so it renders nothing; `check-ui.mjs` now fails on unknown classes.
    - `zIndex`: `z-sticky`, `z-dock`, `z-scrim`, `z-overlay`.
    - `transitionDuration`: `fast`, `base`, `sheet`.
 3. **Fonts.** Add Figtree (500, 600, 700, 800) and Bricolage Grotesque (600, 700, 800) as self-hosted woff2 files, loaded with `next/font/local` into `--ds-font-text` and `--ds-font-display`. Inter stays in place for the old UI.

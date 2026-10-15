@@ -112,6 +112,8 @@ const config: Config = {
         sunken: 'var(--ds-bg-sunken)',
         subtle: 'var(--ds-bg-subtle)',
         hover: 'var(--ds-bg-hover)',
+        // Count bubbles on buttons and filter chips are an ink fill (reference.css .cnt).
+        ink: 'var(--ds-ink)',
       },
       textColor: {
         ink: 'var(--ds-ink)',
@@ -236,10 +238,21 @@ const config: Config = {
         'app-bar': 'var(--ds-app-bar)',
         'tab-bar': 'var(--ds-tab-bar)',
       },
+      // Square controls (icon buttons, pager pills, steppers) need the size tokens as widths too.
       width: {
+        'control-sm': 'var(--ds-control-sm)',
+        'control-md': 'var(--ds-control-md)',
+        'control-lg': 'var(--ds-control-lg)',
+        'control-xl': 'var(--ds-control-xl)',
+        chip: 'var(--ds-chip)',
         rail: 'var(--ds-rail)',
       },
       minWidth: {
+        'control-sm': 'var(--ds-control-sm)',
+        'control-md': 'var(--ds-control-md)',
+        'control-lg': 'var(--ds-control-lg)',
+        'control-xl': 'var(--ds-control-xl)',
+        chip: 'var(--ds-chip)',
         rail: 'var(--ds-rail)',
       },
       zIndex: {
