@@ -71,7 +71,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 16 | DateField | Not started |
 | 17 | Select | Ready for review |
 | 18 | SearchField | Ready for review |
-| 19 | FilterChip | Changes requested |
+| 19 | FilterChip | Ready for review |
 | 20 | Checkbox | Ready for review |
 | 21 | Switch | Ready for review |
 | 22 | SegmentedControl | Ready for review |
@@ -164,6 +164,17 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 5b · FilterChip:
+  - Replaced hand-drawn count badge in `src/components/ds/FilterChip/FilterChip.tsx` with `Badge` primitive (`variant="count"`).
+  - Ensured ChevronDown and X use `Icon` at size `sm` with `text-current` matching label color.
+  - Retained purely presentational chip structure (no dropdown list logic inside FilterChip).
+  - Updated `src/components/ds/FilterChip/FilterChip.stories.tsx`: `AllVariants` as first export, added `DropdownWithSelect` story demonstrating dropdown filter chip as `<Select trigger={<FilterChip ... />} />`, with working Controls for all variant props.
+  - Files deleted: none.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/FilterChip` (9 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Stories compared: `DS/Inputs/FilterChip/AllVariants`, `Off`, `On`, `OnWithValue`, `Dropdown`, `WithCount`, `Removable`, `ReviewOn`, `Toggle`, `MoreFilters`, `DropdownWithSelect` against `FilterChip/preview.html` and `ds-08-inputs.dc.html` at 390px and 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 5a · Select:
   - Rebuilt list presentation on DS `Popover` with `width="match"` (`w-popover-trigger`) in `src/components/ds/Select/Select.tsx`.
