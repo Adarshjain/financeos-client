@@ -60,7 +60,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 3 | Dialog | Ready for review |
 | 4 | TabBar | Changes requested |
 | 5 | Rail | Changes requested |
-| 6 | TopBar | Changes requested |
+| 6 | TopBar | Ready for review |
 | 7 | Tabs | Ready for review |
 | 8 | Pager | Ready for review |
 | 9 | Button | Ready for review |
@@ -217,6 +217,17 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 9 · TopBar (AppBar merged in):
+  - Merged AppBar into TopBar and deleted `src/components/ds/AppBar/` and its export from `src/components/ds/index.ts`.
+  - Rebuilt TopBar with responsive phone and desktop forms selected by CSS (at `lg` breakpoint):
+    - Phone form (56px): Logo mark or back arrow, crumb and title (truncating, never wrapping), bordered `control-md` icon actions.
+    - Desktop form (56px): crumb and title with inline slash, labelled actions with their shortcut on the right.
+  - Props strictly accept `title`, `crumb`, `back`, and `actions: { id, icon, label, href | onSelect, variant?: 'default' | 'primary', shortcut? }[]` with no built-in hardcoded actions.
+  - Updated `TopBar.stories.tsx` with Phone and Desktop variants and real actions. Added tests for Logo mark, back link/button, and action callbacks.
+  - Stories compared and interacted with: TopBar (AllVariants, PhoneTopLevel, PhoneDetail, DesktopTopLevel, DesktopDetail) beside preview.html in light and dark at 390 and 1440. All buttons and callbacks respond in canvas.
+  - Checks: typecheck (clean), lint (0 errors), vitest (all 4 tests passing), build-storybook (clean), check-ui (clean on touched files). Differences left open: none.
+
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 8 · Dialog footer (one unified layout across viewports):
   - Unified DialogFooter to one layout on all viewports: tertiary at far left (`mr-auto shrink-0`), then secondary and primary on the right. On phone the buttons are `control-xl`, and secondary and primary share the remaining width (`flex-1`).
