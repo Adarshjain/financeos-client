@@ -68,7 +68,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 13 | SwipeActions | Changes requested |
 | 14 | TextField | Ready for review |
 | 15 | TextArea | Ready for review |
-| 16 | DateField | Not started |
+| 16 | DateField | Ready for review |
 | 17 | Select | Ready for review |
 | 18 | SearchField | Ready for review |
 | 19 | FilterChip | Ready for review |
@@ -110,6 +110,32 @@ For each swap:
 3. Add the page's new paths to `checked-paths.txt`.
 4. Map the page's E2E specs to the new controls and keep the full suite green (RULES §10.5).
 5. Add a row to the migration map.
+
+### Before Phase 3 starts (flagged 2026-10-15)
+New pages may use nothing from the old UI (RULES §1.8). These are needed and don't exist yet.
+
+**Components the reviewed boards need that the library lacks** (design first, then build):
+1. **DataTable**: the desktop tables on 55 boards. Header row with sort, numeric and right-aligned columns, a checkbox selection column, columns hidden on phone (phone shows rows instead), sticky header, and the Pager above and below.
+2. **PageHeader**: the desktop page title row on 71 boards. Display-face title, meta line ("9 accounts · synced 4 min ago"), and actions (including the dashboard switcher).
+3. **Stepper**: the import wizard steps (Files ✓ · Match ✓ · 3 Reconcile).
+4. **Search palette**: ⌘K / Search results grouped by section with keyboard movement. Built from Dialog, SearchField, ListRow and SectionHeader; needs its own README.
+5. **Chat**: message bubbles, answer blocks (KPI, table, chart) and the composer (`D-chat`).
+6. **ChoiceCard**: selectable cards. Used by the four account-type buttons on Add account (the one tile exception) and the widget picker.
+7. **SectionHeader `group` variant**: the Inbox group header with a count ("Act now · 5").
+8. **MonthCalendar events**: the desktop Upcoming calendar shows labelled event chips in day cells, not only markers.
+9. **Illustration**: the auth, offline and empty-state artwork as one component. AuthPanel was removed; login and signup still need their art.
+10. **Chart** (line, bar, donut with legend): not drawn on the reviewed boards, but dashboards, reports and investments use charts today. Design it with those boards.
+11. **Dashboard grid** (arrange and resize widgets) and the KpiTile vs Widget review: parked by the owner, needed before dashboards migrate.
+
+**Setup:**
+- `/ds` pages live in their own route group, `src/app/(ds)/ds/…`, with their own layout: sign-in check, the new shell (Rail, TopBar, AppBar, TabBar) and the new Toaster. The `(protected)` layout renders the old Sidebar, MobileNav and PageActionBar, so nothing new may sit under it.
+- The root layout puts the old theme on `<body>` (Inter, `bg-background`) and mounts the old Sonner Toaster. New layouts and the signed-out pages set their own ground (`bg-canvas`, `font-text`) and use the new Toast's toaster, so old styles never show through.
+- Page logic hooks live inside old UI folders today (`src/components/*/…`, `src/app/(protected)/*/components/…`). Each page's migration first moves its hooks to `src/lib/` or `src/features/<area>/` (RULES §1.8).
+- `check-ui` scope already includes `src/app/(ds)/`; signed-out pages join `checked-paths.txt` when they are rebuilt.
+
+**Open for the owner:** swapping signed-in pages one at a time means the app switches between the old and new shell as you move between migrated and unmigrated pages. Options:
+- (a) accept the mixed shells during the migration;
+- (b) review page by page in `/ds`, then swap all signed-in pages together (or per area) once they are approved.
 
 ### Migration map
 | Page or component | New files | Old files it no longer uses | Swapped on |
@@ -165,6 +191,23 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 9c · DateField:
+  - Created `DateField` in `src/components/ds/DateField/DateField.tsx`:
+    - Shows and accepts typed `dd/mm/yyyy` with auto-slashes formatting via `formatDateInput`.
+    - Never native `<input type="date">`.
+    - Calendar icon `Button` opens `MonthCalendar` in a `Popover` on desktop, or `Dialog` (bottom sheet) on phone via `useIsPhone`.
+    - Range mode (`range={true}`): two side-by-side typed fields ("From" and "To") sharing one calendar; range in calendar renders as a `brand-tint` band.
+    - Min and max support (`minDate`, `maxDate`), error and disabled states.
+    - Today and Clear buttons in the calendar footer.
+  - Enhanced `MonthCalendar` in `src/components/ds/DateTile/DateTile.tsx` to support picker mode with month navigation, weekday headers, outside month days, range selection styling, and footer actions, while retaining backwards compatibility for events overview mode.
+  - Created `src/components/ds/DateField/DateField.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`Single`, `Range`, `WithMinMax`, `ErrorState`, `Disabled`) with controls.
+  - Created `src/components/ds/DateField/DateField.test.tsx`: 8 unit tests covering `formatDateInput` helper, auto-formatting on input change, single date default value, helper and error text, disabled state, range mode with From/To fields, and opening calendar to pick a date.
+  - Exported `DateField` from `src/components/ds/index.ts`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npx vitest run src/components/ds/DateField src/components/ds/DateTile` (13/13 tests passed), `npm run build-storybook`, `node design-system/tools/check-ui.mjs` clean.
+  - Stories compared: `DS/Inputs/DateField/AllVariants`, `Single`, `Range`, `WithMinMax`, `ErrorState`, `Disabled` beside `design-system/components/DateField/preview.html` at 390px and 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 9b · TextArea:
   - Created `TextArea` in `src/components/ds/TextArea/TextArea.tsx`:
