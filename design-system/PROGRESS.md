@@ -53,7 +53,7 @@ Build in this order, one component per step. After each one, set its status to *
 
 | # | Component | Status |
 | --- | --- | --- |
-| 1 | Icon | Not started |
+| 1 | Icon | Ready for review |
 | 2 | Popover | Not started |
 | 3 | Dialog | Changes requested |
 | 4 | AppBar | Changes requested |
@@ -164,6 +164,28 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 1 · Icon:
+  - Created new `Icon` primitive in `src/components/ds/Icon/Icon.tsx` wrapping Lucide icons at token sizes (`sm` 14px `w-icon-sm h-icon-sm`, `md` 16px `w-icon-md h-icon-md`, `lg` 20px `w-icon-lg h-icon-lg`), 2px stroke, `currentColor`.
+  - Created `src/components/ds/Icon/Icon.stories.tsx` driven by args with `AllVariants` as first export, plus `Sm`, `Md`, `Lg`.
+  - Created `src/components/ds/Icon/Icon.test.tsx` testing size classes, strokeWidth=2, aria-hidden, className merging, and children rendering.
+  - Exported `Icon` from `src/components/ds/index.ts`.
+  - Replaced every typed glyph (`▾`, `✕`, `✓`, `›`, `‹`) across `src/components/ds/` with `Icon` or SVG:
+    - `src/components/ds/FilterChip/FilterChip.tsx` (replaced `▾` with `<Icon icon={ChevronDown} size="sm" />`, replaced `✕` with `<Icon icon={X} size="sm" />`);
+    - `src/components/ds/Select/Select.tsx` (replaced option checkmarks with `<Icon icon={Check} size="sm|md" />`, replaced triggers with `<Icon icon={isOpen ? ChevronUp : ChevronDown} size="md" />`);
+    - `src/components/ds/RuleCard/RuleCard.tsx` (replaced approve button with `<Button icon={<Icon icon={Check} size="sm" />}>Approve</Button>`, removed checkmark from comment);
+    - `src/components/ds/AuthPanel/AuthPanel.tsx` (replaced typed check with SVG checkmark path);
+    - `src/components/ds/Card/Card.stories.tsx` (replaced `Inbox ›` with `Inbox <Icon icon={ChevronRight} size="sm" />`);
+    - `src/components/ds/Dialog/Dialog.stories.tsx` (replaced checkmarks with `<Icon icon={Check} size="sm" />`);
+    - `src/components/ds/Menu/Menu.stories.tsx` (replaced `Default ✓` with `Default <Icon icon={Check} size="sm" />`);
+    - `src/components/ds/Sheet/Sheet.stories.tsx` (replaced `✓ Review` with `Review` button using `<Icon icon={Check} size="sm" />`, replaced checkmark with `<Icon icon={Check} size="md" />`);
+    - Changed existing tests: `src/components/ds/FilterChip/FilterChip.test.tsx` (queried svg instead of text `▾`), `src/components/ds/Card/Card.test.tsx` (action button name `Inbox`), `src/components/ds/Menu/Menu.test.tsx` (hint text `Default`), `src/components/ds/Pager/Pager.test.tsx` (cleaned `‹`/`›` in comments).
+  - Files deleted: none.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 11 touched test files / 96 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Stories compared: `DS/Foundations/Icon/AllVariants`, `DS/Foundations/Icon/Sm`, `DS/Foundations/Icon/Md`, `DS/Foundations/Icon/Lg` against `Icon/preview.html` and `ds-05-foundations.webp` at 390px and 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
+
 
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 17) · AuthPanel component fixes:
   - Fixed AuthPanel in `src/components/ds/AuthPanel/AuthPanel.tsx`:

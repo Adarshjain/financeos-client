@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { Check } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '../Button/Button';
+import { Icon } from '../Icon/Icon';
 import {
   Dialog,
   DialogBody,
@@ -86,12 +88,12 @@ export const LargeList: Story = {
     >
       <DialogBody>
         <div className="flex items-center gap-space-8 py-space-6 border-b border-line-soft font-bold text-body text-ink">
-          <span className="text-brand">✓</span>
+          <Icon icon={Check} size="sm" className="text-brand" />
           <span>Select all 12 matches</span>
         </div>
         <div className="flex items-center justify-between py-space-6 border-b border-line-soft text-body">
           <div className="flex items-center gap-space-8">
-            <span className="text-brand">✓</span>
+            <Icon icon={Check} size="sm" className="text-brand" />
             <span className="text-ink">DUNZO DAILY BANGALORE</span>
           </div>
           <span className="text-caption text-ink-3 tabular-nums">₹612</span>

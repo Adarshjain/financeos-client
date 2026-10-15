@@ -19,12 +19,12 @@ describe('Card', () => {
       <Card
         title="Needs you"
         subtitle="Act now · 2"
-        action={<button type="button">Inbox ›</button>}
+        action={<button type="button">Inbox</button>}
       />,
     );
     expect(screen.getByText('Needs you')).toBeInTheDocument();
     expect(screen.getByText('Act now · 2')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Inbox ›' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Inbox' })).toBeInTheDocument();
   });
 
   it('renders compound header structure', () => {

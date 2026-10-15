@@ -373,16 +373,14 @@ export const AuthIllustration: React.FC<{
               filter="url(#auth-shadow-full)"
             />
             <circle cx="30" cy="30" r="13" fill="var(--ds-hover)" />
-            <text
-              x="30"
-              y="35"
-              textAnchor="middle"
-              fill="var(--ds-ink)"
-              fontSize="12"
-              fontWeight="800"
-            >
-              ✓
-            </text>
+            <path
+              d="m26 30 3 3 6-6"
+              fill="none"
+              stroke="var(--ds-ink)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
             <text
               x="52"
               y="26"

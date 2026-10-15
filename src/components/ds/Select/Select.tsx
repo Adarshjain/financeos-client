@@ -1,5 +1,5 @@
 import * as Popover from '@radix-ui/react-popover';
-import { Lock } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp, Lock } from 'lucide-react';
 import React, {
   forwardRef,
   useId,
@@ -10,6 +10,7 @@ import React, {
 import { Button } from '../Button/Button';
 import { CategoryChip } from '../CategoryChip/CategoryChip';
 import { cn } from '../cn';
+import { Icon } from '../Icon/Icon';
 import { SearchField } from '../SearchField/SearchField';
 import { Sheet, SheetBody, SheetContent } from '../Sheet/Sheet';
 import { useIsPhone } from '../useMediaQuery';
@@ -256,13 +257,13 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           {multiple ? (
             <span
               className={cn(
-                'w-space-16 h-space-16 rounded-ds-xs border-2 shrink-0 flex items-center justify-center font-text font-extrabold text-caption select-none transition-colors',
+                'w-space-16 h-space-16 rounded-ds-xs border-2 shrink-0 flex items-center justify-center font-text font-extrabold select-none transition-colors',
                 isSelected
                   ? 'bg-brand border-brand text-on-brand'
                   : 'border-line-strong bg-surface text-transparent',
               )}
             >
-              ✓
+              <Icon icon={Check} size="sm" />
             </span>
           ) : null}
 
@@ -310,9 +311,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
               {opt.hint}
             </span>
           ) : isSelected && !multiple && !showRadio ? (
-            <span className="ml-auto font-text font-extrabold text-caption text-brand-strong">
-              ✓
-            </span>
+            <Icon icon={Check} size="md" className="ml-auto text-brand-strong" />
           ) : null}
         </div>
       );
@@ -638,9 +637,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             <span className="font-text font-medium text-body text-ink-4 truncate flex-1 min-w-0">
               {loadingText}
             </span>
-            <span className="font-text text-caption text-ink-4 select-none shrink-0">
-              ▾
-            </span>
+            <Icon icon={isOpen ? ChevronUp : ChevronDown} size="md" className="text-ink-4 shrink-0" />
           </>
         );
       }
@@ -666,9 +663,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
                 </>
               )}
             </div>
-            <span className="font-text text-caption text-ink-4 select-none shrink-0 ml-auto">
-              ▾
-            </span>
+            <Icon icon={isOpen ? ChevronUp : ChevronDown} size="md" className="text-ink-4 shrink-0 ml-auto" />
           </>
         );
       }
@@ -689,9 +684,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
               ? selectedOptions[0].label
               : placeholder}
           </span>
-          <span className="font-text text-caption text-ink-4 select-none shrink-0 ml-auto">
-            ▾
-          </span>
+          <Icon icon={isOpen ? ChevronUp : ChevronDown} size="md" className="text-ink-4 shrink-0 ml-auto" />
         </>
       );
     })();

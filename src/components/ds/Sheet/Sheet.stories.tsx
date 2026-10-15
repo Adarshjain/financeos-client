@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Search } from 'lucide-react';
+import { Check, Search } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '../Button/Button';
+import { Icon } from '../Icon/Icon';
 import { ListField } from '../ListRow/ListRow';
 import { TextField } from '../TextField/TextField';
 import {
@@ -70,8 +71,8 @@ export const DetailSheet: Story = {
             <Button size="sm" variant="secondary">
               Link to…
             </Button>
-            <Button size="sm" variant="secondary">
-              ✓ Review
+            <Button size="sm" variant="secondary" icon={<Icon icon={Check} size="sm" />}>
+              Review
             </Button>
             <Button size="sm" variant="danger">
               Delete
@@ -108,7 +109,7 @@ export const PickerSheet: Story = {
                 </span>
                 <span>HDFC Bank</span>
               </div>
-              <span className="text-brand-strong">✓</span>
+              <Icon icon={Check} size="md" className="text-brand-strong" />
             </div>
             <div className="flex items-center justify-between py-space-10 text-body font-bold text-ink">
               <div className="flex items-center gap-space-8">

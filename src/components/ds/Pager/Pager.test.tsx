@@ -6,22 +6,22 @@ import { getPageNumbers, Pager } from './Pager';
 
 describe('getPageNumbers', () => {
   it('implements desktop ellipsis formula: first, current ± 1, last with ellipsis in gaps', () => {
-    // ‹ 1 2 … 4 › on page 1 of 4
+    // < 1 2 … 4 > on page 1 of 4
     expect(getPageNumbers(0, 4, false)).toEqual([0, 1, 'ellipsis', 3]);
-    // ‹ 1 … 3 4 › on page 4 of 4
+    // < 1 … 3 4 > on page 4 of 4
     expect(getPageNumbers(3, 4, false)).toEqual([0, 'ellipsis', 2, 3]);
-    // ‹ 1 … 4 5 6 … 10 › on page 5 of 10
+    // < 1 … 4 5 6 … 10 > on page 5 of 10
     expect(getPageNumbers(4, 10, false)).toEqual([0, 'ellipsis', 3, 4, 5, 'ellipsis', 9]);
     // returns empty array for single page
     expect(getPageNumbers(0, 1, false)).toEqual([]);
   });
 
   it('implements phone ellipsis formula: one neighbour fewer', () => {
-    // ‹ 1 … 4 › on page 1 of 4
+    // < 1 … 4 > on page 1 of 4
     expect(getPageNumbers(0, 4, true)).toEqual([0, 'ellipsis', 3]);
-    // ‹ 1 … 4 › on page 4 of 4
+    // < 1 … 4 > on page 4 of 4
     expect(getPageNumbers(3, 4, true)).toEqual([0, 'ellipsis', 3]);
-    // ‹ 1 … 3 4 › on page 3 of 4
+    // < 1 … 3 4 > on page 3 of 4
     expect(getPageNumbers(2, 4, true)).toEqual([0, 'ellipsis', 2, 3]);
   });
 });
