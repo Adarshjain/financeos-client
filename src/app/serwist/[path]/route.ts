@@ -16,8 +16,9 @@ export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
     additionalPrecacheEntries: [{ url: '/offline', revision }],
     // The plugin precaches every file under public/ by default. The static
     // system reference (public/handbook, ~1.2 MB of docs) is read on demand by
-    // maintainers, not by app users, so keep it out of every install.
-    globIgnores: ['**/node_modules/**/*', 'public/handbook/**/*'],
+    // maintainers, not by app users, so keep it out of every install. The same
+    // goes for the Storybook build that Vercel deploys under public/storybook.
+    globIgnores: ['**/node_modules/**/*', 'public/handbook/**/*', 'public/storybook/**/*'],
     swSrc: 'src/app/sw.ts',
     useNativeEsbuild: true,
   });

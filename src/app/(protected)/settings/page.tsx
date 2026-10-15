@@ -7,14 +7,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { requireAuth } from '@/lib/auth';
 
 
-function SettingsRow({ href, label }: { href: string; label: string }) {
+// `staticPage` rows point at files under public/ (not Next routes), so they
+// need a full page load instead of client-side navigation.
+function SettingsRow({ href, label, staticPage }: { href: string; label: string; staticPage?: boolean }) {
+  const Row = staticPage ? 'a' : Link;
   return (
-    <Link href={href}>
+    <Row href={href}>
       <div className="flex justify-between items-center text-sm font-semibold text-slate-800 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-850/30 transition-all cursor-pointer">
         <span>{label}</span>
         <ArrowRight className="w-4 h-4 text-slate-400" />
       </div>
-    </Link>
+    </Row>
   );
 }
 
@@ -59,6 +62,8 @@ export default async function SettingsPage() {
           <SettingsRow href="/settings/activity" label="Activity" />
           <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800"></div>
           <SettingsRow href="/debug" label="Debug & diagnostics" />
+          <div className="h-[1px] w-full bg-slate-100 dark:bg-slate-800"></div>
+          <SettingsRow href="/storybook" label="Design system (Storybook)" staticPage />
         </CardContent>
       </Card>
 
