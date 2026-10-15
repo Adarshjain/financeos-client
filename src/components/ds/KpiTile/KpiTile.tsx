@@ -1,5 +1,6 @@
 import React, { forwardRef } from 'react';
 
+import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { ProgressBar, ProgressBarTone } from '../ProgressBar/ProgressBar';
 import { Skeleton } from '../Skeleton/Skeleton';
@@ -110,13 +111,15 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
                 {onRetry && (
                   <>
                     {' · '}
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="sm"
                       onClick={onRetry}
-                      className="text-ink font-bold underline hover:text-ink-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring cursor-pointer"
+                      className="inline-flex h-auto p-0 text-ink font-bold underline hover:text-ink-2 hover:bg-transparent"
                     >
                       Retry
-                    </button>
+                    </Button>
                   </>
                 )}
               </>

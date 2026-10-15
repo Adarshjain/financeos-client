@@ -10,74 +10,31 @@ const meta: Meta<typeof KpiTile> = {
   parameters: {
     layout: 'padded',
   },
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['default', 'hero'],
+    },
+    label: {
+      control: 'text',
+    },
+    value: {
+      control: 'text',
+    },
+    context: {
+      control: 'text',
+    },
+    loading: {
+      control: 'boolean',
+    },
+    error: {
+      control: 'boolean',
+    },
+  },
 };
 
 export default meta;
 type Story = StoryObj<typeof KpiTile>;
-
-export const Hero: Story = {
-  args: {
-    label: 'Net worth',
-    value: '₹11,98,842',
-    variant: 'hero',
-    delta: {
-      value: '▲ ₹41,220',
-      period: 'this month',
-      direction: 'good',
-    },
-  },
-};
-
-export const DeltaBadDirection: Story = {
-  args: {
-    label: 'Spent · October',
-    value: '₹97,044',
-    delta: {
-      value: '▲ 28%',
-      period: 'vs Sep',
-      direction: 'bad',
-    },
-  },
-};
-
-export const WithBar: Story = {
-  args: {
-    label: 'Budget',
-    value: '62%',
-    progressBar: {
-      value: 62,
-      tone: 'warning',
-    },
-    context: 'of ₹1.55L · 18 days left',
-  },
-};
-
-export const WithBadges: Story = {
-  args: {
-    label: 'To pay · 14 days',
-    value: '₹78,219',
-    badges: (
-      <>
-        <Badge tone="amber">Amex in 2 d</Badge>
-        <Badge tone="grey">Regalia 25 Oct</Badge>
-      </>
-    ),
-  },
-};
-
-export const Loading: Story = {
-  args: {
-    loading: true,
-  },
-};
-
-export const Failed: Story = {
-  args: {
-    label: 'Portfolio',
-    error: true,
-    onRetry: () => alert('Retrying prices service...'),
-  },
-};
 
 export const AllVariants: Story = {
   render: () => (
@@ -163,4 +120,68 @@ export const AllVariants: Story = {
       </div>
     </div>
   ),
+};
+
+export const Hero: Story = {
+  args: {
+    label: 'Net worth',
+    value: '₹11,98,842',
+    variant: 'hero',
+    delta: {
+      value: '▲ ₹41,220',
+      period: 'this month',
+      direction: 'good',
+    },
+  },
+};
+
+export const DeltaBadDirection: Story = {
+  args: {
+    label: 'Spent · October',
+    value: '₹97,044',
+    delta: {
+      value: '▲ 28%',
+      period: 'vs Sep',
+      direction: 'bad',
+    },
+  },
+};
+
+export const WithBar: Story = {
+  args: {
+    label: 'Budget',
+    value: '62%',
+    progressBar: {
+      value: 62,
+      tone: 'warning',
+    },
+    context: 'of ₹1.55L · 18 days left',
+  },
+};
+
+export const WithBadges: Story = {
+  args: {
+    label: 'To pay · 14 days',
+    value: '₹78,219',
+    badges: (
+      <>
+        <Badge tone="amber">Amex in 2 d</Badge>
+        <Badge tone="grey">Regalia 25 Oct</Badge>
+      </>
+    ),
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    loading: true,
+  },
+};
+
+export const Failed: Story = {
+  args: {
+    label: 'Portfolio',
+    error: true,
+    onRetry: () => alert('Retrying prices service...'),
+  },
 };
