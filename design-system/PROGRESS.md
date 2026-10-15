@@ -144,6 +144,24 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 10) · Widget component fixes:
+  - Fixed Widget in `src/components/ds/Widget/Widget.tsx`:
+    - Updated retry button styling: changed from grey text to bold ink (`text-ink font-bold underline hover:text-ink-2`) matching the board.
+    - Updated remove button styling in unavailable state to bold ink (`text-ink font-bold underline hover:text-ink-2`).
+    - Added `role="alert"` on the failed error container.
+  - Updated `src/components/ds/Widget/Widget.test.tsx`:
+    - Added unit test assertions for `role="alert"` and bold ink styling (`text-ink font-bold`) on retry and remove buttons.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/Widget` (5 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `Widget/preview.html` and `ds-06-cards.webp`:
+    - `DS/Data display/Widget/Figure`
+    - `DS/Data display/Widget/RowsLoading`
+    - `DS/Data display/Widget/Failed`
+    - `DS/Data display/Widget/Unavailable`
+    - `DS/Data display/Widget/AllVariants`
+    Verified bold ink retry link, bold ink remove link, alert role, and clean widget header styling.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 9) · KpiTile component fixes:
   - Fixed KpiTile in `src/components/ds/KpiTile/KpiTile.tsx`:
     - Updated retry button styling: changed from grey text to bold ink (`text-ink font-bold underline hover:text-ink-2`) matching the board.

@@ -52,8 +52,10 @@ describe('Widget', () => {
       />,
     );
 
+    expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getByText("Couldn't load this widget")).toBeInTheDocument();
     const retryBtn = screen.getByRole('button', { name: /retry/i });
+    expect(retryBtn).toHaveClass('text-ink', 'font-bold');
     fireEvent.click(retryBtn);
     expect(handleRetry).toHaveBeenCalledTimes(1);
   });
@@ -73,6 +75,7 @@ describe('Widget', () => {
       screen.getByText('This report is no longer available'),
     ).toBeInTheDocument();
     const removeBtn = screen.getByRole('button', { name: /remove/i });
+    expect(removeBtn).toHaveClass('text-ink', 'font-bold');
     fireEvent.click(removeBtn);
     expect(handleRemove).toHaveBeenCalledTimes(1);
   });
