@@ -187,6 +187,17 @@ function unknownClasses(text) {
 // Components that may render a raw <button>: the primitives that ARE buttons or
 // button-like controls. Every other design-system component uses Button (RULES §5b.2).
 const RAW_BUTTON_OK = new Set(['Button', 'Switch', 'Checkbox', 'FilterChip', 'CategoryChip', 'SegmentedControl', 'Tabs', 'Menu', 'Select', 'DateField', 'DateTile', 'Popover', 'Dialog']);
+// Icons in the new system are Phosphor through the Icon component (RULES §6.1). The rule
+// switches on once @phosphor-icons/react is a dependency, so the Lucide-based Icon keeps
+// working until the migration round installs it.
+const PHOSPHOR = (() => {
+  try {
+    const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+    return Boolean({ ...pkg.dependencies, ...pkg.devDependencies }['@phosphor-icons/react']);
+  } catch {
+    return false;
+  }
+})();
 function dsComponent(file) {
   const m = /^src\/components\/ds\/([A-Za-z]+)\/([A-Za-z]+)\.tsx$/.exec(file);
   return m && m[1] === m[2] ? m[1] : null;
@@ -213,6 +224,12 @@ function check(lines, all = false, classes = true) {
     if (comp && /[▾▴✕✓›‹]/.test(text)) {
       const hit = { file, line, rule: 'typed-glyph', why: 'a typed glyph used as an icon — use the Icon component (ChevronDown, X, Check, ChevronRight…)', text: text.trim().slice(0, 160) };
       (/ds-allow:/.test(text) ? allowed : errors).push(hit);
+    }
+    if (PHOSPHOR && /^src\/components\/ds\//.test(file) && /from ['"]lucide-react['"]/.test(text)) {
+      errors.push({ file, line, rule: 'lucide-in-ds', why: 'Lucide in the new system — use <Icon name="…" /> (Phosphor, RULES §6.1)', text: text.trim().slice(0, 160) });
+    }
+    if (/^src\/components\/ds\//.test(file) && !/^src\/components\/ds\/Icon\//.test(file) && /from ['"]@phosphor-icons\//.test(text)) {
+      errors.push({ file, line, rule: 'phosphor-direct', why: 'Phosphor imported directly — only the Icon component imports it; use <Icon name="…" />', text: text.trim().slice(0, 160) });
     }
     if (comp && !RAW_BUTTON_OK.has(comp) && /<button(?:[\s>]|$)/.test(text)) {
       const hit = { file, line, rule: 'raw-button', why: `${comp} draws its own <button> — use the Button component (RULES §5b.2)`, text: text.trim().slice(0, 160) };
