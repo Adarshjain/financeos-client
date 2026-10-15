@@ -144,6 +144,24 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 10 (part 1) · Banner component fixes:
+  - Fixed Banner in `src/components/ds/Banner/Banner.tsx`:
+    - Corrected `ok` tone styling: updated to `bg-positive-tint text-positive-strong` per README and Ink token lock.
+    - Cleaned unlisted variants and aliases: restricted `tone` to `'err' | 'ok' | 'info' | 'warn'` matching the README specification, removing unlisted aliases (`error`, `success`, `warning`) and `variant` prop.
+  - Updated `src/components/ds/Banner/Banner.test.tsx`:
+    - Updated unit test asserting `bg-positive-tint` and `text-positive-strong` for the `ok` tone.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,491 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs --staged` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `Banner/preview.html` and `ds-09-feedback.dc.html` board:
+    - `DS/Feedback/Banner/ErrorBanner`
+    - `DS/Feedback/Banner/SuccessBanner`
+    - `DS/Feedback/Banner/InfoBanner`
+    - `DS/Feedback/Banner/WarningBanner`
+    - `DS/Feedback/Banner/WithAction`
+    - `DS/Feedback/Banner/AllVariants`
+    Verified `positive-tint` and `positive-strong` colors in light and dark themes, padding `py-space-10 px-space-12`, and role attributes.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 9 · SwipeActions component fixes:
   - Fixed SwipeActions in `src/components/ds/SwipeActions/SwipeActions.tsx`:
     - Preserved vertical scrolling: added `touch-pan-y` to the container and vertical scroll detection (>8px vertical delta over horizontal) to cancel horizontal dragging so native page scrolling is uninterrupted.

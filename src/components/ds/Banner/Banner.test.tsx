@@ -22,14 +22,14 @@ describe('Banner', () => {
     );
   });
 
-  it('renders ok tone with status role and brand tokens', () => {
+  it('renders ok tone with status role and positive tokens', () => {
     const { container } = render(
       <Banner tone="ok">Your account has been deleted.</Banner>,
     );
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(container.firstChild).toHaveClass(
-      'bg-brand-tint',
-      'text-brand-strong',
+      'bg-positive-tint',
+      'text-positive-strong',
     );
   });
 

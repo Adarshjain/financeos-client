@@ -2,50 +2,35 @@ import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
 
-export type BannerTone =
-  | 'err'
-  | 'error'
-  | 'ok'
-  | 'success'
-  | 'info'
-  | 'warn'
-  | 'warning';
+export type BannerTone = 'err' | 'ok' | 'info' | 'warn';
 
 export interface BannerProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Tone of the banner */
   tone?: BannerTone;
-  /** Alias for tone */
-  variant?: BannerTone;
   /** Optional trailing or inline action */
   action?: React.ReactNode;
 }
+
+const toneStyles: Record<BannerTone, string> = {
+  err: 'bg-danger-tint text-danger-ink',
+  ok: 'bg-positive-tint text-positive-strong',
+  info: 'bg-info-tint text-info-ink',
+  warn: 'bg-warning-tint text-warning-ink',
+};
 
 export const Banner = forwardRef<HTMLDivElement, BannerProps>(
   (
     {
       children,
       className,
-      tone,
-      variant = 'info',
+      tone = 'info',
       action,
       role,
       ...props
     },
     ref,
   ) => {
-    const resolvedTone = tone || variant;
-
-    const toneStyles: Record<string, string> = {
-      err: 'bg-danger-tint text-danger-ink',
-      error: 'bg-danger-tint text-danger-ink',
-      ok: 'bg-brand-tint text-brand-strong',
-      success: 'bg-brand-tint text-brand-strong',
-      info: 'bg-info-tint text-info-ink',
-      warn: 'bg-warning-tint text-warning-ink',
-      warning: 'bg-warning-tint text-warning-ink',
-    };
-
-    const isError = resolvedTone === 'err' || resolvedTone === 'error';
+    const isError = tone === 'err';
     const computedRole = role || (isError ? 'alert' : 'status');
 
     return (
@@ -54,7 +39,7 @@ export const Banner = forwardRef<HTMLDivElement, BannerProps>(
         role={computedRole}
         className={cn(
           'text-label rounded-ds-lg px-space-12 py-space-10 flex items-start justify-between gap-space-10',
-          toneStyles[resolvedTone] || toneStyles.info,
+          toneStyles[tone] || toneStyles.info,
           className,
         )}
         {...props}
