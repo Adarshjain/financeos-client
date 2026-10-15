@@ -8,7 +8,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | --- | --- | --- |
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
-| 2 | New component library in Storybook, one component at a time, owner-reviewed | In progress (restructured 2026-10-15 to 44 components; see the table) |
+| 2 | New component library in Storybook, one component at a time, owner-reviewed | In progress (43 components; owner feedback round 2 open) |
 | 3 | Pages: rebuild and swap in one page or big component at a time | Not started |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
@@ -19,10 +19,10 @@ Goal: everything the new components need, with **no visible change to the existi
 
 1. **Tokens.** Load `design-system/tokens.css` globally, as an addition. Every variable is `--ds-*`, light on `:root` and dark on `.dark`. Do not change or remove any existing CSS variable or Tailwind key.
 2. **Tailwind names.** Add these keys. They are fixed; do not choose others. Each maps to `var(--ds-<token>)`.
-   - `backgroundColor`: `canvas`, `surface`, `sunken`, `subtle`, `hover` (tokens `bg-*`) → `bg-canvas`, `bg-surface`…; plus `ink` (token `ink`) → `bg-ink`, only for count bubbles.
+   - `backgroundColor`: `canvas`, `surface`, `sunken`, `subtle`, `hover`, `pressed` (tokens `bg-*`) → `bg-canvas`, `bg-surface`…; plus `ink` (token `ink`) → `bg-ink`, only for count bubbles.
    - `textColor`: `ink`, `ink-2`, `ink-3`, `ink-4`, `ink-faint` → `text-ink`…
    - `borderColor`: `line`, `line-soft`, `line-strong`, `line-handle` → `border-line`…
-   - `colors` (every utility): `brand`, `brand-strong`, `brand-tint`, `brand-border`, `on-brand`, `focus-ring`, `positive`, `positive-strong`, `positive-tint`, `danger`, `danger-tint`, `danger-border`, `danger-ink`, `warning`, `warning-tint`, `warning-border`, `warning-ink`, `watch`, `watch-tint`, `info`, `info-tint`, `info-ink`, `neutral-ink`, `illus-mint`, `illus-gold`, `illus-gold-edge`, `scrim`.
+   - `colors` (every utility): `brand`, `brand-strong`, `brand-tint`, `brand-border`, `on-brand`, `focus-ring`, `brand-hover`, `brand-pressed`, `danger-hover`, `danger-pressed`, `positive`, `positive-strong`, `positive-tint`, `danger`, `danger-tint`, `danger-border`, `danger-ink`, `warning`, `warning-tint`, `warning-border`, `warning-ink`, `watch`, `watch-tint`, `info`, `info-tint`, `info-ink`, `neutral-ink`, `illus-mint`, `illus-gold`, `illus-gold-edge`, `scrim`.
    - Chart tokens use the name `series` (`chart-*` is already taken by the old theme): `series-1` … `series-5`, `series-rest`.
    - `fontSize`: one key per type style carrying its size, line height, weight and letter-spacing: `text-hero-figure`, `text-page-title`, `text-screen-title`, `text-figure`, `text-title`, `text-heading`, `text-body`, `text-body-strong`, `text-label`, `text-caption`, `text-overline`, `text-tab-label`. For `overline`, uppercase comes from the component.
    - `fontFamily`: `font-text` (Figtree) and `font-display` (Bricolage Grotesque).
@@ -54,51 +54,50 @@ Build in this order, one component per step. After each one, set its status to *
 | # | Component | Status |
 | --- | --- | --- |
 | 1 | Icon | Ready for review |
-| 2 | Popover | Ready for review |
-| 3 | Dialog | Ready for review |
-| 4 | AppBar | Ready for review |
-| 5 | TabBar | Ready for review |
-| 6 | Rail | Ready for review |
-| 7 | TopBar | Ready for review |
-| 8 | Tabs | Ready for review |
-| 9 | Pager | Ready for review |
-| 10 | Button | Ready for review |
-| 11 | Menu | Ready for review |
-| 12 | SelectionBar | Ready for review |
-| 13 | SwipeActions | Ready for review |
-| 14 | TextField | Ready for review |
-| 15 | TextArea | Ready for review |
-| 16 | DateField | Ready for review |
-| 17 | Select | Ready for review |
-| 18 | SearchField | Ready for review |
-| 19 | FilterChip | Ready for review |
-| 20 | Checkbox | Ready for review |
-| 21 | Switch | Ready for review |
-| 22 | SegmentedControl | Ready for review |
-| 23 | DropZone | Ready for review |
-| 24 | Card | Ready for review |
-| 25 | ListRow | Ready for review |
-| 26 | SectionHeader | Ready for review |
-| 27 | TransactionRow | Ready for review |
-| 28 | RuleCard | Ready for review |
-| 29 | KpiTile | Ready for review |
-| 30 | Widget | Ready for review |
-| 31 | Badge | Ready for review |
-| 32 | CategoryChip | Ready for review |
-| 33 | StatusWords | Ready for review |
-| 34 | ProgressBar | Ready for review |
-| 35 | DateTile | Ready for review |
-| 36 | Avatar | Ready for review |
-| 37 | Kbd | Ready for review |
-| 38 | Banner | Ready for review |
-| 39 | Toast | Ready for review |
-| 40 | EmptyState | Ready for review |
-| 41 | Skeleton | Ready for review |
-| 42 | Logo | Ready for review |
-| 43 | Divider | Ready for review |
-| 44 | Illustration | Ready for review |
+| 2 | Popover | Changes requested |
+| 3 | Dialog | Changes requested |
+| 4 | TabBar | Changes requested |
+| 5 | Rail | Changes requested |
+| 6 | TopBar | Changes requested |
+| 7 | Tabs | Changes requested |
+| 8 | Pager | Ready for review |
+| 9 | Button | Changes requested |
+| 10 | Menu | Changes requested |
+| 11 | SelectionBar | Changes requested |
+| 12 | SwipeActions | Changes requested |
+| 13 | TextField | Ready for review |
+| 14 | TextArea | Changes requested |
+| 15 | DateField | Changes requested |
+| 16 | Select | Changes requested |
+| 17 | SearchField | Ready for review |
+| 18 | FilterChip | Changes requested |
+| 19 | Checkbox | Changes requested |
+| 20 | Switch | Ready for review |
+| 21 | SegmentedControl | Ready for review |
+| 22 | DropZone | Changes requested |
+| 23 | Card | Ready for review |
+| 24 | ListRow | Ready for review |
+| 25 | SectionHeader | Ready for review |
+| 26 | TransactionRow | Changes requested |
+| 27 | RuleCard | Changes requested |
+| 28 | KpiTile | Ready for review |
+| 29 | Widget | Changes requested |
+| 30 | Badge | Ready for review |
+| 31 | CategoryChip | Ready for review |
+| 32 | StatusWords | Ready for review |
+| 33 | ProgressBar | Ready for review |
+| 34 | DateTile | Ready for review |
+| 35 | Avatar | Ready for review |
+| 36 | Kbd | Ready for review |
+| 37 | Banner | Changes requested |
+| 38 | Toast | Changes requested |
+| 39 | EmptyState | Ready for review |
+| 40 | Skeleton | Ready for review |
+| 41 | Logo | Ready for review |
+| 42 | Divider | Ready for review |
+| 43 | Illustration | Changes requested |
 
-Removed on 2026-10-15 (merged, see Owner decisions): Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; AuthPanel → a page in Phase 3.
+Removed on 2026-10-15 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; AuthPanel → a page in Phase 3.
 
 The desktop shell is Rail and TopBar; the phone shell is AppBar and TabBar.
 
@@ -190,6 +189,19 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - Composition rules added (RULES §5b).
 - 2026-10-15 · **Icons move to Phosphor** in the new system: `@phosphor-icons/react` (approved as a new dependency), bold weight at every size (regular reads too thin beside 700–800 type), drawn only through Icon by registry name (`design-system/icons.json`, 23 icons). The old UI keeps Lucide until Phase 4. Storybook gets a `DS/Foundations/Icons` page listing the registry. Done in the round after the restructure.
 - 2026-10-15 · **Phase 3 runs through `/ds`**: each page is built under `/ds/…` first and reviewed there before the live route switches. Storybook is published inside the app at `/storybook`, linked from Settings, so it can be checked on any device.
+- 2026-10-15 · **Storybook feedback round 2** (owner):
+  - Every interactive component shows a pressed state distinct from hover (new tokens `bg-pressed`, `brand-hover`, `brand-pressed`, `danger-hover`, `danger-pressed`).
+  - No storybook-addon-pseudo-states; states are checked by interacting.
+  - Menu and Select items have no border or outline; options are weight 500.
+  - Popovers are one surface, at least the trigger's width and growing to their content.
+  - Banner actions are inline links that never change its height.
+  - TextArea starts one line tall, grows, and can be dragged taller.
+  - DateField range is one combined field.
+  - Tabs underline is square.
+  - Dialog footer is the same on every screen size.
+  - AppBar and TopBar are one TopBar.
+  - Components carry no app content (RULES §5b.6).
+  - Every story is interactive.
 - 2026-10-15 · Accessibility is out of scope: no ARIA, screen-reader or contrast work. The Storybook accessibility addon stays installed but is not a check.
 
 ## Open questions
@@ -281,7 +293,7 @@ Newest first: date, phase, tool or agent, what changed (files), checks run, open
   - Stories compared: Icon/AllVariants, Icon/Sm, Icon/Md, Icon/Lg against `design-system/components/Icon/preview.html` at 390 and 1440 in light and dark.
   - Checks: `vitest run src/components/ds/Icon/Icon.test.tsx` (all 6 tests passing), `npm run build-storybook` (clean), `node design-system/tools/check-ui.mjs` (clean). Open questions: none. Deviations: none.
 
-- 2026-10-15 · Phase 2 · Antigravity · Unit 0 · Server and client boundaries (RULES §5b.6):
+- 2026-10-15 · Phase 2 · Antigravity · Unit 0 · Server and client boundaries (RULES §5b.8):
   - Added `'use client'` directive to 28 component files that use state, effects, refs, event handlers, Radix, Sonner, or browser APIs: `AppBar.tsx`, `Avatar.tsx`, `Button.tsx`, `CategoryChip.tsx`, `Checkbox.tsx`, `DateField.tsx`, `DateTile.tsx`, `Dialog.tsx`, `DropZone.tsx`, `FilterChip.tsx`, `ListRow.tsx`, `Menu.tsx`, `Pager.tsx`, `Popover.tsx`, `Rail.tsx`, `RuleCard.tsx`, `SearchField.tsx`, `SegmentedControl.tsx`, `Select.tsx`, `SelectionBar.tsx`, `SwipeActions.tsx`, `Switch.tsx`, `TabBar.tsx`, `Tabs.tsx`, `TextArea.tsx`, `TextField.tsx`, `Toast.tsx`, `TransactionRow.tsx`, plus shared hooks `useSheetDrag.ts` and `useSwipe.ts` (`useMediaQuery.ts` already had it).
   - Maintained purely presentational components as Server Components with no directive: `Badge`, `Banner`, `Card`, `EmptyState`, `Foundations`, `Icon`, `Kbd`, `KpiTile`, `ProgressBar`, `SectionHeader`, `Skeleton`, `StatusWords`, `TopBar`, `Widget` (plus `FieldFrame.tsx`, `cn.ts`, `itemRow.ts`).
   - Added Server Component test fixture `src/components/ds/__fixtures__/ServerFixture.tsx` importing Badge, Card, SectionHeader, Banner from `@/components/ds`. Verified `npm run build` succeeds with Server Component importing from barrel.

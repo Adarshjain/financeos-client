@@ -5,6 +5,7 @@ A phone row gesture. It wraps any row and reveals what each side will do while t
 ## Props
 - `left` and `right`, each optional: `{ label, icon, tone, onTrigger }`. Omit a side to make the row swipe one way only; pass the same action to both sides if both should do it.
 - `disabled` for rows that can't swipe.
+- No preset actions: Approve, Delete, Snooze and Dismiss are what pages pass, not options built into the component.
 
 ## How pages use it
 - Transactions: right Approve (`brand`), left Delete (`danger`). The page shows its ConfirmDialog for Delete; Approve applies at once with an Undo Toast (RULES §5.7).

@@ -12,7 +12,7 @@ The same as Banner, so a toast reads the same as an inline message: `neutral` (t
 - No icon.
 
 ## Built from
-Banner (tones and layout), Sonner (queue and timing), Button (Undo).
+Banner (tones and layout), Sonner (queue and timing), Button `link` (Undo).
 
 ## Don't
 - Don't use a toast for something the user must act on; use a Banner or the Inbox.

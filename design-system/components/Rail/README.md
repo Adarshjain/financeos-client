@@ -11,7 +11,7 @@ Brand row (₹ mark + FinanceOS), the search button with its ⌘K hint, Home · 
 - Items are links (`href`), icons `lg`, labels `body-strong`.
 
 ## Props
-`items` (grouped: label, href, icon, count, countTone), `current`, `user` (name, email, avatar) — never hard-coded.
+`groups`: `{ label?, items: { id, label, icon, href, count?, countTone? }[] }[]`, `current`, `search` (handler and shortcut), `footer` items (Settings) and `user` (name, avatar): all from the app. The component has **no default items, labels or routes**.
 
 ## Built from
 Icon, Badge (count), Avatar, Kbd, Button (search).

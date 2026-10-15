@@ -23,6 +23,11 @@
   --ds-brand-border: #c4c9d1;
   --ds-on-brand: #ffffff;
   --ds-focus-ring: var(--ds-brand);
+  --ds-brand-hover: #2c3038;
+  --ds-brand-pressed: #3d4350;
+  --ds-danger-hover: #ad1c37;
+  --ds-danger-pressed: #9f1239;
+  --ds-bg-pressed: #e9ebef;
   --ds-positive: #107a4f;
   --ds-positive-strong: #0b5e45;
   --ds-positive-tint: #e6f4ef;
@@ -121,6 +126,11 @@
   --ds-brand-border: #4a525c;
   --ds-on-brand: #121417;
   --ds-focus-ring: var(--ds-brand);
+  --ds-brand-hover: #d9dde2;
+  --ds-brand-pressed: #c9cfd6;
+  --ds-danger-hover: #f27a90;
+  --ds-danger-pressed: #f593a6;
+  --ds-bg-pressed: #262c33;
   --ds-positive: #3cc28f;
   --ds-positive-strong: #5fd0aa;
   --ds-positive-tint: #12332a;

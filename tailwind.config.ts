@@ -74,6 +74,10 @@ const config: Config = {
         'brand-border': 'var(--ds-brand-border)',
         'on-brand': 'var(--ds-on-brand)',
         'focus-ring': 'var(--ds-focus-ring)',
+        'brand-hover': 'var(--ds-brand-hover)',
+        'brand-pressed': 'var(--ds-brand-pressed)',
+        'danger-hover': 'var(--ds-danger-hover)',
+        'danger-pressed': 'var(--ds-danger-pressed)',
         positive: 'var(--ds-positive)',
         'positive-strong': 'var(--ds-positive-strong)',
         'positive-tint': 'var(--ds-positive-tint)',
@@ -112,6 +116,7 @@ const config: Config = {
         sunken: 'var(--ds-bg-sunken)',
         subtle: 'var(--ds-bg-subtle)',
         hover: 'var(--ds-bg-hover)',
+        pressed: 'var(--ds-bg-pressed)',
         // Count bubbles on buttons and filter chips are an ink fill (reference.css .cnt).
         ink: 'var(--ds-ink)',
       },

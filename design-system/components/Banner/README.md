@@ -12,13 +12,17 @@ The one inline message. It replaces the old Callout and Note: a failed request a
 ## Props
 `tone`, children (the message), optional `title` (bold lead-in), optional `action` (a link-styled button at the end: "Reconcile", "See them", "Try again").
 
+## Layout
+- One line of text keeps the banner one line tall: text and action are vertically centred, and the action is Button `link` (inline text, no padding), so adding an action never changes the height.
+- Longer text wraps; the action stays at the end of the last line.
+
 ## Rules
 - Say what happened and what to do next. Keep the form and its values.
 - No icon: the tone and the words carry it (RULES §6).
 - Placement is layout, not a variant: top of a form, top of a list, or inside a card.
 
 ## Built from
-Button (link style for the action). Toast reuses its tones.
+Button `link` (the action). Toast reuses its tones.
 
 ## Variants
 - The five tones, with and without a title, with an action.
