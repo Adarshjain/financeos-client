@@ -218,6 +218,22 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 6 · SwipeActions: a pure wrapper that adds swipe to any child:
+  - Stripped imposed visual styles from `src/components/ds/SwipeActions/SwipeActions.tsx`: outer wrapper keeps only `relative overflow-hidden touch-pan-y` plus consumer's `className` (no background, border, font, or padding); foreground has no background (child brings its own).
+  - Replaced inline transition with Tailwind utility classes `transition-transform duration-base ease-out` (removed while dragging), keeping only `transform: translateX(...)` inline.
+  - Trimmed props to exactly `left`, `right` (`{ label, icon, tone, onTrigger }`), `disabled`, and `threshold`. Exported `useSwipe` from index and component module.
+  - Rewrote `src/components/ds/SwipeActions/SwipeActions.stories.tsx` to wrap `TransactionRow` (preserving selected tint), `ListRow`, and `Card` (preserving border and radius).
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 336 problems (0 errors, 336 warnings)`
+    - `npm test`: `Test Files  426 passed (426) | Tests  3533 passed (3533)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+  - Done when:
+    - `grep -nE "bg-surface|border-t|font-text|200ms|cubic-bezier" src/components/ds/SwipeActions/SwipeActions.tsx` returned nothing.
+    - Verified stories wrap TransactionRow, ListRow, and Card.
+  - Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 5 · State props: one name each, through one hook:
   - Added `src/components/ds/useControllableState.ts` (RULES §5c.6) and exported from `src/components/ds/index.ts`.
   - Adopted `useControllableState` across Select, Switch, SegmentedControl, Checkbox, DateField, Tabs, Dialog (ConfirmDialog), Menu, Popover, and ResponsiveOverlay.

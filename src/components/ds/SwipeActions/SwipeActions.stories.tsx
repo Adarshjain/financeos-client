@@ -4,6 +4,7 @@ import React from 'react';
 import { Card } from '../Card/Card';
 import { Icon } from '../Icon/Icon';
 import { ListRow } from '../ListRow/ListRow';
+import { TransactionRow } from '../TransactionRow/TransactionRow';
 import { SwipeActions } from './SwipeActions';
 
 const meta: Meta<typeof SwipeActions> = {
@@ -40,71 +41,30 @@ const deleteAction = {
 export const AllVariants: Story = {
   name: 'All variants',
   render: () => (
-    <div className="space-y-space-16 max-w-sm w-full font-text">
+    <div className="space-y-space-24 max-w-sm w-full font-text">
       <div>
         <h4 className="font-text text-label font-bold text-ink-3 mb-space-8">
-          Both sides (swipe right Approve · swipe left Delete)
+          Wrapping TransactionRow (selected tint preserved)
         </h4>
-        <Card className="overflow-hidden p-0">
-          <SwipeActions
-            left={approveAction}
-            right={deleteAction}
-          >
-            <div className="p-space-12 bg-surface">
-              <div className="font-extrabold text-body text-ink">Swiggy Bangalore</div>
-              <div className="text-caption text-ink-3">HDFC Regalia ••7741</div>
-            </div>
-          </SwipeActions>
-        </Card>
+        <SwipeActions
+          left={approveAction}
+          right={deleteAction}
+          className="rounded-ds-md"
+        >
+          <TransactionRow
+            description="Swiggy Bangalore"
+            amount="₹1,249.00"
+            account="HDFC Regalia"
+            selected
+          />
+        </SwipeActions>
       </div>
 
       <div>
         <h4 className="font-text text-label font-bold text-ink-3 mb-space-8">
-          Right only (Delete only)
+          Wrapping ListRow
         </h4>
-        <Card className="overflow-hidden p-0">
-          <SwipeActions right={deleteAction}>
-            <div className="p-space-12 bg-surface">
-              <div className="font-extrabold text-body text-ink">Uber India</div>
-              <div className="text-caption text-ink-3">ICICI Amazon Pay ••9021</div>
-            </div>
-          </SwipeActions>
-        </Card>
-      </div>
-
-      <div>
-        <h4 className="font-text text-label font-bold text-ink-3 mb-space-8">
-          Left only (Approve only)
-        </h4>
-        <Card className="overflow-hidden p-0">
-          <SwipeActions left={approveAction}>
-            <div className="p-space-12 bg-surface">
-              <div className="font-extrabold text-body text-ink">Starbucks Coffee</div>
-              <div className="text-caption text-ink-3">HDFC Regalia ••7741</div>
-            </div>
-          </SwipeActions>
-        </Card>
-      </div>
-
-      <div>
-        <h4 className="font-text text-label font-bold text-ink-3 mb-space-8">
-          Disabled
-        </h4>
-        <Card className="overflow-hidden p-0">
-          <SwipeActions disabled left={approveAction} right={deleteAction}>
-            <div className="p-space-12 bg-surface">
-              <div className="font-extrabold text-body text-ink">Amazon Pay</div>
-              <div className="text-caption text-ink-3">ICICI Sapphiro ••9021</div>
-            </div>
-          </SwipeActions>
-        </Card>
-      </div>
-
-      <div>
-        <h4 className="font-text text-label font-bold text-ink-3 mb-space-8">
-          Wrapping a ListRow
-        </h4>
-        <Card className="overflow-hidden p-0">
+        <div className="border border-line rounded-ds-lg overflow-hidden bg-surface">
           <SwipeActions left={approveAction} right={deleteAction}>
             <ListRow
               title="Quarterly Review Statement"
@@ -112,79 +72,91 @@ export const AllVariants: Story = {
               borderTop={false}
             />
           </SwipeActions>
-        </Card>
+        </div>
+      </div>
+
+      <div>
+        <h4 className="font-text text-label font-bold text-ink-3 mb-space-8">
+          Wrapping Card (border and radius preserved)
+        </h4>
+        <SwipeActions
+          left={approveAction}
+          right={deleteAction}
+          className="rounded-ds-lg"
+        >
+          <Card className="p-space-16 border border-line rounded-ds-lg bg-surface shadow-pop">
+            <div className="font-extrabold text-body text-ink">
+              Subscription renewal
+            </div>
+            <div className="text-caption text-ink-3">
+              Netflix Premium · Renews in 2 days
+            </div>
+          </Card>
+        </SwipeActions>
       </div>
     </div>
   ),
 };
 
-export const BothSides: Story = {
-  name: 'Both sides',
-  args: {
-    left: approveAction,
-    right: deleteAction,
-  },
+export const WrapTransactionRow: Story = {
+  name: 'Wrapping TransactionRow',
   render: (args) => (
-    <Card className="max-w-sm w-full overflow-hidden p-0">
-      <SwipeActions {...args}>
-        <div className="p-space-12 bg-surface">
-          <div className="font-extrabold text-body text-ink">Swiggy Bangalore</div>
-          <div className="text-caption text-ink-3">HDFC Regalia ••7741</div>
-        </div>
+    <div className="max-w-sm w-full">
+      <SwipeActions
+        left={approveAction}
+        right={deleteAction}
+        {...args}
+        className="rounded-ds-md"
+      >
+        <TransactionRow
+          description="Swiggy Bangalore"
+          amount="₹1,249.00"
+          account="HDFC Regalia"
+          selected
+        />
       </SwipeActions>
-    </Card>
+    </div>
   ),
 };
 
-export const RightOnly: Story = {
-  name: 'Right only',
-  args: {
-    right: deleteAction,
-  },
+export const WrapListRow: Story = {
+  name: 'Wrapping ListRow',
   render: (args) => (
-    <Card className="max-w-sm w-full overflow-hidden p-0">
-      <SwipeActions {...args}>
-        <div className="p-space-12 bg-surface">
-          <div className="font-extrabold text-body text-ink">Uber India</div>
-          <div className="text-caption text-ink-3">ICICI Amazon Pay ••9021</div>
-        </div>
+    <div className="max-w-sm w-full border border-line rounded-ds-lg overflow-hidden bg-surface">
+      <SwipeActions
+        left={approveAction}
+        right={deleteAction}
+        {...args}
+      >
+        <ListRow
+          title="Quarterly Review Statement"
+          subtitle="PDF · 4.2 MB"
+          borderTop={false}
+        />
       </SwipeActions>
-    </Card>
+    </div>
   ),
 };
 
-export const LeftOnly: Story = {
-  name: 'Left only',
-  args: {
-    left: approveAction,
-  },
+export const WrapCard: Story = {
+  name: 'Wrapping Card',
   render: (args) => (
-    <Card className="max-w-sm w-full overflow-hidden p-0">
-      <SwipeActions {...args}>
-        <div className="p-space-12 bg-surface">
-          <div className="font-extrabold text-body text-ink">Starbucks Coffee</div>
-          <div className="text-caption text-ink-3">HDFC Regalia ••7741</div>
-        </div>
+    <div className="max-w-sm w-full">
+      <SwipeActions
+        left={approveAction}
+        right={deleteAction}
+        {...args}
+        className="rounded-ds-lg"
+      >
+        <Card className="p-space-16 border border-line rounded-ds-lg bg-surface shadow-pop">
+          <div className="font-extrabold text-body text-ink">
+            Subscription renewal
+          </div>
+          <div className="text-caption text-ink-3">
+            Netflix Premium · Renews in 2 days
+          </div>
+        </Card>
       </SwipeActions>
-    </Card>
-  ),
-};
-
-export const Disabled: Story = {
-  name: 'Disabled',
-  args: {
-    disabled: true,
-    left: approveAction,
-    right: deleteAction,
-  },
-  render: (args) => (
-    <Card className="max-w-sm w-full overflow-hidden p-0">
-      <SwipeActions {...args}>
-        <div className="p-space-12 bg-surface">
-          <div className="font-extrabold text-body text-ink">Amazon Pay</div>
-          <div className="text-caption text-ink-3">ICICI Sapphiro ••9021</div>
-        </div>
-      </SwipeActions>
-    </Card>
+    </div>
   ),
 };
