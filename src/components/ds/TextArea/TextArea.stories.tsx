@@ -32,7 +32,7 @@ export const AllVariants: Story = {
       />
       <TextArea
         label="Note"
-        defaultValue="Split with Priya, she owes half"
+        defaultValue={'Split with Priya.\nShe owes half by Friday.\nSettle on UPI.'}
       />
       <TextArea
         label="Description"
@@ -65,6 +65,14 @@ export const Filled: Story = {
   args: {
     label: 'Note',
     defaultValue: 'Split with Priya, she owes half',
+  },
+};
+
+export const GrownToThreeLines: Story = {
+  name: 'Grown to three lines',
+  args: {
+    label: 'Note',
+    defaultValue: 'Split with Priya.\nShe owes half by Friday.\nSettle on UPI.',
   },
 };
 

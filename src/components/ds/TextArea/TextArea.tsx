@@ -30,8 +30,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       error,
       optional = false,
       disabled = false,
-      rows = 3,
-      minRows = 3,
+      rows = 1,
+      minRows = 1,
       maxRows = 8,
       className,
       placeholder,
@@ -48,6 +48,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     const hasError = Boolean(error);
 
     const internalRef = useRef<HTMLTextAreaElement | null>(null);
+    const userResizedRef = useRef(false);
+    const isAutoAdjustingRef = useRef(false);
 
     const combinedRef = useCallback(
       (node: HTMLTextAreaElement | null) => {
@@ -63,17 +65,40 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
 
     const adjustHeight = useCallback(() => {
       const textarea = internalRef.current;
-      if (!textarea) return;
+      if (!textarea || userResizedRef.current) return;
+
+      isAutoAdjustingRef.current = true;
       textarea.style.height = 'auto';
-      const lineHeight = 20;
-      const paddingBorder = 26;
-      const minHeight = minRows * lineHeight + paddingBorder;
-      const maxHeight = maxRows * lineHeight + paddingBorder;
+
+      const lineHeight = 18;
+      const paddingBorder = 18; // py-space-8 (8px top, 8px bottom) + 2px border = 18px
+      const minHeight = minRows * lineHeight + paddingBorder; // 36px (h-control-lg) for minRows=1
+      const maxHeight = maxRows * lineHeight + paddingBorder; // 162px for maxRows=8
+
       const scrollHeight = textarea.scrollHeight;
       const nextHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight);
+
       textarea.style.height = `${nextHeight}px`;
       textarea.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
+      isAutoAdjustingRef.current = false;
     }, [minRows, maxRows]);
+
+    useEffect(() => {
+      const textarea = internalRef.current;
+      if (!textarea || typeof ResizeObserver === 'undefined') return;
+
+      let prevHeight = textarea.offsetHeight;
+      const observer = new ResizeObserver(() => {
+        const currentHeight = textarea.offsetHeight;
+        if (isAutoAdjustingRef.current) return;
+        if (currentHeight > 0 && prevHeight > 0 && Math.abs(currentHeight - prevHeight) > 2) {
+          userResizedRef.current = true;
+        }
+        prevHeight = currentHeight;
+      });
+      observer.observe(textarea);
+      return () => observer.disconnect();
+    }, []);
 
     useEffect(() => {
       adjustHeight();
@@ -106,7 +131,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           aria-invalid={hasError ? 'true' : undefined}
           aria-describedby={hasError || helper ? helperId : undefined}
           className={cn(
-            'w-full p-space-12 rounded-ds-md border bg-surface font-text font-medium text-body text-ink placeholder:text-ink-4 resize-none',
+            'w-full min-h-control-lg px-space-12 py-space-8 rounded-ds-md border bg-surface font-text font-medium text-body text-ink placeholder:text-ink-4 resize-y',
             'transition-colors duration-fast focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2',
             hasError
               ? 'border-danger focus:ring-danger'
@@ -122,3 +147,4 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
 );
 
 TextArea.displayName = 'TextArea';
+

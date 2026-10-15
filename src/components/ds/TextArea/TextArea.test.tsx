@@ -5,11 +5,36 @@ import { describe, expect, it, vi } from 'vitest';
 import { TextArea } from './TextArea';
 
 describe('TextArea component', () => {
-  it('renders label and textarea with default rows=3', () => {
+  it('renders label and textarea with default rows=1, min-h-control-lg, and resize-y', () => {
     render(<TextArea label="Note" defaultValue="Split with Priya" />);
     const textarea = screen.getByLabelText('Note');
     expect(textarea).toHaveValue('Split with Priya');
-    expect(textarea).toHaveAttribute('rows', '3');
+    expect(textarea).toHaveAttribute('rows', '1');
+    expect(textarea).toHaveClass('min-h-control-lg');
+    expect(textarea).toHaveClass('resize-y');
+  });
+
+  it('adjusts height to auto-grow with content up to 8 lines', () => {
+    const { container } = render(<TextArea label="Note" defaultValue="" />);
+    const textarea = container.querySelector('textarea')!;
+    expect(textarea.style.height).toBe('36px'); // starts at 36px (h-control-lg)
+
+    // Simulate content growth
+    Object.defineProperty(textarea, 'scrollHeight', {
+      configurable: true,
+      value: 72,
+    });
+    fireEvent.change(textarea, { target: { value: 'Line 1\nLine 2\nLine 3' } });
+    expect(textarea.style.height).toBe('72px');
+
+    // Simulate growth beyond 8 lines (e.g. 200px > 162px max)
+    Object.defineProperty(textarea, 'scrollHeight', {
+      configurable: true,
+      value: 200,
+    });
+    fireEvent.change(textarea, { target: { value: 'Many lines\n'.repeat(10) } });
+    expect(textarea.style.height).toBe('162px');
+    expect(textarea.style.overflowY).toBe('auto');
   });
 
   it('renders (Optional) text when optional prop is true', () => {
