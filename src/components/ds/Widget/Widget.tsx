@@ -107,7 +107,7 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
 
       if (error) {
         return (
-          <div className="flex gap-space-10 items-start text-label text-danger">
+          <div role="alert" className="flex gap-space-10 items-start text-label text-danger">
             <div>
               <b className="font-bold">Couldn&apos;t load this widget</b>
               <div className="text-caption font-medium text-ink-3 mt-space-2">
@@ -122,7 +122,7 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
                         <button
                           type="button"
                           onClick={onRetry}
-                          className="underline hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                          className="text-ink font-bold underline hover:text-ink-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring cursor-pointer"
                         >
                           Retry
                         </button>
@@ -154,7 +154,7 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
                         <button
                           type="button"
                           onClick={onRemove}
-                          className="underline hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                          className="text-ink font-bold underline hover:text-ink-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring cursor-pointer"
                         >
                           Remove
                         </button>
