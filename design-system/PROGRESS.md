@@ -144,6 +144,28 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 6) · Menu component fixes:
+  - Fixed Menu in `src/components/ds/Menu/Menu.tsx`:
+    - Updated sizing: `MenuItem` and `DropdownMenuItem` height set to `min-h-control-lg px-space-10` (36px) per owner decision (2026-10-15).
+    - Fixed disabled item fade: removed double fade (`opacity-60` removed, strictly `text-ink-faint cursor-not-allowed`).
+    - Added focus ring: added `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset`.
+    - Added keyboard navigation on static `Menu`: handled `ArrowDown`, `ArrowUp`, `Home`, and `End` across active `button[role="menuitem"]` items, wrapping around and skipping disabled items.
+  - Updated `src/components/ds/Menu/Menu.test.tsx`:
+    - Added unit tests for `min-h-control-lg`, focus ring, single fade on disabled items, and keyboard arrow/Home/End navigation.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/Menu` (10 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `Menu/preview.html` and `ds-08-data.webp` / `D-dashboards-menu.webp`:
+    - `DS/Actions/Menu/Actions`
+    - `DS/Actions/Menu/WithIconsAndHints`
+    - `DS/Actions/Menu/SnoozePresets`
+    - `DS/Actions/Menu/DisabledItem`
+    - `DS/Actions/Menu/Sectioned`
+    - `DS/Actions/Menu/SwitcherWithAFooterLink`
+    - `DS/Actions/Menu/FloatingDropdown`
+    - `DS/Actions/Menu/AllVariants`
+    Verified 36px item height, crisp focus ring, proper disabled item rendering, and keyboard traversal.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 5) · DropZone component fixes:
   - Fixed DropZone in `src/components/ds/DropZone/DropZone.tsx`:
     - Updated border: changed dashed border from `border-2 border-dashed` to 1px `border border-dashed` per owner decision (2026-10-15).

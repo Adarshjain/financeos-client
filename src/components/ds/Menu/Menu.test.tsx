@@ -91,6 +91,63 @@ describe('Menu', () => {
     expect(screen.getByText('This widget')).toBeInTheDocument();
     expect(screen.getByRole('group')).toBeInTheDocument();
   });
+
+  it('has min-h-control-lg and focus ring classes on items, single fade on disabled', () => {
+    render(
+      <Menu>
+        <MenuItem>Active Item</MenuItem>
+        <MenuItem disabled>Disabled Item</MenuItem>
+      </Menu>,
+    );
+    const active = screen.getByRole('menuitem', { name: 'Active Item' });
+    const disabled = screen.getByRole('menuitem', { name: 'Disabled Item' });
+
+    expect(active).toHaveClass('min-h-control-lg', 'px-space-10', 'focus-visible:ring-focus-ring');
+    expect(disabled).toHaveClass('text-ink-faint');
+    expect(disabled).not.toHaveClass('opacity-60');
+  });
+
+  it('navigates with ArrowDown, ArrowUp, Home, and End across items', () => {
+    render(
+      <Menu>
+        <MenuItem>First</MenuItem>
+        <MenuItem disabled>Second (Disabled)</MenuItem>
+        <MenuItem>Third</MenuItem>
+        <MenuItem>Fourth</MenuItem>
+      </Menu>,
+    );
+    const menu = screen.getByRole('menu');
+    const first = screen.getByRole('menuitem', { name: 'First' });
+    const third = screen.getByRole('menuitem', { name: 'Third' });
+    const fourth = screen.getByRole('menuitem', { name: 'Fourth' });
+
+    first.focus();
+    expect(document.activeElement).toBe(first);
+
+    // ArrowDown skips disabled item (Second) and moves to Third
+    fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(third);
+
+    // ArrowDown moves to Fourth
+    fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(fourth);
+
+    // ArrowDown wraps to First
+    fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(first);
+
+    // ArrowUp wraps to Fourth
+    fireEvent.keyDown(menu, { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(fourth);
+
+    // Home moves to First
+    fireEvent.keyDown(menu, { key: 'Home' });
+    expect(document.activeElement).toBe(first);
+
+    // End moves to Fourth
+    fireEvent.keyDown(menu, { key: 'End' });
+    expect(document.activeElement).toBe(fourth);
+  });
 });
 
 describe('DropdownMenu', () => {
