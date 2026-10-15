@@ -1,6 +1,5 @@
 'use client';
 
-import { X } from 'lucide-react';
 import React, { forwardRef, useEffect } from 'react';
 
 import { Button } from '../Button/Button';
@@ -124,7 +123,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
           onClick={onClear}
           className="text-ink-3 hover:bg-hover hover:text-ink shrink-0"
         >
-          <Icon icon={X} size="sm" />
+          <Icon name="close" size="sm" />
         </Button>
       </div>
     );
@@ -152,7 +151,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
               onClick={onClear}
               className="text-ink-3 hover:bg-hover hover:text-ink shrink-0"
             >
-              <Icon icon={X} size="sm" />
+              <Icon name="close" size="sm" />
             </Button>
 
             <div className="flex-1 flex flex-col leading-tight min-w-0 pr-space-4">

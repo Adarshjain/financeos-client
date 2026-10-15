@@ -1,7 +1,6 @@
 'use client';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { X } from 'lucide-react';
 import React, { forwardRef, useRef } from 'react';
 
 import { Button } from '../Button/Button';
@@ -240,7 +239,7 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
                   onClick={onClose}
                   className="hidden sm:inline-flex text-ink-4 hover:text-ink hover:bg-hover p-space-6 rounded-ds-md ml-auto shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
                 >
-                  <Icon icon={X} size="md" aria-hidden="true" />
+                  <Icon name="close" size="md" />
                 </button>
               )}
             </div>
@@ -472,7 +471,7 @@ export const DialogContent = forwardRef<
                         aria-label="Close"
                         className="hidden sm:inline-flex text-ink-4 hover:text-ink hover:bg-hover p-space-6 rounded-ds-md ml-auto shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
                       >
-                        <Icon icon={X} size="md" aria-hidden="true" />
+                        <Icon name="close" size="md" />
                       </button>
                     </DialogPrimitive.Close>
                   )}

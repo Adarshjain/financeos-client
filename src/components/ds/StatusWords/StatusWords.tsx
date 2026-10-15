@@ -1,7 +1,7 @@
-import { Link2 } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
+import { Icon } from '../Icon/Icon';
 
 export type StatusTone =
   | 'amber'
@@ -75,7 +75,7 @@ export const StatusWord = forwardRef<HTMLSpanElement, StatusWordProps>(
         {...props}
       >
         {shouldShowIcon ? (
-          icon ?? <Link2 className="h-space-10 w-space-10 shrink-0" aria-hidden="true" />
+          icon ?? <Icon name="link" size="sm" className="shrink-0" />
         ) : null}
         {children}
       </span>

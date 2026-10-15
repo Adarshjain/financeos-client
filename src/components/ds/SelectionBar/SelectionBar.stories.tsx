@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Check, GitMerge, Link2, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '../Button/Button';
@@ -35,25 +34,25 @@ type Story = StoryObj<typeof SelectionBar>;
 const transactionActions: SelectionBarAction[] = [
   {
     label: 'Link',
-    icon: <Icon icon={Link2} size="sm" />,
+    icon: <Icon name="link" size="sm" />,
     onClick: () => alert('Link clicked'),
   },
   {
     label: 'Merge',
-    icon: <Icon icon={GitMerge} size="sm" />,
+    icon: <Icon name="merge" size="sm" />,
     hint: 'the pair',
     onClick: () => alert('Merge clicked'),
   },
   {
     label: 'Approve',
-    icon: <Icon icon={Check} size="sm" />,
+    icon: <Icon name="check" size="sm" />,
     hint: 'clear Duplicate',
     count: 2,
     onClick: () => alert('Approve clicked'),
   },
   {
     label: 'Delete',
-    icon: <Icon icon={Trash2} size="sm" />,
+    icon: <Icon name="delete" size="sm" />,
     variant: 'danger',
     onClick: () => alert('Delete clicked'),
   },
@@ -105,7 +104,7 @@ export const AllVariants: Story = {
             actions={[
               {
                 label: 'Approve',
-                icon: <Icon icon={Check} size="sm" />,
+                icon: <Icon name="check" size="sm" />,
                 hint: 'mark verified',
               },
             ]}
@@ -127,12 +126,12 @@ export const AllVariants: Story = {
           actions={[
             {
               label: 'Merge',
-              icon: <Icon icon={GitMerge} size="sm" />,
+              icon: <Icon name="merge" size="sm" />,
               disabled: true,
             },
             {
               label: 'Approve',
-              icon: <Icon icon={Check} size="sm" />,
+              icon: <Icon name="check" size="sm" />,
               count: 3,
             },
           ]}
@@ -186,7 +185,7 @@ export const SingleAction: Story = {
         actions={[
           {
             label: 'Approve',
-            icon: <Check className="w-space-16 h-space-16" />,
+            icon: <Icon name="check" size="md" />,
             hint: 'mark verified',
             onClick: () => alert('Approve rules'),
           },
@@ -210,12 +209,12 @@ export const ActionDisabled: Story = {
         actions={[
           {
             label: 'Merge',
-            icon: <GitMerge className="w-space-16 h-space-16" />,
+            icon: <Icon name="merge" size="md" />,
             disabled: true,
           },
           {
             label: 'Approve',
-            icon: <Check className="w-space-16 h-space-16" />,
+            icon: <Icon name="check" size="md" />,
             count: 3,
             onClick: () => alert('Approve 3'),
           },
@@ -255,26 +254,26 @@ const InteractiveSelectionStory: React.FC = () => {
             actions={[
               {
                 label: 'Link',
-                icon: <Link2 className="w-space-16 h-space-16" />,
+                icon: <Icon name="link" size="md" />,
                 onClick: () => alert('Link'),
               },
               {
                 label: 'Merge',
-                icon: <GitMerge className="w-space-16 h-space-16" />,
+                icon: <Icon name="merge" size="md" />,
                 disabled: selectedCount !== 2,
                 hint: 'the pair',
                 onClick: () => alert('Merge'),
               },
               {
                 label: 'Approve',
-                icon: <Check className="w-space-16 h-space-16" />,
+                icon: <Icon name="check" size="md" />,
                 count: selectedCount,
                 hint: 'clear Duplicate',
                 onClick: () => alert('Approve'),
               },
               {
                 label: 'Delete',
-                icon: <Trash2 className="w-space-16 h-space-16" />,
+                icon: <Icon name="delete" size="md" />,
                 variant: 'danger',
                 onClick: () => alert('Delete'),
               },

@@ -1,6 +1,5 @@
 'use client';
 
-import { Calendar as CalendarIcon } from 'lucide-react';
 import React, { forwardRef, useId, useState } from 'react';
 
 import { Button } from '../Button/Button';
@@ -293,7 +292,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
                   }}
                   className="text-ink-3 hover:text-ink shrink-0"
                 >
-                  <Icon icon={CalendarIcon} size="md" />
+                  <Icon name="calendar" size="md" />
                 </Button>
               </div>
             </div>
@@ -346,7 +345,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
                   }}
                   className="text-ink-3 hover:text-ink shrink-0"
                 >
-                  <Icon icon={CalendarIcon} size="md" />
+                  <Icon name="calendar" size="md" />
                 </Button>
               </div>
             </div>
@@ -448,7 +447,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
                 onClick={() => !disabled && setOpen(!isOpen)}
                 className="text-ink-3 hover:text-ink shrink-0"
               >
-                <Icon icon={CalendarIcon} size="md" />
+                <Icon name="calendar" size="md" />
               </Button>
             ) : (
               <PopoverTrigger asChild>
@@ -462,7 +461,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
                   onClick={() => !disabled && setOpen(!isOpen)}
                   className="text-ink-3 hover:text-ink shrink-0"
                 >
-                  <Icon icon={CalendarIcon} size="md" />
+                  <Icon name="calendar" size="md" />
                 </Button>
               </PopoverTrigger>
             )}

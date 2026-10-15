@@ -1,6 +1,5 @@
 'use client';
 
-import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
@@ -160,7 +159,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                       className="gap-space-6 h-control-md px-space-10 text-label font-semibold text-ink-2 mr-space-6 bg-surface"
                     >
                       <span>{size} / page</span>
-                      <Icon icon={ChevronDown} size="sm" className="text-ink-4 shrink-0" />
+                      <Icon name="chevron-down" size="sm" className="text-ink-4 shrink-0" />
                     </Button>
                   }
                   menuClassName="min-w-fit"
@@ -184,7 +183,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                 onClick={() => onPageChange(page - 1)}
                 className="min-w-control-md h-control-md px-space-6 border-line-strong text-ink-3"
               >
-                <Icon icon={ChevronLeft} size="md" />
+                <Icon name="chevron-left" size="md" />
               </Button>
 
               {pageItems.map((item, idx) => {
@@ -230,7 +229,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                 onClick={() => onPageChange(page + 1)}
                 className="min-w-control-md h-control-md px-space-6 border-line-strong text-ink-3"
               >
-                <Icon icon={ChevronRight} size="md" />
+                <Icon name="chevron-right" size="md" />
               </Button>
             </>
           )}

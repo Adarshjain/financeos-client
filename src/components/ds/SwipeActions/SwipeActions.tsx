@@ -1,6 +1,5 @@
 'use client';
 
-import { Check, Eye, Trash2, X } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
@@ -71,7 +70,7 @@ export const SwipeActions = forwardRef<HTMLDivElement, SwipeActionsProps>(
     if (!effectiveLeft && (variant === 'transactions' || onApprove)) {
       effectiveLeft = {
         label: 'Approve',
-        icon: <Icon icon={Check} size="lg" />,
+        icon: <Icon name="check" size="lg" />,
         tone: 'brand',
         onTrigger: onApprove,
         disabled: !canApprove,
@@ -79,7 +78,7 @@ export const SwipeActions = forwardRef<HTMLDivElement, SwipeActionsProps>(
     } else if (!effectiveLeft && (variant === 'inbox' || onSnooze)) {
       effectiveLeft = {
         label: 'Snooze',
-        icon: <Icon icon={Eye} size="lg" />,
+        icon: <Icon name="view" size="lg" />,
         tone: 'brand',
         onTrigger: onSnooze,
       };
@@ -90,14 +89,14 @@ export const SwipeActions = forwardRef<HTMLDivElement, SwipeActionsProps>(
     if (!effectiveRight && (variant === 'transactions' || onDelete)) {
       effectiveRight = {
         label: 'Delete',
-        icon: <Icon icon={Trash2} size="lg" />,
+        icon: <Icon name="delete" size="lg" />,
         tone: 'danger',
         onTrigger: onDelete,
       };
     } else if (!effectiveRight && (variant === 'inbox' || onDismiss)) {
       effectiveRight = {
         label: 'Dismiss',
-        icon: <Icon icon={X} size="lg" />,
+        icon: <Icon name="close" size="lg" />,
         tone: 'danger',
         onTrigger: onDismiss,
       };

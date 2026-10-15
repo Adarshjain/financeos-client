@@ -195,10 +195,20 @@ Only the owner adds to this list. Each entry has a date and the decision.
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
 
+- 2026-10-15 · Phase 2 · Checkbox · Indeterminate/mixed state icon · Checkbox mixed state (some rows selected) needs a minus/dash icon, which is not in icons.json. Options: (A) Add `minus` (Phosphor `minus`) to the icon registry, (B) Render an inline SVG dash stroke inside Checkbox, or (C) Use a CSS dash line. Meanwhile using `close` as the closest registry icon.
+- 2026-10-15 · Phase 2 · Button · Loading spinner icon · Button loading state needs a spinner icon (RULES §6.2 progress spinner), which is not in icons.json. Options: (A) Add `spinner` (Phosphor `spinner` or `circle-notch`) to the icon registry, or (B) Use a CSS rotating border spinner. Meanwhile using `settings` with `animate-spin` as the closest rotating registry icon.
 - 2026-10-15 · Phase 2 · Button · Count pill on primary button · The board only shows count pills on secondary buttons (btn). On a primary (btn-p) button, both the button background and default count pill use bg-ink, making an ink pill blend into the button. Options: (A) Reverse the pill colors on primary buttons to bg-surface text-ink, (B) Forbid count pills on primary buttons, or (C) Add a dedicated contrasting pill token. Meanwhile, Button renders bg-surface text-ink when primary.
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 2 · Switch every DS component to registry names:
+  - Replaced all Lucide icon imports across `src/components/ds/` with `<Icon name="…" />` using canonical names from `design-system/icons.json`.
+  - Updated 28 files: `AppBar.tsx`, `Button.tsx`, `Button.stories.tsx`, `Button.test.tsx`, `Card.stories.tsx`, `Checkbox.tsx`, `DateField.tsx`, `DateTile.tsx`, `Dialog.tsx`, `DropZone.tsx`, `FilterChip.tsx`, `ListRow.tsx`, `Menu.stories.tsx`, `Pager.tsx`, `Popover.stories.tsx`, `Rail.tsx`, `RuleCard.tsx`, `SearchField.tsx`, `Select.tsx`, `SelectionBar.tsx`, `SelectionBar.stories.tsx`, `StatusWords.tsx`, `SwipeActions.tsx`, `TabBar.tsx`, `TopBar.tsx`, `TransactionRow.tsx`, `TransactionRow.test.tsx`, `Widget.tsx`.
+  - Logged open questions for missing icons (Checkbox mixed dash and Button loading spinner) and used closest registry icons meanwhile (`close` and `settings`).
+  - Verified `grep -r "lucide-react" src/components/ds` returns 0 results.
+  - Stories compared: AppBar, Button, Checkbox, DateField, DateTile, Dialog, DropZone, FilterChip, ListRow, Menu, Pager, Popover, Rail, RuleCard, SearchField, Select, SelectionBar, StatusWords, SwipeActions, TabBar, TopBar, TransactionRow, Widget (AllVariants for each) against updated previews at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck` (clean), `npm run lint` (0 errors), `npx vitest run src/components/ds/` (all 41 test files / 300 tests passing), `npm run build-storybook` (clean), `node design-system/tools/check-ui.mjs --base c8b557b` (clean). Open questions: Checkbox mixed icon, Button loading spinner icon. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 1 · Install Phosphor and rebuild Icon:
   - Installed approved dependency `@phosphor-icons/react@2.1.10`.

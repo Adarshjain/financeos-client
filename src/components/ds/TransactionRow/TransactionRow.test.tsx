@@ -316,7 +316,7 @@ describe('TransactionRow', () => {
     );
 
     expect(screen.getByTestId('leading-avatar')).toBeInTheDocument();
-    const chevronSvg = container.querySelector('svg.lucide-chevron-right');
+    const chevronSvg = container.querySelector('svg.w-icon-sm');
     expect(chevronSvg).toBeInTheDocument();
   });
 });

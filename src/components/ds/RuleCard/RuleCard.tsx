@@ -1,6 +1,5 @@
 'use client';
 
-import { Check, Eye, MoreVertical } from 'lucide-react';
 import React, { forwardRef, useRef } from 'react';
 
 import { Button } from '../Button/Button';
@@ -201,7 +200,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
             aria-label="View rule details"
             className="text-brand-strong shrink-0"
           >
-            <Icon icon={Eye} size="md" />
+            <Icon name="view" size="md" />
           </Button>
         );
       }
@@ -213,7 +212,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
               size="sm"
               variant="secondary"
               onClick={onApprove}
-              icon={<Icon icon={Check} size="sm" />}
+              icon={<Icon name="check" size="sm" />}
             >
               Approve
             </Button>
@@ -227,7 +226,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
                 iconOnly
                 aria-label="Rule actions"
               >
-                <Icon icon={MoreVertical} size="sm" />
+                <Icon name="more" size="sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

@@ -1,6 +1,5 @@
 'use client';
 
-import { Search, X } from 'lucide-react';
 import React, { forwardRef, useId, useRef, useState } from 'react';
 
 import { Button } from '../Button/Button';
@@ -115,7 +114,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
           )}
         >
           <Icon
-            icon={Search}
+            name="search"
             size="sm"
             className="text-ink-3 shrink-0"
           />
@@ -147,7 +146,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
               onClick={handleClear}
               className="text-ink-4 hover:text-ink shrink-0"
             >
-              <Icon icon={X} size="sm" />
+              <Icon name="close" size="sm" />
             </Button>
           ) : null}
         </div>

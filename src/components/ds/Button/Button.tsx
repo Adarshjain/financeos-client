@@ -1,7 +1,6 @@
 'use client';
 
 import { Slot } from '@radix-ui/react-slot';
-import { Loader2 } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { Badge } from '../Badge/Badge';
@@ -105,7 +104,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {loading ? (
           <>
             <Icon
-              icon={Loader2}
+              name="settings"
               size={size === 'sm' ? 'sm' : 'md'}
               className="animate-spin shrink-0"
             />

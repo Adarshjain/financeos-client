@@ -1,6 +1,5 @@
 'use client';
 
-import { ChevronDown, X } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { Badge } from '../Badge/Badge';
@@ -52,7 +51,7 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
       ) : null;
 
     const dropdownNode = hasDropdown ? (
-      <Icon icon={ChevronDown} size="sm" className="text-current shrink-0" />
+      <Icon name="chevron-down" size="sm" className="text-current shrink-0" />
     ) : null;
 
     const toneClasses = cn(
@@ -91,7 +90,7 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
             onClick={handleRemoveClick}
             className="inline-flex items-center justify-center h-full pl-space-2 pr-space-8 bg-transparent border-0 text-inherit font-text font-semibold text-label cursor-pointer rounded-r-ds-pill opacity-70 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:cursor-not-allowed"
           >
-            <Icon icon={X} size="sm" />
+            <Icon name="close" size="sm" />
           </button>
         </span>
       );

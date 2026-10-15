@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Calendar, Check, Eye, MoreVertical, Plus } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '../Button/Button';
@@ -49,18 +48,18 @@ const ActionsContent = () => (
 const IconsAndHintsContent = () => (
   <>
     <MenuItem
-      icon={<Icon icon={Plus} size="sm" />}
+      icon={<Icon name="add" size="sm" />}
       hint="built-in or report"
     >
       Add widget
     </MenuItem>
     <MenuItem
-      icon={<Icon icon={Eye} size="sm" />}
+      icon={<Icon name="view" size="sm" />}
       hint="arrange, resize"
     >
       Edit dashboard
     </MenuItem>
-    <MenuItem icon={<Icon icon={Calendar} size="sm" />}>
+    <MenuItem icon={<Icon name="calendar" size="sm" />}>
       New dashboard
     </MenuItem>
   </>
@@ -106,7 +105,7 @@ const SwitcherContent = () => (
       active
       hint={
         <span className="inline-flex items-center gap-space-2 text-brand-strong">
-          Default <Icon icon={Check} size="sm" />
+          Default <Icon name="check" size="sm" />
         </span>
       }
     >
@@ -131,7 +130,7 @@ export const AllVariants: Story = {
             defaultOpen
             trigger={
               <Button variant="secondary" iconOnly aria-label="Actions">
-                <Icon icon={MoreVertical} size="md" />
+                <Icon name="more" size="md" />
               </Button>
             }
           >
@@ -149,7 +148,7 @@ export const AllVariants: Story = {
             defaultOpen
             trigger={
               <Button variant="secondary" iconOnly aria-label="Options">
-                <Icon icon={MoreVertical} size="md" />
+                <Icon name="more" size="md" />
               </Button>
             }
           >
@@ -167,7 +166,7 @@ export const AllVariants: Story = {
             defaultOpen
             trigger={
               <Button variant="secondary" iconOnly aria-label="Snooze">
-                <Icon icon={MoreVertical} size="md" />
+                <Icon name="more" size="md" />
               </Button>
             }
           >
@@ -185,7 +184,7 @@ export const AllVariants: Story = {
             defaultOpen
             trigger={
               <Button variant="secondary" iconOnly aria-label="Cardholder">
-                <Icon icon={MoreVertical} size="md" />
+                <Icon name="more" size="md" />
               </Button>
             }
           >
@@ -203,7 +202,7 @@ export const AllVariants: Story = {
             defaultOpen
             trigger={
               <Button variant="secondary" iconOnly aria-label="Widget">
-                <Icon icon={MoreVertical} size="md" />
+                <Icon name="more" size="md" />
               </Button>
             }
           >
@@ -221,7 +220,7 @@ export const AllVariants: Story = {
             defaultOpen
             trigger={
               <Button variant="secondary" iconOnly aria-label="Dashboards">
-                <Icon icon={MoreVertical} size="md" />
+                <Icon name="more" size="md" />
               </Button>
             }
           >
@@ -238,7 +237,7 @@ export const Actions: Story = {
     defaultOpen: true,
     trigger: (
       <Button variant="secondary" iconOnly aria-label="Rule actions">
-        <Icon icon={MoreVertical} size="md" />
+        <Icon name="more" size="md" />
       </Button>
     ),
     children: <ActionsContent />,
@@ -250,7 +249,7 @@ export const WithIconsAndHints: Story = {
     defaultOpen: true,
     trigger: (
       <Button variant="secondary" iconOnly aria-label="Dashboard actions">
-        <Icon icon={MoreVertical} size="md" />
+        <Icon name="more" size="md" />
       </Button>
     ),
     children: <IconsAndHintsContent />,
@@ -262,7 +261,7 @@ export const SnoozePresets: Story = {
     defaultOpen: true,
     trigger: (
       <Button variant="secondary" iconOnly aria-label="Snooze options">
-        <Icon icon={MoreVertical} size="md" />
+        <Icon name="more" size="md" />
       </Button>
     ),
     children: <SnoozePresetsContent />,
@@ -274,7 +273,7 @@ export const DisabledItem: Story = {
     defaultOpen: true,
     trigger: (
       <Button variant="secondary" iconOnly aria-label="Cardholder options">
-        <Icon icon={MoreVertical} size="md" />
+        <Icon name="more" size="md" />
       </Button>
     ),
     children: <DisabledItemContent />,
@@ -286,7 +285,7 @@ export const Sectioned: Story = {
     defaultOpen: true,
     trigger: (
       <Button variant="secondary" iconOnly aria-label="Widget options">
-        <Icon icon={MoreVertical} size="md" />
+        <Icon name="more" size="md" />
       </Button>
     ),
     children: <SectionedContent />,
@@ -298,7 +297,7 @@ export const SwitcherWithAFooterLink: Story = {
     defaultOpen: true,
     trigger: (
       <Button variant="secondary" iconOnly aria-label="Switch dashboard">
-        <Icon icon={MoreVertical} size="md" />
+        <Icon name="more" size="md" />
       </Button>
     ),
     children: <SwitcherContent />,

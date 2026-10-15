@@ -1,6 +1,5 @@
 'use client';
 
-import { ChevronRight, Eye } from 'lucide-react';
 import React, { forwardRef, useRef } from 'react';
 
 import { Button } from '../Button/Button';
@@ -449,11 +448,11 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                     aria-label="View transaction details"
                     className="p-space-4 text-ink-3 hover:text-ink h-auto min-h-0"
                   >
-                    <Icon icon={Eye} size="md" />
+                    <Icon name="view" size="md" />
                   </Button>
                 )}
                 {chevron && (
-                  <Icon icon={ChevronRight} size="sm" className="text-ink-4 shrink-0" />
+                  <Icon name="chevron-right" size="sm" className="text-ink-4 shrink-0" />
                 )}
               </div>
             )}

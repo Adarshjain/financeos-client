@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { ChevronRight } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '../Button/Button';
@@ -42,7 +41,7 @@ export const AllVariants: Story = {
                 className="font-text font-bold text-label text-brand hover:underline"
               >
                 <span className="inline-flex items-center gap-space-2">
-                  Inbox <Icon icon={ChevronRight} size="sm" />
+                  Inbox <Icon name="chevron-right" size="sm" />
                 </span>
               </a>
             }
@@ -135,7 +134,7 @@ export const TitleSubtitleLink: Story = {
         className="font-text font-bold text-label text-brand hover:underline"
       >
         <span className="inline-flex items-center gap-space-2">
-          Inbox <Icon icon={ChevronRight} size="sm" />
+          Inbox <Icon name="chevron-right" size="sm" />
         </span>
       </a>
     ),
