@@ -37,9 +37,9 @@ export const Person: Story = {
 export const Logo: Story = {
   render: () => (
     <div className="flex items-center gap-space-8">
-      <Avatar variant="logo">HD</Avatar>
-      <Avatar variant="logo">AX</Avatar>
-      <Avatar variant="logo">SB</Avatar>
+      <Avatar variant="logo" style={{ background: '#004c8f' }}>HD</Avatar> {/* ds-allow: bank brand colour from preview */}
+      <Avatar variant="logo" style={{ background: '#97144d' }}>AX</Avatar> {/* ds-allow: bank brand colour from preview */}
+      <Avatar variant="logo" style={{ background: '#22409a' }}>SB</Avatar> {/* ds-allow: bank brand colour from preview */}
     </div>
   ),
 };
@@ -94,7 +94,7 @@ export const AllVariants: Story = {
           <Avatar variant="account">AX</Avatar>
           <Avatar variant="person">PN</Avatar>
           <Avatar variant="person">RS</Avatar>
-          <Avatar variant="logo">HD</Avatar>
+          <Avatar variant="logo" style={{ background: '#004c8f' }}>HD</Avatar> {/* ds-allow: bank brand colour from preview */}
         </div>
       </div>
 
