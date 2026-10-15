@@ -5,8 +5,6 @@ import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
 
-export type PopoverWidth = 'match' | 'content';
-
 export const PopoverRoot = PopoverPrimitive.Root;
 export const PopoverTrigger = PopoverPrimitive.Trigger;
 export const PopoverPortal = PopoverPrimitive.Portal;
@@ -14,9 +12,7 @@ export const PopoverClose = PopoverPrimitive.Close;
 export const PopoverAnchor = PopoverPrimitive.Anchor;
 
 export interface PopoverContentProps
-  extends React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> {
-  width?: PopoverWidth;
-}
+  extends React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content> {}
 
 export const PopoverContent = forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
@@ -26,7 +22,6 @@ export const PopoverContent = forwardRef<
     {
       className,
       children,
-      width = 'match',
       align = 'start',
       side = 'bottom',
       sideOffset = 4,
@@ -44,7 +39,7 @@ export const PopoverContent = forwardRef<
           className={cn(
             'z-overlay bg-surface border border-line rounded-ds-lg shadow-pop p-space-4 flex flex-col outline-none',
             'animate-in fade-in-0 slide-in-from-top-1 duration-base',
-            width === 'match' ? 'w-popover-trigger' : 'min-w-popover-trigger',
+            'min-w-popover-trigger max-w-dialog-sm w-auto',
             className,
           )}
           {...props}
@@ -61,7 +56,6 @@ PopoverContent.displayName = 'PopoverContent';
 export interface PopoverProps extends PopoverPrimitive.PopoverProps {
   trigger?: React.ReactNode;
   children?: React.ReactNode;
-  width?: PopoverWidth;
   contentClassName?: string;
   align?: 'start' | 'center' | 'end';
   side?: 'top' | 'bottom' | 'left' | 'right';
@@ -78,7 +72,6 @@ export const Popover: React.FC<PopoverProps> & {
 } = ({
   trigger,
   children,
-  width = 'match',
   contentClassName,
   align = 'start',
   side = 'bottom',
@@ -98,7 +91,6 @@ export const Popover: React.FC<PopoverProps> & {
       >
         <PopoverPrimitive.Trigger asChild>{trigger}</PopoverPrimitive.Trigger>
         <PopoverContent
-          width={width}
           align={align}
           side={side}
           sideOffset={sideOffset}

@@ -19,38 +19,23 @@ describe('Popover', () => {
     expect(screen.getByText('Popover body content')).toBeInTheDocument();
   });
 
-  it('applies w-popover-trigger when width="match"', () => {
+  it('applies min-w-popover-trigger and max-w-dialog-sm by default', () => {
     render(
       <Popover
         defaultOpen
-        width="match"
         trigger={<button type="button">Trigger</button>}
       >
-        <div data-testid="popover-inner">Match Width</div>
-      </Popover>,
-    );
-
-    const inner = screen.getByTestId('popover-inner');
-    const content = inner.parentElement;
-    expect(content).toHaveClass('w-popover-trigger');
-    expect(content).toHaveClass('shadow-pop');
-    expect(content).toHaveClass('rounded-ds-lg');
-  });
-
-  it('applies min-w-popover-trigger when width="content"', () => {
-    render(
-      <Popover
-        defaultOpen
-        width="content"
-        trigger={<button type="button">Trigger</button>}
-      >
-        <div data-testid="popover-inner">Content Width</div>
+        <div data-testid="popover-inner">Popover Content</div>
       </Popover>,
     );
 
     const inner = screen.getByTestId('popover-inner');
     const content = inner.parentElement;
     expect(content).toHaveClass('min-w-popover-trigger');
+    expect(content).toHaveClass('max-w-dialog-sm');
+    expect(content).toHaveClass('w-auto');
+    expect(content).toHaveClass('shadow-pop');
+    expect(content).toHaveClass('rounded-ds-lg');
   });
 
   it('supports controlled open state and onOpenChange', () => {

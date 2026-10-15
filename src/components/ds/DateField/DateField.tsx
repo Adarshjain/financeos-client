@@ -369,7 +369,6 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
                 <span className="sr-only">Date picker popover trigger</span>
               </PopoverTrigger>
               <PopoverContent
-                width="content"
                 className="p-0 overflow-hidden shadow-pop"
               >
                 {calendarContent}
@@ -480,7 +479,6 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
             </Dialog>
           ) : (
             <PopoverContent
-              width="content"
               className="p-0 overflow-hidden shadow-pop"
             >
               {calendarContent}

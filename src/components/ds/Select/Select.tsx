@@ -14,6 +14,7 @@ import { cn } from '../cn';
 import { Dialog, DialogBody, DialogContent } from '../Dialog/Dialog';
 import { FieldFrame } from '../FieldFrame';
 import { Icon } from '../Icon/Icon';
+import { getItemRowClass } from '../itemRow';
 import { PopoverContent, PopoverRoot, PopoverTrigger } from '../Popover/Popover';
 import { SearchField } from '../SearchField/SearchField';
 import { useIsPhone } from '../useMediaQuery';
@@ -228,6 +229,11 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       const isDisabled = Boolean(opt.disabled);
       const isHighlighted = opt.value === effectiveHighlighted;
 
+      const rowClass = getItemRowClass({
+        active: isSelected && !multiple && !showRadio,
+        disabled: isDisabled,
+      });
+
       return (
         <div
           key={opt.value}
@@ -235,7 +241,6 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           role="option"
           aria-selected={isSelected}
           aria-disabled={isDisabled}
-          tabIndex={-1}
           onMouseEnter={() => {
             if (!isDisabled) setHighlightedValue(opt.value);
           }}
@@ -245,16 +250,8 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
             }
           }}
           className={cn(
-            'flex items-center gap-space-10 py-space-8 px-space-10 rounded-ds-md font-text font-semibold text-body transition-colors select-none outline-none',
-            isDisabled
-              ? 'text-ink-faint cursor-not-allowed opacity-60'
-              : isHighlighted
-                ? 'bg-hover text-ink cursor-pointer'
-                : 'text-ink hover:bg-hover cursor-pointer',
-            isSelected &&
-              !multiple &&
-              !showRadio &&
-              'bg-brand-tint text-brand-strong hover:bg-brand-tint',
+            rowClass,
+            isHighlighted && !isDisabled && !isSelected && 'bg-hover',
           )}
         >
           {multiple ? (
@@ -281,7 +278,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           <div className="flex-1 min-w-0">
             <span
               className={cn(
-                'block font-text font-semibold text-body truncate',
+                'block font-text font-medium text-body truncate',
                 isSelected && !multiple && !showRadio
                   ? 'text-brand-strong'
                   : 'text-ink',
@@ -297,15 +294,15 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           </div>
 
           {opt.disabledReason ? (
-            <span className="ml-auto font-text font-semibold text-caption text-ink-4">
+            <span className="ml-auto font-text font-medium text-caption text-ink-4">
               {opt.disabledReason}
             </span>
           ) : opt.hint ? (
-            <span className="ml-auto font-text font-semibold text-caption text-ink-4">
+            <span className="ml-auto font-text font-medium text-caption text-ink-4">
               {opt.hint}
             </span>
           ) : isSelected && !multiple && !showRadio ? (
-            <Icon name="check" size="md" className="ml-auto text-brand-strong" />
+            <Icon name="check" size="md" className="ml-auto text-brand-strong shrink-0" />
           ) : null}
         </div>
       );
@@ -318,9 +315,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
         onKeyDown={!searchable ? handleKeyDown : undefined}
         className={cn(
           'flex flex-col w-full outline-none',
-          isSheet
-            ? 'p-space-16 bg-surface'
-            : 'bg-surface border border-line rounded-ds-lg shadow-pop p-space-6',
+          isSheet ? 'p-space-16 bg-surface' : 'p-space-2',
           className,
         )}
       >
@@ -773,7 +768,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
         ) : (
           <PopoverRoot open={isOpen} onOpenChange={setOpen}>
             <PopoverTrigger asChild>{effectiveTrigger}</PopoverTrigger>
-            <PopoverContent width="match" className={menuClassName}>
+            <PopoverContent className={menuClassName}>
               <SelectMenu
                 id={id}
                 options={options}
