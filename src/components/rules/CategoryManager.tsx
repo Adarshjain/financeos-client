@@ -163,7 +163,8 @@ export function CategoryManager() {
                 </div>
               </div>
 
-              <DropdownMenu>
+              {/* Non-modal: its items open dialogs, which a modal menu can leave the page inert behind. */}
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
