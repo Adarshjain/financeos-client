@@ -47,7 +47,7 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
         ref={ref}
         aria-label="Primary"
         className={cn(
-          'flex items-center px-space-8 pt-space-8 pb-space-14 bg-surface border-t border-line min-h-tab-bar select-none',
+          'fixed inset-x-space-12 bottom-safe-12 z-dock flex items-center bg-surface border border-line rounded-ds-pill shadow-dock py-space-8 px-space-4 select-none lg:hidden',
           className,
         )}
         {...props}
@@ -71,10 +71,10 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
                 }
               }}
               className={cn(
-                'flex-1 flex flex-col items-center justify-center gap-space-2 font-text text-tab-label font-bold transition-colors duration-fast cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded-ds-sm py-space-2',
+                'flex-1 min-w-0 flex flex-col items-center justify-center gap-space-2 font-text text-tab-label transition-colors duration-fast cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded-ds-sm active:text-ink-3',
                 isActive
-                  ? 'text-brand-strong font-extrabold'
-                  : 'text-ink-4 hover:text-ink hover:bg-hover active:bg-pressed',
+                  ? 'text-ink'
+                  : 'text-ink-faint',
               )}
             >
               <div className="relative inline-flex items-center justify-center">
@@ -84,11 +84,13 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
                     variant="count"
                     tone={item.countTone}
                     count={item.count}
-                    className="absolute -top-space-4 left-space-14 pointer-events-none"
+                    className="absolute -top-space-4 -right-space-8 pointer-events-none ring-2 ring-surface"
                   />
                 ) : null}
               </div>
-              <span className="truncate max-w-full">{item.label}</span>
+              <span className={cn('truncate max-w-full', isActive && 'font-extrabold')}>
+                {item.label}
+              </span>
             </Tag>
           );
         })}
