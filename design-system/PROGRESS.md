@@ -68,7 +68,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 11 | SelectionBar | Changes requested |
 | 12 | SwipeActions | Changes requested |
 | 13 | TextField | Ready for review |
-| 14 | TextArea | Changes requested |
+| 14 | TextArea | Ready for review |
 | 15 | DateField | Changes requested |
 | 16 | Select | Ready for review |
 | 17 | SearchField | Ready for review |
@@ -217,6 +217,15 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 5 · TextArea (starts at control-lg, auto-grows, resizable):
+  - Updated TextArea default rows to 1 (`min-h-control-lg`, starting at 36px, identical to TextField).
+  - Wired auto-growth: dynamically computes `scrollHeight` line-by-line from 1 up to 8 lines (`maxHeight = 162px`), then switches to scrollable (`overflow-y: auto`).
+  - Added `resize-y` vertical drag handle with `ResizeObserver` listener that preserves manual user resizing.
+  - Added multiline preview examples and `GrownToThreeLines` story in `TextArea.stories.tsx`. Added growth behavior and dimension tests in `TextArea.test.tsx`.
+  - Stories compared and interacted with: TextArea (AllVariants, Default, Filled, GrownToThreeLines, WithHelper, ErrorState, Disabled) beside preview.html at 390 and 1440, light and dark. Canvas typing auto-grows properly and vertical resize drag functions smoothly.
+  - Checks: typecheck (clean), lint (0 errors), vitest (all 7 tests passing), build-storybook (clean), check-ui (clean on touched files). Differences left open: none.
+
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 4 · Banner and Toast (inline actions with Button link):
   - Banner: set container to `items-center`; action is rendered inline at the end of the text line via Button `link` (or wrapped in Button `link` when string); long text wraps naturally with the action at the end of the last line; one line of text stays one line tall. Deleted legacy tone aliases (`err`, `ok`, `warn`, `callout`, `note`).
