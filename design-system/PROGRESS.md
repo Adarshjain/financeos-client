@@ -144,6 +144,28 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 7 · Pager component fixes:
+  - Fixed Pager in `src/components/ds/Pager/Pager.tsx`:
+    - Ellipsis algorithm: desktop shows first, current ± 1, last with "…" in gaps (e.g. ‹ 1 2 … 4 › on page 1 of 4, ‹ 1 … 4 5 6 … 10 › in middle); phone keeps one neighbour fewer (‹ 1 … 4 ›); single page shows count and size only with no arrows.
+    - Page size select: replaced native `<select>` and typed "▾" character with design-system Radix `DropdownMenu` (`DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuItem`), styled with `h-control-md px-space-10 border border-line-strong rounded-ds-md text-label font-semibold text-ink-2 mr-space-6 bg-surface` and Lucide `ChevronDown`.
+    - Responsive phone morphology: uses `useIsPhone()` hook and media queries; desktop displays unit ("1–50 of 182 transactions") and page size dropdown, while phone drops both unit and size selector.
+    - Accessibility: numbered page buttons have `aria-label="Page N"` and `aria-current="page"` on the active page; arrow buttons have `aria-label="Previous page"` and `aria-label="Next page"`.
+    - Active page pill uses `min-w-control-md h-control-md` matching design-system scale.
+  - Updated `src/components/ds/Pager/Pager.test.tsx`:
+    - Added unit tests for `getPageNumbers` verifying desktop and phone ellipsis formulas and single page behavior.
+    - Updated page size selection test to interact via DropdownMenu.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,472 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs --staged` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `Pager/preview.html` and boards:
+    - `DS/Navigation/Pager/Desktop`
+    - `DS/Navigation/Pager/Phone`
+    - `DS/Navigation/Pager/SinglePage`
+    - `DS/Navigation/Pager/MiddlePage`
+    - `DS/Navigation/Pager/Interactive`
+    - `DS/Navigation/Pager/All variants`
+    Verified desktop displays ‹ 1 2 … 4 ›, phone displays ‹ 1 … 4 ›, single page has no arrows, and page size dropdown renders cleanly in both themes matching preview.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 6 · TabBar component fixes:
   - Fixed TabBar in `src/components/ds/TabBar/TabBar.tsx`:
     - Count bubble positioning: anchored with `left-space-14` instead of `-right-space-8` so the badge sits neatly at the top-right corner of the 20px icon and expands to the right without covering or obscuring the icon glyph.
