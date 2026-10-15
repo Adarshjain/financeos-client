@@ -1,7 +1,14 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../Menu/Menu';
+import { useIsPhone } from '../useMediaQuery';
 
 export interface PagerProps
   extends Omit<React.HTMLAttributes<HTMLElement>, 'onChange'> {
@@ -17,46 +24,41 @@ export interface PagerProps
   borderPosition?: 'top' | 'bottom' | 'none';
 }
 
-function getPageNumbers(
+export function getPageNumbers(
   currentPage: number, // 0-based
   totalPages: number,
   isPhone: boolean,
 ): (number | 'ellipsis')[] {
   if (totalPages <= 1) return [];
 
-  if (isPhone) {
-    if (totalPages <= 4) {
-      return Array.from({ length: totalPages }, (_, i) => i);
+  // Indices to include: desktop keeps first, current ± 1, last; phone drops current neighbours
+  const targets = new Set<number>();
+  targets.add(0);
+  targets.add(totalPages - 1);
+  targets.add(currentPage);
+
+  if (!isPhone) {
+    if (currentPage > 0) targets.add(currentPage - 1);
+    if (currentPage < totalPages - 1) targets.add(currentPage + 1);
+  }
+
+  const sorted = Array.from(targets)
+    .filter((p) => p >= 0 && p < totalPages)
+    .sort((a, b) => a - b);
+
+  const result: (number | 'ellipsis')[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0) {
+      const prev = sorted[i - 1];
+      const curr = sorted[i];
+      if (curr - prev > 1) {
+        result.push('ellipsis');
+      }
     }
-    if (currentPage === 0) {
-      return [0, 'ellipsis', totalPages - 1];
-    }
-    if (currentPage === totalPages - 1) {
-      return [0, 'ellipsis', totalPages - 1];
-    }
-    return [0, currentPage, 'ellipsis', totalPages - 1];
+    result.push(sorted[i]);
   }
 
-  // Desktop
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, i) => i);
-  }
-
-  if (currentPage <= 2) {
-    return [0, 1, 2, 'ellipsis', totalPages - 1];
-  }
-
-  if (currentPage >= totalPages - 3) {
-    return [
-      0,
-      'ellipsis',
-      totalPages - 3,
-      totalPages - 2,
-      totalPages - 1,
-    ];
-  }
-
-  return [0, 'ellipsis', currentPage, 'ellipsis', totalPages - 1];
+  return result;
 }
 
 /**
@@ -89,8 +91,9 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
     const start = totalElements === 0 ? 0 : page * size + 1;
     const end = Math.min((page + 1) * size, totalElements);
 
-    const isPhoneVariant = variant === 'phone';
-    const isDesktopVariant = variant === 'desktop';
+    const isPhoneDevice = useIsPhone();
+    const isPhone = variant === 'phone' || (variant === 'auto' && isPhoneDevice);
+    const isDesktop = variant === 'desktop' || (variant === 'auto' && !isPhoneDevice);
 
     // Unit pluralization
     const formattedUnit = unit.endsWith('s') || unit.includes(' ')
@@ -99,7 +102,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
         ? unit
         : `${unit}s`;
 
-    const pageItems = getPageNumbers(page, totalPages, isPhoneVariant);
+    const pageItems = getPageNumbers(page, totalPages, isPhone);
 
     return (
       <nav
@@ -118,10 +121,10 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
             {totalElements === 0 ? '0' : `${start}–${end}`}
           </span>
           <span>of {totalElements}</span>
-          {!isPhoneVariant && (
+          {!isPhone && (
             <span
               className={cn(
-                isDesktopVariant ? 'inline' : 'hidden sm:inline',
+                isDesktop ? 'inline' : 'hidden sm:inline',
                 'pg-unit',
               )}
             >
@@ -131,43 +134,43 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
         </div>
 
         <div className="flex items-center gap-space-4 ml-auto pg-r">
-          {!isPhoneVariant && (
+          {!isPhone && (
             <div
               className={cn(
-                isDesktopVariant ? 'inline-flex' : 'hidden sm:inline-flex',
-                'items-center h-control-md px-space-10 border border-line-strong rounded-ds-md text-label font-semibold text-ink-2 mr-space-6 bg-surface relative',
+                isDesktop ? 'inline-flex' : 'hidden sm:inline-flex',
+                'items-center',
               )}
             >
               {onSizeChange ? (
-                <>
-                  <select
-                    aria-label="Rows per page"
-                    value={size}
-                    onChange={(e) => onSizeChange(Number(e.target.value))}
-                    className="appearance-none bg-transparent pr-space-16 text-label font-semibold text-ink-2 focus:outline-none cursor-pointer"
-                  >
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Rows per page"
+                      className="inline-flex items-center gap-space-6 h-control-md px-space-10 border border-line-strong rounded-ds-md text-label font-semibold text-ink-2 mr-space-6 bg-surface hover:bg-hover active:bg-hover transition-colors duration-fast cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                    >
+                      <span>{size} / page</span>
+                      <ChevronDown
+                        className="w-space-12 h-space-12 text-ink-4 shrink-0"
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
                     {sizeOptions.map((opt) => (
-                      <option key={opt} value={opt}>
+                      <DropdownMenuItem
+                        key={opt}
+                        active={opt === size}
+                        onSelect={() => onSizeChange(opt)}
+                      >
                         {opt} / page
-                      </option>
+                      </DropdownMenuItem>
                     ))}
-                  </select>
-                  <span
-                    className="pointer-events-none absolute right-space-8 text-caption text-ink-4"
-                    aria-hidden="true"
-                  >
-                    ▾
-                  </span>
-                </>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
-                <span className="flex items-center gap-space-4">
+                <span className="inline-flex items-center gap-space-6 h-control-md px-space-10 border border-line-strong rounded-ds-md text-label font-semibold text-ink-2 mr-space-6 bg-surface">
                   {size} / page
-                  <span
-                    className="text-caption text-ink-4 leading-none"
-                    aria-hidden="true"
-                  >
-                    ▾
-                  </span>
                 </span>
               )}
             </div>
@@ -208,6 +211,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                   <button
                     key={item}
                     type="button"
+                    aria-label={`Page ${pageNumber}`}
                     aria-current={isActive ? 'page' : undefined}
                     onClick={() => onPageChange(item)}
                     className={cn(
