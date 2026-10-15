@@ -9,7 +9,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
 | 2 | New component library in Storybook, one component at a time, owner-reviewed | Ready for review (44 components; Storybook feedback round 2 complete) |
-| 3 | Pages: rebuild and swap in one page or big component at a time | Not started |
+| 3 | Pages: rebuild and swap in one page or big component at a time | In progress (3a: /ds setup, login, signup, offline) |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
 Statuses: Not started · In progress · Done · Blocked (with the reason).
@@ -209,6 +209,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-15 · **Responsive and API standards** (RULES §5c): one structure per component with CSS breakpoints at `lg`; no viewport JavaScript except the shared ResponsiveOverlay; no phone/desktop props; Radix-style prop names; events named for the component, not the app.
 - 2026-10-15 · **TabBar is a floating pill, the only mobile navigation format** (owner, canvas thread): inset 12px, `shadow-dock`, icon over label 2px apart, inactive `ink-faint`, current `ink` with an 800 label, no indicator or dot. The phone screen boards were updated to match.
 - 2026-10-15 · Accessibility is out of scope: no ARIA, screen-reader or contrast work. The Storybook accessibility addon stays installed but is not a check.
+- 2026-10-15 · Pages under `/ds/…` may use components marked Ready for review; they are a review area and the live app is untouched. Only a swap into a live route requires Approved components.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
@@ -219,6 +220,18 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 3a · Antigravity · Unit 0 · Record the round:
+  - Recorded owner decision: "Pages under `/ds/…` may use components marked Ready for review; they are a review area and the live app is untouched. Only a swap into a live route requires Approved components."
+  - Set Phase 3 status to "In progress (3a: /ds setup, login, signup, offline)".
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 338 problems (0 errors, 338 warnings)`
+    - `npm test`: `Test Files  427 passed (427) | Tests  3543 passed (3543)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `npm run build`: `✓ Generating static pages using 10 workers (45/45) in 2.6s`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+  - Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 2 · Toaster for the new system:
   - Exported `Toaster` from `src/components/ds/Toast/Toast.tsx` (and `src/components/ds/index.ts`) mounting Sonner with `id="ds"`, `position="bottom-center"`, `visibleToasts={1}`, and `mobileOffset` set to `calc(var(--ds-space-12) + var(--ds-tab-bar) + env(safe-area-inset-bottom, 0px))` (above TabBar on phone).
