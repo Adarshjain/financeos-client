@@ -71,8 +71,29 @@ describe('Pager', () => {
       />,
     );
 
-    const activePageBtn = screen.getAllByRole('button', { name: /Page 2/i })[0];
+    const activePageBtn = screen.getByRole('button', { name: /Page 2/i });
     expect(activePageBtn).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('renders each page number exactly once in the DOM with desktop neighbours carrying hidden lg:inline-flex', () => {
+    render(
+      <Pager
+        page={2} // page 3 of 4
+        size={50}
+        totalElements={182}
+        totalPages={4}
+        onPageChange={() => {}}
+      />,
+    );
+
+    [1, 2, 3, 4].forEach((num) => {
+      expect(screen.getAllByRole('button', { name: `Page ${num}` })).toHaveLength(1);
+    });
+
+    // Page 2 is a neighbour on page 3 of 4, so it carries hidden lg:inline-flex
+    expect(screen.getByRole('button', { name: 'Page 2' })).toHaveClass('hidden', 'lg:inline-flex');
+    // Active page does not carry hidden
+    expect(screen.getByRole('button', { name: 'Page 3' })).not.toHaveClass('hidden');
   });
 
   it('disables previous button on first page', () => {
@@ -126,7 +147,7 @@ describe('Pager', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
     expect(handlePageChange).toHaveBeenCalledWith(1);
 
-    fireEvent.click(screen.getAllByRole('button', { name: /Page 4/i })[0]);
+    fireEvent.click(screen.getByRole('button', { name: /Page 4/i }));
     expect(handlePageChange).toHaveBeenCalledWith(3);
   });
 
