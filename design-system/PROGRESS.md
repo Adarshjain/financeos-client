@@ -95,7 +95,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 40 | EmptyState | Ready for review |
 | 41 | Skeleton | Ready for review |
 | 42 | Logo | Ready for review |
-| 43 | Divider | Not started |
+| 43 | Divider | Ready for review |
 | 44 | Illustration | Not started |
 
 Removed on 2026-10-15 (merged, see Owner decisions): Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; AuthPanel → a page in Phase 3.
@@ -201,6 +201,14 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 3b · Divider:
+  - Created `src/components/ds/Divider/Divider.tsx`: supports plain 1px rule (`h-px w-full bg-line`) with `role="separator"`, and optional centered label in `ink-4` caption flanked by two 1px lines (`text-caption font-semibold font-text text-ink-4 gap-space-10`).
+  - Created `src/components/ds/Divider/Divider.stories.tsx` under `DS/Data display/Divider` (`AllVariants`, `Plain`, `WithLabel`).
+  - Created `src/components/ds/Divider/Divider.test.tsx` (4 unit tests verifying plain separator, label prop, children as label, and className merging).
+  - Exported `Divider` from `src/components/ds/index.ts`.
+  - Stories compared: Divider/AllVariants, Divider/Plain, Divider/WithLabel against `design-system/components/Divider/preview.html` at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck` (passed), `npm run lint` (0 errors), `npm test -- src/components/ds/Divider` (all 4 tests passing), `node design-system/tools/check-ui.mjs --base c8b557b` (clean). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 3b · Logo:
   - Created `src/components/ds/Logo/Logo.tsx`: supports `variant="mark" | "full"` and `size="sm" | "md"` (`sm` = 28px `w-chip h-chip`, `md` = 32px `w-control-md h-control-md`), with ₹ mark in `bg-brand` `text-on-brand` `font-extrabold` and optional "FinanceOS" wordmark in `text-heading`.
