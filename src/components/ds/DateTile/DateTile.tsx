@@ -1,6 +1,5 @@
 'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { forwardRef, useState } from 'react';
 
 import { Button } from '../Button/Button';
@@ -355,7 +354,7 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
             onClick={handlePrevMonth}
             className="text-ink-3 hover:text-ink"
           >
-            <Icon icon={ChevronLeft} size="md" />
+            <Icon name="chevron-left" size="md" />
           </Button>
 
           <span className="font-bold text-label text-ink">
@@ -371,7 +370,7 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
             onClick={handleNextMonth}
             className="text-ink-3 hover:text-ink"
           >
-            <Icon icon={ChevronRight} size="md" />
+            <Icon name="chevron-right" size="md" />
           </Button>
         </div>
 

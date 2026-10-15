@@ -1,11 +1,5 @@
 'use client';
 
-import {
-  ChevronLeft,
-  MessageSquare,
-  Plus,
-  Search,
-} from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
@@ -95,7 +89,7 @@ export const AppBar = forwardRef<HTMLElement, AppBarProps>(
             onClick={onBack}
             className="shrink-0 text-ink-2 hover:text-ink"
           >
-            <Icon icon={ChevronLeft} size="md" />
+            <Icon name="chevron-left" size="md" />
           </Button>
         ) : brandHref ? (
           <a
@@ -135,7 +129,7 @@ export const AppBar = forwardRef<HTMLElement, AppBarProps>(
                 aria-label="Ask the data"
                 onClick={onAsk}
               >
-                <Icon icon={MessageSquare} size="md" />
+                <Icon name="chat" size="md" />
               </Button>
             ) : null}
             {onSearch ? (
@@ -147,7 +141,7 @@ export const AppBar = forwardRef<HTMLElement, AppBarProps>(
                 aria-label="Search"
                 onClick={onSearch}
               >
-                <Icon icon={Search} size="md" />
+                <Icon name="search" size="md" />
               </Button>
             ) : null}
             {onAdd ? (
@@ -159,7 +153,7 @@ export const AppBar = forwardRef<HTMLElement, AppBarProps>(
                 aria-label={addAriaLabel}
                 onClick={onAdd}
               >
-                <Icon icon={Plus} size="md" />
+                <Icon name="add" size="md" />
               </Button>
             ) : null}
           </div>

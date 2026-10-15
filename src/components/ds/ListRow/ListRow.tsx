@@ -1,6 +1,5 @@
 'use client';
 
-import { ChevronRight, MoreVertical } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
@@ -139,12 +138,12 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
                 }
                 className="text-ink-4 hover:text-ink p-space-2 h-auto min-h-0"
               >
-                <Icon icon={MoreVertical} size="sm" />
+                <Icon name="more" size="sm" />
               </Button>
             )}
             {chevron && (
               <Icon
-                icon={ChevronRight}
+                name="chevron-right"
                 size="sm"
                 className="text-ink-4 shrink-0"
               />

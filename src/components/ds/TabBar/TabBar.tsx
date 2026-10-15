@@ -1,12 +1,10 @@
 'use client';
 
-import type { LucideIcon } from 'lucide-react';
-import { Calendar, Home, Inbox, Menu, Receipt } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { Badge } from '../Badge/Badge';
 import { cn } from '../cn';
-import { Icon } from '../Icon/Icon';
+import { Icon, type IconName } from '../Icon/Icon';
 
 export type TabBarTabId =
   | 'home'
@@ -18,7 +16,7 @@ export type TabBarTabId =
 export interface TabBarItemDef {
   id: TabBarTabId;
   label: string;
-  icon: LucideIcon;
+  icon: IconName;
   href?: string;
   count?: number;
   countTone?: 'danger' | 'warning';
@@ -71,23 +69,23 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
     if (hidden) return null;
 
     const tabs: TabBarItemDef[] = [
-      { id: 'home', label: 'Home', icon: Home },
+      { id: 'home', label: 'Home', icon: 'home' },
       {
         id: 'inbox',
         label: 'Inbox',
-        icon: Inbox,
+        icon: 'inbox',
         count: inboxCount,
         countTone: 'danger',
       },
-      { id: 'upcoming', label: 'Upcoming', icon: Calendar },
+      { id: 'upcoming', label: 'Upcoming', icon: 'calendar' },
       {
         id: 'transactions',
         label: 'Transactions',
-        icon: Receipt,
+        icon: 'transactions',
         count: transactionsCount,
         countTone: 'warning',
       },
-      { id: 'more', label: 'More', icon: Menu },
+      { id: 'more', label: 'More', icon: 'menu' },
     ];
 
     return (
@@ -125,7 +123,7 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
               )}
             >
               <div className="relative inline-flex items-center justify-center">
-                <Icon icon={tab.icon} size="lg" />
+                <Icon name={tab.icon} size="lg" />
                 {tab.count !== undefined && tab.count > 0 ? (
                   <Badge
                     variant="count"

@@ -1,6 +1,5 @@
 'use client';
 
-import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import React, {
   forwardRef,
   useId,
@@ -306,7 +305,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
               {opt.hint}
             </span>
           ) : isSelected && !multiple && !showRadio ? (
-            <Icon icon={Check} size="md" className="ml-auto text-brand-strong" />
+            <Icon name="check" size="md" className="ml-auto text-brand-strong" />
           ) : null}
         </div>
       );
@@ -616,7 +615,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             <span className="font-text font-medium text-body text-ink-4 truncate flex-1 min-w-0">
               {loadingText}
             </span>
-            <Icon icon={isOpen ? ChevronUp : ChevronDown} size="md" className="text-ink-4 shrink-0" />
+            <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} size="md" className="text-ink-4 shrink-0" />
           </>
         );
       }
@@ -642,7 +641,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
                 </>
               )}
             </div>
-            <Icon icon={isOpen ? ChevronUp : ChevronDown} size="md" className="text-ink-4 shrink-0 ml-auto" />
+            <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} size="md" className="text-ink-4 shrink-0 ml-auto" />
           </>
         );
       }
@@ -663,7 +662,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
               ? selectedOptions[0].label
               : placeholder}
           </span>
-          <Icon icon={isOpen ? ChevronUp : ChevronDown} size="md" className="text-ink-4 shrink-0 ml-auto" />
+          <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} size="md" className="text-ink-4 shrink-0 ml-auto" />
         </>
       );
     })();

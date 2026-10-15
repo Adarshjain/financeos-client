@@ -1,4 +1,3 @@
-import { MoreVertical } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
@@ -75,7 +74,7 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
                 aria-label="Widget options"
                 className="text-ink-4 hover:text-ink shrink-0"
               >
-                <Icon icon={MoreVertical} size="sm" />
+                <Icon name="more" size="sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

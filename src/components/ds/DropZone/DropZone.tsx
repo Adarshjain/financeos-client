@@ -1,6 +1,5 @@
 'use client';
 
-import { Trash2, Upload } from 'lucide-react';
 import React, { forwardRef, useRef, useState } from 'react';
 
 import { Banner } from '../Banner/Banner';
@@ -153,7 +152,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
                   : 'bg-brand-tint text-brand',
               )}
             >
-              <Icon icon={Upload} size="lg" />
+              <Icon name="upload" size="lg" />
             </div>
 
             <div>
@@ -218,7 +217,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
                       onRemoveFile(f);
                     }}
                   >
-                    <Icon icon={Trash2} size="sm" />
+                    <Icon name="delete" size="sm" />
                   </Button>
                 )}
               </div>

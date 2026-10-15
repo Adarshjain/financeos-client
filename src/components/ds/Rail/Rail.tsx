@@ -1,18 +1,5 @@
 'use client';
 
-import {
-  Calendar,
-  CreditCard,
-  Home,
-  Inbox,
-  MessageSquare,
-  Receipt,
-  Search,
-  Settings,
-  Sparkles,
-  TrendingUp,
-  Users,
-} from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { BrandMark } from '../AppBar/AppBar';
@@ -55,18 +42,18 @@ export interface RailProps extends React.HTMLAttributes<HTMLElement> {
 export const defaultRailGroups: RailGroup[] = [
   {
     items: [
-      { href: '/', label: 'Home', icon: <Icon icon={Home} size="lg" /> },
+      { href: '/', label: 'Home', icon: <Icon name="home" size="lg" /> },
       {
         href: '/inbox',
         label: 'Inbox',
-        icon: <Icon icon={Inbox} size="lg" />,
+        icon: <Icon name="inbox" size="lg" />,
         count: 9,
         countTone: 'danger',
       },
       {
         href: '/upcoming',
         label: 'Upcoming',
-        icon: <Icon icon={Calendar} size="lg" />,
+        icon: <Icon name="calendar" size="lg" />,
       },
     ],
   },
@@ -76,12 +63,12 @@ export const defaultRailGroups: RailGroup[] = [
       {
         href: '/accounts',
         label: 'Accounts',
-        icon: <Icon icon={CreditCard} size="lg" />,
+        icon: <Icon name="accounts" size="lg" />,
       },
       {
         href: '/transactions',
         label: 'Transactions',
-        icon: <Icon icon={Receipt} size="lg" />,
+        icon: <Icon name="transactions" size="lg" />,
         count: 25,
         countTone: 'warning',
       },
@@ -93,12 +80,12 @@ export const defaultRailGroups: RailGroup[] = [
       {
         href: '/investments',
         label: 'Investments',
-        icon: <Icon icon={TrendingUp} size="lg" />,
+        icon: <Icon name="transactions" size="lg" />,
       },
       {
         href: '/rewards',
         label: 'Rewards',
-        icon: <Icon icon={Sparkles} size="lg" />,
+        icon: <Icon name="notifications" size="lg" />,
       },
     ],
   },
@@ -108,7 +95,7 @@ export const defaultRailGroups: RailGroup[] = [
       {
         href: '/loans',
         label: 'Loans & lendings',
-        icon: <Icon icon={Users} size="lg" />,
+        icon: <Icon name="accounts" size="lg" />,
       },
     ],
   },
@@ -118,7 +105,7 @@ export const defaultRailGroups: RailGroup[] = [
       {
         href: '/chat',
         label: 'Ask the data',
-        icon: <Icon icon={MessageSquare} size="lg" />,
+        icon: <Icon name="chat" size="lg" />,
       },
     ],
   },
@@ -191,7 +178,7 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
             onClick={onSearch}
             className="w-full justify-start text-ink-3 bg-sunken border-line-soft hover:bg-hover active:bg-hover font-medium px-space-10 mb-space-12 gap-space-8"
           >
-            <Icon icon={Search} size="md" className="shrink-0 text-ink-3" />
+            <Icon name="search" size="md" className="shrink-0 text-ink-3" />
             <span className="text-label text-ink-3">Search</span>
             <span className="ml-auto">
               <Kbd>⌘K</Kbd>
@@ -277,7 +264,7 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
               current === '/settings' && 'bg-brand-tint text-brand-strong',
             )}
           >
-            <Icon icon={Settings} size="lg" />
+            <Icon name="settings" size="lg" />
             <span>Settings</span>
           </a>
 

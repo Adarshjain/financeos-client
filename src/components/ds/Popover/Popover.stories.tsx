@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Check, ChevronDown } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '../Button/Button';
@@ -11,7 +10,7 @@ const SampleMenuContent: React.FC = () => (
     <div className="flex items-center gap-space-10 min-h-control-lg px-space-10 rounded-ds-md font-text font-semibold text-body bg-brand-tint text-brand-strong cursor-pointer">
       <span>HDFC Regalia Gold</span>
       <span className="ml-auto text-brand-strong">
-        <Icon icon={Check} size="md" />
+        <Icon name="check" size="md" />
       </span>
     </div>
     <div className="flex items-center gap-space-10 min-h-control-lg px-space-10 rounded-ds-md font-text font-semibold text-body text-ink hover:bg-hover cursor-pointer">
@@ -64,7 +63,7 @@ export const AllVariants: Story = {
           trigger={
             <Button variant="secondary" className="w-72 justify-between">
               <span>HDFC Regalia Gold</span>
-              <Icon icon={ChevronDown} size="md" />
+              <Icon name="chevron-down" size="md" />
             </Button>
           }
         >
@@ -82,7 +81,7 @@ export const AllVariants: Story = {
           trigger={
             <Button variant="secondary" className="gap-space-8">
               <span>Account</span>
-              <Icon icon={ChevronDown} size="md" />
+              <Icon name="chevron-down" size="md" />
             </Button>
           }
         >
@@ -100,7 +99,7 @@ export const MatchTriggerWidth: Story = {
     trigger: (
       <Button variant="secondary" className="w-72 justify-between">
         <span>HDFC Regalia Gold</span>
-        <Icon icon={ChevronDown} size="md" />
+        <Icon name="chevron-down" size="md" />
       </Button>
     ),
     children: <SampleMenuContent />,
@@ -114,7 +113,7 @@ export const ContentWidth: Story = {
     trigger: (
       <Button variant="secondary" className="gap-space-8">
         <span>Options</span>
-        <Icon icon={ChevronDown} size="md" />
+        <Icon name="chevron-down" size="md" />
       </Button>
     ),
     children: <SampleMenuContent />,

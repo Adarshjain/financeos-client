@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Check, MoreHorizontal, Plus, Search, Upload, X } from 'lucide-react';
 import React from 'react';
 
 import { Icon } from '../Icon/Icon';
@@ -85,26 +84,26 @@ export const AllVariants: Story = {
             variant="secondary"
             iconOnly
             aria-label="Search"
-            icon={<Icon icon={Search} size="md" />}
+            icon={<Icon name="search" size="md" />}
           />
           <Button
             variant="primary"
             iconOnly
             aria-label="Add"
-            icon={<Icon icon={Plus} size="md" />}
+            icon={<Icon name="add" size="md" />}
           />
           <Button
             variant="ghost"
             iconOnly
             aria-label="More"
-            icon={<Icon icon={MoreHorizontal} size="md" />}
+            icon={<Icon name="more" size="md" />}
           />
           <Button
             variant="ghost"
             size="sm"
             iconOnly
             aria-label="Remove"
-            icon={<Icon icon={X} size="sm" />}
+            icon={<Icon name="close" size="sm" />}
           />
         </div>
       </div>
@@ -112,8 +111,8 @@ export const AllVariants: Story = {
       <div>
         <h3 className="text-overline uppercase text-ink-4 mb-space-8">With icon · with count</h3>
         <div className="flex flex-wrap items-center gap-space-8">
-          <Button icon={<Icon icon={Upload} size="md" />}>Upload</Button>
-          <Button icon={<Icon icon={Check} size="md" />} count={9}>
+          <Button icon={<Icon name="upload" size="md" />}>Upload</Button>
+          <Button icon={<Icon name="check" size="md" />} count={9}>
             Approve
           </Button>
         </div>
@@ -176,26 +175,26 @@ export const IconButton: Story = {
         variant="secondary"
         iconOnly
         aria-label="Search transactions"
-        icon={<Icon icon={Search} size="md" />}
+        icon={<Icon name="search" size="md" />}
       />
       <Button
         variant="primary"
         iconOnly
         aria-label="Add entry"
-        icon={<Icon icon={Plus} size="md" />}
+        icon={<Icon name="add" size="md" />}
       />
       <Button
         variant="ghost"
         iconOnly
         aria-label="More actions"
-        icon={<Icon icon={MoreHorizontal} size="md" />}
+        icon={<Icon name="more" size="md" />}
       />
       <Button
         variant="ghost"
         size="sm"
         iconOnly
         aria-label="Remove filter"
-        icon={<Icon icon={X} size="sm" />}
+        icon={<Icon name="close" size="sm" />}
       />
     </div>
   ),
@@ -242,7 +241,7 @@ export const Disabled: Story = {
 export const WithIcon: Story = {
   args: {
     variant: 'secondary',
-    icon: <Icon icon={Upload} size="md" />,
+    icon: <Icon name="upload" size="md" />,
     children: 'Upload statement',
   },
 };
@@ -250,7 +249,7 @@ export const WithIcon: Story = {
 export const WithCount: Story = {
   args: {
     variant: 'secondary',
-    icon: <Icon icon={Check} size="md" />,
+    icon: <Icon name="check" size="md" />,
     count: 9,
     children: 'Approve',
   },

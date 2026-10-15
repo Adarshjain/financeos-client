@@ -1,4 +1,3 @@
-import { Bell, MessageSquare, Plus } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
@@ -72,7 +71,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
                   onClick={onAdd}
                   className="gap-space-6"
                 >
-                  <Icon icon={Plus} size="md" />
+                  <Icon name="add" size="md" />
                   {addLabel ?? (
                     <span className="flex items-center gap-space-6">
                       Add <Kbd>⌘N</Kbd>
@@ -90,7 +89,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
                   aria-label="Chat"
                   onClick={onChat}
                 >
-                  <Icon icon={MessageSquare} size="md" />
+                  <Icon name="chat" size="md" />
                 </Button>
               ) : null}
 
@@ -103,7 +102,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
                   aria-label="Notifications"
                   onClick={onNotifications}
                 >
-                  <Icon icon={Bell} size="md" />
+                  <Icon name="notifications" size="md" />
                 </Button>
               ) : null}
             </>
