@@ -45,9 +45,10 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
    - arbitrary values (`bg-[#…]`, `p-[13px]`, `text-[11px]`, `w-[372px]`).
 2. Spacing uses the `space-*` steps, corners use `radius-*`, control heights use the size tokens. Shadows are only the five shadow tokens, and **cards never get a shadow**.
 3. Status colour is a **word in a colour**, never a pill on a transaction row. Amber means it needs you. Blue means it's linked to something. Grey means where it came from. Green is money in only (`design-system/README.md` → Colour).
-4. Never add, rename or re-value a token yourself. A token you think is missing is an open question.
-5. Both themes must work: light, and dark (the `dark` class on `<html>`). Text keeps 4.5:1 contrast on the ground its token note names.
-6. Charts use `chart-1` … `chart-5` and `chart-rest`, always with labels or a legend.
+4. Never add, rename or re-value a token yourself. A token you think is missing is an open question. A pixel value in a preview or reference CSS that has no token (for example 18px padding) is an open question too: never round it silently and never invent a class name for it.
+5. Use only the class names listed in the Phase 1 contract in `PROGRESS.md`, plus Tailwind's own defaults. Tailwind silently drops a name it does not know, so a made-up name like `px-space-18` or `text-small` renders nothing. `check-ui.mjs` fails on them.
+6. Both themes must work: light, and dark (the `dark` class on `<html>`).
+7. Charts use `chart-1` … `chart-5` and `chart-rest`, always with labels or a legend.
 
 ## 4. Typography
 
@@ -59,6 +60,7 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 
 ## 5. Components
 
+0. The behaviour rules in this file (§5.5–§5.7, §7) apply to every component they describe, even when the component's README does not repeat them. When this file and a README disagree, this file wins (§0).
 1. Each design-system component (`design-system/components/<Name>/README.md`) is built as a **new** component in `src/components/ds/<Name>/`:
    - `<Name>.tsx`, `<Name>.stories.tsx` and `<Name>.test.tsx`;
    - exported from `src/components/ds/index.ts`.
@@ -80,8 +82,9 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 1. Each component gets one story per variant in its README, named exactly as the README names it, plus an **All variants** story that shows them side by side for review. Story titles are `DS/<Group>/<Name>`, using the README's group (Navigation, Actions, Inputs, Data display, Feedback, Overlays, Screens).
 2. Every story can be viewed in light and dark and at phone (390px) and desktop (1440px) widths, through the global toolbar set up in Phase 1.
 3. Stories use realistic FinanceOS content: ₹ amounts with Indian grouping, real-looking merchants and accounts like the boards. Never lorem ipsum.
-4. The accessibility check must show no violations for any story.
-5. No stories for old components.
+4. Before a component is set to **Ready for review**, open its stories in a browser and compare them with its `preview.html` and its board, at 390px and 1440px, in light and dark. The log line names the stories you compared and any differences left open. Passing the commands in §10 is not enough.
+5. Accessibility (ARIA roles, screen-reader text, contrast audits) is out of scope by owner decision. Don't spend work on it.
+6. No stories for old components.
 
 ## 6. Icons
 
