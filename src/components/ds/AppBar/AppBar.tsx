@@ -5,27 +5,16 @@ import React, { forwardRef } from 'react';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
+import { Logo, type LogoProps } from '../Logo/Logo';
 
-export interface BrandMarkProps extends React.HTMLAttributes<HTMLSpanElement> {
+export interface BrandMarkProps extends LogoProps {
   symbol?: string;
 }
 
 export const BrandMark = forwardRef<HTMLSpanElement, BrandMarkProps>(
-  ({ className, symbol = '₹', ...props }, ref) => {
-    return (
-      <span
-        ref={ref}
-        aria-hidden="true"
-        className={cn(
-          'w-control-md h-control-md rounded-ds-md bg-brand text-on-brand flex items-center justify-center font-display font-extrabold text-heading shrink-0 select-none leading-none',
-          className,
-        )}
-        {...props}
-      >
-        {symbol}
-      </span>
-    );
-  },
+  ({ symbol, ...props }, ref) => (
+    <Logo ref={ref} variant="mark" size="sm" symbol={symbol} {...props} />
+  ),
 );
 BrandMark.displayName = 'BrandMark';
 
@@ -97,10 +86,10 @@ export const AppBar = forwardRef<HTMLElement, AppBarProps>(
             aria-label="FinanceOS home"
             className="shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded-ds-md"
           >
-            <BrandMark />
+            <Logo variant="mark" size="sm" />
           </a>
         ) : (
-          <BrandMark />
+          <Logo variant="mark" size="sm" />
         )}
 
         <div className="flex-1 min-w-0 pr-space-4">

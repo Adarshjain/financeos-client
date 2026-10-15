@@ -2,13 +2,13 @@
 
 import React, { forwardRef } from 'react';
 
-import { BrandMark } from '../AppBar/AppBar';
 import { Avatar } from '../Avatar/Avatar';
 import { Badge } from '../Badge/Badge';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import { Kbd } from '../Kbd/Kbd';
+import { Logo } from '../Logo/Logo';
 
 export interface RailNavItem {
   href: string;
@@ -161,12 +161,9 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
               onNavigate(brandHref);
             }
           }}
-          className="flex items-center gap-space-10 px-space-6 py-space-10 text-ink rounded-ds-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring mb-space-8"
+          className="flex items-center px-space-6 py-space-10 text-ink rounded-ds-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring mb-space-8"
         >
-          <BrandMark />
-          <span className="font-extrabold text-heading text-ink">
-            FinanceOS
-          </span>
+          <Logo variant="full" size="sm" />
         </a>
 
         {/* Search button */}
