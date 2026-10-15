@@ -112,7 +112,7 @@ These are the rules a mature design system (Radix, Material, Polaris, Atlassian)
    - `open` / `defaultOpen` / `onOpenChange`;
    - `selected` / `onSelectedChange`.
 
-   Every stateful component works both controlled and uncontrolled. Never `onChange` for a value, never `isOpen`.
+   Every stateful component works both controlled and uncontrolled, through the one shared `useControllableState` hook. Never `onChange` for a value, never `isOpen`. The exception is text entry (TextField, TextArea, SearchField), which keeps its input's native `onChange` like every React form library.
 7. **Events are named for what the user did to the component**, not what the app does with it: `onSelect`, `onTrigger`, `onRemove`, `onOpenDetail`. Never `onApprove`, `onEditRule`, `onSetCategory`. Actions the app defines arrive as data (`actions={[{ id, label, icon, onSelect }]}`).
 8. **One name per prop.** No aliases, no "legacy" or "backwards compatible" props.
 9. **Behaviours wrap, they don't embed.** Swipe, long-press and drag are added from outside, by a wrapper component (SwipeActions) or a shared hook (`useSwipe`, `useLongPress`, `useSheetDrag`). No component carries props like `swipeable` or `swipeLeft`, and none wraps itself in a behaviour. Any component can be made swipeable by the page wrapping it.
