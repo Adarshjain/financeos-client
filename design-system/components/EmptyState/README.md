@@ -8,7 +8,7 @@ What a screen shows when it has nothing yet, or cannot load: a small illustratio
 - Errors: what failed and the reference to quote; never a stack trace.
 
 ## Built from
-Button; illustrations are inline SVG artwork.
+Button, Illustration (offline).
 
 ## Variants
 - First run, nothing matches (filters), all clear, couldn't load, offline, and the one-line empty used inside small panels.

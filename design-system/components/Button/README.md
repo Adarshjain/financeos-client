@@ -3,7 +3,7 @@
 Buttons: one primary per view, secondary for everything else, ghost for low-emphasis icon actions, danger for destructive ones.
 
 ## Variants
-- `btn` secondary (default): `bg-surface` with a `line-strong` border.
+- `btn` secondary (default): `bg-surface` with a `line-strong` border. Google (sign-in pages only).
 - `btn-p` primary: `brand` fill, `on-brand` text. One per screen or sheet: "Save", "Save & apply", "Approve 2 rules".
 - `btn-d` danger: `danger` text and `danger-border`. Starts a destructive action; always followed by a confirm step.
 - `btn-dd` danger filled: `danger` fill. Only the final button of a ConfirmDialog ("Delete statement").
@@ -18,6 +18,9 @@ Name the action with a verb and its object: "Mark paid", "Upload statement", "Ap
 - Don't put a create button ("New category") in a page header; the + in the app bar does that.
 - Don't put two primary buttons side by side.
 - Phone tap targets are at least 44px tall in sheets; 32px is fine inside dense rows.
+
+## Google
+- `google`: secondary look, full width, `control-xl` (44px), the Google "G" mark before "Continue with Google". The mark is Google's own multicolour artwork shipped as a static file (`public/brand/google-g.svg`) and shown with `<img>`, so no colour literal enters the code. Only on Sign in and Sign up.
 
 ## Built from
 Icon, Badge (count), Radix Slot (`asChild` for links).
