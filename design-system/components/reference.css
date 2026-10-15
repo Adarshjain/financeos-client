@@ -340,3 +340,17 @@ textarea.inp.one{height:var(--control-lg);min-height:var(--control-lg);resize:ve
 .ppill.calm .pi{gap:2px;color:var(--ink-faint)}
 .ppill.calm .ind{background:none!important;height:22px}
 .ppill.calm .pi-on{color:var(--ink)}.ppill.calm .pi-on .lab{font-weight:800}
+/* ---------- More as a popup sheet above the floating TabBar ---------- */
+.pmore-scene{position:relative;height:640px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg-canvas);padding:12px 14px}
+.pmore-scene .row{background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-lg);height:44px;margin-bottom:8px}
+.pmore-scrim{position:absolute;inset:0;background:var(--scrim)}
+.pmore{position:absolute;left:12px;right:12px;bottom:88px;background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-xl);box-shadow:var(--shadow-sheet);padding:8px 0 6px;display:flex;flex-direction:column}
+.pmore .hd{display:flex;justify-content:center;padding:2px 0 8px}.pmore .hd span{width:36px;height:4px;border-radius:var(--radius-pill);background:var(--line-handle)}
+.pmore .srch{margin:0 14px 10px}
+.pmore .qa{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:0 14px 6px}
+.pmore .qa span{display:flex;align-items:center;justify-content:center;height:var(--control-md);border:1px solid var(--line-strong);border-radius:var(--radius-md);font:600 12px/16px var(--font-text);color:var(--ink-2)}
+.pmore .gh{font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);padding:10px 16px 4px}
+.pmore .it{display:flex;align-items:center;min-height:var(--control-lg);padding:0 16px;font:600 13px/18px var(--font-text);color:var(--ink)}
+.pmore .it .ic{margin-left:auto;color:var(--ink-4)}
+.pmore .me{display:flex;align-items:center;gap:10px;margin-top:6px;padding:10px 16px 4px;border-top:1px solid var(--line-soft)}
+.pmore .me b{display:block;font:700 13px/18px var(--font-text);color:var(--ink)}.pmore .me small{font:500 11px/14px var(--font-text);color:var(--ink-3)}
