@@ -12,7 +12,8 @@ export type ButtonVariant =
   | 'secondary'
   | 'danger'
   | 'danger-filled'
-  | 'ghost';
+  | 'ghost'
+  | 'google';
 
 export type ButtonSize = 'sm' | 'md' | 'xl';
 
@@ -39,6 +40,8 @@ const variantStyles: Record<ButtonVariant, string> = {
     'border border-transparent bg-danger text-on-brand hover:opacity-90 active:opacity-90',
   ghost:
     'border border-transparent bg-transparent text-ink hover:bg-hover active:bg-hover',
+  google:
+    'border border-line-strong bg-surface text-ink hover:bg-hover active:bg-hover w-full',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -60,6 +63,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
+    const isGoogle = variant === 'google';
+    const effectiveSize = isGoogle ? 'xl' : size;
+
     const sizeClasses = {
       sm: iconOnly
         ? 'h-control-sm aspect-square p-0 rounded-ds-sm'
@@ -70,7 +76,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       xl: iconOnly
         ? 'h-control-xl aspect-square p-0 rounded-ds-lg'
         : 'h-control-xl px-space-16 text-heading rounded-ds-lg gap-space-8',
-    }[size];
+    }[effectiveSize];
 
     const classes = cn(
       'inline-flex items-center justify-center font-text font-semibold whitespace-nowrap transition-colors duration-fast select-none',
@@ -92,6 +98,22 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const isEffectivelyDisabled = disabled || loading;
     const isPrimary = variant === 'primary';
 
+    const effectiveIcon =
+      icon ??
+      (isGoogle ? (
+        <img
+          src="/brand/google-g.svg"
+          width={18}
+          height={18}
+          alt=""
+          aria-hidden="true"
+          className="shrink-0"
+        />
+      ) : null);
+
+    const effectiveChildren =
+      children ?? (isGoogle ? 'Continue with Google' : null);
+
     return (
       <button
         ref={ref}
@@ -105,23 +127,23 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           <>
             <Icon
               name="settings"
-              size={size === 'sm' ? 'sm' : 'md'}
+              size={effectiveSize === 'sm' ? 'sm' : 'md'}
               className="animate-spin shrink-0"
             />
             {loadingLabel ? (
               <span>{loadingLabel}</span>
-            ) : !iconOnly && children ? (
-              <span>{children}</span>
+            ) : !iconOnly && effectiveChildren ? (
+              <span>{effectiveChildren}</span>
             ) : null}
           </>
         ) : (
           <>
-            {icon ? (
+            {effectiveIcon ? (
               <span className="inline-flex items-center justify-center shrink-0">
-                {icon}
+                {effectiveIcon}
               </span>
             ) : null}
-            {children}
+            {effectiveChildren}
             {count !== undefined && count !== null ? (
               <Badge
                 variant="count"
