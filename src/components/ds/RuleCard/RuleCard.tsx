@@ -32,7 +32,7 @@ export interface RuleCardProps
   /** Rule title / merchant name, e.g. "Dunzo", "Swiggy" */
   name?: React.ReactNode;
   /** Match type, e.g. "Contains", "Starts with", "Exact" */
-  matchType?: React.ReactNode;
+  matchType: React.ReactNode;
   /** Match pattern string, e.g. "DUNZO DAILY", "SWIGGY" */
   pattern?: React.ReactNode;
   /** Usage count shown at top right, e.g. 4, 31, 1 */
@@ -76,7 +76,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
   (
     {
       name,
-      matchType = 'Contains',
+      matchType,
       pattern,
       usedCount,
       status = 'unverified',

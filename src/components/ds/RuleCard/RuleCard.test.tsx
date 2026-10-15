@@ -28,6 +28,7 @@ describe('RuleCard', () => {
     render(
       <RuleCard
         name="Dunzo"
+        matchType="Contains"
         status="unverified"
         source="LLM-generated"
         onApprove={handleApprove}
@@ -45,6 +46,7 @@ describe('RuleCard', () => {
     render(
       <RuleCard
         name="Swiggy"
+        matchType="Starts with"
         status="verified"
         source="Created by you"
         mcc="MCC 5812"
@@ -64,6 +66,7 @@ describe('RuleCard', () => {
     render(
       <RuleCard
         name="Lenskart"
+        matchType="Contains"
         selectionMode={true}
         onDetail={handleView}
       />,
@@ -83,6 +86,7 @@ describe('RuleCard', () => {
     render(
       <RuleCard
         name="Dunzo"
+        matchType="Contains"
         menuItems={[
           { label: 'Find matches', onSelect: handleFind },
         ]}
@@ -94,7 +98,9 @@ describe('RuleCard', () => {
   });
 
   it('applies selected styles', () => {
-    const { container } = render(<RuleCard name="Selected rule" selected />);
+    const { container } = render(
+      <RuleCard name="Selected rule" matchType="Contains" selected />,
+    );
     expect(container.firstChild).toHaveClass('bg-brand-tint');
     expect(container.firstChild).toHaveClass('border-brand');
     expect(container.firstChild).toHaveClass('ring-brand');
@@ -103,7 +109,11 @@ describe('RuleCard', () => {
   it('is focusable and interactive when selectable or with onClick', () => {
     const handleClick = vi.fn();
     const { container } = render(
-      <RuleCard name="Clickable rule" onClick={handleClick} />,
+      <RuleCard
+        name="Clickable rule"
+        matchType="Contains"
+        onClick={handleClick}
+      />,
     );
 
     const card = container.firstChild as HTMLElement;
@@ -119,6 +129,7 @@ describe('RuleCard', () => {
     render(
       <RuleCard
         name="Selectable rule"
+        matchType="Contains"
         selectable
         selected={false}
         onSelectedChange={handleSelectedChange}
@@ -134,6 +145,7 @@ describe('RuleCard', () => {
     const { container } = render(
       <RuleCard
         name="Keyboard rule"
+        matchType="Contains"
         selectable
         selected={true}
         onSelectedChange={handleSelectedChange}
@@ -154,6 +166,7 @@ describe('RuleCard', () => {
     const { container } = render(
       <RuleCard
         name="Long press rule"
+        matchType="Contains"
         selectable
         selected={false}
         onSelectedChange={handleSelectedChange}
@@ -179,6 +192,7 @@ describe('RuleCard', () => {
     const { container } = render(
       <RuleCard
         name="Moving rule"
+        matchType="Contains"
         selectable
         selected={false}
         onSelectedChange={handleSelectedChange}
@@ -207,6 +221,7 @@ describe('RuleCard', () => {
     render(
       <RuleCard
         name="Detail rule"
+        matchType="Contains"
         selected
         selectionMode
         onDetail={handleDetail}
@@ -228,6 +243,7 @@ describe('RuleCard', () => {
     render(
       <RuleCard
         name="Desktop rule"
+        matchType="Contains"
         selectable
         selected={false}
         onSelectedChange={handleSelectedChange}

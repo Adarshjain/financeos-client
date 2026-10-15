@@ -220,6 +220,18 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 8 · No domain defaults:
+  - Made `matchType` a required prop in `RuleCardProps` (`matchType: React.ReactNode`) in `src/components/ds/RuleCard/RuleCard.tsx` and removed the domain default (`matchType = 'Contains'`) from the component destructuring.
+  - Updated `src/components/ds/RuleCard/RuleCard.test.tsx` to explicitly supply `matchType` across all test cases.
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 335 problems (0 errors, 335 warnings)`
+    - `npm test`: `Test Files  427 passed (427) | Tests  3539 passed (3539)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+  - Done when: `grep -n "matchType = " src/components/ds/RuleCard/RuleCard.tsx` returned nothing.
+  - Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 7 · One shared long-press hook:
   - Created `src/components/ds/useLongPress.ts` (RULES §5b.5, §5c.9): touch input only (`pointerType === 'touch'`), fires after 450 ms, cancelled by movement > 10px or pointer up/cancel, returns handlers to spread onto an element and `consumeTriggered()` to prevent subsequent clicks.
   - Exported `useLongPress` from `src/components/ds/index.ts`.
