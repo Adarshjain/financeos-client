@@ -2,6 +2,8 @@
 
 Reviewer: Claude. Scope: the 39 components Antigravity built overnight (commits `756a49b` … `42a15d3`), against `RULES.md`, each component's README and preview, and the `ds-05` … `ds-09` boards. Every story was rendered in light and dark, screenshotted, compared with a render of the design reference, and run through axe.
 
+> **Owner decision, 15 Oct:** accessibility is out of scope. The accessibility findings below are kept for the record only; the fix prompt leaves them out.
+
 ## Verdict
 
 **Not ready to approve as a batch.** The build is tidy and every automated check passes, but 14 components need real fixes before you approve them, and 18 more need small ones. Seven are good as they are.

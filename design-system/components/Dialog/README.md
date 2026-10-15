@@ -1,6 +1,6 @@
 # Dialog
 
-The desktop form of a sheet: centred, `radius-xl`, `shadow-dialog`, × at the top right, footer right-aligned on `bg-sunken`.
+The desktop form of a sheet: centred, `radius-xl`, `shadow-dialog`, × at the top right, footer right-aligned on `bg-sunken`. On phone the same dialog renders as a **Sheet** (RULES §5.6): drag handle, no ×, swipe down or tap the scrim to close, footer pinned. One component, two forms; pages never choose between Dialog and Sheet themselves.
 
 ## Use
 - Widths: 440 small (confirm), 640 default, 760 large (pickers), 920 extra large (tables).
