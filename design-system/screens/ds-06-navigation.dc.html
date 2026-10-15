@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Navigation · desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+
+<style>
+
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700;800&display=swap");
+:root,.th-light{--bg-canvas:#f5f6f8;--bg-surface:#ffffff;--bg-sunken:#fafbfc;--bg-subtle:#f8f9fb;--bg-hover:#f5f6f8;--scrim:rgba(18,20,23,0.45);--line:#e4e7eb;--line-soft:#eef0f3;--line-strong:#d7dbe0;--line-handle:#c4c9d1;--ink:#121417;--ink-2:#374151;--ink-3:#5b6472;--ink-4:#636b78;--ink-faint:#8a94a3;--brand:#1b1e24;--brand-strong:#1b1e24;--brand-tint:#eceef1;--brand-border:#c4c9d1;--on-brand:#ffffff;--focus-ring:var(--brand);--positive:#107a4f;--positive-strong:#0b5e45;--positive-tint:#e6f4ef;--danger:#c5203f;--danger-tint:#fdecef;--danger-border:#f4c7d2;--warning:#a84d06;--warning-tint:#fff4e5;--warning-border:#f5c97a;--warning-ink:#7c3f0a;--watch:#d97706;--watch-tint:#fffbf3;--info:#2456d6;--info-tint:#e8eefc;--neutral-ink:#4b5563;--info-ink:#1e3a8a;--danger-ink:#9f1239;--chart-1:#3d4350;--chart-2:#2456d6;--chart-3:#d9822b;--chart-4:#7c3aed;--chart-5:#0e9aa7;--chart-rest:#9ca3af;--illus-mint:#eaf4ee;--illus-gold:#ffd166;--illus-gold-edge:#f4b942;--shadow-pop:0 12px 32px rgba(16,24,40,0.16);--shadow-dialog:0 20px 60px rgba(16,24,40,0.22);--shadow-sheet:0 -12px 40px rgba(16,24,40,0.22);--shadow-dock:0 -8px 24px rgba(16,24,40,0.12);--shadow-raise:0 14px 34px rgba(16,24,40,0.10);}.th-dark{--bg-canvas:#0e1114;--bg-surface:#161a1e;--bg-sunken:#12161a;--bg-subtle:#1b2025;--bg-hover:#1f252b;--scrim:rgba(0,0,0,0.6);--line:#262c33;--line-soft:#20262c;--line-strong:#3a424b;--line-handle:#4a525c;--ink:#eceff2;--ink-2:#c9cfd6;--ink-3:#9aa3ae;--ink-4:#929ba7;--ink-faint:#6b7480;--brand:#eceff2;--brand-strong:#ffffff;--brand-tint:#2a2f36;--brand-border:#4a525c;--on-brand:#121417;--focus-ring:var(--brand);--positive:#3cc28f;--positive-strong:#5fd0aa;--positive-tint:#12332a;--danger:#f0607a;--danger-tint:#3a1820;--danger-border:#6b2a37;--warning:#f2a640;--warning-tint:#3a2a12;--warning-border:#6e4b17;--warning-ink:#f7c987;--watch:#f59e0b;--watch-tint:#2a2212;--info:#7fa2ff;--info-tint:#1a2547;--neutral-ink:#c9cfd6;--info-ink:#c7d2fe;--danger-ink:#fda4af;--chart-1:#c9cfd6;--chart-2:#7fa2ff;--chart-3:#f0a65a;--chart-4:#a98bf5;--chart-5:#3cc4cf;--chart-rest:#6b7480;--illus-mint:#13261f;--illus-gold:#e8b84a;--illus-gold-edge:#b8892a;--shadow-pop:0 12px 32px rgba(0,0,0,0.5);--shadow-dialog:0 20px 60px rgba(0,0,0,0.6);--shadow-sheet:0 -12px 40px rgba(0,0,0,0.6);--shadow-dock:0 -8px 24px rgba(0,0,0,0.45);--shadow-raise:0 14px 34px rgba(0,0,0,0.4);color-scheme:dark}:root{--space-2:2px;--space-4:4px;--space-6:6px;--space-8:8px;--space-10:10px;--space-12:12px;--space-14:14px;--space-16:16px;--space-20:20px;--space-24:24px;--space-28:28px;--space-32:32px;--space-40:40px;--space-48:48px;--radius-xs:4px;--radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:14px;--radius-sheet:22px;--radius-pill:999px;--control-sm:26px;--control-md:32px;--control-lg:36px;--control-xl:44px;--chip:28px;--app-bar:56px;--tab-bar:64px;--rail:240px;--dialog-sm:440px;--dialog-md:640px;--dialog-lg:760px;--dialog-xl:920px;--swipe-action:96px;--icon-sm:14px;--icon-md:16px;--icon-lg:20px;--z-sticky:2;--z-dock:10;--z-scrim:20;--z-overlay:21;--dur-fast:120ms;--dur-base:200ms;--dur-sheet:280ms;--font-display:"Bricolage Grotesque", "Figtree", system-ui, sans-serif;--font-text:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;}
+
+/* FinanceOS components. Every value comes from tokens.css; class names match the canvas. */
+.fos,.fos *{box-sizing:border-box}
+.fos{font-family:var(--font-text);font-size:13px;line-height:18px;color:var(--ink);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+.fos :focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.fos a{color:var(--brand);text-decoration:underline;text-decoration-color:var(--line-strong);text-underline-offset:2px;font-weight:600}
+.fos a[class]{text-decoration:none}
+@media (prefers-reduced-motion:reduce){.fos *{transition:none!important;animation:none!important}}
+
+/* ---------- Button ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--space-6);height:var(--control-md);padding:0 var(--space-12);border-radius:var(--radius-md);font:600 12px/1 var(--font-text);border:1px solid var(--line-strong);background:var(--bg-surface);color:var(--ink);cursor:pointer;white-space:nowrap;transition:background var(--dur-fast)}
+.btn:hover{background:var(--bg-hover)}
+.btn svg{width:14px;height:14px}
+.btn-p{background:var(--brand);color:var(--on-brand);border-color:transparent}
+.btn-p:hover{background:var(--brand-strong)}
+.btn-d{color:var(--danger);border-color:var(--danger-border)}
+.btn-g{border-color:transparent;background:transparent}
+.btn-i{width:var(--control-md);padding:0}
+.btn-s{height:var(--control-sm);padding:0 var(--space-8);font-size:11px;border-radius:var(--radius-sm)}
+.btn-s.btn-i{width:var(--control-sm)}
+.btn-xl{height:var(--control-xl);padding:0 var(--space-16);font-size:14px;border-radius:var(--radius-lg)}
+.btn[disabled]{opacity:.45;cursor:default}
+
+/* ---------- Chips ---------- */
+.chip{display:inline-flex;align-items:center;gap:var(--space-6);height:var(--chip);padding:0 var(--space-10);border-radius:var(--radius-pill);border:1px solid var(--line-strong);background:var(--bg-surface);font:600 12px/1 var(--font-text);color:var(--ink-2);white-space:nowrap}
+.chip-on{background:var(--brand-tint);border-color:var(--brand-border);color:var(--brand-strong)}
+.chip-amber{background:var(--warning-tint);border-color:var(--warning-border);color:var(--warning)}
+.chip i{font-style:normal;font-size:9px;color:var(--ink-4)}
+.chips{display:flex;gap:var(--space-8);align-items:center;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}
+.cnt{display:inline-flex;align-items:center;justify-content:center;min-width:var(--space-16);height:var(--space-16);padding:0 var(--space-6);border-radius:var(--radius-pill);background:var(--ink);color:var(--bg-surface);font:700 10px/1 var(--font-text)}
+
+/* ---------- Badges, category chips, status words ---------- */
+.badge{display:inline-flex;align-items:center;height:20px;padding:0 var(--space-8);border-radius:var(--radius-sm);font:700 11px/1 var(--font-text);white-space:nowrap}
+.b-green{background:var(--positive-tint);color:var(--positive-strong)}.b-amber{background:var(--warning-tint);color:var(--warning)}.b-rose{background:var(--danger-tint);color:var(--danger)}.b-blue{background:var(--info-tint);color:var(--info)}.b-grey{background:var(--line-soft);color:var(--neutral-ink)}
+.cat{display:inline-flex;align-items:center;height:var(--space-20);padding:0 var(--space-8);border-radius:var(--radius-pill);border:1px solid var(--line);background:var(--bg-subtle);font:600 11px/1 var(--font-text);color:var(--ink-2);white-space:nowrap}
+.cat-set{border-style:dashed;border-color:var(--warning-border);color:var(--warning);background:var(--bg-surface)}
+.cat-n{background:var(--bg-surface);color:var(--ink-3);padding:0 7px}
+.rv{color:var(--warning);font-weight:700}
+.lk{color:var(--info);font-weight:600;white-space:nowrap}
+.lk svg{width:10px;height:10px;vertical-align:-1px}
+.pv{color:var(--ink-3)}
+.pos{color:var(--positive)}.neg{color:var(--danger)}
+
+/* ---------- Surfaces ---------- */
+.card{background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;min-width:0}
+.ch{display:flex;align-items:center;justify-content:space-between;gap:var(--space-10);padding:var(--space-14) var(--space-16) var(--space-10)}
+.ct{font:800 14px/20px var(--font-text)}.cs{font:500 12px/16px var(--font-text);color:var(--ink-3)}
+.ch a{font-size:12px;font-weight:700}
+.row{display:flex;align-items:center;gap:var(--space-12);padding:var(--space-10) var(--space-16);border-top:1px solid var(--line-soft)}
+.row .grow{flex:1;min-width:0}
+.fld{display:flex;justify-content:space-between;gap:var(--space-12);padding:var(--space-8) var(--space-16);border-top:1px solid var(--line-soft)}
+.fld>span:first-child{color:var(--ink-3)}.fld>span:last-child{text-align:right;font-weight:600}
+.sec{font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);padding:var(--space-6) var(--space-14);background:var(--bg-sunken);border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+.note{font:500 12px/18px var(--font-text);color:var(--ink-2);padding:var(--space-10) var(--space-12);border-radius:var(--radius-lg);background:var(--bg-canvas)}
+.callout{font:500 12px/18px var(--font-text);padding:var(--space-10) var(--space-12);border-radius:var(--radius-lg);background:var(--warning-tint);color:var(--warning-ink)}
+.callout b{font-weight:700}
+.kbd{font:700 11px/1 var(--font-text);border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:var(--radius-xs);padding:2px 6px;background:var(--bg-surface);color:var(--ink-2)}
+
+/* ---------- KPI ---------- */
+.kpi{background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:var(--space-14) var(--space-16);min-width:0}
+.lbl{font:700 11px/14px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)}
+.kv{font:800 22px/28px var(--font-text);letter-spacing:-.02em;margin-top:var(--space-4);white-space:nowrap}
+.kv-hero{font:800 30px/34px var(--font-display);letter-spacing:-.02em}
+.delta{font:700 12px/16px var(--font-text)}
+.bar{height:6px;background:var(--line-soft);border-radius:var(--radius-pill);overflow:hidden}.bar>div{height:100%;border-radius:var(--radius-pill);background:var(--brand)}
+
+/* ---------- Transaction row (phone layout) ---------- */
+.dg{display:flex;align-items:baseline;gap:var(--space-6);position:sticky;top:0;z-index:var(--z-sticky);background:var(--bg-subtle);padding:var(--space-8) var(--space-14) var(--space-6);border-top:1px solid var(--line-soft);font:800 12px/16px var(--font-text)}
+.dg span{font:600 11px/14px var(--font-text);color:var(--ink-3)}
+.tx{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"main num" "sub badge";column-gap:var(--space-10);padding:var(--space-10) var(--space-14);border-top:1px solid var(--line-soft);background:var(--bg-surface);position:relative}
+.tx .m{grid-area:main;font:700 14px/20px var(--font-text);overflow-wrap:anywhere}
+.tx .n{grid-area:num;text-align:right;font:700 14px/20px var(--font-text);white-space:nowrap}
+.tx .n small{display:block;font:500 11px/14px var(--font-text);color:var(--ink-3)}
+.tx .s{grid-area:sub;font:500 11px/14px var(--font-text);color:var(--ink-3);align-self:center;margin-top:var(--space-4);overflow-wrap:anywhere}
+.tx .b{grid-area:badge;display:flex;gap:var(--space-4);justify-content:flex-end;align-self:center;margin-top:var(--space-4)}
+.tx.sel{background:var(--brand-tint);box-shadow:inset 4px 0 0 var(--brand)}
+.tx.mon{background:var(--watch-tint);box-shadow:inset 4px 0 0 var(--watch)}
+.tx.exc{opacity:.6}
+.tx.selm{grid-template-columns:minmax(0,1fr) auto var(--control-md);grid-template-areas:"main num eye" "sub badge eye"}
+.tx .eye{grid-area:eye;display:flex;align-items:center;justify-content:flex-end;color:var(--ink-3)}
+
+/* ---------- Rule / record card ---------- */
+.rc{background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-xl);padding:var(--space-12) var(--space-10) var(--space-12) var(--space-14);display:flex;flex-direction:column;gap:var(--space-6)}
+.rc.sel{background:var(--brand-tint);border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+.rc.sel .cat{background:var(--bg-surface)}
+.rh{display:flex;gap:var(--space-10);align-items:flex-start}.rn{flex:1;min-width:0}
+.rt{font:800 14px/20px var(--font-text)}
+.rp{font:500 12px/16px var(--font-text);color:var(--ink-3)}.rp b{color:var(--ink-2)}
+.ru{font:800 14px/20px var(--font-text);color:var(--ink-2);padding:0 var(--space-4)}
+.rb{display:flex;align-items:center;gap:var(--space-6)}.rb .cats{flex:1;display:flex;gap:var(--space-6);flex-wrap:wrap}
+
+/* ---------- Inputs ---------- */
+.fl{display:block;font:700 12px/16px var(--font-text);color:var(--ink-2);margin-bottom:var(--space-6)}
+.inp{display:flex;align-items:center;gap:var(--space-8);height:var(--control-lg);width:100%;padding:0 var(--space-12);border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--bg-surface);font:500 13px/1 var(--font-text);color:var(--ink);min-width:0}
+.inp .ph{color:var(--ink-4)}
+.inp .car{margin-left:auto;color:var(--ink-4);font-size:10px}
+.inp.locked{background:var(--bg-sunken);color:var(--ink-3)}
+.inp.err{border-color:var(--danger)}
+.help{font:500 11px/14px var(--font-text);color:var(--ink-3);margin-top:var(--space-6)}.help.err{color:var(--danger)}
+.search{display:flex;align-items:center;gap:var(--space-8);height:var(--control-md);padding:0 var(--space-10);border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--bg-surface);color:var(--ink-4);font:500 13px/1 var(--font-text)}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:var(--radius-md);overflow:hidden}
+.seg span{display:inline-flex;align-items:center;height:var(--control-md);padding:0 var(--space-12);font:700 12px/1 var(--font-text);color:var(--ink-3)}
+.seg .on{background:var(--ink);color:var(--bg-surface)}
+.sw{width:var(--control-lg);height:20px;border-radius:var(--radius-pill);background:var(--line-handle);position:relative;flex:none;display:inline-block}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:var(--radius-pill);background:var(--bg-surface);transition:left var(--dur-fast)}
+.sw-on{background:var(--brand)}.sw-on::after{left:18px}
+.tog{display:flex;align-items:center;justify-content:space-between;gap:var(--space-12);padding:var(--space-10) 0;border-top:1px solid var(--line-soft)}
+.cbx{width:18px;height:18px;accent-color:var(--brand);margin:0}
+
+/* ---------- Menu / dropdown list ---------- */
+.menu{background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-pop);padding:var(--space-6);display:flex;flex-direction:column}
+.mi{display:flex;align-items:center;gap:var(--space-10);min-height:var(--control-lg);padding:0 var(--space-10);border-radius:var(--radius-md);font:600 13px/18px var(--font-text);color:var(--ink)}
+.mi:hover{background:var(--bg-hover)}
+.mi.on{background:var(--brand-tint);color:var(--brand-strong)}
+.mi .hint{margin-left:auto;font:600 11px/14px var(--font-text);color:var(--ink-4)}
+.mi.del{color:var(--danger)}
+.msep{height:1px;background:var(--line-soft);margin:var(--space-4) var(--space-6)}
+.logo{width:var(--space-24);height:var(--space-24);border-radius:var(--radius-sm);display:inline-flex;align-items:center;justify-content:center;font:800 9px/1 var(--font-text);color:var(--on-brand);flex:none}
+
+/* ---------- Tabs ---------- */
+.tabs{display:flex;gap:var(--space-4);border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tab{font:600 13px/18px var(--font-text);padding:var(--space-10) var(--space-12);color:var(--ink-3);white-space:nowrap;border-bottom:2px solid transparent}
+.tab-on{color:var(--brand-strong);border-bottom-color:var(--brand);font-weight:700}
+
+/* ---------- App bar + tab bar (phone) ---------- */
+.ptop{display:flex;align-items:center;gap:var(--space-8);padding:var(--space-12) var(--space-12) var(--space-8);background:var(--bg-surface);border-bottom:1px solid var(--line)}
+.ptop .t{flex:1;min-width:0}.ptop .cr{font:600 12px/16px var(--font-text);color:var(--ink-4)}.ptop .tt{font:800 17px/22px var(--font-text);letter-spacing:-.01em}
+.mark{width:32px;height:32px;border-radius:var(--radius-md);background:var(--brand);color:var(--on-brand);display:inline-flex;align-items:center;justify-content:center;font:800 16px/1 var(--font-display);flex:none}
+.ptabs{display:flex;padding:var(--space-8) var(--space-8) var(--space-14);background:var(--bg-surface);border-top:1px solid var(--line)}
+.tabi{flex:1;display:flex;flex-direction:column;align-items:center;gap:var(--space-4);font:700 10px/12px var(--font-text);color:var(--ink-4);position:relative}
+.tabi svg{width:20px;height:20px}
+.tabi-on{color:var(--brand-strong)}
+.tabi .dot{position:absolute;top:-4px;left:calc(50% + 6px);min-width:16px;height:16px;padding:0 4px;border-radius:var(--radius-pill);font:800 9px/16px var(--font-text);text-align:center;color:var(--on-brand);background:var(--danger)}
+.tabi .dot.amber{background:var(--warning)}
+
+/* ---------- Selection bar ---------- */
+.bulk{display:flex;align-items:center;gap:var(--space-8);padding:var(--space-8) var(--space-8) var(--space-8) var(--space-12);background:var(--bg-surface);border:1px solid var(--line-strong);border-radius:var(--radius-lg);box-shadow:var(--shadow-pop)}
+.bc{display:flex;flex-direction:column}.bc b{font:700 13px/16px var(--font-text)}.bc span{font:600 11px/14px var(--font-text);color:var(--ink-3)}
+.bsep{width:1px;height:24px;background:var(--line)}
+.ba{display:inline-flex;align-items:center;gap:var(--space-6);height:var(--control-md);padding:0 var(--space-12);border-radius:var(--radius-md);border:1px solid var(--line-strong);background:var(--bg-surface);font:600 12px/1 var(--font-text);color:var(--ink)}
+.ba svg{width:14px;height:14px}.ba.del{color:var(--danger);border-color:var(--danger-border)}
+.bx{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border:0;background:transparent;color:var(--ink-3)}
+.blink{font:700 12px/1 var(--font-text);color:var(--brand);margin-left:auto}
+.bulk.dock{flex-direction:column;align-items:stretch;gap:0;padding:0;border-radius:var(--radius-sheet) var(--radius-sheet) 0 0;border-bottom:0;box-shadow:var(--shadow-dock)}
+.bulk.dock .brow{display:flex;align-items:center;gap:var(--space-10);padding:var(--space-10) var(--space-14) var(--space-8);border-bottom:1px solid var(--line-soft)}
+.bulk.dock .bacts{display:grid;grid-template-columns:repeat(4,1fr);padding:var(--space-4) var(--space-6) var(--space-12)}
+.bulk.dock .ba{flex-direction:column;height:auto;padding:var(--space-8) 2px 2px;border:0;gap:var(--space-4);font-size:11px}
+.bulk.dock .ba svg{width:20px;height:20px}
+.bulk.dock .ba em{font:600 10px/12px var(--font-text);font-style:normal;color:var(--ink-4)}
+
+/* ---------- Pager ---------- */
+.pager{display:flex;align-items:center;justify-content:space-between;gap:var(--space-8);flex-wrap:wrap;font:500 13px/18px var(--font-text);color:var(--ink-3);padding:var(--space-10) var(--space-14);border-top:1px solid var(--line-soft)}
+.pager b{color:var(--ink);font-weight:700}
+.pg-r{display:flex;align-items:center;gap:var(--space-4);margin-left:auto}
+.pg-size{display:inline-flex;align-items:center;gap:var(--space-6);height:var(--control-md);padding:0 var(--space-10);border:1px solid var(--line-strong);border-radius:var(--radius-md);font:600 12px/1 var(--font-text);color:var(--ink-2);margin-right:var(--space-6)}
+.pg{min-width:var(--control-md);height:var(--control-md);padding:0 var(--space-6);border-radius:var(--radius-md);border:0;background:transparent;font:600 13px/1 var(--font-text);color:var(--ink-2);display:inline-flex;align-items:center;justify-content:center}
+.pg-arw{border:1px solid var(--line-strong);background:var(--bg-surface);color:var(--ink-3)}
+.pg[disabled]{opacity:.4}
+.pg-on{background:var(--brand);color:var(--on-brand)}
+.pg-gap{width:var(--space-16);text-align:center;color:var(--ink-faint)}
+
+/* ---------- Sheet / dialog ---------- */
+.sheet{background:var(--bg-surface);border-radius:var(--radius-sheet) var(--radius-sheet) 0 0;box-shadow:var(--shadow-sheet);display:flex;flex-direction:column;overflow:hidden}
+.sheet::before{content:"";display:block;width:40px;height:4px;border-radius:var(--radius-pill);background:var(--line-handle);margin:var(--space-8) auto 0}
+.dlg{background:var(--bg-surface);border-radius:var(--radius-xl);box-shadow:var(--shadow-dialog);display:flex;flex-direction:column;overflow:hidden}
+.dh{display:flex;align-items:flex-start;gap:var(--space-12);padding:var(--space-12) var(--space-16) var(--space-8)}
+.dlg .dh{padding:var(--space-20) var(--space-24) var(--space-10)}
+.dt{font:800 17px/22px var(--font-text);letter-spacing:-.01em}.ds{font:500 12px/18px var(--font-text);color:var(--ink-3);margin-top:2px}
+.db{padding:var(--space-4) var(--space-16) var(--space-14);display:flex;flex-direction:column;gap:var(--space-14)}
+.df{display:flex;gap:var(--space-8);padding:var(--space-12) var(--space-16);border-top:1px solid var(--line-soft);background:var(--bg-sunken)}
+.sheet .df .btn{flex:1;height:var(--control-xl);font-size:14px;border-radius:var(--radius-lg)}
+.dlg .df{justify-content:flex-end}
+.scrim{background:var(--scrim)}
+
+/* ---------- Swipe ---------- */
+.swipe{display:flex;overflow:hidden;border-top:1px solid var(--line-soft)}
+.swipe .tx{flex:0 0 calc(100% - var(--swipe-action));border-top:0}
+.swa{flex:0 0 var(--swipe-action);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-4);font:800 12px/1 var(--font-text);color:var(--on-brand)}
+.swa.ok{background:var(--brand)}.swa.no{background:var(--danger)}
+
+/* ---------- Upcoming date tile + calendar ---------- */
+.dtile{width:40px;text-align:center;flex:none}.dtile b{display:block;font:800 15px/1 var(--font-text)}.dtile span{font:800 10px/12px var(--font-text);letter-spacing:.06em;color:var(--ink-4)}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:1px solid var(--line-soft);border-left:1px solid var(--line-soft)}
+.cwh{font:800 10px/12px var(--font-text);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-4);padding:var(--space-8) var(--space-6);text-align:center}
+.cd{min-height:56px;border-right:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft);padding:var(--space-4);font:700 11px/14px var(--font-text);color:var(--ink-3);display:flex;flex-direction:column;gap:var(--space-4)}
+.cd.today{background:var(--brand-tint);color:var(--brand-strong)}
+.ev{height:6px;border-radius:var(--radius-xs)}
+.ev.bill{background:var(--warning)}.ev.in{background:var(--positive)}.ev.emi{background:var(--info)}
+
+/* ---------- Empty / offline / skeleton ---------- */
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-8);padding:var(--space-40) var(--space-20);color:var(--ink-3)}
+.empty h3{margin:0;font:700 20px/26px var(--font-display);color:var(--ink)}
+.empty p{margin:0;max-width:320px;font:500 13px/20px var(--font-text)}
+.skl{background:var(--line-soft);border-radius:var(--radius-xs);height:12px}
+
+/* ---------- Drop zone + file rows ---------- */
+.drop{border:1px dashed var(--line-handle);border-radius:var(--radius-xl);padding:var(--space-24) var(--space-16);background:var(--bg-sunken);display:flex;flex-direction:column;align-items:center;text-align:center;gap:var(--space-6)}
+.dic{width:44px;height:44px;border-radius:var(--radius-lg);background:var(--brand-tint);color:var(--brand);display:flex;align-items:center;justify-content:center}
+.file{display:flex;align-items:center;gap:var(--space-10);padding:var(--space-10) 0;border-top:1px solid var(--line-soft)}
+.file .grow{flex:1;min-width:0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- Avatar ---------- */
+.av{width:32px;height:32px;border-radius:var(--radius-md);background:var(--bg-canvas);display:flex;align-items:center;justify-content:center;font:800 12px/1 var(--font-text);color:var(--ink-2);flex:none}
+.avr{width:var(--control-md);height:var(--control-md);border-radius:var(--radius-pill);background:var(--brand-tint);color:var(--brand-strong);display:flex;align-items:center;justify-content:center;font:800 11px/1 var(--font-text);flex:none}
+
+/* ---------- Auth ---------- */
+.gbtn{display:flex;align-items:center;justify-content:center;gap:var(--space-8);height:var(--control-xl);border:1px solid var(--line-strong);border-radius:var(--radius-lg);background:var(--bg-surface);font:600 14px/1 var(--font-text);color:var(--ink);width:100%}
+.or{display:flex;align-items:center;gap:var(--space-10);font:600 11px/14px var(--font-text);color:var(--ink-4)}.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* ---------- Feedback: toast, banner ---------- */
+.btn-dd{background:var(--danger);color:var(--on-brand);border-color:transparent}
+.toast{display:flex;align-items:center;gap:var(--space-10);padding:var(--space-10) var(--space-14);background:var(--ink);color:var(--bg-surface);border-radius:var(--radius-lg);font:600 13px/18px var(--font-text);box-shadow:var(--shadow-pop)}
+.toast .tk{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:var(--radius-sm);font:800 11px/1 var(--font-text);background:var(--brand-tint);color:var(--brand-strong);flex:none}
+.toast .tk.err{background:var(--danger-tint);color:var(--danger)}
+.toast a{margin-left:auto;color:var(--line);font-weight:700;white-space:nowrap}
+.banner{display:flex;gap:var(--space-10);align-items:flex-start;padding:var(--space-10) var(--space-12);border-radius:var(--radius-lg);font:500 12px/18px var(--font-text)}
+.banner svg{flex:none;margin-top:1px;width:16px;height:16px}
+.banner.err{background:var(--danger-tint);color:var(--danger-ink)}.banner.ok{background:var(--positive-tint);color:var(--positive-strong)}.banner.info{background:var(--info-tint);color:var(--info-ink)}.banner.warn{background:var(--warning-tint);color:var(--warning-ink)}
+.hl{box-shadow:inset 0 0 0 2px var(--brand);background:var(--brand-tint)}
+/* ---------- Dashboard widget ---------- */
+.w{background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-lg);min-width:0;display:flex;flex-direction:column}
+.wh{display:flex;align-items:center;justify-content:space-between;gap:var(--space-8);padding:var(--space-12) var(--space-14) var(--space-6)}
+.wt{font:800 13px/18px var(--font-text)}.ws{font:500 11px/14px var(--font-text);color:var(--ink-3)}
+.wb{padding:0 var(--space-14) var(--space-12)}
+.wstate{display:flex;gap:var(--space-10);align-items:flex-start;font:500 12px/18px var(--font-text)}
+
+/* ---------- Variant support: lists, fields, buttons ---------- */
+.mgrp{font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);padding:var(--space-8) var(--space-10) var(--space-4)}
+.mcb{width:16px;height:16px;border-radius:var(--radius-xs);border:2px solid var(--line-strong);background:var(--bg-surface);flex:none;display:inline-flex;align-items:center;justify-content:center;font:800 10px/1 var(--font-text);color:var(--on-brand)}
+.mcb.on{background:var(--brand);border-color:var(--brand)}
+.mrad{width:16px;height:16px;border-radius:var(--radius-pill);border:2px solid var(--line-strong);flex:none}
+.mrad.on{border:4px solid var(--brand)}
+.mi.act{color:var(--brand);font-weight:700}
+.mi.dis{color:var(--ink-faint)}
+.mi .sub{display:block;font:500 11px/14px var(--font-text);color:var(--ink-3)}
+.mempty{padding:var(--space-14) var(--space-10);font:500 12px/16px var(--font-text);color:var(--ink-3);text-align:center}
+.mfoot{display:flex;gap:var(--space-8);padding:var(--space-8) var(--space-6) var(--space-4);border-top:1px solid var(--line-soft);margin-top:var(--space-4)}
+.mfoot .btn{flex:1}
+.inp.focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-tint)}
+.inp.dis{background:var(--bg-sunken);color:var(--ink-faint);border-color:var(--line)}
+.inp .pre{color:var(--ink-3);font-weight:700}
+.inp .clr{margin-left:auto;color:var(--ink-4);display:inline-flex}
+textarea.inp{height:72px;padding:var(--space-8) var(--space-12);resize:none;align-items:flex-start;white-space:normal}
+.chip-x{padding-right:var(--space-6)}.chip-x b{font-weight:800;margin-left:2px;color:inherit;opacity:.7}
+.chip-more{border-style:dashed}
+.btn.loading{opacity:.75;cursor:progress}
+.btn.focusring{outline:2px solid var(--focus-ring);outline-offset:2px}
+.btn.hover{background:var(--bg-hover)}.btn-p.hover{background:var(--brand-strong)}
+.drop.over{border-color:var(--brand);background:var(--brand-tint)}
+.vgrid{display:grid;gap:16px 20px;align-items:start}
+.vlab{font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);margin-bottom:6px}
+.dlg .db,.dlg .df{padding-left:var(--space-24);padding-right:var(--space-24)}
+
+/* ---------- 2026-10-15 restructure ---------- */
+.ic{flex:none;display:inline-block;vertical-align:middle}.ic-sm{width:var(--icon-sm);height:var(--icon-sm)}.ic-md{width:var(--icon-md);height:var(--icon-md)}.ic-lg{width:var(--icon-lg);height:var(--icon-lg)}
+.chip .ic{color:var(--ink-4)}.chip-on .ic,.chip-amber .ic{color:inherit}
+.chip-x .chip-rm{display:inline-flex;align-items:center;justify-content:center;margin-left:var(--space-2);color:inherit;opacity:.7}
+.sel-trig{display:flex;align-items:center;gap:var(--space-8);height:var(--control-lg);padding:0 var(--space-10);border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--bg-surface);font:500 13px/18px var(--font-text);color:var(--ink)}
+.sel-trig .ph{color:var(--ink-4)}.sel-trig .ic:last-child{margin-left:auto;color:var(--ink-3)}
+.sel-trig.open{border-color:var(--brand);box-shadow:0 0 0 1px var(--brand)}
+.sel-trig[aria-disabled]{background:var(--bg-sunken);color:var(--ink-4)}
+.pop{background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-lg);box-shadow:var(--shadow-pop);padding:var(--space-4);display:flex;flex-direction:column}
+.pop .mi{padding:0 var(--space-10)}
+.pop-anchor{display:flex;flex-direction:column;gap:var(--space-4)}
+.hl-row{background:var(--brand-tint);box-shadow:inset 4px 0 0 var(--brand)}
+.toast.t-ok{background:var(--positive-tint);color:var(--positive-strong);border:1px solid var(--line)}
+.toast.t-err{background:var(--danger-tint);color:var(--danger-ink);border:1px solid var(--danger-border)}
+.toast.t-warn{background:var(--warning-tint);color:var(--warning-ink);border:1px solid var(--warning-border)}
+.toast.t-info{background:var(--info-tint);color:var(--info-ink);border:1px solid var(--line)}
+.toast.t-ok a,.toast.t-err a,.toast.t-warn a,.toast.t-info a{color:inherit}
+.banner.neutral{background:var(--bg-surface);color:var(--ink-2);border:1px solid var(--line)}
+.banner b{font-weight:800}.banner a{font-weight:700;color:inherit;text-decoration:underline;text-underline-offset:2px}
+.sh-date{position:sticky;top:0;display:flex;align-items:baseline;gap:var(--space-6);padding:var(--space-6) var(--space-14);background:var(--bg-subtle);border-bottom:1px solid var(--line-soft);font:800 12px/16px var(--font-text);color:var(--ink)}
+.sh-date span{font-weight:600;color:var(--ink-3)}
+.df-tert{display:flex;justify-content:center;padding:var(--space-12) var(--space-16) var(--space-4);border-top:1px solid var(--line-soft)}
+.rail{width:var(--rail);background:var(--bg-surface);border-right:1px solid var(--line);padding:var(--space-14) var(--space-12);display:flex;flex-direction:column;gap:var(--space-2)}
+.rail .brandrow{display:flex;align-items:center;gap:var(--space-10);padding:var(--space-4) var(--space-6) var(--space-12);font:800 15px/20px var(--font-text);color:var(--ink)}
+.rail .mark{width:var(--chip);height:var(--chip);border-radius:var(--radius-md);background:var(--brand);color:var(--on-brand);display:flex;align-items:center;justify-content:center;font:800 15px/1 var(--font-text)}
+.rail .rsearch{display:flex;align-items:center;gap:var(--space-8);height:var(--control-md);padding:0 var(--space-10);border:1px solid var(--line-strong);border-radius:var(--radius-md);color:var(--ink-4);font:600 13px/18px var(--font-text);margin-bottom:var(--space-8)}
+.nav{display:flex;align-items:center;gap:var(--space-10);height:var(--control-md);padding:0 var(--space-10);border-radius:var(--radius-md);font:600 13px/18px var(--font-text);color:var(--ink-2)}
+.nav .ic{color:var(--ink-4)}.nav-on{background:var(--brand-tint);color:var(--brand-strong)}.nav-on .ic{color:var(--brand-strong)}
+.nav .nc{margin-left:auto}.nav .nw{margin-left:auto;font:800 10px/12px var(--font-text);color:var(--warning)}
+.rail .grp{font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);padding:var(--space-14) var(--space-10) var(--space-6)}
+.rail .me{margin-top:auto;display:flex;align-items:center;gap:var(--space-8);padding:var(--space-8) var(--space-6) 0;border-top:1px solid var(--line-soft)}
+.topbar{height:var(--app-bar);background:var(--bg-surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:var(--space-10);padding:0 var(--space-28)}
+.topbar .ttl{font:800 14px/20px var(--font-text);color:var(--ink)}.topbar .acts{margin-left:auto;display:flex;gap:var(--space-8);align-items:center}
+.cal{width:280px;padding:var(--space-10)}.cal .ch{display:flex;align-items:center;justify-content:space-between;font:800 13px/18px var(--font-text);color:var(--ink);padding:var(--space-4) var(--space-4) var(--space-8)}
+.cal .cg{display:grid;grid-template-columns:repeat(7,1fr);gap:var(--space-2);text-align:center}
+.cal .wd{font:700 10px/12px var(--font-text);color:var(--ink-4);padding:var(--space-4) 0}
+.cal .d{height:var(--control-md);display:flex;align-items:center;justify-content:center;border-radius:var(--radius-md);font:600 12px/16px var(--font-text);color:var(--ink-2)}
+.cal .d.mut{color:var(--ink-faint)}.cal .d.today{box-shadow:inset 0 0 0 1px var(--line-strong)}.cal .d.on{background:var(--brand);color:var(--on-brand)}.cal .d.rng{background:var(--brand-tint);border-radius:0;color:var(--brand-strong)}
+.cal .cf{display:flex;gap:var(--space-6);padding-top:var(--space-8);border-top:1px solid var(--line-soft);margin-top:var(--space-8)}
+.swipe-trig{position:relative;overflow:hidden}.swipe-trig .bgL,.swipe-trig .bgR{position:absolute;inset:0;display:flex;align-items:center;gap:var(--space-8);padding:0 var(--space-16);font:700 13px/18px var(--font-text)}
+.swipe-trig .bgL{background:var(--brand);color:var(--on-brand)}.swipe-trig .bgR{background:var(--danger);color:#fff;justify-content:flex-end}
+.swipe-trig .fg{position:relative;background:var(--bg-surface)}
+
+body{margin:0;background:var(--bg-canvas);color:var(--ink);font-family:var(--font-text);font-variant-numeric:tabular-nums}
+.dsb{color:var(--ink);padding:48px 40px 56px;display:flex;flex-direction:column;gap:28px}
+.ds-h{color:var(--ink);font:800 40px/44px var(--font-display);letter-spacing:-.02em;margin:0}
+.ds-k{font:800 11px/14px var(--font-text);letter-spacing:.1em;text-transform:uppercase;color:var(--brand)}
+.ds-lead{font:500 15px/24px var(--font-text);color:var(--ink-3);max-width:760px;margin:6px 0 0}
+.ds-sec{background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-xl);padding:28px}
+.ds-sec>h2{color:var(--ink);font:800 22px/28px var(--font-display);letter-spacing:-.01em;margin:0 0 4px}
+.ds-sub{font:500 13px/20px var(--font-text);color:var(--ink-3);margin:0 0 20px}
+.md{font:500 13px/21px var(--font-text);color:var(--ink-2);min-width:0}
+.md h3{font:800 14px/20px var(--font-text);color:var(--ink);margin:16px 0 6px}.md h3:first-child{margin-top:0}
+.md p{margin:0 0 8px}.md ul{margin:0 0 8px;padding-left:18px}.md li{margin:0 0 4px}
+.md code{font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg-subtle);border:1px solid var(--line-soft);padding:1px 5px;border-radius:var(--radius-xs);color:var(--ink)}
+.md b,.md strong{color:var(--ink)}
+.comp{display:grid;grid-template-columns:400px minmax(0,1fr) minmax(0,1fr);gap:28px;padding:28px 0;border-top:1px solid var(--line)}
+.comp:first-of-type{border-top:0;padding-top:0}
+.cn{color:var(--ink);font:800 20px/26px var(--font-display);margin:0 0 2px}.cg{font:700 11px/14px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);margin-bottom:10px}
+.pvw{border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;min-width:0}
+.pvl{font:700 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--bg-surface);color:var(--ink-4)}
+.pvw .fos{min-height:0}
+.grid{display:grid;gap:16px}
+.swc{border:1px solid var(--line);border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-surface)}
+.swc .chips2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);height:56px}
+.swc .chips2 div{display:flex;align-items:flex-end;padding:6px 8px;font:700 10px/12px var(--font-text)}
+.swc .meta{padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-width:0}.swc .meta>*{overflow-wrap:anywhere;min-width:0}
+.swc .nm{font:800 13px/18px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink)}
+.swc .hx{font:600 11px/14px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
+.swc .us{font:500 12px/17px var(--font-text);color:var(--ink-3)}
+.spec{display:grid;grid-template-columns:200px 120px minmax(0,1fr) 300px;gap:20px;align-items:baseline;padding:14px 0;border-top:1px solid var(--line-soft)}
+.spec .nm{font:800 12px/16px ui-monospace,SFMono-Regular,Menlo,monospace}
+.spec .mt{font:600 11px/16px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
+.spec .us{font:500 12px/17px var(--font-text);color:var(--ink-3)}
+table.t{color:var(--ink);border-collapse:collapse;width:100%;font:500 13px/18px var(--font-text)}
+table.t th{text-align:left;font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4);padding:8px 10px;border-bottom:1px solid var(--line)}
+table.t td{padding:9px 10px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.yes{color:var(--positive);font-weight:800}.no{color:var(--danger);font-weight:800}
+
+</style>
+</helmet>
+
+<div class="th-light"><div class="dsb"><div><div class="ds-k">Design system · 06</div><h1 class="ds-h">Navigation</h1><p class="ds-lead">Each component with its rules, rendered in the light and the dark theme.</p></div><div class="ds-sec"><div class="comp"><div><div class="cn">AppBar</div><div class="cg">Navigation</div><div class="md"><p style="color:var(--ink);font-weight:600">The phone app bar (the desktop shell is Rail and TopBar): the brand mark (or a back arrow on detail screens), breadcrumb and screen title, then Ask the data, Search and the one + (`brand` fill) that adds whatever the screen is about.</p><h3>Use</h3>
+<ul>
+<li>Every phone screen has exactly one. It replaces a body title: phone pages never repeat the title as an H1.</li>
+<li>The <b>+</b> is page-aware: on Transactions it opens Quick add, on Rules it opens New rule, on Accounts it opens Add account. Never add a second "New …" button in the page header.</li>
+<li>Detail screens swap the mark for a back arrow (<code>back</code>).</li>
+</ul>
+<h3>Consumer provides</h3>
+<p><code>crumb</code> (section path, optional), <code>title</code>, <code>back</code> (boolean), the add target for the +.</p>
+<h3>Don't</h3>
+<ul>
+<li>Don't put page actions (Export, Merge…) here; they live in the page or in a ⋮ menu.</li>
+<li>Don't wrap the title; it truncates with an ellipsis.</li>
+</ul>
+<h3>Built from</h3>
+<p>Button, Icon. The desktop shell is Rail and TopBar.</p></div></div><div class="pvw th-light"><div class="pvl">Light</div><div class="fos" style="padding:16px;background:var(--bg-canvas);min-height:100%;display:flex;flex-direction:column;gap:12px;max-width:420px;"><div style="font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)">Top level</div><div class="ptop" style="border:1px solid var(--line);border-radius:12px"><span class="mark" aria-hidden="true">₹</span><div class="t"><div class="cr">Money</div><div class="tt">Transactions</div></div><button class="btn btn-i" aria-label="Ask the data"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg></button><button class="btn btn-i" aria-label="Search"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button><button class="btn btn-i btn-p" aria-label="Add"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div><div style="font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)">Detail screen</div><div class="ptop" style="border:1px solid var(--line);border-radius:12px"><button class="btn btn-i btn-g" aria-label="Back"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button><div class="t"><div class="cr">Accounts</div><div class="tt">HDFC Regalia Gold</div></div><button class="btn btn-i" aria-label="Ask the data"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg></button><button class="btn btn-i" aria-label="Search"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button><button class="btn btn-i btn-p" aria-label="Add"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
+</div><div class="pvw th-dark"><div class="pvl">Dark</div><div class="fos" style="padding:16px;background:var(--bg-canvas);min-height:100%;display:flex;flex-direction:column;gap:12px;max-width:420px;"><div style="font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)">Top level</div><div class="ptop" style="border:1px solid var(--line);border-radius:12px"><span class="mark" aria-hidden="true">₹</span><div class="t"><div class="cr">Money</div><div class="tt">Transactions</div></div><button class="btn btn-i" aria-label="Ask the data"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg></button><button class="btn btn-i" aria-label="Search"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button><button class="btn btn-i btn-p" aria-label="Add"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div><div style="font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)">Detail screen</div><div class="ptop" style="border:1px solid var(--line);border-radius:12px"><button class="btn btn-i btn-g" aria-label="Back"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg></button><div class="t"><div class="cr">Accounts</div><div class="tt">HDFC Regalia Gold</div></div><button class="btn btn-i" aria-label="Ask the data"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg></button><button class="btn btn-i" aria-label="Search"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button><button class="btn btn-i btn-p" aria-label="Add"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
+</div></div><div class="comp"><div><div class="cn">TabBar</div><div class="cg">Navigation</div><div class="md"><p style="color:var(--ink);font-weight:600">The phone tab bar: Home · Inbox · Upcoming · Transactions · More, always in that order.</p><h3>Use</h3>
+<ul>
+<li>Shown on every top-level phone screen; hidden while a list is in selection mode (the selection bar takes the bottom edge) and under the keyboard.</li>
+<li>Count bubbles: <code>danger</code> for things that need you now (Inbox), <code>warning</code> for the review count on Transactions. Over 99 shows "99+".</li>
+<li>The active tab uses <code>brand-strong</code> for icon and label. Icons are 20px Lucide-style strokes, labels use <code>tab-label</code>.</li>
+</ul>
+<h3>Don't</h3>
+<ul>
+<li>Don't add a sixth tab or reorder; new sections go under More.</li>
+<li>Don't use a count bubble for information that needs no action.</li>
+</ul>
+<h3>Built from</h3>
+<p>Icon, Badge (count). Items are links with the current one marked.</p></div></div><div class="pvw th-light"><div class="pvl">Light</div><div class="fos" style="padding:16px;background:var(--bg-canvas);min-height:100%;display:flex;flex-direction:column;gap:12px;max-width:420px;"><nav class="ptabs" aria-label="Primary" style="border:1px solid var(--line);border-radius:12px"><span class="tabi tabi-on"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8v10H3z"/></svg>Home</span><span class="tabi"><span class="dot">4</span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H4zM4 12h5l2 3h2l2-3h5"/></svg>Inbox</span><span class="tabi"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Upcoming</span><span class="tabi"><span class="dot amber">25</span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Transactions</span><span class="tabi"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</span></nav><nav class="ptabs" aria-label="Primary" style="border:1px solid var(--line);border-radius:12px"><span class="tabi"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8v10H3z"/></svg>Home</span><span class="tabi"><span class="dot">4</span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H4zM4 12h5l2 3h2l2-3h5"/></svg>Inbox</span><span class="tabi"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Upcoming</span><span class="tabi tabi-on"><span class="dot amber">25</span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Transactions</span><span class="tabi"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</span></nav></div>
+</div><div class="pvw th-dark"><div class="pvl">Dark</div><div class="fos" style="padding:16px;background:var(--bg-canvas);min-height:100%;display:flex;flex-direction:column;gap:12px;max-width:420px;"><nav class="ptabs" aria-label="Primary" style="border:1px solid var(--line);border-radius:12px"><span class="tabi tabi-on"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8v10H3z"/></svg>Home</span><span class="tabi"><span class="dot">4</span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H4zM4 12h5l2 3h2l2-3h5"/></svg>Inbox</span><span class="tabi"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Upcoming</span><span class="tabi"><span class="dot amber">25</span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Transactions</span><span class="tabi"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</span></nav><nav class="ptabs" aria-label="Primary" style="border:1px solid var(--line);border-radius:12px"><span class="tabi"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8v10H3z"/></svg>Home</span><span class="tabi"><span class="dot">4</span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H4zM4 12h5l2 3h2l2-3h5"/></svg>Inbox</span><span class="tabi"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Upcoming</span><span class="tabi tabi-on"><span class="dot amber">25</span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg>Transactions</span><span class="tabi"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>More</span></nav></div>
+</div></div><div class="comp"><div><div class="cn">Rail</div><div class="cg">Navigation</div><div class="md"><p style="color:var(--ink);font-weight:600">The desktop left navigation, 240px (`rail`). Phone uses TabBar and More instead.</p><h3>Anatomy</h3>
+<p>Brand row (₹ mark + FinanceOS), the search button with its ⌘K hint, Home · Inbox · Upcoming, then grouped sections with <code>overline</code> headers (Money · Grow · Owe &amp; lend · Insights), and Settings with the account avatar pinned at the bottom.</p>
+<h3>Use</h3>
+<ul>
+<li>The current page is <code>brand-tint</code> with <code>brand-strong</code> text and icon.</li>
+<li>Counts: Inbox uses a danger CountBubble (needs you now); Transactions shows the review count as a <code>warning</code> number, no bubble.</li>
+<li>Items are links (<code>href</code>), icons <code>lg</code>, labels <code>body-strong</code>.</li>
+</ul>
+<h3>Props</h3>
+<p><code>items</code> (grouped: label, href, icon, count, countTone), <code>current</code>, <code>user</code> (name, email, avatar) — never hard-coded.</p>
+<h3>Built from</h3>
+<p>Icon, Badge (count), Avatar, Kbd, Button (search).</p>
+<h3>Variants</h3>
+<ul>
+<li>Default, with counts, collapsed group headers hidden when a group has one item.</li>
+</ul></div></div><div class="pvw th-light"><div class="pvl">Light</div><div class="fos" style="padding:16px;background:var(--bg-canvas);min-height:100%;display:flex;flex-direction:column;gap:12px;"><nav class="rail" style="height:600px"><div class="brandrow"><span class="mark">₹</span>FinanceOS</div><div class="rsearch"><svg class="ic ic-md " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Search<span class="kbd" style="margin-left:auto">⌘K</span></div><div class="nav nav-on"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</div><div class="nav"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/></svg>Inbox<span class="nc cnt" style="background:var(--danger)">9</span></div><div class="nav"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>Upcoming</div><div class="grp">Money</div><div class="nav"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M16 14h.01"/></svg>Accounts</div><div class="nav"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Transactions<span class="nw">25</span></div><div class="grp">Insights</div><div class="nav"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg>Ask the data</div><div class="me"><div class="nav" style="padding:0;height:28px"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</div><span class="avr" style="margin-left:auto">AM</span></div></nav></div>
+</div><div class="pvw th-dark"><div class="pvl">Dark</div><div class="fos" style="padding:16px;background:var(--bg-canvas);min-height:100%;display:flex;flex-direction:column;gap:12px;"><nav class="rail" style="height:600px"><div class="brandrow"><span class="mark">₹</span>FinanceOS</div><div class="rsearch"><svg class="ic ic-md " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Search<span class="kbd" style="margin-left:auto">⌘K</span></div><div class="nav nav-on"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Home</div><div class="nav"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13L22 12v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/></svg>Inbox<span class="nc cnt" style="background:var(--danger)">9</span></div><div class="nav"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>Upcoming</div><div class="grp">Money</div><div class="nav"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/><path d="M16 14h.01"/></svg>Accounts</div><div class="nav"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Transactions<span class="nw">25</span></div><div class="grp">Insights</div><div class="nav"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg>Ask the data</div><div class="me"><div class="nav" style="padding:0;height:28px"><svg class="ic ic-lg " viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</div><span class="avr" style="margin-left:auto">AM</span></div></nav></div>
+</div></div><div class="comp"><div><div class="cn">TopBar</div><div class="cg">Navigation</div><div class="md"><p style="color:var(--ink);font-weight:600">The desktop bar above every page, 56px (`app-bar`), `bg-surface` with a `line` bottom border.</p><h3>Anatomy</h3>
+<p>Page title (or breadcrumb + title on detail pages) on the left; on the right the Add button with its ⌘N hint (opens the add form for the page, like the phone +), the chat panel and notifications icon buttons.</p>
+<h3>Props</h3>
+<p><code>title</code>, <code>crumb</code>, <code>onAdd</code> (or the add target), <code>actions</code> limited to chat and notifications.</p>
+<h3>Built from</h3>
+<p>Button, Icon, Kbd.</p>
+<h3>Variants</h3>
+<ul>
+<li>Top level, detail (with crumb).</li>
+</ul></div></div><div class="pvw th-light"><div class="pvl">Light</div><div class="fos" style="padding:16px;background:var(--bg-canvas);min-height:100%;display:flex;flex-direction:column;gap:12px;"><div class="topbar" style="border:1px solid var(--line);border-radius:12px"><span class="ttl">Home</span><div class="acts"><button class="btn"><svg class="ic ic-md " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add <span class="kbd">⌘N</span></button><button class="btn btn-i" aria-label="Chat"><svg class="ic ic-md " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg></button><button class="btn btn-i" aria-label="Notifications"><svg class="ic ic-md " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button></div></div></div>
+</div><div class="pvw th-dark"><div class="pvl">Dark</div><div class="fos" style="padding:16px;background:var(--bg-canvas);min-height:100%;display:flex;flex-direction:column;gap:12px;"><div class="topbar" style="border:1px solid var(--line);border-radius:12px"><span class="ttl">Home</span><div class="acts"><button class="btn"><svg class="ic ic-md " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add <span class="kbd">⌘N</span></button><button class="btn btn-i" aria-label="Chat"><svg class="ic ic-md " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H8l-4 4z"/></svg></button><button class="btn btn-i" aria-label="Notifications"><svg class="ic ic-md " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg></button></div></div></div>
+</div></div><div class="comp"><div><div class="cn">Tabs</div><div class="cg">Navigation</div><div class="md"><p style="color:var(--ink);font-weight:600">A tab strip that switches between sibling views of one section (All · Rules · Categories · Import).</p><h3>Use</h3>
+<ul>
+<li>Tabs never wrap: on phone the strip scrolls sideways and bleeds to the screen edges.</li>
+<li>Put counts in the label only when they help decide where to go ("Tradebook · 38").</li>
+<li>The active tab is <code>brand-strong</code> text with a 2px <code>brand</code> underline.</li>
+</ul>
+<h3>Don't</h3>
+<ul>
+<li>Don't use tabs for filters on the same data; that is what filter chips are for.</li>
+<li>Don't put a Settings tab on an object page; settings belong in its edit sheet.</li>
+</ul>
+<h3>Built from</h3>
+<p>Radix Tabs; the count after a label is <code>ink-3</code> text, not a bubble.</p>
+<h3>Variants</h3>
+<ul>
+<li>Plain, with counts, and scrolling (never wrapping) when they overflow on phone.</li>
+</ul></div></div><div class="pvw th-light"><div class="pvl">Light</div><div class="fos" style="padding:16px;background:var(--bg-canvas);min-height:100%;display:flex;flex-direction:column;gap:12px;"><div class="vgrid" style="grid-template-columns:repeat(1,minmax(0,1fr))"><div style="min-width:0"><div class="vlab">Plain</div><div class="tabs"><span class="tab">All</span><span class="tab tab-on">Rules</span><span class="tab">Categories</span><span class="tab">Import</span></div></div><div style="min-width:0"><div class="vlab">With counts</div><div class="tabs"><span class="tab">Overview</span><span class="tab tab-on">Statements · 3</span><span class="tab">Cards · 2</span></div></div><div style="min-width:0"><div class="vlab">Scrolling on phone</div><div class="tabs" style="max-width:300px"><span class="tab">Holdings</span><span class="tab tab-on">Tradebook · 38</span><span class="tab">Dividends · 5</span><span class="tab">F&amp;O · 5</span><span class="tab">Corporate actions · 2</span></div></div></div></div>
+</div><div class="pvw th-dark"><div class="pvl">Dark</div><div class="fos" style="padding:16px;background:var(--bg-canvas);min-height:100%;display:flex;flex-direction:column;gap:12px;"><div class="vgrid" style="grid-template-columns:repeat(1,minmax(0,1fr))"><div style="min-width:0"><div class="vlab">Plain</div><div class="tabs"><span class="tab">All</span><span class="tab tab-on">Rules</span><span class="tab">Categories</span><span class="tab">Import</span></div></div><div style="min-width:0"><div class="vlab">With counts</div><div class="tabs"><span class="tab">Overview</span><span class="tab tab-on">Statements · 3</span><span class="tab">Cards · 2</span></div></div><div style="min-width:0"><div class="vlab">Scrolling on phone</div><div class="tabs" style="max-width:300px"><span class="tab">Holdings</span><span class="tab tab-on">Tradebook · 38</span><span class="tab">Dividends · 5</span><span class="tab">F&amp;O · 5</span><span class="tab">Corporate actions · 2</span></div></div></div></div>
+</div></div><div class="comp"><div><div class="cn">Pager</div><div class="cg">Navigation</div><div class="md"><p style="color:var(--ink);font-weight:600">Pagination for any list that can outgrow one page, matching the app&#x27;s TablePagination: the visible range out of the total, rows per page, and numbered pages with first, last and neighbours.</p><h3>Use</h3>
+<ul>
+<li>It sits <b>above and below the list</b>: the first row of the list's card (under the card header, above the table header) and its last row. Card-grid lists (rule cards) put it above and under the grid. Both copies always show the same page.</li>
+<li>Desktop: "1–50 of 182 transactions" · "50 / page ▾" · ‹ 1 2 … 4 ›.</li>
+<li>Phone: drop the unit and the page-size select, keep one neighbour fewer: "1–50 of 182" · ‹ 1 … 4 ›.</li>
+<li>A single page shows the count and page size only, no arrows.</li>
+<li>Server-side paging only. Never load every row and slice on the client.</li>
+</ul>
+<h3>Consumer provides</h3>
+<p><code>page</code> (0-based), <code>size</code>, <code>totalElements</code>, <code>totalPages</code>, <code>unit</code> (singular noun), <code>onPageChange</code>, <code>onSizeChange</code>.</p>
+<h3>Don't</h3>
+<ul>
+<li>Don't use "Load more" or infinite scroll for money lists; people need to say "page 3" and come back to it.</li>
+<li>Don't show two pagers on one list.</li>
+</ul>
+<h3>Built from</h3>
+<p>Button, Icon, Select (rows per page).</p></div></div><div class="pvw th-light"><div class="pvl">Light</div><div class="fos" style="padding:16px;background:var(--bg-canvas);min-height:100%;display:flex;flex-direction:column;gap:12px;"><div style="font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)">Desktop</div><div class="card"><nav class="pager" aria-label="Pagination"><span><b>1–50</b> of 182 transactions</span><div class="pg-r"><span class="pg-size">50 / page <span style="font-size:9px;color:var(--ink-4)"><svg class="ic ic-md " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></span><button class="pg pg-arw" aria-label="Previous page" disabled><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="pg pg-on" aria-current="page">1</button><button class="pg">2</button><span class="pg-gap" aria-hidden="true">…</span><button class="pg">4</button><button class="pg pg-arw" aria-label="Next page"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></div></nav></div><div style="font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)">Phone</div><div class="card" style="max-width:390px"><nav class="pager" aria-label="Pagination"><span><b>1–50</b> of 182</span><div class="pg-r"><button class="pg pg-arw" aria-label="Previous page" disabled><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="pg pg-on" aria-current="page">1</button><span class="pg-gap" aria-hidden="true">…</span><button class="pg">4</button><button class="pg pg-arw" aria-label="Next page"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></div></nav></div><div style="font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)">Single page</div><div class="card"><nav class="pager" aria-label="Pagination"><span><b>1–25</b> of 25 needing review</span><div class="pg-r"><span class="pg-size">50 / page <span style="font-size:9px;color:var(--ink-4)"><svg class="ic ic-md " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></span></div></nav></div></div>
+</div><div class="pvw th-dark"><div class="pvl">Dark</div><div class="fos" style="padding:16px;background:var(--bg-canvas);min-height:100%;display:flex;flex-direction:column;gap:12px;"><div style="font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)">Desktop</div><div class="card"><nav class="pager" aria-label="Pagination"><span><b>1–50</b> of 182 transactions</span><div class="pg-r"><span class="pg-size">50 / page <span style="font-size:9px;color:var(--ink-4)"><svg class="ic ic-md " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></span><button class="pg pg-arw" aria-label="Previous page" disabled><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="pg pg-on" aria-current="page">1</button><button class="pg">2</button><span class="pg-gap" aria-hidden="true">…</span><button class="pg">4</button><button class="pg pg-arw" aria-label="Next page"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></div></nav></div><div style="font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)">Phone</div><div class="card" style="max-width:390px"><nav class="pager" aria-label="Pagination"><span><b>1–50</b> of 182</span><div class="pg-r"><button class="pg pg-arw" aria-label="Previous page" disabled><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button><button class="pg pg-on" aria-current="page">1</button><span class="pg-gap" aria-hidden="true">…</span><button class="pg">4</button><button class="pg pg-arw" aria-label="Next page"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button></div></nav></div><div style="font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)">Single page</div><div class="card"><nav class="pager" aria-label="Pagination"><span><b>1–25</b> of 25 needing review</span><div class="pg-r"><span class="pg-size">50 / page <span style="font-size:9px;color:var(--ink-4)"><svg class="ic ic-md " viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></span></span></div></nav></div></div>
+</div></div></div></div></div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1880,"height":3941}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

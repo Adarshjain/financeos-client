@@ -5,5 +5,8 @@ A 6px track (`line-soft`) with a rounded fill. Brand by default; `warning` when 
 ## Use
 Always pair it with the numbers it represents ("62% of ₹1.55L budget · 18 days left"). Milestones and card utilisation use the same bar.
 
+## Built from
+Nothing else.
+
 ## Variants
 - Brand, warning past about 60%, danger past 100%, empty.

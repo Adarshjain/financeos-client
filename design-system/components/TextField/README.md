@@ -1,16 +1,21 @@
 # TextField
 
-A labelled text input. Labels sit above the field in `ink-2`, 12px bold; helper or error text sits below.
+A labelled single-line input. Label above in `ink-2` 12px bold; helper or error below.
+
+## Kinds
+- Text, number, email.
+- Amount: ₹ prefix, reads left to right in forms (right-aligned only in tables).
+- Password: masked with a Show toggle (statement passwords).
 
 ## States
-Default, filled, placeholder (`ink-4`), focus (2px `focus-ring`), error (`danger` border and message that says how to fix it), locked (`bg-sunken`, lock icon, no explanation needed: e.g. the account of an imported transaction).
+Default, filled, placeholder (`ink-4`), focus (2px `focus-ring`), error (`danger` border and a message that says how to fix it), disabled.
 
-## Rules
-- Dates are typed and shown as dd/mm/yyyy.
-- Amounts are right-aligned only in tables; in forms they read left to right with a ₹ prefix.
-- Optional fields say "(Optional)" in the label: "MCC Code (Optional)".
-- Secrets (statement passwords) are masked with a show toggle.
+## Not here
+- Dates: DateField. Multi-line: TextArea. A read-only value: ListField (label/value row in ListRow). No locked state: a field that can't change is disabled.
+- Optional fields say "(Optional)" in the label.
+
+## Built from
+The shared field frame (label, helper, error) that TextArea, DateField and Select also use; Icon (password toggle).
 
 ## Variants
-- States: default, placeholder, focused, with helper, error (red border and a message that says how to fix it), disabled, locked (lock icon, no explanation).
-- Kinds: amount with a ₹ prefix, password with Show, date (dd/mm/yyyy with a calendar icon), multi-line note, read-only value as a label/value row.
+- Kinds text, amount, password; states default, placeholder, focused, with helper, error, disabled.

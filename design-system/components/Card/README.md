@@ -8,5 +8,8 @@ The container for a group of related rows: a header with title, subtitle and an 
 - Cards sit on `bg-canvas`; never nest a card in a card (use a section band or note instead).
 - The list's Pager, when it has one, is the card's last row.
 
+## Built from
+SectionHeader, Pager, Button, Icon.
+
 ## Variants
 - Title with subtitle and link, with an action, with rows, with a pager footer, with section bands, empty.

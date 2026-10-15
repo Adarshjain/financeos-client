@@ -8,7 +8,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | --- | --- | --- |
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
-| 2 | New component library in Storybook, one component at a time, owner-reviewed | In progress (all 39 built; owner review and the fix round pending) |
+| 2 | New component library in Storybook, one component at a time, owner-reviewed | In progress (restructured 2026-10-15 to 41 components; see the table) |
 | 3 | Pages: rebuild and swap in one page or big component at a time | Not started |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
@@ -32,6 +32,7 @@ Goal: everything the new components need, with **no visible change to the existi
    - `height` and `minHeight`: `control-sm`, `control-md`, `control-lg`, `control-xl`, `chip`, `app-bar`, `tab-bar`.
    - `width`: `control-sm`, `control-md`, `control-lg`, `control-xl`, `chip`, `rail`, `swipe-action`; `minWidth`: the same without `swipe-action`.
    - `maxWidth`: `dialog-sm` (440), `dialog-md` (640), `dialog-lg` (760), `dialog-xl` (920).
+   - `width` and `height` also take `icon-sm` (14), `icon-md` (16), `icon-lg` (20) for Icon sizes.
    - There is no `space-0`, `space-18`, `text-small`, `rounded-ds-circle`, `z-1` or `font-inherit`. Tailwind silently drops a class name it does not know, so it renders nothing; `check-ui.mjs` now fails on unknown classes.
    - `zIndex`: `z-sticky`, `z-dock`, `z-scrim`, `z-overlay`.
    - `transitionDuration`: `fast`, `base`, `sheet`.
@@ -51,50 +52,54 @@ Build in this order, one component per step. After each one, set its status to *
 
 | # | Component | Status |
 | --- | --- | --- |
-| 1 | Button | Ready for review |
-| 2 | Badge | Ready for review |
-| 3 | CategoryChip | Ready for review |
-| 4 | StatusWords | Ready for review |
-| 5 | Kbd | Ready for review |
-| 6 | Avatar | Ready for review |
-| 7 | ProgressBar | Ready for review |
-| 8 | TextField | Ready for review |
-| 9 | SearchField | Ready for review |
-| 10 | Select | Ready for review |
-| 11 | Switch | Ready for review |
-| 12 | SegmentedControl | Ready for review |
-| 13 | FilterChip | Ready for review |
-| 14 | Tabs | Ready for review |
-| 15 | Menu | Ready for review |
-| 16 | Card | Ready for review |
-| 17 | ListRow | Ready for review |
-| 18 | SectionBand | Ready for review |
-| 19 | Callout | Ready for review |
-| 20 | Banner | Ready for review |
-| 21 | Toast | Ready for review |
-| 22 | Skeleton | Ready for review |
-| 23 | EmptyState | Ready for review |
-| 24 | Dialog | Ready for review |
-| 25 | Sheet | Ready for review |
-| 26 | ConfirmSheet | Ready for review |
-| 27 | AppBar | Ready for review |
-| 28 | TabBar | Ready for review |
-| 29 | Pager | Ready for review |
-| 30 | SelectionBar | Ready for review |
-| 31 | SwipeActions | Ready for review |
-| 32 | DateGroupHeader | Ready for review |
-| 33 | TransactionRow | Ready for review |
-| 34 | KpiTile | Ready for review |
-| 35 | Widget | Ready for review |
-| 36 | RuleCard | Ready for review |
-| 37 | DateTile | Ready for review |
-| 38 | DropZone | Ready for review |
-| 39 | AuthPanel | Ready for review |
+| 1 | Icon | Not started |
+| 2 | Popover | Not started |
+| 3 | Dialog | Changes requested |
+| 4 | AppBar | Changes requested |
+| 5 | TabBar | Changes requested |
+| 6 | Rail | Not started |
+| 7 | TopBar | Not started |
+| 8 | Tabs | Changes requested |
+| 9 | Pager | Changes requested |
+| 10 | Button | Changes requested |
+| 11 | Menu | Changes requested |
+| 12 | SelectionBar | Changes requested |
+| 13 | SwipeActions | Changes requested |
+| 14 | TextField | Changes requested |
+| 15 | TextArea | Not started |
+| 16 | DateField | Not started |
+| 17 | Select | Changes requested |
+| 18 | SearchField | Ready for review |
+| 19 | FilterChip | Changes requested |
+| 20 | Checkbox | Not started |
+| 21 | Switch | Ready for review |
+| 22 | SegmentedControl | Ready for review |
+| 23 | DropZone | Changes requested |
+| 24 | Card | Changes requested |
+| 25 | ListRow | Changes requested |
+| 26 | SectionHeader | Not started |
+| 27 | TransactionRow | Changes requested |
+| 28 | RuleCard | Changes requested |
+| 29 | KpiTile | Changes requested |
+| 30 | Widget | Changes requested |
+| 31 | Badge | Changes requested |
+| 32 | CategoryChip | Ready for review |
+| 33 | StatusWords | Ready for review |
+| 34 | ProgressBar | Ready for review |
+| 35 | DateTile | Ready for review |
+| 36 | Avatar | Changes requested |
+| 37 | Kbd | Ready for review |
+| 38 | Banner | Changes requested |
+| 39 | Toast | Changes requested |
+| 40 | EmptyState | Ready for review |
+| 41 | Skeleton | Ready for review |
 
-The desktop rail and top bar are part of the app shell. Build them with AppBar (phone and desktop variants), following the desktop boards.
+Removed on 2026-10-15 (merged, see Owner decisions): Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; AuthPanel → a page in Phase 3.
+
+The desktop shell is Rail and TopBar; the phone shell is AppBar and TabBar.
 
 ## Phase 3 · Pages
-Rebuild one page or big component at a time, from **Approved** components only, and swap it in. Old components stay in place until Phase 4.
+Rebuild one page or big component at a time, from **Approved** components only. Each new page is built first under `/ds/…` beside the live page (RULES §11). The owner reviews it at `/ds`, which lists every new page. After approval the live route switches to it (the swap) and the `/ds/…` copy is removed. Old components stay in place until Phase 4.
 
 Suggested order, matching the owner's review: sign in, sign up and offline → Home and dashboards → Inbox and Upcoming → Accounts → Transactions (with review merged in) and Import → Rules and Categories. Investments, loans, rewards, reports and settings come after the owner has reviewed those boards.
 
@@ -134,6 +139,21 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - Empty-state text width 300 → `max-w-xs` (320). Skeleton figure bar 22 → 24. Result-summary numbers 18px → `text-title`. Textarea is `rows={3}`, not a fixed height.
   - New size tokens: `dialog-sm/md/lg/xl` (440/640/760/920) as `max-w-dialog-*`, and `swipe-action` (96) as `w-swipe-action`. No inline pixel sizes for these.
   - Illustrations (auth, offline, empty) are SVG artwork: pixel geometry inside the SVG is fine; positioning the SVG uses tokens.
+- 2026-10-15 · **Component restructure** (owner review of the Storybook build):
+  - Merged: Callout and Note into **Banner** (five tones); **Toast** is a floating Banner with the same tones; Sheet and ConfirmSheet into **Dialog** (desktop modal, phone sheet and desktop side panel by viewport) with a **ConfirmDialog** preset; DateGroupHeader and SectionBand into **SectionHeader**.
+  - Split: TextField into **TextField**, **TextArea** and **DateField** (typed dd/mm/yyyy, calendar Popover, range); AppBar's desktop parts into **Rail** and **TopBar**. `ReadOnlyRow` is gone; use `ListField`.
+  - New: **Icon** (three sizes, no typed glyphs), **Popover** (the one floating surface, Radix on Floating UI), **Checkbox** (desktop selection and multi-select). The count bubble is Badge's `count` variant.
+  - Removed: AuthPanel and the Screens story group; pages are not components.
+  - No locked state anywhere; a field that can't change is disabled.
+  - Select takes a custom `trigger`; dropdown filter chips are a Select with a FilterChip trigger. Menu stays separate from Select (actions vs a value) but shares Popover and the item row.
+  - SwipeActions only reports a swipe past the threshold to the page (`left` / `right` slots, either optional); the page confirms or applies with Undo.
+  - Highlighted ListRow uses the 4px stripe on `brand-tint`, not an outline.
+  - Avatar sizes are one scale (24 / 32 / 44) for every variant.
+  - DropZone: the whole zone opens the picker and accepts drops in every state.
+  - All variants is the first story; every story is driven by args so Controls work.
+  - The new CSS `corner-shape` is not used.
+  - Composition rules added (RULES §5b).
+- 2026-10-15 · **Phase 3 runs through `/ds`**: each page is built under `/ds/…` first and reviewed there before the live route switches. Storybook is published inside the app at `/storybook`, linked from Settings, so it can be checked on any device.
 - 2026-10-15 · Accessibility is out of scope: no ARIA, screen-reader or contrast work. The Storybook accessibility addon stays installed but is not a check.
 
 ## Open questions

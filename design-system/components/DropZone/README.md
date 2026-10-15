@@ -1,11 +1,16 @@
 # DropZone
 
-The import area: drop files or choose them, then each queued file is a row with its name, size and a trash icon.
+The import area. The whole zone is the target: tapping or clicking anywhere in it opens the file picker, and dropping files anywhere on it adds them, in every state, including while files are queued.
 
 ## Use
-- Centred stack: icon tile, "Add statements", one line of what is accepted, then the Choose files button (phone label "Choose files").
+- Centred stack: icon tile, "Add statements", one line of what is accepted, and the Choose files button (a visible cue; the zone itself is the control).
+- Dragging over: `brand` dashed border on `brand-tint`.
 - Queued files show name, size and remove only. The user picks the account; nothing is detected or asked for at upload time.
-- Recent imports below are rows with the file name and a coloured status word ("Done" in `positive`, "1 warning" in `warning`), no icons.
+- A file that can't be sent says why in words ("Larger than 10 MB"), not only in red.
+- Recent imports below are rows with the file name and a coloured status word ("Done" in `positive`, "1 warning" in `warning`).
+
+## Built from
+Button, ListRow (queued files), Icon, StatusWords.
 
 ## Variants
-- Idle, dragging over, queued files (name, size, remove), and a file that cannot be sent.
+- Idle, dragging over, queued files, a file that cannot be sent.

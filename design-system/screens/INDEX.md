@@ -16,11 +16,12 @@ Every board of the FinanceOS redesign canvas (https://claude.ai/artifact/2nScEY5
 - **02 · Colour options (Ink locked)** — `ds-02b-palettes.dc.html` · `shots/ds-02b-palettes.webp`
 - **03 · Typography** — `ds-03-type.dc.html` · `shots/ds-03-type.webp`
 - **04 · Space, shape and depth** — `ds-04-layout.dc.html` · `shots/ds-04-layout.webp`
-- **05 · Navigation** — `ds-05-navigation.dc.html` · `shots/ds-05-navigation.webp`
-- **06 · Actions** — `ds-06-actions.dc.html` · `shots/ds-06-actions.webp`
-- **07 · Inputs** — `ds-07-inputs.dc.html` · `shots/ds-07-inputs.webp`
-- **08 · Data display** — `ds-08-data.dc.html` · `shots/ds-08-data.webp`
-- **09 · Feedback and overlays** — `ds-09-feedback.dc.html` · `shots/ds-09-feedback.webp`
+- **05 · Foundations and overlays** — `ds-05-foundations.dc.html` · `shots/ds-05-foundations.webp`
+- **06 · Navigation** — `ds-06-navigation.dc.html` · `shots/ds-06-navigation.webp`
+- **07 · Actions** — `ds-07-actions.dc.html` · `shots/ds-07-actions.webp`
+- **08 · Inputs** — `ds-08-inputs.dc.html` · `shots/ds-08-inputs.webp`
+- **09 · Data display** — `ds-09-data.dc.html` · `shots/ds-09-data.webp`
+- **10 · Feedback** — `ds-10-feedback.dc.html` · `shots/ds-10-feedback.webp`
 
 ## Phone screens
 

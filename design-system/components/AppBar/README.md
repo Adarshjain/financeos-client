@@ -1,6 +1,6 @@
 # AppBar
 
-The phone app bar: the brand mark (or a back arrow on detail screens), breadcrumb and screen title, then Ask the data, Search and the one + (`brand` fill) that adds whatever the screen is about.
+The phone app bar (the desktop shell is Rail and TopBar): the brand mark (or a back arrow on detail screens), breadcrumb and screen title, then Ask the data, Search and the one + (`brand` fill) that adds whatever the screen is about.
 
 ## Use
 - Every phone screen has exactly one. It replaces a body title: phone pages never repeat the title as an H1.
@@ -13,3 +13,6 @@ The phone app bar: the brand mark (or a back arrow on detail screens), breadcrum
 ## Don't
 - Don't put page actions (Export, Merge…) here; they live in the page or in a ⋮ menu.
 - Don't wrap the title; it truncates with an ellipsis.
+
+## Built from
+Button, Icon. The desktop shell is Rail and TopBar.

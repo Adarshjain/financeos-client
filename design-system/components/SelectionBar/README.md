@@ -11,5 +11,8 @@ The bar that appears while items are selected: the count, a one-line summary, an
 ## Selection model (phone)
 Long-press a row to start, tap to add or remove, the eye icon opens the item's detail without leaving selection, × or back to finish. No checkboxes on phone. Desktop uses checkboxes.
 
+## Built from
+Button, Icon.
+
 ## Variants
 - Four actions (transactions), a single action (rules), and an action that does not apply to the current selection (greyed, with the reason in the subtitle).

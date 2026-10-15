@@ -10,3 +10,6 @@ The phone tab bar: Home · Inbox · Upcoming · Transactions · More, always in 
 ## Don't
 - Don't add a sixth tab or reorder; new sections go under More.
 - Don't use a count bubble for information that needs no action.
+
+## Built from
+Icon, Badge (count). Items are links with the current one marked.

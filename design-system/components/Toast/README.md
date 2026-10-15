@@ -1,13 +1,21 @@
 # Toast
 
-A short confirmation at the bottom of the screen after an action, with Undo when the action can be reversed.
+A Banner that floats at the bottom of the screen after an action, for about 5 seconds, with Undo when the action can be reversed.
+
+## Tones
+The same as Banner, so a toast reads the same as an inline message: `neutral` (the default: "Snoozed until Wed 14 Oct"), `success`, `danger` ("Couldn't snooze. The row is back."), `warning`, `info`. Floating adds `shadow-pop`.
 
 ## Use
-- Says what happened, with the object: "Snoozed until Wed 14 Oct", "Marked ₹20,000 paid · ₹13,900 still due", "Dashboard deleted".
-- Offer **Undo** for snooze, dismiss, mark paid and other reversible actions; the row leaves at once and Undo puts it back.
-- Failures use the error mark and say what is back the way it was: "Couldn't snooze. The row is back."
-- One toast at a time, about 5 seconds, above the tab bar on phone.
-- No icon: the words carry the result. A failure says so in its first words ("Couldn't …").
+- Says what happened, with the object: "Marked ₹20,000 paid · ₹13,900 still due", "Dashboard deleted".
+- Undo for snooze, dismiss, mark paid and other reversible actions; the row leaves at once and Undo puts it back.
+- One toast at a time, above the tab bar on phone, bottom centre on desktop.
+- No icon.
+
+## Built from
+Banner (tones and layout), Sonner (queue and timing), Button (Undo).
 
 ## Don't
 - Don't use a toast for something the user must act on; use a Banner or the Inbox.
+
+## Variants
+- Neutral, success, danger, warning, info; with Undo.
