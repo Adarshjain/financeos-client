@@ -55,7 +55,7 @@ Build in this order, one component per step. After each one, set its status to *
 | # | Component | Status |
 | --- | --- | --- |
 | 1 | Icon | Ready for review |
-| 2 | Popover | Changes requested |
+| 2 | Popover | Ready for review |
 | 3 | Dialog | Changes requested |
 | 4 | TabBar | Changes requested |
 | 5 | Rail | Changes requested |
@@ -63,13 +63,13 @@ Build in this order, one component per step. After each one, set its status to *
 | 7 | Tabs | Changes requested |
 | 8 | Pager | Ready for review |
 | 9 | Button | Ready for review |
-| 10 | Menu | Changes requested |
+| 10 | Menu | Ready for review |
 | 11 | SelectionBar | Changes requested |
 | 12 | SwipeActions | Changes requested |
 | 13 | TextField | Ready for review |
 | 14 | TextArea | Changes requested |
 | 15 | DateField | Changes requested |
-| 16 | Select | Changes requested |
+| 16 | Select | Ready for review |
 | 17 | SearchField | Ready for review |
 | 18 | FilterChip | Changes requested |
 | 19 | Checkbox | Ready for review |
@@ -216,6 +216,15 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 3 · Menu, Select, Popover (one item row, one surface):
+  - Popover: deleted legacy `width="match"` mode and `PopoverWidth` type; unified content width to `min-w-popover-trigger max-w-dialog-sm w-auto` so content grows naturally with trigger/options. Updated Popover stories and tests.
+  - Select: replaced custom option styling with shared `getItemRowClass` from `itemRow.ts`; set option text and hints to weight 500 (`font-medium text-body`); removed nested inner card (`p-0` directly in Popover surface without duplicate `bg-surface border rounded shadow`).
+  - Menu: set MenuItem hint weight to 500 (`font-medium text-caption`); verified hover `bg-hover`, pressed `bg-pressed`, active `brand-tint` with Check, and zero outline/border/ring.
+  - DateField: cleaned up removed `width="content"` prop calls on PopoverContent.
+  - Stories compared and interacted with: Menu (AllVariants, Default, WithIcons, ForcePhone), Select (AllVariants, SingleSelect, MultiSelect, SectionedList, CustomTrigger), Popover (AllVariants, Default, WithCompactTrigger) beside previews at 390 and 1440, light and dark. Click, keyboard navigation, and hover all responded properly.
+  - Checks: typecheck (clean), lint (0 errors), vitest (all 426 test files / 3,527 tests passing), build-storybook (clean), check-ui (clean on touched files). Differences left open: none.
+
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 2 · Checkbox:
   - Added `align-middle` and `select-none` to Checkbox to prevent baseline shift when the Indicator mounts/unmounts, keeping dimensions strictly identical across all states (16x16px with 2px border).

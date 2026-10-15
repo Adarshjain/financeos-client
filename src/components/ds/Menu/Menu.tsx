@@ -125,7 +125,7 @@ export const MenuItem = forwardRef<
         {hint ? (
           <span
             className={cn(
-              'ml-auto font-text font-semibold text-caption shrink-0 pl-space-6',
+              'ml-auto font-text font-medium text-caption shrink-0 pl-space-6',
               active ? 'text-brand-strong' : 'text-ink-4',
             )}
           >

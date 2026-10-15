@@ -26,11 +26,6 @@ const meta: Meta<typeof Popover> = {
   title: 'DS/Overlays/Popover',
   component: Popover,
   argTypes: {
-    width: {
-      control: { type: 'select' },
-      options: ['match', 'content'],
-      description: 'Whether popover matches trigger width or fits content (min trigger width)',
-    },
     align: {
       control: { type: 'select' },
       options: ['start', 'center', 'end'],
@@ -41,7 +36,6 @@ const meta: Meta<typeof Popover> = {
     },
   },
   args: {
-    width: 'match',
     align: 'start',
     side: 'bottom',
   },
@@ -55,10 +49,9 @@ export const AllVariants: Story = {
     <div className="flex flex-col gap-space-24 p-space-16 max-w-lg">
       <div className="flex flex-col gap-space-8">
         <span className="font-text text-overline font-extrabold uppercase text-ink-4">
-          Match trigger width
+          Default trigger
         </span>
         <Popover
-          width="match"
           defaultOpen
           trigger={
             <Button variant="secondary" className="w-72 justify-between">
@@ -73,10 +66,9 @@ export const AllVariants: Story = {
 
       <div className="flex flex-col gap-space-8 pt-space-48">
         <span className="font-text text-overline font-extrabold uppercase text-ink-4">
-          Content width
+          Compact trigger · content grows freely
         </span>
         <Popover
-          width="content"
           defaultOpen
           trigger={
             <Button variant="secondary" className="gap-space-8">
@@ -92,9 +84,8 @@ export const AllVariants: Story = {
   ),
 };
 
-export const MatchTriggerWidth: Story = {
+export const Default: Story = {
   args: {
-    width: 'match',
     defaultOpen: true,
     trigger: (
       <Button variant="secondary" className="w-72 justify-between">
@@ -106,9 +97,8 @@ export const MatchTriggerWidth: Story = {
   },
 };
 
-export const ContentWidth: Story = {
+export const WithCompactTrigger: Story = {
   args: {
-    width: 'content',
     defaultOpen: true,
     trigger: (
       <Button variant="secondary" className="gap-space-8">
