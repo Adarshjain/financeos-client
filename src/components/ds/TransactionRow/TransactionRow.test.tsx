@@ -304,4 +304,19 @@ describe('TransactionRow', () => {
     fireEvent.click(checkbox);
     expect(handleSelectedChange).toHaveBeenCalledWith(true);
   });
+
+  it('renders leading element and trailing chevron', () => {
+    const { container } = render(
+      <TransactionRow
+        leading={<span data-testid="leading-avatar">HD</span>}
+        description="Amex bill"
+        amount="10,000.00"
+        chevron
+      />,
+    );
+
+    expect(screen.getByTestId('leading-avatar')).toBeInTheDocument();
+    const chevronSvg = container.querySelector('svg.lucide-chevron-right');
+    expect(chevronSvg).toBeInTheDocument();
+  });
 });
