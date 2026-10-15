@@ -83,6 +83,11 @@ const RULES = [
     why: 'Google-hosted font — self-host with next/font/local',
   },
   {
+    id: 'inline-size',
+    re: /(?:\b(?:width|height|minWidth|minHeight|maxWidth|maxHeight|padding\w*|margin\w*|gap|top|left|right|bottom|inset|borderRadius|borderWidth)\s*:\s*(?:-?\d+(?:\.\d+)?\s*[,}\n]|['"`]-?\d+(?:\.\d+)?px))/,
+    why: 'fixed pixel size in an inline style — use a size or space token class (dynamic values like percentages are fine)',
+  },
+  {
     id: 'inline-style',
     re: /style=\{\{[^}]*\b(?:color|background(?:Color)?|fontSize|fontWeight|boxShadow|borderColor|fontFamily)\s*:/,
     why: 'colour or type in an inline style — use tokens and type styles',
@@ -220,6 +225,8 @@ function selfTest() {
     ['native-date', '<input type="date" />'],
     ['google-font', "import { Inter } from 'next/font/google';"],
     ['inline-style', '<div style={{ color: x }}>'],
+    ['inline-size', '<span style={{ width: 34, height: 20 }}>'],
+    ['inline-size', "style={{ maxWidth: '440px' }}"],
   ];
   const good = [
     '<div className="bg-surface border-line text-ink">',
@@ -230,6 +237,8 @@ function selfTest() {
     'color: hsl(var(--foreground));',
     '<DateInput value={v} />',
     '<a href="#section">',
+    '<div style={{ width: `${pct}%` }}>',
+    '<div style={{ transform: `translateX(${dx}px)` }}>',
   ];
   let fail = 0;
   for (const [rule, text] of bad) {
