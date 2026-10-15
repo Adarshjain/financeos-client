@@ -67,7 +67,7 @@ describe('Tabs', () => {
     expect(twoTab).toHaveAttribute('aria-selected', 'true');
   });
 
-  it('renders tab counts', () => {
+  it('renders tab counts without opacity-75 and with inset focus ring', () => {
     render(
       <Tabs
         items={[
@@ -75,8 +75,11 @@ describe('Tabs', () => {
         ]}
       />,
     );
-    expect(screen.getByText(/Tradebook/)).toBeInTheDocument();
-    expect(screen.getByText(/38/)).toBeInTheDocument();
+    const tab = screen.getByRole('tab', { name: /Tradebook/ });
+    expect(tab).toHaveClass('focus-visible:ring-inset');
+    const countSpan = screen.getByText(/38/);
+    expect(countSpan).toBeInTheDocument();
+    expect(countSpan).not.toHaveClass('opacity-75');
   });
 
   it('navigates with arrow keys and Home/End', () => {

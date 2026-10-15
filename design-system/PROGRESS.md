@@ -144,6 +144,23 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 8) · Tabs component fixes:
+  - Fixed Tabs in `src/components/ds/Tabs/Tabs.tsx`:
+    - Fixed focus ring clipping: added `focus-visible:ring-inset rounded-ds-sm` to `TabsTrigger` so focus ring is inset and never clipped by `TabsList`'s `overflow-x-auto` container.
+    - Fixed count contrast: removed `opacity-75` from tab count span, keeping count contrast crisp and matching `preview.html`.
+  - Updated `src/components/ds/Tabs/Tabs.test.tsx`:
+    - Updated unit tests to assert `focus-visible:ring-inset` on tabs and confirm count element has no `opacity-75`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/Tabs` (7 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `Tabs/preview.html`:
+    - `DS/Navigation/Tabs/Plain`
+    - `DS/Navigation/Tabs/WithCounts`
+    - `DS/Navigation/Tabs/ScrollingOnPhone`
+    - `DS/Navigation/Tabs/InteractiveWithContent`
+    - `DS/Navigation/Tabs/AllVariants`
+    Verified unclipped inset focus ring, clear tab underline indicator, and crisp contrast on counts without opacity reduction.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 7) · SelectionBar component fixes:
   - Fixed SelectionBar in `src/components/ds/SelectionBar/SelectionBar.tsx`:
     - Fixed "Select all" button height: changed from unpadded 12px inline text to `inline-flex items-center h-control-md px-space-8 rounded-ds-md` (32px standard control height meeting touch targets).

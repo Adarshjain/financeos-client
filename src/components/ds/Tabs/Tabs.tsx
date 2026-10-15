@@ -204,7 +204,7 @@ export const TabsTrigger = forwardRef<HTMLButtonElement, TabsTriggerProps>(
         }}
         className={cn(
           'font-text text-body py-space-10 px-space-12 whitespace-nowrap border-b-2 transition-colors duration-fast select-none cursor-pointer',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset rounded-ds-sm',
           isActive
             ? 'text-brand-strong border-brand font-bold'
             : 'font-semibold text-ink-3 border-transparent hover:text-ink',
@@ -215,7 +215,7 @@ export const TabsTrigger = forwardRef<HTMLButtonElement, TabsTriggerProps>(
       >
         <span>{children}</span>
         {count !== undefined && count !== null ? (
-          <span className="opacity-75"> · {count}</span>
+          <span> · {count}</span>
         ) : null}
       </button>
     );
