@@ -130,7 +130,7 @@ describe('Pager', () => {
     expect(handlePageChange).toHaveBeenCalledWith(3);
   });
 
-  it('triggers onSizeChange when changing page size via dropdown menu', () => {
+  it('triggers onSizeChange when changing page size via Select', () => {
     const handleSizeChange = vi.fn();
     render(
       <Pager
@@ -145,9 +145,9 @@ describe('Pager', () => {
     );
 
     const trigger = screen.getByRole('button', { name: 'Rows per page' });
-    fireEvent.pointerDown(trigger, { button: 0 });
+    fireEvent.click(trigger);
 
-    const option = screen.getByRole('menuitem', { name: '100 / page' });
+    const option = screen.getByRole('option', { name: '100 / page' });
     fireEvent.click(option);
     expect(handleSizeChange).toHaveBeenCalledWith(100);
   });

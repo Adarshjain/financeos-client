@@ -61,7 +61,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 6 | Rail | Ready for review |
 | 7 | TopBar | Ready for review |
 | 8 | Tabs | Ready for review |
-| 9 | Pager | Changes requested |
+| 9 | Pager | Ready for review |
 | 10 | Button | Ready for review |
 | 11 | Menu | Ready for review |
 | 12 | SelectionBar | Ready for review |
@@ -199,6 +199,17 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 13g · Pager:
+  - Updated `Pager` in `src/components/ds/Pager/Pager.tsx`:
+    - Replaced all raw `<button>` elements with DS `Button` component:
+      - Previous/Next navigation arrow buttons use `Button` (`variant="secondary"`, `size="md"`, `iconOnly`) with `Icon` (`ChevronLeft`/`ChevronRight`, `size="md"`).
+      - Numbered page buttons use `Button` (`variant={isActive ? 'primary' : 'ghost'}`, `size="md"`), rendering active page with `bg-brand text-on-brand font-bold` and inactive pages with ghost styling.
+      - Rows-per-page selector uses `Select` with custom `Button` trigger and `Icon` `ChevronDown` (`size="sm"`), replacing raw button and Radix DropdownMenu.
+  - Updated `src/components/ds/Pager/Pager.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`Desktop`, `Phone`, `SinglePage`, `MiddlePage`) with controls, card decorator.
+  - Updated `src/components/ds/Pager/Pager.test.tsx`: updated test name and assertion from `triggers onSizeChange when changing page size via dropdown menu` to `triggers onSizeChange when changing page size via Select`. 11 unit tests passing.
+  - Stories compared: AllVariants, Desktop, Phone, SinglePage, MiddlePage against `design-system/components/Pager/preview.html` and pagination screens at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 13f · Tabs:
   - Rebuilt `Tabs` on `@radix-ui/react-tabs` primitives (`TabsPrimitive.Root`, `TabsPrimitive.List`, `TabsPrimitive.Trigger`, `TabsPrimitive.Content`) in `src/components/ds/Tabs/Tabs.tsx`.
