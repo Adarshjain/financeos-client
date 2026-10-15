@@ -52,32 +52,65 @@ describe('DateField component', () => {
     expect(button).toBeDisabled();
   });
 
-  it('renders range mode with From and To fields', () => {
+  it('renders range mode as one combined field and auto-inserts separator on typing', () => {
     const handleRangeChange = vi.fn();
     render(
       <DateField
         range
-        fromLabel="Start"
-        toLabel="End"
+        label="Period"
         defaultStartDate="01/10/2026"
         defaultEndDate="15/10/2026"
         onRangeChange={handleRangeChange}
       />,
     );
 
-    const fromInput = screen.getByLabelText('Start');
-    const toInput = screen.getByLabelText('End');
-    expect(fromInput).toHaveValue('01/10/2026');
-    expect(toInput).toHaveValue('15/10/2026');
+    const input = screen.getByLabelText('Period');
+    expect(input).toHaveValue('01/10/2026 – 15/10/2026');
 
-    fireEvent.change(fromInput, { target: { value: '05102026' } });
+    // Type new start and end digits
+    fireEvent.change(input, { target: { value: '05102026' } });
+    expect(input).toHaveValue('05/10/2026 – ');
+
+    fireEvent.change(input, { target: { value: '0510202620102026' } });
+    expect(input).toHaveValue('05/10/2026 – 20/10/2026');
     expect(handleRangeChange).toHaveBeenCalledWith({
       startDate: '05/10/2026',
-      endDate: '15/10/2026',
+      endDate: '20/10/2026',
     });
   });
 
-  it('opens calendar and allows selecting date', () => {
+  it('picks range from calendar: first tap sets start, second tap sets end', () => {
+    const handleRangeChange = vi.fn();
+    render(
+      <DateField
+        range
+        label="Period"
+        defaultStartDate="01/10/2026"
+        onRangeChange={handleRangeChange}
+      />,
+    );
+
+    const openButton = screen.getByRole('button', { name: 'Open calendar' });
+    fireEvent.click(openButton);
+
+    // Click day 5 (first tap sets start)
+    const day5Buttons = screen.getAllByRole('button', { name: '5' });
+    fireEvent.click(day5Buttons[0]);
+    expect(handleRangeChange).toHaveBeenCalledWith({
+      startDate: '05/10/2026',
+      endDate: '',
+    });
+
+    // Click day 20 (second tap sets end)
+    const day20Buttons = screen.getAllByRole('button', { name: '20' });
+    fireEvent.click(day20Buttons[0]);
+    expect(handleRangeChange).toHaveBeenCalledWith({
+      startDate: '05/10/2026',
+      endDate: '20/10/2026',
+    });
+  });
+
+  it('opens calendar and allows selecting date in single mode', () => {
     const handleChange = vi.fn();
     render(<DateField label="Due date" defaultValue="25/10/2026" onChange={handleChange} />);
 

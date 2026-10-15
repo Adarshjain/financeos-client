@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef, useId, useState } from 'react';
+import React, { forwardRef, useId, useRef, useState } from 'react';
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
@@ -26,10 +26,8 @@ export interface DateFieldProps {
   defaultValue?: string;
   onChange?: (dateStr: string) => void;
 
-  /** Range mode: two typed inputs (From and To) sharing one calendar */
+  /** Range mode: one combined field "dd/mm/yyyy – dd/mm/yyyy" */
   range?: boolean;
-  fromLabel?: React.ReactNode;
-  toLabel?: React.ReactNode;
   startDate?: string;
   endDate?: string;
   defaultStartDate?: string;
@@ -51,6 +49,49 @@ export function formatDateInput(val: string): string {
   if (digits.length <= 2) return digits;
   if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
   return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+export function formatRangeInput(val: string): {
+  display: string;
+  startDate: string;
+  endDate: string;
+} {
+  if (!val) return { display: '', startDate: '', endDate: '' };
+
+  const digits = val.replace(/\D/g, '').slice(0, 16);
+  const startDigits = digits.slice(0, 8);
+  const endDigits = digits.slice(8, 16);
+
+  let startFormatted = '';
+  if (startDigits.length <= 2) {
+    startFormatted = startDigits;
+  } else if (startDigits.length <= 4) {
+    startFormatted = `${startDigits.slice(0, 2)}/${startDigits.slice(2)}`;
+  } else {
+    startFormatted = `${startDigits.slice(0, 2)}/${startDigits.slice(2, 4)}/${startDigits.slice(4)}`;
+  }
+
+  let endFormatted = '';
+  if (endDigits.length > 0) {
+    if (endDigits.length <= 2) {
+      endFormatted = endDigits;
+    } else if (endDigits.length <= 4) {
+      endFormatted = `${endDigits.slice(0, 2)}/${endDigits.slice(2)}`;
+    } else {
+      endFormatted = `${endDigits.slice(0, 2)}/${endDigits.slice(2, 4)}/${endDigits.slice(4)}`;
+    }
+  }
+
+  let display = startFormatted;
+  if (startDigits.length === 8) {
+    display = endFormatted ? `${startFormatted} – ${endFormatted}` : `${startFormatted} – `;
+  }
+
+  return {
+    display,
+    startDate: startDigits.length === 8 ? startFormatted : '',
+    endDate: endDigits.length === 8 ? endFormatted : '',
+  };
 }
 
 function parseDateStr(val?: string): Date | null {
@@ -87,8 +128,6 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       defaultValue,
       onChange,
       range = false,
-      fromLabel = 'From',
-      toLabel = 'To',
       startDate: controlledStartDate,
       endDate: controlledEndDate,
       defaultStartDate,
@@ -96,6 +135,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       onRangeChange,
       minDate,
       maxDate,
+      ...props
     },
     ref,
   ) => {
@@ -116,12 +156,21 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         : internalValue;
 
     // Range mode state
-    const [internalStart, setInternalStart] = useState<string>(
-      defaultStartDate ? formatDateInput(defaultStartDate) : '',
-    );
-    const [internalEnd, setInternalEnd] = useState<string>(
-      defaultEndDate ? formatDateInput(defaultEndDate) : '',
-    );
+    const initialStart = defaultStartDate ? formatDateInput(defaultStartDate) : '';
+    const initialEnd = defaultEndDate ? formatDateInput(defaultEndDate) : '';
+    const [internalStart, setInternalStart] = useState<string>(initialStart);
+    const [internalEnd, setInternalEnd] = useState<string>(initialEnd);
+
+    const initialDisplay =
+      initialStart && initialEnd
+        ? `${initialStart} – ${initialEnd}`
+        : initialStart
+          ? `${initialStart} – `
+          : '';
+
+    const [internalRangeInput, setInternalRangeInput] = useState<string>(initialDisplay);
+    const prevRangeInputRef = useRef<string>(initialDisplay);
+
     const currentStart =
       controlledStartDate !== undefined
         ? formatDateInput(controlledStartDate)
@@ -131,7 +180,24 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         ? formatDateInput(controlledEndDate)
         : internalEnd;
 
-    // Range selection picking state: 0 = start, 1 = end
+    const displayRange =
+      controlledStartDate !== undefined || controlledEndDate !== undefined
+        ? currentStart && currentEnd
+          ? `${currentStart} – ${currentEnd}`
+          : currentStart
+            ? `${currentStart} – `
+            : ''
+        : internalRangeInput;
+
+    // Calendar view state (year/month)
+    const baseDate = parseDateStr(currentStart) ?? parseDateStr(currentValue) ?? new Date();
+    const [viewYear, setViewYear] = useState<number>(baseDate.getFullYear());
+    const [viewMonth, setViewMonth] = useState<number>(baseDate.getMonth());
+
+    const nextMonth = viewMonth === 11 ? 0 : viewMonth + 1;
+    const nextMonthYear = viewMonth === 11 ? viewYear + 1 : viewYear;
+
+    // 0 = next click sets start, 1 = next click sets end
     const [rangeStep, setRangeStep] = useState<0 | 1>(0);
 
     const hasError = Boolean(error);
@@ -144,16 +210,24 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       onChange?.(formatted);
     };
 
-    const handleStartInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const formatted = formatDateInput(e.target.value);
-      setInternalStart(formatted);
-      onRangeChange?.({ startDate: formatted, endDate: currentEnd });
-    };
-
-    const handleEndInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const formatted = formatDateInput(e.target.value);
-      setInternalEnd(formatted);
-      onRangeChange?.({ startDate: currentStart, endDate: formatted });
+    const handleRangeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      let val = e.target.value;
+      if (
+        prevRangeInputRef.current.endsWith(' – ') &&
+        val.length < prevRangeInputRef.current.length &&
+        !val.includes(' –')
+      ) {
+        val = val.replace(/\D*$/, '').slice(0, -1);
+      }
+      const formatted = formatRangeInput(val);
+      prevRangeInputRef.current = formatted.display;
+      setInternalRangeInput(formatted.display);
+      setInternalStart(formatted.startDate);
+      setInternalEnd(formatted.endDate);
+      onRangeChange?.({
+        startDate: formatted.startDate,
+        endDate: formatted.endDate,
+      });
     };
 
     const handleSelectDateFromCalendar = (dateStr: string) => {
@@ -163,24 +237,31 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         setOpen(false);
       } else {
         if (rangeStep === 0 || (currentStart && currentEnd)) {
+          // First tap: set start date
           setInternalStart(dateStr);
           setInternalEnd('');
+          const disp = `${dateStr} – `;
+          setInternalRangeInput(disp);
+          prevRangeInputRef.current = disp;
           setRangeStep(1);
           onRangeChange?.({ startDate: dateStr, endDate: '' });
         } else {
-          // Setting end date
-          const startDateObj = parseDateStr(currentStart);
-          const endDateObj = parseDateStr(dateStr);
-          if (startDateObj && endDateObj && endDateObj < startDateObj) {
-            // Swap
-            setInternalStart(dateStr);
-            setInternalEnd(currentStart);
-            onRangeChange?.({ startDate: dateStr, endDate: currentStart });
-          } else {
-            setInternalEnd(dateStr);
-            onRangeChange?.({ startDate: currentStart, endDate: dateStr });
+          // Second tap: set end date
+          const startObj = parseDateStr(currentStart);
+          const endObj = parseDateStr(dateStr);
+          let finalStart = currentStart;
+          let finalEnd = dateStr;
+          if (startObj && endObj && endObj < startObj) {
+            finalStart = dateStr;
+            finalEnd = currentStart;
           }
+          setInternalStart(finalStart);
+          setInternalEnd(finalEnd);
+          const disp = `${finalStart} – ${finalEnd}`;
+          setInternalRangeInput(disp);
+          prevRangeInputRef.current = disp;
           setRangeStep(0);
+          onRangeChange?.({ startDate: finalStart, endDate: finalEnd });
           setOpen(false);
         }
       }
@@ -195,6 +276,9 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       } else {
         setInternalStart(todayStr);
         setInternalEnd('');
+        const disp = `${todayStr} – `;
+        setInternalRangeInput(disp);
+        prevRangeInputRef.current = disp;
         setRangeStep(1);
         onRangeChange?.({ startDate: todayStr, endDate: '' });
       }
@@ -208,194 +292,110 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       } else {
         setInternalStart('');
         setInternalEnd('');
+        setInternalRangeInput('');
+        prevRangeInputRef.current = '';
         setRangeStep(0);
         onRangeChange?.({ startDate: '', endDate: '' });
         setOpen(false);
       }
     };
 
-    const calendarContent = (
-      <MonthCalendar
-        mode="picker"
-        selectedDate={!range ? currentValue : undefined}
-        startDate={range ? currentStart : undefined}
-        endDate={range ? currentEnd : undefined}
-        minDate={minDate}
-        maxDate={maxDate}
-        onSelectDate={handleSelectDateFromCalendar}
-        showFooter
-        onToday={handleToday}
-        onClear={handleClear}
-      />
+    const handleMonthChange = (y: number, m: number) => {
+      setViewYear(y);
+      setViewMonth(m);
+    };
+
+    // Calendar content: two months side by side on desktop in range mode, one month otherwise
+    const calendarContent =
+      range && !isPhone ? (
+        <div className="flex flex-col bg-surface">
+          <div className="flex flex-row divide-x divide-line-soft">
+            <MonthCalendar
+              mode="picker"
+              year={viewYear}
+              month={viewMonth}
+              onMonthChange={handleMonthChange}
+              startDate={currentStart}
+              endDate={currentEnd}
+              minDate={minDate}
+              maxDate={maxDate}
+              onSelectDate={handleSelectDateFromCalendar}
+            />
+            <MonthCalendar
+              mode="picker"
+              year={nextMonthYear}
+              month={nextMonth}
+              onMonthChange={(y, m) => {
+                let prevM = m - 1;
+                let prevY = y;
+                if (prevM < 0) {
+                  prevM = 11;
+                  prevY -= 1;
+                }
+                setViewYear(prevY);
+                setViewMonth(prevM);
+              }}
+              startDate={currentStart}
+              endDate={currentEnd}
+              minDate={minDate}
+              maxDate={maxDate}
+              onSelectDate={handleSelectDateFromCalendar}
+            />
+          </div>
+          <div className="flex items-center justify-between p-space-8 border-t border-line-soft">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleToday}
+            >
+              Today
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleClear}
+              className="ml-auto text-ink-3 hover:text-ink"
+            >
+              Clear
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <MonthCalendar
+          mode="picker"
+          selectedDate={!range ? currentValue : undefined}
+          startDate={range ? currentStart : undefined}
+          endDate={range ? currentEnd : undefined}
+          minDate={minDate}
+          maxDate={maxDate}
+          onSelectDate={handleSelectDateFromCalendar}
+          showFooter
+          onToday={handleToday}
+          onClear={handleClear}
+        />
+      );
+
+    const triggerButton = (
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        iconOnly
+        disabled={disabled}
+        aria-label="Open calendar"
+        onClick={() => {
+          if (!disabled) {
+            setOpen(!isOpen);
+          }
+        }}
+        className="text-ink-3 hover:text-ink shrink-0"
+      >
+        <Icon name="calendar" size="md" />
+      </Button>
     );
 
-    if (range) {
-      return (
-        <div className={cn('w-full font-text text-body', className)}>
-          {label ? (
-            <div className="font-text font-bold text-label text-ink-2 mb-space-6 select-none">
-              {label}
-              {optional ? (
-                <span className="font-medium text-ink-4 ml-space-4">
-                  (Optional)
-                </span>
-              ) : null}
-            </div>
-          ) : null}
-
-          <div className="flex gap-space-8 max-w-sm">
-            {/* From field */}
-            <div className="flex-1 min-w-0">
-              <label
-                htmlFor={`${id}-from`}
-                className="block font-text font-bold text-label text-ink-2 mb-space-6 select-none"
-              >
-                {fromLabel}
-              </label>
-              <div
-                className={cn(
-                  'flex items-center gap-space-8 h-control-lg w-full px-space-12 border rounded-ds-md bg-surface font-text font-medium text-body text-ink',
-                  'transition-colors duration-fast focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
-                  hasError
-                    ? 'border-danger focus-within:ring-danger'
-                    : 'border-line-strong focus-within:border-brand',
-                  disabled &&
-                    'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
-                )}
-              >
-                <input
-                  id={`${id}-from`}
-                  type="text"
-                  inputMode="numeric"
-                  disabled={disabled}
-                  placeholder={placeholder}
-                  value={currentStart}
-                  onChange={handleStartInputChange}
-                  aria-invalid={hasError ? 'true' : undefined}
-                  className={cn(
-                    'w-full h-full bg-transparent border-0 p-0 text-body text-ink placeholder:text-ink-4 focus:outline-none focus:ring-0',
-                    disabled && 'cursor-not-allowed text-ink-faint',
-                  )}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  iconOnly
-                  disabled={disabled}
-                  aria-label="Open calendar for start date"
-                  onClick={() => {
-                    if (!disabled) {
-                      setRangeStep(0);
-                      setOpen(!isOpen);
-                    }
-                  }}
-                  className="text-ink-3 hover:text-ink shrink-0"
-                >
-                  <Icon name="calendar" size="md" />
-                </Button>
-              </div>
-            </div>
-
-            {/* To field */}
-            <div className="flex-1 min-w-0">
-              <label
-                htmlFor={`${id}-to`}
-                className="block font-text font-bold text-label text-ink-2 mb-space-6 select-none"
-              >
-                {toLabel}
-              </label>
-              <div
-                className={cn(
-                  'flex items-center gap-space-8 h-control-lg w-full px-space-12 border rounded-ds-md bg-surface font-text font-medium text-body text-ink',
-                  'transition-colors duration-fast focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
-                  hasError
-                    ? 'border-danger focus-within:ring-danger'
-                    : 'border-line-strong focus-within:border-brand',
-                  disabled &&
-                    'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
-                )}
-              >
-                <input
-                  id={`${id}-to`}
-                  type="text"
-                  inputMode="numeric"
-                  disabled={disabled}
-                  placeholder={placeholder}
-                  value={currentEnd}
-                  onChange={handleEndInputChange}
-                  aria-invalid={hasError ? 'true' : undefined}
-                  className={cn(
-                    'w-full h-full bg-transparent border-0 p-0 text-body text-ink placeholder:text-ink-4 focus:outline-none focus:ring-0',
-                    disabled && 'cursor-not-allowed text-ink-faint',
-                  )}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  iconOnly
-                  disabled={disabled}
-                  aria-label="Open calendar for end date"
-                  onClick={() => {
-                    if (!disabled) {
-                      setRangeStep(1);
-                      setOpen(!isOpen);
-                    }
-                  }}
-                  className="text-ink-3 hover:text-ink shrink-0"
-                >
-                  <Icon name="calendar" size="md" />
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Dialog on phone, Popover on desktop */}
-          {isPhone ? (
-            <Dialog open={isOpen} onOpenChange={setOpen}>
-              <DialogContent
-                title="Select date range"
-                onClose={() => setOpen(false)}
-              >
-                <DialogBody className="p-0 flex justify-center">
-                  {calendarContent}
-                </DialogBody>
-              </DialogContent>
-            </Dialog>
-          ) : (
-            <PopoverRoot open={isOpen} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
-                <span className="sr-only">Date picker popover trigger</span>
-              </PopoverTrigger>
-              <PopoverContent
-                className="p-0 overflow-hidden shadow-pop"
-              >
-                {calendarContent}
-              </PopoverContent>
-            </PopoverRoot>
-          )}
-
-          {hasError ? (
-            <div
-              id={helperId}
-              className="mt-space-6 font-text font-medium text-caption text-danger"
-            >
-              {error}
-            </div>
-          ) : helper ? (
-            <div
-              id={helperId}
-              className="mt-space-6 font-text font-medium text-caption text-ink-3"
-            >
-              {helper}
-            </div>
-          ) : null}
-        </div>
-      );
-    }
-
-    // Single mode
     return (
       <FieldFrame
         id={id}
@@ -409,7 +409,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         <PopoverRoot open={isOpen} onOpenChange={setOpen}>
           <div
             className={cn(
-              'flex items-center gap-space-8 h-control-lg w-full max-w-sm px-space-12 border rounded-ds-md bg-surface font-text font-medium text-body text-ink',
+              'flex items-center gap-space-8 h-control-lg w-full px-space-12 border rounded-ds-md bg-surface font-text font-medium text-body text-ink',
               'transition-colors duration-fast focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
               hasError
                 ? 'border-danger focus-within:ring-danger'
@@ -424,52 +424,35 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
               type="text"
               inputMode="numeric"
               disabled={disabled}
-              placeholder={placeholder}
-              value={currentValue}
-              onChange={handleSingleInputChange}
+              placeholder={range ? 'dd/mm/yyyy – dd/mm/yyyy' : placeholder}
+              value={range ? displayRange : currentValue}
+              onChange={range ? handleRangeInputChange : handleSingleInputChange}
               aria-invalid={hasError ? 'true' : undefined}
               aria-describedby={hasError || helper ? helperId : undefined}
               className={cn(
                 'w-full h-full bg-transparent border-0 p-0 text-body text-ink placeholder:text-ink-4 focus:outline-none focus:ring-0',
                 disabled && 'cursor-not-allowed text-ink-faint',
               )}
+              {...props}
             />
 
             {isPhone ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                iconOnly
-                disabled={disabled}
-                aria-label="Open calendar"
-                onClick={() => !disabled && setOpen(!isOpen)}
-                className="text-ink-3 hover:text-ink shrink-0"
-              >
-                <Icon name="calendar" size="md" />
-              </Button>
+              triggerButton
             ) : (
-              <PopoverTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  iconOnly
-                  disabled={disabled}
-                  aria-label="Open calendar"
-                  onClick={() => !disabled && setOpen(!isOpen)}
-                  className="text-ink-3 hover:text-ink shrink-0"
-                >
-                  <Icon name="calendar" size="md" />
-                </Button>
-              </PopoverTrigger>
+              <PopoverTrigger asChild>{triggerButton}</PopoverTrigger>
             )}
           </div>
 
           {isPhone ? (
             <Dialog open={isOpen} onOpenChange={setOpen}>
               <DialogContent
-                title={label || 'Select date'}
+                title={
+                  typeof label === 'string'
+                    ? label
+                    : range
+                      ? 'Select date range'
+                      : 'Select date'
+                }
                 onClose={() => setOpen(false)}
               >
                 <DialogBody className="p-0 flex justify-center">
@@ -479,7 +462,10 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
             </Dialog>
           ) : (
             <PopoverContent
-              className="p-0 overflow-hidden shadow-pop"
+              className={cn(
+                'p-0 overflow-hidden shadow-pop',
+                range ? 'max-w-dialog-md w-auto' : '',
+              )}
             >
               {calendarContent}
             </PopoverContent>
