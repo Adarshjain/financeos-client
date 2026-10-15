@@ -1,7 +1,10 @@
 import { Search, X } from 'lucide-react';
 import React, { forwardRef, useId, useRef, useState } from 'react';
 
+import { Button } from '../Button/Button';
 import { cn } from '../cn';
+import { FieldFrame } from '../FieldFrame';
+import { Icon } from '../Icon/Icon';
 
 export interface SearchFieldProps
   extends Omit<
@@ -11,6 +14,7 @@ export interface SearchFieldProps
   variant?: 'filter' | 'sheet';
   label?: React.ReactNode;
   helper?: React.ReactNode;
+  error?: React.ReactNode;
   clearable?: boolean;
   onClear?: () => void;
   onValueChange?: (value: string) => void;
@@ -25,6 +29,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
       variant = 'filter',
       label,
       helper,
+      error,
       clearable = true,
       onClear,
       onValueChange,
@@ -89,16 +94,14 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
     const isSheet = variant === 'sheet';
 
     return (
-      <div className={cn('w-full', className)}>
-        {label ? (
-          <label
-            htmlFor={id}
-            className="block font-text text-label font-bold text-ink-2 mb-space-6"
-          >
-            {label}
-          </label>
-        ) : null}
-
+      <FieldFrame
+        id={id}
+        helperId={helperId}
+        label={label}
+        helper={helper}
+        error={error}
+        className={cn('w-full', className)}
+      >
         <div
           className={cn(
             'flex items-center gap-space-8 rounded-ds-md border border-line-strong bg-surface font-text font-medium text-body text-ink',
@@ -109,9 +112,10 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
             containerClassName,
           )}
         >
-          <Search
-            className="h-space-14 w-space-14 text-ink-3 shrink-0"
-            aria-hidden="true"
+          <Icon
+            icon={Search}
+            size="sm"
+            className="text-ink-3 shrink-0"
           />
 
           <input
@@ -133,26 +137,19 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
           />
 
           {clearable && hasValue && !disabled ? (
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
+              iconOnly
               aria-label="Clear search"
               onClick={handleClear}
-              className="inline-flex items-center justify-center text-ink-4 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded-ds-xs transition-colors shrink-0"
+              className="text-ink-4 hover:text-ink shrink-0"
             >
-              <X className="h-space-12 w-space-12" aria-hidden="true" />
-            </button>
+              <Icon icon={X} size="sm" />
+            </Button>
           ) : null}
         </div>
-
-        {helper ? (
-          <p
-            id={helperId}
-            className="font-text text-caption font-medium text-ink-3 mt-space-6"
-          >
-            {helper}
-          </p>
-        ) : null}
-      </div>
+      </FieldFrame>
     );
   },
 );
