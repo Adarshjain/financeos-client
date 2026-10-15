@@ -144,6 +144,25 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 7) · SelectionBar component fixes:
+  - Fixed SelectionBar in `src/components/ds/SelectionBar/SelectionBar.tsx`:
+    - Fixed "Select all" button height: changed from unpadded 12px inline text to `inline-flex items-center h-control-md px-space-8 rounded-ds-md` (32px standard control height meeting touch targets).
+    - Deduplicated Escape listener: only attach keydown listener to window when `count > 0` (preventing listeners while selection is empty), check `e.defaultPrevented`, and call `e.preventDefault()`.
+    - Added `z-dock` to phone docked bar container (`shadow-dock z-dock`).
+    - Verified `w-control-md` (32px) close button sizing now renders correctly with the updated contract.
+  - Updated `src/components/ds/SelectionBar/SelectionBar.test.tsx`:
+    - Added tests for `h-control-md` on Select all button, presence of `z-dock` on phone variant, and verified Escape does not trigger onClear when `count === 0`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/SelectionBar` (7 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `SelectionBar/preview.html`:
+    - `DS/Actions/SelectionBar/Desktop`
+    - `DS/Actions/SelectionBar/PhoneDocked`
+    - `DS/Actions/SelectionBar/SingleAction`
+    - `DS/Actions/SelectionBar/ActionDisabled`
+    - `DS/Actions/SelectionBar/AllVariants`
+    Verified 32px close button, 32px Select all button height, z-dock stacking, and clean phone dock styling.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 6) · Menu component fixes:
   - Fixed Menu in `src/components/ds/Menu/Menu.tsx`:
     - Updated sizing: `MenuItem` and `DropdownMenuItem` height set to `min-h-control-lg px-space-10` (36px) per owner decision (2026-10-15).
