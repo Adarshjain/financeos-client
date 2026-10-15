@@ -1,4 +1,4 @@
-import { Badge, Card, SectionHeader, Banner } from '@/components/ds';
+import { Badge, Banner,Card, SectionHeader } from '@/components/ds';
 
 export function ServerFixture() {
   return (
