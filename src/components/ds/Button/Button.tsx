@@ -8,11 +8,10 @@ export type ButtonVariant =
   | 'primary'
   | 'secondary'
   | 'danger'
-  | 'danger-outline'
   | 'danger-filled'
   | 'ghost';
 
-export type ButtonSize = 'sm' | 'md' | 'xl' | 'small' | 'default' | 'phone';
+export type ButtonSize = 'sm' | 'md' | 'xl';
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -33,19 +32,11 @@ const variantStyles: Record<ButtonVariant, string> = {
     'border border-line-strong bg-surface text-ink hover:bg-hover active:bg-hover',
   danger:
     'border border-danger-border bg-surface text-danger hover:bg-danger-tint active:bg-danger-tint',
-  'danger-outline':
-    'border border-danger-border bg-surface text-danger hover:bg-danger-tint active:bg-danger-tint',
   'danger-filled':
     'border border-transparent bg-danger text-on-brand hover:opacity-90 active:opacity-90',
   ghost:
     'border border-transparent bg-transparent text-ink hover:bg-hover active:bg-hover',
 };
-
-function normalizeSize(size: ButtonSize): 'sm' | 'md' | 'xl' {
-  if (size === 'small' || size === 'sm') return 'sm';
-  if (size === 'phone' || size === 'xl') return 'xl';
-  return 'md';
-}
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -66,8 +57,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
-    const normalizedSize = normalizeSize(size);
-
     const sizeClasses = {
       sm: iconOnly
         ? 'h-control-sm aspect-square p-0 rounded-ds-sm'
@@ -78,9 +67,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       xl: iconOnly
         ? 'h-control-xl aspect-square p-0 rounded-ds-lg'
         : 'h-control-xl px-space-16 text-heading rounded-ds-lg gap-space-8',
-    }[normalizedSize];
+    }[size];
 
-    const spinnerSize = normalizedSize === 'sm' ? 'h-space-12 w-space-12' : 'h-space-14 w-space-14';
+    const spinnerSize = size === 'sm' ? 'h-space-12 w-space-12' : 'h-space-14 w-space-14';
 
     const classes = cn(
       'inline-flex items-center justify-center font-text font-semibold whitespace-nowrap transition-colors duration-fast select-none',
@@ -100,6 +89,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     }
 
     const isEffectivelyDisabled = disabled || loading;
+    const isPrimary = variant === 'primary';
 
     return (
       <button
@@ -124,7 +114,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             {icon ? <span className="inline-flex items-center justify-center shrink-0">{icon}</span> : null}
             {children}
             {count !== undefined && count !== null ? (
-              <span className="inline-flex items-center justify-center min-w-space-16 h-space-16 px-space-6 rounded-ds-pill bg-ink text-on-brand font-text font-bold text-tab-label leading-none shrink-0">
+              <span
+                className={cn(
+                  'inline-flex items-center justify-center min-w-space-16 h-space-16 px-space-6 rounded-ds-pill font-text font-bold text-tab-label leading-none shrink-0',
+                  isPrimary ? 'bg-surface text-ink' : 'bg-ink text-on-brand',
+                )}
+              >
                 {count}
               </span>
             ) : null}

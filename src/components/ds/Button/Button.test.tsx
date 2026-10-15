@@ -85,14 +85,25 @@ describe('Button component', () => {
   });
 
   it('renders count pill when count prop is provided', () => {
-    render(
+    const { rerender } = render(
       <Button icon={<Check />} count={9}>
         Approve
       </Button>
     );
 
     expect(screen.getByRole('button')).toHaveTextContent('Approve');
-    expect(screen.getByText('9')).toBeInTheDocument();
+    const pill = screen.getByText('9');
+    expect(pill).toBeInTheDocument();
+    expect(pill).toHaveClass('bg-ink', 'text-on-brand');
+
+    rerender(
+      <Button variant="primary" count={5}>
+        Approve rules
+      </Button>
+    );
+    const primaryPill = screen.getByText('5');
+    expect(primaryPill).toBeInTheDocument();
+    expect(primaryPill).toHaveClass('bg-surface', 'text-ink');
   });
 
   it('renders asChild with Slot', () => {
