@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
   Sheet,
@@ -47,10 +47,51 @@ describe('SheetShell', () => {
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
   });
+
+  it('SheetBody includes touch-pan-y for scroll ergonomics', () => {
+    render(<SheetBody>Scrollable content</SheetBody>);
+    expect(screen.getByText('Scrollable content')).toHaveClass('touch-pan-y');
+  });
+
+  it('triggers onClose when swiping down past the threshold', () => {
+    const handleClose = vi.fn();
+    render(
+      <SheetShell title="Swipe Test" onClose={handleClose}>
+        <SheetBody>Body</SheetBody>
+      </SheetShell>,
+    );
+
+    const dragArea = screen.getByTestId('sheet-drag-area');
+
+    // Simulate drag down by 100px (threshold is 80px)
+    fireEvent.pointerDown(dragArea, { clientY: 50, pointerId: 1 });
+    fireEvent.pointerMove(dragArea, { clientY: 150, pointerId: 1 });
+    fireEvent.pointerUp(dragArea, { clientY: 150, pointerId: 1 });
+
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('springs back and does not call onClose when swipe is below threshold', () => {
+    const handleClose = vi.fn();
+    render(
+      <SheetShell title="Spring Test" onClose={handleClose}>
+        <SheetBody>Body</SheetBody>
+      </SheetShell>,
+    );
+
+    const dragArea = screen.getByTestId('sheet-drag-area');
+
+    // Drag down only 30px (below threshold 80px)
+    fireEvent.pointerDown(dragArea, { clientY: 50, pointerId: 1 });
+    fireEvent.pointerMove(dragArea, { clientY: 80, pointerId: 1 });
+    fireEvent.pointerUp(dragArea, { clientY: 80, pointerId: 1 });
+
+    expect(handleClose).not.toHaveBeenCalled();
+  });
 });
 
 describe('Sheet (Radix bottom-sheet overlay)', () => {
-  it('opens and displays content on trigger click', () => {
+  it('opens and displays content on trigger click with z-overlay and z-scrim tokens', () => {
     render(
       <Sheet>
         <SheetTrigger asChild>
@@ -66,6 +107,8 @@ describe('Sheet (Radix bottom-sheet overlay)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open Sheet' }));
 
-    expect(screen.getByText('Sheet is open')).toBeInTheDocument();
+    const content = screen.getByText('Sheet is open').closest('[role="dialog"]');
+    expect(content).toBeInTheDocument();
+    expect(content).toHaveClass('z-overlay', 'max-h-dvh');
   });
 });
