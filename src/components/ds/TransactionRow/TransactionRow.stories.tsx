@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
 import { Card } from '../Card/Card';
-import { DateGroupHeader } from '../DateGroupHeader/DateGroupHeader';
+import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { TransactionRow } from './TransactionRow';
 
 const meta: Meta<typeof TransactionRow> = {
@@ -106,7 +106,7 @@ export const AllVariants: Story = {
   render: () => (
     <div style={{ maxWidth: '24.375rem' }} className="w-full">
       <Card className="p-0 overflow-hidden">
-        <DateGroupHeader date="12 Oct" weekday="Mon" borderTop={false} />
+        <SectionHeader variant="date" label="12 Oct" meta="Mon" borderTop={false} />
         <TransactionRow
           description="BigBasket"
           amount="3,600.00"
@@ -124,7 +124,7 @@ export const AllVariants: Story = {
           categories={['Salary']}
         />
 
-        <DateGroupHeader date="11 Oct" weekday="Sun" />
+        <SectionHeader variant="date" label="11 Oct" meta="Sun" />
         <TransactionRow
           description="Swiggy Bangalore"
           amount="1,249.00"
