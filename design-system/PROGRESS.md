@@ -67,7 +67,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 12 | SelectionBar | Changes requested |
 | 13 | SwipeActions | Changes requested |
 | 14 | TextField | Ready for review |
-| 15 | TextArea | Not started |
+| 15 | TextArea | Ready for review |
 | 16 | DateField | Not started |
 | 17 | Select | Ready for review |
 | 18 | SearchField | Ready for review |
@@ -165,6 +165,19 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 9b · TextArea:
+  - Created `TextArea` in `src/components/ds/TextArea/TextArea.tsx`:
+    - Label, optional marker, helper and error via shared `FieldFrame`.
+    - Auto-grow from default 3 rows up to 8 rows (`minRows=3`, `maxRows=8`), then scrolls with `overflow-y: auto`.
+    - Styled with `p-space-12`, `rounded-ds-md`, `border`, `bg-surface`, `focus:ring-2 focus:ring-focus-ring`, error state (`border-danger`), and disabled state (`bg-sunken`).
+  - Created `src/components/ds/TextArea/TextArea.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`Default`, `Filled`, `WithHelper`, `ErrorState`, `Disabled`) with controls.
+  - Created `src/components/ds/TextArea/TextArea.test.tsx`: 6 unit tests covering label and textarea with rows=3, optional marker, typing via onChange, helper text, error state with danger border, and disabled state.
+  - Exported `TextArea` from `src/components/ds/index.ts`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npx vitest run src/components/ds/TextArea` (6/6 tests passed), `npm run build-storybook`, `node design-system/tools/check-ui.mjs` clean.
+  - Stories compared: `DS/Inputs/TextArea/AllVariants`, `Default`, `Filled`, `WithHelper`, `ErrorState`, `Disabled` beside `design-system/components/TextArea/preview.html` at 390px and 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 9a · TextField and FieldFrame:
   - Extracted shared field frame into `src/components/ds/FieldFrame.tsx` (`label`, `optional`, `helper`, `error`), used by `TextField` and `Select`.
