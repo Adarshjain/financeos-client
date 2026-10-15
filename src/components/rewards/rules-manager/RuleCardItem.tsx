@@ -128,8 +128,8 @@ export function RuleCardItem({
         </div>
       </div>
 
-      {/* Actions 3-dot dropdown menu */}
-      <DropdownMenu>
+      {/* Actions 3-dot dropdown menu. Non-modal: its items open dialogs, which a modal menu can leave the page inert behind. */}
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
