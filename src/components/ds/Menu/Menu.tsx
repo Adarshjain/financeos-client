@@ -45,13 +45,13 @@ export const MenuItem = forwardRef<HTMLButtonElement, MenuItemProps>(
         disabled={disabled}
         onClick={handleClick}
         className={cn(
-          'flex items-center gap-space-10 w-full text-left py-space-8 px-space-10 rounded-ds-md font-text font-semibold text-body select-none transition-colors duration-fast outline-none',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
+          'flex items-center gap-space-10 w-full text-left min-h-control-lg px-space-10 rounded-ds-md font-text font-semibold text-body select-none transition-colors duration-fast outline-none',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
           !disabled && !destructive && !active && !action && 'text-ink hover:bg-hover focus-visible:bg-hover cursor-pointer',
           !disabled && active && 'bg-brand-tint text-brand-strong hover:bg-brand-tint cursor-pointer',
           !disabled && destructive && 'text-danger hover:bg-danger-tint focus-visible:bg-danger-tint cursor-pointer',
           !disabled && action && 'text-brand font-bold hover:bg-hover focus-visible:bg-hover cursor-pointer',
-          disabled && 'text-ink-faint cursor-not-allowed opacity-60',
+          disabled && 'text-ink-faint cursor-not-allowed',
           className,
         )}
         {...props}
@@ -119,11 +119,49 @@ MenuGroup.displayName = 'MenuGroup';
 export interface MenuProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const Menu = forwardRef<HTMLDivElement, MenuProps>(
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, onKeyDown, ...props }, ref) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+      onKeyDown?.(e);
+      if (e.defaultPrevented) return;
+
+      const isArrowDown = e.key === 'ArrowDown';
+      const isArrowUp = e.key === 'ArrowUp';
+      const isHome = e.key === 'Home';
+      const isEnd = e.key === 'End';
+
+      if (!isArrowDown && !isArrowUp && !isHome && !isEnd) return;
+
+      const container = e.currentTarget;
+      const items = Array.from(
+        container.querySelectorAll<HTMLButtonElement>(
+          'button[role="menuitem"]:not([disabled])',
+        ),
+      );
+
+      if (items.length === 0) return;
+
+      e.preventDefault();
+      const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement);
+
+      if (isHome) {
+        items[0]?.focus();
+      } else if (isEnd) {
+        items[items.length - 1]?.focus();
+      } else if (isArrowDown) {
+        const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % items.length;
+        items[nextIndex]?.focus();
+      } else if (isArrowUp) {
+        const prevIndex =
+          currentIndex <= 0 ? items.length - 1 : currentIndex - 1;
+        items[prevIndex]?.focus();
+      }
+    };
+
     return (
       <div
         ref={ref}
         role="menu"
+        onKeyDown={handleKeyDown}
         className={cn(
           'bg-surface border border-line rounded-ds-lg shadow-pop p-space-6 flex flex-col w-full min-w-0',
           className,
@@ -201,12 +239,13 @@ export const DropdownMenuItem = forwardRef<
         ref={ref}
         disabled={disabled}
         className={cn(
-          'flex items-center gap-space-10 w-full text-left py-space-8 px-space-10 rounded-ds-md font-text font-semibold text-body select-none transition-colors duration-fast outline-none',
+          'flex items-center gap-space-10 w-full text-left min-h-control-lg px-space-10 rounded-ds-md font-text font-semibold text-body select-none transition-colors duration-fast outline-none',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
           !disabled && !destructive && !active && !action && 'text-ink hover:bg-hover focus-visible:bg-hover cursor-pointer',
           !disabled && active && 'bg-brand-tint text-brand-strong hover:bg-brand-tint cursor-pointer',
           !disabled && destructive && 'text-danger hover:bg-danger-tint focus-visible:bg-danger-tint cursor-pointer',
           !disabled && action && 'text-brand font-bold hover:bg-hover focus-visible:bg-hover cursor-pointer',
-          disabled && 'text-ink-faint cursor-not-allowed opacity-60',
+          disabled && 'text-ink-faint cursor-not-allowed',
           className,
         )}
         {...props}
