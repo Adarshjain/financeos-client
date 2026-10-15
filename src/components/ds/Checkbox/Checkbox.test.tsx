@@ -56,4 +56,16 @@ describe('Checkbox', () => {
     expect(checkbox).toBeDisabled();
     expect(checkbox).toHaveClass('disabled:opacity-50');
   });
+
+  it('maintains align-middle and identical dimensions across checked states', () => {
+    const { rerender } = render(<Checkbox checked={false} aria-label="Align test" />);
+    const checkbox = screen.getByRole('checkbox', { name: 'Align test' });
+    expect(checkbox).toHaveClass('align-middle', 'w-space-16', 'h-space-16');
+
+    rerender(<Checkbox checked={true} aria-label="Align test" />);
+    expect(checkbox).toHaveClass('align-middle', 'w-space-16', 'h-space-16');
+
+    rerender(<Checkbox checked="indeterminate" aria-label="Align test" />);
+    expect(checkbox).toHaveClass('align-middle', 'w-space-16', 'h-space-16');
+  });
 });
