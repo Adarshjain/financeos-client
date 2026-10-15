@@ -1,5 +1,5 @@
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useRef, useState } from 'react';
 
 import { cn } from '../cn';
 
@@ -30,6 +30,7 @@ export interface SheetShellProps
   description?: React.ReactNode;
   srTitle?: string;
   showHandle?: boolean;
+  onClose?: () => void;
 }
 
 /**
@@ -41,41 +42,91 @@ export const SheetShell = forwardRef<HTMLDivElement, SheetShellProps>(
     {
       children,
       className,
+      style,
       title,
       subtitle,
       description,
       srTitle,
       showHandle = true,
+      onClose,
       ...props
     },
     ref,
   ) => {
     const desc = subtitle ?? description;
+    const [dragOffset, setDragOffset] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+    const startYRef = useRef(0);
+
+    const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+      startYRef.current = e.clientY;
+      setIsDragging(true);
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        // pointer capture fallback
+      }
+    };
+
+    const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDragging) return;
+      const diff = e.clientY - startYRef.current;
+      setDragOffset(diff > 0 ? diff : 0);
+    };
+
+    const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDragging) return;
+      setIsDragging(false);
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {
+        // ignore
+      }
+      if (dragOffset > 80) {
+        onClose?.();
+      }
+      setDragOffset(0);
+    };
 
     return (
       <div
         ref={ref}
+        style={{
+          transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
+          ...style,
+        }}
         className={cn(
-          'bg-surface rounded-t-ds-sheet shadow-sheet flex flex-col overflow-hidden text-body text-ink border-t border-line-soft',
+          'bg-surface rounded-t-ds-sheet shadow-sheet flex flex-col overflow-hidden text-body text-ink border-t border-line-soft max-h-dvh',
+          isDragging ? 'transition-none' : 'transition-transform duration-sheet ease-out',
           className,
         )}
         {...props}
       >
         {srTitle && !title && <span className="sr-only">{srTitle}</span>}
-        {showHandle && <SheetHandle />}
 
-        {(title || desc) && (
-          <div className="px-space-16 pt-space-12 pb-space-8 flex flex-col shrink-0">
-            {title && (
-              <div className="font-extrabold text-title text-ink leading-tight">
-                {title}
-              </div>
-            )}
-            {desc && (
-              <div className="text-label text-ink-3 mt-space-2">{desc}</div>
-            )}
-          </div>
-        )}
+        <div
+          data-testid="sheet-drag-area"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
+          className="cursor-grab active:cursor-grabbing select-none shrink-0 touch-none"
+        >
+          {showHandle && <SheetHandle />}
+
+          {(title || desc) && (
+            <div className="px-space-16 pt-space-12 pb-space-8 flex flex-col shrink-0">
+              {title && (
+                <div className="font-extrabold text-title text-ink leading-tight">
+                  {title}
+                </div>
+              )}
+              {desc && (
+                <div className="text-label text-ink-3 mt-space-2">{desc}</div>
+              )}
+            </div>
+          )}
+        </div>
 
         {children}
       </div>
@@ -85,21 +136,15 @@ export const SheetShell = forwardRef<HTMLDivElement, SheetShellProps>(
 
 SheetShell.displayName = 'SheetShell';
 
-export interface SheetBodyProps extends React.HTMLAttributes<HTMLDivElement> {
-  maxHeight?: number | string;
-}
+export interface SheetBodyProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const SheetBody = forwardRef<HTMLDivElement, SheetBodyProps>(
-  ({ children, className, style, maxHeight = 480, ...props }, ref) => {
+  ({ children, className, ...props }, ref) => {
     return (
       <div
         ref={ref}
-        style={{
-          maxHeight,
-          ...style,
-        }}
         className={cn(
-          'px-space-16 py-space-4 overflow-y-auto flex flex-col gap-space-12 flex-1',
+          'px-space-16 py-space-4 overflow-y-auto flex flex-col gap-space-12 flex-1 touch-pan-y',
           className,
         )}
         {...props}
@@ -150,6 +195,7 @@ export interface SheetContentProps
   description?: React.ReactNode;
   srTitle?: string;
   showHandle?: boolean;
+  onClose?: () => void;
 }
 
 export const SheetContent = forwardRef<
@@ -166,27 +212,69 @@ export const SheetContent = forwardRef<
       description,
       srTitle,
       showHandle = true,
+      onClose,
       ...props
     },
     ref,
   ) => {
     const desc = subtitle ?? description;
+    const [dragOffset, setDragOffset] = useState(0);
+    const [isDragging, setIsDragging] = useState(false);
+    const startYRef = useRef(0);
+    const closeRef = useRef<HTMLButtonElement>(null);
+
+    const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+      startYRef.current = e.clientY;
+      setIsDragging(true);
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        // fallback
+      }
+    };
+
+    const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDragging) return;
+      const diff = e.clientY - startYRef.current;
+      setDragOffset(diff > 0 ? diff : 0);
+    };
+
+    const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+      if (!isDragging) return;
+      setIsDragging(false);
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch {
+        // ignore
+      }
+      if (dragOffset > 80) {
+        if (onClose) {
+          onClose();
+        } else {
+          closeRef.current?.click();
+        }
+      }
+      setDragOffset(0);
+    };
 
     return (
       <SheetPortal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-scrim" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-scrim bg-scrim" />
         <DialogPrimitive.Content
           ref={ref}
           style={{
-            maxHeight: '90%',
+            transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
             ...style,
           }}
           className={cn(
-            'fixed inset-x-0 bottom-0 z-50 bg-surface rounded-t-ds-sheet shadow-sheet flex flex-col overflow-hidden text-body text-ink border-t border-line-soft focus:outline-none',
+            'fixed inset-x-0 bottom-0 z-overlay bg-surface rounded-t-ds-sheet shadow-sheet flex flex-col overflow-hidden text-body text-ink border-t border-line-soft focus:outline-none max-h-dvh',
+            isDragging ? 'transition-none' : 'transition-transform duration-sheet ease-out',
             className,
           )}
           {...props}
         >
+          <DialogPrimitive.Close ref={closeRef} className="sr-only" aria-label="Close" />
+
           {title ? (
             <DialogPrimitive.Title className="sr-only">
               {typeof title === 'string' ? title : 'Sheet'}
@@ -205,20 +293,29 @@ export const SheetContent = forwardRef<
                 : 'Sheet description'}
           </DialogPrimitive.Description>
 
-          {showHandle && <SheetHandle />}
+          <div
+            data-testid="sheet-drag-area"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            className="cursor-grab active:cursor-grabbing select-none shrink-0 touch-none"
+          >
+            {showHandle && <SheetHandle />}
 
-          {(title || desc) && (
-            <div className="px-space-16 pt-space-12 pb-space-8 flex flex-col shrink-0">
-              {title && (
-                <div className="font-extrabold text-title text-ink leading-tight">
-                  {title}
-                </div>
-              )}
-              {desc && (
-                <div className="text-label text-ink-3 mt-space-2">{desc}</div>
-              )}
-            </div>
-          )}
+            {(title || desc) && (
+              <div className="px-space-16 pt-space-12 pb-space-8 flex flex-col shrink-0">
+                {title && (
+                  <div className="font-extrabold text-title text-ink leading-tight">
+                    {title}
+                  </div>
+                )}
+                {desc && (
+                  <div className="text-label text-ink-3 mt-space-2">{desc}</div>
+                )}
+              </div>
+            )}
+          </div>
 
           {children}
         </DialogPrimitive.Content>

@@ -142,19 +142,19 @@ export const ResultSummarySheet: Story = {
           <div className="grid grid-cols-3 gap-space-8">
             <div className="p-space-10 bg-sunken rounded-ds-md text-center">
               <div className="text-caption text-ink-3 font-semibold">Approved</div>
-              <div className="text-screen-title font-extrabold text-positive mt-space-2">
+              <div className="text-title font-extrabold text-positive mt-space-2">
                 7
               </div>
             </div>
             <div className="p-space-10 bg-sunken rounded-ds-md text-center">
               <div className="text-caption text-ink-3 font-semibold">Skipped</div>
-              <div className="text-screen-title font-extrabold text-ink mt-space-2">
+              <div className="text-title font-extrabold text-ink mt-space-2">
                 1
               </div>
             </div>
             <div className="p-space-10 bg-sunken rounded-ds-md text-center">
               <div className="text-caption text-ink-3 font-semibold">Failed</div>
-              <div className="text-screen-title font-extrabold text-danger mt-space-2">
+              <div className="text-title font-extrabold text-danger mt-space-2">
                 1
               </div>
             </div>
@@ -282,7 +282,7 @@ export const AllVariants: Story = {
             <div className="grid grid-cols-3 gap-space-8">
               <div className="p-space-10 bg-sunken rounded-ds-md text-center">
                 <div className="text-caption text-ink-3 font-semibold">Approved</div>
-                <div className="text-screen-title font-extrabold text-positive mt-space-2">
+                <div className="text-title font-extrabold text-positive mt-space-2">
                   7
                 </div>
               </div>

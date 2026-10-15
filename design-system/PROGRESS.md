@@ -144,6 +144,26 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 2 · Sheet component fixes:
+  - Fixed Sheet implementation in `src/components/ds/Sheet/Sheet.tsx`:
+    - Snapped phone gutter side padding to `px-space-16`.
+    - Added interactive swipe-down gesture on drag handle and header area: tracks pointer/touch movement, translates sheet with finger, closes past 80px threshold, and springs back with `transition-transform duration-sheet ease-out`.
+    - Added `touch-pan-y` to `SheetBody` for native scroll ergonomics.
+    - Updated overlay z-index to `z-scrim` and content z-index to `z-overlay`.
+    - Removed arbitrary `maxHeight: 480` and `maxHeight: '90%'`; capped sheet height with viewport-relative `max-h-dvh`.
+  - Updated `src/components/ds/Sheet/Sheet.test.tsx` with behavioral tests: swipe down past threshold triggers `onClose`, swipe down below threshold springs back, body includes `touch-pan-y`, and overlay/content use `z-scrim` / `z-overlay` and `max-h-dvh`.
+  - Updated `src/components/ds/Sheet/Sheet.stories.tsx`: result summary numbers use `text-title` per owner decision.
+  - Checks: `npm run typecheck`, `npm run lint`, `npx vitest run src/components/ds/Sheet/Sheet.test.tsx` (all 7 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs --staged` all clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark mode against `Sheet/preview.html`:
+    - `DS/Overlays/Sheet/Form`
+    - `DS/Overlays/Sheet/Detail`
+    - `DS/Overlays/Sheet/Picker`
+    - `DS/Overlays/Sheet/Result summary`
+    - `DS/Overlays/Sheet/All variants`
+    Verified drag handle, `radius-sheet` top corners, 16px gutter alignment, and pinned footers match preview.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 1 · Unknown Tailwind classes replaced:
   - Fixed unknown Tailwind class names across 15 files:
     - `text-small` replaced with `text-label` / `text-caption` / `text-body` in `AppBar.tsx`, `AppBar.stories.tsx`, `ConfirmSheet.tsx`, `ConfirmSheet.stories.tsx`, `Pager.tsx`, `Pager.stories.tsx`, `SelectionBar.stories.tsx`, `SwipeActions.stories.tsx`, and `TabBar.stories.tsx`.
