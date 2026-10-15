@@ -208,6 +208,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - Every story is interactive.
 - 2026-10-15 · **Responsive and API standards** (RULES §5c): one structure per component with CSS breakpoints at `lg`; no viewport JavaScript except the shared ResponsiveOverlay; no phone/desktop props; Radix-style prop names; events named for the component, not the app.
 - 2026-10-15 · **TabBar is a floating pill, the only mobile navigation format** (owner, canvas thread): inset 12px, `shadow-dock`, icon over label 2px apart, inactive `ink-faint`, current `ink` with an 800 label, no indicator or dot. The phone screen boards were updated to match.
+- 2026-10-16 · **More opens as a popup sheet above the TabBar**, not a full screen (owner, canvas thread): search, Quick add, the remaining sections by group, profile row; the bar stays visible with More current. TabBar README updated; to be built in the next component round (not in Phase 3a).
 - 2026-10-15 · Accessibility is out of scope: no ARIA, screen-reader or contrast work. The Storybook accessibility addon stays installed but is not a check.
 - 2026-10-15 · Pages under `/ds/…` may use components marked Ready for review; they are a review area and the live app is untouched. Only a swap into a live route requires Approved components.
 
