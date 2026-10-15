@@ -144,6 +144,26 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 11) · Card component fixes:
+  - Fixed Card in `src/components/ds/Card/Card.tsx`:
+    - Removed extra divider in empty variant: removed `border-t border-line-soft` from `CardEmpty`, aligning with `preview.html`.
+  - Updated `src/components/ds/Card/Card.stories.tsx`:
+    - Fixed pager sizing in `WithAPager` and `AllVariants`: updated pager buttons from miniature 24px buttons to standard `min-w-control-md h-control-md px-space-6 rounded-ds-md` (32px) controls matching the board.
+  - Updated `src/components/ds/Card/Card.test.tsx`:
+    - Added unit test assertion verifying `CardEmpty` does not have `border-t`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/Card` (6 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `Card/preview.html` and `ds-06-cards.webp`:
+    - `DS/Data display/Card/TitleSubtitleLink`
+    - `DS/Data display/Card/WithAnAction`
+    - `DS/Data display/Card/WithRows`
+    - `DS/Data display/Card/WithAPager`
+    - `DS/Data display/Card/WithSectionBands`
+    - `DS/Data display/Card/Empty`
+    - `DS/Data display/Card/AllVariants`
+    Verified no extra divider in empty variant, standard 32px pager buttons, and clean row borders.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 10) · Widget component fixes:
   - Fixed Widget in `src/components/ds/Widget/Widget.tsx`:
     - Updated retry button styling: changed from grey text to bold ink (`text-ink font-bold underline hover:text-ink-2`) matching the board.

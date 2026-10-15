@@ -70,13 +70,15 @@ describe('Card', () => {
     expect(screen.getByText('Item 1')).toBeInTheDocument();
   });
 
-  it('renders empty state', () => {
-    render(
+  it('renders empty state without extra top border divider', () => {
+    const { container } = render(
       <Card title="Untagged · 0">
         <CardEmpty>Every transaction has a category.</CardEmpty>
       </Card>,
     );
-    expect(screen.getByText('Every transaction has a category.')).toBeInTheDocument();
+    const emptyEl = screen.getByText('Every transaction has a category.');
+    expect(emptyEl).toBeInTheDocument();
+    expect(container.querySelector('.font-text.text-body.text-ink-3')).not.toHaveClass('border-t');
   });
 
   it('renders footer', () => {
