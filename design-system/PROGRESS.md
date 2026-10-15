@@ -56,7 +56,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 1 | Icon | Ready for review |
 | 2 | Popover | Ready for review |
 | 3 | Dialog | Ready for review |
-| 4 | AppBar | Changes requested |
+| 4 | AppBar | Ready for review |
 | 5 | TabBar | Changes requested |
 | 6 | Rail | Not started |
 | 7 | TopBar | Not started |
@@ -191,6 +191,19 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 10a · AppBar:
+  - Restricted `AppBar` in `src/components/ds/AppBar/AppBar.tsx` to the phone bar only:
+    - Renders brand mark (or back arrow on detail screens), breadcrumb and screen title with truncation, and Ask the data, Search, and Add action buttons.
+    - All icons now go through `Icon` (`ChevronLeft`, `MessageSquare`, `Search`, `Plus`) at size `md`.
+    - Removed `DesktopRail` and `DesktopTopBar` (moved to dedicated `Rail/` and `TopBar/` components).
+    - Preserved `BrandMark` export for phone and rail branding.
+  - Updated `src/components/ds/AppBar/AppBar.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`TopLevel`, `DetailScreen`, `WithoutCrumb`) with controls.
+  - Updated `src/components/ds/AppBar/AppBar.test.tsx`: 5 unit tests covering BrandMark rendering with default and custom symbols, top-level screen title/crumb, detail screen back button with `onBack`, and action callbacks (`onAsk`, `onSearch`, `onAdd`).
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npx vitest run src/components/ds/AppBar` (5/5 tests passed), `npm run build-storybook`, `node design-system/tools/check-ui.mjs` clean (raw-button error on AppBar resolved).
+  - Stories compared: `DS/Navigation/AppBar/AllVariants`, `TopLevel`, `DetailScreen`, `WithoutCrumb` beside `design-system/components/AppBar/preview.html` at 390px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 9c · DateField:
   - Created `DateField` in `src/components/ds/DateField/DateField.tsx`:
