@@ -144,6 +144,36 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 8 (part 1) · TransactionRow component fixes:
+  - Fixed TransactionRow in `src/components/ds/TransactionRow/TransactionRow.tsx`:
+    - Selection API (RULES §7.4): added `selectable`, `selected`, `onSelectedChange`, `onDetail` (with `onViewDetail` alias).
+    - Phone long-press: ~450ms timer starts selection (`onSelectedChange?.(true)`), cancelled if movement exceeds 10px or touch/pointer cancels before 450ms.
+    - Tap toggle: tapping the row toggles selection when `selectable`, `selected`, or in `selectionMode`.
+    - Trailing eye control: button with `Eye` icon opens detail (`onDetail?.()`) without leaving selection mode; `e.stopPropagation()` prevents row click/toggle.
+    - Desktop checkbox: uses `useIsPhone()` to display semantic checkbox on desktop (`!isPhone`) on the left (`accent-brand w-space-16 h-space-16 rounded-ds-xs m-0`), toggling selection without long-press.
+    - Typography: merchant/description uses `text-heading` (token 800 weight), removing overriding `font-bold` (700). Amount preserves 700 tabular digits.
+    - Accessibility: interactive row renders `role="row"`, `aria-selected`, `tabIndex=0`, and keyboard support (Enter/Space toggles selection).
+    - Styling & off-scale sizes: 4px stripe (`w-space-4 bg-brand` and `bg-watch`), excluded rows at 60% opacity (`opacity-60`), padding `py-space-10 px-space-14` matching `reference.css`.
+  - Updated `src/components/ds/TransactionRow/TransactionRow.stories.tsx`:
+    - `AllVariants` story configured with phone viewport parameters and 390px container (`style={{ maxWidth: '24.375rem' }}`).
+    - Added `SelectableInteractive` story demonstrating interactive selection toggle, desktop checkbox, and eye control callback.
+  - Updated `src/components/ds/TransactionRow/TransactionRow.test.tsx`:
+    - 15 unit tests covering rendering, credit amount, review status, empty category chip, selection mode eye button, selected/monitored/excluded states, row click, description 800 heading without font-bold, 4px stripe, tap selection toggle, keyboard Enter/Space toggle, mobile long-press selection, move >10px cancel, eye control stop propagation, and desktop checkbox.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,478 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs --staged` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `TransactionRow/preview.html` and boards (`P-transactions.webp`, `P-transactions-states.webp`):
+    - `DS/Data display/TransactionRow/Default`
+    - `DS/Data display/TransactionRow/Credit`
+    - `DS/Data display/TransactionRow/ReviewDuplicate`
+    - `DS/Data display/TransactionRow/TransferLink`
+    - `DS/Data display/TransactionRow/MonitoredUnset`
+    - `DS/Data display/TransactionRow/SelectedSelectionMode`
+    - `DS/Data display/TransactionRow/Excluded`
+    - `DS/Data display/TransactionRow/AllVariants`
+    - `DS/Data display/TransactionRow/SelectableInteractive`
+    Verified 390px container, 800-weight title typography, 4px stripes, desktop checkbox placement, phone long-press selection, and eye control action in both light and dark modes.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 7 · Pager component fixes:
   - Fixed Pager in `src/components/ds/Pager/Pager.tsx`:
     - Ellipsis algorithm: desktop shows first, current ± 1, last with "…" in gaps (e.g. ‹ 1 2 … 4 › on page 1 of 4, ‹ 1 … 4 5 6 … 10 › in middle); phone keeps one neighbour fewer (‹ 1 … 4 ›); single page shows count and size only with no arrows.

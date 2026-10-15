@@ -100,8 +100,11 @@ export const Excluded: Story = {
 };
 
 export const AllVariants: Story = {
+  parameters: {
+    viewport: { defaultViewport: 'phone' },
+  },
   render: () => (
-    <div className="max-w-sm">
+    <div style={{ maxWidth: '24.375rem' }} className="w-full">
       <Card className="p-0 overflow-hidden">
         <DateGroupHeader date="12 Oct" weekday="Mon" borderTop={false} />
         <TransactionRow
@@ -170,4 +173,30 @@ export const AllVariants: Story = {
       </Card>
     </div>
   ),
+};
+
+const SelectableInteractiveDemo = () => {
+  const [selected, setSelected] = React.useState(false);
+  return (
+    <div style={{ maxWidth: '24.375rem' }} className="w-full">
+      <Card className="p-0 overflow-hidden">
+        <TransactionRow
+          description="Swiggy Bangalore"
+          amount="1,249.00"
+          balance="bal ₹44,319"
+          account="HDFC Regalia"
+          plastic="••7741"
+          selectable
+          selected={selected}
+          onSelectedChange={setSelected}
+          onDetail={() => alert('View detail clicked')}
+          categories={['Food & dining']}
+        />
+      </Card>
+    </div>
+  );
+};
+
+export const SelectableInteractive: Story = {
+  render: () => <SelectableInteractiveDemo />,
 };

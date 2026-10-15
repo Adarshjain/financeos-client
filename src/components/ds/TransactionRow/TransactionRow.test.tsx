@@ -135,4 +135,173 @@ describe('TransactionRow', () => {
     fireEvent.click(screen.getByText('Clickable'));
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
+
+  it('renders description with text-heading and without font-bold', () => {
+    render(
+      <TransactionRow
+        description="BigBasket"
+        amount="3,600.00"
+      />,
+    );
+
+    const descEl = screen.getByText('BigBasket');
+    expect(descEl).toHaveClass('text-heading');
+    expect(descEl).not.toHaveClass('font-bold');
+  });
+
+  it('renders 4px stripes for selected and monitored rows', () => {
+    const { container: selContainer } = render(
+      <TransactionRow
+        description="Selected tx"
+        amount="100.00"
+        selected
+      />,
+    );
+    const selStripe = selContainer.querySelector('.bg-brand');
+    expect(selStripe).toHaveClass('w-space-4');
+
+    const { container: monContainer } = render(
+      <TransactionRow
+        description="Monitored tx"
+        amount="100.00"
+        monitored
+      />,
+    );
+    const monStripe = monContainer.querySelector('.bg-watch');
+    expect(monStripe).toHaveClass('w-space-4');
+  });
+
+  it('toggles selection on row tap when selectable', () => {
+    const handleSelectedChange = vi.fn();
+    render(
+      <TransactionRow
+        description="Selectable row"
+        amount="500.00"
+        selectable
+        selected={false}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByText('Selectable row'));
+    expect(handleSelectedChange).toHaveBeenCalledWith(true);
+  });
+
+  it('toggles selection on Enter and Space keys', () => {
+    const handleSelectedChange = vi.fn();
+    render(
+      <TransactionRow
+        description="Keyboard row"
+        amount="500.00"
+        selectable
+        selected={true}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+
+    const row = screen.getByRole('row');
+    fireEvent.keyDown(row, { key: 'Enter' });
+    expect(handleSelectedChange).toHaveBeenCalledWith(false);
+
+    fireEvent.keyDown(row, { key: ' ' });
+    expect(handleSelectedChange).toHaveBeenCalledWith(false);
+  });
+
+  it('starts selection on long-press (~450ms)', () => {
+    vi.useFakeTimers();
+    const handleSelectedChange = vi.fn();
+    const { container } = render(
+      <TransactionRow
+        description="Long press row"
+        amount="500.00"
+        selectable
+        selected={false}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+
+    const row = container.firstChild as HTMLElement;
+    fireEvent.touchStart(row, {
+      touches: [{ clientX: 100, clientY: 100 }],
+    });
+
+    vi.advanceTimersByTime(200);
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+
+    vi.advanceTimersByTime(300);
+    expect(handleSelectedChange).toHaveBeenCalledWith(true);
+    vi.useRealTimers();
+  });
+
+  it('cancels long-press when movement exceeds 10px', () => {
+    vi.useFakeTimers();
+    const handleSelectedChange = vi.fn();
+    const { container } = render(
+      <TransactionRow
+        description="Moving row"
+        amount="500.00"
+        selectable
+        selected={false}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+
+    const row = container.firstChild as HTMLElement;
+    fireEvent.touchStart(row, {
+      touches: [{ clientX: 100, clientY: 100 }],
+    });
+
+    vi.advanceTimersByTime(200);
+    // Move 15px vertically
+    fireEvent.touchMove(row, {
+      touches: [{ clientX: 100, clientY: 115 }],
+    });
+
+    vi.advanceTimersByTime(300);
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it('eye control opens detail without toggling selection', () => {
+    const handleDetail = vi.fn();
+    const handleSelectedChange = vi.fn();
+    render(
+      <TransactionRow
+        description="Detail row"
+        amount="500.00"
+        selected
+        selectionMode
+        onDetail={handleDetail}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+
+    const eyeBtn = screen.getByRole('button', {
+      name: /view transaction details/i,
+    });
+    fireEvent.click(eyeBtn);
+
+    expect(handleDetail).toHaveBeenCalledTimes(1);
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+  });
+
+  it('renders desktop checkbox when selectable on desktop', () => {
+    const handleSelectedChange = vi.fn();
+    render(
+      <TransactionRow
+        description="Desktop selectable"
+        amount="500.00"
+        selectable
+        selected={false}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+
+    const checkbox = screen.getByLabelText('Select Desktop selectable');
+    expect(checkbox).toBeInTheDocument();
+    expect(checkbox).not.toBeChecked();
+
+    fireEvent.click(checkbox);
+    expect(handleSelectedChange).toHaveBeenCalledWith(true);
+  });
 });
