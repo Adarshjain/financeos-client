@@ -58,135 +58,413 @@ export const AuthIllustration: React.FC<{
 }> = ({ className, variant = 'strip' }) => {
   const isFull = variant === 'full';
 
+  if (!isFull) {
+    return (
+      <div
+        className={cn(
+          'bg-illus-mint relative overflow-hidden select-none w-full',
+          className,
+        )}
+        aria-hidden="true"
+      >
+        <svg
+          viewBox="0 0 390 120"
+          className="w-full block"
+          fill="none"
+          preserveAspectRatio="xMidYMid slice"
+        >
+          <defs>
+            <filter
+              id="auth-shadow-strip"
+              x="-20%"
+              y="-20%"
+              width="140%"
+              height="140%"
+            >
+              <feDropShadow
+                dx="0"
+                dy="4"
+                stdDeviation="6"
+                floodColor="var(--ds-scrim)"
+                floodOpacity="0.12"
+              />
+            </filter>
+          </defs>
+
+          {/* Background soft blob */}
+          <circle
+            cx="360"
+            cy="10"
+            r="80"
+            fill="var(--ds-positive-tint)"
+            opacity="0.75"
+          />
+
+          {/* Brand credit card */}
+          <g transform="translate(24, 22) rotate(-6)">
+            <rect
+              width="150"
+              height="88"
+              rx="14"
+              fill="var(--ds-brand)"
+              filter="url(#auth-shadow-strip)"
+            />
+            <text
+              x="14"
+              y="24"
+              fill="var(--ds-on-brand)"
+              fontSize="10"
+              fontWeight="800"
+              letterSpacing="0.08em"
+              opacity="0.9"
+            >
+              REGALIA
+            </text>
+            <text
+              x="136"
+              y="24"
+              textAnchor="end"
+              fill="var(--ds-on-brand)"
+              fontSize="10"
+              fontWeight="800"
+            >
+              ₹
+            </text>
+            <text
+              x="14"
+              y="62"
+              fill="var(--ds-on-brand)"
+              fontSize="11"
+              fontWeight="800"
+              letterSpacing="0.12em"
+            >
+              •••• 7741
+            </text>
+            <text
+              x="14"
+              y="76"
+              fill="var(--ds-on-brand)"
+              fontSize="9"
+              fontWeight="500"
+              opacity="0.8"
+            >
+              ARJUN MEHTA
+            </text>
+          </g>
+
+          {/* Net worth card */}
+          <g transform="translate(150, 56) rotate(3)">
+            <rect
+              width="150"
+              height="58"
+              rx="14"
+              fill="var(--ds-bg-surface)"
+              stroke="var(--ds-line)"
+              filter="url(#auth-shadow-strip)"
+            />
+            <text
+              x="12"
+              y="20"
+              fill="var(--ds-ink-4)"
+              fontSize="10"
+              fontWeight="800"
+              letterSpacing="0.08em"
+            >
+              NET WORTH
+            </text>
+            <text
+              x="12"
+              y="42"
+              fill="var(--ds-ink)"
+              fontSize="15"
+              fontWeight="800"
+              fontFamily="var(--ds-font-display)"
+            >
+              ₹11.98L
+            </text>
+          </g>
+
+          {/* Gold Coin */}
+          <g transform="translate(322, 18) rotate(12)">
+            <circle
+              cx="20"
+              cy="20"
+              r="20"
+              fill="var(--ds-illus-gold)"
+              stroke="var(--ds-illus-gold-edge)"
+              strokeWidth="3"
+              filter="url(#auth-shadow-strip)"
+            />
+            <text
+              x="20"
+              y="26"
+              textAnchor="middle"
+              fill="var(--ds-warning-ink)"
+              fontSize="16"
+              fontWeight="800"
+            >
+              ₹
+            </text>
+          </g>
+        </svg>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
-        'bg-illus-mint relative overflow-hidden select-none',
-        isFull
-          ? 'h-full min-h-screen p-space-48 flex flex-col justify-between'
-          : 'h-space-48 w-full',
+        'bg-illus-mint relative overflow-hidden select-none h-full min-h-screen p-space-48 flex flex-col justify-between',
         className,
       )}
-      style={isFull ? undefined : { height: 120 }}
       aria-hidden="true"
     >
-      {/* Background soft blob */}
-      <div
-        className="absolute rounded-ds-pill bg-positive-tint opacity-75"
-        style={{
-          width: isFull ? 320 : 160,
-          height: isFull ? 320 : 160,
-          right: isFull ? -60 : -40,
-          top: isFull ? -60 : -40,
-        }}
-      />
-
-      {isFull && (
-        <div className="flex items-center gap-space-10 relative">
-          <div className="w-space-32 h-space-32 rounded-ds-md bg-brand text-on-brand font-extrabold flex items-center justify-center text-heading">
-            ₹
-          </div>
-          <div className="text-title font-extrabold text-ink">FinanceOS</div>
-        </div>
-      )}
-
-      {/* Floating scene elements */}
-      <div
-        className={cn(
-          'relative',
-          isFull ? 'my-auto h-space-48' : 'w-full h-full',
-        )}
-        style={isFull ? { height: 260 } : undefined}
-      >
-        {/* Brand credit card */}
-        <div
-          className="absolute rounded-ds-xl bg-brand text-on-brand shadow-raise flex flex-col justify-between p-space-12"
-          style={{
-            left: isFull ? '10%' : 24,
-            top: isFull ? 30 : 22,
-            width: isFull ? 200 : 150,
-            height: isFull ? 120 : 88,
-            transform: 'rotate(-6deg)',
-          }}
-        >
-          <div className="flex justify-between text-overline font-extrabold tracking-wider opacity-90">
-            <span>REGALIA</span>
-            <span>₹</span>
-          </div>
-          <div>
-            <div className="text-caption font-extrabold tracking-widest">
-              •••• 7741
-            </div>
-            <div className="text-overline opacity-80 mt-space-2">
-              ARJUN MEHTA
-            </div>
-          </div>
-        </div>
-
-        {/* Net worth card with mini chart */}
-        <div
-          className="absolute rounded-ds-xl bg-surface border border-line shadow-raise p-space-10"
-          style={{
-            left: isFull ? '42%' : 150,
-            top: isFull ? 80 : 56,
-            width: isFull ? 180 : 150,
-            transform: 'rotate(3deg)',
-          }}
-        >
-          <div className="text-overline uppercase font-bold text-ink-4">
-            Net worth
-          </div>
-          <div className="text-body-strong font-display font-extrabold text-ink mt-space-2">
-            ₹11.98L
-          </div>
-          <svg
-            className="w-full mt-space-2 text-brand"
-            height="18"
-            viewBox="0 0 100 18"
-            fill="none"
-          >
-            <path
-              d="M0 16 L20 14 L40 15 L60 10 L80 11 L100 4"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-
-        {/* Gold Coin */}
-        <div
-          className="absolute rounded-ds-pill bg-illus-gold border-4 border-illus-gold-edge shadow-raise flex items-center justify-center font-extrabold text-warning-ink"
-          style={{
-            right: isFull ? '20%' : 28,
-            top: isFull ? 20 : 18,
-            width: isFull ? 48 : 40,
-            height: isFull ? 48 : 40,
-            transform: 'rotate(12deg)',
-          }}
-        >
+      <div className="flex items-center gap-space-10 relative">
+        <div className="w-control-md h-control-md rounded-ds-md bg-brand text-on-brand font-extrabold flex items-center justify-center text-heading">
           ₹
+        </div>
+        <div className="text-title font-extrabold text-ink font-display">
+          FinanceOS
         </div>
       </div>
 
-      {isFull && (
-        <div className="relative max-w-md">
-          <div className="text-page-title font-extrabold tracking-tight text-ink leading-tight">
-            Every rupee, every card, every loan. One calm ledger.
-          </div>
-          <div className="text-body font-medium text-ink-2 mt-space-8 leading-relaxed">
-            Statements, bank alerts and brokers flow in. You see what needs you
-            today and where the rest went.
-          </div>
-          <div className="flex gap-space-12 text-caption font-medium text-ink-3 mt-space-16 flex-wrap">
-            <span>Encrypted at rest</span>
-            <span>·</span>
-            <span>Read-only Gmail</span>
-            <span>·</span>
-            <span>Your keys, your data</span>
-          </div>
+      <div className="my-auto w-full max-w-xl">
+        <svg viewBox="0 0 520 300" className="w-full block" fill="none">
+          <defs>
+            <filter
+              id="auth-shadow-full"
+              x="-20%"
+              y="-20%"
+              width="140%"
+              height="140%"
+            >
+              <feDropShadow
+                dx="0"
+                dy="6"
+                stdDeviation="8"
+                floodColor="var(--ds-scrim)"
+                floodOpacity="0.14"
+              />
+            </filter>
+          </defs>
+
+          {/* Background decorative soft blobs */}
+          <circle
+            cx="480"
+            cy="30"
+            r="120"
+            fill="var(--ds-positive-tint)"
+            opacity="0.6"
+          />
+          <circle
+            cx="40"
+            cy="240"
+            r="80"
+            fill="var(--ds-illus-gold)"
+            opacity="0.35"
+          />
+          <circle
+            cx="440"
+            cy="260"
+            r="60"
+            fill="var(--ds-info-tint)"
+            opacity="0.4"
+          />
+
+          {/* Brand credit card */}
+          <g transform="translate(30, 40) rotate(-7)">
+            <rect
+              width="220"
+              height="136"
+              rx="14"
+              fill="var(--ds-brand)"
+              filter="url(#auth-shadow-full)"
+            />
+            <text
+              x="16"
+              y="30"
+              fill="var(--ds-on-brand)"
+              fontSize="11"
+              fontWeight="800"
+              letterSpacing="0.08em"
+              opacity="0.9"
+            >
+              HDFC REGALIA GOLD
+            </text>
+            <text
+              x="204"
+              y="30"
+              textAnchor="end"
+              fill="var(--ds-on-brand)"
+              fontSize="12"
+              fontWeight="800"
+            >
+              ₹
+            </text>
+            <text
+              x="16"
+              y="96"
+              fill="var(--ds-on-brand)"
+              fontSize="15"
+              fontWeight="800"
+              letterSpacing="0.14em"
+            >
+              •••• 7741
+            </text>
+            <text
+              x="16"
+              y="118"
+              fill="var(--ds-on-brand)"
+              fontSize="10"
+              fontWeight="500"
+              opacity="0.85"
+            >
+              ARJUN MEHTA · 03/29
+            </text>
+          </g>
+
+          {/* Net worth card with mini chart */}
+          <g transform="translate(280, 20) rotate(4)">
+            <rect
+              width="210"
+              height="110"
+              rx="14"
+              fill="var(--ds-bg-surface)"
+              stroke="var(--ds-line)"
+              filter="url(#auth-shadow-full)"
+            />
+            <text
+              x="16"
+              y="26"
+              fill="var(--ds-ink-4)"
+              fontSize="10"
+              fontWeight="800"
+              letterSpacing="0.08em"
+            >
+              NET WORTH
+            </text>
+            <text
+              x="16"
+              y="56"
+              fill="var(--ds-ink)"
+              fontSize="20"
+              fontWeight="800"
+              fontFamily="var(--ds-font-display)"
+            >
+              ₹11.98L
+            </text>
+            <path
+              d="M16 95 L45 88 L75 92 L105 78 L135 82 L165 68 L194 60"
+              fill="none"
+              stroke="var(--ds-brand)"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            />
+          </g>
+
+          {/* Amex bill paid tile */}
+          <g transform="translate(110, 190) rotate(-2)">
+            <rect
+              width="210"
+              height="60"
+              rx="14"
+              fill="var(--ds-bg-surface)"
+              stroke="var(--ds-line)"
+              filter="url(#auth-shadow-full)"
+            />
+            <circle cx="30" cy="30" r="13" fill="var(--ds-hover)" />
+            <text
+              x="30"
+              y="35"
+              textAnchor="middle"
+              fill="var(--ds-ink)"
+              fontSize="12"
+              fontWeight="800"
+            >
+              ✓
+            </text>
+            <text
+              x="52"
+              y="26"
+              fill="var(--ds-ink)"
+              fontSize="12"
+              fontWeight="800"
+            >
+              Amex bill paid
+            </text>
+            <text
+              x="52"
+              y="44"
+              fill="var(--ds-ink-3)"
+              fontSize="11"
+              fontWeight="500"
+            >
+              ₹33,900 · 2 days early
+            </text>
+          </g>
+
+          {/* Gold Coin */}
+          <g transform="translate(360, 160) rotate(12)">
+            <circle
+              cx="26"
+              cy="26"
+              r="26"
+              fill="var(--ds-illus-gold)"
+              stroke="var(--ds-illus-gold-edge)"
+              strokeWidth="3"
+              filter="url(#auth-shadow-full)"
+            />
+            <text
+              x="26"
+              y="34"
+              textAnchor="middle"
+              fill="var(--ds-warning-ink)"
+              fontSize="20"
+              fontWeight="800"
+            >
+              ₹
+            </text>
+          </g>
+
+          {/* Rewards points tile */}
+          <g transform="translate(330, 240) rotate(6)">
+            <rect
+              width="160"
+              height="36"
+              rx="10"
+              fill="var(--ds-warning-tint)"
+              stroke="var(--ds-warning-border)"
+              filter="url(#auth-shadow-full)"
+            />
+            <text
+              x="12"
+              y="23"
+              fill="var(--ds-warning-ink)"
+              fontSize="11"
+              fontWeight="700"
+            >
+              +600 pts · dining 5X
+            </text>
+          </g>
+        </svg>
+      </div>
+
+      <div className="relative max-w-md">
+        <div className="text-page-title font-extrabold tracking-tight text-ink leading-tight font-display">
+          Every rupee, every card, every loan. One calm ledger.
         </div>
-      )}
+        <div className="text-body font-medium text-ink-2 mt-space-10 leading-relaxed font-text">
+          Statements, bank alerts and brokers flow in. You see what needs you
+          today and where the rest went.
+        </div>
+        <div className="flex gap-space-14 text-caption font-medium text-ink-3 mt-space-16 flex-wrap font-text">
+          <span>Encrypted at rest</span>
+          <span>·</span>
+          <span>Read-only Gmail</span>
+          <span>·</span>
+          <span>Your keys, your data</span>
+        </div>
+      </div>
     </div>
   );
 };
@@ -230,7 +508,7 @@ export const AuthPanel = forwardRef<HTMLDivElement, AuthPanelProps>(
     const subText =
       subtitle ??
       (isSignup
-        ? 'Start your calm ledger with an invite code.'
+        ? 'You will need an invite code.'
         : 'Sign in to see your money in one place.');
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -259,13 +537,36 @@ export const AuthPanel = forwardRef<HTMLDivElement, AuthPanelProps>(
           </div>
         )}
 
-        {/* Google sign in button */}
+        {/* Google sign in button with official Google mark */}
         <button
           type="button"
           onClick={onGoogleSignIn}
           className="h-control-xl w-full border border-line-strong rounded-ds-md bg-surface hover:bg-hover active:bg-hover text-body font-semibold text-ink flex items-center justify-center gap-space-8 transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
         >
-          <span className="font-extrabold text-info">G</span>
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className="shrink-0"
+          >
+            <path
+              fill="#4285F4" /* ds-allow: official Google brand logo */
+              d="M22.6 12.2c0-.8-.1-1.4-.2-2H12v3.9h6c-.1 1-.8 2.5-2.3 3.5v2.8h3.7c2.1-2 3.2-4.9 3.2-8.2z"
+            />
+            <path
+              fill="#34A853" /* ds-allow: official Google brand logo */
+              d="M12 23c3 0 5.6-1 7.4-2.7l-3.7-2.8c-1 .7-2.3 1.1-3.7 1.1-2.9 0-5.3-1.9-6.2-4.6H2v2.9A11 11 0 0 0 12 23z"
+            />
+            <path
+              fill="#FBBC05" /* ds-allow: official Google brand logo */
+              d="M5.8 14c-.2-.7-.4-1.4-.4-2s.1-1.4.4-2V7.1H2A11 11 0 0 0 1 12c0 1.8.4 3.4 1.2 4.9z"
+            />
+            <path
+              fill="#EA4335" /* ds-allow: official Google brand logo */
+              d="M12 5.4c1.6 0 3.1.6 4.2 1.7l3.2-3.2A11 11 0 0 0 2 7.1L5.8 10c.9-2.7 3.3-4.6 6.2-4.6z"
+            />
+          </svg>
           <span>Continue with Google</span>
         </button>
 
@@ -282,6 +583,7 @@ export const AuthPanel = forwardRef<HTMLDivElement, AuthPanelProps>(
             <TextField
               label="Invite code"
               placeholder="INVITE-2026"
+              autoComplete="one-time-code"
               value={inviteCode}
               onChange={(e) => {
                 setInternalInviteCode(e.target.value);
@@ -295,6 +597,7 @@ export const AuthPanel = forwardRef<HTMLDivElement, AuthPanelProps>(
             label="Email"
             type="email"
             placeholder="arjun@example.com"
+            autoComplete="email"
             value={email}
             onChange={(e) => {
               setInternalEmail(e.target.value);
@@ -307,6 +610,7 @@ export const AuthPanel = forwardRef<HTMLDivElement, AuthPanelProps>(
             label="Password"
             type="password"
             placeholder="••••••••"
+            autoComplete={isSignup ? 'new-password' : 'current-password'}
             value={password}
             onChange={(e) => {
               setInternalPassword(e.target.value);
@@ -314,29 +618,6 @@ export const AuthPanel = forwardRef<HTMLDivElement, AuthPanelProps>(
             }}
             required
           />
-
-          {isSignup && (
-            <div className="flex flex-col gap-space-6 p-space-10 rounded-ds-md bg-subtle border border-line-soft text-caption text-ink-3 mt-space-2">
-              <div className="flex items-center gap-space-8">
-                <span className="w-space-16 h-space-16 rounded-ds-pill bg-brand text-on-brand font-bold text-center leading-none flex items-center justify-center shrink-0">
-                  1
-                </span>
-                <span>Enter your invite code</span>
-              </div>
-              <div className="flex items-center gap-space-8">
-                <span className="w-space-16 h-space-16 rounded-ds-pill bg-brand text-on-brand font-bold text-center leading-none flex items-center justify-center shrink-0">
-                  2
-                </span>
-                <span>Connect accounts via read-only sync</span>
-              </div>
-              <div className="flex items-center gap-space-8">
-                <span className="w-space-16 h-space-16 rounded-ds-pill bg-brand text-on-brand font-bold text-center leading-none flex items-center justify-center shrink-0">
-                  3
-                </span>
-                <span>Review your calm daily ledger</span>
-              </div>
-            </div>
-          )}
 
           <Button
             size="xl"

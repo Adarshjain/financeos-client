@@ -144,6 +144,28 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 17) · AuthPanel component fixes:
+  - Fixed AuthPanel in `src/components/ds/AuthPanel/AuthPanel.tsx`:
+    - Converted illustration scenes (both card strip and desktop split) into pure SVG artwork, eliminating all fixed-pixel inline style sizes (`height: 120`, `height: 260`, and element geometry styles) in accordance with Owner decisions (2026-10-15).
+    - Replaced letter "G" in Google sign-in button with the official 4-color Google SVG mark (`#4285F4`, `#34A853`, `#FBBC05`, `#EA4335`) matching `P-login.dc.html`, `D-login.dc.html`, and `P-auth-states.dc.html` (RULES §8.4).
+    - Added `autoComplete="email"` on email field, `autoComplete={isSignup ? 'new-password' : 'current-password'}` on password field, and `autoComplete="one-time-code"` on invite code field.
+    - Removed unboarded marketing copy from signup form (removed invented 3-step explainer with unboarded claims; updated signup subtitle to board copy `"You will need an invite code."` matching `P-auth-states.dc.html` per RULES §8.4).
+  - Updated `src/components/ds/AuthPanel/AuthPanel.stories.tsx`:
+    - Updated story section title from `Sign-up card (with invite code and explainer)` to `Sign-up card (with invite code)`.
+  - Updated `src/components/ds/AuthPanel/AuthPanel.test.tsx`:
+    - Updated signup test to assert board subtitle (`You will need an invite code.`).
+    - Added unit tests verifying `autoComplete` attributes on email, password, and invite code inputs.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/AuthPanel` (7 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `AuthPanel/preview.html`, `P-login.webp`, `D-login.webp`, and `P-auth-states.webp`:
+    - `DS/Screens/AuthPanel/Login`
+    - `DS/Screens/AuthPanel/SignUp`
+    - `DS/Screens/AuthPanel/SplitDesktop`
+    - `DS/Screens/AuthPanel/Interactive`
+    - `DS/Screens/AuthPanel/AllVariants`
+    Verified SVG artwork scaling, 4-color Google mark, card layout, desktop split scene, dark mode contrast, and clean form inputs.
+  - Differences left open: none.
+  - Deviations: Official Google brand logo colors (`#4285F4`, `#34A853`, `#FBBC05`, `#EA4335`) used in Google sign-in button SVG in `AuthPanel.tsx` per owner review and boards `P-login.dc.html`, `D-login.dc.html`, `P-auth-states.dc.html` (marked with `ds-allow`).
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 16) · Toast component fixes:
   - Fixed Toast in `src/components/ds/Toast/Toast.tsx`:
     - Updated background from `bg-brand` to `bg-ink text-on-brand` matching reference `.toast`.

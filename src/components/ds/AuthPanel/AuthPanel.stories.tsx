@@ -70,7 +70,7 @@ export const AllVariants: Story = {
 
       <div>
         <div className="text-caption font-semibold text-ink-3 mb-space-4">
-          Sign-up card (with invite code and explainer)
+          Sign-up card (with invite code)
         </div>
         <AuthPanel
           mode="signup"
