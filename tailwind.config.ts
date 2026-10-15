@@ -284,6 +284,24 @@ const config: Config = {
         scrim: 'var(--ds-z-scrim)',
         overlay: 'var(--ds-z-overlay)',
       },
+      // Radix state attributes as named variants (data-open:, data-highlighted:…) so
+      // components never need arbitrary data-[state=…] selectors (RULES §3.1).
+      data: {
+        open: 'state="open"',
+        closed: 'state="closed"',
+        checked: 'state="checked"',
+        unchecked: 'state="unchecked"',
+        indeterminate: 'state="indeterminate"',
+        active: 'state="active"',
+        inactive: 'state="inactive"',
+        on: 'state="on"',
+        highlighted: 'highlighted',
+        disabled: 'disabled',
+        'side-top': 'side="top"',
+        'side-bottom': 'side="bottom"',
+        'side-left': 'side="left"',
+        'side-right': 'side="right"',
+      },
       transitionDuration: {
         fast: 'var(--ds-dur-fast)',
         base: 'var(--ds-dur-base)',

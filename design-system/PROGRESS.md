@@ -37,6 +37,7 @@ Goal: everything the new components need, with **no visible change to the existi
    - There is no `space-0`, `space-18`, `text-small`, `rounded-ds-circle`, `z-1` or `font-inherit`. Tailwind silently drops a class name it does not know, so it renders nothing; `check-ui.mjs` now fails on unknown classes.
    - `zIndex`: `z-sticky`, `z-dock`, `z-scrim`, `z-overlay`.
    - Breakpoint: `lg` (1024px, Tailwind's default) is the only phone→desktop switch inside components (RULES §5c.2).
+   - Radix state variants: `data-open:`, `data-closed:`, `data-checked:`, `data-unchecked:`, `data-indeterminate:`, `data-active:`, `data-inactive:`, `data-on:`, `data-highlighted:`, `data-disabled:`, `data-side-top:` / `-bottom:` / `-left:` / `-right:`. Use these instead of `data-[state=…]:`, which is an arbitrary value.
    - `transitionDuration`: `fast`, `base`, `sheet`.
 3. **Fonts.** Add Figtree (500, 600, 700, 800) and Bricolage Grotesque (600, 700, 800) as self-hosted woff2 files, loaded with `next/font/local` into `--ds-font-text` and `--ds-font-display`. Inter stays in place for the old UI.
 4. **Storybook** (approved as a new dev dependency, see Owner decisions):
