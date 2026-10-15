@@ -37,14 +37,22 @@ describe('Callout', () => {
     expect(container.firstChild).toHaveClass('bg-canvas', 'text-ink-2');
   });
 
-  it('renders warning-banner variant', () => {
+  it('renders warning-banner variant with distinct banner layout and trailing action', () => {
     const { container } = render(
-      <Callout variant="warning-banner">2 lines were skipped.</Callout>,
+      <Callout
+        variant="warning-banner"
+        action={<a href="#see-them">See them</a>}
+      >
+        2 lines were skipped.
+      </Callout>,
     );
     expect(container.firstChild).toHaveClass(
       'bg-warning-tint',
       'text-warning-ink',
+      'justify-between',
+      'gap-space-10',
     );
+    expect(screen.getByText('See them').closest('.shrink-0')).toBeInTheDocument();
   });
 
   it('renders action element', () => {

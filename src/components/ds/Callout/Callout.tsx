@@ -32,21 +32,34 @@ export const Callout = forwardRef<HTMLDivElement, CalloutProps>(
       'warning-banner': 'bg-warning-tint text-warning-ink',
     };
 
+    const isWarningBanner = variant === 'warning-banner';
+
     return (
       <div
         ref={ref}
         className={cn(
-          'text-label rounded-ds-lg px-space-12 py-space-10 flex items-start gap-space-8',
+          'text-label rounded-ds-lg px-space-12 py-space-10 flex items-start',
+          isWarningBanner ? 'justify-between gap-space-10' : 'gap-space-8',
           variantStyles[variant],
           className,
         )}
         {...props}
       >
-        <div className="flex-1 min-w-0">
-          {title && <b className="font-bold mr-space-4">{title}</b>}
-          {children}
-          {action && <span className="ml-space-4">{action}</span>}
-        </div>
+        {isWarningBanner ? (
+          <>
+            <div className="flex-1 min-w-0">
+              {title && <b className="font-bold mr-space-4">{title}</b>}
+              {children}
+            </div>
+            {action && <div className="shrink-0">{action}</div>}
+          </>
+        ) : (
+          <div className="flex-1 min-w-0">
+            {title && <b className="font-bold mr-space-4">{title}</b>}
+            {children}
+            {action && <span className="ml-space-4">{action}</span>}
+          </div>
+        )}
       </div>
     );
   },
