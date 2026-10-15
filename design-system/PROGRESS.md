@@ -61,7 +61,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 4 | TabBar | Changes requested |
 | 5 | Rail | Changes requested |
 | 6 | TopBar | Changes requested |
-| 7 | Tabs | Changes requested |
+| 7 | Tabs | Ready for review |
 | 8 | Pager | Ready for review |
 | 9 | Button | Ready for review |
 | 10 | Menu | Ready for review |
@@ -217,6 +217,14 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 7 · Tabs (straight 2px brand underline, args-driven stories):
+  - Ensured TabsTrigger renders a straight 2px `brand` bar with square ends (`rounded-none`, `-mb-px` overlapping list border) without radius; verified `TabsList` has `gap-space-4 border-b border-line`.
+  - Converted `Tabs.stories.tsx` to be args-driven with `useArgs` for controlled `value` switching in canvas and controls syncing.
+  - Added test verifying tab triggers have square underline (`rounded-none` and no `rounded-ds-sm`).
+  - Stories compared and interacted with: Tabs (AllVariants, Plain, WithCounts, ScrollingOnPhone, InteractiveWithContent) beside preview.html in light and dark at 390 and 1440. Canvas clicks switch active tabs and sync Controls args.
+  - Checks: typecheck (clean), lint (0 errors), vitest (all 8 tests passing), build-storybook (clean), check-ui (clean on touched files). Differences left open: none.
+
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 6 · DateField combined range:
   - Converted range mode to a single combined field ("01/10/2026 – 13/10/2026") with automatic separator insertion on typing and clean backspace handling. Removed `fromLabel`, `toLabel`, and two-field layout.

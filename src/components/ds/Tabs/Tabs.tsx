@@ -132,7 +132,7 @@ export const TabsList = forwardRef<
       ref={ref}
       onKeyDown={handleKeyDown}
       className={cn(
-        'flex items-center border-b border-line-soft overflow-x-auto flex-nowrap scrollbar-none',
+        'flex items-center gap-space-4 border-b border-line overflow-x-auto flex-nowrap scrollbar-none',
         className,
       )}
       {...props}
@@ -166,7 +166,7 @@ export const TabsTrigger = forwardRef<
         }
       }}
       className={cn(
-        'font-text text-body py-space-10 px-space-12 whitespace-nowrap border-b-2 transition-colors duration-fast select-none cursor-pointer',
+        'font-text text-body py-space-10 px-space-12 whitespace-nowrap border-b-2 rounded-none -mb-px transition-colors duration-fast select-none cursor-pointer',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
         isActive
           ? 'text-brand-strong border-brand font-bold'

@@ -153,4 +153,17 @@ describe('Tabs', () => {
     fireEvent.click(disabledTab);
     expect(handleValueChange).not.toHaveBeenCalled();
   });
+
+  it('renders tab trigger with square underline (rounded-none, no rounded-ds-sm)', () => {
+    render(
+      <Tabs
+        defaultValue="first"
+        items={[{ value: 'first', label: 'First' }]}
+      />,
+    );
+    const tab = screen.getByRole('tab', { name: 'First' });
+    expect(tab).toHaveClass('rounded-none');
+    expect(tab).not.toHaveClass('rounded-ds-sm');
+  });
 });
+
