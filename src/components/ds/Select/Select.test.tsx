@@ -56,7 +56,7 @@ describe('Select', () => {
         defaultValue="hdfc"
       />,
     );
-    const trigger = screen.getByRole('button');
+    const trigger = screen.getByRole('combobox');
     expect(trigger).toBeDisabled();
     expect(screen.getByText('HDFC Bank')).toBeInTheDocument();
   });
@@ -155,5 +155,70 @@ describe('SelectMenu', () => {
     render(<SelectMenu groups={groups} />);
     expect(screen.getByText('Bank accounts')).toBeInTheDocument();
     expect(screen.getByText('Credit cards')).toBeInTheDocument();
+  });
+
+  it('navigates options via keyboard (ArrowDown, ArrowUp, Enter, Escape)', () => {
+    const onSelect = vi.fn();
+    const onClose = vi.fn();
+
+    render(
+      <SelectMenu
+        options={sampleOptions}
+        onSelect={onSelect}
+        onClose={onClose}
+      />,
+    );
+
+    const listbox = screen.getByRole('listbox');
+    const container = listbox.parentElement!;
+
+    // Initial highlight is first enabled option (hdfc)
+    // Press ArrowDown moves to icici
+    fireEvent.keyDown(container, { key: 'ArrowDown' });
+    fireEvent.keyDown(container, { key: 'Enter' });
+    expect(onSelect).toHaveBeenCalledWith('icici');
+
+    // Press Escape calls onClose
+    fireEvent.keyDown(container, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('Select responsive morphology', () => {
+  it('sets aria-invalid="true" when error is present', () => {
+    render(<Select options={sampleOptions} error="Required" />);
+    const trigger = screen.getByRole('combobox');
+    expect(trigger).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  it('opens in a Sheet on phone when forceSheet is enabled', () => {
+    render(
+      <Select
+        label="Bank Account"
+        options={sampleOptions}
+        forceSheet
+        defaultOpen
+      />,
+    );
+
+    // Sheet contains drag handle area and title
+    expect(screen.getByTestId('sheet-drag-area')).toBeInTheDocument();
+    expect(screen.getAllByText('Bank Account').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('opens Sheet when trigger is clicked with forceSheet', () => {
+    render(
+      <Select
+        label="Choose Bank"
+        options={sampleOptions}
+        forceSheet
+      />,
+    );
+
+    expect(screen.queryByTestId('sheet-drag-area')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('combobox'));
+    expect(screen.getByTestId('sheet-drag-area')).toBeInTheDocument();
+    expect(screen.getAllByText('Choose Bank').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('HDFC Bank')).toBeInTheDocument();
   });
 });
