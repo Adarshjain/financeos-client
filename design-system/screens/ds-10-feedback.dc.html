@@ -337,6 +337,24 @@ textarea.inp{height:72px;padding:var(--space-8) var(--space-12);resize:none;alig
 .cal2{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-16)}
 textarea.inp.one{height:var(--control-lg);min-height:var(--control-lg);resize:vertical;padding-top:var(--space-8)}
 .tabs-u .tab{border-radius:0}
+/* ---------- TabBar floating pill (proposal, 2026-10-15) ---------- */
+.ppill-scene{position:relative;height:184px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg-canvas);padding:12px 14px}
+.ppill-scene .row{background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-lg);height:44px;margin-bottom:8px}
+.ppill{position:absolute;left:12px;right:12px;bottom:12px;display:flex;padding:8px 4px;background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius-pill);box-shadow:var(--shadow-dock)}
+.ppill .pi{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:var(--space-4);font:700 10px/12px var(--font-text);color:var(--ink-4)}
+.ppill .ind{position:relative;display:flex;align-items:center;justify-content:center;width:48px;height:28px;border-radius:var(--radius-pill)}
+.ppill .ind svg{width:20px;height:20px}
+.ppill .pi-on{color:var(--brand-strong)}.ppill .pi-on .ind{background:var(--brand-tint)}
+.ppill .pi .lab{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ppill .dot{position:absolute;top:-4px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:var(--radius-pill);font:800 10px/16px var(--font-text);text-align:center;color:var(--on-brand);background:var(--danger);box-shadow:0 0 0 2px var(--bg-surface)}
+.ppill .dot.amber{background:var(--warning)}
+/* pill options: concentric capsule, no background */
+.ppill.cap{padding:4px}.ppill.cap .pi{padding:6px 0 5px;border-radius:var(--radius-pill);gap:2px}.ppill.cap .ind{width:auto;height:auto;background:none!important}
+.ppill.cap .pi-on{background:var(--brand-tint)}.ppill.cap .pi .lab{padding:0 4px}
+.ppill.cap .dot{top:-6px;right:-10px}
+.ppill.calm .pi{gap:2px;color:var(--ink-faint)}
+.ppill.calm .ind{background:none!important;height:22px}
+.ppill.calm .pi-on{color:var(--ink)}.ppill.calm .pi-on .lab{font-weight:800}
 
 body{margin:0;background:var(--bg-canvas);color:var(--ink);font-family:var(--font-text);font-variant-numeric:tabular-nums}
 .dsb{color:var(--ink);padding:48px 40px 56px;display:flex;flex-direction:column;gap:28px}
@@ -413,6 +431,10 @@ table.t td{padding:9px 10px;border-bottom:1px solid var(--line-soft);vertical-al
 <li>Undo for snooze, dismiss, mark paid and other reversible actions; the row leaves at once and Undo puts it back.</li>
 <li>One toast at a time, above the tab bar on phone, bottom centre on desktop.</li>
 <li>No icon.</li>
+</ul>
+<h3>Toaster</h3>
+<ul>
+<li><code>Toaster</code> is the one mount point for new-system toasts: bottom centre, above the TabBar on phone (<code>bottom-safe-12</code> plus the bar), a single toast at a time. It is a separate Sonner toaster (<code>id="ds"</code>); <code>showToast</code> always targets it, so new toasts never appear in the old app's top-centre toaster and old toasts never appear in the new one. New layouts mount <code>&lt;Toaster /&gt;</code> once.</li>
 </ul>
 <h3>Built from</h3>
 <p>Banner (tones and layout), Sonner (queue and timing), Button <code>link</code> (Undo).</p>
@@ -513,7 +535,7 @@ table.t td{padding:9px 10px;border-bottom:1px solid var(--line-soft);vertical-al
 </div></div></div></div></div>
 
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1880,"height":4495}}'>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1880,"height":4684}}'>
 class Component extends DCLogic {
   renderVals() { return {}; }
 }

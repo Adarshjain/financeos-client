@@ -11,6 +11,9 @@ The same as Banner, so a toast reads the same as an inline message: `neutral` (t
 - One toast at a time, above the tab bar on phone, bottom centre on desktop.
 - No icon.
 
+## Toaster
+- `Toaster` is the one mount point for new-system toasts: bottom centre, above the TabBar on phone (`bottom-safe-12` plus the bar), a single toast at a time. It is a separate Sonner toaster (`id="ds"`); `showToast` always targets it, so new toasts never appear in the old app's top-centre toaster and old toasts never appear in the new one. New layouts mount `<Toaster />` once.
+
 ## Built from
 Banner (tones and layout), Sonner (queue and timing), Button `link` (Undo).
 
