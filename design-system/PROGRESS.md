@@ -69,7 +69,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 14 | TextField | Changes requested |
 | 15 | TextArea | Not started |
 | 16 | DateField | Not started |
-| 17 | Select | Changes requested |
+| 17 | Select | Ready for review |
 | 18 | SearchField | Ready for review |
 | 19 | FilterChip | Changes requested |
 | 20 | Checkbox | Ready for review |
@@ -164,6 +164,20 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 5a · Select:
+  - Rebuilt list presentation on DS `Popover` with `width="match"` (`w-popover-trigger`) in `src/components/ds/Select/Select.tsx`.
+  - Added `trigger?: React.ReactNode` slot allowing any element to open the list (supporting FilterChip triggers).
+  - Replaced hand-drawn multi-select checkbox with `Checkbox` primitive.
+  - Removed `locked` prop and lock glyphs across `Select.tsx`, `Select.stories.tsx`, and `Select.test.tsx` (`disabled` covers non-editable fields).
+  - Ensured ChevronDown and ChevronUp use `Icon` at size `md`.
+  - Updated `src/components/ds/Select/Select.stories.tsx`: `AllVariants` as first export, added `CustomTrigger` story with FilterChip, updated `WithIcon` with `Avatar` `logo` rendering `<img>`, and removed locked closed state.
+  - Updated `src/components/ds/Select/Select.test.tsx`: replaced locked test with disabled, added custom trigger slot test and `width="match"` Popover test (13 tests passing).
+  - Files deleted: none.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/Select` (13 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Stories compared: `DS/Inputs/Select/AllVariants`, `SingleSelect`, `SingleWithSearchAndIcons`, `MultiSelect`, `MultiWithSearch`, `SectionedList`, `WithAnActionRow`, `SearchCreateFromTyping`, `NoResults`, `WithDescriptions`, `DisabledOption`, `CustomTrigger`, `ClosedFieldStates` against `Select/preview.html` and `ds-08-inputs.dc.html` at 390px and 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 4b · Menu:
   - Rebuilt `Menu` component in `src/components/ds/Menu/Menu.tsx` on Radix DropdownMenu (`@radix-ui/react-dropdown-menu`), deleting the hand-made static `Menu` container to unify on a single Radix-based Menu API.
