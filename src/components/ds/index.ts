@@ -22,6 +22,7 @@ export * from './KpiTile/KpiTile';
 export * from './ListRow/ListRow';
 export * from './Menu/Menu';
 export * from './Pager/Pager';
+export * from './Popover/Popover';
 export * from './ProgressBar/ProgressBar';
 export * from './RuleCard/RuleCard';
 export * from './SearchField/SearchField';
