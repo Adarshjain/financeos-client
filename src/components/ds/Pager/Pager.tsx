@@ -1,13 +1,10 @@
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
+import { Button } from '../Button/Button';
 import { cn } from '../cn';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../Menu/Menu';
+import { Icon } from '../Icon/Icon';
+import { Select } from '../Select/Select';
 import { useIsPhone } from '../useMediaQuery';
 
 export interface PagerProps
@@ -142,32 +139,30 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
               )}
             >
               {onSizeChange ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      type="button"
+                <Select
+                  options={sizeOptions.map((opt) => ({
+                    value: String(opt),
+                    label: `${opt} / page`,
+                  }))}
+                  value={String(size)}
+                  onChange={(val) => {
+                    if (typeof val === 'string') {
+                      onSizeChange(Number(val));
+                    }
+                  }}
+                  trigger={
+                    <Button
+                      variant="secondary"
+                      size="md"
                       aria-label="Rows per page"
-                      className="inline-flex items-center gap-space-6 h-control-md px-space-10 border border-line-strong rounded-ds-md text-label font-semibold text-ink-2 mr-space-6 bg-surface hover:bg-hover active:bg-hover transition-colors duration-fast cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                      className="gap-space-6 h-control-md px-space-10 text-label font-semibold text-ink-2 mr-space-6 bg-surface"
                     >
                       <span>{size} / page</span>
-                      <ChevronDown
-                        className="w-space-12 h-space-12 text-ink-4 shrink-0"
-                        aria-hidden="true"
-                      />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {sizeOptions.map((opt) => (
-                      <DropdownMenuItem
-                        key={opt}
-                        active={opt === size}
-                        onSelect={() => onSizeChange(opt)}
-                      >
-                        {opt} / page
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                      <Icon icon={ChevronDown} size="sm" className="text-ink-4 shrink-0" />
+                    </Button>
+                  }
+                  menuClassName="min-w-fit"
+                />
               ) : (
                 <span className="inline-flex items-center gap-space-6 h-control-md px-space-10 border border-line-strong rounded-ds-md text-label font-semibold text-ink-2 mr-space-6 bg-surface">
                   {size} / page
@@ -178,18 +173,17 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
 
           {!isSinglePage && (
             <>
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                size="md"
+                iconOnly
                 aria-label="Previous page"
                 disabled={page <= 0}
                 onClick={() => onPageChange(page - 1)}
-                className="min-w-control-md h-control-md px-space-6 rounded-ds-md border border-line-strong bg-surface text-ink-3 hover:bg-hover hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface disabled:hover:text-ink-3 inline-flex items-center justify-center cursor-pointer transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                className="min-w-control-md h-control-md px-space-6 border-line-strong text-ink-3"
               >
-                <ChevronLeft
-                  className="w-space-16 h-space-16"
-                  aria-hidden="true"
-                />
-              </button>
+                <Icon icon={ChevronLeft} size="md" />
+              </Button>
 
               {pageItems.map((item, idx) => {
                 if (item === 'ellipsis') {
@@ -208,36 +202,34 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                 const pageNumber = item + 1; // 1-based display
 
                 return (
-                  <button
+                  <Button
                     key={item}
-                    type="button"
+                    variant={isActive ? 'primary' : 'ghost'}
+                    size="md"
                     aria-label={`Page ${pageNumber}`}
                     aria-current={isActive ? 'page' : undefined}
                     onClick={() => onPageChange(item)}
                     className={cn(
-                      'min-w-control-md h-control-md px-space-6 rounded-ds-md border-0 text-body font-semibold inline-flex items-center justify-center tabular-nums cursor-pointer transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
-                      isActive
-                        ? 'bg-brand text-on-brand font-bold'
-                        : 'bg-transparent text-ink-2 hover:bg-hover hover:text-ink',
+                      'min-w-control-md h-control-md px-space-6 rounded-ds-md tabular-nums font-semibold',
+                      isActive ? 'font-bold' : 'text-ink-2',
                     )}
                   >
                     {pageNumber}
-                  </button>
+                  </Button>
                 );
               })}
 
-              <button
-                type="button"
+              <Button
+                variant="secondary"
+                size="md"
+                iconOnly
                 aria-label="Next page"
                 disabled={page >= totalPages - 1}
                 onClick={() => onPageChange(page + 1)}
-                className="min-w-control-md h-control-md px-space-6 rounded-ds-md border border-line-strong bg-surface text-ink-3 hover:bg-hover hover:text-ink disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface disabled:hover:text-ink-3 inline-flex items-center justify-center cursor-pointer transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                className="min-w-control-md h-control-md px-space-6 border-line-strong text-ink-3"
               >
-                <ChevronRight
-                  className="w-space-16 h-space-16"
-                  aria-hidden="true"
-                />
-              </button>
+                <Icon icon={ChevronRight} size="md" />
+              </Button>
             </>
           )}
         </div>
