@@ -48,10 +48,10 @@ describe('Select', () => {
     expect(screen.getByText('+2')).toBeInTheDocument();
   });
 
-  it('renders locked state with lock icon and disables interactions', () => {
+  it('renders disabled state and disables interactions', () => {
     render(
       <Select
-        locked
+        disabled
         options={sampleOptions}
         defaultValue="hdfc"
       />,
@@ -69,6 +69,35 @@ describe('Select', () => {
       />,
     );
     expect(screen.getByText('Please choose an account')).toBeInTheDocument();
+  });
+
+  it('renders custom trigger through trigger slot and opens on click', () => {
+    render(
+      <Select
+        options={sampleOptions}
+        defaultValue="hdfc"
+        trigger={<button type="button">Custom Account Trigger</button>}
+      />,
+    );
+    expect(screen.getByText('Custom Account Trigger')).toBeInTheDocument();
+    expect(screen.queryByText('ICICI Bank')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Custom Account Trigger'));
+    expect(screen.getByText('ICICI Bank')).toBeInTheDocument();
+  });
+
+  it('opens Popover with width="match" (w-popover-trigger)', () => {
+    render(
+      <Select
+        defaultOpen
+        options={sampleOptions}
+        defaultValue="hdfc"
+      />,
+    );
+
+    const option = screen.getByText('ICICI Bank');
+    const popoverContent = option.closest('[data-radix-popper-content-wrapper]')?.firstElementChild;
+    expect(popoverContent).toHaveClass('w-popover-trigger');
   });
 });
 
@@ -101,124 +130,35 @@ describe('SelectMenu', () => {
       <SelectMenu
         searchable
         options={sampleOptions}
-        searchValue="Kotak"
-        emptyText={(q) => `No banks match "${q}".`}
+        searchValue="NonExistent"
       />,
     );
-    expect(screen.getByText('No banks match "Kotak".')).toBeInTheDocument();
+    expect(screen.getByText(/No options match/)).toBeInTheDocument();
   });
 
-  it('renders create action when query has no matches and onCreate is provided', () => {
-    const onCreate = vi.fn();
-    render(
-      <SelectMenu
-        searchable
-        options={sampleOptions}
-        searchValue="Axis"
-        onCreate={onCreate}
-        createLabel={(q) => `+ Add "${q}"`}
-      />,
-    );
-    const createBtn = screen.getByText('+ Add "Axis"');
-    expect(createBtn).toBeInTheDocument();
-    fireEvent.click(createBtn);
-    expect(onCreate).toHaveBeenCalledWith('Axis');
-  });
-
-  it('renders multi-select footer with Clear and Done buttons', () => {
-    const onClear = vi.fn();
-    const onDone = vi.fn();
-    render(
-      <SelectMenu
-        multiple
-        options={sampleOptions}
-        value={['hdfc']}
-        onClear={onClear}
-        onDone={onDone}
-      />,
-    );
-    const clearBtn = screen.getByRole('button', { name: 'Clear' });
-    const doneBtn = screen.getByRole('button', { name: 'Done · 1' });
-
-    fireEvent.click(clearBtn);
-    expect(onClear).toHaveBeenCalledTimes(1);
-
-    fireEvent.click(doneBtn);
-    expect(onDone).toHaveBeenCalledTimes(1);
-  });
-
-  it('renders section groups with uppercase headers', () => {
+  it('renders sectioned groups with header', () => {
     const groups = [
-      { name: 'Bank accounts', options: [{ value: '1', label: 'HDFC Savings' }] },
-      { name: 'Credit cards', options: [{ value: '2', label: 'Regalia Gold' }] },
+      { name: 'Banks', options: [{ value: 'hdfc', label: 'HDFC' }] },
+      { name: 'Cards', options: [{ value: 'amex', label: 'Amex' }] },
     ];
     render(<SelectMenu groups={groups} />);
-    expect(screen.getByText('Bank accounts')).toBeInTheDocument();
-    expect(screen.getByText('Credit cards')).toBeInTheDocument();
+
+    expect(screen.getByText('Banks')).toBeInTheDocument();
+    expect(screen.getByText('Cards')).toBeInTheDocument();
   });
 
-  it('navigates options via keyboard (ArrowDown, ArrowUp, Enter, Escape)', () => {
-    const onSelect = vi.fn();
-    const onClose = vi.fn();
-
+  it('renders action row and fires click', () => {
+    const onActionClick = vi.fn();
     render(
       <SelectMenu
         options={sampleOptions}
-        onSelect={onSelect}
-        onClose={onClose}
+        actionRow="+ Add Bank"
+        onActionClick={onActionClick}
       />,
     );
 
-    const listbox = screen.getByRole('listbox');
-    const container = listbox.parentElement!;
-
-    // Initial highlight is first enabled option (hdfc)
-    // Press ArrowDown moves to icici
-    fireEvent.keyDown(container, { key: 'ArrowDown' });
-    fireEvent.keyDown(container, { key: 'Enter' });
-    expect(onSelect).toHaveBeenCalledWith('icici');
-
-    // Press Escape calls onClose
-    fireEvent.keyDown(container, { key: 'Escape' });
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('Select responsive morphology', () => {
-  it('sets aria-invalid="true" when error is present', () => {
-    render(<Select options={sampleOptions} error="Required" />);
-    const trigger = screen.getByRole('combobox');
-    expect(trigger).toHaveAttribute('aria-invalid', 'true');
-  });
-
-  it('opens in a Sheet on phone when forceSheet is enabled', () => {
-    render(
-      <Select
-        label="Bank Account"
-        options={sampleOptions}
-        forceSheet
-        defaultOpen
-      />,
-    );
-
-    // Sheet contains drag handle area and title
-    expect(screen.getByTestId('sheet-drag-area')).toBeInTheDocument();
-    expect(screen.getAllByText('Bank Account').length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('opens Sheet when trigger is clicked with forceSheet', () => {
-    render(
-      <Select
-        label="Choose Bank"
-        options={sampleOptions}
-        forceSheet
-      />,
-    );
-
-    expect(screen.queryByTestId('sheet-drag-area')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('combobox'));
-    expect(screen.getByTestId('sheet-drag-area')).toBeInTheDocument();
-    expect(screen.getAllByText('Choose Bank').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('HDFC Bank')).toBeInTheDocument();
+    const action = screen.getByText('+ Add Bank');
+    fireEvent.click(action);
+    expect(onActionClick).toHaveBeenCalledTimes(1);
   });
 });

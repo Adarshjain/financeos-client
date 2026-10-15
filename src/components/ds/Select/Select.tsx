@@ -1,5 +1,4 @@
-import * as Popover from '@radix-ui/react-popover';
-import { Check, ChevronDown, ChevronUp, Lock } from 'lucide-react';
+import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import React, {
   forwardRef,
   useId,
@@ -9,8 +8,10 @@ import React, {
 
 import { Button } from '../Button/Button';
 import { CategoryChip } from '../CategoryChip/CategoryChip';
+import { Checkbox } from '../Checkbox/Checkbox';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
+import { PopoverContent, PopoverRoot, PopoverTrigger } from '../Popover/Popover';
 import { SearchField } from '../SearchField/SearchField';
 import { Sheet, SheetBody, SheetContent } from '../Sheet/Sheet';
 import { useIsPhone } from '../useMediaQuery';
@@ -255,16 +256,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           )}
         >
           {multiple ? (
-            <span
-              className={cn(
-                'w-space-16 h-space-16 rounded-ds-xs border-2 shrink-0 flex items-center justify-center font-text font-extrabold select-none transition-colors',
-                isSelected
-                  ? 'bg-brand border-brand text-on-brand'
-                  : 'border-line-strong bg-surface text-transparent',
-              )}
-            >
-              <Icon icon={Check} size="sm" />
-            </span>
+            <Checkbox checked={isSelected} className="pointer-events-none shrink-0" />
           ) : null}
 
           {showRadio ? (
@@ -467,10 +459,10 @@ export interface SelectProps {
   onActionClick?: () => void;
   maxDisplayChips?: number;
   disabled?: boolean;
-  locked?: boolean;
   loading?: boolean;
   loadingText?: string;
   icon?: React.ReactNode;
+  trigger?: React.ReactNode;
   showRadio?: boolean;
   open?: boolean;
   defaultOpen?: boolean;
@@ -506,10 +498,10 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       onActionClick,
       maxDisplayChips = 2,
       disabled = false,
-      locked = false,
       loading = false,
       loadingText = 'Loading…',
       icon: explicitIcon,
+      trigger,
       showRadio = false,
       open: controlledOpen,
       defaultOpen = false,
@@ -601,7 +593,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
     };
 
     const hasError = Boolean(error);
-    const isLockedOrDisabled = Boolean(locked || disabled || loading);
+    const isLockedOrDisabled = Boolean(disabled || loading);
 
     // Visible chips and overflow for multiple
     const visibleChips = selectedOptions.slice(0, maxDisplayChips);
@@ -615,22 +607,6 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
         : undefined);
 
     const triggerContent = (() => {
-      if (locked) {
-        return (
-          <>
-            <Lock
-              className="w-space-14 h-space-14 text-ink-3 shrink-0"
-              aria-hidden="true"
-            />
-            <span className="font-text font-medium text-body text-ink truncate flex-1 min-w-0">
-              {selectedOptions.length > 0
-                ? selectedOptions[0].label
-                : placeholder}
-            </span>
-          </>
-        );
-      }
-
       if (loading) {
         return (
           <>
@@ -727,7 +703,6 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             : isOpen
               ? 'border-brand ring-2 ring-focus-ring ring-offset-2'
               : 'border-line-strong hover:border-line-strong focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:border-brand',
-          locked && 'bg-sunken text-ink-3 cursor-not-allowed',
           disabled &&
             'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
           triggerClassName,
@@ -737,8 +712,10 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       </button>
     );
 
+    const effectiveTrigger = trigger ?? triggerButton;
+
     return (
-      <div className={cn('w-full', className)}>
+      <div className={cn(trigger ? 'inline-block' : 'w-full', className)}>
         {label ? (
           <label
             id={labelId}
@@ -751,7 +728,14 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
 
         {showSheet ? (
           <>
-            {triggerButton}
+            <div
+              onClick={() => {
+                if (!isLockedOrDisabled) setOpen(!isOpen);
+              }}
+              className={trigger ? 'inline-block' : 'w-full'}
+            >
+              {effectiveTrigger}
+            </div>
             <Sheet open={isOpen} onOpenChange={setOpen}>
               <SheetContent
                 title={label || placeholder || 'Select'}
@@ -787,40 +771,32 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             </Sheet>
           </>
         ) : (
-          <Popover.Root open={isOpen} onOpenChange={setOpen}>
-            <Popover.Trigger asChild>{triggerButton}</Popover.Trigger>
-
-            <Popover.Portal>
-              <Popover.Content
-                align="start"
-                sideOffset={4}
-                className="z-sticky w-full max-w-sm outline-none"
-              >
-                <SelectMenu
-                  id={id}
-                  options={options}
-                  groups={groups}
-                  value={currentValue}
-                  multiple={multiple}
-                  searchable={searchable}
-                  searchPlaceholder={searchPlaceholder}
-                  searchValue={searchValue}
-                  onSearchChange={onSearchChange}
-                  onSelect={handleSelect}
-                  onClear={handleClear}
-                  onDone={handleDone}
-                  onClose={() => setOpen(false)}
-                  onCreate={onCreate}
-                  createLabel={createLabel}
-                  actionRow={actionRow}
-                  onActionClick={onActionClick}
-                  showRadio={showRadio}
-                  emptyText={emptyText}
-                  className={menuClassName}
-                />
-              </Popover.Content>
-            </Popover.Portal>
-          </Popover.Root>
+          <PopoverRoot open={isOpen} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>{effectiveTrigger}</PopoverTrigger>
+            <PopoverContent width="match" className={menuClassName}>
+              <SelectMenu
+                id={id}
+                options={options}
+                groups={groups}
+                value={currentValue}
+                multiple={multiple}
+                searchable={searchable}
+                searchPlaceholder={searchPlaceholder}
+                searchValue={searchValue}
+                onSearchChange={onSearchChange}
+                onSelect={handleSelect}
+                onClear={handleClear}
+                onDone={handleDone}
+                onClose={() => setOpen(false)}
+                onCreate={onCreate}
+                createLabel={createLabel}
+                actionRow={actionRow}
+                onActionClick={onActionClick}
+                showRadio={showRadio}
+                emptyText={emptyText}
+              />
+            </PopoverContent>
+          </PopoverRoot>
         )}
 
         {hasError ? (
