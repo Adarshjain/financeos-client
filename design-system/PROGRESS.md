@@ -58,8 +58,8 @@ Build in this order, one component per step. After each one, set its status to *
 | 1 | Icon | Ready for review |
 | 2 | Popover | Ready for review |
 | 3 | Dialog | Ready for review |
-| 4 | TabBar | Changes requested |
-| 5 | Rail | Changes requested |
+| 4 | TabBar | Ready for review |
+| 5 | Rail | Ready for review |
 | 6 | TopBar | Ready for review |
 | 7 | Tabs | Ready for review |
 | 8 | Pager | Ready for review |
@@ -217,6 +217,14 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 10 · TabBar and Rail take their items from the app:
+  - TabBar: accepts `items: { id, label, icon, href, count?, countTone? }[]` (at most 5) and `current` from props. Deleted `TabBarTabId`, `inboxCount`, `transactionsCount`, `getHref`, and hardcoded tab list.
+  - Rail: accepts `groups`, `current`, `search`, `footer`, `user` from props with zero hardcoded routes or default navigation trees. `check-ui` `hardcoded-route` clean.
+  - Stories: wired `useArgs` for both TabBar and Rail so clicking tabs/links updates `current` interactively in canvas and controls. Passed realistic FinanceOS items and navigation groups.
+  - Tests: tested props-driven items/groups, count badges/numbers, navigation/selection callbacks, and 5-item cap on TabBar.
+  - Stories compared and interacted with: TabBar (AllVariants, HomeActive, TransactionsActive, HighCounts, NoCounts) and Rail (AllVariants, Default, WithCounts, TransactionsActive) beside preview.html in light and dark at 390 and 1440. All items respond on click/tap and hover/pressed states.
+  - Checks: typecheck (clean), lint (0 errors), vitest (all 15 tests passing), build-storybook (clean), check-ui (clean on touched components). Differences left open: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 9 · TopBar (AppBar merged in):
   - Merged AppBar into TopBar and deleted `src/components/ds/AppBar/` and its export from `src/components/ds/index.ts`.
