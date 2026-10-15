@@ -3,3 +3,4 @@
 # (Phase 3), add its new files' paths here in the same commit. Old code is not checked,
 # so maintenance of not-yet-migrated screens is never blocked.
 src/components/ds/
+src/app/(ds)/

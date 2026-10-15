@@ -225,6 +225,12 @@ function check(lines, all = false, classes = true) {
       const hit = { file, line, rule: 'typed-glyph', why: 'a typed glyph used as an icon — use the Icon component (ChevronDown, X, Check, ChevronRight…)', text: text.trim().slice(0, 160) };
       (/ds-allow:/.test(text) ? allowed : errors).push(hit);
     }
+    if (
+      !/^src\/components\/ds\/.*\.stories\.tsx$/.test(file) &&
+      /from ['"](?:@\/components\/(?!ds\/|ds['"])|@\/app\/[^'"]*\/components\/)/.test(text)
+    ) {
+      errors.push({ file, line, rule: 'old-import', why: 'imports old UI — new code uses only src/components/ds; move shared logic (hooks, queries) to src/lib or src/features first (RULES §1.8)', text: text.trim().slice(0, 160) });
+    }
     if (PHOSPHOR && /^src\/components\/ds\//.test(file) && /from ['"]lucide-react['"]/.test(text)) {
       errors.push({ file, line, rule: 'lucide-in-ds', why: 'Lucide in the new system — use <Icon name="…" /> (Phosphor, RULES §6.1)', text: text.trim().slice(0, 160) });
     }
@@ -290,6 +296,10 @@ function selfTest() {
     }
   }
   for (const [file, text, rule, bad] of [
+    ['src/app/(ds)/ds/transactions/page.tsx', "import { Card } from '@/components/ui/card';", 'old-import', true],
+    ['src/app/(ds)/ds/transactions/page.tsx', "import { useLoanDetail } from '@/app/(protected)/loans/[id]/components/useLoanDetail';", 'old-import', true],
+    ['src/app/(ds)/ds/transactions/page.tsx', "import { Card } from '@/components/ds';", 'old-import', false],
+    ['src/app/(ds)/ds/transactions/page.tsx', "import { keys } from '@/lib/query';", 'old-import', false],
     ['src/components/ds/FilterChip/FilterChip.tsx', '<span>▾</span>', 'typed-glyph', true],
     ['src/components/ds/Card/Card.tsx', '<button type="button">', 'raw-button', true],
     ['src/components/ds/Button/Button.tsx', '<button type="button">', 'raw-button', false],
@@ -317,7 +327,7 @@ function selfTest() {
   console.log(
     fail
       ? `self-test: ${fail} problem(s)`
-      : `self-test: ${bad.length + 4} catches, ${good.length + 5} clean lines, all correct`
+      : `self-test: ${bad.length + 6} catches, ${good.length + 7} clean lines, all correct`
   );
   process.exit(fail ? 1 : 0);
 }

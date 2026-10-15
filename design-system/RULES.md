@@ -32,6 +32,7 @@ Never use as a source: "how apps usually do it", shadcn / MUI / Material / iOS d
 5. Do not touch `financeos-server` during UI phases.
 6. **Never modify existing components** (`src/components/ui/` and every feature folder) to restyle them. New code lives in `src/components/ds/`. In Phase 3, the only edits to old code allowed are the ones that swap the page being migrated over to new components.
 7. **Never delete old code before Phase 4.** In Phase 4, delete a file only after proving nothing imports it.
+8. **New code never uses old UI.** New components and new pages import UI only from `src/components/ds/`: nothing from `src/components/ui/`, other `src/components/*` folders, or `components/` folders under `src/app/`. Logic they need (hooks, queries, mutations, pure helpers) is first **moved** out of the old UI folder into `src/lib/` or `src/features/<area>/`, with the old components importing it from its new home: moved, never copied. If a page needs a piece of UI the new library doesn't have, that is an open question before the page is built, never a reason to borrow an old component. `check-ui.mjs` fails on these imports.
 
 ## 2. When something is unclear: stop, don't guess
 
