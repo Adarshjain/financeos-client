@@ -82,7 +82,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 27 | TransactionRow | Ready for review |
 | 28 | RuleCard | Ready for review |
 | 29 | KpiTile | Ready for review |
-| 30 | Widget | Changes requested |
+| 30 | Widget | Ready for review |
 | 31 | Badge | Ready for review |
 | 32 | CategoryChip | Ready for review |
 | 33 | StatusWords | Ready for review |
@@ -191,6 +191,15 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 13d · Widget:
+  - Updated `Widget` in `src/components/ds/Widget/Widget.tsx`:
+    - Replaced raw button for ⋮ menu trigger with DS `Button` (`size="sm"` `variant="ghost"` `iconOnly`) wrapping `Icon` `MoreVertical` (`size="sm"`).
+    - Replaced raw inline buttons for `Retry` (error state) and `Remove` (unavailable state) with DS `Button` component, eliminating raw-button violations.
+  - Updated `src/components/ds/Widget/Widget.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`Figure`, `RowsLoading`, `Failed`, `Unavailable`, `WithMenu`) with controls.
+  - Verified `src/components/ds/Widget/Widget.test.tsx`: 5 unit tests passing.
+  - Stories compared: AllVariants, Figure, RowsLoading, Failed, Unavailable against `design-system/components/Widget/preview.html` and widget screens at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 13c · KpiTile:
   - Updated `KpiTile` in `src/components/ds/KpiTile/KpiTile.tsx`:
