@@ -60,14 +60,17 @@ export const SmallForm: Story = {
             Delete 9
           </Button>
         }
-      >
-        <Button size="sm" variant="secondary">
-          Cancel
-        </Button>
-        <Button size="sm" variant="primary">
-          Approve 9
-        </Button>
-      </DialogFooter>
+        secondaryAction={
+          <Button size="sm" variant="secondary">
+            Cancel
+          </Button>
+        }
+        primaryAction={
+          <Button size="sm" variant="primary">
+            Approve 9
+          </Button>
+        }
+      />
     </DialogShell>
   ),
 };
@@ -101,14 +104,18 @@ export const LargeList: Story = {
           <span className="text-caption text-ink-3 tabular-nums">₹390</span>
         </div>
       </DialogBody>
-      <DialogFooter>
-        <Button size="sm" variant="secondary">
-          Cancel
-        </Button>
-        <Button size="sm" variant="primary">
-          Apply rule (11)
-        </Button>
-      </DialogFooter>
+      <DialogFooter
+        secondaryAction={
+          <Button size="sm" variant="secondary">
+            Cancel
+          </Button>
+        }
+        primaryAction={
+          <Button size="sm" variant="primary">
+            Apply rule (11)
+          </Button>
+        }
+      />
     </DialogShell>
   ),
 };
@@ -125,14 +132,18 @@ export const DefaultDialog: Story = {
       <DialogBody>
         <div className="text-body text-ink-3">Account form fields</div>
       </DialogBody>
-      <DialogFooter>
-        <Button size="sm" variant="secondary">
-          Cancel
-        </Button>
-        <Button size="sm" variant="primary">
-          Save changes
-        </Button>
-      </DialogFooter>
+      <DialogFooter
+        secondaryAction={
+          <Button size="sm" variant="secondary">
+            Cancel
+          </Button>
+        }
+        primaryAction={
+          <Button size="sm" variant="primary">
+            Save changes
+          </Button>
+        }
+      />
     </DialogShell>
   ),
 };
@@ -149,14 +160,18 @@ export const ExtraLarge: Story = {
       <DialogBody>
         <div className="text-body text-ink-3">Table of transactions</div>
       </DialogBody>
-      <DialogFooter>
-        <Button size="sm" variant="secondary">
-          Cancel
-        </Button>
-        <Button size="sm" variant="primary">
-          Import all
-        </Button>
-      </DialogFooter>
+      <DialogFooter
+        secondaryAction={
+          <Button size="sm" variant="secondary">
+            Cancel
+          </Button>
+        }
+        primaryAction={
+          <Button size="sm" variant="primary">
+            Import all
+          </Button>
+        }
+      />
     </DialogShell>
   ),
 };
@@ -178,14 +193,18 @@ export const InteractiveModal: Story = {
             Are you sure you want to approve these items?
           </div>
         </DialogBody>
-        <DialogFooter>
-          <Button size="sm" variant="secondary">
-            Cancel
-          </Button>
-          <Button size="sm" variant="primary">
-            Approve
-          </Button>
-        </DialogFooter>
+        <DialogFooter
+          secondaryAction={
+            <Button size="sm" variant="secondary">
+              Cancel
+            </Button>
+          }
+          primaryAction={
+            <Button size="sm" variant="primary">
+              Approve
+            </Button>
+          }
+        />
       </DialogContent>
     </Dialog>
   ),
@@ -214,14 +233,17 @@ export const AllVariants: Story = {
                 Delete 9
               </Button>
             }
-          >
-            <Button size="sm" variant="secondary">
-              Cancel
-            </Button>
-            <Button size="sm" variant="primary">
-              Approve 9
-            </Button>
-          </DialogFooter>
+            secondaryAction={
+              <Button size="sm" variant="secondary">
+                Cancel
+              </Button>
+            }
+            primaryAction={
+              <Button size="sm" variant="primary">
+                Approve 9
+              </Button>
+            }
+          />
         </DialogShell>
       </div>
 
@@ -238,14 +260,18 @@ export const AllVariants: Story = {
           <DialogBody>
             <div className="text-body">Content</div>
           </DialogBody>
-          <DialogFooter>
-            <Button size="sm" variant="secondary">
-              Cancel
-            </Button>
-            <Button size="sm" variant="primary">
-              Confirm
-            </Button>
-          </DialogFooter>
+          <DialogFooter
+            secondaryAction={
+              <Button size="sm" variant="secondary">
+                Cancel
+              </Button>
+            }
+            primaryAction={
+              <Button size="sm" variant="primary">
+                Confirm
+              </Button>
+            }
+          />
         </DialogShell>
       </div>
 
@@ -262,14 +288,18 @@ export const AllVariants: Story = {
           <DialogBody>
             <div className="text-body">List items</div>
           </DialogBody>
-          <DialogFooter>
-            <Button size="sm" variant="secondary">
-              Cancel
-            </Button>
-            <Button size="sm" variant="primary">
-              Apply
-            </Button>
-          </DialogFooter>
+          <DialogFooter
+            secondaryAction={
+              <Button size="sm" variant="secondary">
+                Cancel
+              </Button>
+            }
+            primaryAction={
+              <Button size="sm" variant="primary">
+                Apply
+              </Button>
+            }
+          />
         </DialogShell>
       </div>
 
@@ -286,14 +316,18 @@ export const AllVariants: Story = {
           <DialogBody>
             <div className="text-body">Table content</div>
           </DialogBody>
-          <DialogFooter>
-            <Button size="sm" variant="secondary">
-              Cancel
-            </Button>
-            <Button size="sm" variant="primary">
-              Done
-            </Button>
-          </DialogFooter>
+          <DialogFooter
+            secondaryAction={
+              <Button size="sm" variant="secondary">
+                Cancel
+              </Button>
+            }
+            primaryAction={
+              <Button size="sm" variant="primary">
+                Done
+              </Button>
+            }
+          />
         </DialogShell>
       </div>
     </div>

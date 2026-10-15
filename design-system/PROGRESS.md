@@ -144,6 +144,26 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 2 · Dialog component fixes:
+  - Fixed Dialog in `src/components/ds/Dialog/Dialog.tsx`:
+    - Responsive mobile morphology: on screens below `sm` (phone), Dialog seamlessly renders as a bottom sheet with `SheetHandle`, no `×` button, full-width `rounded-t-ds-sheet shadow-sheet`, pinned footer with full-width action buttons, and touch/pointer swipe-down to dismiss (RULES §5.6). On desktop (`sm:`), it renders centered with `rounded-ds-xl shadow-dialog`, `×` close button, and token max-widths (`max-w-dialog-sm/md/lg/xl`).
+    - Removed arbitrary `maxHeight: 480` and pixel width styles (`dialogWidths[size]`); capped by viewport using `max-h-dvh`.
+    - Token z-indices: `z-scrim` on overlay, `z-overlay` on content.
+    - Title and description: rendered exactly once through Radix primitives (`DialogPrimitive.Title` and `DialogPrimitive.Description`) with no duplicated hidden copies.
+    - Config-driven footer: supports `leftAction` (far-left destructive slot, e.g. "Delete 9"), `secondaryAction` ("Cancel"), and `primaryAction` ("Approve 9").
+  - Updated `src/components/ds/Dialog/Dialog.test.tsx`: verified title/description rendering, token size classes (`sm:max-w-dialog-*`), desktop close button, mobile swipe down, footer props, and Radix overlay tokens.
+  - Updated `src/components/ds/Dialog/Dialog.stories.tsx`: configured stories using `leftAction`, `secondaryAction`, and `primaryAction` props.
+  - Checks: `npm run typecheck`, `npm run lint`, `npx vitest run src/components/ds/Dialog/Dialog.test.tsx` (all 6 passed), and `node design-system/tools/check-ui.mjs --staged` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px (phone bottom sheet) and 1440px (desktop centered modal) in light and dark against `Dialog/preview.html`:
+    - `DS/Overlays/Dialog/Small (440)`
+    - `DS/Overlays/Dialog/Default (640)`
+    - `DS/Overlays/Dialog/Large (760)`
+    - `DS/Overlays/Dialog/Extra large (920)`
+    - `DS/Overlays/Dialog/All variants`
+    Verified desktop modal has `rounded-ds-xl`, `shadow-dialog`, `×` button, far-left destructive action, and right-aligned buttons matching preview. Verified phone render adapts to bottom sheet with drag handle, no `×`, and pinned footer.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 2 · Sheet component fixes:
   - Fixed Sheet implementation in `src/components/ds/Sheet/Sheet.tsx`:
     - Snapped phone gutter side padding to `px-space-16`.

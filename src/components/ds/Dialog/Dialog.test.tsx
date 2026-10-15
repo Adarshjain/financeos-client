@@ -28,18 +28,18 @@ describe('DialogShell', () => {
     expect(screen.getByText('Modal body content')).toBeInTheDocument();
   });
 
-  it('applies correct maxWidth for sizes', () => {
+  it('applies correct size classes for dialog tokens', () => {
     const { container: c1 } = render(<DialogShell size="sm" title="Small" />);
-    expect(c1.firstChild).toHaveStyle({ maxWidth: '440px' });
+    expect(c1.firstChild).toHaveClass('sm:max-w-dialog-sm');
 
     const { container: c2 } = render(<DialogShell size="md" title="Default" />);
-    expect(c2.firstChild).toHaveStyle({ maxWidth: '640px' });
+    expect(c2.firstChild).toHaveClass('sm:max-w-dialog-md');
 
     const { container: c3 } = render(<DialogShell size="lg" title="Large" />);
-    expect(c3.firstChild).toHaveStyle({ maxWidth: '760px' });
+    expect(c3.firstChild).toHaveClass('sm:max-w-dialog-lg');
 
     const { container: c4 } = render(<DialogShell size="xl" title="XL" />);
-    expect(c4.firstChild).toHaveStyle({ maxWidth: '920px' });
+    expect(c4.firstChild).toHaveClass('sm:max-w-dialog-xl');
   });
 
   it('triggers onClose when close button is clicked', () => {
@@ -54,23 +54,38 @@ describe('DialogShell', () => {
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
 
-  it('renders footer with actions and leftAction', () => {
+  it('triggers onClose when swiping down on phone', () => {
+    const handleClose = vi.fn();
+    render(
+      <DialogShell title="Swipe Test" onClose={handleClose}>
+        <DialogBody>Body</DialogBody>
+      </DialogShell>,
+    );
+    const dragArea = screen.getByTestId('dialog-drag-area');
+
+    fireEvent.pointerDown(dragArea, { clientY: 50, pointerId: 1 });
+    fireEvent.pointerMove(dragArea, { clientY: 150, pointerId: 1 });
+    fireEvent.pointerUp(dragArea, { clientY: 150, pointerId: 1 });
+
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders footer with leftAction, secondaryAction and primaryAction props', () => {
     render(
       <DialogFooter
-        leftAction={<button type="button" data-testid="delete-btn">Delete</button>}
-      >
-        <button type="button">Cancel</button>
-        <button type="button">Save</button>
-      </DialogFooter>,
+        leftAction={<button type="button" data-testid="delete-btn">Delete 9</button>}
+        secondaryAction={<button type="button">Cancel</button>}
+        primaryAction={<button type="button">Approve 9</button>}
+      />
     );
     expect(screen.getByTestId('delete-btn')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Approve 9' })).toBeInTheDocument();
   });
 });
 
 describe('Dialog (Radix overlay)', () => {
-  it('opens and displays content on trigger click', () => {
+  it('opens and displays content on trigger click with z-overlay and z-scrim tokens', () => {
     render(
       <Dialog>
         <DialogTrigger asChild>
@@ -86,6 +101,11 @@ describe('Dialog (Radix overlay)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open Modal' }));
 
-    expect(screen.getByText('Dialog is open')).toBeInTheDocument();
+    const content = screen.getByText('Dialog is open').closest('[role="dialog"]');
+    expect(content).toBeInTheDocument();
+    expect(content).toHaveClass('max-h-dvh');
+
+    // Title and description should be rendered exactly once
+    expect(screen.getAllByText('Interactive Dialog')).toHaveLength(1);
   });
 });
