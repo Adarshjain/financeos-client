@@ -82,7 +82,8 @@ test.describe('Gmail connect, senders and empty sync', () => {
     expect(url.searchParams.get('redirect_uri')).toBe(GMAIL_REDIRECT_URI);
     expect(url.searchParams.get('scope')).toBe('https://www.googleapis.com/auth/gmail.readonly');
     expect(url.searchParams.get('access_type')).toBe('offline');
-    expect(url.searchParams.get('approval_prompt')).toBe('force');
+    expect(url.searchParams.get('prompt')).toBe('consent');
+    expect(url.searchParams.has('approval_prompt')).toBe(false);
     expect(url.searchParams.get('state')).toBeTruthy();
   });
 
