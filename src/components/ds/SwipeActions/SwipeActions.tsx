@@ -6,7 +6,6 @@ import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import { useSwipe } from '../useSwipe';
 
-export type SwipeActionsVariant = 'transactions' | 'inbox';
 export type SwipeActionTone = 'brand' | 'danger' | 'warning' | 'info';
 
 export interface SwipeActionItem {
@@ -17,13 +16,16 @@ export interface SwipeActionItem {
   disabled?: boolean;
 }
 
-export interface SwipeActionsProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface SwipeActionsProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   children: React.ReactNode;
   left?: SwipeActionItem;
   right?: SwipeActionItem;
   disabled?: boolean;
   threshold?: number;
 }
+
+export { useSwipe } from '../useSwipe';
 
 /**
  * SwipeActions: A phone row gesture. It wraps any row and reveals what each side will do
@@ -68,10 +70,7 @@ export const SwipeActions = forwardRef<HTMLDivElement, SwipeActionsProps>(
     return (
       <div
         ref={ref}
-        className={cn(
-          'relative overflow-hidden select-none bg-surface border-t border-line-soft font-text',
-          className,
-        )}
+        className={cn('relative overflow-hidden touch-pan-y', className)}
         {...handlers}
         {...props}
       >
@@ -81,7 +80,9 @@ export const SwipeActions = forwardRef<HTMLDivElement, SwipeActionsProps>(
             aria-hidden={offset <= 0}
             className={cn(
               'absolute inset-0 flex items-center justify-start gap-space-8 px-space-16 text-body-strong font-bold',
-              left.tone === 'danger' ? 'bg-danger text-on-brand' : 'bg-brand text-on-brand',
+              left.tone === 'danger'
+                ? 'bg-danger text-on-brand'
+                : 'bg-brand text-on-brand',
               offset <= 0 && 'pointer-events-none opacity-0',
             )}
           >
@@ -96,7 +97,9 @@ export const SwipeActions = forwardRef<HTMLDivElement, SwipeActionsProps>(
             aria-hidden={offset >= 0}
             className={cn(
               'absolute inset-0 flex items-center justify-end gap-space-8 px-space-16 text-body-strong font-bold',
-              right.tone === 'brand' ? 'bg-brand text-on-brand' : 'bg-danger text-on-brand',
+              right.tone === 'brand'
+                ? 'bg-brand text-on-brand'
+                : 'bg-danger text-on-brand',
               offset >= 0 && 'pointer-events-none opacity-0',
             )}
           >
@@ -109,9 +112,11 @@ export const SwipeActions = forwardRef<HTMLDivElement, SwipeActionsProps>(
         <div
           style={{
             transform: `translateX(${offset}px)`,
-            transition: isDragging ? 'none' : 'transform 200ms cubic-bezier(0.16, 1, 0.3, 1)',
           }}
-          className="relative bg-surface touch-pan-y"
+          className={cn(
+            'relative',
+            !isDragging && 'transition-transform duration-base ease-out',
+          )}
         >
           {children}
         </div>
