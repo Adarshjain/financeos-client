@@ -91,7 +91,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 36 | Avatar | Changes requested |
 | 37 | Kbd | Ready for review |
 | 38 | Banner | Ready for review |
-| 39 | Toast | Changes requested |
+| 39 | Toast | Ready for review |
 | 40 | EmptyState | Ready for review |
 | 41 | Skeleton | Ready for review |
 
@@ -165,6 +165,19 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 7b · Toast:
+  - Rebuilt `Toast` in `src/components/ds/Toast/Toast.tsx` to take `tone?: BannerTone`, reusing `bannerToneStyles` imported directly from `../Banner/Banner`.
+  - Neutral default renders the dark ink toast (`bg-ink text-on-brand shadow-pop rounded-ds-lg`).
+  - Replaced raw `<button>` for Undo action with `Button` primitive (`variant="ghost"`, size `sm`, underline link styling).
+  - Maintained `showToast` sonner helper with timing and Undo wiring.
+  - Updated `src/components/ds/Toast/Toast.stories.tsx`: `AllVariants` as first export, stories for all 5 tones (`Neutral`, `Success`, `Danger`, `Warning`, `Info`) with Controls.
+  - Updated `src/components/ds/Toast/Toast.test.tsx`: 7 unit tests covering neutral dark ink default, Banner tone reuse with `shadow-pop`, Button undo callbacks, and showToast options.
+  - Files deleted: none.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/Toast` (7 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Stories compared: `DS/Feedback/Toast/AllVariants`, `Neutral`, `Success`, `Danger`, `Warning`, `Info` against `Toast/preview.html` and `ds-10-feedback.dc.html` at 390px and 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 7a · Banner:
   - Rebuilt `Banner` in `src/components/ds/Banner/Banner.tsx` supporting tones `danger`, `success`, `warning`, `info`, and `neutral`.
