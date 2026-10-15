@@ -100,7 +100,7 @@ Removed on 2026-10-15 (merged, see Owner decisions): Callout and its Note → Ba
 The desktop shell is Rail and TopBar; the phone shell is AppBar and TabBar.
 
 ## Phase 3 · Pages
-Rebuild one page or big component at a time, from **Approved** components only. Each new page is built first under `/ds/…` beside the live page (RULES §11). The owner reviews it at `/ds`, which lists every new page. After approval the live route switches to it (the swap) and the `/ds/…` copy is removed. Old components stay in place until Phase 4.
+Rebuild one page or big component at a time, from **Approved** components only. Signed-out pages (login, signup, offline) are rebuilt in place and swapped directly (owner decision 2026-10-15). Each signed-in page is built first under `/ds/…` beside the live page (RULES §11). The owner reviews it at `/ds`, which lists every new page. After approval the live route switches to it (the swap) and the `/ds/…` copy is removed. Old components stay in place until Phase 4.
 
 Suggested order, matching the owner's review: sign in, sign up and offline → Home and dashboards → Inbox and Upcoming → Accounts → Transactions (with review merged in) and Import → Rules and Categories. Investments, loans, rewards, reports and settings come after the owner has reviewed those boards.
 
