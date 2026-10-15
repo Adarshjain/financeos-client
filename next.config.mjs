@@ -8,6 +8,11 @@ const nextConfig = {
   // via a LAN IP. A bare '*' is rejected by Next's matcher; '*.*.*.*' matches
   // any IPv4 host, '**.local' covers mDNS hostnames. Dev-only, ignored in prod.
   allowedDevOrigins: ['*.*.*.*', '**.local'],
+  // Storybook (built into public/storybook on Vercel) uses relative asset
+  // paths, so its entry must be the real index.html URL, not a rewrite.
+  async redirects() {
+    return [{ source: '/storybook', destination: '/storybook/index.html', permanent: false }];
+  },
   async rewrites() {
     if (process.env.VERCEL && !process.env.API_ORIGIN) {
       throw new Error(

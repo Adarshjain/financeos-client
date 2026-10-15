@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "TRUST_STORES=system next dev -p 6970 --experimental-https",
+    "prebuild": "node scripts/build-storybook-for-deploy.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

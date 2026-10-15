@@ -55,3 +55,4 @@ e2e/fixtures/files/samples/
 
 # storybook
 storybook-static/
+public/storybook/
