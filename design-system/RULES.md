@@ -84,6 +84,7 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 3. **Variants are props.** A variant is never its own exported component (no `Note`, no `ReadOnlyRow`, no `ListRowIconTile`). Compound parts of one component (`Card.Header`, `Dialog.Footer`) are fine.
 4. **One component per concept.** Before building something new, look for an existing component that does it. A new component that looks or behaves like an existing one is an open question, not a build.
 5. **Shared behaviour lives in hooks** (`useSwipe`, the sheet drag), never copied between components.
+6. **Server or client, on purpose.** A component that uses state, effects, refs, event handlers, Radix, Sonner or browser APIs starts with `'use client'`. A purely presentational component (Badge, Card, ListRow without handlers, SectionHeader, Banner, Skeleton…) has no directive and no hooks, so a Server Component page can render it with no client JavaScript. Never put `'use client'` in `index.ts`.
 
 ## 5a. Storybook
 
