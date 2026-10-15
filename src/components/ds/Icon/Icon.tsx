@@ -1,15 +1,15 @@
-import type { LucideIcon } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
+import { type IconName,iconRegistry } from './registry';
 
+export type { IconName };
 export type IconSize = 'sm' | 'md' | 'lg';
 
-export interface IconProps extends React.SVGAttributes<SVGSVGElement> {
-  icon?: LucideIcon;
+export interface IconProps extends Omit<React.SVGAttributes<SVGSVGElement>, 'size'> {
+  name: IconName;
   size?: IconSize;
   className?: string;
-  children?: React.ReactNode;
 }
 
 const sizeClasses: Record<IconSize, string> = {
@@ -18,43 +18,22 @@ const sizeClasses: Record<IconSize, string> = {
   lg: 'w-icon-lg h-icon-lg',
 };
 
-const pixelSizes: Record<IconSize, number> = {
-  sm: 14,
-  md: 16,
-  lg: 20,
-};
-
 export const Icon = forwardRef<SVGSVGElement, IconProps>(
-  ({ icon: IconComponent, size = 'md', className, children, ...props }, ref) => {
-    const classes = cn('shrink-0 inline-block align-middle', sizeClasses[size], className);
+  ({ name, size = 'md', className, ...props }, ref) => {
+    const Component = iconRegistry[name];
+    if (!Component) return null;
 
-    if (IconComponent) {
-      return (
-        <IconComponent
-          ref={ref}
-          size={pixelSizes[size]}
-          className={classes}
-          strokeWidth={2}
-          aria-hidden="true"
-          {...props}
-        />
-      );
-    }
-
-    if (React.isValidElement(children)) {
-      return React.cloneElement(
-        children as React.ReactElement<React.SVGAttributes<SVGSVGElement>>,
-        {
-          className: cn(classes, (children.props as { className?: string })?.className),
-          strokeWidth: 2,
-          'aria-hidden': 'true',
-          ...props,
-        },
-      );
-    }
-
-    return null;
-  }
+    return (
+      <Component
+        ref={ref}
+        weight="bold"
+        color="currentColor"
+        aria-hidden="true"
+        className={cn('shrink-0 inline-block align-middle', sizeClasses[size], className)}
+        {...props}
+      />
+    );
+  },
 );
 
 Icon.displayName = 'Icon';

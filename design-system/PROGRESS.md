@@ -200,6 +200,15 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 · Antigravity · Unit 1 · Install Phosphor and rebuild Icon:
+  - Installed approved dependency `@phosphor-icons/react@2.1.10`.
+  - Created `src/components/ds/Icon/registry.ts`: mapped all 23 registry icon names to Phosphor SSR components from `@phosphor-icons/react/dist/ssr` (`as const satisfies Record<string, PhosphorIcon>`), exported `iconRegistry` and `IconName` type; exports nothing else.
+  - Rebuilt `src/components/ds/Icon/Icon.tsx`: accepts `name` (registry union), `size` (`sm` | `md` | `lg`), and layout `className`. Renders Phosphor component with `weight="bold"`, `color="currentColor"`, and `aria-hidden="true"`. Removed `icon` and `children` props.
+  - Updated `src/components/ds/Icon/Icon.test.tsx`: verified `iconRegistry` keys strictly match `design-system/icons.json`, verified registry exports only `iconRegistry`, and tested `sm`, `md`, `lg` rendering, `currentColor`, `bold` weight, and `aria-hidden`.
+  - Updated `src/components/ds/Icon/Icon.stories.tsx`: switched to registry names (`chevron-down`, `close`, `check`, `search`).
+  - Stories compared: Icon/AllVariants, Icon/Sm, Icon/Md, Icon/Lg against `design-system/components/Icon/preview.html` at 390 and 1440 in light and dark.
+  - Checks: `vitest run src/components/ds/Icon/Icon.test.tsx` (all 6 tests passing), `npm run build-storybook` (clean), `node design-system/tools/check-ui.mjs` (clean). Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 · Antigravity · Unit 0 · Server and client boundaries (RULES §5b.6):
   - Added `'use client'` directive to 28 component files that use state, effects, refs, event handlers, Radix, Sonner, or browser APIs: `AppBar.tsx`, `Avatar.tsx`, `Button.tsx`, `CategoryChip.tsx`, `Checkbox.tsx`, `DateField.tsx`, `DateTile.tsx`, `Dialog.tsx`, `DropZone.tsx`, `FilterChip.tsx`, `ListRow.tsx`, `Menu.tsx`, `Pager.tsx`, `Popover.tsx`, `Rail.tsx`, `RuleCard.tsx`, `SearchField.tsx`, `SegmentedControl.tsx`, `Select.tsx`, `SelectionBar.tsx`, `SwipeActions.tsx`, `Switch.tsx`, `TabBar.tsx`, `Tabs.tsx`, `TextArea.tsx`, `TextField.tsx`, `Toast.tsx`, `TransactionRow.tsx`, plus shared hooks `useSheetDrag.ts` and `useSwipe.ts` (`useMediaQuery.ts` already had it).
   - Maintained purely presentational components as Server Components with no directive: `Badge`, `Banner`, `Card`, `EmptyState`, `Foundations`, `Icon`, `Kbd`, `KpiTile`, `ProgressBar`, `SectionHeader`, `Skeleton`, `StatusWords`, `TopBar`, `Widget` (plus `FieldFrame.tsx`, `cn.ts`, `itemRow.ts`).
