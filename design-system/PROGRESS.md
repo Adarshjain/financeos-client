@@ -65,7 +65,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 10 | Button | Ready for review |
 | 11 | Menu | Ready for review |
 | 12 | SelectionBar | Changes requested |
-| 13 | SwipeActions | Changes requested |
+| 13 | SwipeActions | Ready for review |
 | 14 | TextField | Ready for review |
 | 15 | TextArea | Ready for review |
 | 16 | DateField | Ready for review |
@@ -191,6 +191,19 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 12 · SwipeActions:
+  - Created shared `useSwipe` hook in `src/components/ds/useSwipe.ts` (and exported from `src/components/ds/index.ts`):
+    - Encapsulates pointer tracking, horizontal drag physics, vertical scroll priority, 96px (`w-swipe-action`) threshold reporting, and spring-back on release.
+  - Rebuilt `SwipeActions` in `src/components/ds/SwipeActions/SwipeActions.tsx`:
+    - Uses `useSwipe` hook to report swipes to the parent without confirming, deleting, or opening anything itself (RULES §7.5).
+    - Left and right action slots (either optional): renders `Icon` at size `lg` and one-word label on background tone (`brand` / `danger`).
+    - Foreground row shifted via `transform: translateX(${offset}px)` with smooth spring back transition.
+    - Completely removed internal static buttons, eliminating `raw-button` violations. Removed locked state.
+  - Updated `src/components/ds/SwipeActions/SwipeActions.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`BothSides`, `RightOnly`, `LeftOnly`, `Disabled`) with controls.
+  - Updated `src/components/ds/SwipeActions/SwipeActions.test.tsx`: 7 unit tests covering children rendering, threshold trigger on swipe right/left, spring back below threshold, drag cancellation on vertical scrolling, behavior when neither slot is set, and disabled state.
+  - Stories compared: BothSides, RightOnly, LeftOnly, Disabled against `design-system/components/SwipeActions/preview.html` and phone gesture screens at 390px light/dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 11b · ListRow:
   - Updated `ListRow` in `src/components/ds/ListRow/ListRow.tsx`:

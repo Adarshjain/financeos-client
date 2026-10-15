@@ -41,4 +41,5 @@ export * from './Toast/Toast';
 export * from './TopBar/TopBar';
 export * from './TransactionRow/TransactionRow';
 export * from './useSheetDrag';
+export * from './useSwipe';
 export * from './Widget/Widget';
