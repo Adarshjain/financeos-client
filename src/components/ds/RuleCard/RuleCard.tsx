@@ -1,6 +1,6 @@
 'use client';
 
-import React, { forwardRef, useRef } from 'react';
+import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
 import { CategoryChip } from '../CategoryChip/CategoryChip';
@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '../Menu/Menu';
 import { StatusWords } from '../StatusWords/StatusWords';
+import { useLongPress } from '../useLongPress';
 
 export interface RuleCardMenuItem {
   label: React.ReactNode;
@@ -117,29 +118,10 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       ((selected || isSelectable) && Boolean(onDetail));
 
     // Long press detection for mobile (~450ms, cancelled on move > 10px)
-    const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
-    const isLongPressTriggeredRef = useRef(false);
-
-    const startLongPress = (clientX: number, clientY: number) => {
-      if (longPressTimerRef.current) {
-        clearTimeout(longPressTimerRef.current);
-      }
-      isLongPressTriggeredRef.current = false;
-      touchStartPosRef.current = { x: clientX, y: clientY };
-      longPressTimerRef.current = setTimeout(() => {
-        isLongPressTriggeredRef.current = true;
-        onSelectedChange?.(true);
-      }, 450);
-    };
-
-    const cancelLongPress = () => {
-      if (longPressTimerRef.current) {
-        clearTimeout(longPressTimerRef.current);
-        longPressTimerRef.current = null;
-      }
-      touchStartPosRef.current = null;
-    };
+    const longPress = useLongPress({
+      onLongPress: () => onSelectedChange?.(true),
+      disabled: !isSelectable && !selectionMode,
+    });
 
     const effectiveApprove =
       approveAction ??
@@ -236,8 +218,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
     };
 
     const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
-      if (isLongPressTriggeredRef.current) {
-        isLongPressTriggeredRef.current = false;
+      if (longPress.consumeTriggered()) {
         return;
       }
       if (isSelectable || selectionMode || selected) {
@@ -282,51 +263,35 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
         onClick={handleCardClick}
         onKeyDown={handleCardKeyDown}
         onTouchStart={(e) => {
-          if (e.touches.length === 1) {
-            startLongPress(e.touches[0].clientX, e.touches[0].clientY);
-          }
+          longPress.onTouchStart(e);
           onTouchStart?.(e);
         }}
         onTouchMove={(e) => {
-          if (touchStartPosRef.current && e.touches.length === 1) {
-            const dx = Math.abs(e.touches[0].clientX - touchStartPosRef.current.x);
-            const dy = Math.abs(e.touches[0].clientY - touchStartPosRef.current.y);
-            if (dx > 10 || dy > 10) {
-              cancelLongPress();
-            }
-          }
+          longPress.onTouchMove(e);
           onTouchMove?.(e);
         }}
         onTouchEnd={(e) => {
-          cancelLongPress();
+          longPress.onTouchEnd(e);
           onTouchEnd?.(e);
         }}
         onTouchCancel={(e) => {
-          cancelLongPress();
+          longPress.onTouchCancel(e);
           onTouchCancel?.(e);
         }}
         onPointerDown={(e) => {
-          if (e.pointerType === 'touch') {
-            startLongPress(e.clientX, e.clientY);
-          }
+          longPress.onPointerDown(e);
           onPointerDown?.(e);
         }}
         onPointerMove={(e) => {
-          if (touchStartPosRef.current && e.pointerType === 'touch') {
-            const dx = Math.abs(e.clientX - touchStartPosRef.current.x);
-            const dy = Math.abs(e.clientY - touchStartPosRef.current.y);
-            if (dx > 10 || dy > 10) {
-              cancelLongPress();
-            }
-          }
+          longPress.onPointerMove(e);
           onPointerMove?.(e);
         }}
         onPointerUp={(e) => {
-          cancelLongPress();
+          longPress.onPointerUp(e);
           onPointerUp?.(e);
         }}
         onPointerCancel={(e) => {
-          cancelLongPress();
+          longPress.onPointerCancel(e);
           onPointerCancel?.(e);
         }}
         {...props}

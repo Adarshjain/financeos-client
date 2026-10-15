@@ -220,6 +220,21 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 7 · One shared long-press hook:
+  - Created `src/components/ds/useLongPress.ts` (RULES §5b.5, §5c.9): touch input only (`pointerType === 'touch'`), fires after 450 ms, cancelled by movement > 10px or pointer up/cancel, returns handlers to spread onto an element and `consumeTriggered()` to prevent subsequent clicks.
+  - Exported `useLongPress` from `src/components/ds/index.ts`.
+  - Created `src/components/ds/useLongPress.test.tsx` verifying fire on held touch after 450 ms, ignoring mouse input, cancellation on movement > 10px, cancellation on pointerUp / pointerCancel, and disabled state.
+  - Replaced duplicate inline long-press timers in `src/components/ds/TransactionRow/TransactionRow.tsx` and `src/components/ds/RuleCard/RuleCard.tsx` with `useLongPress`.
+  - Removed unused `useState` import from `src/components/ds/Menu/Menu.tsx`.
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 335 problems (0 errors, 335 warnings)`
+    - `npm test`: `Test Files  427 passed (427) | Tests  3539 passed (3539)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+  - Done when: `grep -n "setTimeout" src/components/ds/TransactionRow/TransactionRow.tsx src/components/ds/RuleCard/RuleCard.tsx` returned nothing.
+  - Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 6 · SwipeActions: a pure wrapper that adds swipe to any child:
   - Stripped imposed visual styles from `src/components/ds/SwipeActions/SwipeActions.tsx`: outer wrapper keeps only `relative overflow-hidden touch-pan-y` plus consumer's `className` (no background, border, font, or padding); foreground has no background (child brings its own).
   - Replaced inline transition with Tailwind utility classes `transition-transform duration-base ease-out` (removed while dragging), keeping only `transform: translateX(...)` inline.
