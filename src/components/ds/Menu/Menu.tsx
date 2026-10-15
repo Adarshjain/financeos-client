@@ -1,8 +1,15 @@
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useMemo, useState } from 'react';
 
 import { cn } from '../cn';
+import { Dialog, DialogBody, DialogContent } from '../Dialog/Dialog';
 import { getItemRowClass, ItemRowStyleOptions } from '../itemRow';
+import { useIsPhone } from '../useMediaQuery';
+
+const MenuContext = React.createContext<{
+  isDialog: boolean;
+  close: () => void;
+}>({ isDialog: false, close: () => {} });
 
 export const DropdownMenu = DropdownMenuPrimitive.Root;
 export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
@@ -29,6 +36,12 @@ export const MenuContent = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   MenuContentProps
 >(({ className, sideOffset = 4, children, ...props }, ref) => {
+  const { isDialog } = React.useContext(MenuContext);
+
+  if (isDialog) {
+    return <div className={cn('flex flex-col', className)}>{children}</div>;
+  }
+
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
@@ -51,10 +64,15 @@ MenuContent.displayName = 'MenuContent';
 export const DropdownMenuContent = MenuContent;
 
 export interface MenuItemProps
-  extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item>,
+  extends Omit<
+      React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item>,
+      'onClick' | 'onSelect'
+    >,
     ItemRowStyleOptions {
   icon?: React.ReactNode;
   hint?: React.ReactNode;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onSelect?: (e: Event) => void;
 }
 
 export const MenuItem = forwardRef<
@@ -71,23 +89,33 @@ export const MenuItem = forwardRef<
       action = false,
       disabled = false,
       className,
+      onClick,
+      onSelect,
       ...props
     },
     ref,
   ) => {
-    return (
-      <DropdownMenuPrimitive.Item
-        ref={ref}
-        disabled={disabled}
-        className={getItemRowClass({
-          active,
-          destructive,
-          action,
-          disabled,
-          className,
-        })}
-        {...props}
-      >
+    const { isDialog, close } = React.useContext(MenuContext);
+
+    const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (disabled) return;
+      onClick?.(e);
+      if (isDialog) {
+        onSelect?.(e as unknown as Event);
+        close();
+      }
+    };
+
+    const rowClass = getItemRowClass({
+      active,
+      destructive,
+      action,
+      disabled,
+      className,
+    });
+
+    const content = (
+      <>
         {icon ? (
           <span className="shrink-0 flex items-center text-current">{icon}</span>
         ) : null}
@@ -102,6 +130,41 @@ export const MenuItem = forwardRef<
             {hint}
           </span>
         ) : null}
+      </>
+    );
+
+    if (isDialog) {
+      return (
+        <div
+          ref={ref as unknown as React.Ref<HTMLDivElement>}
+          role="menuitem"
+          aria-disabled={disabled || undefined}
+          tabIndex={disabled ? -1 : 0}
+          onClick={handleClick}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+            }
+          }}
+          className={cn(rowClass, 'cursor-pointer select-none')}
+          {...props}
+        >
+          {content}
+        </div>
+      );
+    }
+
+    return (
+      <DropdownMenuPrimitive.Item
+        ref={ref}
+        disabled={disabled}
+        className={rowClass}
+        onClick={onClick}
+        onSelect={onSelect}
+        {...props}
+      >
+        {content}
       </DropdownMenuPrimitive.Item>
     );
   },
@@ -111,18 +174,33 @@ MenuItem.displayName = 'MenuItem';
 export const DropdownMenuItem = MenuItem;
 
 export interface MenuSeparatorProps
-  extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator> {}
+  extends React.ComponentPropsWithoutRef<
+    typeof DropdownMenuPrimitive.Separator
+  > {}
 
 export const MenuSeparator = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
   MenuSeparatorProps
->(({ className, ...props }, ref) => (
-  <DropdownMenuPrimitive.Separator
-    ref={ref}
-    className={cn('h-px bg-line-soft my-space-4 mx-space-6', className)}
-    {...props}
-  />
-));
+>(({ className, ...props }, ref) => {
+  const { isDialog } = React.useContext(MenuContext);
+  if (isDialog) {
+    return (
+      <div
+        ref={ref as unknown as React.Ref<HTMLDivElement>}
+        role="separator"
+        className={cn('h-px bg-line-soft my-space-4 mx-space-6', className)}
+        {...props}
+      />
+    );
+  }
+  return (
+    <DropdownMenuPrimitive.Separator
+      ref={ref}
+      className={cn('h-px bg-line-soft my-space-4 mx-space-6', className)}
+      {...props}
+    />
+  );
+});
 
 MenuSeparator.displayName = 'MenuSeparator';
 export const DropdownMenuSeparator = MenuSeparator;
@@ -182,6 +260,8 @@ export interface MenuProps extends DropdownMenuPrimitive.DropdownMenuProps {
   side?: 'top' | 'bottom' | 'left' | 'right';
   sideOffset?: number;
   contentClassName?: string;
+  forcePhone?: boolean;
+  title?: string;
 }
 
 export const Menu: React.FC<MenuProps> & {
@@ -204,17 +284,80 @@ export const Menu: React.FC<MenuProps> & {
   onOpenChange,
   modal,
   dir,
+  forcePhone,
+  title,
 }) => {
+  const isPhoneDevice = useIsPhone();
+  const isPhone = forcePhone !== undefined ? forcePhone : isPhoneDevice;
+
+  const itemCount = useMemo(() => {
+    let count = 0;
+    const walk = (node: React.ReactNode) => {
+      React.Children.forEach(node, (child) => {
+        if (!React.isValidElement(child)) return;
+        if (
+          child.type === MenuItem ||
+          child.type === DropdownMenuItem ||
+          (child.props as { role?: string })?.role === 'menuitem'
+        ) {
+          count++;
+        } else if ((child.props as { children?: React.ReactNode })?.children) {
+          walk((child.props as { children?: React.ReactNode }).children);
+        }
+      });
+    };
+    walk(children);
+    return count;
+  }, [children]);
+
+  const showDialog = isPhone && itemCount > 6;
+  const [internalOpen, setInternalOpen] = useState(defaultOpen ?? false);
+  const isOpen = open !== undefined ? open : internalOpen;
+  const setOpen = (next: boolean) => {
+    if (open === undefined) setInternalOpen(next);
+    onOpenChange?.(next);
+  };
+
+  if (showDialog) {
+    return (
+      <MenuContext.Provider
+        value={{ isDialog: true, close: () => setOpen(false) }}
+      >
+        <Dialog open={isOpen} onOpenChange={setOpen}>
+          {trigger ? (
+            <div
+              onClick={() => setOpen(!isOpen)}
+              className="inline-block cursor-pointer"
+            >
+              {trigger}
+            </div>
+          ) : null}
+          <DialogContent
+            title={title || 'Menu'}
+            onClose={() => setOpen(false)}
+            className="max-h-dvh"
+          >
+            <DialogBody className="p-space-8 flex flex-col gap-space-2">
+              {children}
+            </DialogBody>
+          </DialogContent>
+        </Dialog>
+      </MenuContext.Provider>
+    );
+  }
+
   if (trigger) {
     return (
       <DropdownMenuPrimitive.Root
-        open={open}
+        open={isOpen}
         defaultOpen={defaultOpen}
-        onOpenChange={onOpenChange}
+        onOpenChange={setOpen}
         modal={modal}
         dir={dir}
       >
-        <DropdownMenuPrimitive.Trigger asChild>{trigger}</DropdownMenuPrimitive.Trigger>
+        <DropdownMenuPrimitive.Trigger asChild>
+          {trigger}
+        </DropdownMenuPrimitive.Trigger>
         <MenuContent
           align={align}
           side={side}
@@ -229,9 +372,9 @@ export const Menu: React.FC<MenuProps> & {
 
   return (
     <DropdownMenuPrimitive.Root
-      open={open}
+      open={isOpen}
       defaultOpen={defaultOpen}
-      onOpenChange={onOpenChange}
+      onOpenChange={setOpen}
       modal={modal}
       dir={dir}
     >

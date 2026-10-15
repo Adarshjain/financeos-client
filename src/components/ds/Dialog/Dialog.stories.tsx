@@ -1,14 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Check } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 
 import { Button } from '../Button/Button';
-import { Icon } from '../Icon/Icon';
+import { Checkbox } from '../Checkbox/Checkbox';
 import {
+  ConfirmDialogShell,
   Dialog,
   DialogBody,
   DialogContent,
-  DialogFooter,
   DialogShell,
   DialogTrigger,
 } from './Dialog';
@@ -19,198 +18,42 @@ const meta: Meta<typeof DialogShell> = {
   parameters: {
     layout: 'padded',
   },
+  argTypes: {
+    size: {
+      control: 'select',
+      options: ['sm', 'md', 'lg', 'xl'],
+      description: 'Modal width on desktop',
+    },
+    variant: {
+      control: 'select',
+      options: ['modal', 'side-panel'],
+      description: 'Centred modal vs desktop side panel (both render as sheet on phone)',
+    },
+    forcePhone: {
+      control: 'boolean',
+      description: 'Force phone sheet presentation',
+    },
+    showClose: {
+      control: 'boolean',
+    },
+    title: {
+      control: 'text',
+    },
+    description: {
+      control: 'text',
+    },
+  },
   args: {
+    size: 'md',
+    variant: 'modal',
     title: 'Approve 9 transactions',
-    description:
-      'Clears the reasons you tick. Rows that need no approval are skipped.',
+    description: 'Clears the reasons you tick. Rows that need no approval are skipped.',
+    showClose: true,
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof DialogShell>;
-
-export const SmallForm: Story = {
-  name: 'Small (440)',
-  render: () => (
-    <DialogShell
-      size="sm"
-      title="Approve 9 transactions"
-      description="Clears the reasons you tick. Rows that need no approval are skipped."
-      onClose={() => alert('Close')}
-    >
-      <DialogBody>
-        <label className="flex items-center justify-between py-space-6 border-b border-line-soft cursor-pointer">
-          <span className="text-body font-semibold text-ink">Unreconciled · 6</span>
-          <input
-            type="checkbox"
-            defaultChecked
-            className="w-space-16 h-space-16 accent-brand rounded-ds-xs cursor-pointer"
-          />
-        </label>
-        <label className="flex items-center justify-between py-space-6 cursor-pointer">
-          <span className="text-body font-semibold text-ink">Duplicate · 3</span>
-          <input
-            type="checkbox"
-            defaultChecked
-            className="w-space-16 h-space-16 accent-brand rounded-ds-xs cursor-pointer"
-          />
-        </label>
-      </DialogBody>
-      <DialogFooter
-        leftAction={
-          <Button size="sm" variant="danger">
-            Delete 9
-          </Button>
-        }
-        secondaryAction={
-          <Button size="sm" variant="secondary">
-            Cancel
-          </Button>
-        }
-        primaryAction={
-          <Button size="sm" variant="primary">
-            Approve 9
-          </Button>
-        }
-      />
-    </DialogShell>
-  ),
-};
-
-export const LargeList: Story = {
-  name: 'Large (760)',
-  render: () => (
-    <DialogShell
-      size="lg"
-      title="Matching transactions · Dunzo"
-      description="Manually reviewed transactions are left out"
-      onClose={() => alert('Close')}
-    >
-      <DialogBody>
-        <div className="flex items-center gap-space-8 py-space-6 border-b border-line-soft font-bold text-body text-ink">
-          <Icon icon={Check} size="sm" className="text-brand" />
-          <span>Select all 12 matches</span>
-        </div>
-        <div className="flex items-center justify-between py-space-6 border-b border-line-soft text-body">
-          <div className="flex items-center gap-space-8">
-            <Icon icon={Check} size="sm" className="text-brand" />
-            <span className="text-ink">DUNZO DAILY BANGALORE</span>
-          </div>
-          <span className="text-caption text-ink-3 tabular-nums">₹612</span>
-        </div>
-        <div className="flex items-center justify-between py-space-6 text-body">
-          <div className="flex items-center gap-space-8">
-            <span className="text-ink-4">○</span>
-            <span className="text-ink">DUNZO DAILY</span>
-          </div>
-          <span className="text-caption text-ink-3 tabular-nums">₹390</span>
-        </div>
-      </DialogBody>
-      <DialogFooter
-        secondaryAction={
-          <Button size="sm" variant="secondary">
-            Cancel
-          </Button>
-        }
-        primaryAction={
-          <Button size="sm" variant="primary">
-            Apply rule (11)
-          </Button>
-        }
-      />
-    </DialogShell>
-  ),
-};
-
-export const DefaultDialog: Story = {
-  name: 'Default (640)',
-  render: () => (
-    <DialogShell
-      size="md"
-      title="Edit account"
-      description="Update balance and credentials"
-      onClose={() => {}}
-    >
-      <DialogBody>
-        <div className="text-body text-ink-3">Account form fields</div>
-      </DialogBody>
-      <DialogFooter
-        secondaryAction={
-          <Button size="sm" variant="secondary">
-            Cancel
-          </Button>
-        }
-        primaryAction={
-          <Button size="sm" variant="primary">
-            Save changes
-          </Button>
-        }
-      />
-    </DialogShell>
-  ),
-};
-
-export const ExtraLarge: Story = {
-  name: 'Extra large (920)',
-  render: () => (
-    <DialogShell
-      size="xl"
-      title="Review import batch"
-      description="142 transactions parsed from HDFC statement"
-      onClose={() => {}}
-    >
-      <DialogBody>
-        <div className="text-body text-ink-3">Table of transactions</div>
-      </DialogBody>
-      <DialogFooter
-        secondaryAction={
-          <Button size="sm" variant="secondary">
-            Cancel
-          </Button>
-        }
-        primaryAction={
-          <Button size="sm" variant="primary">
-            Import all
-          </Button>
-        }
-      />
-    </DialogShell>
-  ),
-};
-
-export const InteractiveModal: Story = {
-  name: 'Interactive modal',
-  render: () => (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="primary">Open Dialog</Button>
-      </DialogTrigger>
-      <DialogContent
-        size="sm"
-        title="Approve 9 transactions"
-        description="Clears the reasons you tick."
-      >
-        <DialogBody>
-          <div className="text-body text-ink">
-            Are you sure you want to approve these items?
-          </div>
-        </DialogBody>
-        <DialogFooter
-          secondaryAction={
-            <Button size="sm" variant="secondary">
-              Cancel
-            </Button>
-          }
-          primaryAction={
-            <Button size="sm" variant="primary">
-              Approve
-            </Button>
-          }
-        />
-      </DialogContent>
-    </Dialog>
-  ),
-};
 
 export const AllVariants: Story = {
   name: 'All variants',
@@ -218,120 +61,433 @@ export const AllVariants: Story = {
     <div className="flex flex-col gap-space-32 max-w-5xl">
       <div>
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Small (440)
+          Desktop · sm · with tertiary
         </div>
         <DialogShell
           size="sm"
           title="Approve 9 transactions"
           description="Clears the reasons you tick."
           onClose={() => {}}
+          tertiary={
+            <Button size="sm" variant="danger">
+              Delete 9
+            </Button>
+          }
+          secondary={
+            <Button size="sm" variant="secondary">
+              Cancel
+            </Button>
+          }
+          primary={
+            <Button size="sm" variant="primary">
+              Approve 9
+            </Button>
+          }
         >
           <DialogBody>
-            <div className="text-body">Body content</div>
+            <label className="flex items-center justify-between py-space-6 border-b border-line-soft cursor-pointer">
+              <span className="text-body font-semibold text-ink">
+                Unreconciled · 6
+              </span>
+              <Checkbox checked disabled />
+            </label>
+            <label className="flex items-center justify-between py-space-6 cursor-pointer">
+              <span className="text-body font-semibold text-ink">
+                Duplicate · 3
+              </span>
+              <Checkbox checked disabled />
+            </label>
           </DialogBody>
-          <DialogFooter
-            leftAction={
-              <Button size="sm" variant="danger">
-                Delete 9
-              </Button>
-            }
-            secondaryAction={
-              <Button size="sm" variant="secondary">
-                Cancel
-              </Button>
-            }
-            primaryAction={
-              <Button size="sm" variant="primary">
-                Approve 9
-              </Button>
-            }
-          />
         </DialogShell>
       </div>
 
       <div>
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Default (640)
+          Phone sheet · tertiary moves into the body
         </div>
-        <DialogShell
-          size="md"
-          title="Default dialog"
-          description="Standard desktop modal width"
-          onClose={() => {}}
-        >
-          <DialogBody>
-            <div className="text-body">Content</div>
-          </DialogBody>
-          <DialogFooter
-            secondaryAction={
-              <Button size="sm" variant="secondary">
+        <div className="bg-scrim p-space-16 max-w-sm rounded-ds-lg">
+          <DialogShell
+            size="sm"
+            forcePhone
+            title="Edit rule"
+            description="Swiggy · Food & dining"
+            onClose={() => {}}
+            tertiaryLabel="Delete rule"
+            tertiary={
+              <Button size="xl" variant="danger-filled" className="w-full">
+                Delete rule
+              </Button>
+            }
+            secondary={
+              <Button size="xl" variant="secondary" className="w-full">
                 Cancel
               </Button>
             }
-            primaryAction={
-              <Button size="sm" variant="primary">
-                Confirm
+            primary={
+              <Button size="xl" variant="primary" className="w-full">
+                Save
               </Button>
             }
-          />
-        </DialogShell>
+          >
+            <DialogBody>
+              <div>
+                <label className="block text-label font-bold text-ink-2 mb-space-4">
+                  Pattern
+                </label>
+                <div className="border border-line rounded-ds-md px-space-12 py-space-8 text-body text-ink font-semibold">
+                  SWIGGY
+                </div>
+              </div>
+            </DialogBody>
+          </DialogShell>
+        </div>
       </div>
 
       <div>
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Large (760)
+          ConfirmDialog (preview + gentler alternative)
         </div>
-        <DialogShell
-          size="lg"
-          title="Large dialog"
-          description="For pickers and lists"
-          onClose={() => {}}
-        >
-          <DialogBody>
-            <div className="text-body">List items</div>
-          </DialogBody>
-          <DialogFooter
-            secondaryAction={
-              <Button size="sm" variant="secondary">
-                Cancel
-              </Button>
-            }
-            primaryAction={
-              <Button size="sm" variant="primary">
-                Apply
-              </Button>
-            }
-          />
-        </DialogShell>
+        <ConfirmDialogShell
+          title="Delete statement"
+          description="Removes the Oct 2026 statement and what it added to this account."
+          impact={[
+            '6 transactions it created will be deleted.',
+            '2 email alerts go back to review as unreconciled.',
+          ]}
+          confirmLabel="Delete statement"
+          cancelLabel="Cancel"
+          alternativeLabel="Close instead"
+        />
       </div>
 
       <div>
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Extra large (920)
+          Side panel (desktop detail)
         </div>
         <DialogShell
-          size="xl"
-          title="Extra large dialog"
-          description="For wide data tables"
+          variant="side-panel"
+          size="sm"
+          title="Swiggy Bangalore"
+          description="₹1,249 · 14 Oct 2026"
           onClose={() => {}}
+          secondary={
+            <Button size="sm" variant="secondary">
+              Cancel
+            </Button>
+          }
+          primary={
+            <Button size="sm" variant="primary">
+              Save
+            </Button>
+          }
         >
           <DialogBody>
-            <div className="text-body">Table content</div>
+            <div className="text-body text-ink">
+              Transaction details and categorization rules.
+            </div>
           </DialogBody>
-          <DialogFooter
-            secondaryAction={
-              <Button size="sm" variant="secondary">
-                Cancel
-              </Button>
-            }
-            primaryAction={
-              <Button size="sm" variant="primary">
-                Done
-              </Button>
-            }
-          />
         </DialogShell>
       </div>
     </div>
   ),
+};
+
+export const DesktopSm: Story = {
+  name: 'Desktop · sm · with tertiary',
+  args: {
+    size: 'sm',
+    title: 'Approve 9 transactions',
+    description: 'Clears the reasons you tick.',
+  },
+  render: (args) => (
+    <DialogShell
+      {...args}
+      tertiary={
+        <Button size="sm" variant="danger">
+          Delete 9
+        </Button>
+      }
+      secondary={
+        <Button size="sm" variant="secondary">
+          Cancel
+        </Button>
+      }
+      primary={
+        <Button size="sm" variant="primary">
+          Approve 9
+        </Button>
+      }
+    >
+      <DialogBody>
+        <label className="flex items-center justify-between py-space-6 border-b border-line-soft cursor-pointer">
+          <span className="text-body font-semibold text-ink">
+            Unreconciled · 6
+          </span>
+          <Checkbox checked disabled />
+        </label>
+        <label className="flex items-center justify-between py-space-6 cursor-pointer">
+          <span className="text-body font-semibold text-ink">
+            Duplicate · 3
+          </span>
+          <Checkbox checked disabled />
+        </label>
+      </DialogBody>
+    </DialogShell>
+  ),
+};
+
+export const DesktopMd: Story = {
+  name: 'Desktop · md',
+  args: {
+    size: 'md',
+    title: 'Edit account',
+    description: 'Update balance and credentials',
+  },
+  render: (args) => (
+    <DialogShell
+      {...args}
+      secondary={
+        <Button size="sm" variant="secondary">
+          Cancel
+        </Button>
+      }
+      primary={
+        <Button size="sm" variant="primary">
+          Save changes
+        </Button>
+      }
+    >
+      <DialogBody>
+        <div className="text-body text-ink-3">Account configuration form</div>
+      </DialogBody>
+    </DialogShell>
+  ),
+};
+
+export const DesktopLg: Story = {
+  name: 'Desktop · lg',
+  args: {
+    size: 'lg',
+    title: 'Matching transactions · Dunzo',
+    description: 'Manually reviewed transactions are left out',
+  },
+  render: (args) => (
+    <DialogShell
+      {...args}
+      secondary={
+        <Button size="sm" variant="secondary">
+          Cancel
+        </Button>
+      }
+      primary={
+        <Button size="sm" variant="primary">
+          Apply rule (11)
+        </Button>
+      }
+    >
+      <DialogBody>
+        <div className="flex items-center justify-between py-space-6 border-b border-line-soft text-body">
+          <span className="text-ink">DUNZO DAILY BANGALORE</span>
+          <span className="text-caption text-ink-3 tabular-nums">₹612</span>
+        </div>
+        <div className="flex items-center justify-between py-space-6 text-body">
+          <span className="text-ink">DUNZO DAILY</span>
+          <span className="text-caption text-ink-3 tabular-nums">₹390</span>
+        </div>
+      </DialogBody>
+    </DialogShell>
+  ),
+};
+
+export const DesktopXl: Story = {
+  name: 'Desktop · xl',
+  args: {
+    size: 'xl',
+    title: 'Review import batch',
+    description: '142 transactions parsed from HDFC statement',
+  },
+  render: (args) => (
+    <DialogShell
+      {...args}
+      secondary={
+        <Button size="sm" variant="secondary">
+          Cancel
+        </Button>
+      }
+      primary={
+        <Button size="sm" variant="primary">
+          Import all
+        </Button>
+      }
+    >
+      <DialogBody>
+        <div className="text-body text-ink-3">Statement transactions table</div>
+      </DialogBody>
+    </DialogShell>
+  ),
+};
+
+export const PhoneSheet: Story = {
+  name: 'Phone sheet',
+  args: {
+    size: 'sm',
+    forcePhone: true,
+    title: 'Edit rule',
+    description: 'Swiggy · Food & dining',
+    tertiaryLabel: 'Delete rule',
+  },
+  render: (args) => (
+    <div className="bg-scrim p-space-16 max-w-sm rounded-ds-lg">
+      <DialogShell
+        {...args}
+        tertiary={
+          <Button size="xl" variant="danger-filled" className="w-full">
+            Delete rule
+          </Button>
+        }
+        secondary={
+          <Button size="xl" variant="secondary" className="w-full">
+            Cancel
+          </Button>
+        }
+        primary={
+          <Button size="xl" variant="primary" className="w-full">
+            Save
+          </Button>
+        }
+      >
+        <DialogBody>
+          <div>
+            <label className="block text-label font-bold text-ink-2 mb-space-4">
+              Pattern
+            </label>
+            <div className="border border-line rounded-ds-md px-space-12 py-space-8 text-body text-ink font-semibold">
+              SWIGGY
+            </div>
+          </div>
+        </DialogBody>
+      </DialogShell>
+    </div>
+  ),
+};
+
+export const SidePanel: Story = {
+  name: 'Side panel',
+  args: {
+    variant: 'side-panel',
+    size: 'sm',
+    title: 'Transaction detail',
+    description: 'Swiggy Bangalore · ₹1,249',
+  },
+  render: (args) => (
+    <DialogShell
+      {...args}
+      secondary={
+        <Button size="sm" variant="secondary">
+          Cancel
+        </Button>
+      }
+      primary={
+        <Button size="sm" variant="primary">
+          Save
+        </Button>
+      }
+    >
+      <DialogBody>
+        <div className="text-body text-ink">
+          Detail view sliding in from the right on desktop, sheet on phone.
+        </div>
+      </DialogBody>
+    </DialogShell>
+  ),
+};
+
+export const ConfirmDialogWithPreview: StoryObj<typeof ConfirmDialogShell> = {
+  name: 'ConfirmDialog · with preview',
+  render: () => (
+    <ConfirmDialogShell
+      title="Delete statement"
+      description="Removes the Oct 2026 statement and what it added to this account."
+      impact={[
+        '6 transactions it created will be deleted.',
+        '2 email alerts go back to review as unreconciled.',
+      ]}
+      confirmLabel="Delete statement"
+      cancelLabel="Cancel"
+    />
+  ),
+};
+
+export const ConfirmDialogWithGentlerOption: StoryObj<
+  typeof ConfirmDialogShell
+> = {
+  name: 'ConfirmDialog · gentler option',
+  render: () => (
+    <ConfirmDialogShell
+      title="Discard changes?"
+      description="You have unsaved changes in this rule."
+      confirmLabel="Discard"
+      cancelLabel="Keep editing"
+      alternativeLabel="Close instead"
+    />
+  ),
+};
+
+export const ConfirmDialogLoading: StoryObj<typeof ConfirmDialogShell> = {
+  name: 'ConfirmDialog · loading preview',
+  render: () => (
+    <ConfirmDialogShell
+      title="Delete account"
+      description="Checking what will be affected…"
+      isCheckingImpact
+      checkingMessage="Checking transactions and rules…"
+      confirmLabel="Delete account"
+      cancelLabel="Cancel"
+    />
+  ),
+};
+
+const InteractiveModalDemo: React.FC = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="primary">Open Dialog</Button>
+      </DialogTrigger>
+      <DialogContent
+        size="sm"
+        title="Approve 9 transactions"
+        description="Clears the reasons you tick."
+        secondary={
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => setOpen(false)}
+          >
+            Cancel
+          </Button>
+        }
+        primary={
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={() => setOpen(false)}
+          >
+            Approve 9
+          </Button>
+        }
+      >
+        <DialogBody>
+          <div className="text-body text-ink">
+            Are you sure you want to approve these items?
+          </div>
+        </DialogBody>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export const InteractiveModal: Story = {
+  name: 'Interactive modal',
+  render: () => <InteractiveModalDemo />,
 };

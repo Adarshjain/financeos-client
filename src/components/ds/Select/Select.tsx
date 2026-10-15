@@ -10,10 +10,10 @@ import { Button } from '../Button/Button';
 import { CategoryChip } from '../CategoryChip/CategoryChip';
 import { Checkbox } from '../Checkbox/Checkbox';
 import { cn } from '../cn';
+import { Dialog, DialogBody, DialogContent } from '../Dialog/Dialog';
 import { Icon } from '../Icon/Icon';
 import { PopoverContent, PopoverRoot, PopoverTrigger } from '../Popover/Popover';
 import { SearchField } from '../SearchField/SearchField';
-import { Sheet, SheetBody, SheetContent } from '../Sheet/Sheet';
 import { useIsPhone } from '../useMediaQuery';
 
 export interface SelectOption {
@@ -736,13 +736,13 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             >
               {effectiveTrigger}
             </div>
-            <Sheet open={isOpen} onOpenChange={setOpen}>
-              <SheetContent
+            <Dialog open={isOpen} onOpenChange={setOpen}>
+              <DialogContent
                 title={label || placeholder || 'Select'}
                 onClose={() => setOpen(false)}
                 className="max-h-dvh"
               >
-                <SheetBody className="p-0">
+                <DialogBody className="p-0">
                   <SelectMenu
                     id={id}
                     options={options}
@@ -766,9 +766,9 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
                     isSheet
                     className={menuClassName}
                   />
-                </SheetBody>
-              </SheetContent>
-            </Sheet>
+                </DialogBody>
+              </DialogContent>
+            </Dialog>
           </>
         ) : (
           <PopoverRoot open={isOpen} onOpenChange={setOpen}>

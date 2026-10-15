@@ -2,11 +2,13 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { Button } from '../Button/Button';
 import {
+  ConfirmDialog,
+  ConfirmDialogShell,
   Dialog,
   DialogBody,
   DialogContent,
-  DialogFooter,
   DialogShell,
   DialogTrigger,
 } from './Dialog';
@@ -42,6 +44,14 @@ describe('DialogShell', () => {
     expect(c4.firstChild).toHaveClass('sm:max-w-dialog-xl');
   });
 
+  it('applies side-panel variant classes on desktop', () => {
+    const { container } = render(
+      <DialogShell variant="side-panel" title="Detail view" />,
+    );
+    expect(container.firstChild).toHaveClass('sm:rounded-l-ds-xl');
+    expect(container.firstChild).toHaveClass('sm:h-full');
+  });
+
   it('triggers onClose when close button is clicked', () => {
     const handleClose = vi.fn();
     render(
@@ -54,7 +64,7 @@ describe('DialogShell', () => {
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
 
-  it('triggers onClose when swiping down on phone', () => {
+  it('triggers onClose when swiping down past threshold', () => {
     const handleClose = vi.fn();
     render(
       <DialogShell title="Swipe Test" onClose={handleClose}>
@@ -70,26 +80,147 @@ describe('DialogShell', () => {
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
 
-  it('renders footer with leftAction, secondaryAction and primaryAction props', () => {
+  it('does not trigger onClose when swiping down below threshold', () => {
+    const handleClose = vi.fn();
     render(
-      <DialogFooter
-        leftAction={<button type="button" data-testid="delete-btn">Delete 9</button>}
-        secondaryAction={<button type="button">Cancel</button>}
-        primaryAction={<button type="button">Approve 9</button>}
-      />
+      <DialogShell title="Swipe Short Test" onClose={handleClose}>
+        <DialogBody>Body</DialogBody>
+      </DialogShell>,
     );
-    expect(screen.getByTestId('delete-btn')).toBeInTheDocument();
+    const dragArea = screen.getByTestId('dialog-drag-area');
+
+    fireEvent.pointerDown(dragArea, { clientY: 50, pointerId: 1 });
+    fireEvent.pointerMove(dragArea, { clientY: 70, pointerId: 1 });
+    fireEvent.pointerUp(dragArea, { clientY: 70, pointerId: 1 });
+
+    expect(handleClose).not.toHaveBeenCalled();
+  });
+
+  it('renders footer with tertiary, secondary and primary on desktop', () => {
+    render(
+      <DialogShell
+        title="Footer test"
+        tertiary={<Button variant="danger">Delete 9</Button>}
+        secondary={<Button variant="secondary">Cancel</Button>}
+        primary={<Button variant="primary">Approve 9</Button>}
+      >
+        <DialogBody>Body</DialogBody>
+      </DialogShell>,
+    );
+    expect(screen.getByRole('button', { name: 'Delete 9' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Approve 9' })).toBeInTheDocument();
+  });
+
+  it('moves tertiary into body on phone under danger SectionHeader band', () => {
+    render(
+      <DialogShell
+        forcePhone
+        title="Phone tertiary test"
+        tertiary={<Button variant="danger">Delete rule</Button>}
+        tertiaryLabel="Delete rule"
+        secondary={<Button variant="secondary">Cancel</Button>}
+        primary={<Button variant="primary">Save</Button>}
+      >
+        <DialogBody>Form content</DialogBody>
+      </DialogShell>,
+    );
+    // Tertiary action is rendered inside body
+    expect(screen.getByText('Delete rule', { selector: 'div' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete rule' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
+  });
+});
+
+describe('ConfirmDialog', () => {
+  it('renders title, description and impact items', () => {
+    render(
+      <ConfirmDialogShell
+        title="Delete statement"
+        description="Removes statement"
+        impact={[
+          '6 transactions will be deleted.',
+          '2 email alerts go back to review.',
+        ]}
+        confirmLabel="Delete statement"
+        cancelLabel="Cancel"
+      />,
+    );
+    expect(screen.getByText('Delete statement', { selector: '.font-extrabold' })).toBeInTheDocument();
+    expect(screen.getByText('Removes statement')).toBeInTheDocument();
+    expect(screen.getByText('6 transactions will be deleted.')).toBeInTheDocument();
+    expect(screen.getByText('2 email alerts go back to review.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete statement' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+  });
+
+  it('renders checking impact state and disables confirm button', () => {
+    const handleConfirm = vi.fn();
+    render(
+      <ConfirmDialogShell
+        title="Delete statement"
+        isCheckingImpact
+        checkingMessage="Checking affected rows…"
+        onConfirm={handleConfirm}
+        confirmLabel="Delete statement"
+      />,
+    );
+    expect(screen.getByText('Checking affected rows…')).toBeInTheDocument();
+    const deleteBtn = screen.getByRole('button', { name: 'Delete statement' });
+    expect(deleteBtn).toBeDisabled();
+    fireEvent.click(deleteBtn);
+    expect(handleConfirm).not.toHaveBeenCalled();
+  });
+
+  it('renders alternative label and triggers callbacks', () => {
+    const handleConfirm = vi.fn();
+    const handleCancel = vi.fn();
+    const handleAlternative = vi.fn();
+
+    render(
+      <ConfirmDialogShell
+        title="Discard changes"
+        confirmLabel="Discard"
+        cancelLabel="Keep editing"
+        alternativeLabel="Close instead"
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+        onAlternative={handleAlternative}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Close instead' }));
+    expect(handleAlternative).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Keep editing' }));
+    expect(handleCancel).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
+    expect(handleConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders accessible modal when trigger is clicked', () => {
+    render(
+      <ConfirmDialog
+        title="Delete transaction?"
+        confirmLabel="Delete"
+        trigger={<Button>Delete transaction</Button>}
+      />,
+    );
+
+    expect(screen.queryByText('Delete transaction?')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Delete transaction' }));
+    expect(screen.getByText('Delete transaction?')).toBeInTheDocument();
   });
 });
 
 describe('Dialog (Radix overlay)', () => {
-  it('opens and displays content on trigger click with z-overlay and z-scrim tokens', () => {
+  it('opens and displays content on trigger click', () => {
     render(
       <Dialog>
         <DialogTrigger asChild>
-          <button type="button">Open Modal</button>
+          <Button>Open Modal</Button>
         </DialogTrigger>
         <DialogContent title="Interactive Dialog">
           <DialogBody>Dialog is open</DialogBody>
@@ -104,8 +235,6 @@ describe('Dialog (Radix overlay)', () => {
     const content = screen.getByText('Dialog is open').closest('[role="dialog"]');
     expect(content).toBeInTheDocument();
     expect(content).toHaveClass('max-h-dvh');
-
-    // Title and description should be rendered exactly once
     expect(screen.getAllByText('Interactive Dialog')).toHaveLength(1);
   });
 });
