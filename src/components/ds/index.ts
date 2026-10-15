@@ -9,6 +9,7 @@ export * from './Checkbox/Checkbox';
 export * from './DateField/DateField';
 export * from './DateTile/DateTile';
 export * from './Dialog/Dialog';
+export * from './Divider/Divider';
 export * from './DropZone/DropZone';
 export * from './EmptyState/EmptyState';
 export * from './FilterChip/FilterChip';
