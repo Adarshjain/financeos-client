@@ -3,7 +3,7 @@
 import React, { forwardRef } from 'react';
 import { toast as sonnerToast } from 'sonner';
 
-import { BannerTone,bannerToneStyles } from '../Banner/Banner';
+import { BannerTone, bannerToneStyles } from '../Banner/Banner';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 
@@ -19,34 +19,6 @@ export interface ToastProps
   undoLabel?: string;
   /** Optional custom action element */
   action?: React.ReactNode;
-  /** Whether this toast represents a failure (legacy alias for tone='danger') */
-  isError?: boolean;
-}
-
-function normalizeToastTone(
-  tone?: BannerTone,
-  isError?: boolean,
-): 'neutral' | 'danger' | 'success' | 'warning' | 'info' {
-  if (isError) return 'danger';
-  if (!tone) return 'neutral';
-  switch (tone) {
-    case 'err':
-    case 'danger':
-      return 'danger';
-    case 'ok':
-    case 'success':
-      return 'success';
-    case 'warn':
-    case 'warning':
-    case 'callout':
-      return 'warning';
-    case 'info':
-      return 'info';
-    case 'note':
-    case 'neutral':
-    default:
-      return 'neutral';
-  }
 }
 
 export const Toast = forwardRef<HTMLDivElement, ToastProps>(
@@ -59,15 +31,13 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
       onUndo,
       undoLabel = 'Undo',
       action,
-      isError = false,
       role,
       ...props
     },
     ref,
   ) => {
-    const normalizedTone = normalizeToastTone(tone, isError);
-    const isDanger = normalizedTone === 'danger';
-    const isNeutral = normalizedTone === 'neutral';
+    const isDanger = tone === 'danger';
+    const isNeutral = tone === 'neutral';
 
     return (
       <div
@@ -75,7 +45,7 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
         role={role || (isDanger ? 'alert' : 'status')}
         className={cn(
           'shadow-pop rounded-ds-lg px-space-14 py-space-10 flex items-center gap-space-10 text-body font-semibold select-none',
-          isNeutral ? 'bg-ink text-on-brand' : bannerToneStyles[normalizedTone],
+          isNeutral ? 'bg-ink text-on-brand' : bannerToneStyles[tone],
           className,
         )}
         {...props}
@@ -84,14 +54,11 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
         {onUndo ? (
           <Button
             type="button"
-            variant="ghost"
-            size="sm"
+            variant="link"
             onClick={onUndo}
             className={cn(
-              'ml-auto underline font-bold underline-offset-2 shrink-0 p-0 h-auto hover:bg-transparent',
-              isNeutral
-                ? 'text-line hover:text-line-soft'
-                : 'text-current hover:opacity-80',
+              'ml-auto shrink-0',
+              isNeutral ? 'text-line hover:text-line-soft' : 'text-inherit',
             )}
           >
             {undoLabel}
@@ -111,7 +78,6 @@ export interface ShowToastOptions {
   onUndo?: () => void;
   undoLabel?: string;
   action?: React.ReactNode;
-  isError?: boolean;
   duration?: number;
 }
 
@@ -138,7 +104,6 @@ export function showToast(
         }
         undoLabel={options?.undoLabel}
         action={options?.action}
-        isError={options?.isError}
       />
     ),
     {
@@ -146,3 +111,4 @@ export function showToast(
     },
   );
 }
+

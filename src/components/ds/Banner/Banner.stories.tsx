@@ -59,11 +59,7 @@ export const AllVariants: Story = {
         <Banner
           tone="warning"
           title="2 bank credits look like dividends."
-          action={
-            <Button size="sm" variant="ghost" className="underline font-bold">
-              Reconcile
-            </Button>
-          }
+          action={<Button variant="link">Reconcile</Button>}
         />
       </div>
 
@@ -108,11 +104,7 @@ export const Warning: Story = {
     tone: 'warning',
     title: '2 bank credits look like dividends.',
     children: '',
-    action: (
-      <Button size="sm" variant="ghost" className="underline font-bold">
-        Reconcile
-      </Button>
-    ),
+    action: <Button variant="link">Reconcile</Button>,
   },
 };
 
@@ -138,10 +130,6 @@ export const WithAction: Story = {
   args: {
     tone: 'danger',
     children: 'Failed to load upcoming items.',
-    action: (
-      <Button size="sm" variant="ghost" className="underline font-bold">
-        Try again
-      </Button>
-    ),
+    action: <Button variant="link">Try again</Button>,
   },
 };

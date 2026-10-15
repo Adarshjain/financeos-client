@@ -71,27 +71,8 @@ describe('Banner', () => {
     );
   });
 
-  it('supports legacy tone aliases err, ok, warn, callout, note', () => {
-    const { container: cErr } = render(<Banner tone="err">Error</Banner>);
-    expect(cErr.firstChild).toHaveClass('bg-danger-tint');
-
-    const { container: cOk } = render(<Banner tone="ok">Ok</Banner>);
-    expect(cOk.firstChild).toHaveClass('bg-positive-tint');
-
-    const { container: cWarn } = render(<Banner tone="warn">Warn</Banner>);
-    expect(cWarn.firstChild).toHaveClass('bg-warning-tint');
-
-    const { container: cCallout } = render(
-      <Banner tone="callout">Callout</Banner>,
-    );
-    expect(cCallout.firstChild).toHaveClass('bg-warning-tint');
-
-    const { container: cNote } = render(<Banner tone="note">Note</Banner>);
-    expect(cNote.firstChild).toHaveClass('bg-surface');
-  });
-
-  it('renders lead-in title and trailing action', () => {
-    render(
+  it('renders lead-in title and inline action with items-center', () => {
+    const { container } = render(
       <Banner
         tone="warning"
         title="2 bank credits look like dividends."
@@ -100,6 +81,7 @@ describe('Banner', () => {
         Additional details
       </Banner>,
     );
+    expect(container.firstChild).toHaveClass('items-center');
     expect(
       screen.getByText('2 bank credits look like dividends.'),
     ).toBeInTheDocument();

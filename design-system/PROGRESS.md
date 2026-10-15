@@ -91,8 +91,8 @@ Build in this order, one component per step. After each one, set its status to *
 | 34 | DateTile | Ready for review |
 | 35 | Avatar | Ready for review |
 | 36 | Kbd | Ready for review |
-| 37 | Banner | Changes requested |
-| 38 | Toast | Changes requested |
+| 37 | Banner | Ready for review |
+| 38 | Toast | Ready for review |
 | 39 | EmptyState | Ready for review |
 | 40 | Skeleton | Ready for review |
 | 41 | Logo | Ready for review |
@@ -217,6 +217,13 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 4 · Banner and Toast (inline actions with Button link):
+  - Banner: set container to `items-center`; action is rendered inline at the end of the text line via Button `link` (or wrapped in Button `link` when string); long text wraps naturally with the action at the end of the last line; one line of text stays one line tall. Deleted legacy tone aliases (`err`, `ok`, `warn`, `callout`, `note`).
+  - Toast: updated Undo action to use Button `link` (`ml-auto shrink-0`, inheriting tone color or using `text-line` on neutral); deleted legacy `isError` alias prop from Toast, `ShowToastOptions`, and `showToast`. Added `InteractiveTrigger` story for canvas interaction.
+  - Stories compared and interacted with: Banner (AllVariants, Danger, Success, Warning, Info, Neutral, WithAction) and Toast (AllVariants, Neutral, Success, Danger, Warning, Info, InteractiveTrigger) beside previews at 390 and 1440, light and dark. Verified click triggers, Undo callbacks, and layout responsiveness.
+  - Checks: typecheck (clean), lint (0 errors), vitest (all 14 tests passing), build-storybook (clean), check-ui (clean on touched files). Differences left open: none.
+
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 3 · Menu, Select, Popover (one item row, one surface):
   - Popover: deleted legacy `width="match"` mode and `PopoverWidth` type; unified content width to `min-w-popover-trigger max-w-dialog-sm w-auto` so content grows naturally with trigger/options. Updated Popover stories and tests.

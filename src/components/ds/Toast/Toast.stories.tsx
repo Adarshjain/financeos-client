@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
-import { Toast } from './Toast';
+import { Button } from '../Button/Button';
+import { showToast, Toast } from './Toast';
 
 const meta: Meta<typeof Toast> = {
   title: 'DS/Feedback/Toast',
@@ -156,4 +157,56 @@ export const Info: Story = {
       <Toast {...args} />
     </div>
   ),
+};
+
+export const InteractiveTrigger: Story = {
+  name: 'Trigger in canvas',
+  render: () => {
+    return (
+      <div className="flex flex-wrap gap-space-8 p-space-16">
+        <Button
+          variant="secondary"
+          onClick={() =>
+            showToast('Snoozed until Wed 14 Oct', {
+              tone: 'neutral',
+              onUndo: () => alert('Undone!'),
+            })
+          }
+        >
+          Toast Neutral
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() =>
+            showToast('Marked ₹20,000 paid · ₹13,900 still due', {
+              tone: 'success',
+              onUndo: () => alert('Undone!'),
+            })
+          }
+        >
+          Toast Success
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() =>
+            showToast("Couldn't snooze. The row is back.", {
+              tone: 'danger',
+            })
+          }
+        >
+          Toast Danger
+        </Button>
+        <Button
+          variant="secondary"
+          onClick={() =>
+            showToast('Imported 41 rows, 2 skipped', {
+              tone: 'warning',
+            })
+          }
+        >
+          Toast Warning
+        </Button>
+      </div>
+    );
+  },
 };

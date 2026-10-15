@@ -88,9 +88,6 @@ describe('Toast', () => {
 
     rerender(<Toast message="Couldn't snooze." tone="danger" />);
     expect(screen.getByRole('alert')).toBeInTheDocument();
-
-    rerender(<Toast message="Failed again" isError />);
-    expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
   it('wires onUndo in showToast to invoke callback and dismiss the toast', () => {
