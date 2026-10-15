@@ -115,16 +115,17 @@ These are the rules a mature design system (Radix, Material, Polaris, Atlassian)
    Every stateful component works both controlled and uncontrolled. Never `onChange` for a value, never `isOpen`.
 7. **Events are named for what the user did to the component**, not what the app does with it: `onSelect`, `onTrigger`, `onRemove`, `onOpenDetail`. Never `onApprove`, `onEditRule`, `onSetCategory`. Actions the app defines arrive as data (`actions={[{ id, label, icon, onSelect }]}`).
 8. **One name per prop.** No aliases, no "legacy" or "backwards compatible" props.
-9. **Composition:**
+9. **Behaviours wrap, they don't embed.** Swipe, long-press and drag are added from outside, by a wrapper component (SwipeActions) or a shared hook (`useSwipe`, `useLongPress`, `useSheetDrag`). No component carries props like `swipeable` or `swipeLeft`, and none wraps itself in a behaviour. Any component can be made swipeable by the page wrapping it.
+10. **Composition:**
    - polymorphism through `asChild`;
    - compound parts as `Name.Part` (`Dialog.Footer`, `Card.Header`);
    - content through slots (`trigger`, `actions`, `footer`);
    - every component forwards its ref, spreads native props, and takes `className` for layout only.
-10. **Content comes from props** (§5b.6). **States are visible** (§5b.7). **Server or client on purpose** (§5b.8).
+11. **Content comes from props** (§5b.6). **States are visible** (§5b.7). **Server or client on purpose** (§5b.8).
 
 **Proof**
-11. Each README lists **Props** (with the names above), **Variants** and **Built from**. Stories are args-driven and interactive (§5a). Tests cover behaviour.
-12. `check-ui.mjs` enforces what can be checked mechanically:
+12. Each README lists **Props** (with the names above), **Variants** and **Built from**. Stories are args-driven and interactive (§5a). Tests cover behaviour.
+13. `check-ui.mjs` enforces what can be checked mechanically:
     - viewport hooks outside ResponsiveOverlay;
     - `phone` / `desktop` variant props;
     - old imports;
