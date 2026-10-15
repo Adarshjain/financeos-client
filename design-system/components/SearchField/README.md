@@ -7,5 +7,8 @@ A search box with a leading magnifier. Every search input carries the icon.
 - Inside sheets it is a labelled field ("Find the other side") so it reads as an input, not a filter.
 - Placeholder names what can be searched: "Search merchant keys or names…".
 
+## Built from
+The shared field frame, Icon.
+
 ## Variants
 - Empty, typing with a clear ×, labelled inside a sheet, no results.

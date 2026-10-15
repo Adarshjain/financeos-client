@@ -52,19 +52,19 @@ FinanceOS is a personal money app for India, used mostly on phones: accounts, ca
 Illustration only on auth, offline and empty screens: flat shapes from the palette (mint panel `illus-mint`, gold coin `illus-gold`, white tiles), no photos, no people, no mascots. Bank logos are the banks' own favicons at 22px; never redraw a bank's mark.
 
 ## Iconography
-Lucide-style line icons (the app uses `lucide-react`): 24px grid, 2px stroke, round caps and joins, `currentColor`. Sizes 14px in buttons and chips, 16–18px in bars and rows, 20px in the phone tab bar and selection bar. Icons inherit `ink-4` by default and `brand-strong` when active. Use an icon only when it is a control (close, more, back, chevron, search, delete), navigation, or progress (a spinner). Toasts, banners, empty states and badges carry no decorative icon; their words do the work. The link glyph on transaction rows is a 10px chain. The app mark is the ₹ glyph in `on-brand` on a `brand` rounded square (`radius-md`); there is no separate logo file.
+Lucide-style line icons (the app uses `lucide-react`): 24px grid, 2px stroke, round caps and joins, `currentColor`. Three sizes only, from the `icon-*` tokens: `icon-sm` 14px in chips, field carets and small buttons; `icon-md` 16px in buttons, bars, rows and menus; `icon-lg` 20px in the phone tab bar, desktop rail and selection bar. Never type a glyph (▾ ✕ ✓ ›) as an icon. Icons inherit `ink-4` by default and `brand-strong` when active. Use an icon only when it is a control (close, more, back, chevron, search, delete), navigation, or progress (a spinner). Toasts, banners, empty states and badges carry no decorative icon; their words do the work. The link glyph on transaction rows is a 10px chain. The app mark is the ₹ glyph in `on-brand` on a `brand` rounded square (`radius-md`); there is no separate logo file.
 
 ## Mobile patterns (binding)
 - **The app bar's + is the only add.** It opens the add form for the current screen. Pages never carry "New …" or "Add …" header buttons.
 - **No body title on phone**; the app bar has it.
 - **Single choice = dropdown, multi choice = multi-select dropdown.** No tiles or chip groups in forms.
-- **Sheets, not dialogs**: bottom sheets with a handle, no ×, swipe down to close, body scrolls, footer sticks.
+- **Sheets, not dialogs**: on phone every Dialog is a bottom sheet with a handle, no ×, swipe down to close, body scrolls, footer sticks. One component; the viewport picks the form.
 - **Selection**: long-press starts, tap toggles, eye opens the detail without leaving selection, no checkboxes on phone. The selection bar docks at the bottom.
-- **Swipe** on Transactions: right approves, left deletes. On Inbox: right snoozes until tomorrow, left dismisses. Rows that can't do either don't swipe.
-- **Reversible actions confirm with a Toast and Undo**; destructive ones confirm first with a ConfirmSheet that says what goes and what stays.
+- **Swipe** on Transactions: right approves, left deletes. On Inbox: right snoozes until tomorrow, left dismisses. Rows that can't do either don't swipe. The swipe only tells the page; the page confirms or applies (with Undo) by the rule below.
+- **Reversible actions confirm with a Toast and Undo**; destructive ones confirm first with a ConfirmDialog that says what goes and what stays.
 - **Lists** group by day under sticky date headers; rows never repeat the date. Long lists end in a Pager.
 - **Filters** are one scrolling chip row under a full-width search; review filters sit in the same row as the rest.
-- **Locked fields** (the account of an imported transaction, the type of an account) show greyed with a lock and no explanation.
+- **Fields that can't change** (the account of an imported transaction, the type of an account) are disabled. There is no separate locked state.
 - **Destructive actions** live in a ⋮ menu or at the bottom of an edit sheet, in `danger`, and always confirm.
 
 ## Intentional additions

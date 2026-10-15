@@ -71,24 +71,33 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 4. A component may be used in a page only after its status in `PROGRESS.md` is **Approved**.
 5. These structural rules carry over to the new components:
    - **Buttons**: only the Button component's variants and sizes.
-   - **Dialog and Sheet**: an unpadded shell; the body is the only scroll container; the footer is config-driven with at most two actions (Delete goes in the body); headerless dialogs take an `srTitle`.
-   - **Dates**: the new date input shows and accepts dd/mm/yyyy. Never `<input type="date">`.
+   - **Dialog**: one component for every overlay. An unpadded shell; the body is the only scroll container; the footer is config-driven with at most two actions plus an optional tertiary destructive action (far left on desktop, end of the body on phone); headerless dialogs take an `srTitle`.
+   - **Dates**: DateField shows and accepts dd/mm/yyyy, with a calendar to pick from. Never `<input type="date">`.
    - **Lists**: real server-side pagination, with the Pager above and below the list.
-6. On phone, every dialog is a bottom sheet: drag handle, no ×, swipe down or tap the scrim to close, footer pinned. Desktop dialogs keep ×.
-7. Destructive actions confirm first with a **ConfirmSheet** that says what goes and what stays. Reversible actions confirm afterwards with a **Toast** that has Undo.
+6. On phone, every Dialog renders as a bottom sheet: drag handle, no ×, swipe down or tap the scrim to close, footer pinned. Desktop dialogs keep ×. The viewport picks the form; pages never choose.
+7. Destructive actions confirm first with a **ConfirmDialog** that says what goes and what stays. Reversible actions confirm afterwards with a **Toast** that has Undo.
+
+## 5b. Composition (no duplicates)
+
+1. **Layers.** Tokens → primitives (Icon, Button, Badge, Avatar, Checkbox, Switch, TextField, TextArea, CategoryChip, StatusWords, ProgressBar, Kbd, Skeleton) → patterns (Popover, Dialog, Menu, Select, DateField, SearchField, FilterChip, Banner, Toast, ListRow, Card, SectionHeader, EmptyState) → composites (TransactionRow, RuleCard, KpiTile, Widget, Pager, SelectionBar, SwipeActions, DropZone, DateTile, SegmentedControl, Tabs) → shell (AppBar, TabBar, Rail, TopBar). A component uses the ones below it; it never re-draws them.
+2. **Reuse, never copy.** If a component needs a button, count bubble, avatar, checkbox, icon, popover, section header or card, it imports that component. Hand-drawing one (a styled `<button>`, a `<span>` pill, a typed ▾) is a rule violation. Each README's **Built from** section lists what it must import; reviews check the imports against it.
+3. **Variants are props.** A variant is never its own exported component (no `Note`, no `ReadOnlyRow`, no `ListRowIconTile`). Compound parts of one component (`Card.Header`, `Dialog.Footer`) are fine.
+4. **One component per concept.** Before building something new, look for an existing component that does it. A new component that looks or behaves like an existing one is an open question, not a build.
+5. **Shared behaviour lives in hooks** (`useSwipe`, the sheet drag), never copied between components.
 
 ## 5a. Storybook
 
-1. Each component gets one story per variant in its README, named exactly as the README names it, plus an **All variants** story that shows them side by side for review. Story titles are `DS/<Group>/<Name>`, using the README's group (Navigation, Actions, Inputs, Data display, Feedback, Overlays, Screens).
-2. Every story can be viewed in light and dark and at phone (390px) and desktop (1440px) widths, through the global toolbar set up in Phase 1.
-3. Stories use realistic FinanceOS content: ₹ amounts with Indian grouping, real-looking merchants and accounts like the boards. Never lorem ipsum.
-4. Before a component is set to **Ready for review**, open its stories in a browser and compare them with its `preview.html` and its board, at 390px and 1440px, in light and dark. The log line names the stories you compared and any differences left open. Passing the commands in §10 is not enough.
-5. Accessibility (ARIA roles, screen-reader text, contrast audits) is out of scope by owner decision. Don't spend work on it.
-6. No stories for old components.
+1. Each component gets one story per variant in its README, named exactly as the README names it, plus an **All variants** story that shows them side by side for review. **All variants** is the first story, so it opens by default. Story titles are `DS/<Group>/<Name>`, using the README's group (Foundations, Navigation, Actions, Inputs, Data display, Feedback, Overlays). There is no Screens group: pages are not components.
+2. **Stories are driven by args.** Every prop shows in the Controls panel with a sensible control (a dropdown for each variant prop); each variant story is the component with different `args`. A story that hard-codes markup the Controls can't change is not allowed, except All variants.
+3. Every story can be viewed in light and dark and at phone (390px) and desktop (1440px) widths, through the global toolbar set up in Phase 1.
+4. Stories use realistic FinanceOS content: ₹ amounts with Indian grouping, real-looking merchants and accounts like the boards. Never lorem ipsum.
+5. Before a component is set to **Ready for review**, open its stories in a browser and compare them with its `preview.html` and its board, at 390px and 1440px, in light and dark. The log line names the stories you compared and any differences left open. Passing the commands in §10 is not enough.
+6. Accessibility (ARIA roles, screen-reader text, contrast audits) is out of scope by owner decision. Don't spend work on it.
+7. No stories for old components.
 
 ## 6. Icons
 
-1. Lucide (`lucide-react`) only, 2px stroke.
+1. Lucide (`lucide-react`) only, 2px stroke, drawn through the Icon component at `sm` 14, `md` 16 or `lg` 20 (the `icon-*` tokens). Never type a glyph (▾ ✕ ✓ › ‹) as an icon, and every icon inside one control is the same size.
 2. An icon is allowed only when it **is** a control (close, more, back, chevron, search, delete), navigation (tab bar, rail) or progress (spinner).
 3. No icons in toasts, banners, empty states, badges, section headers or card titles. No emoji.
 
@@ -98,9 +107,9 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 2. No body title on phone; the app bar carries it. Tab strips and filter-chip rows scroll sideways and never wrap.
 3. A single choice is a dropdown; several choices are a multi-select dropdown. Never tiles or chip groups in forms (the four account-type buttons on Add account are the only exception).
 4. Selection: long-press starts it, tap toggles, the eye icon opens the detail without leaving selection. No checkboxes on phone; desktop uses checkboxes. The selection bar docks at the bottom.
-5. Swipe on Transactions: right approves, left deletes. Swipe on Inbox: right snoozes until tomorrow, left dismisses.
+5. Swipe on Transactions: right approves, left deletes. Swipe on Inbox: right snoozes until tomorrow, left dismisses. SwipeActions only reports the swipe to the page; the page confirms (destructive) or applies with Undo (reversible) by §5.7.
 6. Phone lists group by day under sticky date headers, and rows don't repeat the date. The transaction context line starts with the account name.
-7. Locked fields show greyed with a lock and no explanation (for example the account of an imported transaction).
+7. A field that can't change is disabled (for example the account of an imported transaction). There is no locked state.
 
 ## 8. Copy
 
@@ -145,7 +154,7 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 
 1. **Start**: read this file, then `PROGRESS.md`, the README of every component you will touch, and the boards for your screens.
    - **Phase 2**: build one component at a time, set it to **Ready for review**, and stop. The owner approves it or asks for changes.
-   - **Phase 3**: put the new files' paths in `design-system/checked-paths.txt` and add a row to the migration map in `PROGRESS.md`. The row lists the page, its new files, and the old files it no longer uses.
+   - **Phase 3**: each page is first built as a new route under `/ds/…` (for example `/ds/login`, `/ds/transactions`), with the same data and behaviour as the live page, while the live page stays untouched. The owner reviews it there. Only after the owner approves does the live route switch to the new page (the swap), with the E2E rules in §10.5, and the `/ds/…` copy is removed. Put the new files' paths in `design-system/checked-paths.txt` and add a row to the migration map in `PROGRESS.md`: the page, its new files, and the old files it no longer uses.
 2. **Commit**: small commits on `main` with explicit paths (`git add <paths>`). Never `git add -A`, never push, never force-push, never rewrite history. Start each message with `ui(ds):`.
 3. **Finish**: update `PROGRESS.md` with:
    - the phase status;

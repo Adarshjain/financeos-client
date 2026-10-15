@@ -10,5 +10,8 @@ A record card for lists where each item has several facts and actions (categoris
 ## Selection mode (phone)
 Long-press starts it. Selected cards turn `brand-tint` with a `brand` outline; on every card the eye icon replaces Approve and ⋮ and opens the edit sheet.
 
+## Built from
+Card, StatusWords, CategoryChip, Menu, Button, Checkbox (desktop selection).
+
 ## Variants
 - Unverified (with Approve), selected, verified (⋮ only), and a card in selection mode that is not selected (eye only).

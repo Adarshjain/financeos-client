@@ -7,5 +7,8 @@ What a screen shows when it has nothing yet, or cannot load: a small illustratio
 - Offline: a friendly generic page (sleeping ₹ coin under a cloud), no cached data, one "Try again" button.
 - Errors: what failed and the reference to quote; never a stack trace.
 
+## Built from
+Button; illustrations are inline SVG artwork.
+
 ## Variants
 - First run, nothing matches (filters), all clear, couldn't load, offline, and the one-line empty used inside small panels.

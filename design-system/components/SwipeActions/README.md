@@ -1,12 +1,23 @@
 # SwipeActions
 
-Phone row gestures on lists that need triage (Transactions with Needs review on).
+A phone row gesture. It wraps any row and reveals what each side will do while the finger moves; when the swipe passes the threshold it calls the handler the page gave it and springs back. It never confirms, deletes or opens anything itself.
 
-## Use
-- Swipe right: Approve (`brand` fill with `on-brand` text). On a row that needs no approval it does nothing and springs back.
-- Swipe left: Delete (`danger`), followed by an undo snackbar, not a dialog.
-- The revealed panel is 96px wide with an icon and a one-word label.
-- Every swipe action is also reachable from the row's detail sheet; gestures are shortcuts, never the only way.
+## Props
+- `left` and `right`, each optional: `{ label, icon, tone, onTrigger }`. Omit a side to make the row swipe one way only; pass the same action to both sides if both should do it.
+- `disabled` for rows that can't swipe.
+
+## How pages use it
+- Transactions: right Approve (`brand`), left Delete (`danger`). The page shows its ConfirmDialog for Delete; Approve applies at once with an Undo Toast (RULES §5.7).
+- Inbox: right Snooze until tomorrow, left Dismiss; both apply at once with Undo.
+- The background under the row shows the side's icon and one-word label in its tone; past the threshold (40% of the row, or a fast flick) it fires once.
+
+## Rules
+- No tap action of its own: a tap goes to the row.
+- Vertical scrolling wins until the finger moves sideways (`touch-action: pan-y`).
+- Every swipe action is also reachable from the row's detail; gestures are shortcuts.
+
+## Built from
+A shared `useSwipe` hook (pointer tracking, threshold, spring back) and Icon. The row inside is the page's (TransactionRow, ListRow).
 
 ## Variants
-- Transactions: right Approve, left Delete. Inbox: right Snooze until tomorrow, left Dismiss.
+- Both sides; right only; left only; disabled.

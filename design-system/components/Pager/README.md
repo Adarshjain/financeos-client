@@ -15,3 +15,6 @@ Pagination for any list that can outgrow one page, matching the app's TablePagin
 ## Don't
 - Don't use "Load more" or infinite scroll for money lists; people need to say "page 3" and come back to it.
 - Don't show two pagers on one list.
+
+## Built from
+Button, Icon, Select (rows per page).

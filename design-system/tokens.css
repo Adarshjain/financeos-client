@@ -88,6 +88,9 @@
   --ds-dialog-lg: 760px;
   --ds-dialog-xl: 920px;
   --ds-swipe-action: 96px;
+  --ds-icon-sm: 14px;
+  --ds-icon-md: 16px;
+  --ds-icon-lg: 20px;
   --ds-z-sticky: 2;
   --ds-z-dock: 10;
   --ds-z-scrim: 20;

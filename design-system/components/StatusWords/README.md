@@ -10,3 +10,6 @@ Inline coloured words on a context line that tell state without tags. Shared by 
 
 ## Rule
 A word, a middle dot (·) between words, never a pill. Colour is never the only signal: the word itself says it.
+
+## Built from
+Nothing else.

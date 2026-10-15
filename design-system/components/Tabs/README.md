@@ -11,5 +11,8 @@ A tab strip that switches between sibling views of one section (All · Rules · 
 - Don't use tabs for filters on the same data; that is what filter chips are for.
 - Don't put a Settings tab on an object page; settings belong in its edit sheet.
 
+## Built from
+Radix Tabs; the count after a label is `ink-3` text, not a bubble.
+
 ## Variants
 - Plain, with counts, and scrolling (never wrapping) when they overflow on phone.

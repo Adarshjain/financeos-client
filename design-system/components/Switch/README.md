@@ -9,5 +9,8 @@ A switch for a setting that takes effect on save, shown as a toggle row: label a
 ## Don't
 - Don't use a switch for a choice between two named options; use a Select.
 
+## Built from
+Nothing else (a button with `role="switch"`).
+
 ## Variants
 - Off, on, disabled (both), and the toggle row with a label and an explanation.

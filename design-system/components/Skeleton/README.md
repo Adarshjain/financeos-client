@@ -5,5 +5,8 @@ Loading placeholders shaped like the content they stand for: grey bars in `line-
 ## Use
 Show for loads over about 300ms. Keep the real layout (card header, rows) so nothing jumps when data arrives. Respect reduced motion: no shimmer.
 
+## Built from
+Nothing else.
+
 ## Variants
 - Rows, a single figure, widget rows, table rows.
