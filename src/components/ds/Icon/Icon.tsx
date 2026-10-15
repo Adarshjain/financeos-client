@@ -42,12 +42,15 @@ export const Icon = forwardRef<SVGSVGElement, IconProps>(
     }
 
     if (React.isValidElement(children)) {
-      return React.cloneElement(children, {
-        className: cn(classes, (children.props as { className?: string })?.className),
-        strokeWidth: 2,
-        'aria-hidden': 'true',
-        ...props,
-      });
+      return React.cloneElement(
+        children as React.ReactElement<React.SVGAttributes<SVGSVGElement>>,
+        {
+          className: cn(classes, (children.props as { className?: string })?.className),
+          strokeWidth: 2,
+          'aria-hidden': 'true',
+          ...props,
+        },
+      );
     }
 
     return null;

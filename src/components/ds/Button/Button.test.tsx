@@ -1,7 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { Check, Search } from 'lucide-react';
+import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { Icon } from '../Icon/Icon';
 import { Button } from './Button';
 
 describe('Button component', () => {
@@ -75,7 +77,7 @@ describe('Button component', () => {
       <Button
         iconOnly
         aria-label="Search"
-        icon={<Search data-testid="search-icon" />}
+        icon={<Icon icon={Search} size="md" data-testid="search-icon" />}
       />
     );
 
@@ -86,7 +88,7 @@ describe('Button component', () => {
 
   it('renders count pill when count prop is provided', () => {
     const { rerender } = render(
-      <Button icon={<Check />} count={9}>
+      <Button icon={<Icon icon={Check} size="md" />} count={9}>
         Approve
       </Button>
     );

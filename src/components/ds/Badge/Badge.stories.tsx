@@ -1,17 +1,45 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
 
 import { Badge } from './Badge';
 
 const meta: Meta<typeof Badge> = {
   title: 'DS/Data display/Badge',
   component: Badge,
-  parameters: {
-    layout: 'padded',
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['grey', 'green', 'amber', 'rose', 'blue', 'count'],
+    },
+    tone: {
+      control: 'select',
+      options: ['grey', 'green', 'amber', 'rose', 'blue', 'ink', 'danger', 'warning'],
+    },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof Badge>;
+
+export const AllVariants: Story = {
+  render: () => (
+    <div className="p-space-16 bg-canvas min-h-full flex flex-col gap-space-12 font-text">
+      <div className="flex gap-space-8 flex-wrap items-center">
+        <Badge tone="green">Paid</Badge>
+        <Badge tone="amber">2 days</Badge>
+        <Badge tone="rose">Missing</Badge>
+        <Badge tone="blue">Gmail</Badge>
+        <Badge tone="grey">Closed</Badge>
+      </div>
+      <div className="flex gap-space-8 items-center">
+        <Badge variant="count" count={3} tone="ink" />
+        <Badge variant="count" count={9} tone="danger" />
+        <Badge variant="count" count={25} tone="warning" />
+        <Badge variant="count" count={120} tone="ink" />
+      </div>
+    </div>
+  ),
+};
 
 export const Green: Story = {
   args: {
@@ -48,80 +76,34 @@ export const Grey: Story = {
   },
 };
 
-export const StatementVerdicts: Story = {
-  render: () => (
-    <div className="flex flex-wrap items-center gap-space-8">
-      <Badge tone="green">Auto ingested</Badge>
-      <Badge tone="amber">Needs review</Badge>
-      <Badge tone="rose">Rejected</Badge>
-    </div>
-  ),
+export const Count: Story = {
+  args: {
+    variant: 'count',
+    count: 3,
+    tone: 'ink',
+  },
 };
 
-export const DueStates: Story = {
-  render: () => (
-    <div className="flex flex-wrap items-center gap-space-8">
-      <Badge tone="amber">Due soon</Badge>
-      <Badge tone="rose">Overdue</Badge>
-      <Badge tone="amber">Part paid</Badge>
-      <Badge tone="green">Paid</Badge>
-    </div>
-  ),
+export const CountDanger: Story = {
+  args: {
+    variant: 'count',
+    count: 9,
+    tone: 'danger',
+  },
 };
 
-export const AccountStates: Story = {
-  render: () => (
-    <div className="flex flex-wrap items-center gap-space-8">
-      <Badge tone="grey">Excluded</Badge>
-      <Badge tone="grey">Closing 31 Oct</Badge>
-      <Badge tone="amber">No active card</Badge>
-      <Badge tone="green">Gmail synced</Badge>
-    </div>
-  ),
+export const CountWarning: Story = {
+  args: {
+    variant: 'count',
+    count: 25,
+    tone: 'warning',
+  },
 };
 
-export const AllVariants: Story = {
-  render: () => (
-    <div className="space-y-space-24 max-w-2xl font-text">
-      <div>
-        <h3 className="text-overline uppercase text-ink-4 mb-space-8">Tones</h3>
-        <div className="flex flex-wrap items-center gap-space-8">
-          <Badge tone="green">Paid</Badge>
-          <Badge tone="amber">2 days</Badge>
-          <Badge tone="rose">Missing</Badge>
-          <Badge tone="blue">Gmail</Badge>
-          <Badge tone="grey">Closed</Badge>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-overline uppercase text-ink-4 mb-space-8">Statement verdicts</h3>
-        <div className="flex flex-wrap items-center gap-space-8">
-          <Badge tone="green">Auto ingested</Badge>
-          <Badge tone="amber">Needs review</Badge>
-          <Badge tone="rose">Rejected</Badge>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-overline uppercase text-ink-4 mb-space-8">Due states</h3>
-        <div className="flex flex-wrap items-center gap-space-8">
-          <Badge tone="amber">Due soon</Badge>
-          <Badge tone="rose">Overdue</Badge>
-          <Badge tone="amber">Part paid</Badge>
-          <Badge tone="green">Paid</Badge>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="text-overline uppercase text-ink-4 mb-space-8">Account states</h3>
-        <div className="flex flex-wrap items-center gap-space-8">
-          <Badge tone="grey">Excluded</Badge>
-          <Badge tone="grey">Closing 31 Oct</Badge>
-          <Badge tone="amber">No active card</Badge>
-          <Badge tone="green">Gmail synced</Badge>
-        </div>
-      </div>
-    </div>
-  ),
+export const CountOver99: Story = {
+  args: {
+    variant: 'count',
+    count: 120,
+    tone: 'ink',
+  },
 };

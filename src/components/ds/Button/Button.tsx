@@ -2,7 +2,9 @@ import { Slot } from '@radix-ui/react-slot';
 import { Loader2 } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
+import { Badge } from '../Badge/Badge';
 import { cn } from '../cn';
+import { Icon } from '../Icon/Icon';
 
 export type ButtonVariant =
   | 'primary'
@@ -69,8 +71,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         : 'h-control-xl px-space-16 text-heading rounded-ds-lg gap-space-8',
     }[size];
 
-    const spinnerSize = size === 'sm' ? 'h-space-12 w-space-12' : 'h-space-14 w-space-14';
-
     const classes = cn(
       'inline-flex items-center justify-center font-text font-semibold whitespace-nowrap transition-colors duration-fast select-none',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
@@ -102,7 +102,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading ? (
           <>
-            <Loader2 className={cn('animate-spin shrink-0', spinnerSize)} aria-hidden="true" />
+            <Icon
+              icon={Loader2}
+              size={size === 'sm' ? 'sm' : 'md'}
+              className="animate-spin shrink-0"
+            />
             {loadingLabel ? (
               <span>{loadingLabel}</span>
             ) : !iconOnly && children ? (
@@ -111,17 +115,18 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           </>
         ) : (
           <>
-            {icon ? <span className="inline-flex items-center justify-center shrink-0">{icon}</span> : null}
+            {icon ? (
+              <span className="inline-flex items-center justify-center shrink-0">
+                {icon}
+              </span>
+            ) : null}
             {children}
             {count !== undefined && count !== null ? (
-              <span
-                className={cn(
-                  'inline-flex items-center justify-center min-w-space-16 h-space-16 px-space-6 rounded-ds-pill font-text font-bold text-tab-label leading-none shrink-0',
-                  isPrimary ? 'bg-surface text-ink' : 'bg-ink text-on-brand',
-                )}
-              >
-                {count}
-              </span>
+              <Badge
+                variant="count"
+                count={count}
+                className={isPrimary ? 'bg-surface text-ink' : undefined}
+              />
             ) : null}
           </>
         )}
