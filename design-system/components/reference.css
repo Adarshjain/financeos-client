@@ -333,3 +333,10 @@ textarea.inp.one{height:var(--control-lg);min-height:var(--control-lg);resize:ve
 .ppill .pi .lab{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ppill .dot{position:absolute;top:-4px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:var(--radius-pill);font:800 10px/16px var(--font-text);text-align:center;color:var(--on-brand);background:var(--danger);box-shadow:0 0 0 2px var(--bg-surface)}
 .ppill .dot.amber{background:var(--warning)}
+/* pill options: concentric capsule, no background */
+.ppill.cap{padding:4px}.ppill.cap .pi{padding:6px 0 5px;border-radius:var(--radius-pill);gap:2px}.ppill.cap .ind{width:auto;height:auto;background:none!important}
+.ppill.cap .pi-on{background:var(--brand-tint)}.ppill.cap .pi .lab{padding:0 4px}
+.ppill.cap .dot{top:-6px;right:-10px}
+.ppill.calm .ind{background:none!important}.ppill.calm .pi-on{color:var(--brand)}.ppill.calm .pi-on .lab{font-weight:800}
+.ppill.calm .pi-on .lab::after{content:"";display:block;width:4px;height:4px;border-radius:var(--radius-pill);background:var(--brand);margin:3px auto 0}
+.ppill.calm .pi:not(.pi-on) .lab{padding-bottom:7px}
