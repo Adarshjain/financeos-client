@@ -144,6 +144,23 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 2) · SearchField component fixes:
+  - Fixed SearchField in `src/components/ds/SearchField/SearchField.tsx`:
+    - Filter variant height: verified `h-control-md` (32px) and `px-space-10` for `variant="filter"` (default) matching board `ds-07`, and `h-control-lg` (40px) for `variant="sheet"`.
+    - Removed `inputClassName`: removed unneeded class injection prop from `SearchFieldProps`.
+  - Updated `src/components/ds/SearchField/SearchField.test.tsx`:
+    - Added unit test asserting default filter variant applies `h-control-md`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,493 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `SearchField/preview.html` and `ds-07-inputs.webp` board:
+    - `DS/Inputs/SearchField/Empty`
+    - `DS/Inputs/SearchField/TypingWithAClearX`
+    - `DS/Inputs/SearchField/LabelledInsideASheet`
+    - `DS/Inputs/SearchField/NoResults`
+    - `DS/Inputs/SearchField/AllVariants`
+    Verified 32px height for filter variant and 40px height for sheet variant in both themes.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 1) · TextField component fixes:
   - Fixed TextField in `src/components/ds/TextField/TextField.tsx`:
     - Locked state: updated `locked` to set `readOnly` without disabling the input, keeping it focusable and submittable in forms, styled with `bg-sunken text-ink-3` and lock icon per RULES §7.7.

@@ -80,6 +80,14 @@ describe('SearchField', () => {
     expect(input.value).toBe('');
   });
 
+  it('applies filter variant height class (h-control-md) by default', () => {
+    const { container } = render(
+      <SearchField placeholder="In filter" />,
+    );
+    const wrapper = container.querySelector('.h-control-md');
+    expect(wrapper).toBeInTheDocument();
+  });
+
   it('applies sheet variant height class', () => {
     const { container } = render(
       <SearchField variant="sheet" placeholder="In sheet" />,

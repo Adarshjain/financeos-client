@@ -16,7 +16,6 @@ export interface SearchFieldProps
   onValueChange?: (value: string) => void;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   containerClassName?: string;
-  inputClassName?: string;
 }
 
 export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
@@ -36,7 +35,6 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
       placeholder = 'Search…',
       className,
       containerClassName,
-      inputClassName,
       ...props
     },
     ref,
@@ -130,7 +128,6 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(
               'w-full bg-transparent border-0 p-0 font-text text-body font-medium text-ink placeholder:text-ink-4 focus:outline-none focus:ring-0',
               '[&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden',
               disabled && 'cursor-not-allowed text-ink-faint',
-              inputClassName,
             )}
             {...props}
           />
