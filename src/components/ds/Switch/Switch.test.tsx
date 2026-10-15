@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React, { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Switch, ToggleRow } from './Switch';
+import { Switch } from './Switch';
 
 describe('Switch', () => {
   it('renders with role switch and default checked false', () => {
@@ -10,6 +10,13 @@ describe('Switch', () => {
     const switchEl = screen.getByRole('switch');
     expect(switchEl).toBeInTheDocument();
     expect(switchEl).toHaveAttribute('aria-checked', 'false');
+  });
+
+  it('renders with token sizes (w-control-lg h-space-20)', () => {
+    render(<Switch />);
+    const switchEl = screen.getByRole('switch');
+    expect(switchEl).toHaveClass('w-control-lg');
+    expect(switchEl).toHaveClass('h-space-20');
   });
 
   it('renders default checked true', () => {
@@ -51,16 +58,11 @@ describe('Switch', () => {
     expect(switchEl).toHaveAttribute('aria-checked', 'true');
   });
 
-  it('toggles on Space and Enter keyboard events', () => {
-    const handleCheckedChange = vi.fn();
-    render(<Switch onCheckedChange={handleCheckedChange} />);
+  it('is a button of type button', () => {
+    render(<Switch />);
     const switchEl = screen.getByRole('switch');
-
-    fireEvent.keyDown(switchEl, { key: ' ' });
-    expect(switchEl).toHaveAttribute('aria-checked', 'true');
-
-    fireEvent.keyDown(switchEl, { key: 'Enter' });
-    expect(switchEl).toHaveAttribute('aria-checked', 'false');
+    expect(switchEl.tagName.toLowerCase()).toBe('button');
+    expect(switchEl).toHaveAttribute('type', 'button');
   });
 
   it('does not toggle when disabled', () => {
@@ -74,10 +76,10 @@ describe('Switch', () => {
   });
 });
 
-describe('ToggleRow', () => {
+describe('Switch with label and description', () => {
   it('renders label and description connected to switch', () => {
     render(
-      <ToggleRow
+      <Switch
         label="Exclude from net worth"
         description="Hide this account from totals"
       />,
@@ -92,7 +94,7 @@ describe('ToggleRow', () => {
 
   it('renders error message and links it with aria-describedby', () => {
     render(
-      <ToggleRow
+      <Switch
         label="Enable alerts"
         error="You must verify email first"
       />,

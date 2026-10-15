@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
 
-import { Switch, ToggleRow } from './Switch';
+import { Switch } from './Switch';
 
 const meta = {
   title: 'DS/Inputs/Switch',
@@ -45,7 +45,7 @@ function ToggleRowInteractiveDemo() {
   const [checked, setChecked] = useState(false);
   return (
     <div className="max-w-md p-space-16 bg-surface rounded-ds-lg border border-line">
-      <ToggleRow
+      <Switch
         label="Exclude from net worth"
         description="Hide this account from totals"
         checked={checked}
@@ -64,7 +64,7 @@ function ToggleRowOnInteractiveDemo() {
   const [checked, setChecked] = useState(true);
   return (
     <div className="max-w-md p-space-16 bg-surface rounded-ds-lg border border-line">
-      <ToggleRow
+      <Switch
         label="Bill overdue"
         description="Daily after the due date"
         checked={checked}
@@ -123,7 +123,7 @@ export const AllVariants: Story = {
             Toggle row
           </span>
           <div className="bg-surface p-space-12 rounded-ds-md border border-line">
-            <ToggleRow
+            <Switch
               label="Exclude from net worth"
               description="Hide this account from totals"
               defaultChecked={false}
@@ -136,7 +136,7 @@ export const AllVariants: Story = {
             Toggle row · on
           </span>
           <div className="bg-surface p-space-12 rounded-ds-md border border-line">
-            <ToggleRow
+            <Switch
               label="Bill overdue"
               description="Daily after the due date"
               defaultChecked={true}
