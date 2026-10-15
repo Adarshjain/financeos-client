@@ -43,9 +43,6 @@ describe('ListRow', () => {
   it('applies highlighted styling with 4px stripe on brand-tint', () => {
     const { container: c1 } = render(<ListRow title="Row 1" highlighted />);
     expect(c1.firstChild).toHaveClass('border-l-4', 'border-l-brand-strong', 'bg-brand-tint');
-
-    const { container: c2 } = render(<ListRow title="Row 2" hl />);
-    expect(c2.firstChild).toHaveClass('border-l-4', 'border-l-brand-strong', 'bg-brand-tint');
   });
 
   it('applies disabled styling and aria-disabled attribute', () => {

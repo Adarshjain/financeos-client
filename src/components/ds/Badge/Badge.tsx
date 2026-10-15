@@ -4,7 +4,7 @@ import { cn } from '../cn';
 
 export type BadgeTone = 'green' | 'amber' | 'rose' | 'blue' | 'grey';
 export type BadgeCountTone = 'ink' | 'danger' | 'warning';
-export type BadgeVariant = BadgeTone | 'count' | 'default';
+export type BadgeVariant = 'count' | 'default';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant;
@@ -61,9 +61,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
       );
     }
 
-    const selectedTone: BadgeTone =
-      (tone as BadgeTone) ??
-      (variant in toneStyles ? (variant as BadgeTone) : 'grey');
+    const selectedTone: BadgeTone = (tone as BadgeTone) || 'grey';
 
     return (
       <span

@@ -59,7 +59,7 @@ export const AllVariants: Story = {
         </div>
         <Card className="p-0 overflow-hidden">
           <ListRow
-            leading={<Badge variant="rose">Missing</Badge>}
+            leading={<Badge tone="rose">Missing</Badge>}
             title="SBI Cashback statement"
             subtitle="Expected 8 Oct"
             trailing={<Button size="sm">Upload</Button>}
@@ -131,7 +131,7 @@ export const AllVariants: Story = {
         <Card className="p-0 overflow-hidden">
           <ListRow
             highlighted
-            leading={<Badge variant="amber">2 days</Badge>}
+            leading={<Badge tone="amber">2 days</Badge>}
             title="Amex Platinum bill"
             subtitle="Opened from a notification"
             trailing={
@@ -181,7 +181,7 @@ export const BadgeAction: Story = {
     <Card className="max-w-md p-0 overflow-hidden">
       <ListRow
         {...args}
-        leading={<Badge variant="rose">Missing</Badge>}
+        leading={<Badge tone="rose">Missing</Badge>}
         trailing={<Button size="sm">Upload</Button>}
       />
     </Card>
@@ -266,7 +266,7 @@ export const Highlighted: Story = {
     <Card className="max-w-md p-0 overflow-hidden">
       <ListRow
         {...args}
-        leading={<Badge variant="amber">2 days</Badge>}
+        leading={<Badge tone="amber">2 days</Badge>}
         trailing={
           <Button size="sm" variant="primary">
             Mark paid

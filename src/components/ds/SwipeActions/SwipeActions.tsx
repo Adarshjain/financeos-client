@@ -14,8 +14,6 @@ export interface SwipeActionItem {
   icon?: React.ReactNode;
   tone?: SwipeActionTone;
   onTrigger?: () => void;
-  /** Backwards compatibility alias for onTrigger */
-  onAction?: () => void;
   disabled?: boolean;
 }
 
@@ -23,10 +21,6 @@ export interface SwipeActionsProps extends React.HTMLAttributes<HTMLDivElement> 
   children: React.ReactNode;
   left?: SwipeActionItem;
   right?: SwipeActionItem;
-  /** Backwards compatibility alias for left */
-  leftAction?: SwipeActionItem;
-  /** Backwards compatibility alias for right */
-  rightAction?: SwipeActionItem;
   disabled?: boolean;
   threshold?: number;
 }
@@ -44,8 +38,6 @@ export const SwipeActions = forwardRef<HTMLDivElement, SwipeActionsProps>(
       children,
       left,
       right,
-      leftAction,
-      rightAction,
       disabled = false,
       threshold = 96,
       className,
@@ -53,20 +45,15 @@ export const SwipeActions = forwardRef<HTMLDivElement, SwipeActionsProps>(
     },
     ref,
   ) => {
-    const effectiveLeft = left ?? leftAction;
-    const effectiveRight = right ?? rightAction;
-
-    const canSwipeRight = Boolean(effectiveLeft && !effectiveLeft.disabled);
-    const canSwipeLeft = Boolean(effectiveRight && !effectiveRight.disabled);
+    const canSwipeRight = Boolean(left && !left.disabled);
+    const canSwipeLeft = Boolean(right && !right.disabled);
 
     const triggerLeft = () => {
-      effectiveLeft?.onTrigger?.();
-      effectiveLeft?.onAction?.();
+      left?.onTrigger?.();
     };
 
     const triggerRight = () => {
-      effectiveRight?.onTrigger?.();
-      effectiveRight?.onAction?.();
+      right?.onTrigger?.();
     };
 
     const { offset, isDragging, handlers } = useSwipe({
@@ -89,32 +76,32 @@ export const SwipeActions = forwardRef<HTMLDivElement, SwipeActionsProps>(
         {...props}
       >
         {/* Left Action background (revealed on swipe right) */}
-        {effectiveLeft && (
+        {left && (
           <div
             aria-hidden={offset <= 0}
             className={cn(
               'absolute inset-0 flex items-center justify-start gap-space-8 px-space-16 text-body-strong font-bold',
-              effectiveLeft.tone === 'danger' ? 'bg-danger text-on-brand' : 'bg-brand text-on-brand',
+              left.tone === 'danger' ? 'bg-danger text-on-brand' : 'bg-brand text-on-brand',
               offset <= 0 && 'pointer-events-none opacity-0',
             )}
           >
-            {effectiveLeft.icon}
-            <span>{effectiveLeft.label}</span>
+            {left.icon}
+            <span>{left.label}</span>
           </div>
         )}
 
         {/* Right Action background (revealed on swipe left) */}
-        {effectiveRight && (
+        {right && (
           <div
             aria-hidden={offset >= 0}
             className={cn(
               'absolute inset-0 flex items-center justify-end gap-space-8 px-space-16 text-body-strong font-bold',
-              effectiveRight.tone === 'brand' ? 'bg-brand text-on-brand' : 'bg-danger text-on-brand',
+              right.tone === 'brand' ? 'bg-brand text-on-brand' : 'bg-danger text-on-brand',
               offset >= 0 && 'pointer-events-none opacity-0',
             )}
           >
-            <span>{effectiveRight.label}</span>
-            {effectiveRight.icon}
+            <span>{right.label}</span>
+            {right.icon}
           </div>
         )}
 

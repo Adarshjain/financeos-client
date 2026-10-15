@@ -218,6 +218,15 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 · Antigravity · Unit 12 · Delete every alias and legacy prop:
+  - ListRow: deleted legacy `hl` alias prop from `ListRow.tsx` and removed its test assertion in `ListRow.test.tsx`.
+  - SwipeActions: deleted backwards-compatibility aliases `leftAction`, `rightAction`, and `onAction` from `SwipeActions.tsx`.
+  - Badge: constrained `BadgeVariant` to `'count' | 'default'`, removing `variant` acting as an alias for `tone`. Updated `Badge.tsx`, `Badge.test.tsx`, `Badge.stories.tsx`, and `ListRow.stories.tsx` to use `tone` explicitly.
+  - RuleCard & TransactionRow: verified removal of legacy `onViewDetail` aliases; `onDetail` is the single canonical prop.
+  - Banner & Toast: verified single canonical `tone` prop with no legacy aliases.
+  - Stories compared and interacted with: ListRow (AllVariants, BadgeAction, DateTileAmount, AvatarCredit, IconTileChevron, Kebab, Highlighted), SwipeActions (AllVariants, BothSides, RightOnly, LeftOnly, Disabled), Badge (AllVariants, Green, Amber, Rose, Blue, Count).
+  - Checks: typecheck (clean), lint (0 errors), vitest (all 425 test files passing), build-storybook (clean), check-ui (clean on touched components). Differences left open: none.
+
 - 2026-10-15 · Phase 2 · Antigravity · Unit 11 · No app content in components (RULES §5b.6):
   - SwipeActions: deleted Approve, Snooze, Delete, Dismiss presets. Actions are driven strictly by `left` and `right` props. Stories updated to pass explicit actions and demonstrate wrapping TransactionRow, ListRow, and Card.
   - RuleCard: menu items and Approve action strictly driven from props (`menuItems`, `approveAction`/`onApprove`). Removed hardcoded default items ('Find matches', 'Edit rule', 'Delete rule'). Replaced `useIsPhone` JS viewport check with CSS `hidden lg:inline-flex` for desktop checkbox.

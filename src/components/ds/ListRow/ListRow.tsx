@@ -26,8 +26,6 @@ export interface ListRowProps
   kebab?: boolean | (() => void);
   /** Highlighted row (opened from notification): 4px brand-strong stripe on brand-tint */
   highlighted?: boolean;
-  /** Alias for highlighted */
-  hl?: boolean;
   /** Disabled row state: dim opacity and disable pointer interactions */
   disabled?: boolean;
   /** Whether to show top border. Default true, with first:border-t-0 */
@@ -50,7 +48,6 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
       chevron = false,
       kebab,
       highlighted = false,
-      hl = false,
       disabled = false,
       borderTop = true,
       clickable = false,
@@ -62,7 +59,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
     },
     ref,
   ) => {
-    const isHighlighted = highlighted || hl;
+    const isHighlighted = highlighted;
     const isInteractive = (clickable || !!onClick) && !disabled;
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
