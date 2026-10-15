@@ -55,11 +55,23 @@ describe('FilterChip', () => {
     );
 
     const removeBtn = screen.getByRole('button', { name: 'Remove filter' });
+    const chipBtn = screen.getByRole('button', { name: 'This year' });
     expect(removeBtn).toBeInTheDocument();
+    expect(chipBtn).toBeInTheDocument();
 
+    // Verify they are sibling buttons, not nested
+    expect(chipBtn.contains(removeBtn)).toBe(false);
+    expect(removeBtn.contains(chipBtn)).toBe(false);
+
+    // Clicking remove triggers handleRemove only
     fireEvent.click(removeBtn);
     expect(handleRemove).toHaveBeenCalledTimes(1);
     expect(handleClick).not.toHaveBeenCalled();
+
+    // Clicking chip triggers handleClick only
+    fireEvent.click(chipBtn);
+    expect(handleClick).toHaveBeenCalledTimes(1);
+    expect(handleRemove).toHaveBeenCalledTimes(1);
   });
 
   it('prevents click when disabled', () => {

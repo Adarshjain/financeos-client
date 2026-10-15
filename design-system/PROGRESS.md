@@ -144,6 +144,31 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 10 (part 2) · FilterChip component fixes:
+  - Fixed FilterChip in `src/components/ds/FilterChip/FilterChip.tsx`:
+    - Removable sibling buttons: structured removable chip as two sibling `<button>` elements (chip label button and `✕` remove button) inside a styled pill container, eliminating invalid and click-breaking nested buttons.
+    - Tokenized count bubble: replaced inline `style={{ minWidth: 18, height: 18 }}` with design-system tokens `min-w-space-16 h-space-16 px-space-6 rounded-ds-pill bg-ink text-on-brand font-text font-bold text-tab-label leading-none` matching `reference.css` (`.cnt`) and the owner's 16px count bubble decision.
+    - Cleaned unknown classes: removed `font-inherit` and `text-surface`.
+  - Updated `src/components/ds/FilterChip/FilterChip.stories.tsx`:
+    - Updated variant section titles in `AllVariants` to `font-text text-overline font-extrabold uppercase text-ink-4` matching the design reference board.
+  - Updated `src/components/ds/FilterChip/FilterChip.test.tsx`:
+    - Added unit test asserting chip button and remove button are non-nested sibling elements, verifying independent click handling.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,491 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs --staged` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `FilterChip/preview.html` and `ds-07-inputs.dc.html` board:
+    - `DS/Inputs/FilterChip/Off`
+    - `DS/Inputs/FilterChip/On`
+    - `DS/Inputs/FilterChip/WithValue`
+    - `DS/Inputs/FilterChip/WithCount`
+    - `DS/Inputs/FilterChip/Removable`
+    - `DS/Inputs/FilterChip/ReviewOn`
+    - `DS/Inputs/FilterChip/Toggle`
+    - `DS/Inputs/FilterChip/MoreFilters`
+    - `DS/Inputs/FilterChip/FilterRow`
+    - `DS/Inputs/FilterChip/AllVariants`
+    Verified 16px count bubble, sibling removable button appearance and interaction, amber review chip, and dashed more variant in both light and dark modes.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 10 (part 1) · Banner component fixes:
   - Fixed Banner in `src/components/ds/Banner/Banner.tsx`:
     - Corrected `ok` tone styling: updated to `bg-positive-tint text-positive-strong` per README and Ink token lock.
