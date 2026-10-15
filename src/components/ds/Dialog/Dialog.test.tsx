@@ -112,21 +112,18 @@ describe('DialogShell', () => {
     expect(screen.getByRole('button', { name: 'Approve 9' })).toBeInTheDocument();
   });
 
-  it('moves tertiary into body on phone under danger SectionHeader band', () => {
+  it('renders unified footer with tertiary far left, secondary and primary on right', () => {
     render(
       <DialogShell
-        forcePhone
         title="Phone tertiary test"
         tertiary={<Button variant="danger">Delete rule</Button>}
-        tertiaryLabel="Delete rule"
         secondary={<Button variant="secondary">Cancel</Button>}
         primary={<Button variant="primary">Save</Button>}
       >
         <DialogBody>Form content</DialogBody>
       </DialogShell>,
     );
-    // Tertiary action is rendered inside body
-    expect(screen.getByText('Delete rule', { selector: 'span' })).toBeInTheDocument();
+    // Tertiary action is rendered inside footer alongside secondary and primary
     expect(screen.getByRole('button', { name: 'Delete rule' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();

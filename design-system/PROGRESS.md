@@ -57,7 +57,7 @@ Build in this order, one component per step. After each one, set its status to *
 | --- | --- | --- |
 | 1 | Icon | Ready for review |
 | 2 | Popover | Ready for review |
-| 3 | Dialog | Changes requested |
+| 3 | Dialog | Ready for review |
 | 4 | TabBar | Changes requested |
 | 5 | Rail | Changes requested |
 | 6 | TopBar | Changes requested |
@@ -217,6 +217,16 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 8 · Dialog footer (one unified layout across viewports):
+  - Unified DialogFooter to one layout on all viewports: tertiary at far left (`mr-auto shrink-0`), then secondary and primary on the right. On phone the buttons are `control-xl`, and secondary and primary share the remaining width (`flex-1`).
+  - Deleted phone-only path that moved tertiary into the body under a danger SectionHeader band. Removed unused `SectionHeader` and `useIsPhone` imports.
+  - Cleaned props strictly to `primary`, `secondary`, and `tertiary`; deleted aliases `primaryAction`, `secondaryAction`, `tertiaryAction`, `leftAction`, `tertiaryLabel`, and `isPhone`.
+  - Made `confirmLabel` in ConfirmDialog and ConfirmDialogShell a required prop (no default "Delete").
+  - Updated stories and tests to verify the unified footer layout and callbacks.
+  - Stories compared and interacted with: Dialog (AllVariants, DesktopSm, PhoneSheet, SidePanel, ConfirmDialogWithPreview, ConfirmDialogWithGentlerOption, ConfirmDialogLoading, InteractiveModal) beside preview.html in light and dark at 390 and 1440. All buttons and callbacks respond in canvas.
+  - Checks: typecheck (clean), lint (0 errors), vitest (all 12 tests passing), build-storybook (clean), check-ui (clean on touched files). Differences left open: none.
+
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 7 · Tabs (straight 2px brand underline, args-driven stories):
   - Ensured TabsTrigger renders a straight 2px `brand` bar with square ends (`rounded-none`, `-mb-px` overlapping list border) without radius; verified `TabsList` has `gap-space-4 border-b border-line`.

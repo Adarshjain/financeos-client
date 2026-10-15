@@ -6,8 +6,6 @@ import React, { forwardRef, useRef } from 'react';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
-import { SectionHeader } from '../SectionHeader/SectionHeader';
-import { useIsPhone } from '../useMediaQuery';
 import { useSheetDrag } from '../useSheetDrag';
 
 export type DialogSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -67,15 +65,10 @@ export interface DialogFooterProps
   extends React.HTMLAttributes<HTMLDivElement> {
   /** Primary / confirming action on the right (rendered last) */
   primary?: React.ReactNode;
-  primaryAction?: React.ReactNode;
   /** Secondary action on the right (rendered before primary) */
   secondary?: React.ReactNode;
-  secondaryAction?: React.ReactNode;
   /** Optional far-left destructive action (e.g. "Delete rule") */
   tertiary?: React.ReactNode;
-  tertiaryAction?: React.ReactNode;
-  leftAction?: React.ReactNode;
-  isPhone?: boolean;
 }
 
 export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
@@ -84,34 +77,36 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
       children,
       className,
       primary,
-      primaryAction,
       secondary,
-      secondaryAction,
       tertiary,
-      tertiaryAction,
-      leftAction,
-      isPhone = false,
       ...props
     },
     ref,
   ) => {
-    const prim = primary ?? primaryAction;
-    const sec = secondary ?? secondaryAction;
-    const tert = tertiary ?? tertiaryAction ?? leftAction;
-
     return (
       <div
         ref={ref}
         className={cn(
-          'px-space-16 sm:px-space-20 py-space-12 border-t border-line-soft bg-sunken flex items-center gap-space-8 shrink-0',
-          isPhone ? 'justify-stretch' : 'justify-end',
+          'px-space-16 sm:px-space-20 py-space-12 border-t border-line-soft bg-sunken flex items-center gap-space-8 shrink-0 justify-end',
           className,
         )}
         {...props}
       >
-        {!isPhone && tert && <div className="mr-auto shrink-0">{tert}</div>}
-        {sec && <div className={cn(isPhone && 'flex-1')}>{sec}</div>}
-        {prim && <div className={cn(isPhone && 'flex-1')}>{prim}</div>}
+        {tertiary && (
+          <div className="mr-auto shrink-0 flex items-center [&>button]:h-control-xl sm:[&>button]:h-control-md [&>button]:text-body [&>button]:rounded-ds-lg sm:[&>button]:rounded-ds-md [&>button]:px-space-20 sm:[&>button]:px-space-12">
+            {tertiary}
+          </div>
+        )}
+        {secondary && (
+          <div className="flex-1 sm:flex-initial sm:shrink-0 flex items-center [&>button]:w-full sm:[&>button]:w-auto [&>button]:h-control-xl sm:[&>button]:h-control-md [&>button]:text-body [&>button]:rounded-ds-lg sm:[&>button]:rounded-ds-md [&>button]:px-space-20 sm:[&>button]:px-space-12">
+            {secondary}
+          </div>
+        )}
+        {primary && (
+          <div className="flex-1 sm:flex-initial sm:shrink-0 flex items-center [&>button]:w-full sm:[&>button]:w-auto [&>button]:h-control-xl sm:[&>button]:h-control-md [&>button]:text-body [&>button]:rounded-ds-lg sm:[&>button]:rounded-ds-md [&>button]:px-space-20 sm:[&>button]:px-space-12">
+            {primary}
+          </div>
+        )}
         {children}
       </div>
     );
@@ -133,12 +128,6 @@ export interface DialogShellProps
   primary?: React.ReactNode;
   secondary?: React.ReactNode;
   tertiary?: React.ReactNode;
-  primaryAction?: React.ReactNode;
-  secondaryAction?: React.ReactNode;
-  tertiaryAction?: React.ReactNode;
-  leftAction?: React.ReactNode;
-  tertiaryLabel?: string;
-  forcePhone?: boolean;
 }
 
 /**
@@ -164,28 +153,17 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
       primary,
       secondary,
       tertiary,
-      primaryAction,
-      secondaryAction,
-      tertiaryAction,
-      leftAction,
-      tertiaryLabel,
-      forcePhone,
       ...props
     },
     ref,
   ) => {
-    const isPhoneDevice = useIsPhone();
-    const isPhone = forcePhone !== undefined ? forcePhone : isPhoneDevice;
     const desc = subtitle ?? description;
-    const prim = primary ?? primaryAction;
-    const sec = secondary ?? secondaryAction;
-    const tert = tertiary ?? tertiaryAction ?? leftAction;
 
     const { dragOffset, isDragging, dragProps } = useSheetDrag({
       onClose,
     });
 
-    const hasFooterFromProps = Boolean(prim || sec || (!isPhone && tert));
+    const hasFooterFromProps = Boolean(primary || secondary || tertiary);
 
     return (
       <div
@@ -248,54 +226,11 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
 
         {children}
 
-        {isPhone && tert && (
-          <div className="mt-auto pt-space-16 pb-space-8 shrink-0">
-            <SectionHeader
-              variant="danger"
-              label={
-                tertiaryLabel ||
-                (typeof tert === 'string'
-                  ? tert
-                  : typeof title === 'string'
-                    ? title
-                    : 'Delete')
-              }
-              className="-mx-space-16 sm:-mx-space-20 mb-space-12"
-            />
-            <div className="px-space-16">
-              {React.isValidElement(tert) ? (
-                React.cloneElement(
-                  tert as React.ReactElement<{
-                    className?: string;
-                    size?: string;
-                    variant?: string;
-                  }>,
-                  {
-                    className: cn(
-                      'w-full',
-                      (tert.props as { className?: string }).className,
-                    ),
-                    size: 'xl',
-                    variant:
-                      (tert.props as { variant?: string }).variant ||
-                      'danger-filled',
-                  },
-                )
-              ) : (
-                <Button variant="danger-filled" size="xl" className="w-full">
-                  {tert}
-                </Button>
-              )}
-            </div>
-          </div>
-        )}
-
         {hasFooterFromProps && (
           <DialogFooter
-            primary={prim}
-            secondary={sec}
-            tertiary={!isPhone ? tert : undefined}
-            isPhone={isPhone}
+            primary={primary}
+            secondary={secondary}
+            tertiary={tertiary}
           />
         )}
       </div>
@@ -328,12 +263,6 @@ export interface DialogContentProps
   primary?: React.ReactNode;
   secondary?: React.ReactNode;
   tertiary?: React.ReactNode;
-  primaryAction?: React.ReactNode;
-  secondaryAction?: React.ReactNode;
-  tertiaryAction?: React.ReactNode;
-  leftAction?: React.ReactNode;
-  tertiaryLabel?: string;
-  forcePhone?: boolean;
 }
 
 export const DialogContent = forwardRef<
@@ -356,22 +285,11 @@ export const DialogContent = forwardRef<
       primary,
       secondary,
       tertiary,
-      primaryAction,
-      secondaryAction,
-      tertiaryAction,
-      leftAction,
-      tertiaryLabel,
-      forcePhone,
       ...props
     },
     ref,
   ) => {
-    const isPhoneDevice = useIsPhone();
-    const isPhone = forcePhone !== undefined ? forcePhone : isPhoneDevice;
     const desc = subtitle ?? description;
-    const prim = primary ?? primaryAction;
-    const sec = secondary ?? secondaryAction;
-    const tert = tertiary ?? tertiaryAction ?? leftAction;
     const closeRef = useRef<HTMLButtonElement>(null);
 
     const { dragOffset, isDragging, dragProps } = useSheetDrag({
@@ -384,7 +302,7 @@ export const DialogContent = forwardRef<
       },
     });
 
-    const hasFooterFromProps = Boolean(prim || sec || (!isPhone && tert));
+    const hasFooterFromProps = Boolean(primary || secondary || tertiary);
 
     return (
       <DialogPortal>
@@ -481,54 +399,11 @@ export const DialogContent = forwardRef<
 
             {children}
 
-            {isPhone && tert && (
-              <div className="mt-auto pt-space-16 pb-space-8 shrink-0">
-                <SectionHeader
-                  variant="danger"
-                  label={
-                    tertiaryLabel ||
-                    (typeof tert === 'string'
-                      ? tert
-                      : typeof title === 'string'
-                        ? title
-                        : 'Delete')
-                  }
-                  className="-mx-space-16 sm:-mx-space-20 mb-space-12"
-                />
-                <div className="px-space-16">
-                  {React.isValidElement(tert) ? (
-                    React.cloneElement(
-                      tert as React.ReactElement<{
-                        className?: string;
-                        size?: string;
-                        variant?: string;
-                      }>,
-                      {
-                        className: cn(
-                          'w-full',
-                          (tert.props as { className?: string }).className,
-                        ),
-                        size: 'xl',
-                        variant:
-                          (tert.props as { variant?: string }).variant ||
-                          'danger-filled',
-                      },
-                    )
-                  ) : (
-                    <Button variant="danger-filled" size="xl" className="w-full">
-                      {tert}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )}
-
             {hasFooterFromProps && (
               <DialogFooter
-                primary={prim}
-                secondary={sec}
-                tertiary={!isPhone ? tert : undefined}
-                isPhone={isPhone}
+                primary={primary}
+                secondary={secondary}
+                tertiary={tertiary}
               />
             )}
           </DialogPrimitive.Content>
@@ -547,7 +422,7 @@ export interface ConfirmDialogShellProps
   title: React.ReactNode;
   description?: React.ReactNode;
   impact?: React.ReactNode[];
-  confirmLabel?: React.ReactNode;
+  confirmLabel: React.ReactNode;
   cancelLabel?: React.ReactNode;
   alternativeLabel?: React.ReactNode;
   onConfirm?: () => void;
@@ -561,7 +436,6 @@ export interface ConfirmDialogShellProps
   size?: DialogSize;
   showClose?: boolean;
   onClose?: () => void;
-  forcePhone?: boolean;
 }
 
 export const ConfirmDialogShell = forwardRef<
@@ -573,7 +447,7 @@ export const ConfirmDialogShell = forwardRef<
       title,
       description,
       impact,
-      confirmLabel = 'Delete',
+      confirmLabel,
       cancelLabel = 'Cancel',
       alternativeLabel,
       onConfirm,
@@ -589,13 +463,10 @@ export const ConfirmDialogShell = forwardRef<
       onClose,
       children,
       className,
-      forcePhone,
       ...props
     },
     ref,
   ) => {
-    const isPhoneDevice = useIsPhone();
-    const isPhone = forcePhone !== undefined ? forcePhone : isPhoneDevice;
     const isBusy = Boolean(loading || confirmLoading);
     const isConfirmDisabled = Boolean(
       confirmDisabled || isCheckingImpact || isBusy,
@@ -614,7 +485,39 @@ export const ConfirmDialogShell = forwardRef<
         description={description}
         showClose={showClose}
         onClose={onCancel || onClose}
-        forcePhone={forcePhone}
+        tertiary={
+          alternativeLabel ? (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={isBusy}
+              onClick={onAlternative}
+            >
+              {alternativeLabel}
+            </Button>
+          ) : undefined
+        }
+        secondary={
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={isBusy}
+            onClick={onCancel || onClose}
+          >
+            {cancelLabel}
+          </Button>
+        }
+        primary={
+          <Button
+            type="button"
+            variant="danger-filled"
+            loading={isBusy}
+            disabled={isConfirmDisabled}
+            onClick={handleConfirm}
+          >
+            {confirmLabel}
+          </Button>
+        }
         className={cn('w-full', className)}
         {...props}
       >
@@ -637,47 +540,6 @@ export const ConfirmDialogShell = forwardRef<
 
           {children}
         </DialogBody>
-
-        <DialogFooter
-          isPhone={isPhone}
-          className={cn(isPhone && 'flex-col sm:flex-row items-stretch')}
-        >
-          {alternativeLabel ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size={isPhone ? 'xl' : 'sm'}
-              disabled={isBusy}
-              onClick={onAlternative}
-              className={cn(isPhone && 'w-full')}
-            >
-              {alternativeLabel}
-            </Button>
-          ) : null}
-
-          <Button
-            type="button"
-            variant="secondary"
-            size={isPhone ? 'xl' : 'sm'}
-            disabled={isBusy}
-            onClick={onCancel || onClose}
-            className={cn(isPhone && 'w-full')}
-          >
-            {cancelLabel}
-          </Button>
-
-          <Button
-            type="button"
-            variant="danger-filled"
-            size={isPhone ? 'xl' : 'sm'}
-            loading={isBusy}
-            disabled={isConfirmDisabled}
-            onClick={handleConfirm}
-            className={cn(isPhone && 'w-full')}
-          >
-            {confirmLabel}
-          </Button>
-        </DialogFooter>
       </DialogShell>
     );
   },
@@ -700,7 +562,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   title,
   description,
   impact,
-  confirmLabel = 'Delete',
+  confirmLabel,
   cancelLabel = 'Cancel',
   alternativeLabel,
   onConfirm,
@@ -749,6 +611,39 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         showClose={showClose}
         onClose={handleCancel}
         className={className}
+        tertiary={
+          alternativeLabel ? (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={isBusy}
+              onClick={handleAlternative}
+            >
+              {alternativeLabel}
+            </Button>
+          ) : undefined
+        }
+        secondary={
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={isBusy}
+            onClick={handleCancel}
+          >
+            {cancelLabel}
+          </Button>
+        }
+        primary={
+          <Button
+            type="button"
+            variant="danger-filled"
+            loading={isBusy}
+            disabled={isConfirmDisabled}
+            onClick={handleConfirm}
+          >
+            {confirmLabel}
+          </Button>
+        }
         {...props}
       >
         <DialogBody className="space-y-space-12">
@@ -770,44 +665,6 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
           {children}
         </DialogBody>
-
-        <DialogFooter className="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-8">
-          {alternativeLabel ? (
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              disabled={isBusy}
-              onClick={handleAlternative}
-              className="w-full sm:w-auto flex-1 order-2 sm:order-1"
-            >
-              {alternativeLabel}
-            </Button>
-          ) : null}
-
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            disabled={isBusy}
-            onClick={handleCancel}
-            className="w-full sm:w-auto flex-1 order-3 sm:order-2"
-          >
-            {cancelLabel}
-          </Button>
-
-          <Button
-            type="button"
-            variant="danger-filled"
-            size="sm"
-            loading={isBusy}
-            disabled={isConfirmDisabled}
-            onClick={handleConfirm}
-            className="w-full sm:w-auto flex-1 order-1 sm:order-3"
-          >
-            {confirmLabel}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
