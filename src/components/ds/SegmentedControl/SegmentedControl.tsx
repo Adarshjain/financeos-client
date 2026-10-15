@@ -17,7 +17,6 @@ export interface SegmentedControlProps<T extends string = string>
   onChange?: (value: T) => void;
   fullWidth?: boolean;
   disabled?: boolean;
-  size?: 'md';
 }
 
 export const SegmentedControl = forwardRef<
@@ -33,6 +32,7 @@ export const SegmentedControl = forwardRef<
       fullWidth = false,
       disabled = false,
       className,
+      'aria-label': ariaLabel,
       ...props
     },
     ref,
@@ -89,6 +89,7 @@ export const SegmentedControl = forwardRef<
       <div
         ref={ref}
         role="radiogroup"
+        aria-label={ariaLabel || 'Options'}
         aria-disabled={disabled}
         className={cn(
           'border border-line-strong rounded-ds-md overflow-hidden bg-surface',
@@ -117,7 +118,7 @@ export const SegmentedControl = forwardRef<
               onKeyDown={(e) => handleKeyDown(e, idx)}
               className={cn(
                 'inline-flex items-center justify-center gap-space-6 h-control-md px-space-12 font-text font-bold text-label select-none transition-colors duration-fast',
-                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset z-dock',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
                 fullWidth && 'flex-1',
                 isSelected
                   ? 'bg-brand text-on-brand'

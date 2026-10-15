@@ -144,6 +144,24 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 4) · SegmentedControl component fixes:
+  - Fixed SegmentedControl in `src/components/ds/SegmentedControl/SegmentedControl.tsx`:
+    - Removed dead `size` prop: eliminated unused `size?: 'md'` from `SegmentedControlProps`.
+    - Removed stray `z-dock`: removed misplaced dock bar z-index class from option buttons.
+    - Added accessible name: added `aria-label={ariaLabel || 'Options'}` to the container `radiogroup`.
+  - Updated `src/components/ds/SegmentedControl/SegmentedControl.stories.tsx`:
+    - Removed unlisted variants (`FullWidth` and `Disabled`), keeping stories strictly matching the README and preview specification (Two options, Three options, View switch, In a form, AllVariants).
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,494 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `SegmentedControl/preview.html` and `ds-07-inputs.webp` board:
+    - `DS/Inputs/SegmentedControl/TwoOptions`
+    - `DS/Inputs/SegmentedControl/ThreeOptions`
+    - `DS/Inputs/SegmentedControl/ViewSwitch`
+    - `DS/Inputs/SegmentedControl/InAForm`
+    - `DS/Inputs/SegmentedControl/AllVariants`
+    Verified active segment ink fill with `on-brand` text, inactive hover states, border styling, and keyboard arrow selection.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 3) · Switch component fixes:
   - Fixed Switch in `src/components/ds/Switch/Switch.tsx`:
     - Replaced inline `34×20` style with token classes `w-control-lg h-space-20` (36×20) and knob `w-space-16 h-space-16` translating `translate-x-space-16` per owner decision (2026-10-15).
