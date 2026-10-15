@@ -50,14 +50,18 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
   ) => {
     // Esc key clears selection
     useEffect(() => {
+      if (count <= 0) return;
+
       const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.defaultPrevented) return;
         if (e.key === 'Escape') {
+          e.preventDefault();
           onClear();
         }
       };
       window.addEventListener('keydown', handleKeyDown);
       return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [onClear]);
+    }, [count, onClear]);
 
     if (count <= 0) return null;
 
@@ -134,7 +138,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
       return (
         <div
           className={cn(
-            'flex flex-col items-stretch bg-surface border-t border-line-strong rounded-t-ds-sheet shadow-dock select-none text-body text-ink w-full',
+            'flex flex-col items-stretch bg-surface border-t border-line-strong rounded-t-ds-sheet shadow-dock z-dock select-none text-body text-ink w-full',
             className,
           )}
         >
@@ -164,7 +168,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
               <button
                 type="button"
                 onClick={onSelectAll}
-                className="text-label font-bold text-brand hover:underline cursor-pointer shrink-0 bg-transparent border-0 p-0"
+                className="inline-flex items-center h-control-md px-space-8 rounded-ds-md text-label font-bold text-brand hover:underline cursor-pointer shrink-0 bg-transparent border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
               >
                 {selectAllLabel ?? 'Select all'}
               </button>

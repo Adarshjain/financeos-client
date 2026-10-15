@@ -95,7 +95,7 @@ describe('SelectionBar', () => {
 
   it('renders phone variant with select all and hints', () => {
     const handleSelectAll = vi.fn();
-    render(
+    const { container } = render(
       <SelectionBar
         variant="phone"
         count={2}
@@ -111,19 +111,25 @@ describe('SelectionBar', () => {
       name: 'Select all 182',
     });
     expect(selectAllBtn).toBeInTheDocument();
+    expect(selectAllBtn).toHaveClass('h-control-md');
+    expect(container.querySelector('.z-dock')).toBeInTheDocument();
     fireEvent.click(selectAllBtn);
     expect(handleSelectAll).toHaveBeenCalledTimes(1);
   });
 
-  it('returns null when count is 0', () => {
+  it('returns null and does not fire onClear on Escape when count is 0', () => {
+    const handleClear = vi.fn();
     const { container } = render(
       <SelectionBar
         variant="desktop"
         count={0}
         actions={defaultActions}
-        onClear={() => {}}
+        onClear={handleClear}
       />,
     );
     expect(container.firstChild).toBeNull();
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(handleClear).not.toHaveBeenCalled();
   });
 });
