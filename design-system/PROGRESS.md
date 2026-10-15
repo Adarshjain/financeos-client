@@ -33,6 +33,7 @@ Goal: everything the new components need, with **no visible change to the existi
    - `width`: `control-sm`, `control-md`, `control-lg`, `control-xl`, `chip`, `rail`, `swipe-action`; `minWidth`: the same without `swipe-action`.
    - `maxWidth`: `dialog-sm` (440), `dialog-md` (640), `dialog-lg` (760), `dialog-xl` (920).
    - `width` and `height` also take `icon-sm` (14), `icon-md` (16), `icon-lg` (20) for Icon sizes.
+   - `width` and `minWidth` also take `popover-trigger` and `menu-trigger` (the trigger width Radix exposes) for Popover `match` and Menu minimum width.
    - There is no `space-0`, `space-18`, `text-small`, `rounded-ds-circle`, `z-1` or `font-inherit`. Tailwind silently drops a class name it does not know, so it renders nothing; `check-ui.mjs` now fails on unknown classes.
    - `zIndex`: `z-sticky`, `z-dock`, `z-scrim`, `z-overlay`.
    - `transitionDuration`: `fast`, `base`, `sheet`.
