@@ -1,7 +1,7 @@
 'use client';
 
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import React, { forwardRef, useMemo, useState } from 'react';
+import React, { forwardRef, useMemo } from 'react';
 
 import { cn } from '../cn';
 import { getItemRowClass, ItemRowStyleOptions } from '../itemRow';
