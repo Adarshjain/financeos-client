@@ -94,43 +94,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
         ? unit
         : `${unit}s`;
 
-    const compactItems = getPageNumbers(page, totalPages, true);
-    const fullItems = getPageNumbers(page, totalPages, false);
-
-    const renderPageButtons = (items: (number | 'ellipsis')[]) =>
-      items.map((item, idx) => {
-        if (item === 'ellipsis') {
-          return (
-            <span
-              key={`gap-${idx}`}
-              aria-hidden="true"
-              className="w-space-16 text-center text-ink-faint text-label select-none"
-            >
-              …
-            </span>
-          );
-        }
-
-        const isActive = page === item;
-        const pageNumber = item + 1; // 1-based display
-
-        return (
-          <Button
-            key={item}
-            variant={isActive ? 'primary' : 'ghost'}
-            size="md"
-            aria-label={`Page ${pageNumber}`}
-            aria-current={isActive ? 'page' : undefined}
-            onClick={() => onPageChange(item)}
-            className={cn(
-              'min-w-control-md h-control-md px-space-6 rounded-ds-md tabular-nums font-semibold',
-              isActive ? 'font-bold' : 'text-ink-2',
-            )}
-          >
-            {pageNumber}
-          </Button>
-        );
-      });
+    const pageItems = getPageNumbers(page, totalPages, false);
 
     return (
       <nav
@@ -202,11 +166,45 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                 <Icon name="chevron-left" size="md" />
               </Button>
 
-              <div className="flex lg:hidden items-center gap-space-4">
-                {renderPageButtons(compactItems)}
-              </div>
-              <div className="hidden lg:flex items-center gap-space-4">
-                {renderPageButtons(fullItems)}
+              <div className="flex items-center gap-space-4">
+                {pageItems.map((item, idx) => {
+                  if (item === 'ellipsis') {
+                    return (
+                      <span
+                        key={`gap-${idx}`}
+                        aria-hidden="true"
+                        className="w-space-16 text-center text-ink-faint text-label select-none"
+                      >
+                        …
+                      </span>
+                    );
+                  }
+
+                  const isActive = page === item;
+                  const isNeighbour =
+                    (item === page - 1 || item === page + 1) &&
+                    item !== 0 &&
+                    item !== totalPages - 1;
+                  const pageNumber = item + 1; // 1-based display
+
+                  return (
+                    <Button
+                      key={item}
+                      variant={isActive ? 'primary' : 'ghost'}
+                      size="md"
+                      aria-label={`Page ${pageNumber}`}
+                      aria-current={isActive ? 'page' : undefined}
+                      onClick={() => onPageChange(item)}
+                      className={cn(
+                        'min-w-control-md h-control-md px-space-6 rounded-ds-md tabular-nums font-semibold',
+                        isActive ? 'font-bold' : 'text-ink-2',
+                        isNeighbour && 'hidden lg:inline-flex',
+                      )}
+                    >
+                      {pageNumber}
+                    </Button>
+                  );
+                })}
               </div>
 
               <Button

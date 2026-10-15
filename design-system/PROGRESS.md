@@ -218,6 +218,18 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 4 · Pager: one page list:
+  - Eliminated dual page-number lists (`flex lg:hidden` and `hidden lg:flex`) in `src/components/ds/Pager/Pager.tsx`. Rendered a single page list with `pageItems.map()`, ran ellipsis logic once, and applied `hidden lg:inline-flex` to neighbour page buttons (`page - 1`, `page + 1`) that only display on desktop.
+  - Updated `src/components/ds/Pager/Pager.test.tsx` to verify each page number appears exactly once in the rendered DOM and neighbour buttons carry `hidden lg:inline-flex`.
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 336 problems (0 errors, 336 warnings)`
+    - `npm test`: `Test Files  426 passed (426) | Tests  3529 passed (3529)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+  - Done when: each page number appears once in the DOM (verified in unit test).
+  - Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 3 · SelectionBar: one structure, not two copies:
   - Eliminated dual-rendered markup (`lg:hidden` and `hidden lg:flex`) in `src/components/ds/SelectionBar/SelectionBar.tsx`. Unified into single markup using CSS grid below `lg` (docked bottom sheet with action grid and hints) and flex from `lg` (floating pill with outlined buttons in a row and × at the end). Action hints carry `lg:hidden`.
   - Updated `src/components/ds/SelectionBar/SelectionBar.test.tsx` to verify each action label, count, and summary renders exactly once in the DOM, and verified responsive switch classes.
