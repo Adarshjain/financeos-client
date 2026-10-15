@@ -66,7 +66,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 11 | Menu | Ready for review |
 | 12 | SelectionBar | Changes requested |
 | 13 | SwipeActions | Changes requested |
-| 14 | TextField | Changes requested |
+| 14 | TextField | Ready for review |
 | 15 | TextArea | Not started |
 | 16 | DateField | Not started |
 | 17 | Select | Ready for review |
@@ -165,6 +165,21 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 9a · TextField and FieldFrame:
+  - Extracted shared field frame into `src/components/ds/FieldFrame.tsx` (`label`, `optional`, `helper`, `error`), used by `TextField` and `Select`.
+  - Rebuilt `TextField` in `src/components/ds/TextField/TextField.tsx`:
+    - Kinds supported: `text`, `number`, `email`, `amount` (₹ prefix with tabular figures), `password` (masked with Show/Hide toggle via `Button` ghost sm).
+    - Removed obsolete props: `mode`, `date`, `multiline`, `locked`, and `inputClassName`.
+    - Removed `ReadOnlyRow` (ListField in ListRow covers it).
+  - Updated `Select` in `src/components/ds/Select/Select.tsx` to use `FieldFrame`.
+  - Updated `Banner` in `src/components/ds/Banner/Banner.tsx` (`BannerProps` omits `title` from HTMLAttributes).
+  - Updated `TextField.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`Text`, `Amount`, `Password`, `Placeholder`, `WithHelper`, `ErrorState`, `Disabled`) with controls.
+  - Updated `TextField.test.tsx`: 9 unit tests covering label, input, optional marker, typing via onChange, helper text, error state with danger border, disabled state, amount with ₹ prefix and tabular figures, password toggle via Button, and prefix/suffix slots.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npx vitest run src/components/ds/TextField src/components/ds/Select` (29/29 tests passed), `npm run build-storybook`, `node design-system/tools/check-ui.mjs` clean (zero errors on touched files).
+  - Stories compared: `DS/Inputs/TextField/AllVariants`, `Text`, `Amount`, `Password`, `Placeholder`, `WithHelper`, `ErrorState`, `Disabled` beside `design-system/components/TextField/preview.html` at 390px and 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 8 · SectionHeader:
   - Created `SectionHeader` in `src/components/ds/SectionHeader/SectionHeader.tsx` with variants:

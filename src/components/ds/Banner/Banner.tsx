@@ -15,7 +15,8 @@ export type BannerTone =
   | 'callout'
   | 'note';
 
-export interface BannerProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface BannerProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   /** Tone of the banner */
   tone?: BannerTone;
   /** Optional bold lead-in title */

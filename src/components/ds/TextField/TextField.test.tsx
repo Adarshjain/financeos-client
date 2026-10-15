@@ -1,7 +1,8 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { ReadOnlyRow, TextField } from './TextField';
+import { TextField } from './TextField';
 
 describe('TextField component', () => {
   it('renders label and input with default value', () => {
@@ -38,28 +39,28 @@ describe('TextField component', () => {
     expect(inputWrapper).toBeInTheDocument();
   });
 
-  it('renders locked state with lock icon and read-only input', () => {
-    const { container } = render(
-      <TextField label="Account" defaultValue="HDFC" locked />,
-    );
+  it('renders disabled state', () => {
+    render(<TextField label="Account" defaultValue="HDFC" disabled />);
     const input = screen.getByLabelText('Account');
-    expect(input).not.toBeDisabled();
-    expect(input).toHaveAttribute('readonly');
-    expect(container.querySelector('svg')).toBeInTheDocument();
+    expect(input).toBeDisabled();
   });
 
-  it('supports date mode formatting and accepting dd/mm/yyyy', () => {
-    const handleChange = vi.fn();
-    render(<TextField label="Due date" mode="date" onChange={handleChange} />);
-    const input = screen.getByLabelText('Due date');
-    expect(input).toHaveAttribute('placeholder', 'dd/mm/yyyy');
-    fireEvent.change(input, { target: { value: '15102026' } });
-    expect(input).toHaveValue('15/10/2026');
-    expect(handleChange).toHaveBeenCalled();
+  it('renders kind="amount" with ₹ prefix and tabular-nums', () => {
+    render(<TextField label="Total due" kind="amount" defaultValue="44,319.00" />);
+    expect(screen.getByText('₹')).toBeInTheDocument();
+    const input = screen.getByLabelText('Total due');
+    expect(input).toHaveClass('tabular-nums');
+    expect(input).toHaveValue('44,319.00');
   });
 
   it('toggles password visibility with Show/Hide button', () => {
-    render(<TextField label="Password" type="password" defaultValue="secret" />);
+    render(
+      <TextField
+        label="Password"
+        kind="password"
+        defaultValue="secret"
+      />,
+    );
     const input = screen.getByLabelText('Password');
     expect(input).toHaveAttribute('type', 'password');
 
@@ -70,28 +71,15 @@ describe('TextField component', () => {
     expect(screen.getByRole('button', { name: 'Hide password' })).toBeInTheDocument();
   });
 
-  it('renders prefix and suffix elements', () => {
+  it('renders custom prefix and suffix elements', () => {
     render(
       <TextField
         label="Amount"
-        prefix="₹"
-        suffix={<span data-testid="test-suffix">INR</span>}
+        prefix="$"
+        suffix={<span data-testid="test-suffix">USD</span>}
       />,
     );
-    expect(screen.getByText('₹')).toBeInTheDocument();
+    expect(screen.getByText('$')).toBeInTheDocument();
     expect(screen.getByTestId('test-suffix')).toBeInTheDocument();
-  });
-
-  it('renders multiline textarea when multiline is true', () => {
-    render(<TextField label="Notes" multiline rows={4} placeholder="Add note" />);
-    const textarea = screen.getByPlaceholderText('Add note');
-    expect(textarea.tagName.toLowerCase()).toBe('textarea');
-    expect(textarea).toHaveAttribute('rows', '4');
-  });
-
-  it('renders ReadOnlyRow with label and value', () => {
-    render(<ReadOnlyRow label="Source" value="Statement PDF" />);
-    expect(screen.getByText('Source')).toBeInTheDocument();
-    expect(screen.getByText('Statement PDF')).toBeInTheDocument();
   });
 });

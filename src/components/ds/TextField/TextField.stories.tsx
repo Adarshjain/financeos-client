@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { ReadOnlyRow, TextField } from './TextField';
+import { TextField } from './TextField';
 
 const meta: Meta<typeof TextField> = {
   title: 'DS/Inputs/TextField',
@@ -8,108 +8,23 @@ const meta: Meta<typeof TextField> = {
   parameters: {
     layout: 'padded',
   },
+  argTypes: {
+    kind: {
+      control: 'select',
+      options: ['text', 'amount', 'password', 'number', 'email'],
+    },
+    label: { control: 'text' },
+    placeholder: { control: 'text' },
+    defaultValue: { control: 'text' },
+    helper: { control: 'text' },
+    error: { control: 'text' },
+    optional: { control: 'boolean' },
+    disabled: { control: 'boolean' },
+  },
 };
 
 export default meta;
 type Story = StoryObj<typeof TextField>;
-
-export const Default: Story = {
-  args: {
-    label: 'Account name',
-    defaultValue: 'HDFC Regalia Gold',
-  },
-};
-
-export const Placeholder: Story = {
-  args: {
-    label: 'Description',
-    optional: true,
-    placeholder: 'e.g. Primary card',
-  },
-};
-
-export const Focused: Story = {
-  args: {
-    label: 'Pattern',
-    defaultValue: 'SWIGGY',
-  },
-};
-
-export const WithHelper: Story = {
-  args: {
-    label: 'Import emails from',
-    defaultValue: '01/04/2026',
-    helper: 'Leave empty to pause Gmail import.',
-  },
-};
-
-export const Error: Story = {
-  args: {
-    label: 'Last 4 digits',
-    defaultValue: '77',
-    error: 'Enter the last 4 digits of the card.',
-  },
-};
-
-export const Disabled: Story = {
-  args: {
-    label: 'Email',
-    defaultValue: 'arjun@example.com',
-    disabled: true,
-  },
-};
-
-export const Locked: Story = {
-  args: {
-    label: 'Account',
-    defaultValue: 'HDFC Regalia Gold ••7741',
-    locked: true,
-  },
-};
-
-export const AmountWithPrefix: Story = {
-  args: {
-    label: 'Amount paid',
-    prefix: '₹',
-    defaultValue: '44,319.00',
-  },
-};
-
-export const PasswordWithToggle: Story = {
-  args: {
-    label: 'Statement password',
-    type: 'password',
-    defaultValue: 'Secret123',
-  },
-};
-
-export const DateInput: Story = {
-  args: {
-    label: 'Paid on',
-    mode: 'date',
-    defaultValue: '13/10/2026',
-  },
-};
-
-export const MultiLine: Story = {
-  args: {
-    label: 'Note',
-    optional: true,
-    multiline: true,
-    rows: 3,
-    placeholder: 'e.g. returned the TV',
-  },
-};
-
-export const ReadOnly: Story = {
-  render: () => (
-    <div className="max-w-md p-space-12 rounded-ds-lg border border-line bg-surface">
-      <ReadOnlyRow label="Source" value="Statement · Regalia-Oct.pdf" />
-      <ReadOnlyRow label="Account" value="HDFC Regalia Gold ••7741" />
-      <ReadOnlyRow label="Status" value="Reconciled" />
-    </div>
-  ),
-};
 
 export const AllVariants: Story = {
   render: () => (
@@ -119,14 +34,19 @@ export const AllVariants: Story = {
         defaultValue="HDFC Regalia Gold"
       />
       <TextField
-        label="Description"
-        optional
-        placeholder="e.g. Primary card"
+        label="Total due"
+        kind="amount"
+        defaultValue="44,319.00"
       />
       <TextField
-        label="Import emails from"
-        defaultValue="01/04/2026"
-        helper="Leave empty to pause Gmail import."
+        label="Statement password"
+        kind="password"
+        defaultValue="Secret123"
+      />
+      <TextField
+        label="MCC code"
+        optional
+        placeholder="e.g. 5812"
       />
       <TextField
         label="Last 4 digits"
@@ -134,39 +54,65 @@ export const AllVariants: Story = {
         error="Enter the last 4 digits of the card."
       />
       <TextField
-        label="Email"
-        defaultValue="arjun@example.com"
+        label="Account"
+        defaultValue="HDFC Regalia ••7741"
         disabled
       />
-      <TextField
-        label="Account"
-        defaultValue="HDFC Regalia Gold ••7741"
-        locked
-      />
-      <TextField
-        label="Amount paid"
-        prefix="₹"
-        defaultValue="44,319.00"
-      />
-      <TextField
-        label="Statement password"
-        type="password"
-        defaultValue="Secret123"
-      />
-      <TextField
-        label="Paid on"
-        mode="date"
-        defaultValue="13/10/2026"
-      />
-      <TextField
-        label="Note"
-        optional
-        multiline
-        placeholder="e.g. returned the TV"
-      />
-      <div className="p-space-12 rounded-ds-lg border border-line bg-surface">
-        <ReadOnlyRow label="Source" value="Statement · Regalia-Oct.pdf" />
-      </div>
     </div>
   ),
+};
+
+export const Text: Story = {
+  args: {
+    label: 'Account name',
+    defaultValue: 'HDFC Regalia Gold',
+  },
+};
+
+export const Amount: Story = {
+  args: {
+    label: 'Total due',
+    kind: 'amount',
+    defaultValue: '44,319.00',
+  },
+};
+
+export const Password: Story = {
+  args: {
+    label: 'Statement password',
+    kind: 'password',
+    defaultValue: 'Secret123',
+  },
+};
+
+export const Placeholder: Story = {
+  args: {
+    label: 'MCC code',
+    optional: true,
+    placeholder: 'e.g. 5812',
+  },
+};
+
+export const WithHelper: Story = {
+  args: {
+    label: 'Import emails from',
+    placeholder: '01/04/2026',
+    helper: 'Leave empty to pause Gmail import.',
+  },
+};
+
+export const ErrorState: Story = {
+  args: {
+    label: 'Last 4 digits',
+    defaultValue: '77',
+    error: 'Enter the last 4 digits of the card.',
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    label: 'Account',
+    defaultValue: 'HDFC Regalia ••7741',
+    disabled: true,
+  },
 };
