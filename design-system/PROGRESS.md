@@ -96,7 +96,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 41 | Skeleton | Ready for review |
 | 42 | Logo | Ready for review |
 | 43 | Divider | Ready for review |
-| 44 | Illustration | Not started |
+| 44 | Illustration | Ready for review |
 
 Removed on 2026-10-15 (merged, see Owner decisions): Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; AuthPanel → a page in Phase 3.
 
@@ -201,6 +201,18 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 3b · Illustration:
+  - Created `src/components/ds/Illustration/Illustration.tsx`: supports `variant="signin" | "signup" | "offline"` using DS tokens only:
+    - `signin`: auth desktop left panel and mobile band, with Logo, credit card, net-worth tile with sparkline, Amex bill paid tile, gold coin, points tile, headline, and trust footer. Copy hides on phone (`hidden md:flex`) and scene scales down.
+    - `signup`: setup desktop panel with Logo, statement imported progress tile, Gmail connected tile, card dining recommendation, lending reminder, and 3 numbered setup steps. Copy hides on phone.
+    - `offline`: sleeping ₹ coin under a cloud in SVG with `illus-gold`, `illus-gold-edge`, and `line-soft`.
+  - Created `src/components/ds/Illustration/Illustration.stories.tsx` under `DS/Feedback/Illustration` (`AllVariants`, `SignIn`, `SignUp`, `Offline`).
+  - Created `src/components/ds/Illustration/Illustration.test.tsx` (4 unit tests verifying all three variants and className merging).
+  - Updated `src/components/ds/EmptyState/EmptyState.tsx`: added `variant="offline"` rendering `<Illustration variant="offline" />`, and deleted internal `OfflineIllustration`. Updated `EmptyState.stories.tsx` and `EmptyState.test.tsx`.
+  - Exported `Illustration` from `src/components/ds/index.ts`.
+  - Stories compared: Illustration/AllVariants, Illustration/SignIn, Illustration/SignUp, Illustration/Offline, EmptyState/Offline against `design-system/components/Illustration/preview.html` and `EmptyState/preview.html` at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck` (passed), `npm run lint` (0 errors), `npm test -- src/components/ds/Illustration src/components/ds/EmptyState` (all 9 tests passing), `node design-system/tools/check-ui.mjs --base c8b557b` (clean). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 3b · Divider:
   - Created `src/components/ds/Divider/Divider.tsx`: supports plain 1px rule (`h-px w-full bg-line`) with `role="separator"`, and optional centered label in `ink-4` caption flanked by two 1px lines (`text-caption font-semibold font-text text-ink-4 gap-space-10`).
