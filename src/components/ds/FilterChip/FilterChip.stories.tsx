@@ -148,7 +148,7 @@ export const AllVariants: Story = {
     return (
       <div className="grid grid-cols-2 md:grid-cols-4 gap-space-16 p-space-16 max-w-2xl bg-canvas rounded-ds-lg border border-line">
         <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
+          <span className="font-text text-overline font-extrabold uppercase text-ink-4">
             Off
           </span>
           <div>
@@ -157,7 +157,7 @@ export const AllVariants: Story = {
         </div>
 
         <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
+          <span className="font-text text-overline font-extrabold uppercase text-ink-4">
             On
           </span>
           <div>
@@ -166,7 +166,7 @@ export const AllVariants: Story = {
         </div>
 
         <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
+          <span className="font-text text-overline font-extrabold uppercase text-ink-4">
             With value
           </span>
           <div>
@@ -177,7 +177,7 @@ export const AllVariants: Story = {
         </div>
 
         <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
+          <span className="font-text text-overline font-extrabold uppercase text-ink-4">
             With count
           </span>
           <div>
@@ -186,7 +186,7 @@ export const AllVariants: Story = {
         </div>
 
         <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
+          <span className="font-text text-overline font-extrabold uppercase text-ink-4">
             Removable
           </span>
           <div>
@@ -197,7 +197,7 @@ export const AllVariants: Story = {
         </div>
 
         <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
+          <span className="font-text text-overline font-extrabold uppercase text-ink-4">
             Review (on)
           </span>
           <div>
@@ -208,7 +208,7 @@ export const AllVariants: Story = {
         </div>
 
         <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
+          <span className="font-text text-overline font-extrabold uppercase text-ink-4">
             Toggle
           </span>
           <div>
@@ -217,7 +217,7 @@ export const AllVariants: Story = {
         </div>
 
         <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
+          <span className="font-text text-overline font-extrabold uppercase text-ink-4">
             More filters
           </span>
           <div>
