@@ -72,7 +72,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 16 | Select | Changes requested |
 | 17 | SearchField | Ready for review |
 | 18 | FilterChip | Changes requested |
-| 19 | Checkbox | Changes requested |
+| 19 | Checkbox | Ready for review |
 | 20 | Switch | Ready for review |
 | 21 | SegmentedControl | Ready for review |
 | 22 | DropZone | Changes requested |
@@ -216,6 +216,13 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 2 · Checkbox:
+  - Added `align-middle` and `select-none` to Checkbox to prevent baseline shift when the Indicator mounts/unmounts, keeping dimensions strictly identical across all states (16x16px with 2px border).
+  - Verified hover and pressed states (`hover:bg-hover active:bg-pressed` when off; `hover:bg-brand-hover active:bg-brand-pressed` when on).
+  - Updated `Checkbox.stories.tsx` to be interactive using `useArgs` for `checked` prop across all variant stories and interactive multi-toggle state in `AllVariants`.
+  - Stories compared and interacted with: Checkbox (AllVariants, Off, On, Mixed, Disabled) beside preview.html in light and dark at 390 and 1440. Canvas clicks toggle state and update Controls panel.
+  - Checks: typecheck (clean), lint (0 errors), vitest (all 6 tests passing), build-storybook (clean), check-ui (clean on touched files). Differences left open: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 1 · States everywhere:
   - Added `link` variant to Button (inline, font-bold body-strong, underlined, text-inherit, p-0, h-auto, ignores clicks when disabled/loading).

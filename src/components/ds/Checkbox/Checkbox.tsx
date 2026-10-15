@@ -48,7 +48,7 @@ export const Checkbox = forwardRef<
         checked={checkedState}
         onCheckedChange={handleCheckedChange}
         className={cn(
-          'peer shrink-0 inline-flex items-center justify-center w-space-16 h-space-16 rounded-ds-xs border-2 text-on-brand transition-colors',
+          'peer shrink-0 inline-flex items-center justify-center align-middle w-space-16 h-space-16 rounded-ds-xs border-2 text-on-brand transition-colors select-none',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           isActive
