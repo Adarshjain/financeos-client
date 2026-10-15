@@ -132,6 +132,13 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- **2026-10-15 · Phase 2 review (Claude):** reviewed all 39 components; report in `design-system/reviews/2026-10-15-phase2-review.md`. Verdict: 14 need real fixes, 18 small ones, 7 good as built (Badge, StatusWords, SectionBand, Kbd, Skeleton, EmptyState, DateGroupHeader). Statuses unchanged; the owner sets them.
+  - Root cause of most visual bugs: class names Tailwind does not know (it drops them silently). `check-ui.mjs` now fails on them.
+  - Contract and token changes (commit `5f30714`): `ink-4` #636b78 / #929ba7 and `warning` #a84d06 (contrast); `w-`/`min-w-control-*`, `w-chip` and `bg-ink` added. READMEs corrected: Banner `ok` is positive, SwipeActions and AppBar + are brand.
+  - Checks: typecheck, lint, test, build-storybook and check-ui self-test green.
+  - Open questions for the owner are in the report's "Decisions for you".
+  - Deviations: none.
+
 - **2026-10-15 · Phase 2 Complete (Overnight batch summary):**
   - **What was built:** All 39 Phase 2 design system components (Units 1–39) were successfully built, tested, and documented with Storybook stories matching Figma/HTML previews and screen boards:
     1. Button, 2. Badge, 3. CategoryChip, 4. StatusWords, 5. Kbd, 6. Avatar, 7. ProgressBar, 8. TextField, 9. SearchField, 10. Select, 11. Switch, 12. SegmentedControl, 13. FilterChip, 14. Tabs, 15. Menu, 16. Card, 17. ListRow, 18. SectionBand, 19. Callout, 20. Banner, 21. Toast, 22. Skeleton, 23. EmptyState, 24. Dialog, 25. Sheet, 26. ConfirmSheet, 27. AppBar, 28. TabBar, 29. Pager, 30. SelectionBar, 31. SwipeActions, 32. DateGroupHeader, 33. TransactionRow, 34. KpiTile, 35. Widget, 36. RuleCard, 37. DateTile, 38. DropZone, 39. AuthPanel.
