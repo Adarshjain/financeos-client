@@ -24,7 +24,7 @@ export const BrandMark = forwardRef<HTMLSpanElement, BrandMarkProps>(
         ref={ref}
         aria-hidden="true"
         className={cn(
-          'w-space-28 h-space-28 rounded-ds-md bg-brand text-on-brand flex items-center justify-center font-extrabold text-heading shrink-0 select-none',
+          'w-control-md h-control-md rounded-ds-md bg-brand text-on-brand flex items-center justify-center font-display font-extrabold text-heading shrink-0 select-none leading-none',
           className,
         )}
         {...props}
@@ -90,7 +90,7 @@ export const AppBar = forwardRef<HTMLElement, AppBarProps>(
           <Button
             type="button"
             variant="ghost"
-            size="sm"
+            size="md"
             iconOnly
             aria-label={backAriaLabel}
             onClick={onBack}
@@ -112,7 +112,7 @@ export const AppBar = forwardRef<HTMLElement, AppBarProps>(
 
         <div className="flex-1 min-w-0 pr-space-4">
           {crumb ? (
-            <div className="text-overline font-semibold text-ink-4 uppercase tracking-wider leading-none mb-space-2 truncate">
+            <div className="text-label font-semibold text-ink-4 leading-none mb-space-2 truncate">
               {crumb}
             </div>
           ) : null}
@@ -130,8 +130,8 @@ export const AppBar = forwardRef<HTMLElement, AppBarProps>(
             {onAsk ? (
               <Button
                 type="button"
-                variant="ghost"
-                size="sm"
+                variant="secondary"
+                size="md"
                 iconOnly
                 aria-label="Ask the data"
                 onClick={onAsk}
@@ -145,8 +145,8 @@ export const AppBar = forwardRef<HTMLElement, AppBarProps>(
             {onSearch ? (
               <Button
                 type="button"
-                variant="ghost"
-                size="sm"
+                variant="secondary"
+                size="md"
                 iconOnly
                 aria-label="Search"
                 onClick={onSearch}
@@ -158,7 +158,7 @@ export const AppBar = forwardRef<HTMLElement, AppBarProps>(
               <Button
                 type="button"
                 variant="primary"
-                size="sm"
+                size="md"
                 iconOnly
                 aria-label={addAriaLabel}
                 onClick={onAdd}
@@ -177,6 +177,7 @@ AppBar.displayName = 'AppBar';
 export interface DesktopTopBarProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   title: React.ReactNode;
+  crumb?: React.ReactNode;
   onAdd?: () => void;
   addLabel?: React.ReactNode;
   onAsk?: () => void;
@@ -191,6 +192,7 @@ export const DesktopTopBar = forwardRef<HTMLDivElement, DesktopTopBarProps>(
   (
     {
       title,
+      crumb,
       onAdd,
       addLabel,
       onAsk,
@@ -210,8 +212,18 @@ export const DesktopTopBar = forwardRef<HTMLDivElement, DesktopTopBarProps>(
         )}
         {...props}
       >
-        <div className="text-page-title font-extrabold text-ink leading-tight truncate">
-          {title}
+        <div className="flex items-center gap-space-8 min-w-0">
+          {crumb ? (
+            <>
+              <span className="text-label font-semibold text-ink-3">
+                {crumb}
+              </span>
+              <span className="text-label text-ink-4">/</span>
+            </>
+          ) : null}
+          <div className="text-title font-extrabold text-ink leading-tight truncate">
+            {title}
+          </div>
         </div>
 
         <div className="ml-auto flex items-center gap-space-8 shrink-0">
@@ -223,7 +235,7 @@ export const DesktopTopBar = forwardRef<HTMLDivElement, DesktopTopBarProps>(
                 <Button
                   type="button"
                   variant="secondary"
-                  size="sm"
+                  size="md"
                   onClick={onAdd}
                   className="gap-space-6"
                 >
@@ -239,8 +251,8 @@ export const DesktopTopBar = forwardRef<HTMLDivElement, DesktopTopBarProps>(
               {onAsk ? (
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="sm"
+                  variant="secondary"
+                  size="md"
                   iconOnly
                   aria-label="Ask the data"
                   onClick={onAsk}
@@ -255,8 +267,8 @@ export const DesktopTopBar = forwardRef<HTMLDivElement, DesktopTopBarProps>(
               {onNotifications ? (
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="sm"
+                  variant="secondary"
+                  size="md"
                   iconOnly
                   aria-label="Notifications"
                   onClick={onNotifications}
@@ -291,6 +303,7 @@ export interface DesktopRailProps extends React.HTMLAttributes<HTMLElement> {
   onNavigate?: (href: string) => void;
   onSearch?: () => void;
   userName?: string;
+  userEmail?: string;
   userInitials?: string;
   groups?: DesktopRailGroup[];
 }
@@ -305,8 +318,9 @@ export const DesktopRail = forwardRef<HTMLElement, DesktopRailProps>(
       activeHref = '/',
       onNavigate,
       onSearch,
-      userName = 'Arjun Mehta',
-      userInitials = 'AM',
+      userName,
+      userEmail,
+      userInitials,
       groups,
       className,
       ...props
@@ -355,6 +369,18 @@ export const DesktopRail = forwardRef<HTMLElement, DesktopRailProps>(
     ];
 
     const railGroups = groups ?? defaultGroups;
+
+    const derivedInitials =
+      userInitials ??
+      (userName
+        ? userName
+            .split(' ')
+            .map((p) => p[0])
+            .filter(Boolean)
+            .slice(0, 2)
+            .join('')
+            .toUpperCase()
+        : undefined);
 
     return (
       <nav
@@ -461,7 +487,12 @@ export const DesktopRail = forwardRef<HTMLElement, DesktopRailProps>(
             <span>Settings</span>
           </a>
           <div className="ml-auto">
-            <Avatar initials={userInitials} alt={userName} size="sm" />
+            <Avatar
+              variant="person"
+              initials={derivedInitials}
+              alt={userName ? `${userName}, account menu` : 'Account menu'}
+              size="sm"
+            />
           </div>
         </div>
       </nav>

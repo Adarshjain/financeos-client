@@ -85,6 +85,9 @@ const InteractiveDesktopRail: React.FC = () => {
         activeHref={active}
         onNavigate={(href) => setActive(href)}
         onSearch={() => alert('Open search palette')}
+        userName="Arjun Mehta"
+        userEmail="arjun@example.com"
+        userInitials="AM"
       />
     </div>
   );
@@ -129,6 +132,18 @@ export const AllVariants: Story = {
 
       <div>
         <h4 className="text-label font-semibold text-ink-3 mb-space-8">
+          Phone Without Crumb
+        </h4>
+        <AppBar
+          title="Settings"
+          onAsk={() => {}}
+          onSearch={() => {}}
+          onAdd={() => {}}
+        />
+      </div>
+
+      <div>
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Brand Mark
         </h4>
         <div className="flex items-center gap-space-12">
@@ -144,6 +159,7 @@ export const AllVariants: Story = {
         </h4>
         <DesktopTopBar
           title="Settings"
+          crumb="Workspace"
           onAdd={() => {}}
           onAsk={() => {}}
           onNotifications={() => {}}
