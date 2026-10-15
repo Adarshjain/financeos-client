@@ -55,7 +55,7 @@ Build in this order, one component per step. After each one, set its status to *
 | --- | --- | --- |
 | 1 | Icon | Ready for review |
 | 2 | Popover | Ready for review |
-| 3 | Dialog | Changes requested |
+| 3 | Dialog | Ready for review |
 | 4 | AppBar | Changes requested |
 | 5 | TabBar | Changes requested |
 | 6 | Rail | Not started |
@@ -165,6 +165,26 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 6 · Dialog (merge Sheet and ConfirmSheet):
+  - Created `src/components/ds/useSheetDrag.ts`: shared hook for phone bottom sheet drag handling (pointer down/move/up/cancel, threshold detection, springs back before threshold).
+  - Rebuilt `Dialog` in `src/components/ds/Dialog/Dialog.tsx`:
+    - Desktop modal: centred, `radius-xl`, `shadow-dialog`, sizes `sm` (440), `md` (640), `lg` (760), `xl` (920), × close button (`Icon` with `X` at size `md`).
+    - Phone sheet: automatically picked below phone breakpoint, top corners `radius-sheet`, drag handle (`DialogHandle`), swipe down to close via `useSheetDrag`, no × button.
+    - Side panel: `variant="side-panel"` slides in from right on desktop, renders as bottom sheet on phone.
+    - Config-driven footer via props (`primary`, `secondary`, `tertiary`): tertiary destructive action sits far left on desktop (`mr-auto`); on phone it moves to the end of the body as a full-width danger `Button` under a danger SectionHeader band.
+    - `ConfirmDialog` preset: destructive confirmation with server impact preview bullet list, checking state with loading spinner, disabled confirm button while running, and optional gentler action.
+  - Deleted `src/components/ds/Sheet/` and `src/components/ds/ConfirmSheet/` completely (components, stories, tests).
+  - Removed `Sheet` and `ConfirmSheet` exports from `src/components/ds/index.ts`, and exported `useSheetDrag`.
+  - Updated `src/components/ds/Select/Select.tsx` to point phone sheet picker path to `Dialog` (`DialogContent`, `DialogBody`).
+  - Updated `src/components/ds/Menu/Menu.tsx` to open in `Dialog` on phone when itemCount > 6.
+  - Updated `src/components/ds/Dialog/Dialog.stories.tsx`: `AllVariants` as first export, all variant stories (`DesktopSm`, `DesktopMd`, `DesktopLg`, `DesktopXl`, `PhoneSheet`, `SidePanel`, `ConfirmDialogWithPreview`, `ConfirmDialogWithGentlerOption`, `ConfirmDialogLoading`, `InteractiveModal`) with Controls.
+  - Updated `src/components/ds/Dialog/Dialog.test.tsx`: 13 tests covering desktop modal sizes, side-panel variant, phone drag gestures with `useSheetDrag`, phone tertiary placement in body, ConfirmDialog impact previews and loading state, and accessible Radix overlay. Added phone Dialog test to `Menu.test.tsx`.
+  - Files deleted: `src/components/ds/Sheet/Sheet.tsx`, `src/components/ds/Sheet/Sheet.stories.tsx`, `src/components/ds/Sheet/Sheet.test.tsx`, `src/components/ds/ConfirmSheet/ConfirmSheet.tsx`, `src/components/ds/ConfirmSheet/ConfirmSheet.stories.tsx`, `src/components/ds/ConfirmSheet/ConfirmSheet.test.tsx`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 3508 tests passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs --base c8b557b` clean for all touched files.
+  - Stories compared: `DS/Overlays/Dialog/AllVariants`, `DesktopSm`, `DesktopMd`, `DesktopLg`, `DesktopXl`, `PhoneSheet`, `SidePanel`, `ConfirmDialogWithPreview`, `ConfirmDialogWithGentlerOption`, `ConfirmDialogLoading`, `InteractiveModal` against `Dialog/preview.html` and `ds-09-overlays.dc.html` at 390px and 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 5b · FilterChip:
   - Replaced hand-drawn count badge in `src/components/ds/FilterChip/FilterChip.tsx` with `Badge` primitive (`variant="count"`).

@@ -158,4 +158,36 @@ describe('Menu', () => {
     fireEvent.keyDown(document.body, { key: 'Escape' });
     expect(screen.queryByText('Item')).not.toBeInTheDocument();
   });
+
+  it('opens in a Dialog on phone when it has more than six items', () => {
+    const handleSelect = vi.fn();
+    render(
+      <Menu
+        forcePhone
+        trigger={<button type="button">Phone Menu</button>}
+      >
+        <MenuItem onSelect={handleSelect}>Item 1</MenuItem>
+        <MenuItem>Item 2</MenuItem>
+        <MenuItem>Item 3</MenuItem>
+        <MenuItem>Item 4</MenuItem>
+        <MenuItem>Item 5</MenuItem>
+        <MenuItem>Item 6</MenuItem>
+        <MenuItem>Item 7</MenuItem>
+      </Menu>,
+    );
+
+    expect(screen.queryByText('Item 1')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Phone Menu' }));
+
+    // Opened in Dialog: check for dialog role
+    const dialog = screen.getByRole('dialog');
+    expect(dialog).toBeInTheDocument();
+    expect(screen.getByText('Item 1')).toBeInTheDocument();
+    expect(screen.getByText('Item 7')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Item 1'));
+    expect(handleSelect).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
 });
+
