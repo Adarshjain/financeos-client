@@ -89,6 +89,52 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 7. **Every state is visible.** Interactive components show hover, pressed (different from hover), keyboard focus, disabled and, where it applies, loading and selected, using the state tokens (`bg-hover`, `bg-pressed`, `brand-hover`, `brand-pressed`, `danger-hover`, `danger-pressed`). Nothing moves or changes size between states.
 8. **Server or client, on purpose.** A component that uses state, effects, refs, event handlers, Radix, Sonner or browser APIs starts with `'use client'`. A purely presentational component (Badge, Card, ListRow without handlers, SectionHeader, Banner, Skeleton…) has no directive and no hooks, so a Server Component page can render it with no client JavaScript. Never put `'use client'` in `index.ts`.
 
+## 5c. Component standards (every component, no exceptions)
+
+These are the rules a mature design system (Radix, Material, Polaris, Atlassian) follows. A component that breaks one is not done.
+
+**Responsive**
+1. **One component, one structure, one code path.** Phone and desktop are the same markup; what differs (size, position, what shows) is written with Tailwind breakpoint classes, mobile first. Never two render functions, never `renderPhone` / `renderDesktop`, never a `variant="phone" | "desktop"` prop. The page never chooses a form.
+2. **One switch: `lg` (1024px).** Below it is the phone form, from it the desktop form. Components use only `lg:` for that switch (no `sm:`, `md:`, `xl:` inside components).
+3. **No viewport detection in JavaScript** (`useMediaQuery`, `useIsPhone`, `matchMedia`, `innerWidth`). The server can't know the width, so it renders the wrong form and the page jumps. The one exception is **ResponsiveOverlay**, the single shared piece that opens a floating Popover on desktop and a bottom-sheet Dialog on phone (Select, Menu, DateField). It renders only while open, so it never causes a server/client mismatch. Nothing else may use these hooks.
+4. **Touch vs mouse is not phone vs desktop.** Long-press responds to touch input (`pointerType === 'touch'`) on any screen. The desktop checkbox column is shown with `hidden lg:flex`, not by a hook.
+
+**API**
+5. **Prop names mean one thing everywhere:**
+   - `variant` = visual style (`primary`, `secondary`…);
+   - `size` = `sm` | `md` | `lg`;
+   - `tone` = semantic colour (`neutral`, `success`, `warning`, `danger`, `info`).
+
+   No `kind`, `status`, `type`, `appearance` or `intent` for these.
+6. **State props follow Radix:**
+   - `value` / `defaultValue` / `onValueChange`;
+   - `checked` / `defaultChecked` / `onCheckedChange`;
+   - `open` / `defaultOpen` / `onOpenChange`;
+   - `selected` / `onSelectedChange`.
+
+   Every stateful component works both controlled and uncontrolled. Never `onChange` for a value, never `isOpen`.
+7. **Events are named for what the user did to the component**, not what the app does with it: `onSelect`, `onTrigger`, `onRemove`, `onOpenDetail`. Never `onApprove`, `onEditRule`, `onSetCategory`. Actions the app defines arrive as data (`actions={[{ id, label, icon, onSelect }]}`).
+8. **One name per prop.** No aliases, no "legacy" or "backwards compatible" props.
+9. **Composition:**
+   - polymorphism through `asChild`;
+   - compound parts as `Name.Part` (`Dialog.Footer`, `Card.Header`);
+   - content through slots (`trigger`, `actions`, `footer`);
+   - every component forwards its ref, spreads native props, and takes `className` for layout only.
+10. **Content comes from props** (§5b.6). **States are visible** (§5b.7). **Server or client on purpose** (§5b.8).
+
+**Proof**
+11. Each README lists **Props** (with the names above), **Variants** and **Built from**. Stories are args-driven and interactive (§5a). Tests cover behaviour.
+12. `check-ui.mjs` enforces what can be checked mechanically:
+    - viewport hooks outside ResponsiveOverlay;
+    - `phone` / `desktop` variant props;
+    - old imports;
+    - unknown classes;
+    - typed glyphs;
+    - hand-made buttons;
+    - hard-coded routes.
+
+    The rest Claude reviews in code before the owner sees it.
+
 ## 5a. Storybook
 
 1. Each component gets one story per variant in its README, named exactly as the README names it, plus an **All variants** story that shows them side by side for review. **All variants** is the first story, so it opens by default. Story titles are `DS/<Group>/<Name>`, using the README's group (Foundations, Navigation, Actions, Inputs, Data display, Feedback, Overlays). There is no Screens group: pages are not components.

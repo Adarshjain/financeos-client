@@ -8,7 +8,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | --- | --- | --- |
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
-| 2 | New component library in Storybook, one component at a time, owner-reviewed | In progress (43 components; owner feedback round 2 open) |
+| 2 | New component library in Storybook, one component at a time, owner-reviewed | In progress (44 components; owner feedback round 2 open) |
 | 3 | Pages: rebuild and swap in one page or big component at a time | Not started |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
@@ -36,6 +36,7 @@ Goal: everything the new components need, with **no visible change to the existi
    - `width` and `minWidth` also take `popover-trigger` and `menu-trigger` (the trigger width Radix exposes) for Popover `match` and Menu minimum width.
    - There is no `space-0`, `space-18`, `text-small`, `rounded-ds-circle`, `z-1` or `font-inherit`. Tailwind silently drops a class name it does not know, so it renders nothing; `check-ui.mjs` now fails on unknown classes.
    - `zIndex`: `z-sticky`, `z-dock`, `z-scrim`, `z-overlay`.
+   - Breakpoint: `lg` (1024px, Tailwind's default) is the only phone→desktop switch inside components (RULES §5c.2).
    - `transitionDuration`: `fast`, `base`, `sheet`.
 3. **Fonts.** Add Figtree (500, 600, 700, 800) and Bricolage Grotesque (600, 700, 800) as self-hosted woff2 files, loaded with `next/font/local` into `--ds-font-text` and `--ds-font-display`. Inter stays in place for the old UI.
 4. **Storybook** (approved as a new dev dependency, see Owner decisions):
@@ -96,6 +97,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 41 | Logo | Ready for review |
 | 42 | Divider | Ready for review |
 | 43 | Illustration | Changes requested |
+| 44 | ResponsiveOverlay | Not started |
 
 Removed on 2026-10-15 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; AuthPanel → a page in Phase 3.
 
@@ -202,6 +204,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - AppBar and TopBar are one TopBar.
   - Components carry no app content (RULES §5b.6).
   - Every story is interactive.
+- 2026-10-15 · **Responsive and API standards** (RULES §5c): one structure per component with CSS breakpoints at `lg`; no viewport JavaScript except the shared ResponsiveOverlay; no phone/desktop props; Radix-style prop names; events named for the component, not the app.
 - 2026-10-15 · Accessibility is out of scope: no ARIA, screen-reader or contrast work. The Storybook accessibility addon stays installed but is not a check.
 
 ## Open questions

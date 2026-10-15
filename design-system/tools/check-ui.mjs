@@ -221,6 +221,13 @@ function check(lines, all = false, classes = true) {
       (/ds-allow:/.test(text) ? allowed : errors).push(hit);
     }
     const comp = dsComponent(file);
+    if (/^src\/components\/ds\//.test(file) && !/ResponsiveOverlay|useMediaQuery\.ts$/.test(file) && !/\.(?:stories|test)\.tsx$/.test(file) &&
+        /\b(?:useMediaQuery|useIsPhone|useIsDesktop|matchMedia|innerWidth)\b/.test(text)) {
+      errors.push({ file, line, rule: 'viewport-js', why: 'viewport detected in JavaScript — use lg: breakpoint classes (only ResponsiveOverlay may, RULES §5c.3)', text: text.trim().slice(0, 160) });
+    }
+    if (comp && /['"](?:phone|desktop|mobile)['"]/.test(text) && /\b(?:variant|layout|mode|form|device)\b/.test(text)) {
+      errors.push({ file, line, rule: 'device-prop', why: 'a phone/desktop prop — one structure with lg: classes instead (RULES §5c.1)', text: text.trim().slice(0, 160) });
+    }
     if (comp && /\b(?:href|path|to)\s*[:=]\s*\{?\s*['"`]\/[a-z]/.test(text)) {
       errors.push({ file, line, rule: 'hardcoded-route', why: `${comp} hard-codes an app route — routes come from the page or app shell (RULES §5b.6)`, text: text.trim().slice(0, 160) });
     }
@@ -304,6 +311,9 @@ function selfTest() {
     ['src/app/(ds)/ds/transactions/page.tsx', "import { Card } from '@/components/ds';", 'old-import', false],
     ['src/app/(ds)/ds/transactions/page.tsx', "import { keys } from '@/lib/query';", 'old-import', false],
     ['src/components/ds/FilterChip/FilterChip.tsx', '<span>▾</span>', 'typed-glyph', true],
+    ['src/components/ds/Pager/Pager.tsx', "  variant?: 'phone' | 'desktop';", 'device-prop', true],
+    ['src/components/ds/Dialog/Dialog.tsx', 'const isPhone = useIsPhone();', 'viewport-js', true],
+    ['src/components/ds/ResponsiveOverlay/ResponsiveOverlay.tsx', 'const isPhone = useIsPhone();', 'viewport-js', false],
     ['src/components/ds/Rail/Rail.tsx', "{ id: 'inbox', label: 'Inbox', href: '/inbox' },", 'hardcoded-route', true],
     ['src/components/ds/Rail/Rail.stories.tsx', "{ id: 'inbox', label: 'Inbox', href: '/inbox' },", 'hardcoded-route', false],
     ['src/components/ds/Card/Card.tsx', '<button type="button">', 'raw-button', true],
@@ -332,7 +342,7 @@ function selfTest() {
   console.log(
     fail
       ? `self-test: ${fail} problem(s)`
-      : `self-test: ${bad.length + 7} catches, ${good.length + 8} clean lines, all correct`
+      : `self-test: ${bad.length + 9} catches, ${good.length + 9} clean lines, all correct`
   );
   process.exit(fail ? 1 : 0);
 }

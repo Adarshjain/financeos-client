@@ -16,7 +16,7 @@ Both open the same Popover with the same item rows, so they look identical. They
 - Don't put a single action in a menu; show it as a button.
 
 ## Built from
-Popover (Radix DropdownMenu), the shared item row, Icon, Dialog (phone, long menus).
+ResponsiveOverlay (popover on desktop, sheet on phone); Popover (Radix DropdownMenu), the shared item row, Icon, Dialog (phone, long menus).
 
 ## Variants
 - Actions; with icons and hints (icons only when every item has one); snooze presets with "Pick a date…"; disabled item with its reason; sectioned; switcher with a footer link.
