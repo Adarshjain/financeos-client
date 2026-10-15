@@ -253,6 +253,9 @@ const config: Config = {
         chip: 'var(--ds-chip)',
         rail: 'var(--ds-rail)',
         'swipe-action': 'var(--ds-swipe-action)',
+        // Popover/menu content sized to its trigger (CSS vars set by Radix).
+        'popover-trigger': 'var(--radix-popover-trigger-width)',
+        'menu-trigger': 'var(--radix-dropdown-menu-trigger-width)',
       },
       maxWidth: {
         'dialog-sm': 'var(--ds-dialog-sm)',
@@ -261,6 +264,8 @@ const config: Config = {
         'dialog-xl': 'var(--ds-dialog-xl)',
       },
       minWidth: {
+        'popover-trigger': 'var(--radix-popover-trigger-width)',
+        'menu-trigger': 'var(--radix-dropdown-menu-trigger-width)',
         'control-sm': 'var(--ds-control-sm)',
         'control-md': 'var(--ds-control-md)',
         'control-lg': 'var(--ds-control-lg)',
