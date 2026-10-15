@@ -144,6 +144,27 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 3 · ConfirmSheet component fixes:
+  - Fixed ConfirmSheet in `src/components/ds/ConfirmSheet/ConfirmSheet.tsx`:
+    - Inherits all Sheet fixes: swipe-down dismiss (> 80px), `px-space-16`, `max-h-dvh`, and `z-scrim`/`z-overlay`.
+    - Disabled confirm button while loading: both `loading` and `confirmLoading` props disable the confirm button and guard `handleConfirm` so duplicate clicks cannot fire. Alternative and cancel buttons are disabled while busy.
+    - Verified and enforced token typography: `text-label text-ink-3` for impact checking indicator, `text-label text-ink-2` for impact bullet list with `pl-space-16`.
+    - Responsive footer button layout: phone full-width stack with primary action on top (`order-1 sm:order-3`, `w-full sm:w-auto`), desktop inline layout (`sm:flex-row sm:items-center`) with cancel on left and confirm on right matching `preview.html`.
+  - Updated `src/components/ds/ConfirmSheet/ConfirmSheet.test.tsx`:
+    - Added tests verifying `loading` and `confirmLoading` disable the confirm button and prevent duplicate click invocations.
+    - Added test verifying swipe-down gesture (> 80px) dismisses the modal ConfirmSheet and invokes `onCancel`.
+  - Checks: `npm run typecheck`, `npm run lint`, `npm test` (all 3,463 tests passed across 421 suites), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs --staged` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `ConfirmSheet/preview.html`:
+    - `DS/Overlays/ConfirmSheet/DeleteStatement`
+    - `DS/Overlays/ConfirmSheet/DiscardEdits`
+    - `DS/Overlays/ConfirmSheet/WithAlternative`
+    - `DS/Overlays/ConfirmSheet/LoadingPreview`
+    - `DS/Overlays/ConfirmSheet/Interactive`
+    - `DS/Overlays/ConfirmSheet/All variants`
+    Verified drag handle, title/description, impact list with bullet markers, loading spinner with label text, and button layout (phone stacked with primary on top; desktop inline with cancel on left, confirm on right) match preview.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 2 · Dialog component fixes:
   - Fixed Dialog in `src/components/ds/Dialog/Dialog.tsx`:
     - Responsive mobile morphology: on screens below `sm` (phone), Dialog seamlessly renders as a bottom sheet with `SheetHandle`, no `×` button, full-width `rounded-t-ds-sheet shadow-sheet`, pinned footer with full-width action buttons, and touch/pointer swipe-down to dismiss (RULES §5.6). On desktop (`sm:`), it renders centered with `rounded-ds-xl shadow-dialog`, `×` close button, and token max-widths (`max-w-dialog-sm/md/lg/xl`).

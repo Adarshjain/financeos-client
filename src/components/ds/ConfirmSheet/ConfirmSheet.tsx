@@ -22,6 +22,7 @@ export interface ConfirmSheetShellProps
   onConfirm?: () => void;
   onCancel?: () => void;
   onAlternative?: () => void;
+  loading?: boolean;
   confirmLoading?: boolean;
   confirmDisabled?: boolean;
   isCheckingImpact?: boolean;
@@ -48,6 +49,7 @@ export const ConfirmSheetShell = forwardRef<
       onConfirm,
       onCancel,
       onAlternative,
+      loading = false,
       confirmLoading = false,
       confirmDisabled = false,
       isCheckingImpact = false,
@@ -58,6 +60,16 @@ export const ConfirmSheetShell = forwardRef<
     },
     ref,
   ) => {
+    const isBusy = Boolean(loading || confirmLoading);
+    const isConfirmDisabled = Boolean(
+      confirmDisabled || isCheckingImpact || isBusy,
+    );
+
+    const handleConfirm = () => {
+      if (isConfirmDisabled) return;
+      onConfirm?.();
+    };
+
     return (
       <SheetShell
         ref={ref}
@@ -76,7 +88,7 @@ export const ConfirmSheetShell = forwardRef<
               <span>{checkingMessage}</span>
             </div>
           ) : impact && impact.length > 0 ? (
-            <ul className="list-disc pl-space-20 space-y-space-6 text-label text-ink-2">
+            <ul className="list-disc pl-space-16 space-y-space-6 text-label text-ink-2">
               {impact.map((item, idx) => (
                 <li key={idx}>{item}</li>
               ))}
@@ -86,14 +98,15 @@ export const ConfirmSheetShell = forwardRef<
           {children}
         </SheetBody>
 
-        <SheetFooter className="flex flex-col sm:flex-row gap-space-8">
+        <SheetFooter className="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-8">
           {alternativeLabel ? (
             <Button
               type="button"
               variant="secondary"
               size="phone"
+              disabled={isBusy}
               onClick={onAlternative}
-              className="flex-1 order-2 sm:order-1"
+              className="w-full sm:w-auto flex-1 order-2 sm:order-1"
             >
               {alternativeLabel}
             </Button>
@@ -103,8 +116,9 @@ export const ConfirmSheetShell = forwardRef<
             type="button"
             variant="secondary"
             size="phone"
+            disabled={isBusy}
             onClick={onCancel}
-            className="flex-1 order-3 sm:order-2"
+            className="w-full sm:w-auto flex-1 order-3 sm:order-2"
           >
             {cancelLabel}
           </Button>
@@ -113,10 +127,10 @@ export const ConfirmSheetShell = forwardRef<
             type="button"
             variant="danger-filled"
             size="phone"
-            loading={confirmLoading}
-            disabled={confirmDisabled || isCheckingImpact}
-            onClick={onConfirm}
-            className="flex-1 order-1 sm:order-3"
+            loading={isBusy}
+            disabled={isConfirmDisabled}
+            onClick={handleConfirm}
+            className="w-full sm:w-auto flex-1 order-1 sm:order-3"
           >
             {confirmLabel}
           </Button>
@@ -152,6 +166,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
   onConfirm,
   onCancel,
   onAlternative,
+  loading = false,
   confirmLoading = false,
   confirmDisabled = false,
   isCheckingImpact = false,
@@ -160,6 +175,11 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
   className,
   ...props
 }) => {
+  const isBusy = Boolean(loading || confirmLoading);
+  const isConfirmDisabled = Boolean(
+    confirmDisabled || isCheckingImpact || isBusy,
+  );
+
   const handleCancel = () => {
     onCancel?.();
     onOpenChange?.(false);
@@ -171,6 +191,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
   };
 
   const handleConfirm = () => {
+    if (isConfirmDisabled) return;
     onConfirm?.();
   };
 
@@ -182,6 +203,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
       <SheetContent
         title={title}
         description={description}
+        onClose={handleCancel}
         className={className}
         {...props}
       >
@@ -195,7 +217,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
               <span>{checkingMessage}</span>
             </div>
           ) : impact && impact.length > 0 ? (
-            <ul className="list-disc pl-space-20 space-y-space-6 text-label text-ink-2">
+            <ul className="list-disc pl-space-16 space-y-space-6 text-label text-ink-2">
               {impact.map((item, idx) => (
                 <li key={idx}>{item}</li>
               ))}
@@ -205,14 +227,15 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
           {children}
         </SheetBody>
 
-        <SheetFooter className="flex flex-col sm:flex-row gap-space-8">
+        <SheetFooter className="flex flex-col sm:flex-row items-stretch sm:items-center gap-space-8">
           {alternativeLabel ? (
             <Button
               type="button"
               variant="secondary"
               size="phone"
+              disabled={isBusy}
               onClick={handleAlternative}
-              className="flex-1 order-2 sm:order-1"
+              className="w-full sm:w-auto flex-1 order-2 sm:order-1"
             >
               {alternativeLabel}
             </Button>
@@ -222,8 +245,9 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
             type="button"
             variant="secondary"
             size="phone"
+            disabled={isBusy}
             onClick={handleCancel}
-            className="flex-1 order-3 sm:order-2"
+            className="w-full sm:w-auto flex-1 order-3 sm:order-2"
           >
             {cancelLabel}
           </Button>
@@ -232,10 +256,10 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
             type="button"
             variant="danger-filled"
             size="phone"
-            loading={confirmLoading}
-            disabled={confirmDisabled || isCheckingImpact}
+            loading={isBusy}
+            disabled={isConfirmDisabled}
             onClick={handleConfirm}
-            className="flex-1 order-1 sm:order-3"
+            className="w-full sm:w-auto flex-1 order-1 sm:order-3"
           >
             {confirmLabel}
           </Button>

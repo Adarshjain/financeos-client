@@ -91,6 +91,45 @@ describe('ConfirmSheetShell', () => {
     const confirmButton = screen.getByRole('button', { name: 'Delete' });
     expect(confirmButton).toBeDisabled();
   });
+
+  it('disables confirm button while loading and prevents duplicate clicks', () => {
+    const handleConfirm = vi.fn();
+
+    render(
+      <ConfirmSheetShell
+        title="Delete statement"
+        confirmLabel="Delete"
+        loading
+        onConfirm={handleConfirm}
+      />,
+    );
+
+    const confirmButton = screen.getByRole('button', { name: 'Delete' });
+    expect(confirmButton).toBeDisabled();
+
+    fireEvent.click(confirmButton);
+    fireEvent.click(confirmButton);
+    expect(handleConfirm).not.toHaveBeenCalled();
+  });
+
+  it('disables confirm button and prevents clicks when confirmLoading is true', () => {
+    const handleConfirm = vi.fn();
+
+    render(
+      <ConfirmSheetShell
+        title="Delete statement"
+        confirmLabel="Delete"
+        confirmLoading
+        onConfirm={handleConfirm}
+      />,
+    );
+
+    const confirmButton = screen.getByRole('button', { name: 'Delete' });
+    expect(confirmButton).toBeDisabled();
+
+    fireEvent.click(confirmButton);
+    expect(handleConfirm).not.toHaveBeenCalled();
+  });
 });
 
 describe('ConfirmSheet Modal', () => {
@@ -112,5 +151,27 @@ describe('ConfirmSheet Modal', () => {
     ).toBeGreaterThanOrEqual(1);
     fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
     expect(handleConfirm).toHaveBeenCalledTimes(1);
+  });
+
+  it('triggers onCancel when swiped down > 80px', () => {
+    const handleCancel = vi.fn();
+    const handleOpenChange = vi.fn();
+
+    render(
+      <ConfirmSheet
+        defaultOpen
+        title="Delete statement"
+        onCancel={handleCancel}
+        onOpenChange={handleOpenChange}
+      />,
+    );
+
+    const dragArea = screen.getByTestId('sheet-drag-area');
+    fireEvent.pointerDown(dragArea, { clientY: 100 });
+    fireEvent.pointerMove(dragArea, { clientY: 210 }); // +110px > 80px
+    fireEvent.pointerUp(dragArea);
+
+    expect(handleCancel).toHaveBeenCalledTimes(1);
+    expect(handleOpenChange).toHaveBeenCalledWith(false);
   });
 });
