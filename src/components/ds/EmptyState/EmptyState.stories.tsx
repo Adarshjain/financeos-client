@@ -3,7 +3,7 @@ import React from 'react';
 
 import { Button } from '../Button/Button';
 import { Card } from '../Card/Card';
-import { EmptyState, OfflineIllustration } from './EmptyState';
+import { EmptyState } from './EmptyState';
 
 const meta: Meta<typeof EmptyState> = {
   title: 'DS/Feedback/EmptyState',
@@ -82,9 +82,7 @@ export const Offline: Story = {
   render: () => (
     <Card className="max-w-md p-0 overflow-hidden">
       <EmptyState
-        illustration={<OfflineIllustration />}
-        title="You're offline"
-        description="FinanceOS needs a connection to show your money. We'll pick up where you left off."
+        variant="offline"
         action={<Button variant="primary">Try again</Button>}
       />
     </Card>
@@ -167,9 +165,7 @@ export const AllVariants: Story = {
         </div>
         <Card className="p-0 overflow-hidden">
           <EmptyState
-            illustration={<OfflineIllustration />}
-            title="You're offline"
-            description="FinanceOS needs a connection to show your money. We'll pick up where you left off."
+            variant="offline"
             action={<Button variant="primary">Try again</Button>}
           />
         </Card>

@@ -1,10 +1,13 @@
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
+import { Illustration } from '../Illustration/Illustration';
 
 export interface EmptyStateProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
-  /** Optional illustration element (e.g. OfflineIllustration) */
+  /** Optional variant: 'default' or 'offline' (auto-provides offline illustration and copy) */
+  variant?: 'default' | 'offline';
+  /** Optional illustration element (defaults to Illustration offline if variant="offline") */
   illustration?: React.ReactNode;
   /** Primary headline (rendered in display font, screen-title style) */
   title?: React.ReactNode;
@@ -21,6 +24,7 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
     {
       children,
       className,
+      variant = 'default',
       illustration,
       title,
       description,
@@ -30,7 +34,17 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
     },
     ref,
   ) => {
-    if (compact || (!title && !illustration && !action)) {
+    const isOffline = variant === 'offline';
+    const resolvedIllustration =
+      illustration ?? (isOffline ? <Illustration variant="offline" /> : null);
+    const resolvedTitle = title ?? (isOffline ? "You're offline" : null);
+    const resolvedDescription =
+      description ??
+      (isOffline
+        ? "FinanceOS needs a connection to show your money. We'll pick up where you left off."
+        : null);
+
+    if (compact || (!resolvedTitle && !resolvedIllustration && !action)) {
       return (
         <div
           ref={ref}
@@ -40,7 +54,7 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
           )}
           {...props}
         >
-          {children ?? description}
+          {children ?? resolvedDescription}
         </div>
       );
     }
@@ -54,15 +68,17 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
         )}
         {...props}
       >
-        {illustration && <div className="mb-space-4">{illustration}</div>}
-        {title && (
+        {resolvedIllustration && (
+          <div className="mb-space-4">{resolvedIllustration}</div>
+        )}
+        {resolvedTitle && (
           <h3 className="font-display font-bold text-screen-title text-ink m-0">
-            {title}
+            {resolvedTitle}
           </h3>
         )}
-        {description && (
+        {resolvedDescription && (
           <p className="font-sans text-body text-ink-3 max-w-xs m-0">
-            {description}
+            {resolvedDescription}
           </p>
         )}
         {children}
@@ -77,46 +93,3 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
 );
 
 EmptyState.displayName = 'EmptyState';
-
-export function OfflineIllustration({ className }: { className?: string }) {
-  return (
-    <svg
-      width="84"
-      height="64"
-      viewBox="0 0 84 64"
-      aria-hidden="true"
-      className={className}
-    >
-      <ellipse cx="44" cy="22" rx="26" ry="14" fill="var(--ds-line-soft)" />
-      <circle
-        cx="40"
-        cy="44"
-        r="16"
-        fill="var(--ds-illus-gold)"
-        stroke="var(--ds-illus-gold-edge)"
-        strokeWidth="3"
-      />
-      <text
-        x="40"
-        y="50"
-        textAnchor="middle"
-        fontFamily="var(--ds-font-text),Figtree,sans-serif"
-        fontWeight="800"
-        fontSize="16"
-        fill="var(--ds-warning-ink)"
-      >
-        ₹
-      </text>
-      <text
-        x="62"
-        y="12"
-        fontFamily="var(--ds-font-text),Figtree,sans-serif"
-        fontWeight="800"
-        fontSize="11"
-        fill="var(--ds-ink-4)"
-      >
-        z z
-      </text>
-    </svg>
-  );
-}

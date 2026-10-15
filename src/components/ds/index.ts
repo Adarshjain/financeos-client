@@ -15,6 +15,7 @@ export * from './EmptyState/EmptyState';
 export * from './FilterChip/FilterChip';
 export * from './Foundations/Foundations';
 export * from './Icon/Icon';
+export * from './Illustration/Illustration';
 export * from './Kbd/Kbd';
 export * from './KpiTile/KpiTile';
 export * from './ListRow/ListRow';

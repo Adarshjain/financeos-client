@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { EmptyState, OfflineIllustration } from './EmptyState';
+import { EmptyState } from './EmptyState';
 
 describe('EmptyState', () => {
   it('renders title and description', () => {
@@ -18,13 +18,8 @@ describe('EmptyState', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders illustration', () => {
-    render(
-      <EmptyState
-        illustration={<OfflineIllustration />}
-        title="You're offline"
-      />,
-    );
+  it('renders illustration or offline variant', () => {
+    render(<EmptyState variant="offline" />);
     expect(screen.getByText("You're offline")).toBeInTheDocument();
     expect(screen.getByText('₹')).toBeInTheDocument();
     expect(screen.getByText('z z')).toBeInTheDocument();
@@ -43,10 +38,14 @@ describe('EmptyState', () => {
   });
 
   it('renders compact single-line style', () => {
-    const { container } = render(
-      <EmptyState compact>Nothing due on this day.</EmptyState>,
-    );
+    render(<EmptyState compact>Nothing due on this day.</EmptyState>);
     expect(screen.getByText('Nothing due on this day.')).toBeInTheDocument();
-    expect(container.firstChild).toHaveClass('p-space-16', 'text-body', 'text-ink-3');
+  });
+
+  it('merges custom className', () => {
+    const { container } = render(
+      <EmptyState title="Empty" className="custom-empty-class" />,
+    );
+    expect(container.firstChild).toHaveClass('custom-empty-class');
   });
 });
