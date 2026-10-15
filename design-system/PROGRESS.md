@@ -77,7 +77,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 22 | SegmentedControl | Ready for review |
 | 23 | DropZone | Changes requested |
 | 24 | Card | Changes requested |
-| 25 | ListRow | Changes requested |
+| 25 | ListRow | Ready for review |
 | 26 | SectionHeader | Ready for review |
 | 27 | TransactionRow | Changes requested |
 | 28 | RuleCard | Changes requested |
@@ -191,6 +191,18 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 11b · ListRow:
+  - Updated `ListRow` in `src/components/ds/ListRow/ListRow.tsx`:
+    - Deleted `ListRowDateTile` and `ListRowIconTile` as variants/components (leading date uses `DateTile`, leading avatar and icon tile use `Avatar`).
+    - Updated highlighted row styling to 4px brand-strong stripe on brand-tint (`border-l-4 border-l-brand-strong bg-brand-tint`) instead of an outline.
+    - Replaced raw button for kebab with `Button` (`variant="ghost"` with `Icon` `MoreVertical` at size `sm`), resolving `raw-button` error.
+    - Updated trailing chevron to use `Icon` at size `sm`.
+    - Tabular numbers on trailing amount (`tabular-nums font-bold text-body-strong`).
+  - Updated `src/components/ds/ListRow/ListRow.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`BadgeAction`, `DateTileAmount`, `AvatarCredit`, `IconTileChevron`, `Kebab`, `Highlighted`, `LabelValue`, `Disabled`) using `DateTile` and `Avatar`.
+  - Updated `src/components/ds/ListRow/ListRow.test.tsx`: 9 unit tests (removed tests for deleted `ListRowDateTile` and `ListRowIconTile`; updated highlighted styling assertions to test 4px stripe; added chevron icon test).
+  - Stories compared: BadgeAction, DateTileAmount, AvatarCredit, IconTileChevron, Kebab, Highlighted, LabelValue, Disabled against `design-system/components/ListRow/preview.html` and card screens at 390/1440 light/dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 11a · Avatar:
   - Updated `Avatar` in `src/components/ds/Avatar/Avatar.tsx`:
