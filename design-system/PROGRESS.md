@@ -144,6 +144,29 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 12) · ListRow component fixes:
+  - Fixed ListRow in `src/components/ds/ListRow/ListRow.tsx`:
+    - Updated title typography from `font-bold text-body` to `text-body-strong` (13px 700).
+    - Updated subtitle typography from `text-caption` to `text-label font-medium text-ink-3` (12px 500), matching reference `.cs`.
+    - Updated trailing amount typography from `font-bold text-body` to `text-body-strong`.
+    - Updated `ListField` value weight from regular to `font-semibold` (`font-weight: 600`), matching `.fld > span:last-child`.
+  - Updated `src/components/ds/ListRow/ListRow.test.tsx`:
+    - Updated unit tests to assert `text-body-strong` on title, `text-label` on subtitle, and `font-semibold` on `ListField` value.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/ListRow` (10 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `ListRow/preview.html` and `ds-08-data.webp`:
+    - `DS/Data display/ListRow/Basic`
+    - `DS/Data display/ListRow/WithDateTile`
+    - `DS/Data display/ListRow/WithIconTile`
+    - `DS/Data display/ListRow/Interactive`
+    - `DS/Data display/ListRow/WithKebabMenu`
+    - `DS/Data display/ListRow/Highlighted`
+    - `DS/Data display/ListRow/Disabled`
+    - `DS/Data display/ListRow/FieldsVariant`
+    - `DS/Data display/ListRow/AllVariants`
+    Verified 13px 700 title, 12px 500 subtitle, 600 weight field values, and clean row borders.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 11) · Card component fixes:
   - Fixed Card in `src/components/ds/Card/Card.tsx`:
     - Removed extra divider in empty variant: removed `border-t border-line-soft` from `CardEmpty`, aligning with `preview.html`.
