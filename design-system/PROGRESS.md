@@ -69,7 +69,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 12 | SwipeActions | Changes requested |
 | 13 | TextField | Ready for review |
 | 14 | TextArea | Ready for review |
-| 15 | DateField | Changes requested |
+| 15 | DateField | Ready for review |
 | 16 | Select | Ready for review |
 | 17 | SearchField | Ready for review |
 | 18 | FilterChip | Changes requested |
@@ -217,6 +217,15 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 6 · DateField combined range:
+  - Converted range mode to a single combined field ("01/10/2026 – 13/10/2026") with automatic separator insertion on typing and clean backspace handling. Removed `fromLabel`, `toLabel`, and two-field layout.
+  - Implemented 2-tap calendar range picking: first tap sets start, second tap sets end with `brand-tint` band in between.
+  - Responsive calendar layout: two months side-by-side on desktop (`max-w-dialog-md`), one month in Dialog on phone.
+  - Updated `DateField.stories.tsx` (single `Period` label on range stories) and added 9 comprehensive tests in `DateField.test.tsx` (combined range formatting, typing separator, two-tap calendar selection).
+  - Stories compared and interacted with: DateField (AllVariants, Default, Filled, Range, RangeWithPresets, WithError, Disabled) beside preview.html in light and dark at 390 and 1440. Range typing, separator insertion, and calendar taps all responded properly in canvas.
+  - Checks: typecheck (clean), lint (0 errors), vitest (all 9 tests passing), build-storybook (clean), check-ui (clean on touched files). Differences left open: none.
+
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 5 · TextArea (starts at control-lg, auto-grows, resizable):
   - Updated TextArea default rows to 1 (`min-h-control-lg`, starting at 36px, identical to TextField).

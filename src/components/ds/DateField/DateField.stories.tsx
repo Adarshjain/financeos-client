@@ -17,8 +17,6 @@ const meta: Meta<typeof DateField> = {
     optional: { control: 'boolean' },
     disabled: { control: 'boolean' },
     range: { control: 'boolean' },
-    fromLabel: { control: 'text' },
-    toLabel: { control: 'text' },
     defaultStartDate: { control: 'text' },
     defaultEndDate: { control: 'text' },
     minDate: { control: 'text' },
@@ -38,8 +36,7 @@ export const AllVariants: Story = {
       />
       <DateField
         range
-        fromLabel="From"
-        toLabel="To"
+        label="Period"
         defaultStartDate="01/10/2026"
         defaultEndDate="13/10/2026"
       />
@@ -74,8 +71,7 @@ export const Single: Story = {
 export const Range: Story = {
   args: {
     range: true,
-    fromLabel: 'From',
-    toLabel: 'To',
+    label: 'Period',
     defaultStartDate: '01/10/2026',
     defaultEndDate: '13/10/2026',
   },
