@@ -104,4 +104,28 @@ describe('DropZone', () => {
     expect(screen.getByText('Done')).toHaveClass('text-positive');
     expect(screen.getByText('1 warning')).toHaveClass('text-warning');
   });
+
+  it('renders 1px border on drop box (border, not border-2)', () => {
+    const { container } = render(<DropZone />);
+    const box = container.querySelector('.border-dashed');
+    expect(box).toHaveClass('border');
+    expect(box).not.toHaveClass('border-2');
+  });
+
+  it('renders error message text in drop zone box', () => {
+    render(<DropZone error="Invalid format" />);
+    expect(screen.getByText('Invalid format')).toBeInTheDocument();
+    expect(screen.getByText('Invalid format')).toHaveClass('text-danger');
+  });
+
+  it('hides drop box when showDropArea is false', () => {
+    const { container } = render(
+      <DropZone
+        showDropArea={false}
+        queuedFiles={[{ id: '1', name: 'File.pdf', size: '10 KB' }]}
+      />,
+    );
+    expect(container.querySelector('.border-dashed')).toBeNull();
+    expect(screen.getByText('File.pdf')).toBeInTheDocument();
+  });
 });

@@ -38,6 +38,12 @@ export interface DropZoneProps
   /** Callback when files are selected via picker or drop */
   onFilesSelected?: (files: File[]) => void;
 
+  /** Error message on the drop zone */
+  error?: React.ReactNode;
+
+  /** Whether to show the drop zone upload area box (default: true) */
+  showDropArea?: boolean;
+
   /** Staged / queued files */
   queuedFiles?: QueuedFile[];
   /** Callback when remove trash button is clicked for a queued file */
@@ -58,6 +64,8 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
       isDragging,
       accept = '.pdf,.xlsx,.xls',
       onFilesSelected,
+      error,
+      showDropArea = true,
       queuedFiles,
       onRemoveFile,
       recentImports,
@@ -70,6 +78,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
     const [isDragOver, setIsDragOver] = useState(false);
 
     const activeDragging = isDragging ?? isDragOver;
+    const hasError = Boolean(error);
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
@@ -117,36 +126,52 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
         />
 
         {/* Drop zone box */}
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={cn(
-            'border-2 border-dashed rounded-ds-xl px-space-16 py-space-20 flex flex-col items-center text-center gap-space-6 select-none transition-colors duration-fast',
-            activeDragging
-              ? 'border-brand bg-brand-tint'
-              : 'border-line-handle bg-sunken',
-          )}
-        >
-          <div className="w-control-xl h-control-xl rounded-ds-lg bg-brand-tint text-brand flex items-center justify-center shrink-0">
-            <Upload className="w-space-20 h-space-20" aria-hidden="true" />
-          </div>
-
-          <div>
-            <b className="block text-heading font-extrabold text-ink">
-              {activeDragging ? dragTitle : title}
-            </b>
-            <div className="text-label font-medium text-ink-3 mt-space-2">
-              {activeDragging && dragHint ? dragHint : hint}
+        {showDropArea ? (
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={cn(
+              'border border-dashed rounded-ds-xl px-space-16 py-space-20 flex flex-col items-center text-center gap-space-6 select-none transition-colors duration-fast',
+              activeDragging
+                ? 'border-brand bg-brand-tint'
+                : hasError
+                  ? 'border-danger bg-danger-tint'
+                  : 'border-line-handle bg-sunken',
+            )}
+          >
+            <div
+              className={cn(
+                'w-control-xl h-control-xl rounded-ds-lg flex items-center justify-center shrink-0',
+                hasError
+                  ? 'bg-surface text-danger'
+                  : 'bg-brand-tint text-brand',
+              )}
+            >
+              <Upload className="w-space-20 h-space-20" aria-hidden="true" />
             </div>
-          </div>
 
-          {!activeDragging && (
-            <Button size="sm" variant="primary" onClick={handleChooseFiles}>
-              {buttonLabel}
-            </Button>
-          )}
-        </div>
+            <div>
+              <b className="block text-heading font-extrabold text-ink">
+                {activeDragging ? dragTitle : title}
+              </b>
+              <div className="text-label font-medium text-ink-3 mt-space-2">
+                {activeDragging && dragHint ? dragHint : hint}
+              </div>
+              {hasError ? (
+                <div className="text-caption font-bold text-danger mt-space-4">
+                  {error}
+                </div>
+              ) : null}
+            </div>
+
+            {!activeDragging && (
+              <Button size="sm" variant="primary" onClick={handleChooseFiles}>
+                {buttonLabel}
+              </Button>
+            )}
+          </div>
+        ) : null}
 
         {/* Queued files */}
         {queuedFiles && queuedFiles.length > 0 && (

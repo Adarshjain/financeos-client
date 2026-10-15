@@ -144,6 +144,29 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 5) · DropZone component fixes:
+  - Fixed DropZone in `src/components/ds/DropZone/DropZone.tsx`:
+    - Updated border: changed dashed border from `border-2 border-dashed` to 1px `border border-dashed` per owner decision (2026-10-15).
+    - Added `showDropArea?: boolean` (defaults to `true`): allows hiding the drop box when displaying only queued files or recent imports, preventing stories from re-rendering the idle zone.
+    - Added `error?: React.ReactNode`: displays error message text inside the drop box (`text-caption font-bold text-danger`) with `border-danger bg-danger-tint` styling instead of color only.
+  - Updated `src/components/ds/DropZone/DropZone.stories.tsx`:
+    - Set `showDropArea: false` on `Queued` and `TooLarge` stories and in `AllVariants` so queued variants render file cards directly matching `preview.html`.
+    - Added `WithDropError` story to demonstrate drop zone error state with message text.
+  - Updated `src/components/ds/DropZone/DropZone.test.tsx`:
+    - Added unit tests for 1px border (`border`, not `border-2`), drop zone error message text rendering, and `showDropArea={false}` hiding the drop box.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,497 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `DropZone/preview.html` and `ds-07-inputs.webp` board:
+    - `DS/Inputs/DropZone/Idle`
+    - `DS/Inputs/DropZone/DraggingOver`
+    - `DS/Inputs/DropZone/Queued`
+    - `DS/Inputs/DropZone/TooLarge`
+    - `DS/Inputs/DropZone/WithDropError`
+    - `DS/Inputs/DropZone/WithRecentImports`
+    - `DS/Inputs/DropZone/AllVariants`
+    Verified 1px dashed border, error message text rendering, and queued file lists without duplicate idle zones.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 4) · SegmentedControl component fixes:
   - Fixed SegmentedControl in `src/components/ds/SegmentedControl/SegmentedControl.tsx`:
     - Removed dead `size` prop: eliminated unused `size?: 'md'` from `SegmentedControlProps`.
