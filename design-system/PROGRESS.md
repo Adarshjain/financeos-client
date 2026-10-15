@@ -90,7 +90,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 35 | DateTile | Ready for review |
 | 36 | Avatar | Changes requested |
 | 37 | Kbd | Ready for review |
-| 38 | Banner | Changes requested |
+| 38 | Banner | Ready for review |
 | 39 | Toast | Changes requested |
 | 40 | EmptyState | Ready for review |
 | 41 | Skeleton | Ready for review |
@@ -165,6 +165,20 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 7a · Banner:
+  - Rebuilt `Banner` in `src/components/ds/Banner/Banner.tsx` supporting tones `danger`, `success`, `warning`, `info`, and `neutral`.
+  - Added optional bold lead-in `title` slot and trailing `action` slot.
+  - Exported `bannerToneStyles` for reuse in `Toast`.
+  - Absorbed Callout's `callout` (= warning) and `note` (= neutral) variants, with backwards compatibility mapping for legacy aliases.
+  - Deleted `src/components/ds/Callout/` (with `Note`), removing its export from `src/components/ds/index.ts`.
+  - Updated `src/components/ds/Banner/Banner.stories.tsx`: `AllVariants` as first export, stories for all 5 tones (`Danger`, `Success`, `Warning`, `Info`, `Neutral`) and `WithAction` driven by args Controls.
+  - Updated `src/components/ds/Banner/Banner.test.tsx`: 8 unit tests covering all 5 tones, semantic roles (alert for danger, status for others), legacy aliases, title, and action.
+  - Files deleted: `src/components/ds/Callout/Callout.tsx`, `src/components/ds/Callout/Callout.stories.tsx`, `src/components/ds/Callout/Callout.test.tsx`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/Banner` (8 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Stories compared: `DS/Feedback/Banner/AllVariants`, `Danger`, `Success`, `Warning`, `Info`, `Neutral`, `WithAction` against `Banner/preview.html` and `ds-10-feedback.dc.html` at 390px and 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 6 · Dialog (merge Sheet and ConfirmSheet):
   - Created `src/components/ds/useSheetDrag.ts`: shared hook for phone bottom sheet drag handling (pointer down/move/up/cancel, threshold detection, springs back before threshold).
