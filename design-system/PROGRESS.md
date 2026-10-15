@@ -79,7 +79,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 24 | Card | Changes requested |
 | 25 | ListRow | Ready for review |
 | 26 | SectionHeader | Ready for review |
-| 27 | TransactionRow | Changes requested |
+| 27 | TransactionRow | Ready for review |
 | 28 | RuleCard | Changes requested |
 | 29 | KpiTile | Changes requested |
 | 30 | Widget | Changes requested |
@@ -191,6 +191,20 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 13a · TransactionRow:
+  - Updated `TransactionRow` in `src/components/ds/TransactionRow/TransactionRow.tsx`:
+    - Replaced raw desktop `<input type="checkbox">` with DS `Checkbox` primitive.
+    - Uses `StatusWord` for review reason, link indicators, and provenance tags.
+    - Uses `Button` ghost iconOnly with `Icon` `Eye` (`w-control-md h-control-md`) for detail action in selection mode, eliminating raw-button violation.
+    - Chevron uses `Icon` `ChevronRight` at `sm` (16px), supports optional `leading` prop (for `Avatar`).
+    - Integrated optional `SwipeActions` wrapping when swiping callbacks (`onSwipeLeft` / `onSwipeRight` or `swipeLeft` / `swipeRight`) are passed.
+    - Amounts formatted with tabular numbers (`tabular-nums font-bold text-heading`).
+    - 4px stripe for selected and monitored states (`border-l-4`).
+  - Updated `src/components/ds/TransactionRow/TransactionRow.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`Debit`, `Credit`, `Selected`, `Monitored`, `Excluded`, `SelectionMode`, `WithAvatar`, `WithChevron`, `Swipeable`) with controls.
+  - Updated `src/components/ds/TransactionRow/TransactionRow.test.tsx`: 16 unit tests covering rendering, credit amounts, review reasons, categories, desktop selection, touch gestures, eye trigger, leading and chevron.
+  - Stories compared: AllVariants, Debit, Credit, Selected, Monitored, Excluded, SelectionMode against `design-system/components/TransactionRow/preview.html` and transaction screens at 390 and 1440, in light and dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 12 · SwipeActions:
   - Created shared `useSwipe` hook in `src/components/ds/useSwipe.ts` (and exported from `src/components/ds/index.ts`):
