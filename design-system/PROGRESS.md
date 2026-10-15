@@ -144,6 +144,33 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 8 (part 2) · RuleCard component fixes:
+  - Fixed RuleCard in `src/components/ds/RuleCard/RuleCard.tsx`:
+    - Selection API (RULES §7.4): added `selectable`, `selected`, `onSelectedChange`, `onDetail` (with `onViewDetail` alias).
+    - Phone long-press: ~450ms timer starts selection (`onSelectedChange?.(true)`), cancelled if pointer moves >10px or pointer cancels/ends early.
+    - Tap toggle: tapping the card toggles selection when `selectable`, `selected`, or in selection mode.
+    - Trailing eye control: button with `Eye` icon opens detail (`onDetail?.()`) without leaving selection mode; `e.stopPropagation()` prevents card click/toggle.
+    - Desktop checkbox: uses `useIsPhone()` to display semantic checkbox on desktop (`!isPhone`) on the left of the card header, toggling selection directly without long-press.
+    - Accessibility: interactive card renders `role="row"`, `aria-selected`, `tabIndex=0`, and keyboard support (Enter/Space toggles selection).
+    - Responsive layout: added `w-full min-w-0` to card container and flex children to prevent horizontal overflow on phone viewports.
+  - Updated `src/components/ds/RuleCard/RuleCard.stories.tsx`:
+    - `AllVariants` story updated with `grid-cols-1 sm:grid-cols-2 gap-space-12 w-full max-w-xl`.
+    - Added `SelectableInteractive` story demonstrating interactive selection toggle, desktop checkbox, and eye control callback.
+  - Updated `src/components/ds/RuleCard/RuleCard.test.tsx`:
+    - 12 unit tests covering title, active status badge, conditions, action chips, unverified amber review styling, selection mode eye button, desktop checkbox, selection click toggle, keyboard Enter/Space toggle, mobile long-press selection, move >10px cancel, and eye control stop propagation.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,478 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs --staged` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `RuleCard/preview.html` and boards:
+    - `DS/Data display/RuleCard/ActiveRule`
+    - `DS/Data display/RuleCard/UnverifiedRule`
+    - `DS/Data display/RuleCard/ComplexConditions`
+    - `DS/Data display/RuleCard/DisabledRule`
+    - `DS/Data display/RuleCard/SelectionMode`
+    - `DS/Data display/RuleCard/AllVariants`
+    - `DS/Data display/RuleCard/SelectableInteractive`
+    Verified card layout at 390px and 1440px, desktop checkbox placement, phone long-press selection, eye control button, and light/dark theme tokens.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 8 (part 1) · TransactionRow component fixes:
   - Fixed TransactionRow in `src/components/ds/TransactionRow/TransactionRow.tsx`:
     - Selection API (RULES §7.4): added `selectable`, `selected`, `onSelectedChange`, `onDetail` (with `onViewDetail` alias).
