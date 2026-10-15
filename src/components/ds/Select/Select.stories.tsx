@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { useArgs } from 'storybook/preview-api';
 
 import { Avatar } from '../Avatar/Avatar';
 import { FilterChip } from '../FilterChip/FilterChip';
@@ -138,6 +139,16 @@ const meta: Meta<typeof Select> = {
   },
   parameters: {
     layout: 'padded',
+  },
+  render: function Render(args) {
+    const [{ value }, updateArgs] = useArgs();
+    return (
+      <Select
+        {...args}
+        value={value ?? args.defaultValue}
+        onChange={(val) => updateArgs({ value: val })}
+      />
+    );
   },
 };
 

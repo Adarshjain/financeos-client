@@ -11,13 +11,14 @@ import { Button } from '../Button/Button';
 import { CategoryChip } from '../CategoryChip/CategoryChip';
 import { Checkbox } from '../Checkbox/Checkbox';
 import { cn } from '../cn';
-import { Dialog, DialogBody, DialogContent } from '../Dialog/Dialog';
 import { FieldFrame } from '../FieldFrame';
 import { Icon } from '../Icon/Icon';
 import { getItemRowClass } from '../itemRow';
-import { PopoverContent, PopoverRoot, PopoverTrigger } from '../Popover/Popover';
+import {
+  ResponsiveOverlay,
+  useResponsiveOverlay,
+} from '../ResponsiveOverlay/ResponsiveOverlay';
 import { SearchField } from '../SearchField/SearchField';
-import { useIsPhone } from '../useMediaQuery';
 
 export interface SelectOption {
   value: string;
@@ -82,10 +83,12 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       showRadio = false,
       className,
       emptyText,
-      isSheet = false,
+      isSheet: explicitIsSheet,
     },
     ref,
   ) => {
+    const { isSheet: overlayIsSheet } = useResponsiveOverlay();
+    const isSheet = explicitIsSheet ?? overlayIsSheet;
     const generatedId = useId();
     const id = explicitId || generatedId;
     const listboxId = `${id}-listbox`;
@@ -534,9 +537,6 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       onOpenChange?.(nextOpen);
     };
 
-    const isPhone = useIsPhone();
-    const showSheet = forceSheet ?? isPhone;
-
     // Flatten all options to find labels/icons
     const allOptions = useMemo(() => {
       if (groups) {
@@ -721,78 +721,37 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
         error={error}
         className={cn(trigger ? 'inline-block' : 'w-full', className)}
       >
-        {showSheet ? (
-          <>
-            <div
-              onClick={() => {
-                if (!isLockedOrDisabled) setOpen(!isOpen);
-              }}
-              className={trigger ? 'inline-block' : 'w-full'}
-            >
-              {effectiveTrigger}
-            </div>
-            <Dialog open={isOpen} onOpenChange={setOpen}>
-              <DialogContent
-                title={label || placeholder || 'Select'}
-                onClose={() => setOpen(false)}
-                className="max-h-dvh"
-              >
-                <DialogBody className="p-0">
-                  <SelectMenu
-                    id={id}
-                    options={options}
-                    groups={groups}
-                    value={currentValue}
-                    multiple={multiple}
-                    searchable={searchable}
-                    searchPlaceholder={searchPlaceholder}
-                    searchValue={searchValue}
-                    onSearchChange={onSearchChange}
-                    onSelect={handleSelect}
-                    onClear={handleClear}
-                    onDone={handleDone}
-                    onClose={() => setOpen(false)}
-                    onCreate={onCreate}
-                    createLabel={createLabel}
-                    actionRow={actionRow}
-                    onActionClick={onActionClick}
-                    showRadio={showRadio}
-                    emptyText={emptyText}
-                    isSheet
-                    className={menuClassName}
-                  />
-                </DialogBody>
-              </DialogContent>
-            </Dialog>
-          </>
-        ) : (
-          <PopoverRoot open={isOpen} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>{effectiveTrigger}</PopoverTrigger>
-            <PopoverContent className={menuClassName}>
-              <SelectMenu
-                id={id}
-                options={options}
-                groups={groups}
-                value={currentValue}
-                multiple={multiple}
-                searchable={searchable}
-                searchPlaceholder={searchPlaceholder}
-                searchValue={searchValue}
-                onSearchChange={onSearchChange}
-                onSelect={handleSelect}
-                onClear={handleClear}
-                onDone={handleDone}
-                onClose={() => setOpen(false)}
-                onCreate={onCreate}
-                createLabel={createLabel}
-                actionRow={actionRow}
-                onActionClick={onActionClick}
-                showRadio={showRadio}
-                emptyText={emptyText}
-              />
-            </PopoverContent>
-          </PopoverRoot>
-        )}
+        <ResponsiveOverlay
+          open={isOpen}
+          onOpenChange={setOpen}
+          trigger={effectiveTrigger}
+          title={label || placeholder || 'Select'}
+          popoverContentClassName={menuClassName}
+          forcePopover={forceSheet === false}
+        >
+          <SelectMenu
+            id={id}
+            options={options}
+            groups={groups}
+            value={currentValue}
+            multiple={multiple}
+            searchable={searchable}
+            searchPlaceholder={searchPlaceholder}
+            searchValue={searchValue}
+            onSearchChange={onSearchChange}
+            onSelect={handleSelect}
+            onClear={handleClear}
+            onDone={handleDone}
+            onClose={() => setOpen(false)}
+            onCreate={onCreate}
+            createLabel={createLabel}
+            actionRow={actionRow}
+            onActionClick={onActionClick}
+            showRadio={showRadio}
+            emptyText={emptyText}
+            className={menuClassName}
+          />
+        </ResponsiveOverlay>
       </FieldFrame>
     );
   },

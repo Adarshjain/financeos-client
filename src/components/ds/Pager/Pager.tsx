@@ -6,7 +6,6 @@ import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import { Select } from '../Select/Select';
-import { useIsPhone } from '../useMediaQuery';
 
 export interface PagerProps
   extends Omit<React.HTMLAttributes<HTMLElement>, 'onChange'> {
@@ -18,24 +17,23 @@ export interface PagerProps
   onPageChange: (page: number) => void;
   onSizeChange?: (size: number) => void;
   sizeOptions?: number[];
-  variant?: 'desktop' | 'phone' | 'auto';
   borderPosition?: 'top' | 'bottom' | 'none';
 }
 
 export function getPageNumbers(
   currentPage: number, // 0-based
   totalPages: number,
-  isPhone: boolean,
+  compact: boolean,
 ): (number | 'ellipsis')[] {
   if (totalPages <= 1) return [];
 
-  // Indices to include: desktop keeps first, current ± 1, last; phone drops current neighbours
+  // Indices to include: full view keeps first, current ± 1, last; compact view drops current neighbours
   const targets = new Set<number>();
   targets.add(0);
   targets.add(totalPages - 1);
   targets.add(currentPage);
 
-  if (!isPhone) {
+  if (!compact) {
     if (currentPage > 0) targets.add(currentPage - 1);
     if (currentPage < totalPages - 1) targets.add(currentPage + 1);
   }
@@ -63,6 +61,7 @@ export function getPageNumbers(
  * Pager: pagination for lists that outgrow one page.
  * Sits above and below the list in table cards or card grids.
  * Server-side paging only. Single page shows count and page size only, no arrows.
+ * Uses lg: CSS breakpoint classes to switch between compact mobile and desktop layouts.
  */
 export const Pager = forwardRef<HTMLElement, PagerProps>(
   (
@@ -75,7 +74,6 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
       onPageChange,
       onSizeChange,
       sizeOptions = [25, 50, 100],
-      variant = 'auto',
       borderPosition = 'top',
       className,
       ...props
@@ -89,10 +87,6 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
     const start = totalElements === 0 ? 0 : page * size + 1;
     const end = Math.min((page + 1) * size, totalElements);
 
-    const isPhoneDevice = useIsPhone();
-    const isPhone = variant === 'phone' || (variant === 'auto' && isPhoneDevice);
-    const isDesktop = variant === 'desktop' || (variant === 'auto' && !isPhoneDevice);
-
     // Unit pluralization
     const formattedUnit = unit.endsWith('s') || unit.includes(' ')
       ? unit
@@ -100,7 +94,43 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
         ? unit
         : `${unit}s`;
 
-    const pageItems = getPageNumbers(page, totalPages, isPhone);
+    const compactItems = getPageNumbers(page, totalPages, true);
+    const fullItems = getPageNumbers(page, totalPages, false);
+
+    const renderPageButtons = (items: (number | 'ellipsis')[]) =>
+      items.map((item, idx) => {
+        if (item === 'ellipsis') {
+          return (
+            <span
+              key={`gap-${idx}`}
+              aria-hidden="true"
+              className="w-space-16 text-center text-ink-faint text-label select-none"
+            >
+              …
+            </span>
+          );
+        }
+
+        const isActive = page === item;
+        const pageNumber = item + 1; // 1-based display
+
+        return (
+          <Button
+            key={item}
+            variant={isActive ? 'primary' : 'ghost'}
+            size="md"
+            aria-label={`Page ${pageNumber}`}
+            aria-current={isActive ? 'page' : undefined}
+            onClick={() => onPageChange(item)}
+            className={cn(
+              'min-w-control-md h-control-md px-space-6 rounded-ds-md tabular-nums font-semibold',
+              isActive ? 'font-bold' : 'text-ink-2',
+            )}
+          >
+            {pageNumber}
+          </Button>
+        );
+      });
 
     return (
       <nav
@@ -119,58 +149,44 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
             {totalElements === 0 ? '0' : `${start}–${end}`}
           </span>
           <span>of {totalElements}</span>
-          {!isPhone && (
-            <span
-              className={cn(
-                isDesktop ? 'inline' : 'hidden sm:inline',
-                'pg-unit',
-              )}
-            >
-              {formattedUnit}
-            </span>
-          )}
+          <span className="hidden lg:inline pg-unit">
+            {formattedUnit}
+          </span>
         </div>
 
         <div className="flex items-center gap-space-4 ml-auto pg-r">
-          {!isPhone && (
-            <div
-              className={cn(
-                isDesktop ? 'inline-flex' : 'hidden sm:inline-flex',
-                'items-center',
-              )}
-            >
-              {onSizeChange ? (
-                <Select
-                  options={sizeOptions.map((opt) => ({
-                    value: String(opt),
-                    label: `${opt} / page`,
-                  }))}
-                  value={String(size)}
-                  onChange={(val) => {
-                    if (typeof val === 'string') {
-                      onSizeChange(Number(val));
-                    }
-                  }}
-                  trigger={
-                    <Button
-                      variant="secondary"
-                      size="md"
-                      aria-label="Rows per page"
-                      className="gap-space-6 h-control-md px-space-10 text-label font-semibold text-ink-2 mr-space-6 bg-surface"
-                    >
-                      <span>{size} / page</span>
-                      <Icon name="chevron-down" size="sm" className="text-ink-4 shrink-0" />
-                    </Button>
+          <div className="hidden lg:inline-flex items-center">
+            {onSizeChange ? (
+              <Select
+                options={sizeOptions.map((opt) => ({
+                  value: String(opt),
+                  label: `${opt} / page`,
+                }))}
+                value={String(size)}
+                onChange={(val) => {
+                  if (typeof val === 'string') {
+                    onSizeChange(Number(val));
                   }
-                  menuClassName="min-w-fit"
-                />
-              ) : (
-                <span className="inline-flex items-center gap-space-6 h-control-md px-space-10 border border-line-strong rounded-ds-md text-label font-semibold text-ink-2 mr-space-6 bg-surface">
-                  {size} / page
-                </span>
-              )}
-            </div>
-          )}
+                }}
+                trigger={
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    aria-label="Rows per page"
+                    className="gap-space-6 h-control-md px-space-10 text-label font-semibold text-ink-2 mr-space-6 bg-surface"
+                  >
+                    <span>{size} / page</span>
+                    <Icon name="chevron-down" size="sm" className="text-ink-4 shrink-0" />
+                  </Button>
+                }
+                menuClassName="min-w-fit"
+              />
+            ) : (
+              <span className="inline-flex items-center gap-space-6 h-control-md px-space-10 border border-line-strong rounded-ds-md text-label font-semibold text-ink-2 mr-space-6 bg-surface">
+                {size} / page
+              </span>
+            )}
+          </div>
 
           {!isSinglePage && (
             <>
@@ -186,39 +202,12 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                 <Icon name="chevron-left" size="md" />
               </Button>
 
-              {pageItems.map((item, idx) => {
-                if (item === 'ellipsis') {
-                  return (
-                    <span
-                      key={`gap-${idx}`}
-                      aria-hidden="true"
-                      className="w-space-16 text-center text-ink-faint text-label select-none"
-                    >
-                      …
-                    </span>
-                  );
-                }
-
-                const isActive = page === item;
-                const pageNumber = item + 1; // 1-based display
-
-                return (
-                  <Button
-                    key={item}
-                    variant={isActive ? 'primary' : 'ghost'}
-                    size="md"
-                    aria-label={`Page ${pageNumber}`}
-                    aria-current={isActive ? 'page' : undefined}
-                    onClick={() => onPageChange(item)}
-                    className={cn(
-                      'min-w-control-md h-control-md px-space-6 rounded-ds-md tabular-nums font-semibold',
-                      isActive ? 'font-bold' : 'text-ink-2',
-                    )}
-                  >
-                    {pageNumber}
-                  </Button>
-                );
-              })}
+              <div className="flex lg:hidden items-center gap-space-4">
+                {renderPageButtons(compactItems)}
+              </div>
+              <div className="hidden lg:flex items-center gap-space-4">
+                {renderPageButtons(fullItems)}
+              </div>
 
               <Button
                 variant="secondary"
@@ -238,4 +227,5 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
     );
   },
 );
+
 Pager.displayName = 'Pager';

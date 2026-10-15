@@ -71,7 +71,7 @@ describe('Pager', () => {
       />,
     );
 
-    const activePageBtn = screen.getByRole('button', { name: /Page 2/i });
+    const activePageBtn = screen.getAllByRole('button', { name: /Page 2/i })[0];
     expect(activePageBtn).toHaveAttribute('aria-current', 'page');
   });
 
@@ -126,7 +126,7 @@ describe('Pager', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
     expect(handlePageChange).toHaveBeenCalledWith(1);
 
-    fireEvent.click(screen.getByRole('button', { name: /Page 4/i }));
+    fireEvent.click(screen.getAllByRole('button', { name: /Page 4/i })[0]);
     expect(handlePageChange).toHaveBeenCalledWith(3);
   });
 
@@ -173,10 +173,9 @@ describe('Pager', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('hides unit in phone variant', () => {
+  it('applies responsive hidden classes to unit on mobile viewports', () => {
     render(
       <Pager
-        variant="phone"
         page={0}
         size={50}
         totalElements={182}
@@ -188,9 +187,6 @@ describe('Pager', () => {
 
     expect(screen.getByText('1–50')).toBeInTheDocument();
     expect(screen.getByText('of 182')).toBeInTheDocument();
-    expect(screen.queryByText('transactions')).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole('button', { name: 'Rows per page' }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByText('transactions')).toHaveClass('hidden', 'lg:inline');
   });
 });

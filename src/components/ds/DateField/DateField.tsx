@@ -5,11 +5,9 @@ import React, { forwardRef, useId, useRef, useState } from 'react';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { MonthCalendar } from '../DateTile/DateTile';
-import { Dialog, DialogBody, DialogContent } from '../Dialog/Dialog';
 import { FieldFrame } from '../FieldFrame';
 import { Icon } from '../Icon/Icon';
-import { PopoverContent, PopoverRoot, PopoverTrigger } from '../Popover/Popover';
-import { useIsPhone } from '../useMediaQuery';
+import { ResponsiveOverlay } from '../ResponsiveOverlay/ResponsiveOverlay';
 
 export interface DateFieldProps {
   id?: string;
@@ -142,7 +140,6 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     const generatedId = useId();
     const id = explicitId ?? generatedId;
     const helperId = `${id}-helper`;
-    const isPhone = useIsPhone();
 
     const [isOpen, setOpen] = useState(false);
 
@@ -305,22 +302,22 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       setViewMonth(m);
     };
 
-    // Calendar content: two months side by side on desktop in range mode, one month otherwise
-    const calendarContent =
-      range && !isPhone ? (
-        <div className="flex flex-col bg-surface">
-          <div className="flex flex-row divide-x divide-line-soft">
-            <MonthCalendar
-              mode="picker"
-              year={viewYear}
-              month={viewMonth}
-              onMonthChange={handleMonthChange}
-              startDate={currentStart}
-              endDate={currentEnd}
-              minDate={minDate}
-              maxDate={maxDate}
-              onSelectDate={handleSelectDateFromCalendar}
-            />
+    // Calendar content: two months side by side on desktop in range mode, one month on phone or in single mode
+    const calendarContent = range ? (
+      <div className="flex flex-col bg-surface">
+        <div className="flex flex-row divide-x divide-line-soft">
+          <MonthCalendar
+            mode="picker"
+            year={viewYear}
+            month={viewMonth}
+            onMonthChange={handleMonthChange}
+            startDate={currentStart}
+            endDate={currentEnd}
+            minDate={minDate}
+            maxDate={maxDate}
+            onSelectDate={handleSelectDateFromCalendar}
+          />
+          <div className="hidden lg:block">
             <MonthCalendar
               mode="picker"
               year={nextMonthYear}
@@ -342,40 +339,39 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
               onSelectDate={handleSelectDateFromCalendar}
             />
           </div>
-          <div className="flex items-center justify-between p-space-8 border-t border-line-soft">
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={handleToday}
-            >
-              Today
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleClear}
-              className="ml-auto text-ink-3 hover:text-ink"
-            >
-              Clear
-            </Button>
-          </div>
         </div>
-      ) : (
-        <MonthCalendar
-          mode="picker"
-          selectedDate={!range ? currentValue : undefined}
-          startDate={range ? currentStart : undefined}
-          endDate={range ? currentEnd : undefined}
-          minDate={minDate}
-          maxDate={maxDate}
-          onSelectDate={handleSelectDateFromCalendar}
-          showFooter
-          onToday={handleToday}
-          onClear={handleClear}
-        />
-      );
+        <div className="flex items-center justify-between p-space-8 border-t border-line-soft">
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={handleToday}
+          >
+            Today
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleClear}
+            className="ml-auto text-ink-3 hover:text-ink"
+          >
+            Clear
+          </Button>
+        </div>
+      </div>
+    ) : (
+      <MonthCalendar
+        mode="picker"
+        selectedDate={currentValue}
+        minDate={minDate}
+        maxDate={maxDate}
+        onSelectDate={handleSelectDateFromCalendar}
+        showFooter
+        onToday={handleToday}
+        onClear={handleClear}
+      />
+    );
 
     const triggerButton = (
       <Button
@@ -406,71 +402,55 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         error={error}
         className={className}
       >
-        <PopoverRoot open={isOpen} onOpenChange={setOpen}>
-          <div
+        <div
+          className={cn(
+            'flex items-center gap-space-8 h-control-lg w-full px-space-12 border rounded-ds-md bg-surface font-text font-medium text-body text-ink',
+            'transition-colors duration-fast focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
+            hasError
+              ? 'border-danger focus-within:ring-danger'
+              : 'border-line-strong focus-within:border-brand',
+            disabled &&
+              'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
+          )}
+        >
+          <input
+            ref={ref}
+            id={id}
+            type="text"
+            inputMode="numeric"
+            disabled={disabled}
+            placeholder={range ? 'dd/mm/yyyy – dd/mm/yyyy' : placeholder}
+            value={range ? displayRange : currentValue}
+            onChange={range ? handleRangeInputChange : handleSingleInputChange}
+            aria-invalid={hasError ? 'true' : undefined}
+            aria-describedby={hasError || helper ? helperId : undefined}
             className={cn(
-              'flex items-center gap-space-8 h-control-lg w-full px-space-12 border rounded-ds-md bg-surface font-text font-medium text-body text-ink',
-              'transition-colors duration-fast focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
-              hasError
-                ? 'border-danger focus-within:ring-danger'
-                : 'border-line-strong focus-within:border-brand',
-              disabled &&
-                'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
+              'w-full h-full bg-transparent border-0 p-0 text-body text-ink placeholder:text-ink-4 focus:outline-none focus:ring-0',
+              disabled && 'cursor-not-allowed text-ink-faint',
+            )}
+            {...props}
+          />
+
+          <ResponsiveOverlay
+            open={isOpen}
+            onOpenChange={setOpen}
+            trigger={triggerButton}
+            title={
+              typeof label === 'string'
+                ? label
+                : range
+                  ? 'Select date range'
+                  : 'Select date'
+            }
+            dialogBodyClassName="p-0 flex justify-center"
+            popoverContentClassName={cn(
+              'p-0 overflow-hidden shadow-pop',
+              range ? 'max-w-dialog-md w-auto' : '',
             )}
           >
-            <input
-              ref={ref}
-              id={id}
-              type="text"
-              inputMode="numeric"
-              disabled={disabled}
-              placeholder={range ? 'dd/mm/yyyy – dd/mm/yyyy' : placeholder}
-              value={range ? displayRange : currentValue}
-              onChange={range ? handleRangeInputChange : handleSingleInputChange}
-              aria-invalid={hasError ? 'true' : undefined}
-              aria-describedby={hasError || helper ? helperId : undefined}
-              className={cn(
-                'w-full h-full bg-transparent border-0 p-0 text-body text-ink placeholder:text-ink-4 focus:outline-none focus:ring-0',
-                disabled && 'cursor-not-allowed text-ink-faint',
-              )}
-              {...props}
-            />
-
-            {isPhone ? (
-              triggerButton
-            ) : (
-              <PopoverTrigger asChild>{triggerButton}</PopoverTrigger>
-            )}
-          </div>
-
-          {isPhone ? (
-            <Dialog open={isOpen} onOpenChange={setOpen}>
-              <DialogContent
-                title={
-                  typeof label === 'string'
-                    ? label
-                    : range
-                      ? 'Select date range'
-                      : 'Select date'
-                }
-                onClose={() => setOpen(false)}
-              >
-                <DialogBody className="p-0 flex justify-center">
-                  {calendarContent}
-                </DialogBody>
-              </DialogContent>
-            </Dialog>
-          ) : (
-            <PopoverContent
-              className={cn(
-                'p-0 overflow-hidden shadow-pop',
-                range ? 'max-w-dialog-md w-auto' : '',
-              )}
-            >
-              {calendarContent}
-            </PopoverContent>
-          )}
-        </PopoverRoot>
+            {calendarContent}
+          </ResponsiveOverlay>
+        </div>
       </FieldFrame>
     );
   },

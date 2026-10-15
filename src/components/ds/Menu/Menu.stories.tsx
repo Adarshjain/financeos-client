@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { useArgs } from 'storybook/preview-api';
 
 import { Button } from '../Button/Button';
 import { Icon } from '../Icon/Icon';
@@ -22,6 +23,9 @@ const meta: Meta<typeof Menu> = {
       control: { type: 'select' },
       options: ['top', 'bottom', 'left', 'right'],
     },
+    open: {
+      control: { type: 'boolean' },
+    },
     defaultOpen: {
       control: { type: 'boolean' },
     },
@@ -30,6 +34,16 @@ const meta: Meta<typeof Menu> = {
     align: 'start',
     side: 'bottom',
     defaultOpen: true,
+  },
+  render: function Render(args) {
+    const [{ open }, updateArgs] = useArgs();
+    return (
+      <Menu
+        {...args}
+        open={open}
+        onOpenChange={(val) => updateArgs({ open: val })}
+      />
+    );
   },
 };
 

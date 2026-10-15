@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { useArgs } from 'storybook/preview-api';
 
 import { TextField } from './TextField';
 
@@ -20,6 +21,16 @@ const meta: Meta<typeof TextField> = {
     error: { control: 'text' },
     optional: { control: 'boolean' },
     disabled: { control: 'boolean' },
+  },
+  render: function Render(args) {
+    const [{ value }, updateArgs] = useArgs();
+    return (
+      <TextField
+        {...args}
+        value={value ?? args.defaultValue}
+        onChange={(e) => updateArgs({ value: e.target.value })}
+      />
+    );
   },
 };
 

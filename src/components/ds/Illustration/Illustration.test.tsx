@@ -35,6 +35,16 @@ describe('Illustration component', () => {
     expect(screen.getByText('z z')).toBeInTheDocument();
   });
 
+  it('hides copy on mobile via CSS classes for phone form', () => {
+    const { container: c1 } = render(<Illustration variant="signin" />);
+    const copy1 = c1.querySelector('h1')?.parentElement;
+    expect(copy1).toHaveClass('hidden', 'md:flex');
+
+    const { container: c2 } = render(<Illustration variant="signup" />);
+    const copy2 = c2.querySelector('h1')?.parentElement;
+    expect(copy2).toHaveClass('hidden', 'md:flex');
+  });
+
   it('merges custom className', () => {
     const { container } = render(
       <Illustration variant="offline" className="custom-ill-class" />,

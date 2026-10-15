@@ -65,14 +65,14 @@ Build in this order, one component per step. After each one, set its status to *
 | 8 | Pager | Ready for review |
 | 9 | Button | Ready for review |
 | 10 | Menu | Ready for review |
-| 11 | SelectionBar | Changes requested |
+| 11 | SelectionBar | Ready for review |
 | 12 | SwipeActions | Ready for review |
 | 13 | TextField | Ready for review |
 | 14 | TextArea | Ready for review |
 | 15 | DateField | Ready for review |
 | 16 | Select | Ready for review |
 | 17 | SearchField | Ready for review |
-| 18 | FilterChip | Changes requested |
+| 18 | FilterChip | Ready for review |
 | 19 | Checkbox | Ready for review |
 | 20 | Switch | Ready for review |
 | 21 | SegmentedControl | Ready for review |
@@ -97,8 +97,8 @@ Build in this order, one component per step. After each one, set its status to *
 | 40 | Skeleton | Ready for review |
 | 41 | Logo | Ready for review |
 | 42 | Divider | Ready for review |
-| 43 | Illustration | Changes requested |
-| 44 | ResponsiveOverlay | Not started |
+| 43 | Illustration | Ready for review |
+| 44 | ResponsiveOverlay | Ready for review |
 
 Removed on 2026-10-15 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; AuthPanel → a page in Phase 3.
 
@@ -217,6 +217,15 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 13 · Stories: all interactive, with nothing missing:
+  - Stories args-driven and interactive: converted Kbd, Skeleton, Tabs, and SelectionBar to args-driven stories with AllVariants as the primary story. Verified interactive canvas responsiveness using `useArgs` across Checkbox, Switch, SegmentedControl, Select, DateField, TextField, TextArea, FilterChip, Tabs, TabBar, Rail, Dialog (InteractiveModal), Menu, Pager, SelectionBar, SwipeActions, and Toast (interactive triggers).
+  - SelectionBar: hints match preview exactly ("the pair", "clear Duplicate"); stories args-driven and interactive. Removed `variant` prop in favor of responsive CSS breakpoints (`lg:hidden` for mobile docked sheet, `hidden lg:flex` for desktop pill).
+  - Illustration: added `signin · phone` and `signup · phone` stories with phone viewport (`parameters.viewport = { defaultViewport: 'phone' }`). The phone form hides copy and renders scene as a band. Added test verifying responsive copy display.
+  - Responsive overlay & standards (RULES §5c.1, §5c.3): Built ResponsiveOverlay (#44) wrapping Popover and Dialog. Refactored Select, DateField, and Menu to use ResponsiveOverlay and eliminated direct `useIsPhone()` viewport detection. Refactored Pager and SelectionBar to eliminate device-prop variants and use `lg:` CSS classes.
+  - Components updated to Ready for review: SelectionBar (#11), FilterChip (#18), Illustration (#43), ResponsiveOverlay (#44).
+  - Stories compared and interacted with: SelectionBar (AllVariants, Desktop, PhoneDocked, SingleAction, ActionDisabled), Illustration (AllVariants, SignIn, SignInPhone, SignUp, SignUpPhone, Offline), ResponsiveOverlay (AllVariants, DesktopPopover, PhoneSheet), Pager (AllVariants, Desktop, Phone, SinglePage, MiddlePage, Interactive), Kbd (AllVariants, SingleKey, KeyCombination), Skeleton (AllVariants, Default, TextLines, Avatar, CardSkeleton), Tabs (AllVariants, Underline, Pills), Switch, SegmentedControl, Select, DateField, TextField, TextArea, FilterChip, TabBar, Rail, Dialog, Menu, SwipeActions, Toast.
+  - Checks: typecheck (clean), lint (0 errors), vitest (all 426 test files, 3,528 tests passing), build-storybook (clean), check-ui --base c8b557b (clean: 0 errors). Differences left open: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 12 · Delete every alias and legacy prop:
   - ListRow: deleted legacy `hl` alias prop from `ListRow.tsx` and removed its test assertion in `ListRow.test.tsx`.
