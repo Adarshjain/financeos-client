@@ -72,7 +72,7 @@ export const SelectionModeNotSelected: Story = {
 
 export const AllVariants: Story = {
   render: () => (
-    <div className="grid grid-cols-2 gap-space-12 max-w-xl items-start">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-space-12 w-full max-w-xl items-start">
       <RuleCard
         name="Dunzo"
         matchType="Contains"
@@ -119,4 +119,29 @@ export const AllVariants: Story = {
       />
     </div>
   ),
+};
+
+const SelectableRuleCardDemo = () => {
+  const [selected, setSelected] = React.useState(false);
+  return (
+    <div className="max-w-md">
+      <RuleCard
+        name="Dunzo"
+        matchType="Contains"
+        pattern="DUNZO DAILY"
+        usedCount={4}
+        status="unverified"
+        source="LLM-generated"
+        categories={['Groceries']}
+        selectable
+        selected={selected}
+        onSelectedChange={setSelected}
+        onDetail={() => alert('View rule details')}
+      />
+    </div>
+  );
+};
+
+export const SelectableInteractive: Story = {
+  render: () => <SelectableRuleCardDemo />,
 };

@@ -1,5 +1,5 @@
 import { Eye, MoreVertical } from 'lucide-react';
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useRef } from 'react';
 
 import { Button } from '../Button/Button';
 import { CategoryChip } from '../CategoryChip/CategoryChip';
@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../Menu/Menu';
+import { useIsPhone } from '../useMediaQuery';
 
 export interface RuleCardMenuItem {
   label: React.ReactNode;
@@ -53,11 +54,18 @@ export interface RuleCardProps
   /** Callback for "Delete rule" */
   onDeleteRule?: () => void;
 
+  /** Whether the card is selectable */
+  selectable?: boolean;
   /** Whether the card is selected */
   selected?: boolean;
+  /** Callback when selection state changes */
+  onSelectedChange?: (selected: boolean) => void;
+
   /** Selection mode (phone): shows trailing eye icon replacing Approve and kebab menu */
   selectionMode?: boolean;
   /** Callback when trailing eye icon is clicked in selection mode */
+  onDetail?: () => void;
+  /** Alias for onDetail */
   onViewDetail?: () => void;
 }
 
@@ -79,16 +87,62 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       onFindMatches,
       onEditRule,
       onDeleteRule,
+      selectable,
       selected = false,
+      onSelectedChange,
       selectionMode = false,
+      onDetail,
       onViewDetail,
       className,
+      onClick,
+      onKeyDown,
+      onTouchStart,
+      onTouchMove,
+      onTouchEnd,
+      onTouchCancel,
+      onPointerDown,
+      onPointerMove,
+      onPointerUp,
+      onPointerCancel,
       children,
       ...props
     },
     ref,
   ) => {
+    const isPhone = useIsPhone();
     const isVerified = status === 'verified';
+
+    const isSelectable = selectable ?? Boolean(onSelectedChange);
+    const showDesktopCheckbox =
+      !isPhone && (isSelectable || selectionMode || selected);
+    const showEye =
+      selectionMode ||
+      ((selected || isSelectable) && Boolean(onDetail || onViewDetail));
+
+    // Long press detection for mobile (~450ms, cancelled on move > 10px)
+    const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const touchStartPosRef = useRef<{ x: number; y: number } | null>(null);
+    const isLongPressTriggeredRef = useRef(false);
+
+    const startLongPress = (clientX: number, clientY: number) => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+      }
+      isLongPressTriggeredRef.current = false;
+      touchStartPosRef.current = { x: clientX, y: clientY };
+      longPressTimerRef.current = setTimeout(() => {
+        isLongPressTriggeredRef.current = true;
+        onSelectedChange?.(true);
+      }, 450);
+    };
+
+    const cancelLongPress = () => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+      touchStartPosRef.current = null;
+    };
 
     const defaultMenuItems: RuleCardMenuItem[] = [
       { label: 'Find matches', onSelect: onFindMatches },
@@ -144,11 +198,14 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
     };
 
     const renderActions = () => {
-      if (selectionMode) {
+      if (showEye) {
         return (
           <button
             type="button"
-            onClick={onViewDetail}
+            onClick={(e) => {
+              e.stopPropagation();
+              (onDetail ?? onViewDetail)?.();
+            }}
             aria-label="View rule details"
             className="text-brand-strong inline-flex items-center justify-center p-space-2 rounded-ds-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
           >
@@ -195,37 +252,137 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       );
     };
 
+    const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+      if (isLongPressTriggeredRef.current) {
+        isLongPressTriggeredRef.current = false;
+        return;
+      }
+      if (isSelectable || selectionMode || selected) {
+        onSelectedChange?.(!selected);
+      }
+      onClick?.(e);
+    };
+
+    const handleCardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        if (isSelectable || selectionMode || selected) {
+          onSelectedChange?.(!selected);
+        } else {
+          onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>);
+        }
+      }
+      onKeyDown?.(e);
+    };
+
+    const isInteractive = Boolean(
+      onClick || isSelectable || selectionMode || onSelectedChange,
+    );
+
     return (
       <div
         ref={ref}
+        role={isSelectable ? 'checkbox' : isInteractive ? 'button' : undefined}
+        aria-selected={isSelectable || selectionMode ? selected : undefined}
+        aria-checked={isSelectable ? selected : undefined}
+        tabIndex={isInteractive ? 0 : undefined}
         className={cn(
-          'border rounded-ds-xl px-space-14 py-space-12 flex flex-col gap-space-6 select-none transition-colors duration-fast',
+          'border rounded-ds-xl px-space-14 py-space-12 flex flex-col gap-space-6 select-none transition-colors duration-fast w-full min-w-0',
           selected
             ? 'bg-brand-tint border-brand ring-1 ring-inset ring-brand'
             : 'bg-surface border-line',
+          isInteractive && !selected && 'hover:border-line-strong cursor-pointer',
+          isInteractive &&
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
           className,
         )}
+        onClick={handleCardClick}
+        onKeyDown={handleCardKeyDown}
+        onTouchStart={(e) => {
+          if (e.touches.length === 1) {
+            startLongPress(e.touches[0].clientX, e.touches[0].clientY);
+          }
+          onTouchStart?.(e);
+        }}
+        onTouchMove={(e) => {
+          if (touchStartPosRef.current && e.touches.length === 1) {
+            const dx = Math.abs(e.touches[0].clientX - touchStartPosRef.current.x);
+            const dy = Math.abs(e.touches[0].clientY - touchStartPosRef.current.y);
+            if (dx > 10 || dy > 10) {
+              cancelLongPress();
+            }
+          }
+          onTouchMove?.(e);
+        }}
+        onTouchEnd={(e) => {
+          cancelLongPress();
+          onTouchEnd?.(e);
+        }}
+        onTouchCancel={(e) => {
+          cancelLongPress();
+          onTouchCancel?.(e);
+        }}
+        onPointerDown={(e) => {
+          if (e.pointerType === 'touch') {
+            startLongPress(e.clientX, e.clientY);
+          }
+          onPointerDown?.(e);
+        }}
+        onPointerMove={(e) => {
+          if (touchStartPosRef.current && e.pointerType === 'touch') {
+            const dx = Math.abs(e.clientX - touchStartPosRef.current.x);
+            const dy = Math.abs(e.clientY - touchStartPosRef.current.y);
+            if (dx > 10 || dy > 10) {
+              cancelLongPress();
+            }
+          }
+          onPointerMove?.(e);
+        }}
+        onPointerUp={(e) => {
+          cancelLongPress();
+          onPointerUp?.(e);
+        }}
+        onPointerCancel={(e) => {
+          cancelLongPress();
+          onPointerCancel?.(e);
+        }}
         {...props}
       >
-        {/* Header: Name + Pattern, and used count */}
+        {/* Header: Desktop Checkbox + Name + Pattern, and used count */}
         <div className="flex gap-space-10 items-start justify-between">
-          <div className="flex-1 min-w-0">
-            {name && (
-              <div className="text-heading font-extrabold text-ink break-words">
-                {name}
-              </div>
+          <div className="flex items-start gap-space-10 flex-1 min-w-0">
+            {showDesktopCheckbox && (
+              <input
+                type="checkbox"
+                checked={selected}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  onSelectedChange?.(e.target.checked);
+                }}
+                aria-label={
+                  typeof name === 'string' ? `Select ${name}` : 'Select rule'
+                }
+                className="accent-brand cursor-pointer w-space-16 h-space-16 rounded-ds-xs m-0 shrink-0 mt-space-2"
+              />
             )}
-            {(matchType || pattern) && (
-              <div className="text-label font-medium text-ink-3">
-                {matchType}
-                {pattern && (
-                  <>
-                    {' · '}
-                    <b className="text-ink-2 font-bold">{pattern}</b>
-                  </>
-                )}
-              </div>
-            )}
+            <div className="flex-1 min-w-0">
+              {name && (
+                <div className="text-heading font-extrabold text-ink break-words">
+                  {name}
+                </div>
+              )}
+              {(matchType || pattern) && (
+                <div className="text-label font-medium text-ink-3">
+                  {matchType}
+                  {pattern && (
+                    <>
+                      {' · '}
+                      <b className="text-ink-2 font-bold">{pattern}</b>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
           {usedCount !== undefined && (
             <span className="text-heading font-extrabold text-ink-2 px-space-4 tabular-nums shrink-0">
