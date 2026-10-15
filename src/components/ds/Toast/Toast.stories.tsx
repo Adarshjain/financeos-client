@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
 import { Button } from '../Button/Button';
-import { showToast, Toast } from './Toast';
+import { showToast, Toast, Toaster } from './Toast';
 
 const meta: Meta<typeof Toast> = {
   title: 'DS/Feedback/Toast',
@@ -159,53 +159,93 @@ export const Info: Story = {
   ),
 };
 
+export const WithToaster: Story = {
+  name: 'Toaster + showToast',
+  render: () => {
+    return (
+      <div className="flex flex-col gap-space-12 p-space-16">
+        <Toaster />
+        <p className="font-text text-body text-ink-3">
+          Mounts <code className="font-text font-bold text-ink">&lt;Toaster /&gt;</code> with <code className="font-text font-bold text-ink">id=&quot;ds&quot;</code> at bottom-centre, rendering exactly one toast at a time.
+        </p>
+        <div>
+          <Button
+            variant="primary"
+            onClick={() =>
+              showToast('Marked ₹20,000 paid · ₹13,900 still due', {
+                tone: 'success',
+                onUndo: () => alert('Undone!'),
+              })
+            }
+          >
+            Show toast
+          </Button>
+        </div>
+      </div>
+    );
+  },
+};
+
 export const InteractiveTrigger: Story = {
   name: 'Trigger in canvas',
   render: () => {
     return (
-      <div className="flex flex-wrap gap-space-8 p-space-16">
-        <Button
-          variant="secondary"
-          onClick={() =>
-            showToast('Snoozed until Wed 14 Oct', {
-              tone: 'neutral',
-              onUndo: () => alert('Undone!'),
-            })
-          }
-        >
-          Toast Neutral
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={() =>
-            showToast('Marked ₹20,000 paid · ₹13,900 still due', {
-              tone: 'success',
-              onUndo: () => alert('Undone!'),
-            })
-          }
-        >
-          Toast Success
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={() =>
-            showToast("Couldn't snooze. The row is back.", {
-              tone: 'danger',
-            })
-          }
-        >
-          Toast Danger
-        </Button>
-        <Button
-          variant="secondary"
-          onClick={() =>
-            showToast('Imported 41 rows, 2 skipped', {
-              tone: 'warning',
-            })
-          }
-        >
-          Toast Warning
-        </Button>
+      <div className="flex flex-col gap-space-16 p-space-16">
+        <Toaster />
+        <div className="flex flex-wrap gap-space-8">
+          <Button
+            variant="secondary"
+            onClick={() =>
+              showToast('Snoozed until Wed 14 Oct', {
+                tone: 'neutral',
+                onUndo: () => alert('Undone!'),
+              })
+            }
+          >
+            Toast Neutral
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              showToast('Marked ₹20,000 paid · ₹13,900 still due', {
+                tone: 'success',
+                onUndo: () => alert('Undone!'),
+              })
+            }
+          >
+            Toast Success
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              showToast("Couldn't snooze. The row is back.", {
+                tone: 'danger',
+              })
+            }
+          >
+            Toast Danger
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              showToast('Imported 41 rows, 2 skipped', {
+                tone: 'warning',
+              })
+            }
+          >
+            Toast Warning
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() =>
+              showToast('Dashboard deleted', {
+                tone: 'info',
+              })
+            }
+          >
+            Toast Info
+          </Button>
+        </div>
       </div>
     );
   },

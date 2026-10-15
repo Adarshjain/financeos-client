@@ -220,6 +220,22 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 2 · Toaster for the new system:
+  - Exported `Toaster` from `src/components/ds/Toast/Toast.tsx` (and `src/components/ds/index.ts`) mounting Sonner with `id="ds"`, `position="bottom-center"`, `visibleToasts={1}`, and `mobileOffset` set to `calc(var(--ds-space-12) + var(--ds-tab-bar) + env(safe-area-inset-bottom, 0px))` (above TabBar on phone).
+  - Updated `showToast` in `src/components/ds/Toast/Toast.tsx` to pass `toasterId: 'ds'` to `sonnerToast.custom`, ensuring new-system toasts render only in the `ds` Toaster and never in the old app's root Toaster.
+  - Added unit test in `src/components/ds/Toast/Toast.test.tsx` verifying that a `showToast` call renders inside the `ds` Toaster and not in an untargeted root Toaster, along with verifying `toasterId: 'ds'` in options.
+  - Added `WithToaster` story in `src/components/ds/Toast/Toast.stories.tsx` using `<Toaster />` + `showToast` showing exactly one toast at bottom-centre, and mounted `<Toaster />` in `InteractiveTrigger`.
+  - TabBar and Toast confirmed set to **Ready for review**.
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 338 problems (0 errors, 338 warnings)`
+    - `npm test`: `Test Files  427 passed (427) | Tests  3543 passed (3543)`
+    - `npm run build-storybook`: `Storybook build completed successfully (288 entries)`
+    - `node design-system/tools/check-ui.mjs`: `design-system check: clean`
+  - Browser comparison: Compared Toast stories at 390px and 1440px in light and dark mode. Clicking "Show toast" displays a single toast at bottom centre (above TabBar clearance on phone, bottom-centre on desktop); clicking multiple buttons replaces the active toast so exactly one toast renders at a time.
+  - Done when: a Toast story using `Toaster` + `showToast` shows exactly one toast at the bottom centre.
+  - Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 1 · TabBar is now a floating pill (owner decision 2026-10-15):
   - Rebuilt TabBar in `src/components/ds/TabBar/TabBar.tsx` as a floating pill per Phase 1 contract:
     - Bar: `fixed inset-x-space-12 bottom-safe-12 z-dock bg-surface border border-line rounded-ds-pill shadow-dock py-space-8 px-space-4 lg:hidden flex items-center select-none`.
