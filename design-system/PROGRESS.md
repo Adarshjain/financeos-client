@@ -59,7 +59,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 4 | AppBar | Ready for review |
 | 5 | TabBar | Changes requested |
 | 6 | Rail | Ready for review |
-| 7 | TopBar | Not started |
+| 7 | TopBar | Ready for review |
 | 8 | Tabs | Changes requested |
 | 9 | Pager | Changes requested |
 | 10 | Button | Ready for review |
@@ -191,6 +191,18 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 10c · TopBar:
+  - Created `TopBar` in `src/components/ds/TopBar/TopBar.tsx`:
+    - Desktop page header bar, fixed height 48px (`h-control-xl min-h-control-xl`), canvas background with bottom hairline border (`bg-canvas border-b border-line`).
+    - Title or breadcrumb (`title` with optional `crumb` separated by slash `/`).
+    - Actions on right: Add button (primary with ⌘N shortcut via `Kbd`), Ask chat button (secondary with `chat` icon), Notifications button (secondary icon-only with `bell` icon).
+    - All buttons use `Button` component (no raw `<button>`), all icons through `Icon` at size `md`.
+  - Created `src/components/ds/TopBar/TopBar.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`TopLevelPage`, `DetailWithCrumb`, `NoActions`) with controls.
+  - Created `src/components/ds/TopBar/TopBar.test.tsx`: 3 unit tests covering top-level page title, detail breadcrumbs, and action button click handlers.
+  - Exported `TopBar` from `src/components/ds/index.ts`.
+  - Stories compared: TopLevelPage, DetailWithCrumb, NoActions against `design-system/components/TopBar/preview.html` and desktop screens.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 10b · Rail:
   - Created `Rail` in `src/components/ds/Rail/Rail.tsx`:
