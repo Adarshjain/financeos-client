@@ -58,7 +58,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 3 | Dialog | Ready for review |
 | 4 | AppBar | Ready for review |
 | 5 | TabBar | Changes requested |
-| 6 | Rail | Not started |
+| 6 | Rail | Ready for review |
 | 7 | TopBar | Not started |
 | 8 | Tabs | Changes requested |
 | 9 | Pager | Changes requested |
@@ -191,6 +191,23 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 10b · Rail:
+  - Created `Rail` in `src/components/ds/Rail/Rail.tsx`:
+    - Desktop primary navigation rail, 240px wide (`w-rail min-w-rail`).
+    - Brand row with `BrandMark` and FinanceOS title.
+    - Search button with ⌘K shortcut (`Button` secondary with `Kbd`, no raw buttons).
+    - Grouped navigation links with `overline` headers; current item highlighted with `bg-brand-tint text-brand-strong`.
+    - All icons through `Icon` at size `lg`.
+    - Danger count bubble on Inbox via `Badge` `count`, warning text count on Transactions.
+    - Bottom pinned footer with Settings link and user `Avatar`.
+  - Created `src/components/ds/Rail/Rail.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`Default`, `WithCounts`, `TransactionsActive`) with controls.
+  - Created `src/components/ds/Rail/Rail.test.tsx`: 6 unit tests covering brand row, active link styling, link clicks triggering onNavigate, search button triggering onSearch, count badges, and user profile initials.
+  - Exported `Rail` from `src/components/ds/index.ts`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npx vitest run src/components/ds/Rail` (6/6 tests passed), `npm run build-storybook`, `node design-system/tools/check-ui.mjs` clean.
+  - Stories compared: `DS/Navigation/Rail/AllVariants`, `Default`, `WithCounts`, `TransactionsActive` beside `design-system/components/Rail/preview.html` at 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 10a · AppBar:
   - Restricted `AppBar` in `src/components/ds/AppBar/AppBar.tsx` to the phone bar only:
