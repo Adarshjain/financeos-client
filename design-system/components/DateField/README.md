@@ -9,7 +9,7 @@ The only date input. Shows and accepts dd/mm/yyyy, with a calendar in a Popover 
 - Never `<input type="date">`.
 
 ## Built from
-TextField's field frame, Popover, Dialog (phone), MonthCalendar (from DateTile), Icon, Button.
+ResponsiveOverlay (popover on desktop, sheet on phone); TextField's field frame, Popover, Dialog (phone), MonthCalendar (from DateTile), Icon, Button.
 
 ## Variants
 - Single date, date range, with min/max (days outside are greyed), error, disabled.

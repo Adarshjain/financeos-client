@@ -16,7 +16,7 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 - Don't offer an "Other" option to escape a list; add search instead.
 
 ## Built from
-Popover, Dialog (phone), SearchField, Checkbox (multi), CategoryChip (chips in the field), Icon, Button (Clear, Done).
+ResponsiveOverlay (popover on desktop, sheet on phone); Popover, Dialog (phone), SearchField, Checkbox (multi), CategoryChip (chips in the field), Icon, Button (Clear, Done).
 
 ## Variants
 - **Single select**; **single with search and icons** (icons may be images); **multi select** (checkboxes, Clear and "Done · n"); **multi with search** and "Create "…""; **sectioned list**; **with an action row** ("+ New shared limit…"); **search · create from typing**; **no results**; **with descriptions**; **disabled option**; **custom trigger** (FilterChip).

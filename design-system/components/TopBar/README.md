@@ -1,6 +1,6 @@
 # TopBar
 
-The bar at the top of every screen: one component, two forms chosen by the viewport (like Dialog). On phone it is the TopBar; on desktop it is the page bar above the content. Pages never choose.
+The bar at the top of every screen: one component, two forms chosen by CSS at the `lg` breakpoint (like Dialog). On phone it is the TopBar; on desktop it is the page bar above the content. Pages never choose.
 
 ## Forms
 - **Phone** (56px, `app-bar`): the Logo mark, or a back arrow on detail screens (`back`), then crumb and title (title truncates, never wraps), then the actions as bordered `control-md` icon buttons. Phone pages never repeat the title in the body.
