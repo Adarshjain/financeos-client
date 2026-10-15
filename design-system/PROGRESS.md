@@ -62,7 +62,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 6 | TopBar | Changes requested |
 | 7 | Tabs | Changes requested |
 | 8 | Pager | Ready for review |
-| 9 | Button | Changes requested |
+| 9 | Button | Ready for review |
 | 10 | Menu | Changes requested |
 | 11 | SelectionBar | Changes requested |
 | 12 | SwipeActions | Changes requested |
@@ -216,6 +216,13 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 1 · States everywhere:
+  - Added `link` variant to Button (inline, font-bold body-strong, underlined, text-inherit, p-0, h-auto, ignores clicks when disabled/loading).
+  - Updated Button variantStyles with active/pressed state tokens (`bg-pressed`, `brand-hover`, `brand-pressed`, `danger-hover`, `danger-pressed`, `danger-tint` with `border-danger`).
+  - Applied hover/pressed state tokens across FilterChip, itemRow (Menu/Select), ListRow, TabBar, Rail, Tabs, SegmentedControl, Switch, and Checkbox.
+  - Stories compared and interacted with: Button (AllVariants, Link, Primary, Secondary, DangerOutline, DangerFilled, Ghost, Google), FilterChip, ListRow, SegmentedControl, Switch, Tabs, TabBar, Rail beside preview.html in light and dark at 390 and 1440. All responded to hover/press/click interactions.
+  - Checks: typecheck (clean), lint (0 errors), vitest (58 tests passing), build-storybook (clean), check-ui (clean on touched files). Differences left open: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Round summary · Phosphor icons and auth foundations (Units 0, 1, 2, 3, 3b, 4):
   - **Unit 0 (Server and client boundaries)**: Added `'use client'` to 28 interactive DS component files and 2 shared hooks (`useSheetDrag.ts`, `useSwipe.ts`). Verified Server Component barrel imports via `ServerFixture.tsx` (`npm run build` green). 14 presentational components kept as Server Components with no client directive.

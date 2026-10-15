@@ -52,8 +52,8 @@ export const Checkbox = forwardRef<
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           isActive
-            ? 'bg-brand border-brand'
-            : 'bg-surface border-line-strong',
+            ? 'bg-brand border-brand hover:bg-brand-hover hover:border-brand-hover active:bg-brand-pressed active:border-brand-pressed'
+            : 'bg-surface border-line-strong hover:bg-hover active:bg-pressed',
           className,
         )}
         {...props}

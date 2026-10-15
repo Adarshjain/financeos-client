@@ -119,7 +119,7 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
                 'flex-1 flex flex-col items-center justify-center gap-space-2 font-text text-tab-label font-bold transition-colors duration-fast cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded-ds-sm py-space-2',
                 isActive
                   ? 'text-brand-strong font-extrabold'
-                  : 'text-ink-4 hover:text-ink',
+                  : 'text-ink-4 hover:text-ink hover:bg-hover active:bg-pressed',
               )}
             >
               <div className="relative inline-flex items-center justify-center">

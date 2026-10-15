@@ -124,7 +124,7 @@ export const SegmentedControl = forwardRef<
                 fullWidth && 'flex-1',
                 isSelected
                   ? 'bg-brand text-on-brand'
-                  : 'text-ink-3 hover:text-ink hover:bg-hover',
+                  : 'text-ink-3 hover:text-ink hover:bg-hover active:bg-pressed',
                 isOptDisabled && 'cursor-not-allowed text-ink-faint',
               )}
             >

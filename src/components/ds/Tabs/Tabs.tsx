@@ -167,10 +167,10 @@ export const TabsTrigger = forwardRef<
       }}
       className={cn(
         'font-text text-body py-space-10 px-space-12 whitespace-nowrap border-b-2 transition-colors duration-fast select-none cursor-pointer',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset rounded-ds-sm',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
         isActive
           ? 'text-brand-strong border-brand font-bold'
-          : 'font-semibold text-ink-3 border-transparent hover:text-ink',
+          : 'font-semibold text-ink-3 border-transparent hover:text-ink hover:bg-hover active:bg-pressed',
         disabled && 'opacity-50 cursor-not-allowed',
         className,
       )}

@@ -17,6 +17,7 @@ const meta: Meta<typeof Button> = {
         'danger-filled',
         'ghost',
         'google',
+        'link',
       ],
     },
     size: {
@@ -49,6 +50,7 @@ export const AllVariants: Story = {
           <Button variant="danger">Delete rule</Button>
           <Button variant="danger-filled">Delete</Button>
           <Button variant="ghost">Skip</Button>
+          <Button variant="link">Reconcile</Button>
         </div>
       </div>
 
@@ -190,6 +192,13 @@ export const Ghost: Story = {
   args: {
     variant: 'ghost',
     children: 'Skip',
+  },
+};
+
+export const Link: Story = {
+  args: {
+    variant: 'link',
+    children: 'Reconcile',
   },
 };
 
