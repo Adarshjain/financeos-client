@@ -39,12 +39,12 @@ export const Avatar = forwardRef<HTMLSpanElement, AvatarProps>(
       sm: {
         account: 'h-space-24 aspect-square text-caption',
         person: 'h-space-24 aspect-square text-caption',
-        logo: 'h-space-20 aspect-square text-overline',
+        logo: 'h-space-24 aspect-square text-overline',
       },
       md: {
         account: 'h-control-md aspect-square text-label',
-        person: 'h-space-28 aspect-square text-caption',
-        logo: 'h-space-24 aspect-square text-caption',
+        person: 'h-control-md aspect-square text-caption',
+        logo: 'h-space-24 aspect-square text-overline',
       },
       xl: {
         account: 'h-control-xl aspect-square text-heading',

@@ -39,6 +39,12 @@ describe('Avatar component', () => {
     rerender(<Avatar size="md" variant="account">HD</Avatar>);
     expect(screen.getByText('HD')).toHaveClass('h-control-md');
 
+    rerender(<Avatar size="md" variant="person">PN</Avatar>);
+    expect(screen.getByText('PN')).toHaveClass('h-control-md');
+
+    rerender(<Avatar size="md" variant="logo">SB</Avatar>);
+    expect(screen.getByText('SB')).toHaveClass('h-space-24', 'text-overline');
+
     rerender(<Avatar size="xl" variant="account">HD</Avatar>);
     expect(screen.getByText('HD')).toHaveClass('h-control-xl');
   });

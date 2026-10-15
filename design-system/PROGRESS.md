@@ -144,6 +144,26 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 14) · Avatar component fixes:
+  - Fixed Avatar in `src/components/ds/Avatar/Avatar.tsx`:
+    - Updated person avatar sizing: changed `md` person from `h-space-28` to standard `h-control-md aspect-square text-caption` (32px, `control-md`), matching the account avatar per owner decision (2026-10-15).
+    - Updated institution logo sizing: set `md` and `sm` logo to `h-space-24 aspect-square text-overline` (24px, 10px 800 overline font matching reference `.logo`).
+  - Updated `src/components/ds/Avatar/Avatar.stories.tsx`:
+    - Updated `Logo` and `AllVariants` stories to pass realistic bank brand background colors matching `preview.html` and the board (`#004c8f` for HDFC, `#97144d` for Axis, `#22409a` for SBI), resolving the incorrect green `bg-brand` display.
+  - Updated `src/components/ds/Avatar/Avatar.test.tsx`:
+    - Added unit test assertions verifying `size="md"` person avatar renders with `h-control-md` (32px) and `size="md"` logo avatar renders with `h-space-24` and `text-overline`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/Avatar` (7 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `Avatar/preview.html` and `ds-08-data.webp`:
+    - `DS/Data display/Avatar/Account`
+    - `DS/Data display/Avatar/Person`
+    - `DS/Data display/Avatar/Logo`
+    - `DS/Data display/Avatar/Sizes`
+    - `DS/Data display/Avatar/WithImage`
+    - `DS/Data display/Avatar/AllVariants`
+    Verified 32px person circle avatar (`control-md`), 32px account square avatar, 24px institution logo with navy HDFC fill (`#004c8f`), and clean typography.
+  - Differences left open: none.
+  - Deviations: Realistic bank brand background colors (`#004c8f`, `#97144d`, `#22409a`) passed via style props in `Avatar.stories.tsx` to match `preview.html` and `ds-08-data.webp` (marked with `ds-allow`).
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 13) · DateTile component fixes:
   - Fixed DateTile in `src/components/ds/DateTile/DateTile.tsx`:
     - Updated day cell element gap from `gap-space-2` to `gap-space-4`, matching `reference.css` `.cd`.
