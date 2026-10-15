@@ -8,7 +8,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | --- | --- | --- |
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
-| 2 | New component library in Storybook, one component at a time, owner-reviewed | In progress (44 components; owner feedback round 2 open) |
+| 2 | New component library in Storybook, one component at a time, owner-reviewed | Ready for review (44 components; Storybook feedback round 2 complete) |
 | 3 | Pages: rebuild and swap in one page or big component at a time | Not started |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
@@ -217,6 +217,31 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 14 · Final summary — Storybook feedback round 2 complete:
+  - Addressed all 14 units of owner feedback across the entire component library (`src/components/ds/`):
+    1. States everywhere (RULES §5b.7): Added `link` button variant, distinct hover and pressed (`:active`) tokens (`bg-pressed`, `brand-hover`, `brand-pressed`, `danger-hover`, `danger-pressed`) across Button, FilterChip, menu and select items, ListRow, TabBar, Rail, Tabs, SegmentedControl, Switch, Pager, and Checkbox with zero size/position shift.
+    2. Checkbox: Fixed baseline alignment shift on check/mount, hover/pressed states, and args-driven interactive canvas toggling.
+    3. Item row and surface consolidation: Select uses shared `itemRow.ts` (weight 500, `text-body`, no ring/outline, `brand-tint` with Check for selection); removed inner duplicate card and exact-width `match` mode from Popover.
+    4. Banner & Toast: Banner actions render inline Button `link` without altering height; Toast Undo renders Button `link`; clean multiline wrapping.
+    5. TextArea: Starts at `h-control-lg` (36px, single line), auto-grows up to 8 lines then scrolls, with vertical `resize-y` handle preserving manual sizing.
+    6. DateField combined range: Single combined field ("01/10/2026 – 13/10/2026") with auto-inserted separator on typing, 2-tap calendar range picking with `brand-tint` band, and responsive desktop (two months side-by-side) / phone dialog calendar layout.
+    7. Tabs: Straight 2px `brand` underline bar (`rounded-none`), args-driven controlled switching.
+    8. Dialog footer: Unified footer layout across all viewports (tertiary far left, secondary and primary on right; on phone `control-xl` sharing remaining width); removed phone body danger-band branch; cleaned props strictly to `primary`, `secondary`, `tertiary`; required `confirmLabel`.
+    9. TopBar (AppBar merged): Deleted AppBar; TopBar provides responsive phone form (56px, Logo mark or back arrow, crumb/title, `control-md` icon actions) and desktop form (crumb/title, labelled actions with shortcuts); actions passed via props with zero hardcoded actions.
+    10. TabBar & Rail items from app: TabBar (items up to 5, current) and Rail (groups, current, search, footer, user) accept all items/navigation structures from props; zero hardcoded routes (`check-ui` `hardcoded-route` passes clean).
+    11. No app content in components (RULES §5b.6): Removed app presets/hardcoded text from SwipeActions, RuleCard, Widget, DropZone, and TransactionRow; all labels and actions passed via props.
+    12. Delete legacy props & aliases: Removed all legacy/backwards aliases from ListRow (`hl`), SwipeActions (`leftAction`, `rightAction`, `onAction`), Badge (`variant` acting as tone), RuleCard/TransactionRow (`onDetail` canonical), Banner, and Toast.
+    13. Interactive stories & responsive standards (RULES §5c): Built ResponsiveOverlay (#44) to encapsulate all viewport-aware floating overlay behavior. Refactored Select, DateField, Menu, Pager, and SelectionBar to eliminate device-prop variants and use responsive CSS breakpoints (`lg:`). Wired `useArgs` across all controlled stories; added Illustration phone stories.
+    14. Final verification: Full check suite clean.
+  - Component exports: `src/components/ds/index.ts` cleanly exports all 44 Phase 2 components, Foundations, compound parts, and helper hooks. No AppBar.
+  - Checks:
+    - `npm run typecheck`: clean (0 errors)
+    - `npm run lint`: clean (0 errors)
+    - `npm test`: 426 test files passed, 3,528 tests passed
+    - `npm run build-storybook`: clean build in 3.5s
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: clean (0 errors)
+  - Differences left open: none. All 44 components in Phase 2 are **Ready for review**.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 13 · Stories: all interactive, with nothing missing:
   - Stories args-driven and interactive: converted Kbd, Skeleton, Tabs, and SelectionBar to args-driven stories with AllVariants as the primary story. Verified interactive canvas responsiveness using `useArgs` across Checkbox, Switch, SegmentedControl, Select, DateField, TextField, TextArea, FilterChip, Tabs, TabBar, Rail, Dialog (InteractiveModal), Menu, Pager, SelectionBar, SwipeActions, and Toast (interactive triggers).
