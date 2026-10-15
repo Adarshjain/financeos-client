@@ -4,7 +4,7 @@ An inline message at the top of a form or list: a failed request, a success that
 
 ## Tones
 - `err` on `danger-tint` with `danger-ink`: "Email or password is incorrect.", "Failed to load upcoming items. Try again".
-- `ok` on `brand-tint`: "Your account has been deleted.", "Account created! Redirecting…".
+- `ok` on `positive-tint` with `positive-strong`: "Your account has been deleted.", "Account created! Redirecting…".
 - `info` on `info-tint`: "That item is already handled."
 - `warn` on `warning-tint`: lines skipped in a statement, a merge that should be a link.
 
