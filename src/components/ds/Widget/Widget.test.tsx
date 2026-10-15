@@ -41,38 +41,46 @@ describe('Widget', () => {
     expect(container.querySelectorAll('.animate-pulse').length).toBe(3);
   });
 
-  it('renders failed state with retry button', () => {
+  it('renders failed state with messages and retry button from props', () => {
     const handleRetry = vi.fn();
     render(
       <Widget
         title="Portfolio"
         subtitle="Value and day change"
         error={true}
+        errorTitle="Couldn't load this widget"
+        errorMessage="Prices service did not answer."
         onRetry={handleRetry}
       />,
     );
 
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getByText("Couldn't load this widget")).toBeInTheDocument();
+    expect(screen.getByText('Prices service did not answer.')).toBeInTheDocument();
     const retryBtn = screen.getByRole('button', { name: /retry/i });
     expect(retryBtn).toHaveClass('text-ink', 'font-bold');
     fireEvent.click(retryBtn);
     expect(handleRetry).toHaveBeenCalledTimes(1);
   });
 
-  it('renders unavailable state with remove button', () => {
+  it('renders unavailable state with message and remove button from props', () => {
     const handleRemove = vi.fn();
     render(
       <Widget
         title="Card spend by month"
         subtitle="Report"
         unavailable={true}
+        unavailableTitle="This report is no longer available"
+        unavailableMessage="Remove the widget or pick another report."
         onRemove={handleRemove}
       />,
     );
 
     expect(
       screen.getByText('This report is no longer available'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Remove the widget or pick another report.'),
     ).toBeInTheDocument();
     const removeBtn = screen.getByRole('button', { name: /remove/i });
     expect(removeBtn).toHaveClass('text-ink', 'font-bold');

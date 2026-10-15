@@ -50,6 +50,8 @@ export const AllVariants: Story = {
         title="Portfolio"
         subtitle="Value and day change"
         error={true}
+        errorTitle="Couldn't load this widget"
+        errorMessage="Prices service did not answer."
         onRetry={() => {}}
       />
 
@@ -57,6 +59,8 @@ export const AllVariants: Story = {
         title="Card spend by month"
         subtitle="Report"
         unavailable={true}
+        unavailableTitle="This report is no longer available"
+        unavailableMessage="Remove the widget or pick another report."
         onRemove={() => {}}
       />
     </div>
@@ -98,6 +102,8 @@ export const Failed: Story = {
     title: 'Portfolio',
     subtitle: 'Value and day change',
     error: true,
+    errorTitle: "Couldn't load this widget",
+    errorMessage: 'Prices service did not answer.',
     onRetry: () => alert('Retrying prices service...'),
   },
 };
@@ -107,6 +113,8 @@ export const Unavailable: Story = {
     title: 'Card spend by month',
     subtitle: 'Report',
     unavailable: true,
+    unavailableTitle: 'This report is no longer available',
+    unavailableMessage: 'Remove the widget or pick another report.',
     onRemove: () => alert('Widget removed'),
   },
 };

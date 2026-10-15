@@ -24,12 +24,12 @@ export interface RecentImport {
 
 export interface DropZoneProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onDrop' | 'title'> {
-  /** Main title (default: "Add statements") */
-  title?: React.ReactNode;
-  /** Subtitle / accepted formats info (default: "PDF, XLSX or XLS · up to 25 MB per upload") */
-  hint?: React.ReactNode;
-  /** Choose files button label (default: "Choose files") */
-  buttonLabel?: React.ReactNode;
+  /** Main title, required */
+  title: React.ReactNode;
+  /** Subtitle / accepted formats info, required */
+  hint: React.ReactNode;
+  /** Choose files button label, required */
+  buttonLabel: React.ReactNode;
   /** Title when dragging files over (default: "Drop to add") */
   dragTitle?: React.ReactNode;
   /** Hint when dragging files over (e.g. "3 files") */
@@ -52,6 +52,8 @@ export interface DropZoneProps
   /** Callback when remove trash button is clicked for a queued file */
   onRemoveFile?: (file: QueuedFile) => void;
 
+  /** Heading for recent imports (comes from page, no built-in default) */
+  recentImportsTitle?: React.ReactNode;
   /** Recent import history rows */
   recentImports?: RecentImport[];
 }
@@ -59,9 +61,9 @@ export interface DropZoneProps
 export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
   (
     {
-      title = 'Add statements',
-      hint = 'PDF, XLSX or XLS · up to 25 MB per upload',
-      buttonLabel = 'Choose files',
+      title,
+      hint,
+      buttonLabel,
       dragTitle = 'Drop to add',
       dragHint,
       isDragging,
@@ -71,6 +73,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
       showDropArea = true,
       queuedFiles,
       onRemoveFile,
+      recentImportsTitle,
       recentImports,
       className,
       ...props
@@ -228,9 +231,11 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
         {/* Recent imports */}
         {recentImports && recentImports.length > 0 && (
           <Card className="px-space-14 py-0 overflow-hidden">
-            <div className="py-space-8 text-overline font-extrabold uppercase text-ink-4 border-b border-line-soft">
-              Recent imports
-            </div>
+            {recentImportsTitle && (
+              <div className="py-space-8 text-overline font-extrabold uppercase text-ink-4 border-b border-line-soft">
+                {recentImportsTitle}
+              </div>
+            )}
             {recentImports.map((imp, idx) => (
               <div
                 key={imp.id ?? idx}

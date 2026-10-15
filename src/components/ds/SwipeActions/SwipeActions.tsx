@@ -27,14 +27,8 @@ export interface SwipeActionsProps extends React.HTMLAttributes<HTMLDivElement> 
   leftAction?: SwipeActionItem;
   /** Backwards compatibility alias for right */
   rightAction?: SwipeActionItem;
-  variant?: SwipeActionsVariant;
   disabled?: boolean;
   threshold?: number;
-  onApprove?: () => void;
-  onDelete?: () => void;
-  onSnooze?: () => void;
-  onDismiss?: () => void;
-  canApprove?: boolean;
 }
 
 /**
@@ -52,55 +46,15 @@ export const SwipeActions = forwardRef<HTMLDivElement, SwipeActionsProps>(
       right,
       leftAction,
       rightAction,
-      variant,
       disabled = false,
       threshold = 96,
-      onApprove,
-      onDelete,
-      onSnooze,
-      onDismiss,
-      canApprove = true,
       className,
       ...props
     },
     ref,
   ) => {
-    // Resolve left action
-    let effectiveLeft = left ?? leftAction;
-    if (!effectiveLeft && (variant === 'transactions' || onApprove)) {
-      effectiveLeft = {
-        label: 'Approve',
-        icon: <Icon name="check" size="lg" />,
-        tone: 'brand',
-        onTrigger: onApprove,
-        disabled: !canApprove,
-      };
-    } else if (!effectiveLeft && (variant === 'inbox' || onSnooze)) {
-      effectiveLeft = {
-        label: 'Snooze',
-        icon: <Icon name="view" size="lg" />,
-        tone: 'brand',
-        onTrigger: onSnooze,
-      };
-    }
-
-    // Resolve right action
-    let effectiveRight = right ?? rightAction;
-    if (!effectiveRight && (variant === 'transactions' || onDelete)) {
-      effectiveRight = {
-        label: 'Delete',
-        icon: <Icon name="delete" size="lg" />,
-        tone: 'danger',
-        onTrigger: onDelete,
-      };
-    } else if (!effectiveRight && (variant === 'inbox' || onDismiss)) {
-      effectiveRight = {
-        label: 'Dismiss',
-        icon: <Icon name="close" size="lg" />,
-        tone: 'danger',
-        onTrigger: onDismiss,
-      };
-    }
+    const effectiveLeft = left ?? leftAction;
+    const effectiveRight = right ?? rightAction;
 
     const canSwipeRight = Boolean(effectiveLeft && !effectiveLeft.disabled);
     const canSwipeLeft = Boolean(effectiveRight && !effectiveRight.disabled);

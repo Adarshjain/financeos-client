@@ -122,7 +122,7 @@ export const Selected: Story = {
     categories: ['Shopping'],
     selected: true,
     selectionMode: true,
-    onViewDetail: () => alert('View rule details'),
+    onDetail: () => alert('View rule details'),
   },
 };
 
@@ -150,7 +150,7 @@ export const SelectionModeNotSelected: Story = {
     categories: ['Food & dining'],
     selectionMode: true,
     selected: false,
-    onViewDetail: () => alert('View rule details'),
+    onDetail: () => alert('View rule details'),
   },
 };
 
