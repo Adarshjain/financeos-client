@@ -100,7 +100,7 @@ export const AllVariants: Story = {
   render: () => (
     <div className="space-y-space-24 max-w-xl">
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Phone Top Level
         </h4>
         <AppBar
@@ -113,7 +113,7 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Phone Detail Screen
         </h4>
         <AppBar
@@ -128,7 +128,7 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Brand Mark
         </h4>
         <div className="flex items-center gap-space-12">
@@ -139,7 +139,7 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Desktop Top Bar
         </h4>
         <DesktopTopBar

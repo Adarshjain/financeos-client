@@ -135,7 +135,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
             <div
               className={cn(
                 isDesktopVariant ? 'inline-flex' : 'hidden sm:inline-flex',
-                'items-center h-control-md px-space-10 border border-line-strong rounded-ds-md text-small font-semibold text-ink-2 mr-space-6 bg-surface relative',
+                'items-center h-control-md px-space-10 border border-line-strong rounded-ds-md text-label font-semibold text-ink-2 mr-space-6 bg-surface relative',
               )}
             >
               {onSizeChange ? (
@@ -144,7 +144,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                     aria-label="Rows per page"
                     value={size}
                     onChange={(e) => onSizeChange(Number(e.target.value))}
-                    className="appearance-none bg-transparent pr-space-16 text-small font-semibold text-ink-2 focus:outline-none cursor-pointer"
+                    className="appearance-none bg-transparent pr-space-16 text-label font-semibold text-ink-2 focus:outline-none cursor-pointer"
                   >
                     {sizeOptions.map((opt) => (
                       <option key={opt} value={opt}>
@@ -194,7 +194,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                     <span
                       key={`gap-${idx}`}
                       aria-hidden="true"
-                      className="w-space-16 text-center text-ink-faint text-small select-none"
+                      className="w-space-16 text-center text-ink-faint text-label select-none"
                     >
                       …
                     </span>

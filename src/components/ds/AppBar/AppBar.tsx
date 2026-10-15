@@ -387,7 +387,7 @@ export const DesktopRail = forwardRef<HTMLElement, DesktopRailProps>(
           <button
             type="button"
             onClick={onSearch}
-            className="flex items-center gap-space-8 px-space-10 h-control-md text-small text-ink-3 bg-sunken rounded-ds-md border border-line-soft hover:bg-hover active:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring mb-space-12"
+            className="flex items-center gap-space-8 px-space-10 h-control-md text-label text-ink-3 bg-sunken rounded-ds-md border border-line-soft hover:bg-hover active:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring mb-space-12"
           >
             <Search className="w-space-14 h-space-14" aria-hidden="true" />
             <span>Search</span>
@@ -455,7 +455,7 @@ export const DesktopRail = forwardRef<HTMLElement, DesktopRailProps>(
                 onNavigate('/settings');
               }
             }}
-            className="flex items-center gap-space-6 text-ink-3 hover:text-ink text-small py-space-4"
+            className="flex items-center gap-space-6 text-ink-3 hover:text-ink text-label py-space-4"
           >
             <Settings className="w-space-16 h-space-16" aria-hidden="true" />
             <span>Settings</span>

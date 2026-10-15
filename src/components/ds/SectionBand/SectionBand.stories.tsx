@@ -23,7 +23,7 @@ type Story = StoryObj<typeof SectionBand>;
 export const DefaultBand: Story = {
   name: 'Default band',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <SectionBand title="Basics" borderTop={false} />
       <div className="p-space-16 flex flex-col gap-space-12">
         <TextField
@@ -42,7 +42,7 @@ export const DefaultBand: Story = {
 export const DangerBand: Story = {
   name: 'Danger band',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <SectionBand
         variant="danger"
         title="Delete account"
@@ -68,7 +68,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Default band
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <SectionBand title="Basics" borderTop={false} />
           <div className="p-space-16 flex flex-col gap-space-12">
             <TextField
@@ -87,7 +87,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Danger band
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <SectionBand
             variant="danger"
             title="Delete account"

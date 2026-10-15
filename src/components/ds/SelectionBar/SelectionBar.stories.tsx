@@ -184,7 +184,7 @@ const InteractiveSelectionStory: React.FC = () => {
             selectAllLabel="Select all 182"
           />
         ) : (
-          <div className="text-small text-ink-3">No items selected.</div>
+          <div className="text-label text-ink-3">No items selected.</div>
         )}
       </div>
     </div>
@@ -201,7 +201,7 @@ export const AllVariants: Story = {
   render: () => (
     <div className="space-y-space-24 max-w-2xl">
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Desktop Pill
         </h4>
         <SelectionBar
@@ -214,7 +214,7 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Phone Docked
         </h4>
         <div className="max-w-sm">
@@ -231,7 +231,7 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Single Action (Rules)
         </h4>
         <div className="max-w-sm">
@@ -254,7 +254,7 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Disabled Action
         </h4>
         <SelectionBar
