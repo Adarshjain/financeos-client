@@ -1,144 +1,40 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Check, MoreHorizontal, Plus, Search, Upload, X } from 'lucide-react';
+import React from 'react';
 
+import { Icon } from '../Icon/Icon';
 import { Button } from './Button';
 
 const meta: Meta<typeof Button> = {
   title: 'DS/Actions/Button',
   component: Button,
-  parameters: {
-    layout: 'padded',
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['secondary', 'primary', 'danger', 'danger-filled', 'ghost'],
+    },
+    size: {
+      control: 'select',
+      options: ['sm', 'md', 'xl'],
+    },
+    disabled: {
+      control: 'boolean',
+    },
+    loading: {
+      control: 'boolean',
+    },
+    iconOnly: {
+      control: 'boolean',
+    },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof Button>;
 
-export const Secondary: Story = {
-  args: {
-    variant: 'secondary',
-    children: 'Cancel',
-  },
-};
-
-export const Primary: Story = {
-  args: {
-    variant: 'primary',
-    children: 'Save & apply',
-  },
-};
-
-export const DangerOutline: Story = {
-  args: {
-    variant: 'danger',
-    children: 'Delete rule',
-  },
-};
-
-export const DangerFilled: Story = {
-  args: {
-    variant: 'danger-filled',
-    children: 'Delete statement',
-  },
-};
-
-export const Ghost: Story = {
-  args: {
-    variant: 'ghost',
-    children: 'Skip',
-  },
-};
-
-export const IconButton: Story = {
-  render: () => (
-    <div className="flex items-center gap-space-8">
-      <Button
-        variant="secondary"
-        iconOnly
-        aria-label="Search transactions"
-        icon={<Search className="h-space-16 w-space-16" />}
-      />
-      <Button
-        variant="primary"
-        iconOnly
-        aria-label="Add entry"
-        icon={<Plus className="h-space-16 w-space-16" />}
-      />
-      <Button
-        variant="ghost"
-        iconOnly
-        aria-label="More actions"
-        icon={<MoreHorizontal className="h-space-14 w-space-14" />}
-      />
-      <Button
-        variant="ghost"
-        size="sm"
-        iconOnly
-        aria-label="Remove filter"
-        icon={<X className="h-space-12 w-space-12" />}
-      />
-    </div>
-  ),
-};
-
-export const Small: Story = {
-  args: {
-    size: 'sm',
-    children: 'Approve rule',
-  },
-};
-
-export const Default: Story = {
-  args: {
-    size: 'md',
-    children: 'Mark paid',
-  },
-};
-
-export const Phone: Story = {
-  args: {
-    size: 'xl',
-    variant: 'primary',
-    children: 'Save changes',
-  },
-};
-
-export const Loading: Story = {
-  args: {
-    variant: 'primary',
-    loading: true,
-    loadingLabel: 'Saving…',
-  },
-};
-
-export const Disabled: Story = {
-  args: {
-    variant: 'primary',
-    disabled: true,
-    children: 'Disabled action',
-  },
-};
-
-export const WithIcon: Story = {
-  args: {
-    variant: 'secondary',
-    icon: <Upload className="h-space-14 w-space-14" />,
-    children: 'Upload statement',
-  },
-};
-
-export const WithCount: Story = {
-  args: {
-    variant: 'secondary',
-    icon: <Check className="h-space-14 w-space-14" />,
-    count: 9,
-    children: 'Approve',
-  },
-};
-
 export const AllVariants: Story = {
   render: () => (
-    <div className="space-y-space-24 max-w-2xl font-text">
+    <div className="space-y-space-24 max-w-2xl font-text p-space-16 bg-canvas">
       <div>
         <h3 className="text-overline uppercase text-ink-4 mb-space-8">Variants</h3>
         <div className="flex flex-wrap items-center gap-space-8">
@@ -189,26 +85,26 @@ export const AllVariants: Story = {
             variant="secondary"
             iconOnly
             aria-label="Search"
-            icon={<Search className="h-space-16 w-space-16" />}
+            icon={<Icon icon={Search} size="md" />}
           />
           <Button
             variant="primary"
             iconOnly
             aria-label="Add"
-            icon={<Plus className="h-space-16 w-space-16" />}
+            icon={<Icon icon={Plus} size="md" />}
           />
           <Button
             variant="ghost"
             iconOnly
             aria-label="More"
-            icon={<MoreHorizontal className="h-space-14 w-space-14" />}
+            icon={<Icon icon={MoreHorizontal} size="md" />}
           />
           <Button
             variant="ghost"
             size="sm"
             iconOnly
             aria-label="Remove"
-            icon={<X className="h-space-12 w-space-12" />}
+            icon={<Icon icon={X} size="sm" />}
           />
         </div>
       </div>
@@ -216,8 +112,8 @@ export const AllVariants: Story = {
       <div>
         <h3 className="text-overline uppercase text-ink-4 mb-space-8">With icon · with count</h3>
         <div className="flex flex-wrap items-center gap-space-8">
-          <Button icon={<Upload className="h-space-14 w-space-14" />}>Upload</Button>
-          <Button icon={<Check className="h-space-14 w-space-14" />} count={9}>
+          <Button icon={<Icon icon={Upload} size="md" />}>Upload</Button>
+          <Button icon={<Icon icon={Check} size="md" />} count={9}>
             Approve
           </Button>
         </div>
@@ -236,4 +132,126 @@ export const AllVariants: Story = {
       </div>
     </div>
   ),
+};
+
+export const Secondary: Story = {
+  args: {
+    variant: 'secondary',
+    children: 'Cancel',
+  },
+};
+
+export const Primary: Story = {
+  args: {
+    variant: 'primary',
+    children: 'Save & apply',
+  },
+};
+
+export const DangerOutline: Story = {
+  args: {
+    variant: 'danger',
+    children: 'Delete rule',
+  },
+};
+
+export const DangerFilled: Story = {
+  args: {
+    variant: 'danger-filled',
+    children: 'Delete statement',
+  },
+};
+
+export const Ghost: Story = {
+  args: {
+    variant: 'ghost',
+    children: 'Skip',
+  },
+};
+
+export const IconButton: Story = {
+  render: () => (
+    <div className="flex items-center gap-space-8">
+      <Button
+        variant="secondary"
+        iconOnly
+        aria-label="Search transactions"
+        icon={<Icon icon={Search} size="md" />}
+      />
+      <Button
+        variant="primary"
+        iconOnly
+        aria-label="Add entry"
+        icon={<Icon icon={Plus} size="md" />}
+      />
+      <Button
+        variant="ghost"
+        iconOnly
+        aria-label="More actions"
+        icon={<Icon icon={MoreHorizontal} size="md" />}
+      />
+      <Button
+        variant="ghost"
+        size="sm"
+        iconOnly
+        aria-label="Remove filter"
+        icon={<Icon icon={X} size="sm" />}
+      />
+    </div>
+  ),
+};
+
+export const Small: Story = {
+  args: {
+    size: 'sm',
+    children: 'Approve rule',
+  },
+};
+
+export const Default: Story = {
+  args: {
+    size: 'md',
+    children: 'Mark paid',
+  },
+};
+
+export const Phone: Story = {
+  args: {
+    size: 'xl',
+    variant: 'primary',
+    children: 'Save changes',
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    variant: 'primary',
+    loading: true,
+    loadingLabel: 'Saving…',
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    variant: 'primary',
+    disabled: true,
+    children: 'Disabled action',
+  },
+};
+
+export const WithIcon: Story = {
+  args: {
+    variant: 'secondary',
+    icon: <Icon icon={Upload} size="md" />,
+    children: 'Upload statement',
+  },
+};
+
+export const WithCount: Story = {
+  args: {
+    variant: 'secondary',
+    icon: <Icon icon={Check} size="md" />,
+    count: 9,
+    children: 'Approve',
+  },
 };

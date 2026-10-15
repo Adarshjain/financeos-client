@@ -62,7 +62,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 7 | TopBar | Not started |
 | 8 | Tabs | Changes requested |
 | 9 | Pager | Changes requested |
-| 10 | Button | Changes requested |
+| 10 | Button | Ready for review |
 | 11 | Menu | Changes requested |
 | 12 | SelectionBar | Changes requested |
 | 13 | SwipeActions | Changes requested |
@@ -83,7 +83,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 28 | RuleCard | Changes requested |
 | 29 | KpiTile | Changes requested |
 | 30 | Widget | Changes requested |
-| 31 | Badge | Changes requested |
+| 31 | Badge | Ready for review |
 | 32 | CategoryChip | Ready for review |
 | 33 | StatusWords | Ready for review |
 | 34 | ProgressBar | Ready for review |
@@ -164,6 +164,20 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 2 · Badge count and Button:
+  - Added `count` variant to `src/components/ds/Badge/Badge.tsx`: 16px count bubble (`h-space-16 min-w-space-16 px-space-6 rounded-ds-pill`, `tab-label`, tones ink, danger and warning; displays "99+" for counts over 99).
+  - Updated `src/components/ds/Badge/Badge.stories.tsx` with `AllVariants` as first export and stories driven by args with Controls (Green, Amber, Rose, Blue, Grey, Count, CountDanger, CountWarning, CountOver99).
+  - Updated `src/components/ds/Badge/Badge.test.tsx` testing count bubble styling, ink/danger/warning tones, and "99+" over 99 threshold.
+  - Updated `src/components/ds/Button/Button.tsx`: imports and uses `Badge` with `variant="count"` instead of drawing its own count pill, and uses `Icon` with Lucide `Loader2` instead of raw icon; maintained strict variants (`primary`, `secondary`, `danger`, `danger-filled`, `ghost`) and sizes (`sm`, `md`, `xl`).
+  - Updated `src/components/ds/Button/Button.stories.tsx`: `AllVariants` as first export, all icons driven through `Icon` (`sm` 14px for small button, `md` 16px for standard buttons), stories driven by args with Controls.
+  - Updated `src/components/ds/Button/Button.test.tsx`: tested icon-only button and count bubble via Badge.
+  - Files deleted: none.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 3 touched test files / 22 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Stories compared: `DS/Data display/Badge/*` and `DS/Actions/Button/*` against `Badge/preview.html`, `Button/preview.html`, and `ds-06-actions.webp` at 390px and 1440px in light and dark.
+  - Differences left open: Count pill appearance on primary button (see Open questions).
+  - Deviations: none.
+
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 1 · Icon:
   - Created new `Icon` primitive in `src/components/ds/Icon/Icon.tsx` wrapping Lucide icons at token sizes (`sm` 14px `w-icon-sm h-icon-sm`, `md` 16px `w-icon-md h-icon-md`, `lg` 20px `w-icon-lg h-icon-lg`), 2px stroke, `currentColor`.
