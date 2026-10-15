@@ -48,6 +48,8 @@ export default defineConfig({
       name: 'ui-desktop',
       testMatch: /ui\/.*\.spec\.ts/,
       testIgnore: /ui\/chat\.spec\.ts/,
+      // @mobile-only tests exercise phone-only UI (bottom bar, menu sheet, card lists); ui-mobile runs them.
+      grepInvert: /@mobile-only/,
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1440, height: 900 },

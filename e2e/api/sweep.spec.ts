@@ -70,14 +70,9 @@ test.describe('@sweep 401 Negative Sweep', () => {
       continue;
     }
 
-    const key = `${op.method} ${op.path}`;
-    const allowlistedReason = allowlistMap.get(key);
-
+    // No allowlist here: its entries exempt an operation from the unknown-id 404 check only. Every
+    // non-public operation must still reject an anonymous caller.
     test(`401 on ${op.method} ${op.path}`, async () => {
-      if (allowlistedReason) {
-        test.skip(true, `Allowlisted: ${allowlistedReason}`);
-      }
-
       const resolvedPath = substitutePath(op.path);
       const url = `${E2E_API_URL}${resolvedPath}`;
       const bodyInfo = getRequestBodyInfo(op.method, op.path);

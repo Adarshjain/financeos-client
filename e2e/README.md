@@ -87,7 +87,8 @@ The harness enforces mechanical coverage gates in `e2e/global-teardown.ts`:
 - Every entry in `e2e/coverage/api-allowlist.json` (`{ method, path, reason, phase }`) and `e2e/coverage/routes-allowlist.json` (`{ route, reason, phase }`) must have a non-empty `reason` and target `phase` (e.g. 5–15).
 - **Stale Entries Fail the Run:** An allowlist entry that has become covered will cause the coverage gate to fail with `remove from allowlist`.
 - **Exit Criterion:** Shrinking the allowlist is a mandatory exit criterion for each module phase.
-- Negative sweep exceptions live in `e2e/coverage/sweep-allowlist.json` (`{ method, path, reason }`), reserved only for legitimate architectural deviations.
+- Unknown-id sweep exceptions live in `e2e/coverage/sweep-allowlist.json` (`{ method, path, reason }`), reserved only for legitimate architectural deviations. The 401 sweep has no exceptions.
+- Tag a test `@mobile-only` when its UI exists only below the desktop breakpoint: `ui-mobile` runs it and `ui-desktop` leaves it out, so it never shows as skipped. Plain `@mobile` runs on both.
 
 ## Reports and Logs
 

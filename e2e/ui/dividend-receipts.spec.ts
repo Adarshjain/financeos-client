@@ -310,10 +310,9 @@ test.describe('Dividend receipt reconciliation UI (@ui)', () => {
     await expect(row).toContainText(`+₹500.00 · Unrecorded Bank · ${fmtDate(creditDate)}`);
   });
 
-  test('mobile: card shows the Receipt badge and the receipt filter is in the page action bar (@mobile)', async ({
+  test('mobile: card shows the Receipt badge and the receipt filter is in the page action bar (@mobile-only)', async ({
     page,
-  }, testInfo) => {
-    test.skip(testInfo.project.name !== 'ui-mobile', 'card layout + action bar only exist on the mobile viewport');
+  }) => {
     const bank = await createBankAccount(api, { name: 'Mobile Bank' });
     await createTransaction(api, bank.id, { amount: 50, date: todayString(-5), description: 'Misc credit' });
     const h = await seedHolding(api);
