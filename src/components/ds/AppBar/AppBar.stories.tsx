@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React, { useState } from 'react';
 
-import { AppBar, BrandMark, DesktopRail, DesktopTopBar } from './AppBar';
+import { AppBar } from './AppBar';
 
 const meta: Meta<typeof AppBar> = {
   title: 'DS/Navigation/AppBar',
@@ -9,162 +8,63 @@ const meta: Meta<typeof AppBar> = {
   parameters: {
     layout: 'padded',
   },
+  argTypes: {
+    title: { control: 'text' },
+    crumb: { control: 'text' },
+    back: { control: 'boolean' },
+    showActions: { control: 'boolean' },
+    addAriaLabel: { control: 'text' },
+    backAriaLabel: { control: 'text' },
+  },
 };
 
 export default meta;
 type Story = StoryObj<typeof AppBar>;
 
-export const TopLevel: Story = {
-  name: 'Top level',
+export const AllVariants: Story = {
   render: () => (
-    <div className="max-w-md bg-canvas p-space-16 rounded-ds-lg">
-      <AppBar
-        title="Transactions"
-        crumb="Money"
-        onAsk={() => alert('Ask the data')}
-        onSearch={() => alert('Search')}
-        onAdd={() => alert('Quick add')}
-        addAriaLabel="Quick add transaction"
-      />
+    <div className="space-y-space-24 max-w-sm font-text">
+      <div>
+        <div className="text-caption font-bold text-ink-4 uppercase tracking-wider mb-space-8">
+          Top level
+        </div>
+        <AppBar crumb="Money" title="Transactions" />
+      </div>
+
+      <div>
+        <div className="text-caption font-bold text-ink-4 uppercase tracking-wider mb-space-8">
+          Detail screen
+        </div>
+        <AppBar back crumb="Accounts" title="HDFC Regalia Gold" />
+      </div>
+
+      <div>
+        <div className="text-caption font-bold text-ink-4 uppercase tracking-wider mb-space-8">
+          Without crumb
+        </div>
+        <AppBar title="Overview" />
+      </div>
     </div>
   ),
+};
+
+export const TopLevel: Story = {
+  args: {
+    crumb: 'Money',
+    title: 'Transactions',
+  },
 };
 
 export const DetailScreen: Story = {
-  name: 'Detail screen',
-  render: () => (
-    <div className="max-w-md bg-canvas p-space-16 rounded-ds-lg">
-      <AppBar
-        back
-        title="HDFC Regalia Gold"
-        crumb="Accounts"
-        onBack={() => alert('Go back')}
-        onAsk={() => alert('Ask')}
-        onSearch={() => alert('Search')}
-        onAdd={() => alert('Add statement')}
-        addAriaLabel="Add statement"
-      />
-    </div>
-  ),
+  args: {
+    back: true,
+    crumb: 'Accounts',
+    title: 'HDFC Regalia Gold',
+  },
 };
 
 export const WithoutCrumb: Story = {
-  name: 'Without crumb',
-  render: () => (
-    <div className="max-w-md bg-canvas p-space-16 rounded-ds-lg">
-      <AppBar
-        title="Settings"
-        onAsk={() => alert('Ask')}
-        onSearch={() => alert('Search')}
-        onAdd={() => alert('Add')}
-      />
-    </div>
-  ),
-};
-
-export const DesktopTopBarStory: Story = {
-  name: 'DesktopTopBar',
-  render: () => (
-    <div className="w-full bg-canvas p-space-16 rounded-ds-lg">
-      <DesktopTopBar
-        title="Transactions"
-        onAdd={() => alert('Add')}
-        onAsk={() => alert('Ask the data')}
-        onNotifications={() => alert('Notifications')}
-      />
-    </div>
-  ),
-};
-
-const InteractiveDesktopRail: React.FC = () => {
-  const [active, setActive] = useState('/transactions');
-
-  return (
-    <div className="bg-canvas p-space-16 rounded-ds-lg inline-block">
-      <DesktopRail
-        activeHref={active}
-        onNavigate={(href) => setActive(href)}
-        onSearch={() => alert('Open search palette')}
-        userName="Arjun Mehta"
-        userEmail="arjun@example.com"
-        userInitials="AM"
-      />
-    </div>
-  );
-};
-
-export const DesktopRailStory: Story = {
-  name: 'DesktopRail',
-  render: () => <InteractiveDesktopRail />,
-};
-
-export const AllVariants: Story = {
-  name: 'All variants',
-  render: () => (
-    <div className="space-y-space-24 max-w-xl">
-      <div>
-        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Phone Top Level
-        </h4>
-        <AppBar
-          title="Transactions"
-          crumb="Money"
-          onAsk={() => {}}
-          onSearch={() => {}}
-          onAdd={() => {}}
-        />
-      </div>
-
-      <div>
-        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Phone Detail Screen
-        </h4>
-        <AppBar
-          back
-          title="HDFC Regalia Gold"
-          crumb="Accounts"
-          onBack={() => {}}
-          onAsk={() => {}}
-          onSearch={() => {}}
-          onAdd={() => {}}
-        />
-      </div>
-
-      <div>
-        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Phone Without Crumb
-        </h4>
-        <AppBar
-          title="Settings"
-          onAsk={() => {}}
-          onSearch={() => {}}
-          onAdd={() => {}}
-        />
-      </div>
-
-      <div>
-        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Brand Mark
-        </h4>
-        <div className="flex items-center gap-space-12">
-          <BrandMark />
-          <BrandMark symbol="$" />
-          <BrandMark symbol="€" />
-        </div>
-      </div>
-
-      <div>
-        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Desktop Top Bar
-        </h4>
-        <DesktopTopBar
-          title="Settings"
-          crumb="Workspace"
-          onAdd={() => {}}
-          onAsk={() => {}}
-          onNotifications={() => {}}
-        />
-      </div>
-    </div>
-  ),
+  args: {
+    title: 'Overview',
+  },
 };
