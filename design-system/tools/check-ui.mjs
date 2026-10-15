@@ -55,7 +55,7 @@ const RULES = [
   {
     id: 'arbitrary-value',
     re: /(?:^|[\s"'`:])(?!grid-cols-|grid-rows-)[a-z][\w-]*-\[[^\]]+\]/,
-    why: 'arbitrary value — use a token step (grid-cols/grid-rows templates are the only exception)',
+    why: 'arbitrary value — use a token step (grid-cols/grid-rows templates are the only exception; for Radix state use data-open:, data-highlighted:… from the Phase 1 contract)',
   },
   {
     id: 'raw-font-size',
