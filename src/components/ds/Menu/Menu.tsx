@@ -2,223 +2,64 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
-
-export interface MenuItemProps
-  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onSelect'> {
-  icon?: React.ReactNode;
-  hint?: React.ReactNode;
-  destructive?: boolean;
-  active?: boolean;
-  action?: boolean;
-  onSelect?: () => void;
-}
-
-export const MenuItem = forwardRef<HTMLButtonElement, MenuItemProps>(
-  (
-    {
-      children,
-      icon,
-      hint,
-      destructive = false,
-      active = false,
-      action = false,
-      disabled = false,
-      onSelect,
-      onClick,
-      className,
-      type = 'button',
-      ...props
-    },
-    ref,
-  ) => {
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (disabled) return;
-      onClick?.(e);
-      onSelect?.();
-    };
-
-    return (
-      <button
-        ref={ref}
-        type={type}
-        role="menuitem"
-        disabled={disabled}
-        onClick={handleClick}
-        className={cn(
-          'flex items-center gap-space-10 w-full text-left min-h-control-lg px-space-10 rounded-ds-md font-text font-semibold text-body select-none transition-colors duration-fast outline-none',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
-          !disabled && !destructive && !active && !action && 'text-ink hover:bg-hover focus-visible:bg-hover cursor-pointer',
-          !disabled && active && 'bg-brand-tint text-brand-strong hover:bg-brand-tint cursor-pointer',
-          !disabled && destructive && 'text-danger hover:bg-danger-tint focus-visible:bg-danger-tint cursor-pointer',
-          !disabled && action && 'text-brand font-bold hover:bg-hover focus-visible:bg-hover cursor-pointer',
-          disabled && 'text-ink-faint cursor-not-allowed',
-          className,
-        )}
-        {...props}
-      >
-        {icon ? (
-          <span className="shrink-0 flex items-center text-current">{icon}</span>
-        ) : null}
-        <span className="flex-1 truncate">{children}</span>
-        {hint ? (
-          <span
-            className={cn(
-              'ml-auto font-text font-semibold text-caption shrink-0 pl-space-6',
-              active ? 'text-brand-strong' : 'text-ink-4',
-            )}
-          >
-            {hint}
-          </span>
-        ) : null}
-      </button>
-    );
-  },
-);
-
-MenuItem.displayName = 'MenuItem';
-
-export interface MenuSeparatorProps
-  extends React.HTMLAttributes<HTMLDivElement> {}
-
-export const MenuSeparator = forwardRef<HTMLDivElement, MenuSeparatorProps>(
-  ({ className, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        role="separator"
-        className={cn('h-px bg-line-soft my-space-4 mx-space-6', className)}
-        {...props}
-      />
-    );
-  },
-);
-
-MenuSeparator.displayName = 'MenuSeparator';
-
-export interface MenuGroupProps extends React.HTMLAttributes<HTMLDivElement> {
-  label?: React.ReactNode;
-}
-
-export const MenuGroup = forwardRef<HTMLDivElement, MenuGroupProps>(
-  ({ label, className, children, ...props }, ref) => {
-    return (
-      <div ref={ref} role="group" className={cn('flex flex-col', className)} {...props}>
-        {label ? (
-          <div className="font-text text-overline font-extrabold uppercase text-ink-4 px-space-10 pt-space-8 pb-space-4 select-none">
-            {label}
-          </div>
-        ) : null}
-        {children}
-      </div>
-    );
-  },
-);
-
-MenuGroup.displayName = 'MenuGroup';
-
-export interface MenuProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-export const Menu = forwardRef<HTMLDivElement, MenuProps>(
-  ({ className, children, onKeyDown, ...props }, ref) => {
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-      onKeyDown?.(e);
-      if (e.defaultPrevented) return;
-
-      const isArrowDown = e.key === 'ArrowDown';
-      const isArrowUp = e.key === 'ArrowUp';
-      const isHome = e.key === 'Home';
-      const isEnd = e.key === 'End';
-
-      if (!isArrowDown && !isArrowUp && !isHome && !isEnd) return;
-
-      const container = e.currentTarget;
-      const items = Array.from(
-        container.querySelectorAll<HTMLButtonElement>(
-          'button[role="menuitem"]:not([disabled])',
-        ),
-      );
-
-      if (items.length === 0) return;
-
-      e.preventDefault();
-      const currentIndex = items.indexOf(document.activeElement as HTMLButtonElement);
-
-      if (isHome) {
-        items[0]?.focus();
-      } else if (isEnd) {
-        items[items.length - 1]?.focus();
-      } else if (isArrowDown) {
-        const nextIndex = currentIndex < 0 ? 0 : (currentIndex + 1) % items.length;
-        items[nextIndex]?.focus();
-      } else if (isArrowUp) {
-        const prevIndex =
-          currentIndex <= 0 ? items.length - 1 : currentIndex - 1;
-        items[prevIndex]?.focus();
-      }
-    };
-
-    return (
-      <div
-        ref={ref}
-        role="menu"
-        onKeyDown={handleKeyDown}
-        className={cn(
-          'bg-surface border border-line rounded-ds-lg shadow-pop p-space-6 flex flex-col w-full min-w-0',
-          className,
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    );
-  },
-);
-
-Menu.displayName = 'Menu';
-
-/* ---------- DropdownMenu Primitives (Floating Menu) ---------- */
+import { getItemRowClass, ItemRowStyleOptions } from '../itemRow';
 
 export const DropdownMenu = DropdownMenuPrimitive.Root;
 export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
-export const DropdownMenuGroup = DropdownMenuPrimitive.Group;
 export const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
+export const DropdownMenuGroup = DropdownMenuPrimitive.Group;
+export const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
+export const DropdownMenuSub = DropdownMenuPrimitive.Sub;
+export const DropdownMenuSubTrigger = DropdownMenuPrimitive.SubTrigger;
+export const DropdownMenuSubContent = DropdownMenuPrimitive.SubContent;
 
-export interface DropdownMenuContentProps
-  extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content> {}
+export const MenuTrigger = DropdownMenuPrimitive.Trigger;
+export const MenuPortal = DropdownMenuPrimitive.Portal;
+export const MenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
+export const MenuSub = DropdownMenuPrimitive.Sub;
+export const MenuSubTrigger = DropdownMenuPrimitive.SubTrigger;
+export const MenuSubContent = DropdownMenuPrimitive.SubContent;
 
-export const DropdownMenuContent = forwardRef<
+export interface MenuContentProps
+  extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content> {
+  sideOffset?: number;
+}
+
+export const MenuContent = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
-  DropdownMenuContentProps
->(({ className, sideOffset = 4, ...props }, ref) => {
+  MenuContentProps
+>(({ className, sideOffset = 4, children, ...props }, ref) => {
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
         ref={ref}
         sideOffset={sideOffset}
         className={cn(
-          'z-sticky bg-surface border border-line rounded-ds-lg shadow-pop p-space-6 flex flex-col min-w-0 outline-none',
+          'z-overlay bg-surface border border-line rounded-ds-lg shadow-pop p-space-6 flex flex-col min-w-menu-trigger outline-none',
+          'animate-in fade-in-0 slide-in-from-top-1 duration-base',
           className,
         )}
         {...props}
-      />
+      >
+        {children}
+      </DropdownMenuPrimitive.Content>
     </DropdownMenuPrimitive.Portal>
   );
 });
 
-DropdownMenuContent.displayName = 'DropdownMenuContent';
+MenuContent.displayName = 'MenuContent';
+export const DropdownMenuContent = MenuContent;
 
-export interface DropdownMenuItemProps
-  extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item> {
+export interface MenuItemProps
+  extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Item>,
+    ItemRowStyleOptions {
   icon?: React.ReactNode;
   hint?: React.ReactNode;
-  destructive?: boolean;
-  active?: boolean;
-  action?: boolean;
 }
 
-export const DropdownMenuItem = forwardRef<
+export const MenuItem = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Item>,
-  DropdownMenuItemProps
+  MenuItemProps
 >(
   (
     {
@@ -238,16 +79,13 @@ export const DropdownMenuItem = forwardRef<
       <DropdownMenuPrimitive.Item
         ref={ref}
         disabled={disabled}
-        className={cn(
-          'flex items-center gap-space-10 w-full text-left min-h-control-lg px-space-10 rounded-ds-md font-text font-semibold text-body select-none transition-colors duration-fast outline-none',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
-          !disabled && !destructive && !active && !action && 'text-ink hover:bg-hover focus-visible:bg-hover cursor-pointer',
-          !disabled && active && 'bg-brand-tint text-brand-strong hover:bg-brand-tint cursor-pointer',
-          !disabled && destructive && 'text-danger hover:bg-danger-tint focus-visible:bg-danger-tint cursor-pointer',
-          !disabled && action && 'text-brand font-bold hover:bg-hover focus-visible:bg-hover cursor-pointer',
-          disabled && 'text-ink-faint cursor-not-allowed',
+        className={getItemRowClass({
+          active,
+          destructive,
+          action,
+          disabled,
           className,
-        )}
+        })}
         {...props}
       >
         {icon ? (
@@ -269,14 +107,15 @@ export const DropdownMenuItem = forwardRef<
   },
 );
 
-DropdownMenuItem.displayName = 'DropdownMenuItem';
+MenuItem.displayName = 'MenuItem';
+export const DropdownMenuItem = MenuItem;
 
-export interface DropdownMenuSeparatorProps
+export interface MenuSeparatorProps
   extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Separator> {}
 
-export const DropdownMenuSeparator = forwardRef<
+export const MenuSeparator = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
-  DropdownMenuSeparatorProps
+  MenuSeparatorProps
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Separator
     ref={ref}
@@ -285,14 +124,43 @@ export const DropdownMenuSeparator = forwardRef<
   />
 ));
 
-DropdownMenuSeparator.displayName = 'DropdownMenuSeparator';
+MenuSeparator.displayName = 'MenuSeparator';
+export const DropdownMenuSeparator = MenuSeparator;
 
-export interface DropdownMenuLabelProps
+export interface MenuGroupProps
+  extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Group> {
+  label?: React.ReactNode;
+}
+
+export const MenuGroup = forwardRef<
+  React.ElementRef<typeof DropdownMenuPrimitive.Group>,
+  MenuGroupProps
+>(({ label, className, children, ...props }, ref) => {
+  return (
+    <DropdownMenuPrimitive.Group
+      ref={ref}
+      className={cn('flex flex-col', className)}
+      {...props}
+    >
+      {label ? (
+        <DropdownMenuPrimitive.Label className="font-text text-overline font-extrabold uppercase text-ink-4 px-space-10 pt-space-8 pb-space-4 select-none">
+          {label}
+        </DropdownMenuPrimitive.Label>
+      ) : null}
+      {children}
+    </DropdownMenuPrimitive.Group>
+  );
+});
+
+MenuGroup.displayName = 'MenuGroup';
+export const DropdownMenuGroupWrapper = MenuGroup;
+
+export interface MenuLabelProps
   extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> {}
 
-export const DropdownMenuLabel = forwardRef<
+export const MenuLabel = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Label>,
-  DropdownMenuLabelProps
+  MenuLabelProps
 >(({ className, ...props }, ref) => (
   <DropdownMenuPrimitive.Label
     ref={ref}
@@ -304,4 +172,79 @@ export const DropdownMenuLabel = forwardRef<
   />
 ));
 
-DropdownMenuLabel.displayName = 'DropdownMenuLabel';
+MenuLabel.displayName = 'MenuLabel';
+export const DropdownMenuLabel = MenuLabel;
+
+export interface MenuProps extends DropdownMenuPrimitive.DropdownMenuProps {
+  trigger?: React.ReactNode;
+  children?: React.ReactNode;
+  align?: 'start' | 'center' | 'end';
+  side?: 'top' | 'bottom' | 'left' | 'right';
+  sideOffset?: number;
+  contentClassName?: string;
+}
+
+export const Menu: React.FC<MenuProps> & {
+  Root: typeof DropdownMenuPrimitive.Root;
+  Trigger: typeof DropdownMenuPrimitive.Trigger;
+  Content: typeof MenuContent;
+  Item: typeof MenuItem;
+  Separator: typeof MenuSeparator;
+  Group: typeof MenuGroup;
+  Label: typeof MenuLabel;
+} = ({
+  trigger,
+  children,
+  align = 'start',
+  side = 'bottom',
+  sideOffset = 4,
+  contentClassName,
+  open,
+  defaultOpen,
+  onOpenChange,
+  modal,
+  dir,
+}) => {
+  if (trigger) {
+    return (
+      <DropdownMenuPrimitive.Root
+        open={open}
+        defaultOpen={defaultOpen}
+        onOpenChange={onOpenChange}
+        modal={modal}
+        dir={dir}
+      >
+        <DropdownMenuPrimitive.Trigger asChild>{trigger}</DropdownMenuPrimitive.Trigger>
+        <MenuContent
+          align={align}
+          side={side}
+          sideOffset={sideOffset}
+          className={contentClassName}
+        >
+          {children}
+        </MenuContent>
+      </DropdownMenuPrimitive.Root>
+    );
+  }
+
+  return (
+    <DropdownMenuPrimitive.Root
+      open={open}
+      defaultOpen={defaultOpen}
+      onOpenChange={onOpenChange}
+      modal={modal}
+      dir={dir}
+    >
+      {children}
+    </DropdownMenuPrimitive.Root>
+  );
+};
+
+Menu.displayName = 'Menu';
+Menu.Root = DropdownMenuPrimitive.Root;
+Menu.Trigger = DropdownMenuPrimitive.Trigger;
+Menu.Content = MenuContent;
+Menu.Item = MenuItem;
+Menu.Separator = MenuSeparator;
+Menu.Group = MenuGroup;
+Menu.Label = MenuLabel;

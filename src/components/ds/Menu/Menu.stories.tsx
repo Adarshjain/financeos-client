@@ -1,280 +1,306 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Check, Eye, LayoutGrid, MoreVertical, Plus } from 'lucide-react';
+import { Calendar, Check, Eye, MoreVertical, Plus } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '../Button/Button';
 import { Icon } from '../Icon/Icon';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
   Menu,
   MenuGroup,
   MenuItem,
   MenuSeparator,
 } from './Menu';
 
-const meta = {
+const meta: Meta<typeof Menu> = {
   title: 'DS/Actions/Menu',
   component: Menu,
-  parameters: {
-    layout: 'padded',
+  argTypes: {
+    align: {
+      control: { type: 'select' },
+      options: ['start', 'center', 'end'],
+    },
+    side: {
+      control: { type: 'select' },
+      options: ['top', 'bottom', 'left', 'right'],
+    },
+    defaultOpen: {
+      control: { type: 'boolean' },
+    },
   },
-  tags: ['autodocs'],
-} satisfies Meta<typeof Menu>;
+  args: {
+    align: 'start',
+    side: 'bottom',
+    defaultOpen: true,
+  },
+};
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof Menu>;
+
+const ActionsContent = () => (
+  <>
+    <MenuItem>Find matches</MenuItem>
+    <MenuItem>Edit rule</MenuItem>
+    <MenuSeparator />
+    <MenuItem destructive>Delete rule</MenuItem>
+  </>
+);
+
+const IconsAndHintsContent = () => (
+  <>
+    <MenuItem
+      icon={<Icon icon={Plus} size="sm" />}
+      hint="built-in or report"
+    >
+      Add widget
+    </MenuItem>
+    <MenuItem
+      icon={<Icon icon={Eye} size="sm" />}
+      hint="arrange, resize"
+    >
+      Edit dashboard
+    </MenuItem>
+    <MenuItem icon={<Icon icon={Calendar} size="sm" />}>
+      New dashboard
+    </MenuItem>
+  </>
+);
+
+const SnoozePresetsContent = () => (
+  <>
+    <MenuItem hint="Wed 14 Oct">Tomorrow</MenuItem>
+    <MenuItem hint="Fri 16 Oct">In 3 days</MenuItem>
+    <MenuItem hint="Tue 20 Oct">Next week</MenuItem>
+    <MenuSeparator />
+    <MenuItem>Pick a date…</MenuItem>
+  </>
+);
+
+const DisabledItemContent = () => (
+  <>
+    <MenuItem>Edit details</MenuItem>
+    <MenuItem>Reassign transactions</MenuItem>
+    <MenuSeparator />
+    <MenuItem disabled hint="has transactions">
+      Delete cardholder
+    </MenuItem>
+  </>
+);
+
+const SectionedContent = () => (
+  <>
+    <MenuGroup label="This widget">
+      <MenuItem>Widget settings</MenuItem>
+      <MenuItem>View full page</MenuItem>
+    </MenuGroup>
+    <MenuGroup label="Report">
+      <MenuItem>Edit report</MenuItem>
+      <MenuItem>Duplicate as my report</MenuItem>
+    </MenuGroup>
+  </>
+);
+
+const SwitcherContent = () => (
+  <>
+    <MenuItem
+      active
+      hint={
+        <span className="inline-flex items-center gap-space-2 text-brand-strong">
+          Default <Icon icon={Check} size="sm" />
+        </span>
+      }
+    >
+      Home
+    </MenuItem>
+    <MenuItem>Money overview</MenuItem>
+    <MenuItem>Cards & loans</MenuItem>
+    <MenuSeparator />
+    <MenuItem action>View all dashboards</MenuItem>
+  </>
+);
+
+export const AllVariants: Story = {
+  render: () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-space-24 p-space-16 max-w-4xl">
+      <div className="flex flex-col gap-space-8">
+        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
+          Actions
+        </span>
+        <div className="relative">
+          <Menu
+            defaultOpen
+            trigger={
+              <Button variant="secondary" iconOnly aria-label="Actions">
+                <Icon icon={MoreVertical} size="md" />
+              </Button>
+            }
+          >
+            <ActionsContent />
+          </Menu>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-space-8">
+        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
+          With icons and hints
+        </span>
+        <div className="relative">
+          <Menu
+            defaultOpen
+            trigger={
+              <Button variant="secondary" iconOnly aria-label="Options">
+                <Icon icon={MoreVertical} size="md" />
+              </Button>
+            }
+          >
+            <IconsAndHintsContent />
+          </Menu>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-space-8 pt-space-48">
+        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
+          Snooze presets
+        </span>
+        <div className="relative">
+          <Menu
+            defaultOpen
+            trigger={
+              <Button variant="secondary" iconOnly aria-label="Snooze">
+                <Icon icon={MoreVertical} size="md" />
+              </Button>
+            }
+          >
+            <SnoozePresetsContent />
+          </Menu>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-space-8 pt-space-48">
+        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
+          Disabled item
+        </span>
+        <div className="relative">
+          <Menu
+            defaultOpen
+            trigger={
+              <Button variant="secondary" iconOnly aria-label="Cardholder">
+                <Icon icon={MoreVertical} size="md" />
+              </Button>
+            }
+          >
+            <DisabledItemContent />
+          </Menu>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-space-8 pt-space-48">
+        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
+          Sectioned
+        </span>
+        <div className="relative">
+          <Menu
+            defaultOpen
+            trigger={
+              <Button variant="secondary" iconOnly aria-label="Widget">
+                <Icon icon={MoreVertical} size="md" />
+              </Button>
+            }
+          >
+            <SectionedContent />
+          </Menu>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-space-8 pt-space-48">
+        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
+          Switcher with a footer link
+        </span>
+        <div className="relative">
+          <Menu
+            defaultOpen
+            trigger={
+              <Button variant="secondary" iconOnly aria-label="Dashboards">
+                <Icon icon={MoreVertical} size="md" />
+              </Button>
+            }
+          >
+            <SwitcherContent />
+          </Menu>
+        </div>
+      </div>
+    </div>
+  ),
+};
 
 export const Actions: Story = {
-  render: () => {
-    return (
-      <div className="max-w-xs">
-        <Menu>
-          <MenuItem>Find matches</MenuItem>
-          <MenuItem>Edit rule</MenuItem>
-          <MenuSeparator />
-          <MenuItem destructive>Delete rule</MenuItem>
-        </Menu>
-      </div>
-    );
+  args: {
+    defaultOpen: true,
+    trigger: (
+      <Button variant="secondary" iconOnly aria-label="Rule actions">
+        <Icon icon={MoreVertical} size="md" />
+      </Button>
+    ),
+    children: <ActionsContent />,
   },
 };
 
 export const WithIconsAndHints: Story = {
-  render: () => {
-    return (
-      <div className="max-w-sm">
-        <Menu>
-          <MenuItem
-            icon={<Plus className="w-space-14 h-space-14" />}
-            hint="built-in or report"
-          >
-            Add widget
-          </MenuItem>
-          <MenuItem
-            icon={<Eye className="w-space-14 h-space-14" />}
-            hint="arrange, resize"
-          >
-            Edit dashboard
-          </MenuItem>
-          <MenuItem icon={<LayoutGrid className="w-space-14 h-space-14" />}>
-            New dashboard
-          </MenuItem>
-        </Menu>
-      </div>
-    );
+  args: {
+    defaultOpen: true,
+    trigger: (
+      <Button variant="secondary" iconOnly aria-label="Dashboard actions">
+        <Icon icon={MoreVertical} size="md" />
+      </Button>
+    ),
+    children: <IconsAndHintsContent />,
   },
 };
 
 export const SnoozePresets: Story = {
-  render: () => {
-    return (
-      <div className="max-w-xs">
-        <Menu>
-          <MenuItem hint="Wed 14 Oct">Tomorrow</MenuItem>
-          <MenuItem hint="Fri 16 Oct">In 3 days</MenuItem>
-          <MenuItem hint="Tue 20 Oct">Next week</MenuItem>
-          <MenuSeparator />
-          <MenuItem>Pick a date…</MenuItem>
-        </Menu>
-      </div>
-    );
+  args: {
+    defaultOpen: true,
+    trigger: (
+      <Button variant="secondary" iconOnly aria-label="Snooze options">
+        <Icon icon={MoreVertical} size="md" />
+      </Button>
+    ),
+    children: <SnoozePresetsContent />,
   },
 };
 
 export const DisabledItem: Story = {
-  render: () => {
-    return (
-      <div className="max-w-xs">
-        <Menu>
-          <MenuItem>Edit details</MenuItem>
-          <MenuItem>Reassign transactions</MenuItem>
-          <MenuSeparator />
-          <MenuItem disabled hint="has transactions">
-            Delete cardholder
-          </MenuItem>
-        </Menu>
-      </div>
-    );
+  args: {
+    defaultOpen: true,
+    trigger: (
+      <Button variant="secondary" iconOnly aria-label="Cardholder options">
+        <Icon icon={MoreVertical} size="md" />
+      </Button>
+    ),
+    children: <DisabledItemContent />,
   },
 };
 
 export const Sectioned: Story = {
-  render: () => {
-    return (
-      <div className="max-w-xs">
-        <Menu>
-          <MenuGroup label="This widget">
-            <MenuItem>Widget settings</MenuItem>
-            <MenuItem>View full page</MenuItem>
-          </MenuGroup>
-          <MenuGroup label="Report">
-            <MenuItem>Edit report</MenuItem>
-            <MenuItem>Duplicate as my report</MenuItem>
-          </MenuGroup>
-        </Menu>
-      </div>
-    );
+  args: {
+    defaultOpen: true,
+    trigger: (
+      <Button variant="secondary" iconOnly aria-label="Widget options">
+        <Icon icon={MoreVertical} size="md" />
+      </Button>
+    ),
+    children: <SectionedContent />,
   },
 };
 
 export const SwitcherWithAFooterLink: Story = {
-  render: () => {
-    return (
-      <div className="max-w-xs">
-        <Menu>
-          <MenuItem
-            active
-            hint={
-              <span className="inline-flex items-center gap-space-2">
-                Default <Icon icon={Check} size="sm" />
-              </span>
-            }
-          >
-            Home
-          </MenuItem>
-          <MenuItem>Money overview</MenuItem>
-          <MenuItem>Cards & loans</MenuItem>
-          <MenuSeparator />
-          <MenuItem action>View all dashboards</MenuItem>
-        </Menu>
-      </div>
-    );
-  },
-};
-
-export const FloatingDropdown: Story = {
-  render: () => {
-    return (
-      <div className="p-space-24">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={<MoreVertical className="w-space-14 h-space-14" />}
-              aria-label="Options"
-            />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            <DropdownMenuItem>Find matches</DropdownMenuItem>
-            <DropdownMenuItem>Edit rule</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem destructive>Delete rule</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    );
-  },
-};
-
-export const AllVariants: Story = {
-  render: () => {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-space-16 p-space-16 max-w-3xl bg-canvas rounded-ds-lg border border-line">
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Actions
-          </span>
-          <Menu>
-            <MenuItem>Find matches</MenuItem>
-            <MenuItem>Edit rule</MenuItem>
-            <MenuSeparator />
-            <MenuItem destructive>Delete rule</MenuItem>
-          </Menu>
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            With icons and hints
-          </span>
-          <Menu>
-            <MenuItem
-              icon={<Plus className="w-space-14 h-space-14" />}
-              hint="built-in or report"
-            >
-              Add widget
-            </MenuItem>
-            <MenuItem
-              icon={<Eye className="w-space-14 h-space-14" />}
-              hint="arrange, resize"
-            >
-              Edit dashboard
-            </MenuItem>
-            <MenuItem icon={<LayoutGrid className="w-space-14 h-space-14" />}>
-              New dashboard
-            </MenuItem>
-          </Menu>
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Snooze presets
-          </span>
-          <Menu>
-            <MenuItem hint="Wed 14 Oct">Tomorrow</MenuItem>
-            <MenuItem hint="Fri 16 Oct">In 3 days</MenuItem>
-            <MenuItem hint="Tue 20 Oct">Next week</MenuItem>
-            <MenuSeparator />
-            <MenuItem>Pick a date…</MenuItem>
-          </Menu>
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Disabled item
-          </span>
-          <Menu>
-            <MenuItem>Edit details</MenuItem>
-            <MenuItem>Reassign transactions</MenuItem>
-            <MenuSeparator />
-            <MenuItem disabled hint="has transactions">
-              Delete cardholder
-            </MenuItem>
-          </Menu>
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Sectioned
-          </span>
-          <Menu>
-            <MenuGroup label="This widget">
-              <MenuItem>Widget settings</MenuItem>
-              <MenuItem>View full page</MenuItem>
-            </MenuGroup>
-            <MenuGroup label="Report">
-              <MenuItem>Edit report</MenuItem>
-              <MenuItem>Duplicate as my report</MenuItem>
-            </MenuGroup>
-          </Menu>
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Switcher with a footer link
-          </span>
-          <Menu>
-            <MenuItem
-              active
-              hint={
-                <span className="inline-flex items-center gap-space-2">
-                  Default <Icon icon={Check} size="sm" />
-                </span>
-              }
-            >
-              Home
-            </MenuItem>
-            <MenuItem>Money overview</MenuItem>
-            <MenuItem>Cards & loans</MenuItem>
-            <MenuSeparator />
-            <MenuItem action>View all dashboards</MenuItem>
-          </Menu>
-        </div>
-      </div>
-    );
+  args: {
+    defaultOpen: true,
+    trigger: (
+      <Button variant="secondary" iconOnly aria-label="Switch dashboard">
+        <Icon icon={MoreVertical} size="md" />
+      </Button>
+    ),
+    children: <SwitcherContent />,
   },
 };

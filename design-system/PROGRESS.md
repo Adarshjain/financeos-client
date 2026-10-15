@@ -63,7 +63,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 8 | Tabs | Changes requested |
 | 9 | Pager | Changes requested |
 | 10 | Button | Ready for review |
-| 11 | Menu | Changes requested |
+| 11 | Menu | Ready for review |
 | 12 | SelectionBar | Changes requested |
 | 13 | SwipeActions | Changes requested |
 | 14 | TextField | Changes requested |
@@ -164,6 +164,18 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 4b · Menu:
+  - Rebuilt `Menu` component in `src/components/ds/Menu/Menu.tsx` on Radix DropdownMenu (`@radix-ui/react-dropdown-menu`), deleting the hand-made static `Menu` container to unify on a single Radix-based Menu API.
+  - Extracted shared item-row style into `src/components/ds/itemRow.ts` (`getItemRowClass`) used by `MenuItem` with `min-h-control-lg px-space-10 rounded-ds-md font-text font-semibold text-body`, active (`bg-brand-tint text-brand-strong`), destructive (`text-danger hover:bg-danger-tint`), action (`text-brand font-bold`), and disabled (`text-ink-faint cursor-not-allowed`).
+  - Styled floating content with `z-overlay bg-surface border border-line rounded-ds-lg shadow-pop p-space-6 flex flex-col min-w-menu-trigger animate-in fade-in-0 slide-in-from-top-1 duration-base`.
+  - Rebuilt `src/components/ds/Menu/Menu.stories.tsx` with `AllVariants` as first export, all variants driven by args with working Controls (Actions, With icons and hints, Snooze presets, Disabled item, Sectioned, Switcher with a footer link), using `Icon` for icons.
+  - Updated `src/components/ds/Menu/Menu.test.tsx` testing Radix DropdownMenu trigger, item clicks, keyboard navigation, disabled prevention, styling variants, and Escape to close.
+  - Files deleted: hand-made static Menu implementation.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/Menu` (9 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Stories compared: `DS/Actions/Menu/AllVariants`, `DS/Actions/Menu/Actions`, `DS/Actions/Menu/WithIconsAndHints`, `DS/Actions/Menu/SnoozePresets`, `DS/Actions/Menu/DisabledItem`, `DS/Actions/Menu/Sectioned`, `DS/Actions/Menu/SwitcherWithAFooterLink` against `Menu/preview.html` and `ds-07-actions.dc.html` at 390px and 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 4a · Popover:
   - Created new `Popover` component in `src/components/ds/Popover/Popover.tsx` based on `@radix-ui/react-popover`: floating surface with `bg-surface border border-line rounded-ds-lg shadow-pop p-space-4 z-overlay`, `animate-in fade-in-0 slide-in-from-top-1 duration-base`, supporting `width="match"` (`w-popover-trigger`) and `width="content"` (`min-w-popover-trigger`). Exported primitives `PopoverRoot`, `PopoverTrigger`, `PopoverContent`, `PopoverPortal`, `PopoverClose`, `PopoverAnchor` and unified `Popover`.
