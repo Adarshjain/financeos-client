@@ -340,5 +340,3 @@ textarea.inp.one{height:var(--control-lg);min-height:var(--control-lg);resize:ve
 .ppill.calm .pi{gap:2px;color:var(--ink-faint)}
 .ppill.calm .ind{background:none!important;height:22px}
 .ppill.calm .pi-on{color:var(--ink)}.ppill.calm .pi-on .lab{font-weight:800}
-.ppill.calm .pi-on .lab::after{content:"";display:block;width:4px;height:4px;border-radius:var(--radius-pill);background:var(--ink);margin:3px auto 0}
-.ppill.calm .pi:not(.pi-on) .lab{padding-bottom:7px}
