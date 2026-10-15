@@ -78,52 +78,6 @@ export const InAForm: Story = {
   render: () => <InAFormInteractive />,
 };
 
-export const FullWidth: Story = {
-  render: () => {
-    return (
-      <div className="max-w-md">
-        <SegmentedControl
-          fullWidth
-          options={['Debit', 'Credit']}
-          defaultValue="Debit"
-        />
-      </div>
-    );
-  },
-};
-
-export const Disabled: Story = {
-  render: () => {
-    return (
-      <div className="space-y-space-12">
-        <div>
-          <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
-            Whole control disabled
-          </span>
-          <SegmentedControl
-            disabled
-            options={['Debit', 'Credit']}
-            defaultValue="Debit"
-          />
-        </div>
-        <div>
-          <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
-            Single option disabled
-          </span>
-          <SegmentedControl
-            options={[
-              { value: 'all', label: 'All' },
-              { value: 'active', label: 'Active' },
-              { value: 'archived', label: 'Archived', disabled: true },
-            ]}
-            defaultValue="all"
-          />
-        </div>
-      </div>
-    );
-  },
-};
-
 export const AllVariants: Story = {
   render: () => {
     return (
