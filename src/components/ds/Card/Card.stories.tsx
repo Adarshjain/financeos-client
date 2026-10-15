@@ -86,13 +86,13 @@ export const WithAPager: Story = {
             <div className="flex gap-space-4 items-center">
               <button
                 type="button"
-                className="inline-flex items-center justify-center h-space-24 px-space-8 rounded-ds-sm bg-brand text-on-brand font-text font-bold text-caption"
+                className="inline-flex items-center justify-center min-w-control-md h-control-md px-space-6 rounded-ds-md bg-brand text-on-brand font-text font-semibold text-body"
               >
                 1
               </button>
               <button
                 type="button"
-                className="inline-flex items-center justify-center h-space-24 px-space-8 rounded-ds-sm bg-surface text-ink-3 font-text font-bold text-caption hover:bg-hover"
+                className="inline-flex items-center justify-center min-w-control-md h-control-md px-space-6 rounded-ds-md bg-surface text-ink-2 font-text font-semibold text-body hover:bg-hover"
               >
                 2
               </button>
@@ -200,13 +200,13 @@ export const AllVariants: Story = {
               <div className="flex gap-space-4 items-center">
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center h-space-24 px-space-8 rounded-ds-sm bg-brand text-on-brand font-text font-bold text-caption"
+                  className="inline-flex items-center justify-center min-w-control-md h-control-md px-space-6 rounded-ds-md bg-brand text-on-brand font-text font-semibold text-body"
                 >
                   1
                 </button>
                 <button
                   type="button"
-                  className="inline-flex items-center justify-center h-space-24 px-space-8 rounded-ds-sm bg-surface text-ink-3 font-text font-bold text-caption hover:bg-hover"
+                  className="inline-flex items-center justify-center min-w-control-md h-control-md px-space-6 rounded-ds-md bg-surface text-ink-2 font-text font-semibold text-body hover:bg-hover"
                 >
                   2
                 </button>

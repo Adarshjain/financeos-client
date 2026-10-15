@@ -142,7 +142,7 @@ export const CardEmpty = forwardRef<HTMLDivElement, CardEmptyProps>(
       <div
         ref={ref}
         className={cn(
-          'flex flex-col items-center justify-center text-center gap-space-8 py-space-16 px-space-16 border-t border-line-soft font-text text-body text-ink-3',
+          'flex flex-col items-center justify-center text-center gap-space-8 py-space-16 px-space-16 font-text text-body text-ink-3',
           className,
         )}
         {...props}
