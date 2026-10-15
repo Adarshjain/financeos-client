@@ -56,13 +56,14 @@ describe('TransactionRow', () => {
     expect(screen.getByText('+1')).toBeInTheDocument();
   });
 
-  it('renders "Set category" when categories array is empty', () => {
+  it('renders unset category chip when categories array is empty and unsetCategoryLabel provided', () => {
     const handleSet = vi.fn();
     render(
       <TransactionRow
         description="Truffles"
         amount="1,860.00"
         categories={[]}
+        unsetCategoryLabel="Set category"
         onSetCategory={handleSet}
       />,
     );
@@ -81,7 +82,7 @@ describe('TransactionRow', () => {
         amount="640.00"
         selected
         selectionMode
-        onViewDetail={handleView}
+        onDetail={handleView}
       />,
     );
 

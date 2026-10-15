@@ -124,6 +124,7 @@ export const AllVariants: Story = {
           reviewStatus="Watching"
           provenance="Manual"
           categories={[]}
+          unsetCategoryLabel="Set category"
           monitored
         />
         <TransactionRow
@@ -229,6 +230,7 @@ export const MonitoredUnset: Story = {
     reviewStatus: 'Watching',
     provenance: 'Manual',
     categories: [],
+    unsetCategoryLabel: 'Set category',
     monitored: true,
   },
   render: (args) => (

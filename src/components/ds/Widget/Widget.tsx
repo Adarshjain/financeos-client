@@ -31,12 +31,18 @@ export interface WidgetProps
   loading?: boolean;
   /** Custom loading skeleton node */
   loadingSkeleton?: React.ReactNode;
-  /** Failed error message or true */
+  /** Failed error message or boolean */
   error?: React.ReactNode | boolean;
+  errorTitle?: React.ReactNode;
+  errorMessage?: React.ReactNode;
+  retryLabel?: string;
   /** Retry callback if failed */
   onRetry?: () => void;
-  /** Unavailable status message or true when report was deleted */
+  /** Unavailable status message or boolean when report was deleted */
   unavailable?: React.ReactNode | boolean;
+  unavailableTitle?: React.ReactNode;
+  unavailableMessage?: React.ReactNode;
+  removeLabel?: string;
   /** Callback to remove widget when unavailable */
   onRemove?: () => void;
 }
@@ -51,8 +57,14 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
       loading = false,
       loadingSkeleton,
       error,
+      errorTitle,
+      errorMessage,
+      retryLabel = 'Retry',
       onRetry,
       unavailable,
+      unavailableTitle,
+      unavailableMessage,
+      removeLabel = 'Remove',
       onRemove,
       className,
       children,
@@ -107,30 +119,37 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
       }
 
       if (error) {
+        const resolvedTitle =
+          errorTitle ??
+          (typeof error === 'string'
+            ? null
+            : React.isValidElement(error)
+              ? null
+              : undefined);
+        const resolvedMsg =
+          errorMessage ??
+          (typeof error === 'string' || React.isValidElement(error)
+            ? error
+            : null);
+
         return (
           <div role="alert" className="flex gap-space-10 items-start text-label text-danger">
             <div>
-              <b className="font-bold">Couldn&apos;t load this widget</b>
+              {resolvedTitle && <b className="font-bold">{resolvedTitle}</b>}
               <div className="text-caption font-medium text-ink-3 mt-space-2">
-                {typeof error === 'string' || React.isValidElement(error) ? (
-                  error
-                ) : (
+                {resolvedMsg}
+                {onRetry && (
                   <>
-                    Prices service did not answer.
-                    {onRetry && (
-                      <>
-                        {' '}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={onRetry}
-                          className="inline-flex h-auto p-0 text-ink font-bold underline hover:text-ink-2 hover:bg-transparent"
-                        >
-                          Retry
-                        </Button>
-                      </>
-                    )}
+                    {resolvedMsg ? ' ' : null}
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      onClick={onRetry}
+                      className="text-ink font-bold"
+                    >
+                      {retryLabel}
+                    </Button>
                   </>
                 )}
               </div>
@@ -140,34 +159,39 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
       }
 
       if (unavailable) {
+        const resolvedTitle =
+          unavailableTitle ??
+          (typeof unavailable === 'string'
+            ? null
+            : React.isValidElement(unavailable)
+              ? null
+              : undefined);
+        const resolvedMsg =
+          unavailableMessage ??
+          (typeof unavailable === 'string' || React.isValidElement(unavailable)
+            ? unavailable
+            : null);
+
         return (
           <div className="flex gap-space-10 items-start text-label text-ink-3">
             <div>
-              <b className="font-bold text-ink-2">
-                This report is no longer available
-              </b>
+              {resolvedTitle && (
+                <b className="font-bold text-ink-2">{resolvedTitle}</b>
+              )}
               <div className="text-caption font-medium text-ink-3 mt-space-2">
-                {typeof unavailable === 'string' ||
-                React.isValidElement(unavailable) ? (
-                  unavailable
-                ) : (
+                {resolvedMsg}
+                {onRemove && (
                   <>
-                    {onRemove ? (
-                      <>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={onRemove}
-                          className="inline-flex h-auto p-0 text-ink font-bold underline hover:text-ink-2 hover:bg-transparent"
-                        >
-                          Remove
-                        </Button>
-                        {' the widget or pick another report.'}
-                      </>
-                    ) : (
-                      'Remove the widget or pick another report.'
-                    )}
+                    {resolvedMsg ? ' ' : null}
+                    <Button
+                      type="button"
+                      variant="link"
+                      size="sm"
+                      onClick={onRemove}
+                      className="text-ink font-bold"
+                    >
+                      {removeLabel}
+                    </Button>
                   </>
                 )}
               </div>

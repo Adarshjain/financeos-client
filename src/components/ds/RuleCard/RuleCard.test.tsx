@@ -59,13 +59,13 @@ describe('RuleCard', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('renders eye icon and triggers onViewDetail in selection mode', () => {
+  it('renders eye icon and triggers onDetail in selection mode', () => {
     const handleView = vi.fn();
     render(
       <RuleCard
         name="Lenskart"
         selectionMode={true}
-        onViewDetail={handleView}
+        onDetail={handleView}
       />,
     );
 
@@ -76,6 +76,21 @@ describe('RuleCard', () => {
     expect(eyeBtn).toBeInTheDocument();
     fireEvent.click(eyeBtn);
     expect(handleView).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders menu items passed via props', () => {
+    const handleFind = vi.fn();
+    render(
+      <RuleCard
+        name="Dunzo"
+        menuItems={[
+          { label: 'Find matches', onSelect: handleFind },
+        ]}
+      />,
+    );
+
+    const menuBtn = screen.getByRole('button', { name: /rule actions/i });
+    expect(menuBtn).toBeInTheDocument();
   });
 
   it('applies selected styles', () => {

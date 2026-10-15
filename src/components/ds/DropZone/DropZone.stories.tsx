@@ -3,12 +3,19 @@ import React from 'react';
 
 import { DropZone } from './DropZone';
 
+const defaultProps = {
+  title: 'Add statements',
+  hint: 'PDF, XLSX or XLS · up to 25 MB per upload',
+  buttonLabel: 'Choose files',
+};
+
 const meta: Meta<typeof DropZone> = {
   title: 'DS/Inputs/DropZone',
   component: DropZone,
   parameters: {
     layout: 'padded',
   },
+  args: defaultProps,
   argTypes: {
     title: { control: 'text' },
     hint: { control: 'text' },
@@ -32,14 +39,14 @@ export const AllVariants: Story = {
         <div className="text-caption font-semibold text-ink-3 mb-space-4">
           Idle
         </div>
-        <DropZone />
+        <DropZone {...defaultProps} />
       </div>
 
       <div>
         <div className="text-caption font-semibold text-ink-3 mb-space-4">
           Dragging over
         </div>
-        <DropZone isDragging dragHint="3 files" />
+        <DropZone {...defaultProps} isDragging dragHint="3 files" />
       </div>
 
       <div>
@@ -47,6 +54,7 @@ export const AllVariants: Story = {
           Queued
         </div>
         <DropZone
+          {...defaultProps}
           showDropArea={false}
           queuedFiles={[
             { id: '1', name: 'Regalia-Gold-Oct.pdf', size: '412 KB' },
@@ -61,6 +69,7 @@ export const AllVariants: Story = {
           Too large
         </div>
         <DropZone
+          {...defaultProps}
           showDropArea={false}
           queuedFiles={[
             {
@@ -79,14 +88,13 @@ export const AllVariants: Story = {
 
 export const Idle: Story = {
   args: {
-    title: 'Add statements',
-    hint: 'PDF, XLSX or XLS · up to 25 MB per upload',
-    buttonLabel: 'Choose files',
+    ...defaultProps,
   },
 };
 
 export const DraggingOver: Story = {
   args: {
+    ...defaultProps,
     dragTitle: 'Drop to add',
     dragHint: '3 files',
     isDragging: true,
@@ -95,6 +103,7 @@ export const DraggingOver: Story = {
 
 export const Queued: Story = {
   args: {
+    ...defaultProps,
     showDropArea: false,
     queuedFiles: [
       { id: '1', name: 'Regalia-Gold-Oct.pdf', size: '412 KB' },
@@ -105,6 +114,7 @@ export const Queued: Story = {
 
 export const TooLarge: Story = {
   args: {
+    ...defaultProps,
     showDropArea: false,
     queuedFiles: [
       {
@@ -119,14 +129,15 @@ export const TooLarge: Story = {
 
 export const WithDropError: Story = {
   args: {
+    ...defaultProps,
     error: 'File format not supported. Please upload a PDF or Excel sheet.',
   },
 };
 
 export const WithRecentImports: Story = {
   args: {
-    title: 'Add statements',
-    hint: 'PDF, XLSX or XLS · up to 25 MB per upload',
+    ...defaultProps,
+    recentImportsTitle: 'Recent imports',
     recentImports: [
       {
         id: '1',
@@ -143,4 +154,3 @@ export const WithRecentImports: Story = {
     ],
   },
 };
-

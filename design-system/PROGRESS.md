@@ -66,7 +66,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 9 | Button | Ready for review |
 | 10 | Menu | Ready for review |
 | 11 | SelectionBar | Changes requested |
-| 12 | SwipeActions | Changes requested |
+| 12 | SwipeActions | Ready for review |
 | 13 | TextField | Ready for review |
 | 14 | TextArea | Ready for review |
 | 15 | DateField | Ready for review |
@@ -76,14 +76,14 @@ Build in this order, one component per step. After each one, set its status to *
 | 19 | Checkbox | Ready for review |
 | 20 | Switch | Ready for review |
 | 21 | SegmentedControl | Ready for review |
-| 22 | DropZone | Changes requested |
+| 22 | DropZone | Ready for review |
 | 23 | Card | Ready for review |
 | 24 | ListRow | Ready for review |
 | 25 | SectionHeader | Ready for review |
-| 26 | TransactionRow | Changes requested |
-| 27 | RuleCard | Changes requested |
+| 26 | TransactionRow | Ready for review |
+| 27 | RuleCard | Ready for review |
 | 28 | KpiTile | Ready for review |
-| 29 | Widget | Changes requested |
+| 29 | Widget | Ready for review |
 | 30 | Badge | Ready for review |
 | 31 | CategoryChip | Ready for review |
 | 32 | StatusWords | Ready for review |
@@ -217,6 +217,15 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 11 · No app content in components (RULES §5b.6):
+  - SwipeActions: deleted Approve, Snooze, Delete, Dismiss presets. Actions are driven strictly by `left` and `right` props. Stories updated to pass explicit actions and demonstrate wrapping TransactionRow, ListRow, and Card.
+  - RuleCard: menu items and Approve action strictly driven from props (`menuItems`, `approveAction`/`onApprove`). Removed hardcoded default items ('Find matches', 'Edit rule', 'Delete rule'). Replaced `useIsPhone` JS viewport check with CSS `hidden lg:inline-flex` for desktop checkbox.
+  - Widget: error and unavailable state titles and messages now come from props (`errorTitle`, `errorMessage`, `unavailableTitle`, `unavailableMessage`), using Button `link` for Retry and Remove actions.
+  - DropZone: made `title`, `hint`, and `buttonLabel` required with no built-in defaults. Removed hardcoded 'Recent imports' heading; now accepted via `recentImportsTitle`.
+  - TransactionRow: unset category label comes from props (`unsetCategoryLabel`). Removed `useIsPhone` JS check (replaced with `hidden lg:flex` for desktop checkbox column). Removed swipe props (`swipeable`, `swipeLeft`, `swipeRight`, `onApprove`, `onDelete`) in favor of external `SwipeActions` wrapping (RULES §5c.9).
+  - Stories compared and interacted with: SwipeActions (AllVariants, BothSides, RightOnly, LeftOnly, Disabled), RuleCard (AllVariants, Unverified, Selected, Verified, SelectionModeNotSelected), Widget (AllVariants, Figure, RowsLoading, Failed, Unavailable, WithMenu), DropZone (AllVariants, Idle, DraggingOver, Queued, TooLarge, WithDropError, WithRecentImports), TransactionRow (AllVariants, Default, Credit, ReviewDuplicate, TransferLink, MonitoredUnset, SelectedSelectionMode, Excluded, WithLeadingAvatar).
+  - Checks: typecheck (clean), lint (0 errors), vitest (all 46 tests passing), build-storybook (clean), check-ui (clean on touched components). Differences left open: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 10 · TabBar and Rail take their items from the app:
   - TabBar: accepts `items: { id, label, icon, href, count?, countTone? }[]` (at most 5) and `current` from props. Deleted `TabBarTabId`, `inboxCount`, `transactionsCount`, `getHref`, and hardcoded tab list.

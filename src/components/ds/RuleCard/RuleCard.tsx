@@ -14,12 +14,16 @@ import {
   DropdownMenuTrigger,
 } from '../Menu/Menu';
 import { StatusWords } from '../StatusWords/StatusWords';
-import { useIsPhone } from '../useMediaQuery';
 
 export interface RuleCardMenuItem {
   label: React.ReactNode;
   onSelect?: () => void;
   destructive?: boolean;
+}
+
+export interface RuleCardApproveAction {
+  label?: string;
+  onSelect?: () => void;
 }
 
 export interface RuleCardProps
@@ -47,16 +51,12 @@ export interface RuleCardProps
   /** Custom category elements */
   categoryContent?: React.ReactNode;
 
-  /** Callback when Approve button is clicked (unverified cards) */
+  /** Approve action (unverified cards) from props */
+  approveAction?: RuleCardApproveAction;
   onApprove?: () => void;
-  /** Kebab menu options */
+  approveLabel?: string;
+  /** Kebab menu options from props */
   menuItems?: RuleCardMenuItem[];
-  /** Callback for "Find matches" */
-  onFindMatches?: () => void;
-  /** Callback for "Edit rule" */
-  onEditRule?: () => void;
-  /** Callback for "Delete rule" */
-  onDeleteRule?: () => void;
 
   /** Whether the card is selectable */
   selectable?: boolean;
@@ -69,8 +69,6 @@ export interface RuleCardProps
   selectionMode?: boolean;
   /** Callback when trailing eye icon is clicked in selection mode */
   onDetail?: () => void;
-  /** Alias for onDetail */
-  onViewDetail?: () => void;
 }
 
 export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
@@ -86,17 +84,15 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       statusLine,
       categories,
       categoryContent,
+      approveAction,
       onApprove,
+      approveLabel,
       menuItems,
-      onFindMatches,
-      onEditRule,
-      onDeleteRule,
       selectable,
       selected = false,
       onSelectedChange,
       selectionMode = false,
       onDetail,
-      onViewDetail,
       className,
       onClick,
       onKeyDown,
@@ -113,15 +109,12 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
     },
     ref,
   ) => {
-    const isPhone = useIsPhone();
     const isVerified = status === 'verified';
 
     const isSelectable = selectable ?? Boolean(onSelectedChange);
-    const showDesktopCheckbox =
-      !isPhone && (isSelectable || selectionMode || selected);
     const showEye =
       selectionMode ||
-      ((selected || isSelectable) && Boolean(onDetail || onViewDetail));
+      ((selected || isSelectable) && Boolean(onDetail));
 
     // Long press detection for mobile (~450ms, cancelled on move > 10px)
     const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -148,21 +141,11 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       touchStartPosRef.current = null;
     };
 
-    const defaultMenuItems: RuleCardMenuItem[] = [
-      { label: 'Find matches', onSelect: onFindMatches },
-      { label: 'Edit rule', onSelect: onEditRule },
-      { label: 'Delete rule', onSelect: onDeleteRule, destructive: true },
-    ].filter((item) => Boolean(item.onSelect));
-
-    const resolvedMenuItems =
-      menuItems ??
-      (defaultMenuItems.length > 0
-        ? defaultMenuItems
-        : [
-            { label: 'Find matches', onSelect: () => {} },
-            { label: 'Edit rule', onSelect: () => {} },
-            { label: 'Delete rule', onSelect: () => {}, destructive: true },
-          ]);
+    const effectiveApprove =
+      approveAction ??
+      (onApprove
+        ? { onSelect: onApprove, label: approveLabel ?? 'Approve' }
+        : undefined);
 
     const renderStatusLine = () => {
       if (statusLine) return statusLine;
@@ -195,7 +178,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
             iconOnly
             onClick={(e) => {
               e.stopPropagation();
-              (onDetail ?? onViewDetail)?.();
+              onDetail?.();
             }}
             aria-label="View rule details"
             className="text-brand-strong shrink-0"
@@ -205,42 +188,49 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
         );
       }
 
+      const hasApprove = !isVerified && effectiveApprove?.onSelect;
+      const hasMenu = menuItems && menuItems.length > 0;
+
+      if (!hasApprove && !hasMenu) return null;
+
       return (
         <div className="flex items-center gap-space-6 shrink-0">
-          {!isVerified && onApprove && (
+          {hasApprove && (
             <Button
               size="sm"
               variant="secondary"
-              onClick={onApprove}
+              onClick={effectiveApprove.onSelect}
               icon={<Icon name="check" size="sm" />}
             >
-              Approve
+              {effectiveApprove.label ?? 'Approve'}
             </Button>
           )}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant="ghost"
-                iconOnly
-                aria-label="Rule actions"
-              >
-                <Icon name="more" size="sm" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {resolvedMenuItems.map((item, idx) => (
-                <DropdownMenuItem
-                  key={idx}
-                  destructive={item.destructive}
-                  onSelect={item.onSelect}
+          {hasMenu && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  iconOnly
+                  aria-label="Rule actions"
                 >
-                  {item.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  <Icon name="more" size="sm" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {menuItems.map((item, idx) => (
+                  <DropdownMenuItem
+                    key={idx}
+                    destructive={item.destructive}
+                    onSelect={item.onSelect}
+                  >
+                    {item.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       );
     };
@@ -344,10 +334,10 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
         {/* Header: Desktop Checkbox + Name + Pattern, and used count */}
         <div className="flex gap-space-10 items-start justify-between">
           <div className="flex items-start gap-space-10 flex-1 min-w-0">
-            {showDesktopCheckbox && (
+            {(isSelectable || selectionMode || selected) && (
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="shrink-0 mt-space-2 inline-flex"
+                className="shrink-0 mt-space-2 hidden lg:inline-flex"
               >
                 <Checkbox
                   checked={selected}

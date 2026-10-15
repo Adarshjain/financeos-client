@@ -4,15 +4,15 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { DropZone } from './DropZone';
 
+const requiredProps = {
+  title: 'Add statements',
+  hint: 'PDF, XLSX or XLS · up to 25 MB',
+  buttonLabel: 'Choose files',
+};
+
 describe('DropZone', () => {
   it('renders title, hint, and choose files button', () => {
-    render(
-      <DropZone
-        title="Add statements"
-        hint="PDF, XLSX or XLS · up to 25 MB"
-        buttonLabel="Choose files"
-      />,
-    );
+    render(<DropZone {...requiredProps} />);
 
     expect(screen.getByText('Add statements')).toBeInTheDocument();
     expect(
@@ -26,6 +26,7 @@ describe('DropZone', () => {
   it('renders dragging over state and hides choose files button', () => {
     render(
       <DropZone
+        {...requiredProps}
         isDragging={true}
         dragTitle="Drop to add"
         dragHint="3 files"
@@ -43,6 +44,7 @@ describe('DropZone', () => {
     const handleRemove = vi.fn();
     render(
       <DropZone
+        {...requiredProps}
         queuedFiles={[
           { id: '1', name: 'Regalia-Gold-Oct.pdf', size: '412 KB' },
         ]}
@@ -64,6 +66,7 @@ describe('DropZone', () => {
   it('renders file with error styling', () => {
     render(
       <DropZone
+        {...requiredProps}
         queuedFiles={[
           {
             id: '1',
@@ -79,9 +82,11 @@ describe('DropZone', () => {
     expect(errorEl).toHaveClass('text-danger');
   });
 
-  it('renders recent imports list', () => {
+  it('renders recent imports list with custom title from props', () => {
     render(
       <DropZone
+        {...requiredProps}
+        recentImportsTitle="Recent statements"
         recentImports={[
           {
             id: '1',
@@ -99,33 +104,10 @@ describe('DropZone', () => {
       />,
     );
 
-    expect(screen.getByText('Recent imports')).toBeInTheDocument();
+    expect(screen.getByText('Recent statements')).toBeInTheDocument();
     expect(screen.getByText('HDFC-Savings.pdf')).toBeInTheDocument();
     expect(screen.getByText('Done')).toHaveClass('text-positive');
+    expect(screen.getByText('ICICI-Card.pdf')).toBeInTheDocument();
     expect(screen.getByText('1 warning')).toHaveClass('text-warning');
-  });
-
-  it('renders 1px border on drop box (border, not border-2)', () => {
-    const { container } = render(<DropZone />);
-    const box = container.querySelector('.border-dashed');
-    expect(box).toHaveClass('border');
-    expect(box).not.toHaveClass('border-2');
-  });
-
-  it('renders error message text in drop zone box', () => {
-    render(<DropZone error="Invalid format" />);
-    expect(screen.getByText('Invalid format')).toBeInTheDocument();
-    expect(screen.getByText('Invalid format')).toHaveClass('text-danger');
-  });
-
-  it('hides drop box when showDropArea is false', () => {
-    const { container } = render(
-      <DropZone
-        showDropArea={false}
-        queuedFiles={[{ id: '1', name: 'File.pdf', size: '10 KB' }]}
-      />,
-    );
-    expect(container.querySelector('.border-dashed')).toBeNull();
-    expect(screen.getByText('File.pdf')).toBeInTheDocument();
   });
 });

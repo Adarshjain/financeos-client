@@ -8,8 +8,6 @@ import { Checkbox } from '../Checkbox/Checkbox';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import { StatusWord } from '../StatusWords/StatusWords';
-import { SwipeActionItem, SwipeActions } from '../SwipeActions/SwipeActions';
-import { useIsPhone } from '../useMediaQuery';
 
 export type TransactionRowStatus =
   | 'default'
@@ -51,11 +49,13 @@ export interface TransactionRowProps
   /** Custom context line override */
   contextLine?: React.ReactNode;
 
-  /** Categories list: empty array renders dashed "Set category" chip, 1 renders chip, 2+ renders chip and +n count */
+  /** Categories list: empty array renders dashed unset category chip, 1 renders chip, 2+ renders chip and +n count */
   categories?: string[];
+  /** Label for unset category (e.g. "Set category") passed from page */
+  unsetCategoryLabel?: React.ReactNode;
   /** Custom category element override */
   category?: React.ReactNode;
-  /** Callback when "Set category" is clicked */
+  /** Callback when unset category chip is clicked */
   onSetCategory?: () => void;
   /** Callback when first category is clicked */
   onCategoryClick?: (category: string) => void;
@@ -79,18 +79,9 @@ export interface TransactionRowProps
   selectionMode?: boolean;
   /** Callback when trailing eye icon is clicked to view detail */
   onDetail?: () => void;
-  /** Alias for onDetail */
-  onViewDetail?: () => void;
 
   /** Trailing chevron indicator */
   chevron?: boolean;
-
-  /** Swiping support */
-  swipeable?: boolean;
-  swipeLeft?: SwipeActionItem;
-  swipeRight?: SwipeActionItem;
-  onApprove?: () => void;
-  onDelete?: () => void;
 
   /** Whether to show top border (default: true) */
   borderTop?: boolean;
@@ -112,6 +103,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       provenance,
       contextLine,
       categories,
+      unsetCategoryLabel,
       category,
       onSetCategory,
       onCategoryClick,
@@ -124,13 +116,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       excluded,
       selectionMode,
       onDetail,
-      onViewDetail,
       chevron = false,
-      swipeable,
-      swipeLeft,
-      swipeRight,
-      onApprove,
-      onDelete,
       borderTop = true,
       className,
       children,
@@ -148,17 +134,14 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     },
     ref,
   ) => {
-    const isPhone = useIsPhone();
-
     const isSel = selected ?? status === 'selected';
     const isMon = monitored ?? status === 'monitored';
     const isExc = excluded ?? status === 'excluded';
     const isSelectable = selectable ?? Boolean(onSelectedChange);
 
-    const showDesktopCheckbox = !isPhone && isSelectable;
     const showEye =
       selectionMode ||
-      ((isSel || isSelectable) && Boolean(onDetail || onViewDetail));
+      ((isSel || isSelectable) && Boolean(onDetail));
 
     // Long press detection for mobile selection
     const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -251,9 +234,10 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       if (!categories) return null;
 
       if (categories.length === 0) {
+        if (!unsetCategoryLabel) return null;
         return (
           <CategoryChip variant="unset" onClick={onSetCategory}>
-            Set category
+            {unsetCategoryLabel}
           </CategoryChip>
         );
       }
@@ -305,7 +289,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       onClick || isSelectable || selectionMode || onSelectedChange,
     );
 
-    const rowContent = (
+    return (
       <div
         ref={ref}
         role={isInteractive ? 'row' : undefined}
@@ -388,8 +372,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
 
         <div className="flex items-center gap-space-10 min-w-0 w-full">
           {/* Desktop Checkbox */}
-          {showDesktopCheckbox && (
-            <div className="flex items-center justify-center shrink-0 pr-space-4">
+          {isSelectable && (
+            <div className="hidden lg:flex items-center justify-center shrink-0 pr-space-4">
               <Checkbox
                 checked={isSel}
                 onCheckedChange={(checked) => onSelectedChange?.(Boolean(checked))}
@@ -443,7 +427,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      (onDetail ?? onViewDetail)?.();
+                      onDetail?.();
                     }}
                     aria-label="View transaction details"
                     className="p-space-4 text-ink-3 hover:text-ink h-auto min-h-0"
@@ -475,25 +459,6 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         </div>
       </div>
     );
-
-    const isSwipeEnabled = Boolean(
-      swipeable || swipeLeft || swipeRight || onApprove || onDelete,
-    );
-
-    if (isSwipeEnabled) {
-      return (
-        <SwipeActions
-          left={swipeLeft}
-          right={swipeRight}
-          onApprove={onApprove}
-          onDelete={onDelete}
-        >
-          {rowContent}
-        </SwipeActions>
-      );
-    }
-
-    return rowContent;
   },
 );
 
