@@ -144,6 +144,25 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 16) · Toast component fixes:
+  - Fixed Toast in `src/components/ds/Toast/Toast.tsx`:
+    - Updated background from `bg-brand` to `bg-ink text-on-brand` matching reference `.toast`.
+    - Updated undo button styling to `text-line hover:text-line-soft` matching reference `.toast a`.
+  - Updated `src/components/ds/Toast/Toast.test.tsx`:
+    - Replaced padding-only test with `bg-ink` token assertions.
+    - Added comprehensive unit tests for `showToast` undo wiring: verifies user callback is invoked and `sonnerToast.dismiss(id)` is called with the toast ID.
+    - Added tests for custom duration, custom `undoLabel`, and error state.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/Toast` (6 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `Toast/preview.html` and `ds-09-feedback.webp`:
+    - `DS/Feedback/Toast/Confirmation`
+    - `DS/Feedback/Toast/Undo`
+    - `DS/Feedback/Toast/MarkPaid`
+    - `DS/Feedback/Toast/Failure`
+    - `DS/Feedback/Toast/AllVariants`
+    Verified `bg-ink` contrast, high contrast white text, light grey undo link, and failure messaging.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 15) · Callout component fixes:
   - Fixed Callout in `src/components/ds/Callout/Callout.tsx`:
     - Updated `warning-banner` variant: provided distinct banner layout with `justify-between gap-space-10` and trailing action container (`shrink-0`), distinguishing it from the inline `callout` flow with inline title/action.
