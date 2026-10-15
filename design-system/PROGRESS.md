@@ -144,6 +144,33 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 9 · SwipeActions component fixes:
+  - Fixed SwipeActions in `src/components/ds/SwipeActions/SwipeActions.tsx`:
+    - Preserved vertical scrolling: added `touch-pan-y` to the container and vertical scroll detection (>8px vertical delta over horizontal) to cancel horizontal dragging so native page scrolling is uninterrupted.
+    - Pointer gestures: unified touch and mouse pointer tracking via standard `PointerEvent` APIs with threshold (48px) snapping and spring back to none.
+    - Variants: implemented first-class `variant="transactions"` (right Approve `brand`, left Delete `danger`) and `variant="inbox"` (right Snooze `brand`, left Dismiss `danger`) with exact Lucide icons (`Check`, `Trash2`, `Eye`, `X`) matching `preview.html` SVG paths.
+    - No-approval spring back: added `canApprove` prop (defaults to true); when `false`, right swipe cannot reveal and springs back to none.
+    - Layout: switched to flex row structure matching `reference.css` (`.swipe` with `w-swipe-action` and content `flex-1 min-w-0`), preventing content truncation or off-screen clipping when actions are revealed.
+    - Accessibility: unrevealed action buttons have `tabIndex={-1}` and `aria-hidden="true"`; revealed action buttons have `tabIndex={0}` and `aria-hidden="false"`, ensuring hidden actions are excluded from the tab order.
+    - Cleaned unlisted props: removed `borderTop` prop and unlisted `warning` tones. Replaced inline pixel widths with Tailwind token `w-swipe-action`.
+  - Updated `src/components/ds/SwipeActions/SwipeActions.stories.tsx`:
+    - Updated `AllVariants` story to render both Transactions and Inbox cards in a 390px container matching `preview.html` and `ds-06-actions.dc.html`.
+    - Added `NoApprovalSpringBack` story demonstrating `canApprove={false}` behavior.
+  - Updated `src/components/ds/SwipeActions/SwipeActions.test.tsx`:
+    - 11 unit tests covering children rendering, Approve callback on transactions variant, Delete callback on transactions variant, Snooze and Dismiss on inbox variant, tabIndex -1 when hidden, swipe right past threshold, swipe left past threshold, spring back below threshold, spring back with `canApprove={false}`, vertical scroll detection cancellation, and tap to close.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,491 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs --staged` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `SwipeActions/preview.html` and `ds-06-actions.dc.html` board:
+    - `DS/Actions/SwipeActions/ApproveRevealed`
+    - `DS/Actions/SwipeActions/DeleteRevealed`
+    - `DS/Actions/SwipeActions/SnoozeRevealed`
+    - `DS/Actions/SwipeActions/DismissRevealed`
+    - `DS/Actions/SwipeActions/Interactive`
+    - `DS/Actions/SwipeActions/NoApprovalSpringBack`
+    - `DS/Actions/SwipeActions/AllVariants`
+    Verified flex layout, 96px action widths, no content clipping, correct `bg-brand` and `bg-danger` tokens across light and dark modes.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 8 (part 2) · RuleCard component fixes:
   - Fixed RuleCard in `src/components/ds/RuleCard/RuleCard.tsx`:
     - Selection API (RULES §7.4): added `selectable`, `selected`, `onSelectedChange`, `onDetail` (with `onViewDetail` alias).
