@@ -3,6 +3,7 @@ import React, { forwardRef, useRef } from 'react';
 
 import { Button } from '../Button/Button';
 import { CategoryChip } from '../CategoryChip/CategoryChip';
+import { Checkbox } from '../Checkbox/Checkbox';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import {
@@ -11,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../Menu/Menu';
+import { StatusWords } from '../StatusWords/StatusWords';
 import { useIsPhone } from '../useMediaQuery';
 
 export interface RuleCardMenuItem {
@@ -164,54 +166,41 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
     const renderStatusLine = () => {
       if (statusLine) return statusLine;
 
-      const parts: React.ReactNode[] = [];
-
-      parts.push(
-        isVerified ? (
-          <span key="status" className="text-brand-strong font-bold">
-            Verified
-          </span>
-        ) : (
-          <span key="status" className="text-warning font-bold">
-            Unverified
-          </span>
-        ),
-      );
+      const items: { tone: 'amber' | 'green' | 'grey'; label: React.ReactNode }[] = [
+        {
+          tone: isVerified ? 'green' : 'amber',
+          label: isVerified ? 'Verified' : 'Unverified',
+        },
+      ];
 
       if (source) {
-        parts.push(<span key="source">{source}</span>);
+        items.push({ tone: 'grey', label: source });
       }
 
       if (mcc) {
-        parts.push(<span key="mcc">{mcc}</span>);
+        items.push({ tone: 'grey', label: mcc });
       }
 
-      return (
-        <div className="text-label font-medium text-ink-3">
-          {parts.map((part, idx) => (
-            <React.Fragment key={idx}>
-              {idx > 0 && <span className="text-ink-4 select-none"> · </span>}
-              {part}
-            </React.Fragment>
-          ))}
-        </div>
-      );
+      return <StatusWords items={items} />;
     };
 
     const renderActions = () => {
       if (showEye) {
         return (
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant="ghost"
+            iconOnly
             onClick={(e) => {
               e.stopPropagation();
               (onDetail ?? onViewDetail)?.();
             }}
             aria-label="View rule details"
-            className="text-brand-strong inline-flex items-center justify-center p-space-2 rounded-ds-sm hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+            className="text-brand-strong shrink-0"
           >
-            <Eye className="w-space-16 h-space-16" aria-hidden="true" />
-          </button>
+            <Icon icon={Eye} size="md" />
+          </Button>
         );
       }
 
@@ -236,10 +225,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
                 iconOnly
                 aria-label="Rule actions"
               >
-                <MoreVertical
-                  className="w-space-14 h-space-14"
-                  aria-hidden="true"
-                />
+                <Icon icon={MoreVertical} size="sm" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -358,18 +344,20 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
         <div className="flex gap-space-10 items-start justify-between">
           <div className="flex items-start gap-space-10 flex-1 min-w-0">
             {showDesktopCheckbox && (
-              <input
-                type="checkbox"
-                checked={selected}
-                onChange={(e) => {
-                  e.stopPropagation();
-                  onSelectedChange?.(e.target.checked);
-                }}
-                aria-label={
-                  typeof name === 'string' ? `Select ${name}` : 'Select rule'
-                }
-                className="accent-brand cursor-pointer w-space-16 h-space-16 rounded-ds-xs m-0 shrink-0 mt-space-2"
-              />
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="shrink-0 mt-space-2 inline-flex"
+              >
+                <Checkbox
+                  checked={selected}
+                  onCheckedChange={(checked) => {
+                    onSelectedChange?.(checked === true);
+                  }}
+                  aria-label={
+                    typeof name === 'string' ? `Select ${name}` : 'Select rule'
+                  }
+                />
+              </div>
             )}
             <div className="flex-1 min-w-0">
               {name && (

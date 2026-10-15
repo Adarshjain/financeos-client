@@ -80,7 +80,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 25 | ListRow | Ready for review |
 | 26 | SectionHeader | Ready for review |
 | 27 | TransactionRow | Ready for review |
-| 28 | RuleCard | Changes requested |
+| 28 | RuleCard | Ready for review |
 | 29 | KpiTile | Changes requested |
 | 30 | Widget | Changes requested |
 | 31 | Badge | Ready for review |
@@ -191,6 +191,18 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 13b · RuleCard:
+  - Updated `RuleCard` in `src/components/ds/RuleCard/RuleCard.tsx`:
+    - Replaced raw desktop `<input type="checkbox">` with DS `Checkbox` primitive.
+    - Uses `StatusWords` component for status line (`Unverified` in amber, `Verified` in green, and provenance/MCC in grey).
+    - Uses `Button` ghost iconOnly with `Icon` `Eye` (`size="md"`) for detail view trigger in selection mode, eliminating raw-button violation.
+    - Replaced raw SVG `MoreVertical` with `Icon` `MoreVertical` at `sm` (16px) inside actions kebab menu.
+    - Category chips use `CategoryChip` with `bg-surface` on selected cards matching `.rc.sel .cat`.
+  - Updated `src/components/ds/RuleCard/RuleCard.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`Unverified`, `Selected`, `Verified`, `SelectionModeNotSelected`, `SelectableInteractive`) with controls.
+  - Updated `src/components/ds/RuleCard/RuleCard.test.tsx`: 12 unit tests passing, updated assertion for verified status.
+  - Stories compared: AllVariants, Unverified, Selected, Verified, SelectionModeNotSelected against `design-system/components/RuleCard/preview.html` and rule card boards at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 13a · TransactionRow:
   - Updated `TransactionRow` in `src/components/ds/TransactionRow/TransactionRow.tsx`:
