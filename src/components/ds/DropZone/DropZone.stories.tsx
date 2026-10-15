@@ -32,6 +32,7 @@ export const DraggingOver: Story = {
 
 export const Queued: Story = {
   args: {
+    showDropArea: false,
     queuedFiles: [
       { id: '1', name: 'Regalia-Gold-Oct.pdf', size: '412 KB' },
       { id: '2', name: 'Amex-Platinum-Sep.pdf', size: '1.2 MB' },
@@ -42,6 +43,7 @@ export const Queued: Story = {
 
 export const TooLarge: Story = {
   args: {
+    showDropArea: false,
     queuedFiles: [
       {
         id: '1',
@@ -51,6 +53,12 @@ export const TooLarge: Story = {
       },
     ],
     onRemoveFile: (f) => alert(`Removed ${f.name}`),
+  },
+};
+
+export const WithDropError: Story = {
+  args: {
+    error: 'File format not supported. Please upload a PDF or Excel sheet.',
   },
 };
 
@@ -97,6 +105,7 @@ export const AllVariants: Story = {
           Queued
         </div>
         <DropZone
+          showDropArea={false}
           queuedFiles={[
             { id: '1', name: 'Regalia-Gold-Oct.pdf', size: '412 KB' },
             { id: '2', name: 'Amex-Platinum-Sep.pdf', size: '1.2 MB' },
@@ -110,6 +119,7 @@ export const AllVariants: Story = {
           Too large
         </div>
         <DropZone
+          showDropArea={false}
           queuedFiles={[
             {
               id: '1',
