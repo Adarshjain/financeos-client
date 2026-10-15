@@ -9,11 +9,73 @@ const meta = {
   parameters: {
     layout: 'padded',
   },
-  tags: ['autodocs'],
+  argTypes: {
+    value: { control: 'text' },
+    defaultValue: { control: 'text' },
+  },
 } satisfies Meta<typeof Tabs>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
+
+export const AllVariants: Story = {
+  render: () => {
+    return (
+      <div className="space-y-space-24 max-w-2xl bg-canvas p-space-16 rounded-ds-lg border border-line">
+        <div className="space-y-space-4">
+          <span className="font-text text-caption font-semibold text-ink-3">
+            Plain
+          </span>
+          <Tabs
+            defaultValue="rules"
+            items={[
+              { value: 'all', label: 'All' },
+              { value: 'rules', label: 'Rules' },
+              { value: 'categories', label: 'Categories' },
+              { value: 'import', label: 'Import' },
+            ]}
+          />
+        </div>
+
+        <div className="space-y-space-4">
+          <span className="font-text text-caption font-semibold text-ink-3">
+            With counts
+          </span>
+          <Tabs
+            defaultValue="statements"
+            items={[
+              { value: 'overview', label: 'Overview' },
+              { value: 'statements', label: 'Statements', count: 3 },
+              { value: 'cards', label: 'Cards', count: 2 },
+            ]}
+          />
+        </div>
+
+        <div className="space-y-space-4">
+          <span className="font-text text-caption font-semibold text-ink-3">
+            Scrolling on phone
+          </span>
+          <div className="max-w-xs">
+            <Tabs
+              defaultValue="tradebook"
+              items={[
+                { value: 'holdings', label: 'Holdings' },
+                { value: 'tradebook', label: 'Tradebook', count: 38 },
+                { value: 'dividends', label: 'Dividends', count: 5 },
+                { value: 'fno', label: 'F&O', count: 5 },
+                {
+                  value: 'corp_actions',
+                  label: 'Corporate actions',
+                  count: 2,
+                },
+              ]}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  },
+};
 
 function PlainInteractiveDemo() {
   const [val, setVal] = useState('rules');
@@ -114,63 +176,4 @@ function InteractiveWithContentDemo() {
 
 export const InteractiveWithContent: Story = {
   render: () => <InteractiveWithContentDemo />,
-};
-
-export const AllVariants: Story = {
-  render: () => {
-    return (
-      <div className="space-y-space-24 max-w-2xl bg-canvas p-space-16 rounded-ds-lg border border-line">
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Plain
-          </span>
-          <Tabs
-            defaultValue="rules"
-            items={[
-              { value: 'all', label: 'All' },
-              { value: 'rules', label: 'Rules' },
-              { value: 'categories', label: 'Categories' },
-              { value: 'import', label: 'Import' },
-            ]}
-          />
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            With counts
-          </span>
-          <Tabs
-            defaultValue="statements"
-            items={[
-              { value: 'overview', label: 'Overview' },
-              { value: 'statements', label: 'Statements', count: 3 },
-              { value: 'cards', label: 'Cards', count: 2 },
-            ]}
-          />
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Scrolling on phone
-          </span>
-          <div className="max-w-xs">
-            <Tabs
-              defaultValue="tradebook"
-              items={[
-                { value: 'holdings', label: 'Holdings' },
-                { value: 'tradebook', label: 'Tradebook', count: 38 },
-                { value: 'dividends', label: 'Dividends', count: 5 },
-                { value: 'fno', label: 'F&O', count: 5 },
-                {
-                  value: 'corp_actions',
-                  label: 'Corporate actions',
-                  count: 2,
-                },
-              ]}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  },
 };

@@ -60,7 +60,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 5 | TabBar | Ready for review |
 | 6 | Rail | Ready for review |
 | 7 | TopBar | Ready for review |
-| 8 | Tabs | Changes requested |
+| 8 | Tabs | Ready for review |
 | 9 | Pager | Changes requested |
 | 10 | Button | Ready for review |
 | 11 | Menu | Ready for review |
@@ -199,6 +199,16 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 13f · Tabs:
+  - Rebuilt `Tabs` on `@radix-ui/react-tabs` primitives (`TabsPrimitive.Root`, `TabsPrimitive.List`, `TabsPrimitive.Trigger`, `TabsPrimitive.Content`) in `src/components/ds/Tabs/Tabs.tsx`.
+  - Active indicator is an underline border (`border-b-2 border-brand text-brand-strong font-bold`) instead of a sliding pill, matching design-system/components/Tabs/README.md and preview.html.
+  - Tab counts render cleanly with `text-ink-3 font-medium` (` · <count>`).
+  - Added Radix sync context ensuring consistent controlled/uncontrolled state, keyboard navigation (left/right/home/end), and click handlers.
+  - Updated `src/components/ds/Tabs/Tabs.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`TwoTabs`, `ThreeTabs`, `WithCounts`, `Controlled`, `CustomList`) with controls.
+  - Verified `src/components/ds/Tabs/Tabs.test.tsx`: 7 unit tests passing.
+  - Stories compared: AllVariants, TwoTabs, ThreeTabs, WithCounts, Controlled, CustomList against `design-system/components/Tabs/preview.html` at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 13e · SelectionBar:
   - Updated `SelectionBar` in `src/components/ds/SelectionBar/SelectionBar.tsx`:
