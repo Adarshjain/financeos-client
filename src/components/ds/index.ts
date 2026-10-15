@@ -7,6 +7,7 @@ export * from './Button/Button';
 export * from './Card/Card';
 export * from './CategoryChip/CategoryChip';
 export * from './Checkbox/Checkbox';
+export * from './DateField/DateField';
 export * from './DateTile/DateTile';
 export * from './Dialog/Dialog';
 export * from './DropZone/DropZone';
