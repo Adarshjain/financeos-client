@@ -15,7 +15,6 @@ describe('SelectionBar', () => {
   it('renders count and summary', () => {
     render(
       <SelectionBar
-        variant="desktop"
         count={2}
         summary="₹2,498 · the duplicate pair"
         actions={defaultActions}
@@ -23,42 +22,40 @@ describe('SelectionBar', () => {
       />,
     );
 
-    expect(screen.getByText('2 selected')).toBeInTheDocument();
+    expect(screen.getAllByText('2 selected').length).toBeGreaterThan(0);
     expect(
-      screen.getByText('₹2,498 · the duplicate pair'),
-    ).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Link' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Merge' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Approve 2' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+      screen.getAllByText('₹2,498 · the duplicate pair').length,
+    ).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: 'Link' })[0]).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Merge' })[0]).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Approve 2' })[0]).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Delete' })[0]).toBeInTheDocument();
   });
 
   it('triggers action click callback', () => {
     const handleLink = vi.fn();
     render(
       <SelectionBar
-        variant="desktop"
         count={2}
         actions={[{ label: 'Link', onClick: handleLink }]}
         onClear={() => {}}
       />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Link' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Link' })[0]);
     expect(handleLink).toHaveBeenCalledTimes(1);
   });
 
   it('disables actions marked disabled', () => {
     render(
       <SelectionBar
-        variant="desktop"
         count={3}
         actions={[{ label: 'Merge', disabled: true }]}
         onClear={() => {}}
       />,
     );
 
-    const mergeBtn = screen.getByRole('button', { name: 'Merge' });
+    const mergeBtn = screen.getAllByRole('button', { name: 'Merge' })[0];
     expect(mergeBtn).toBeDisabled();
   });
 
@@ -66,14 +63,13 @@ describe('SelectionBar', () => {
     const handleClear = vi.fn();
     render(
       <SelectionBar
-        variant="desktop"
         count={2}
         actions={defaultActions}
         onClear={handleClear}
       />,
     );
 
-    const clearBtn = screen.getByRole('button', { name: 'Clear selection' });
+    const clearBtn = screen.getAllByRole('button', { name: 'Clear selection' })[0];
     fireEvent.click(clearBtn);
     expect(handleClear).toHaveBeenCalledTimes(1);
   });
@@ -82,7 +78,6 @@ describe('SelectionBar', () => {
     const handleClear = vi.fn();
     render(
       <SelectionBar
-        variant="desktop"
         count={2}
         actions={defaultActions}
         onClear={handleClear}
@@ -93,11 +88,10 @@ describe('SelectionBar', () => {
     expect(handleClear).toHaveBeenCalledTimes(1);
   });
 
-  it('renders phone variant with select all and hints', () => {
+  it('renders select all and hints in mobile docked layout', () => {
     const handleSelectAll = vi.fn();
     const { container } = render(
       <SelectionBar
-        variant="phone"
         count={2}
         actions={defaultActions}
         onClear={() => {}}
@@ -121,7 +115,6 @@ describe('SelectionBar', () => {
     const handleClear = vi.fn();
     const { container } = render(
       <SelectionBar
-        variant="desktop"
         count={0}
         actions={defaultActions}
         onClear={handleClear}

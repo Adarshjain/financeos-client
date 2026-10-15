@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { useArgs } from 'storybook/preview-api';
 
 import { TextArea } from './TextArea';
 
@@ -17,6 +18,16 @@ const meta: Meta<typeof TextArea> = {
     optional: { control: 'boolean' },
     disabled: { control: 'boolean' },
     rows: { control: 'number' },
+  },
+  render: function Render(args) {
+    const [{ value }, updateArgs] = useArgs();
+    return (
+      <TextArea
+        {...args}
+        value={value ?? args.defaultValue}
+        onChange={(e) => updateArgs({ value: e.target.value })}
+      />
+    );
   },
 };
 

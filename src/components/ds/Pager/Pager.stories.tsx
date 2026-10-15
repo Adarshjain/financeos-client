@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
+import { useArgs } from 'storybook/preview-api';
 
 import { Card } from '../Card/Card';
 import { Pager } from './Pager';
@@ -12,16 +13,12 @@ const meta: Meta<typeof Pager> = {
   },
   decorators: [
     (Story) => (
-      <Card className="max-w-3xl overflow-hidden">
+      <Card className="max-w-3xl overflow-hidden font-text">
         <Story />
       </Card>
     ),
   ],
   argTypes: {
-    variant: {
-      control: 'select',
-      options: ['auto', 'desktop', 'phone'],
-    },
     borderPosition: {
       control: 'select',
       options: ['top', 'bottom', 'none'],
@@ -32,6 +29,18 @@ const meta: Meta<typeof Pager> = {
     totalPages: { control: 'number' },
     unit: { control: 'text' },
   },
+  render: function Render(args) {
+    const [{ page, size }, updateArgs] = useArgs();
+    return (
+      <Pager
+        {...args}
+        page={page ?? args.page}
+        size={size ?? args.size}
+        onPageChange={(p) => updateArgs({ page: p })}
+        onSizeChange={(s) => updateArgs({ size: s, page: 0 })}
+      />
+    );
+  },
 };
 
 export default meta;
@@ -40,7 +49,7 @@ type Story = StoryObj<typeof Pager>;
 export const AllVariants: Story = {
   name: 'All variants',
   render: () => (
-    <div className="space-y-space-24 max-w-3xl">
+    <div className="space-y-space-24 max-w-3xl font-text">
       <div>
         <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Desktop (First page of 4)
@@ -60,11 +69,10 @@ export const AllVariants: Story = {
 
       <div>
         <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Phone Variant
+          Mobile (Compact layout on phone viewports)
         </h4>
         <Card className="max-w-sm overflow-hidden">
           <Pager
-            variant="phone"
             page={0}
             size={50}
             totalElements={182}
@@ -102,7 +110,6 @@ export const Desktop: Story = {
     totalElements: 182,
     totalPages: 4,
     unit: 'transaction',
-    variant: 'desktop',
     onPageChange: () => {},
     onSizeChange: () => {},
   },
@@ -110,15 +117,10 @@ export const Desktop: Story = {
 
 export const Phone: Story = {
   name: 'Phone',
-  decorators: [
-    (Story) => (
-      <Card className="max-w-sm overflow-hidden">
-        <Story />
-      </Card>
-    ),
-  ],
+  parameters: {
+    viewport: { defaultViewport: 'phone' },
+  },
   args: {
-    variant: 'phone',
     page: 0,
     size: 50,
     totalElements: 182,
@@ -182,4 +184,3 @@ export const Interactive: Story = {
   name: 'Interactive',
   render: () => <InteractivePagerStory />,
 };
-

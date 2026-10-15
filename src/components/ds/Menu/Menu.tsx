@@ -4,9 +4,11 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import React, { forwardRef, useMemo, useState } from 'react';
 
 import { cn } from '../cn';
-import { Dialog, DialogBody, DialogContent } from '../Dialog/Dialog';
 import { getItemRowClass, ItemRowStyleOptions } from '../itemRow';
-import { useIsPhone } from '../useMediaQuery';
+import {
+  ResponsiveOverlay,
+  useResponsiveOverlay,
+} from '../ResponsiveOverlay/ResponsiveOverlay';
 
 const MenuContext = React.createContext<{
   isDialog: boolean;
@@ -98,13 +100,16 @@ export const MenuItem = forwardRef<
     ref,
   ) => {
     const { isDialog, close } = React.useContext(MenuContext);
+    const { isSheet, close: overlayClose } = useResponsiveOverlay();
+    const effectiveIsDialog = isDialog || isSheet;
+    const effectiveClose = close || overlayClose;
 
     const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
       if (disabled) return;
       onClick?.(e);
-      if (isDialog) {
+      if (effectiveIsDialog) {
         onSelect?.(e as unknown as Event);
-        close();
+        effectiveClose();
       }
     };
 
@@ -135,7 +140,7 @@ export const MenuItem = forwardRef<
       </>
     );
 
-    if (isDialog) {
+    if (effectiveIsDialog) {
       return (
         <div
           ref={ref as unknown as React.Ref<HTMLDivElement>}
@@ -266,6 +271,15 @@ export interface MenuProps extends DropdownMenuPrimitive.DropdownMenuProps {
   title?: string;
 }
 
+const MenuBody: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isSheet, close } = useResponsiveOverlay();
+  return (
+    <MenuContext.Provider value={{ isDialog: isSheet, close }}>
+      {children}
+    </MenuContext.Provider>
+  );
+};
+
 export const Menu: React.FC<MenuProps> & {
   Root: typeof DropdownMenuPrimitive.Root;
   Trigger: typeof DropdownMenuPrimitive.Trigger;
@@ -289,9 +303,6 @@ export const Menu: React.FC<MenuProps> & {
   forcePhone,
   title,
 }) => {
-  const isPhoneDevice = useIsPhone();
-  const isPhone = forcePhone !== undefined ? forcePhone : isPhoneDevice;
-
   const itemCount = useMemo(() => {
     let count = 0;
     const walk = (node: React.ReactNode) => {
@@ -312,76 +323,25 @@ export const Menu: React.FC<MenuProps> & {
     return count;
   }, [children]);
 
-  const showDialog = isPhone && itemCount > 6;
-  const [internalOpen, setInternalOpen] = useState(defaultOpen ?? false);
-  const isOpen = open !== undefined ? open : internalOpen;
-  const setOpen = (next: boolean) => {
-    if (open === undefined) setInternalOpen(next);
-    onOpenChange?.(next);
-  };
-
-  if (showDialog) {
-    return (
-      <MenuContext.Provider
-        value={{ isDialog: true, close: () => setOpen(false) }}
-      >
-        <Dialog open={isOpen} onOpenChange={setOpen}>
-          {trigger ? (
-            <div
-              onClick={() => setOpen(!isOpen)}
-              className="inline-block cursor-pointer"
-            >
-              {trigger}
-            </div>
-          ) : null}
-          <DialogContent
-            title={title || 'Menu'}
-            onClose={() => setOpen(false)}
-            className="max-h-dvh"
-          >
-            <DialogBody className="p-space-8 flex flex-col gap-space-2">
-              {children}
-            </DialogBody>
-          </DialogContent>
-        </Dialog>
-      </MenuContext.Provider>
-    );
-  }
-
-  if (trigger) {
-    return (
-      <DropdownMenuPrimitive.Root
-        open={isOpen}
-        defaultOpen={defaultOpen}
-        onOpenChange={setOpen}
-        modal={modal}
-        dir={dir}
-      >
-        <DropdownMenuPrimitive.Trigger asChild>
-          {trigger}
-        </DropdownMenuPrimitive.Trigger>
-        <MenuContent
-          align={align}
-          side={side}
-          sideOffset={sideOffset}
-          className={contentClassName}
-        >
-          {children}
-        </MenuContent>
-      </DropdownMenuPrimitive.Root>
-    );
-  }
-
   return (
-    <DropdownMenuPrimitive.Root
-      open={isOpen}
+    <ResponsiveOverlay
+      open={open}
       defaultOpen={defaultOpen}
-      onOpenChange={setOpen}
+      onOpenChange={onOpenChange}
+      trigger={trigger}
+      title={title || 'Menu'}
+      align={align}
+      side={side}
+      sideOffset={sideOffset}
       modal={modal}
-      dir={dir}
+      asDropdownMenu
+      forcePopover={!forcePhone && itemCount <= 6}
+      forceSheet={forcePhone}
+      popoverContentClassName={contentClassName}
+      dialogBodyClassName="p-space-8 flex flex-col gap-space-2"
     >
-      {children}
-    </DropdownMenuPrimitive.Root>
+      <MenuBody>{children}</MenuBody>
+    </ResponsiveOverlay>
   );
 };
 

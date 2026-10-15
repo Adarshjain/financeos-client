@@ -29,8 +29,8 @@ export function useMediaQuery(query: string, serverValue = false): boolean {
 }
 
 /**
- * Returns true when viewport is below the `sm` breakpoint (< 640px).
+ * Returns true when viewport is below the `lg` breakpoint (< 1024px, phone/tablet form).
  */
 export function useIsPhone(): boolean {
-  return useMediaQuery('(max-width: 639.98px)');
+  return useMediaQuery('(max-width: 1023.98px)');
 }

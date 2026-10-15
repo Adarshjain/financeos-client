@@ -1,9 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
+import { useArgs } from 'storybook/preview-api';
 
 import { SegmentedControl } from './SegmentedControl';
 
-const meta = {
+const meta: Meta<typeof SegmentedControl> = {
   title: 'DS/Inputs/SegmentedControl',
   component: SegmentedControl,
   parameters: {
@@ -12,124 +13,121 @@ const meta = {
   args: {
     options: ['Debit', 'Credit'],
   },
-  tags: ['autodocs'],
-} satisfies Meta<typeof SegmentedControl>;
+  argTypes: {
+    value: { control: 'text' },
+    defaultValue: { control: 'text' },
+  },
+  render: function Render(args) {
+    const [{ value }, updateArgs] = useArgs();
+    return (
+      <SegmentedControl
+        {...args}
+        value={value ?? args.value}
+        onChange={(val) => updateArgs({ value: val })}
+      />
+    );
+  },
+};
 
 export default meta;
-type Story = StoryObj<typeof meta>;
-
-function TwoOptionsInteractive() {
-  const [val, setVal] = useState('Debit');
-  return (
-    <SegmentedControl
-      options={['Debit', 'Credit']}
-      value={val}
-      onChange={setVal}
-    />
-  );
-}
-
-export const TwoOptions: Story = {
-  render: () => <TwoOptionsInteractive />,
-};
-
-function ThreeOptionsInteractive() {
-  const [val, setVal] = useState('Preset');
-  return (
-    <SegmentedControl
-      options={['Preset', 'Single date', 'Range']}
-      value={val}
-      onChange={setVal}
-    />
-  );
-}
-
-export const ThreeOptions: Story = {
-  render: () => <ThreeOptionsInteractive />,
-};
-
-function ViewSwitchInteractive() {
-  const [val, setVal] = useState('Calendar');
-  return (
-    <SegmentedControl
-      options={['List', 'Calendar']}
-      value={val}
-      onChange={setVal}
-    />
-  );
-}
-
-export const ViewSwitch: Story = {
-  render: () => <ViewSwitchInteractive />,
-};
-
-function InAFormInteractive() {
-  const [val, setVal] = useState('Part payment');
-  return (
-    <SegmentedControl
-      options={['Paid in full', 'Part payment']}
-      value={val}
-      onChange={setVal}
-    />
-  );
-}
-
-export const InAForm: Story = {
-  render: () => <InAFormInteractive />,
-};
+type Story = StoryObj<typeof SegmentedControl>;
 
 export const AllVariants: Story = {
+  name: 'All variants',
   render: () => {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-space-16 p-space-16 max-w-2xl bg-canvas rounded-ds-lg border border-line">
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Two options
-          </span>
-          <div>
-            <SegmentedControl
-              options={['Debit', 'Credit']}
-              defaultValue="Debit"
-            />
+    const InteractiveAll = () => {
+      const [v1, setV1] = useState('Debit');
+      const [v2, setV2] = useState('Preset');
+      const [v3, setV3] = useState('Calendar');
+      const [v4, setV4] = useState('Part payment');
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-space-16 p-space-16 max-w-2xl bg-canvas rounded-ds-lg border border-line font-text">
+          <div className="space-y-space-4">
+            <span className="font-text text-caption font-semibold text-ink-3">
+              Two options
+            </span>
+            <div>
+              <SegmentedControl
+                options={['Debit', 'Credit']}
+                value={v1}
+                onChange={setV1}
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Three options
-          </span>
-          <div>
-            <SegmentedControl
-              options={['Preset', 'Single date', 'Range']}
-              defaultValue="Preset"
-            />
+          <div className="space-y-space-4">
+            <span className="font-text text-caption font-semibold text-ink-3">
+              Three options
+            </span>
+            <div>
+              <SegmentedControl
+                options={['Preset', 'Single date', 'Range']}
+                value={v2}
+                onChange={setV2}
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            View switch
-          </span>
-          <div>
-            <SegmentedControl
-              options={['List', 'Calendar']}
-              defaultValue="Calendar"
-            />
+          <div className="space-y-space-4">
+            <span className="font-text text-caption font-semibold text-ink-3">
+              View switch
+            </span>
+            <div>
+              <SegmentedControl
+                options={['List', 'Calendar']}
+                value={v3}
+                onChange={setV3}
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            In a form
-          </span>
-          <div>
-            <SegmentedControl
-              options={['Paid in full', 'Part payment']}
-              defaultValue="Part payment"
-            />
+          <div className="space-y-space-4">
+            <span className="font-text text-caption font-semibold text-ink-3">
+              In a form
+            </span>
+            <div>
+              <SegmentedControl
+                options={['Paid in full', 'Part payment']}
+                value={v4}
+                onChange={setV4}
+              />
+            </div>
           </div>
         </div>
-      </div>
-    );
+      );
+    };
+    return <InteractiveAll />;
+  },
+};
+
+export const TwoOptions: Story = {
+  name: 'Two options',
+  args: {
+    options: ['Debit', 'Credit'],
+    value: 'Debit',
+  },
+};
+
+export const ThreeOptions: Story = {
+  name: 'Three options',
+  args: {
+    options: ['Preset', 'Single date', 'Range'],
+    value: 'Preset',
+  },
+};
+
+export const ViewSwitch: Story = {
+  name: 'View switch',
+  args: {
+    options: ['List', 'Calendar'],
+    value: 'Calendar',
+  },
+};
+
+export const InAForm: Story = {
+  name: 'In a form',
+  args: {
+    options: ['Paid in full', 'Part payment'],
+    value: 'Part payment',
   },
 };

@@ -21,15 +21,29 @@ export const AllVariants: Story = {
   render: () => (
     <div className="p-space-16 bg-canvas min-h-full flex flex-col gap-space-24 font-text">
       <div className="flex flex-col gap-space-8">
-        <span className="text-caption font-mono text-ink-3">signin</span>
+        <span className="text-caption font-mono text-ink-3">signin (desktop)</span>
         <div className="max-w-2xl w-full">
           <Illustration variant="signin" />
         </div>
       </div>
 
       <div className="flex flex-col gap-space-8">
-        <span className="text-caption font-mono text-ink-3">signup</span>
+        <span className="text-caption font-mono text-ink-3">signin · phone</span>
+        <div className="max-w-sm w-full">
+          <Illustration variant="signin" />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-space-8">
+        <span className="text-caption font-mono text-ink-3">signup (desktop)</span>
         <div className="max-w-2xl w-full">
+          <Illustration variant="signup" />
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-space-8">
+        <span className="text-caption font-mono text-ink-3">signup · phone</span>
+        <div className="max-w-sm w-full">
           <Illustration variant="signup" />
         </div>
       </div>
@@ -57,6 +71,23 @@ export const SignIn: Story = {
   ),
 };
 
+export const SignInPhone: Story = {
+  name: 'signin · phone',
+  parameters: {
+    viewport: { defaultViewport: 'phone' },
+  },
+  args: {
+    variant: 'signin',
+  },
+  render: (args) => (
+    <div className="p-space-8 bg-canvas min-h-full flex items-center justify-center">
+      <div className="w-full max-w-sm">
+        <Illustration {...args} />
+      </div>
+    </div>
+  ),
+};
+
 export const SignUp: Story = {
   args: {
     variant: 'signup',
@@ -64,6 +95,23 @@ export const SignUp: Story = {
   render: (args) => (
     <div className="p-space-16 bg-canvas min-h-full flex items-center justify-center">
       <div className="max-w-2xl w-full">
+        <Illustration {...args} />
+      </div>
+    </div>
+  ),
+};
+
+export const SignUpPhone: Story = {
+  name: 'signup · phone',
+  parameters: {
+    viewport: { defaultViewport: 'phone' },
+  },
+  args: {
+    variant: 'signup',
+  },
+  render: (args) => (
+    <div className="p-space-8 bg-canvas min-h-full flex items-center justify-center">
+      <div className="w-full max-w-sm">
         <Illustration {...args} />
       </div>
     </div>

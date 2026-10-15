@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
+import { useArgs } from 'storybook/preview-api';
 
 import { Select } from '../Select/Select';
 import { FilterChip, FilterChipRow } from './FilterChip';
@@ -23,6 +24,23 @@ const meta: Meta<typeof FilterChip> = {
   },
   parameters: {
     layout: 'padded',
+  },
+  render: function Render(args) {
+    const [{ active }, updateArgs] = useArgs();
+    return (
+      <FilterChip
+        {...args}
+        active={active ?? args.active}
+        onClick={(e) => {
+          args.onClick?.(e);
+          updateArgs({ active: !(active ?? args.active) });
+        }}
+        onRemove={(e) => {
+          args.onRemove?.(e);
+          updateArgs({ active: false });
+        }}
+      />
+    );
   },
 };
 

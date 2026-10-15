@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { useArgs } from 'storybook/preview-api';
 
 import { DateField } from './DateField';
 
@@ -21,6 +22,19 @@ const meta: Meta<typeof DateField> = {
     defaultEndDate: { control: 'text' },
     minDate: { control: 'text' },
     maxDate: { control: 'text' },
+  },
+  render: function Render(args) {
+    const [{ value, startDate, endDate }, updateArgs] = useArgs();
+    return (
+      <DateField
+        {...args}
+        value={value}
+        startDate={startDate}
+        endDate={endDate}
+        onChange={(val) => updateArgs({ value: val })}
+        onRangeChange={(range) => updateArgs({ startDate: range.startDate, endDate: range.endDate })}
+      />
+    );
   },
 };
 

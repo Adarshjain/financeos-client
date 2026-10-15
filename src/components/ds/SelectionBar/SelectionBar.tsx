@@ -11,9 +11,11 @@ export interface SelectionBarAction {
   label: string;
   icon?: React.ReactNode;
   onClick?: () => void;
+  onSelect?: () => void;
   hint?: string;
   count?: number | string;
   variant?: 'default' | 'danger';
+  tone?: 'default' | 'danger';
   disabled?: boolean;
 }
 
@@ -25,15 +27,13 @@ export interface SelectionBarProps
   onClear: () => void;
   onSelectAll?: () => void;
   selectAllLabel?: string;
-  variant?: 'desktop' | 'phone' | 'auto';
   clearAriaLabel?: string;
 }
 
 /**
  * SelectionBar: bar that appears while items are selected in lists.
  * Shows count, summary line, and actions that apply to the selection.
- * Desktop: floating pill centred above list (Esc clears).
- * Phone: docked to bottom edge like a sheet (tab bar hidden).
+ * Floating pill centred above list from lg up; docked to bottom edge below lg.
  */
 export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
   (
@@ -44,7 +44,6 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
       onClear,
       onSelectAll,
       selectAllLabel,
-      variant = 'auto',
       clearAriaLabel = 'Clear selection',
       className,
       ...props
@@ -68,79 +67,14 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
 
     if (count <= 0) return null;
 
-    const renderDesktop = () => (
-      <div
-        className={cn(
-          'flex items-center gap-space-8 px-space-12 py-space-8 bg-surface border border-line-strong rounded-ds-lg shadow-pop select-none text-body text-ink',
-          className,
-        )}
-      >
-        <div className="flex flex-col leading-tight">
-          <b className="font-bold text-body text-ink tabular-nums">
-            {count} selected
-          </b>
-          {summary ? (
-            <span className="text-caption font-semibold text-ink-3">
-              {summary}
-            </span>
-          ) : null}
-        </div>
+    const colStyle = {
+      gridTemplateColumns: `repeat(${actions.length}, minmax(0, 1fr))`,
+    };
 
-        <div className="w-px h-space-24 bg-line mx-space-2" aria-hidden="true" />
-
-        <div className="flex items-center gap-space-6">
-          {actions.map((act, idx) => {
-            const isDanger = act.variant === 'danger';
-            return (
-              <Button
-                key={act.id ?? idx}
-                type="button"
-                size="md"
-                variant={isDanger ? 'danger' : 'secondary'}
-                disabled={act.disabled}
-                onClick={act.onClick}
-                icon={act.icon}
-                count={act.count}
-                aria-label={
-                  act.count !== undefined ? `${act.label} ${act.count}` : act.label
-                }
-                className={cn(
-                  act.disabled && 'opacity-45 cursor-not-allowed pointer-events-none',
-                )}
-              >
-                {act.label}
-              </Button>
-            );
-          })}
-        </div>
-
-        <Button
-          type="button"
-          size="md"
-          variant="ghost"
-          iconOnly
-          aria-label={clearAriaLabel}
-          onClick={onClear}
-          className="text-ink-3 hover:bg-hover hover:text-ink shrink-0"
-        >
-          <Icon name="close" size="sm" />
-        </Button>
-      </div>
-    );
-
-    const renderPhone = () => {
-      const colStyle = {
-        gridTemplateColumns: `repeat(${actions.length}, minmax(0, 1fr))`,
-      };
-
-      return (
-        <div
-          className={cn(
-            'flex flex-col items-stretch bg-surface border-t border-line-strong rounded-t-ds-sheet shadow-dock z-dock select-none text-body text-ink w-full',
-            className,
-          )}
-        >
-          {/* Top row */}
+    return (
+      <div ref={ref} className={cn('relative w-full', className)} {...props}>
+        {/* Mobile docked view below lg */}
+        <div className="lg:hidden flex flex-col items-stretch bg-surface border-t border-line-strong rounded-t-ds-sheet shadow-dock z-dock select-none text-body text-ink w-full">
           <div className="flex items-center gap-space-10 px-space-14 pt-space-10 pb-space-8 border-b border-line-soft">
             <Button
               type="button"
@@ -178,20 +112,19 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
             ) : null}
           </div>
 
-          {/* Action buttons */}
           <div
             className="grid px-space-6 pt-space-4 pb-space-12 gap-space-4"
             style={colStyle}
           >
             {actions.map((act, idx) => {
-              const isDanger = act.variant === 'danger';
+              const isDanger = act.variant === 'danger' || act.tone === 'danger';
               return (
                 <Button
                   key={act.id ?? idx}
                   type="button"
                   variant="ghost"
                   disabled={act.disabled}
-                  onClick={act.onClick}
+                  onClick={act.onSelect ?? act.onClick}
                   aria-label={
                     act.count !== undefined ? `${act.label} ${act.count}` : act.label
                   }
@@ -222,32 +155,63 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
             })}
           </div>
         </div>
-      );
-    };
 
-    if (variant === 'desktop') {
-      return (
-        <div ref={ref} {...props}>
-          {renderDesktop()}
+        {/* Desktop pill view from lg up */}
+        <div className="hidden lg:flex items-center gap-space-8 px-space-12 py-space-8 bg-surface border border-line-strong rounded-ds-lg shadow-pop select-none text-body text-ink mx-auto w-fit">
+          <div className="flex flex-col leading-tight">
+            <b className="font-bold text-body text-ink tabular-nums">
+              {count} selected
+            </b>
+            {summary ? (
+              <span className="text-caption font-semibold text-ink-3">
+                {summary}
+              </span>
+            ) : null}
+          </div>
+
+          <div className="w-px h-space-24 bg-line mx-space-2" aria-hidden="true" />
+
+          <div className="flex items-center gap-space-6">
+            {actions.map((act, idx) => {
+              const isDanger = act.variant === 'danger' || act.tone === 'danger';
+              return (
+                <Button
+                  key={act.id ?? idx}
+                  type="button"
+                  size="md"
+                  variant={isDanger ? 'danger' : 'secondary'}
+                  disabled={act.disabled}
+                  onClick={act.onSelect ?? act.onClick}
+                  icon={act.icon}
+                  count={act.count}
+                  aria-label={
+                    act.count !== undefined ? `${act.label} ${act.count}` : act.label
+                  }
+                  className={cn(
+                    act.disabled && 'opacity-45 cursor-not-allowed pointer-events-none',
+                  )}
+                >
+                  {act.label}
+                </Button>
+              );
+            })}
+          </div>
+
+          <Button
+            type="button"
+            size="md"
+            variant="ghost"
+            iconOnly
+            aria-label={clearAriaLabel}
+            onClick={onClear}
+            className="text-ink-3 hover:bg-hover hover:text-ink shrink-0"
+          >
+            <Icon name="close" size="sm" />
+          </Button>
         </div>
-      );
-    }
-
-    if (variant === 'phone') {
-      return (
-        <div ref={ref} {...props}>
-          {renderPhone()}
-        </div>
-      );
-    }
-
-    // Auto responsive
-    return (
-      <div ref={ref} {...props}>
-        <div className="hidden sm:block">{renderDesktop()}</div>
-        <div className="block sm:hidden">{renderPhone()}</div>
       </div>
     );
   },
 );
+
 SelectionBar.displayName = 'SelectionBar';

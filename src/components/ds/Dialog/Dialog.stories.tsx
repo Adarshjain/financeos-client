@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React, { useState } from 'react';
+import { useArgs } from 'storybook/preview-api';
 
 import { Button } from '../Button/Button';
 import { Checkbox } from '../Checkbox/Checkbox';
@@ -442,47 +443,48 @@ export const ConfirmDialogLoading: StoryObj<typeof ConfirmDialogShell> = {
   ),
 };
 
-const InteractiveModalDemo: React.FC = () => {
-  const [open, setOpen] = useState(false);
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="primary">Open Dialog</Button>
-      </DialogTrigger>
-      <DialogContent
-        size="sm"
-        title="Approve 9 transactions"
-        description="Clears the reasons you tick."
-        secondary={
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => setOpen(false)}
-          >
-            Cancel
-          </Button>
-        }
-        primary={
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={() => setOpen(false)}
-          >
-            Approve 9
-          </Button>
-        }
-      >
-        <DialogBody>
-          <div className="text-body text-ink">
-            Are you sure you want to approve these items?
-          </div>
-        </DialogBody>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-export const InteractiveModal: Story = {
+export const InteractiveModal: StoryObj<{ open?: boolean }> = {
   name: 'Interactive modal',
-  render: () => <InteractiveModalDemo />,
+  args: {
+    open: false,
+  },
+  render: function Render() {
+    const [{ open }, updateArgs] = useArgs();
+    return (
+      <Dialog open={open ?? false} onOpenChange={(val) => updateArgs({ open: val })}>
+        <DialogTrigger asChild>
+          <Button variant="primary">Open Dialog</Button>
+        </DialogTrigger>
+        <DialogContent
+          size="sm"
+          title="Approve 9 transactions"
+          description="Clears the reasons you tick."
+          secondary={
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => updateArgs({ open: false })}
+            >
+              Cancel
+            </Button>
+          }
+          primary={
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => updateArgs({ open: false })}
+            >
+              Approve 9
+            </Button>
+          }
+        >
+          <DialogBody>
+            <div className="text-body text-ink">
+              Are you sure you want to approve these items?
+            </div>
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
+    );
+  },
 };
