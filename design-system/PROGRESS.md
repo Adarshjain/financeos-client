@@ -76,7 +76,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 21 | Switch | Ready for review |
 | 22 | SegmentedControl | Ready for review |
 | 23 | DropZone | Ready for review |
-| 24 | Card | Changes requested |
+| 24 | Card | Ready for review |
 | 25 | ListRow | Ready for review |
 | 26 | SectionHeader | Ready for review |
 | 27 | TransactionRow | Ready for review |
@@ -199,6 +199,13 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 13j · Card:
+  - Verified `CardSection` in `src/components/ds/Card/Card.tsx` uses `SectionHeader` with `variant="band"`, matching design-system/components/Card/README.md and preview.html.
+  - Updated `src/components/ds/Card/Card.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`TitleSubtitleLink`, `WithAnAction`, `WithRows`, `WithAPager`, `WithSectionBands`, `Empty`) with controls, replaced raw buttons in pager story with DS `Pager` component.
+  - Verified `src/components/ds/Card/Card.test.tsx`: 6 unit tests passing.
+  - Stories compared: AllVariants, TitleSubtitleLink, WithAnAction, WithRows, WithAPager, WithSectionBands, Empty against `design-system/components/Card/preview.html` and card screens at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 13i · DropZone:
   - Updated `DropZone` in `src/components/ds/DropZone/DropZone.tsx`:
