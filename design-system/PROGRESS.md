@@ -8,7 +8,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | --- | --- | --- |
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
-| 2 | New component library in Storybook, one component at a time, owner-reviewed | In progress (restructured 2026-10-15 to 41 components; see the table) |
+| 2 | New component library in Storybook, one component at a time, owner-reviewed | In progress (restructured 2026-10-15 to 44 components; see the table) |
 | 3 | Pages: rebuild and swap in one page or big component at a time | Not started |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
@@ -94,13 +94,16 @@ Build in this order, one component per step. After each one, set its status to *
 | 39 | Toast | Ready for review |
 | 40 | EmptyState | Ready for review |
 | 41 | Skeleton | Ready for review |
+| 42 | Logo | Not started |
+| 43 | Divider | Not started |
+| 44 | Illustration | Not started |
 
 Removed on 2026-10-15 (merged, see Owner decisions): Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; AuthPanel → a page in Phase 3.
 
 The desktop shell is Rail and TopBar; the phone shell is AppBar and TabBar.
 
 ## Phase 3 · Pages
-Rebuild one page or big component at a time, from **Approved** components only. Signed-out pages (login, signup, offline) are rebuilt in place and swapped directly (owner decision 2026-10-15). Each signed-in page is built first under `/ds/…` beside the live page (RULES §11). The owner reviews it at `/ds`, which lists every new page. After approval the live route switches to it (the swap) and the `/ds/…` copy is removed. Old components stay in place until Phase 4.
+Rebuild one page or big component at a time, from **Approved** components only. Every page, signed-out ones included, is built first under `/ds/…` beside the live page (RULES §11). Nothing is swapped yet (owner decision 2026-10-15). The owner reviews it at `/ds`, which lists every new page. After approval the live route switches to it (the swap) and the `/ds/…` copy is removed. Old components stay in place until Phase 4.
 
 Suggested order, matching the owner's review: sign in, sign up and offline → Home and dashboards → Inbox and Upcoming → Accounts → Transactions (with review merged in) and Import → Rules and Categories. Investments, loans, rewards, reports and settings come after the owner has reviewed those boards.
 
@@ -123,7 +126,6 @@ New pages may use nothing from the old UI (RULES §1.8). These are needed and do
 6. **ChoiceCard**: selectable cards. Used by the four account-type buttons on Add account (the one tile exception) and the widget picker.
 7. **SectionHeader `group` variant**: the Inbox group header with a count ("Act now · 5").
 8. **MonthCalendar events**: the desktop Upcoming calendar shows labelled event chips in day cells, not only markers.
-9. **Illustration**: the auth, offline and empty-state artwork as one component. AuthPanel was removed; login and signup still need their art.
 10. **Chart** (line, bar, donut with legend): not drawn on the reviewed boards, but dashboards, reports and investments use charts today. Design it with those boards.
 11. **Dashboard grid** (arrange and resize widgets) and the KpiTile vs Widget review: parked by the owner, needed before dashboards migrate.
 
@@ -131,9 +133,15 @@ New pages may use nothing from the old UI (RULES §1.8). These are needed and do
 - `/ds` pages live in their own route group, `src/app/(ds)/ds/…`, with their own layout: sign-in check, the new shell (Rail, TopBar, AppBar, TabBar) and the new Toaster. The `(protected)` layout renders the old Sidebar, MobileNav and PageActionBar, so nothing new may sit under it.
 - The root layout puts the old theme on `<body>` (Inter, `bg-background`) and mounts the old Sonner Toaster. New layouts and the signed-out pages set their own ground (`bg-canvas`, `font-text`) and use the new Toast's toaster, so old styles never show through.
 - Page logic hooks live inside old UI folders today (`src/components/*/…`, `src/app/(protected)/*/components/…`). Each page's migration first moves its hooks to `src/lib/` or `src/features/<area>/` (RULES §1.8).
-- `check-ui` scope already includes `src/app/(ds)/`; signed-out pages join `checked-paths.txt` when they are rebuilt.
+- `check-ui` scope already includes `src/app/(ds)/`.
+- **First pages: `/ds/login`, `/ds/signup`, `/ds/offline`.** What they need is designed: Logo, Divider, Illustration and Button's `google` variant (added 2026-10-15, Not started). Nothing else is missing. No backend change: they call the same server actions (`src/actions/auth.ts`: `login`, `signup`, `startGoogleSSO`). Client-side only:
+  - add the three paths to the public paths in `src/proxy.ts`;
+  - a signed-in visitor is redirected like the live login page does;
+  - after sign-in, go to the `from` page or `/dashboard`.
+  - Google sign-in from `/ds/login` returns through the existing `/auth/google/callback` page (Google's redirect URI is fixed server-side) and lands on the live app; a `/ds` callback would need a new redirect URI in Google Cloud and the server, so it isn't built.
+  - `/ds/offline` is a viewable page; the service worker's real offline fallback stays `/offline` until a swap.
 
-**Open for the owner:** swapping signed-in pages one at a time means the app switches between the old and new shell as you move between migrated and unmigrated pages. Options:
+**Open for the owner (later):** swapping signed-in pages one at a time means the app switches between the old and new shell as you move between migrated and unmigrated pages. Options:
 - (a) accept the mixed shells during the migration;
 - (b) review page by page in `/ds`, then swap all signed-in pages together (or per area) once they are approved.
 
