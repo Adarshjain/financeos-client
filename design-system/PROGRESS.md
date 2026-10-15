@@ -202,6 +202,22 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 · Antigravity · Round summary · Phosphor icons and auth foundations (Units 0, 1, 2, 3, 3b, 4):
+  - **Unit 0 (Server and client boundaries)**: Added `'use client'` to 28 interactive DS component files and 2 shared hooks (`useSheetDrag.ts`, `useSwipe.ts`). Verified Server Component barrel imports via `ServerFixture.tsx` (`npm run build` green). 14 presentational components kept as Server Components with no client directive.
+  - **Unit 1 (Phosphor installation & Icon rebuild)**: Installed approved dependency `@phosphor-icons/react@2.1.10`. Created `src/components/ds/Icon/registry.ts` strictly matching the 23 icons in `design-system/icons.json` using `@phosphor-icons/react/dist/ssr`. Rebuilt `Icon.tsx` (bold weight, `currentColor`, `aria-hidden="true"`, sizes `sm` | `md` | `lg`). Removed Lucide component and arbitrary SVG props.
+  - **Unit 2 (Migrate DS components to registry names)**: Replaced all Lucide imports across 28 files in `src/components/ds/` with `<Icon name="..." />`. Verified zero Lucide references remain in `src/components/ds/` (`grep -r "lucide-react" src/components/ds` returns 0).
+  - **Unit 3 (Storybook Icons page)**: Built `DS/Foundations/Icons` (`Icon.stories.tsx`) featuring an All Icons responsive grid (all 23 registry icons with sizes 14/16/20, `use` text from `icons.json`, search filter, click-to-copy snippet), Playground story driven by controls, and Sizes weight-check story beside typography.
+  - **Unit 3b (Auth foundations - Logo, Divider, Illustration, Button google)**:
+    - **Logo**: Created `Logo.tsx`, `Logo.stories.tsx`, `Logo.test.tsx` (`variant="mark" | "full"`, `size="sm" | "md"`). Switched `AppBar.tsx` and `Rail.tsx` to use `Logo`. Delegated `BrandMark` to `Logo`.
+    - **Divider**: Created `Divider.tsx`, `Divider.stories.tsx`, `Divider.test.tsx` (`role="separator"`, plain 1px rule `h-px bg-line`, optional centered label in `ink-4` caption flanked by hairline lines).
+    - **Illustration**: Created `Illustration.tsx`, `Illustration.stories.tsx`, `Illustration.test.tsx` (`variant="signin" | "signup" | "offline"` using DS tokens only, responsive scaling/copy hiding at 390 vs 1440). Switched `EmptyState.tsx` to `Illustration variant="offline"` and removed internal `OfflineIllustration`.
+    - **Button google**: Added Google's official multicolour SVG to `public/brand/google-g.svg`. Added `variant="google"` to `Button.tsx` (full width, `control-xl`, `<img>` mark, default "Continue with Google" label).
+  - **Unit 4 (Final verification)**:
+    - `node design-system/tools/check-ui.mjs --base c8b557b` reports clean (0 errors, 0 warnings), including `lucide-in-ds` and `phosphor-direct`.
+    - All stories verified across 390 and 1440 viewports in both light and dark modes against previews.
+    - Full test suite: 426 test files / 3,526 tests passing (`vitest`).
+    - Typecheck, ESLint, Next.js production build (`next build`), and Storybook build (`build-storybook`) all clean and passing.
+
 - 2026-10-15 · Phase 2 · Antigravity · Unit 3b · Button google variant:
   - Added official multicolour Google "G" SVG to `public/brand/google-g.svg` (no color literals in source code).
   - Updated `src/components/ds/Button/Button.tsx`: added `variant="google"` supporting full width, `h-control-xl`, Google "G" `<img>` icon, and default label "Continue with Google" (overridable via children).
