@@ -17,26 +17,32 @@ describe('formatBadgeCount', () => {
 });
 
 describe('TabBar', () => {
-  it('renders 5 tabs in canonical order', () => {
+  it('renders 5 tabs as links in canonical order', () => {
     render(<TabBar activeTab="home" />);
 
     const tabs = screen.getAllByRole('tab');
     expect(tabs).toHaveLength(5);
     expect(tabs[0]).toHaveTextContent('Home');
+    expect(tabs[0].tagName).toBe('A');
+    expect(tabs[0]).toHaveAttribute('href', '/');
     expect(tabs[1]).toHaveTextContent('Inbox');
+    expect(tabs[1].tagName).toBe('A');
+    expect(tabs[1]).toHaveAttribute('href', '/inbox');
     expect(tabs[2]).toHaveTextContent('Upcoming');
     expect(tabs[3]).toHaveTextContent('Transactions');
     expect(tabs[4]).toHaveTextContent('More');
   });
 
-  it('marks active tab with aria-selected="true"', () => {
+  it('marks active tab with aria-selected="true" and aria-current="page"', () => {
     render(<TabBar activeTab="transactions" />);
 
     const transactionsTab = screen.getByRole('tab', { name: /Transactions/i });
     expect(transactionsTab).toHaveAttribute('aria-selected', 'true');
+    expect(transactionsTab).toHaveAttribute('aria-current', 'page');
 
     const homeTab = screen.getByRole('tab', { name: /Home/i });
     expect(homeTab).toHaveAttribute('aria-selected', 'false');
+    expect(homeTab).not.toHaveAttribute('aria-current');
   });
 
   it('calls onTabChange when a tab is clicked', () => {

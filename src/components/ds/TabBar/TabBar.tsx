@@ -1,7 +1,10 @@
-import { Calendar, Home, Inbox, Menu } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { Calendar, Home, Inbox, Menu, Receipt } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
+import { Badge } from '../Badge/Badge';
 import { cn } from '../cn';
+import { Icon } from '../Icon/Icon';
 
 export type TabBarTabId =
   | 'home'
@@ -13,32 +16,10 @@ export type TabBarTabId =
 export interface TabBarItemDef {
   id: TabBarTabId;
   label: string;
-  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean | 'true' | 'false' }>;
+  icon: LucideIcon;
+  href?: string;
   count?: number;
   countTone?: 'danger' | 'warning';
-}
-
-function TransactionsIcon({
-  className,
-  'aria-hidden': ariaHidden,
-}: {
-  className?: string;
-  'aria-hidden'?: boolean | 'true' | 'false';
-}) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden={ariaHidden}
-    >
-      <path d="M4 7h16M4 12h16M4 17h10" />
-    </svg>
-  );
 }
 
 export function formatBadgeCount(count?: number): string | null {
@@ -53,12 +34,23 @@ export interface TabBarProps extends React.HTMLAttributes<HTMLElement> {
   inboxCount?: number;
   transactionsCount?: number;
   hidden?: boolean;
+  getHref?: (tabId: TabBarTabId) => string;
 }
+
+const defaultHrefs: Record<TabBarTabId, string> = {
+  home: '/',
+  inbox: '/inbox',
+  upcoming: '/upcoming',
+  transactions: '/transactions',
+  more: '/more',
+};
 
 /**
  * The phone tab bar: Home · Inbox · Upcoming · Transactions · More,
  * always in that order. Shown on every top-level phone screen;
- * hidden while in selection mode and under the keyboard.
+ * hidden while a list is in selection mode and under the keyboard.
+ *
+ * Built from: Icon, Badge (count). Items are links with the current one marked.
  */
 export const TabBar = forwardRef<HTMLElement, TabBarProps>(
   (
@@ -68,6 +60,7 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
       inboxCount,
       transactionsCount,
       hidden = false,
+      getHref,
       className,
       ...props
     },
@@ -88,7 +81,7 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
       {
         id: 'transactions',
         label: 'Transactions',
-        icon: TransactionsIcon,
+        icon: Receipt,
         count: transactionsCount,
         countTone: 'warning',
       },
@@ -107,45 +100,46 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
       >
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
-          const Icon = tab.icon;
-          const badgeText = formatBadgeCount(tab.count);
+          const href = getHref ? getHref(tab.id) : tab.href || defaultHrefs[tab.id];
 
           return (
-            <button
+            <a
               key={tab.id}
-              type="button"
+              href={href}
               role="tab"
               aria-selected={isActive}
-              onClick={() => onTabChange?.(tab.id)}
+              aria-current={isActive ? 'page' : undefined}
+              onClick={(e) => {
+                if (onTabChange) {
+                  e.preventDefault();
+                  onTabChange(tab.id);
+                }
+              }}
               className={cn(
-                'flex-1 flex flex-col items-center justify-center gap-space-2 text-tab-label font-bold transition-colors duration-fast cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded-ds-sm py-space-2',
+                'flex-1 flex flex-col items-center justify-center gap-space-2 font-text text-tab-label font-bold transition-colors duration-fast cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded-ds-sm py-space-2',
                 isActive
                   ? 'text-brand-strong font-extrabold'
                   : 'text-ink-4 hover:text-ink',
               )}
             >
               <div className="relative inline-flex items-center justify-center">
-                <Icon
-                  className="w-space-20 h-space-20 shrink-0"
-                  aria-hidden={true}
-                />
-                {badgeText ? (
-                  <span
-                    className={cn(
-                      'absolute -top-space-4 left-space-14 min-w-space-16 h-space-16 px-space-4 rounded-ds-pill flex items-center justify-center text-overline font-extrabold text-on-brand leading-none pointer-events-none',
-                      tab.countTone === 'warning' ? 'bg-warning' : 'bg-danger',
-                    )}
-                  >
-                    {badgeText}
-                  </span>
+                <Icon icon={tab.icon} size="lg" />
+                {tab.count !== undefined && tab.count > 0 ? (
+                  <Badge
+                    variant="count"
+                    tone={tab.countTone}
+                    count={tab.count}
+                    className="absolute -top-space-4 left-space-14 pointer-events-none"
+                  />
                 ) : null}
               </div>
               <span className="truncate max-w-full">{tab.label}</span>
-            </button>
+            </a>
           );
         })}
       </nav>
     );
   },
 );
+
 TabBar.displayName = 'TabBar';
