@@ -1,6 +1,6 @@
 # AppBar
 
-The phone app bar: the brand mark (or a back arrow on detail screens), breadcrumb and screen title, then Ask the data, Search and the one green + that adds whatever the screen is about.
+The phone app bar: the brand mark (or a back arrow on detail screens), breadcrumb and screen title, then Ask the data, Search and the one + (`brand` fill) that adds whatever the screen is about.
 
 ## Use
 - Every phone screen has exactly one. It replaces a body title: phone pages never repeat the title as an H1.
