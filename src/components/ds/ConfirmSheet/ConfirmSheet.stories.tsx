@@ -90,7 +90,7 @@ const InteractiveConfirmSheetStory: React.FC = () => {
 
   return (
     <div className="p-space-24">
-      <Button variant="danger-outline" onClick={() => setOpen(true)}>
+      <Button variant="danger" onClick={() => setOpen(true)}>
         Delete transaction (₹1,249)
       </Button>
       <ConfirmSheet

@@ -42,10 +42,10 @@ export const FormSheet: Story = {
           <TextField label="Due date" defaultValue="25/10/2026" />
         </SheetBody>
         <SheetFooter>
-          <Button size="phone" variant="secondary" className="flex-1">
+          <Button size="xl" variant="secondary" className="flex-1">
             Cancel
           </Button>
-          <Button size="phone" variant="primary" className="flex-1">
+          <Button size="xl" variant="primary" className="flex-1">
             Save
           </Button>
         </SheetFooter>
@@ -81,7 +81,7 @@ export const DetailSheet: Story = {
           <ListField label="Category" value="Food & dining" />
         </SheetBody>
         <SheetFooter>
-          <Button size="phone" variant="secondary" className="flex-1">
+          <Button size="xl" variant="secondary" className="flex-1">
             Close
           </Button>
         </SheetFooter>
@@ -121,7 +121,7 @@ export const PickerSheet: Story = {
           </div>
         </SheetBody>
         <SheetFooter>
-          <Button size="phone" variant="secondary" className="flex-1">
+          <Button size="xl" variant="secondary" className="flex-1">
             Cancel
           </Button>
         </SheetFooter>
@@ -161,7 +161,7 @@ export const ResultSummarySheet: Story = {
           </div>
         </SheetBody>
         <SheetFooter>
-          <Button size="phone" variant="primary" className="flex-1">
+          <Button size="xl" variant="primary" className="flex-1">
             Done
           </Button>
         </SheetFooter>
@@ -187,7 +187,7 @@ export const InteractiveModal: Story = {
           </div>
         </SheetBody>
         <SheetFooter>
-          <Button size="phone" variant="primary" className="flex-1">
+          <Button size="xl" variant="primary" className="flex-1">
             Done
           </Button>
         </SheetFooter>
@@ -213,10 +213,10 @@ export const AllVariants: Story = {
             <TextField label="Due date" defaultValue="25/10/2026" />
           </SheetBody>
           <SheetFooter>
-            <Button size="phone" variant="secondary" className="flex-1">
+            <Button size="xl" variant="secondary" className="flex-1">
               Cancel
             </Button>
-            <Button size="phone" variant="primary" className="flex-1">
+            <Button size="xl" variant="primary" className="flex-1">
               Save
             </Button>
           </SheetFooter>
@@ -244,7 +244,7 @@ export const AllVariants: Story = {
             <ListField label="Category" value="Food & dining" />
           </SheetBody>
           <SheetFooter>
-            <Button size="phone" variant="secondary" className="flex-1">
+            <Button size="xl" variant="secondary" className="flex-1">
               Close
             </Button>
           </SheetFooter>
@@ -263,7 +263,7 @@ export const AllVariants: Story = {
             </div>
           </SheetBody>
           <SheetFooter>
-            <Button size="phone" variant="secondary" className="flex-1">
+            <Button size="xl" variant="secondary" className="flex-1">
               Cancel
             </Button>
           </SheetFooter>
@@ -289,7 +289,7 @@ export const AllVariants: Story = {
             </div>
           </SheetBody>
           <SheetFooter>
-            <Button size="phone" variant="primary" className="flex-1">
+            <Button size="xl" variant="primary" className="flex-1">
               Done
             </Button>
           </SheetFooter>

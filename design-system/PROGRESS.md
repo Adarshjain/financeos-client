@@ -139,10 +139,40 @@ Only the owner adds to this list. Each entry has a date and the decision.
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
 
-_(none yet)_
+- 2026-10-15 · Phase 2 · Button · Count pill on primary button · The board only shows count pills on secondary buttons (btn). On a primary (btn-p) button, both the button background and default count pill use bg-ink, making an ink pill blend into the button. Options: (A) Reverse the pill colors on primary buttons to bg-surface text-ink, (B) Forbid count pills on primary buttons, or (C) Add a dedicated contrasting pill token. Meanwhile, Button renders bg-surface text-ink when primary.
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 10 (part 3) · Button component fixes:
+  - Fixed Button in `src/components/ds/Button/Button.tsx`:
+    - Cleaned variant and size aliases: restricted variants to `'primary' | 'secondary' | 'danger' | 'danger-filled' | 'ghost'` and sizes to `'sm' | 'md' | 'xl'`, removing unlisted aliases (`danger-outline`, `small`, `default`, `phone`) per README specification.
+    - Handled count pill on primary button: rendered `bg-surface text-ink` when on a primary button so the count pill remains contrasting and legible against `bg-brand`, contrasting with `bg-ink text-on-brand` on secondary buttons.
+  - Updated callers for strict Button types:
+    - `src/components/ds/ConfirmSheet/ConfirmSheet.tsx`: updated buttons to `size="xl"`.
+    - `src/components/ds/ConfirmSheet/ConfirmSheet.stories.tsx`: updated trigger to `variant="danger"`.
+    - `src/components/ds/Sheet/Sheet.stories.tsx`: updated footer buttons to `size="xl"`.
+  - Updated `src/components/ds/Button/Button.test.tsx`:
+    - Added unit test asserting count pill renders `bg-surface text-ink` on primary buttons and `bg-ink text-on-brand` on secondary buttons.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,491 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `Button/preview.html` and `ds-06-actions.webp` board:
+    - `DS/Actions/Button/Secondary`
+    - `DS/Actions/Button/Primary`
+    - `DS/Actions/Button/DangerOutline`
+    - `DS/Actions/Button/DangerFilled`
+    - `DS/Actions/Button/Ghost`
+    - `DS/Actions/Button/IconButton`
+    - `DS/Actions/Button/Small`
+    - `DS/Actions/Button/Default`
+    - `DS/Actions/Button/Phone`
+    - `DS/Actions/Button/Loading`
+    - `DS/Actions/Button/Disabled`
+    - `DS/Actions/Button/WithIcon`
+    - `DS/Actions/Button/WithCount`
+    - `DS/Actions/Button/AllVariants`
+    Verified variants, states, sizes (sm 26px, md 32px, xl 44px), icon buttons, count pill, and phone sheet footer.
+  - Differences left open: Count pill appearance on primary button (see Open questions).
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 10 (part 2) · FilterChip component fixes:
   - Fixed FilterChip in `src/components/ds/FilterChip/FilterChip.tsx`:

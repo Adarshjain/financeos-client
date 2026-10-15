@@ -103,7 +103,7 @@ export const ConfirmSheetShell = forwardRef<
             <Button
               type="button"
               variant="secondary"
-              size="phone"
+              size="xl"
               disabled={isBusy}
               onClick={onAlternative}
               className="w-full sm:w-auto flex-1 order-2 sm:order-1"
@@ -115,7 +115,7 @@ export const ConfirmSheetShell = forwardRef<
           <Button
             type="button"
             variant="secondary"
-            size="phone"
+            size="xl"
             disabled={isBusy}
             onClick={onCancel}
             className="w-full sm:w-auto flex-1 order-3 sm:order-2"
@@ -126,7 +126,7 @@ export const ConfirmSheetShell = forwardRef<
           <Button
             type="button"
             variant="danger-filled"
-            size="phone"
+            size="xl"
             loading={isBusy}
             disabled={isConfirmDisabled}
             onClick={handleConfirm}
@@ -232,7 +232,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
             <Button
               type="button"
               variant="secondary"
-              size="phone"
+              size="xl"
               disabled={isBusy}
               onClick={handleAlternative}
               className="w-full sm:w-auto flex-1 order-2 sm:order-1"
@@ -244,7 +244,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
           <Button
             type="button"
             variant="secondary"
-            size="phone"
+            size="xl"
             disabled={isBusy}
             onClick={handleCancel}
             className="w-full sm:w-auto flex-1 order-3 sm:order-2"
@@ -255,7 +255,7 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
           <Button
             type="button"
             variant="danger-filled"
-            size="phone"
+            size="xl"
             loading={isBusy}
             disabled={isConfirmDisabled}
             onClick={handleConfirm}
