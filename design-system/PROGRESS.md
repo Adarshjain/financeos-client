@@ -144,6 +144,26 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 9) · KpiTile component fixes:
+  - Fixed KpiTile in `src/components/ds/KpiTile/KpiTile.tsx`:
+    - Updated retry button styling: changed from grey text to bold ink (`text-ink font-bold underline hover:text-ink-2`) matching the board.
+    - Added `role="alert"` on the failed state container.
+    - Added accessible `aria-label` to the embedded ProgressBar.
+  - Updated `src/components/ds/KpiTile/KpiTile.test.tsx`:
+    - Added unit test assertions for `role="alert"` and bold ink styling (`text-ink font-bold`) on retry button.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/KpiTile` (7 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `KpiTile/preview.html` and `ds-06-cards.webp`:
+    - `DS/Data display/KpiTile/Hero`
+    - `DS/Data display/KpiTile/DeltaBadDirection`
+    - `DS/Data display/KpiTile/WithBar`
+    - `DS/Data display/KpiTile/WithBadges`
+    - `DS/Data display/KpiTile/Loading`
+    - `DS/Data display/KpiTile/Failed`
+    - `DS/Data display/KpiTile/AllVariants`
+    Verified bold ink retry link, hero figure styling, delta indicators, and alert semantics.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 8) · Tabs component fixes:
   - Fixed Tabs in `src/components/ds/Tabs/Tabs.tsx`:
     - Fixed focus ring clipping: added `focus-visible:ring-inset rounded-ds-sm` to `TabsTrigger` so focus ring is inset and never clipped by `TabsList`'s `overflow-x-auto` container.

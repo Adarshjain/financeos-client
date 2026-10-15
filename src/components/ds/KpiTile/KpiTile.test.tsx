@@ -85,9 +85,11 @@ describe('KpiTile', () => {
       />,
     );
 
+    expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getByText('Portfolio')).toHaveClass('text-danger');
     expect(screen.getByText(/Prices unavailable/)).toBeInTheDocument();
     const retryBtn = screen.getByRole('button', { name: /retry/i });
+    expect(retryBtn).toHaveClass('text-ink', 'font-bold');
     fireEvent.click(retryBtn);
     expect(handleRetry).toHaveBeenCalledTimes(1);
   });
