@@ -15,233 +15,128 @@ describe('SwipeActions', () => {
     expect(screen.getByText('Swiggy Bangalore ₹1,249')).toBeInTheDocument();
   });
 
-  it('renders revealed left action for transactions variant and triggers onApprove', () => {
-    const handleApprove = vi.fn();
+  it('triggers left action when swiped right past threshold', () => {
+    const handleTrigger = vi.fn();
 
-    render(
+    const { container } = render(
       <SwipeActions
-        variant="transactions"
-        revealed="left"
-        onApprove={handleApprove}
+        left={{ label: 'Approve', tone: 'brand', onTrigger: handleTrigger }}
       >
         <div>Transaction row</div>
       </SwipeActions>,
     );
 
-    const approveBtn = screen.getByRole('button', { name: 'Approve' });
-    expect(approveBtn).toBeInTheDocument();
-    expect(approveBtn).toHaveAttribute('tabIndex', '0');
+    const root = container.firstChild as HTMLElement;
 
-    fireEvent.click(approveBtn);
-    expect(handleApprove).toHaveBeenCalledTimes(1);
+    // Drag right past threshold (startX: 100, endX: 210 = delta +110 > 96px threshold)
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0 });
+    fireEvent.pointerMove(root, { clientX: 210, clientY: 50 });
+    fireEvent.pointerUp(root);
+
+    expect(handleTrigger).toHaveBeenCalledTimes(1);
   });
 
-  it('renders revealed right action for transactions variant and triggers onDelete', () => {
-    const handleDelete = vi.fn();
+  it('triggers right action when swiped left past threshold', () => {
+    const handleTrigger = vi.fn();
 
-    render(
+    const { container } = render(
       <SwipeActions
-        variant="transactions"
-        revealed="right"
-        onDelete={handleDelete}
+        right={{ label: 'Delete', tone: 'danger', onTrigger: handleTrigger }}
       >
         <div>Transaction row</div>
       </SwipeActions>,
     );
 
-    const deleteBtn = screen.getByRole('button', { name: 'Delete' });
-    expect(deleteBtn).toBeInTheDocument();
-    expect(deleteBtn).toHaveAttribute('tabIndex', '0');
+    const root = container.firstChild as HTMLElement;
 
-    fireEvent.click(deleteBtn);
-    expect(handleDelete).toHaveBeenCalledTimes(1);
+    // Drag left past threshold (startX: 200, endX: 90 = delta -110 < -96px threshold)
+    fireEvent.pointerDown(root, { clientX: 200, clientY: 50, button: 0 });
+    fireEvent.pointerMove(root, { clientX: 90, clientY: 50 });
+    fireEvent.pointerUp(root);
+
+    expect(handleTrigger).toHaveBeenCalledTimes(1);
   });
 
-  it('renders revealed actions for inbox variant (Snooze and Dismiss)', () => {
-    const handleSnooze = vi.fn();
-    const handleDismiss = vi.fn();
+  it('does not trigger and springs back when drag does not reach threshold', () => {
+    const handleLeft = vi.fn();
+    const handleRight = vi.fn();
 
-    const { rerender } = render(
+    const { container } = render(
       <SwipeActions
-        variant="inbox"
-        revealed="left"
-        onSnooze={handleSnooze}
-        onDismiss={handleDismiss}
-      >
-        <div>Inbox row</div>
-      </SwipeActions>,
-    );
-
-    const snoozeBtn = screen.getByRole('button', { name: 'Snooze' });
-    expect(snoozeBtn).toBeInTheDocument();
-    fireEvent.click(snoozeBtn);
-    expect(handleSnooze).toHaveBeenCalledTimes(1);
-
-    rerender(
-      <SwipeActions
-        variant="inbox"
-        revealed="right"
-        onSnooze={handleSnooze}
-        onDismiss={handleDismiss}
-      >
-        <div>Inbox row</div>
-      </SwipeActions>,
-    );
-
-    const dismissBtn = screen.getByRole('button', { name: 'Dismiss' });
-    expect(dismissBtn).toBeInTheDocument();
-    fireEvent.click(dismissBtn);
-    expect(handleDismiss).toHaveBeenCalledTimes(1);
-  });
-
-  it('hides unrevealed action buttons from tab order with tabIndex -1', () => {
-    render(
-      <SwipeActions
-        variant="transactions"
-        revealed="none"
+        left={{ label: 'Approve', onTrigger: handleLeft }}
+        right={{ label: 'Delete', onTrigger: handleRight }}
       >
         <div>Transaction row</div>
       </SwipeActions>,
     );
 
-    const approveBtn = screen.getByRole('button', { name: 'Approve', hidden: true });
-    const deleteBtn = screen.getByRole('button', { name: 'Delete', hidden: true });
-    expect(approveBtn).toHaveAttribute('tabIndex', '-1');
-    expect(deleteBtn).toHaveAttribute('tabIndex', '-1');
-  });
+    const root = container.firstChild as HTMLElement;
 
-  it('handles pointer swipe right gesture to reveal left action', () => {
-    const handleRevealedChange = vi.fn();
+    // Drag right below threshold (startX: 100, endX: 140 = delta +40 < 96px)
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0 });
+    fireEvent.pointerMove(root, { clientX: 140, clientY: 50 });
+    fireEvent.pointerUp(root);
 
-    const { container } = render(
-      <SwipeActions
-        onRevealedChange={handleRevealedChange}
-        variant="transactions"
-      >
-        <div>Swipeable row</div>
-      </SwipeActions>,
-    );
-
-    const swipeRoot = container.firstChild as HTMLElement;
-
-    // Drag right past threshold (startX: 100, endX: 180 = delta +80 > 48px)
-    fireEvent.pointerDown(swipeRoot, { clientX: 100, clientY: 50, button: 0 });
-    fireEvent.pointerMove(swipeRoot, { clientX: 180, clientY: 50 });
-    fireEvent.pointerUp(swipeRoot);
-
-    expect(handleRevealedChange).toHaveBeenCalledWith('left');
-  });
-
-  it('handles pointer swipe left gesture to reveal right action', () => {
-    const handleRevealedChange = vi.fn();
-
-    const { container } = render(
-      <SwipeActions
-        onRevealedChange={handleRevealedChange}
-        variant="transactions"
-      >
-        <div>Swipeable row</div>
-      </SwipeActions>,
-    );
-
-    const swipeRoot = container.firstChild as HTMLElement;
-
-    // Drag left past threshold (startX: 200, endX: 120 = delta -80 < -48px)
-    fireEvent.pointerDown(swipeRoot, { clientX: 200, clientY: 50, button: 0 });
-    fireEvent.pointerMove(swipeRoot, { clientX: 120, clientY: 50 });
-    fireEvent.pointerUp(swipeRoot);
-
-    expect(handleRevealedChange).toHaveBeenCalledWith('right');
-  });
-
-  it('springs back to none when drag does not reach threshold', () => {
-    const handleRevealedChange = vi.fn();
-
-    const { container } = render(
-      <SwipeActions
-        onRevealedChange={handleRevealedChange}
-        variant="transactions"
-      >
-        <div>Swipeable row</div>
-      </SwipeActions>,
-    );
-
-    const swipeRoot = container.firstChild as HTMLElement;
-
-    // Drag right below threshold (startX: 100, endX: 120 = delta +20 < 48px)
-    fireEvent.pointerDown(swipeRoot, { clientX: 100, clientY: 50, button: 0 });
-    fireEvent.pointerMove(swipeRoot, { clientX: 120, clientY: 50 });
-    fireEvent.pointerUp(swipeRoot);
-
-    expect(handleRevealedChange).toHaveBeenCalledWith('none');
-  });
-
-  it('springs back when row needs no approval (canApprove=false)', () => {
-    const handleRevealedChange = vi.fn();
-
-    const { container } = render(
-      <SwipeActions
-        onRevealedChange={handleRevealedChange}
-        variant="transactions"
-        canApprove={false}
-      >
-        <div>Row needing no approval</div>
-      </SwipeActions>,
-    );
-
-    const swipeRoot = container.firstChild as HTMLElement;
-
-    // Attempt drag right on row that cannot approve
-    fireEvent.pointerDown(swipeRoot, { clientX: 100, clientY: 50, button: 0 });
-    fireEvent.pointerMove(swipeRoot, { clientX: 180, clientY: 50 });
-    fireEvent.pointerUp(swipeRoot);
-
-    expect(handleRevealedChange).toHaveBeenCalledWith('none');
+    expect(handleLeft).not.toHaveBeenCalled();
+    expect(handleRight).not.toHaveBeenCalled();
   });
 
   it('cancels drag if vertical scroll motion is detected', () => {
-    const handleRevealedChange = vi.fn();
+    const handleLeft = vi.fn();
 
     const { container } = render(
       <SwipeActions
-        onRevealedChange={handleRevealedChange}
-        variant="transactions"
+        left={{ label: 'Approve', onTrigger: handleLeft }}
       >
         <div>Scrollable row</div>
       </SwipeActions>,
     );
 
-    const swipeRoot = container.firstChild as HTMLElement;
+    const root = container.firstChild as HTMLElement;
 
     // Start drag, then move vertically more than horizontally (deltaY: 30, deltaX: 10)
-    fireEvent.pointerDown(swipeRoot, { clientX: 100, clientY: 50, button: 0 });
-    fireEvent.pointerMove(swipeRoot, { clientX: 110, clientY: 80 });
-    fireEvent.pointerUp(swipeRoot);
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0 });
+    fireEvent.pointerMove(root, { clientX: 110, clientY: 80 });
+    fireEvent.pointerUp(root);
 
-    // Should not trigger swipe reveal because vertical scroll took precedence
-    expect(handleRevealedChange).not.toHaveBeenCalledWith('left');
-    expect(handleRevealedChange).not.toHaveBeenCalledWith('right');
+    expect(handleLeft).not.toHaveBeenCalled();
   });
 
-  it('closes revealed panel on tap', () => {
-    const handleRevealedChange = vi.fn();
-
+  it('does not trigger when neither slot is set', () => {
     const { container } = render(
-      <SwipeActions
-        revealed="left"
-        onRevealedChange={handleRevealedChange}
-        variant="transactions"
-      >
-        <div>Revealed row</div>
+      <SwipeActions>
+        <div>Plain row without actions</div>
       </SwipeActions>,
     );
 
-    const swipeRoot = container.firstChild as HTMLElement;
+    const root = container.firstChild as HTMLElement;
 
-    // Simple tap without movement
-    fireEvent.pointerDown(swipeRoot, { clientX: 100, clientY: 50, button: 0 });
-    fireEvent.pointerUp(swipeRoot, { clientX: 100, clientY: 50 });
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0 });
+    fireEvent.pointerMove(root, { clientX: 250, clientY: 50 });
+    fireEvent.pointerUp(root);
 
-    expect(handleRevealedChange).toHaveBeenCalledWith('none');
+    // No error, no action
+    expect(screen.getByText('Plain row without actions')).toBeInTheDocument();
+  });
+
+  it('does not trigger when disabled', () => {
+    const handleTrigger = vi.fn();
+
+    const { container } = render(
+      <SwipeActions
+        disabled
+        left={{ label: 'Approve', onTrigger: handleTrigger }}
+      >
+        <div>Disabled row</div>
+      </SwipeActions>,
+    );
+
+    const root = container.firstChild as HTMLElement;
+
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0 });
+    fireEvent.pointerMove(root, { clientX: 250, clientY: 50 });
+    fireEvent.pointerUp(root);
+
+    expect(handleTrigger).not.toHaveBeenCalled();
   });
 });
