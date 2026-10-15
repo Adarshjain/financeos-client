@@ -144,6 +144,26 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 6 · TabBar component fixes:
+  - Fixed TabBar in `src/components/ds/TabBar/TabBar.tsx`:
+    - Count bubble positioning: anchored with `left-space-14` instead of `-right-space-8` so the badge sits neatly at the top-right corner of the 20px icon and expands to the right without covering or obscuring the icon glyph.
+    - Verified size tokens: badge uses `min-w-space-16 h-space-16` (16px per owner decision on count bubbles).
+    - Verified count cap: counts exceeding 99 format as "99+" with `formatBadgeCount`.
+    - Added `pointer-events-none` on the badge so tab clicks pass directly to the tab button.
+  - Updated `src/components/ds/TabBar/TabBar.test.tsx`:
+    - Added assertions for `left-space-14` positioning and `min-w-space-16 h-space-16` size tokens.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,468 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs --staged` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px in light and dark against `TabBar/preview.html` and boards:
+    - `DS/Navigation/TabBar/HomeActive`
+    - `DS/Navigation/TabBar/TransactionsActive`
+    - `DS/Navigation/TabBar/HighCounts`
+    - `DS/Navigation/TabBar/NoCounts`
+    - `DS/Navigation/TabBar/Interactive`
+    - `DS/Navigation/TabBar/All variants`
+    Verified count bubbles on Inbox (danger) and Transactions (warning) sit at the icon's top-right corner without covering glyphs, expand to "99+" without collision, and match preview.html.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 5 · AppBar component fixes:
   - Fixed AppBar, BrandMark, DesktopTopBar, and DesktopRail in `src/components/ds/AppBar/AppBar.tsx`:
     - Phone AppBar:

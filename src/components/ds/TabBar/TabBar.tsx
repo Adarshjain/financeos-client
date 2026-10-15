@@ -132,7 +132,7 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
                 {badgeText ? (
                   <span
                     className={cn(
-                      'absolute -top-space-4 -right-space-8 min-w-space-16 h-space-16 px-space-4 rounded-ds-pill flex items-center justify-center text-overline font-extrabold text-on-brand leading-none',
+                      'absolute -top-space-4 left-space-14 min-w-space-16 h-space-16 px-space-4 rounded-ds-pill flex items-center justify-center text-overline font-extrabold text-on-brand leading-none pointer-events-none',
                       tab.countTone === 'warning' ? 'bg-warning' : 'bg-danger',
                     )}
                   >

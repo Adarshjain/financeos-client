@@ -50,7 +50,7 @@ describe('TabBar', () => {
     expect(handleTabChange).toHaveBeenCalledWith('more');
   });
 
-  it('renders count badges on Inbox and Transactions', () => {
+  it('renders count badges on Inbox and Transactions positioned without covering glyphs', () => {
     render(
       <TabBar
         activeTab="home"
@@ -59,8 +59,15 @@ describe('TabBar', () => {
       />,
     );
 
-    expect(screen.getByText('9')).toBeInTheDocument();
-    expect(screen.getByText('25')).toBeInTheDocument();
+    const inboxBadge = screen.getByText('9');
+    expect(inboxBadge).toBeInTheDocument();
+    expect(inboxBadge).toHaveClass('left-space-14');
+    expect(inboxBadge).toHaveClass('h-space-16');
+    expect(inboxBadge).toHaveClass('min-w-space-16');
+
+    const txBadge = screen.getByText('25');
+    expect(txBadge).toBeInTheDocument();
+    expect(txBadge).toHaveClass('left-space-14');
   });
 
   it('renders 99+ when count exceeds 99', () => {
