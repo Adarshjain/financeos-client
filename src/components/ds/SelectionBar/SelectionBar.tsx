@@ -73,47 +73,60 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
 
     return (
       <div ref={ref} className={cn('relative w-full', className)} {...props}>
-        {/* Mobile docked view below lg */}
-        <div className="lg:hidden flex flex-col items-stretch bg-surface border-t border-line-strong rounded-t-ds-sheet shadow-dock z-dock select-none text-body text-ink w-full">
-          <div className="flex items-center gap-space-10 px-space-14 pt-space-10 pb-space-8 border-b border-line-soft">
-            <Button
-              type="button"
-              size="md"
-              variant="ghost"
-              iconOnly
-              aria-label={clearAriaLabel}
-              onClick={onClear}
-              className="text-ink-3 hover:bg-hover hover:text-ink shrink-0"
-            >
-              <Icon name="close" size="sm" />
-            </Button>
+        <div
+          className={cn(
+            'bg-surface border-t lg:border border-line-strong rounded-t-ds-sheet lg:rounded-ds-lg shadow-dock lg:shadow-pop z-dock select-none text-body text-ink w-full lg:w-fit lg:mx-auto',
+            'grid grid-cols-[auto_1fr_auto] items-center px-space-14 pt-space-10 pb-space-12 lg:p-0',
+            'lg:flex lg:flex-row lg:items-center lg:px-space-12 lg:py-space-8 lg:gap-space-8',
+          )}
+        >
+          {/* Close button (×): column 1 on mobile, at the end on desktop */}
+          <Button
+            type="button"
+            size="md"
+            variant="ghost"
+            iconOnly
+            aria-label={clearAriaLabel}
+            onClick={onClear}
+            className="text-ink-3 hover:bg-hover hover:text-ink shrink-0 col-start-1 order-1 lg:order-5"
+          >
+            <Icon name="close" size="sm" />
+          </Button>
 
-            <div className="flex-1 flex flex-col leading-tight min-w-0 pr-space-4">
-              <b className="font-bold text-body text-ink tabular-nums truncate">
-                {count} selected
-              </b>
-              {summary ? (
-                <span className="text-caption font-semibold text-ink-3 truncate">
-                  {summary}
-                </span>
-              ) : null}
-            </div>
-
-            {onSelectAll ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={onSelectAll}
-                className="inline-flex items-center h-control-md px-space-8 text-label font-bold text-brand hover:underline hover:bg-transparent cursor-pointer shrink-0"
-              >
-                {selectAllLabel ?? 'Select all'}
-              </Button>
+          {/* Count and summary: column 2 on mobile, at the beginning on desktop */}
+          <div className="flex flex-col leading-tight min-w-0 pr-space-4 lg:pr-0 col-start-2 order-2 lg:order-1">
+            <b className="font-bold text-body text-ink tabular-nums truncate">
+              {count} selected
+            </b>
+            {summary ? (
+              <span className="text-caption font-semibold text-ink-3 truncate">
+                {summary}
+              </span>
             ) : null}
           </div>
 
+          {/* Select all link (if present): column 3 on mobile */}
+          {onSelectAll ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onSelectAll}
+              className="inline-flex items-center h-control-md px-space-8 text-label font-bold text-brand hover:underline hover:bg-transparent cursor-pointer shrink-0 col-start-3 justify-self-end order-3 lg:order-3"
+            >
+              {selectAllLabel ?? 'Select all'}
+            </Button>
+          ) : null}
+
+          {/* Divider between count and actions on desktop */}
           <div
-            className="grid px-space-6 pt-space-4 pb-space-12 gap-space-4"
+            className="hidden lg:block w-px h-space-24 bg-line mx-space-2 lg:order-2"
+            aria-hidden="true"
+          />
+
+          {/* Actions: row 2 grid on mobile, row flex on desktop */}
+          <div
+            className="col-start-1 col-span-3 grid gap-space-4 pt-space-8 border-t border-line-soft lg:border-t-0 lg:pt-0 lg:flex lg:items-center lg:gap-space-6 order-4 lg:order-4"
             style={colStyle}
           >
             {actions.map((act, idx) => {
@@ -122,14 +135,14 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
                 <Button
                   key={act.id ?? idx}
                   type="button"
-                  variant="ghost"
+                  variant={isDanger ? 'danger' : 'secondary'}
                   disabled={act.disabled}
                   onClick={act.onSelect ?? act.onClick}
                   aria-label={
                     act.count !== undefined ? `${act.label} ${act.count}` : act.label
                   }
                   className={cn(
-                    'h-auto flex flex-col items-center justify-center p-space-8 rounded-ds-md border-0 text-caption font-semibold cursor-pointer transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring gap-space-2',
+                    'border-0 bg-transparent lg:border lg:bg-surface h-auto lg:h-control-md flex flex-col lg:flex-row items-center justify-center p-space-8 lg:px-space-12 lg:py-0 rounded-ds-md text-caption lg:text-body font-semibold cursor-pointer gap-space-2 lg:gap-space-6',
                     act.disabled && 'opacity-45 cursor-not-allowed pointer-events-none',
                     isDanger
                       ? 'text-danger hover:bg-danger-tint active:bg-danger-tint'
@@ -146,7 +159,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
                     {act.count !== undefined ? ` ${act.count}` : ''}
                   </span>
                   {act.hint ? (
-                    <span className="text-tab-label font-semibold text-ink-4 not-italic truncate max-w-full leading-none">
+                    <span className="text-tab-label font-semibold text-ink-4 not-italic truncate max-w-full leading-none lg:hidden">
                       {act.hint}
                     </span>
                   ) : null}
@@ -154,60 +167,6 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
               );
             })}
           </div>
-        </div>
-
-        {/* Desktop pill view from lg up */}
-        <div className="hidden lg:flex items-center gap-space-8 px-space-12 py-space-8 bg-surface border border-line-strong rounded-ds-lg shadow-pop select-none text-body text-ink mx-auto w-fit">
-          <div className="flex flex-col leading-tight">
-            <b className="font-bold text-body text-ink tabular-nums">
-              {count} selected
-            </b>
-            {summary ? (
-              <span className="text-caption font-semibold text-ink-3">
-                {summary}
-              </span>
-            ) : null}
-          </div>
-
-          <div className="w-px h-space-24 bg-line mx-space-2" aria-hidden="true" />
-
-          <div className="flex items-center gap-space-6">
-            {actions.map((act, idx) => {
-              const isDanger = act.variant === 'danger' || act.tone === 'danger';
-              return (
-                <Button
-                  key={act.id ?? idx}
-                  type="button"
-                  size="md"
-                  variant={isDanger ? 'danger' : 'secondary'}
-                  disabled={act.disabled}
-                  onClick={act.onSelect ?? act.onClick}
-                  icon={act.icon}
-                  count={act.count}
-                  aria-label={
-                    act.count !== undefined ? `${act.label} ${act.count}` : act.label
-                  }
-                  className={cn(
-                    act.disabled && 'opacity-45 cursor-not-allowed pointer-events-none',
-                  )}
-                >
-                  {act.label}
-                </Button>
-              );
-            })}
-          </div>
-
-          <Button
-            type="button"
-            size="md"
-            variant="ghost"
-            iconOnly
-            aria-label={clearAriaLabel}
-            onClick={onClear}
-            className="text-ink-3 hover:bg-hover hover:text-ink shrink-0"
-          >
-            <Icon name="close" size="sm" />
-          </Button>
         </div>
       </div>
     );

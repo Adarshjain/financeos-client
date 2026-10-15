@@ -218,6 +218,18 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 3 · SelectionBar: one structure, not two copies:
+  - Eliminated dual-rendered markup (`lg:hidden` and `hidden lg:flex`) in `src/components/ds/SelectionBar/SelectionBar.tsx`. Unified into single markup using CSS grid below `lg` (docked bottom sheet with action grid and hints) and flex from `lg` (floating pill with outlined buttons in a row and × at the end). Action hints carry `lg:hidden`.
+  - Updated `src/components/ds/SelectionBar/SelectionBar.test.tsx` to verify each action label, count, and summary renders exactly once in the DOM, and verified responsive switch classes.
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 336 problems (0 errors, 336 warnings)`
+    - `npm test`: `Test Files  426 passed (426) | Tests  3528 passed (3528)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+  - Done when: each action's label appears once in the rendered DOM (verified in unit test), and the bar switches form when the viewport crosses 1024px.
+  - Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 2 · Illustration switches at lg:
   - Replaced all 10 `md:` classes with `lg:` in `src/components/ds/Illustration/Illustration.tsx` (`lg:p-space-48`, `lg:h-72`, `lg:my-space-24`, `lg:scale-100`, `hidden lg:flex` for copy in signup and signin variants). Updated test assertion in `src/components/ds/Illustration/Illustration.test.tsx` to `lg:flex`.
   - Checks:

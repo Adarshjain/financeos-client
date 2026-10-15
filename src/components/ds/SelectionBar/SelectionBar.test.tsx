@@ -12,7 +12,7 @@ describe('SelectionBar', () => {
     { label: 'Delete', variant: 'danger', onClick: vi.fn() },
   ];
 
-  it('renders count and summary', () => {
+  it('renders count and summary once in DOM', () => {
     render(
       <SelectionBar
         count={2}
@@ -22,14 +22,13 @@ describe('SelectionBar', () => {
       />,
     );
 
-    expect(screen.getAllByText('2 selected').length).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText('₹2,498 · the duplicate pair').length,
-    ).toBeGreaterThan(0);
-    expect(screen.getAllByRole('button', { name: 'Link' })[0]).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Merge' })[0]).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Approve 2' })[0]).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: 'Delete' })[0]).toBeInTheDocument();
+    expect(screen.getAllByText('2 selected')).toHaveLength(1);
+    expect(screen.getAllByText('₹2,498 · the duplicate pair')).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'Link' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'Merge' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'Approve 2' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'Delete' })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'Clear selection' })).toHaveLength(1);
   });
 
   it('triggers action click callback', () => {
@@ -42,7 +41,7 @@ describe('SelectionBar', () => {
       />,
     );
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Link' })[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Link' }));
     expect(handleLink).toHaveBeenCalledTimes(1);
   });
 
@@ -55,7 +54,7 @@ describe('SelectionBar', () => {
       />,
     );
 
-    const mergeBtn = screen.getAllByRole('button', { name: 'Merge' })[0];
+    const mergeBtn = screen.getByRole('button', { name: 'Merge' });
     expect(mergeBtn).toBeDisabled();
   });
 
@@ -69,7 +68,7 @@ describe('SelectionBar', () => {
       />,
     );
 
-    const clearBtn = screen.getAllByRole('button', { name: 'Clear selection' })[0];
+    const clearBtn = screen.getByRole('button', { name: 'Clear selection' });
     fireEvent.click(clearBtn);
     expect(handleClear).toHaveBeenCalledTimes(1);
   });
@@ -88,7 +87,7 @@ describe('SelectionBar', () => {
     expect(handleClear).toHaveBeenCalledTimes(1);
   });
 
-  it('renders select all and hints in mobile docked layout', () => {
+  it('renders select all and hints with responsive switch classes', () => {
     const handleSelectAll = vi.fn();
     const { container } = render(
       <SelectionBar
@@ -100,13 +99,28 @@ describe('SelectionBar', () => {
       />,
     );
 
-    expect(screen.getByText('the pair')).toBeInTheDocument();
+    // Each action label appears exactly once
+    defaultActions.forEach((act) => {
+      const labelRegex = new RegExp(`^${act.label}`);
+      expect(screen.getAllByText(labelRegex)).toHaveLength(1);
+    });
+
+    // Hint is present with lg:hidden
+    const hint = screen.getByText('the pair');
+    expect(hint).toBeInTheDocument();
+    expect(hint).toHaveClass('lg:hidden');
+
     const selectAllBtn = screen.getByRole('button', {
       name: 'Select all 182',
     });
     expect(selectAllBtn).toBeInTheDocument();
     expect(selectAllBtn).toHaveClass('h-control-md');
-    expect(container.querySelector('.z-dock')).toBeInTheDocument();
+
+    // Bar switches between docked bottom sheet (< lg) and floating pill (>= lg)
+    const bar = container.querySelector('.z-dock');
+    expect(bar).toBeInTheDocument();
+    expect(bar).toHaveClass('rounded-t-ds-sheet', 'lg:rounded-ds-lg', 'shadow-dock', 'lg:shadow-pop', 'w-full', 'lg:w-fit');
+
     fireEvent.click(selectAllBtn);
     expect(handleSelectAll).toHaveBeenCalledTimes(1);
   });
