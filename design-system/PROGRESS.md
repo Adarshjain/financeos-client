@@ -26,7 +26,8 @@ Goal: everything the new components need, with **no visible change to the existi
    - Chart tokens use the name `series` (`chart-*` is already taken by the old theme): `series-1` … `series-5`, `series-rest`.
    - `fontSize`: one key per type style carrying its size, line height, weight and letter-spacing: `text-hero-figure`, `text-page-title`, `text-screen-title`, `text-figure`, `text-title`, `text-heading`, `text-body`, `text-body-strong`, `text-label`, `text-caption`, `text-overline`, `text-tab-label`. For `overline`, uppercase comes from the component.
    - `fontFamily`: `font-text` (Figtree) and `font-display` (Bricolage Grotesque).
-   - `spacing`: `space-2` … `space-48`, by pixel value.
+   - `spacing`: `space-2` … `space-48`, by pixel value. Plus `safe-12` (12px above the safe area, for the floating TabBar: `bottom-safe-12`) and `tab-bar-clearance` (bottom padding pages keep under the TabBar: `pb-tab-bar-clearance`).
+   - `ringColor`: `surface` (`ring-surface`, the ring around count badges on the TabBar).
    - `borderRadius`: `rounded-ds-xs`, `ds-sm`, `ds-md`, `ds-lg`, `ds-xl`, `ds-sheet`, `ds-pill` (`sm`, `md` and `lg` are already taken by the old theme).
    - `boxShadow`: `shadow-pop`, `shadow-dialog`, `shadow-sheet`, `shadow-dock`, `shadow-raise`.
    - `height` and `minHeight`: `control-sm`, `control-md`, `control-lg`, `control-xl`, `chip`, `app-bar`, `tab-bar`.
@@ -206,6 +207,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - Components carry no app content (RULES §5b.6).
   - Every story is interactive.
 - 2026-10-15 · **Responsive and API standards** (RULES §5c): one structure per component with CSS breakpoints at `lg`; no viewport JavaScript except the shared ResponsiveOverlay; no phone/desktop props; Radix-style prop names; events named for the component, not the app.
+- 2026-10-15 · **TabBar is a floating pill, the only mobile navigation format** (owner, canvas thread): inset 12px, `shadow-dock`, icon over label 2px apart, inactive `ink-faint`, current `ink` with an 800 label, no indicator or dot. The phone screen boards were updated to match.
 - 2026-10-15 · Accessibility is out of scope: no ARIA, screen-reader or contrast work. The Storybook accessibility addon stays installed but is not a check.
 
 ## Open questions

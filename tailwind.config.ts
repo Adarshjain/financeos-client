@@ -205,6 +205,9 @@ const config: Config = {
         'space-32': 'var(--ds-space-32)',
         'space-40': 'var(--ds-space-40)',
         'space-48': 'var(--ds-space-48)',
+        // Floating TabBar: offset from the bottom edge, and the clearance pages keep under it.
+        'safe-12': 'calc(var(--ds-space-12) + env(safe-area-inset-bottom))',
+        'tab-bar-clearance': 'calc(var(--ds-tab-bar) + var(--ds-space-24) + env(safe-area-inset-bottom))',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -217,6 +220,9 @@ const config: Config = {
         'ds-xl': 'var(--ds-radius-xl)',
         'ds-sheet': 'var(--ds-radius-sheet)',
         'ds-pill': 'var(--ds-radius-pill)',
+      },
+      ringColor: {
+        surface: 'var(--ds-bg-surface)',
       },
       boxShadow: {
         pop: 'var(--ds-shadow-pop)',
