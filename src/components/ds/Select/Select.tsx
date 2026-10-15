@@ -11,6 +11,7 @@ import { CategoryChip } from '../CategoryChip/CategoryChip';
 import { Checkbox } from '../Checkbox/Checkbox';
 import { cn } from '../cn';
 import { Dialog, DialogBody, DialogContent } from '../Dialog/Dialog';
+import { FieldFrame } from '../FieldFrame';
 import { Icon } from '../Icon/Icon';
 import { PopoverContent, PopoverRoot, PopoverTrigger } from '../Popover/Popover';
 import { SearchField } from '../SearchField/SearchField';
@@ -715,17 +716,15 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
     const effectiveTrigger = trigger ?? triggerButton;
 
     return (
-      <div className={cn(trigger ? 'inline-block' : 'w-full', className)}>
-        {label ? (
-          <label
-            id={labelId}
-            htmlFor={id}
-            className="block font-text text-label font-bold text-ink-2 mb-space-6"
-          >
-            {label}
-          </label>
-        ) : null}
-
+      <FieldFrame
+        id={id}
+        labelId={labelId}
+        helperId={helperId}
+        label={label}
+        helper={helper}
+        error={error}
+        className={cn(trigger ? 'inline-block' : 'w-full', className)}
+      >
         {showSheet ? (
           <>
             <div
@@ -798,23 +797,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             </PopoverContent>
           </PopoverRoot>
         )}
-
-        {hasError ? (
-          <p
-            id={helperId}
-            className="font-text text-caption font-medium text-danger mt-space-6"
-          >
-            {error}
-          </p>
-        ) : helper ? (
-          <p
-            id={helperId}
-            className="font-text text-caption font-medium text-ink-3 mt-space-6"
-          >
-            {helper}
-          </p>
-        ) : null}
-      </div>
+      </FieldFrame>
     );
   },
 );
