@@ -28,6 +28,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
       borderTop = false,
       disabled = false,
       className,
+      'aria-label': ariaLabel,
       ...props
     },
     ref,
@@ -51,13 +52,6 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
       onChange?.(nextChecked);
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-      if (e.key === ' ' || e.key === 'Enter') {
-        e.preventDefault();
-        handleClick();
-      }
-    };
-
     const switchButton = (
       <button
         ref={ref}
@@ -66,15 +60,14 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
         role="switch"
         aria-checked={isChecked}
         aria-disabled={disabled}
+        aria-label={ariaLabel || (label ? undefined : 'Toggle')}
         aria-describedby={
           error ? errId : description ? descId : undefined
         }
         disabled={disabled}
         onClick={handleClick}
-        onKeyDown={handleKeyDown}
-        style={{ width: 34, height: 20 }}
         className={cn(
-          'relative inline-flex shrink-0 items-center rounded-ds-pill p-space-2 transition-colors duration-fast',
+          'relative inline-flex shrink-0 items-center w-control-lg h-space-20 rounded-ds-pill p-space-2 transition-colors duration-fast',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
           isChecked ? 'bg-brand' : 'bg-line-handle',
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
@@ -85,7 +78,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
         <span
           className={cn(
             'pointer-events-none block w-space-16 h-space-16 rounded-ds-pill bg-surface shadow-pop transition-transform duration-fast',
-            isChecked ? 'translate-x-space-14' : 'translate-x-0',
+            isChecked ? 'translate-x-space-16' : 'translate-x-0',
           )}
         />
       </button>
@@ -139,15 +132,3 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
 );
 
 Switch.displayName = 'Switch';
-
-export interface ToggleRowProps extends SwitchProps {
-  label: React.ReactNode;
-}
-
-export const ToggleRow = forwardRef<HTMLButtonElement, ToggleRowProps>(
-  (props, ref) => {
-    return <Switch ref={ref} {...props} />;
-  },
-);
-
-ToggleRow.displayName = 'ToggleRow';

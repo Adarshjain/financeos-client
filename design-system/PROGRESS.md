@@ -144,6 +144,30 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 3) · Switch component fixes:
+  - Fixed Switch in `src/components/ds/Switch/Switch.tsx`:
+    - Replaced inline `34×20` style with token classes `w-control-lg h-space-20` (36×20) and knob `w-space-16 h-space-16` translating `translate-x-space-16` per owner decision (2026-10-15).
+    - Fixed double toggle on Space: removed custom `onKeyDown` interceptor, letting native `<button type="button">` handle standard keyboard activation.
+    - Dropped redundant `ToggleRow` export: removed `ToggleRow` wrapper in favor of direct `Switch` with `label` and `description` props as documented in README.
+    - Added accessible name fallback: defaulted `aria-label="Toggle"` when used without a visible label.
+  - Updated `src/components/ds/Switch/Switch.stories.tsx`:
+    - Replaced `ToggleRow` imports and usage with `Switch`.
+  - Updated `src/components/ds/Switch/Switch.test.tsx`:
+    - Replaced `ToggleRow` test suite with `Switch with label and description`.
+    - Added assertion for token sizes `w-control-lg h-space-20`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,494 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `Switch/preview.html` and `ds-07-inputs.webp` board:
+    - `DS/Inputs/Switch/Off`
+    - `DS/Inputs/Switch/On`
+    - `DS/Inputs/Switch/DisabledOff`
+    - `DS/Inputs/Switch/DisabledOn`
+    - `DS/Inputs/Switch/ToggleRowStory`
+    - `DS/Inputs/Switch/ToggleRowOn`
+    - `DS/Inputs/Switch/AllVariants`
+    Verified 36×20 switch dimensions with 16px knob translation, brand fill on toggle, and row label/description spacing.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 2) · SearchField component fixes:
   - Fixed SearchField in `src/components/ds/SearchField/SearchField.tsx`:
     - Filter variant height: verified `h-control-md` (32px) and `px-space-10` for `variant="filter"` (default) matching board `ds-07`, and `h-control-lg` (40px) for `variant="sheet"`.
