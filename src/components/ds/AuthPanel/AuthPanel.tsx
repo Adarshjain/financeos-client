@@ -82,7 +82,7 @@ export const AuthIllustration: React.FC<{
       />
 
       {isFull && (
-        <div className="flex items-center gap-space-10 relative z-1">
+        <div className="flex items-center gap-space-10 relative">
           <div className="w-space-32 h-space-32 rounded-ds-md bg-brand text-on-brand font-extrabold flex items-center justify-center text-heading">
             ₹
           </div>
@@ -170,7 +170,7 @@ export const AuthIllustration: React.FC<{
       </div>
 
       {isFull && (
-        <div className="relative z-1 max-w-md">
+        <div className="relative max-w-md">
           <div className="text-page-title font-extrabold tracking-tight text-ink leading-tight">
             Every rupee, every card, every loan. One calm ledger.
           </div>

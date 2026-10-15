@@ -30,7 +30,7 @@ type Story = StoryObj<typeof ListRow>;
 export const BadgeAction: Story = {
   name: 'Badge · action',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <ListRow
         leading={<Badge variant="rose">Missing</Badge>}
         title="SBI Cashback statement"
@@ -44,7 +44,7 @@ export const BadgeAction: Story = {
 export const DateTileAmount: Story = {
   name: 'Date tile · amount',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <ListRow
         leading={<ListRowDateTile day="15" month="OCT" />}
         title="Amex Platinum bill"
@@ -58,7 +58,7 @@ export const DateTileAmount: Story = {
 export const AvatarCredit: Story = {
   name: 'Avatar · credit',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <ListRow
         leading={<Avatar variant="person" initials="RS" />}
         title="Rahul Sharma"
@@ -73,7 +73,7 @@ export const AvatarCredit: Story = {
 export const IconTileChevron: Story = {
   name: 'Icon tile · chevron',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <ListRow
         leading={<ListRowIconTile tone="info">EMI</ListRowIconTile>}
         title="Car loan · EMI #8"
@@ -88,7 +88,7 @@ export const IconTileChevron: Story = {
 export const Kebab: Story = {
   name: 'Kebab',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <ListRow
         title="Dining out"
         subtitle="₹5,240 in 90 days · no rules"
@@ -101,7 +101,7 @@ export const Kebab: Story = {
 export const Highlighted: Story = {
   name: 'Highlighted',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <ListRow
         highlighted
         leading={<Badge variant="amber">2 days</Badge>}
@@ -120,7 +120,7 @@ export const Highlighted: Story = {
 export const LabelValue: Story = {
   name: 'Label / value',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <ListField label="Account" value="HDFC Regalia ••7741" />
       <ListField label="Date" value="11 Oct 2026" />
       <ListField label="Available" value={<b className="font-bold">₹12,500</b>} />
@@ -131,7 +131,7 @@ export const LabelValue: Story = {
 export const Disabled: Story = {
   name: 'Disabled',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <ListRow
         disabled
         leading={<Avatar variant="person" initials="RM" />}
@@ -151,7 +151,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Badge · action
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <ListRow
             leading={<Badge variant="rose">Missing</Badge>}
             title="SBI Cashback statement"
@@ -165,7 +165,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Date tile · amount
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <ListRow
             leading={<ListRowDateTile day="15" month="OCT" />}
             title="Amex Platinum bill"
@@ -179,7 +179,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Avatar · credit
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <ListRow
             leading={<Avatar variant="person" initials="RS" />}
             title="Rahul Sharma"
@@ -194,7 +194,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Icon tile · chevron
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <ListRow
             leading={<ListRowIconTile tone="info">EMI</ListRowIconTile>}
             title="Car loan · EMI #8"
@@ -209,7 +209,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Kebab
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <ListRow
             title="Dining out"
             subtitle="₹5,240 in 90 days · no rules"
@@ -222,7 +222,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Highlighted
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <ListRow
             highlighted
             leading={<Badge variant="amber">2 days</Badge>}
@@ -241,7 +241,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Label / value
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <ListField label="Account" value="HDFC Regalia ••7741" />
           <ListField label="Date" value="11 Oct 2026" />
         </Card>
@@ -251,7 +251,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Disabled
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <ListRow
             disabled
             leading={<Avatar variant="person" initials="RM" />}

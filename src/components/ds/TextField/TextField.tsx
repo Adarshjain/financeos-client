@@ -158,7 +158,7 @@ export const TextField = forwardRef<
               value={value}
               defaultValue={defaultValue}
               onChange={onChange}
-              className="w-full h-full bg-transparent border-0 p-0 text-inherit font-inherit placeholder:text-ink-4 focus:outline-none focus:ring-0"
+              className="w-full h-full bg-transparent border-0 p-0 text-body text-ink placeholder:text-ink-4 focus:outline-none focus:ring-0"
               {...props}
             />
 

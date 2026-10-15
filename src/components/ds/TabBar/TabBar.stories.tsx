@@ -75,14 +75,14 @@ export const AllVariants: Story = {
   render: () => (
     <div className="space-y-space-24 max-w-md">
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Home Active (with counts)
         </h4>
         <TabBar activeTab="home" inboxCount={4} transactionsCount={25} />
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Transactions Active
         </h4>
         <TabBar
@@ -93,14 +93,14 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           High Counts (99+)
         </h4>
         <TabBar activeTab="inbox" inboxCount={150} transactionsCount={200} />
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           No Counts
         </h4>
         <TabBar activeTab="upcoming" />

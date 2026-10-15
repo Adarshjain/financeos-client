@@ -65,7 +65,7 @@ export const SheetShell = forwardRef<HTMLDivElement, SheetShellProps>(
         {showHandle && <SheetHandle />}
 
         {(title || desc) && (
-          <div className="px-space-18 pt-space-12 pb-space-8 flex flex-col shrink-0">
+          <div className="px-space-16 pt-space-12 pb-space-8 flex flex-col shrink-0">
             {title && (
               <div className="font-extrabold text-title text-ink leading-tight">
                 {title}
@@ -99,7 +99,7 @@ export const SheetBody = forwardRef<HTMLDivElement, SheetBodyProps>(
           ...style,
         }}
         className={cn(
-          'px-space-18 py-space-4 overflow-y-auto flex flex-col gap-space-12 flex-1',
+          'px-space-16 py-space-4 overflow-y-auto flex flex-col gap-space-12 flex-1',
           className,
         )}
         {...props}
@@ -120,7 +120,7 @@ export const SheetFooter = forwardRef<HTMLDivElement, SheetFooterProps>(
       <div
         ref={ref}
         className={cn(
-          'px-space-18 py-space-12 border-t border-line-soft bg-sunken flex items-center gap-space-8 shrink-0',
+          'px-space-16 py-space-12 border-t border-line-soft bg-sunken flex items-center gap-space-8 shrink-0',
           className,
         )}
         {...props}
@@ -208,7 +208,7 @@ export const SheetContent = forwardRef<
           {showHandle && <SheetHandle />}
 
           {(title || desc) && (
-            <div className="px-space-18 pt-space-12 pb-space-8 flex flex-col shrink-0">
+            <div className="px-space-16 pt-space-12 pb-space-8 flex flex-col shrink-0">
               {title && (
                 <div className="font-extrabold text-title text-ink leading-tight">
                   {title}

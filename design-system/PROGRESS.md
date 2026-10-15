@@ -144,6 +144,25 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 1 · Unknown Tailwind classes replaced:
+  - Fixed unknown Tailwind class names across 15 files:
+    - `text-small` replaced with `text-label` / `text-caption` / `text-body` in `AppBar.tsx`, `AppBar.stories.tsx`, `ConfirmSheet.tsx`, `ConfirmSheet.stories.tsx`, `Pager.tsx`, `Pager.stories.tsx`, `SelectionBar.stories.tsx`, `SwipeActions.stories.tsx`, and `TabBar.stories.tsx`.
+    - `p-space-0` replaced with `p-0` in `EmptyState.stories.tsx`, `ListRow.stories.tsx`, and `SectionBand.stories.tsx`.
+    - `px-space-18` replaced with `px-space-16` in `Sheet.tsx` (matches phone sheet 16px gutter per owner decision).
+    - `z-1` replaced with `relative` stacking in `AuthPanel.tsx`.
+    - `rounded-ds-circle` and `border-t-ink` replaced with `rounded-ds-pill` and `border-t-brand` in `ConfirmSheet.tsx`.
+    - `font-inherit` replaced with explicit `text-body text-ink` styling on `<input>` in `TextField.tsx`.
+  - Checks: `npm run typecheck`, `npm run lint`, `npm test` (all 421 files / 3,456 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs --staged` all clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px against component previews and boards:
+    - Button (`DS/Actions/Button/All variants`, `With count`, `Icon button`)
+    - FilterChip (`DS/Inputs/FilterChip/All variants`, `With count`, `Removable`)
+    - Pager (`DS/Navigation/Pager/All variants`, `Desktop`, `Phone`)
+    - SelectionBar (`DS/Actions/SelectionBar/All variants`, `Desktop`, `Phone docked`)
+    - DropZone (`DS/Inputs/DropZone/All variants`, `Idle`, `Queued`)
+    Verified count bubbles render in `bg-ink`, square icon buttons render with `control-md`, page pills render with `min-w-control-md`, and selection bar close button renders at full height.
+  - Differences left open: none for this unit.
+  - Deviations: none.
+
 - **2026-10-15 · Phase 2 review (Claude):** reviewed all 39 components; report in `design-system/reviews/2026-10-15-phase2-review.md`. Verdict: 14 need real fixes, 18 small ones, 7 good as built (Badge, StatusWords, SectionBand, Kbd, Skeleton, EmptyState, DateGroupHeader). Statuses unchanged; the owner sets them.
   - Root cause of most visual bugs: class names Tailwind does not know (it drops them silently). `check-ui.mjs` now fails on them.
   - Contract and token changes (commit `5f30714`): `ink-4` #636b78 / #929ba7 and `warning` #a84d06 (contrast); `w-`/`min-w-control-*`, `w-chip` and `bg-ink` added. READMEs corrected: Banner `ok` is positive, SwipeActions and AppBar + are brand.

@@ -89,7 +89,7 @@ const InteractivePagerStory: React.FC = () => {
 
   return (
     <Card className="max-w-3xl overflow-hidden">
-      <div className="p-space-20 text-small text-ink-2">
+      <div className="p-space-20 text-body text-ink-2">
         Simulated content for page {page + 1} ({size} rows per page)
       </div>
       <Pager
@@ -117,7 +117,7 @@ export const AllVariants: Story = {
   render: () => (
     <div className="space-y-space-24 max-w-3xl">
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Desktop (First page of 4)
         </h4>
         <Card className="overflow-hidden">
@@ -134,7 +134,7 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Phone Variant
         </h4>
         <Card className="max-w-sm overflow-hidden">
@@ -150,7 +150,7 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Single Page (no navigation arrows)
         </h4>
         <Card className="overflow-hidden">

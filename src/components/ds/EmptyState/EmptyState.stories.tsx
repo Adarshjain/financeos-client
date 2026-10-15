@@ -23,7 +23,7 @@ type Story = StoryObj<typeof EmptyState>;
 export const FirstRun: Story = {
   name: 'First run',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <EmptyState
         title="No accounts yet"
         description="Add a bank or card, or upload a statement."
@@ -36,7 +36,7 @@ export const FirstRun: Story = {
 export const NothingMatches: Story = {
   name: 'Nothing matches',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <EmptyState
         title="No transactions match"
         description="This year · manual · excluded only"
@@ -49,7 +49,7 @@ export const NothingMatches: Story = {
 export const AllClear: Story = {
   name: 'All clear',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <EmptyState
         title="All clear"
         description="Nothing needs you right now."
@@ -67,7 +67,7 @@ export const AllClear: Story = {
 export const CouldntLoad: Story = {
   name: "Couldn't load",
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <EmptyState
         title="Couldn't load the inbox"
         description="The server did not answer. Your items are safe."
@@ -80,7 +80,7 @@ export const CouldntLoad: Story = {
 export const Offline: Story = {
   name: 'Offline',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <EmptyState
         illustration={<OfflineIllustration />}
         title="You're offline"
@@ -94,7 +94,7 @@ export const Offline: Story = {
 export const NothingOnThisDay: Story = {
   name: 'Nothing on this day',
   render: () => (
-    <Card className="max-w-md p-space-0 overflow-hidden">
+    <Card className="max-w-md p-0 overflow-hidden">
       <EmptyState compact>Nothing due on this day.</EmptyState>
     </Card>
   ),
@@ -108,7 +108,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           First run
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <EmptyState
             title="No accounts yet"
             description="Add a bank or card, or upload a statement."
@@ -121,7 +121,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Nothing matches
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <EmptyState
             title="No transactions match"
             description="This year · manual · excluded only"
@@ -134,7 +134,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           All clear
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <EmptyState
             title="All clear"
             description="Nothing needs you right now."
@@ -152,7 +152,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           {"Couldn't load"}
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <EmptyState
             title="Couldn't load the inbox"
             description="The server did not answer. Your items are safe."
@@ -165,7 +165,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Offline
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <EmptyState
             illustration={<OfflineIllustration />}
             title="You're offline"
@@ -179,7 +179,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Nothing on this day (compact)
         </div>
-        <Card className="p-space-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <EmptyState compact>Nothing due on this day.</EmptyState>
         </Card>
       </div>

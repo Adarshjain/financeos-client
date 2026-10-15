@@ -220,7 +220,7 @@ export const AllVariants: Story = {
   render: () => (
     <div className="space-y-space-24 max-w-sm">
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Swipe Right: Approve (Brand)
         </h4>
         <Card className="overflow-hidden">
@@ -243,7 +243,7 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Swipe Left: Delete (Danger)
         </h4>
         <Card className="overflow-hidden">
@@ -266,7 +266,7 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Inbox: Snooze & Dismiss
         </h4>
         <Card className="overflow-hidden">

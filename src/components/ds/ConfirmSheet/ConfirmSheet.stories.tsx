@@ -120,7 +120,7 @@ export const AllVariants: Story = {
   render: () => (
     <div className="space-y-space-24 max-w-xl">
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Delete Statement
         </h4>
         <div className="bg-scrim p-space-12 rounded-ds-lg">
@@ -138,7 +138,7 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Discard Edits
         </h4>
         <div className="bg-scrim p-space-12 rounded-ds-lg">
@@ -152,7 +152,7 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           With Gentler Alternative
         </h4>
         <div className="bg-scrim p-space-12 rounded-ds-lg">
@@ -167,7 +167,7 @@ export const AllVariants: Story = {
       </div>
 
       <div>
-        <h4 className="text-small font-semibold text-ink-3 mb-space-8">
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
           Loading Preview
         </h4>
         <div className="bg-scrim p-space-12 rounded-ds-lg">

@@ -68,15 +68,15 @@ export const ConfirmSheetShell = forwardRef<
       >
         <SheetBody className="space-y-space-12">
           {isCheckingImpact ? (
-            <div className="flex items-center gap-space-8 text-small text-ink-3 py-space-4">
+            <div className="flex items-center gap-space-8 text-label text-ink-3 py-space-4">
               <span
-                className="w-space-12 h-space-12 border-2 border-line-strong border-t-ink rounded-ds-circle animate-spin inline-block"
+                className="w-space-12 h-space-12 border-2 border-line-strong border-t-brand rounded-ds-pill animate-spin inline-block"
                 aria-hidden="true"
               />
               <span>{checkingMessage}</span>
             </div>
           ) : impact && impact.length > 0 ? (
-            <ul className="list-disc pl-space-20 space-y-space-6 text-small text-ink-2">
+            <ul className="list-disc pl-space-20 space-y-space-6 text-label text-ink-2">
               {impact.map((item, idx) => (
                 <li key={idx}>{item}</li>
               ))}
@@ -187,15 +187,15 @@ export const ConfirmSheet: React.FC<ConfirmSheetProps> = ({
       >
         <SheetBody className="space-y-space-12">
           {isCheckingImpact ? (
-            <div className="flex items-center gap-space-8 text-small text-ink-3 py-space-4">
+            <div className="flex items-center gap-space-8 text-label text-ink-3 py-space-4">
               <span
-                className="w-space-12 h-space-12 border-2 border-line-strong border-t-ink rounded-ds-circle animate-spin inline-block"
+                className="w-space-12 h-space-12 border-2 border-line-strong border-t-brand rounded-ds-pill animate-spin inline-block"
                 aria-hidden="true"
               />
               <span>{checkingMessage}</span>
             </div>
           ) : impact && impact.length > 0 ? (
-            <ul className="list-disc pl-space-20 space-y-space-6 text-small text-ink-2">
+            <ul className="list-disc pl-space-20 space-y-space-6 text-label text-ink-2">
               {impact.map((item, idx) => (
                 <li key={idx}>{item}</li>
               ))}
