@@ -81,7 +81,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 26 | SectionHeader | Ready for review |
 | 27 | TransactionRow | Ready for review |
 | 28 | RuleCard | Ready for review |
-| 29 | KpiTile | Changes requested |
+| 29 | KpiTile | Ready for review |
 | 30 | Widget | Changes requested |
 | 31 | Badge | Ready for review |
 | 32 | CategoryChip | Ready for review |
@@ -191,6 +191,15 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 13c · KpiTile:
+  - Updated `KpiTile` in `src/components/ds/KpiTile/KpiTile.tsx`:
+    - Replaced raw `<button>` retry element with DS `Button` component (`size="sm"` `variant="ghost"`), eliminating raw-button violation.
+    - Uses `ProgressBar`, `Skeleton`, and `Badge` context components as specified in README Built from.
+  - Updated `src/components/ds/KpiTile/KpiTile.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`Hero`, `DeltaBadDirection`, `WithBar`, `WithBadges`, `Loading`, `Failed`) with controls.
+  - Verified `src/components/ds/KpiTile/KpiTile.test.tsx`: 7 unit tests passing.
+  - Stories compared: AllVariants, Hero, DeltaBadDirection, WithBar, WithBadges, Loading, Failed against `design-system/components/KpiTile/preview.html` and KPI tile screens at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 13b · RuleCard:
   - Updated `RuleCard` in `src/components/ds/RuleCard/RuleCard.tsx`:
