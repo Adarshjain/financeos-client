@@ -92,9 +92,9 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
 
         {title !== undefined ? (
           <div className="flex-1 min-w-0">
-            <div className="font-bold text-body text-ink truncate">{title}</div>
+            <div className="text-body-strong text-ink truncate">{title}</div>
             {subtitle && (
-              <div className="text-caption text-ink-3 truncate">{subtitle}</div>
+              <div className="text-label font-medium text-ink-3 truncate mt-space-2">{subtitle}</div>
             )}
             {children}
           </div>
@@ -107,7 +107,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
             {amount !== undefined && (
               <span
                 className={cn(
-                  'tabular-nums font-bold text-body text-right',
+                  'tabular-nums text-body-strong text-right',
                   isCredit ? 'text-positive' : 'text-ink',
                 )}
               >
@@ -172,7 +172,7 @@ export const ListField = forwardRef<HTMLDivElement, ListFieldProps>(
       >
         <span className="text-ink-3 shrink-0">{label}</span>
         {value !== undefined ? (
-          <span className="text-ink text-right min-w-0 break-words">{value}</span>
+          <span className="text-ink font-semibold text-right min-w-0 break-words">{value}</span>
         ) : (
           children
         )}

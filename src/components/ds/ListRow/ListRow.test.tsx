@@ -10,10 +10,14 @@ import {
 } from './ListRow';
 
 describe('ListRow', () => {
-  it('renders title and subtitle', () => {
+  it('renders title and subtitle with correct typography', () => {
     render(<ListRow title="Amex Platinum bill" subtitle="Card bill" />);
-    expect(screen.getByText('Amex Platinum bill')).toBeInTheDocument();
-    expect(screen.getByText('Card bill')).toBeInTheDocument();
+    const titleEl = screen.getByText('Amex Platinum bill');
+    expect(titleEl).toBeInTheDocument();
+    expect(titleEl).toHaveClass('text-body-strong');
+    const subtitleEl = screen.getByText('Card bill');
+    expect(subtitleEl).toBeInTheDocument();
+    expect(subtitleEl).toHaveClass('text-label');
   });
 
   it('renders leading element and trailing amount', () => {
@@ -91,10 +95,12 @@ describe('ListRow', () => {
 });
 
 describe('ListField', () => {
-  it('renders label and value', () => {
+  it('renders label and value with font-semibold value weight', () => {
     render(<ListField label="Account" value="HDFC Regalia ••7741" />);
     expect(screen.getByText('Account')).toBeInTheDocument();
-    expect(screen.getByText('HDFC Regalia ••7741')).toBeInTheDocument();
+    const valueEl = screen.getByText('HDFC Regalia ••7741');
+    expect(valueEl).toBeInTheDocument();
+    expect(valueEl).toHaveClass('font-semibold');
   });
 });
 
