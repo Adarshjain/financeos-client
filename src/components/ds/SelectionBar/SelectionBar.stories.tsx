@@ -3,6 +3,7 @@ import { Check, GitMerge, Link2, Trash2 } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Button } from '../Button/Button';
+import { Icon } from '../Icon/Icon';
 import { SelectionBar, SelectionBarAction } from './SelectionBar';
 
 const meta: Meta<typeof SelectionBar> = {
@@ -10,6 +11,21 @@ const meta: Meta<typeof SelectionBar> = {
   component: SelectionBar,
   parameters: {
     layout: 'padded',
+  },
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['desktop', 'phone', 'auto'],
+    },
+    count: {
+      control: 'number',
+    },
+    summary: {
+      control: 'text',
+    },
+    selectAllLabel: {
+      control: 'text',
+    },
   },
 };
 
@@ -19,29 +35,113 @@ type Story = StoryObj<typeof SelectionBar>;
 const transactionActions: SelectionBarAction[] = [
   {
     label: 'Link',
-    icon: <Link2 className="w-space-16 h-space-16" />,
+    icon: <Icon icon={Link2} size="sm" />,
     onClick: () => alert('Link clicked'),
   },
   {
     label: 'Merge',
-    icon: <GitMerge className="w-space-16 h-space-16" />,
+    icon: <Icon icon={GitMerge} size="sm" />,
     hint: 'the pair',
     onClick: () => alert('Merge clicked'),
   },
   {
     label: 'Approve',
-    icon: <Check className="w-space-16 h-space-16" />,
+    icon: <Icon icon={Check} size="sm" />,
     hint: 'clear Duplicate',
     count: 2,
     onClick: () => alert('Approve clicked'),
   },
   {
     label: 'Delete',
-    icon: <Trash2 className="w-space-16 h-space-16" />,
+    icon: <Icon icon={Trash2} size="sm" />,
     variant: 'danger',
     onClick: () => alert('Delete clicked'),
   },
 ];
+
+export const AllVariants: Story = {
+  name: 'All variants',
+  render: () => (
+    <div className="space-y-space-24 max-w-2xl">
+      <div>
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
+          Desktop Pill
+        </h4>
+        <SelectionBar
+          variant="desktop"
+          count={2}
+          summary="₹ 2,498 · the duplicate pair"
+          actions={transactionActions}
+          onClear={() => {}}
+        />
+      </div>
+
+      <div>
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
+          Phone Docked
+        </h4>
+        <div className="max-w-sm">
+          <SelectionBar
+            variant="phone"
+            count={2}
+            summary="₹ 2,498 · the duplicate pair"
+            actions={transactionActions}
+            onClear={() => {}}
+            onSelectAll={() => {}}
+            selectAllLabel="Select all 182"
+          />
+        </div>
+      </div>
+
+      <div>
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
+          Single Action (Rules)
+        </h4>
+        <div className="max-w-sm">
+          <SelectionBar
+            variant="phone"
+            count={2}
+            summary="unverified rules"
+            actions={[
+              {
+                label: 'Approve',
+                icon: <Icon icon={Check} size="sm" />,
+                hint: 'mark verified',
+              },
+            ]}
+            onClear={() => {}}
+            onSelectAll={() => {}}
+            selectAllLabel="Select all on page"
+          />
+        </div>
+      </div>
+
+      <div>
+        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
+          Disabled Action
+        </h4>
+        <SelectionBar
+          variant="desktop"
+          count={3}
+          summary="Merge needs exactly 2"
+          actions={[
+            {
+              label: 'Merge',
+              icon: <Icon icon={GitMerge} size="sm" />,
+              disabled: true,
+            },
+            {
+              label: 'Approve',
+              icon: <Icon icon={Check} size="sm" />,
+              count: 3,
+            },
+          ]}
+          onClear={() => {}}
+        />
+      </div>
+    </div>
+  ),
+};
 
 export const Desktop: Story = {
   name: 'Desktop',
@@ -194,88 +294,4 @@ const InteractiveSelectionStory: React.FC = () => {
 export const Interactive: Story = {
   name: 'Interactive',
   render: () => <InteractiveSelectionStory />,
-};
-
-export const AllVariants: Story = {
-  name: 'All variants',
-  render: () => (
-    <div className="space-y-space-24 max-w-2xl">
-      <div>
-        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Desktop Pill
-        </h4>
-        <SelectionBar
-          variant="desktop"
-          count={2}
-          summary="₹ 2,498 · the duplicate pair"
-          actions={transactionActions}
-          onClear={() => {}}
-        />
-      </div>
-
-      <div>
-        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Phone Docked
-        </h4>
-        <div className="max-w-sm">
-          <SelectionBar
-            variant="phone"
-            count={2}
-            summary="₹ 2,498 · the duplicate pair"
-            actions={transactionActions}
-            onClear={() => {}}
-            onSelectAll={() => {}}
-            selectAllLabel="Select all 182"
-          />
-        </div>
-      </div>
-
-      <div>
-        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Single Action (Rules)
-        </h4>
-        <div className="max-w-sm">
-          <SelectionBar
-            variant="phone"
-            count={2}
-            summary="unverified rules"
-            actions={[
-              {
-                label: 'Approve',
-                icon: <Check className="w-space-16 h-space-16" />,
-                hint: 'mark verified',
-              },
-            ]}
-            onClear={() => {}}
-            onSelectAll={() => {}}
-            selectAllLabel="Select all on page"
-          />
-        </div>
-      </div>
-
-      <div>
-        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Disabled Action
-        </h4>
-        <SelectionBar
-          variant="desktop"
-          count={3}
-          summary="Merge needs exactly 2"
-          actions={[
-            {
-              label: 'Merge',
-              icon: <GitMerge className="w-space-16 h-space-16" />,
-              disabled: true,
-            },
-            {
-              label: 'Approve',
-              icon: <Check className="w-space-16 h-space-16" />,
-              count: 3,
-            },
-          ]}
-          onClear={() => {}}
-        />
-      </div>
-    </div>
-  ),
 };
