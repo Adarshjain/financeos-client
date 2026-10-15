@@ -1,7 +1,9 @@
 import { X } from 'lucide-react';
 import React, { forwardRef, useEffect } from 'react';
 
+import { Button } from '../Button/Button';
 import { cn } from '../cn';
+import { Icon } from '../Icon/Icon';
 
 export interface SelectionBarAction {
   id?: string;
@@ -89,44 +91,39 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
           {actions.map((act, idx) => {
             const isDanger = act.variant === 'danger';
             return (
-              <button
+              <Button
                 key={act.id ?? idx}
                 type="button"
-                aria-label={act.count !== undefined ? `${act.label} ${act.count}` : act.label}
+                size="md"
+                variant={isDanger ? 'danger' : 'secondary'}
                 disabled={act.disabled}
                 onClick={act.onClick}
+                icon={act.icon}
+                count={act.count}
+                aria-label={
+                  act.count !== undefined ? `${act.label} ${act.count}` : act.label
+                }
                 className={cn(
-                  'inline-flex items-center gap-space-6 h-control-md px-space-12 rounded-ds-md border font-semibold text-label transition-colors duration-fast cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
                   act.disabled && 'opacity-45 cursor-not-allowed pointer-events-none',
-                  isDanger
-                    ? 'text-danger border-danger-border bg-surface hover:bg-danger-tint active:bg-danger-tint'
-                    : 'text-ink border-line-strong bg-surface hover:bg-hover active:bg-hover',
                 )}
               >
-                {act.icon ? (
-                  <span className="w-space-14 h-space-14 shrink-0 flex items-center justify-center">
-                    {act.icon}
-                  </span>
-                ) : null}
-                <span>{act.label}</span>
-                {act.count !== undefined ? (
-                  <span className="ml-space-2 tabular-nums font-bold">
-                    {' '}{act.count}
-                  </span>
-                ) : null}
-              </button>
+                {act.label}
+              </Button>
             );
           })}
         </div>
 
-        <button
+        <Button
           type="button"
+          size="md"
+          variant="ghost"
+          iconOnly
           aria-label={clearAriaLabel}
           onClick={onClear}
-          className="w-control-md h-control-md rounded-ds-md border-0 bg-transparent text-ink-3 hover:bg-hover hover:text-ink flex items-center justify-center cursor-pointer transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          className="text-ink-3 hover:bg-hover hover:text-ink shrink-0"
         >
-          <X className="w-space-16 h-space-16" aria-hidden="true" />
-        </button>
+          <Icon icon={X} size="sm" />
+        </Button>
       </div>
     );
 
@@ -144,14 +141,17 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
         >
           {/* Top row */}
           <div className="flex items-center gap-space-10 px-space-14 pt-space-10 pb-space-8 border-b border-line-soft">
-            <button
+            <Button
               type="button"
+              size="md"
+              variant="ghost"
+              iconOnly
               aria-label={clearAriaLabel}
               onClick={onClear}
-              className="w-control-md h-control-md rounded-ds-md border-0 bg-transparent text-ink-3 hover:bg-hover hover:text-ink flex items-center justify-center cursor-pointer transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring shrink-0"
+              className="text-ink-3 hover:bg-hover hover:text-ink shrink-0"
             >
-              <X className="w-space-16 h-space-16" aria-hidden="true" />
-            </button>
+              <Icon icon={X} size="sm" />
+            </Button>
 
             <div className="flex-1 flex flex-col leading-tight min-w-0 pr-space-4">
               <b className="font-bold text-body text-ink tabular-nums truncate">
@@ -165,13 +165,15 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
             </div>
 
             {onSelectAll ? (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={onSelectAll}
-                className="inline-flex items-center h-control-md px-space-8 rounded-ds-md text-label font-bold text-brand hover:underline cursor-pointer shrink-0 bg-transparent border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                className="inline-flex items-center h-control-md px-space-8 text-label font-bold text-brand hover:underline hover:bg-transparent cursor-pointer shrink-0"
               >
                 {selectAllLabel ?? 'Select all'}
-              </button>
+              </Button>
             ) : null}
           </div>
 
@@ -183,17 +185,21 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
             {actions.map((act, idx) => {
               const isDanger = act.variant === 'danger';
               return (
-                <button
+                <Button
                   key={act.id ?? idx}
                   type="button"
+                  variant="ghost"
                   disabled={act.disabled}
                   onClick={act.onClick}
+                  aria-label={
+                    act.count !== undefined ? `${act.label} ${act.count}` : act.label
+                  }
                   className={cn(
-                    'flex flex-col items-center justify-center p-space-8 rounded-ds-md border-0 text-caption font-semibold cursor-pointer transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring gap-space-2',
+                    'h-auto flex flex-col items-center justify-center p-space-8 rounded-ds-md border-0 text-caption font-semibold cursor-pointer transition-colors duration-fast focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring gap-space-2',
                     act.disabled && 'opacity-45 cursor-not-allowed pointer-events-none',
                     isDanger
-                      ? 'text-danger hover:bg-danger-tint'
-                      : 'text-ink hover:bg-hover',
+                      ? 'text-danger hover:bg-danger-tint active:bg-danger-tint'
+                      : 'text-ink hover:bg-hover active:bg-hover',
                   )}
                 >
                   {act.icon ? (
@@ -210,7 +216,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
                       {act.hint}
                     </span>
                   ) : null}
-                </button>
+                </Button>
               );
             })}
           </div>

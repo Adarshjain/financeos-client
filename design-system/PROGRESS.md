@@ -64,7 +64,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 9 | Pager | Changes requested |
 | 10 | Button | Ready for review |
 | 11 | Menu | Ready for review |
-| 12 | SelectionBar | Changes requested |
+| 12 | SelectionBar | Ready for review |
 | 13 | SwipeActions | Ready for review |
 | 14 | TextField | Ready for review |
 | 15 | TextArea | Ready for review |
@@ -199,6 +199,18 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 13e · SelectionBar:
+  - Updated `SelectionBar` in `src/components/ds/SelectionBar/SelectionBar.tsx`:
+    - Replaced all 5 raw `<button>` elements with DS `Button` component:
+      - Desktop action buttons use `Button` (`size="md"`, `variant="secondary"` / `variant="danger"`), supporting icon and Badge `count`.
+      - Desktop and phone clear buttons use `Button` (`size="md"`, `variant="ghost"`, `iconOnly`) with `Icon` `X` (`size="sm"`).
+      - Phone "Select all" button uses `Button` (`variant="ghost"`, `size="sm"`).
+      - Phone bottom docked action buttons use `Button` (`variant="ghost"`).
+  - Updated `src/components/ds/SelectionBar/SelectionBar.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`Desktop`, `PhoneDocked`, `SingleAction`, `ActionDisabled`, `Interactive`) with controls, action icons wrapped in `Icon`.
+  - Verified `src/components/ds/SelectionBar/SelectionBar.test.tsx`: 7 unit tests passing.
+  - Stories compared: AllVariants, Desktop, PhoneDocked, SingleAction, ActionDisabled against `design-system/components/SelectionBar/preview.html` and selection screens at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 13d · Widget:
   - Updated `Widget` in `src/components/ds/Widget/Widget.tsx`:
