@@ -22,5 +22,9 @@ Selected (`brand-tint` with a 3px `brand` stripe), monitored (`watch-tint` with 
 ## Props
 - Every word on the row comes from the page, including the unset-category label ("Set category").
 
+## Not here
+- Swipe: the page wraps the row in SwipeActions. The row has no swipe props.
+- Long-press detection is the shared `useLongPress` hook (touch input only); the row takes `selected` / `onSelectedChange` and draws the selected look.
+
 ## Built from
-CategoryChip, StatusWords, Checkbox (desktop selection column), Icon (eye in selection). On phone, SwipeActions wraps it.
+CategoryChip, StatusWords, Checkbox (desktop selection column), Icon (eye in selection). Long-press via the shared `useLongPress` hook. Pages wrap it in SwipeActions for swipe.

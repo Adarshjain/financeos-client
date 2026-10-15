@@ -13,6 +13,9 @@ Long-press starts it. Selected cards turn `brand-tint` with a `brand` outline; o
 ## Props
 - The card draws a rule the page hands it; its ⋮ items (Find matches, Edit rule, Delete rule) and the Approve action come from the page as props, with their labels.
 
+## Not here
+- Long-press detection is the shared `useLongPress` hook; swipe, if a page wants it, is SwipeActions around the card.
+
 ## Built from
 Card, StatusWords, CategoryChip, Menu, Button, Checkbox (desktop selection).
 

@@ -1,6 +1,6 @@
 # SwipeActions
 
-A phone row gesture. It wraps any row and reveals what each side will do while the finger moves; when the swipe passes the threshold it calls the handler the page gave it and springs back. It never confirms, deletes or opens anything itself.
+Adds swipe to any component. It wraps exactly one child (a TransactionRow, a ListRow, a Card, anything) and reveals what each side will do while the finger moves; when the swipe passes the threshold it calls the handler the page gave it and springs back. It never confirms, deletes or opens anything itself, and the wrapped component knows nothing about it.
 
 ## Props
 - `left` and `right`, each optional: `{ label, icon, tone, onTrigger }`. Omit a side to make the row swipe one way only; pass the same action to both sides if both should do it.
@@ -12,13 +12,19 @@ A phone row gesture. It wraps any row and reveals what each side will do while t
 - Inbox: right Snooze until tomorrow, left Dismiss; both apply at once with Undo.
 - The background under the row shows the side's icon and one-word label in its tone; past the threshold (40% of the row, or a fast flick) it fires once.
 
+## Composition
+- The page wraps whatever should swipe: `<SwipeActions left={…} right={…}><TransactionRow …/></SwipeActions>`. No component has `swipeable`, `swipeLeft`, `swipeRight` or similar props, and no component wraps itself in SwipeActions.
+- It adds nothing to the child's look: no background, padding, border or radius. The child keeps its own background (selected tint included) and the revealed side shows behind it. The child's corner radius is matched by the reveal layer (`className` on SwipeActions for layout, e.g. `rounded-ds-lg` when wrapping a card).
+- The gesture itself is the shared `useSwipe` hook, exported, so a component with a layout SwipeActions can't wrap can use the same behaviour.
+- No domain props: no `variant` ('transactions' | 'inbox'), no `onApprove` / `onDelete` / `onSnooze` / `onDismiss` / `canApprove`, no aliases. Spring-back uses `duration-base`.
+
 ## Rules
 - No tap action of its own: a tap goes to the row.
 - Vertical scrolling wins until the finger moves sideways (`touch-action: pan-y`).
 - Every swipe action is also reachable from the row's detail; gestures are shortcuts.
 
 ## Built from
-A shared `useSwipe` hook (pointer tracking, threshold, spring back) and Icon. The row inside is the page's (TransactionRow, ListRow).
+The shared `useSwipe` hook (pointer tracking, threshold, spring back) and Icon. The child is whatever the page passes.
 
 ## Variants
-- Both sides; right only; left only; disabled.
+- Both sides; right only; left only; disabled; wrapping a TransactionRow, a ListRow and a Card (stories show all three).
