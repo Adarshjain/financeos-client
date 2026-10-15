@@ -7,12 +7,14 @@ import { Banner } from './Banner';
 describe('Banner', () => {
   it('renders children content', () => {
     render(<Banner tone="info">That item is already handled.</Banner>);
-    expect(screen.getByText('That item is already handled.')).toBeInTheDocument();
+    expect(
+      screen.getByText('That item is already handled.'),
+    ).toBeInTheDocument();
   });
 
-  it('renders error tone with alert role and danger tokens', () => {
+  it('renders danger tone with alert role and danger tokens', () => {
     const { container } = render(
-      <Banner tone="err">Email or password is incorrect.</Banner>,
+      <Banner tone="danger">Email or password is incorrect.</Banner>,
     );
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(container.firstChild).toHaveClass(
@@ -22,14 +24,25 @@ describe('Banner', () => {
     );
   });
 
-  it('renders ok tone with status role and positive tokens', () => {
+  it('renders success tone with status role and positive tokens', () => {
     const { container } = render(
-      <Banner tone="ok">Your account has been deleted.</Banner>,
+      <Banner tone="success">Your account has been deleted.</Banner>,
     );
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(container.firstChild).toHaveClass(
       'bg-positive-tint',
       'text-positive-strong',
+    );
+  });
+
+  it('renders warning tone with status role and warning tokens', () => {
+    const { container } = render(
+      <Banner tone="warning">2 bank credits look like dividends.</Banner>,
+    );
+    expect(screen.getByRole('status')).toBeInTheDocument();
+    expect(container.firstChild).toHaveClass(
+      'bg-warning-tint',
+      'text-warning-ink',
     );
   });
 
@@ -44,26 +57,55 @@ describe('Banner', () => {
     );
   });
 
-  it('renders warn tone with status role and warning tokens', () => {
+  it('renders neutral tone with surface background and border', () => {
     const { container } = render(
-      <Banner tone="warn">2 lines were skipped.</Banner>,
+      <Banner tone="neutral">
+        Changing the pattern unlinks the 31 transactions it categorised.
+      </Banner>,
     );
     expect(screen.getByRole('status')).toBeInTheDocument();
     expect(container.firstChild).toHaveClass(
-      'bg-warning-tint',
-      'text-warning-ink',
+      'bg-surface',
+      'text-ink-2',
+      'border-line',
     );
   });
 
-  it('renders trailing action element', () => {
+  it('supports legacy tone aliases err, ok, warn, callout, note', () => {
+    const { container: cErr } = render(<Banner tone="err">Error</Banner>);
+    expect(cErr.firstChild).toHaveClass('bg-danger-tint');
+
+    const { container: cOk } = render(<Banner tone="ok">Ok</Banner>);
+    expect(cOk.firstChild).toHaveClass('bg-positive-tint');
+
+    const { container: cWarn } = render(<Banner tone="warn">Warn</Banner>);
+    expect(cWarn.firstChild).toHaveClass('bg-warning-tint');
+
+    const { container: cCallout } = render(
+      <Banner tone="callout">Callout</Banner>,
+    );
+    expect(cCallout.firstChild).toHaveClass('bg-warning-tint');
+
+    const { container: cNote } = render(<Banner tone="note">Note</Banner>);
+    expect(cNote.firstChild).toHaveClass('bg-surface');
+  });
+
+  it('renders lead-in title and trailing action', () => {
     render(
       <Banner
-        tone="err"
-        action={<button type="button" data-testid="retry-btn">Retry</button>}
+        tone="warning"
+        title="2 bank credits look like dividends."
+        action={<button type="button">Reconcile</button>}
       >
-        Failed to load
+        Additional details
       </Banner>,
     );
-    expect(screen.getByTestId('retry-btn')).toBeInTheDocument();
+    expect(
+      screen.getByText('2 bank credits look like dividends.'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('Additional details')).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Reconcile' }),
+    ).toBeInTheDocument();
   });
 });
