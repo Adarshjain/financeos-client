@@ -246,6 +246,13 @@ const config: Config = {
         'control-xl': 'var(--ds-control-xl)',
         chip: 'var(--ds-chip)',
         rail: 'var(--ds-rail)',
+        'swipe-action': 'var(--ds-swipe-action)',
+      },
+      maxWidth: {
+        'dialog-sm': 'var(--ds-dialog-sm)',
+        'dialog-md': 'var(--ds-dialog-md)',
+        'dialog-lg': 'var(--ds-dialog-lg)',
+        'dialog-xl': 'var(--ds-dialog-xl)',
       },
       minWidth: {
         'control-sm': 'var(--ds-control-sm)',

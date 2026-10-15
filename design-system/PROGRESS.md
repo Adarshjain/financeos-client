@@ -30,7 +30,8 @@ Goal: everything the new components need, with **no visible change to the existi
    - `borderRadius`: `rounded-ds-xs`, `ds-sm`, `ds-md`, `ds-lg`, `ds-xl`, `ds-sheet`, `ds-pill` (`sm`, `md` and `lg` are already taken by the old theme).
    - `boxShadow`: `shadow-pop`, `shadow-dialog`, `shadow-sheet`, `shadow-dock`, `shadow-raise`.
    - `height` and `minHeight`: `control-sm`, `control-md`, `control-lg`, `control-xl`, `chip`, `app-bar`, `tab-bar`.
-   - `width` and `minWidth`: `control-sm`, `control-md`, `control-lg`, `control-xl`, `chip`, `rail`.
+   - `width`: `control-sm`, `control-md`, `control-lg`, `control-xl`, `chip`, `rail`, `swipe-action`; `minWidth`: the same without `swipe-action`.
+   - `maxWidth`: `dialog-sm` (440), `dialog-md` (640), `dialog-lg` (760), `dialog-xl` (920).
    - There is no `space-0`, `space-18`, `text-small`, `rounded-ds-circle`, `z-1` or `font-inherit`. Tailwind silently drops a class name it does not know, so it renders nothing; `check-ui.mjs` now fails on unknown classes.
    - `zIndex`: `z-sticky`, `z-dock`, `z-scrim`, `z-overlay`.
    - `transitionDuration`: `fast`, `base`, `sheet`.
@@ -101,7 +102,8 @@ For each swap:
 1. Build the page from its boards (`design-system/screens/INDEX.md`), including its `*-states` board.
 2. Keep every existing behaviour.
 3. Add the page's new paths to `checked-paths.txt`.
-4. Add a row to the migration map.
+4. Map the page's E2E specs to the new controls and keep the full suite green (RULES §10.5).
+5. Add a row to the migration map.
 
 ### Migration map
 | Page or component | New files | Old files it no longer uses | Swapped on |
@@ -123,6 +125,15 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-14 · The design system and the boards in `design-system/screens/` are the approved target. Boards for investments, loans, rewards, reports and settings are not reviewed yet.
 - 2026-10-14 · Build approach: a new library in `src/components/ds/`, reviewed in Storybook, then page-by-page swaps, then delete the dead old components. Existing components are not modified.
 - 2026-10-14 · Storybook is approved as a new dev dependency.
+- 2026-10-15 · **Off-scale sizes** (decided by Claude at the owner's request). The reference used a few pixel values with no token. They now snap to the scale, and `reference.css` and the previews were updated to match, so compare against them:
+  - Phone sheet padding 18 → `space-16` (matches the phone page gutter). Desktop dialog: header 20/24, body and footer 24 on the sides, so all three edges line up (the old reference had 22 vs 18).
+  - Row padding: phone transaction row 7/5 → 8/6; desktop row 9 → 10; menu item = `min-h-control-lg` with `px-space-10` (same 36px height). Badge side padding 7 → 8. Hairline gaps 3 → 4.
+  - Category chip 22 → 20 (`h-space-20`). Count bubble 18 → 16 (`h-space-16 min-w-space-16`). Checkbox 18 → 16. Institution logo 22 → 24. Person avatar 30 → 32 (`control-md`, same as the account avatar). Switch 34×20 → 36×20 (`w-control-lg h-space-20`, knob `space-16`). Selection-mode eye column 30 → `control-md`.
+  - Selected and watched row stripe 3 → 4px (`border-l-4` or an inset of 4); 2px lost the amber stripe on the watch tint.
+  - Borders: drop zone 1px dashed (not 1.5 or 2); menu checkbox and radio 2px; radio on 4px.
+  - Empty-state text width 300 → `max-w-xs` (320). Skeleton figure bar 22 → 24. Result-summary numbers 18px → `text-title`. Textarea is `rows={3}`, not a fixed height.
+  - New size tokens: `dialog-sm/md/lg/xl` (440/640/760/920) as `max-w-dialog-*`, and `swipe-action` (96) as `w-swipe-action`. No inline pixel sizes for these.
+  - Illustrations (auth, offline, empty) are SVG artwork: pixel geometry inside the SVG is fine; positioning the SVG uses tokens.
 - 2026-10-15 · Accessibility is out of scope: no ARIA, screen-reader or contrast work. The Storybook accessibility addon stays installed but is not a check.
 
 ## Open questions

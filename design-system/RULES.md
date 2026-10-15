@@ -134,6 +134,12 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
    - Write no padding tests.
    - Never edit or delete an existing test unless your change forces it, and name the test and the reason in your report.
 4. Look at every screen you changed at 390px and 1440px wide, in light and dark. Compare it with its board in `design-system/screens/`. Differences are bugs unless they are logged as open questions.
+5. **E2E during page swaps (Phase 3).** The end-to-end suite is the proof that no feature was lost.
+   - Before swapping a page, list every E2E spec that touches it and map each step to the new control that replaces the old one.
+   - Change selectors only. Never weaken an assertion, delete a step or skip a test to make it pass. If a behaviour moves (for example a header button becomes the app bar +), move the test step with it.
+   - Keep the `data-*` hooks the specs use, and put them on the new controls.
+   - The full E2E suite is green before the swap is committed, not just the touched specs.
+   - Add phone-width (390px) coverage for the page's main flow when the page gets a phone-specific pattern (bottom sheet, swipe, long-press selection).
 
 ## 11. How to work
 
