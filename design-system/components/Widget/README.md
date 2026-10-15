@@ -11,5 +11,8 @@ A dashboard tile: title, subtitle and a ⋮ menu, then a figure, rows, a chart o
 ## ⋮ menu
 Report widgets: Edit report · View full page · View underlying data (KPIs). Built-ins and templates: Widget settings · Duplicate as my report (templates) · View full page.
 
+## Props
+- Messages for its states (couldn't load, report no longer available) and its menu items come from the page.
+
 ## Built from
 Card, Menu, Skeleton, Button (Retry).

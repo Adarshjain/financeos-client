@@ -9,6 +9,7 @@ Both open the same Popover with the same item rows, so they look identical. They
 - Verbs, most common first, destructive last after a separator in `danger`.
 - Optional right-aligned hint in `ink-4` ("Tomorrow · Wed 14 Oct"); hidden on phone.
 - On phone, menus with more than about six items open as a Dialog (bottom sheet).
+- Item row (shared with Select's options): `body` weight 500, `ink`. Hover and keyboard highlight `bg-hover`; pressed `bg-pressed`. No outline or border on an item, ever: the highlight fill is the focus indicator.
 - Arrow keys move, Enter runs, Escape closes.
 
 ## Don't

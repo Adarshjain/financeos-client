@@ -307,3 +307,18 @@ textarea.inp{height:72px;padding:var(--space-8) var(--space-12);resize:none;alig
 .logo-mark.sm{width:var(--chip);height:var(--chip)}
 .logo-row{display:inline-flex;align-items:center;gap:var(--space-10);font:800 16px/20px var(--font-text);color:var(--ink)}
 .btn-google{width:100%;height:var(--control-xl);justify-content:center;gap:var(--space-8)}
+
+/* ---------- interaction states (2026-10-15) ---------- */
+.btn.is-hover{background:var(--bg-hover)}.btn.is-pressed{background:var(--bg-pressed)}
+.btn-p.is-hover{background:var(--brand-hover)}.btn-p.is-pressed{background:var(--brand-pressed)}
+.btn-dd.is-hover{background:var(--danger-hover)}.btn-dd.is-pressed{background:var(--danger-pressed)}
+.btn-d.is-hover{background:var(--danger-tint)}.btn-d.is-pressed{background:var(--danger-tint);border-color:var(--danger)}
+.btn.is-focus{outline:2px solid var(--focus-ring);outline-offset:2px}.btn.is-disabled{opacity:.45}
+.btn-link{height:auto;padding:0;border:0;background:none;font-weight:700;text-decoration:underline;text-underline-offset:2px;color:inherit}
+.mi.is-hover{background:var(--bg-hover)}.mi.is-pressed{background:var(--bg-pressed)}
+.banner{align-items:center}
+.drange{display:flex;align-items:center;gap:var(--space-8);height:var(--control-lg);padding:0 var(--space-10);border:1px solid var(--line-strong);border-radius:var(--radius-md);background:var(--bg-surface);font:500 13px/18px var(--font-text);color:var(--ink)}
+.drange .to{color:var(--ink-4)}.drange .ic:last-child{margin-left:auto;color:var(--ink-3)}
+.cal2{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-16)}
+textarea.inp.one{height:var(--control-lg);min-height:var(--control-lg);resize:vertical;padding-top:var(--space-8)}
+.tabs-u .tab{border-radius:0}

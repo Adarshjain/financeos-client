@@ -10,6 +10,9 @@ A record card for lists where each item has several facts and actions (categoris
 ## Selection mode (phone)
 Long-press starts it. Selected cards turn `brand-tint` with a `brand` outline; on every card the eye icon replaces Approve and ⋮ and opens the edit sheet.
 
+## Props
+- The card draws a rule the page hands it; its ⋮ items (Find matches, Edit rule, Delete rule) and the Approve action come from the page as props, with their labels.
+
 ## Built from
 Card, StatusWords, CategoryChip, Menu, Button, Checkbox (desktop selection).
 

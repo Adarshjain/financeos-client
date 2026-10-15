@@ -11,6 +11,9 @@ The bar that appears while items are selected: the count, a one-line summary, an
 ## Selection model (phone)
 Long-press a row to start, tap to add or remove, the eye icon opens the item's detail without leaving selection, × or back to finish. No checkboxes on phone. Desktop uses checkboxes.
 
+## Props
+- `actions`: `{ id, icon, label, hint?, tone?, disabled?, onSelect }[]` from the page. On phone each action shows its `hint` under the label ("the pair", "clear Duplicate"); stories show hints exactly as the preview does.
+
 ## Built from
 Button, Icon.
 

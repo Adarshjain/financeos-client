@@ -221,6 +221,9 @@ function check(lines, all = false, classes = true) {
       (/ds-allow:/.test(text) ? allowed : errors).push(hit);
     }
     const comp = dsComponent(file);
+    if (comp && /\b(?:href|path|to)\s*[:=]\s*\{?\s*['"`]\/[a-z]/.test(text)) {
+      errors.push({ file, line, rule: 'hardcoded-route', why: `${comp} hard-codes an app route — routes come from the page or app shell (RULES §5b.6)`, text: text.trim().slice(0, 160) });
+    }
     if (comp && /[▾▴✕✓›‹]/.test(text)) {
       const hit = { file, line, rule: 'typed-glyph', why: 'a typed glyph used as an icon — use the Icon component (ChevronDown, X, Check, ChevronRight…)', text: text.trim().slice(0, 160) };
       (/ds-allow:/.test(text) ? allowed : errors).push(hit);
@@ -301,6 +304,8 @@ function selfTest() {
     ['src/app/(ds)/ds/transactions/page.tsx', "import { Card } from '@/components/ds';", 'old-import', false],
     ['src/app/(ds)/ds/transactions/page.tsx', "import { keys } from '@/lib/query';", 'old-import', false],
     ['src/components/ds/FilterChip/FilterChip.tsx', '<span>▾</span>', 'typed-glyph', true],
+    ['src/components/ds/Rail/Rail.tsx', "{ id: 'inbox', label: 'Inbox', href: '/inbox' },", 'hardcoded-route', true],
+    ['src/components/ds/Rail/Rail.stories.tsx', "{ id: 'inbox', label: 'Inbox', href: '/inbox' },", 'hardcoded-route', false],
     ['src/components/ds/Card/Card.tsx', '<button type="button">', 'raw-button', true],
     ['src/components/ds/Button/Button.tsx', '<button type="button">', 'raw-button', false],
     ['src/components/ds/Card/Card.stories.tsx', '<button>', 'raw-button', false],
@@ -327,7 +332,7 @@ function selfTest() {
   console.log(
     fail
       ? `self-test: ${fail} problem(s)`
-      : `self-test: ${bad.length + 6} catches, ${good.length + 7} clean lines, all correct`
+      : `self-test: ${bad.length + 7} catches, ${good.length + 8} clean lines, all correct`
   );
   process.exit(fail ? 1 : 0);
 }

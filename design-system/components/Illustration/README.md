@@ -7,5 +7,8 @@ The flat artwork on the sign-in, sign-up, offline and empty screens, as one comp
 - **signup**: the same panel for Sign up: the scene (statement imported, Gmail connected, card advice, a lending reminder) and the three setup steps.
 - **offline**: the sleeping ₹ coin under a cloud (used by EmptyState's offline variant).
 
+## Phone
+- Each variant has a phone form: the scene shrinks to a band above the form and the copy hides. Storybook shows it as its own story at 390px (`signin · phone`, `signup · phone`).
+
 ## Built from
 Logo (in the sign-in and sign-up panels). EmptyState uses the offline variant.

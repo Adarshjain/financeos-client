@@ -19,5 +19,8 @@ Selected (`brand-tint` with a 3px `brand` stripe), monitored (`watch-tint` with 
 ## Don't
 - No tags or pills for status on the row. No date on the row on phone: the sticky date header carries it.
 
+## Props
+- Every word on the row comes from the page, including the unset-category label ("Set category").
+
 ## Built from
 CategoryChip, StatusWords, Checkbox (desktop selection column), Icon (eye in selection). On phone, SwipeActions wraps it.

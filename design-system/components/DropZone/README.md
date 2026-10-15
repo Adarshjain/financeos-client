@@ -9,6 +9,9 @@ The import area. The whole zone is the target: tapping or clicking anywhere in i
 - A file that can't be sent says why in words ("Larger than 10 MB"), not only in red.
 - Recent imports below are rows with the file name and a coloured status word ("Done" in `positive`, "1 warning" in `warning`).
 
+## Props
+- `title`, `hint` and `buttonLabel` are required props ("Add statements", "PDF, XLSX or XLS · up to 25 MB per upload", "Choose files"); the component has no default copy.
+
 ## Built from
 Button, ListRow (queued files), Icon, StatusWords.
 
