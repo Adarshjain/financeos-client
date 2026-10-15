@@ -11,8 +11,8 @@ describe('FilterChip', () => {
   });
 
   it('renders dropdown caret when hasDropdown is true', () => {
-    render(<FilterChip hasDropdown>Account</FilterChip>);
-    expect(screen.getByText('▾')).toBeInTheDocument();
+    const { container } = render(<FilterChip hasDropdown>Account</FilterChip>);
+    expect(container.querySelector('svg')).toBeInTheDocument();
   });
 
   it('renders count badge when count is specified', () => {

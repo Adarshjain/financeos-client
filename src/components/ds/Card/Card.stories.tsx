@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { ChevronRight } from 'lucide-react';
 import React from 'react';
 
 import { FilterChip } from '../FilterChip/FilterChip';
+import { Icon } from '../Icon/Icon';
 import { Card, CardEmpty, CardFooter, CardRow, CardSection } from './Card';
 
 const meta = {
@@ -28,7 +30,9 @@ export const TitleSubtitleLink: Story = {
               href="#inbox"
               className="font-text font-bold text-label text-brand hover:underline"
             >
-              Inbox ›
+              <span className="inline-flex items-center gap-space-2">
+                Inbox <Icon icon={ChevronRight} size="sm" />
+              </span>
             </a>
           }
         />
@@ -151,7 +155,9 @@ export const AllVariants: Story = {
                 href="#inbox"
                 className="font-text font-bold text-label text-brand hover:underline"
               >
-                Inbox ›
+                <span className="inline-flex items-center gap-space-2">
+                  Inbox <Icon icon={ChevronRight} size="sm" />
+                </span>
               </a>
             }
           />

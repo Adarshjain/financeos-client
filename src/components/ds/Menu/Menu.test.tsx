@@ -59,14 +59,14 @@ describe('Menu', () => {
   it('renders active styling with hint', () => {
     render(
       <Menu>
-        <MenuItem active hint="Default ✓">
+        <MenuItem active hint="Default">
           Home
         </MenuItem>
       </Menu>,
     );
     const item = screen.getByRole('menuitem');
     expect(item).toHaveClass('bg-brand-tint');
-    expect(screen.getByText('Default ✓')).toHaveClass('text-brand-strong');
+    expect(screen.getByText('Default')).toHaveClass('text-brand-strong');
   });
 
   it('renders separator with separator role', () => {

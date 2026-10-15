@@ -1,8 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Eye, LayoutGrid, MoreVertical, Plus } from 'lucide-react';
+import { Check, Eye, LayoutGrid, MoreVertical, Plus } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '../Button/Button';
+import { Icon } from '../Icon/Icon';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -125,7 +126,14 @@ export const SwitcherWithAFooterLink: Story = {
     return (
       <div className="max-w-xs">
         <Menu>
-          <MenuItem active hint="Default ✓">
+          <MenuItem
+            active
+            hint={
+              <span className="inline-flex items-center gap-space-2">
+                Default <Icon icon={Check} size="sm" />
+              </span>
+            }
+          >
             Home
           </MenuItem>
           <MenuItem>Money overview</MenuItem>
@@ -250,7 +258,14 @@ export const AllVariants: Story = {
             Switcher with a footer link
           </span>
           <Menu>
-            <MenuItem active hint="Default ✓">
+            <MenuItem
+              active
+              hint={
+                <span className="inline-flex items-center gap-space-2">
+                  Default <Icon icon={Check} size="sm" />
+                </span>
+              }
+            >
               Home
             </MenuItem>
             <MenuItem>Money overview</MenuItem>

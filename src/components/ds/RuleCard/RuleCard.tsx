@@ -1,9 +1,10 @@
-import { Eye, MoreVertical } from 'lucide-react';
+import { Check, Eye, MoreVertical } from 'lucide-react';
 import React, { forwardRef, useRef } from 'react';
 
 import { Button } from '../Button/Button';
 import { CategoryChip } from '../CategoryChip/CategoryChip';
 import { cn } from '../cn';
+import { Icon } from '../Icon/Icon';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,7 +44,7 @@ export interface RuleCardProps
   /** Custom category elements */
   categoryContent?: React.ReactNode;
 
-  /** Callback when "✓ Approve" button is clicked (unverified cards) */
+  /** Callback when Approve button is clicked (unverified cards) */
   onApprove?: () => void;
   /** Kebab menu options */
   menuItems?: RuleCardMenuItem[];
@@ -217,8 +218,13 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       return (
         <div className="flex items-center gap-space-6 shrink-0">
           {!isVerified && onApprove && (
-            <Button size="sm" variant="secondary" onClick={onApprove}>
-              ✓ Approve
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={onApprove}
+              icon={<Icon icon={Check} size="sm" />}
+            >
+              Approve
             </Button>
           )}
 
