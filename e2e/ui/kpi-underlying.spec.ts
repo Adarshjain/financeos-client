@@ -329,7 +329,9 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await expect(assets.getByRole('heading', { level: 3 })).toHaveText('Asset');
     await expect(assets.getByText('₹26,299.90', { exact: true })).toBeVisible();
     await expect(liabilities.getByRole('heading', { level: 3 })).toHaveText('Liability');
-    await expect(liabilities.getByText('-₹500.00', { exact: true })).toBeVisible();
+    // One liability row, so its value matches the total: read the total from the heading line.
+    const liabilityHeadingLine = liabilities.getByRole('heading', { level: 3 }).locator('xpath=..');
+    await expect(liabilityHeadingLine.getByText('-₹500.00', { exact: true })).toBeVisible();
     const rows = bodyRows(vud);
     const grouped = [/NW Broker/, /NW Savings/, /NW Overdrawn/];
     await expect(rows).toHaveText(grouped);

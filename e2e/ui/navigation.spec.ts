@@ -110,8 +110,7 @@ test.describe('Navigation and relocated pages (@ui)', () => {
     await page.waitForURL('**/chat');
   });
 
-  test('@mobile bottom bar: Home, Inbox, Upcoming, Transactions and the contextual bar', async ({ page, isMobile }) => {
-    test.skip(!isMobile, 'The bottom bar only exists below the desktop breakpoint');
+  test('@mobile-only bottom bar: Home, Inbox, Upcoming, Transactions and the contextual bar', async ({ page }) => {
     const api = makeApi(currentUser.cookie);
     await seedDueSoonLoan(api, 'Bar Loan');
 
@@ -141,8 +140,7 @@ test.describe('Navigation and relocated pages (@ui)', () => {
     await page.waitForURL('**/dashboard');
   });
 
-  test('@mobile menu sheet: Accounts, grouped pages incl. Settings, signed-in email and Sign out', async ({ page, isMobile }) => {
-    test.skip(!isMobile, 'The menu sheet only exists below the desktop breakpoint');
+  test('@mobile-only menu sheet: Accounts, grouped pages incl. Settings, signed-in email and Sign out', async ({ page }) => {
     await page.goto('/dashboard');
 
     await page.getByLabel('Open navigation menu').click();
