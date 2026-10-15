@@ -38,13 +38,24 @@ describe('TextField component', () => {
     expect(inputWrapper).toBeInTheDocument();
   });
 
-  it('renders locked state with lock icon and disabled input', () => {
+  it('renders locked state with lock icon and read-only input', () => {
     const { container } = render(
       <TextField label="Account" defaultValue="HDFC" locked />,
     );
     const input = screen.getByLabelText('Account');
-    expect(input).toBeDisabled();
+    expect(input).not.toBeDisabled();
+    expect(input).toHaveAttribute('readonly');
     expect(container.querySelector('svg')).toBeInTheDocument();
+  });
+
+  it('supports date mode formatting and accepting dd/mm/yyyy', () => {
+    const handleChange = vi.fn();
+    render(<TextField label="Due date" mode="date" onChange={handleChange} />);
+    const input = screen.getByLabelText('Due date');
+    expect(input).toHaveAttribute('placeholder', 'dd/mm/yyyy');
+    fireEvent.change(input, { target: { value: '15102026' } });
+    expect(input).toHaveValue('15/10/2026');
+    expect(handleChange).toHaveBeenCalled();
   });
 
   it('toggles password visibility with Show/Hide button', () => {

@@ -1,4 +1,4 @@
-import { Lock } from 'lucide-react';
+import { Calendar, Lock } from 'lucide-react';
 import React, { forwardRef, useId, useState } from 'react';
 
 import { cn } from '../cn';
@@ -13,11 +13,12 @@ export interface TextFieldProps
   error?: React.ReactNode;
   optional?: boolean;
   locked?: boolean;
+  mode?: 'text' | 'date';
+  date?: boolean;
   prefix?: React.ReactNode;
   suffix?: React.ReactNode;
   multiline?: boolean;
   rows?: number;
-  inputClassName?: string;
   onChange?: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => void;
@@ -48,6 +49,17 @@ export const ReadOnlyRow = forwardRef<HTMLDivElement, ReadOnlyRowProps>(
 
 ReadOnlyRow.displayName = 'ReadOnlyRow';
 
+function formatDateInput(val: string): string {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    const [y, m, d] = val.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  const digits = val.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
 export const TextField = forwardRef<
   HTMLInputElement | HTMLTextAreaElement,
   TextFieldProps
@@ -61,13 +73,14 @@ export const TextField = forwardRef<
       optional = false,
       locked = false,
       disabled = false,
+      mode = 'text',
+      date = false,
       prefix,
       suffix,
       multiline = false,
       rows = 3,
       type = 'text',
       className,
-      inputClassName,
       placeholder,
       value,
       defaultValue,
@@ -80,11 +93,37 @@ export const TextField = forwardRef<
     const id = explicitId ?? generatedId;
     const [showPassword, setShowPassword] = useState(false);
 
+    const isDateMode = mode === 'date' || date || type === 'date';
     const isPassword = type === 'password';
-    const computedType = isPassword && showPassword ? 'text' : type;
+    const computedType = isPassword && showPassword ? 'text' : isDateMode ? 'text' : type;
+    const computedPlaceholder = placeholder ?? (isDateMode ? 'dd/mm/yyyy' : undefined);
+    const renderedSuffix =
+      suffix ??
+      (isDateMode ? (
+        <Calendar className="h-space-14 w-space-14 text-ink-3 shrink-0" aria-hidden="true" />
+      ) : null);
 
     const hasError = Boolean(error);
-    const isLockedOrDisabled = locked || disabled;
+    const isLocked = Boolean(locked);
+
+    const formattedDefaultValue =
+      isDateMode && typeof defaultValue === 'string'
+        ? formatDateInput(defaultValue)
+        : defaultValue;
+
+    const formattedValue =
+      isDateMode && typeof value === 'string'
+        ? formatDateInput(value)
+        : value;
+
+    const handleChange = (
+      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    ) => {
+      if (isDateMode && !multiline) {
+        e.target.value = formatDateInput(e.target.value);
+      }
+      onChange?.(e);
+    };
 
     return (
       <div className={cn('w-full font-text text-body', className)}>
@@ -107,8 +146,8 @@ export const TextField = forwardRef<
             ref={ref as React.Ref<HTMLTextAreaElement>}
             id={id}
             rows={rows}
-            disabled={isLockedOrDisabled}
-            readOnly={locked}
+            disabled={disabled}
+            readOnly={isLocked || props.readOnly}
             placeholder={placeholder}
             value={value}
             defaultValue={defaultValue}
@@ -119,9 +158,8 @@ export const TextField = forwardRef<
               hasError
                 ? 'border-danger focus:ring-danger'
                 : 'border-line-strong focus:border-brand',
-              locked && 'bg-sunken text-ink-3 cursor-not-allowed',
+              isLocked && 'bg-sunken text-ink-3',
               disabled && 'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
-              inputClassName,
             )}
             {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
           />
@@ -133,12 +171,11 @@ export const TextField = forwardRef<
               hasError
                 ? 'border-danger focus-within:ring-danger'
                 : 'border-line-strong focus-within:border-brand',
-              locked && 'bg-sunken text-ink-3 cursor-not-allowed',
+              isLocked && 'bg-sunken text-ink-3',
               disabled && 'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
-              inputClassName,
             )}
           >
-            {locked ? (
+            {isLocked ? (
               <Lock className="h-space-14 w-space-14 text-ink-3 shrink-0" aria-hidden="true" />
             ) : null}
 
@@ -152,12 +189,13 @@ export const TextField = forwardRef<
               ref={ref as React.Ref<HTMLInputElement>}
               id={id}
               type={computedType}
-              disabled={isLockedOrDisabled}
-              readOnly={locked}
-              placeholder={placeholder}
-              value={value}
-              defaultValue={defaultValue}
-              onChange={onChange}
+              inputMode={isDateMode ? 'numeric' : props.inputMode}
+              disabled={disabled}
+              readOnly={isLocked || props.readOnly}
+              placeholder={computedPlaceholder}
+              value={formattedValue}
+              defaultValue={formattedDefaultValue}
+              onChange={handleChange}
               className="w-full h-full bg-transparent border-0 p-0 text-body text-ink placeholder:text-ink-4 focus:outline-none focus:ring-0"
               {...props}
             />
@@ -173,9 +211,9 @@ export const TextField = forwardRef<
               </button>
             ) : null}
 
-            {suffix ? (
+            {renderedSuffix ? (
               <span className="ml-auto shrink-0 flex items-center text-ink-4">
-                {suffix}
+                {renderedSuffix}
               </span>
             ) : null}
           </div>

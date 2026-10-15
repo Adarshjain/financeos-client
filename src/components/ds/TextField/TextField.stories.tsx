@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Calendar } from 'lucide-react';
 
 import { ReadOnlyRow, TextField } from './TextField';
 
@@ -87,8 +86,8 @@ export const PasswordWithToggle: Story = {
 export const DateInput: Story = {
   args: {
     label: 'Paid on',
+    mode: 'date',
     defaultValue: '13/10/2026',
-    suffix: <Calendar className="h-space-14 w-space-14" />,
   },
 };
 
@@ -156,8 +155,8 @@ export const AllVariants: Story = {
       />
       <TextField
         label="Paid on"
+        mode="date"
         defaultValue="13/10/2026"
-        suffix={<Calendar className="h-space-14 w-space-14" />}
       />
       <TextField
         label="Note"

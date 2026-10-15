@@ -144,6 +144,35 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 1) · TextField component fixes:
+  - Fixed TextField in `src/components/ds/TextField/TextField.tsx`:
+    - Locked state: updated `locked` to set `readOnly` without disabling the input, keeping it focusable and submittable in forms, styled with `bg-sunken text-ink-3` and lock icon per RULES §7.7.
+    - Removed `inputClassName`: eliminated arbitrary class injection prop from `TextFieldProps`.
+    - Added date mode: added `mode?: 'text' | 'date'` (and `date?: boolean` / `type="date"`) support that shows and accepts `dd/mm/yyyy`, formatting typed input into `dd/mm/yyyy`, setting placeholder to `dd/mm/yyyy`, and defaulting suffix to Calendar icon.
+  - Updated `src/components/ds/TextField/TextField.stories.tsx`:
+    - Updated `DateInput` and `AllVariants` stories to use `mode="date"`.
+  - Updated `src/components/ds/TextField/TextField.test.tsx`:
+    - Updated locked test to verify `not.toBeDisabled()` and `toHaveAttribute('readonly')`.
+    - Added unit test asserting date mode formatting and acceptance of `dd/mm/yyyy`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,492 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `TextField/preview.html` and `ds-07-inputs.webp` board:
+    - `DS/Inputs/TextField/Default`
+    - `DS/Inputs/TextField/Placeholder`
+    - `DS/Inputs/TextField/Focused`
+    - `DS/Inputs/TextField/WithHelper`
+    - `DS/Inputs/TextField/Error`
+    - `DS/Inputs/TextField/Disabled`
+    - `DS/Inputs/TextField/Locked`
+    - `DS/Inputs/TextField/AmountWithPrefix`
+    - `DS/Inputs/TextField/PasswordWithToggle`
+    - `DS/Inputs/TextField/DateInput`
+    - `DS/Inputs/TextField/MultiLine`
+    - `DS/Inputs/TextField/ReadOnly`
+    - `DS/Inputs/TextField/AllVariants`
+    Verified locked read-only styling with lock icon, date mode with calendar icon and `dd/mm/yyyy`, and input heights.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 10 (part 3) · Button component fixes:
   - Fixed Button in `src/components/ds/Button/Button.tsx`:
     - Cleaned variant and size aliases: restricted variants to `'primary' | 'secondary' | 'danger' | 'danger-filled' | 'ghost'` and sizes to `'sm' | 'md' | 'xl'`, removing unlisted aliases (`danger-outline`, `small`, `default`, `phone`) per README specification.
