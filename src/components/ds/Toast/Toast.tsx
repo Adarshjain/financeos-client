@@ -37,7 +37,7 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
         ref={ref}
         role={role || (isError ? 'alert' : 'status')}
         className={cn(
-          'bg-brand text-on-brand shadow-pop rounded-ds-lg px-space-14 py-space-10 flex items-center gap-space-10 text-body font-semibold select-none',
+          'bg-ink text-on-brand shadow-pop rounded-ds-lg px-space-14 py-space-10 flex items-center gap-space-10 text-body font-semibold select-none',
           className,
         )}
         {...props}
@@ -47,7 +47,7 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
           <button
             type="button"
             onClick={onUndo}
-            className="ml-auto text-on-brand underline font-bold hover:opacity-80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring rounded-ds-sm shrink-0 transition-opacity"
+            className="ml-auto text-line underline font-bold hover:text-line-soft focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring rounded-ds-sm shrink-0 transition-colors"
           >
             {undoLabel}
           </button>
