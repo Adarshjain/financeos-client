@@ -2,12 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  ListField,
-  ListRow,
-  ListRowDateTile,
-  ListRowIconTile,
-} from './ListRow';
+import { ListField, ListRow } from './ListRow';
 
 describe('ListRow', () => {
   it('renders title and subtitle with correct typography', () => {
@@ -32,7 +27,7 @@ describe('ListRow', () => {
     expect(screen.getByText('₹33,900')).toBeInTheDocument();
   });
 
-  it('formats positive credit amounts with a plus sign', () => {
+  it('formats positive credit amounts with a plus sign and tabular numbers', () => {
     render(
       <ListRow
         title="Rahul Sharma"
@@ -42,15 +37,15 @@ describe('ListRow', () => {
     );
     const amountEl = screen.getByText('+₹15,000');
     expect(amountEl).toBeInTheDocument();
-    expect(amountEl).toHaveClass('text-positive');
+    expect(amountEl).toHaveClass('text-positive', 'tabular-nums');
   });
 
-  it('applies highlighted styling when highlighted or hl is true', () => {
+  it('applies highlighted styling with 4px stripe on brand-tint', () => {
     const { container: c1 } = render(<ListRow title="Row 1" highlighted />);
-    expect(c1.firstChild).toHaveClass('ring-2', 'ring-brand', 'bg-brand-tint');
+    expect(c1.firstChild).toHaveClass('border-l-4', 'border-l-brand-strong', 'bg-brand-tint');
 
     const { container: c2 } = render(<ListRow title="Row 2" hl />);
-    expect(c2.firstChild).toHaveClass('ring-2', 'ring-brand', 'bg-brand-tint');
+    expect(c2.firstChild).toHaveClass('border-l-4', 'border-l-brand-strong', 'bg-brand-tint');
   });
 
   it('applies disabled styling and aria-disabled attribute', () => {
@@ -83,7 +78,7 @@ describe('ListRow', () => {
     expect(handleClick).toHaveBeenCalledTimes(3);
   });
 
-  it('renders kebab button and handles click', () => {
+  it('renders kebab button using Button and handles click', () => {
     const handleKebab = vi.fn();
     render(<ListRow title="Dining out" kebab={handleKebab} />);
     const kebabBtn = screen.getByRole('button', { name: 'More options' });
@@ -91,6 +86,13 @@ describe('ListRow', () => {
 
     fireEvent.click(kebabBtn);
     expect(handleKebab).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders chevron icon when chevron prop is true', () => {
+    const { container } = render(<ListRow title="Navigate" chevron />);
+    const svg = container.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+    expect(svg).toHaveClass('w-icon-sm', 'h-icon-sm');
   });
 });
 
@@ -101,23 +103,5 @@ describe('ListField', () => {
     const valueEl = screen.getByText('HDFC Regalia ••7741');
     expect(valueEl).toBeInTheDocument();
     expect(valueEl).toHaveClass('font-semibold');
-  });
-});
-
-describe('ListRowDateTile', () => {
-  it('renders day and month in date tile', () => {
-    render(<ListRowDateTile day="15" month="OCT" />);
-    expect(screen.getByText('15')).toBeInTheDocument();
-    expect(screen.getByText('OCT')).toBeInTheDocument();
-  });
-});
-
-describe('ListRowIconTile', () => {
-  it('renders content with tone styling', () => {
-    const { container } = render(
-      <ListRowIconTile tone="info">EMI</ListRowIconTile>,
-    );
-    expect(container.firstChild).toHaveTextContent('EMI');
-    expect(container.firstChild).toHaveClass('bg-info-tint', 'text-info');
   });
 });

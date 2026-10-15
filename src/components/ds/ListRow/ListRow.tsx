@@ -1,11 +1,13 @@
 import { ChevronRight, MoreVertical } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
+import { Button } from '../Button/Button';
 import { cn } from '../cn';
+import { Icon } from '../Icon/Icon';
 
 export interface ListRowProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
-  /** Leading element: Badge, Avatar, DateTile, IconTile, or custom node */
+  /** Leading element: Badge, Avatar, DateTile, or custom node */
   leading?: React.ReactNode;
   /** Primary text/title */
   title?: React.ReactNode;
@@ -21,7 +23,7 @@ export interface ListRowProps
   chevron?: boolean;
   /** If true or function, renders a trailing kebab (More options) icon/button */
   kebab?: boolean | (() => void);
-  /** Highlighted row (opened from notification): 2px brand outline on brand-tint */
+  /** Highlighted row (opened from notification): 4px brand-strong stripe on brand-tint */
   highlighted?: boolean;
   /** Alias for highlighted */
   hl?: boolean;
@@ -79,11 +81,14 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
         onClick={disabled ? undefined : onClick}
         onKeyDown={handleKeyDown}
         className={cn(
-          'flex items-center gap-space-12 px-space-16 py-space-10 text-body relative transition-colors',
+          'flex items-center gap-space-12 px-space-16 py-space-10 text-body relative transition-colors font-text',
           borderTop ? 'border-t border-line-soft first:border-t-0' : 'border-t-0',
-          isHighlighted && 'ring-2 ring-inset ring-brand bg-brand-tint',
+          isHighlighted
+            ? 'border-l-4 border-l-brand-strong bg-brand-tint'
+            : 'border-l-4 border-l-transparent',
           disabled && 'opacity-50 pointer-events-none',
-          isInteractive && 'cursor-pointer hover:bg-hover active:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
+          isInteractive &&
+            'cursor-pointer hover:bg-hover active:bg-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
           className,
         )}
         {...props}
@@ -92,7 +97,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
 
         {title !== undefined ? (
           <div className="flex-1 min-w-0">
-            <div className="text-body-strong text-ink truncate">{title}</div>
+            <div className="text-body-strong font-bold text-ink truncate">{title}</div>
             {subtitle && (
               <div className="text-label font-medium text-ink-3 truncate mt-space-2">{subtitle}</div>
             )}
@@ -107,7 +112,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
             {amount !== undefined && (
               <span
                 className={cn(
-                  'tabular-nums text-body-strong text-right',
+                  'tabular-nums text-body-strong font-bold text-right',
                   isCredit ? 'text-positive' : 'text-ink',
                 )}
               >
@@ -118,8 +123,9 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
             )}
             {trailing}
             {kebab && (
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="sm"
                 aria-label="More options"
                 onClick={
                   typeof kebab === 'function'
@@ -129,15 +135,16 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
                       }
                     : undefined
                 }
-                className="text-ink-4 hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring rounded-ds-sm p-space-2 inline-flex items-center justify-center transition-colors"
+                className="text-ink-4 hover:text-ink p-space-2 h-auto min-h-0"
               >
-                <MoreVertical className="w-space-14 h-space-14" aria-hidden="true" />
-              </button>
+                <Icon icon={MoreVertical} size="sm" />
+              </Button>
             )}
             {chevron && (
-              <ChevronRight
-                className="w-space-14 h-space-14 text-ink-4 shrink-0"
-                aria-hidden="true"
+              <Icon
+                icon={ChevronRight}
+                size="sm"
+                className="text-ink-4 shrink-0"
               />
             )}
           </div>
@@ -164,13 +171,13 @@ export const ListField = forwardRef<HTMLDivElement, ListFieldProps>(
       <div
         ref={ref}
         className={cn(
-          'flex items-center justify-between gap-space-12 px-space-16 py-space-8 text-body',
+          'flex items-center justify-between gap-space-12 px-space-16 py-space-8 text-body font-text',
           borderTop ? 'border-t border-line-soft first:border-t-0' : 'border-t-0',
           className,
         )}
         {...props}
       >
-        <span className="text-ink-3 shrink-0">{label}</span>
+        <span className="text-ink-3 shrink-0 font-medium">{label}</span>
         {value !== undefined ? (
           <span className="text-ink font-semibold text-right min-w-0 break-words">{value}</span>
         ) : (
@@ -182,79 +189,3 @@ export const ListField = forwardRef<HTMLDivElement, ListFieldProps>(
 );
 
 ListField.displayName = 'ListField';
-
-/**
- * ListRowDateTile: Helper for leading date tiles in rows
- */
-export interface ListRowDateTileProps extends React.HTMLAttributes<HTMLDivElement> {
-  day: string | number;
-  month: string;
-}
-
-export const ListRowDateTile = forwardRef<HTMLDivElement, ListRowDateTileProps>(
-  ({ className, day, month, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'w-space-40 text-center shrink-0 flex flex-col items-center justify-center',
-          className,
-        )}
-        {...props}
-      >
-        <b className="block font-extrabold text-heading text-ink leading-none">
-          {day}
-        </b>
-        <span className="block font-extrabold text-overline text-ink-4 uppercase tracking-wider">
-          {month}
-        </span>
-      </div>
-    );
-  },
-);
-
-ListRowDateTile.displayName = 'ListRowDateTile';
-
-/**
- * ListRowIconTile: Helper for icon/short abbreviation tiles in rows
- */
-export type IconTileTone =
-  | 'default'
-  | 'info'
-  | 'positive'
-  | 'warning'
-  | 'danger'
-  | 'brand';
-
-export interface ListRowIconTileProps extends React.HTMLAttributes<HTMLSpanElement> {
-  tone?: IconTileTone;
-}
-
-export const ListRowIconTile = forwardRef<HTMLSpanElement, ListRowIconTileProps>(
-  ({ children, className, tone = 'default', ...props }, ref) => {
-    const toneStyles: Record<IconTileTone, string> = {
-      default: 'bg-canvas text-ink-2',
-      info: 'bg-info-tint text-info',
-      positive: 'bg-positive-tint text-positive-strong',
-      warning: 'bg-warning-tint text-warning-ink',
-      danger: 'bg-danger-tint text-danger',
-      brand: 'bg-brand-tint text-brand-strong',
-    };
-
-    return (
-      <span
-        ref={ref}
-        className={cn(
-          'w-space-32 h-space-32 rounded-ds-md shrink-0 flex items-center justify-center font-extrabold text-label select-none',
-          toneStyles[tone],
-          className,
-        )}
-        {...props}
-      >
-        {children}
-      </span>
-    );
-  },
-);
-
-ListRowIconTile.displayName = 'ListRowIconTile';
