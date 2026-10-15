@@ -184,6 +184,14 @@ function unknownClasses(text) {
   return out;
 }
 
+// Components that may render a raw <button>: the primitives that ARE buttons or
+// button-like controls. Every other design-system component uses Button (RULES §5b.2).
+const RAW_BUTTON_OK = new Set(['Button', 'Switch', 'Checkbox', 'FilterChip', 'CategoryChip', 'SegmentedControl', 'Tabs', 'Menu', 'Select', 'DateField', 'DateTile', 'Popover', 'Dialog']);
+function dsComponent(file) {
+  const m = /^src\/components\/ds\/([A-Za-z]+)\/([A-Za-z]+)\.tsx$/.exec(file);
+  return m && m[1] === m[2] ? m[1] : null;
+}
+
 function check(lines, all = false, classes = true) {
   const errors = [];
   const allowed = [];
@@ -199,6 +207,15 @@ function check(lines, all = false, classes = true) {
         why: r.why,
         text: text.trim().slice(0, 160),
       };
+      (/ds-allow:/.test(text) ? allowed : errors).push(hit);
+    }
+    const comp = dsComponent(file);
+    if (comp && /[▾▴✕✓›‹]/.test(text)) {
+      const hit = { file, line, rule: 'typed-glyph', why: 'a typed glyph used as an icon — use the Icon component (ChevronDown, X, Check, ChevronRight…)', text: text.trim().slice(0, 160) };
+      (/ds-allow:/.test(text) ? allowed : errors).push(hit);
+    }
+    if (comp && !RAW_BUTTON_OK.has(comp) && /<button(?:[\s>]|$)/.test(text)) {
+      const hit = { file, line, rule: 'raw-button', why: `${comp} draws its own <button> — use the Button component (RULES §5b.2)`, text: text.trim().slice(0, 160) };
       (/ds-allow:/.test(text) ? allowed : errors).push(hit);
     }
     if (classes && /\.(?:tsx?|jsx?)$/.test(file)) {
@@ -255,6 +272,18 @@ function selfTest() {
       fail++;
     }
   }
+  for (const [file, text, rule, bad] of [
+    ['src/components/ds/FilterChip/FilterChip.tsx', '<span>▾</span>', 'typed-glyph', true],
+    ['src/components/ds/Card/Card.tsx', '<button type="button">', 'raw-button', true],
+    ['src/components/ds/Button/Button.tsx', '<button type="button">', 'raw-button', false],
+    ['src/components/ds/Card/Card.stories.tsx', '<button>', 'raw-button', false],
+  ]) {
+    const { errors } = check([{ file, line: 1, text }], true, false);
+    if (errors.some((e) => e.rule === rule) !== bad) {
+      console.log(`${bad ? 'MISSED' : 'FALSE POSITIVE'} ${rule}: ${file} ${text}`);
+      fail++;
+    }
+  }
   for (const [cls, known] of [
     ['px-space-18', false],
     ['text-small', false],
@@ -271,7 +300,7 @@ function selfTest() {
   console.log(
     fail
       ? `self-test: ${fail} problem(s)`
-      : `self-test: ${bad.length + 2} catches, ${good.length + 3} clean lines, all correct`
+      : `self-test: ${bad.length + 4} catches, ${good.length + 5} clean lines, all correct`
   );
   process.exit(fail ? 1 : 0);
 }
