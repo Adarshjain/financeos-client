@@ -202,6 +202,14 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 · Antigravity · Unit 3b · Button google variant:
+  - Added official multicolour Google "G" SVG to `public/brand/google-g.svg` (no color literals in source code).
+  - Updated `src/components/ds/Button/Button.tsx`: added `variant="google"` supporting full width, `h-control-xl`, Google "G" `<img>` icon, and default label "Continue with Google" (overridable via children).
+  - Updated `src/components/ds/Button/Button.stories.tsx`: added Google section to `AllVariants` and dedicated `Google` story.
+  - Updated `src/components/ds/Button/Button.test.tsx`: added tests for default google variant rendering and custom label.
+  - Stories compared: Button/AllVariants, Button/Google against `design-system/components/Button/preview.html` at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck` (passed), `npm run lint` (0 errors), `npm test -- src/components/ds/Button` (all 12 tests passing), `node design-system/tools/check-ui.mjs --base c8b557b` (clean). Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 · Antigravity · Unit 3b · Illustration:
   - Created `src/components/ds/Illustration/Illustration.tsx`: supports `variant="signin" | "signup" | "offline"` using DS tokens only:
     - `signin`: auth desktop left panel and mobile band, with Logo, credit card, net-worth tile with sparkline, Amex bill paid tile, gold coin, points tile, headline, and trust footer. Copy hides on phone (`hidden md:flex`) and scene scales down.

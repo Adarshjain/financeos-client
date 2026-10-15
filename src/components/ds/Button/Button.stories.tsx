@@ -10,7 +10,14 @@ const meta: Meta<typeof Button> = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['secondary', 'primary', 'danger', 'danger-filled', 'ghost'],
+      options: [
+        'secondary',
+        'primary',
+        'danger',
+        'danger-filled',
+        'ghost',
+        'google',
+      ],
     },
     size: {
       control: 'select',
@@ -128,6 +135,24 @@ export const AllVariants: Story = {
             Save
           </Button>
         </div>
+      </div>
+
+      <div className="max-w-sm">
+        <h3 className="text-overline uppercase text-ink-4 mb-space-8">Google (sign-in pages)</h3>
+        <Button variant="google" />
+      </div>
+    </div>
+  ),
+};
+
+export const Google: Story = {
+  args: {
+    variant: 'google',
+  },
+  render: (args) => (
+    <div className="p-space-24 bg-canvas min-h-full flex items-center justify-center">
+      <div className="max-w-sm w-full">
+        <Button {...args} />
       </div>
     </div>
   ),

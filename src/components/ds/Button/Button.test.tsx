@@ -119,4 +119,24 @@ describe('Button component', () => {
     expect(link).toHaveAttribute('href', '#test-link');
     expect(link).toHaveClass('bg-brand', 'text-on-brand');
   });
+
+  it('renders google variant with full width, control-xl, image icon, and default label', () => {
+    render(<Button variant="google" />);
+    const btn = screen.getByRole('button', { name: 'Continue with Google' });
+    expect(btn).toBeInTheDocument();
+    expect(btn).toHaveClass('w-full', 'h-control-xl');
+
+    const img = btn.querySelector('img');
+    expect(img).toBeInTheDocument();
+    expect(img).toHaveAttribute('src', '/brand/google-g.svg');
+    expect(img).toHaveAttribute('width', '18');
+    expect(img).toHaveAttribute('height', '18');
+  });
+
+  it('renders google variant with custom children', () => {
+    render(<Button variant="google">Sign in with Google</Button>);
+    expect(
+      screen.getByRole('button', { name: 'Sign in with Google' }),
+    ).toBeInTheDocument();
+  });
 });
