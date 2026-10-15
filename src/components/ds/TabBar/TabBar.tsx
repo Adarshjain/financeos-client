@@ -1,3 +1,5 @@
+'use client';
+
 import type { LucideIcon } from 'lucide-react';
 import { Calendar, Home, Inbox, Menu, Receipt } from 'lucide-react';
 import React, { forwardRef } from 'react';

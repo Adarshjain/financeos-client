@@ -1,3 +1,5 @@
+'use client';
+
 import { Slot } from '@radix-ui/react-slot';
 import { Loader2 } from 'lucide-react';
 import React, { forwardRef } from 'react';

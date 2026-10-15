@@ -1,3 +1,5 @@
+'use client';
+
 import { ChevronDown, X } from 'lucide-react';
 import React, { forwardRef } from 'react';
 

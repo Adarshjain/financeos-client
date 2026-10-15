@@ -1,3 +1,5 @@
+'use client';
+
 import { Trash2, Upload } from 'lucide-react';
 import React, { forwardRef, useRef, useState } from 'react';
 

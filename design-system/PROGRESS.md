@@ -200,6 +200,13 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 · Antigravity · Unit 0 · Server and client boundaries (RULES §5b.6):
+  - Added `'use client'` directive to 28 component files that use state, effects, refs, event handlers, Radix, Sonner, or browser APIs: `AppBar.tsx`, `Avatar.tsx`, `Button.tsx`, `CategoryChip.tsx`, `Checkbox.tsx`, `DateField.tsx`, `DateTile.tsx`, `Dialog.tsx`, `DropZone.tsx`, `FilterChip.tsx`, `ListRow.tsx`, `Menu.tsx`, `Pager.tsx`, `Popover.tsx`, `Rail.tsx`, `RuleCard.tsx`, `SearchField.tsx`, `SegmentedControl.tsx`, `Select.tsx`, `SelectionBar.tsx`, `SwipeActions.tsx`, `Switch.tsx`, `TabBar.tsx`, `Tabs.tsx`, `TextArea.tsx`, `TextField.tsx`, `Toast.tsx`, `TransactionRow.tsx`, plus shared hooks `useSheetDrag.ts` and `useSwipe.ts` (`useMediaQuery.ts` already had it).
+  - Maintained purely presentational components as Server Components with no directive: `Badge`, `Banner`, `Card`, `EmptyState`, `Foundations`, `Icon`, `Kbd`, `KpiTile`, `ProgressBar`, `SectionHeader`, `Skeleton`, `StatusWords`, `TopBar`, `Widget` (plus `FieldFrame.tsx`, `cn.ts`, `itemRow.ts`).
+  - Added Server Component test fixture `src/components/ds/__fixtures__/ServerFixture.tsx` importing Badge, Card, SectionHeader, Banner from `@/components/ds`. Verified `npm run build` succeeds with Server Component importing from barrel.
+  - Stories compared: Badge/AllVariants, Card/AllVariants, SectionHeader/AllVariants, Banner/AllVariants at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck` (passed), `npm run build` (passed), `npm run build-storybook` (passed), `node design-system/tools/check-ui.mjs` (clean). Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 · Antigravity · Unit 14 · Remove AuthPanel:
   - Removed `AuthPanel` component (`src/components/ds/AuthPanel/AuthPanel.tsx`, `AuthPanel.stories.tsx`, `AuthPanel.test.tsx`) per owner decision on component restructure (pages are not DS components; auth moves to a page in Phase 3).
   - Removed `export * from './AuthPanel/AuthPanel'` from `src/components/ds/index.ts`.

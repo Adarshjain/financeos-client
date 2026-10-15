@@ -1,3 +1,5 @@
+'use client';
+
 import { Check, Eye, Trash2, X } from 'lucide-react';
 import React, { forwardRef } from 'react';
 
