@@ -1,3 +1,5 @@
+'use client';
+
 import { Check, Eye, MoreVertical } from 'lucide-react';
 import React, { forwardRef, useRef } from 'react';
 

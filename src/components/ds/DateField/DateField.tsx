@@ -1,3 +1,5 @@
+'use client';
+
 import { Calendar as CalendarIcon } from 'lucide-react';
 import React, { forwardRef, useId, useState } from 'react';
 

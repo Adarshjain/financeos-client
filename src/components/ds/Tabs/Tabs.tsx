@@ -1,3 +1,5 @@
+'use client';
+
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import React, { createContext, forwardRef, useContext, useState } from 'react';
 
