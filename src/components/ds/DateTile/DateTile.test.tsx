@@ -35,14 +35,14 @@ describe('MonthCalendar', () => {
   });
 
   it('highlights today cell', () => {
-    const { container } = render(<MonthCalendar days={sampleDays} />);
+    render(<MonthCalendar days={sampleDays} />);
     const todayCell = screen.getByText('2').closest('div');
     expect(todayCell).toHaveClass('bg-brand-tint');
     expect(todayCell).toHaveClass('text-brand-strong');
   });
 
   it('renders event indicator bars', () => {
-    const { container } = render(<MonthCalendar days={sampleDays} />);
+    render(<MonthCalendar days={sampleDays} />);
     const day3Cell = screen.getByText('3').closest('div');
     expect(day3Cell?.querySelector('.bg-warning')).toBeInTheDocument();
     expect(day3Cell?.querySelector('.bg-info')).toBeInTheDocument();

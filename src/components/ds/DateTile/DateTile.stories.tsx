@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React, { useState } from 'react';
+import React from 'react';
 
 import { Card } from '../Card/Card';
 import { CalendarDay, DateTile, MonthCalendar } from './DateTile';
@@ -42,30 +42,6 @@ export const Calendar: StoryObj<typeof MonthCalendar> = {
       <MonthCalendar borderTop={false} days={sampleDays} />
     </Card>
   ),
-};
-
-const InteractiveCalendarStory: React.FC = () => {
-  const [selectedDay, setSelectedDay] = useState<number>(15);
-
-  return (
-    <div className="flex flex-col gap-space-12 max-w-sm">
-      <Card className="p-0 overflow-hidden">
-        <MonthCalendar
-          borderTop={false}
-          days={sampleDays}
-          selectedDay={selectedDay}
-          onSelectDay={(d) => setSelectedDay(d)}
-        />
-      </Card>
-      <div className="text-body text-ink">
-        Selected day: <span className="font-bold">{selectedDay} Oct</span>
-      </div>
-    </div>
-  );
-};
-
-export const Interactive: StoryObj<typeof MonthCalendar> = {
-  render: () => <InteractiveCalendarStory />,
 };
 
 export const AllVariants: Story = {

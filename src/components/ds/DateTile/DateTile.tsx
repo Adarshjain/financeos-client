@@ -117,7 +117,7 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
                   : undefined
               }
               className={cn(
-                'min-h-app-bar border-r border-b border-line-soft p-space-4 text-caption font-bold text-ink-3 flex flex-col gap-space-2 transition-colors',
+                'min-h-app-bar border-r border-b border-line-soft p-space-4 text-caption font-bold text-ink-3 flex flex-col gap-space-4 transition-colors',
                 isToday && 'bg-brand-tint text-brand-strong',
                 isSelected &&
                   'ring-1 ring-inset ring-brand bg-brand-tint text-brand-strong',

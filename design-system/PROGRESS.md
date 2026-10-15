@@ -144,6 +144,22 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 13) · DateTile component fixes:
+  - Fixed DateTile in `src/components/ds/DateTile/DateTile.tsx`:
+    - Updated day cell element gap from `gap-space-2` to `gap-space-4`, matching `reference.css` `.cd`.
+  - Updated `src/components/ds/DateTile/DateTile.stories.tsx`:
+    - Removed extraneous `Interactive` story not defined in component specification.
+  - Updated `src/components/ds/DateTile/DateTile.test.tsx`:
+    - Removed unused `container` variables in tests, resolving lint warnings.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/DateTile` (5 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `DateTile/preview.html` and `ds-08-data.webp`:
+    - `DS/Data display/DateTile/Tile`
+    - `DS/Data display/DateTile/Calendar`
+    - `DS/Data display/DateTile/AllVariants`
+    Verified 40px tile width, 800 weight day number, 10px uppercase month overline, 6px event indicators (bill warning, in positive, emi info), brand-tint today indicator, and clean grid borders.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 11 (part 12) · ListRow component fixes:
   - Fixed ListRow in `src/components/ds/ListRow/ListRow.tsx`:
     - Updated title typography from `font-bold text-body` to `text-body-strong` (13px 700).
