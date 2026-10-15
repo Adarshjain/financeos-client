@@ -72,7 +72,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 17 | Select | Changes requested |
 | 18 | SearchField | Ready for review |
 | 19 | FilterChip | Changes requested |
-| 20 | Checkbox | Not started |
+| 20 | Checkbox | Ready for review |
 | 21 | Switch | Ready for review |
 | 22 | SegmentedControl | Ready for review |
 | 23 | DropZone | Changes requested |
@@ -164,6 +164,18 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 3 · Checkbox:
+  - Created new `Checkbox` component in `src/components/ds/Checkbox/Checkbox.tsx` based on `@radix-ui/react-checkbox`: 16px box (`w-space-16 h-space-16`), `rounded-ds-xs`, 2px `line-strong` border (`bg-surface`); active = `brand` fill and border with Icon `Check` (`sm`); mixed = `brand` fill and border with Icon `Minus` (`sm`); disabled = `disabled:opacity-50 disabled:cursor-not-allowed`.
+  - Created `src/components/ds/Checkbox/Checkbox.stories.tsx` with `AllVariants` as first export and stories driven by args with Controls (Off, On, Mixed, Disabled).
+  - Created `src/components/ds/Checkbox/Checkbox.test.tsx` testing unchecked default, checked state, indeterminate / mixed state, toggling via click, and disabled behavior.
+  - Exported `Checkbox` from `src/components/ds/index.ts`.
+  - Files deleted: none.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test src/components/ds/Checkbox` (5 passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Stories compared: `DS/Inputs/Checkbox/AllVariants`, `DS/Inputs/Checkbox/Off`, `DS/Inputs/Checkbox/On`, `DS/Inputs/Checkbox/Mixed`, `DS/Inputs/Checkbox/Disabled` against `Checkbox/preview.html` and `ds-07-inputs.webp` at 390px and 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
+
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 2 · Badge count and Button:
   - Added `count` variant to `src/components/ds/Badge/Badge.tsx`: 16px count bubble (`h-space-16 min-w-space-16 px-space-6 rounded-ds-pill`, `tab-label`, tones ink, danger and warning; displays "99+" for counts over 99).
