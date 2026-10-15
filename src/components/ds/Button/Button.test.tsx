@@ -42,6 +42,29 @@ describe('Button component', () => {
 
     rerender(<Button variant="ghost">Ghost</Button>);
     expect(screen.getByRole('button')).toHaveClass('bg-transparent', 'text-ink');
+
+    rerender(<Button variant="link">Link</Button>);
+    expect(screen.getByRole('button')).toHaveClass('underline', 'font-bold');
+  });
+
+  it('handles link variant clicks and disabled state', () => {
+    const handleClick = vi.fn();
+    const { rerender } = render(
+      <Button variant="link" onClick={handleClick}>
+        Reconcile
+      </Button>,
+    );
+    const linkBtn = screen.getByRole('button', { name: 'Reconcile' });
+    fireEvent.click(linkBtn);
+    expect(handleClick).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <Button variant="link" disabled onClick={handleClick}>
+        Reconcile
+      </Button>,
+    );
+    fireEvent.click(linkBtn);
+    expect(handleClick).toHaveBeenCalledTimes(1); // not incremented
   });
 
   it('renders all sizes', () => {

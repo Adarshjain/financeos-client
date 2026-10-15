@@ -55,8 +55,8 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
     ) : null;
 
     const toneClasses = cn(
-      isMore && 'border-dashed border-line-strong bg-surface text-ink-2 hover:bg-hover',
-      !isMore && !active && 'border-line-strong bg-surface text-ink-2 hover:bg-hover',
+      isMore && 'border-dashed border-line-strong bg-surface text-ink-2 hover:bg-hover active:bg-pressed',
+      !isMore && !active && 'border-line-strong bg-surface text-ink-2 hover:bg-hover active:bg-pressed',
       !isMore && active && !isAmber && 'bg-brand-tint border-brand-border text-brand-strong hover:bg-brand-tint',
       !isMore && active && isAmber && 'bg-warning-tint border-warning-border text-warning hover:bg-warning-tint',
     );

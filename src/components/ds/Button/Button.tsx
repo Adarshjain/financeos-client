@@ -13,7 +13,8 @@ export type ButtonVariant =
   | 'danger'
   | 'danger-filled'
   | 'ghost'
-  | 'google';
+  | 'google'
+  | 'link';
 
 export type ButtonSize = 'sm' | 'md' | 'xl';
 
@@ -31,17 +32,19 @@ export interface ButtonProps
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'border border-transparent bg-brand text-on-brand hover:bg-brand-strong active:bg-brand-strong',
+    'border border-transparent bg-brand text-on-brand hover:bg-brand-hover active:bg-brand-pressed',
   secondary:
-    'border border-line-strong bg-surface text-ink hover:bg-hover active:bg-hover',
+    'border border-line-strong bg-surface text-ink hover:bg-hover active:bg-pressed',
   danger:
-    'border border-danger-border bg-surface text-danger hover:bg-danger-tint active:bg-danger-tint',
+    'border border-danger-border bg-surface text-danger hover:bg-danger-tint active:bg-danger-tint active:border-danger',
   'danger-filled':
-    'border border-transparent bg-danger text-on-brand hover:opacity-90 active:opacity-90',
+    'border border-transparent bg-danger text-on-brand hover:bg-danger-hover active:bg-danger-pressed',
   ghost:
-    'border border-transparent bg-transparent text-ink hover:bg-hover active:bg-hover',
+    'border border-transparent bg-transparent text-ink hover:bg-hover active:bg-pressed',
   google:
-    'border border-line-strong bg-surface text-ink hover:bg-hover active:bg-hover w-full',
+    'border border-line-strong bg-surface text-ink hover:bg-hover active:bg-pressed w-full',
+  link:
+    'border-0 bg-transparent text-inherit underline underline-offset-2 hover:no-underline active:opacity-80 p-0 h-auto font-bold inline',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -63,25 +66,28 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref,
   ) => {
+    const isLink = variant === 'link';
     const isGoogle = variant === 'google';
     const effectiveSize = isGoogle ? 'xl' : size;
 
-    const sizeClasses = {
-      sm: iconOnly
-        ? 'h-control-sm aspect-square p-0 rounded-ds-sm'
-        : 'h-control-sm px-space-8 text-caption rounded-ds-sm gap-space-4',
-      md: iconOnly
-        ? 'h-control-md aspect-square p-0 rounded-ds-md'
-        : 'h-control-md px-space-12 text-label rounded-ds-md gap-space-6',
-      xl: iconOnly
-        ? 'h-control-xl aspect-square p-0 rounded-ds-lg'
-        : 'h-control-xl px-space-16 text-heading rounded-ds-lg gap-space-8',
-    }[effectiveSize];
+    const sizeClasses = isLink
+      ? ''
+      : {
+          sm: iconOnly
+            ? 'h-control-sm aspect-square p-0 rounded-ds-sm'
+            : 'h-control-sm px-space-8 text-caption rounded-ds-sm gap-space-4',
+          md: iconOnly
+            ? 'h-control-md aspect-square p-0 rounded-ds-md'
+            : 'h-control-md px-space-12 text-label rounded-ds-md gap-space-6',
+          xl: iconOnly
+            ? 'h-control-xl aspect-square p-0 rounded-ds-lg'
+            : 'h-control-xl px-space-16 text-heading rounded-ds-lg gap-space-8',
+        }[effectiveSize];
 
     const classes = cn(
-      'inline-flex items-center justify-center font-text font-semibold whitespace-nowrap transition-colors duration-fast select-none',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
-      'disabled:opacity-45 disabled:pointer-events-none cursor-pointer',
+      isLink
+        ? 'inline font-text font-bold text-inherit underline underline-offset-2 transition-colors duration-fast select-none cursor-pointer disabled:opacity-45 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2'
+        : 'inline-flex items-center justify-center font-text font-semibold whitespace-nowrap transition-colors duration-fast select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 disabled:opacity-45 disabled:pointer-events-none cursor-pointer',
       sizeClasses,
       variantStyles[variant],
       className,

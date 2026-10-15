@@ -209,7 +209,7 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
                       'flex items-center gap-space-8 px-space-8 py-space-6 rounded-ds-md text-body font-semibold transition-colors duration-fast',
                       isCurrent
                         ? 'bg-brand-tint text-brand-strong'
-                        : 'text-ink-2 hover:bg-hover hover:text-ink',
+                        : 'text-ink-2 hover:bg-hover hover:text-ink active:bg-pressed',
                     )}
                   >
                     {item.icon ? (
@@ -257,7 +257,7 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
               }
             }}
             className={cn(
-              'flex items-center gap-space-8 px-space-8 py-space-6 rounded-ds-md text-body font-semibold transition-colors duration-fast text-ink-2 hover:bg-hover hover:text-ink',
+              'flex items-center gap-space-8 px-space-8 py-space-6 rounded-ds-md text-body font-semibold transition-colors duration-fast text-ink-2 hover:bg-hover hover:text-ink active:bg-pressed',
               current === '/settings' && 'bg-brand-tint text-brand-strong',
             )}
           >

@@ -71,7 +71,9 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
         className={cn(
           'relative inline-flex shrink-0 items-center w-control-lg h-space-20 rounded-ds-pill p-space-2 transition-colors duration-fast',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
-          isChecked ? 'bg-brand' : 'bg-line-handle',
+          isChecked
+            ? 'bg-brand hover:bg-brand-hover active:bg-brand-pressed'
+            : 'bg-line-handle hover:bg-line-strong active:bg-line-strong',
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
           !label && !description && className,
         )}
