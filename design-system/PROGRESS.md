@@ -144,6 +144,35 @@ _(none yet)_
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 5 · AppBar component fixes:
+  - Fixed AppBar, BrandMark, DesktopTopBar, and DesktopRail in `src/components/ds/AppBar/AppBar.tsx`:
+    - Phone AppBar:
+      - 32px BrandMark: sized with `w-control-md h-control-md` (32px), `font-display font-extrabold text-heading select-none shrink-0 leading-none` matching board.
+      - Sentence-case crumb: crumb text uses `text-label font-semibold text-ink-4 leading-none` (removed uppercase and wide tracking) matching `preview.html` (`.ptop .cr`).
+      - Bordered 32px secondary icon buttons: Ask the data and Search use `variant="secondary" size="md" iconOnly` (`h-control-md aspect-square`).
+      - Brand add button (+): uses `variant="primary" size="md" iconOnly` (`bg-brand text-on-brand h-control-md aspect-square`).
+      - Detail screen back button: uses `variant="ghost" size="md" iconOnly` (`h-control-md aspect-square`).
+    - DesktopTopBar:
+      - Action controls use 32px `control-md` buttons: Add uses `size="md" variant="secondary"`, Ask and Notifications use `size="md" variant="secondary" iconOnly`. Added optional `crumb` prop for breadcrumb path support.
+    - DesktopRail:
+      - Removed hardcoded default user "Arjun Mehta" and "AM" from component props; accepts `userName`, `userEmail`, `userInitials` via props. Dynamically calculates initials when `userName` is provided and renders user avatar with `variant="person"` and `size="sm"`.
+  - Updated `src/components/ds/AppBar/AppBar.stories.tsx`:
+    - Interactive DesktopRail story passes realistic user props (`userName="Arjun Mehta"`, `userEmail="arjun@example.com"`, `userInitials="AM"`).
+    - Added "Phone Without Crumb" variant to `All variants` story.
+  - Updated `src/components/ds/AppBar/AppBar.test.tsx`:
+    - Added tests for 32px control tokens on BrandMark and buttons, sentence case crumb, DesktopTopBar crumb/actions, dynamic initials calculation, and clean rendering without user props.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 421 files / 3,468 tests green), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs --staged` clean.
+  - Browser comparison: Compared stories rendered in Storybook at 390px and 1440px in light and dark against `AppBar/preview.html` and boards `D-home` / `P-*` / `ds-05-navigation`:
+    - `DS/Navigation/AppBar/Top level`
+    - `DS/Navigation/AppBar/Detail screen`
+    - `DS/Navigation/AppBar/Without crumb`
+    - `DS/Navigation/AppBar/DesktopTopBar`
+    - `DS/Navigation/AppBar/DesktopRail`
+    - `DS/Navigation/AppBar/All variants`
+    Verified 32px BrandMark, sentence case crumb, 32px bordered Ask/Search buttons, 32px brand Add button, DesktopTopBar actions, and DesktopRail user profile match preview and boards.
+  - Differences left open: none.
+  - Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Unit 4 · Select component fixes:
   - Fixed Select in `src/components/ds/Select/Select.tsx`:
     - Responsive phone Sheet picker morphology: below the phone breakpoint (`< sm`), Select opens as a bottom sheet (`Sheet`, `SheetContent`, `SheetBody`) with drag handle, title, scrolling options list, and swipe-down-to-dismiss (Sheet README "picker" variant); on desktop (`sm:`), it renders the anchored floating popover menu. Supports `forceSheet` prop.
