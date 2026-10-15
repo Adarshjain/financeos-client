@@ -202,6 +202,14 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 · Antigravity · Unit 3 · Storybook Icons page:
+  - Updated `src/components/ds/Icon/Icon.stories.tsx` under title `DS/Foundations/Icons`:
+    - `All icons` (first story): displays responsive grid of all 23 registry icons with name, icon rendered at 14, 16, and 20px (`sm`, `md`, `lg`), and `use` guidance text from `design-system/icons.json`. Added search input filtering by name, use, or phosphor equivalent, with click-to-copy `<Icon name="…" />` snippet and confirmation feedback. Works in light and dark at 390 and 1440.
+    - `Playground`: single Icon driven by controls, with select dropdowns for all 23 registry names and sizes (`sm`, `md`, `lg`).
+    - `Sizes`: renders icon at all three token sizes (`sm`, `md`, `lg`) beside 12px (`text-label`), 13px (`text-body`), and 14px (`text-heading`) text to verify visual weight against typography.
+  - Stories compared: Icons/All icons, Icons/Playground, Icons/Sizes against `design-system/components/Icon/preview.html` at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck` (passed), `npm run lint` (0 errors), `npm test -- src/components/ds/Icon` (all 6 tests passing), `npm run build-storybook` (passed), `node design-system/tools/check-ui.mjs --base c8b557b` (clean). Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 · Antigravity · Unit 2 · Switch every DS component to registry names:
   - Replaced all Lucide icon imports across `src/components/ds/` with `<Icon name="…" />` using canonical names from `design-system/icons.json`.
   - Updated 28 files: `AppBar.tsx`, `Button.tsx`, `Button.stories.tsx`, `Button.test.tsx`, `Card.stories.tsx`, `Checkbox.tsx`, `DateField.tsx`, `DateTile.tsx`, `Dialog.tsx`, `DropZone.tsx`, `FilterChip.tsx`, `ListRow.tsx`, `Menu.stories.tsx`, `Pager.tsx`, `Popover.stories.tsx`, `Rail.tsx`, `RuleCard.tsx`, `SearchField.tsx`, `Select.tsx`, `SelectionBar.tsx`, `SelectionBar.stories.tsx`, `StatusWords.tsx`, `SwipeActions.tsx`, `TabBar.tsx`, `TopBar.tsx`, `TransactionRow.tsx`, `TransactionRow.test.tsx`, `Widget.tsx`.
