@@ -1,10 +1,11 @@
 'use client';
 
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
+import { useControllableState } from '../useControllableState';
 
 export interface CheckboxProps
   extends Omit<React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>, 'onChange'> {
@@ -26,27 +27,22 @@ export const Checkbox = forwardRef<
     },
     ref,
   ) => {
-    const isControlled = controlledChecked !== undefined;
-    const [internalChecked, setInternalChecked] =
-      useState<CheckboxPrimitive.CheckedState>(defaultChecked);
-    const rawChecked = isControlled ? controlledChecked : internalChecked;
+    const [rawChecked, setRawChecked] =
+      useControllableState<CheckboxPrimitive.CheckedState>({
+        value: controlledChecked,
+        defaultValue: defaultChecked,
+        onChange: onCheckedChange,
+      });
     const checkedState: CheckboxPrimitive.CheckedState = indeterminate
       ? 'indeterminate'
       : rawChecked;
     const isActive = checkedState === true || checkedState === 'indeterminate';
 
-    const handleCheckedChange = (state: CheckboxPrimitive.CheckedState) => {
-      if (!isControlled) {
-        setInternalChecked(state);
-      }
-      onCheckedChange?.(state);
-    };
-
     return (
       <CheckboxPrimitive.Root
         ref={ref}
         checked={checkedState}
-        onCheckedChange={handleCheckedChange}
+        onCheckedChange={setRawChecked}
         className={cn(
           'peer shrink-0 inline-flex items-center justify-center align-middle w-space-16 h-space-16 rounded-ds-xs border-2 text-on-brand transition-colors select-none',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',

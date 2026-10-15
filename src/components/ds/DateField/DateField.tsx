@@ -8,6 +8,7 @@ import { MonthCalendar } from '../DateTile/DateTile';
 import { FieldFrame } from '../FieldFrame';
 import { Icon } from '../Icon/Icon';
 import { ResponsiveOverlay } from '../ResponsiveOverlay/ResponsiveOverlay';
+import { useControllableState } from '../useControllableState';
 
 export interface DateFieldProps {
   id?: string;
@@ -22,7 +23,7 @@ export interface DateFieldProps {
   /** Single date mode: formatted as dd/mm/yyyy */
   value?: string;
   defaultValue?: string;
-  onChange?: (dateStr: string) => void;
+  onValueChange?: (dateStr: string) => void;
 
   /** Range mode: one combined field "dd/mm/yyyy – dd/mm/yyyy" */
   range?: boolean;
@@ -124,7 +125,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       placeholder = 'dd/mm/yyyy',
       value: controlledValue,
       defaultValue,
-      onChange,
+      onValueChange,
       range = false,
       startDate: controlledStartDate,
       endDate: controlledEndDate,
@@ -144,13 +145,14 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     const [isOpen, setOpen] = useState(false);
 
     // Single mode state
-    const [internalValue, setInternalValue] = useState<string>(
-      defaultValue ? formatDateInput(defaultValue) : '',
-    );
-    const currentValue =
-      controlledValue !== undefined
-        ? formatDateInput(controlledValue)
-        : internalValue;
+    const [currentValue, setCurrentValue] = useControllableState<string>({
+      value:
+        controlledValue !== undefined
+          ? formatDateInput(controlledValue)
+          : undefined,
+      defaultValue: defaultValue ? formatDateInput(defaultValue) : '',
+      onChange: onValueChange,
+    });
 
     // Range mode state
     const initialStart = defaultStartDate ? formatDateInput(defaultStartDate) : '';
@@ -203,8 +205,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       e: React.ChangeEvent<HTMLInputElement>,
     ) => {
       const formatted = formatDateInput(e.target.value);
-      setInternalValue(formatted);
-      onChange?.(formatted);
+      setCurrentValue(formatted);
     };
 
     const handleRangeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -229,8 +230,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
 
     const handleSelectDateFromCalendar = (dateStr: string) => {
       if (!range) {
-        setInternalValue(dateStr);
-        onChange?.(dateStr);
+        setCurrentValue(dateStr);
         setOpen(false);
       } else {
         if (rangeStep === 0 || (currentStart && currentEnd)) {
@@ -267,8 +267,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     const handleToday = () => {
       const todayStr = getTodayStr();
       if (!range) {
-        setInternalValue(todayStr);
-        onChange?.(todayStr);
+        setCurrentValue(todayStr);
         setOpen(false);
       } else {
         setInternalStart(todayStr);
@@ -283,8 +282,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
 
     const handleClear = () => {
       if (!range) {
-        setInternalValue('');
-        onChange?.('');
+        setCurrentValue('');
         setOpen(false);
       } else {
         setInternalStart('');

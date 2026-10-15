@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import React, { useState } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { Checkbox } from './Checkbox';
 
@@ -25,6 +25,23 @@ describe('Checkbox', () => {
     const checkbox = screen.getByRole('checkbox', { name: 'Select all' });
     expect(checkbox).toHaveAttribute('aria-checked', 'mixed');
     expect(checkbox.querySelector('svg')).toBeInTheDocument();
+  });
+
+  it('works in uncontrolled mode with defaultChecked', () => {
+    const handleCheckedChange = vi.fn();
+    render(
+      <Checkbox
+        defaultChecked={true}
+        onCheckedChange={handleCheckedChange}
+        aria-label="Uncontrolled"
+      />,
+    );
+    const checkbox = screen.getByRole('checkbox', { name: 'Uncontrolled' });
+    expect(checkbox).toHaveAttribute('aria-checked', 'true');
+
+    fireEvent.click(checkbox);
+    expect(checkbox).toHaveAttribute('aria-checked', 'false');
+    expect(handleCheckedChange).toHaveBeenCalledWith(false);
   });
 
   it('toggles when clicked in controlled usage', () => {

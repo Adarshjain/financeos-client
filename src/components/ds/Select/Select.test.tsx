@@ -100,6 +100,42 @@ describe('Select', () => {
     expect(popoverContent).toHaveClass('min-w-popover-trigger');
     expect(popoverContent).toHaveClass('max-w-dialog-sm');
   });
+
+  it('updates value and calls onValueChange in uncontrolled mode', () => {
+    const handleValueChange = vi.fn();
+    render(
+      <Select
+        options={sampleOptions}
+        defaultValue="hdfc"
+        defaultOpen
+        onValueChange={handleValueChange}
+      />,
+    );
+    fireEvent.click(screen.getByText('ICICI Bank'));
+    expect(handleValueChange).toHaveBeenCalledWith('icici');
+  });
+
+  it('works in controlled mode with value and onValueChange', () => {
+    const handleValueChange = vi.fn();
+    const ControlledSelect = () => {
+      const [val, setVal] = React.useState('hdfc');
+      return (
+        <Select
+          options={sampleOptions}
+          value={val}
+          defaultOpen
+          onValueChange={(v) => {
+            setVal(v as string);
+            handleValueChange(v);
+          }}
+        />
+      );
+    };
+    render(<ControlledSelect />);
+    fireEvent.click(screen.getByText('ICICI Bank'));
+    expect(handleValueChange).toHaveBeenCalledWith('icici');
+    expect(screen.getByText('ICICI Bank')).toBeInTheDocument();
+  });
 });
 
 describe('SelectMenu', () => {

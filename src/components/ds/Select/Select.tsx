@@ -19,6 +19,7 @@ import {
   useResponsiveOverlay,
 } from '../ResponsiveOverlay/ResponsiveOverlay';
 import { SearchField } from '../SearchField/SearchField';
+import { useControllableState } from '../useControllableState';
 
 export interface SelectOption {
   value: string;
@@ -445,7 +446,7 @@ export interface SelectProps {
   placeholder?: string;
   value?: string | string[];
   defaultValue?: string | string[];
-  onChange?: (value: string | string[]) => void;
+  onValueChange?: (value: string | string[]) => void;
   options?: SelectOption[];
   groups?: SelectGroup[];
   multiple?: boolean;
@@ -484,7 +485,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       placeholder = 'Select an option…',
       value: controlledValue,
       defaultValue,
-      onChange,
+      onValueChange,
       options = [],
       groups,
       multiple = false,
@@ -520,22 +521,20 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
     const labelId = `${id}-label`;
     const listboxId = `${id}-listbox`;
 
-    const isControlled = controlledValue !== undefined;
-    const [internalValue, setInternalValue] = useState<string | string[]>(
-      defaultValue !== undefined ? defaultValue : multiple ? [] : '',
-    );
-    const currentValue = isControlled ? controlledValue : internalValue;
+    const [currentValue, setCurrentValue] = useControllableState<
+      string | string[]
+    >({
+      value: controlledValue,
+      defaultValue:
+        defaultValue !== undefined ? defaultValue : multiple ? [] : '',
+      onChange: onValueChange,
+    });
 
-    const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
-    const isOpen =
-      controlledOpen !== undefined ? controlledOpen : uncontrolledOpen;
-
-    const setOpen = (nextOpen: boolean) => {
-      if (controlledOpen === undefined) {
-        setUncontrolledOpen(nextOpen);
-      }
-      onOpenChange?.(nextOpen);
-    };
+    const [isOpen, setOpen] = useControllableState<boolean>({
+      value: controlledOpen,
+      defaultValue: defaultOpen,
+      onChange: onOpenChange,
+    });
 
     // Flatten all options to find labels/icons
     const allOptions = useMemo(() => {
@@ -564,25 +563,15 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           index >= 0
             ? currentArr.filter((item) => item !== val)
             : [...currentArr, val];
-        if (!isControlled) {
-          setInternalValue(nextArr);
-        }
-        onChange?.(nextArr);
+        setCurrentValue(nextArr);
       } else {
-        if (!isControlled) {
-          setInternalValue(val);
-        }
-        onChange?.(val);
+        setCurrentValue(val);
         setOpen(false);
       }
     };
 
     const handleClear = () => {
-      const next: string[] = [];
-      if (!isControlled) {
-        setInternalValue(next);
-      }
-      onChange?.(next);
+      setCurrentValue([]);
     };
 
     const handleDone = () => {

@@ -9,6 +9,7 @@ import {
   ResponsiveOverlay,
   useResponsiveOverlay,
 } from '../ResponsiveOverlay/ResponsiveOverlay';
+import { useControllableState } from '../useControllableState';
 
 const MenuContext = React.createContext<{
   isDialog: boolean;
@@ -303,6 +304,12 @@ export const Menu: React.FC<MenuProps> & {
   forcePhone,
   title,
 }) => {
+  const [isOpen, setOpen] = useControllableState<boolean>({
+    value: open,
+    defaultValue: defaultOpen ?? false,
+    onChange: onOpenChange,
+  });
+
   const itemCount = useMemo(() => {
     let count = 0;
     const walk = (node: React.ReactNode) => {
@@ -325,9 +332,8 @@ export const Menu: React.FC<MenuProps> & {
 
   return (
     <ResponsiveOverlay
-      open={open}
-      defaultOpen={defaultOpen}
-      onOpenChange={onOpenChange}
+      open={isOpen}
+      onOpenChange={setOpen}
       trigger={trigger}
       title={title || 'Menu'}
       align={align}

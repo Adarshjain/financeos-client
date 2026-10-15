@@ -146,7 +146,7 @@ const meta: Meta<typeof Select> = {
       <Select
         {...args}
         value={value ?? args.defaultValue}
-        onChange={(val) => updateArgs({ value: val })}
+        onValueChange={(val) => updateArgs({ value: val })}
       />
     );
   },

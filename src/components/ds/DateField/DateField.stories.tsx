@@ -31,7 +31,7 @@ const meta: Meta<typeof DateField> = {
         value={value}
         startDate={startDate}
         endDate={endDate}
-        onChange={(val) => updateArgs({ value: val })}
+        onValueChange={(val) => updateArgs({ value: val })}
         onRangeChange={(range) => updateArgs({ startDate: range.startDate, endDate: range.endDate })}
       />
     );

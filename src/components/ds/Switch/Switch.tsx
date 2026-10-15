@@ -1,15 +1,15 @@
 'use client';
 
-import React, { forwardRef, useId, useState } from 'react';
+import React, { forwardRef, useId } from 'react';
 
 import { cn } from '../cn';
+import { useControllableState } from '../useControllableState';
 
 export interface SwitchProps
   extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> {
   checked?: boolean;
   defaultChecked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
-  onChange?: (checked: boolean) => void;
   label?: React.ReactNode;
   description?: React.ReactNode;
   error?: React.ReactNode;
@@ -23,7 +23,6 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
       checked: controlledChecked,
       defaultChecked = false,
       onCheckedChange,
-      onChange,
       label,
       description,
       error,
@@ -40,18 +39,15 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
     const descId = `${id}-desc`;
     const errId = `${id}-err`;
 
-    const isControlled = controlledChecked !== undefined;
-    const [internalChecked, setInternalChecked] = useState(defaultChecked);
-    const isChecked = isControlled ? controlledChecked : internalChecked;
+    const [isChecked, setIsChecked] = useControllableState<boolean>({
+      value: controlledChecked,
+      defaultValue: defaultChecked,
+      onChange: onCheckedChange,
+    });
 
     const handleClick = () => {
       if (disabled) return;
-      const nextChecked = !isChecked;
-      if (!isControlled) {
-        setInternalChecked(nextChecked);
-      }
-      onCheckedChange?.(nextChecked);
-      onChange?.(nextChecked);
+      setIsChecked(!isChecked);
     };
 
     const switchButton = (
