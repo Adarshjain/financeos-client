@@ -5,6 +5,7 @@ import React, { forwardRef, useRef } from 'react';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
+import { SectionHeader } from '../SectionHeader/SectionHeader';
 import { useIsPhone } from '../useMediaQuery';
 import { useSheetDrag } from '../useSheetDrag';
 
@@ -248,14 +249,18 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
 
         {isPhone && tert && (
           <div className="mt-auto pt-space-16 pb-space-8 shrink-0">
-            <div className="font-text text-overline font-extrabold uppercase text-danger bg-sunken border-y border-line-soft py-space-6 px-space-14 -mx-space-16 sm:-mx-space-20 mb-space-12 select-none">
-              {tertiaryLabel ||
+            <SectionHeader
+              variant="danger"
+              label={
+                tertiaryLabel ||
                 (typeof tert === 'string'
                   ? tert
                   : typeof title === 'string'
                     ? title
-                    : 'Delete')}
-            </div>
+                    : 'Delete')
+              }
+              className="-mx-space-16 sm:-mx-space-20 mb-space-12"
+            />
             <div className="px-space-16">
               {React.isValidElement(tert) ? (
                 React.cloneElement(
@@ -477,14 +482,18 @@ export const DialogContent = forwardRef<
 
             {isPhone && tert && (
               <div className="mt-auto pt-space-16 pb-space-8 shrink-0">
-                <div className="font-text text-overline font-extrabold uppercase text-danger bg-sunken border-y border-line-soft py-space-6 px-space-14 -mx-space-16 sm:-mx-space-20 mb-space-12 select-none">
-                  {tertiaryLabel ||
+                <SectionHeader
+                  variant="danger"
+                  label={
+                    tertiaryLabel ||
                     (typeof tert === 'string'
                       ? tert
                       : typeof title === 'string'
                         ? title
-                        : 'Delete')}
-                </div>
+                        : 'Delete')
+                  }
+                  className="-mx-space-16 sm:-mx-space-20 mb-space-12"
+                />
                 <div className="px-space-16">
                   {React.isValidElement(tert) ? (
                     React.cloneElement(

@@ -126,7 +126,7 @@ describe('DialogShell', () => {
       </DialogShell>,
     );
     // Tertiary action is rendered inside body
-    expect(screen.getByText('Delete rule', { selector: 'div' })).toBeInTheDocument();
+    expect(screen.getByText('Delete rule', { selector: 'span' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Delete rule' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();

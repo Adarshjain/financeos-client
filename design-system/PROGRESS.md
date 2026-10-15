@@ -78,7 +78,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 23 | DropZone | Changes requested |
 | 24 | Card | Changes requested |
 | 25 | ListRow | Changes requested |
-| 26 | SectionHeader | Not started |
+| 26 | SectionHeader | Ready for review |
 | 27 | TransactionRow | Changes requested |
 | 28 | RuleCard | Changes requested |
 | 29 | KpiTile | Changes requested |
@@ -165,6 +165,25 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 8 · SectionHeader:
+  - Created `SectionHeader` in `src/components/ds/SectionHeader/SectionHeader.tsx` with variants:
+    - `date`: sticky day header on phone lists ("12 Oct" in 800 with weekday in `ink-3`, on `bg-subtle`, `z-sticky`).
+    - `band`: form section in a sheet or card, `overline` caption in `ink-4` on `bg-sunken`, bleeding to the edges.
+    - `month`: desktop list band ("September 2026 · 61 transactions · out ₹1,05,219"), `overline` on `bg-sunken`.
+    - `danger`: band that closes an edit sheet (Delete account), `danger` caption.
+  - Updated `Card` in `src/components/ds/Card/Card.tsx`: `CardSection` delegates completely to `SectionHeader` `band` (`CardSection draws nothing itself`).
+  - Updated `Dialog` in `src/components/ds/Dialog/Dialog.tsx`: phone tertiary section band delegates to `SectionHeader` `danger`.
+  - Updated `TransactionRow.stories.tsx` to use `SectionHeader` `date`.
+  - Deleted `src/components/ds/DateGroupHeader/` and `src/components/ds/SectionBand/`, removing their exports from `src/components/ds/index.ts`.
+  - Exported `SectionHeader` from `src/components/ds/index.ts`.
+  - Created `src/components/ds/SectionHeader/SectionHeader.stories.tsx`: `AllVariants` as first export, stories for all 4 variants (`DateVariant`, `Band`, `Month`, `Danger`) with Controls.
+  - Created `src/components/ds/SectionHeader/SectionHeader.test.tsx`: 6 unit tests covering all 4 variants, meta rendering, sticky toggle, and children fallback.
+  - Files deleted: `src/components/ds/DateGroupHeader/DateGroupHeader.tsx`, `src/components/ds/DateGroupHeader/DateGroupHeader.stories.tsx`, `src/components/ds/DateGroupHeader/DateGroupHeader.test.tsx`, `src/components/ds/SectionBand/SectionBand.tsx`, `src/components/ds/SectionBand/SectionBand.stories.tsx`, `src/components/ds/SectionBand/SectionBand.test.tsx`.
+  - Checks: `npm run typecheck`, `npm run lint` (0 errors), `npm test` (all 3508 tests passed), `npm run build-storybook`, and `node design-system/tools/check-ui.mjs` clean.
+  - Stories compared: `DS/Data display/SectionHeader/AllVariants`, `Date`, `Band`, `Month`, `Danger` against `SectionHeader/preview.html` and `ds-07-data-display.dc.html` at 390px and 1440px in light and dark.
+  - Differences left open: none.
+  - Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 7b · Toast:
   - Rebuilt `Toast` in `src/components/ds/Toast/Toast.tsx` to take `tone?: BannerTone`, reusing `bannerToneStyles` imported directly from `../Banner/Banner`.

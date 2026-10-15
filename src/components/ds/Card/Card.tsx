@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
+import { SectionHeader } from '../SectionHeader/SectionHeader';
 
 export interface CardHeaderProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
@@ -113,21 +114,20 @@ export const CardRow = forwardRef<HTMLDivElement, CardRowProps>(
 CardRow.displayName = 'CardRow';
 
 export interface CardSectionProps
-  extends React.HTMLAttributes<HTMLDivElement> {}
+  extends React.HTMLAttributes<HTMLDivElement> {
+  label?: React.ReactNode;
+}
 
 export const CardSection = forwardRef<HTMLDivElement, CardSectionProps>(
-  ({ className, children, ...props }, ref) => {
+  ({ className, children, label, ...props }, ref) => {
     return (
-      <div
+      <SectionHeader
         ref={ref}
-        className={cn(
-          'font-text text-overline font-extrabold uppercase text-ink-4 py-space-6 px-space-14 bg-sunken border-t border-b border-line-soft first:border-t-0 select-none',
-          className,
-        )}
+        variant="band"
+        label={label ?? children}
+        className={cn('first:border-t-0', className)}
         {...props}
-      >
-        {children}
-      </div>
+      />
     );
   },
 );
