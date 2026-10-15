@@ -218,6 +218,17 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 1 · Dialog switches at lg, not sm:
+  - Replaced all `sm:` breakpoints with `lg:` in `src/components/ds/Dialog/Dialog.tsx` (size map `lg:max-w-dialog-*`, `lg:px-space-20`, button sizing, sheet handle `lg:hidden`, desktop close button `hidden lg:inline-flex`, side panel and modal viewport classes). Updated test assertions in `src/components/ds/Dialog/Dialog.test.tsx` to `lg:`.
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 336 problems (0 errors, 336 warnings)`
+    - `npm test`: `Test Files  426 passed (426) | Tests  3528 passed (3528)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+  - Done when: `grep -nE "(^|[ '\"\`])(sm|md|xl):" src/components/ds/Dialog/Dialog.tsx` returned nothing.
+  - Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 · Antigravity · Unit 14 · Final summary — Storybook feedback round 2 complete:
   - Addressed all 14 units of owner feedback across the entire component library (`src/components/ds/`):
     1. States everywhere (RULES §5b.7): Added `link` button variant, distinct hover and pressed (`:active`) tokens (`bg-pressed`, `brand-hover`, `brand-pressed`, `danger-hover`, `danger-pressed`) across Button, FilterChip, menu and select items, ListRow, TabBar, Rail, Tabs, SegmentedControl, Switch, Pager, and Checkbox with zero size/position shift.

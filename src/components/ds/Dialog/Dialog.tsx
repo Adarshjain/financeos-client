@@ -12,10 +12,10 @@ export type DialogSize = 'sm' | 'md' | 'lg' | 'xl';
 export type DialogVariant = 'modal' | 'side-panel';
 
 const dialogSizeClasses: Record<DialogSize, string> = {
-  sm: 'sm:max-w-dialog-sm',
-  md: 'sm:max-w-dialog-md',
-  lg: 'sm:max-w-dialog-lg',
-  xl: 'sm:max-w-dialog-xl',
+  ['sm']: 'lg:max-w-dialog-sm',
+  ['md']: 'lg:max-w-dialog-md',
+  ['lg']: 'lg:max-w-dialog-lg',
+  ['xl']: 'lg:max-w-dialog-xl',
 };
 
 export interface DialogHandleProps
@@ -48,7 +48,7 @@ export const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(
       <div
         ref={ref}
         className={cn(
-          'px-space-16 sm:px-space-20 py-space-10 overflow-y-auto flex flex-col gap-space-12 flex-1 touch-pan-y',
+          'px-space-16 lg:px-space-20 py-space-10 overflow-y-auto flex flex-col gap-space-12 flex-1 touch-pan-y',
           className,
         )}
         {...props}
@@ -87,23 +87,23 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
       <div
         ref={ref}
         className={cn(
-          'px-space-16 sm:px-space-20 py-space-12 border-t border-line-soft bg-sunken flex items-center gap-space-8 shrink-0 justify-end',
+          'px-space-16 lg:px-space-20 py-space-12 border-t border-line-soft bg-sunken flex items-center gap-space-8 shrink-0 justify-end',
           className,
         )}
         {...props}
       >
         {tertiary && (
-          <div className="mr-auto shrink-0 flex items-center [&>button]:h-control-xl sm:[&>button]:h-control-md [&>button]:text-body [&>button]:rounded-ds-lg sm:[&>button]:rounded-ds-md [&>button]:px-space-20 sm:[&>button]:px-space-12">
+          <div className="mr-auto shrink-0 flex items-center [&>button]:h-control-xl lg:[&>button]:h-control-md [&>button]:text-body [&>button]:rounded-ds-lg lg:[&>button]:rounded-ds-md [&>button]:px-space-20 lg:[&>button]:px-space-12">
             {tertiary}
           </div>
         )}
         {secondary && (
-          <div className="flex-1 sm:flex-initial sm:shrink-0 flex items-center [&>button]:w-full sm:[&>button]:w-auto [&>button]:h-control-xl sm:[&>button]:h-control-md [&>button]:text-body [&>button]:rounded-ds-lg sm:[&>button]:rounded-ds-md [&>button]:px-space-20 sm:[&>button]:px-space-12">
+          <div className="flex-1 lg:flex-initial lg:shrink-0 flex items-center [&>button]:w-full lg:[&>button]:w-auto [&>button]:h-control-xl lg:[&>button]:h-control-md [&>button]:text-body [&>button]:rounded-ds-lg lg:[&>button]:rounded-ds-md [&>button]:px-space-20 lg:[&>button]:px-space-12">
             {secondary}
           </div>
         )}
         {primary && (
-          <div className="flex-1 sm:flex-initial sm:shrink-0 flex items-center [&>button]:w-full sm:[&>button]:w-auto [&>button]:h-control-xl sm:[&>button]:h-control-md [&>button]:text-body [&>button]:rounded-ds-lg sm:[&>button]:rounded-ds-md [&>button]:px-space-20 sm:[&>button]:px-space-12">
+          <div className="flex-1 lg:flex-initial lg:shrink-0 flex items-center [&>button]:w-full lg:[&>button]:w-auto [&>button]:h-control-xl lg:[&>button]:h-control-md [&>button]:text-body [&>button]:rounded-ds-lg lg:[&>button]:rounded-ds-md [&>button]:px-space-20 lg:[&>button]:px-space-12">
             {primary}
           </div>
         )}
@@ -176,8 +176,8 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
           'bg-surface flex flex-col overflow-hidden text-body text-ink border-line-soft max-h-dvh w-full',
           'rounded-t-ds-sheet shadow-sheet border-t',
           variant === 'side-panel'
-            ? 'sm:rounded-none sm:rounded-l-ds-xl sm:shadow-dialog sm:border-y-0 sm:border-r-0 sm:border-l sm:h-full sm:max-h-full sm:w-full'
-            : 'sm:rounded-ds-xl sm:shadow-dialog sm:border',
+            ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-dialog lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full'
+            : 'lg:rounded-ds-xl lg:shadow-dialog lg:border',
           dialogSizeClasses[size],
           isDragging
             ? 'transition-none'
@@ -194,12 +194,12 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
           className="select-none shrink-0"
         >
           {/* On phone: drag handle */}
-          <div className="sm:hidden cursor-grab active:cursor-grabbing touch-none">
+          <div className="lg:hidden cursor-grab active:cursor-grabbing touch-none">
             <DialogHandle />
           </div>
 
           {(title || desc || showClose) && (
-            <div className="px-space-16 sm:px-space-20 pt-space-12 sm:pt-space-16 pb-space-8 sm:pb-space-10 flex items-start gap-space-12 shrink-0">
+            <div className="px-space-16 lg:px-space-20 pt-space-12 lg:pt-space-16 pb-space-8 lg:pb-space-10 flex items-start gap-space-12 shrink-0">
               <div className="flex-1 min-w-0">
                 {title && (
                   <div className="font-extrabold text-title text-ink leading-tight">
@@ -215,7 +215,7 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
                   type="button"
                   aria-label="Close"
                   onClick={onClose}
-                  className="hidden sm:inline-flex text-ink-4 hover:text-ink hover:bg-hover p-space-6 rounded-ds-md ml-auto shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
+                  className="hidden lg:inline-flex text-ink-4 hover:text-ink hover:bg-hover p-space-6 rounded-ds-md ml-auto shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
                 >
                   <Icon name="close" size="md" />
                 </button>
@@ -311,8 +311,8 @@ export const DialogContent = forwardRef<
           className={cn(
             'fixed inset-x-0 bottom-0 z-overlay flex flex-col pointer-events-none',
             variant === 'side-panel'
-              ? 'sm:inset-y-0 sm:right-0 sm:left-auto sm:h-full sm:max-h-full'
-              : 'sm:inset-0 sm:items-center sm:justify-center sm:p-space-16',
+              ? 'lg:inset-y-0 lg:right-0 lg:left-auto lg:h-full lg:max-h-full'
+              : 'lg:inset-0 lg:items-center lg:justify-center lg:p-space-16',
           )}
         >
           <DialogPrimitive.Content
@@ -326,10 +326,10 @@ export const DialogContent = forwardRef<
               'pointer-events-auto bg-surface flex flex-col overflow-hidden text-body text-ink border-line-soft focus:outline-none max-h-dvh w-full',
               'rounded-t-ds-sheet shadow-sheet border-t',
               variant === 'side-panel'
-                ? 'sm:rounded-none sm:rounded-l-ds-xl sm:shadow-dialog sm:border-y-0 sm:border-r-0 sm:border-l sm:h-full sm:max-h-full sm:w-full sm:slide-in-from-right'
-                : 'sm:rounded-ds-xl sm:shadow-dialog sm:border sm:zoom-in-95',
+                ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-dialog lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full lg:slide-in-from-right'
+                : 'lg:rounded-ds-xl lg:shadow-dialog lg:border lg:zoom-in-95',
               dialogSizeClasses[size],
-              'animate-in fade-in-0 duration-base slide-in-from-bottom sm:slide-in-from-bottom-0',
+              'animate-in fade-in-0 duration-base slide-in-from-bottom lg:slide-in-from-bottom-0',
               isDragging
                 ? 'transition-none'
                 : 'transition-transform duration-sheet ease-out',
@@ -349,12 +349,12 @@ export const DialogContent = forwardRef<
               className="select-none shrink-0"
             >
               {/* On phone: drag handle */}
-              <div className="sm:hidden cursor-grab active:cursor-grabbing touch-none">
+              <div className="lg:hidden cursor-grab active:cursor-grabbing touch-none">
                 <DialogHandle />
               </div>
 
               {(title || desc || showClose || srTitle) && (
-                <div className="px-space-16 sm:px-space-20 pt-space-12 sm:pt-space-16 pb-space-8 sm:pb-space-10 flex items-start gap-space-12 shrink-0">
+                <div className="px-space-16 lg:px-space-20 pt-space-12 lg:pt-space-16 pb-space-8 lg:pb-space-10 flex items-start gap-space-12 shrink-0">
                   <div className="flex-1 min-w-0">
                     {title ? (
                       <DialogPrimitive.Title className="font-extrabold text-title text-ink leading-tight">
@@ -387,7 +387,7 @@ export const DialogContent = forwardRef<
                       <button
                         type="button"
                         aria-label="Close"
-                        className="hidden sm:inline-flex text-ink-4 hover:text-ink hover:bg-hover p-space-6 rounded-ds-md ml-auto shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
+                        className="hidden lg:inline-flex text-ink-4 hover:text-ink hover:bg-hover p-space-6 rounded-ds-md ml-auto shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
                       >
                         <Icon name="close" size="md" />
                       </button>
