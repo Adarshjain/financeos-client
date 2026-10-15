@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Check, Clock, Trash2, X } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Card } from '../Card/Card';
@@ -33,7 +32,7 @@ const TransactionSampleRow = ({
 }) => (
   <div className="flex flex-col p-space-12 bg-surface select-none">
     <div className="flex items-baseline justify-between gap-space-8">
-      <span className="font-bold text-body text-ink">{merchant}</span>
+      <span className="font-extrabold text-body text-ink">{merchant}</span>
       <span className="font-bold text-body text-ink tabular-nums">{amount}</span>
     </div>
     <div className="flex items-center gap-space-6 text-caption text-ink-3 mt-space-2">
@@ -67,24 +66,15 @@ const InboxSampleRow = ({
 export const ApproveRevealed: Story = {
   name: 'ApproveRevealed',
   render: () => (
-    <Card className="max-w-sm overflow-hidden">
+    <Card className="max-w-sm w-full overflow-hidden">
       <SwipeActions
+        variant="transactions"
         revealed="left"
-        leftAction={{
-          label: 'Approve',
-          icon: <Check className="w-space-20 h-space-20" />,
-          tone: 'brand',
-          onAction: () => alert('Approved'),
-        }}
-        rightAction={{
-          label: 'Delete',
-          icon: <Trash2 className="w-space-20 h-space-20" />,
-          tone: 'danger',
-        }}
+        onApprove={() => alert('Approved')}
       >
         <TransactionSampleRow
           merchant="Swiggy Bangalore"
-          amount="₹ 1,249.00"
+          amount="1,249.00"
           account="HDFC Regalia ••7741"
           category="Food & dining"
           status="Duplicate"
@@ -97,24 +87,15 @@ export const ApproveRevealed: Story = {
 export const DeleteRevealed: Story = {
   name: 'DeleteRevealed',
   render: () => (
-    <Card className="max-w-sm overflow-hidden">
+    <Card className="max-w-sm w-full overflow-hidden">
       <SwipeActions
+        variant="transactions"
         revealed="right"
-        leftAction={{
-          label: 'Approve',
-          icon: <Check className="w-space-20 h-space-20" />,
-          tone: 'brand',
-        }}
-        rightAction={{
-          label: 'Delete',
-          icon: <Trash2 className="w-space-20 h-space-20" />,
-          tone: 'danger',
-          onAction: () => alert('Deleted'),
-        }}
+        onDelete={() => alert('Deleted')}
       >
         <TransactionSampleRow
           merchant="Uber India"
-          amount="₹ 640.00"
+          amount="640.00"
           account="Amex Platinum ••1008 · Gmail"
           category="Transport"
         />
@@ -126,20 +107,11 @@ export const DeleteRevealed: Story = {
 export const SnoozeRevealed: Story = {
   name: 'SnoozeRevealed',
   render: () => (
-    <Card className="max-w-sm overflow-hidden">
+    <Card className="max-w-sm w-full overflow-hidden">
       <SwipeActions
+        variant="inbox"
         revealed="left"
-        leftAction={{
-          label: 'Snooze',
-          icon: <Clock className="w-space-20 h-space-20" />,
-          tone: 'brand',
-          onAction: () => alert('Snoozed until tomorrow'),
-        }}
-        rightAction={{
-          label: 'Dismiss',
-          icon: <X className="w-space-20 h-space-20" />,
-          tone: 'danger',
-        }}
+        onSnooze={() => alert('Snoozed until tomorrow')}
       >
         <InboxSampleRow
           title="SBI statement missing"
@@ -153,20 +125,11 @@ export const SnoozeRevealed: Story = {
 export const DismissRevealed: Story = {
   name: 'DismissRevealed',
   render: () => (
-    <Card className="max-w-sm overflow-hidden">
+    <Card className="max-w-sm w-full overflow-hidden">
       <SwipeActions
+        variant="inbox"
         revealed="right"
-        leftAction={{
-          label: 'Snooze',
-          icon: <Clock className="w-space-20 h-space-20" />,
-          tone: 'brand',
-        }}
-        rightAction={{
-          label: 'Dismiss',
-          icon: <X className="w-space-20 h-space-20" />,
-          tone: 'danger',
-          onAction: () => alert('Dismissed'),
-        }}
+        onDismiss={() => alert('Dismissed')}
       >
         <InboxSampleRow title="Prices refreshed" subtitle="Inbox" />
       </SwipeActions>
@@ -174,30 +137,21 @@ export const DismissRevealed: Story = {
   ),
 };
 
-const InteractiveSwipeStory: React.FC = () => {
+const InteractiveSwipeDemo = () => {
   const [revealed, setRevealed] = useState<'left' | 'right' | 'none'>('none');
 
   return (
-    <Card className="max-w-sm overflow-hidden">
+    <Card className="max-w-sm w-full overflow-hidden">
       <SwipeActions
+        variant="transactions"
         revealed={revealed}
         onRevealedChange={setRevealed}
-        leftAction={{
-          label: 'Approve',
-          icon: <Check className="w-space-20 h-space-20" />,
-          tone: 'brand',
-          onAction: () => alert('Approved!'),
-        }}
-        rightAction={{
-          label: 'Delete',
-          icon: <Trash2 className="w-space-20 h-space-20" />,
-          tone: 'danger',
-          onAction: () => alert('Deleted!'),
-        }}
+        onApprove={() => alert('Approved!')}
+        onDelete={() => alert('Deleted!')}
       >
         <TransactionSampleRow
           merchant="Swiggy Bangalore"
-          amount="₹ 1,249.00"
+          amount="1,249.00"
           account="HDFC Regalia ••7741"
           category="Food & dining"
           status="Duplicate"
@@ -212,76 +166,98 @@ const InteractiveSwipeStory: React.FC = () => {
 
 export const Interactive: Story = {
   name: 'Interactive',
-  render: () => <InteractiveSwipeStory />,
+  render: () => <InteractiveSwipeDemo />,
+};
+
+const NoApprovalDemo = () => {
+  const [revealed, setRevealed] = useState<'left' | 'right' | 'none'>('none');
+
+  return (
+    <Card className="max-w-sm w-full overflow-hidden">
+      <SwipeActions
+        variant="transactions"
+        canApprove={false}
+        revealed={revealed}
+        onRevealedChange={setRevealed}
+        onDelete={() => alert('Deleted!')}
+      >
+        <TransactionSampleRow
+          merchant="Verified Uber Ride"
+          amount="340.00"
+          account="ICICI Sapphiro ••9021"
+          category="Transport"
+        />
+      </SwipeActions>
+      <div className="p-space-8 text-center text-caption text-ink-4 bg-sunken">
+        Row needs no approval: swiping right springs back; swipe left still deletes
+      </div>
+    </Card>
+  );
+};
+
+export const NoApprovalSpringBack: Story = {
+  name: 'NoApprovalSpringBack',
+  render: () => <NoApprovalDemo />,
 };
 
 export const AllVariants: Story = {
   name: 'All variants',
   render: () => (
-    <div className="space-y-space-24 max-w-sm">
+    <div className="space-y-space-16 max-w-sm w-full">
+      {/* Transactions Card matching preview.html */}
       <div>
         <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Swipe Right: Approve (Brand)
+          Transactions: right Approve · left Delete
         </h4>
         <Card className="overflow-hidden">
           <SwipeActions
+            variant="transactions"
             revealed="left"
-            leftAction={{
-              label: 'Approve',
-              icon: <Check className="w-space-20 h-space-20" />,
-              tone: 'brand',
-            }}
+            className="border-t-0"
           >
             <TransactionSampleRow
               merchant="Swiggy Bangalore"
-              amount="₹ 1,249.00"
+              amount="1,249.00"
               account="HDFC Regalia ••7741"
               category="Food & dining"
+              status="Duplicate"
             />
           </SwipeActions>
-        </Card>
-      </div>
-
-      <div>
-        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Swipe Left: Delete (Danger)
-        </h4>
-        <Card className="overflow-hidden">
           <SwipeActions
+            variant="transactions"
             revealed="right"
-            rightAction={{
-              label: 'Delete',
-              icon: <Trash2 className="w-space-20 h-space-20" />,
-              tone: 'danger',
-            }}
           >
             <TransactionSampleRow
               merchant="Uber India"
-              amount="₹ 640.00"
-              account="Amex Platinum ••1008"
+              amount="640.00"
+              account="Amex Platinum ••1008 · Gmail"
               category="Transport"
             />
           </SwipeActions>
         </Card>
       </div>
 
+      {/* Inbox Card matching preview.html */}
       <div>
         <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Inbox: Snooze & Dismiss
+          Inbox: right Snooze · left Dismiss
         </h4>
         <Card className="overflow-hidden">
           <SwipeActions
+            variant="inbox"
             revealed="left"
-            leftAction={{
-              label: 'Snooze',
-              icon: <Clock className="w-space-20 h-space-20" />,
-              tone: 'brand',
-            }}
+            className="border-t-0"
           >
             <InboxSampleRow
               title="SBI statement missing"
               subtitle="Inbox · until tomorrow"
             />
+          </SwipeActions>
+          <SwipeActions
+            variant="inbox"
+            revealed="right"
+          >
+            <InboxSampleRow title="Prices refreshed" subtitle="Inbox" />
           </SwipeActions>
         </Card>
       </div>
