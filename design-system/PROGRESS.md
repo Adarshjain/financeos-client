@@ -94,7 +94,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 39 | Toast | Ready for review |
 | 40 | EmptyState | Ready for review |
 | 41 | Skeleton | Ready for review |
-| 42 | Logo | Not started |
+| 42 | Logo | Ready for review |
 | 43 | Divider | Not started |
 | 44 | Illustration | Not started |
 
@@ -201,6 +201,16 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 3b · Logo:
+  - Created `src/components/ds/Logo/Logo.tsx`: supports `variant="mark" | "full"` and `size="sm" | "md"` (`sm` = 28px `w-chip h-chip`, `md` = 32px `w-control-md h-control-md`), with ₹ mark in `bg-brand` `text-on-brand` `font-extrabold` and optional "FinanceOS" wordmark in `text-heading`.
+  - Created `src/components/ds/Logo/Logo.stories.tsx` under `DS/Foundations/Logo` (`AllVariants`, `MarkSm`, `MarkMd`, `Full`).
+  - Created `src/components/ds/Logo/Logo.test.tsx` (5 unit tests verifying sizes, mark vs full, custom symbols, and class merging).
+  - Switched `src/components/ds/AppBar/AppBar.tsx` to `<Logo variant="mark" size="sm" />` (and delegated `BrandMark` export to `Logo`).
+  - Switched `src/components/ds/Rail/Rail.tsx` brand row to `<Logo variant="full" size="sm" />`.
+  - Exported `Logo` from `src/components/ds/index.ts`.
+  - Stories compared: Logo/AllVariants, Logo/MarkSm, Logo/MarkMd, Logo/Full, AppBar/AllVariants, Rail/AllVariants against `design-system/components/Logo/preview.html` at 390 and 1440 in light and dark.
+  - Checks: `npm run typecheck` (passed), `npm run lint` (0 errors), `npm test -- src/components/ds/Logo src/components/ds/AppBar src/components/ds/Rail` (all 16 tests passing), `node design-system/tools/check-ui.mjs --base c8b557b` (clean). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 3 · Storybook Icons page:
   - Updated `src/components/ds/Icon/Icon.stories.tsx` under title `DS/Foundations/Icons`:

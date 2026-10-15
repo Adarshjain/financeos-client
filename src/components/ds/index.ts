@@ -17,6 +17,7 @@ export * from './Icon/Icon';
 export * from './Kbd/Kbd';
 export * from './KpiTile/KpiTile';
 export * from './ListRow/ListRow';
+export * from './Logo/Logo';
 export * from './Menu/Menu';
 export * from './Pager/Pager';
 export * from './Popover/Popover';
