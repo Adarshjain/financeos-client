@@ -23,7 +23,7 @@ const meta: Meta<typeof SegmentedControl> = {
       <SegmentedControl
         {...args}
         value={value ?? args.value}
-        onChange={(val) => updateArgs({ value: val })}
+        onValueChange={(val) => updateArgs({ value: val })}
       />
     );
   },
@@ -50,7 +50,7 @@ export const AllVariants: Story = {
               <SegmentedControl
                 options={['Debit', 'Credit']}
                 value={v1}
-                onChange={setV1}
+                onValueChange={setV1}
               />
             </div>
           </div>
@@ -63,7 +63,7 @@ export const AllVariants: Story = {
               <SegmentedControl
                 options={['Preset', 'Single date', 'Range']}
                 value={v2}
-                onChange={setV2}
+                onValueChange={setV2}
               />
             </div>
           </div>
@@ -76,7 +76,7 @@ export const AllVariants: Story = {
               <SegmentedControl
                 options={['List', 'Calendar']}
                 value={v3}
-                onChange={setV3}
+                onValueChange={setV3}
               />
             </div>
           </div>
@@ -89,7 +89,7 @@ export const AllVariants: Story = {
               <SegmentedControl
                 options={['Paid in full', 'Part payment']}
                 value={v4}
-                onChange={setV4}
+                onValueChange={setV4}
               />
             </div>
           </div>

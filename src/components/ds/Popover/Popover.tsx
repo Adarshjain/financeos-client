@@ -4,6 +4,7 @@ import * as PopoverPrimitive from '@radix-ui/react-popover';
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
+import { useControllableState } from '../useControllableState';
 
 export const PopoverRoot = PopoverPrimitive.Root;
 export const PopoverTrigger = PopoverPrimitive.Trigger;
@@ -81,12 +82,17 @@ export const Popover: React.FC<PopoverProps> & {
   onOpenChange,
   modal,
 }) => {
+  const [isOpen, setOpen] = useControllableState<boolean>({
+    value: open,
+    defaultValue: defaultOpen ?? false,
+    onChange: onOpenChange,
+  });
+
   if (trigger) {
     return (
       <PopoverPrimitive.Root
-        open={open}
-        defaultOpen={defaultOpen}
-        onOpenChange={onOpenChange}
+        open={isOpen}
+        onOpenChange={setOpen}
         modal={modal}
       >
         <PopoverPrimitive.Trigger asChild>{trigger}</PopoverPrimitive.Trigger>
@@ -104,9 +110,8 @@ export const Popover: React.FC<PopoverProps> & {
 
   return (
     <PopoverPrimitive.Root
-      open={open}
-      defaultOpen={defaultOpen}
-      onOpenChange={onOpenChange}
+      open={isOpen}
+      onOpenChange={setOpen}
       modal={modal}
     >
       {children}

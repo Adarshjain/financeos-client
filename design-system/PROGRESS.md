@@ -218,6 +218,22 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 5 · State props: one name each, through one hook:
+  - Added `src/components/ds/useControllableState.ts` (RULES §5c.6) and exported from `src/components/ds/index.ts`.
+  - Adopted `useControllableState` across Select, Switch, SegmentedControl, Checkbox, DateField, Tabs, Dialog (ConfirmDialog), Menu, Popover, and ResponsiveOverlay.
+  - Renamed state callback props per specification: Select `onChange` removed (`onValueChange` kept); Switch `onChange` removed (`onCheckedChange` kept); SegmentedControl `onChange` renamed to `onValueChange`; DateField `onChange` renamed to `onValueChange`; Checkbox `onChange` aliases removed (`onCheckedChange` kept).
+  - Updated all stories and unit tests to use unified prop names and added explicit tests for both controlled and uncontrolled operation for each component.
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 336 problems (0 errors, 336 warnings)`
+    - `npm test`: `Test Files  426 passed (426) | Tests  3533 passed (3533)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+  - Done when:
+    - `grep -nE "onChange\?:" src/components/ds/{Select,Switch,SegmentedControl,DateField,Checkbox}/*.tsx` returned nothing.
+    - Each of Select, Switch, SegmentedControl, DateField, Checkbox has verified unit tests for both uncontrolled (`defaultValue` / `defaultChecked`) and controlled modes.
+  - Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 2 Fixes · Antigravity · Fix 4 · Pager: one page list:
   - Eliminated dual page-number lists (`flex lg:hidden` and `hidden lg:flex`) in `src/components/ds/Pager/Pager.tsx`. Rendered a single page list with `pageItems.map()`, ran ellipsis logic once, and applied `hidden lg:inline-flex` to neighbour page buttons (`page - 1`, `page + 1`) that only display on desktop.
   - Updated `src/components/ds/Pager/Pager.test.tsx` to verify each page number appears exactly once in the rendered DOM and neighbour buttons carry `hidden lg:inline-flex`.

@@ -41,7 +41,7 @@ describe('SegmentedControl', () => {
       <SegmentedControl
         options={['Preset', 'Single date', 'Range']}
         defaultValue="Preset"
-        onChange={handleChange}
+        onValueChange={handleChange}
       />,
     );
     const rangeBtn = screen.getByRole('radio', { name: 'Range' });
@@ -58,7 +58,7 @@ describe('SegmentedControl', () => {
         <SegmentedControl
           options={['List', 'Calendar']}
           value={val}
-          onChange={setVal}
+          onValueChange={setVal}
         />
       );
     };
@@ -77,7 +77,7 @@ describe('SegmentedControl', () => {
       <SegmentedControl
         options={['Debit', 'Credit']}
         defaultValue="Debit"
-        onChange={handleChange}
+        onValueChange={handleChange}
       />,
     );
     const debitBtn = screen.getByRole('radio', { name: 'Debit' });
@@ -105,7 +105,7 @@ describe('SegmentedControl', () => {
         disabled
         options={['Debit', 'Credit']}
         defaultValue="Debit"
-        onChange={handleChange}
+        onValueChange={handleChange}
       />,
     );
     const creditBtn = screen.getByRole('radio', { name: 'Credit' });
@@ -125,7 +125,7 @@ describe('SegmentedControl', () => {
           { value: 'archived', label: 'Archived', disabled: true },
         ]}
         defaultValue="all"
-        onChange={handleChange}
+        onValueChange={handleChange}
       />,
     );
     const archivedBtn = screen.getByRole('radio', { name: 'Archived' });

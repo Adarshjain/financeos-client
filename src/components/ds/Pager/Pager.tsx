@@ -127,7 +127,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                   label: `${opt} / page`,
                 }))}
                 value={String(size)}
-                onChange={(val) => {
+                onValueChange={(val) => {
                   if (typeof val === 'string') {
                     onSizeChange(Number(val));
                   }

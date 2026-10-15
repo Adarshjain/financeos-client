@@ -6,6 +6,7 @@ import React, { forwardRef, useRef } from 'react';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
+import { useControllableState } from '../useControllableState';
 import { useSheetDrag } from '../useSheetDrag';
 
 export type DialogSize = 'sm' | 'md' | 'lg' | 'xl';
@@ -579,6 +580,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   className,
   ...props
 }) => {
+  const [isOpen, setIsOpen] = useControllableState<boolean>({
+    value: open,
+    defaultValue: defaultOpen ?? false,
+    onChange: onOpenChange,
+  });
+
   const isBusy = Boolean(loading || confirmLoading);
   const isConfirmDisabled = Boolean(
     confirmDisabled || isCheckingImpact || isBusy,
@@ -586,12 +593,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   const handleCancel = () => {
     onCancel?.();
-    onOpenChange?.(false);
+    setIsOpen(false);
   };
 
   const handleAlternative = () => {
     onAlternative?.();
-    onOpenChange?.(false);
+    setIsOpen(false);
   };
 
   const handleConfirm = () => {
@@ -600,7 +607,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   };
 
   return (
-    <Dialog open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {trigger ? (
         <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>
       ) : null}

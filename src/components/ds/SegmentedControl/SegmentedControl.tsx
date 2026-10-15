@@ -1,8 +1,9 @@
 'use client';
 
-import React, { forwardRef, useId, useState } from 'react';
+import React, { forwardRef, useId } from 'react';
 
 import { cn } from '../cn';
+import { useControllableState } from '../useControllableState';
 
 export interface SegmentedControlOption<T extends string = string> {
   value: T;
@@ -16,7 +17,7 @@ export interface SegmentedControlProps<T extends string = string>
   options: Array<SegmentedControlOption<T> | T>;
   value?: T;
   defaultValue?: T;
-  onChange?: (value: T) => void;
+  onValueChange?: (value: T) => void;
   fullWidth?: boolean;
   disabled?: boolean;
 }
@@ -30,7 +31,7 @@ export const SegmentedControl = forwardRef<
       options,
       value: controlledValue,
       defaultValue,
-      onChange,
+      onValueChange,
       fullWidth = false,
       disabled = false,
       className,
@@ -45,20 +46,16 @@ export const SegmentedControl = forwardRef<
       typeof opt === 'string' ? { value: opt, label: opt } : opt,
     );
 
-    const firstValue = normalizedOptions[0]?.value ?? '';
-    const isControlled = controlledValue !== undefined;
-    const [internalValue, setInternalValue] = useState<string>(
-      defaultValue !== undefined ? defaultValue : firstValue,
-    );
-
-    const currentValue = isControlled ? controlledValue : internalValue;
+    const firstValue = (normalizedOptions[0]?.value ?? '') as string;
+    const [currentValue, setCurrentValue] = useControllableState<string>({
+      value: controlledValue,
+      defaultValue: defaultValue !== undefined ? defaultValue : firstValue,
+      onChange: onValueChange,
+    });
 
     const handleSelect = (val: string, optDisabled?: boolean) => {
       if (disabled || optDisabled) return;
-      if (!isControlled) {
-        setInternalValue(val);
-      }
-      onChange?.(val);
+      setCurrentValue(val);
     };
 
     const handleKeyDown = (

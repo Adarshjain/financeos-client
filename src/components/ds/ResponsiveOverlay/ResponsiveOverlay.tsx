@@ -1,7 +1,7 @@
 'use client';
 
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext } from 'react';
 
 import { cn } from '../cn';
 import {
@@ -16,6 +16,7 @@ import {
   PopoverRoot,
   PopoverTrigger,
 } from '../Popover/Popover';
+import { useControllableState } from '../useControllableState';
 import { useIsPhone } from '../useMediaQuery';
 
 export interface ResponsiveOverlayContextValue {
@@ -83,13 +84,11 @@ export const ResponsiveOverlay: React.FC<ResponsiveOverlayProps> = ({
   forceSheet = false,
   asDropdownMenu = false,
 }) => {
-  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
-  const isOpen = open !== undefined ? open : uncontrolledOpen;
-
-  const setOpen = (next: boolean) => {
-    if (open === undefined) setUncontrolledOpen(next);
-    onOpenChange?.(next);
-  };
+  const [isOpen, setOpen] = useControllableState<boolean>({
+    value: open,
+    defaultValue: defaultOpen ?? false,
+    onChange: onOpenChange,
+  });
 
   const isPhone = useIsPhone();
   const isSheet = (isPhone || forceSheet) && !forcePopover;

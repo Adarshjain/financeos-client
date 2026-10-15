@@ -1,9 +1,10 @@
 'use client';
 
 import * as TabsPrimitive from '@radix-ui/react-tabs';
-import React, { createContext, forwardRef, useContext, useState } from 'react';
+import React, { createContext, forwardRef, useContext } from 'react';
 
 import { cn } from '../cn';
+import { useControllableState } from '../useControllableState';
 
 export interface TabItem {
   value: string;
@@ -40,29 +41,22 @@ export const Tabs = forwardRef<
     },
     ref,
   ) => {
-    const isControlled = controlledValue !== undefined;
     const initialDefault =
-      defaultValue ?? (items && items.length > 0 ? items[0].value : undefined);
-    const [uncontrolledValue, setUncontrolledValue] = useState<string | undefined>(
-      initialDefault,
-    );
-    const activeValue = isControlled ? controlledValue : uncontrolledValue;
-
-    const handleValueChange = (val: string) => {
-      if (!isControlled) {
-        setUncontrolledValue(val);
-      }
-      onValueChange?.(val);
-    };
+      defaultValue ?? (items && items.length > 0 ? items[0].value : '');
+    const [activeValue, setActiveValue] = useControllableState<string>({
+      value: controlledValue,
+      defaultValue: initialDefault,
+      onChange: onValueChange,
+    });
 
     return (
       <TabsContext.Provider
-        value={{ value: activeValue, onValueChange: handleValueChange }}
+        value={{ value: activeValue, onValueChange: setActiveValue }}
       >
         <TabsPrimitive.Root
           ref={ref}
           value={activeValue}
-          onValueChange={handleValueChange}
+          onValueChange={setActiveValue}
           className={cn('w-full', className)}
           {...props}
         >

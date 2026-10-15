@@ -23,14 +23,30 @@ describe('DateField component', () => {
     expect(input).toHaveValue('25/10/2026');
   });
 
-  it('auto-formats input as user types digits', () => {
+  it('auto-formats input as user types digits in uncontrolled mode with onValueChange', () => {
     const handleChange = vi.fn();
-    render(<DateField label="Date" onChange={handleChange} />);
+    render(<DateField label="Date" defaultValue="01/01/2026" onValueChange={handleChange} />);
     const input = screen.getByLabelText('Date');
+    expect(input).toHaveValue('01/01/2026');
 
     fireEvent.change(input, { target: { value: '01042026' } });
     expect(handleChange).toHaveBeenCalledWith('01/04/2026');
     expect(input).toHaveValue('01/04/2026');
+  });
+
+  it('works in controlled mode with value and onValueChange', () => {
+    const handleValueChange = vi.fn();
+    const { rerender } = render(
+      <DateField label="Due date" value="10/10/2026" onValueChange={handleValueChange} />,
+    );
+    const input = screen.getByLabelText('Due date');
+    expect(input).toHaveValue('10/10/2026');
+
+    fireEvent.change(input, { target: { value: '15102026' } });
+    expect(handleValueChange).toHaveBeenCalledWith('15/10/2026');
+
+    rerender(<DateField label="Due date" value="15/10/2026" onValueChange={handleValueChange} />);
+    expect(input).toHaveValue('15/10/2026');
   });
 
   it('renders helper and error text', () => {
@@ -112,7 +128,7 @@ describe('DateField component', () => {
 
   it('opens calendar and allows selecting date in single mode', () => {
     const handleChange = vi.fn();
-    render(<DateField label="Due date" defaultValue="25/10/2026" onChange={handleChange} />);
+    render(<DateField label="Due date" defaultValue="25/10/2026" onValueChange={handleChange} />);
 
     const openButton = screen.getByRole('button', { name: 'Open calendar' });
     fireEvent.click(openButton);
