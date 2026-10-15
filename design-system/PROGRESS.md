@@ -57,7 +57,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 2 | Popover | Ready for review |
 | 3 | Dialog | Ready for review |
 | 4 | AppBar | Ready for review |
-| 5 | TabBar | Changes requested |
+| 5 | TabBar | Ready for review |
 | 6 | Rail | Ready for review |
 | 7 | TopBar | Ready for review |
 | 8 | Tabs | Changes requested |
@@ -191,6 +191,16 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-15 · Phase 2 · Antigravity · Unit 10d · TabBar:
+  - Rebuilt `TabBar` in `src/components/ds/TabBar/TabBar.tsx`:
+    - Replaced raw `<button>` elements with `<a>` links (resolving `raw-button` lint error), adding `href`, `role="tab"`, `aria-selected`, and `aria-current="page"`.
+    - Integrated `Icon` at size `lg` (20px) for all 5 canonical tabs (Home, Inbox, Upcoming, Transactions, More).
+    - Integrated `Badge` `count` variant (`danger` for Inbox, `warning` for Transactions) formatted at `h-space-16 min-w-space-16` with `99+` threshold.
+  - Updated `src/components/ds/TabBar/TabBar.stories.tsx`: `AllVariants` as first export, args-driven variant stories (`HomeActive`, `TransactionsActive`, `HighCounts`, `NoCounts`, `Interactive`) with full argTypes controls.
+  - Updated `src/components/ds/TabBar/TabBar.test.tsx`: 7 unit tests covering canonical order, link rendering, active state, click callbacks, badge counts and positioning, and hidden behavior.
+  - Stories compared: HomeActive, TransactionsActive, HighCounts, NoCounts against `design-system/components/TabBar/preview.html` and phone navigation screens at 390px light/dark.
+  - Checks: `npm run typecheck`, `npm run lint`, `vitest`, `npm run build-storybook`, `check-ui.mjs` (0 errors on touched files). Open questions: none. Deviations: none.
 
 - 2026-10-15 · Phase 2 · Antigravity · Unit 10c · TopBar:
   - Created `TopBar` in `src/components/ds/TopBar/TopBar.tsx`:
