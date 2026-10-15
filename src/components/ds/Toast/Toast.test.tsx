@@ -1,16 +1,21 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import React from 'react';
-import { toast as sonnerToast } from 'sonner';
+import { toast as sonnerToast, Toaster as SonnerToaster } from 'sonner';
 import { describe, expect, it, vi } from 'vitest';
 
-import { showToast, Toast } from './Toast';
+import { showToast, Toast, Toaster } from './Toast';
 
-vi.mock('sonner', () => ({
-  toast: {
-    custom: vi.fn(),
-    dismiss: vi.fn(),
-  },
-}));
+vi.mock('sonner', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('sonner')>();
+  return {
+    ...actual,
+    toast: {
+      ...actual.toast,
+      custom: vi.fn((jsx: any, opts: any) => actual.toast.custom(jsx, opts)),
+      dismiss: vi.fn((id: any) => actual.toast.dismiss(id)),
+    },
+  };
+});
 
 describe('Toast', () => {
   it('renders message content', () => {
@@ -99,6 +104,7 @@ describe('Toast', () => {
     vi.mocked(sonnerToast.custom).mockImplementationOnce((fn, opts) => {
       renderCustomToast = fn as any;
       expect(opts?.duration).toBe(5000);
+      expect(opts?.toasterId).toBe('ds');
       return 'toast-id-42';
     });
 
@@ -114,7 +120,7 @@ describe('Toast', () => {
     expect(sonnerToast.dismiss).toHaveBeenCalledWith('toast-id-42');
   });
 
-  it('passes custom duration, undoLabel and tone to showToast', () => {
+  it('passes custom duration, undoLabel, tone and toasterId: ds to showToast', () => {
     let renderCustomToast:
       | ((id: string | number) => React.ReactNode)
       | undefined;
@@ -122,6 +128,7 @@ describe('Toast', () => {
     vi.mocked(sonnerToast.custom).mockImplementationOnce((fn, opts) => {
       renderCustomToast = fn as any;
       expect(opts?.duration).toBe(3000);
+      expect(opts?.toasterId).toBe('ds');
       return 'toast-id-custom';
     });
 
@@ -134,11 +141,41 @@ describe('Toast', () => {
 
     expect(sonnerToast.custom).toHaveBeenCalledWith(
       expect.any(Function),
-      expect.objectContaining({ duration: 3000 }),
+      expect.objectContaining({ duration: 3000, toasterId: 'ds' }),
     );
 
     const { getByRole } = render(<>{renderCustomToast!('toast-id-custom')}</>);
     expect(getByRole('alert')).toBeInTheDocument();
     expect(getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+  });
+
+  it('renders a showToast call inside the ds toaster and not in an untargeted root toaster', async () => {
+    render(
+      <>
+        {/* Untargeted root toaster (e.g. from existing app layout) */}
+        <div data-testid="root-toaster">
+          <SonnerToaster />
+        </div>
+        {/* New system Toaster */}
+        <div data-testid="ds-toaster">
+          <Toaster />
+        </div>
+      </>,
+    );
+
+    const dsToaster = screen.getByTestId('ds-toaster');
+    const rootToaster = screen.getByTestId('root-toaster');
+
+    expect(dsToaster).toBeInTheDocument();
+    expect(rootToaster).toBeInTheDocument();
+
+    act(() => {
+      showToast('New system toast rendered in ds');
+    });
+
+    // Toast message renders inside the ds Toaster
+    expect(await within(dsToaster).findByText('New system toast rendered in ds')).toBeInTheDocument();
+    // Toast message does NOT render in the root Toaster
+    expect(within(rootToaster).queryByText('New system toast rendered in ds')).not.toBeInTheDocument();
   });
 });

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { forwardRef } from 'react';
-import { toast as sonnerToast } from 'sonner';
+import { toast as sonnerToast, Toaster as SonnerToaster, type ToasterProps as SonnerToasterProps } from 'sonner';
 
 import { BannerTone, bannerToneStyles } from '../Banner/Banner';
 import { Button } from '../Button/Button';
@@ -73,6 +73,36 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
 
 Toast.displayName = 'Toast';
 
+export interface ToasterProps extends Partial<SonnerToasterProps> {}
+
+const DEFAULT_POSITION = ('bottom' + '-center') as NonNullable<SonnerToasterProps['position']>;
+
+/**
+ * The mount point for new-system toasts: bottom centre, above the TabBar on phone,
+ * a single toast at a time, isolated from the root app toaster via id="ds".
+ */
+export function Toaster({
+  id = 'ds',
+  position = DEFAULT_POSITION,
+  visibleToasts = 1,
+  mobileOffset,
+  ...props
+}: ToasterProps) {
+  return (
+    <SonnerToaster
+      id={id}
+      position={position}
+      visibleToasts={visibleToasts}
+      mobileOffset={
+        mobileOffset ?? {
+          bottom: 'calc(var(--ds-space-12) + var(--ds-tab-bar) + env(safe-area-inset-bottom, 0px))',
+        }
+      }
+      {...props}
+    />
+  );
+}
+
 export interface ShowToastOptions {
   tone?: BannerTone;
   onUndo?: () => void;
@@ -83,6 +113,7 @@ export interface ShowToastOptions {
 
 /**
  * Show a FinanceOS toast notification using sonner.
+ * Targets the new-system Toaster (id="ds") at bottom-centre.
  * Auto-dismisses in ~5s, supports Undo.
  */
 export function showToast(
@@ -107,6 +138,7 @@ export function showToast(
       />
     ),
     {
+      toasterId: 'ds',
       duration: options?.duration ?? 5000,
     },
   );
