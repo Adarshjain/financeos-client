@@ -254,6 +254,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 3b · Antigravity · Dinero utils (G10): added src/components/ds/utils/ (formatCount, formatDate, parseDateInput, todayISO, formatMonth, weekdayLetters), unit tests in src/components/ds/utils/__tests__/utils.test.ts, and exported from src/components/ds/index.ts. Checks: vitest (13 tests passed), npm run typecheck, node design-system/tools/check-ui.mjs --base 681c9d0. Open questions: none. Deviations: none.
+
 - 2026-10-17 · Phase 3b · Antigravity · Storybook setup: installed @storybook/addon-docs, updated .storybook/main.ts (addons and organisms stories glob), updated .storybook/preview.tsx (tags: ['autodocs'], parameters.docs.controls.disable = true, storySort docs first). Checks: npm run build-storybook, node design-system/tools/check-ui.mjs --base 681c9d0. Open questions: none. Deviations: none.
 
 - 2026-10-16 · Phase 3a · Antigravity · Omit padded header container in DialogContent when only srTitle is present:
