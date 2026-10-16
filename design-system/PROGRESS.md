@@ -194,7 +194,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - All variants is the first story; every story is driven by args so Controls work.
   - The new CSS `corner-shape` is not used.
   - Composition rules added (RULES §5b).
-- 2026-10-15 · **Icons move to Phosphor** in the new system: `@phosphor-icons/react` (approved as a new dependency), bold weight at every size (regular reads too thin beside 700–800 type), drawn only through Icon by registry name (`design-system/icons.json`, 23 icons). The old UI keeps Lucide until Phase 4. Storybook gets a `DS/Foundations/Icons` page listing the registry. Done in the round after the restructure.
+- 2026-10-15 · **Icons move to Phosphor** in the new system: `@phosphor-icons/react` (approved as a new dependency), bold weight at every size (regular reads too thin beside 700–800 type), drawn only through Icon by registry name (`design-system/icons.json`, 28 icons). The old UI keeps Lucide until Phase 4. Storybook gets a `DS/Foundations/Icons` page listing the registry. Done in the round after the restructure.
 - 2026-10-15 · **Phase 3 runs through `/ds`**: each page is built under `/ds/…` first and reviewed there before the live route switches. Storybook is published inside the app at `/storybook`, linked from Settings, so it can be checked on any device.
 - 2026-10-15 · **Storybook feedback round 2** (owner):
   - Every interactive component shows a pressed state distinct from hover (new tokens `bg-pressed`, `brand-hover`, `brand-pressed`, `danger-hover`, `danger-pressed`).

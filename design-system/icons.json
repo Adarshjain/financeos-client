@@ -113,5 +113,30 @@
   "name": "notifications",
   "phosphor": "bell",
   "use": "Notifications"
+ },
+ {
+  "name": "investments",
+  "phosphor": "chart-line-up",
+  "use": "Investments navigation"
+ },
+ {
+  "name": "rewards",
+  "phosphor": "gift",
+  "use": "Rewards navigation"
+ },
+ {
+  "name": "loans",
+  "phosphor": "handshake",
+  "use": "Loans & lendings navigation"
+ },
+ {
+  "name": "dashboards",
+  "phosphor": "squares-four",
+  "use": "Dashboards navigation"
+ },
+ {
+  "name": "reports",
+  "phosphor": "chart-bar",
+  "use": "Reports navigation"
  }
 ]
