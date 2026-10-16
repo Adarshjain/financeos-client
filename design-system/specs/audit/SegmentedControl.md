@@ -6,25 +6,25 @@ Read `00-global.md` first. Its rules override anything below.
 
 ## Change (5)
 
-- [ ] **ffc4a21d6** · SegmentedControl loses its generic value type
+- [x] **ffc4a21d6** · SegmentedControl loses its generic value type
   - Now: `forwardRef<HTMLDivElement, SegmentedControlProps>` (lines 25-28) uses the default `string`, so apps get `string` in `onValueChange` even though the file exports `SegmentedControlProps<T>`.
   - Do: Cast the result to a generic function type so `T` flows through.
   ```tsx
   export const SegmentedControl = forwardRef(Impl) as <T extends string = string>(p: SegmentedControlProps<T> & { ref?: React.Ref<HTMLDivElement> }) => React.ReactElement;
   ```
-- [ ] **fdf1c013c** · SegmentedControl finds the next button by DOM id
+- [x] **fdf1c013c** · SegmentedControl finds the next button by DOM id
   - Now: Arrow keys call `document.getElementById(...)` (line 79) to move focus.
   - Do: Keep an `itemRefs = useRef<(HTMLButtonElement | null)[]>([])` and call `itemRefs.current[nextIndex]?.focus()`. No ids needed.
   ```tsx
   ref={(el) => { itemRefs.current[idx] = el; }}
   ```
-- [ ] **fa87bcfd0** · SegmentedControl always has a selected option
+- [x] **fa87bcfd0** · SegmentedControl always has a selected option
   - Now: With no `defaultValue` it picks the first option (lines 49-52), so it can never start empty.
   - Do: Leave `defaultValue` undefined by default (nothing selected). Make the first option tabbable when none is selected. An app that wants the first option passes `defaultValue`.
-- [ ] **f72c282de** · SegmentedControl stories: four near-duplicates and missing states
+- [x] **f72c282de** · SegmentedControl stories: four near-duplicates and missing states
   - Now: `TwoOptions`, `ThreeOptions`, `ViewSwitch`, `InAForm` differ only by option words. There is no story for `disabled`, `fullWidth`, `icon` or a disabled option. `argTypes` lists only `value` and `defaultValue` (lines 16-19).
   - Do: Keep `TwoOptions` and `ThreeOptions`; delete the other two. Add `Disabled`, `FullWidth`, `WithIcons` (icons via `<Icon name>`) and `DisabledOption`.
-- [ ] **f48c23601** · SegmentedControl story onValueChange is not logged
+- [x] **f48c23601** · SegmentedControl story onValueChange is not logged
   - Now: The render sends `onValueChange` only to `updateArgs` (line 26).
   - Do: Add `args: { onValueChange: fn() }` and call `args.onValueChange?.(val)` in the handler.
   ```tsx
@@ -33,9 +33,9 @@ Read `00-global.md` first. Its rules override anything below.
 
 ## Owner's own call (2)
 
-- [ ] **f50984561** · SegmentedControl AllVariants hard-codes options and values
+- [x] **f50984561** · SegmentedControl AllVariants hard-codes options and values
   - Do: Delete the AllVariants story; the autodocs page shows every story, with no controls on the docs page (G9).
-- [ ] **fc2b286ba** · SegmentedControl has no interaction demo
+- [x] **fc2b286ba** · SegmentedControl has no interaction demo
   - Do: No play function and no interaction test (G9).
 
 ## Keep: do NOT change (4)
