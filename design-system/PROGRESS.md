@@ -222,6 +222,26 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-16 · Phase 3a · Antigravity · Unit 3 · /ds/signup:
+  - Created `src/app/(ds)/ds/(public)/signup/SignupForm.tsx` matching `D-signup`, `P-signup`, and `P-auth-states`:
+    - Responsive two-column layout with `Illustration variant="signup"` (phone banner on top, full column on desktop).
+    - Form in exact board order: Logo (`variant="mark"`, `size="md"`), title "Create account", subtitle "Welcome to FinanceOS.", info Banner "FinanceOS is invite-only — you'll need a code to sign up.", `Button variant="google"` ("Sign up with Google") with double-click guard and `ssoPending` loading state ("Opening Google…"), `Divider label="or"`, `TextField id="inviteCode"` with Show toggle, `TextField id="email" autoComplete="username"`, `TextField id="password" autoComplete="new-password"` with Show toggle, terms notice, `Button variant="primary"` ("Create account", "Creating account…"), and link to `/ds/login`.
+    - Client-side validation checks empty inputs and rejects passwords under 8 characters before submitting with a danger Banner ("Password must be at least 8 characters.") without dispatching a network call.
+    - Server error (e.g. invalid invite code) displays in danger Banner above fields.
+    - On success: shows success Banner ("Account created! Redirecting…"), dims inputs, and redirects to `/dashboard`.
+    - SSO failure triggers a danger toast via `showToast(..., { tone: 'danger' })`.
+  - Updated `src/app/(ds)/ds/(public)/signup/page.tsx` as a server component redirecting authenticated sessions to `/dashboard`.
+  - Added unit test suite in `src/app/(ds)/ds/(public)/signup/signup.test.tsx` (6 unit tests, all passing).
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 342 problems (0 errors, 342 warnings)`
+    - `npm test`: `Test Files  430 passed (430) | Tests  3561 passed (3561)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `npm run build`: `✓ Generating static pages using 10 workers (49/49) in 2.3s`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+  - Boards compared: `D-signup`, `P-signup`, `P-auth-states` (password too short, invite code rejected, account created).
+  - Open questions: none. Deviations: none.
+
 - 2026-10-16 · Phase 3a · Antigravity · Unit 2 · /ds/login:
   - Created `src/app/(ds)/ds/(public)/login/LoginForm.tsx` matching `D-login`, `P-login`, and `P-auth-states`:
     - Responsive two-column layout with `Illustration variant="signin"` (phone banner on top, full column on desktop).
