@@ -142,22 +142,18 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(profileRow).toBeVisible();
     await expect(profileRow).toHaveAttribute('href', '/settings');
 
-    // Closing Way 1: Tapping More again
-    await moreTab.click();
-    await expect(sheet).not.toBeVisible();
-
-    // Closing Way 2: Tapping the scrim
-    await moreTab.click();
-    await expect(sheet).toBeVisible();
-    // Tap above the sheet on the scrim overlay (e.g. at x: 200, y: 50)
+    // Closing Way 1: Tapping the scrim above the sheet
     await page.mouse.click(200, 50);
     await expect(sheet).not.toBeVisible();
 
-    // Closing Way 3: Swipe down on the drag handle
+    // Closing Way 2: Swipe down on the drag handle
     await moreTab.click();
     await expect(sheet).toBeVisible();
-    const dragArea = page.getByTestId('dialog-drag-area');
+    // Wait for the slide-in animation to finish
+    await page.waitForTimeout(300);
+    const dragArea = sheet.getByTestId('dialog-drag-area');
     const dragBox = await dragArea.boundingBox();
+    expect(dragBox).not.toBeNull();
     if (dragBox) {
       await page.mouse.move(dragBox.x + dragBox.width / 2, dragBox.y + dragBox.height / 2);
       await page.mouse.down();
@@ -165,5 +161,27 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
       await page.mouse.up();
     }
     await expect(sheet).not.toBeVisible();
+
+    // Closing Way 3: Choosing a section tile (navigates to that route)
+    await moreTab.click();
+    await expect(sheet).toBeVisible();
+    await sheet.getByRole('link', { name: 'Accounts' }).click();
+    await page.waitForURL('**/accounts');
+    expect(page.url()).toContain('/accounts');
+  });
+
+  test('phone 390px: TabBar links navigate as plain links (Transactions)', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${E2E_CLIENT_URL}/ds`);
+
+    const tabBar = page.locator('nav.lg\\:hidden');
+    const txTab = tabBar.getByRole('tab', { name: 'Transactions' });
+    await expect(txTab).toBeVisible();
+    await expect(txTab).toHaveAttribute('href', '/transactions');
+
+    // Click Transactions tab and ensure it navigates directly as a link
+    await txTab.click();
+    await page.waitForURL('**/transactions');
+    expect(page.url()).toContain('/transactions');
   });
 });
