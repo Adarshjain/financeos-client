@@ -6,10 +6,10 @@ import { SelectionBar, SelectionBarAction } from './SelectionBar';
 
 describe('SelectionBar', () => {
   const defaultActions: SelectionBarAction[] = [
-    { label: 'Link', onClick: vi.fn() },
-    { label: 'Merge', hint: 'the pair', onClick: vi.fn() },
-    { label: 'Approve', count: 2, onClick: vi.fn() },
-    { label: 'Delete', variant: 'danger', onClick: vi.fn() },
+    { label: 'Link', onSelect: vi.fn() },
+    { label: 'Merge', hint: 'the pair', onSelect: vi.fn() },
+    { label: 'Approve', count: 2, onSelect: vi.fn() },
+    { label: 'Delete', tone: 'danger', onSelect: vi.fn() },
   ];
 
   it('renders count and summary once in DOM', () => {
@@ -31,12 +31,12 @@ describe('SelectionBar', () => {
     expect(screen.getAllByRole('button', { name: 'Clear selection' })).toHaveLength(1);
   });
 
-  it('triggers action click callback', () => {
+  it('triggers action onSelect callback', () => {
     const handleLink = vi.fn();
     render(
       <SelectionBar
         count={2}
-        actions={[{ label: 'Link', onClick: handleLink }]}
+        actions={[{ label: 'Link', onSelect: handleLink }]}
         onClear={() => {}}
       />,
     );

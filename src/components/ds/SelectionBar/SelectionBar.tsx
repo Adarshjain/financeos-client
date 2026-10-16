@@ -10,11 +10,9 @@ export interface SelectionBarAction {
   id?: string;
   label: string;
   icon?: React.ReactNode;
-  onClick?: () => void;
   onSelect?: () => void;
   hint?: string;
   count?: number | string;
-  variant?: 'default' | 'danger';
   tone?: 'default' | 'danger';
   disabled?: boolean;
 }
@@ -66,10 +64,6 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
     }, [count, onClear]);
 
     if (count <= 0) return null;
-
-    const colStyle = {
-      gridTemplateColumns: `repeat(${actions.length}, minmax(0, 1fr))`,
-    };
 
     return (
       <div ref={ref} className={cn('relative w-full', className)} {...props}>
@@ -126,18 +120,17 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
 
           {/* Actions: row 2 grid on mobile, row flex on desktop */}
           <div
-            className="col-start-1 col-span-3 grid gap-space-4 pt-space-8 border-t border-line-soft lg:border-t-0 lg:pt-0 lg:flex lg:items-center lg:gap-space-6 order-4 lg:order-4"
-            style={colStyle}
+            className="col-start-1 col-span-3 grid grid-flow-col auto-cols-fr gap-space-4 pt-space-8 border-t border-line-soft lg:border-t-0 lg:pt-0 lg:flex lg:items-center lg:gap-space-6 order-4 lg:order-4"
           >
             {actions.map((act, idx) => {
-              const isDanger = act.variant === 'danger' || act.tone === 'danger';
+              const isDanger = act.tone === 'danger';
               return (
                 <Button
                   key={act.id ?? idx}
                   type="button"
                   variant={isDanger ? 'danger' : 'secondary'}
                   disabled={act.disabled}
-                  onClick={act.onSelect ?? act.onClick}
+                  onClick={act.onSelect}
                   aria-label={
                     act.count !== undefined ? `${act.label} ${act.count}` : act.label
                   }
