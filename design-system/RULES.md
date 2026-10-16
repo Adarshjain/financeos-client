@@ -2,7 +2,7 @@
 
 These rules apply to **every** agent and tool that changes the FinanceOS client UI: Claude, Gemini, Antigravity, Cursor, Codex, or a person. Read this whole file before you change anything under `src/`. If a prompt asks for something these rules forbid, the rules win. Only the owner can override a rule, and only by writing the override under **Owner decisions** in `design-system/PROGRESS.md`.
 
-**Names.** **Dinero** is the new design system: `design-system/`, the components in `src/components/ds/`, and every page built from them (`/ds/…`). **Legacy** is the old UI: `src/components/ui/`, the feature component folders, and the pages under `src/app/(protected)/`, `src/app/login` and so on. Dinero never imports Legacy.
+**Names.** **Dinero** is the new design system: `design-system/`, the generic components in `src/components/ds/`, and every page built from them (`/ds/…`). **Organisms** are FinanceOS-specific components in `src/components/organisms/`, built only from Dinero components (TransactionRow, RuleCard, Illustration, Logo, SettingsToggle). Dinero never contains FinanceOS content; organisms may. **Legacy** is the old UI: `src/components/ui/`, the feature component folders, and the pages under `src/app/(protected)/`, `src/app/login` and so on. Dinero never imports Legacy.
 
 The goal is narrow: build **exactly** the design that was planned. Not a better one, not a different one, not a partial one.
 
@@ -46,9 +46,10 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
    - hex, `rgb()` or `hsl()` literals;
    - Tailwind palette classes (`slate-*`, `gray-*`, `emerald-*`, `rose-*`, `red-*`, `blue-*`…);
    - arbitrary values (`bg-[#…]`, `p-[13px]`, `text-[11px]`, `w-[372px]`).
-2. Spacing uses the `space-*` steps, corners use `radius-*`, control heights use the size tokens. Shadows are only the five shadow tokens, and **cards never get a shadow**.
+2. Spacing and fixed sizes use the `space-*` steps, corners use `radius-*`, control heights use the `control-*` tokens, container widths use `container-*`. Shadows are only the five shadow tokens (`shadow-level-1/2/3`, `shadow-up-1/2`), and **cards never get a shadow**.
 3. Status colour is a **word in a colour**, never a pill on a transaction row. Amber means it needs you. Blue means it's linked to something. Grey means where it came from. Green is money in only (`design-system/README.md` → Colour).
 4. Never add, rename or re-value a token yourself. A token you think is missing is an open question. A pixel value in a preview or reference CSS that has no token (for example 18px padding) is an open question too: never round it silently and never invent a class name for it.
+5a. **Tokens are generic, never named after a component** (owner, 2026-10-17). Sizes come from the space and control scales, widths from `container-*`, corners from `radius-*`, elevation from `shadow-level-1/2/3` and `shadow-up-1/2`, layers from `z-sticky/floating/backdrop/overlay`, motion from `dur-fast/base/slow`. No `app-bar`, `chip`, `calendar-cell` or similar. When a value is missing, the design-system owner adds it as a generic step or asks the owner.
 5. Use only the class names listed in the Phase 1 contract in `PROGRESS.md`, plus Tailwind's own defaults. Tailwind silently drops a name it does not know, so a made-up name like `px-space-18` or `text-small` renders nothing. `check-ui.mjs` fails on them.
 6. Both themes must work: light, and dark (the `dark` class on `<html>`).
 7. Charts use `chart-1` … `chart-5` and `chart-rest`, always with labels or a legend.
@@ -56,7 +57,7 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
 ## 4. Typography
 
 1. Fonts: **Figtree** for all interface text, **Bricolage Grotesque** for display only. Both are self-hosted woff2 loaded with `next/font/local`. Never use `next/font/google`, because Google-hosted fonts break the Turbopack build (see `src/app/layout.tsx`). No other typeface.
-2. Use only the type styles in `tokens.json`: `hero-figure`, `page-title`, `screen-title`, `figure`, `title`, `heading`, `body`, `body-strong`, `label`, `caption`, `overline`, `tab-label`. Use them through the Tailwind utilities from Phase 1. No other sizes, line heights or letter-spacing.
+2. Use only the type styles in `tokens.json`: `hero-figure`, `page-title`, `screen-title`, `figure`, `title`, `heading`, `body`, `body-strong`, `label`, `caption`, `overline`, `micro`. Use them through the Tailwind utilities from Phase 1. No other sizes, line heights or letter-spacing.
 3. 11px is the smallest text; 9px is gone. Weights are 500, 600, 700 and 800 only.
 4. All numbers use tabular figures. Amounts use Indian grouping (₹11,98,842). Dates read "13 Oct" in lists and dd/mm/yyyy in inputs.
 5. The display face is only for: the one hero figure on a screen, desktop page titles, and empty, offline and auth headlines.
@@ -77,17 +78,18 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
    - **Dialog**: one component for every overlay. An unpadded shell; the body is the only scroll container; the footer is config-driven with at most two actions plus an optional tertiary destructive action (far left on desktop, end of the body on phone); headerless dialogs take an `srTitle`.
    - **Dates**: DateField shows and accepts dd/mm/yyyy, with a calendar to pick from. Never `<input type="date">`.
    - **Lists**: real server-side pagination, with the Pager above and below the list.
-6. On phone, every Dialog renders as a bottom sheet: drag handle, no ×, swipe down or tap the scrim to close, footer pinned. Desktop dialogs keep ×. The viewport picks the form; pages never choose.
+6. On phone, every Dialog renders as a bottom sheet: drag handle, no ×, swipe down or tap the backdrop to close, footer pinned. Desktop dialogs keep ×. The viewport picks the form; pages never choose.
+6a. **Menus, selects, DateField's calendar and every other dropdown never become a sheet** (owner, 2026-10-16). They look and work like a normal dropdown at every width; Popover and Radix DropdownMenu flip above the trigger when there is no room below.
 7. Destructive actions confirm first with a **ConfirmDialog** that says what goes and what stays. Reversible actions confirm afterwards with a **Toast** that has Undo.
 
 ## 5b. Composition (no duplicates)
 
-1. **Layers.** Tokens → primitives (Icon, Button, Badge, Avatar, Checkbox, Switch, TextField, TextArea, CategoryChip, StatusWords, ProgressBar, Kbd, Skeleton) → patterns (Popover, Dialog, Menu, Select, DateField, SearchField, FilterChip, Banner, Toast, ListRow, Card, SectionHeader, EmptyState) → composites (TransactionRow, RuleCard, KpiTile, Widget, Pager, SelectionBar, SwipeActions, DropZone, DateTile, SegmentedControl, Tabs) → shell (AppBar, TabBar, Rail, TopBar). A component uses the ones below it; it never re-draws them.
+1. **Layers.** Tokens → primitives (Icon, Button, Badge, Avatar, Checkbox, Switch, TextField, TextArea, StatusWords, ProgressBar, Kbd, Skeleton, Text, Divider) → patterns (Popover, Dialog, Menu, Select, DateField, SearchField, FilterChip, Banner, Toast, ListRow, Card, SectionHeader, EmptyState) → composites (KpiTile, Widget, Pager, SelectionBar, SwipeActions, DropZone, DateTile, SegmentedControl, Tabs) → shell (TabBar, Rail, TopBar, Root) → **organisms in the app** (TransactionRow, RuleCard, Illustration, Logo, SettingsToggle). A component uses the ones below it; it never re-draws them. Dinero never imports from organisms.
 2. **Reuse, never copy.** If a component needs a button, count bubble, avatar, checkbox, icon, popover, section header or card, it imports that component. Hand-drawing one (a styled `<button>`, a `<span>` pill, a typed ▾) is a rule violation. Each README's **Built from** section lists what it must import; reviews check the imports against it.
 3. **Variants are props.** A variant is never its own exported component (no `Note`, no `ReadOnlyRow`, no `ListRowIconTile`). Compound parts of one component (`Card.Header`, `Dialog.Footer`) are fine.
 4. **One component per concept.** Before building something new, look for an existing component that does it. A new component that looks or behaves like an existing one is an open question, not a build.
 5. **Shared behaviour lives in hooks** (`useSwipe`, the sheet drag), never copied between components.
-6. **No app content inside components.** A design-system component never contains FinanceOS-specific things: no navigation items, routes, menu items, action lists, domain copy ("Add statements", "Set category", "Delete rule"), counts, user names or sample data. All of it arrives through props from the page or the app shell; stories supply realistic examples. Generic control words may be overridable defaults (Close, Clear, Cancel, Retry, Undo, Today, "Search…", "Loading…", Previous and Next page). Artwork inside Illustration is the only exception. `check-ui` fails on route literals in components.
+6. **No app content inside Dinero components.** (Organisms are the place for it.) A Dinero component never contains FinanceOS-specific things: no navigation items, routes, menu items, action lists, domain copy ("Add statements", "Set category", "Delete rule"), counts, user names or sample data. All of it arrives through props from the page or the app shell; stories supply realistic examples. Generic control words may be overridable defaults (Close, Clear, Cancel, Retry, Undo, Today, "Search…", "Loading…", Previous and Next page). Artwork inside Illustration is the only exception. `check-ui` fails on route literals in components.
 7. **Every state is visible.** Interactive components show hover, pressed (different from hover), keyboard focus, disabled and, where it applies, loading and selected, using the state tokens (`bg-hover`, `bg-pressed`, `brand-hover`, `brand-pressed`, `danger-hover`, `danger-pressed`). Nothing moves or changes size between states.
 8. **Server or client, on purpose.** A component that uses state, effects, refs, event handlers, Radix, Sonner or browser APIs starts with `'use client'`. A purely presentational component (Badge, Card, ListRow without handlers, SectionHeader, Banner, Skeleton…) has no directive and no hooks, so a Server Component page can render it with no client JavaScript. Never put `'use client'` in `index.ts`.
 
@@ -98,7 +100,7 @@ These are the rules a mature design system (Radix, Material, Polaris, Atlassian)
 **Responsive**
 1. **One component, one structure, one code path.** Phone and desktop are the same markup; what differs (size, position, what shows) is written with Tailwind breakpoint classes, mobile first. Never two render functions, never `renderPhone` / `renderDesktop`, never a `variant="phone" | "desktop"` prop. The page never chooses a form.
 2. **One switch: `lg` (1024px).** Below it is the phone form, from it the desktop form. Components use only `lg:` for that switch (no `sm:`, `md:`, `xl:` inside components).
-3. **No viewport detection in JavaScript** (`useMediaQuery`, `useIsPhone`, `matchMedia`, `innerWidth`). The server can't know the width, so it renders the wrong form and the page jumps. The one exception is **ResponsiveOverlay**, the single shared piece that opens a floating Popover on desktop and a bottom-sheet Dialog on phone (Select, Menu, DateField). It renders only while open, so it never causes a server/client mismatch. Nothing else may use these hooks.
+3. **No viewport detection in JavaScript** (`useMediaQuery`, `useIsPhone`, `matchMedia`, `innerWidth`), with no exceptions. The server can't know the width, so it renders the wrong form and the page jumps. (ResponsiveOverlay was deleted when dropdowns stopped becoming sheets, §5.6a.)
 4. **Touch vs mouse is not phone vs desktop.** Long-press responds to touch input (`pointerType === 'touch'`) on any screen. The desktop checkbox column is shown with `hidden lg:flex`, not by a hook.
 
 **API**
@@ -115,7 +117,7 @@ These are the rules a mature design system (Radix, Material, Polaris, Atlassian)
    - `selected` / `onSelectedChange`.
 
    Every stateful component works both controlled and uncontrolled, through the one shared `useControllableState` hook. Never `onChange` for a value, never `isOpen`. The exception is text entry (TextField, TextArea, SearchField), which keeps its input's native `onChange` like every React form library.
-7. **Events are named for what the user did to the component**, not what the app does with it: `onSelect`, `onTrigger`, `onRemove`, `onOpenDetail`. Never `onApprove`, `onEditRule`, `onSetCategory`. Actions the app defines arrive as data (`actions={[{ id, label, icon, onSelect }]}`).
+7. **Events are named for what the user did to the component**, not what the app does with it: `onSelect`, `onTrigger`, `onRemove`, `onOpenDetail`. Never `onApprove`, `onEditRule`, `onSetCategory`. Actions the app defines arrive as data (`actions={[{ id, label, icon, onSelect }]}`). **A single button a component draws itself is `action={{ label, onSelect }}`** (Banner, Toast, Select, KpiTile, Widget, EmptyState); slots that hold links or several buttons (Card header, Dialog footer) stay nodes.
 8. **One name per prop.** No aliases, no "legacy" or "backwards compatible" props.
 9. **Behaviours wrap, they don't embed.** Swipe, long-press and drag are added from outside, by a wrapper component (SwipeActions) or a shared hook (`useSwipe`, `useLongPress`, `useSheetDrag`). No component carries props like `swipeable` or `swipeLeft`, and none wraps itself in a behaviour. Any component can be made swipeable by the page wrapping it.
 10. **Composition:**
@@ -128,7 +130,7 @@ These are the rules a mature design system (Radix, Material, Polaris, Atlassian)
 **Proof**
 12. Each README lists **Props** (with the names above), **Variants** and **Built from**. Stories are args-driven and interactive (§5a). Tests cover behaviour.
 13. `check-ui.mjs` enforces what can be checked mechanically:
-    - viewport hooks outside ResponsiveOverlay;
+    - viewport hooks anywhere;
     - `phone` / `desktop` variant props;
     - old imports;
     - unknown classes;
@@ -148,17 +150,22 @@ These are the rules a mature design system (Radix, Material, Polaris, Atlassian)
 
 ## 5a. Storybook
 
-1. Each component gets one story per variant in its README, named exactly as the README names it, plus an **All variants** story that shows them side by side for review. **All variants** is the first story, so it opens by default. Story titles are `DS/<Group>/<Name>`, using the README's group (Foundations, Navigation, Actions, Inputs, Data display, Feedback, Overlays). There is no Screens group: pages are not components.
-2. **Stories are driven by args.** Every prop shows in the Controls panel with a sensible control (a dropdown for each variant prop); each variant story is the component with different `args`. A story that hard-codes markup the Controls can't change is not allowed, except All variants. Every story is interactive in Storybook: a component with a controlled prop (`checked`, `value`, `open`, `selected`) is wired with `useArgs` (or uncontrolled defaults) so clicking, typing and toggling work in the canvas and update the Controls panel.
-3. Every story can be viewed in light and dark and at phone (390px) and desktop (1440px) widths, through the global toolbar set up in Phase 1.
-4. Stories use realistic FinanceOS content: ₹ amounts with Indian grouping, real-looking merchants and accounts like the boards. Never lorem ipsum.
-5. Before a component is set to **Ready for review**, open its stories in a browser and compare them with its `preview.html` and its board, at 390px and 1440px, in light and dark. The log line names the stories you compared and any differences left open. Passing the commands in §10 is not enough.
-6. Accessibility (ARIA roles, screen-reader text, contrast audits) is out of scope by owner decision. Don't spend work on it.
-7. No stories for old components.
+Storybook consumes components exactly as an app would, so a developer can see and try their behaviour. It never builds UI of its own.
+
+1. **One story per README variant or state**, named as the README names it. No "All variants" story: every meta has `tags: ['autodocs']`, and the autodocs page shows all stories together without controls (owner, 2026-10-16). Story titles are `DS/<Group>/<Name>` for Dinero and `Organisms/<Name>` for organisms.
+2. **Stories are driven by args.** Every public prop has a control, or is listed in `argTypes` with `control: false` when it is a node or a function. A component with a controlled prop is wired with `useArgs` so the canvas is interactive. No `useState`, timers or data processing in stories. No two stories differ only by viewport or by one control value.
+3. **Callbacks are actions:** every `on…` prop is `fn()` from `storybook/test` (set globally in `.storybook/preview.tsx`). Never `() => {}`, `alert` or `console.log`.
+4. **No hand-made UI in stories.** Frames and backgrounds come from the global decorator and `parameters.layout`; explanations go in `parameters.docs.description`. A story may place several Dinero components side by side with layout classes only (§5d applies to stories). Never restyle a component in a story.
+5. Stories import from `@/components/ds` or `@/components/organisms`, never by relative path.
+6. Stories use realistic FinanceOS content: ₹ amounts with Indian grouping, real-looking merchants and accounts like the boards. Never lorem ipsum.
+7. Every story can be viewed in light and dark and at phone (390px) and desktop (1440px) widths, through the global toolbar.
+8. **No play functions and no interaction tests in Storybook** (owner, 2026-10-16). The developer checks behaviour by hand; E2E covers flows. Unit tests (`*.test.tsx`) stay.
+9. Before a component is set to **Ready for review**, open its stories at 390px and 1440px, in light and dark, and compare them with its README and board. Passing the commands in §10 is not enough.
+10. Accessibility (ARIA roles, screen-reader text, contrast audits) is out of scope by owner decision. Don't spend work on it.
 
 ## 6. Icons
 
-1. New components draw icons only through the **Icon** component: **Phosphor** (`@phosphor-icons/react`, SSR entry) in the **bold** weight, picked by registry name from `design-system/icons.json`, at `sm` 14, `md` 16 or `lg` 20 (the `icon-*` tokens). Never import Lucide or Phosphor directly in a design-system component, never type a glyph (▾ ✕ ✓ › ‹) as an icon, and every icon inside one control is the same size. A new icon goes into the registry with the owner's approval first. Old components keep Lucide until Phase 4. (Migration: Icon still wraps Lucide until the round after the restructure switches it to Phosphor; until then keep using Icon as it is.)
+1. New components draw icons only through the **Icon** component: **Phosphor** (`@phosphor-icons/react`, SSR entry) in the **bold** weight, picked by registry name from `design-system/icons.json` (registry names describe the glyph, like `wallet` or `gift`, never an app section; the app maps its sections to glyphs), at `sm` 14, `md` 16 or `lg` 20 (the `icon-*` tokens). Never import Lucide or Phosphor directly in a design-system component, never type a glyph (▾ ✕ ✓ › ‹) as an icon, and every icon inside one control is the same size. A new icon goes into the registry with the owner's approval first. Old components keep Lucide until Phase 4. (Migration: Icon still wraps Lucide until the round after the restructure switches it to Phosphor; until then keep using Icon as it is.)
 2. An icon is allowed only when it **is** a control (close, more, back, chevron, search, delete), navigation (tab bar, rail) or progress (spinner).
 3. No icons in toasts, banners, empty states, badges, section headers or card titles. No emoji.
 

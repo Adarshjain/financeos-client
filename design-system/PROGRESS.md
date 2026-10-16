@@ -10,6 +10,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
 | 2 | New component library in Storybook, one component at a time, owner-reviewed | Ready for review (44 components; Storybook feedback round 2 complete) |
 | 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: /ds review area, login, signup, offline Ready for review) |
+| 3b | Audit implementation: apply the 673 owner-approved conventions decisions (`design-system/specs/audit/`) to Dinero, organisms, stories and the /ds pages | In progress (step 1 done by Claude 2026-10-17: tokens, RULES, specs, check-ui; steps 2–4 by Antigravity) |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
 Statuses: Not started · In progress · Done · Blocked (with the reason).
@@ -224,6 +225,22 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-16 · **More sheet tiles are a Button variant** (owner): `variant="tile"` with `iconPosition` `start` (row) or `top` (stacked), following Fluent's CompoundButton and Polaris's full-width start-aligned Button. No separate Tile component.
 - 2026-10-15 · Accessibility is out of scope: no ARIA, screen-reader or contrast work. The Storybook accessibility addon stays installed but is not a check.
 - 2026-10-15 · Pages under `/ds/…` may use components marked Ready for review; they are a review area and the live app is untouched. Only a swap into a live route requires Approved components.
+
+- 2026-10-17 · **Conventions audit approved** (https://claude.ai/artifact/L7sSF76ZtsZJDsQy6DLUYC): 673 findings decided and approved. Global decisions are in `design-system/specs/audit/00-global.md` (G1–G15); per-component checklists are in `design-system/specs/audit/<Name>.md`. Together they override older README text and earlier Owner decisions where they differ. Headlines:
+  - organisms layer (TransactionRow, RuleCard, Illustration, Logo, SettingsToggle);
+  - Badge absorbs CategoryChip;
+  - FilterChip is aligned with Badge;
+  - Switch is bare;
+  - dropdowns never become sheets (ResponsiveOverlay and useMediaQuery deleted);
+  - one action shape `action={{ label, onSelect }}`;
+  - Banner action on the right plus dismiss;
+  - generic tokens only;
+  - autodocs instead of All variants, with no play functions;
+  - Dinero utils for dates and counts;
+  - Button `layout` replaces tile, and google is removed.
+- 2026-10-17 · **Generic tokens only** (owner). Component-named tokens were migrated to generic steps (commit eb39939). A missing value is added as a generic step, or asked.
+- 2026-10-17 · Icon registry: add `minus` (Phosphor Minus) for Checkbox's mixed state, which closes the 2026-10-15 open question (decided by Claude at the owner's request).
+- 2026-10-17 · This round only, Antigravity may edit component READMEs, `.storybook/`, `design-system/icons.json` and `tailwind.config.ts`, exactly as the audit specs say. Tokens stay read-only.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
