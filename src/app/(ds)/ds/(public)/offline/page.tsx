@@ -1,9 +1,12 @@
+import type { Metadata } from 'next';
 import React from 'react';
 
+import { OfflineContent } from './OfflineContent';
+
+export const metadata: Metadata = {
+  title: 'Offline · FinanceOS',
+};
+
 export default function DsOfflinePage() {
-  return (
-    <div className="p-space-24">
-      <h1 className="text-screen-title font-display font-bold">You&apos;re offline</h1>
-    </div>
-  );
+  return <OfflineContent />;
 }
