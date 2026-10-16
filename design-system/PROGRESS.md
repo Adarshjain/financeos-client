@@ -254,6 +254,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 3b · Antigravity · Popover (G12): added directional slide animation (data-side-bottom:slide-in-from-top-1 data-side-top:slide-in-from-bottom-1), added contentProps forwarding, and added dev warning when contentClassName is passed without a trigger; updated stories to args-driven Default and WithCompactTrigger with fn() onOpenChange and min-h-64 decorator, removed AllVariants and raw div menus; updated unit tests (6 passed); updated README. Checks: npm run typecheck, vitest (Popover 6 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
+
 - 2026-10-17 · Phase 3b · Antigravity · useSheetDrag: wrapped pointer handlers in useCallback, returned only { dragOffset, reset, isDragging, dragProps } without loose duplicates, added fast flick velocityThreshold support; added unit tests (6 passed). Checks: npm run typecheck, vitest (useSheetDrag, Dialog 22 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
 
 - 2026-10-17 · Phase 3b · Antigravity · useSwipe: gave onPointerCancel its own handler function clearing drag and offset without invoking swipe callbacks; added unit tests (4 passed). Checks: npm run typecheck, vitest (useSwipe, SwipeActions 11 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.

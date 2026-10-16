@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import React, { useState } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { Popover } from './Popover';
 
@@ -19,7 +19,7 @@ describe('Popover', () => {
     expect(screen.getByText('Popover body content')).toBeInTheDocument();
   });
 
-  it('applies min-w-popover-trigger and max-w-container-sm by default', () => {
+  it('applies directional slide animation and sizing tokens', () => {
     render(
       <Popover
         defaultOpen
@@ -36,6 +36,8 @@ describe('Popover', () => {
     expect(content).toHaveClass('w-auto');
     expect(content).toHaveClass('shadow-level-2');
     expect(content).toHaveClass('rounded-ds-lg');
+    expect(content).toHaveClass('data-side-bottom:slide-in-from-top-1');
+    expect(content).toHaveClass('data-side-top:slide-in-from-bottom-1');
   });
 
   it('supports controlled open state and onOpenChange', () => {
@@ -72,5 +74,38 @@ describe('Popover', () => {
     expect(screen.getByText('Escape Test')).toBeInTheDocument();
     fireEvent.keyDown(document.body, { key: 'Escape' });
     expect(screen.queryByText('Escape Test')).not.toBeInTheDocument();
+  });
+
+  it('forwards contentProps to PopoverContent', () => {
+    render(
+      <Popover
+        defaultOpen
+        trigger={<button type="button">Trigger</button>}
+        contentProps={{ 'data-testid': 'custom-content' } as Record<string, unknown>}
+      >
+        <div>Content</div>
+      </Popover>,
+    );
+
+    expect(screen.getByTestId('custom-content')).toBeInTheDocument();
+  });
+
+  it('warns in dev when contentClassName is passed without a trigger', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    render(
+      <Popover contentClassName="unused-class">
+        <Popover.Trigger asChild>
+          <button type="button">Custom Trigger</button>
+        </Popover.Trigger>
+        <Popover.Content>
+          <div>Composition Content</div>
+        </Popover.Content>
+      </Popover>,
+    );
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining('`contentClassName` was passed without a `trigger`'),
+    );
+    warnSpy.mockRestore();
   });
 });
