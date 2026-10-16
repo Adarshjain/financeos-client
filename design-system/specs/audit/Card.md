@@ -50,6 +50,7 @@ Read `00-global.md` first. Its rules override anything below.
 
 - [ ] **f34536ca7** · Card paddings are fixed and inconsistent (14 vs 16)
   - Do: Owner: Lets use px-space-16 even in footer, else content wouldnt align
+  - Generic version the owner refers to: Use one horizontal padding (`px-space-16`) for header, row, footer and empty. If density is needed, add `size?: 'sm' | 'md'` on `Card` that changes it.
 - [ ] **f6ccce928** · Card AllVariants story hard-codes every card
   - Do: Delete the AllVariants story; the autodocs page shows every story, with no controls on the docs page (G9).
 - [ ] **ffca4095c** · Card stories show app data and a kitchen sink

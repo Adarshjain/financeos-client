@@ -29,10 +29,7 @@ Read `00-global.md` first. Its rules override anything below.
   ```
 - [ ] **f6c1631a7** · DateField ignores placeholder in range mode
   - Now: `placeholder={range ? 'dd/mm/yyyy – dd/mm/yyyy' : placeholder}` (DateField.tsx:420) throws away a given placeholder in range mode.
-  - Do: Use the passed `placeholder` first and build the default from `format` only when none is given.
-  ```tsx
-  placeholder={placeholder ?? defaultPlaceholder(format, range)}
-  ```
+  - Do: Use the passed `placeholder` when given. The default is `dd/mm/yyyy`, or `dd/mm/yyyy – dd/mm/yyyy` in range mode. There is no `format` prop (G10: the display is always dd/mm/yyyy). _(per G10)_
 - [ ] **fb8ad7219** · DateField AllVariants has a hand-built wrapper
   - Now: `<div className="space-y-space-24 max-w-lg font-text">` in DateField.stories.tsx:46.
   - Do: Delete the story, and use `parameters.layout: 'padded'` plus a decorator for width.
@@ -50,6 +47,10 @@ Read `00-global.md` first. Its rules override anything below.
 
 - [ ] **ff40ccbbd** · DateField's public value is a formatted string
   - Do: Owner: Lets go with generic version suggestion but with one change, lets not try to duplicate date formatting logic in two places i.e. Dinero and the App. Let Dinero expose set of utils which will include date utils which app can use. This way logic stays in one place.
+  - Generic version the owner refers to: Move the date helpers to a small `dateFormat.ts` beside the component. Change the props to ISO strings (`value`, `minDate`, `maxDate`, `startDate`, `endDate`) and format only for display. The app converts if it must.
+  ```tsx
+  <DateField value="2026-10-13" minDate="2026-01-01" onValueChange={setIso} />
+  ```
 - [ ] **f70c5026e** · DateField stories pass undefined value and AllVariants is fixed
   - Do: Delete the AllVariants story; the autodocs page shows every story, with no controls on the docs page (G9).
 - [ ] **fb3b2609a** · DateField AllVariants duplicates stories; calendar never shown open
