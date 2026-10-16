@@ -1,36 +1,52 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
 
-import { Avatar } from './Avatar';
+import { Avatar } from '@/components/ds';
+
+const sampleImage =
+  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="%232563eb"/><circle cx="32" cy="24" r="12" fill="%2393c5fd"/><path d="M16 54 C16 42 24 38 32 38 C40 38 48 42 48 54 Z" fill="%2393c5fd"/></svg>';
 
 const meta: Meta<typeof Avatar> = {
   title: 'DS/Data display/Avatar',
   component: Avatar,
   parameters: {
-    layout: 'padded',
+    layout: 'centered',
+    docs: {
+      description: {
+        component:
+          'Identity marks: rounded initials for accounts, circles for people, the bank\'s own logo for institutions.',
+      },
+    },
+  },
+  args: {
+    initials: 'JD',
+    size: 'md',
+    variant: 'rounded',
+    tone: 'neutral',
   },
   argTypes: {
     variant: {
       control: 'select',
-      options: ['account', 'person', 'logo'],
-      description: 'The identity mark shape and fill: account (rounded square), person (circle), logo (brand square)',
+      options: ['rounded', 'circle', 'square'],
+    },
+    tone: {
+      control: 'select',
+      options: ['neutral', 'brand', 'inverse'],
     },
     size: {
       control: 'select',
       options: ['sm', 'md', 'lg'],
-      description: 'The size scale: sm (24px), md (32px), lg (44px)',
     },
     initials: {
       control: 'text',
-      description: 'Initials fallback text',
     },
     src: {
       control: 'text',
-      description: 'Image URL for logo or person',
     },
     alt: {
       control: 'text',
-      description: 'Image alt text',
+    },
+    imgProps: {
+      control: false,
     },
   },
 };
@@ -38,120 +54,48 @@ const meta: Meta<typeof Avatar> = {
 export default meta;
 type Story = StoryObj<typeof Avatar>;
 
-export const AllVariants: Story = {
-  name: 'All variants',
-  render: () => (
-    <div className="space-y-space-24 max-w-lg font-text">
-      <div>
-        <h3 className="font-text text-overline uppercase text-ink-4 mb-space-8">
-          Account (sm, md, lg)
-        </h3>
-        <div className="flex items-center gap-space-8 p-space-12 rounded-ds-lg border border-line bg-surface">
-          <Avatar variant="account" size="sm">HD</Avatar>
-          <Avatar variant="account" size="md">HD</Avatar>
-          <Avatar variant="account" size="lg">HD</Avatar>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="font-text text-overline uppercase text-ink-4 mb-space-8">
-          Person (sm, md, lg)
-        </h3>
-        <div className="flex items-center gap-space-8 p-space-12 rounded-ds-lg border border-line bg-surface">
-          <Avatar variant="person" size="sm">PN</Avatar>
-          <Avatar variant="person" size="md">PN</Avatar>
-          <Avatar variant="person" size="lg">PN</Avatar>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="font-text text-overline uppercase text-ink-4 mb-space-8">
-          Logo (sm, md, lg fallback to brand initials)
-        </h3>
-        <div className="flex items-center gap-space-8 p-space-12 rounded-ds-lg border border-line bg-surface">
-          <Avatar variant="logo" size="sm">HD</Avatar>
-          <Avatar variant="logo" size="md">HD</Avatar>
-          <Avatar variant="logo" size="lg">HD</Avatar>
-        </div>
-      </div>
-
-      <div>
-        <h3 className="font-text text-overline uppercase text-ink-4 mb-space-8">
-          With Image (logo & person)
-        </h3>
-        <div className="flex items-center gap-space-8 p-space-12 rounded-ds-lg border border-line bg-surface">
-          <Avatar
-            variant="person"
-            size="md"
-            initials="AM"
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=128&h=128&q=80"
-            alt="Arjun Mehta"
-          />
-          <Avatar
-            variant="person"
-            size="lg"
-            initials="AM"
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=128&h=128&q=80"
-            alt="Arjun Mehta"
-          />
-        </div>
-      </div>
-    </div>
-  ),
-};
-
-export const Account: Story = {
-  name: 'Account',
+export const Default: Story = {
   args: {
-    variant: 'account',
     initials: 'HD',
-    size: 'md',
+    variant: 'rounded',
+    tone: 'neutral',
   },
 };
 
 export const Person: Story = {
-  name: 'Person',
   args: {
-    variant: 'person',
     initials: 'PN',
-    size: 'md',
+    variant: 'circle',
+    tone: 'brand',
   },
 };
 
-export const Logo: Story = {
-  name: 'Logo',
+export const SquareInverse: Story = {
   args: {
-    variant: 'logo',
-    initials: 'HD',
-    size: 'md',
+    initials: 'SB',
+    variant: 'square',
+    tone: 'inverse',
   },
 };
 
 export const Small: Story = {
-  name: 'Small',
   args: {
-    variant: 'account',
-    initials: 'HD',
     size: 'sm',
+    initials: 'HD',
   },
 };
 
 export const Large: Story = {
-  name: 'Large',
   args: {
-    variant: 'person',
-    initials: 'PN',
     size: 'lg',
+    initials: 'HD',
   },
 };
 
 export const WithImage: Story = {
-  name: 'WithImage',
   args: {
-    variant: 'person',
-    size: 'md',
-    initials: 'AM',
-    src: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=128&h=128&q=80',
-    alt: 'Arjun Mehta',
+    src: sampleImage,
+    initials: 'JD',
+    alt: 'User profile image',
   },
 };

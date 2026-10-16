@@ -4,24 +4,33 @@ import React, { forwardRef, useState } from 'react';
 
 import { cn } from '../cn';
 
-export type AvatarVariant = 'account' | 'person' | 'logo';
-export type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
+export type AvatarVariant = 'rounded' | 'circle' | 'square';
+export type AvatarTone = 'neutral' | 'brand' | 'inverse';
+export type AvatarSize = 'sm' | 'md' | 'lg';
 
 export interface AvatarProps extends React.HTMLAttributes<HTMLSpanElement> {
   variant?: AvatarVariant;
+  tone?: AvatarTone;
   size?: AvatarSize;
   initials?: string;
   src?: string;
   alt?: string;
+  imgProps?: React.ImgHTMLAttributes<HTMLImageElement>;
 }
 
 const variantStyles: Record<AvatarVariant, string> = {
-  account: 'bg-canvas text-ink-2 rounded-ds-md',
-  person: 'bg-brand-tint text-brand-strong rounded-ds-pill',
-  logo: 'bg-brand text-on-brand rounded-ds-sm',
+  rounded: 'rounded-ds-md',
+  circle: 'rounded-ds-pill',
+  square: 'rounded-ds-sm',
 };
 
-const sizeStyles: Record<'sm' | 'md' | 'lg', string> = {
+const toneStyles: Record<AvatarTone, string> = {
+  neutral: 'bg-canvas text-ink-2',
+  brand: 'bg-brand-tint text-brand-strong',
+  inverse: 'bg-brand text-on-brand',
+};
+
+const sizeStyles: Record<AvatarSize, string> = {
   sm: 'h-space-24 w-space-24 text-micro font-bold',
   md: 'h-control-md w-control-md text-label font-bold',
   lg: 'h-control-xl w-control-xl text-heading font-extrabold',
@@ -30,27 +39,31 @@ const sizeStyles: Record<'sm' | 'md' | 'lg', string> = {
 /**
  * Identity marks: rounded-square initials for accounts, circles for people,
  * the bank's own logo for institutions.
- *
- * Sizes: One scale for every variant: sm 24 (lists and pickers), md 32 (default), lg 44 (profile, account header).
- * The variant changes shape and fill, never the size.
  */
 export const Avatar = forwardRef<HTMLSpanElement, AvatarProps>(
   (
     {
       children,
       className,
-      variant = 'account',
+      variant = 'rounded',
+      tone = 'neutral',
       size = 'md',
       initials,
       src,
       alt,
+      imgProps,
       ...props
     },
     ref,
   ) => {
+    const [prevSrc, setPrevSrc] = useState(src);
     const [imageError, setImageError] = useState(false);
 
-    const normalizedSize: 'sm' | 'md' | 'lg' = size === 'xl' ? 'lg' : size;
+    if (prevSrc !== src) {
+      setPrevSrc(src);
+      setImageError(false);
+    }
+
     const displayInitials = initials ?? (typeof children === 'string' ? children : null);
 
     return (
@@ -60,7 +73,8 @@ export const Avatar = forwardRef<HTMLSpanElement, AvatarProps>(
           'inline-flex items-center justify-center font-text leading-none',
           'shrink-0 overflow-hidden select-none whitespace-nowrap',
           variantStyles[variant],
-          sizeStyles[normalizedSize],
+          toneStyles[tone],
+          sizeStyles[size],
           className,
         )}
         {...props}
@@ -68,10 +82,13 @@ export const Avatar = forwardRef<HTMLSpanElement, AvatarProps>(
         {src && !imageError ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
+            key={src}
             src={src}
             alt={alt ?? displayInitials ?? 'Avatar'}
+            loading="lazy"
             onError={() => setImageError(true)}
             className="h-full w-full object-cover"
+            {...imgProps}
           />
         ) : (
           displayInitials ?? children

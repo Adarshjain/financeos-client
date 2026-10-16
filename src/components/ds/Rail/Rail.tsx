@@ -242,7 +242,8 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
 
             {user && (
               <Avatar
-                variant="person"
+                variant="circle"
+                tone="brand"
                 size="sm"
                 src={user.avatar}
                 initials={derivedInitials}
