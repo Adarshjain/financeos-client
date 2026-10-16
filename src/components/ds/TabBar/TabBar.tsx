@@ -64,11 +64,8 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
               role="tab"
               aria-selected={isActive}
               aria-current={isActive ? 'page' : undefined}
-              onClick={(e) => {
-                if (onSelect) {
-                  e.preventDefault();
-                  onSelect(item.id);
-                }
+              onClick={() => {
+                onSelect?.(item.id);
               }}
               className={cn(
                 'flex-1 min-w-0 flex flex-col items-center justify-center gap-space-2 font-text text-tab-label transition-colors duration-fast cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded-ds-sm active:text-ink-3',

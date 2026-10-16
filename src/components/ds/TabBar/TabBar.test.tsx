@@ -64,6 +64,44 @@ describe('TabBar', () => {
     expect(handleSelect).toHaveBeenCalledWith('more');
   });
 
+  it('renders an item with href as a link and does not preventDefault on click', () => {
+    const handleSelect = vi.fn();
+    render(
+      <TabBar
+        items={[{ id: 'home', label: 'Home', icon: 'home', href: '/dashboard' }]}
+        onSelect={handleSelect}
+      />,
+    );
+
+    const tab = screen.getByRole('tab', { name: /Home/i });
+    expect(tab.tagName).toBe('A');
+    expect(tab).toHaveAttribute('href', '/dashboard');
+
+    const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+    tab.dispatchEvent(clickEvent);
+
+    expect(handleSelect).toHaveBeenCalledWith('home');
+    expect(clickEvent.defaultPrevented).toBe(false);
+  });
+
+  it('renders an item without href as a button and calls onSelect on click', () => {
+    const handleSelect = vi.fn();
+    render(
+      <TabBar
+        items={[{ id: 'more', label: 'More', icon: 'menu' }]}
+        onSelect={handleSelect}
+      />,
+    );
+
+    const tab = screen.getByRole('tab', { name: /More/i });
+    expect(tab.tagName).toBe('BUTTON');
+    expect(tab).toHaveAttribute('type', 'button');
+    expect(tab).not.toHaveAttribute('href');
+
+    fireEvent.click(tab);
+    expect(handleSelect).toHaveBeenCalledWith('more');
+  });
+
   it('renders count badges on items with counts', () => {
     render(<TabBar items={sampleItems} current="home" />);
 
