@@ -14,9 +14,9 @@ test.describe('/ds Auth UI (@ui)', () => {
   test('signup flow: fill form, submit -> dashboard; wrong invite shows error', async ({ page }) => {
     // 1. Wrong invite shows user-readable error message
     await page.goto(`${E2E_CLIENT_URL}/ds/signup`);
-    await page.getByLabel('Invite code').fill('wrong-code-xyz');
     await page.getByLabel('Email').fill(nextEmail('bad-invite'));
-    await page.getByLabel('Password').fill(DEFAULT_PASSWORD);
+    await page.getByLabel('Password', { exact: true }).fill(DEFAULT_PASSWORD);
+    await page.getByLabel('Invite code', { exact: true }).fill('wrong-code-xyz');
     await page.getByRole('button', { name: 'Create account' }).click();
 
     // Assert error alert inside form is visible and contains readable text (not a status code)
@@ -30,9 +30,9 @@ test.describe('/ds Auth UI (@ui)', () => {
 
     // 2. Successful signup lands on dashboard
     const goodEmail = nextEmail('good-signup');
-    await page.getByLabel('Invite code').fill(INVITE_CODE);
     await page.getByLabel('Email').fill(goodEmail);
-    await page.getByLabel('Password').fill(DEFAULT_PASSWORD);
+    await page.getByLabel('Password', { exact: true }).fill(DEFAULT_PASSWORD);
+    await page.getByLabel('Invite code', { exact: true }).fill(INVITE_CODE);
     await page.getByRole('button', { name: 'Create account' }).click();
 
     await page.waitForURL('**/dashboard', { timeout: 15000 });
@@ -41,9 +41,9 @@ test.describe('/ds Auth UI (@ui)', () => {
 
   test('signup password under 8 characters shows danger banner before submit', async ({ page }) => {
     await page.goto(`${E2E_CLIENT_URL}/ds/signup`);
-    await page.getByLabel('Invite code').fill(INVITE_CODE);
     await page.getByLabel('Email').fill(nextEmail('short-pwd'));
-    await page.getByLabel('Password').fill('12345');
+    await page.getByLabel('Password', { exact: true }).fill('12345');
+    await page.getByLabel('Invite code', { exact: true }).fill(INVITE_CODE);
     await page.getByRole('button', { name: 'Create account' }).click();
 
     const alert = page.locator('form [role="alert"]');
@@ -66,12 +66,12 @@ test.describe('/ds Auth UI (@ui)', () => {
 
     // Fill login form
     await page.getByLabel('Email').fill(u.email);
-    await page.getByLabel('Password').fill(u.password);
+    await page.getByLabel('Password', { exact: true }).fill(u.password);
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
     // Lands on /accounts
-    await page.waitForURL('**/accounts', { timeout: 15000 });
-    expect(page.url()).toContain('/accounts');
+    await page.waitForURL((url) => url.pathname === '/accounts', { timeout: 15000 });
+    expect(new URL(page.url()).pathname).toBe('/accounts');
   });
 
   test('login empty submit shows danger banner without navigating', async ({ page }) => {

@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import React from 'react';
 
 import { Rail, TabBar } from '@/components/ds';
+
 import {
   getActiveNavItem,
   shellFooterItems,

@@ -84,38 +84,37 @@ export function SignupForm() {
             </Text>
           </div>
 
-          {/* Account created success banner */}
-          {isSuccess && (
-            <Banner tone="success">Account created! Redirecting…</Banner>
-          )}
-
-          {/* Error banner */}
-          {errorMessage && !isSuccess && (
-            <Banner tone="danger">{errorMessage}</Banner>
-          )}
-
-          {/* 3. Continue with Google */}
-          <Button
-            type="button"
-            variant="google"
-            loading={ssoPending}
-            loadingLabel="Opening Google…"
-            disabled={ssoPending || isPending || isSuccess}
-            onClick={handleGoogleSSO}
-          >
-            Sign up with Google
-          </Button>
-
-          {/* 4. Divider "or" */}
-          <Divider label="or" />
-
-          {/* Form containing 5. Email, 6. Password, 7. Invite code, 8. Button, 9. Terms */}
           <form
             noValidate
             onSubmit={handleSubmit}
             action={formAction}
             className="flex flex-col gap-space-16"
           >
+            {/* Account created success banner */}
+            {isSuccess && (
+              <Banner tone="success">Account created! Redirecting…</Banner>
+            )}
+
+            {/* Error banner */}
+            {errorMessage && !isSuccess && (
+              <Banner tone="danger">{errorMessage}</Banner>
+            )}
+
+            {/* 3. Continue with Google */}
+            <Button
+              type="button"
+              variant="google"
+              loading={ssoPending}
+              loadingLabel="Opening Google…"
+              disabled={ssoPending || isPending || isSuccess}
+              onClick={handleGoogleSSO}
+            >
+              Sign up with Google
+            </Button>
+
+            {/* 4. Divider "or" */}
+            <Divider label="or" />
+
             <div className="flex flex-col gap-space-12">
               <TextField
                 id="email"
