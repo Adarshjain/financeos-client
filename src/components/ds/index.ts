@@ -3,7 +3,6 @@ export * from './Badge/Badge';
 export * from './Banner/Banner';
 export * from './Button/Button';
 export * from './Card/Card';
-export * from './CategoryChip/CategoryChip';
 export * from './Checkbox/Checkbox';
 export * from './cn';
 export * from './DateField/DateField';

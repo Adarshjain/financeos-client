@@ -94,8 +94,8 @@ export const AllVariants: Story = {
           value="₹78,219"
           badges={
             <>
-              <Badge tone="amber">Amex in 2 d</Badge>
-              <Badge tone="grey">Regalia 25 Oct</Badge>
+              <Badge tone="warning">Amex in 2 d</Badge>
+              <Badge tone="neutral">Regalia 25 Oct</Badge>
             </>
           }
         />
@@ -165,8 +165,8 @@ export const WithBadges: Story = {
     value: '₹78,219',
     badges: (
       <>
-        <Badge tone="amber">Amex in 2 d</Badge>
-        <Badge tone="grey">Regalia 25 Oct</Badge>
+        <Badge tone="warning">Amex in 2 d</Badge>
+        <Badge tone="neutral">Regalia 25 Oct</Badge>
       </>
     ),
   },

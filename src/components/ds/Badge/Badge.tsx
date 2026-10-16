@@ -1,78 +1,126 @@
+'use client';
+
+import { Slot } from '@radix-ui/react-slot';
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
 
-export type BadgeTone = 'green' | 'amber' | 'rose' | 'blue' | 'grey';
-export type BadgeCountTone = 'ink' | 'danger' | 'warning';
-export type BadgeVariant = 'count' | 'default';
+export type BadgeTone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
+export type BadgeVariant = 'soft' | 'solid' | 'outline' | 'dashed';
+export type BadgeShape = 'default' | 'rounded';
+export type BadgeSize = 'sm' | 'md';
 
-export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+export interface BadgeProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement | HTMLSpanElement> {
+  tone?: BadgeTone;
   variant?: BadgeVariant;
-  tone?: BadgeTone | BadgeCountTone;
-  count?: number | string;
+  shape?: BadgeShape;
+  size?: BadgeSize;
+  asChild?: boolean;
 }
 
-const toneStyles: Record<BadgeTone, string> = {
-  green: 'bg-positive-tint text-positive-strong',
-  amber: 'bg-warning-tint text-warning',
-  rose: 'bg-danger-tint text-danger',
-  blue: 'bg-info-tint text-info',
-  grey: 'bg-line-soft text-neutral-ink',
+const colorStyles: Record<BadgeVariant, Record<BadgeTone, string>> = {
+  soft: {
+    neutral: 'bg-line-soft text-neutral-ink',
+    success: 'bg-positive-tint text-positive-strong',
+    warning: 'bg-warning-tint text-warning',
+    danger: 'bg-danger-tint text-danger',
+    info: 'bg-info-tint text-info',
+  },
+  solid: {
+    neutral: 'bg-ink text-on-brand',
+    success: 'bg-positive text-on-brand',
+    warning: 'bg-warning text-on-brand',
+    danger: 'bg-danger text-on-brand',
+    info: 'bg-info text-on-brand',
+  },
+  outline: {
+    neutral: 'border border-line bg-subtle text-ink-2',
+    success: 'border border-positive bg-surface text-positive',
+    warning: 'border border-warning-border bg-surface text-warning',
+    danger: 'border border-danger-border bg-surface text-danger',
+    info: 'border border-info bg-surface text-info',
+  },
+  dashed: {
+    neutral: 'border border-dashed border-line-strong bg-surface text-ink-2',
+    success: 'border border-dashed border-positive bg-surface text-positive',
+    warning: 'border border-dashed border-warning-border bg-surface text-warning',
+    danger: 'border border-dashed border-danger-border bg-surface text-danger',
+    info: 'border border-dashed border-info bg-surface text-info',
+  },
 };
 
-const countToneStyles: Record<BadgeCountTone, string> = {
-  ink: 'bg-ink text-on-brand',
-  danger: 'bg-danger text-on-brand',
-  warning: 'bg-warning text-on-brand',
+const sizeStyles: Record<BadgeSize, string> = {
+  sm: 'h-space-16 min-w-space-16 px-space-6 text-micro',
+  md: 'h-space-20 px-space-8 text-caption',
 };
 
-export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
-  ({ children, className, tone, variant = 'grey', count, ...props }, ref) => {
-    const isCount = variant === 'count' || count !== undefined;
+const shapeStyles: Record<BadgeShape, string> = {
+  default: 'rounded-ds-sm',
+  rounded: 'rounded-ds-pill',
+};
 
-    if (isCount) {
-      const countTone = (tone as BadgeCountTone) || 'ink';
-      let displayCount: React.ReactNode = count ?? children;
+export const Badge = forwardRef<HTMLButtonElement, BadgeProps>(
+  (
+    {
+      children,
+      className,
+      tone = 'neutral',
+      variant = 'soft',
+      shape = 'default',
+      size = 'md',
+      asChild = false,
+      onClick,
+      type = 'button',
+      ...props
+    },
+    ref,
+  ) => {
+    const isInteractive = Boolean(onClick || asChild);
+    const isBold = variant === 'soft' || variant === 'solid';
 
-      if (typeof displayCount === 'number') {
-        if (displayCount > 99) {
-          displayCount = '99+';
-        }
-      } else if (typeof displayCount === 'string') {
-        const parsed = parseInt(displayCount, 10);
-        if (!isNaN(parsed) && parsed > 99 && !displayCount.includes('+')) {
-          displayCount = '99+';
-        }
-      }
+    const classes = cn(
+      'inline-flex items-center justify-center font-text leading-none select-none box-border shrink-0 whitespace-nowrap',
+      isBold ? 'font-bold' : 'font-semibold',
+      sizeStyles[size],
+      shapeStyles[shape],
+      colorStyles[variant][tone],
+      isInteractive && [
+        'cursor-pointer transition-colors duration-fast focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring',
+        tone === 'warning'
+          ? 'hover:bg-warning-tint active:bg-warning-tint'
+          : 'hover:bg-hover active:bg-pressed',
+      ],
+      className,
+    );
 
+    if (asChild) {
       return (
-        <span
-          ref={ref}
-          className={cn(
-            'inline-flex items-center justify-center h-space-16 min-w-space-16 px-space-6 rounded-ds-pill',
-            'font-text font-bold text-micro leading-none whitespace-nowrap select-none box-border shrink-0',
-            countToneStyles[countTone] || countToneStyles.ink,
-            className,
-          )}
-          {...props}
-        >
-          {displayCount}
-        </span>
+        <Slot ref={ref} className={classes} {...props}>
+          {children}
+        </Slot>
       );
     }
 
-    const selectedTone: BadgeTone = (tone as BadgeTone) || 'grey';
+    if (onClick) {
+      return (
+        <button
+          ref={ref}
+          type={type}
+          onClick={onClick}
+          className={classes}
+          {...(props as React.ButtonHTMLAttributes<HTMLButtonElement>)}
+        >
+          {children}
+        </button>
+      );
+    }
 
     return (
       <span
-        ref={ref}
-        className={cn(
-          'inline-flex items-center justify-center h-space-20 px-space-8 rounded-ds-sm',
-          'font-text font-bold text-caption whitespace-nowrap select-none',
-          toneStyles[selectedTone] || toneStyles.grey,
-          className,
-        )}
-        {...props}
+        ref={ref as React.Ref<HTMLSpanElement>}
+        className={classes}
+        {...(props as React.HTMLAttributes<HTMLSpanElement>)}
       >
         {children}
       </span>

@@ -5,6 +5,7 @@ import React, { forwardRef } from 'react';
 import { Badge } from '../Badge/Badge';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
+import { formatCount } from '../utils';
 
 export type FilterChipVariant = 'default' | 'amber' | 'more';
 
@@ -47,7 +48,9 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
 
     const countNode =
       count !== undefined && count !== null ? (
-        <Badge variant="count" count={count} />
+        <Badge variant="solid" shape="rounded" size="sm">
+          {formatCount(count)}
+        </Badge>
       ) : null;
 
     const dropdownNode = hasDropdown ? (

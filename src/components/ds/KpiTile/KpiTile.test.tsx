@@ -61,7 +61,7 @@ describe('KpiTile', () => {
       <KpiTile
         label="To pay"
         value="₹78,219"
-        badges={<Badge tone="amber">Amex in 2 d</Badge>}
+        badges={<Badge tone="warning">Amex in 2 d</Badge>}
       />,
     );
     expect(screen.getByText('Amex in 2 d')).toBeInTheDocument();

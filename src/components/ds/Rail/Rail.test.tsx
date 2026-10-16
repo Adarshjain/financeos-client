@@ -69,7 +69,7 @@ describe('Rail component', () => {
     expect(screen.getByText('9')).toBeInTheDocument();
     const warningCount = screen.getByText('25');
     expect(warningCount).toBeInTheDocument();
-    expect(warningCount).toHaveClass('text-warning');
+    expect(warningCount).toHaveClass('bg-warning', 'text-on-brand');
   });
 
   it('renders user initials in bottom profile section', () => {
