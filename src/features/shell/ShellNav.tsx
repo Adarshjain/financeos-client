@@ -76,14 +76,16 @@ export function ShellTabBar({
           onPointerDownOutside={(e) => {
             const eventWithDetail = e as unknown as { detail?: { originalEvent?: Event } };
             const target = eventWithDetail.detail?.originalEvent?.target;
-            if (target instanceof HTMLElement && target.closest('nav[aria-label="Primary"]')) {
+            const el = target instanceof Element ? target : (target as Node)?.parentElement;
+            if (el?.closest('nav[aria-label="Primary"]')) {
               e.preventDefault();
             }
           }}
           onInteractOutside={(e) => {
             const eventWithDetail = e as unknown as { detail?: { originalEvent?: Event } };
             const target = eventWithDetail.detail?.originalEvent?.target;
-            if (target instanceof HTMLElement && target.closest('nav[aria-label="Primary"]')) {
+            const el = target instanceof Element ? target : (target as Node)?.parentElement;
+            if (el?.closest('nav[aria-label="Primary"]')) {
               e.preventDefault();
             }
           }}
