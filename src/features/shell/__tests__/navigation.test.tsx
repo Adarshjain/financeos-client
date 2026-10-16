@@ -47,7 +47,7 @@ describe('shell navigation', () => {
     expect(shellFooterItems[0].id).toBe('settings');
   });
 
-  it('matches TabBar items with menu icon and href /ds on More', () => {
+  it('matches TabBar items with menu icon and no href on More', () => {
     expect(shellTabBarItems.map((i) => i.id)).toEqual([
       'home',
       'inbox',
@@ -57,7 +57,7 @@ describe('shell navigation', () => {
     ]);
     const moreItem = shellTabBarItems.find((i) => i.id === 'more')!;
     expect(moreItem.icon).toBe('menu');
-    expect(moreItem.href).toBe('/ds');
+    expect(moreItem.href).toBeUndefined();
   });
 
   it('getActiveNavItem computes current item correctly and returns undefined for /ds', () => {

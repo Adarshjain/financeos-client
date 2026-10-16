@@ -8,6 +8,10 @@ export interface ShellNavItem {
   countSource?: string;
 }
 
+export type ShellTabBarItem = Omit<ShellNavItem, 'href'> & {
+  href?: string;
+};
+
 export interface ShellNavGroup {
   label?: string;
   items: ShellNavItem[];
@@ -16,14 +20,14 @@ export interface ShellNavGroup {
 /**
  * TabBar navigation items (phone bottom navigation, at most 5 items).
  * Items: Home, Inbox, Upcoming, Transactions, More.
- * More uses the 'menu' icon and points to '/ds' for now (More behavior on hold).
+ * More uses the 'menu' icon and has no href (it triggers the More sheet).
  */
-export const shellTabBarItems: ShellNavItem[] = [
+export const shellTabBarItems: ShellTabBarItem[] = [
   { id: 'home', label: 'Home', icon: 'home', href: '/dashboard' },
   { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox' },
   { id: 'upcoming', label: 'Upcoming', icon: 'calendar', href: '/upcoming' },
   { id: 'transactions', label: 'Transactions', icon: 'transactions', href: '/transactions' },
-  { id: 'more', label: 'More', icon: 'menu', href: '/ds' },
+  { id: 'more', label: 'More', icon: 'menu' },
 ];
 
 /**
