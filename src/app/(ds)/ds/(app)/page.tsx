@@ -9,30 +9,30 @@ export default function DsIndexPage() {
       {/* Signed out pages */}
       <Card>
         <SectionHeader label="Signed out" borderTop={false} />
-        <Link href="/ds/login" className="no-underline text-inherit block">
-          <ListRow
-            title="Sign in"
-            subtitle="/ds/login"
-            chevron
-            clickable
-          />
-        </Link>
-        <Link href="/ds/signup" className="no-underline text-inherit block">
-          <ListRow
-            title="Sign up"
-            subtitle="/ds/signup"
-            chevron
-            clickable
-          />
-        </Link>
-        <Link href="/ds/offline" className="no-underline text-inherit block">
-          <ListRow
-            title="Offline"
-            subtitle="/ds/offline"
-            chevron
-            clickable
-          />
-        </Link>
+        <ListRow
+          asChild
+          title="Sign in"
+          subtitle="/ds/login"
+          chevron
+        >
+          <Link href="/ds/login" />
+        </ListRow>
+        <ListRow
+          asChild
+          title="Sign up"
+          subtitle="/ds/signup"
+          chevron
+        >
+          <Link href="/ds/signup" />
+        </ListRow>
+        <ListRow
+          asChild
+          title="Offline"
+          subtitle="/ds/offline"
+          chevron
+        >
+          <Link href="/ds/offline" />
+        </ListRow>
       </Card>
 
       {/* Signed in section */}
