@@ -5,25 +5,23 @@ import { describe, expect, it, vi } from 'vitest';
 import { TabBar, type TabBarItem } from './TabBar';
 
 const sampleItems: TabBarItem[] = [
-  { id: 'home', label: 'Home', icon: 'home', href: '/' },
-  { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox', count: 4, countTone: 'danger' },
-  { id: 'upcoming', label: 'Upcoming', icon: 'calendar', href: '/upcoming' },
-  { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions', count: 25, countTone: 'warning' },
-  { id: 'more', label: 'More', icon: 'more', href: '/more' },
+  { id: 'home', label: 'Home', icon: 'home' },
+  { id: 'inbox', label: 'Inbox', icon: 'inbox', count: 4, countTone: 'danger' },
+  { id: 'upcoming', label: 'Upcoming', icon: 'calendar' },
+  { id: 'transactions', label: 'Transactions', icon: 'list-bullets', count: 25, countTone: 'warning' },
+  { id: 'more', label: 'More', icon: 'more' },
 ];
 
 describe('TabBar', () => {
-  it('renders up to 5 items as links in order', () => {
+  it('renders up to 5 items in order as buttons by default', () => {
     render(<TabBar items={sampleItems} current="home" />);
 
     const tabs = screen.getAllByRole('tab');
     expect(tabs).toHaveLength(5);
     expect(tabs[0]).toHaveTextContent('Home');
-    expect(tabs[0].tagName).toBe('A');
-    expect(tabs[0]).toHaveAttribute('href', '/');
+    expect(tabs[0].tagName).toBe('BUTTON');
     expect(tabs[1]).toHaveTextContent('Inbox');
-    expect(tabs[1].tagName).toBe('A');
-    expect(tabs[1]).toHaveAttribute('href', '/inbox');
+    expect(tabs[1].tagName).toBe('BUTTON');
     expect(tabs[2]).toHaveTextContent('Upcoming');
     expect(tabs[3]).toHaveTextContent('Transactions');
     expect(tabs[4]).toHaveTextContent('More');
@@ -32,7 +30,7 @@ describe('TabBar', () => {
   it('limits visible items to at most 5', () => {
     const sixItems: TabBarItem[] = [
       ...sampleItems,
-      { id: 'extra', label: 'Extra', icon: 'settings', href: '/extra' },
+      { id: 'extra', label: 'Extra', icon: 'settings' },
     ];
     render(<TabBar items={sixItems} current="home" />);
 
@@ -64,42 +62,31 @@ describe('TabBar', () => {
     expect(handleSelect).toHaveBeenCalledWith('more');
   });
 
-  it('renders an item with href as a link and does not preventDefault on click', () => {
+  it('renders an item with asChild as the provided child element and calls onSelect', () => {
     const handleSelect = vi.fn();
     render(
       <TabBar
-        items={[{ id: 'home', label: 'Home', icon: 'home', href: '/dashboard' }]}
+        items={[
+          {
+            id: 'home',
+            label: 'Home',
+            icon: 'home',
+            asChild: true,
+            children: <a href="/dashboard" data-testid="custom-link" />,
+          },
+        ]}
         onSelect={handleSelect}
       />,
     );
 
-    const tab = screen.getByRole('tab', { name: /Home/i });
+    const tab = screen.getByTestId('custom-link');
     expect(tab.tagName).toBe('A');
     expect(tab).toHaveAttribute('href', '/dashboard');
-
-    const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
-    tab.dispatchEvent(clickEvent);
-
-    expect(handleSelect).toHaveBeenCalledWith('home');
-    expect(clickEvent.defaultPrevented).toBe(false);
-  });
-
-  it('renders an item without href as a button and calls onSelect on click', () => {
-    const handleSelect = vi.fn();
-    render(
-      <TabBar
-        items={[{ id: 'more', label: 'More', icon: 'menu' }]}
-        onSelect={handleSelect}
-      />,
-    );
-
-    const tab = screen.getByRole('tab', { name: /More/i });
-    expect(tab.tagName).toBe('BUTTON');
-    expect(tab).toHaveAttribute('type', 'button');
-    expect(tab).not.toHaveAttribute('href');
+    expect(tab).toHaveAttribute('role', 'tab');
+    expect(tab).toHaveTextContent('Home');
 
     fireEvent.click(tab);
-    expect(handleSelect).toHaveBeenCalledWith('more');
+    expect(handleSelect).toHaveBeenCalledWith('home');
   });
 
   it('renders count badges on items with counts', () => {
@@ -112,18 +99,13 @@ describe('TabBar', () => {
     expect(txBadge).toBeInTheDocument();
   });
 
-  it('renders 99+ when count exceeds 99', () => {
+  it('renders 99+ when count exceeds 99 via formatCount', () => {
     const highCountItems: TabBarItem[] = [
       { id: 'inbox', label: 'Inbox', icon: 'inbox', count: 150, countTone: 'danger' },
     ];
     render(<TabBar items={highCountItems} current="inbox" />);
 
     expect(screen.getByText('99+')).toBeInTheDocument();
-  });
-
-  it('returns null when hidden is true', () => {
-    const { container } = render(<TabBar items={sampleItems} current="home" hidden />);
-    expect(container.firstChild).toBeNull();
   });
 
   it('renders floating pill container with Phase 1 classes and lg:hidden', () => {

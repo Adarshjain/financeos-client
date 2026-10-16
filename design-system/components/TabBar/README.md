@@ -6,7 +6,7 @@ The phone bottom navigation: a floating pill. This is the only mobile navigation
 - A pill floating 12px in from the left, right and bottom edges (above the safe area): `bg-surface`, a `line` border, `radius-pill`, `shadow-dock`, padding 8px top and bottom and 4px at the sides.
 - Each item is the icon (`lg`, 20px) over its label (`tab-label`), 2px apart, centred in an equal-width slot.
 - Inactive items are `ink-faint`. The current item is `ink` with its label at weight 800. There is no background, indicator, dot or underline behind the current item.
-- Counts are Badge `count` pinned to the icon's top-right corner, with a 2px `bg-surface` ring so they read cleanly over the icon: `danger` for things that need you now (Inbox), `warning` for the review count (Transactions). Over 99 shows "99+".
+- Counts are Badge `variant="solid" shape="rounded" size="sm"` pinned to the icon's top-right corner, with a 2px `bg-surface` ring so they read cleanly over the icon: `danger` for things that need you now (Inbox), `warning` for the review count (Transactions). Over 99 shows "99+".
 - Pressed: the item's label and icon go one step darker (`ink-3`) for the press; nothing moves.
 
 ## More
@@ -24,7 +24,7 @@ Tapping More opens the **More sheet** (final, owner 2026-10-16; board `P-more`):
 - Page content scrolls under the pill; the page keeps bottom padding equal to the pill's height plus 24px, so the last row can scroll clear of it.
 
 ## Props
-- `items`: `{ id, label, icon, href, count?, countTone?: 'danger' | 'warning' }[]` (at most 5), and `current` (the id of the current item). No item, label, route or count is built into the component.
+- `items`: `{ id, label, icon, count?, countTone?: 'danger' | 'warning', asChild?: boolean, children?: ReactNode }[]` (at most 5), and `current` (the id of the current item). No item, label, route or count is built into the component.
 
 ## Don't
 - Don't add a sixth item; new sections go under More.
@@ -32,7 +32,7 @@ Tapping More opens the **More sheet** (final, owner 2026-10-16; board `P-more`):
 - No other mobile navigation format exists; don't add variants.
 
 ## Built from
-Icon, Badge (count), Dialog (sheet form), Button (`tile`), Avatar, SectionHeader. Items are links with the current one marked.
+Icon, Badge (`variant="solid" shape="rounded" size="sm"`), Slot (for `asChild` links). Items are buttons or `asChild` links with the current one marked.
 
 ## Variants
-- One format. Stories show Home current, Transactions current, counts over 99, and More open.
+- One format. Stories show Default (Home current), counts over 99, and with asChild link.
