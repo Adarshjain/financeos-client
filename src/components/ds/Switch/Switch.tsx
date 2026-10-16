@@ -10,10 +10,9 @@ export interface SwitchProps
   checked?: boolean;
   defaultChecked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
-  label?: React.ReactNode;
-  description?: React.ReactNode;
-  error?: React.ReactNode;
-  borderTop?: boolean;
+  disabled?: boolean;
+  name?: string;
+  value?: string;
 }
 
 export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
@@ -23,12 +22,11 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
       checked: controlledChecked,
       defaultChecked = false,
       onCheckedChange,
-      label,
-      description,
-      error,
-      borderTop = false,
       disabled = false,
+      name,
+      value = 'on',
       className,
+      onClick,
       'aria-label': ariaLabel,
       ...props
     },
@@ -36,8 +34,6 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
   ) => {
     const generatedId = useId();
     const id = explicitId || generatedId;
-    const descId = `${id}-desc`;
-    const errId = `${id}-err`;
 
     const [isChecked, setIsChecked] = useControllableState<boolean>({
       value: controlledChecked,
@@ -45,88 +41,56 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
       onChange: onCheckedChange,
     });
 
-    const handleClick = () => {
-      if (disabled) return;
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      onClick?.(e);
+      if (e.defaultPrevented || disabled) return;
       setIsChecked(!isChecked);
     };
 
-    const switchButton = (
-      <button
-        ref={ref}
-        id={id}
-        type="button"
-        role="switch"
-        aria-checked={isChecked}
-        aria-disabled={disabled}
-        aria-label={ariaLabel || (label ? undefined : 'Toggle')}
-        aria-describedby={
-          error ? errId : description ? descId : undefined
-        }
-        disabled={disabled}
-        onClick={handleClick}
-        className={cn(
-          'relative inline-flex shrink-0 items-center w-control-lg h-space-20 rounded-ds-pill p-space-2 transition-colors duration-fast',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
-          isChecked
-            ? 'bg-brand hover:bg-brand-hover active:bg-brand-pressed'
-            : 'bg-line-heavy hover:bg-line-strong active:bg-line-strong',
-          disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
-          !label && !description && className,
-        )}
-        {...props}
-      >
-        <span
-          className={cn(
-            'pointer-events-none block w-space-16 h-space-16 rounded-ds-pill bg-surface shadow-level-2 transition-transform duration-fast',
-            isChecked ? 'translate-x-space-16' : 'translate-x-0',
-          )}
-        />
-      </button>
-    );
-
-    if (!label && !description && !error) {
-      return switchButton;
-    }
-
     return (
-      <div
-        className={cn(
-          'flex items-center justify-between gap-space-12 py-space-10 font-text',
-          borderTop && 'border-t border-line-soft',
-          className,
-        )}
-      >
-        <div className="flex-1 min-w-0 pr-space-8">
-          {label ? (
-            <label
-              htmlFor={id}
-              className={cn(
-                'block font-text font-semibold text-body select-none',
-                disabled ? 'text-ink-3 cursor-not-allowed' : 'text-ink cursor-pointer',
-              )}
-            >
-              {label}
-            </label>
-          ) : null}
-          {description ? (
-            <div
-              id={descId}
-              className="font-text font-medium text-caption text-ink-3 mt-space-2 select-none"
-            >
-              {description}
-            </div>
-          ) : null}
-          {error ? (
-            <div
-              id={errId}
-              className="font-text font-medium text-caption text-danger mt-space-4"
-            >
-              {error}
-            </div>
-          ) : null}
-        </div>
-        {switchButton}
-      </div>
+      <>
+        <button
+          ref={ref}
+          id={id}
+          type="button"
+          role="switch"
+          aria-checked={isChecked}
+          aria-disabled={disabled}
+          aria-label={ariaLabel || 'Toggle'}
+          disabled={disabled}
+          onClick={handleClick}
+          className={cn(
+            'relative inline-flex shrink-0 items-center w-control-lg h-space-20 rounded-ds-pill p-space-2 transition-colors duration-fast',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
+            isChecked
+              ? 'bg-brand hover:bg-brand-hover active:bg-brand-pressed'
+              : 'bg-line-heavy hover:bg-line-strong active:bg-line-strong',
+            disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+            className,
+          )}
+          {...props}
+        >
+          <span
+            className={cn(
+              'pointer-events-none block w-space-16 h-space-16 rounded-ds-pill bg-surface shadow-level-2 transition-transform duration-fast',
+              isChecked ? 'translate-x-space-16' : 'translate-x-0',
+            )}
+          />
+        </button>
+        {name ? (
+          <input
+            type="checkbox"
+            name={name}
+            value={value}
+            checked={isChecked}
+            onChange={() => {}}
+            tabIndex={-1}
+            aria-hidden="true"
+            className="sr-only"
+            disabled={disabled}
+          />
+        ) : null}
+      </>
     );
   },
 );

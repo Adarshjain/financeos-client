@@ -10,6 +10,7 @@ describe('Switch', () => {
     const switchEl = screen.getByRole('switch');
     expect(switchEl).toBeInTheDocument();
     expect(switchEl).toHaveAttribute('aria-checked', 'false');
+    expect(switchEl).toHaveAttribute('aria-label', 'Toggle');
   });
 
   it('renders with token sizes (w-control-lg h-space-20)', () => {
@@ -74,34 +75,42 @@ describe('Switch', () => {
     expect(switchEl).toHaveAttribute('aria-checked', 'false');
     expect(handleCheckedChange).not.toHaveBeenCalled();
   });
-});
 
-describe('Switch with label and description', () => {
-  it('renders label and description connected to switch', () => {
-    render(
-      <Switch
-        label="Exclude from net worth"
-        description="Hide this account from totals"
-      />,
-    );
-    const label = screen.getByText('Exclude from net worth');
-    const description = screen.getByText('Hide this account from totals');
+  it('calls consumer onClick and still toggles', () => {
+    const handleClick = vi.fn();
+    const handleCheckedChange = vi.fn();
+    render(<Switch onClick={handleClick} onCheckedChange={handleCheckedChange} />);
     const switchEl = screen.getByRole('switch');
 
-    expect(label).toHaveAttribute('for', switchEl.getAttribute('id'));
-    expect(switchEl).toHaveAttribute('aria-describedby', description.getAttribute('id'));
+    fireEvent.click(switchEl);
+    expect(handleClick).toHaveBeenCalledTimes(1);
+    expect(handleCheckedChange).toHaveBeenCalledWith(true);
+    expect(switchEl).toHaveAttribute('aria-checked', 'true');
   });
 
-  it('renders error message and links it with aria-describedby', () => {
-    render(
-      <Switch
-        label="Enable alerts"
-        error="You must verify email first"
-      />,
-    );
-    const error = screen.getByText('You must verify email first');
+  it('does not toggle if consumer onClick prevents default', () => {
+    const handleClick = vi.fn((e: React.MouseEvent) => e.preventDefault());
+    const handleCheckedChange = vi.fn();
+    render(<Switch onClick={handleClick} onCheckedChange={handleCheckedChange} />);
     const switchEl = screen.getByRole('switch');
 
-    expect(switchEl).toHaveAttribute('aria-describedby', error.getAttribute('id'));
+    fireEvent.click(switchEl);
+    expect(handleClick).toHaveBeenCalledTimes(1);
+    expect(handleCheckedChange).not.toHaveBeenCalled();
+    expect(switchEl).toHaveAttribute('aria-checked', 'false');
+  });
+
+  it('renders hidden input when name is provided for form submission', () => {
+    const { container } = render(<Switch name="notifications" value="yes" defaultChecked />);
+    const input = container.querySelector('input[type="checkbox"]');
+    expect(input).toBeInTheDocument();
+    expect(input).toHaveAttribute('name', 'notifications');
+    expect(input).toHaveAttribute('value', 'yes');
+    expect(input).toBeChecked();
+  });
+
+  it('merges custom className directly onto button', () => {
+    render(<Switch className="custom-switch" />);
+    expect(screen.getByRole('switch')).toHaveClass('custom-switch');
   });
 });
