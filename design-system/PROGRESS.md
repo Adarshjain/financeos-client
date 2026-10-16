@@ -228,12 +228,65 @@ Only the owner adds to this list. Each entry has a date and the decision.
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
 
+- 2026-10-16 · Phase 3a · Shell · Quick add actions without live routes · Quick add items Transaction, Lending and Trade are modal dialogs in the Legacy app without dedicated routes; only Import (/transactions/import) has a route. Options: (A) Build dedicated Dinero add forms later when those modules migrate, or (B) Open the Legacy live pages/dialogs. Meanwhile, those three tiles are shown disabled until the owner decides.
 - 2026-10-15 · Phase 2 · Checkbox · Indeterminate/mixed state icon · Checkbox mixed state (some rows selected) needs a minus/dash icon, which is not in icons.json. Options: (A) Add `minus` (Phosphor `minus`) to the icon registry, (B) Render an inline SVG dash stroke inside Checkbox, or (C) Use a CSS dash line. Meanwhile using `close` as the closest registry icon.
 - 2026-10-15 · Phase 2 · Button · Loading spinner icon · Button loading state needs a spinner icon (RULES §6.2 progress spinner), which is not in icons.json. Options: (A) Add `spinner` (Phosphor `spinner` or `circle-notch`) to the icon registry, or (B) Use a CSS rotating border spinner. Meanwhile using `settings` with `animate-spin` as the closest rotating registry icon.
 - 2026-10-15 · Phase 2 · Button · Count pill on primary button · The board only shows count pills on secondary buttons (btn). On a primary (btn-p) button, both the button background and default count pill use bg-ink, making an ink pill blend into the button. Options: (A) Reverse the pill colors on primary buttons to bg-surface text-ink, (B) Forbid count pills on primary buttons, or (C) Add a dedicated contrasting pill token. Meanwhile, Button renders bg-surface text-ink when primary.
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-16 · Phase 3a · Antigravity · Review remediation (Fixes 1–6: Client boundaries, E2E specs, TabBar stories, Illustration height, Button tile variant, More sheet):
+  - Fix 1 (Client boundaries, RULES §5b.8): Added `'use client'` to `src/components/ds/ListRow/ListRow.tsx`, `src/components/ds/KpiTile/KpiTile.tsx`, and `src/components/ds/Widget/Widget.tsx`. Verified no `missing-use-client` warnings reported by `check-ui`.
+  - Fix 2 (E2E shell & auth specs):
+    - Added `e2e/ui/ds-shell.spec.ts` signed in with `createUser` fixture testing:
+      1. `/ds` renders the 3 index rows and no error boundary.
+      2. Desktop 1440px renders Rail with every group and item in order matching `D-home`.
+      3. Phone 390px renders TopBar, floating TabBar (Home, Inbox, Upcoming, Transactions, More) without error.
+      4. Phone 390px More tab opens More sheet, links live routes, and closes all 3 ways (tapping More again, tapping scrim overlay, and swipe down on drag handle).
+    - Added single-hop redirect test in `e2e/ui/ds-auth.spec.ts` mirroring `auth.spec.ts`: visiting `/ds` with an invalid session cookie bounces directly to `/login?from=%2Fds` in one hop.
+  - Fix 3 (TabBar stories without deviation): Removed inline `style={{ width: 390 }}` and `ds-allow` from `src/components/ds/TabBar/TabBar.stories.tsx`. Set `parameters: { viewport: { defaultViewport: 'phone' } }`.
+  - Fix 4 (Phone illustration band height): Matched `P-login` and `P-signup` board band height (reduced container by 44px to 120px) inside `src/components/ds/Illustration/Illustration.tsx` phone form.
+  - Fix 5 (Button variant="tile" with iconPosition):
+    - Implemented `variant="tile"` in `src/components/ds/Button/Button.tsx` with `iconPosition="start" | "top"`:
+      - `start`: 46px height, `body-strong` label, icon leading, left-aligned.
+      - `top`: 64px height, `label` in `ink-2`, icon centered above label, text centered.
+      - Hover `bg-hover`, pressed `bg-pressed`, works with `asChild` and Next Link.
+    - Added unit test suite in `src/components/ds/Button/Button.test.tsx` and stories in `src/components/ds/Button/Button.stories.tsx`.
+  - Fix 6 (More sheet in /ds shell):
+    - Added `shellQuickAddItems` and `shellMoreGroups` in `src/features/shell/navigation.ts`.
+    - Wired More sheet inside `src/features/shell/ShellNav.tsx` using `Dialog`, `DialogContent`, `Button variant="tile"`, `ListRow`, `Avatar`, `Icon`:
+      - Quick add: Transaction (disabled), Lending (disabled), Trade (disabled), Import (`/transactions/import`).
+      - Groups: Money, Grow, Owe & lend · Insights (2 tiles/line with navigation icons).
+      - Profile row: Avatar, user name, "Settings · connections · notifications", chevron, linking to `/settings` with no underline (`ListRow asChild`).
+      - Closes on scrim click, swipe down on handle, or tapping More again. TabBar elevated above overlay with `calc(var(--ds-z-overlay) + 1)` when open.
+      - Fixed TabBar outside click detection for SVG icons (`target instanceof Element ? target : (target as Node)?.parentElement`).
+  - Browser inspection logged at 390 and 1440, signed in and signed out:
+    - `/ds`:
+      - Signed out (390 & 1440): Redirects in one hop to `/login?from=%2Fds` (`https://localhost:6970/login?from=%2Fds`).
+      - Signed in @ 390: Renders TopBar ("Overview", avatar, status), index rows (Sign in, Sign up, Offline, No signed-in pages yet), floating TabBar (Home, Inbox, Upcoming, Transactions, More). Tapping More opens sheet matching `P-more` with Quick add (Import active, 3 disabled), sections (Money, Grow, Owe & lend · Insights), profile row to `/settings`. Closes all three ways.
+      - Signed in @ 1440: Renders desktop Rail with logo, all groups in order (Home/Inbox/Upcoming, Money, Grow, Owe & lend, Insights), footer (Settings, user), index rows, no error boundary. TabBar and More sheet hidden.
+    - `/ds/login`:
+      - Signed out @ 390: Logo mark, title, subtitle, 120px phone illustration band, Continue with Google, divider, Email/Password, Sign in button, footer.
+      - Signed out @ 1440: Split desktop layout with form on left and isometric illustration scene on right.
+      - Signed in (390 & 1440): Redirects to `/dashboard` (or `from` path).
+    - `/ds/signup`:
+      - Signed out @ 390: Logo mark, title, subtitle, 120px phone illustration band, Sign up with Google, divider, Invite code, Name, Email, Password, Create account button, footer.
+      - Signed out @ 1440: Split desktop layout.
+      - Signed in (390 & 1440): Redirects to `/dashboard`.
+    - `/ds/offline`:
+      - Signed out & Signed in (390 & 1440): Centered EmptyState with offline icon, "You're offline", description, "Try again" button.
+  - Component statuses: `ListRow`, `KpiTile`, `Widget`, `Button`, `TabBar`, `Illustration` and the `/ds` pages confirmed set to **Ready for review**.
+  - Checks run and outputs:
+    - `npm run typecheck`: clean (0 errors)
+    - `npm run lint`: clean (`✖ 342 problems (0 errors, 342 warnings)`)
+    - `npm test`: `Test Files 434 passed (434) | Tests 3595 passed (3595)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `npm run build`: `✓ Generating static pages using 10 workers (49/49) in 2.3s`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+    - Playwright E2E (`ds-auth.spec.ts`, `ds-offline.spec.ts`, `ds-shell.spec.ts`): `10 passed (6.0s)`
+  - Open questions: Quick add targets (Transaction, Lending, Trade) have no routes.
+  - Deviations: none.
 
 - 2026-10-16 · Phase 3a · Antigravity · Review findings remediation (Part A: 1–7, Part B: 8–14):
   - Fix 1 (Text): Created `src/components/ds/Text/Text.tsx` server component with 12 type styles, 8 tones, `as`, `family`, `align`, `truncate`. Added stories and tests, exported from `src/components/ds/index.ts`. Status: Ready for review.
