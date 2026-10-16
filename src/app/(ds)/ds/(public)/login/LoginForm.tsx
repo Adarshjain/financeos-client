@@ -72,38 +72,37 @@ export function LoginForm() {
             </Text>
           </div>
 
-          {/* Deleted account notification */}
-          {isDeleted && (
-            <Banner tone="success">Your account has been deleted.</Banner>
-          )}
-
-          {/* Error banner */}
-          {errorMessage && (
-            <Banner tone="danger">{errorMessage}</Banner>
-          )}
-
-          {/* 3. Continue with Google */}
-          <Button
-            type="button"
-            variant="google"
-            loading={ssoPending}
-            loadingLabel="Opening Google…"
-            disabled={ssoPending || isPending}
-            onClick={handleGoogleSSO}
-          >
-            Continue with Google
-          </Button>
-
-          {/* 4. Divider "or" */}
-          <Divider label="or" />
-
-          {/* Form containing 5. Email, 6. Password, 7. Sign in button */}
           <form
             noValidate
             onSubmit={handleSubmit}
             action={formAction}
             className="flex flex-col gap-space-16"
           >
+            {/* Deleted account notification */}
+            {isDeleted && (
+              <Banner tone="success">Your account has been deleted.</Banner>
+            )}
+
+            {/* Error banner */}
+            {errorMessage && (
+              <Banner tone="danger">{errorMessage}</Banner>
+            )}
+
+            {/* 3. Continue with Google */}
+            <Button
+              type="button"
+              variant="google"
+              loading={ssoPending}
+              loadingLabel="Opening Google…"
+              disabled={ssoPending || isPending}
+              onClick={handleGoogleSSO}
+            >
+              Continue with Google
+            </Button>
+
+            {/* 4. Divider "or" */}
+            <Divider label="or" />
+
             <div className="flex flex-col gap-space-12">
               <TextField
                 id="email"
