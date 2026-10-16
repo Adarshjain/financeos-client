@@ -88,4 +88,22 @@ test.describe('/ds Auth UI (@ui)', () => {
     await page.goto(`${E2E_CLIENT_URL}/ds/login?deleted=1`);
     await expect(page.getByText('Your account has been deleted.')).toBeVisible();
   });
+
+  test('invalid cookie present: bounced to /login in one hop', async ({ page, context }) => {
+    // Set invalid cookie
+    await context.addCookies([
+      {
+        name: 'FINANCEOS_SESSION',
+        value: 'bogus-invalid-session-token-xyz',
+        url: E2E_CLIENT_URL,
+      },
+    ]);
+
+    await page.goto(`${E2E_CLIENT_URL}/ds`);
+    await page.waitForURL('**/login**', { timeout: 10000 });
+    expect(page.url()).toContain('/login');
+    // Ensure login form is displayed, not an error boundary or redirect loop
+    await expect(page.getByLabel('Email')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign in', exact: true })).toBeVisible();
+  });
 });
