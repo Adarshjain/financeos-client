@@ -5,17 +5,40 @@ import React, { forwardRef } from 'react';
 import { Badge } from '../Badge/Badge';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
+import { useControllableState } from '../useControllableState';
 import { formatCount } from '../utils';
 
-export type FilterChipVariant = 'default' | 'amber' | 'more';
+export type FilterChipVariant =
+  | 'outline'
+  | 'soft'
+  | 'dashed'
+  | 'default'
+  | 'amber'
+  | 'more';
+
+export type FilterChipTone = 'brand' | 'warning' | 'neutral';
 
 export interface FilterChipProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> {
+  /** Controlled selected state */
+  selected?: boolean;
+  /** Legacy alias for selected */
   active?: boolean;
+  /** Initial selected state when uncontrolled */
+  defaultSelected?: boolean;
+  /** Callback fired when selected state changes */
+  onSelectedChange?: (selected: boolean) => void;
+  /** Look variant: outline when off, soft when on, or dashed for '+ More' */
   variant?: FilterChipVariant;
+  /** Semantic tone when selected: brand (default), warning (review), or neutral */
+  tone?: FilterChipTone;
+  /** Whether the chip acts as a dropdown trigger with a chevron */
   hasDropdown?: boolean;
+  /** Numeric count shown in a count badge */
   count?: number;
+  /** Whether the chip shows a remove button */
   removable?: boolean;
+  /** Callback fired when remove button is clicked */
   onRemove?: (e: React.MouseEvent) => void;
 }
 
@@ -23,8 +46,12 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
   (
     {
       children,
-      active = false,
-      variant = 'default',
+      selected,
+      active,
+      defaultSelected = false,
+      onSelectedChange,
+      variant,
+      tone,
       hasDropdown = false,
       count,
       removable = false,
@@ -37,9 +64,26 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
     },
     ref,
   ) => {
-    const isAmber = variant === 'amber';
-    const isMore = variant === 'more';
+    const controlledSelected = selected !== undefined ? selected : active;
+    const [isSelected, setIsSelected] = useControllableState<boolean>({
+      value: controlledSelected,
+      defaultValue: defaultSelected,
+      onChange: onSelectedChange,
+    });
+
+    const isAmber = variant === 'amber' || tone === 'warning';
+    const isDashed = variant === 'dashed' || variant === 'more';
+    const isSoft =
+      variant === 'soft' || (!isDashed && variant !== 'outline' && isSelected);
+
     const showRemove = removable || Boolean(onRemove);
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+      onClick?.(e);
+      if (!e.defaultPrevented && !disabled) {
+        setIsSelected(!isSelected);
+      }
+    };
 
     const handleRemoveClick = (e: React.MouseEvent) => {
       e.stopPropagation();
@@ -58,15 +102,30 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
     ) : null;
 
     const toneClasses = cn(
-      isMore && 'border-dashed border-line-strong bg-surface text-ink-2 hover:bg-hover active:bg-pressed',
-      !isMore && !active && 'border-line-strong bg-surface text-ink-2 hover:bg-hover active:bg-pressed',
-      !isMore && active && !isAmber && 'bg-brand-tint border-brand-border text-brand-strong hover:bg-brand-tint',
-      !isMore && active && isAmber && 'bg-warning-tint border-warning-border text-warning hover:bg-warning-tint',
+      isDashed &&
+        'border-dashed border-line-strong bg-surface text-ink-2 hover:bg-hover active:bg-pressed',
+      !isDashed &&
+        !isSoft &&
+        'border-line-strong bg-surface text-ink-2 hover:bg-hover active:bg-pressed',
+      !isDashed &&
+        isSoft &&
+        isAmber &&
+        'bg-warning-tint border-warning-border text-warning hover:bg-warning-tint',
+      !isDashed &&
+        isSoft &&
+        tone === 'neutral' &&
+        'bg-subtle border-line-strong text-ink hover:bg-subtle',
+      !isDashed &&
+        isSoft &&
+        !isAmber &&
+        tone !== 'neutral' &&
+        'bg-brand-tint border-brand-border text-brand-strong hover:bg-brand-tint',
     );
 
     if (showRemove) {
       return (
         <span
+          ref={ref as unknown as React.Ref<HTMLSpanElement>}
           className={cn(
             'inline-flex items-center h-space-28 rounded-ds-pill border font-text font-semibold text-label whitespace-nowrap select-none transition-colors duration-fast',
             toneClasses,
@@ -75,10 +134,9 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
           )}
         >
           <button
-            ref={ref}
             type={type}
             disabled={disabled}
-            onClick={onClick}
+            onClick={handleClick}
             className="inline-flex items-center gap-space-6 h-full pl-space-10 pr-space-4 bg-transparent border-0 text-inherit font-text font-semibold text-label cursor-pointer rounded-l-ds-pill focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring disabled:cursor-not-allowed"
             {...props}
           >
@@ -104,7 +162,7 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
         ref={ref}
         type={type}
         disabled={disabled}
-        onClick={onClick}
+        onClick={handleClick}
         className={cn(
           'inline-flex items-center gap-space-6 h-space-28 px-space-10 rounded-ds-pill border font-text font-semibold text-label whitespace-nowrap transition-colors duration-fast select-none cursor-pointer',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
@@ -123,25 +181,3 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
 );
 
 FilterChip.displayName = 'FilterChip';
-
-export interface FilterChipRowProps
-  extends React.HTMLAttributes<HTMLDivElement> {}
-
-export const FilterChipRow = forwardRef<HTMLDivElement, FilterChipRowProps>(
-  ({ className, children, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'flex gap-space-8 items-center overflow-x-auto flex-nowrap scrollbar-none py-space-2',
-          className,
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    );
-  },
-);
-
-FilterChipRow.displayName = 'FilterChipRow';

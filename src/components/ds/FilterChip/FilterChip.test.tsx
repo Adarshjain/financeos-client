@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { FilterChip, FilterChipRow } from './FilterChip';
+import { FilterChip } from './FilterChip';
 
 describe('FilterChip', () => {
   it('renders label text', () => {
@@ -20,16 +20,16 @@ describe('FilterChip', () => {
     expect(screen.getByText('3')).toBeInTheDocument();
   });
 
-  it('applies active styling when active is true', () => {
-    const { container } = render(<FilterChip active>All · 64</FilterChip>);
+  it('applies selected styling when selected is true', () => {
+    const { container } = render(<FilterChip selected>All · 64</FilterChip>);
     const chip = container.querySelector('button');
     expect(chip).toHaveClass('bg-brand-tint');
     expect(chip).toHaveClass('text-brand-strong');
   });
 
-  it('applies amber review styling when variant="amber" and active', () => {
+  it('applies warning styling when tone="warning" and selected', () => {
     const { container } = render(
-      <FilterChip variant="amber" active>
+      <FilterChip tone="warning" selected>
         Needs review · 25
       </FilterChip>,
     );
@@ -38,18 +38,25 @@ describe('FilterChip', () => {
     expect(chip).toHaveClass('text-warning');
   });
 
-  it('applies dashed border when variant="more"', () => {
-    const { container } = render(<FilterChip variant="more">+ More</FilterChip>);
+  it('applies dashed border when variant="dashed"', () => {
+    const { container } = render(<FilterChip variant="dashed">+ More</FilterChip>);
     const chip = container.querySelector('button');
     expect(chip).toHaveClass('border-dashed');
   });
 
-  it('renders removable button and calls onRemove without triggering chip onClick', () => {
+  it('renders removable button and calls onRemove without triggering chip selection', () => {
     const handleClick = vi.fn();
     const handleRemove = vi.fn();
+    const handleSelectedChange = vi.fn();
 
     render(
-      <FilterChip active removable onClick={handleClick} onRemove={handleRemove}>
+      <FilterChip
+        selected
+        removable
+        onClick={handleClick}
+        onRemove={handleRemove}
+        onSelectedChange={handleSelectedChange}
+      >
         This year
       </FilterChip>,
     );
@@ -67,17 +74,31 @@ describe('FilterChip', () => {
     fireEvent.click(removeBtn);
     expect(handleRemove).toHaveBeenCalledTimes(1);
     expect(handleClick).not.toHaveBeenCalled();
+    expect(handleSelectedChange).not.toHaveBeenCalled();
 
-    // Clicking chip triggers handleClick only
+    // Clicking chip triggers handleClick and toggles selection
     fireEvent.click(chipBtn);
     expect(handleClick).toHaveBeenCalledTimes(1);
-    expect(handleRemove).toHaveBeenCalledTimes(1);
+    expect(handleSelectedChange).toHaveBeenCalledWith(false);
+  });
+
+  it('handles uncontrolled toggling and calls onSelectedChange', () => {
+    const handleSelectedChange = vi.fn();
+    render(
+      <FilterChip defaultSelected={false} onSelectedChange={handleSelectedChange}>
+        Toggle chip
+      </FilterChip>,
+    );
+    const chip = screen.getByRole('button', { name: 'Toggle chip' });
+    fireEvent.click(chip);
+    expect(handleSelectedChange).toHaveBeenCalledWith(true);
   });
 
   it('prevents click when disabled', () => {
     const handleClick = vi.fn();
+    const handleSelectedChange = vi.fn();
     render(
-      <FilterChip disabled onClick={handleClick}>
+      <FilterChip disabled onClick={handleClick} onSelectedChange={handleSelectedChange}>
         Disabled chip
       </FilterChip>,
     );
@@ -86,18 +107,24 @@ describe('FilterChip', () => {
 
     fireEvent.click(chip);
     expect(handleClick).not.toHaveBeenCalled();
+    expect(handleSelectedChange).not.toHaveBeenCalled();
   });
-});
 
-describe('FilterChipRow', () => {
-  it('renders children within a flex container', () => {
-    render(
-      <FilterChipRow>
-        <FilterChip>One</FilterChip>
-        <FilterChip>Two</FilterChip>
-      </FilterChipRow>,
+  it('forwards ref to outermost element when removable vs not removable', () => {
+    const buttonRef = React.createRef<HTMLButtonElement>();
+    const { rerender } = render(
+      <FilterChip ref={buttonRef}>
+        Button ref
+      </FilterChip>,
     );
-    expect(screen.getByText('One')).toBeInTheDocument();
-    expect(screen.getByText('Two')).toBeInTheDocument();
+    expect(buttonRef.current).toBeInstanceOf(HTMLButtonElement);
+
+    const spanRef = React.createRef<HTMLButtonElement>();
+    rerender(
+      <FilterChip ref={spanRef} removable>
+        Span ref
+      </FilterChip>,
+    );
+    expect(spanRef.current).toBeInstanceOf(HTMLSpanElement);
   });
 });
