@@ -66,6 +66,7 @@
     "@playwright/test": "1.62.1",
     "@serwist/turbopack": "^9.5.12",
     "@storybook/addon-a11y": "^10.6.2",
+    "@storybook/addon-docs": "^10.6.2",
     "@storybook/nextjs-vite": "^10.6.2",
     "@tanstack/eslint-plugin-query": "^5.102.8",
     "@tanstack/react-query-devtools": "^5.102.8",

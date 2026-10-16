@@ -59,18 +59,21 @@ const withTheme: Decorator = (Story, context) => {
 };
 
 const preview: Preview = {
+  tags: ['autodocs'],
   parameters: {
+    docs: {
+      controls: {
+        disable: true,
+      },
+    },
     viewport: {
       viewports: customViewports,
     },
     layout: 'fullscreen',
     options: {
-      // Components in title order; inside a component, "All variants" first so
-      // it is the story that opens by default (RULES §5a.1). Storybook
-      // serialises this function, so it must not reference anything outside.
       storySort: (a, b) => {
         if (a.title !== b.title) return a.title.localeCompare(b.title, undefined, { numeric: true });
-        const rank = (e) => (/^all ?variants$/i.test(e.name) ? 0 : e.type === 'docs' ? 1 : 2);
+        const rank = (e) => (e.type === 'docs' ? 0 : 1);
         return rank(a) - rank(b);
       },
     },

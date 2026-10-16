@@ -254,6 +254,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 3b · Antigravity · Storybook setup: installed @storybook/addon-docs, updated .storybook/main.ts (addons and organisms stories glob), updated .storybook/preview.tsx (tags: ['autodocs'], parameters.docs.controls.disable = true, storySort docs first). Checks: npm run build-storybook, node design-system/tools/check-ui.mjs --base 681c9d0. Open questions: none. Deviations: none.
+
 - 2026-10-16 · Phase 3a · Antigravity · Omit padded header container in DialogContent when only srTitle is present:
   - In `src/components/ds/Dialog/Dialog.tsx`, updated `DialogContent` to only render the padded header `<div>` (`px-space-16 pt-space-12 ...`) when a visible header element exists (`title`, `desc`, or `showClose`). When only `srTitle` is passed (e.g. on the More sheet), `<DialogPrimitive.Title className="sr-only">` and `<DialogPrimitive.Description className="sr-only">` render directly without the padded wrapper, eliminating unwanted empty vertical padding.
   - Added unit test in `src/components/ds/Dialog/Dialog.test.tsx` verifying that no padded header element is rendered when only `srTitle` is passed.
