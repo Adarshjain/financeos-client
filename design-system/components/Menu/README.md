@@ -7,16 +7,33 @@ Both open the same Popover with the same item rows, so they look identical. They
 
 ## Use
 - Verbs, most common first, destructive last after a separator in `danger`.
-- Optional right-aligned hint in `ink-4` ("Tomorrow · Wed 14 Oct"); hidden on phone.
-- On phone, menus with more than about six items open as a Dialog (bottom sheet).
+- Optional right-aligned hint in `ink-4` ("Tomorrow · Wed 14 Oct").
+- Menus look and work like a normal dropdown at every viewport size (never open as a sheet).
 - Item row (shared with Select's options): `body` weight 500, `ink`. Hover and keyboard highlight `bg-hover`; pressed `bg-pressed`. No outline or border on an item, ever: the highlight fill is the focus indicator.
 - Arrow keys move, Enter runs, Escape closes.
 
 ## Don't
 - Don't put a single action in a menu; show it as a button.
 
-## Built from
-ResponsiveOverlay (popover on desktop, sheet on phone); Popover (Radix DropdownMenu), the shared item row, Icon, Dialog (phone, long menus).
+## Props
+- `<Menu>`:
+  - `trigger?: React.ReactNode`: trigger element wrapped in `Menu.Trigger asChild`.
+  - `children?: React.ReactNode`: items and groups inside `MenuContent`.
+  - `align?: 'start' | 'center' | 'end'`: alignment relative to trigger (`default: 'start'`).
+  - `side?: 'top' | 'bottom' | 'left' | 'right'`: preferred side (`default: 'bottom'`).
+  - `sideOffset?: number`: distance from trigger in pixels (`default: 4`).
+  - `contentClassName?: string`: class applied to `MenuContent`.
+  - `contentProps?: Omit<MenuContentProps, 'align' | 'side' | 'sideOffset' | 'className'>`: props forwarded to Radix Content.
+  - `open?: boolean`: controlled open state.
+  - `defaultOpen?: boolean`: uncontrolled initial open state.
+  - `onOpenChange?: (open: boolean) => void`: open change callback.
+- Subcomponents: `Menu.Item`, `Menu.Separator`, `Menu.Group`, `Menu.Label`, `Menu.Trigger`, `Menu.Content`.
 
 ## Variants
-- Actions; with icons and hints (icons only when every item has one); snooze presets with "Pick a date…"; disabled item with its reason; sectioned; switcher with a footer link.
+- Standard action items (Edit, Duplicate, Delete).
+- Items with icons and hints.
+- Grouped with `Menu.Group` and `Menu.Separator`.
+- Labelled trigger or icon-only trigger.
+
+## Built from
+Radix DropdownMenu, the shared item row (`itemRow`), Icon.
