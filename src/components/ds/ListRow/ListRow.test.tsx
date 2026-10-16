@@ -15,24 +15,23 @@ describe('ListRow', () => {
     expect(subtitleEl).toHaveClass('text-label');
   });
 
-  it('renders leading element and trailing amount', () => {
+  it('renders leading and trailing elements', () => {
     render(
       <ListRow
         leading={<span data-testid="leading-badge">Missing</span>}
         title="SBI Statement"
-        amount="₹33,900"
+        trailing={<span data-testid="trailing-amount">₹33,900</span>}
       />,
     );
     expect(screen.getByTestId('leading-badge')).toBeInTheDocument();
-    expect(screen.getByText('₹33,900')).toBeInTheDocument();
+    expect(screen.getByTestId('trailing-amount')).toBeInTheDocument();
   });
 
-  it('formats positive credit amounts with a plus sign and tabular numbers', () => {
+  it('renders trailing node as passed by the app', () => {
     render(
       <ListRow
         title="Rahul Sharma"
-        amount="₹15,000"
-        isCredit
+        trailing={<span className="text-positive tabular-nums">+₹15,000</span>}
       />,
     );
     const amountEl = screen.getByText('+₹15,000');
@@ -75,14 +74,24 @@ describe('ListRow', () => {
     expect(handleClick).toHaveBeenCalledTimes(3);
   });
 
-  it('renders kebab button using Button and handles click', () => {
-    const handleKebab = vi.fn();
-    render(<ListRow title="Dining out" kebab={handleKebab} />);
+  it('renders actions menu button and triggers onSelect when action is clicked', async () => {
+    const handleSelect = vi.fn();
+    render(
+      <ListRow
+        title="Dining out"
+        actions={[
+          { id: 'edit', label: 'Edit', onSelect: handleSelect },
+        ]}
+      />,
+    );
     const kebabBtn = screen.getByRole('button', { name: 'More options' });
     expect(kebabBtn).toBeInTheDocument();
 
-    fireEvent.click(kebabBtn);
-    expect(handleKebab).toHaveBeenCalledTimes(1);
+    fireEvent.pointerDown(kebabBtn, { button: 0 });
+    const item = await screen.findByRole('menuitem', { name: 'Edit' });
+    expect(item).toBeInTheDocument();
+    fireEvent.click(item);
+    expect(handleSelect).toHaveBeenCalledTimes(1);
   });
 
   it('renders chevron icon when chevron prop is true', () => {
@@ -94,25 +103,38 @@ describe('ListRow', () => {
 
   it('renders asChild using Radix Slot without underline and with inherited text color', () => {
     render(
-      <ListRow asChild title="Sign in" subtitle="/ds/login" chevron>
-        <a href="/ds/login" data-testid="nav-link" />
+      <ListRow asChild title="Sign in" subtitle="Account access" chevron>
+        <a href="#" data-testid="nav-link" />
       </ListRow>,
     );
 
     const link = screen.getByTestId('nav-link');
     expect(link.tagName).toBe('A');
-    expect(link).toHaveAttribute('href', '/ds/login');
+    expect(link).toHaveAttribute('href', '#');
     expect(link).toHaveClass('no-underline', 'text-inherit', 'cursor-pointer');
     expect(screen.getByText('Sign in')).toBeInTheDocument();
-    expect(screen.getByText('/ds/login')).toBeInTheDocument();
+    expect(screen.getByText('Account access')).toBeInTheDocument();
     expect(link.querySelector('svg')).toBeInTheDocument();
   });
 
-  it('forwards ref to child element when asChild is used', () => {
-    const ref = React.createRef<HTMLDivElement>();
+  it('skips key interceptor when asChild is true', () => {
+    const handleClick = vi.fn();
     render(
-      <ListRow asChild ref={ref}>
-        <a href="/ds/offline">Offline</a>
+      <ListRow asChild title="Profile" onClick={handleClick}>
+        <a href="#" data-testid="as-child-link">Link</a>
+      </ListRow>,
+    );
+    const link = screen.getByTestId('as-child-link');
+    fireEvent.keyDown(link, { key: 'Enter' });
+    // In asChild mode, ListRow does not call onClick on Enter
+    expect(handleClick).not.toHaveBeenCalled();
+  });
+
+  it('forwards ref to child element when asChild is used', () => {
+    const ref = React.createRef<HTMLAnchorElement>();
+    render(
+      <ListRow asChild ref={ref as React.Ref<HTMLDivElement>}>
+        <a href="#">Offline</a>
       </ListRow>,
     );
     expect(ref.current).toBeInstanceOf(HTMLAnchorElement);
