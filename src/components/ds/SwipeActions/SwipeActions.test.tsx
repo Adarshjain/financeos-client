@@ -139,4 +139,33 @@ describe('SwipeActions', () => {
 
     expect(handleTrigger).not.toHaveBeenCalled();
   });
+
+  it('renders all 4 tones with appropriate background classes and text-on-brand', () => {
+    const { container: c1 } = render(
+      <SwipeActions left={{ label: 'Warning Action', tone: 'warning' }}>
+        <div>Item</div>
+      </SwipeActions>,
+    );
+    expect(c1.querySelector('.bg-warning.text-on-brand')).toBeInTheDocument();
+
+    const { container: c2 } = render(
+      <SwipeActions right={{ label: 'Info Action', tone: 'info' }}>
+        <div>Item</div>
+      </SwipeActions>,
+    );
+    expect(c2.querySelector('.bg-info.text-on-brand')).toBeInTheDocument();
+  });
+
+  it('preserves and calls consumer pointer event handlers', () => {
+    const onPointerDown = vi.fn();
+    const { container } = render(
+      <SwipeActions onPointerDown={onPointerDown} left={{ label: 'Action' }}>
+        <div>Item</div>
+      </SwipeActions>,
+    );
+
+    const root = container.firstChild as HTMLElement;
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0 });
+    expect(onPointerDown).toHaveBeenCalledTimes(1);
+  });
 });
