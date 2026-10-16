@@ -1,25 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useActionState, useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import React, { useActionState, useState } from 'react';
 
 import { login, startGoogleSSO } from '@/actions/auth';
 import {
   Banner,
   Button,
-  cn,
   Divider,
   Illustration,
-  Logo,
   showToast,
+  Text,
   TextField,
 } from '@/components/ds';
 import type { ApiResult, UserResponse } from '@/lib/types';
 
 export function LoginForm() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const isDeleted = searchParams.get('deleted') === '1';
 
   const [state, formAction, isPending] = useActionState(
@@ -31,18 +29,6 @@ export function LoginForm() {
   const [password, setPassword] = useState('');
   const [clientError, setClientError] = useState<string | null>(null);
   const [ssoPending, setSsoPending] = useState(false);
-
-  // Redirect on successful login
-  useEffect(() => {
-    if (state?.success) {
-      const from = searchParams.get('from');
-      const dest =
-        from && from.startsWith('/') && !from.startsWith('//')
-          ? from
-          : '/dashboard';
-      router.push(dest);
-    }
-  }, [state, router, searchParams]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     if (!email.trim() || !password) {
@@ -69,60 +55,56 @@ export function LoginForm() {
     clientError ?? (state && !state.success ? state.error.message : null);
 
   return (
-    <div className="min-h-dvh flex flex-col lg:grid lg:grid-cols-2 bg-canvas">
+    <div className="min-h-dvh flex flex-col lg:grid lg:grid-cols-2">
       {/* Signin artwork illustration: phone band on top, full column on desktop */}
-      <Illustration variant="signin" className="w-full h-auto lg:h-full rounded-none" />
+      <Illustration variant="signin" className="w-full h-auto lg:h-full" />
 
       {/* Form column */}
       <div className="flex-1 flex items-center justify-center p-space-20 lg:p-space-40">
         <div className="w-full max-w-sm flex flex-col gap-space-16">
-          {/* Logo, title, subtitle */}
+          {/* 1. Title and 2. Subtitle */}
           <div className="flex flex-col gap-space-4">
-            <div className="mb-space-6">
-              <Logo variant="mark" size="md" />
-            </div>
-            <h1 className="font-text font-extrabold text-heading text-ink m-0">
+            <Text as="h1" variant="page-title" family="display">
               Sign in
-            </h1>
-            <p className="font-text text-label text-ink-3 m-0">Welcome back.</p>
+            </Text>
+            <Text variant="body" tone="ink-3">
+              Welcome back.
+            </Text>
           </div>
 
+          {/* Deleted account notification */}
+          {isDeleted && (
+            <Banner tone="success">Your account has been deleted.</Banner>
+          )}
+
+          {/* Error banner */}
+          {errorMessage && (
+            <Banner tone="danger">{errorMessage}</Banner>
+          )}
+
+          {/* 3. Continue with Google */}
+          <Button
+            type="button"
+            variant="google"
+            loading={ssoPending}
+            loadingLabel="Opening Google…"
+            disabled={ssoPending || isPending}
+            onClick={handleGoogleSSO}
+          >
+            Continue with Google
+          </Button>
+
+          {/* 4. Divider "or" */}
+          <Divider label="or" />
+
+          {/* Form containing 5. Email, 6. Password, 7. Sign in button */}
           <form
             noValidate
             onSubmit={handleSubmit}
             action={formAction}
             className="flex flex-col gap-space-16"
           >
-            {/* Deleted account notification */}
-            {isDeleted && (
-              <Banner tone="success">Your account has been deleted.</Banner>
-            )}
-
-            {/* Error banner */}
-            {errorMessage && (
-              <Banner tone="danger">{errorMessage}</Banner>
-            )}
-
-            {/* Continue with Google button */}
-            <Button
-              type="button"
-              variant="google"
-              loading={ssoPending}
-              loadingLabel="Opening Google…"
-              disabled={ssoPending || isPending}
-              onClick={handleGoogleSSO}
-            >
-              Continue with Google
-            </Button>
-
-            <Divider label="or" className="my-space-2" />
-
-            <div
-              className={cn(
-                'flex flex-col gap-space-12',
-                ssoPending && 'opacity-55 pointer-events-none',
-              )}
-            >
+            <div className="flex flex-col gap-space-12">
               <TextField
                 id="email"
                 label="Email"
@@ -154,37 +136,28 @@ export function LoginForm() {
                 }}
                 disabled={isPending || ssoPending}
               />
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="xl"
-                className="w-full mt-space-4"
-                loading={isPending}
-                loadingLabel="Signing in…"
-                disabled={isPending || ssoPending}
-                onClick={(e) => {
-                  if (!email.trim() || !password) {
-                    e.preventDefault();
-                    setClientError('Email and password are required.');
-                  }
-                }}
-              >
-                Sign in
-              </Button>
             </div>
+
+            <Button
+              type="submit"
+              variant="primary"
+              size="xl"
+              className="w-full"
+              loading={isPending}
+              loadingLabel="Signing in…"
+              disabled={isPending || ssoPending}
+            >
+              Sign in
+            </Button>
           </form>
 
-          {/* Link to sign up */}
-          <p className="text-center font-text text-label text-ink-3 m-0">
+          {/* 8. Footer line */}
+          <Text variant="label" tone="ink-3" align="center">
             Don&apos;t have an account?{' '}
-            <Link
-              href="/ds/signup"
-              className="text-brand font-bold underline hover:no-underline"
-            >
-              Sign up
-            </Link>
-          </p>
+            <Button variant="link" asChild>
+              <Link href="/ds/signup">Sign up</Link>
+            </Button>
+          </Text>
         </div>
       </div>
     </div>
