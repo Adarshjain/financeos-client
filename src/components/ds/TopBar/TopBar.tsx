@@ -50,7 +50,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
       <header
         ref={ref}
         className={cn(
-          'w-full h-app-bar min-h-app-bar bg-surface border-b border-line px-space-12 lg:px-space-24 flex items-center gap-space-8 lg:gap-space-10 text-body select-none',
+          'w-full h-space-56 min-h-space-56 bg-surface border-b border-line px-space-12 lg:px-space-24 flex items-center gap-space-8 lg:gap-space-10 text-body select-none',
           className,
         )}
         {...props}

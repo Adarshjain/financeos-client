@@ -53,7 +53,7 @@ export const MenuContent = forwardRef<
         ref={ref}
         sideOffset={sideOffset}
         className={cn(
-          'z-overlay bg-surface border border-line rounded-ds-lg shadow-pop p-space-6 flex flex-col min-w-menu-trigger outline-none',
+          'z-overlay bg-surface border border-line rounded-ds-lg shadow-level-2 p-space-6 flex flex-col min-w-menu-trigger outline-none',
           'animate-in fade-in-0 slide-in-from-top-1 duration-base',
           className,
         )}

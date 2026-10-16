@@ -86,7 +86,7 @@ describe('Select', () => {
     expect(screen.getByText('ICICI Bank')).toBeInTheDocument();
   });
 
-  it('opens Popover with flexible width (min-w-popover-trigger max-w-dialog-sm)', () => {
+  it('opens Popover with flexible width (min-w-popover-trigger max-w-container-sm)', () => {
     render(
       <Select
         defaultOpen
@@ -98,7 +98,7 @@ describe('Select', () => {
     const option = screen.getByText('ICICI Bank');
     const popoverContent = option.closest('[data-radix-popper-content-wrapper]')?.firstElementChild;
     expect(popoverContent).toHaveClass('min-w-popover-trigger');
-    expect(popoverContent).toHaveClass('max-w-dialog-sm');
+    expect(popoverContent).toHaveClass('max-w-container-sm');
   });
 
   it('updates value and calls onValueChange in uncontrolled mode', () => {

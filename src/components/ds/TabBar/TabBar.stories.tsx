@@ -26,7 +26,7 @@ function Scene({
           {title}
         </div>
       )}
-      <div className="relative h-48 border border-line rounded-ds-lg overflow-hidden bg-canvas p-space-12 pb-tab-bar-clearance">
+      <div className="relative h-48 border border-line rounded-ds-lg overflow-hidden bg-canvas p-space-12 pb-bottom-clearance">
         <div className="bg-surface border border-line rounded-ds-lg h-control-xl mb-space-8" />
         <div className="bg-surface border border-line rounded-ds-lg h-control-xl mb-space-8" />
         <div className="bg-surface border border-line rounded-ds-lg h-control-xl" />
@@ -59,7 +59,7 @@ const meta: Meta<typeof TabBar> = {
     return (
       <div className="flex flex-col gap-space-12">
         <p className="font-text text-caption text-ink-3">
-          Pages keep <code className="font-text font-bold text-ink">pb-tab-bar-clearance</code> under the bar.
+          Pages keep <code className="font-text font-bold text-ink">pb-bottom-clearance</code> under the bar.
         </p>
         <Scene>
           <TabBar
@@ -82,7 +82,7 @@ export const AllVariants: Story = {
   render: () => (
     <div className="flex flex-col gap-space-16">
       <p className="font-text text-caption text-ink-3">
-        Pages keep <code className="font-text font-bold text-ink">pb-tab-bar-clearance</code> under the bar.
+        Pages keep <code className="font-text font-bold text-ink">pb-bottom-clearance</code> under the bar.
       </p>
 
       <Scene title="Home current">

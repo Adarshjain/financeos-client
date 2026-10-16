@@ -39,8 +39,8 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
               cx="40"
               cy="44"
               r="16"
-              fill="var(--ds-illus-gold)"
-              stroke="var(--ds-illus-gold-edge)"
+              fill="var(--ds-accent-gold)"
+              stroke="var(--ds-accent-gold-strong)"
               strokeWidth={3}
             />
             <text
@@ -75,7 +75,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
           ref={ref}
           aria-hidden="true"
           className={cn(
-            'bg-illus-mint text-ink p-space-20 pb-0 lg:p-space-48 flex flex-col justify-start lg:justify-between gap-space-8 lg:gap-0 relative overflow-hidden select-none',
+            'bg-accent-mint text-ink p-space-20 pb-0 lg:p-space-48 flex flex-col justify-start lg:justify-between gap-space-8 lg:gap-0 relative overflow-hidden select-none',
             className,
           )}
           {...props}
@@ -93,7 +93,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
           {/* Setup artwork scene (shrinks on mobile) */}
           <div className="relative h-36 lg:h-72 mt-space-8 mb-0 lg:my-space-24 shrink-0 origin-center scale-90 lg:scale-100">
             {/* Statement imported tile */}
-            <div className="absolute left-4 top-4 w-56 bg-surface border border-line rounded-ds-xl shadow-raise p-space-12 -rotate-3">
+            <div className="absolute left-4 top-4 w-56 bg-surface border border-line rounded-ds-xl shadow-level-1 p-space-12 -rotate-3">
               <div className="flex items-center gap-space-8">
                 <span className="w-7 h-7 rounded-ds-md bg-brand-tint text-brand flex items-center justify-center font-bold text-caption shrink-0">
                   PDF
@@ -113,7 +113,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
             </div>
 
             {/* Gmail connected tile */}
-            <div className="absolute right-4 top-0 bg-surface border border-line rounded-ds-xl shadow-raise px-space-14 py-space-10 flex items-center gap-space-10 rotate-3">
+            <div className="absolute right-4 top-0 bg-surface border border-line rounded-ds-xl shadow-level-1 px-space-14 py-space-10 flex items-center gap-space-10 rotate-3">
               <span className="w-7 h-7 rounded-ds-pill bg-info-tint text-info flex items-center justify-center font-bold text-caption shrink-0">
                 @
               </span>
@@ -124,7 +124,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
             </div>
 
             {/* Card recommendation tile */}
-            <div className="absolute right-12 bottom-2 bg-surface border border-line rounded-ds-xl shadow-raise px-space-14 py-space-10 -rotate-2">
+            <div className="absolute right-12 bottom-2 bg-surface border border-line rounded-ds-xl shadow-level-1 px-space-14 py-space-10 -rotate-2">
               <div className="text-caption font-semibold text-ink-3">
                 Which card for ₹4,500 dining?
               </div>
@@ -134,7 +134,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
             </div>
 
             {/* Lending reminder tile */}
-            <div className="absolute left-20 bottom-0 bg-info-tint border border-line rounded-ds-xl shadow-raise px-space-12 py-space-8 text-caption font-bold text-info rotate-3">
+            <div className="absolute left-20 bottom-0 bg-info-tint border border-line rounded-ds-xl shadow-level-1 px-space-12 py-space-8 text-caption font-bold text-info rotate-3">
               Rahul owes you ₹15,000 · 28 Oct
             </div>
           </div>
@@ -181,7 +181,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
         ref={ref}
         aria-hidden="true"
         className={cn(
-          'bg-illus-mint text-ink p-space-20 pb-0 lg:p-space-48 flex flex-col justify-start lg:justify-between gap-space-8 lg:gap-0 relative overflow-hidden select-none',
+          'bg-accent-mint text-ink p-space-20 pb-0 lg:p-space-48 flex flex-col justify-start lg:justify-between gap-space-8 lg:gap-0 relative overflow-hidden select-none',
           className,
         )}
         {...props}
@@ -199,7 +199,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
         {/* Signin artwork scene (shrinks on mobile) */}
         <div className="relative h-44 lg:h-72 mt-space-8 mb-0 lg:my-space-24 shrink-0 origin-center scale-90 lg:scale-100">
           {/* Credit card */}
-          <div className="absolute left-4 top-10 w-52 h-32 rounded-ds-xl bg-brand text-on-brand p-space-16 shadow-raise flex flex-col justify-between -rotate-6">
+          <div className="absolute left-4 top-10 w-52 h-32 rounded-ds-xl bg-brand text-on-brand p-space-16 shadow-level-1 flex flex-col justify-between -rotate-6">
             <div className="flex justify-between text-overline tracking-wider opacity-90 font-bold">
               <span>HDFC REGALIA GOLD</span>
               <span>₹</span>
@@ -215,7 +215,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
           </div>
 
           {/* Net worth tile */}
-          <div className="absolute right-4 top-2 w-52 bg-surface border border-line rounded-ds-xl shadow-raise p-space-12 rotate-3">
+          <div className="absolute right-4 top-2 w-52 bg-surface border border-line rounded-ds-xl shadow-level-1 p-space-12 rotate-3">
             <div className="text-caption font-semibold text-ink-3">Net worth</div>
             <div className="text-screen-title font-extrabold text-ink tracking-tight">
               ₹11.98L
@@ -240,7 +240,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
           </div>
 
           {/* Amex bill paid tile */}
-          <div className="absolute left-16 bottom-4 bg-surface border border-line rounded-ds-xl shadow-raise px-space-14 py-space-10 flex items-center gap-space-10 -rotate-2">
+          <div className="absolute left-16 bottom-4 bg-surface border border-line rounded-ds-xl shadow-level-1 px-space-14 py-space-10 flex items-center gap-space-10 -rotate-2">
             <span className="w-6 h-6 rounded-ds-pill bg-brand-tint text-brand flex items-center justify-center shrink-0">
               <Icon name="check" size="sm" />
             </span>
@@ -251,12 +251,12 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
           </div>
 
           {/* Coin */}
-          <div className="absolute right-24 bottom-10 w-12 h-12 rounded-ds-pill bg-illus-gold border-2 border-illus-gold-edge flex items-center justify-center font-extrabold text-heading text-warning-ink shadow-raise rotate-12">
+          <div className="absolute right-24 bottom-10 w-12 h-12 rounded-ds-pill bg-accent-gold border-2 border-accent-gold-strong flex items-center justify-center font-extrabold text-heading text-warning-ink shadow-level-1 rotate-12">
             ₹
           </div>
 
           {/* Points tile */}
-          <div className="absolute right-2 bottom-0 px-space-12 py-space-8 rounded-ds-xl border border-warning-border bg-warning-tint text-warning font-bold text-caption shadow-raise rotate-6">
+          <div className="absolute right-2 bottom-0 px-space-12 py-space-8 rounded-ds-xl border border-warning-border bg-warning-tint text-warning font-bold text-caption shadow-level-1 rotate-6">
             +600 pts · dining 5X
           </div>
         </div>

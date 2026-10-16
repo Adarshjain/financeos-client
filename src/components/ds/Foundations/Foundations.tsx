@@ -7,14 +7,14 @@ export function FoundationsColours() {
     { name: 'bg-sunken', desc: 'Table headers, section bands, footers', className: 'bg-sunken border border-line' },
     { name: 'bg-subtle', desc: 'Sticky date headers, category chip fill', className: 'bg-subtle border border-line' },
     { name: 'bg-hover', desc: 'Hover and pressed state for rows', className: 'bg-hover border border-line' },
-    { name: 'scrim', desc: 'Overlay behind sheets and dialogs', className: 'bg-scrim border border-line' },
+    { name: 'scrim', desc: 'Overlay behind sheets and dialogs', className: 'bg-backdrop border border-line' },
   ];
 
   const lines = [
     { name: 'line', desc: 'Card and menu borders, hairlines', className: 'bg-line' },
     { name: 'line-soft', desc: 'Dividers inside cards, neutral badge', className: 'bg-line-soft' },
     { name: 'line-strong', desc: 'Borders of interactive controls', className: 'bg-line-strong' },
-    { name: 'line-handle', desc: 'Sheet handle, switch track when off', className: 'bg-line-handle' },
+    { name: 'line-handle', desc: 'Sheet handle, switch track when off', className: 'bg-line-heavy' },
   ];
 
   const ink = [
@@ -40,8 +40,8 @@ export function FoundationsColours() {
     { name: 'danger-tint', label: 'Danger tint', className: 'bg-danger-tint text-danger-ink border border-danger-border' },
     { name: 'warning', label: 'Warning (needs you)', className: 'bg-warning text-on-brand' },
     { name: 'warning-tint', label: 'Warning tint', className: 'bg-warning-tint text-warning-ink border border-warning-border' },
-    { name: 'watch', label: 'Watch (monitored)', className: 'bg-watch text-on-brand' },
-    { name: 'watch-tint', label: 'Watch tint', className: 'bg-watch-tint text-ink border border-line' },
+    { name: 'watch', label: 'Watch (monitored)', className: 'bg-attention text-on-brand' },
+    { name: 'watch-tint', label: 'Watch tint', className: 'bg-attention-tint text-ink border border-line' },
     { name: 'info', label: 'Info (connected)', className: 'bg-info text-on-brand' },
     { name: 'info-tint', label: 'Info tint', className: 'bg-info-tint text-info-ink' },
   ];
@@ -155,7 +155,7 @@ export function FoundationsTypography() {
     { name: 'text-label', font: 'font-text', cls: 'text-label font-text', sample: 'Statement password', desc: 'Text 12/16 w600 · Buttons, chips, field labels' },
     { name: 'text-caption', font: 'font-text', cls: 'text-caption font-text', sample: 'HDFC Regalia ••7741 · Unreconciled', desc: 'Text 11/14 w500 · Row context, badges, helper text' },
     { name: 'text-overline', font: 'font-text', cls: 'text-overline uppercase font-text', sample: 'CARD DETAILS', desc: 'Text 10/12 w800 +0.08em · Section bands, rail headers' },
-    { name: 'text-tab-label', font: 'font-text', cls: 'text-tab-label font-text', sample: 'Transactions', desc: 'Text 10/12 w700 · Phone tab bar labels' },
+    { name: 'text-micro', font: 'font-text', cls: 'text-micro font-text', sample: 'Transactions', desc: 'Text 10/12 w700 · Phone tab bar labels' },
   ];
 
   return (
@@ -226,7 +226,7 @@ export function FoundationsRadii() {
     { name: 'rounded-ds-md', val: '8px', desc: 'Controls, buttons, inputs', cls: 'rounded-ds-md' },
     { name: 'rounded-ds-lg', val: '12px', desc: 'Cards, menus, dropdowns', cls: 'rounded-ds-lg' },
     { name: 'rounded-ds-xl', val: '14px', desc: 'Record cards, dialogs', cls: 'rounded-ds-xl' },
-    { name: 'rounded-ds-sheet', val: '22px', desc: 'Phone bottom sheet top corners', cls: 'rounded-ds-sheet' },
+    { name: 'rounded-ds-2xl', val: '22px', desc: 'Phone bottom sheet top corners', cls: 'rounded-ds-2xl' },
     { name: 'rounded-ds-pill', val: '999px', desc: 'Chips, search bars, pills', cls: 'rounded-ds-pill' },
   ];
 
@@ -251,11 +251,11 @@ export function FoundationsRadii() {
 
 export function FoundationsShadows() {
   const shadows = [
-    { name: 'shadow-pop', desc: 'Menus, dropdowns, desktop selection bar', cls: 'shadow-pop' },
-    { name: 'shadow-dialog', desc: 'Desktop modal dialogs', cls: 'shadow-dialog' },
-    { name: 'shadow-sheet', desc: 'Phone bottom sheets', cls: 'shadow-sheet' },
-    { name: 'shadow-dock', desc: 'Phone selection bar docked to bottom', cls: 'shadow-dock' },
-    { name: 'shadow-raise', desc: 'Auth illustration tiles only', cls: 'shadow-raise' },
+    { name: 'shadow-level-2', desc: 'Menus, dropdowns, desktop selection bar', cls: 'shadow-level-2' },
+    { name: 'shadow-level-3', desc: 'Desktop modal dialogs', cls: 'shadow-level-3' },
+    { name: 'shadow-up-2', desc: 'Phone bottom sheets', cls: 'shadow-up-2' },
+    { name: 'shadow-up-1', desc: 'Phone selection bar docked to bottom', cls: 'shadow-up-1' },
+    { name: 'shadow-level-1', desc: 'Auth illustration tiles only', cls: 'shadow-level-1' },
   ];
 
   return (

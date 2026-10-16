@@ -18,7 +18,7 @@ const customTwMerge = extendTailwindMerge({
             'label',
             'caption',
             'overline',
-            'tab-label',
+            'micro',
           ],
         },
       ],

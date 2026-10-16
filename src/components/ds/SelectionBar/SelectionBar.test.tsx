@@ -117,9 +117,9 @@ describe('SelectionBar', () => {
     expect(selectAllBtn).toHaveClass('h-control-md');
 
     // Bar switches between docked bottom sheet (< lg) and floating pill (>= lg)
-    const bar = container.querySelector('.z-dock');
+    const bar = container.querySelector('.z-floating');
     expect(bar).toBeInTheDocument();
-    expect(bar).toHaveClass('rounded-t-ds-sheet', 'lg:rounded-ds-lg', 'shadow-dock', 'lg:shadow-pop', 'w-full', 'lg:w-fit');
+    expect(bar).toHaveClass('rounded-t-ds-2xl', 'lg:rounded-ds-lg', 'shadow-up-1', 'lg:shadow-level-2', 'w-full', 'lg:w-fit');
 
     fireEvent.click(selectAllBtn);
     expect(handleSelectAll).toHaveBeenCalledTimes(1);

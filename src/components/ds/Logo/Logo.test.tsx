@@ -12,11 +12,11 @@ describe('Logo component', () => {
     expect(mark).toHaveClass('w-control-md', 'h-control-md', 'bg-brand', 'text-on-brand');
   });
 
-  it('renders mark sm with w-chip h-chip', () => {
+  it('renders mark sm with w-space-28 h-space-28', () => {
     const { container } = render(<Logo variant="mark" size="sm" />);
     const mark = container.firstChild as HTMLElement;
     expect(mark).toHaveTextContent('₹');
-    expect(mark).toHaveClass('w-chip', 'h-chip');
+    expect(mark).toHaveClass('w-space-28', 'h-space-28');
   });
 
   it('renders full variant with ₹ mark and FinanceOS wordmark', () => {

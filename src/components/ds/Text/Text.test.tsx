@@ -30,7 +30,7 @@ describe('Text component', () => {
       label: ['text-label'],
       caption: ['text-caption'],
       overline: ['text-overline', 'uppercase'],
-      'tab-label': ['text-tab-label'],
+      'micro': ['text-micro'],
     };
 
     for (const [variant, classes] of Object.entries(variants) as [TextVariant, string[]][]) {

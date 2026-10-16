@@ -32,16 +32,16 @@ describe('DialogShell', () => {
 
   it('applies correct size classes for dialog tokens', () => {
     const { container: c1 } = render(<DialogShell size="sm" title="Small" />);
-    expect(c1.firstChild).toHaveClass('lg:max-w-dialog-sm');
+    expect(c1.firstChild).toHaveClass('lg:max-w-container-sm');
 
     const { container: c2 } = render(<DialogShell size="md" title="Default" />);
-    expect(c2.firstChild).toHaveClass('lg:max-w-dialog-md');
+    expect(c2.firstChild).toHaveClass('lg:max-w-container-md');
 
     const { container: c3 } = render(<DialogShell size="lg" title="Large" />);
-    expect(c3.firstChild).toHaveClass('lg:max-w-dialog-lg');
+    expect(c3.firstChild).toHaveClass('lg:max-w-container-lg');
 
     const { container: c4 } = render(<DialogShell size="xl" title="XL" />);
-    expect(c4.firstChild).toHaveClass('lg:max-w-dialog-xl');
+    expect(c4.firstChild).toHaveClass('lg:max-w-container-xl');
   });
 
   it('applies side-panel variant classes on desktop', () => {

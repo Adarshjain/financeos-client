@@ -23,24 +23,24 @@ describe('Toast', () => {
     expect(screen.getByText('Dashboard deleted')).toBeInTheDocument();
   });
 
-  it('applies dark ink background and shadow-pop for neutral tone default', () => {
+  it('applies dark ink background and shadow-level-2 for neutral tone default', () => {
     const { container } = render(<Toast message="Snoozed" />);
     expect(container.firstChild).toHaveClass(
       'bg-ink',
       'text-on-brand',
-      'shadow-pop',
+      'shadow-level-2',
       'rounded-ds-lg',
     );
   });
 
-  it('reuses Banner tone styles with shadow-pop for other tones', () => {
+  it('reuses Banner tone styles with shadow-level-2 for other tones', () => {
     const { container: cSuccess } = render(
       <Toast tone="success" message="Success" />,
     );
     expect(cSuccess.firstChild).toHaveClass(
       'bg-positive-tint',
       'text-positive-strong',
-      'shadow-pop',
+      'shadow-level-2',
     );
 
     const { container: cDanger } = render(
@@ -49,7 +49,7 @@ describe('Toast', () => {
     expect(cDanger.firstChild).toHaveClass(
       'bg-danger-tint',
       'text-danger-ink',
-      'shadow-pop',
+      'shadow-level-2',
     );
 
     const { container: cWarning } = render(
@@ -58,7 +58,7 @@ describe('Toast', () => {
     expect(cWarning.firstChild).toHaveClass(
       'bg-warning-tint',
       'text-warning-ink',
-      'shadow-pop',
+      'shadow-level-2',
     );
 
     const { container: cInfo } = render(
@@ -67,7 +67,7 @@ describe('Toast', () => {
     expect(cInfo.firstChild).toHaveClass(
       'bg-info-tint',
       'text-info-ink',
-      'shadow-pop',
+      'shadow-level-2',
     );
   });
 

@@ -84,7 +84,7 @@ export const AllVariants: Story = {
           right={deleteAction}
           className="rounded-ds-lg"
         >
-          <Card className="p-space-16 border border-line rounded-ds-lg bg-surface shadow-pop">
+          <Card className="p-space-16 border border-line rounded-ds-lg bg-surface shadow-level-2">
             <div className="font-extrabold text-body text-ink">
               Subscription renewal
             </div>
@@ -148,7 +148,7 @@ export const WrapCard: Story = {
         {...args}
         className="rounded-ds-lg"
       >
-        <Card className="p-space-16 border border-line rounded-ds-lg bg-surface shadow-pop">
+        <Card className="p-space-16 border border-line rounded-ds-lg bg-surface shadow-level-2">
           <div className="font-extrabold text-body text-ink">
             Subscription renewal
           </div>

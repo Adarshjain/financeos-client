@@ -28,7 +28,7 @@ export const Logo = forwardRef<HTMLSpanElement, LogoProps>(
   ({ variant = 'mark', size = 'md', symbol = '₹', className, ...props }, ref) => {
     const markClasses = cn(
       'rounded-ds-md bg-brand text-on-brand inline-flex items-center justify-center font-text font-extrabold text-heading shrink-0 select-none leading-none',
-      size === 'sm' ? 'w-chip h-chip' : 'w-control-md h-control-md',
+      size === 'sm' ? 'w-space-28 h-space-28' : 'w-control-md h-control-md',
     );
 
     if (variant === 'full') {

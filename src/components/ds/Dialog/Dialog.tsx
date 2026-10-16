@@ -14,10 +14,10 @@ export type DialogVariant = 'modal' | 'side-panel';
 export type DialogBackground = 'surface' | 'canvas';
 
 const dialogSizeClasses: Record<DialogSize, string> = {
-  ['sm']: 'lg:max-w-dialog-sm',
-  ['md']: 'lg:max-w-dialog-md',
-  ['lg']: 'lg:max-w-dialog-lg',
-  ['xl']: 'lg:max-w-dialog-xl',
+  ['sm']: 'lg:max-w-container-sm',
+  ['md']: 'lg:max-w-container-md',
+  ['lg']: 'lg:max-w-container-lg',
+  ['xl']: 'lg:max-w-container-xl',
 };
 
 export interface DialogHandleProps extends React.HTMLAttributes<HTMLDivElement> {}
@@ -29,7 +29,7 @@ export const DialogHandle = forwardRef<HTMLDivElement, DialogHandleProps>(
         ref={ref}
         aria-hidden="true"
         className={cn(
-          'w-space-40 h-space-4 rounded-ds-pill bg-line-handle mx-auto mt-space-8 shrink-0',
+          'w-space-40 h-space-4 rounded-ds-pill bg-line-heavy mx-auto mt-space-8 shrink-0',
           className
         )}
         {...props}
@@ -124,7 +124,7 @@ export interface DialogShellProps extends Omit<
 }
 
 /**
- * Visual shell for modals: on desktop it renders centred, radius-xl, shadow-dialog,
+ * Visual shell for modals: on desktop it renders centred, radius-xl, shadow-level-3,
  * with × close button. On phone it renders as a bottom sheet with drag handle,
  * no × button, and swipe-down-to-close (RULES §5.6).
  * Side panel slides in from the right on desktop and renders as a sheet on phone.
@@ -169,14 +169,14 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
         className={cn(
           background === 'canvas' ? 'bg-canvas' : 'bg-surface',
           'flex flex-col overflow-hidden text-body text-ink border-line-soft max-h-dvh w-full',
-          'rounded-t-ds-sheet shadow-sheet border-t',
+          'rounded-t-ds-2xl shadow-up-2 border-t',
           variant === 'side-panel'
-            ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-dialog lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full'
-            : 'lg:rounded-ds-xl lg:shadow-dialog lg:border',
+            ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-level-3 lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full'
+            : 'lg:rounded-ds-xl lg:shadow-level-3 lg:border',
           dialogSizeClasses[size],
           isDragging
             ? 'transition-none'
-            : 'transition-transform duration-sheet ease-out',
+            : 'transition-transform duration-slow ease-out',
           className
         )}
         {...props}
@@ -310,7 +310,7 @@ export const DialogContent = forwardRef<
 
     return (
       <DialogPortal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-scrim bg-scrim animate-in fade-in-0 duration-sheet lg:duration-base data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-sheet lg:data-closed:duration-base" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-backdrop bg-backdrop animate-in fade-in-0 duration-slow lg:duration-base data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow lg:data-closed:duration-base" />
         {/* Content is the positioning layer, not the panel: Radix keeps a closing
             Content mounted until its own exit animation ends, so it runs a no-op
             exit for the same duration while the panel inside animates out.
@@ -320,7 +320,7 @@ export const DialogContent = forwardRef<
           style={{ pointerEvents: 'none' }}
           className={cn(
             'group fixed inset-x-0 bottom-0 z-overlay flex flex-col focus:outline-none',
-            'data-closed:animate-out data-closed:fill-mode-forwards data-closed:duration-sheet lg:data-closed:duration-base',
+            'data-closed:animate-out data-closed:fill-mode-forwards data-closed:duration-slow lg:data-closed:duration-base',
             variant === 'side-panel'
               ? 'lg:inset-y-0 lg:right-0 lg:left-auto lg:h-full lg:max-h-full'
               : 'lg:inset-0 lg:items-center lg:justify-center lg:p-space-16'
@@ -337,17 +337,17 @@ export const DialogContent = forwardRef<
             className={cn(
               'pointer-events-auto flex flex-col overflow-hidden text-body text-ink border-line-soft max-h-dvh w-full',
               background === 'canvas' ? 'bg-canvas' : 'bg-surface',
-              'rounded-t-ds-sheet shadow-sheet border-t',
+              'rounded-t-ds-2xl shadow-up-2 border-t',
               variant === 'side-panel'
-                ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-dialog lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full lg:slide-in-from-right lg:group-data-closed:slide-out-to-right'
-                : 'lg:rounded-ds-xl lg:shadow-dialog lg:border lg:zoom-in-95 lg:group-data-closed:zoom-out-95',
+                ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-level-3 lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full lg:slide-in-from-right lg:group-data-closed:slide-out-to-right'
+                : 'lg:rounded-ds-xl lg:shadow-level-3 lg:border lg:zoom-in-95 lg:group-data-closed:zoom-out-95',
               dialogSizeClasses[size],
               'animate-in fade-in-0 slide-in-from-bottom lg:slide-in-from-bottom-0',
               // Closing reverses the opening: the sheet slides back down (from wherever a drag left it), the modal fades and shrinks.
-              'group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:slide-out-to-bottom lg:group-data-closed:slide-out-to-bottom-0 group-data-closed:fill-mode-forwards group-data-closed:duration-sheet lg:group-data-closed:duration-base',
+              'group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:slide-out-to-bottom lg:group-data-closed:slide-out-to-bottom-0 group-data-closed:fill-mode-forwards group-data-closed:duration-slow lg:group-data-closed:duration-base',
               isDragging
                 ? 'transition-none'
-                : 'transition-transform duration-sheet ease-out lg:duration-base',
+                : 'transition-transform duration-slow ease-out lg:duration-base',
               className
             )}
           >

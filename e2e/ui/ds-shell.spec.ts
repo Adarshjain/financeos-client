@@ -20,7 +20,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(page.getByText('No signed-in pages yet.')).toBeVisible();
 
     // Verify Rail navigation is visible
-    const rail = page.locator('nav.w-rail');
+    const rail = page.locator('nav.w-container-xs');
     await expect(rail).toBeVisible();
 
     // Verify Rail groups and items in order

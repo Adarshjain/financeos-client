@@ -7,11 +7,11 @@
   --ds-bg-sunken: #fafbfc;
   --ds-bg-subtle: #f8f9fb;
   --ds-bg-hover: #f5f6f8;
-  --ds-scrim: rgba(18,20,23,0.45);
+  --ds-backdrop: rgba(18,20,23,0.45);
   --ds-line: #e4e7eb;
   --ds-line-soft: #eef0f3;
   --ds-line-strong: #d7dbe0;
-  --ds-line-handle: #c4c9d1;
+  --ds-line-heavy: #c4c9d1;
   --ds-ink: #121417;
   --ds-ink-2: #374151;
   --ds-ink-3: #5b6472;
@@ -38,8 +38,8 @@
   --ds-warning-tint: #fff4e5;
   --ds-warning-border: #f5c97a;
   --ds-warning-ink: #7c3f0a;
-  --ds-watch: #d97706;
-  --ds-watch-tint: #fffbf3;
+  --ds-attention: #d97706;
+  --ds-attention-tint: #fffbf3;
   --ds-info: #2456d6;
   --ds-info-tint: #e8eefc;
   --ds-neutral-ink: #4b5563;
@@ -51,14 +51,14 @@
   --ds-chart-4: #7c3aed;
   --ds-chart-5: #0e9aa7;
   --ds-chart-rest: #9ca3af;
-  --ds-illus-mint: #eaf4ee;
-  --ds-illus-gold: #ffd166;
-  --ds-illus-gold-edge: #f4b942;
-  --ds-shadow-pop: 0 12px 32px rgba(16,24,40,0.16);
-  --ds-shadow-dialog: 0 20px 60px rgba(16,24,40,0.22);
-  --ds-shadow-sheet: 0 -12px 40px rgba(16,24,40,0.22);
-  --ds-shadow-dock: 0 -8px 24px rgba(16,24,40,0.12);
-  --ds-shadow-raise: 0 14px 34px rgba(16,24,40,0.10);
+  --ds-accent-mint: #eaf4ee;
+  --ds-accent-gold: #ffd166;
+  --ds-accent-gold-strong: #f4b942;
+  --ds-shadow-level-2: 0 12px 32px rgba(16,24,40,0.16);
+  --ds-shadow-level-3: 0 20px 60px rgba(16,24,40,0.22);
+  --ds-shadow-up-2: 0 -12px 40px rgba(16,24,40,0.22);
+  --ds-shadow-up-1: 0 -8px 24px rgba(16,24,40,0.12);
+  --ds-shadow-level-1: 0 14px 34px rgba(16,24,40,0.10);
   --ds-space-2: 2px;
   --ds-space-4: 4px;
   --ds-space-6: 6px;
@@ -73,36 +73,35 @@
   --ds-space-32: 32px;
   --ds-space-40: 40px;
   --ds-space-48: 48px;
+  --ds-space-56: 56px;
+  --ds-space-64: 64px;
+  --ds-space-96: 96px;
   --ds-radius-xs: 4px;
   --ds-radius-sm: 6px;
   --ds-radius-md: 8px;
   --ds-radius-lg: 12px;
   --ds-radius-xl: 14px;
-  --ds-radius-sheet: 22px;
+  --ds-radius-2xl: 22px;
   --ds-radius-pill: 999px;
   --ds-control-sm: 26px;
   --ds-control-md: 32px;
   --ds-control-lg: 36px;
   --ds-control-xl: 44px;
-  --ds-chip: 28px;
-  --ds-app-bar: 56px;
-  --ds-tab-bar: 64px;
-  --ds-rail: 240px;
-  --ds-dialog-sm: 440px;
-  --ds-dialog-md: 640px;
-  --ds-dialog-lg: 760px;
-  --ds-dialog-xl: 920px;
-  --ds-swipe-action: 96px;
+  --ds-container-xs: 240px;
+  --ds-container-sm: 440px;
+  --ds-container-md: 640px;
+  --ds-container-lg: 760px;
+  --ds-container-xl: 920px;
   --ds-icon-sm: 14px;
   --ds-icon-md: 16px;
   --ds-icon-lg: 20px;
   --ds-z-sticky: 2;
-  --ds-z-dock: 10;
-  --ds-z-scrim: 20;
+  --ds-z-floating: 10;
+  --ds-z-backdrop: 20;
   --ds-z-overlay: 21;
   --ds-dur-fast: 120ms;
   --ds-dur-base: 200ms;
-  --ds-dur-sheet: 280ms;
+  --ds-dur-slow: 280ms;
 }
 .dark {
   --ds-bg-canvas: #0e1114;
@@ -110,11 +109,11 @@
   --ds-bg-sunken: #12161a;
   --ds-bg-subtle: #1b2025;
   --ds-bg-hover: #1f252b;
-  --ds-scrim: rgba(0,0,0,0.6);
+  --ds-backdrop: rgba(0,0,0,0.6);
   --ds-line: #262c33;
   --ds-line-soft: #20262c;
   --ds-line-strong: #3a424b;
-  --ds-line-handle: #4a525c;
+  --ds-line-heavy: #4a525c;
   --ds-ink: #eceff2;
   --ds-ink-2: #c9cfd6;
   --ds-ink-3: #9aa3ae;
@@ -141,8 +140,8 @@
   --ds-warning-tint: #3a2a12;
   --ds-warning-border: #6e4b17;
   --ds-warning-ink: #f7c987;
-  --ds-watch: #f59e0b;
-  --ds-watch-tint: #2a2212;
+  --ds-attention: #f59e0b;
+  --ds-attention-tint: #2a2212;
   --ds-info: #7fa2ff;
   --ds-info-tint: #1a2547;
   --ds-neutral-ink: #c9cfd6;
@@ -154,14 +153,14 @@
   --ds-chart-4: #a98bf5;
   --ds-chart-5: #3cc4cf;
   --ds-chart-rest: #6b7480;
-  --ds-illus-mint: #13261f;
-  --ds-illus-gold: #e8b84a;
-  --ds-illus-gold-edge: #b8892a;
-  --ds-shadow-pop: 0 12px 32px rgba(0,0,0,0.5);
-  --ds-shadow-dialog: 0 20px 60px rgba(0,0,0,0.6);
-  --ds-shadow-sheet: 0 -12px 40px rgba(0,0,0,0.6);
-  --ds-shadow-dock: 0 -8px 24px rgba(0,0,0,0.45);
-  --ds-shadow-raise: 0 14px 34px rgba(0,0,0,0.4);
+  --ds-accent-mint: #13261f;
+  --ds-accent-gold: #e8b84a;
+  --ds-accent-gold-strong: #b8892a;
+  --ds-shadow-level-2: 0 12px 32px rgba(0,0,0,0.5);
+  --ds-shadow-level-3: 0 20px 60px rgba(0,0,0,0.6);
+  --ds-shadow-up-2: 0 -12px 40px rgba(0,0,0,0.6);
+  --ds-shadow-up-1: 0 -8px 24px rgba(0,0,0,0.45);
+  --ds-shadow-level-1: 0 14px 34px rgba(0,0,0,0.4);
 }
 /* Type styles — reference values for the Tailwind fontSize keys text-<style> (font family comes from --ds-font-text / --ds-font-display, set by next/font/local in Phase 1). */
 /* text-hero-figure: display, 30px/34px, 800, tracking -0.02em */
@@ -175,4 +174,4 @@
 /* text-label: text, 12px/16px, 600 */
 /* text-caption: text, 11px/14px, 500 */
 /* text-overline: text, 10px/12px, 800, tracking 0.08em, uppercase */
-/* text-tab-label: text, 10px/12px, 700 */
+/* text-micro: text, 10px/12px, 700 */
