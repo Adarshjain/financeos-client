@@ -8,17 +8,13 @@ import { Button } from '../Button/Button';
 import { cn } from '../cn';
 
 export interface ToastProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title' | 'action'> {
   /** Toast tone (neutral, success, danger, warning, info). Default is neutral (dark ink). */
   tone?: BannerTone;
   /** Toast message */
   message?: React.ReactNode;
-  /** Undo action callback */
-  onUndo?: () => void;
-  /** Label for undo action (default: 'Undo') */
-  undoLabel?: string;
-  /** Optional custom action element */
-  action?: React.ReactNode;
+  /** Single action button on the right: action={{ label, onSelect }} */
+  action?: { label: React.ReactNode; onSelect: () => void };
 }
 
 export const Toast = forwardRef<HTMLDivElement, ToastProps>(
@@ -28,8 +24,6 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
       className,
       tone = 'neutral',
       message,
-      onUndo,
-      undoLabel = 'Undo',
       action,
       role,
       ...props
@@ -51,20 +45,18 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
         {...props}
       >
         <span className="flex-1 min-w-0">{message ?? children}</span>
-        {onUndo ? (
+        {action && (
           <Button
             type="button"
             variant="link"
-            onClick={onUndo}
+            onClick={action.onSelect}
             className={cn(
               'ml-auto shrink-0',
               isNeutral ? 'text-line hover:text-line-soft' : 'text-inherit',
             )}
           >
-            {undoLabel}
+            {action.label}
           </Button>
-        ) : (
-          action && <div className="ml-auto shrink-0">{action}</div>
         )}
       </div>
     );
@@ -104,17 +96,17 @@ export function Toaster({
 }
 
 export interface ShowToastOptions {
+  id?: string;
   tone?: BannerTone;
-  onUndo?: () => void;
-  undoLabel?: string;
-  action?: React.ReactNode;
+  action?: { label: React.ReactNode; onSelect: () => void };
   duration?: number;
+  onDismiss?: () => void;
 }
 
 /**
- * Show a FinanceOS toast notification using sonner.
+ * Show a toast notification using sonner.
  * Targets the new-system Toaster (id="ds") at bottom-centre.
- * Auto-dismisses in ~5s, supports Undo.
+ * Auto-dismisses in ~5s, supports action (e.g. { label: 'Undo', onSelect }).
  */
 export function showToast(
   message: React.ReactNode,
@@ -125,21 +117,24 @@ export function showToast(
       <Toast
         message={message}
         tone={options?.tone}
-        onUndo={
-          options?.onUndo
-            ? () => {
-                options.onUndo?.();
-                sonnerToast.dismiss(id);
+        action={
+          options?.action
+            ? {
+                label: options.action.label,
+                onSelect: () => {
+                  options.action?.onSelect();
+                  sonnerToast.dismiss(id);
+                },
               }
             : undefined
         }
-        undoLabel={options?.undoLabel}
-        action={options?.action}
       />
     ),
     {
+      id: options?.id,
       toasterId: 'ds',
       duration: options?.duration ?? 5000,
+      onDismiss: options?.onDismiss ? () => options.onDismiss!() : undefined,
     },
   );
 }
