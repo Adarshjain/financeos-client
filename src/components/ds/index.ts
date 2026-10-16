@@ -20,6 +20,7 @@ export * from './KpiTile/KpiTile';
 export * from './ListRow/ListRow';
 export * from './Logo/Logo';
 export * from './Menu/Menu';
+export * from './MonthCalendar/MonthCalendar';
 export * from './Pager/Pager';
 export * from './Popover/Popover';
 export * from './ProgressBar/ProgressBar';
