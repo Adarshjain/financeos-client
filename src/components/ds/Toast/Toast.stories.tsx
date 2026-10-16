@@ -1,15 +1,28 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { fn } from 'storybook/test';
 
-import { Button } from '../Button/Button';
-import { showToast, Toast, Toaster } from './Toast';
+import { Button, showToast, Toast, Toaster } from '@/components/ds';
 
 const meta: Meta<typeof Toast> = {
   title: 'DS/Feedback/Toast',
   component: Toast,
   parameters: {
     layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'A Banner that floats at the bottom of the screen after an action, for about 5 seconds, with Undo when the action can be reversed.',
+      },
+    },
   },
+  decorators: [
+    (Story) => (
+      <div className="max-w-sm">
+        <Story />
+      </div>
+    ),
+  ],
   argTypes: {
     tone: {
       control: 'select',
@@ -20,79 +33,23 @@ const meta: Meta<typeof Toast> = {
       control: 'text',
       description: 'Message content',
     },
-    undoLabel: {
-      control: 'text',
-      description: 'Undo action label',
+    action: {
+      control: false,
+      description: 'Action object with label and onSelect callback',
     },
   },
   args: {
     tone: 'neutral',
     message: 'Snoozed until Wed 14 Oct',
-    undoLabel: 'Undo',
+    action: {
+      label: 'Undo',
+      onSelect: fn(),
+    },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof Toast>;
-
-export const AllVariants: Story = {
-  name: 'All variants',
-  render: () => (
-    <div className="flex flex-col gap-space-16 max-w-sm">
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Neutral (default · dark ink with Undo)
-        </div>
-        <Toast
-          tone="neutral"
-          message="Snoozed until Wed 14 Oct"
-          onUndo={() => {}}
-        />
-      </div>
-
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Success (with Undo)
-        </div>
-        <Toast
-          tone="success"
-          message="Marked ₹20,000 paid · ₹13,900 still due"
-          onUndo={() => {}}
-        />
-      </div>
-
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Danger
-        </div>
-        <Toast
-          tone="danger"
-          message="Couldn't snooze. The row is back."
-        />
-      </div>
-
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Warning
-        </div>
-        <Toast
-          tone="warning"
-          message="Imported 41 rows, 2 skipped"
-        />
-      </div>
-
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Info
-        </div>
-        <Toast
-          tone="info"
-          message="Dashboard deleted"
-        />
-      </div>
-    </div>
-  ),
-};
 
 export const Neutral: Story = {
   name: 'Neutral (default)',
@@ -100,11 +57,6 @@ export const Neutral: Story = {
     tone: 'neutral',
     message: 'Snoozed until Wed 14 Oct',
   },
-  render: (args) => (
-    <div className="max-w-sm">
-      <Toast {...args} onUndo={() => alert('Undone')} />
-    </div>
-  ),
 };
 
 export const Success: Story = {
@@ -113,11 +65,6 @@ export const Success: Story = {
     tone: 'success',
     message: 'Marked ₹20,000 paid · ₹13,900 still due',
   },
-  render: (args) => (
-    <div className="max-w-sm">
-      <Toast {...args} onUndo={() => alert('Undone')} />
-    </div>
-  ),
 };
 
 export const Danger: Story = {
@@ -125,12 +72,8 @@ export const Danger: Story = {
   args: {
     tone: 'danger',
     message: "Couldn't snooze. The row is back.",
+    action: undefined,
   },
-  render: (args) => (
-    <div className="max-w-sm">
-      <Toast {...args} />
-    </div>
-  ),
 };
 
 export const Warning: Story = {
@@ -138,12 +81,8 @@ export const Warning: Story = {
   args: {
     tone: 'warning',
     message: 'Imported 41 rows, 2 skipped',
+    action: undefined,
   },
-  render: (args) => (
-    <div className="max-w-sm">
-      <Toast {...args} />
-    </div>
-  ),
 };
 
 export const Info: Story = {
@@ -151,99 +90,34 @@ export const Info: Story = {
   args: {
     tone: 'info',
     message: 'Dashboard deleted',
-  },
-  render: (args) => (
-    <div className="max-w-sm">
-      <Toast {...args} />
-    </div>
-  ),
-};
-
-export const WithToaster: Story = {
-  name: 'Toaster + showToast',
-  render: () => {
-    return (
-      <div className="flex flex-col gap-space-12 p-space-16">
-        <Toaster />
-        <p className="font-text text-body text-ink-3">
-          Mounts <code className="font-text font-bold text-ink">&lt;Toaster /&gt;</code> with <code className="font-text font-bold text-ink">id=&quot;ds&quot;</code> at bottom-centre, rendering exactly one toast at a time.
-        </p>
-        <div>
-          <Button
-            variant="primary"
-            onClick={() =>
-              showToast('Marked ₹20,000 paid · ₹13,900 still due', {
-                tone: 'success',
-                onUndo: () => alert('Undone!'),
-              })
-            }
-          >
-            Show toast
-          </Button>
-        </div>
-      </div>
-    );
+    action: undefined,
   },
 };
 
 export const InteractiveTrigger: Story = {
-  name: 'Trigger in canvas',
-  render: () => {
+  name: 'Interactive Trigger',
+  parameters: {
+    docs: {
+      description: {
+        story: 'Mount <Toaster /> once, then call showToast.',
+      },
+    },
+  },
+  render: (args) => {
     return (
-      <div className="flex flex-col gap-space-16 p-space-16">
+      <div className="flex flex-col gap-space-16">
         <Toaster />
-        <div className="flex flex-wrap gap-space-8">
+        <div>
           <Button
-            variant="secondary"
+            variant="primary"
             onClick={() =>
-              showToast('Snoozed until Wed 14 Oct', {
-                tone: 'neutral',
-                onUndo: () => alert('Undone!'),
+              showToast(args.message, {
+                tone: args.tone,
+                action: args.action,
               })
             }
           >
-            Toast Neutral
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() =>
-              showToast('Marked ₹20,000 paid · ₹13,900 still due', {
-                tone: 'success',
-                onUndo: () => alert('Undone!'),
-              })
-            }
-          >
-            Toast Success
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() =>
-              showToast("Couldn't snooze. The row is back.", {
-                tone: 'danger',
-              })
-            }
-          >
-            Toast Danger
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() =>
-              showToast('Imported 41 rows, 2 skipped', {
-                tone: 'warning',
-              })
-            }
-          >
-            Toast Warning
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={() =>
-              showToast('Dashboard deleted', {
-                tone: 'info',
-              })
-            }
-          >
-            Toast Info
+            Show toast
           </Button>
         </div>
       </div>

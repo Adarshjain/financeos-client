@@ -1,9 +1,14 @@
 # Toast
 
-A Banner that floats at the bottom of the screen after an action, for about 5 seconds, with Undo when the action can be reversed.
+A Banner that floats at the bottom of the screen after an action, for about 5 seconds, with an action when the change can be reversed: `showToast('Snoozed', { action: { label: 'Undo', onSelect: undo } })`.
 
 ## Tones
-The same as Banner, so a toast reads the same as an inline message: `neutral` (the default: "Snoozed until Wed 14 Oct"), `success`, `danger` ("Couldn't snooze. The row is back."), `warning`, `info`. Floating adds `shadow-pop`.
+The same as Banner, so a toast reads the same as an inline message: `neutral` (the default: "Snoozed until Wed 14 Oct"), `success`, `danger` ("Couldn't snooze. The row is back."), `warning`, `info`. Floating adds `shadow-level-2`.
+
+## Props
+- `tone`: `'neutral' | 'success' | 'danger' | 'warning' | 'info'` (default `'neutral'`)
+- `message`: `ReactNode` (or `children`)
+- `action`: `{ label: ReactNode; onSelect: () => void }` (Button `link` on the right)
 
 ## Use
 - Says what happened, with the object: "Marked ₹20,000 paid · ₹13,900 still due", "Dashboard deleted".
@@ -15,10 +20,10 @@ The same as Banner, so a toast reads the same as an inline message: `neutral` (t
 - `Toaster` is the one mount point for new-system toasts: bottom centre, above the TabBar on phone (`bottom-safe-12` plus the bar), a single toast at a time. It is a separate Sonner toaster (`id="ds"`); `showToast` always targets it, so new toasts never appear in the old app's top-centre toaster and old toasts never appear in the new one. New layouts get it through Dinero `Root`, never by mounting it themselves.
 
 ## Built from
-Banner (tones and layout), Sonner (queue and timing), Button `link` (Undo).
+Banner (tones and layout), Sonner (queue and timing), Button `link` (action).
 
 ## Don't
 - Don't use a toast for something the user must act on; use a Banner or the Inbox.
 
 ## Variants
-- Neutral, success, danger, warning, info; with Undo.
+- Neutral, success, danger, warning, info; with action (`{ label, onSelect }`).

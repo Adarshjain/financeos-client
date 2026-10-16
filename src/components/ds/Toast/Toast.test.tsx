@@ -71,20 +71,19 @@ describe('Toast', () => {
     );
   });
 
-  it('renders undo button and calls onUndo callback', () => {
-    const handleUndo = vi.fn();
+  it('renders action button and calls action.onSelect callback', () => {
+    const handleAction = vi.fn();
     render(
       <Toast
         message="Snoozed until Wed 14 Oct"
-        onUndo={handleUndo}
-        undoLabel="Undo"
+        action={{ label: 'Undo', onSelect: handleAction }}
       />,
     );
     const undoBtn = screen.getByRole('button', { name: 'Undo' });
     expect(undoBtn).toBeInTheDocument();
 
     fireEvent.click(undoBtn);
-    expect(handleUndo).toHaveBeenCalledTimes(1);
+    expect(handleAction).toHaveBeenCalledTimes(1);
   });
 
   it('renders status role by default and alert role when tone is danger', () => {
@@ -95,8 +94,8 @@ describe('Toast', () => {
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
-  it('wires onUndo in showToast to invoke callback and dismiss the toast', () => {
-    const handleUndo = vi.fn();
+  it('wires action in showToast to invoke callback and dismiss the toast', () => {
+    const handleAction = vi.fn();
     let renderCustomToast:
       | ((id: string | number) => React.ReactNode)
       | undefined;
@@ -108,7 +107,9 @@ describe('Toast', () => {
       return 'toast-id-42';
     });
 
-    showToast('Snoozed until Wed 14 Oct', { onUndo: handleUndo });
+    showToast('Snoozed until Wed 14 Oct', {
+      action: { label: 'Undo', onSelect: handleAction },
+    });
     expect(sonnerToast.custom).toHaveBeenCalled();
     expect(renderCustomToast).toBeDefined();
 
@@ -116,35 +117,45 @@ describe('Toast', () => {
     const undoButton = getByRole('button', { name: 'Undo' });
     fireEvent.click(undoButton);
 
-    expect(handleUndo).toHaveBeenCalledTimes(1);
+    expect(handleAction).toHaveBeenCalledTimes(1);
     expect(sonnerToast.dismiss).toHaveBeenCalledWith('toast-id-42');
   });
 
-  it('passes custom duration, undoLabel, tone and toasterId: ds to showToast', () => {
+  it('passes custom duration, id, onDismiss, tone and toasterId: ds to showToast', () => {
     let renderCustomToast:
       | ((id: string | number) => React.ReactNode)
       | undefined;
+    const handleDismiss = vi.fn();
 
     vi.mocked(sonnerToast.custom).mockImplementationOnce((fn, opts) => {
       renderCustomToast = fn as any;
       expect(opts?.duration).toBe(3000);
+      expect(opts?.id).toBe('custom-id-123');
       expect(opts?.toasterId).toBe('ds');
-      return 'toast-id-custom';
+      expect(opts?.onDismiss).toBeDefined();
+      opts?.onDismiss?.({} as any);
+      return 'custom-id-123';
     });
 
     showToast("Couldn't snooze.", {
+      id: 'custom-id-123',
       duration: 3000,
       tone: 'danger',
-      onUndo: () => {},
-      undoLabel: 'Retry',
+      onDismiss: handleDismiss,
+      action: { label: 'Retry', onSelect: () => {} },
     });
 
     expect(sonnerToast.custom).toHaveBeenCalledWith(
       expect.any(Function),
-      expect.objectContaining({ duration: 3000, toasterId: 'ds' }),
+      expect.objectContaining({
+        id: 'custom-id-123',
+        duration: 3000,
+        toasterId: 'ds',
+      }),
     );
+    expect(handleDismiss).toHaveBeenCalledTimes(1);
 
-    const { getByRole } = render(<>{renderCustomToast!('toast-id-custom')}</>);
+    const { getByRole } = render(<>{renderCustomToast!('custom-id-123')}</>);
     expect(getByRole('alert')).toBeInTheDocument();
     expect(getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
