@@ -1,18 +1,19 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { fn } from 'storybook/test';
 
-import { TopBar, type TopBarAction } from './TopBar';
+import { Card, TopBar, type TopBarAction } from '@/components/ds';
 
-const phoneActions: TopBarAction[] = [
-  { id: 'ask', icon: 'chat', label: 'Ask the data' },
-  { id: 'search', icon: 'search', label: 'Search' },
-  { id: 'add', icon: 'add', label: 'Add', variant: 'primary' },
+const defaultActions: TopBarAction[] = [
+  { id: 'search', icon: 'search', label: 'Search', onSelect: fn() },
+  { id: 'chat', icon: 'chat', label: 'Ask data', onSelect: fn() },
+  { id: 'notifications', icon: 'notifications', label: 'Notifications', onSelect: fn() },
 ];
 
-const desktopActions: TopBarAction[] = [
-  { id: 'add', icon: 'add', label: 'Add', shortcut: '⌘N' },
-  { id: 'chat', icon: 'chat', label: 'Chat' },
-  { id: 'notifications', icon: 'notifications', label: 'Notifications' },
+const actionsWithPrimary: TopBarAction[] = [
+  { id: 'search', icon: 'search', label: 'Search', onSelect: fn() },
+  { id: 'chat', icon: 'chat', label: 'Chat', onSelect: fn() },
+  { id: 'add', icon: 'add', label: 'Add', variant: 'primary', shortcut: '⌘N', onSelect: fn() },
 ];
 
 const meta: Meta<typeof TopBar> = {
@@ -21,111 +22,49 @@ const meta: Meta<typeof TopBar> = {
   parameters: {
     layout: 'padded',
   },
+  decorators: [
+    (Story) => (
+      <Card className="max-w-3xl overflow-hidden">
+        <Story />
+      </Card>
+    ),
+  ],
+  args: {
+    title: 'Home',
+    actions: defaultActions,
+  },
   argTypes: {
     title: { control: 'text' },
     crumb: { control: 'text' },
+    leading: { control: false },
+    actions: { control: 'object' },
+    backHref: { control: 'text' },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof TopBar>;
 
-export const AllVariants: Story = {
-  render: () => (
-    <div className="space-y-space-24 w-full max-w-4xl font-text">
-      <div>
-        <div className="text-caption font-bold text-ink-4 uppercase tracking-wider mb-space-8">
-          Phone · Top level
-        </div>
-        <div className="max-w-md border border-line rounded-ds-lg overflow-hidden">
-          <TopBar
-            crumb="Money"
-            title="Transactions"
-            actions={phoneActions}
-          />
-        </div>
-      </div>
-
-      <div>
-        <div className="text-caption font-bold text-ink-4 uppercase tracking-wider mb-space-8">
-          Phone · Detail screen
-        </div>
-        <div className="max-w-md border border-line rounded-ds-lg overflow-hidden">
-          <TopBar
-            back={() => {}}
-            crumb="Accounts"
-            title="HDFC Regalia Gold"
-            actions={phoneActions}
-          />
-        </div>
-      </div>
-
-      <div>
-        <div className="text-caption font-bold text-ink-4 uppercase tracking-wider mb-space-8">
-          Desktop · Top level
-        </div>
-        <div className="border border-line rounded-ds-lg overflow-hidden">
-          <TopBar
-            title="Home"
-            actions={desktopActions}
-          />
-        </div>
-      </div>
-
-      <div>
-        <div className="text-caption font-bold text-ink-4 uppercase tracking-wider mb-space-8">
-          Desktop · Detail screen
-        </div>
-        <div className="border border-line rounded-ds-lg overflow-hidden">
-          <TopBar
-            crumb="Accounts"
-            title="HDFC Regalia Gold"
-            actions={desktopActions}
-          />
-        </div>
-      </div>
-    </div>
-  ),
+export const TopLevel: Story = {
+  args: {
+    title: 'Home',
+    actions: defaultActions,
+  },
 };
 
-export const PhoneTopLevel: Story = {
-  name: 'Phone · top level',
-  parameters: {
-    viewport: { defaultViewport: 'phone' },
+export const Detail: Story = {
+  args: {
+    crumb: 'Accounts',
+    title: 'HDFC Regalia Gold',
+    onBack: fn(),
+    actions: defaultActions,
   },
+};
+
+export const WithPrimaryAction: Story = {
   args: {
     crumb: 'Money',
     title: 'Transactions',
-    actions: phoneActions,
-  },
-};
-
-export const PhoneDetail: Story = {
-  name: 'Phone · detail screen',
-  parameters: {
-    viewport: { defaultViewport: 'phone' },
-  },
-  args: {
-    back: () => {},
-    crumb: 'Accounts',
-    title: 'HDFC Regalia Gold',
-    actions: phoneActions,
-  },
-};
-
-export const DesktopTopLevel: Story = {
-  name: 'Desktop · top level',
-  args: {
-    title: 'Home',
-    actions: desktopActions,
-  },
-};
-
-export const DesktopDetail: Story = {
-  name: 'Desktop · detail screen',
-  args: {
-    crumb: 'Accounts',
-    title: 'HDFC Regalia Gold',
-    actions: desktopActions,
+    actions: actionsWithPrimary,
   },
 };
