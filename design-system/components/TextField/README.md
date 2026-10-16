@@ -2,20 +2,25 @@
 
 A labelled single-line input. Label above in `ink-2` 12px bold; helper or error below.
 
-## Kinds
-- Text, number, email.
-- Amount: ₹ prefix, reads left to right in forms (right-aligned only in tables).
-- Password: masked with a Show toggle (statement passwords).
+## Use
+Standard text input for forms, logins, and values.
 
-## States
-Default, filled, placeholder (`ink-4`), focus (2px `focus-ring`), error (`danger` border and a message that says how to fix it), disabled.
-
-## Not here
-- Dates: DateField. Multi-line: TextArea. A read-only value: ListField (label/value row in ListRow). No locked state: a field that can't change is disabled.
-- Optional fields say "(Optional)" in the label.
-
-## Built from
-The shared field frame (label, helper, error) that TextArea, DateField and Select also use; Icon (password toggle).
+## Props
+- `label?: React.ReactNode`: field label above the input.
+- `helper?: React.ReactNode`: helpful hint text below the input.
+- `error?: React.ReactNode`: error message below the input.
+- `optional?: boolean`: shows "(Optional)" next to the label.
+- `prefix?: React.ReactNode`: leading glyph or currency sign (e.g. "₹").
+- `suffix?: React.ReactNode`: trailing content.
+- `className?: string`: class applied to the FieldFrame wrapper.
+- `controlClassName?: string`: custom class applied to the `<input>` element.
+- `onValueChange?: (value: string) => void`: callback with input value on change.
+- Standard `<input>` HTML attributes (`type`, `inputMode`, `placeholder`, `disabled`, `value`, `defaultValue`, etc.).
 
 ## Variants
-- Kinds text, amount, password; states default, placeholder, focused, with helper, error, disabled.
+- States: default, filled, placeholder (`ink-4`), focus (2px `focus-ring`), error (`danger` border and message), disabled.
+- Password input (`type="password"`) includes an integrated Show/Hide toggle button.
+- Numeric inputs (`inputMode="decimal" | "numeric"` or `type="number"`) format with `tabular-nums`.
+
+## Built from
+The shared field frame (`FieldFrame`) that TextArea, DateField and Select also use; Button (password toggle).

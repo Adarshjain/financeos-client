@@ -6,28 +6,27 @@ import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { FieldFrame } from '../FieldFrame';
 
-export type TextFieldKind = 'text' | 'number' | 'email' | 'amount' | 'password';
-
 export interface TextFieldProps
   extends Omit<
     React.InputHTMLAttributes<HTMLInputElement>,
     'prefix' | 'size' | 'ref'
   > {
-  kind?: TextFieldKind;
   label?: React.ReactNode;
   helper?: React.ReactNode;
   error?: React.ReactNode;
   optional?: boolean;
   prefix?: React.ReactNode;
   suffix?: React.ReactNode;
+  controlClassName?: string;
+  onValueChange?: (value: string) => void;
 }
 
 export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
   (
     {
       id: explicitId,
-      kind,
       type = 'text',
+      inputMode,
       label,
       helper,
       error,
@@ -36,10 +35,12 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
       prefix,
       suffix,
       className,
+      controlClassName,
       placeholder,
       value,
       defaultValue,
       onChange,
+      onValueChange,
       ...props
     },
     ref,
@@ -49,21 +50,17 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
     const helperId = `${id}-helper`;
     const [showPassword, setShowPassword] = useState(false);
 
-    const resolvedKind: TextFieldKind =
-      kind ??
-      (type === 'password'
-        ? 'password'
-        : type === 'number'
-          ? 'number'
-          : type === 'email'
-            ? 'email'
-            : 'text');
-
-    const isPassword = resolvedKind === 'password';
-    const computedType = isPassword && showPassword ? 'text' : isPassword ? 'password' : type;
+    const isPassword = type === 'password';
+    const computedType = isPassword && showPassword ? 'text' : type;
 
     const hasError = Boolean(error);
-    const resolvedPrefix = prefix ?? (resolvedKind === 'amount' ? '₹' : null);
+    const isNumeric =
+      inputMode === 'decimal' || inputMode === 'numeric' || type === 'number';
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      onChange?.(e);
+      onValueChange?.(e.target.value);
+    };
 
     return (
       <FieldFrame
@@ -86,9 +83,9 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
               'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
           )}
         >
-          {resolvedPrefix ? (
+          {prefix ? (
             <span className="text-ink-3 font-semibold text-body select-none shrink-0">
-              {resolvedPrefix}
+              {prefix}
             </span>
           ) : null}
 
@@ -96,17 +93,19 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
             ref={ref}
             id={id}
             type={computedType}
+            inputMode={inputMode}
             disabled={disabled}
             placeholder={placeholder}
             value={value}
             defaultValue={defaultValue}
-            onChange={onChange}
+            onChange={handleChange}
             aria-invalid={hasError ? 'true' : undefined}
             aria-describedby={hasError || helper ? helperId : undefined}
             className={cn(
               'w-full h-full bg-transparent border-0 p-0 text-body text-ink placeholder:text-ink-4 focus:outline-none focus:ring-0',
-              resolvedKind === 'amount' && 'tabular-nums',
+              isNumeric && 'tabular-nums',
               disabled && 'cursor-not-allowed text-ink-faint',
+              controlClassName,
             )}
             {...props}
           />
@@ -136,3 +135,4 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
 );
 
 TextField.displayName = 'TextField';
+
