@@ -175,7 +175,7 @@ describe('Button component', () => {
       render(
         <Button
           variant="tile"
-          icon={<Icon name="accounts" size="lg" data-testid="tile-icon" />}
+          icon={<Icon name="wallet" size="lg" data-testid="tile-icon" />}
           onClick={handleClick}
         >
           Accounts
@@ -236,7 +236,7 @@ describe('Button component', () => {
       render(
         <Button variant="tile" asChild>
           <a href="#test-accounts">
-            <Icon name="accounts" size="lg" data-testid="link-icon" />
+            <Icon name="wallet" size="lg" data-testid="link-icon" />
             Accounts
           </a>
         </Button>,

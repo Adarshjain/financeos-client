@@ -254,6 +254,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 3b · Antigravity · Icons (G15): renamed 7 glyph names in design-system/icons.json and src/components/ds/Icon/registry.ts (transactions -> list-bullets, accounts -> wallet, investments -> chart-line-up, rewards -> gift, loans -> handshake, dashboards -> squares-four, reports -> chart-bar), added minus icon. Updated callers in navigation.ts, Rail, TabBar, Button stories & tests. Updated check-ui.mjs for list-bullets. Checks: vitest (Icon, Button, Rail, TabBar passed), npm run typecheck, node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
+
 - 2026-10-17 · Phase 3b · Antigravity · Delete ResponsiveOverlay and useMediaQuery (G5): deleted src/components/ds/ResponsiveOverlay/, design-system/components/ResponsiveOverlay/, and src/components/ds/useMediaQuery.ts. Switched Select, Menu, and DateField to Popover and DropdownMenuPrimitive directly. Updated Menu.test.tsx. Checks: vitest (47 test files, 372 tests passed), npm run typecheck, node design-system/tools/check-ui.mjs --base 681c9d0. Open questions: none. Deviations: none.
 
 - 2026-10-17 · Phase 3b · Antigravity · Dinero utils (G10): added src/components/ds/utils/ (formatCount, formatDate, parseDateInput, todayISO, formatMonth, weekdayLetters), unit tests in src/components/ds/utils/__tests__/utils.test.ts, and exported from src/components/ds/index.ts. Checks: vitest (13 tests passed), npm run typecheck, node design-system/tools/check-ui.mjs --base 681c9d0. Open questions: none. Deviations: none.

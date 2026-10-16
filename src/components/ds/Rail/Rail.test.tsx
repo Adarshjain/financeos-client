@@ -14,7 +14,7 @@ const sampleGroups: RailGroup[] = [
   {
     label: 'Money',
     items: [
-      { id: 'transactions', label: 'Transactions', icon: 'transactions', href: '/transactions', count: 25, countTone: 'warning' },
+      { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions', count: 25, countTone: 'warning' },
     ],
   },
 ];

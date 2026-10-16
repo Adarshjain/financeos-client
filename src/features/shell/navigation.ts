@@ -26,7 +26,7 @@ export const shellTabBarItems: ShellTabBarItem[] = [
   { id: 'home', label: 'Home', icon: 'home', href: '/dashboard' },
   { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox' },
   { id: 'upcoming', label: 'Upcoming', icon: 'calendar', href: '/upcoming' },
-  { id: 'transactions', label: 'Transactions', icon: 'transactions', href: '/transactions' },
+  { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions' },
   { id: 'more', label: 'More', icon: 'menu' },
 ];
 
@@ -50,28 +50,28 @@ export const shellRailGroups: ShellNavGroup[] = [
   {
     label: 'Money',
     items: [
-      { id: 'accounts', label: 'Accounts', icon: 'accounts', href: '/accounts' },
-      { id: 'transactions', label: 'Transactions', icon: 'transactions', href: '/transactions' },
+      { id: 'accounts', label: 'Accounts', icon: 'wallet', href: '/accounts' },
+      { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions' },
     ],
   },
   {
     label: 'Grow',
     items: [
-      { id: 'investments', label: 'Investments', icon: 'investments', href: '/investments' },
-      { id: 'rewards', label: 'Rewards', icon: 'rewards', href: '/rewards' },
+      { id: 'investments', label: 'Investments', icon: 'chart-line-up', href: '/investments' },
+      { id: 'rewards', label: 'Rewards', icon: 'gift', href: '/rewards' },
     ],
   },
   {
     label: 'Owe & lend',
     items: [
-      { id: 'loans', label: 'Loans & lendings', icon: 'loans', href: '/loans' },
+      { id: 'loans', label: 'Loans & lendings', icon: 'handshake', href: '/loans' },
     ],
   },
   {
     label: 'Insights',
     items: [
-      { id: 'dashboards', label: 'Dashboards', icon: 'dashboards', href: '/dashboards' },
-      { id: 'reports', label: 'Reports', icon: 'reports', href: '/reports' },
+      { id: 'dashboards', label: 'Dashboards', icon: 'squares-four', href: '/dashboards' },
+      { id: 'reports', label: 'Reports', icon: 'chart-bar', href: '/reports' },
       { id: 'chat', label: 'Ask the data', icon: 'chat', href: '/chat' },
     ],
   },
@@ -102,8 +102,8 @@ export interface ShellMoreGroup {
  */
 export const shellQuickAddItems: ShellQuickAddItem[] = [
   { id: 'transaction', label: 'Transaction', icon: 'add', disabled: true },
-  { id: 'lending', label: 'Lending', icon: 'loans', disabled: true },
-  { id: 'trade', label: 'Trade', icon: 'investments', disabled: true },
+  { id: 'lending', label: 'Lending', icon: 'handshake', disabled: true },
+  { id: 'trade', label: 'Trade', icon: 'chart-line-up', disabled: true },
   { id: 'import', label: 'Import', icon: 'upload', href: '/transactions/import' },
 ];
 
@@ -117,23 +117,23 @@ export const shellMoreGroups: ShellMoreGroup[] = [
   {
     label: 'Money',
     items: [
-      { id: 'accounts', label: 'Accounts', icon: 'accounts', href: '/accounts' },
-      { id: 'transactions', label: 'Transactions', icon: 'transactions', href: '/transactions' },
+      { id: 'accounts', label: 'Accounts', icon: 'wallet', href: '/accounts' },
+      { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions' },
     ],
   },
   {
     label: 'Grow',
     items: [
-      { id: 'investments', label: 'Investments', icon: 'investments', href: '/investments' },
-      { id: 'rewards', label: 'Rewards', icon: 'rewards', href: '/rewards' },
+      { id: 'investments', label: 'Investments', icon: 'chart-line-up', href: '/investments' },
+      { id: 'rewards', label: 'Rewards', icon: 'gift', href: '/rewards' },
     ],
   },
   {
     label: 'Owe & lend · Insights',
     items: [
-      { id: 'loans', label: 'Loans & lendings', icon: 'loans', href: '/loans' },
-      { id: 'dashboards', label: 'Dashboards', icon: 'dashboards', href: '/dashboards' },
-      { id: 'reports', label: 'Reports', icon: 'reports', href: '/reports' },
+      { id: 'loans', label: 'Loans & lendings', icon: 'handshake', href: '/loans' },
+      { id: 'dashboards', label: 'Dashboards', icon: 'squares-four', href: '/dashboards' },
+      { id: 'reports', label: 'Reports', icon: 'chart-bar', href: '/reports' },
       { id: 'chat', label: 'Ask the data', icon: 'chat', href: '/chat' },
     ],
   },

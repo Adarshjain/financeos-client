@@ -90,7 +90,7 @@
   "use": "Inbox navigation"
  },
  {
-  "name": "transactions",
+  "name": "list-bullets",
   "phosphor": "list-bullets",
   "use": "Transactions navigation"
  },
@@ -100,7 +100,7 @@
   "use": "More tab"
  },
  {
-  "name": "accounts",
+  "name": "wallet",
   "phosphor": "wallet",
   "use": "Accounts navigation"
  },
@@ -115,27 +115,27 @@
   "use": "Notifications"
  },
  {
-  "name": "investments",
+  "name": "chart-line-up",
   "phosphor": "chart-line-up",
   "use": "Investments navigation"
  },
  {
-  "name": "rewards",
+  "name": "gift",
   "phosphor": "gift",
   "use": "Rewards navigation"
  },
  {
-  "name": "loans",
+  "name": "handshake",
   "phosphor": "handshake",
   "use": "Loans & lendings navigation"
  },
  {
-  "name": "dashboards",
+  "name": "squares-four",
   "phosphor": "squares-four",
   "use": "Dashboards navigation"
  },
  {
-  "name": "reports",
+  "name": "chart-bar",
   "phosphor": "chart-bar",
   "use": "Reports navigation"
  },
@@ -143,5 +143,10 @@
   "name": "spinner",
   "phosphor": "circle-notch",
   "use": "Loading: the one animated icon, rotates while a Button or field is busy"
+ },
+ {
+  "name": "minus",
+  "phosphor": "minus",
+  "use": "Checkbox mixed state"
  }
 ]
