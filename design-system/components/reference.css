@@ -354,3 +354,10 @@ textarea.inp.one{height:var(--control-lg);min-height:var(--control-lg);resize:ve
 .pmore .it .ic{margin-left:auto;color:var(--ink-4)}
 .pmore .me{display:flex;align-items:center;gap:10px;margin-top:6px;padding:10px 16px 4px;border-top:1px solid var(--line-soft)}
 .pmore .me b{display:block;font:700 13px/18px var(--font-text);color:var(--ink)}.pmore .me small{font:500 11px/14px var(--font-text);color:var(--ink-3)}
+/* Text component type styles (preview helpers) */
+.ts-page-title{font:800 24px/30px var(--font-text);letter-spacing:-.015em;color:var(--ink)}.ts-screen-title{font:700 20px/26px var(--font-text);letter-spacing:-.01em;color:var(--ink)}
+.ts-title{font:800 17px/22px var(--font-text);color:var(--ink)}.ts-heading{font:800 14px/20px var(--font-text);color:var(--ink)}
+.ts-body{font:500 13px/18px var(--font-text);color:var(--ink)}.ts-body-strong{font:700 13px/18px var(--font-text);color:var(--ink)}
+.ts-label{font:600 12px/16px var(--font-text);color:var(--ink-2)}.ts-caption{font:500 11px/14px var(--font-text);color:var(--ink-3)}
+.ts-overline{font:800 10px/12px var(--font-text);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)}
+.btn .spin{animation:dsspin .8s linear infinite}@keyframes dsspin{to{transform:rotate(360deg)}}

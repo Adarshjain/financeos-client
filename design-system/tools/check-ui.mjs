@@ -220,6 +220,16 @@ function check(lines, all = false, classes = true) {
       };
       (/ds-allow:/.test(text) ? allowed : errors).push(hit);
     }
+    if (/^src\/app\/\(ds\)\//.test(file) && /\.tsx$/.test(file) && !/\.(?:test|stories)\.tsx$/.test(file)) {
+      for (const m of text.matchAll(/className=(?:\{[^}]*?)?["'`]([^"'`]+)["'`]/g)) {
+        for (const c of m[1].split(/\s+/)) {
+          const base = c.replace(/^(?:[a-z0-9-]+:)+/, '');
+          if (/^(?:text-|font-|bg-|border|rounded|shadow|opacity-|ring|underline|no-underline|decoration|italic|uppercase|lowercase|capitalize|tracking-|leading-|fill-|stroke-|divide-|outline)/.test(base)) {
+            errors.push({ file, line, rule: 'page-styling', why: `\`${c}\` styles a page element by hand — use a Dinero component (Text, Button link, …) or flag the gap (RULES §5d)`, text: text.trim().slice(0, 160) });
+          }
+        }
+      }
+    }
     const comp = dsComponent(file);
     if (/^src\/components\/ds\//.test(file) && !/ResponsiveOverlay|useMediaQuery\.ts$/.test(file) && !/\.(?:stories|test)\.tsx$/.test(file) &&
         /\b(?:useMediaQuery|useIsPhone|useIsDesktop|matchMedia|innerWidth)\b/.test(text)) {
@@ -310,6 +320,8 @@ function selfTest() {
     ['src/app/(ds)/ds/transactions/page.tsx', "import { useLoanDetail } from '@/app/(protected)/loans/[id]/components/useLoanDetail';", 'old-import', true],
     ['src/app/(ds)/ds/transactions/page.tsx', "import { Card } from '@/components/ds';", 'old-import', false],
     ['src/app/(ds)/ds/transactions/page.tsx', "import { keys } from '@/lib/query';", 'old-import', false],
+    ['src/app/(ds)/ds/(public)/login/LoginForm.tsx', '<h1 className="font-text font-extrabold text-heading">', 'page-styling', true],
+    ['src/app/(ds)/ds/(public)/login/LoginForm.tsx', '<div className="flex flex-col gap-space-16 lg:p-space-40">', 'page-styling', false],
     ['src/components/ds/FilterChip/FilterChip.tsx', '<span>▾</span>', 'typed-glyph', true],
     ['src/components/ds/Pager/Pager.tsx', "  variant?: 'phone' | 'desktop';", 'device-prop', true],
     ['src/components/ds/Dialog/Dialog.tsx', 'const isPhone = useIsPhone();', 'viewport-js', true],
@@ -342,7 +354,7 @@ function selfTest() {
   console.log(
     fail
       ? `self-test: ${fail} problem(s)`
-      : `self-test: ${bad.length + 9} catches, ${good.length + 9} clean lines, all correct`
+      : `self-test: ${bad.length + 10} catches, ${good.length + 10} clean lines, all correct`
   );
   process.exit(fail ? 1 : 0);
 }

@@ -10,8 +10,7 @@ The phone bottom navigation: a floating pill. This is the only mobile navigation
 - Pressed: the item's label and icon go one step darker (`ink-3`) for the press; nothing moves.
 
 ## More
-- Tapping More opens a popup sheet anchored just above the bar (not a full screen): the drag handle, the search field, Quick add (Transaction · Lending · Trade · Import), the remaining sections in their groups (Money · Grow · Owe & lend · Insights), and the profile row that leads to Settings. The bar stays visible with More current; the rest of the screen is under the `scrim`. Tapping the scrim, swiping the sheet down or tapping More again closes it.
-- The sheet is the Dialog sheet form, drawn above the bar instead of from the screen edge; its contents come from the app's navigation config, like the bar's items.
+- What More opens is **on hold** (owner, 2026-10-16): to be discussed separately. Until then More links to the More screen. The "More open" drawing on the board is a parked proposal, not to be built.
 
 ## Use
 - Shown on every top-level phone screen, below `lg` only. It is hidden while a list is in selection mode (the selection bar takes the bottom edge) and under the keyboard.
@@ -29,4 +28,4 @@ The phone bottom navigation: a floating pill. This is the only mobile navigation
 Icon, Badge (count). Items are links with the current one marked.
 
 ## Variants
-- One format. Stories show Home current, Transactions current, counts over 99, and More open.
+- One format. Stories show Home current, Transactions current, and counts over 99.
