@@ -159,13 +159,10 @@ describe('Menu', () => {
     expect(screen.queryByText('Item')).not.toBeInTheDocument();
   });
 
-  it('opens in a Dialog on phone when it has more than six items', () => {
+  it('opens as a menu even with more than six items', () => {
     const handleSelect = vi.fn();
     render(
-      <Menu
-        forcePhone
-        trigger={<button type="button">Phone Menu</button>}
-      >
+      <Menu trigger={<button type="button">Phone Menu</button>}>
         <MenuItem onSelect={handleSelect}>Item 1</MenuItem>
         <MenuItem>Item 2</MenuItem>
         <MenuItem>Item 3</MenuItem>
@@ -177,17 +174,18 @@ describe('Menu', () => {
     );
 
     expect(screen.queryByText('Item 1')).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Phone Menu' }));
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Phone Menu' }), {
+      button: 0,
+    });
 
-    // Opened in Dialog: check for dialog role
-    const dialog = screen.getByRole('dialog');
-    expect(dialog).toBeInTheDocument();
+    const menu = screen.getByRole('menu');
+    expect(menu).toBeInTheDocument();
     expect(screen.getByText('Item 1')).toBeInTheDocument();
     expect(screen.getByText('Item 7')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('Item 1'));
     expect(handleSelect).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });
 
