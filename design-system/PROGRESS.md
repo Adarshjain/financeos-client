@@ -222,6 +222,25 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-16 · Phase 3a · Antigravity · Unit 1 · Route group, layouts, public paths:
+  - Created `src/app/(ds)/layout.tsx` providing design-system root ground (`min-h-dvh bg-canvas font-text text-ink`) and mounting the new `<Toaster />`.
+  - Created `src/features/shell/navigation.ts` defining plain navigation data (`shellTabBarItems`, `shellRailGroups`, `shellFooterItems`) mirroring live Sidebar and MobileNav destinations and order (counts omitted for now).
+  - Created `src/app/(ds)/ds/(app)/layout.tsx` calling `requireAuth()` and rendering the new shell: `Rail` on desktop (`hidden lg:flex shrink-0 h-dvh sticky top-0`), `TopBar` with title "New design", `TabBar` floating on phone (`lg:hidden`), and content area keeping `pb-tab-bar-clearance` below `lg`.
+  - Created `/ds` index page `src/app/(ds)/ds/(app)/page.tsx` with Card and SectionHeader "Signed out" listing Sign in, Sign up and Offline via ListRows linking to `/ds/login`, `/ds/signup`, and `/ds/offline`, plus an empty "Signed in" Card with EmptyState "No signed-in pages yet.".
+  - Created initial placeholder pages for `src/app/(ds)/ds/(public)/login/page.tsx`, `src/app/(ds)/ds/(public)/signup/page.tsx`, and `src/app/(ds)/ds/(public)/offline/page.tsx`.
+  - Added `/ds/login`, `/ds/signup`, `/ds/offline` to `publicPaths` in `src/proxy.ts`. Added `src/features/shell/` to `design-system/checked-paths.txt`.
+  - Added unit tests in `src/__tests__/proxy.test.ts` verifying unauthenticated `/ds` redirect to `/login?from=%2Fds` and unauthenticated access for `/ds/login`, `/ds/signup`, `/ds/offline`.
+  - Added unit tests in `src/app/(ds)/ds/(app)/page.test.tsx` verifying Signed out and Signed in sections.
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 338 problems (0 errors, 338 warnings)`
+    - `npm test`: `Test Files  428 passed (428) | Tests  3550 passed (3550)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `npm run build`: `✓ Generating static pages using 10 workers (49/49) in 2.3s`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+  - Browser/flow check: Verified signed-out redirect from `/ds` to `/login?from=%2Fds` and access to `/ds/login`, `/ds/signup`, `/ds/offline`.
+  - Open questions: none. Deviations: none.
+
 - 2026-10-15 · Phase 3a · Antigravity · Unit 0 · Record the round:
   - Recorded owner decision: "Pages under `/ds/…` may use components marked Ready for review; they are a review area and the live app is untouched. Only a swap into a live route requires Approved components."
   - Set Phase 3 status to "In progress (3a: /ds setup, login, signup, offline)".
