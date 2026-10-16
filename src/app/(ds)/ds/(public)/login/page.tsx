@@ -1,9 +1,29 @@
-import React from 'react';
+import { redirect } from 'next/navigation';
+import React, { Suspense } from 'react';
 
-export default function DsLoginPage() {
+import { getOptionalSession } from '@/lib/auth';
+
+import { LoginForm } from './LoginForm';
+
+export default async function DsLoginPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ from?: string; deleted?: string }>;
+}) {
+  const params = searchParams ? await searchParams : undefined;
+  const session = await getOptionalSession();
+  if (session) {
+    const from = params?.from;
+    const dest =
+      from && from.startsWith('/') && !from.startsWith('//')
+        ? from
+        : '/dashboard';
+    redirect(dest);
+  }
+
   return (
-    <div className="p-space-24">
-      <h1 className="text-screen-title font-display font-bold">Sign in</h1>
-    </div>
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }

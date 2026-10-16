@@ -222,6 +222,27 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-16 · Phase 3a · Antigravity · Unit 2 · /ds/login:
+  - Created `src/app/(ds)/ds/(public)/login/LoginForm.tsx` matching `D-login`, `P-login`, and `P-auth-states`:
+    - Responsive two-column layout with `Illustration variant="signin"` (phone banner on top, full column on desktop).
+    - Form in exact board order: Logo (`variant="mark"`, `size="md"`), title "Sign in", subtitle "Welcome back.", `Banner` for errors/deleted notice, `Button variant="google"` ("Continue with Google") with double-click guard and `ssoPending` loading state ("Opening Google…"), `Divider label="or"`, `TextField id="email" autoComplete="username"`, `TextField id="password" autoComplete="current-password"` with Show toggle, `Button variant="primary"` ("Sign in", "Signing in…"), and link to `/ds/signup`.
+    - Client-side validation blocks empty submission and shows danger Banner "Email and password are required." without dispatching a network request.
+    - Server errors display in danger Banner above fields while preserving typed email.
+    - `?deleted=1` renders success Banner "Your account has been deleted.".
+    - SSO failure triggers a danger toast via `showToast(..., { tone: 'danger' })`.
+  - Updated `src/app/(ds)/ds/(public)/login/page.tsx` as a server component redirecting authenticated sessions to `from` or `/dashboard`.
+  - Exported `cn` from `src/components/ds/index.ts`.
+  - Added unit test suite in `src/app/(ds)/ds/(public)/login/login.test.tsx` (6 unit tests, all passing).
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 342 problems (0 errors, 342 warnings)`
+    - `npm test`: `Test Files  429 passed (429) | Tests  3555 passed (3555)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `npm run build`: `✓ Generating static pages using 10 workers (49/49) in 2.3s`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+  - Boards compared: `D-login`, `P-login`, `P-auth-states` (wrong details, fields empty, after deleting account, Google opening).
+  - Open questions: none. Deviations: none.
+
 - 2026-10-16 · Phase 3a · Antigravity · Unit 1 · Route group, layouts, public paths:
   - Created `src/app/(ds)/layout.tsx` providing design-system root ground (`min-h-dvh bg-canvas font-text text-ink`) and mounting the new `<Toaster />`.
   - Created `src/features/shell/navigation.ts` defining plain navigation data (`shellTabBarItems`, `shellRailGroups`, `shellFooterItems`) mirroring live Sidebar and MobileNav destinations and order (counts omitted for now).
