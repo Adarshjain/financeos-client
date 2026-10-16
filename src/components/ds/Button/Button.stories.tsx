@@ -261,6 +261,7 @@ export const Loading: Story = {
     variant: 'primary',
     loading: true,
     loadingLabel: 'Saving…',
+    children: 'Save changes',
   },
 };
 

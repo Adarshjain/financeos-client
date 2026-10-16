@@ -525,10 +525,7 @@ export const ConfirmDialogShell = forwardRef<
         <DialogBody className="space-y-space-12">
           {isCheckingImpact ? (
             <div className="flex items-center gap-space-8 text-label text-ink-3 py-space-4">
-              <span
-                className="w-space-12 h-space-12 border-2 border-line-strong border-t-brand rounded-ds-pill animate-spin inline-block"
-                aria-hidden="true"
-              />
+              <Icon name="spinner" size="sm" className="animate-spin shrink-0" />
               <span>{checkingMessage}</span>
             </div>
           ) : impact && impact.length > 0 ? (
@@ -656,10 +653,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <DialogBody className="space-y-space-12">
           {isCheckingImpact ? (
             <div className="flex items-center gap-space-8 text-label text-ink-3 py-space-4">
-              <span
-                className="w-space-12 h-space-12 border-2 border-line-strong border-t-brand rounded-ds-pill animate-spin inline-block"
-                aria-hidden="true"
-              />
+              <Icon name="spinner" size="sm" className="animate-spin shrink-0" />
               <span>{checkingMessage}</span>
             </div>
           ) : impact && impact.length > 0 ? (
