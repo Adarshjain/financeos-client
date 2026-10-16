@@ -2,11 +2,12 @@ import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
 
-export type ProgressBarTone = 'auto' | 'brand' | 'warning' | 'danger';
+export type ProgressBarTone = 'brand' | 'warning' | 'danger';
 
 export interface ProgressBarProps
   extends React.HTMLAttributes<HTMLDivElement> {
-  value: number;
+  value?: number;
+  min?: number;
   max?: number;
   tone?: ProgressBarTone;
   label?: React.ReactNode;
@@ -16,8 +17,9 @@ export const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
   (
     {
       value,
+      min = 0,
       max = 100,
-      tone = 'auto',
+      tone = 'brand',
       label,
       className,
       'aria-label': ariaLabel,
@@ -25,28 +27,25 @@ export const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
     },
     ref,
   ) => {
-    const rawPercentage = max > 0 ? (value / max) * 100 : 0;
-    const fillPercent = Math.min(Math.max(rawPercentage, 0), 100);
-
-    const resolvedTone: 'brand' | 'warning' | 'danger' = (() => {
-      if (tone !== 'auto') return tone;
-      if (rawPercentage > 100) return 'danger';
-      if (rawPercentage >= 60) return 'warning';
-      return 'brand';
-    })();
+    const isIndeterminate = value === undefined;
+    const range = max - min;
+    const fillPercent =
+      !isIndeterminate && range > 0
+        ? Math.min(Math.max(((value - min) / range) * 100, 0), 100)
+        : 0;
 
     const fillToneClass = {
       brand: 'bg-brand',
       warning: 'bg-warning',
       danger: 'bg-danger',
-    }[resolvedTone];
+    }[tone] ?? 'bg-brand';
 
     return (
       <div ref={ref} className={cn('w-full select-none', className)} {...props}>
         <div
           role="progressbar"
-          aria-valuenow={value}
-          aria-valuemin={0}
+          aria-valuenow={isIndeterminate ? undefined : value}
+          aria-valuemin={min}
           aria-valuemax={max}
           aria-label={ariaLabel}
           aria-valuetext={typeof label === 'string' ? label : undefined}
@@ -56,8 +55,9 @@ export const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
             className={cn(
               'h-full rounded-ds-pill transition-all duration-base',
               fillToneClass,
+              isIndeterminate && 'w-full animate-pulse motion-reduce:animate-none',
             )}
-            style={{ width: `${fillPercent}%` }}
+            style={isIndeterminate ? undefined : { width: `${fillPercent}%` }}
           />
         </div>
         {label ? (

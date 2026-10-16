@@ -20,30 +20,42 @@ describe('ProgressBar component', () => {
     expect(fill).toHaveStyle({ width: '21%' });
   });
 
-  it('automatically applies warning tone when percentage is between 60 and 100', () => {
-    const { container } = render(<ProgressBar value={62} />);
-    const fill = container.querySelector('.bg-warning');
-    expect(fill).toBeInTheDocument();
-    expect(fill).toHaveStyle({ width: '62%' });
+  it('defaults to brand tone and supports warning and danger tones', () => {
+    const { container, rerender } = render(<ProgressBar value={62} />);
+    expect(container.querySelector('.bg-brand')).toBeInTheDocument();
+    expect(container.querySelector('.bg-brand')).toHaveStyle({ width: '62%' });
+
+    rerender(<ProgressBar value={62} tone="warning" />);
+    expect(container.querySelector('.bg-warning')).toBeInTheDocument();
+
+    rerender(<ProgressBar value={62} tone="danger" />);
+    expect(container.querySelector('.bg-danger')).toBeInTheDocument();
   });
 
-  it('automatically applies danger tone and clamps fill at 100% when value is 108', () => {
-    const { container } = render(<ProgressBar value={108} />);
+  it('clamps fill at 100% when value exceeds max', () => {
+    const { container } = render(<ProgressBar value={108} tone="danger" />);
     const fill = container.querySelector('.bg-danger');
     expect(fill).toBeInTheDocument();
     expect(fill).toHaveStyle({ width: '100%' });
   });
 
-  it('renders 0% fill when value is 0', () => {
-    const { container } = render(<ProgressBar value={0} />);
+  it('clamps fill at 0% when value is below min', () => {
+    const { container } = render(<ProgressBar value={-10} min={0} max={100} />);
     const fill = container.querySelector('[role="progressbar"] > div');
     expect(fill).toHaveStyle({ width: '0%' });
   });
 
-  it('allows explicit tone override', () => {
-    const { container } = render(<ProgressBar value={10} tone="danger" />);
-    const fill = container.querySelector('.bg-danger');
-    expect(fill).toBeInTheDocument();
+  it('supports custom min prop in percentage calculation', () => {
+    const { container } = render(<ProgressBar value={50} min={0} max={200} />);
+    const fill = container.querySelector('[role="progressbar"] > div');
+    expect(fill).toHaveStyle({ width: '25%' });
+  });
+
+  it('renders indeterminate state without aria-valuenow when value is undefined', () => {
+    render(<ProgressBar aria-label="Loading" />);
+    const bar = screen.getByRole('progressbar', { name: 'Loading' });
+    expect(bar).not.toHaveAttribute('aria-valuenow');
+    expect(bar.querySelector('.animate-pulse')).toBeInTheDocument();
   });
 
   it('renders caption label when provided', () => {

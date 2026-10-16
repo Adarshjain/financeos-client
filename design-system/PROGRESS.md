@@ -254,6 +254,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 3b · Antigravity · ProgressBar (G15): removed auto tone and defaulted to brand; added min prop (default 0), made value optional for indeterminate state, clamped width math; updated stories to args-driven Brand, Warning, Danger, Empty, and Indeterminate with max-w-md frame meta decorator, removed AllVariants; updated unit tests (8 passed); updated README. Checks: npm run typecheck, vitest (ProgressBar 8 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
+
 - 2026-10-17 · Phase 3b · Antigravity · Skeleton: updated stories to args-driven Bar, Circle, and Figure with centered layout and barrel import, removed AllVariants, fake screens and table mocks; updated README. Checks: npm run typecheck, vitest (Skeleton 3 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
 
 - 2026-10-17 · Phase 3b · Antigravity · Divider: updated stories with max-w-sm frame meta decorator and layout: 'padded', removed AllVariants and render wrappers, leaving args-driven Plain and WithLabel stories; updated README. Checks: npm run typecheck, vitest (Divider 4 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
