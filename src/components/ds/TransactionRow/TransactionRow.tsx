@@ -174,7 +174,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
 
       if (reviewStatus) {
         contextElements.push(
-          <StatusWord key="review" tone="review">
+          <StatusWord key="review" tone="warning">
             {reviewStatus}
           </StatusWord>,
         );
@@ -196,7 +196,11 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         const label =
           typeof link === 'object' && 'label' in link ? link.label : link;
         contextElements.push(
-          <StatusWord key="link" tone="link" showIcon={!isRecord}>
+          <StatusWord
+            key="link"
+            tone="info"
+            icon={!isRecord ? 'link' : undefined}
+          >
             {label}
           </StatusWord>,
         );
@@ -204,7 +208,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
 
       if (provenance) {
         contextElements.push(
-          <StatusWord key="provenance" tone="provenance">
+          <StatusWord key="provenance" tone="neutral">
             {provenance}
           </StatusWord>,
         );
