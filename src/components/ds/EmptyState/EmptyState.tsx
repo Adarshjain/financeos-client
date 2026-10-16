@@ -1,20 +1,27 @@
+'use client';
+
 import React, { forwardRef } from 'react';
 
+import { Button } from '../Button/Button';
 import { cn } from '../cn';
-import { Illustration } from '../Illustration/Illustration';
+import { Text } from '../Text/Text';
 
 export interface EmptyStateProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
-  /** Optional variant: 'default' or 'offline' (auto-provides offline illustration and copy) */
-  variant?: 'default' | 'offline';
-  /** Optional illustration element (defaults to Illustration offline if variant="offline") */
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title' | 'action'> {
+  /** Size for padding: 'sm' (px-space-16 py-space-20) or 'md' (px-space-20 py-space-40, default) */
+  size?: 'sm' | 'md';
+  /** Optional illustration slot */
   illustration?: React.ReactNode;
   /** Primary headline (rendered in display font, screen-title style) */
   title?: React.ReactNode;
   /** Explanatory one-sentence description */
   description?: React.ReactNode;
-  /** Action button or group of action buttons */
-  action?: React.ReactNode;
+  /** Single action: action={{ label, onSelect, variant? }} */
+  action?: {
+    label: React.ReactNode;
+    onSelect: () => void;
+    variant?: 'primary' | 'secondary' | 'link';
+  };
   /** Compact single-line style for small panels or widget rows */
   compact?: boolean;
 }
@@ -24,7 +31,7 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
     {
       children,
       className,
-      variant = 'default',
+      size = 'md',
       illustration,
       title,
       description,
@@ -34,57 +41,80 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
     },
     ref,
   ) => {
-    const isOffline = variant === 'offline';
-    const resolvedIllustration =
-      illustration ?? (isOffline ? <Illustration variant="offline" /> : null);
-    const resolvedTitle = title ?? (isOffline ? "You're offline" : null);
-    const resolvedDescription =
-      description ??
-      (isOffline
-        ? "FinanceOS needs a connection to show your money. We'll pick up where you left off."
-        : null);
-
-    if (compact || (!resolvedTitle && !resolvedIllustration && !action)) {
+    if (compact) {
       return (
         <div
           ref={ref}
           className={cn(
-            'flex items-center justify-center text-center p-space-16 text-body text-ink-3',
+            'flex items-center justify-center text-center gap-space-8 p-space-16 text-body text-ink-3',
             className,
           )}
           {...props}
         >
-          {children ?? resolvedDescription}
+          {title ? (
+            <Text variant="label" tone="ink" as="span">
+              {title}
+            </Text>
+          ) : null}
+          {description ? (
+            <Text variant="body" tone="ink-3" as="span">
+              {description}
+            </Text>
+          ) : null}
+          {children}
+          {action ? (
+            <Button
+              type="button"
+              variant={action.variant ?? 'link'}
+              onClick={action.onSelect}
+              className="text-inherit"
+            >
+              {action.label}
+            </Button>
+          ) : null}
         </div>
       );
     }
+
+    const paddingClass =
+      size === 'sm' ? 'px-space-16 py-space-20' : 'px-space-20 py-space-40';
 
     return (
       <div
         ref={ref}
         className={cn(
-          'flex flex-col items-center justify-center text-center gap-space-8 px-space-20 py-space-40 text-ink-3 select-none',
+          'flex flex-col items-center justify-center text-center gap-space-8 text-ink-3',
+          paddingClass,
           className,
         )}
         {...props}
       >
-        {resolvedIllustration && (
-          <div className="mb-space-4">{resolvedIllustration}</div>
+        {illustration && <div className="mb-space-4">{illustration}</div>}
+        {title && (
+          <Text
+            variant="screen-title"
+            family="display"
+            as="h3"
+            className="m-0 text-ink"
+          >
+            {title}
+          </Text>
         )}
-        {resolvedTitle && (
-          <h3 className="font-display font-bold text-screen-title text-ink m-0">
-            {resolvedTitle}
-          </h3>
-        )}
-        {resolvedDescription && (
-          <p className="font-sans text-body text-ink-3 max-w-xs m-0">
-            {resolvedDescription}
-          </p>
+        {description && (
+          <Text variant="body" tone="ink-3" as="p" className="max-w-xs m-0">
+            {description}
+          </Text>
         )}
         {children}
         {action && (
           <div className="mt-space-8 flex items-center justify-center gap-space-8 flex-wrap">
-            {action}
+            <Button
+              type="button"
+              variant={action.variant ?? 'primary'}
+              onClick={action.onSelect}
+            >
+              {action.label}
+            </Button>
           </div>
         )}
       </div>
