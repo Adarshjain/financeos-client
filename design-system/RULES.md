@@ -164,7 +164,7 @@ These are the rules a mature design system (Radix, Material, Polaris, Atlassian)
 
 ## 7. Mobile patterns
 
-1. The app bar's **+** is the only add button. It opens the add form for the current screen. Pages never carry "New …" or "Add …" header buttons.
+1. The app bar's **+** is the only add button. It opens the add form for the current screen. Pages never carry "New …" or "Add …" header buttons. The one exception is **Quick add** in the More sheet (Transaction · Lending · Trade · Import), which the owner kept on 2026-10-16.
 2. No body title on phone; the app bar carries it. Tab strips and filter-chip rows scroll sideways and never wrap.
 3. A single choice is a dropdown; several choices are a multi-select dropdown. Never tiles or chip groups in forms (the four account-type buttons on Add account are the only exception).
 4. Selection: long-press starts it, tap toggles, the eye icon opens the detail without leaving selection. No checkboxes on phone; desktop uses checkboxes. The selection bar docks at the bottom.
