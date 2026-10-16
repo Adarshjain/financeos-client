@@ -49,4 +49,5 @@ export * from './useControllableState';
 export * from './useLongPress';
 export * from './useSheetDrag';
 export * from './useSwipe';
+export * from './utils';
 export * from './Widget/Widget';
