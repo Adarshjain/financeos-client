@@ -9,7 +9,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
 | 2 | New component library in Storybook, one component at a time, owner-reviewed | Ready for review (44 components; Storybook feedback round 2 complete) |
-| 3 | Pages: rebuild and swap in one page or big component at a time | In progress (3a: /ds setup, login, signup, offline) |
+| 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: /ds review area, login, signup, offline Ready for review) |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
 Statuses: Not started · In progress · Done · Blocked (with the reason).
@@ -151,7 +151,10 @@ New pages may use nothing from the old UI (RULES §1.8). These are needed and do
 ### Migration map
 | Page or component | New files | Old files it no longer uses | Swapped on |
 | --- | --- | --- | --- |
-| _(none yet)_ | | | |
+| `/ds/login` (Sign in) | `src/app/(ds)/ds/(public)/login/page.tsx`, `LoginForm.tsx` | _(live `/login` and `LoginForm.tsx` untouched until swap)_ | Built under /ds, Ready for review |
+| `/ds/signup` (Sign up) | `src/app/(ds)/ds/(public)/signup/page.tsx`, `SignupForm.tsx` | _(live `/signup` and `SignupForm.tsx` untouched until swap)_ | Built under /ds, Ready for review |
+| `/ds/offline` (Offline) | `src/app/(ds)/ds/(public)/offline/page.tsx`, `OfflineContent.tsx` | _(live `/offline/page.tsx` untouched until swap)_ | Built under /ds, Ready for review |
+| `/ds` review index & shell | `src/app/(ds)/layout.tsx`, `src/app/(ds)/ds/(app)/layout.tsx`, `src/app/(ds)/ds/(app)/page.tsx`, `src/features/shell/navigation.ts` | _(live layouts untouched)_ | Built under /ds, Ready for review |
 
 ## Phase 4 · Cleanup
 When every page is migrated:
@@ -221,6 +224,21 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-16 · Phase 3a · Antigravity · Unit 6 · Final audit & migration map:
+  - Audited component isolation: `grep -rn "from '@/components/" "src/app/(ds)" src/features | grep -v "@/components/ds"` printed clean (0 non-ds imports).
+  - Confirmed untouched live paths: `git diff --stat c8b557b -- src/app/login src/app/signup src/app/offline src/components/ui` printed clean (0 diffs).
+  - Confirmed proxy diff: only `/ds/login`, `/ds/signup`, `/ds/offline` added to `publicPaths` in `src/proxy.ts`.
+  - Updated Migration map: marked `/ds/login`, `/ds/signup`, `/ds/offline`, and `/ds` review area as "Built under /ds, Ready for review".
+  - Updated Phase 3 status to "In progress (Phase 3a complete: /ds review area, login, signup, offline Ready for review)".
+  - Full suite passed:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 342 problems (0 errors, 342 warnings)`
+    - `npm test`: `Test Files  431 passed (431) | Tests  3564 passed (3564)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `npm run build`: `✓ Generating static pages using 10 workers (49/49) in 2.3s`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+  - Open questions: none. Deviations: none.
 
 - 2026-10-16 · Phase 3a · Antigravity · Unit 5 · E2E specs for /ds pages:
   - Created `e2e/ui/ds-auth.spec.ts` mirroring `e2e/ui/auth.spec.ts` targeting `/ds/login` and `/ds/signup`:
