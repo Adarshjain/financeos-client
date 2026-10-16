@@ -325,7 +325,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
               value={searchQuery}
               placeholder={searchPlaceholder}
               onValueChange={handleSearchChange}
-              containerClassName="focus-within:ring-0 focus-within:ring-offset-0 focus-within:border-brand"
+              variant="embedded"
               autoFocus
               onKeyDown={handleKeyDown}
             />
