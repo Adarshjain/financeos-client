@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Card, type CalendarDay, MonthCalendar } from '@/components/ds';
+import { type CalendarDay, Card, MonthCalendar } from '@/components/ds';
 
 const sampleDays: CalendarDay[] = [
   { day: 1 },

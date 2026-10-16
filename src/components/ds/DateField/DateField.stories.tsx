@@ -1,13 +1,32 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
 import { useArgs } from 'storybook/preview-api';
+import { fn } from 'storybook/test';
 
-import { DateField } from './DateField';
+import { DateField } from '@/components/ds';
 
 const meta: Meta<typeof DateField> = {
   title: 'DS/Inputs/DateField',
   component: DateField,
   parameters: {
     layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'The date and date range input field with Popover calendar picker.',
+      },
+    },
+  },
+  decorators: [
+    (Story) => (
+      <div className="max-w-sm">
+        <Story />
+      </div>
+    ),
+  ],
+  args: {
+    onValueChange: fn(),
+    onOpenChange: fn(),
   },
   argTypes: {
     label: { control: 'text' },
@@ -18,21 +37,22 @@ const meta: Meta<typeof DateField> = {
     optional: { control: 'boolean' },
     disabled: { control: 'boolean' },
     range: { control: 'boolean' },
-    defaultStartDate: { control: 'text' },
-    defaultEndDate: { control: 'text' },
     minDate: { control: 'text' },
     maxDate: { control: 'text' },
+    today: { control: 'text' },
+    open: { control: 'boolean' },
+    defaultOpen: { control: 'boolean' },
   },
   render: function Render(args) {
-    const [{ value, startDate, endDate }, updateArgs] = useArgs();
+    const [{ value }, updateArgs] = useArgs();
     return (
       <DateField
         {...args}
-        value={value}
-        startDate={startDate}
-        endDate={endDate}
-        onValueChange={(val) => updateArgs({ value: val })}
-        onRangeChange={(range) => updateArgs({ startDate: range.startDate, endDate: range.endDate })}
+        value={value ?? args.defaultValue}
+        onValueChange={(val) => {
+          updateArgs({ value: val });
+          args.onValueChange?.(val);
+        }}
       />
     );
   },
@@ -41,44 +61,10 @@ const meta: Meta<typeof DateField> = {
 export default meta;
 type Story = StoryObj<typeof DateField>;
 
-export const AllVariants: Story = {
-  render: () => (
-    <div className="space-y-space-24 max-w-lg font-text">
-      <DateField
-        label="Due date"
-        defaultValue="25/10/2026"
-      />
-      <DateField
-        range
-        label="Period"
-        defaultStartDate="01/10/2026"
-        defaultEndDate="13/10/2026"
-      />
-      <DateField
-        label="Travel dates"
-        defaultValue="15/10/2026"
-        minDate="10/10/2026"
-        maxDate="25/10/2026"
-        helper="Selection restricted between 10/10/2026 and 25/10/2026."
-      />
-      <DateField
-        label="Statement date"
-        defaultValue="32/13/2026"
-        error="Enter a valid date in dd/mm/yyyy format."
-      />
-      <DateField
-        label="Locked cycle date"
-        defaultValue="01/10/2026"
-        disabled
-      />
-    </div>
-  ),
-};
-
-export const Single: Story = {
+export const Default: Story = {
   args: {
     label: 'Due date',
-    defaultValue: '25/10/2026',
+    defaultValue: '2026-10-25',
   },
 };
 
@@ -86,25 +72,32 @@ export const Range: Story = {
   args: {
     range: true,
     label: 'Period',
-    defaultStartDate: '01/10/2026',
-    defaultEndDate: '13/10/2026',
+    defaultValue: { start: '2026-10-01', end: '2026-10-13' },
   },
 };
 
 export const WithMinMax: Story = {
   args: {
     label: 'Travel date',
-    defaultValue: '15/10/2026',
-    minDate: '10/10/2026',
-    maxDate: '25/10/2026',
+    defaultValue: '2026-10-15',
+    minDate: '2026-10-10',
+    maxDate: '2026-10-25',
     helper: 'Selection restricted between 10/10/2026 and 25/10/2026.',
+  },
+};
+
+export const OpenCalendar: Story = {
+  args: {
+    label: 'Open calendar picker',
+    defaultValue: '2026-10-15',
+    defaultOpen: true,
   },
 };
 
 export const ErrorState: Story = {
   args: {
     label: 'Statement date',
-    defaultValue: '32/13/2026',
+    defaultValue: '2026-10-15',
     error: 'Enter a valid date in dd/mm/yyyy format.',
   },
 };
@@ -112,7 +105,7 @@ export const ErrorState: Story = {
 export const Disabled: Story = {
   args: {
     label: 'Locked cycle date',
-    defaultValue: '01/10/2026',
+    defaultValue: '2026-10-01',
     disabled: true,
   },
 };
