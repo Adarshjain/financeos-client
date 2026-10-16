@@ -240,6 +240,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - Button `layout` replaces tile, and google is removed.
 - 2026-10-17 · **Generic tokens only** (owner). Component-named tokens were migrated to generic steps (commit eb39939). A missing value is added as a generic step, or asked.
 - 2026-10-17 · Icon registry: add `minus` (Phosphor Minus) for Checkbox's mixed state, which closes the 2026-10-15 open question (decided by Claude at the owner's request).
+- 2026-10-17 · `@storybook/addon-docs` (same version as `storybook`, ^10.6.2) is approved as a dev dependency. Autodocs needs it.
 - 2026-10-17 · This round only, Antigravity may edit component READMEs, `.storybook/`, `design-system/icons.json` and `tailwind.config.ts`, exactly as the audit specs say. Tokens stay read-only.
 
 ## Open questions
