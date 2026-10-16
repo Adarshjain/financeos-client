@@ -8,7 +8,7 @@ export default function DsIndexPage() {
     <div className="max-w-container-md mx-auto space-y-space-24">
       {/* Signed out pages */}
       <Card>
-        <SectionHeader label="Signed out" borderTop={false} />
+        <SectionHeader borderTop={false}>Signed out</SectionHeader>
         <ListRow
           asChild
           title="Sign in"
@@ -37,7 +37,7 @@ export default function DsIndexPage() {
 
       {/* Signed in section */}
       <Card>
-        <SectionHeader label="Signed in" borderTop={false} />
+        <SectionHeader borderTop={false}>Signed in</SectionHeader>
         <EmptyState description="No signed-in pages yet." compact />
       </Card>
     </div>

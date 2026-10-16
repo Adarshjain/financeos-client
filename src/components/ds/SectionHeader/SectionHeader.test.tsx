@@ -5,9 +5,11 @@ import { describe, expect, it } from 'vitest';
 import { SectionHeader } from './SectionHeader';
 
 describe('SectionHeader', () => {
-  it('renders date variant with label, weekday meta, and sticky positioning', () => {
+  it('renders strong variant with children, weekday meta, and sticky positioning', () => {
     const { container } = render(
-      <SectionHeader variant="date" label="12 Oct" meta="Mon" />,
+      <SectionHeader variant="strong" meta="Mon">
+        12 Oct
+      </SectionHeader>,
     );
     expect(screen.getByText('12 Oct')).toBeInTheDocument();
     expect(screen.getByText('Mon')).toBeInTheDocument();
@@ -20,16 +22,18 @@ describe('SectionHeader', () => {
     );
   });
 
-  it('renders date variant with sticky=false', () => {
+  it('renders strong variant with sticky=false', () => {
     const { container } = render(
-      <SectionHeader variant="date" label="12 Oct" sticky={false} />,
+      <SectionHeader variant="strong" sticky={false}>
+        12 Oct
+      </SectionHeader>,
     );
     expect(container.firstChild).not.toHaveClass('sticky');
   });
 
   it('renders band variant with overline text in ink-4 on bg-sunken', () => {
     const { container } = render(
-      <SectionHeader variant="band" label="Basics" />,
+      <SectionHeader variant="band">Basics</SectionHeader>,
     );
     expect(screen.getByText('Basics')).toBeInTheDocument();
     expect(container.firstChild).toHaveClass(
@@ -39,30 +43,39 @@ describe('SectionHeader', () => {
     );
   });
 
-  it('renders month variant with summary meta', () => {
+  it('renders band variant with meta', () => {
     render(
       <SectionHeader
-        variant="month"
-        label="September 2026"
+        variant="band"
         meta="61 transactions · out ₹1,05,219"
-      />,
+      >
+        September 2026
+      </SectionHeader>,
     );
     expect(screen.getByText('September 2026')).toBeInTheDocument();
     expect(
-      screen.getByText('· 61 transactions · out ₹1,05,219'),
+      screen.getByText('61 transactions · out ₹1,05,219'),
     ).toBeInTheDocument();
   });
 
-  it('renders danger variant with text-danger', () => {
+  it('renders danger tone with text-danger', () => {
     const { container } = render(
-      <SectionHeader variant="danger" label="Delete account" />,
+      <SectionHeader variant="band" tone="danger">
+        Delete account
+      </SectionHeader>,
     );
     expect(screen.getByText('Delete account')).toBeInTheDocument();
     expect(container.firstChild).toHaveClass('text-danger', 'bg-sunken');
   });
 
-  it('supports children as fallback for label', () => {
-    render(<SectionHeader variant="band">Card details</SectionHeader>);
-    expect(screen.getByText('Card details')).toBeInTheDocument();
+  it('renders custom heading element via as prop', () => {
+    render(
+      <SectionHeader as="h3" variant="strong">
+        Section heading
+      </SectionHeader>,
+    );
+    const heading = screen.getByRole('heading', { level: 3 });
+    expect(heading).toBeInTheDocument();
+    expect(heading).toHaveTextContent('Section heading');
   });
 });
