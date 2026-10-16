@@ -4,24 +4,29 @@ import { describe, expect, it } from 'vitest';
 import { StatusWord, StatusWords } from './StatusWords';
 
 describe('StatusWord and StatusWords components', () => {
-  it('renders StatusWord with appropriate tone classes', () => {
-    const { rerender } = render(<StatusWord tone="amber">Unreconciled</StatusWord>);
+  it('renders StatusWord with appropriate semantic tone classes', () => {
+    const { rerender } = render(<StatusWord tone="warning">Unreconciled</StatusWord>);
     expect(screen.getByText('Unreconciled')).toHaveClass('text-warning', 'font-bold');
 
-    rerender(<StatusWord tone="blue">Refund</StatusWord>);
+    rerender(<StatusWord tone="info">Refund</StatusWord>);
     expect(screen.getByText('Refund')).toHaveClass('text-info', 'font-semibold');
 
-    rerender(<StatusWord tone="grey">Gmail</StatusWord>);
+    rerender(<StatusWord tone="neutral">Gmail</StatusWord>);
     expect(screen.getByText('Gmail')).toHaveClass('text-ink-3', 'font-medium');
 
-    rerender(<StatusWord tone="green">Verified</StatusWord>);
+    rerender(<StatusWord>Default neutral</StatusWord>);
+    expect(screen.getByText('Default neutral')).toHaveClass('text-ink-3', 'font-medium');
+
+    rerender(<StatusWord tone="success">Verified</StatusWord>);
     expect(screen.getByText('Verified')).toHaveClass('text-positive-strong', 'font-bold');
   });
 
-  it('renders chain icon for link tone', () => {
-    const { container } = render(<StatusWord tone="link">Refund</StatusWord>);
-    const svg = container.querySelector('svg');
-    expect(svg).toBeInTheDocument();
+  it('renders icon only when passed explicitly', () => {
+    const { container, rerender } = render(<StatusWord tone="info">Refund</StatusWord>);
+    expect(container.querySelector('svg')).toBeNull();
+
+    rerender(<StatusWord tone="info" icon="link">Refund</StatusWord>);
+    expect(container.querySelector('svg')).toBeInTheDocument();
   });
 
   it('renders multiple status words separated by dot from items prop', () => {
@@ -29,9 +34,9 @@ describe('StatusWord and StatusWords components', () => {
       <StatusWords
         prefix="HDFC Regalia"
         items={[
-          { tone: 'amber', label: 'Unreconciled' },
-          { tone: 'blue', label: 'Refund' },
-          { tone: 'grey', label: 'Gmail' },
+          { tone: 'warning', label: 'Unreconciled' },
+          { tone: 'info', label: 'Refund', icon: 'link' },
+          { tone: 'neutral', label: 'Gmail' },
         ]}
       />,
     );
@@ -46,8 +51,8 @@ describe('StatusWord and StatusWords components', () => {
   it('renders multiple status words separated by dot from children composition', () => {
     render(
       <StatusWords>
-        <StatusWord tone="amber">Unverified</StatusWord>
-        <StatusWord tone="grey">LLM-generated</StatusWord>
+        <StatusWord tone="warning">Unverified</StatusWord>
+        <StatusWord tone="neutral">LLM-generated</StatusWord>
       </StatusWords>,
     );
 

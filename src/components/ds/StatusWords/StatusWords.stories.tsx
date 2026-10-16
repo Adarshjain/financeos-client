@@ -1,111 +1,101 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { StatusWord, StatusWords } from './StatusWords';
+import { StatusWord, StatusWords } from '@/components/ds';
 
 const meta: Meta<typeof StatusWords> = {
   title: 'DS/Data display/StatusWords',
   component: StatusWords,
+  subcomponents: { StatusWord: StatusWord as React.ComponentType<React.ComponentProps<typeof StatusWord>> },
   parameters: {
     layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'Inline coloured words on a context line that convey status without tags.',
+      },
+    },
+  },
+  argTypes: {
+    prefix: { control: 'text' },
+    separator: { control: 'text' },
+    items: { control: 'object' },
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof StatusWords>;
 
-export const NeedsReview: Story = {
-  render: () => (
-    <div className="flex flex-col gap-space-8">
-      <StatusWord tone="amber">Unreconciled</StatusWord>
-      <StatusWord tone="amber">Category unverified</StatusWord>
-      <StatusWord tone="amber">Duplicate</StatusWord>
-      <StatusWord tone="amber">Date corrected</StatusWord>
-      <StatusWord tone="amber">Watching</StatusWord>
-      <StatusWord tone="amber">Unverified</StatusWord>
-    </div>
-  ),
-};
-
-export const Linked: Story = {
-  render: () => (
-    <div className="flex flex-col gap-space-8">
-      <StatusWord tone="blue">Refund</StatusWord>
-      <StatusWord tone="blue">Transfer</StatusWord>
-      <StatusWord tone="blue">Split</StatusWord>
-    </div>
-  ),
-};
-
-export const Provenance: Story = {
-  render: () => (
-    <div className="flex flex-col gap-space-8">
-      <StatusWord tone="grey">Gmail</StatusWord>
-      <StatusWord tone="grey">Statement</StatusWord>
-      <StatusWord tone="grey">Manual</StatusWord>
-      <StatusWord tone="grey">LLM-generated</StatusWord>
-      <StatusWord tone="grey">Created by you</StatusWord>
-      <StatusWord tone="grey">Excluded</StatusWord>
-    </div>
-  ),
-};
-
-export const Verified: Story = {
-  render: () => <StatusWord tone="green">Verified</StatusWord>,
-};
-
-export const ContextLine: Story = {
+export const Neutral: StoryObj<typeof StatusWord> = {
+  render: (args) => <StatusWord {...args} />,
+  argTypes: {
+    tone: {
+      control: 'select',
+      options: ['neutral', 'info', 'warning', 'success'],
+    },
+    icon: { control: 'text' },
+    children: { control: 'text' },
+  },
   args: {
-    prefix: 'HDFC Regalia ••7741',
-    items: [
-      { tone: 'amber', label: 'Unreconciled' },
-      { tone: 'blue', label: 'Refund' },
-      { tone: 'grey', label: 'Gmail' },
-    ],
+    tone: 'neutral',
+    children: 'Manual',
   },
 };
 
-export const AllVariants: Story = {
-  render: () => (
-    <div className="space-y-space-24 max-w-lg font-text">
-      <div>
-        <h3 className="text-overline uppercase text-ink-4 mb-space-8">
-          Status vocabulary
-        </h3>
-        <div className="flex flex-wrap items-center gap-space-12 p-space-12 rounded-ds-lg border border-line bg-surface">
-          <StatusWord tone="amber">Unreconciled</StatusWord>
-          <StatusWord tone="blue">Refund</StatusWord>
-          <StatusWord tone="grey">Gmail</StatusWord>
-          <StatusWord tone="green">Verified</StatusWord>
-        </div>
-      </div>
+export const Info: StoryObj<typeof StatusWord> = {
+  render: (args) => <StatusWord {...args} />,
+  argTypes: {
+    tone: {
+      control: 'select',
+      options: ['neutral', 'info', 'warning', 'success'],
+    },
+    icon: { control: 'text' },
+    children: { control: 'text' },
+  },
+  args: {
+    tone: 'info',
+    icon: 'link',
+    children: 'Refund',
+  },
+};
 
-      <div>
-        <h3 className="text-overline uppercase text-ink-4 mb-space-8">
-          On card context lines
-        </h3>
-        <div className="flex flex-col gap-space-8 p-space-14 rounded-ds-lg border border-line bg-surface">
-          <StatusWords
-            prefix="HDFC Regalia ••7741"
-            items={[
-              { tone: 'amber', label: 'Unreconciled' },
-              { tone: 'blue', label: 'Refund' },
-              { tone: 'grey', label: 'Gmail' },
-            ]}
-          />
-          <StatusWords
-            items={[
-              { tone: 'amber', label: 'Unverified' },
-              { tone: 'grey', label: 'LLM-generated · MCC 5814' },
-            ]}
-          />
-          <StatusWords
-            items={[
-              { tone: 'green', label: 'Verified' },
-              { tone: 'grey', label: 'Created by you' },
-            ]}
-          />
-        </div>
-      </div>
-    </div>
-  ),
+export const Warning: StoryObj<typeof StatusWord> = {
+  render: (args) => <StatusWord {...args} />,
+  argTypes: {
+    tone: {
+      control: 'select',
+      options: ['neutral', 'info', 'warning', 'success'],
+    },
+    icon: { control: 'text' },
+    children: { control: 'text' },
+  },
+  args: {
+    tone: 'warning',
+    children: 'Unreconciled',
+  },
+};
+
+export const Success: StoryObj<typeof StatusWord> = {
+  render: (args) => <StatusWord {...args} />,
+  argTypes: {
+    tone: {
+      control: 'select',
+      options: ['neutral', 'info', 'warning', 'success'],
+    },
+    icon: { control: 'text' },
+    children: { control: 'text' },
+  },
+  args: {
+    tone: 'success',
+    children: 'Verified',
+  },
+};
+
+export const ContextLine: StoryObj<typeof StatusWords> = {
+  args: {
+    prefix: 'HDFC Regalia ••7741',
+    items: [
+      { tone: 'warning', label: 'Unreconciled' },
+      { tone: 'info', label: 'Refund', icon: 'link' },
+      { tone: 'neutral', label: 'Gmail' },
+    ],
+  },
 };

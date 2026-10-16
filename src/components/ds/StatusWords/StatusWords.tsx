@@ -2,27 +2,19 @@ import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
+import type { IconName } from '../Icon/registry';
 
-export type StatusTone =
-  | 'amber'
-  | 'blue'
-  | 'grey'
-  | 'green'
-  | 'review'
-  | 'link'
-  | 'provenance'
-  | 'verified';
+export type StatusTone = 'neutral' | 'info' | 'warning' | 'success';
 
 export interface StatusWordItem {
-  tone: StatusTone;
+  tone?: StatusTone;
   label: React.ReactNode;
-  showIcon?: boolean;
+  icon?: IconName;
 }
 
 export interface StatusWordProps extends React.HTMLAttributes<HTMLSpanElement> {
   tone?: StatusTone;
-  showIcon?: boolean;
-  icon?: React.ReactNode;
+  icon?: IconName;
 }
 
 export interface StatusWordsProps
@@ -32,50 +24,36 @@ export interface StatusWordsProps
   separator?: React.ReactNode;
 }
 
-function resolveTone(tone: StatusTone): 'amber' | 'blue' | 'grey' | 'green' {
-  if (tone === 'review') return 'amber';
-  if (tone === 'link') return 'blue';
-  if (tone === 'provenance') return 'grey';
-  if (tone === 'verified') return 'green';
-  return tone;
-}
+const TONE_CLASSES: Record<StatusTone, string> = {
+  neutral: 'text-ink-3 font-medium',
+  info: 'text-info font-semibold',
+  warning: 'text-warning font-bold',
+  success: 'text-positive-strong font-bold',
+};
 
 export const StatusWord = forwardRef<HTMLSpanElement, StatusWordProps>(
   (
     {
       children,
       className,
-      tone = 'grey',
-      showIcon,
+      tone = 'neutral',
       icon,
       ...props
     },
     ref,
   ) => {
-    const resolvedTone = resolveTone(tone);
-
-    const toneClasses = {
-      amber: 'text-warning font-bold',
-      blue: 'text-info font-semibold inline-flex items-center gap-space-2 whitespace-nowrap',
-      grey: 'text-ink-3 font-medium',
-      green: 'text-positive-strong font-bold',
-    }[resolvedTone];
-
-    const shouldShowIcon =
-      showIcon ?? (resolvedTone === 'blue' && icon === undefined);
-
     return (
       <span
         ref={ref}
         className={cn(
-          'font-text text-caption leading-none select-none',
-          toneClasses,
+          'inline-flex items-center gap-space-2 whitespace-nowrap font-text text-caption leading-none select-none',
+          TONE_CLASSES[tone],
           className,
         )}
         {...props}
       >
-        {shouldShowIcon ? (
-          icon ?? <Icon name="link" size="sm" className="shrink-0" />
+        {icon ? (
+          <Icon name={icon} size="sm" className="shrink-0" />
         ) : null}
         {children}
       </span>
@@ -104,7 +82,7 @@ export const StatusWords = forwardRef<HTMLSpanElement, StatusWordsProps>(
             {idx > 0 ? (
               <span className="text-ink-4 select-none">{separator}</span>
             ) : null}
-            <StatusWord tone={item.tone} showIcon={item.showIcon}>
+            <StatusWord tone={item.tone} icon={item.icon}>
               {item.label}
             </StatusWord>
           </React.Fragment>

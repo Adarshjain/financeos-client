@@ -132,19 +132,19 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
     const renderStatusLine = () => {
       if (statusLine) return statusLine;
 
-      const items: { tone: 'amber' | 'green' | 'grey'; label: React.ReactNode }[] = [
+      const items: { tone: 'success' | 'warning' | 'neutral'; label: React.ReactNode }[] = [
         {
-          tone: isVerified ? 'green' : 'amber',
+          tone: isVerified ? 'success' : 'warning',
           label: isVerified ? 'Verified' : 'Unverified',
         },
       ];
 
       if (source) {
-        items.push({ tone: 'grey', label: source });
+        items.push({ tone: 'neutral', label: source });
       }
 
       if (mcc) {
-        items.push({ tone: 'grey', label: mcc });
+        items.push({ tone: 'neutral', label: mcc });
       }
 
       return <StatusWords items={items} />;
