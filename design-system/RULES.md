@@ -154,7 +154,7 @@ Storybook consumes components exactly as an app would, so a developer can see an
 
 1. **One story per README variant or state**, named as the README names it. No "All variants" story: every meta has `tags: ['autodocs']`, and the autodocs page shows all stories together without controls (owner, 2026-10-16). Story titles are `DS/<Group>/<Name>` for Dinero and `Organisms/<Name>` for organisms.
 2. **Stories are driven by args.** Every public prop has a control, or is listed in `argTypes` with `control: false` when it is a node or a function. A component with a controlled prop is wired with `useArgs` so the canvas is interactive. No `useState`, timers or data processing in stories. No two stories differ only by viewport or by one control value.
-3. **Callbacks are actions:** every `on…` prop is `fn()` from `storybook/test` (set globally in `.storybook/preview.tsx`). Never `() => {}`, `alert` or `console.log`.
+3. **Callbacks are actions:** every `on…` prop is set to `fn()` from `storybook/test` in the story file's `meta.args`. Never `() => {}`, `alert` or `console.log`.
 4. **No hand-made UI in stories.** Frames and backgrounds come from the global decorator and `parameters.layout`; explanations go in `parameters.docs.description`. A story may place several Dinero components side by side with layout classes only (§5d applies to stories). Never restyle a component in a story.
 5. Stories import from `@/components/ds` or `@/components/organisms`, never by relative path.
 6. Stories use realistic FinanceOS content: ₹ amounts with Indian grouping, real-looking merchants and accounts like the boards. Never lorem ipsum.

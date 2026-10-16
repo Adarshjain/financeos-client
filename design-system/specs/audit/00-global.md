@@ -101,7 +101,7 @@ Menus, dropdowns, selects and DateField's calendar look and work like a normal d
   - Every public prop has a control, or is listed in `argTypes` with `control: false` when it is a node or function.
   - No story differs from another only by viewport or by one control value.
   - Exception: a component that only shows at one width (TabBar is phone-only, hidden from `lg`) sets `parameters: { viewport: { defaultViewport: 'phone' } }` on its **meta**, so all its stories open at phone width. That is not a separate story.
-- **Actions:** in `.storybook/preview.tsx` set `argTypes`/`args` so every `on[A-Z]*` prop is `fn()` from `storybook/test`. Also use `fn()` explicitly in args, never `() => {}`, `alert` or `console.log`.
+- **Actions:** every story file's `meta.args` sets **each** `on…` prop the component has to `fn()` from `storybook/test`, so every call shows in the Actions panel. (`argTypesRegex` is deprecated in Storybook 10; don't use it.) Never use `() => {}`, `alert` or `console.log`.
 - **No hand-made UI in stories:**
   - frames and backgrounds come from one decorator (the existing theme decorator plus `parameters.layout`);
   - explanations go in `parameters.docs.description`;
