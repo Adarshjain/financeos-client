@@ -14,10 +14,7 @@ import { cn } from '../cn';
 import { FieldFrame } from '../FieldFrame';
 import { Icon } from '../Icon/Icon';
 import { getItemRowClass } from '../itemRow';
-import {
-  ResponsiveOverlay,
-  useResponsiveOverlay,
-} from '../ResponsiveOverlay/ResponsiveOverlay';
+import { Popover } from '../Popover/Popover';
 import { SearchField } from '../SearchField/SearchField';
 import { useControllableState } from '../useControllableState';
 
@@ -88,8 +85,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
     },
     ref,
   ) => {
-    const { isSheet: overlayIsSheet } = useResponsiveOverlay();
-    const isSheet = explicitIsSheet ?? overlayIsSheet;
+    const isSheet = explicitIsSheet ?? false;
     const generatedId = useId();
     const id = explicitId || generatedId;
     const listboxId = `${id}-listbox`;
@@ -710,13 +706,11 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
         error={error}
         className={cn(trigger ? 'inline-block' : 'w-full', className)}
       >
-        <ResponsiveOverlay
+        <Popover
           open={isOpen}
           onOpenChange={setOpen}
           trigger={effectiveTrigger}
-          title={label || placeholder || 'Select'}
-          popoverContentClassName={menuClassName}
-          forcePopover={forceSheet === false}
+          contentClassName={cn('p-0 overflow-hidden', menuClassName)}
         >
           <SelectMenu
             id={id}
@@ -740,7 +734,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             emptyText={emptyText}
             className={menuClassName}
           />
-        </ResponsiveOverlay>
+        </Popover>
       </FieldFrame>
     );
   },

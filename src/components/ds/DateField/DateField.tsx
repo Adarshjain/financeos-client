@@ -7,7 +7,7 @@ import { cn } from '../cn';
 import { MonthCalendar } from '../DateTile/DateTile';
 import { FieldFrame } from '../FieldFrame';
 import { Icon } from '../Icon/Icon';
-import { ResponsiveOverlay } from '../ResponsiveOverlay/ResponsiveOverlay';
+import { Popover } from '../Popover/Popover';
 import { useControllableState } from '../useControllableState';
 
 export interface DateFieldProps {
@@ -429,25 +429,18 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
             {...props}
           />
 
-          <ResponsiveOverlay
+          <Popover
             open={isOpen}
             onOpenChange={setOpen}
             trigger={triggerButton}
-            title={
-              typeof label === 'string'
-                ? label
-                : range
-                  ? 'Select date range'
-                  : 'Select date'
-            }
-            dialogBodyClassName="p-0 flex justify-center"
-            popoverContentClassName={cn(
+            align="end"
+            contentClassName={cn(
               'p-0 overflow-hidden shadow-level-2',
               range ? 'max-w-container-md w-auto' : '',
             )}
           >
             {calendarContent}
-          </ResponsiveOverlay>
+          </Popover>
         </div>
       </FieldFrame>
     );

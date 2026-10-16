@@ -5,16 +5,7 @@ import React, { forwardRef, useMemo } from 'react';
 
 import { cn } from '../cn';
 import { getItemRowClass, ItemRowStyleOptions } from '../itemRow';
-import {
-  ResponsiveOverlay,
-  useResponsiveOverlay,
-} from '../ResponsiveOverlay/ResponsiveOverlay';
 import { useControllableState } from '../useControllableState';
-
-const MenuContext = React.createContext<{
-  isDialog: boolean;
-  close: () => void;
-}>({ isDialog: false, close: () => {} });
 
 export const DropdownMenu = DropdownMenuPrimitive.Root;
 export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
@@ -41,12 +32,6 @@ export const MenuContent = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Content>,
   MenuContentProps
 >(({ className, sideOffset = 4, children, ...props }, ref) => {
-  const { isDialog } = React.useContext(MenuContext);
-
-  if (isDialog) {
-    return <div className={cn('flex flex-col', className)}>{children}</div>;
-  }
-
   return (
     <DropdownMenuPrimitive.Portal>
       <DropdownMenuPrimitive.Content
@@ -100,18 +85,9 @@ export const MenuItem = forwardRef<
     },
     ref,
   ) => {
-    const { isDialog, close } = React.useContext(MenuContext);
-    const { isSheet, close: overlayClose } = useResponsiveOverlay();
-    const effectiveIsDialog = isDialog || isSheet;
-    const effectiveClose = close || overlayClose;
-
     const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
       if (disabled) return;
       onClick?.(e);
-      if (effectiveIsDialog) {
-        onSelect?.(e as unknown as Event);
-        effectiveClose();
-      }
     };
 
     const rowClass = getItemRowClass({
@@ -141,28 +117,6 @@ export const MenuItem = forwardRef<
       </>
     );
 
-    if (effectiveIsDialog) {
-      return (
-        <div
-          ref={ref as unknown as React.Ref<HTMLDivElement>}
-          role="menuitem"
-          aria-disabled={disabled || undefined}
-          tabIndex={disabled ? -1 : 0}
-          onClick={handleClick}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              handleClick(e as unknown as React.MouseEvent<HTMLDivElement>);
-            }
-          }}
-          className={cn(rowClass, 'cursor-pointer select-none')}
-          {...props}
-        >
-          {content}
-        </div>
-      );
-    }
-
     return (
       <DropdownMenuPrimitive.Item
         ref={ref}
@@ -190,17 +144,6 @@ export const MenuSeparator = forwardRef<
   React.ElementRef<typeof DropdownMenuPrimitive.Separator>,
   MenuSeparatorProps
 >(({ className, ...props }, ref) => {
-  const { isDialog } = React.useContext(MenuContext);
-  if (isDialog) {
-    return (
-      <div
-        ref={ref as unknown as React.Ref<HTMLDivElement>}
-        role="separator"
-        className={cn('h-px bg-line-soft my-space-4 mx-space-6', className)}
-        {...props}
-      />
-    );
-  }
   return (
     <DropdownMenuPrimitive.Separator
       ref={ref}
@@ -272,15 +215,6 @@ export interface MenuProps extends DropdownMenuPrimitive.DropdownMenuProps {
   title?: string;
 }
 
-const MenuBody: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isSheet, close } = useResponsiveOverlay();
-  return (
-    <MenuContext.Provider value={{ isDialog: isSheet, close }}>
-      {children}
-    </MenuContext.Provider>
-  );
-};
-
 export const Menu: React.FC<MenuProps> & {
   Root: typeof DropdownMenuPrimitive.Root;
   Trigger: typeof DropdownMenuPrimitive.Trigger;
@@ -301,8 +235,6 @@ export const Menu: React.FC<MenuProps> & {
   onOpenChange,
   modal,
   dir,
-  forcePhone,
-  title,
 }) => {
   const [isOpen, setOpen] = useControllableState<boolean>({
     value: open,
@@ -310,44 +242,27 @@ export const Menu: React.FC<MenuProps> & {
     onChange: onOpenChange,
   });
 
-  const itemCount = useMemo(() => {
-    let count = 0;
-    const walk = (node: React.ReactNode) => {
-      React.Children.forEach(node, (child) => {
-        if (!React.isValidElement(child)) return;
-        if (
-          child.type === MenuItem ||
-          child.type === DropdownMenuItem ||
-          (child.props as { role?: string })?.role === 'menuitem'
-        ) {
-          count++;
-        } else if ((child.props as { children?: React.ReactNode })?.children) {
-          walk((child.props as { children?: React.ReactNode }).children);
-        }
-      });
-    };
-    walk(children);
-    return count;
-  }, [children]);
-
   return (
-    <ResponsiveOverlay
+    <DropdownMenuPrimitive.Root
       open={isOpen}
       onOpenChange={setOpen}
-      trigger={trigger}
-      title={title || 'Menu'}
-      align={align}
-      side={side}
-      sideOffset={sideOffset}
       modal={modal}
-      asDropdownMenu
-      forcePopover={!forcePhone && itemCount <= 6}
-      forceSheet={forcePhone}
-      popoverContentClassName={contentClassName}
-      dialogBodyClassName="p-space-8 flex flex-col gap-space-2"
+      dir={dir}
     >
-      <MenuBody>{children}</MenuBody>
-    </ResponsiveOverlay>
+      {trigger && (
+        <DropdownMenuPrimitive.Trigger asChild>
+          {trigger}
+        </DropdownMenuPrimitive.Trigger>
+      )}
+      <MenuContent
+        align={align}
+        side={side}
+        sideOffset={sideOffset}
+        className={contentClassName}
+      >
+        {children}
+      </MenuContent>
+    </DropdownMenuPrimitive.Root>
   );
 };
 
