@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React, { useState } from 'react';
+import React from 'react';
 import { useArgs } from 'storybook/preview-api';
+import { fn } from 'storybook/test';
 
-import { Card } from '../Card/Card';
-import { Pager } from './Pager';
+import { Card, Pager } from '@/components/ds';
 
 const meta: Meta<typeof Pager> = {
   title: 'DS/Navigation/Pager',
@@ -18,6 +18,10 @@ const meta: Meta<typeof Pager> = {
       </Card>
     ),
   ],
+  args: {
+    onPageChange: fn(),
+    onSizeChange: fn(),
+  },
   argTypes: {
     borderPosition: {
       control: 'select',
@@ -28,6 +32,7 @@ const meta: Meta<typeof Pager> = {
     totalElements: { control: 'number' },
     totalPages: { control: 'number' },
     unit: { control: 'text' },
+    sizeOptions: { control: 'object' },
   },
   render: function Render(args) {
     const [{ page, size }, updateArgs] = useArgs();
@@ -36,8 +41,14 @@ const meta: Meta<typeof Pager> = {
         {...args}
         page={page ?? args.page}
         size={size ?? args.size}
-        onPageChange={(p) => updateArgs({ page: p })}
-        onSizeChange={(s) => updateArgs({ size: s, page: 0 })}
+        onPageChange={(p) => {
+          args.onPageChange?.(p);
+          updateArgs({ page: p });
+        }}
+        onSizeChange={(s) => {
+          args.onSizeChange?.(s);
+          updateArgs({ size: s, page: 0 });
+        }}
       />
     );
   },
@@ -46,62 +57,6 @@ const meta: Meta<typeof Pager> = {
 export default meta;
 type Story = StoryObj<typeof Pager>;
 
-export const AllVariants: Story = {
-  name: 'All variants',
-  render: () => (
-    <div className="space-y-space-24 max-w-3xl font-text">
-      <div>
-        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Desktop (First page of 4)
-        </h4>
-        <Card className="overflow-hidden">
-          <Pager
-            page={0}
-            size={50}
-            totalElements={182}
-            totalPages={4}
-            unit="transaction"
-            onPageChange={() => {}}
-            onSizeChange={() => {}}
-          />
-        </Card>
-      </div>
-
-      <div>
-        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Mobile (Compact layout on phone viewports)
-        </h4>
-        <Card className="max-w-sm overflow-hidden">
-          <Pager
-            page={0}
-            size={50}
-            totalElements={182}
-            totalPages={4}
-            onPageChange={() => {}}
-          />
-        </Card>
-      </div>
-
-      <div>
-        <h4 className="text-label font-semibold text-ink-3 mb-space-8">
-          Single Page (no navigation arrows)
-        </h4>
-        <Card className="overflow-hidden">
-          <Pager
-            page={0}
-            size={50}
-            totalElements={25}
-            totalPages={1}
-            unit="needing review"
-            onPageChange={() => {}}
-            onSizeChange={() => {}}
-          />
-        </Card>
-      </div>
-    </div>
-  ),
-};
-
 export const Desktop: Story = {
   name: 'Desktop',
   args: {
@@ -109,36 +64,8 @@ export const Desktop: Story = {
     size: 50,
     totalElements: 182,
     totalPages: 4,
-    unit: 'transaction',
-    onPageChange: () => {},
-    onSizeChange: () => {},
-  },
-};
-
-export const Phone: Story = {
-  name: 'Phone',
-  parameters: {
-    viewport: { defaultViewport: 'phone' },
-  },
-  args: {
-    page: 0,
-    size: 50,
-    totalElements: 182,
-    totalPages: 4,
-    onPageChange: () => {},
-  },
-};
-
-export const SinglePage: Story = {
-  name: 'Single page',
-  args: {
-    page: 0,
-    size: 50,
-    totalElements: 25,
-    totalPages: 1,
-    unit: 'needing review',
-    onPageChange: () => {},
-    onSizeChange: () => {},
+    unit: 'transactions',
+    sizeLabel: (n) => `${n} / page`,
   },
 };
 
@@ -149,38 +76,42 @@ export const MiddlePage: Story = {
     size: 25,
     totalElements: 250,
     totalPages: 10,
-    unit: 'statement',
-    onPageChange: () => {},
-    onSizeChange: () => {},
+    unit: 'statements',
+    sizeLabel: (n) => `${n} / page`,
   },
 };
 
-const InteractivePagerStory: React.FC = () => {
-  const [page, setPage] = useState(0);
-  const [size, setSize] = useState(50);
-  const totalElements = 182;
+export const SinglePage: Story = {
+  name: 'Single page',
+  args: {
+    page: 0,
+    size: 50,
+    totalElements: 25,
+    totalPages: 1,
+    unit: 'items',
+    sizeLabel: (n) => `${n} / page`,
+  },
+};
 
-  return (
-    <Card className="max-w-3xl overflow-hidden">
-      <div className="p-space-20 text-body text-ink-2">
-        Simulated content for page {page + 1} ({size} rows per page)
-      </div>
-      <Pager
-        page={page}
-        size={size}
-        totalElements={totalElements}
-        unit="transaction"
-        onPageChange={setPage}
-        onSizeChange={(newSize) => {
-          setSize(newSize);
-          setPage(0);
-        }}
-      />
-    </Card>
-  );
+export const CustomSummary: Story = {
+  name: 'Custom summary',
+  args: {
+    page: 0,
+    size: 50,
+    totalElements: 182,
+    totalPages: 4,
+    summary: ({ start, end, total }) => `${start}–${end} of ${total} transactions`,
+    sizeLabel: (n) => `${n} / page`,
+  },
 };
 
 export const Interactive: Story = {
   name: 'Interactive',
-  render: () => <InteractivePagerStory />,
+  args: {
+    page: 0,
+    size: 50,
+    totalElements: 182,
+    unit: 'transactions',
+    sizeLabel: (n) => `${n} / page`,
+  },
 };
