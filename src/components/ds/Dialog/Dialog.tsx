@@ -361,7 +361,7 @@ export const DialogContent = forwardRef<
                 <DialogHandle />
               </div>
 
-              {Boolean(title || desc || showClose) ? (
+              {title || desc || showClose ? (
                 <div className="px-space-16 lg:px-space-20 pt-space-12 lg:pt-space-16 pb-space-8 lg:pb-space-10 flex items-start gap-space-12 shrink-0">
                   <div className="flex-1 min-w-0">
                     {title ? (
