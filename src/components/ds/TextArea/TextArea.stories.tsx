@@ -1,23 +1,46 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from 'storybook/preview-api';
+import { fn } from 'storybook/test';
 
-import { TextArea } from './TextArea';
+import { TextArea } from '@/components/ds';
 
 const meta: Meta<typeof TextArea> = {
   title: 'DS/Inputs/TextArea',
   component: TextArea,
   parameters: {
     layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'A labelled multi-line field for notes and descriptions.',
+      },
+    },
   },
+  decorators: [
+    (Story) => (
+      <div className="max-w-md w-full">
+        <Story />
+      </div>
+    ),
+  ],
   argTypes: {
     label: { control: 'text' },
     placeholder: { control: 'text' },
     defaultValue: { control: 'text' },
+    value: { control: 'text' },
     helper: { control: 'text' },
     error: { control: 'text' },
     optional: { control: 'boolean' },
     disabled: { control: 'boolean' },
     rows: { control: 'number' },
+    minRows: { control: 'number' },
+    maxRows: { control: 'number' },
+    controlClassName: { control: 'text' },
+    onValueChange: { control: false },
+    onChange: { control: false },
+  },
+  args: {
+    onValueChange: fn(),
   },
   render: function Render(args) {
     const [{ value }, updateArgs] = useArgs();
@@ -25,7 +48,10 @@ const meta: Meta<typeof TextArea> = {
       <TextArea
         {...args}
         value={value ?? args.defaultValue}
-        onChange={(e) => updateArgs({ value: e.target.value })}
+        onValueChange={(v) => {
+          args.onValueChange?.(v);
+          updateArgs({ value: v });
+        }}
       />
     );
   },
@@ -33,37 +59,6 @@ const meta: Meta<typeof TextArea> = {
 
 export default meta;
 type Story = StoryObj<typeof TextArea>;
-
-export const AllVariants: Story = {
-  render: () => (
-    <div className="space-y-space-24 max-w-lg font-text">
-      <TextArea
-        label="Note"
-        placeholder="Add a note or description…"
-      />
-      <TextArea
-        label="Note"
-        defaultValue={'Split with Priya.\nShe owes half by Friday.\nSettle on UPI.'}
-      />
-      <TextArea
-        label="Description"
-        optional
-        defaultValue="Quarterly tax reconciliation and GST filing notes for October."
-        helper="Visible on shared reports and export sheets."
-      />
-      <TextArea
-        label="Note"
-        defaultValue="Too long text note"
-        error="Note cannot exceed 500 characters."
-      />
-      <TextArea
-        label="System notes"
-        defaultValue="Auto-generated note by statement parser."
-        disabled
-      />
-    </div>
-  ),
-};
 
 export const Default: Story = {
   args: {
@@ -75,24 +70,32 @@ export const Default: Story = {
 export const Filled: Story = {
   args: {
     label: 'Note',
-    defaultValue: 'Split with Priya, she owes half',
+    defaultValue: 'Split with Priya.\nShe owes half by Friday.\nSettle on UPI.',
   },
 };
 
-export const GrownToThreeLines: Story = {
-  name: 'Grown to three lines',
+export const Optional: Story = {
   args: {
-    label: 'Note',
-    defaultValue: 'Split with Priya.\nShe owes half by Friday.\nSettle on UPI.',
+    label: 'Description',
+    optional: true,
+    placeholder: 'Optional remarks',
   },
 };
 
 export const WithHelper: Story = {
   args: {
     label: 'Description',
-    optional: true,
     defaultValue: 'Quarterly tax reconciliation and GST filing notes for October.',
     helper: 'Visible on shared reports and export sheets.',
+  },
+};
+
+export const MaxRows: Story = {
+  args: {
+    label: 'Note',
+    maxRows: 3,
+    defaultValue:
+      'Line 1: Itemized expense\nLine 2: Client meeting at cafe\nLine 3: Receipt attached\nLine 4: Pending manager signoff\nLine 5: Archive copy',
   },
 };
 
@@ -111,3 +114,4 @@ export const Disabled: Story = {
     disabled: true,
   },
 };
+
