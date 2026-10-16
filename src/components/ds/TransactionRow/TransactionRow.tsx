@@ -292,35 +292,35 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         onClick={handleRowClick}
         onKeyDown={handleRowKeyDown}
         onTouchStart={(e) => {
-          longPress.onTouchStart(e);
+          longPress.handlers.onTouchStart(e);
           onTouchStart?.(e);
         }}
         onTouchMove={(e) => {
-          longPress.onTouchMove(e);
+          longPress.handlers.onTouchMove(e);
           onTouchMove?.(e);
         }}
         onTouchEnd={(e) => {
-          longPress.onTouchEnd(e);
+          longPress.handlers.onTouchEnd(e);
           onTouchEnd?.(e);
         }}
         onTouchCancel={(e) => {
-          longPress.onTouchCancel(e);
+          longPress.handlers.onTouchCancel(e);
           onTouchCancel?.(e);
         }}
         onPointerDown={(e) => {
-          longPress.onPointerDown(e);
+          longPress.handlers.onPointerDown(e);
           onPointerDown?.(e);
         }}
         onPointerMove={(e) => {
-          longPress.onPointerMove(e);
+          longPress.handlers.onPointerMove(e);
           onPointerMove?.(e);
         }}
         onPointerUp={(e) => {
-          longPress.onPointerUp(e);
+          longPress.handlers.onPointerUp(e);
           onPointerUp?.(e);
         }}
         onPointerCancel={(e) => {
-          longPress.onPointerCancel(e);
+          longPress.handlers.onPointerCancel(e);
           onPointerCancel?.(e);
         }}
         className={cn(

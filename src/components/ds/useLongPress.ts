@@ -123,7 +123,6 @@ export function useLongPress({
   };
 
   return {
-    ...handlers,
     handlers,
     consumeTriggered,
   };

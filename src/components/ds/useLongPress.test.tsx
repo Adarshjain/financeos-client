@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, renderHook, screen } from '@testing-library/react';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -138,5 +138,14 @@ describe('useLongPress', () => {
 
     vi.advanceTimersByTime(1000);
     expect(onLongPress).not.toHaveBeenCalled();
+  });
+
+  it('returns exactly { handlers, consumeTriggered } without loose handler copies', () => {
+    const { result } = renderHook(() => useLongPress({}));
+    expect(result.current).toBeDefined();
+    expect(Object.keys(result.current).sort()).toEqual(['consumeTriggered', 'handlers']);
+    expect(typeof result.current.consumeTriggered).toBe('function');
+    expect(typeof result.current.handlers).toBe('object');
+    expect(typeof result.current.handlers.onPointerDown).toBe('function');
   });
 });
