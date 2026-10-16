@@ -26,6 +26,7 @@ export * from './Popover/Popover';
 export * from './ProgressBar/ProgressBar';
 export * from './Rail/Rail';
 export * from './ResponsiveOverlay/ResponsiveOverlay';
+export * from './Root/Root';
 export * from './RuleCard/RuleCard';
 export * from './SearchField/SearchField';
 export * from './SectionHeader/SectionHeader';
