@@ -361,7 +361,7 @@ export const DialogContent = forwardRef<
                 <DialogHandle />
               </div>
 
-              {(title || desc || showClose || srTitle) && (
+              {Boolean(title || desc || showClose) ? (
                 <div className="px-space-16 lg:px-space-20 pt-space-12 lg:pt-space-16 pb-space-8 lg:pb-space-10 flex items-start gap-space-12 shrink-0">
                   <div className="flex-1 min-w-0">
                     {title ? (
@@ -402,6 +402,15 @@ export const DialogContent = forwardRef<
                     </DialogPrimitive.Close>
                   )}
                 </div>
+              ) : (
+                <>
+                  <DialogPrimitive.Title className="sr-only">
+                    {srTitle || 'Dialog'}
+                  </DialogPrimitive.Title>
+                  <DialogPrimitive.Description className="sr-only">
+                    {typeof srTitle === 'string' ? srTitle : 'Dialog description'}
+                  </DialogPrimitive.Description>
+                </>
               )}
             </div>
 

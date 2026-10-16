@@ -263,4 +263,17 @@ describe('Dialog (Radix overlay)', () => {
     expect(content).toHaveClass('bg-canvas');
     expect(content).not.toHaveClass('bg-surface');
   });
+
+  it('does not render padded header wrapper when only srTitle is passed without visible header', () => {
+    const { container } = render(
+      <Dialog open>
+        <DialogContent srTitle="Screen reader title" showClose={false}>
+          <DialogBody>No header body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Screen reader title' })).toHaveClass('sr-only');
+    expect(container.querySelector('.pt-space-12')).toBeNull();
+  });
 });
