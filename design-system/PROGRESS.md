@@ -236,6 +236,12 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-16 · Phase 3a · Antigravity · Omit padded header container in DialogContent when only srTitle is present:
+  - In `src/components/ds/Dialog/Dialog.tsx`, updated `DialogContent` to only render the padded header `<div>` (`px-space-16 pt-space-12 ...`) when a visible header element exists (`title`, `desc`, or `showClose`). When only `srTitle` is passed (e.g. on the More sheet), `<DialogPrimitive.Title className="sr-only">` and `<DialogPrimitive.Description className="sr-only">` render directly without the padded wrapper, eliminating unwanted empty vertical padding.
+  - Added unit test in `src/components/ds/Dialog/Dialog.test.tsx` verifying that no padded header element is rendered when only `srTitle` is passed.
+  - Checks: `npm run typecheck`, `node design-system/tools/check-ui.mjs --base c8b557b`, `npx vitest run src/components/ds/Dialog/Dialog.test.tsx`, `npx playwright test e2e/ui/ds-shell.spec.ts`. All passed clean.
+  - Commit `0d0f6d9`: `ui(ds): omit padded header container in DialogContent when only screen-reader title is present`.
+
 - 2026-10-16 · Phase 3a · Antigravity · Real user in /ds app layout:
   - In `src/app/(ds)/ds/(app)/layout.tsx`, passed `user={{ name: user.displayName ?? undefined, email: user.email }}` to both `ShellRail` and `ShellTabBar`.
   - Removed email string splitting (`user.email.split('@')[0]`), allowing the shell components to cleanly fall back to `user.email` when `displayName` is null or undefined.
