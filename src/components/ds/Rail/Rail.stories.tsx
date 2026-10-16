@@ -15,8 +15,8 @@ const financeOSRailGroups: RailGroup[] = [
   {
     label: 'Money',
     items: [
-      { id: 'accounts', label: 'Accounts', icon: 'accounts', href: '/accounts' },
-      { id: 'transactions', label: 'Transactions', icon: 'transactions', href: '/transactions', count: 25, countTone: 'warning' },
+      { id: 'accounts', label: 'Accounts', icon: 'wallet', href: '/accounts' },
+      { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions', count: 25, countTone: 'warning' },
     ],
   },
   {

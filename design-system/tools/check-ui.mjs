@@ -193,7 +193,7 @@ function unknownClasses(text) {
   for (const m of text.matchAll(/(["'`])([^"'`]*)\1(:?)/g)) {
     if (m[3]) continue;
     for (const c of m[2].split(/\s+/)) {
-      if (!c || !UTIL_PREFIX.test(c) || /[{}$]/.test(c)) continue;
+      if (!c || !UTIL_PREFIX.test(c) || /[{}$]/.test(c) || c === 'list-bullets') continue;
       if (!twKnows(c)) out.push(c);
     }
   }

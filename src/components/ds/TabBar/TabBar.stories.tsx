@@ -8,7 +8,7 @@ const financeOSItems: TabBarItem[] = [
   { id: 'home', label: 'Home', icon: 'home', href: '/' },
   { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox', count: 4, countTone: 'danger' },
   { id: 'upcoming', label: 'Upcoming', icon: 'calendar', href: '/upcoming' },
-  { id: 'transactions', label: 'Transactions', icon: 'transactions', href: '/transactions', count: 25, countTone: 'warning' },
+  { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions', count: 25, countTone: 'warning' },
   { id: 'more', label: 'More', icon: 'more', href: '/more' },
 ];
 

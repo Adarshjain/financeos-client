@@ -144,35 +144,7 @@ export const AllVariants: Story = {
         </div>
       </div>
 
-      <div>
-        <h3 className="text-overline uppercase text-ink-4 mb-space-8">Tile · Start (46px section links)</h3>
-        <div className="grid grid-cols-2 gap-space-8 max-w-md">
-          <Button variant="tile" icon={<Icon name="accounts" size="lg" />}>
-            Accounts
-          </Button>
-          <Button variant="tile" icon={<Icon name="transactions" size="lg" />}>
-            Transactions
-          </Button>
-        </div>
-      </div>
 
-      <div>
-        <h3 className="text-overline uppercase text-ink-4 mb-space-8">Tile · Top (64px quick add)</h3>
-        <div className="grid grid-cols-4 gap-space-8 max-w-md">
-          <Button variant="tile" iconPosition="top" icon={<Icon name="add" size="lg" />}>
-            Transaction
-          </Button>
-          <Button variant="tile" iconPosition="top" icon={<Icon name="loans" size="lg" />}>
-            Lending
-          </Button>
-          <Button variant="tile" iconPosition="top" icon={<Icon name="investments" size="lg" />}>
-            Trade
-          </Button>
-          <Button variant="tile" iconPosition="top" icon={<Icon name="upload" size="lg" />}>
-            Import
-          </Button>
-        </div>
-      </div>
 
       <div className="max-w-sm">
         <h3 className="text-overline uppercase text-ink-4 mb-space-8">Google (sign-in pages)</h3>
@@ -329,7 +301,7 @@ export const TileStart: Story = {
   args: {
     variant: 'tile',
     iconPosition: 'start',
-    icon: <Icon name="accounts" size="lg" />,
+    icon: <Icon name="wallet" size="lg" />,
     children: 'Accounts',
   },
   render: (args) => (
