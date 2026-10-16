@@ -268,6 +268,18 @@ function check(lines, all = false, classes = true) {
       }
     }
   }
+  // Whole-file rule: a Dinero component that uses hooks, event handlers, Radix or Slot must be a
+  // client component, or a server page rendering it fails at runtime (RULES §5b.8).
+  const seen = new Set();
+  for (const { file } of lines) {
+    const comp = dsComponent(file);
+    if (!comp || seen.has(file) || !existsSync(file)) continue;
+    seen.add(file);
+    const src = readFileSync(file, 'utf8');
+    if (/^\s*['"]use client['"]/m.test(src)) continue;
+    const m = src.match(/\buse(?:State|Effect|Ref|Callback|Memo|Reducer|LayoutEffect|ControllableState|LongPress|Swipe|SheetDrag)\(|\bon[A-Z][A-Za-z]*=\{|from ['"]@radix-ui\/|\bSlot\b/);
+    if (m) errors.push({ file, line: 1, rule: 'missing-use-client', why: `${comp} uses \`${m[0]}\` but has no 'use client' — a server page rendering it crashes (RULES §5b.8)`, text: '' });
+  }
   return { errors, allowed };
 }
 
