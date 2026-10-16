@@ -1,16 +1,27 @@
 'use client';
 
-import React, { forwardRef, useId, useRef, useState } from 'react';
+import React, { forwardRef, useId, useMemo, useRef, useState } from 'react';
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
-import { MonthCalendar } from '../DateTile/DateTile';
 import { FieldFrame } from '../FieldFrame';
 import { Icon } from '../Icon/Icon';
+import { MonthCalendar } from '../MonthCalendar/MonthCalendar';
 import { Popover } from '../Popover/Popover';
 import { useControllableState } from '../useControllableState';
+import { formatDate, parseDateInput } from '../utils';
+import { formatDateInput, formatRangeInput } from './dateFormat';
 
-export interface DateFieldProps {
+export interface DateRangeValue {
+  start?: string;
+  end?: string;
+}
+
+export interface DateFieldProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    'value' | 'defaultValue' | 'onChange' | 'placeholder' | 'type'
+  > {
   id?: string;
   label?: React.ReactNode;
   helper?: React.ReactNode;
@@ -20,10 +31,18 @@ export interface DateFieldProps {
   className?: string;
   placeholder?: string;
 
-  /** Single date mode: formatted as dd/mm/yyyy */
-  value?: string;
-  defaultValue?: string;
-  onValueChange?: (dateStr: string) => void;
+  /** Today ISO string (yyyy-mm-dd) */
+  today?: string;
+
+  /** Controlled / uncontrolled open state for calendar popover */
+  open?: boolean;
+  defaultOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
+
+  /** Single date mode: ISO string (yyyy-mm-dd) or Range object */
+  value?: string | DateRangeValue;
+  defaultValue?: string | DateRangeValue;
+  onValueChange?: (val: string | DateRangeValue) => void;
 
   /** Range mode: one combined field "dd/mm/yyyy – dd/mm/yyyy" */
   range?: boolean;
@@ -33,84 +52,12 @@ export interface DateFieldProps {
   defaultEndDate?: string;
   onRangeChange?: (range: { startDate: string; endDate: string }) => void;
 
-  /** Min/Max selectable dates (dd/mm/yyyy) */
+  /** Min/Max selectable dates (ISO yyyy-mm-dd) */
   minDate?: string;
   maxDate?: string;
 }
 
-export function formatDateInput(val: string): string {
-  if (!val) return '';
-  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
-    const [y, m, d] = val.split('-');
-    return `${d}/${m}/${y}`;
-  }
-  const digits = val.replace(/\D/g, '').slice(0, 8);
-  if (digits.length <= 2) return digits;
-  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
-}
-
-export function formatRangeInput(val: string): {
-  display: string;
-  startDate: string;
-  endDate: string;
-} {
-  if (!val) return { display: '', startDate: '', endDate: '' };
-
-  const digits = val.replace(/\D/g, '').slice(0, 16);
-  const startDigits = digits.slice(0, 8);
-  const endDigits = digits.slice(8, 16);
-
-  let startFormatted = '';
-  if (startDigits.length <= 2) {
-    startFormatted = startDigits;
-  } else if (startDigits.length <= 4) {
-    startFormatted = `${startDigits.slice(0, 2)}/${startDigits.slice(2)}`;
-  } else {
-    startFormatted = `${startDigits.slice(0, 2)}/${startDigits.slice(2, 4)}/${startDigits.slice(4)}`;
-  }
-
-  let endFormatted = '';
-  if (endDigits.length > 0) {
-    if (endDigits.length <= 2) {
-      endFormatted = endDigits;
-    } else if (endDigits.length <= 4) {
-      endFormatted = `${endDigits.slice(0, 2)}/${endDigits.slice(2)}`;
-    } else {
-      endFormatted = `${endDigits.slice(0, 2)}/${endDigits.slice(2, 4)}/${endDigits.slice(4)}`;
-    }
-  }
-
-  let display = startFormatted;
-  if (startDigits.length === 8) {
-    display = endFormatted ? `${startFormatted} – ${endFormatted}` : `${startFormatted} – `;
-  }
-
-  return {
-    display,
-    startDate: startDigits.length === 8 ? startFormatted : '',
-    endDate: endDigits.length === 8 ? endFormatted : '',
-  };
-}
-
-function parseDateStr(val?: string): Date | null {
-  if (!val) return null;
-  const match = val.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (match) {
-    const d = parseInt(match[1], 10);
-    const m = parseInt(match[2], 10) - 1;
-    const y = parseInt(match[3], 10);
-    return new Date(y, m, d);
-  }
-  return null;
-}
-
-function getTodayStr(): string {
-  const today = new Date();
-  const dd = String(today.getDate()).padStart(2, '0');
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  return `${dd}/${mm}/${today.getFullYear()}`;
-}
+export { formatDateInput, formatRangeInput } from './dateFormat';
 
 export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
   (
@@ -122,7 +69,11 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       optional = false,
       disabled = false,
       className,
-      placeholder = 'dd/mm/yyyy',
+      placeholder,
+      today,
+      open: controlledOpen,
+      defaultOpen = false,
+      onOpenChange,
       value: controlledValue,
       defaultValue,
       onValueChange,
@@ -142,70 +93,134 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     const id = explicitId ?? generatedId;
     const helperId = `${id}-helper`;
 
-    const [isOpen, setOpen] = useState(false);
-
-    // Single mode state
-    const [currentValue, setCurrentValue] = useControllableState<string>({
-      value:
-        controlledValue !== undefined
-          ? formatDateInput(controlledValue)
-          : undefined,
-      defaultValue: defaultValue ? formatDateInput(defaultValue) : '',
-      onChange: onValueChange,
+    const [isOpen, setOpen] = useControllableState<boolean>({
+      value: controlledOpen,
+      defaultValue: defaultOpen,
+      onChange: onOpenChange,
     });
 
-    // Range mode state
-    const initialStart = defaultStartDate ? formatDateInput(defaultStartDate) : '';
-    const initialEnd = defaultEndDate ? formatDateInput(defaultEndDate) : '';
-    const [internalStart, setInternalStart] = useState<string>(initialStart);
-    const [internalEnd, setInternalEnd] = useState<string>(initialEnd);
+    const isSingleString = typeof controlledValue === 'string';
+    const isRangeObject = typeof controlledValue === 'object' && controlledValue !== null;
 
-    const initialDisplay =
-      initialStart && initialEnd
-        ? `${initialStart} – ${initialEnd}`
-        : initialStart
-          ? `${initialStart} – `
+    // Default placeholder
+    const effectivePlaceholder =
+      placeholder !== undefined
+        ? placeholder
+        : range
+          ? 'dd/mm/yyyy – dd/mm/yyyy'
+          : 'dd/mm/yyyy';
+
+    // Single mode: internal text for typed input
+    const initialSingleText = (() => {
+      if (typeof controlledValue === 'string') return formatDateInput(controlledValue);
+      if (typeof defaultValue === 'string') return formatDateInput(defaultValue);
+      return '';
+    })();
+
+    const [singleText, setSingleText] = useState(initialSingleText);
+
+    // Sync single text when controlled prop changes
+    const [prevControlledValue, setPrevControlledValue] = useState(controlledValue);
+    if (controlledValue !== prevControlledValue) {
+      setPrevControlledValue(controlledValue);
+      if (typeof controlledValue === 'string') {
+        setSingleText(formatDateInput(controlledValue));
+      }
+    }
+
+    // Range mode state
+    const initialStartIso = (() => {
+      if (isRangeObject && 'start' in controlledValue && controlledValue.start) return controlledValue.start;
+      if (controlledStartDate) return controlledStartDate;
+      if (defaultValue && typeof defaultValue === 'object' && 'start' in defaultValue && defaultValue.start) return defaultValue.start;
+      if (defaultStartDate) return defaultStartDate;
+      return '';
+    })();
+
+    const initialEndIso = (() => {
+      if (isRangeObject && 'end' in controlledValue && controlledValue.end) return controlledValue.end;
+      if (controlledEndDate) return controlledEndDate;
+      if (defaultValue && typeof defaultValue === 'object' && 'end' in defaultValue && defaultValue.end) return defaultValue.end;
+      if (defaultEndDate) return defaultEndDate;
+      return '';
+    })();
+
+    const [startIso, setStartIso] = useState<string>(initialStartIso);
+    const [endIso, setEndIso] = useState<string>(initialEndIso);
+
+    // Derive display text for range input
+    const startDisplay = formatDateInput(startIso);
+    const endDisplay = formatDateInput(endIso);
+    const initialRangeDisplay =
+      startDisplay && endDisplay
+        ? `${startDisplay} – ${endDisplay}`
+        : startDisplay
+          ? `${startDisplay} – `
           : '';
 
-    const [internalRangeInput, setInternalRangeInput] = useState<string>(initialDisplay);
-    const prevRangeInputRef = useRef<string>(initialDisplay);
+    const [rangeText, setRangeText] = useState<string>(initialRangeDisplay);
+    const prevRangeInputRef = useRef<string>(initialRangeDisplay);
 
-    const currentStart =
-      controlledStartDate !== undefined
-        ? formatDateInput(controlledStartDate)
-        : internalStart;
-    const currentEnd =
-      controlledEndDate !== undefined
-        ? formatDateInput(controlledEndDate)
-        : internalEnd;
+    const [prevRangeProp, setPrevRangeProp] = useState({
+      val: controlledValue,
+      start: controlledStartDate,
+      end: controlledEndDate,
+    });
+    if (
+      controlledValue !== prevRangeProp.val ||
+      controlledStartDate !== prevRangeProp.start ||
+      controlledEndDate !== prevRangeProp.end
+    ) {
+      setPrevRangeProp({
+        val: controlledValue,
+        start: controlledStartDate,
+        end: controlledEndDate,
+      });
+      if (
+        controlledValue !== undefined ||
+        controlledStartDate !== undefined ||
+        controlledEndDate !== undefined
+      ) {
+        const s =
+          isRangeObject && controlledValue.start
+            ? controlledValue.start
+            : controlledStartDate ?? '';
+        const e =
+          isRangeObject && controlledValue.end
+            ? controlledValue.end
+            : controlledEndDate ?? '';
+        setStartIso(s);
+        setEndIso(e);
+        const sDisp = formatDateInput(s);
+        const eDisp = formatDateInput(e);
+        const disp =
+          sDisp && eDisp ? `${sDisp} – ${eDisp}` : sDisp ? `${sDisp} – ` : '';
+        setRangeText(disp);
+      }
+    }
 
-    const displayRange =
-      controlledStartDate !== undefined || controlledEndDate !== undefined
-        ? currentStart && currentEnd
-          ? `${currentStart} – ${currentEnd}`
-          : currentStart
-            ? `${currentStart} – `
-            : ''
-        : internalRangeInput;
+    // Calendar view state (visible month ISO yyyy-mm-01)
+    const initialMonthIso = useMemo(() => {
+      const candidate = startIso || singleText ? parseDateInput(singleText) : null;
+      if (candidate) return `${candidate.slice(0, 7)}-01`;
+      if (today) return `${today.slice(0, 7)}-01`;
+      return '2026-10-01';
+    }, [startIso, singleText, today]);
 
-    // Calendar view state (year/month)
-    const baseDate = parseDateStr(currentStart) ?? parseDateStr(currentValue) ?? new Date();
-    const [viewYear, setViewYear] = useState<number>(baseDate.getFullYear());
-    const [viewMonth, setViewMonth] = useState<number>(baseDate.getMonth());
-
-    const nextMonth = viewMonth === 11 ? 0 : viewMonth + 1;
-    const nextMonthYear = viewMonth === 11 ? viewYear + 1 : viewYear;
+    const [viewMonthIso, setViewMonthIso] = useState<string>(initialMonthIso);
 
     // 0 = next click sets start, 1 = next click sets end
     const [rangeStep, setRangeStep] = useState<0 | 1>(0);
 
     const hasError = Boolean(error);
 
-    const handleSingleInputChange = (
-      e: React.ChangeEvent<HTMLInputElement>,
-    ) => {
+    const handleSingleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const formatted = formatDateInput(e.target.value);
-      setCurrentValue(formatted);
+      setSingleText(formatted);
+      const iso = parseDateInput(formatted);
+      if (iso) {
+        onValueChange?.(iso);
+      }
     };
 
     const handleRangeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -219,86 +234,107 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       }
       const formatted = formatRangeInput(val);
       prevRangeInputRef.current = formatted.display;
-      setInternalRangeInput(formatted.display);
-      setInternalStart(formatted.startDate);
-      setInternalEnd(formatted.endDate);
-      onRangeChange?.({
-        startDate: formatted.startDate,
-        endDate: formatted.endDate,
-      });
+      setRangeText(formatted.display);
+
+      const sIso = parseDateInput(formatted.startDate);
+      const eIso = parseDateInput(formatted.endDate);
+      if (sIso) setStartIso(sIso);
+      if (eIso) setEndIso(eIso);
+
+      if (sIso && eIso) {
+        onValueChange?.({ start: sIso, end: eIso });
+        onRangeChange?.({
+          startDate: formatted.startDate,
+          endDate: formatted.endDate,
+        });
+      }
     };
 
-    const handleSelectDateFromCalendar = (dateStr: string) => {
+    const handleSelectDateFromCalendar = (isoDate: string) => {
       if (!range) {
-        setCurrentValue(dateStr);
+        setSingleText(formatDate(isoDate, 'input'));
+        onValueChange?.(isoDate);
         setOpen(false);
       } else {
-        if (rangeStep === 0 || (currentStart && currentEnd)) {
-          // First tap: set start date
-          setInternalStart(dateStr);
-          setInternalEnd('');
-          const disp = `${dateStr} – `;
-          setInternalRangeInput(disp);
+        if (rangeStep === 0 || (startIso && endIso)) {
+          // First click: sets start date
+          setStartIso(isoDate);
+          setEndIso('');
+          const disp = `${formatDate(isoDate, 'input')} – `;
+          setRangeText(disp);
           prevRangeInputRef.current = disp;
           setRangeStep(1);
-          onRangeChange?.({ startDate: dateStr, endDate: '' });
+          onRangeChange?.({ startDate: formatDate(isoDate, 'input'), endDate: '' });
         } else {
-          // Second tap: set end date
-          const startObj = parseDateStr(currentStart);
-          const endObj = parseDateStr(dateStr);
-          let finalStart = currentStart;
-          let finalEnd = dateStr;
-          if (startObj && endObj && endObj < startObj) {
-            finalStart = dateStr;
-            finalEnd = currentStart;
+          // Second click: sets end date
+          let finalStart = startIso;
+          let finalEnd = isoDate;
+          if (isoDate < startIso) {
+            finalStart = isoDate;
+            finalEnd = startIso;
           }
-          setInternalStart(finalStart);
-          setInternalEnd(finalEnd);
-          const disp = `${finalStart} – ${finalEnd}`;
-          setInternalRangeInput(disp);
+          setStartIso(finalStart);
+          setEndIso(finalEnd);
+          const disp = `${formatDate(finalStart, 'input')} – ${formatDate(finalEnd, 'input')}`;
+          setRangeText(disp);
           prevRangeInputRef.current = disp;
           setRangeStep(0);
-          onRangeChange?.({ startDate: finalStart, endDate: finalEnd });
+          onValueChange?.({ start: finalStart, end: finalEnd });
+          onRangeChange?.({
+            startDate: formatDate(finalStart, 'input'),
+            endDate: formatDate(finalEnd, 'input'),
+          });
           setOpen(false);
         }
       }
     };
 
     const handleToday = () => {
-      const todayStr = getTodayStr();
+      if (!today) return;
       if (!range) {
-        setCurrentValue(todayStr);
+        setSingleText(formatDate(today, 'input'));
+        onValueChange?.(today);
         setOpen(false);
       } else {
-        setInternalStart(todayStr);
-        setInternalEnd('');
-        const disp = `${todayStr} – `;
-        setInternalRangeInput(disp);
+        setStartIso(today);
+        setEndIso('');
+        const disp = `${formatDate(today, 'input')} – `;
+        setRangeText(disp);
         prevRangeInputRef.current = disp;
         setRangeStep(1);
-        onRangeChange?.({ startDate: todayStr, endDate: '' });
+        onRangeChange?.({ startDate: formatDate(today, 'input'), endDate: '' });
       }
     };
 
     const handleClear = () => {
       if (!range) {
-        setCurrentValue('');
+        setSingleText('');
+        onValueChange?.('');
         setOpen(false);
       } else {
-        setInternalStart('');
-        setInternalEnd('');
-        setInternalRangeInput('');
+        setStartIso('');
+        setEndIso('');
+        setRangeText('');
         prevRangeInputRef.current = '';
         setRangeStep(0);
+        onValueChange?.({ start: '', end: '' });
         onRangeChange?.({ startDate: '', endDate: '' });
         setOpen(false);
       }
     };
 
-    const handleMonthChange = (y: number, m: number) => {
-      setViewYear(y);
-      setViewMonth(m);
-    };
+    // Calculate next month ISO for range view
+    const nextMonthIso = useMemo(() => {
+      const match = viewMonthIso.match(/^(\d{4})-(\d{2})/);
+      if (!match) return '2026-11-01';
+      let y = parseInt(match[1], 10);
+      let m = parseInt(match[2], 10); // 1-based next month
+      if (m > 11) {
+        m = 0;
+        y += 1;
+      }
+      return `${y}-${String(m + 1).padStart(2, '0')}-01`;
+    }, [viewMonthIso]);
 
     // Calendar content: two months side by side on desktop in range mode, one month on phone or in single mode
     const calendarContent = range ? (
@@ -306,34 +342,36 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         <div className="flex flex-row divide-x divide-line-soft">
           <MonthCalendar
             mode="picker"
-            year={viewYear}
-            month={viewMonth}
-            onMonthChange={handleMonthChange}
-            startDate={currentStart}
-            endDate={currentEnd}
+            month={viewMonthIso}
+            onMonthChange={setViewMonthIso}
+            startDate={startIso}
+            endDate={endIso}
             minDate={minDate}
             maxDate={maxDate}
+            today={today}
             onSelectDate={handleSelectDateFromCalendar}
           />
           <div className="hidden lg:block">
             <MonthCalendar
               mode="picker"
-              year={nextMonthYear}
-              month={nextMonth}
-              onMonthChange={(y, m) => {
-                let prevM = m - 1;
-                let prevY = y;
-                if (prevM < 0) {
-                  prevM = 11;
-                  prevY -= 1;
+              month={nextMonthIso}
+              onMonthChange={(iso: string) => {
+                const match = iso.match(/^(\d{4})-(\d{2})/);
+                if (match) {
+                  let y = parseInt(match[1], 10);
+                  let m = parseInt(match[2], 10) - 1; // 1-based to 0-based
+                  if (m < 1) {
+                    m = 12;
+                    y -= 1;
+                  }
+                  setViewMonthIso(`${y}-${String(m).padStart(2, '0')}-01`);
                 }
-                setViewYear(prevY);
-                setViewMonth(prevM);
               }}
-              startDate={currentStart}
-              endDate={currentEnd}
+              startDate={startIso}
+              endDate={endIso}
               minDate={minDate}
               maxDate={maxDate}
+              today={today}
               onSelectDate={handleSelectDateFromCalendar}
             />
           </div>
@@ -361,9 +399,12 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     ) : (
       <MonthCalendar
         mode="picker"
-        selectedDate={currentValue}
+        month={viewMonthIso}
+        onMonthChange={setViewMonthIso}
+        selectedDate={isSingleString ? controlledValue : parseDateInput(singleText) ?? undefined}
         minDate={minDate}
         maxDate={maxDate}
+        today={today}
         onSelectDate={handleSelectDateFromCalendar}
         showFooter
         onToday={handleToday}
@@ -417,8 +458,8 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
             type="text"
             inputMode="numeric"
             disabled={disabled}
-            placeholder={range ? 'dd/mm/yyyy – dd/mm/yyyy' : placeholder}
-            value={range ? displayRange : currentValue}
+            placeholder={effectivePlaceholder}
+            value={range ? rangeText : singleText}
             onChange={range ? handleRangeInputChange : handleSingleInputChange}
             aria-invalid={hasError ? 'true' : undefined}
             aria-describedby={hasError || helper ? helperId : undefined}
