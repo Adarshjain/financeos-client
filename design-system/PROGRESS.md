@@ -236,6 +236,12 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-16 · Phase 3a · Antigravity · Real user in /ds app layout:
+  - In `src/app/(ds)/ds/(app)/layout.tsx`, passed `user={{ name: user.displayName ?? undefined, email: user.email }}` to both `ShellRail` and `ShellTabBar`.
+  - Removed email string splitting (`user.email.split('@')[0]`), allowing the shell components to cleanly fall back to `user.email` when `displayName` is null or undefined.
+  - Checks: `npm run typecheck`, `node design-system/tools/check-ui.mjs --base c8b557b`, `npx vitest run src/features/shell/__tests__/navigation.test.tsx`. All clean.
+  - Commit `6c14beb`: `ui(ds): pass real user to ShellRail and ShellTabBar without deriving name from email`.
+
 - 2026-10-16 · Phase 3a · Antigravity · Review remediation (Fixes 1–4: Dialog background, TabBar links stay links, More sheet purely Dinero, E2E modal closing):
   - Fix 1 (Dialog background):
     - Added `background?: 'surface' | 'canvas'` (default `surface`) to `DialogContent`, `DialogShell`, and `ConfirmDialog` in `src/components/ds/Dialog/Dialog.tsx`.
