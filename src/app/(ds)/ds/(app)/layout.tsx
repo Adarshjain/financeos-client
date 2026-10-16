@@ -1,11 +1,7 @@
 import React from 'react';
 
-import { Rail, TabBar, TopBar } from '@/components/ds';
-import {
-  shellFooterItems,
-  shellRailGroups,
-  shellTabBarItems,
-} from '@/features/shell/navigation';
+import { TopBar } from '@/components/ds';
+import { ShellRail, ShellTabBar } from '@/features/shell/ShellNav';
 import { requireAuth } from '@/lib/auth';
 
 export default async function DsAppLayout({
@@ -16,13 +12,10 @@ export default async function DsAppLayout({
   const user = await requireAuth();
 
   return (
-    <div className="flex min-h-dvh bg-canvas">
+    <div className="flex min-h-dvh">
       {/* Desktop Rail (hidden below lg) */}
       <div className="hidden lg:flex shrink-0 h-dvh sticky top-0">
-        <Rail
-          groups={shellRailGroups}
-          footer={shellFooterItems}
-          brandHref="/ds"
+        <ShellRail
           user={{
             name: user.email.split('@')[0],
             email: user.email,
@@ -39,7 +32,7 @@ export default async function DsAppLayout({
       </div>
 
       {/* Phone floating TabBar (hidden from lg) */}
-      <TabBar items={shellTabBarItems} current="home" />
+      <ShellTabBar />
     </div>
   );
 }
