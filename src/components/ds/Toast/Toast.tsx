@@ -3,7 +3,7 @@
 import React, { forwardRef } from 'react';
 import { toast as sonnerToast, Toaster as SonnerToaster, type ToasterProps as SonnerToasterProps } from 'sonner';
 
-import { BannerTone, bannerToneStyles } from '../Banner/Banner';
+import { bannerToneStyles, type BannerTone } from '../Banner/toneStyles';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 
