@@ -8,16 +8,20 @@ The one overlay for forms, details, pickers and confirmations. It replaces Sheet
 - **Side panel** (desktop detail): slides in from the right, full height, used where the boards open a row's detail beside the list. On phone it is the sheet.
 
 ## Anatomy
-Title and optional subtitle, a body that is the only scroller, and a footer from props: `primary` and optional `secondary` (at most two). An optional `tertiary` destructive action ("Delete rule") sits at the far left of the footer. **The footer is the same on every screen size**: tertiary left, then secondary and primary on the right. On phone the buttons are `control-xl` tall and secondary and primary share the remaining width equally; nothing moves into the body. Props are exactly `primary`, `secondary` and `tertiary` (no aliases).
+Title and optional description, a body that is the only scroller, and a footer from props: `primary` and optional `secondary` (at most two). An optional `tertiary` destructive action ("Delete rule") sits at the far left of the footer. **The footer is the same on every screen size**: tertiary left, then secondary and primary on the right. On phone the buttons are `control-xl` tall and secondary and primary share the remaining width equally; nothing moves into the body. Props are exactly `primary`, `secondary` and `tertiary` (no aliases).
 
 ## Background
 `background`: `surface` (default) or `canvas`. Use `canvas` when the body is made of tiles or cards that carry their own `surface` and border, so they stand out from the sheet. The More sheet (`P-more`) is the one use today. Pages never recolour a Dialog with `className`.
 
 ## ConfirmDialog
-The preset for destructive or hard-to-undo actions (delete a transaction, statement, account, dashboard, rule; discard edits). Title names the object ("Delete Swiggy Bangalore · ₹1,249?"), one or two sentences say what goes and what stays (with the server's preview and a loading line while it checks), then Cancel and the action in filled danger repeating the verb ("Delete statement"); the action's label is a required prop, never a default. The action is disabled while it runs. Offer the gentler option when there is one ("Close instead"). Discard confirms read "Keep editing" / "Discard".
+The preset for destructive or hard-to-undo actions (delete a transaction, statement, account, dashboard, rule; discard edits). Title names the object ("Delete Swiggy Bangalore · ₹1,249?"), description and children explain impact with preview loading state, then Cancel and the confirm action repeating the verb; the action's label is a required prop. `tone` defaults to `'danger'` or accepts `'default'` for non-destructive actions. Offer the gentler option via `alternativeLabel` ("Close instead").
+
+## Props
+- `DialogContent` / `DialogShell`: `size` (`sm` | `md` | `lg` | `xl`), `variant` (`modal` | `side-panel`), `background` (`surface` | `canvas`), `title`, `description`, `showClose`, `srTitle`, `onClose`, `primary`, `secondary`, `tertiary`, `dismissible`.
+- `ConfirmDialog`: `title`, `description`, `children`, `confirmLabel`, `cancelLabel`, `alternativeLabel`, `onConfirm`, `onCancel`, `onAlternative`, `tone` (`danger` | `default`), `loading`, `previewLoading`, `loadingText`, `trigger`, `open`, `defaultOpen`, `onOpenChange`.
 
 ## Built from
 Radix Dialog, Button, Icon, the shared `useSheetDrag` hook.
 
 ## Variants
-- Desktop sizes sm, md, lg, xl; phone sheet; side panel; with tertiary; canvas background; ConfirmDialog (with preview, loading, gentler option).
+- Desktop sizes sm, md, lg, xl; phone sheet; side panel; with tertiary; canvas background; non-dismissible (`dismissible={false}`); ConfirmDialog (tone danger/default, with preview, loading, alternative option).

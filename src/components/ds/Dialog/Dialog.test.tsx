@@ -137,10 +137,18 @@ describe('DialogShell', () => {
         <DialogBody>Form content</DialogBody>
       </DialogShell>,
     );
-    // Tertiary action is rendered inside footer alongside secondary and primary
     expect(screen.getByRole('button', { name: 'Delete rule' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
+  });
+
+  it('hides drag handle when dismissible={false}', () => {
+    const { container } = render(
+      <DialogShell title="Non dismissible" dismissible={false}>
+        <DialogBody>Body</DialogBody>
+      </DialogShell>,
+    );
+    expect(container.querySelector('.bg-line-heavy')).toBeNull();
   });
 });
 
@@ -171,7 +179,7 @@ describe('ConfirmDialog', () => {
     render(
       <ConfirmDialogShell
         title="Delete statement"
-        isCheckingImpact
+        previewLoading
         checkingMessage="Checking affected rows…"
         onConfirm={handleConfirm}
         confirmLabel="Delete statement"
@@ -211,6 +219,31 @@ describe('ConfirmDialog', () => {
     expect(handleConfirm).toHaveBeenCalledTimes(1);
   });
 
+  it('supports tone="default" mapping to primary button', () => {
+    render(
+      <ConfirmDialogShell
+        title="Save draft"
+        confirmLabel="Save"
+        tone="default"
+      />,
+    );
+    const confirmBtn = screen.getByRole('button', { name: 'Save' });
+    expect(confirmBtn).toHaveClass('bg-brand');
+  });
+
+  it('forwards ref on ConfirmDialog', () => {
+    const ref = React.createRef<HTMLDivElement>();
+    render(
+      <ConfirmDialog
+        ref={ref}
+        defaultOpen
+        title="Ref test"
+        confirmLabel="Confirm"
+      />,
+    );
+    expect(ref.current).toBeInstanceOf(HTMLDivElement);
+  });
+
   it('renders accessible modal when trigger is clicked', () => {
     render(
       <ConfirmDialog
@@ -243,7 +276,6 @@ describe('Dialog (Radix overlay)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open Modal' }));
 
-    // The panel is the dialog layer's child (the layer keeps the exit animation running).
     const content = screen.getByText('Dialog is open').closest('[role="dialog"] > div');
     expect(content).toBeInTheDocument();
     expect(content).toHaveClass('max-h-dvh');
@@ -259,7 +291,6 @@ describe('Dialog (Radix overlay)', () => {
       </Dialog>,
     );
 
-    // The panel is the dialog layer's child (the layer keeps the exit animation running).
     const content = screen.getByText('Canvas body').closest('[role="dialog"] > div');
     expect(content).toBeInTheDocument();
     expect(content).toHaveClass('bg-canvas');

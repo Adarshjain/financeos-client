@@ -39,7 +39,6 @@ export const DialogHandle = forwardRef<HTMLDivElement, DialogHandleProps>(
 );
 
 DialogHandle.displayName = 'DialogHandle';
-export const SheetHandle = DialogHandle;
 
 export interface DialogBodyProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -83,17 +82,17 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
         {...props}
       >
         {tertiary && (
-          <div className="mr-auto shrink-0 flex items-center [&>button]:h-control-xl lg:[&>button]:h-control-md [&>button]:text-body [&>button]:rounded-ds-lg lg:[&>button]:rounded-ds-md [&>button]:px-space-20 lg:[&>button]:px-space-12">
+          <div className="mr-auto shrink-0 flex items-center">
             {tertiary}
           </div>
         )}
         {secondary && (
-          <div className="flex-1 lg:flex-initial lg:shrink-0 flex items-center [&>button]:w-full lg:[&>button]:w-auto [&>button]:h-control-xl lg:[&>button]:h-control-md [&>button]:text-body [&>button]:rounded-ds-lg lg:[&>button]:rounded-ds-md [&>button]:px-space-20 lg:[&>button]:px-space-12">
+          <div className="flex-1 lg:flex-initial lg:shrink-0 flex items-center">
             {secondary}
           </div>
         )}
         {primary && (
-          <div className="flex-1 lg:flex-initial lg:shrink-0 flex items-center [&>button]:w-full lg:[&>button]:w-auto [&>button]:h-control-xl lg:[&>button]:h-control-md [&>button]:text-body [&>button]:rounded-ds-lg lg:[&>button]:rounded-ds-md [&>button]:px-space-20 lg:[&>button]:px-space-12">
+          <div className="flex-1 lg:flex-initial lg:shrink-0 flex items-center">
             {primary}
           </div>
         )}
@@ -105,15 +104,11 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
 
 DialogFooter.displayName = 'DialogFooter';
 
-export interface DialogShellProps extends Omit<
-  React.HTMLAttributes<HTMLDivElement>,
-  'title'
-> {
+export interface DialogPanelProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   size?: DialogSize;
   variant?: DialogVariant;
   background?: DialogBackground;
   title?: React.ReactNode;
-  subtitle?: React.ReactNode;
   description?: React.ReactNode;
   onClose?: () => void;
   showClose?: boolean;
@@ -121,25 +116,20 @@ export interface DialogShellProps extends Omit<
   primary?: React.ReactNode;
   secondary?: React.ReactNode;
   tertiary?: React.ReactNode;
+  dismissible?: boolean;
+  dragProps?: Record<string, unknown>;
+  isRadix?: boolean;
 }
 
-/**
- * Visual shell for modals: on desktop it renders centred, radius-xl, shadow-level-3,
- * with × close button. On phone it renders as a bottom sheet with drag handle,
- * no × button, and swipe-down-to-close (RULES §5.6).
- * Side panel slides in from the right on desktop and renders as a sheet on phone.
- */
-export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
+export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
   (
     {
       children,
       className,
-      style,
       size = 'md',
       variant = 'modal',
       background = 'surface',
       title,
-      subtitle,
       description,
       onClose,
       showClose = true,
@@ -147,25 +137,19 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
       primary,
       secondary,
       tertiary,
+      dismissible = true,
+      dragProps,
+      isRadix = false,
       ...props
     },
     ref
   ) => {
-    const desc = subtitle ?? description;
-
-    const { dragOffset, isDragging, dragProps } = useSheetDrag({
-      onClose,
-    });
-
-    const hasFooterFromProps = Boolean(primary || secondary || tertiary);
+    const hasFooter = Boolean(primary || secondary || tertiary);
+    const hasVisibleHeader = Boolean(title || description || showClose);
 
     return (
       <div
         ref={ref}
-        style={{
-          transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
-          ...style,
-        }}
         className={cn(
           background === 'canvas' ? 'bg-canvas' : 'bg-surface',
           'flex flex-col overflow-hidden text-body text-ink border-line-soft max-h-dvh w-full',
@@ -174,35 +158,64 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
             ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-level-3 lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full'
             : 'lg:rounded-ds-xl lg:shadow-level-3 lg:border',
           dialogSizeClasses[size],
-          isDragging
-            ? 'transition-none'
-            : 'transition-transform duration-slow ease-out',
           className
         )}
         {...props}
       >
-        {srTitle && !title && <span className="sr-only">{srTitle}</span>}
+        {srTitle && !title && (
+          isRadix ? (
+            <DialogPrimitive.Title className="sr-only">
+              {srTitle}
+            </DialogPrimitive.Title>
+          ) : (
+            <span className="sr-only">{srTitle}</span>
+          )
+        )}
+        {srTitle && !description && isRadix && (
+          <DialogPrimitive.Description className="sr-only">
+            {srTitle}
+          </DialogPrimitive.Description>
+        )}
 
         <div
           data-testid="dialog-drag-area"
-          {...dragProps}
+          {...(dismissible ? dragProps : {})}
           className="select-none shrink-0"
         >
-          {/* On phone: drag handle */}
-          <div className="lg:hidden cursor-grab active:cursor-grabbing touch-none">
-            <DialogHandle />
-          </div>
+          {dismissible ? (
+            <div className="lg:hidden cursor-grab active:cursor-grabbing touch-none">
+              <DialogHandle />
+            </div>
+          ) : null}
 
-          {(title || desc || showClose) && (
+          {hasVisibleHeader && (
             <div className="px-space-16 lg:px-space-20 pt-space-12 lg:pt-space-16 pb-space-8 lg:pb-space-10 flex items-start gap-space-12 shrink-0">
               <div className="flex-1 min-w-0">
                 {title && (
-                  <div className="font-extrabold text-title text-ink leading-tight">
-                    {title}
-                  </div>
+                  isRadix ? (
+                    <DialogPrimitive.Title asChild>
+                      <div className="font-extrabold text-title text-ink leading-tight">
+                        {title}
+                      </div>
+                    </DialogPrimitive.Title>
+                  ) : (
+                    <div className="font-extrabold text-title text-ink leading-tight">
+                      {title}
+                    </div>
+                  )
                 )}
-                {desc && (
-                  <div className="text-label text-ink-3 mt-space-2">{desc}</div>
+                {description && (
+                  isRadix ? (
+                    <DialogPrimitive.Description asChild>
+                      <div className="text-label text-ink-3 mt-space-2">
+                        {description}
+                      </div>
+                    </DialogPrimitive.Description>
+                  ) : (
+                    <div className="text-label text-ink-3 mt-space-2">
+                      {description}
+                    </div>
+                  )
                 )}
               </div>
               {showClose && onClose && (
@@ -221,7 +234,7 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
 
         {children}
 
-        {hasFooterFromProps && (
+        {hasFooter && (
           <DialogFooter
             primary={primary}
             secondary={secondary}
@@ -229,6 +242,63 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
           />
         )}
       </div>
+    );
+  }
+);
+
+DialogPanel.displayName = 'DialogPanel';
+
+export interface DialogShellProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  'title'
+> {
+  size?: DialogSize;
+  variant?: DialogVariant;
+  background?: DialogBackground;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  onClose?: () => void;
+  showClose?: boolean;
+  srTitle?: string;
+  primary?: React.ReactNode;
+  secondary?: React.ReactNode;
+  tertiary?: React.ReactNode;
+  dismissible?: boolean;
+}
+
+export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
+  (
+    {
+      style,
+      className,
+      onClose,
+      dismissible = true,
+      ...props
+    },
+    ref
+  ) => {
+    const { dragOffset, isDragging, dragProps } = useSheetDrag({
+      onClose,
+    });
+
+    return (
+      <DialogPanel
+        ref={ref}
+        onClose={onClose}
+        dismissible={dismissible}
+        dragProps={dragProps}
+        style={{
+          transform: dismissible && dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
+          ...style,
+        }}
+        className={cn(
+          isDragging
+            ? 'transition-none'
+            : 'transition-transform duration-slow ease-out',
+          className
+        )}
+        {...props}
+      />
     );
   }
 );
@@ -250,7 +320,6 @@ export interface DialogContentProps extends Omit<
   variant?: DialogVariant;
   background?: DialogBackground;
   title?: React.ReactNode;
-  subtitle?: React.ReactNode;
   description?: React.ReactNode;
   showClose?: boolean;
   srTitle?: string;
@@ -258,6 +327,7 @@ export interface DialogContentProps extends Omit<
   primary?: React.ReactNode;
   secondary?: React.ReactNode;
   tertiary?: React.ReactNode;
+  dismissible?: boolean;
 }
 
 export const DialogContent = forwardRef<
@@ -273,7 +343,6 @@ export const DialogContent = forwardRef<
       variant = 'modal',
       background = 'surface',
       title,
-      subtitle,
       description,
       showClose = true,
       srTitle,
@@ -281,11 +350,13 @@ export const DialogContent = forwardRef<
       primary,
       secondary,
       tertiary,
+      dismissible = true,
+      onPointerDownOutside,
+      onEscapeKeyDown,
       ...props
     },
     ref
   ) => {
-    const desc = subtitle ?? description;
     const closeRef = useRef<HTMLButtonElement>(null);
 
     const { dragOffset, isDragging, dragProps, reset: resetDrag } = useSheetDrag({
@@ -306,18 +377,32 @@ export const DialogContent = forwardRef<
       [resetDrag],
     );
 
-    const hasFooterFromProps = Boolean(primary || secondary || tertiary);
+    const handlePointerDownOutside: DialogContentProps['onPointerDownOutside'] = (
+      e,
+    ) => {
+      if (!dismissible) {
+        e.preventDefault();
+        return;
+      }
+      onPointerDownOutside?.(e);
+    };
+
+    const handleEscapeKeyDown: DialogContentProps['onEscapeKeyDown'] = (e) => {
+      if (!dismissible) {
+        e.preventDefault();
+        return;
+      }
+      onEscapeKeyDown?.(e);
+    };
 
     return (
       <DialogPortal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-backdrop bg-backdrop animate-in fade-in-0 duration-slow lg:duration-base data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow lg:data-closed:duration-base" />
-        {/* Content is the positioning layer, not the panel: Radix keeps a closing
-            Content mounted until its own exit animation ends, so it runs a no-op
-            exit for the same duration while the panel inside animates out.
-            pointer-events none lets taps beside the panel reach the scrim. */}
         <DialogPrimitive.Content
           ref={ref}
           style={{ pointerEvents: 'none' }}
+          onPointerDownOutside={handlePointerDownOutside}
+          onEscapeKeyDown={handleEscapeKeyDown}
           className={cn(
             'group fixed inset-x-0 bottom-0 z-overlay flex flex-col focus:outline-none',
             'data-closed:animate-out data-closed:fill-mode-forwards data-closed:duration-slow lg:data-closed:duration-base',
@@ -331,7 +416,7 @@ export const DialogContent = forwardRef<
             ref={panelRef}
             style={{
               transform:
-                dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
+                dismissible && dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
               ...style,
             }}
             className={cn(
@@ -343,7 +428,6 @@ export const DialogContent = forwardRef<
                 : 'lg:rounded-ds-xl lg:shadow-level-3 lg:border lg:zoom-in-95 lg:group-data-closed:zoom-out-95',
               dialogSizeClasses[size],
               'animate-in fade-in-0 slide-in-from-bottom lg:slide-in-from-bottom-0',
-              // Closing reverses the opening: the sheet slides back down (from wherever a drag left it), the modal fades and shrinks.
               'group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:slide-out-to-bottom lg:group-data-closed:slide-out-to-bottom-0 group-data-closed:fill-mode-forwards group-data-closed:duration-slow lg:group-data-closed:duration-base',
               isDragging
                 ? 'transition-none'
@@ -357,80 +441,25 @@ export const DialogContent = forwardRef<
               aria-label="Close"
             />
 
-            <div
-              data-testid="dialog-drag-area"
-              {...dragProps}
-              className="select-none shrink-0"
+            <DialogPanel
+              size={size}
+              variant={variant}
+              background={background}
+              title={title}
+              description={description}
+              showClose={showClose}
+              srTitle={srTitle}
+              onClose={onClose ? onClose : () => closeRef.current?.click()}
+              primary={primary}
+              secondary={secondary}
+              tertiary={tertiary}
+              dismissible={dismissible}
+              dragProps={dragProps}
+              isRadix
+              className="border-0 rounded-none shadow-none bg-transparent"
             >
-              {/* On phone: drag handle */}
-              <div className="lg:hidden cursor-grab active:cursor-grabbing touch-none">
-                <DialogHandle />
-              </div>
-
-              {title || desc || showClose ? (
-                <div className="px-space-16 lg:px-space-20 pt-space-12 lg:pt-space-16 pb-space-8 lg:pb-space-10 flex items-start gap-space-12 shrink-0">
-                  <div className="flex-1 min-w-0">
-                    {title ? (
-                      <DialogPrimitive.Title className="font-extrabold text-title text-ink leading-tight">
-                        {title}
-                      </DialogPrimitive.Title>
-                    ) : srTitle ? (
-                      <DialogPrimitive.Title className="sr-only">
-                        {srTitle}
-                      </DialogPrimitive.Title>
-                    ) : (
-                      <DialogPrimitive.Title className="sr-only">
-                        Dialog
-                      </DialogPrimitive.Title>
-                    )}
-
-                    {desc ? (
-                      <DialogPrimitive.Description className="text-label text-ink-3 mt-space-2">
-                        {desc}
-                      </DialogPrimitive.Description>
-                    ) : (
-                      <DialogPrimitive.Description className="sr-only">
-                        {typeof srTitle === 'string'
-                          ? srTitle
-                          : 'Dialog description'}
-                      </DialogPrimitive.Description>
-                    )}
-                  </div>
-                  {showClose && (
-                    <DialogPrimitive.Close asChild>
-                      <button
-                        type="button"
-                        aria-label="Close"
-                        className="hidden lg:inline-flex text-ink-4 hover:text-ink hover:bg-hover p-space-6 rounded-ds-md ml-auto shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
-                      >
-                        <Icon name="close" size="md" />
-                      </button>
-                    </DialogPrimitive.Close>
-                  )}
-                </div>
-              ) : (
-                <>
-                  <DialogPrimitive.Title className="sr-only">
-                    {srTitle || 'Dialog'}
-                  </DialogPrimitive.Title>
-                  <DialogPrimitive.Description className="sr-only">
-                    {typeof srTitle === 'string'
-                      ? srTitle
-                      : 'Dialog description'}
-                  </DialogPrimitive.Description>
-                </>
-              )}
-            </div>
-
-            {children}
-
-            {hasFooterFromProps && (
-              <DialogFooter
-                primary={primary}
-                secondary={secondary}
-                tertiary={tertiary}
-              />
-            )}
+              {children}
+            </DialogPanel>
           </div>
         </DialogPrimitive.Content>
       </DialogPortal>
@@ -440,7 +469,9 @@ export const DialogContent = forwardRef<
 
 DialogContent.displayName = 'DialogContent';
 
-/* ConfirmDialog preset for destructive confirmations */
+/* ConfirmDialog preset */
+
+export type ConfirmDialogTone = 'danger' | 'default';
 
 export interface ConfirmDialogShellProps extends Omit<
   React.HTMLAttributes<HTMLDivElement>,
@@ -458,8 +489,11 @@ export interface ConfirmDialogShellProps extends Omit<
   loading?: boolean;
   confirmLoading?: boolean;
   confirmDisabled?: boolean;
+  previewLoading?: boolean;
   isCheckingImpact?: boolean;
   checkingMessage?: React.ReactNode;
+  loadingText?: React.ReactNode;
+  tone?: ConfirmDialogTone;
   size?: DialogSize;
   background?: DialogBackground;
   showClose?: boolean;
@@ -484,8 +518,11 @@ export const ConfirmDialogShell = forwardRef<
       loading = false,
       confirmLoading = false,
       confirmDisabled = false,
+      previewLoading = false,
       isCheckingImpact = false,
-      checkingMessage = 'Checking what will be affected…',
+      checkingMessage,
+      loadingText = 'Loading…',
+      tone = 'danger',
       size = 'sm',
       background = 'surface',
       showClose = true,
@@ -497,9 +534,9 @@ export const ConfirmDialogShell = forwardRef<
     ref
   ) => {
     const isBusy = Boolean(loading || confirmLoading);
-    const isConfirmDisabled = Boolean(
-      confirmDisabled || isCheckingImpact || isBusy
-    );
+    const isChecking = Boolean(previewLoading || isCheckingImpact);
+    const isConfirmDisabled = Boolean(confirmDisabled || isChecking || isBusy);
+    const effectiveLoadingMessage = checkingMessage ?? loadingText;
 
     const handleConfirm = () => {
       if (isConfirmDisabled) return;
@@ -540,7 +577,7 @@ export const ConfirmDialogShell = forwardRef<
         primary={
           <Button
             type="button"
-            variant="danger-filled"
+            variant={tone === 'danger' ? 'danger' : 'primary'}
             loading={isBusy}
             disabled={isConfirmDisabled}
             onClick={handleConfirm}
@@ -552,14 +589,14 @@ export const ConfirmDialogShell = forwardRef<
         {...props}
       >
         <DialogBody className="space-y-space-12">
-          {isCheckingImpact ? (
+          {isChecking ? (
             <div className="flex items-center gap-space-8 text-label text-ink-3 py-space-4">
               <Icon
                 name="spinner"
                 size="sm"
                 className="animate-spin shrink-0"
               />
-              <span>{checkingMessage}</span>
+              <span>{effectiveLoadingMessage}</span>
             </div>
           ) : impact && impact.length > 0 ? (
             <ul className="list-disc pl-space-16 space-y-space-6 text-label text-ink-2">
@@ -585,129 +622,138 @@ export interface ConfirmDialogProps extends ConfirmDialogShellProps {
   trigger?: React.ReactNode;
 }
 
-export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
-  open,
-  defaultOpen,
-  onOpenChange,
-  trigger,
-  title,
-  description,
-  impact,
-  confirmLabel,
-  cancelLabel = 'Cancel',
-  alternativeLabel,
-  onConfirm,
-  onCancel,
-  onAlternative,
-  loading = false,
-  confirmLoading = false,
-  confirmDisabled = false,
-  isCheckingImpact = false,
-  checkingMessage = 'Checking what will be affected…',
-  size = 'sm',
-  background = 'surface',
-  showClose = true,
-  children,
-  className,
-  ...props
-}) => {
-  const [isOpen, setIsOpen] = useControllableState<boolean>({
-    value: open,
-    defaultValue: defaultOpen ?? false,
-    onChange: onOpenChange,
-  });
+export const ConfirmDialog = forwardRef<HTMLDivElement, ConfirmDialogProps>(
+  (
+    {
+      open,
+      defaultOpen,
+      onOpenChange,
+      trigger,
+      title,
+      description,
+      impact,
+      confirmLabel,
+      cancelLabel = 'Cancel',
+      alternativeLabel,
+      onConfirm,
+      onCancel,
+      onAlternative,
+      loading = false,
+      confirmLoading = false,
+      confirmDisabled = false,
+      previewLoading = false,
+      isCheckingImpact = false,
+      checkingMessage,
+      loadingText = 'Loading…',
+      tone = 'danger',
+      size = 'sm',
+      background = 'surface',
+      showClose = true,
+      children,
+      className,
+      ...props
+    },
+    ref
+  ) => {
+    const [isOpen, setIsOpen] = useControllableState<boolean>({
+      value: open,
+      defaultValue: defaultOpen ?? false,
+      onChange: onOpenChange,
+    });
 
-  const isBusy = Boolean(loading || confirmLoading);
-  const isConfirmDisabled = Boolean(
-    confirmDisabled || isCheckingImpact || isBusy
-  );
+    const isBusy = Boolean(loading || confirmLoading);
+    const isChecking = Boolean(previewLoading || isCheckingImpact);
+    const isConfirmDisabled = Boolean(confirmDisabled || isChecking || isBusy);
+    const effectiveLoadingMessage = checkingMessage ?? loadingText;
 
-  const handleCancel = () => {
-    onCancel?.();
-    setIsOpen(false);
-  };
+    const handleCancel = () => {
+      onCancel?.();
+      setIsOpen(false);
+    };
 
-  const handleAlternative = () => {
-    onAlternative?.();
-    setIsOpen(false);
-  };
+    const handleAlternative = () => {
+      onAlternative?.();
+      setIsOpen(false);
+    };
 
-  const handleConfirm = () => {
-    if (isConfirmDisabled) return;
-    onConfirm?.();
-  };
+    const handleConfirm = () => {
+      if (isConfirmDisabled) return;
+      onConfirm?.();
+    };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      {trigger ? (
-        <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>
-      ) : null}
-      <DialogContent
-        size={size}
-        background={background}
-        title={title}
-        description={description}
-        showClose={showClose}
-        onClose={handleCancel}
-        className={className}
-        tertiary={
-          alternativeLabel ? (
+    return (
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        {trigger ? (
+          <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>
+        ) : null}
+        <DialogContent
+          ref={ref}
+          size={size}
+          background={background}
+          title={title}
+          description={description}
+          showClose={showClose}
+          onClose={handleCancel}
+          className={className}
+          tertiary={
+            alternativeLabel ? (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={isBusy}
+                onClick={handleAlternative}
+              >
+                {alternativeLabel}
+              </Button>
+            ) : undefined
+          }
+          secondary={
             <Button
               type="button"
               variant="secondary"
               disabled={isBusy}
-              onClick={handleAlternative}
+              onClick={handleCancel}
             >
-              {alternativeLabel}
+              {cancelLabel}
             </Button>
-          ) : undefined
-        }
-        secondary={
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={isBusy}
-            onClick={handleCancel}
-          >
-            {cancelLabel}
-          </Button>
-        }
-        primary={
-          <Button
-            type="button"
-            variant="danger-filled"
-            loading={isBusy}
-            disabled={isConfirmDisabled}
-            onClick={handleConfirm}
-          >
-            {confirmLabel}
-          </Button>
-        }
-        {...props}
-      >
-        <DialogBody className="space-y-space-12">
-          {isCheckingImpact ? (
-            <div className="flex items-center gap-space-8 text-label text-ink-3 py-space-4">
-              <Icon
-                name="spinner"
-                size="sm"
-                className="animate-spin shrink-0"
-              />
-              <span>{checkingMessage}</span>
-            </div>
-          ) : impact && impact.length > 0 ? (
-            <ul className="list-disc pl-space-16 space-y-space-6 text-label text-ink-2">
-              {impact.map((item, idx) => (
-                <li key={idx}>{item}</li>
-              ))}
-            </ul>
-          ) : null}
+          }
+          primary={
+            <Button
+              type="button"
+              variant={tone === 'danger' ? 'danger' : 'primary'}
+              loading={isBusy}
+              disabled={isConfirmDisabled}
+              onClick={handleConfirm}
+            >
+              {confirmLabel}
+            </Button>
+          }
+          {...props}
+        >
+          <DialogBody className="space-y-space-12">
+            {isChecking ? (
+              <div className="flex items-center gap-space-8 text-label text-ink-3 py-space-4">
+                <Icon
+                  name="spinner"
+                  size="sm"
+                  className="animate-spin shrink-0"
+                />
+                <span>{effectiveLoadingMessage}</span>
+              </div>
+            ) : impact && impact.length > 0 ? (
+              <ul className="list-disc pl-space-16 space-y-space-6 text-label text-ink-2">
+                {impact.map((item, idx) => (
+                  <li key={idx}>{item}</li>
+                ))}
+              </ul>
+            ) : null}
 
-          {children}
-        </DialogBody>
-      </DialogContent>
-    </Dialog>
-  );
-};
+            {children}
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+);
 
 ConfirmDialog.displayName = 'ConfirmDialog';
