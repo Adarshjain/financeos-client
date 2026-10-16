@@ -38,7 +38,7 @@ describe('Tabs', () => {
       />,
     );
     const rulesTab = screen.getByRole('tab', { name: 'Rules' });
-    fireEvent.click(rulesTab);
+    fireEvent.mouseDown(rulesTab, { button: 0 });
 
     expect(rulesTab).toHaveAttribute('aria-selected', 'true');
     expect(handleValueChange).toHaveBeenCalledWith('rules');
@@ -63,7 +63,7 @@ describe('Tabs', () => {
     const twoTab = screen.getByRole('tab', { name: 'Two' });
     expect(twoTab).toHaveAttribute('aria-selected', 'false');
 
-    fireEvent.click(twoTab);
+    fireEvent.mouseDown(twoTab, { button: 0 });
     expect(twoTab).toHaveAttribute('aria-selected', 'true');
   });
 
@@ -82,7 +82,7 @@ describe('Tabs', () => {
     expect(countSpan).not.toHaveClass('opacity-75');
   });
 
-  it('navigates with arrow keys and Home/End', () => {
+  it('navigates with arrow keys and Home/End', async () => {
     render(
       <Tabs
         defaultValue="first"
@@ -93,27 +93,36 @@ describe('Tabs', () => {
         ]}
       />,
     );
-    const tablist = screen.getByRole('tablist');
     const firstTab = screen.getByRole('tab', { name: 'First' });
     firstTab.focus();
 
-    fireEvent.keyDown(tablist, { key: 'ArrowRight' });
-    expect(screen.getByRole('tab', { name: 'Second' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    fireEvent.keyDown(firstTab, { key: 'ArrowRight' });
+    await vi.waitFor(() => {
+      expect(screen.getByRole('tab', { name: 'Second' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    });
 
-    fireEvent.keyDown(tablist, { key: 'End' });
-    expect(screen.getByRole('tab', { name: 'Third' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    const secondTab = screen.getByRole('tab', { name: 'Second' });
+    secondTab.focus();
+    fireEvent.keyDown(secondTab, { key: 'End' });
+    await vi.waitFor(() => {
+      expect(screen.getByRole('tab', { name: 'Third' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    });
 
-    fireEvent.keyDown(tablist, { key: 'Home' });
-    expect(screen.getByRole('tab', { name: 'First' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    const thirdTab = screen.getByRole('tab', { name: 'Third' });
+    thirdTab.focus();
+    fireEvent.keyDown(thirdTab, { key: 'Home' });
+    await vi.waitFor(() => {
+      expect(screen.getByRole('tab', { name: 'First' })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+    });
   });
 
   it('renders TabsContent matching the active tab', () => {
@@ -130,7 +139,8 @@ describe('Tabs', () => {
     expect(screen.getByText('Content 1')).toBeInTheDocument();
     expect(screen.queryByText('Content 2')).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Tab 2' }));
+    const tab2 = screen.getByRole('tab', { name: 'Tab 2' });
+    fireEvent.mouseDown(tab2, { button: 0 });
     expect(screen.queryByText('Content 1')).not.toBeInTheDocument();
     expect(screen.getByText('Content 2')).toBeInTheDocument();
   });
