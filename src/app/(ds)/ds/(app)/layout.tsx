@@ -17,7 +17,7 @@ export default async function DsAppLayout({
       <div className="hidden lg:flex shrink-0 h-dvh sticky top-0">
         <ShellRail
           user={{
-            name: user.email.split('@')[0],
+            name: user.displayName ?? undefined,
             email: user.email,
           }}
         />
@@ -34,7 +34,7 @@ export default async function DsAppLayout({
       {/* Phone floating TabBar (hidden from lg) */}
       <ShellTabBar
         user={{
-          name: user.email.split('@')[0],
+          name: user.displayName ?? undefined,
           email: user.email,
         }}
       />
