@@ -3,7 +3,7 @@
 import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
-import { cn } from '../cn';
+import { Card } from '../Card/Card';
 import { Icon } from '../Icon/Icon';
 import {
   Menu,
@@ -17,6 +17,11 @@ export interface WidgetMenuItem {
   label: React.ReactNode;
   onSelect?: () => void;
   destructive?: boolean;
+}
+
+export interface WidgetAction {
+  label: string;
+  onSelect: () => void;
 }
 
 export interface WidgetProps
@@ -33,20 +38,16 @@ export interface WidgetProps
   loading?: boolean;
   /** Custom loading skeleton node */
   loadingSkeleton?: React.ReactNode;
-  /** Failed error message or boolean */
-  error?: React.ReactNode | boolean;
+  /** Failed error message node */
+  error?: React.ReactNode;
+  /** Optional error title, e.g. "Couldn't load this widget" */
   errorTitle?: React.ReactNode;
-  errorMessage?: React.ReactNode;
-  retryLabel?: string;
-  /** Retry callback if failed */
-  onRetry?: () => void;
-  /** Unavailable status message or boolean when report was deleted */
-  unavailable?: React.ReactNode | boolean;
+  /** Unavailable status message node, shown when the content can't be shown */
+  unavailable?: React.ReactNode;
+  /** Optional unavailable title, e.g. "This report is no longer available" */
   unavailableTitle?: React.ReactNode;
-  unavailableMessage?: React.ReactNode;
-  removeLabel?: string;
-  /** Callback to remove widget when unavailable */
-  onRemove?: () => void;
+  /** Action for error or unavailable states (e.g. Retry or Remove) */
+  action?: WidgetAction;
 }
 
 export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
@@ -60,14 +61,9 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
       loadingSkeleton,
       error,
       errorTitle,
-      errorMessage,
-      retryLabel = 'Retry',
-      onRetry,
       unavailable,
       unavailableTitle,
-      unavailableMessage,
-      removeLabel = 'Remove',
-      onRemove,
+      action,
       className,
       children,
       ...props
@@ -121,39 +117,29 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
       }
 
       if (error) {
-        const resolvedTitle =
-          errorTitle ??
-          (typeof error === 'string'
-            ? null
-            : React.isValidElement(error)
-              ? null
-              : undefined);
-        const resolvedMsg =
-          errorMessage ??
-          (typeof error === 'string' || React.isValidElement(error)
-            ? error
-            : null);
-
         return (
-          <div role="alert" className="flex gap-space-10 items-start text-label text-danger">
+          <div
+            role="alert"
+            className="flex gap-space-10 items-start text-label text-danger"
+          >
             <div>
-              {resolvedTitle && <b className="font-bold">{resolvedTitle}</b>}
+              {errorTitle ? <b className="font-bold">{errorTitle}</b> : null}
               <div className="text-caption font-medium text-ink-3 mt-space-2">
-                {resolvedMsg}
-                {onRetry && (
+                {error}
+                {action ? (
                   <>
-                    {resolvedMsg ? ' ' : null}
+                    {' '}
                     <Button
                       type="button"
                       variant="link"
                       size="sm"
-                      onClick={onRetry}
+                      onClick={action.onSelect}
                       className="text-ink font-bold"
                     >
-                      {retryLabel}
+                      {action.label}
                     </Button>
                   </>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
@@ -161,41 +147,28 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
       }
 
       if (unavailable) {
-        const resolvedTitle =
-          unavailableTitle ??
-          (typeof unavailable === 'string'
-            ? null
-            : React.isValidElement(unavailable)
-              ? null
-              : undefined);
-        const resolvedMsg =
-          unavailableMessage ??
-          (typeof unavailable === 'string' || React.isValidElement(unavailable)
-            ? unavailable
-            : null);
-
         return (
           <div className="flex gap-space-10 items-start text-label text-ink-3">
             <div>
-              {resolvedTitle && (
-                <b className="font-bold text-ink-2">{resolvedTitle}</b>
-              )}
+              {unavailableTitle ? (
+                <b className="font-bold text-ink-2">{unavailableTitle}</b>
+              ) : null}
               <div className="text-caption font-medium text-ink-3 mt-space-2">
-                {resolvedMsg}
-                {onRemove && (
+                {unavailable}
+                {action ? (
                   <>
-                    {resolvedMsg ? ' ' : null}
+                    {' '}
                     <Button
                       type="button"
                       variant="link"
                       size="sm"
-                      onClick={onRemove}
+                      onClick={action.onSelect}
                       className="text-ink font-bold"
                     >
-                      {removeLabel}
+                      {action.label}
                     </Button>
                   </>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
@@ -206,31 +179,16 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
     };
 
     return (
-      <div
+      <Card
         ref={ref}
-        className={cn(
-          'bg-surface border border-line rounded-ds-lg min-w-0 flex flex-col select-none',
-          className,
-        )}
+        title={title}
+        subtitle={subtitle}
+        action={renderMenu()}
+        className={className}
         {...props}
       >
-        <div className="flex items-center justify-between gap-space-8 px-space-14 pt-space-12 pb-space-6">
-          <div>
-            {title && (
-              <div className="text-body-strong font-extrabold text-ink">
-                {title}
-              </div>
-            )}
-            {subtitle && (
-              <div className="text-caption font-medium text-ink-3">
-                {subtitle}
-              </div>
-            )}
-          </div>
-          {renderMenu()}
-        </div>
         <div className="px-space-14 pb-space-12 pt-0 flex-1">{renderBody()}</div>
-      </div>
+      </Card>
     );
   },
 );

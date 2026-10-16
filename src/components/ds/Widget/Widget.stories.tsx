@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { fn } from 'storybook/test';
 
-import { Widget } from './Widget';
+import { Text, Widget } from '@/components/ds';
 
 const meta: Meta<typeof Widget> = {
   title: 'DS/Data display/Widget',
@@ -9,80 +10,47 @@ const meta: Meta<typeof Widget> = {
   parameters: {
     layout: 'padded',
   },
+  decorators: [
+    (Story) => (
+      <div className="max-w-md">
+        <Story />
+      </div>
+    ),
+  ],
   argTypes: {
     title: { control: 'text' },
     subtitle: { control: 'text' },
     loading: { control: 'boolean' },
-    error: { control: 'boolean' },
-    unavailable: { control: 'boolean' },
+    error: { control: 'text' },
+    errorTitle: { control: 'text' },
+    unavailable: { control: 'text' },
+    unavailableTitle: { control: 'text' },
+    menuItems: { control: 'object' },
+    action: { control: 'object' },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof Widget>;
 
-export const AllVariants: Story = {
-  render: () => (
-    <div className="grid grid-cols-2 gap-space-12 max-w-xl">
-      <Widget
-        title="Spend this month"
-        subtitle="vs Sep"
-        menuItems={[
-          { label: 'Edit report', onSelect: () => {} },
-          { label: 'View full page', onSelect: () => {} },
-        ]}
-      >
-        <div className="font-text text-figure font-extrabold text-ink tabular-nums">
-          ₹97,044
-        </div>
-        <div className="text-label font-bold text-danger mt-space-4">
-          ▲ 28%
-        </div>
-      </Widget>
-
-      <Widget
-        title="Upcoming"
-        subtitle="Next 14 days"
-        loading
-      />
-
-      <Widget
-        title="Portfolio"
-        subtitle="Value and day change"
-        error={true}
-        errorTitle="Couldn't load this widget"
-        errorMessage="Prices service did not answer."
-        onRetry={() => {}}
-      />
-
-      <Widget
-        title="Card spend by month"
-        subtitle="Report"
-        unavailable={true}
-        unavailableTitle="This report is no longer available"
-        unavailableMessage="Remove the widget or pick another report."
-        onRemove={() => {}}
-      />
-    </div>
-  ),
-};
-
 export const Figure: Story = {
   args: {
     title: 'Spend this month',
     subtitle: 'vs Sep',
     menuItems: [
-      { label: 'Edit report', onSelect: () => {} },
-      { label: 'View full page', onSelect: () => {} },
-      { label: 'View underlying data', onSelect: () => {} },
+      { label: 'Edit report', onSelect: fn() },
+      { label: 'View full page', onSelect: fn() },
+      { label: 'View underlying data', onSelect: fn() },
     ],
     children: (
       <div>
-        <div className="font-text text-figure font-extrabold text-ink tabular-nums">
+        <Text variant="figure">
           ₹97,044
-        </div>
-        <div className="text-label font-bold text-danger mt-space-4">
-          ▲ 28%
+        </Text>
+        <div className="mt-space-4">
+          <Text variant="label" tone="danger">
+            ▲ 28%
+          </Text>
         </div>
       </div>
     ),
@@ -90,6 +58,7 @@ export const Figure: Story = {
 };
 
 export const RowsLoading: Story = {
+  name: 'Rows loading',
   args: {
     title: 'Upcoming',
     subtitle: 'Next 14 days',
@@ -101,10 +70,12 @@ export const Failed: Story = {
   args: {
     title: 'Portfolio',
     subtitle: 'Value and day change',
-    error: true,
     errorTitle: "Couldn't load this widget",
-    errorMessage: 'Prices service did not answer.',
-    onRetry: () => alert('Retrying prices service...'),
+    error: 'Prices service did not answer.',
+    action: {
+      label: 'Retry',
+      onSelect: fn(),
+    },
   },
 };
 
@@ -112,27 +83,30 @@ export const Unavailable: Story = {
   args: {
     title: 'Card spend by month',
     subtitle: 'Report',
-    unavailable: true,
     unavailableTitle: 'This report is no longer available',
-    unavailableMessage: 'Remove the widget or pick another report.',
-    onRemove: () => alert('Widget removed'),
+    unavailable: 'Remove the widget or pick another report.',
+    action: {
+      label: 'Remove',
+      onSelect: fn(),
+    },
   },
 };
 
 export const WithMenu: Story = {
+  name: 'With menu',
   args: {
     title: 'Net worth breakdown',
     subtitle: 'Accounts and investments',
     menuItems: [
-      { label: 'Widget settings', onSelect: () => {} },
-      { label: 'Duplicate as my report', onSelect: () => {} },
-      { label: 'View full page', onSelect: () => {} },
-      { label: 'Remove widget', onSelect: () => {}, destructive: true },
+      { label: 'Widget settings', onSelect: fn() },
+      { label: 'Duplicate as my report', onSelect: fn() },
+      { label: 'View full page', onSelect: fn() },
+      { label: 'Remove widget', onSelect: fn(), destructive: true },
     ],
     children: (
-      <div className="font-text text-figure font-extrabold text-ink tabular-nums">
+      <Text variant="figure">
         ₹11,98,842
-      </div>
+      </Text>
     ),
   },
 };

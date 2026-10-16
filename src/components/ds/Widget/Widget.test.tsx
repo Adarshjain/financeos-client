@@ -41,16 +41,15 @@ describe('Widget', () => {
     expect(container.querySelectorAll('.animate-pulse').length).toBe(3);
   });
 
-  it('renders failed state with messages and retry button from props', () => {
+  it('renders failed state with messages and retry action', () => {
     const handleRetry = vi.fn();
     render(
       <Widget
         title="Portfolio"
         subtitle="Value and day change"
-        error={true}
         errorTitle="Couldn't load this widget"
-        errorMessage="Prices service did not answer."
-        onRetry={handleRetry}
+        error="Prices service did not answer."
+        action={{ label: 'Retry', onSelect: handleRetry }}
       />,
     );
 
@@ -63,16 +62,15 @@ describe('Widget', () => {
     expect(handleRetry).toHaveBeenCalledTimes(1);
   });
 
-  it('renders unavailable state with message and remove button from props', () => {
+  it('renders unavailable state with message and remove action', () => {
     const handleRemove = vi.fn();
     render(
       <Widget
         title="Card spend by month"
         subtitle="Report"
-        unavailable={true}
         unavailableTitle="This report is no longer available"
-        unavailableMessage="Remove the widget or pick another report."
-        onRemove={handleRemove}
+        unavailable="Remove the widget or pick another report."
+        action={{ label: 'Remove', onSelect: handleRemove }}
       />,
     );
 
