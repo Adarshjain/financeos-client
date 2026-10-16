@@ -77,6 +77,64 @@ export const shellFooterItems: ShellNavItem[] = [
   { id: 'settings', label: 'Settings', icon: 'settings', href: '/settings' },
 ];
 
+export interface ShellQuickAddItem {
+  id: string;
+  label: string;
+  icon: IconName;
+  href?: string;
+  disabled?: boolean;
+}
+
+export interface ShellMoreGroup {
+  label: string;
+  items: ShellNavItem[];
+}
+
+/**
+ * Quick add items for the phone More sheet (P-more).
+ * Transaction, Lending, and Trade have no dedicated routes yet (Legacy dialogs),
+ * so they are disabled until the owner decides on their routes.
+ * Import links to /transactions/import.
+ */
+export const shellQuickAddItems: ShellQuickAddItem[] = [
+  { id: 'transaction', label: 'Transaction', icon: 'add', disabled: true },
+  { id: 'lending', label: 'Lending', icon: 'loans', disabled: true },
+  { id: 'trade', label: 'Trade', icon: 'investments', disabled: true },
+  { id: 'import', label: 'Import', icon: 'upload', href: '/transactions/import' },
+];
+
+/**
+ * More sheet section groups (P-more):
+ * - Money: Accounts, Transactions
+ * - Grow: Investments, Rewards
+ * - Owe & lend · Insights: Loans & lendings, Dashboards, Reports, Ask the data
+ */
+export const shellMoreGroups: ShellMoreGroup[] = [
+  {
+    label: 'Money',
+    items: [
+      { id: 'accounts', label: 'Accounts', icon: 'accounts', href: '/accounts' },
+      { id: 'transactions', label: 'Transactions', icon: 'transactions', href: '/transactions' },
+    ],
+  },
+  {
+    label: 'Grow',
+    items: [
+      { id: 'investments', label: 'Investments', icon: 'investments', href: '/investments' },
+      { id: 'rewards', label: 'Rewards', icon: 'rewards', href: '/rewards' },
+    ],
+  },
+  {
+    label: 'Owe & lend · Insights',
+    items: [
+      { id: 'loans', label: 'Loans & lendings', icon: 'loans', href: '/loans' },
+      { id: 'dashboards', label: 'Dashboards', icon: 'dashboards', href: '/dashboards' },
+      { id: 'reports', label: 'Reports', icon: 'reports', href: '/reports' },
+      { id: 'chat', label: 'Ask the data', icon: 'chat', href: '/chat' },
+    ],
+  },
+];
+
 /**
  * Computes current active navigation item ID from pathname.
  * Returns undefined for '/ds' and unknown routes (no item selected).

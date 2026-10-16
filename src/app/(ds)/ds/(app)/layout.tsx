@@ -32,7 +32,12 @@ export default async function DsAppLayout({
       </div>
 
       {/* Phone floating TabBar (hidden from lg) */}
-      <ShellTabBar />
+      <ShellTabBar
+        user={{
+          name: user.email.split('@')[0],
+          email: user.email,
+        }}
+      />
     </div>
   );
 }
