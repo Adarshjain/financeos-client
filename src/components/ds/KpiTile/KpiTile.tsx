@@ -3,6 +3,7 @@
 import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
+import { Card } from '../Card/Card';
 import { cn } from '../cn';
 import { ProgressBar, ProgressBarTone } from '../ProgressBar/ProgressBar';
 import { Skeleton } from '../Skeleton/Skeleton';
@@ -24,8 +25,13 @@ export interface KpiDelta {
   direction?: KpiDeltaDirection;
 }
 
+export interface KpiTileAction {
+  label: string;
+  onSelect: () => void;
+}
+
 export interface KpiTileProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title' | 'children'> {
   /** Label shown as uppercase overline, e.g. "Net worth", "Spent · October" */
   label?: React.ReactNode;
   /** Main KPI value, e.g. "₹11,98,842", "62%" */
@@ -48,10 +54,10 @@ export interface KpiTileProps
 
   /** Whether the tile is in loading state */
   loading?: boolean;
-  /** Error message or true for failed state */
-  error?: React.ReactNode | boolean;
-  /** Retry callback if failed */
-  onRetry?: () => void;
+  /** Error message or node when failed */
+  error?: React.ReactNode;
+  /** Action callback when failed, e.g. { label: 'Retry', onSelect: fn() } */
+  action?: KpiTileAction;
 }
 
 export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
@@ -66,71 +72,12 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
       context,
       loading = false,
       error,
-      onRetry,
+      action,
       className,
-      children,
       ...props
     },
     ref,
   ) => {
-    if (loading) {
-      return (
-        <div
-          ref={ref}
-          className={cn(
-            'bg-surface border border-line rounded-ds-lg px-space-16 py-space-14 min-w-0 flex flex-col select-none',
-            className,
-          )}
-          {...props}
-        >
-          <Skeleton width="40%" height={12} />
-          <Skeleton width="70%" height={22} className="mt-space-10" />
-          <Skeleton width="50%" height={14} className="mt-space-8" />
-        </div>
-      );
-    }
-
-    if (error) {
-      return (
-        <div
-          ref={ref}
-          role="alert"
-          className={cn(
-            'bg-surface border border-danger-border rounded-ds-lg px-space-16 py-space-14 min-w-0 flex flex-col select-none',
-            className,
-          )}
-          {...props}
-        >
-          <div className="text-overline uppercase text-danger font-bold">
-            {label}
-          </div>
-          <div className="mt-space-8 text-label font-medium text-ink-3">
-            {typeof error === 'string' || React.isValidElement(error) ? (
-              error
-            ) : (
-              <>
-                Prices unavailable
-                {onRetry && (
-                  <>
-                    {' · '}
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={onRetry}
-                      className="inline-flex h-auto p-0 text-ink font-bold underline hover:text-ink-2 hover:bg-transparent"
-                    >
-                      Retry
-                    </Button>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      );
-    }
-
     const isHero = variant === 'hero';
 
     const renderDelta = () => {
@@ -168,59 +115,107 @@ export const KpiTile = forwardRef<HTMLDivElement, KpiTileProps>(
       );
     };
 
+    let body: React.ReactNode = null;
+
+    if (loading) {
+      body = (
+        <>
+          <Skeleton width="40%" height={12} />
+          <Skeleton width="70%" height={22} className="mt-space-10" />
+          <Skeleton width="50%" height={14} className="mt-space-8" />
+        </>
+      );
+    } else if (error) {
+      body = (
+        <>
+          <div className="text-overline uppercase text-danger font-bold">
+            {label}
+          </div>
+          <div className="mt-space-8 text-label font-medium text-ink-3">
+            {error}
+            {action && (
+              <>
+                {' · '}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={action.onSelect}
+                  className="inline-flex h-auto p-0 text-ink font-bold underline hover:text-ink-2 hover:bg-transparent"
+                >
+                  {action.label}
+                </Button>
+              </>
+            )}
+          </div>
+        </>
+      );
+    } else {
+      body = (
+        <>
+          {label && (
+            <div className="text-overline uppercase text-ink-4 font-bold">
+              {label}
+            </div>
+          )}
+
+          {value !== undefined && (
+            <div
+              className={cn(
+                'tabular-nums whitespace-nowrap text-ink mt-space-4',
+                isHero
+                  ? 'font-display text-hero-figure font-extrabold'
+                  : 'font-text text-figure font-extrabold',
+              )}
+            >
+              {value}
+            </div>
+          )}
+
+          {renderDelta()}
+
+          {progressBar && (
+            <div className="mt-space-10">
+              <ProgressBar
+                value={progressBar.value}
+                max={progressBar.max}
+                tone={progressBar.tone}
+                aria-label={
+                  typeof label === 'string' ? `${label} progress` : 'Progress'
+                }
+              />
+            </div>
+          )}
+
+          {badges && (
+            <div className="flex items-center gap-space-6 mt-space-8 flex-wrap">
+              {badges}
+            </div>
+          )}
+
+          {context && (
+            <div className="mt-space-6 text-label font-medium text-ink-3">
+              {context}
+            </div>
+          )}
+        </>
+      );
+    }
+
     return (
-      <div
+      <Card
         ref={ref}
+        role={error ? 'alert' : undefined}
         className={cn(
-          'bg-surface border border-line rounded-ds-lg px-space-16 py-space-14 min-w-0 flex flex-col select-none',
+          error ? 'border-danger-border' : undefined,
           className,
         )}
         {...props}
       >
-        {label && (
-          <div className="text-overline uppercase text-ink-4 font-bold">
-            {label}
-          </div>
-        )}
-
-        {(value !== undefined || children !== undefined) && (
-          <div
-            className={cn(
-              'tabular-nums whitespace-nowrap text-ink mt-space-4',
-              isHero
-                ? 'font-display text-hero-figure font-extrabold'
-                : 'font-text text-figure font-extrabold',
-            )}
-          >
-            {value ?? children}
-          </div>
-        )}
-
-        {renderDelta()}
-
-        {progressBar && (
-          <div className="mt-space-10">
-            <ProgressBar
-              value={progressBar.value}
-              max={progressBar.max}
-              tone={progressBar.tone}
-              aria-label={typeof label === 'string' ? `${label} progress` : 'Progress'}
-            />
-          </div>
-        )}
-
-        {badges && (
-          <div className="flex items-center gap-space-6 mt-space-8 flex-wrap">
-            {badges}
-          </div>
-        )}
-
-        {context && (
-          <div className="mt-space-6 text-label font-medium text-ink-3">
-            {context}
-          </div>
-        )}
-      </div>
+        <div className="px-space-16 py-space-14 min-w-0 flex flex-col select-none">
+          {body}
+        </div>
+      </Card>
     );
   },
 );

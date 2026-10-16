@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { fn } from 'storybook/test';
 
 import { Badge } from '../Badge/Badge';
 import { KpiTile } from './KpiTile';
@@ -10,6 +11,13 @@ const meta: Meta<typeof KpiTile> = {
   parameters: {
     layout: 'padded',
   },
+  decorators: [
+    (Story) => (
+      <div className="max-w-xs">
+        <Story />
+      </div>
+    ),
+  ],
   argTypes: {
     variant: {
       control: 'select',
@@ -24,103 +32,29 @@ const meta: Meta<typeof KpiTile> = {
     context: {
       control: 'text',
     },
+    delta: {
+      control: 'object',
+    },
+    progressBar: {
+      control: 'object',
+    },
+    badges: {
+      control: false,
+    },
     loading: {
       control: 'boolean',
     },
     error: {
-      control: 'boolean',
+      control: 'text',
+    },
+    action: {
+      control: 'object',
     },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof KpiTile>;
-
-export const AllVariants: Story = {
-  render: () => (
-    <div className="grid grid-cols-2 gap-space-12 max-w-xl">
-      <div>
-        <div className="text-caption font-semibold text-ink-3 mb-space-4">
-          Hero
-        </div>
-        <KpiTile
-          label="Net worth"
-          value="₹11,98,842"
-          variant="hero"
-          delta={{
-            value: '▲ ₹41,220',
-            period: 'this month',
-            direction: 'good',
-          }}
-        />
-      </div>
-
-      <div>
-        <div className="text-caption font-semibold text-ink-3 mb-space-4">
-          Delta · bad direction
-        </div>
-        <KpiTile
-          label="Spent · October"
-          value="₹97,044"
-          delta={{
-            value: '▲ 28%',
-            period: 'vs Sep',
-            direction: 'bad',
-          }}
-        />
-      </div>
-
-      <div>
-        <div className="text-caption font-semibold text-ink-3 mb-space-4">
-          With a bar
-        </div>
-        <KpiTile
-          label="Budget"
-          value="62%"
-          progressBar={{
-            value: 62,
-            tone: 'warning',
-          }}
-          context="of ₹1.55L · 18 days left"
-        />
-      </div>
-
-      <div>
-        <div className="text-caption font-semibold text-ink-3 mb-space-4">
-          With badges
-        </div>
-        <KpiTile
-          label="To pay · 14 days"
-          value="₹78,219"
-          badges={
-            <>
-              <Badge tone="warning">Amex in 2 d</Badge>
-              <Badge tone="neutral">Regalia 25 Oct</Badge>
-            </>
-          }
-        />
-      </div>
-
-      <div>
-        <div className="text-caption font-semibold text-ink-3 mb-space-4">
-          Loading
-        </div>
-        <KpiTile loading />
-      </div>
-
-      <div>
-        <div className="text-caption font-semibold text-ink-3 mb-space-4">
-          Failed
-        </div>
-        <KpiTile
-          label="Portfolio"
-          error={true}
-          onRetry={() => {}}
-        />
-      </div>
-    </div>
-  ),
-};
 
 export const Hero: Story = {
   args: {
@@ -136,6 +70,7 @@ export const Hero: Story = {
 };
 
 export const DeltaBadDirection: Story = {
+  name: 'Delta bad direction',
   args: {
     label: 'Spent · October',
     value: '₹97,044',
@@ -148,6 +83,7 @@ export const DeltaBadDirection: Story = {
 };
 
 export const WithBar: Story = {
+  name: 'With bar',
   args: {
     label: 'Budget',
     value: '62%',
@@ -160,6 +96,7 @@ export const WithBar: Story = {
 };
 
 export const WithBadges: Story = {
+  name: 'With badges',
   args: {
     label: 'To pay · 14 days',
     value: '₹78,219',
@@ -181,7 +118,10 @@ export const Loading: Story = {
 export const Failed: Story = {
   args: {
     label: 'Portfolio',
-    error: true,
-    onRetry: () => alert('Retrying prices service...'),
+    error: 'Prices unavailable',
+    action: {
+      label: 'Retry',
+      onSelect: fn(),
+    },
   },
 };

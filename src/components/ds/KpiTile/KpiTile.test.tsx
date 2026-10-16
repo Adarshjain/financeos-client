@@ -75,13 +75,13 @@ describe('KpiTile', () => {
     expect(container.querySelectorAll('.animate-pulse').length).toBe(3);
   });
 
-  it('renders failed state with retry callback', () => {
+  it('renders failed state with retry action', () => {
     const handleRetry = vi.fn();
     render(
       <KpiTile
         label="Portfolio"
-        error={true}
-        onRetry={handleRetry}
+        error="Prices unavailable"
+        action={{ label: 'Retry', onSelect: handleRetry }}
       />,
     );
 
