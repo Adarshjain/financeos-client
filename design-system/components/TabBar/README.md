@@ -13,10 +13,10 @@ The phone bottom navigation: a floating pill. This is the only mobile navigation
 Tapping More opens the **More sheet** (final, owner 2026-10-16; board `P-more`): a bottom sheet over the page, built from Dialog's sheet form.
 - **Quick add**: four Buttons `variant="tile" iconPosition="top"`: Transaction, Lending, Trade, Import. This is the one exception to "the + is the only add button" (RULES §7.1).
 - **Sections**, in groups with `overline` labels: Money (Accounts, Transactions) · Grow (Investments, Rewards) · Owe & lend · Insights (Loans & lendings, Dashboards, Reports, Ask the data). Each is a Button `variant="tile"` (icon start), two per line, with the same navigation icon as the Rail.
-- **Profile row** at the bottom: Avatar, name, "Settings · connections · notifications", chevron. It links to Settings, with no underline.
+- **Profile row** at the bottom: Avatar, the user's name (their email when there is no name), "Settings · connections · notifications", chevron. It links to Settings, with no underline.
 - No search field: search lives in the page and the TopBar.
 - Every item comes from the app's navigation config; nothing is built into the component.
-- **The sheet is modal**, as drawn on `P-more`: the scrim dims the page and covers the TabBar, and the sheet runs to the bottom edge, over the bar. It closes on a scrim tap (tapping where More sits is a scrim tap), on swipe down, or by choosing an item. The TabBar is never raised above the scrim.
+- **Layers, bottom to top:** page content, TabBar, scrim, sheet. The sheet is Dialog's sheet form, modal, as drawn on `P-more`: it rises from the bottom edge and covers the TabBar, so More is not visible while it is open. It closes on a scrim tap above the sheet, on swipe down, or by choosing an item. The TabBar is never raised above the scrim or the sheet.
 - The sheet uses Dialog `background="canvas"`; group labels are Text `overline` in `ink-4`; the profile row is a ListRow `asChild` inside a Card.
 
 ## Use
