@@ -20,8 +20,7 @@ const dialogSizeClasses: Record<DialogSize, string> = {
   ['xl']: 'lg:max-w-dialog-xl',
 };
 
-export interface DialogHandleProps
-  extends React.HTMLAttributes<HTMLDivElement> {}
+export interface DialogHandleProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export const DialogHandle = forwardRef<HTMLDivElement, DialogHandleProps>(
   ({ className, ...props }, ref) => {
@@ -31,12 +30,12 @@ export const DialogHandle = forwardRef<HTMLDivElement, DialogHandleProps>(
         aria-hidden="true"
         className={cn(
           'w-space-40 h-space-4 rounded-ds-pill bg-line-handle mx-auto mt-space-8 shrink-0',
-          className,
+          className
         )}
         {...props}
       />
     );
-  },
+  }
 );
 
 DialogHandle.displayName = 'DialogHandle';
@@ -51,20 +50,19 @@ export const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(
         ref={ref}
         className={cn(
           'px-space-16 lg:px-space-20 py-space-10 overflow-y-auto flex flex-col gap-space-12 flex-1 touch-pan-y',
-          className,
+          className
         )}
         {...props}
       >
         {children}
       </div>
     );
-  },
+  }
 );
 
 DialogBody.displayName = 'DialogBody';
 
-export interface DialogFooterProps
-  extends React.HTMLAttributes<HTMLDivElement> {
+export interface DialogFooterProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Primary / confirming action on the right (rendered last) */
   primary?: React.ReactNode;
   /** Secondary action on the right (rendered before primary) */
@@ -74,23 +72,13 @@ export interface DialogFooterProps
 }
 
 export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
-  (
-    {
-      children,
-      className,
-      primary,
-      secondary,
-      tertiary,
-      ...props
-    },
-    ref,
-  ) => {
+  ({ children, className, primary, secondary, tertiary, ...props }, ref) => {
     return (
       <div
         ref={ref}
         className={cn(
           'px-space-16 lg:px-space-20 py-space-12 border-t border-line-soft bg-sunken flex items-center gap-space-8 shrink-0 justify-end',
-          className,
+          className
         )}
         {...props}
       >
@@ -112,13 +100,15 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
         {children}
       </div>
     );
-  },
+  }
 );
 
 DialogFooter.displayName = 'DialogFooter';
 
-export interface DialogShellProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
+export interface DialogShellProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  'title'
+> {
   size?: DialogSize;
   variant?: DialogVariant;
   background?: DialogBackground;
@@ -159,7 +149,7 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
       tertiary,
       ...props
     },
-    ref,
+    ref
   ) => {
     const desc = subtitle ?? description;
 
@@ -187,7 +177,7 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
           isDragging
             ? 'transition-none'
             : 'transition-transform duration-sheet ease-out',
-          className,
+          className
         )}
         {...props}
       >
@@ -240,7 +230,7 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
         )}
       </div>
     );
-  },
+  }
 );
 
 DialogShell.displayName = 'DialogShell';
@@ -252,11 +242,10 @@ export const DialogTrigger = DialogPrimitive.Trigger;
 export const DialogClose = DialogPrimitive.Close;
 export const DialogPortal = DialogPrimitive.Portal;
 
-export interface DialogContentProps
-  extends Omit<
-    React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>,
-    'title'
-  > {
+export interface DialogContentProps extends Omit<
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>,
+  'title'
+> {
   size?: DialogSize;
   variant?: DialogVariant;
   background?: DialogBackground;
@@ -294,7 +283,7 @@ export const DialogContent = forwardRef<
       tertiary,
       ...props
     },
-    ref,
+    ref
   ) => {
     const desc = subtitle ?? description;
     const closeRef = useRef<HTMLButtonElement>(null);
@@ -313,37 +302,45 @@ export const DialogContent = forwardRef<
 
     return (
       <DialogPortal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-scrim bg-scrim animate-in fade-in-0 duration-base" />
-        <div
+        <DialogPrimitive.Overlay className="fixed inset-0 z-scrim bg-scrim animate-in fade-in-0 duration-sheet lg:duration-base data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-sheet lg:data-closed:duration-base" />
+        {/* Content is the positioning layer, not the panel: Radix keeps a closing
+            Content mounted until its own exit animation ends, so it runs a no-op
+            exit for the same duration while the panel inside animates out.
+            pointer-events none lets taps beside the panel reach the scrim. */}
+        <DialogPrimitive.Content
+          ref={ref}
+          style={{ pointerEvents: 'none' }}
           className={cn(
-            'fixed inset-x-0 bottom-0 z-overlay flex flex-col pointer-events-none',
+            'group fixed inset-x-0 bottom-0 z-overlay flex flex-col focus:outline-none',
+            'data-closed:animate-out data-closed:fill-mode-forwards data-closed:duration-sheet lg:data-closed:duration-base',
             variant === 'side-panel'
               ? 'lg:inset-y-0 lg:right-0 lg:left-auto lg:h-full lg:max-h-full'
-              : 'lg:inset-0 lg:items-center lg:justify-center lg:p-space-16',
+              : 'lg:inset-0 lg:items-center lg:justify-center lg:p-space-16'
           )}
+          {...props}
         >
-          <DialogPrimitive.Content
-            ref={ref}
+          <div
             style={{
               transform:
                 dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
               ...style,
             }}
             className={cn(
-              'pointer-events-auto flex flex-col overflow-hidden text-body text-ink border-line-soft focus:outline-none max-h-dvh w-full',
+              'pointer-events-auto flex flex-col overflow-hidden text-body text-ink border-line-soft max-h-dvh w-full',
               background === 'canvas' ? 'bg-canvas' : 'bg-surface',
               'rounded-t-ds-sheet shadow-sheet border-t',
               variant === 'side-panel'
-                ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-dialog lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full lg:slide-in-from-right'
-                : 'lg:rounded-ds-xl lg:shadow-dialog lg:border lg:zoom-in-95',
+                ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-dialog lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full lg:slide-in-from-right lg:group-data-closed:slide-out-to-right'
+                : 'lg:rounded-ds-xl lg:shadow-dialog lg:border lg:zoom-in-95 lg:group-data-closed:zoom-out-95',
               dialogSizeClasses[size],
-              'animate-in fade-in-0 duration-base slide-in-from-bottom lg:slide-in-from-bottom-0',
+              'animate-in fade-in-0 slide-in-from-bottom lg:slide-in-from-bottom-0',
+              // Closing reverses the opening: the sheet slides back down (from wherever a drag left it), the modal fades and shrinks.
+              'group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:slide-out-to-bottom lg:group-data-closed:slide-out-to-bottom-0 group-data-closed:fill-mode-forwards group-data-closed:duration-sheet lg:group-data-closed:duration-base',
               isDragging
                 ? 'transition-none'
-                : 'transition-transform duration-sheet ease-out',
-              className,
+                : 'transition-transform duration-sheet ease-out lg:duration-base',
+              className
             )}
-            {...props}
           >
             <DialogPrimitive.Close
               ref={closeRef}
@@ -408,7 +405,9 @@ export const DialogContent = forwardRef<
                     {srTitle || 'Dialog'}
                   </DialogPrimitive.Title>
                   <DialogPrimitive.Description className="sr-only">
-                    {typeof srTitle === 'string' ? srTitle : 'Dialog description'}
+                    {typeof srTitle === 'string'
+                      ? srTitle
+                      : 'Dialog description'}
                   </DialogPrimitive.Description>
                 </>
               )}
@@ -423,19 +422,21 @@ export const DialogContent = forwardRef<
                 tertiary={tertiary}
               />
             )}
-          </DialogPrimitive.Content>
-        </div>
+          </div>
+        </DialogPrimitive.Content>
       </DialogPortal>
     );
-  },
+  }
 );
 
 DialogContent.displayName = 'DialogContent';
 
 /* ConfirmDialog preset for destructive confirmations */
 
-export interface ConfirmDialogShellProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
+export interface ConfirmDialogShellProps extends Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  'title'
+> {
   title: React.ReactNode;
   description?: React.ReactNode;
   impact?: React.ReactNode[];
@@ -484,11 +485,11 @@ export const ConfirmDialogShell = forwardRef<
       className,
       ...props
     },
-    ref,
+    ref
   ) => {
     const isBusy = Boolean(loading || confirmLoading);
     const isConfirmDisabled = Boolean(
-      confirmDisabled || isCheckingImpact || isBusy,
+      confirmDisabled || isCheckingImpact || isBusy
     );
 
     const handleConfirm = () => {
@@ -544,7 +545,11 @@ export const ConfirmDialogShell = forwardRef<
         <DialogBody className="space-y-space-12">
           {isCheckingImpact ? (
             <div className="flex items-center gap-space-8 text-label text-ink-3 py-space-4">
-              <Icon name="spinner" size="sm" className="animate-spin shrink-0" />
+              <Icon
+                name="spinner"
+                size="sm"
+                className="animate-spin shrink-0"
+              />
               <span>{checkingMessage}</span>
             </div>
           ) : impact && impact.length > 0 ? (
@@ -559,7 +564,7 @@ export const ConfirmDialogShell = forwardRef<
         </DialogBody>
       </DialogShell>
     );
-  },
+  }
 );
 
 ConfirmDialogShell.displayName = 'ConfirmDialogShell';
@@ -605,7 +610,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
   const isBusy = Boolean(loading || confirmLoading);
   const isConfirmDisabled = Boolean(
-    confirmDisabled || isCheckingImpact || isBusy,
+    confirmDisabled || isCheckingImpact || isBusy
   );
 
   const handleCancel = () => {
@@ -674,7 +679,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <DialogBody className="space-y-space-12">
           {isCheckingImpact ? (
             <div className="flex items-center gap-space-8 text-label text-ink-3 py-space-4">
-              <Icon name="spinner" size="sm" className="animate-spin shrink-0" />
+              <Icon
+                name="spinner"
+                size="sm"
+                className="animate-spin shrink-0"
+              />
               <span>{checkingMessage}</span>
             </div>
           ) : impact && impact.length > 0 ? (

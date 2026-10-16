@@ -243,7 +243,8 @@ describe('Dialog (Radix overlay)', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Open Modal' }));
 
-    const content = screen.getByText('Dialog is open').closest('[role="dialog"]');
+    // The panel is the dialog layer's child (the layer keeps the exit animation running).
+    const content = screen.getByText('Dialog is open').closest('[role="dialog"] > div');
     expect(content).toBeInTheDocument();
     expect(content).toHaveClass('max-h-dvh');
     expect(screen.getAllByText('Interactive Dialog')).toHaveLength(1);
@@ -258,7 +259,8 @@ describe('Dialog (Radix overlay)', () => {
       </Dialog>,
     );
 
-    const content = screen.getByText('Canvas body').closest('[role="dialog"]');
+    // The panel is the dialog layer's child (the layer keeps the exit animation running).
+    const content = screen.getByText('Canvas body').closest('[role="dialog"] > div');
     expect(content).toBeInTheDocument();
     expect(content).toHaveClass('bg-canvas');
     expect(content).not.toHaveClass('bg-surface');
