@@ -75,7 +75,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
           ref={ref}
           aria-hidden="true"
           className={cn(
-            'bg-illus-mint text-ink p-space-20 lg:p-space-48 flex flex-col justify-between relative overflow-hidden rounded-ds-lg select-none',
+            'bg-illus-mint text-ink p-space-20 lg:p-space-48 flex flex-col justify-between relative overflow-hidden select-none',
             className,
           )}
           {...props}
@@ -181,7 +181,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
         ref={ref}
         aria-hidden="true"
         className={cn(
-          'bg-illus-mint text-ink p-space-20 lg:p-space-48 flex flex-col justify-between relative overflow-hidden rounded-ds-lg select-none',
+          'bg-illus-mint text-ink p-space-20 lg:p-space-48 flex flex-col justify-between relative overflow-hidden select-none',
           className,
         )}
         {...props}

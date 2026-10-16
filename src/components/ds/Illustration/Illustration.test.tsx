@@ -45,6 +45,14 @@ describe('Illustration component', () => {
     expect(copy2).toHaveClass('hidden', 'lg:flex');
   });
 
+  it('renders signin and signup panels edge-to-edge with no corner radius', () => {
+    const { container: c1 } = render(<Illustration variant="signin" />);
+    expect(c1.firstChild).not.toHaveClass('rounded-ds-lg');
+
+    const { container: c2 } = render(<Illustration variant="signup" />);
+    expect(c2.firstChild).not.toHaveClass('rounded-ds-lg');
+  });
+
   it('merges custom className', () => {
     const { container } = render(
       <Illustration variant="offline" className="custom-ill-class" />,
