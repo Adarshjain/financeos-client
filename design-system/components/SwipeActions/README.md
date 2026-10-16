@@ -10,7 +10,7 @@ Adds swipe to any component. It wraps exactly one child (a TransactionRow, a Lis
 ## How pages use it
 - Transactions: right Approve (`brand`), left Delete (`danger`). The page shows its ConfirmDialog for Delete; Approve applies at once with an Undo Toast (RULES §5.7).
 - Inbox: right Snooze until tomorrow, left Dismiss; both apply at once with Undo.
-- The background under the row shows the side's icon and one-word label in its tone; past the threshold (40% of the row, or a fast flick) it fires once.
+- The background under the row shows the side's icon and one-word label in its tone; past the threshold (pixels, default 96px) it fires once.
 
 ## Composition
 - The page wraps whatever should swipe: `<SwipeActions left={…} right={…}><TransactionRow …/></SwipeActions>`. No component has `swipeable`, `swipeLeft`, `swipeRight` or similar props, and no component wraps itself in SwipeActions.
@@ -27,4 +27,4 @@ Adds swipe to any component. It wraps exactly one child (a TransactionRow, a Lis
 The shared `useSwipe` hook (pointer tracking, threshold, spring back) and Icon. The child is whatever the page passes.
 
 ## Variants
-- Both sides; right only; left only; disabled; wrapping a TransactionRow, a ListRow and a Card (stories show all three).
+- Both sides; right only; left only; disabled; wrapping a ListRow and a Card (stories show both).
