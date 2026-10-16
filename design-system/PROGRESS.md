@@ -222,6 +222,23 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-16 · Phase 3a · Antigravity · Unit 4 · /ds/offline:
+  - Created `src/app/(ds)/ds/(public)/offline/OfflineContent.tsx` client component:
+    - Renders centred `EmptyState variant="offline"` with title "You're offline" and description "Your money is exactly where you left it. We just can't reach the internet right now, so there's nothing fresh to show." matching `D-offline` and `P-offline`.
+    - Action button "Try again" (`Button variant="primary"`) that calls `window.location.reload()`.
+  - Updated `src/app/(ds)/ds/(public)/offline/page.tsx` as a server component exporting `metadata` and rendering `OfflineContent`.
+  - Added unit test suite in `src/app/(ds)/ds/(public)/offline/offline.test.tsx` (3 unit tests, all passing).
+  - Note: The service worker (`src/app/sw.ts`) still falls back to `/offline` for now; it stays untouched until the route swap.
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 342 problems (0 errors, 342 warnings)`
+    - `npm test`: `Test Files  431 passed (431) | Tests  3564 passed (3564)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `npm run build`: `✓ Generating static pages using 10 workers (49/49) in 2.3s`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+  - Boards compared: `D-offline`, `P-offline`.
+  - Open questions: none. Deviations: none.
+
 - 2026-10-16 · Phase 3a · Antigravity · Unit 3 · /ds/signup:
   - Created `src/app/(ds)/ds/(public)/signup/SignupForm.tsx` matching `D-signup`, `P-signup`, and `P-auth-states`:
     - Responsive two-column layout with `Illustration variant="signup"` (phone banner on top, full column on desktop).
