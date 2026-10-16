@@ -19,6 +19,14 @@ Every variant has all six, and each must be visible:
 - **Disabled**: 45% opacity, no hover or pressed.
 - **Loading**: the `spinner` icon (Phosphor circle-notch, the one animated icon) takes the leading icon's place and rotates; no other icon is ever spun. The label stays (or becomes the `loadingLabel`, "Signing in…"), the button keeps its width, and it ignores clicks.
 
+## Tile
+- `variant="tile"`: a bordered navigation or quick-action tile, the way Fluent's CompoundButton and Polaris's full-width start-aligned Button do it. It has `bg-surface`, a `line` border, `radius-lg`, and the icon in `ink-3`. Hover is `bg-hover`, pressed `bg-pressed`.
+- `iconPosition`:
+  - `start` (default): the icon left and the label beside it, left-aligned, 46px tall, label `body-strong` in `ink`. Used for the More sheet's section links.
+  - `top`: the icon above the label, centred, 64px tall, label `label` in `ink-2`. Used for Quick add.
+- Fills its grid cell. With `asChild` it wraps a Next Link for navigation.
+- No badge, chevron or description.
+
 ## Link
 - `link`: an inline text action inside a sentence, a Banner or a Toast ("Reconcile", "See them", "Undo"): `body-strong` weight, underlined, the surrounding text colour, no padding, no height, no border. It never makes its container taller.
 
@@ -48,7 +56,7 @@ Name the action with a verb and its object: "Mark paid", "Upload statement", "Ap
 Icon, Badge (count), Radix Slot (`asChild` for links).
 
 ## Variants
-- Variants: primary, secondary, danger outline (starts a destructive action), danger filled (final confirm), ghost, link.
+- Variants: primary, secondary, danger outline (starts a destructive action), danger filled (final confirm), ghost, link. Tile (`iconPosition` start or top).
 - Sizes: small 26 (rows, card headers), default 32, phone 44 (sheet footers, auth).
 - States: default, hover, focus ring, loading (label changes to the ongoing verb), disabled.
 - Icon-only buttons always carry an aria-label; counts sit in a dark pill after the label.

@@ -102,7 +102,6 @@ Build in this order, one component per step. After each one, set its status to *
 | 44 | ResponsiveOverlay | Ready for review |
 | 45 | Text | Ready for review |
 | 46 | Root | Ready for review |
-| 47 | Tile | Not started |
 
 Removed on 2026-10-15 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; AuthPanel → a page in Phase 3.
 
@@ -220,9 +219,9 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-16 · **Button loading** uses the new `spinner` icon (Phosphor circle-notch), never a spun copy of another icon.
 - 2026-10-16 · **More sheet board refined by the owner** (`P-more`): Quick add kept (RULES §7.1 exception), search bar removed, Transactions added under Money, navigation icons on every row, profile row without underline. 
 - 2026-10-16 · Copy on the /ds auth pages as built is accepted; their layout must follow the boards exactly.
-- 2026-10-16 · **More sheet is final** (owner, board `P-more`): tapping More opens it. Quick add (stacked Tiles), sections in groups (row Tiles with navigation icons), profile row to Settings; no search. TabBar README updated.
+- 2026-10-16 · **More sheet is final** (owner, board `P-more`): tapping More opens it. Quick add (tile Buttons, icon on top), sections in groups (tile Buttons with navigation icons), profile row to Settings; no search. TabBar README updated.
 - 2026-10-16 · **One navigation icon per destination, everywhere**: the More sheet's icons are used on the desktop Rail, the TopBar and the phone TabBar on every board and in Dinero (Phosphor bold registry).
-- 2026-10-16 · **Tile** added to Dinero (row and stacked) for the More sheet, so its tiles are not hand-made.
+- 2026-10-16 · **More sheet tiles are a Button variant** (owner): `variant="tile"` with `iconPosition` `start` (row) or `top` (stacked), following Fluent's CompoundButton and Polaris's full-width start-aligned Button. No separate Tile component.
 - 2026-10-15 · Accessibility is out of scope: no ARIA, screen-reader or contrast work. The Storybook accessibility addon stays installed but is not a check.
 - 2026-10-15 · Pages under `/ds/…` may use components marked Ready for review; they are a review area and the live app is untouched. Only a swap into a live route requires Approved components.
 
