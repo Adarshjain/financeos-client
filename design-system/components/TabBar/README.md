@@ -10,7 +10,7 @@ The phone bottom navigation: a floating pill. This is the only mobile navigation
 - Pressed: the item's label and icon go one step darker (`ink-3`) for the press; nothing moves.
 
 ## More
-- What More opens is **on hold** (owner, 2026-10-16): to be discussed separately. Until then More links to the More screen. The "More open" drawing on the board is a parked proposal, not to be built.
+- What More opens is **on hold** (owner, 2026-10-16): to be discussed separately. Until then More is a plain link whose target the app sets (in the /ds review area it goes to the /ds index). The "More open" drawing on the board is a parked proposal, not to be built.
 
 ## Use
 - Shown on every top-level phone screen, below `lg` only. It is hidden while a list is in selection mode (the selection bar takes the bottom edge) and under the keyboard.
