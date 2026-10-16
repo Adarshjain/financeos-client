@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { SegmentedControl } from './SegmentedControl';
 
 describe('SegmentedControl', () => {
-  it('renders options as radio buttons', () => {
+  it('renders options as radio buttons with first tabbable when none selected', () => {
     render(<SegmentedControl options={['Debit', 'Credit']} />);
     const group = screen.getByRole('radiogroup');
     expect(group).toBeInTheDocument();
@@ -14,8 +14,10 @@ describe('SegmentedControl', () => {
     const credit = screen.getByRole('radio', { name: 'Credit' });
     expect(debit).toBeInTheDocument();
     expect(credit).toBeInTheDocument();
-    expect(debit).toHaveAttribute('aria-checked', 'true');
+    expect(debit).toHaveAttribute('aria-checked', 'false');
     expect(credit).toHaveAttribute('aria-checked', 'false');
+    expect(debit).toHaveAttribute('tabindex', '0');
+    expect(credit).toHaveAttribute('tabindex', '-1');
   });
 
   it('selects option specified by defaultValue', () => {
@@ -35,7 +37,7 @@ describe('SegmentedControl', () => {
     );
   });
 
-  it('calls onChange and updates state on click in uncontrolled mode', () => {
+  it('calls onValueChange and updates state on click in uncontrolled mode', () => {
     const handleChange = vi.fn();
     render(
       <SegmentedControl
@@ -133,5 +135,20 @@ describe('SegmentedControl', () => {
 
     fireEvent.click(archivedBtn);
     expect(handleChange).not.toHaveBeenCalled();
+  });
+
+  it('preserves generic type in onValueChange', () => {
+    type Mode = 'light' | 'dark';
+    const handleChange = vi.fn((_val: Mode) => {});
+    render(
+      <SegmentedControl<Mode>
+        options={['light', 'dark']}
+        defaultValue="light"
+        onValueChange={handleChange}
+      />,
+    );
+    const darkBtn = screen.getByRole('radio', { name: 'dark' });
+    fireEvent.click(darkBtn);
+    expect(handleChange).toHaveBeenCalledWith('dark');
   });
 });
