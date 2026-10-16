@@ -6,7 +6,7 @@ Read `00-global.md` first. Its rules override anything below.
 
 ## Change (1)
 
-- [ ] **f8447c1c4** · FieldFrame takes no ref or native props
+- [x] **f8447c1c4** · FieldFrame takes no ref or native props
   - Now: The props type (lines 5-15) is a fixed list; `className` is the only pass-through. `helperId` is set on both error and helper (lines 51, 58), and each field works out `aria-describedby` itself.
   - Do: It is internal, so only change it if it becomes public. Then: `forwardRef<HTMLDivElement, FieldFrameProps>`, extend `Omit<React.HTMLAttributes<HTMLDivElement>, 'children'>`, spread the rest on the root `div`.
 

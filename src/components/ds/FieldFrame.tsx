@@ -2,7 +2,8 @@ import React from 'react';
 
 import { cn } from './cn';
 
-export interface FieldFrameProps {
+export interface FieldFrameProps
+  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'children'> {
   id?: string;
   labelId?: string;
   helperId?: string;
@@ -14,53 +15,65 @@ export interface FieldFrameProps {
   children: React.ReactNode;
 }
 
-export function FieldFrame({
-  id,
-  labelId,
-  helperId,
-  label,
-  optional = false,
-  helper,
-  error,
-  className,
-  children,
-}: FieldFrameProps) {
-  const hasError = Boolean(error);
+export const FieldFrame = React.forwardRef<HTMLDivElement, FieldFrameProps>(
+  function FieldFrame(
+    {
+      id,
+      labelId,
+      helperId,
+      label,
+      optional = false,
+      helper,
+      error,
+      className,
+      children,
+      ...props
+    },
+    ref,
+  ) {
+    const hasError = Boolean(error);
 
-  return (
-    <div className={cn('w-full font-text text-body', className)}>
-      {label ? (
-        <label
-          htmlFor={id}
-          id={labelId}
-          className="block font-text font-bold text-label text-ink-2 mb-space-6 select-none"
-        >
-          {label}
-          {optional ? (
-            <span className="font-medium text-ink-4 ml-space-4">
-              (Optional)
-            </span>
-          ) : null}
-        </label>
-      ) : null}
+    return (
+      <div
+        ref={ref}
+        className={cn('w-full font-text text-body', className)}
+        {...props}
+      >
+        {label ? (
+          <label
+            htmlFor={id}
+            id={labelId}
+            className="block font-text font-bold text-label text-ink-2 mb-space-6 select-none"
+          >
+            {label}
+            {optional ? (
+              <span className="font-medium text-ink-4 ml-space-4">
+                (Optional)
+              </span>
+            ) : null}
+          </label>
+        ) : null}
 
-      {children}
+        {children}
 
-      {hasError ? (
-        <div
-          id={helperId}
-          className="mt-space-6 font-text font-medium text-caption text-danger"
-        >
-          {error}
-        </div>
-      ) : helper ? (
-        <div
-          id={helperId}
-          className="mt-space-6 font-text font-medium text-caption text-ink-3"
-        >
-          {helper}
-        </div>
-      ) : null}
-    </div>
-  );
-}
+        {hasError ? (
+          <div
+            id={helperId}
+            className="mt-space-6 font-text font-medium text-caption text-danger"
+          >
+            {error}
+          </div>
+        ) : helper ? (
+          <div
+            id={helperId}
+            className="mt-space-6 font-text font-medium text-caption text-ink-3"
+          >
+            {helper}
+          </div>
+        ) : null}
+      </div>
+    );
+  },
+);
+
+FieldFrame.displayName = 'FieldFrame';
