@@ -5,8 +5,8 @@ import React, { forwardRef } from 'react';
 
 import { Badge } from '../Badge/Badge';
 import { cn } from '../cn';
-import { formatCount } from '../utils';
 import { Icon } from '../Icon/Icon';
+import { formatCount } from '../utils';
 
 export type ButtonVariant =
   | 'primary'
@@ -14,24 +14,22 @@ export type ButtonVariant =
   | 'danger'
   | 'danger-filled'
   | 'ghost'
-  | 'google'
-  | 'link'
-  | 'tile';
+  | 'link';
 
-export type ButtonIconPosition = 'start' | 'top';
-
+export type ButtonLayout = 'inline' | 'stacked';
 export type ButtonSize = 'sm' | 'md' | 'xl';
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  layout?: ButtonLayout;
+  fullWidth?: boolean;
   iconOnly?: boolean;
   loading?: boolean;
   loadingLabel?: React.ReactNode;
   count?: number | string;
   icon?: React.ReactNode;
-  iconPosition?: ButtonIconPosition;
   asChild?: boolean;
 }
 
@@ -46,12 +44,8 @@ const variantStyles: Record<ButtonVariant, string> = {
     'border border-transparent bg-danger text-on-brand hover:bg-danger-hover active:bg-danger-pressed',
   ghost:
     'border border-transparent bg-transparent text-ink hover:bg-hover active:bg-pressed',
-  google:
-    'border border-line-strong bg-surface text-ink hover:bg-hover active:bg-pressed w-full',
   link:
     'border-0 bg-transparent text-inherit underline underline-offset-2 hover:no-underline active:opacity-80 p-0 h-auto font-bold inline',
-  tile:
-    'border border-line bg-surface hover:bg-hover active:bg-pressed w-full no-underline [&_svg]:text-ink-3 [&_svg]:shrink-0',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -61,7 +55,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       variant = 'secondary',
       size = 'md',
-      iconPosition = 'start',
+      layout = 'inline',
+      fullWidth = false,
       iconOnly = false,
       loading = false,
       loadingLabel,
@@ -75,16 +70,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const isLink = variant === 'link';
-    const isGoogle = variant === 'google';
-    const isTile = variant === 'tile';
-    const effectiveSize = isGoogle ? 'xl' : size;
+    const isStacked = layout === 'stacked';
+    const isEffectivelyDisabled = disabled || loading;
+    const isPrimary = variant === 'primary';
 
     const sizeClasses = isLink
       ? ''
-      : isTile
-        ? iconPosition === 'top'
-          ? 'h-16 px-space-4 py-space-12 gap-space-6 rounded-ds-lg text-label text-ink-2 flex-col items-center justify-center text-center'
-          : 'px-space-12 py-space-12 gap-space-12 rounded-ds-lg text-body-strong text-ink justify-start text-left'
+      : isStacked
+        ? 'h-space-64 px-space-8 py-space-8 gap-space-4 rounded-ds-lg text-label font-semibold flex-col items-center justify-center text-center'
         : {
             sm: iconOnly
               ? 'h-control-sm aspect-square p-0 rounded-ds-sm'
@@ -95,62 +88,80 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             xl: iconOnly
               ? 'h-control-xl aspect-square p-0 rounded-ds-lg'
               : 'h-control-xl px-space-16 text-heading rounded-ds-lg gap-space-8',
-          }[effectiveSize];
+          }[size];
 
     const classes = cn(
       isLink
         ? 'inline font-text font-bold text-inherit underline underline-offset-2 transition-colors duration-fast select-none cursor-pointer disabled:opacity-45 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2'
-        : cn(
-            'inline-flex items-center justify-center font-text whitespace-nowrap transition-colors duration-fast select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 disabled:opacity-45 disabled:pointer-events-none cursor-pointer',
-            isTile
-              ? iconPosition === 'top'
-                ? 'font-semibold'
-                : 'font-bold'
-              : 'font-semibold',
-          ),
+        : 'inline-flex items-center justify-center font-text whitespace-nowrap transition-colors duration-fast select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 disabled:opacity-45 disabled:pointer-events-none cursor-pointer font-semibold',
       sizeClasses,
       variantStyles[variant],
+      fullWidth && 'w-full',
+      isEffectivelyDisabled && 'opacity-45 pointer-events-none',
       className,
     );
 
-    const isEffectivelyDisabled = disabled || loading;
-    const isPrimary = variant === 'primary';
-
-    const effectiveIcon =
-      icon ??
-      (isGoogle ? (
-        <img
-          src="/brand/google-g.svg"
-          width={18}
-          height={18}
-          alt=""
-          aria-hidden="true"
-          className="shrink-0"
-        />
-      ) : null);
-
-    const effectiveChildren =
-      children ?? (isGoogle ? 'Continue with Google' : null);
-
     if (asChild) {
-      if (React.isValidElement(children) && effectiveIcon) {
+      if (React.isValidElement(children)) {
         const child = children as React.ReactElement<{ children?: React.ReactNode }>;
+        const childContent = loading ? (
+          <>
+            <Icon
+              name="spinner"
+              data-testid="spinner-icon"
+              size={size === 'sm' ? 'sm' : 'md'}
+              className="animate-spin shrink-0"
+            />
+            {loadingLabel ? (
+              <span>{loadingLabel}</span>
+            ) : !iconOnly && child.props.children ? (
+              <span>{child.props.children}</span>
+            ) : null}
+          </>
+        ) : (
+          <>
+            {icon ? (
+              <span className="inline-flex items-center justify-center shrink-0">
+                {icon}
+              </span>
+            ) : null}
+            {child.props.children}
+            {count !== undefined && count !== null ? (
+              <Badge
+                variant="solid"
+                shape="rounded"
+                size="sm"
+                className={isPrimary ? 'bg-surface text-ink' : undefined}
+              >
+                {formatCount(count)}
+              </Badge>
+            ) : null}
+          </>
+        );
+
         return (
-          <Slot ref={ref} className={classes} {...props}>
-            {React.cloneElement(
-              child,
-              {},
-              <span className={cn('inline-flex items-center justify-center shrink-0', isTile && 'text-ink-3')}>
-                {effectiveIcon}
-              </span>,
-              child.props.children,
-            )}
+          <Slot
+            ref={ref}
+            className={classes}
+            data-disabled={isEffectivelyDisabled ? true : undefined}
+            aria-disabled={isEffectivelyDisabled ? true : undefined}
+            aria-busy={loading ? true : undefined}
+            {...props}
+          >
+            {React.cloneElement(child, {}, childContent)}
           </Slot>
         );
       }
 
       return (
-        <Slot ref={ref} className={classes} {...props}>
+        <Slot
+          ref={ref}
+          className={classes}
+          data-disabled={isEffectivelyDisabled ? true : undefined}
+          aria-disabled={isEffectivelyDisabled ? true : undefined}
+          aria-busy={loading ? true : undefined}
+          {...props}
+        >
           {children}
         </Slot>
       );
@@ -170,24 +181,24 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             <Icon
               name="spinner"
               data-testid="spinner-icon"
-              size={isTile ? 'lg' : effectiveSize === 'sm' ? 'sm' : 'md'}
+              size={size === 'sm' ? 'sm' : 'md'}
               className="animate-spin shrink-0"
             />
             {loadingLabel ? (
               <span>{loadingLabel}</span>
-            ) : !iconOnly && effectiveChildren ? (
-              <span>{effectiveChildren}</span>
+            ) : !iconOnly && children ? (
+              <span>{children}</span>
             ) : null}
           </>
         ) : (
           <>
-            {effectiveIcon ? (
-              <span className={cn('inline-flex items-center justify-center shrink-0', isTile && 'text-ink-3')}>
-                {effectiveIcon}
+            {icon ? (
+              <span className="inline-flex items-center justify-center shrink-0">
+                {icon}
               </span>
             ) : null}
-            {effectiveChildren}
-            {!isTile && count !== undefined && count !== null ? (
+            {children}
+            {count !== undefined && count !== null ? (
               <Badge
                 variant="solid"
                 shape="rounded"

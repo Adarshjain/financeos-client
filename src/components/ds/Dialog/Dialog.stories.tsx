@@ -203,10 +203,10 @@ export const AllVariants: Story = {
           >
             <DialogBody>
               <div className="grid grid-cols-2 gap-space-8">
-                <Button variant="tile" icon="accounts">
+                <Button variant="secondary" layout="stacked">
                   Accounts
                 </Button>
-                <Button variant="tile" icon="transactions">
+                <Button variant="secondary" layout="stacked">
                   Transactions
                 </Button>
               </div>
@@ -531,10 +531,10 @@ export const CanvasBackground: Story = {
     <DialogShell {...args}>
       <DialogBody>
         <div className="grid grid-cols-2 gap-space-8">
-          <Button variant="tile" icon="accounts">
+          <Button variant="secondary" layout="stacked">
             Accounts
           </Button>
-          <Button variant="tile" icon="transactions">
+          <Button variant="secondary" layout="stacked">
             Transactions
           </Button>
         </div>

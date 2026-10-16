@@ -91,7 +91,19 @@ export function LoginForm() {
             {/* 3. Continue with Google */}
             <Button
               type="button"
-              variant="google"
+              variant="secondary"
+              size="xl"
+              fullWidth
+              icon={
+                <img
+                  src="/brand/google-g.svg"
+                  width={18}
+                  height={18}
+                  alt=""
+                  aria-hidden="true"
+                  className="shrink-0"
+                />
+              }
               loading={ssoPending}
               loadingLabel="Opening Google…"
               disabled={ssoPending || isPending}
