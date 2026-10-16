@@ -100,8 +100,8 @@ Build in this order, one component per step. After each one, set its status to *
 | 42 | Divider | Ready for review |
 | 43 | Illustration | Ready for review |
 | 44 | ResponsiveOverlay | Ready for review |
-| 45 | Text | Not started |
-| 46 | Root | Not started |
+| 45 | Text | Ready for review |
+| 46 | Root | Ready for review |
 | 47 | Tile | Not started |
 
 Removed on 2026-10-15 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; AuthPanel → a page in Phase 3.
@@ -236,7 +236,36 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
-- 2026-10-16 · Phase 3a · Antigravity · Unit 6 · Final audit & migration map:
+- 2026-10-16 · Phase 3a · Antigravity · Review findings remediation (Part A: 1–7, Part B: 8–14):
+  - Fix 1 (Text): Created `src/components/ds/Text/Text.tsx` server component with 12 type styles, 8 tones, `as`, `family`, `align`, `truncate`. Added stories and tests, exported from `src/components/ds/index.ts`. Status: Ready for review.
+  - Fix 2 (Root): Created `src/components/ds/Root/Root.tsx` server component wrapping viewport with `bg-canvas font-text text-ink` and mounting Dinero `Toaster`. Added stories and tests, exported from `src/components/ds/index.ts`. Status: Ready for review.
+  - Fix 3 (Icon registry): Added 6 new icons to `src/components/ds/Icon/registry.ts` (`dashboards`, `investments`, `loans`, `reports`, `rewards`, `spinner`) matching `icons.json` (29 icons).
+  - Fix 4 (Button loading): Changed loading state in `src/components/ds/Button/Button.tsx` to spin `spinner` icon in place of leading icon; no other icon receives `animate-spin`. Cleaned ad-hoc spinners in Dialog.
+  - Fix 5 (ListRow asChild): Added `asChild` support with Radix `Slot` in `src/components/ds/ListRow/ListRow.tsx` handling row layout, no-underline and inherited color.
+  - Fix 6 (Illustration edge-to-edge): Removed corner radius inside `src/components/ds/Illustration/Illustration.tsx` for `signin` and `signup` panels.
+  - Fix 7 (TabBar badge position): Anchored count badge in `src/components/ds/TabBar/TabBar.tsx` to top-right corner with `left-space-12 -top-space-4`. Stories rendered inside 390px frame (Playwright confirmed 62px width < 71.6px slot, no truncation). More popup left on hold.
+  - Fix 8 (`(ds)/layout.tsx`): Replaced hand-styled div with `<Root>`.
+  - Fix 9 (Google "G" proxy): Added `'/brand'` to `publicPaths` in `src/proxy.ts` and test in `src/__tests__/proxy.test.ts`. `curl -sk -o /dev/null -w "%{http_code}" https://localhost:6970/brand/google-g.svg` returned 200.
+  - Fix 10 (`/ds/login` layout): Matched `D-login` and `P-login` element for element: 1. Title (`Text`), 2. Subtitle (`Text`), 3. Continue with Google, 4. Divider "or", 5. Email, 6. Password, 7. Sign in button, 8. Footer line (`Text` with `Button variant="link" asChild`). Removed Logo mark, removed opacity wrapper/cn, single validation in `onSubmit`, removed `router.push` `useEffect` allowing Next server action redirect. Real sign-in without `?from` landed on `/dashboard`; with `?from=/accounts` landed on `/accounts`.
+  - Fix 11 (`/ds/signup` layout): Matched `D-signup` and `P-signup` element for element: 1. Title, 2. Subtitle ("FinanceOS is invite-only — you'll need a code to sign up."), 3. Continue with Google ("Sign up with Google"), 4. Divider "or", 5. Email, 6. Password with helper="At least 8 characters.", 7. Invite code (masked with Show), 8. Create account button, 9. Terms line (`Text variant="caption"`), 10. Footer line. Removed Logo mark, removed info Banner, removed opacity wrapper/cn, single validation.
+  - Fix 12 (`/ds` index page): Updated to `<ListRow asChild><Link href="..." /></ListRow>` removing anchor styling classes.
+  - Fix 13 (Shell navigation): Matched Rail on `D-home` in `src/features/shell/navigation.ts` (5 groups: Unlabeled [Home, Inbox, Upcoming], Money [Accounts, Transactions], Grow [Investments, Rewards], Owe & lend [Loans & lendings], Insights [Dashboards, Reports, Ask the data]; footer: Settings). TabBar items: Home, Inbox, Upcoming, Transactions, More (`menu` icon, href `/ds`). Created `src/features/shell/ShellNav.tsx` computing active item from `usePathname()`; returns undefined for `/ds`. Removed `bg-canvas` from `src/app/(ds)/ds/(app)/layout.tsx`.
+  - Fix 14 (E2E spec): Updated `e2e/ui/ds-auth.spec.ts` using `{ exact: true }` on Password and Invite code, updated field fill order (Email -> Password -> Invite code), updated redirect check to pathname. Wrapped form elements in `LoginForm` and `SignupForm` in `<form>`. E2E suite passed (5/5).
+  - Boards compared: `D-login` (screenshot `shots/D-login.webp`), `P-login` (`shots/P-login.webp`), `D-signup` (`shots/D-signup.webp`), `P-signup` (`shots/P-signup.webp`), `D-home` (`D-home.dc.html`).
+  - Checks run and outputs:
+    - `curl -sk -o /dev/null -w "%{http_code}" https://localhost:6970/brand/google-g.svg`: 200
+    - Real sign-in results:
+      - Default redirect: `https://localhost:6970/dashboard`
+      - `?from=/accounts` redirect: `https://localhost:6970/accounts`
+    - Playwright E2E (`E2E_SKIP_GATES=1`): `5 passed (5.6s)`
+    - `grep -rn "animate-spin" src/components/ds | grep -v spinner`: clean (0 matches)
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+    - `npm run typecheck`: clean
+    - `npm run lint`: clean (`✖ 342 problems (0 errors, 342 warnings)`)
+    - `npm test`: `Test Files 434 passed (434) | Tests 3588 passed (3588)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `npm run build`: `✓ Generating static pages using 10 workers (49/49) in 2.3s`
+  - Open questions: none. Deviations: listed inline width 390 in TabBar stories.
   - Audited component isolation: `grep -rn "from '@/components/" "src/app/(ds)" src/features | grep -v "@/components/ds"` printed clean (0 non-ds imports).
   - Confirmed untouched live paths: `git diff --stat c8b557b -- src/app/login src/app/signup src/app/offline src/components/ui` printed clean (0 diffs).
   - Confirmed proxy diff: only `/ds/login`, `/ds/signup`, `/ds/offline` added to `publicPaths` in `src/proxy.ts`.
