@@ -90,8 +90,8 @@ export function ShellTabBar({
                   item.disabled ? (
                     <Button
                       key={item.id}
-                      variant="tile"
-                      iconPosition="top"
+                      variant="secondary"
+                      layout="stacked"
                       icon={<Icon name={item.icon} size="lg" />}
                       disabled
                     >
@@ -100,8 +100,8 @@ export function ShellTabBar({
                   ) : (
                     <Button
                       key={item.id}
-                      variant="tile"
-                      iconPosition="top"
+                      variant="secondary"
+                      layout="stacked"
                       icon={<Icon name={item.icon} size="lg" />}
                       asChild
                     >
@@ -126,8 +126,9 @@ export function ShellTabBar({
                   {group.items.map((item) => (
                     <Button
                       key={item.id}
-                      variant="tile"
-                      iconPosition="start"
+                      variant="secondary"
+                      size="xl"
+                      className="w-full justify-start"
                       icon={<Icon name={item.icon} size="lg" />}
                       asChild
                     >

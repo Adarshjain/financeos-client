@@ -6,10 +6,10 @@ import { Avatar } from '../Avatar/Avatar';
 import { Badge } from '../Badge/Badge';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
-import { formatCount } from '../utils';
 import { Icon, type IconName } from '../Icon/Icon';
 import { Kbd } from '../Kbd/Kbd';
 import { Logo } from '../Logo/Logo';
+import { formatCount } from '../utils';
 
 export interface RailItem {
   id?: string;

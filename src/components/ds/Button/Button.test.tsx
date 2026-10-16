@@ -136,79 +136,19 @@ describe('Button component', () => {
     expect(primaryPill).toHaveClass('bg-surface', 'text-ink');
   });
 
-  it('renders asChild with Slot', () => {
-    render(
-      <Button asChild variant="primary">
-        <a href="#test-link">Link Button</a>
-      </Button>
-    );
-
-    const link = screen.getByRole('link', { name: 'Link Button' });
-    expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute('href', '#test-link');
-    expect(link).toHaveClass('bg-brand', 'text-on-brand');
+  it('renders fullWidth with w-full class', () => {
+    render(<Button fullWidth>Save</Button>);
+    expect(screen.getByRole('button')).toHaveClass('w-full');
   });
 
-  it('renders google variant with full width, control-xl, image icon, and default label', () => {
-    render(<Button variant="google" />);
-    const btn = screen.getByRole('button', { name: 'Continue with Google' });
-    expect(btn).toBeInTheDocument();
-    expect(btn).toHaveClass('w-full', 'h-control-xl');
-
-    const img = btn.querySelector('img');
-    expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute('src', '/brand/google-g.svg');
-    expect(img).toHaveAttribute('width', '18');
-    expect(img).toHaveAttribute('height', '18');
-  });
-
-  it('renders google variant with custom children', () => {
-    render(<Button variant="google">Sign in with Google</Button>);
-    expect(
-      screen.getByRole('button', { name: 'Sign in with Google' }),
-    ).toBeInTheDocument();
-  });
-
-  describe('tile variant', () => {
-    it('renders iconPosition="start" (default) with 46px height, ink-3 icon, and start alignment', () => {
+  describe('layout="stacked"', () => {
+    it('renders with 64px height (h-space-64), flex-col, and icon above label', () => {
       const handleClick = vi.fn();
       render(
         <Button
-          variant="tile"
-          icon={<Icon name="wallet" size="lg" data-testid="tile-icon" />}
+          layout="stacked"
+          icon={<Icon name="add" size="lg" data-testid="stacked-icon" />}
           onClick={handleClick}
-        >
-          Accounts
-        </Button>,
-      );
-
-      const btn = screen.getByRole('button', { name: /Accounts/i });
-      expect(btn).toBeInTheDocument();
-      expect(btn).toHaveClass(
-        'bg-surface',
-        'border',
-        'border-line',
-        'rounded-ds-lg',
-        'text-body-strong',
-        'text-ink',
-        'justify-start',
-        'text-left',
-        'w-full',
-      );
-
-      const iconWrapper = screen.getByTestId('tile-icon').parentElement;
-      expect(iconWrapper).toHaveClass('text-ink-3');
-
-      fireEvent.click(btn);
-      expect(handleClick).toHaveBeenCalledTimes(1);
-    });
-
-    it('renders iconPosition="top" with 64px (h-16), centred, and label in ink-2', () => {
-      render(
-        <Button
-          variant="tile"
-          iconPosition="top"
-          icon={<Icon name="add" size="lg" data-testid="tile-icon-top" />}
         >
           Transaction
         </Button>,
@@ -217,59 +157,76 @@ describe('Button component', () => {
       const btn = screen.getByRole('button', { name: /Transaction/i });
       expect(btn).toBeInTheDocument();
       expect(btn).toHaveClass(
-        'h-16',
+        'h-space-64',
         'rounded-ds-lg',
         'text-label',
-        'text-ink-2',
         'flex-col',
         'items-center',
         'justify-center',
         'text-center',
-        'w-full',
       );
 
-      const iconWrapper = screen.getByTestId('tile-icon-top').parentElement;
-      expect(iconWrapper).toHaveClass('text-ink-3');
+      fireEvent.click(btn);
+      expect(handleClick).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('asChild slot behavior', () => {
+    it('renders asChild with Slot around link', () => {
+      render(
+        <Button asChild variant="primary">
+          <a href="#test-link">Link Button</a>
+        </Button>
+      );
+
+      const link = screen.getByRole('link', { name: 'Link Button' });
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute('href', '#test-link');
+      expect(link).toHaveClass('bg-brand', 'text-on-brand');
     });
 
-    it('renders asChild wrapping a link with no underline', () => {
+    it('renders icon and count inside child in asChild mode', () => {
       render(
-        <Button variant="tile" asChild>
-          <a href="#test-accounts">
-            <Icon name="wallet" size="lg" data-testid="link-icon" />
-            Accounts
-          </a>
+        <Button
+          asChild
+          icon={<Icon name="wallet" size="md" data-testid="aschild-icon" />}
+          count={12}
+        >
+          <a href="#accounts">Accounts</a>
         </Button>,
       );
 
       const link = screen.getByRole('link', { name: /Accounts/i });
       expect(link).toBeInTheDocument();
-      expect(link).toHaveAttribute('href', '#test-accounts');
-      expect(link).toHaveClass('bg-surface', 'border', 'border-line', 'no-underline', 'w-full');
+      expect(screen.getByTestId('aschild-icon')).toBeInTheDocument();
+      expect(screen.getByText('12')).toBeInTheDocument();
     });
 
-    it('suppresses count badge on tile variant', () => {
+    it('applies loading state inside child in asChild mode', () => {
       render(
-        <Button variant="tile" count={5}>
-          Accounts
+        <Button asChild loading loadingLabel="Loading…">
+          <a href="#loading">Proceed</a>
         </Button>,
       );
 
-      expect(screen.queryByText('5')).not.toBeInTheDocument();
+      const link = screen.getByRole('link', { name: /Loading…/i });
+      expect(link).toHaveAttribute('data-disabled', 'true');
+      expect(link).toHaveAttribute('aria-disabled', 'true');
+      expect(link).toHaveClass('pointer-events-none', 'opacity-45');
+      expect(screen.getByTestId('spinner-icon')).toBeInTheDocument();
     });
 
-    it('handles disabled state properly on tile', () => {
-      const handleClick = vi.fn();
+    it('applies disabled state in asChild mode', () => {
       render(
-        <Button variant="tile" disabled onClick={handleClick}>
-          Disabled Tile
+        <Button asChild disabled>
+          <a href="#disabled">Disabled Link</a>
         </Button>,
       );
 
-      const btn = screen.getByRole('button', { name: /Disabled Tile/i });
-      expect(btn).toBeDisabled();
-      fireEvent.click(btn);
-      expect(handleClick).not.toHaveBeenCalled();
+      const link = screen.getByRole('link', { name: 'Disabled Link' });
+      expect(link).toHaveAttribute('data-disabled', 'true');
+      expect(link).toHaveAttribute('aria-disabled', 'true');
+      expect(link).toHaveClass('pointer-events-none', 'opacity-45');
     });
   });
 });
