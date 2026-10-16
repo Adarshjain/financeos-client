@@ -80,24 +80,25 @@ describe('shell navigation', () => {
 
   it('ShellTabBar highlights current tab on /dashboard and none on /ds', () => {
     mockPathname = '/dashboard';
-    const { unmount } = render(<ShellTabBar />);
+    const { unmount } = render(<ShellTabBar user={{ email: 'user@example.test' }} />);
     const homeTab = screen.getByRole('tab', { name: /Home/i });
     expect(homeTab.getAttribute('aria-current')).toBe('page');
     unmount();
 
     mockPathname = '/ds';
-    render(<ShellTabBar />);
+    render(<ShellTabBar user={{ email: 'user@example.test' }} />);
     const allTabs = screen.getAllByRole('tab');
     for (const tab of allTabs) {
       expect(tab.getAttribute('aria-current')).toBeNull();
     }
   });
 
-  it('ShellRail renders user and groups', () => {
+  it('ShellRail renders user and groups with email fallback when no name', () => {
     mockPathname = '/accounts';
-    render(<ShellRail user={{ name: 'Arjun Mehta', email: 'arjun@example.test' }} />);
+    render(<ShellRail user={{ email: 'arjun@example.test' }} />);
     expect(screen.getByText('Accounts')).toBeDefined();
     expect(screen.getByText('Settings')).toBeDefined();
+    expect(screen.getByText('AR')).toBeDefined();
   });
 
   it('matches quick add items and more groups configuration', () => {
@@ -119,7 +120,7 @@ describe('shell navigation', () => {
     expect(shellMoreGroups[2].label).toBe('Owe & lend · Insights');
   });
 
-  it('ShellTabBar opens More sheet when More tab is tapped, and toggles closed on More again', () => {
+  it('ShellTabBar opens More sheet when More tab is tapped, and closes when an item is chosen', () => {
     render(<ShellTabBar user={{ name: 'Arjun Mehta', email: 'arjun@example.test' }} />);
 
     // Initially sheet is not open
@@ -153,8 +154,18 @@ describe('shell navigation', () => {
     const profileLink = screen.getByRole('link', { name: /Arjun Mehta/i });
     expect(profileLink).toHaveAttribute('href', '/settings');
 
-    // Tap More again to toggle closed
-    fireEvent.click(moreTab);
+    // Tap an item to close the sheet
+    const accountsLink = screen.getByRole('link', { name: /Accounts/i });
+    fireEvent.click(accountsLink);
     expect(screen.queryByRole('dialog', { name: 'More' })).not.toBeInTheDocument();
+  });
+
+  it('ShellTabBar falls back to user email and derives initials when no name is provided', () => {
+    render(<ShellTabBar user={{ email: 'priya@example.test' }} />);
+    const moreTab = screen.getByRole('tab', { name: /More/i });
+    fireEvent.click(moreTab);
+
+    expect(screen.getByText('priya@example.test')).toBeInTheDocument();
+    expect(screen.getByText('PR')).toBeInTheDocument();
   });
 });

@@ -1,18 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 
 import {
   Avatar,
   Button,
+  Card,
   Dialog,
   DialogContent,
   Icon,
   ListRow,
   Rail,
   TabBar,
+  Text,
 } from '@/components/ds';
 
 import {
@@ -24,12 +26,24 @@ import {
   shellTabBarItems,
 } from './navigation';
 
+export interface ShellUser {
+  name?: string;
+  email: string;
+}
+
+function getInitials(text: string): string {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  if (words.length >= 2) {
+    return (words[0][0] + words[1][0]).toUpperCase();
+  }
+  return text.trim().slice(0, 2).toUpperCase();
+}
+
 export function ShellTabBar({
   user,
 }: {
-  user?: { name?: string; email?: string; initials?: string };
-} = {}) {
-  const router = useRouter();
+  user: ShellUser;
+}) {
   const pathname = usePathname();
   const current = getActiveNavItem(pathname);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -43,59 +57,32 @@ export function ShellTabBar({
 
   const handleSelect = (id: string) => {
     if (id === 'more') {
-      setMoreOpen((prev) => !prev);
+      setMoreOpen(true);
     } else {
       setMoreOpen(false);
-      const item = shellTabBarItems.find((it) => it.id === id);
-      if (item?.href) {
-        router.push(item.href);
-      }
     }
   };
 
-  const displayName = user?.name || 'Arjun Mehta';
-  const derivedInitials =
-    user?.initials ??
-    (user?.name
-      ? user.name
-          .split(' ')
-          .map((p) => p[0])
-          .filter(Boolean)
-          .slice(0, 2)
-          .join('')
-          .toUpperCase()
-      : 'AM');
+  const profileText = user.name?.trim() || user.email;
+  const initials = getInitials(profileText);
 
   return (
     <>
-      <Dialog open={moreOpen} onOpenChange={setMoreOpen} modal={false}>
+      <Dialog open={moreOpen} onOpenChange={setMoreOpen}>
         <DialogContent
           size="sm"
           srTitle="More"
           showClose={false}
-          onPointerDownOutside={(e) => {
-            const eventWithDetail = e as unknown as { detail?: { originalEvent?: Event } };
-            const target = eventWithDetail.detail?.originalEvent?.target;
-            const el = target instanceof Element ? target : (target as Node)?.parentElement;
-            if (el?.closest('nav[aria-label="Primary"]')) {
-              e.preventDefault();
-            }
-          }}
-          onInteractOutside={(e) => {
-            const eventWithDetail = e as unknown as { detail?: { originalEvent?: Event } };
-            const target = eventWithDetail.detail?.originalEvent?.target;
-            const el = target instanceof Element ? target : (target as Node)?.parentElement;
-            if (el?.closest('nav[aria-label="Primary"]')) {
-              e.preventDefault();
-            }
-          }}
-          className="lg:hidden bg-canvas border-line"
+          background="canvas"
+          className="lg:hidden"
         >
-          <div className="px-space-16 pt-space-8 pb-tab-bar-clearance overflow-y-auto space-y-space-12 font-text">
+          <div className="px-space-16 pt-space-8 pb-safe-12 overflow-y-auto space-y-space-12">
             {/* Quick add */}
             <div>
-              <div className="text-overline font-extrabold uppercase tracking-wider text-ink-4 px-space-2 pt-space-4 pb-space-4">
-                Quick add
+              <div className="px-space-2 pt-space-4 pb-space-4">
+                <Text variant="overline" tone="ink-4">
+                  Quick add
+                </Text>
               </div>
               <div className="grid grid-cols-4 gap-space-8">
                 {shellQuickAddItems.map((item) =>
@@ -129,8 +116,10 @@ export function ShellTabBar({
             {/* Sections */}
             {shellMoreGroups.map((group) => (
               <div key={group.label}>
-                <div className="text-overline font-extrabold uppercase tracking-wider text-ink-4 px-space-2 pt-space-4 pb-space-4">
-                  {group.label}
+                <div className="px-space-2 pt-space-4 pb-space-4">
+                  <Text variant="overline" tone="ink-4">
+                    {group.label}
+                  </Text>
                 </div>
                 <div className="grid grid-cols-2 gap-space-8">
                   {group.items.map((item) => (
@@ -151,25 +140,26 @@ export function ShellTabBar({
             ))}
 
             {/* Profile row */}
-            <ListRow
-              asChild
-              leading={
-                <Avatar
-                  variant="person"
-                  size="sm"
-                  initials={derivedInitials}
-                >
-                  {derivedInitials}
-                </Avatar>
-              }
-              title={displayName}
-              subtitle="Settings · connections · notifications"
-              chevron
-              borderTop={false}
-              className="mt-space-16 border border-line rounded-ds-lg bg-surface no-underline"
-            >
-              <Link href="/settings" onClick={() => setMoreOpen(false)} />
-            </ListRow>
+            <Card className="mt-space-16">
+              <ListRow
+                asChild
+                leading={
+                  <Avatar
+                    variant="person"
+                    size="sm"
+                    initials={initials}
+                  >
+                    {initials}
+                  </Avatar>
+                }
+                title={profileText}
+                subtitle="Settings · connections · notifications"
+                chevron
+                borderTop={false}
+              >
+                <Link href="/settings" onClick={() => setMoreOpen(false)} />
+              </ListRow>
+            </Card>
           </div>
         </DialogContent>
       </Dialog>
@@ -178,7 +168,6 @@ export function ShellTabBar({
         items={shellTabBarItems}
         current={moreOpen ? 'more' : current}
         onSelect={handleSelect}
-        style={moreOpen ? { zIndex: 'calc(var(--ds-z-overlay) + 1)' } : undefined}
       />
     </>
   );
@@ -187,10 +176,12 @@ export function ShellTabBar({
 export function ShellRail({
   user,
 }: {
-  user?: { name?: string; email?: string };
+  user: ShellUser;
 }) {
   const pathname = usePathname();
   const current = getActiveNavItem(pathname);
+  const profileText = user.name?.trim() || user.email;
+  const initials = getInitials(profileText);
 
   return (
     <Rail
@@ -198,7 +189,11 @@ export function ShellRail({
       footer={shellFooterItems}
       current={current}
       brandHref="/ds"
-      user={user}
+      user={{
+        name: profileText,
+        email: user.email,
+        initials,
+      }}
     />
   );
 }
