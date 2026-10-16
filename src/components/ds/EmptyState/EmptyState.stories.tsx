@@ -1,19 +1,64 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { fn } from 'storybook/test';
 
-import { Button } from '../Button/Button';
-import { Card } from '../Card/Card';
-import { EmptyState } from './EmptyState';
+import { Card, EmptyState, Icon } from '@/components/ds';
 
 const meta: Meta<typeof EmptyState> = {
   title: 'DS/Feedback/EmptyState',
   component: EmptyState,
   parameters: {
     layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'What a screen shows when it has nothing yet, or cannot load: an optional illustration, a screen-title headline, one sentence, and the one action that fixes it.',
+      },
+    },
+  },
+  decorators: [
+    (Story) => (
+      <Card className="max-w-md">
+        <Story />
+      </Card>
+    ),
+  ],
+  argTypes: {
+    title: {
+      control: 'text',
+      description: 'Primary headline',
+    },
+    description: {
+      control: 'text',
+      description: 'Explanatory description',
+    },
+    size: {
+      control: 'select',
+      options: ['sm', 'md'],
+      description: 'Padding scale',
+    },
+    compact: {
+      control: 'boolean',
+      description: 'Compact single-line mode',
+    },
+    illustration: {
+      control: false,
+      description: 'Optional illustration slot',
+    },
+    action: {
+      control: false,
+      description: 'Action object with label and onSelect callback',
+    },
   },
   args: {
     title: 'No accounts yet',
     description: 'Add a bank or card, or upload a statement.',
+    size: 'md',
+    compact: false,
+    action: {
+      label: 'Add account',
+      onSelect: fn(),
+    },
   },
 };
 
@@ -22,163 +67,67 @@ type Story = StoryObj<typeof EmptyState>;
 
 export const FirstRun: Story = {
   name: 'First run',
-  render: () => (
-    <Card className="max-w-md p-0 overflow-hidden">
-      <EmptyState
-        title="No accounts yet"
-        description="Add a bank or card, or upload a statement."
-        action={<Button variant="primary">Add account</Button>}
-      />
-    </Card>
-  ),
+  args: {
+    title: 'No accounts yet',
+    description: 'Add a bank or card, or upload a statement.',
+    action: {
+      label: 'Add account',
+      onSelect: fn(),
+    },
+  },
 };
 
 export const NothingMatches: Story = {
   name: 'Nothing matches',
-  render: () => (
-    <Card className="max-w-md p-0 overflow-hidden">
-      <EmptyState
-        title="No transactions match"
-        description="This year · manual · excluded only"
-        action={<Button variant="secondary">Clear all filters</Button>}
-      />
-    </Card>
-  ),
+  args: {
+    title: 'No transactions match',
+    description: 'This year · manual · excluded only',
+    action: {
+      label: 'Clear all filters',
+      variant: 'secondary',
+      onSelect: fn(),
+    },
+  },
 };
 
 export const AllClear: Story = {
   name: 'All clear',
-  render: () => (
-    <Card className="max-w-md p-0 overflow-hidden">
-      <EmptyState
-        title="All clear"
-        description="Nothing needs you right now."
-        action={
-          <>
-            <Button variant="secondary">Upcoming</Button>
-            <Button variant="secondary">Transactions</Button>
-          </>
-        }
-      />
-    </Card>
-  ),
+  args: {
+    title: 'All clear',
+    description: 'Nothing needs you right now.',
+    action: undefined,
+  },
 };
 
 export const CouldntLoad: Story = {
   name: "Couldn't load",
-  render: () => (
-    <Card className="max-w-md p-0 overflow-hidden">
-      <EmptyState
-        title="Couldn't load the inbox"
-        description="The server did not answer. Your items are safe."
-        action={<Button variant="primary">Try again</Button>}
-      />
-    </Card>
-  ),
+  args: {
+    title: "Couldn't load the inbox",
+    description: 'The server did not answer. Your items are safe.',
+    action: {
+      label: 'Try again',
+      onSelect: fn(),
+    },
+  },
 };
 
-export const Offline: Story = {
-  name: 'Offline',
-  render: () => (
-    <Card className="max-w-md p-0 overflow-hidden">
-      <EmptyState
-        variant="offline"
-        action={<Button variant="primary">Try again</Button>}
-      />
-    </Card>
-  ),
+export const WithIllustration: Story = {
+  name: 'With illustration',
+  args: {
+    title: 'No messages',
+    description: 'Your inbox is completely caught up.',
+    illustration: <Icon name="check" size="lg" />,
+    action: undefined,
+  },
 };
 
-export const NothingOnThisDay: Story = {
-  name: 'Nothing on this day',
-  render: () => (
-    <Card className="max-w-md p-0 overflow-hidden">
-      <EmptyState compact>Nothing due on this day.</EmptyState>
-    </Card>
-  ),
-};
-
-export const AllVariants: Story = {
-  name: 'All variants',
-  render: () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-space-16 max-w-4xl">
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          First run
-        </div>
-        <Card className="p-0 overflow-hidden">
-          <EmptyState
-            title="No accounts yet"
-            description="Add a bank or card, or upload a statement."
-            action={<Button variant="primary">Add account</Button>}
-          />
-        </Card>
-      </div>
-
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Nothing matches
-        </div>
-        <Card className="p-0 overflow-hidden">
-          <EmptyState
-            title="No transactions match"
-            description="This year · manual · excluded only"
-            action={<Button variant="secondary">Clear all filters</Button>}
-          />
-        </Card>
-      </div>
-
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          All clear
-        </div>
-        <Card className="p-0 overflow-hidden">
-          <EmptyState
-            title="All clear"
-            description="Nothing needs you right now."
-            action={
-              <>
-                <Button variant="secondary">Upcoming</Button>
-                <Button variant="secondary">Transactions</Button>
-              </>
-            }
-          />
-        </Card>
-      </div>
-
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          {"Couldn't load"}
-        </div>
-        <Card className="p-0 overflow-hidden">
-          <EmptyState
-            title="Couldn't load the inbox"
-            description="The server did not answer. Your items are safe."
-            action={<Button variant="primary">Try again</Button>}
-          />
-        </Card>
-      </div>
-
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Offline
-        </div>
-        <Card className="p-0 overflow-hidden">
-          <EmptyState
-            variant="offline"
-            action={<Button variant="primary">Try again</Button>}
-          />
-        </Card>
-      </div>
-
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Nothing on this day (compact)
-        </div>
-        <Card className="p-0 overflow-hidden">
-          <EmptyState compact>Nothing due on this day.</EmptyState>
-        </Card>
-      </div>
-    </div>
-  ),
+export const Compact: Story = {
+  name: 'Compact',
+  args: {
+    compact: true,
+    title: undefined,
+    description: undefined,
+    children: 'Nothing due on this day.',
+    action: undefined,
+  },
 };

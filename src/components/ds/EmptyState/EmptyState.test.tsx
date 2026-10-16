@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { EmptyState } from './EmptyState';
 
@@ -18,28 +18,64 @@ describe('EmptyState', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders illustration or offline variant', () => {
-    render(<EmptyState variant="offline" />);
-    expect(screen.getByText("You're offline")).toBeInTheDocument();
-    expect(screen.getByText('₹')).toBeInTheDocument();
-    expect(screen.getByText('z z')).toBeInTheDocument();
+  it('renders illustration slot element', () => {
+    render(
+      <EmptyState
+        illustration={<span data-testid="test-art">Illustration Art</span>}
+        title="No items"
+      />,
+    );
+    expect(screen.getByTestId('test-art')).toBeInTheDocument();
+    expect(screen.getByText('No items')).toBeInTheDocument();
   });
 
-  it('renders action elements', () => {
+  it('renders action button and triggers onSelect callback', () => {
+    const handleAction = vi.fn();
     render(
       <EmptyState
         title="No accounts yet"
-        action={<button type="button">Add account</button>}
+        action={{ label: 'Add account', onSelect: handleAction }}
       />,
     );
-    expect(
-      screen.getByRole('button', { name: 'Add account' }),
-    ).toBeInTheDocument();
+    const actionBtn = screen.getByRole('button', { name: 'Add account' });
+    expect(actionBtn).toBeInTheDocument();
+
+    fireEvent.click(actionBtn);
+    expect(handleAction).toHaveBeenCalledTimes(1);
   });
 
-  it('renders compact single-line style', () => {
-    render(<EmptyState compact>Nothing due on this day.</EmptyState>);
-    expect(screen.getByText('Nothing due on this day.')).toBeInTheDocument();
+  it('renders compact single-line style with inline items', () => {
+    const handleAction = vi.fn();
+    render(
+      <EmptyState
+        compact
+        title="Due today:"
+        description="None"
+        action={{ label: 'Add', onSelect: handleAction }}
+      >
+        <span>(0 items)</span>
+      </EmptyState>,
+    );
+    expect(screen.getByText('Due today:')).toBeInTheDocument();
+    expect(screen.getByText('None')).toBeInTheDocument();
+    expect(screen.getByText('(0 items)')).toBeInTheDocument();
+    const actionBtn = screen.getByRole('button', { name: 'Add' });
+    expect(actionBtn).toBeInTheDocument();
+
+    fireEvent.click(actionBtn);
+    expect(handleAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('applies padding based on size prop', () => {
+    const { container: smContainer } = render(
+      <EmptyState size="sm" title="Small Empty" />,
+    );
+    expect(smContainer.firstChild).toHaveClass('px-space-16', 'py-space-20');
+
+    const { container: mdContainer } = render(
+      <EmptyState size="md" title="Default Empty" />,
+    );
+    expect(mdContainer.firstChild).toHaveClass('px-space-20', 'py-space-40');
   });
 
   it('merges custom className', () => {
