@@ -14,7 +14,10 @@ export type ButtonVariant =
   | 'danger-filled'
   | 'ghost'
   | 'google'
-  | 'link';
+  | 'link'
+  | 'tile';
+
+export type ButtonIconPosition = 'start' | 'top';
 
 export type ButtonSize = 'sm' | 'md' | 'xl';
 
@@ -27,6 +30,7 @@ export interface ButtonProps
   loadingLabel?: React.ReactNode;
   count?: number | string;
   icon?: React.ReactNode;
+  iconPosition?: ButtonIconPosition;
   asChild?: boolean;
 }
 
@@ -45,6 +49,8 @@ const variantStyles: Record<ButtonVariant, string> = {
     'border border-line-strong bg-surface text-ink hover:bg-hover active:bg-pressed w-full',
   link:
     'border-0 bg-transparent text-inherit underline underline-offset-2 hover:no-underline active:opacity-80 p-0 h-auto font-bold inline',
+  tile:
+    'border border-line bg-surface hover:bg-hover active:bg-pressed w-full no-underline [&_svg]:text-ink-3 [&_svg]:shrink-0',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -54,6 +60,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       className,
       variant = 'secondary',
       size = 'md',
+      iconPosition = 'start',
       iconOnly = false,
       loading = false,
       loadingLabel,
@@ -68,38 +75,42 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ) => {
     const isLink = variant === 'link';
     const isGoogle = variant === 'google';
+    const isTile = variant === 'tile';
     const effectiveSize = isGoogle ? 'xl' : size;
 
     const sizeClasses = isLink
       ? ''
-      : {
-          sm: iconOnly
-            ? 'h-control-sm aspect-square p-0 rounded-ds-sm'
-            : 'h-control-sm px-space-8 text-caption rounded-ds-sm gap-space-4',
-          md: iconOnly
-            ? 'h-control-md aspect-square p-0 rounded-ds-md'
-            : 'h-control-md px-space-12 text-label rounded-ds-md gap-space-6',
-          xl: iconOnly
-            ? 'h-control-xl aspect-square p-0 rounded-ds-lg'
-            : 'h-control-xl px-space-16 text-heading rounded-ds-lg gap-space-8',
-        }[effectiveSize];
+      : isTile
+        ? iconPosition === 'top'
+          ? 'h-16 px-space-4 py-space-12 gap-space-6 rounded-ds-lg text-label text-ink-2 flex-col items-center justify-center text-center'
+          : 'px-space-12 py-space-12 gap-space-12 rounded-ds-lg text-body-strong text-ink justify-start text-left'
+        : {
+            sm: iconOnly
+              ? 'h-control-sm aspect-square p-0 rounded-ds-sm'
+              : 'h-control-sm px-space-8 text-caption rounded-ds-sm gap-space-4',
+            md: iconOnly
+              ? 'h-control-md aspect-square p-0 rounded-ds-md'
+              : 'h-control-md px-space-12 text-label rounded-ds-md gap-space-6',
+            xl: iconOnly
+              ? 'h-control-xl aspect-square p-0 rounded-ds-lg'
+              : 'h-control-xl px-space-16 text-heading rounded-ds-lg gap-space-8',
+          }[effectiveSize];
 
     const classes = cn(
       isLink
         ? 'inline font-text font-bold text-inherit underline underline-offset-2 transition-colors duration-fast select-none cursor-pointer disabled:opacity-45 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2'
-        : 'inline-flex items-center justify-center font-text font-semibold whitespace-nowrap transition-colors duration-fast select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 disabled:opacity-45 disabled:pointer-events-none cursor-pointer',
+        : cn(
+            'inline-flex items-center justify-center font-text whitespace-nowrap transition-colors duration-fast select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 disabled:opacity-45 disabled:pointer-events-none cursor-pointer',
+            isTile
+              ? iconPosition === 'top'
+                ? 'font-semibold'
+                : 'font-bold'
+              : 'font-semibold',
+          ),
       sizeClasses,
       variantStyles[variant],
       className,
     );
-
-    if (asChild) {
-      return (
-        <Slot ref={ref} className={classes} {...props}>
-          {children}
-        </Slot>
-      );
-    }
 
     const isEffectivelyDisabled = disabled || loading;
     const isPrimary = variant === 'primary';
@@ -120,6 +131,30 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const effectiveChildren =
       children ?? (isGoogle ? 'Continue with Google' : null);
 
+    if (asChild) {
+      if (React.isValidElement(children) && effectiveIcon) {
+        const child = children as React.ReactElement<{ children?: React.ReactNode }>;
+        return (
+          <Slot ref={ref} className={classes} {...props}>
+            {React.cloneElement(
+              child,
+              {},
+              <span className={cn('inline-flex items-center justify-center shrink-0', isTile && 'text-ink-3')}>
+                {effectiveIcon}
+              </span>,
+              child.props.children,
+            )}
+          </Slot>
+        );
+      }
+
+      return (
+        <Slot ref={ref} className={classes} {...props}>
+          {children}
+        </Slot>
+      );
+    }
+
     return (
       <button
         ref={ref}
@@ -131,7 +166,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading ? (
           <>
-            <Icon name="spinner" data-testid="spinner-icon" size={effectiveSize === 'sm' ? 'sm' : 'md'} className="animate-spin shrink-0" />
+            <Icon
+              name="spinner"
+              data-testid="spinner-icon"
+              size={isTile ? 'lg' : effectiveSize === 'sm' ? 'sm' : 'md'}
+              className="animate-spin shrink-0"
+            />
             {loadingLabel ? (
               <span>{loadingLabel}</span>
             ) : !iconOnly && effectiveChildren ? (
@@ -141,12 +181,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ) : (
           <>
             {effectiveIcon ? (
-              <span className="inline-flex items-center justify-center shrink-0">
+              <span className={cn('inline-flex items-center justify-center shrink-0', isTile && 'text-ink-3')}>
                 {effectiveIcon}
               </span>
             ) : null}
             {effectiveChildren}
-            {count !== undefined && count !== null ? (
+            {!isTile && count !== undefined && count !== null ? (
               <Badge
                 variant="count"
                 count={count}

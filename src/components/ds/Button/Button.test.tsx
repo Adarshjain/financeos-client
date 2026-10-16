@@ -168,4 +168,108 @@ describe('Button component', () => {
       screen.getByRole('button', { name: 'Sign in with Google' }),
     ).toBeInTheDocument();
   });
+
+  describe('tile variant', () => {
+    it('renders iconPosition="start" (default) with 46px height, ink-3 icon, and start alignment', () => {
+      const handleClick = vi.fn();
+      render(
+        <Button
+          variant="tile"
+          icon={<Icon name="accounts" size="lg" data-testid="tile-icon" />}
+          onClick={handleClick}
+        >
+          Accounts
+        </Button>,
+      );
+
+      const btn = screen.getByRole('button', { name: /Accounts/i });
+      expect(btn).toBeInTheDocument();
+      expect(btn).toHaveClass(
+        'bg-surface',
+        'border',
+        'border-line',
+        'rounded-ds-lg',
+        'text-body-strong',
+        'text-ink',
+        'justify-start',
+        'text-left',
+        'w-full',
+      );
+
+      const iconWrapper = screen.getByTestId('tile-icon').parentElement;
+      expect(iconWrapper).toHaveClass('text-ink-3');
+
+      fireEvent.click(btn);
+      expect(handleClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('renders iconPosition="top" with 64px (h-16), centred, and label in ink-2', () => {
+      render(
+        <Button
+          variant="tile"
+          iconPosition="top"
+          icon={<Icon name="add" size="lg" data-testid="tile-icon-top" />}
+        >
+          Transaction
+        </Button>,
+      );
+
+      const btn = screen.getByRole('button', { name: /Transaction/i });
+      expect(btn).toBeInTheDocument();
+      expect(btn).toHaveClass(
+        'h-16',
+        'rounded-ds-lg',
+        'text-label',
+        'text-ink-2',
+        'flex-col',
+        'items-center',
+        'justify-center',
+        'text-center',
+        'w-full',
+      );
+
+      const iconWrapper = screen.getByTestId('tile-icon-top').parentElement;
+      expect(iconWrapper).toHaveClass('text-ink-3');
+    });
+
+    it('renders asChild wrapping a link with no underline', () => {
+      render(
+        <Button variant="tile" asChild>
+          <a href="#test-accounts">
+            <Icon name="accounts" size="lg" data-testid="link-icon" />
+            Accounts
+          </a>
+        </Button>,
+      );
+
+      const link = screen.getByRole('link', { name: /Accounts/i });
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute('href', '#test-accounts');
+      expect(link).toHaveClass('bg-surface', 'border', 'border-line', 'no-underline', 'w-full');
+    });
+
+    it('suppresses count badge on tile variant', () => {
+      render(
+        <Button variant="tile" count={5}>
+          Accounts
+        </Button>,
+      );
+
+      expect(screen.queryByText('5')).not.toBeInTheDocument();
+    });
+
+    it('handles disabled state properly on tile', () => {
+      const handleClick = vi.fn();
+      render(
+        <Button variant="tile" disabled onClick={handleClick}>
+          Disabled Tile
+        </Button>,
+      );
+
+      const btn = screen.getByRole('button', { name: /Disabled Tile/i });
+      expect(btn).toBeDisabled();
+      fireEvent.click(btn);
+      expect(handleClick).not.toHaveBeenCalled();
+    });
+  });
 });
