@@ -1,145 +1,147 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { useArgs } from 'storybook/preview-api';
+import { fn } from 'storybook/test';
 
-import { Avatar } from '../Avatar/Avatar';
-import { FilterChip } from '../FilterChip/FilterChip';
-import { Select, SelectMenu, type SelectOption } from './Select';
+import { Avatar, FilterChip, Icon, Select, type SelectOption } from '@/components/ds';
 
-const singleOptions: SelectOption[] = [
-  { value: 'contains', label: 'Contains' },
-  { value: 'starts_with', label: 'Starts with' },
-  { value: 'exact', label: 'Exact' },
-  { value: 'regex', label: 'Regex' },
+const standardOptions: SelectOption[] = [
+  { value: 'option-a', label: 'Option A', hint: 'Hint A' },
+  { value: 'option-b', label: 'Option B', hint: 'Hint B' },
+  { value: 'option-c', label: 'Option C', hint: 'Hint C' },
+  { value: 'option-d', label: 'Option D', hint: 'Hint D' },
 ];
 
-const bankOptions: SelectOption[] = [
+const iconOptions: SelectOption[] = [
   {
-    value: 'hdfc',
-    label: 'HDFC Bank',
+    value: 'item-1',
+    label: 'Item 1',
     icon: (
-      <Avatar
-        variant="square"
-        tone="inverse"
-        size="sm"
-        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Crect width='24' height='24' fill='%23004c8f'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-family='sans-serif' font-size='10' font-weight='bold'%3EHD%3C/text%3E%3C/svg%3E"
-      >
-        HD
+      <Avatar variant="square" size="sm">
+        A1
       </Avatar>
     ),
   },
   {
-    value: 'icici',
-    label: 'ICICI Bank',
+    value: 'item-2',
+    label: 'Item 2',
     icon: (
-      <Avatar variant="square" tone="inverse" size="sm">
-        IC
+      <Avatar variant="square" size="sm">
+        A2
       </Avatar>
     ),
   },
   {
-    value: 'sbi',
-    label: 'State Bank of India',
+    value: 'item-3',
+    label: 'Item 3',
     icon: (
-      <Avatar variant="square" tone="inverse" size="sm">
-        SB
+      <Avatar variant="square" size="sm">
+        A3
       </Avatar>
     ),
   },
 ];
 
-const statusOptions: SelectOption[] = [
-  { value: 'unreconciled', label: 'Unreconciled' },
-  { value: 'unverified', label: 'Category unverified' },
-  { value: 'duplicate', label: 'Duplicate' },
-  { value: 'corrected', label: 'Date corrected' },
+const descriptionOptions: SelectOption[] = [
+  {
+    value: 'plan-basic',
+    label: 'Basic Plan',
+    description: 'Up to 5 team members',
+  },
+  {
+    value: 'plan-pro',
+    label: 'Pro Plan',
+    description: 'Unlimited team members and storage',
+  },
+  {
+    value: 'plan-enterprise',
+    label: 'Enterprise Plan',
+    description: 'Dedicated support and custom SLAs',
+  },
 ];
 
-const categoryOptions: SelectOption[] = [
-  { value: 'food', label: 'Food & dining' },
-  { value: 'fast_food', label: 'Fast food' },
+const disabledOptions: SelectOption[] = [
+  { value: 'active-1', label: 'Enabled Option 1' },
+  { value: 'active-2', label: 'Enabled Option 2' },
+  {
+    value: 'disabled-1',
+    label: 'Disabled Option',
+    disabled: true,
+    disabledReason: 'Unavailable',
+  },
 ];
 
 const sectionedGroups = [
   {
-    name: 'Bank accounts',
+    name: 'Group 1',
     options: [
-      { value: 'hdfc_savings', label: 'HDFC Bank Savings', hint: '••4521' },
-      { value: 'icici_salary', label: 'ICICI Salary', hint: '••8832' },
+      { value: 'g1-1', label: 'Option 1.1', hint: 'Detail' },
+      { value: 'g1-2', label: 'Option 1.2', hint: 'Detail' },
     ],
   },
   {
-    name: 'Credit cards',
+    name: 'Group 2',
     options: [
-      { value: 'regalia', label: 'HDFC Regalia Gold' },
-      { value: 'amex', label: 'Amex Platinum', hint: '••1008' },
+      { value: 'g2-1', label: 'Option 2.1' },
+      { value: 'g2-2', label: 'Option 2.2', hint: 'Detail' },
     ],
   },
   {
-    name: 'Wallets & cash',
-    options: [{ value: 'paytm', label: 'Paytm Wallet' }],
-  },
-];
-
-const sharedLimitOptions: SelectOption[] = [
-  {
-    value: 'none',
-    label: 'None',
-    description: 'This card has its own limit',
-  },
-  {
-    value: 'hdfc_pool',
-    label: 'HDFC cards',
-    description: '₹5,00,000 · 2 cards',
-  },
-];
-
-const counterpartyOptions: SelectOption[] = [
-  {
-    value: 'rahul',
-    label: 'Rahul Sharma',
-    hint: 'owes ₹15,000',
-    icon: (
-      <Avatar variant="circle" tone="brand" size="sm">
-        RS
-      </Avatar>
-    ),
-  },
-];
-
-const repaymentOptions: SelectOption[] = [
-  { value: 'full', label: 'Paid in full', description: '₹44,319' },
-  { value: 'min', label: 'Minimum due', description: '₹2,500' },
-  { value: 'other', label: 'Other amount' },
-];
-
-const transferOptions: SelectOption[] = [
-  { value: 'debit', label: 'Debit' },
-  { value: 'credit', label: 'Credit' },
-  {
-    value: 'transfer',
-    label: 'Transfer',
-    disabled: true,
-    hint: 'use Link instead',
+    name: 'Group 3',
+    options: [{ value: 'g3-1', label: 'Option 3.1' }],
   },
 ];
 
 const meta: Meta<typeof Select> = {
   title: 'DS/Inputs/Select',
   component: Select,
-  argTypes: {
-    placeholder: { control: { type: 'text' } },
-    label: { control: { type: 'text' } },
-    error: { control: { type: 'text' } },
-    helper: { control: { type: 'text' } },
-    disabled: { control: { type: 'boolean' } },
-    multiple: { control: { type: 'boolean' } },
-    searchable: { control: { type: 'boolean' } },
-    loading: { control: { type: 'boolean' } },
-    defaultOpen: { control: { type: 'boolean' } },
-  },
   parameters: {
     layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'The dropdown for choosing values. Single-choice fields are always a Select, never tiles or chip groups; multi-choice fields are a multi-select with the picks as chips inside the field.',
+      },
+    },
+  },
+  decorators: [
+    (Story) => (
+      <div className="max-w-sm">
+        <Story />
+      </div>
+    ),
+  ],
+  args: {
+    placeholder: 'Select an option…',
+    onValueChange: fn(),
+    onSearchChange: fn(),
+    onCreate: fn(),
+    onOpenChange: fn(),
+  },
+  argTypes: {
+    placeholder: { control: 'text' },
+    label: { control: 'text' },
+    error: { control: 'text' },
+    helper: { control: 'text' },
+    disabled: { control: 'boolean' },
+    multiple: { control: 'boolean' },
+    searchable: { control: 'boolean' },
+    loading: { control: 'boolean' },
+    loadingText: { control: 'text' },
+    maxDisplayChips: { control: 'number' },
+    showRadio: { control: 'boolean' },
+    defaultOpen: { control: 'boolean' },
+    open: { control: 'boolean' },
+    options: { table: { disable: true } },
+    groups: { table: { disable: true } },
+    icon: { table: { disable: true } },
+    trigger: { control: false, table: { disable: true } },
+    action: { table: { disable: true } },
+    emptyText: { table: { disable: true } },
+    createLabel: { table: { disable: true } },
+    clearLabel: { table: { disable: true } },
+    doneLabel: { table: { disable: true } },
+    filter: { table: { disable: true } },
   },
   render: function Render(args) {
     const [{ value }, updateArgs] = useArgs();
@@ -147,7 +149,10 @@ const meta: Meta<typeof Select> = {
       <Select
         {...args}
         value={value ?? args.defaultValue}
-        onValueChange={(val) => updateArgs({ value: val })}
+        onValueChange={(val) => {
+          updateArgs({ value: val });
+          args.onValueChange?.(val);
+        }}
       />
     );
   },
@@ -156,447 +161,139 @@ const meta: Meta<typeof Select> = {
 export default meta;
 type Story = StoryObj<typeof Select>;
 
-export const AllVariants: Story = {
-  render: () => {
-    return (
-      <div className="space-y-space-24 max-w-4xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-space-16 p-space-16 bg-canvas rounded-ds-lg border border-line">
-          <div className="space-y-space-4">
-            <span className="font-text text-caption font-semibold text-ink-3">
-              Single · value
-            </span>
-            <Select options={singleOptions} defaultValue="starts_with" />
-          </div>
-
-          <div className="space-y-space-4">
-            <span className="font-text text-caption font-semibold text-ink-3">
-              Single · placeholder
-            </span>
-            <Select
-              options={categoryOptions}
-              placeholder="Choose a category"
-            />
-          </div>
-
-          <div className="space-y-space-4">
-            <span className="font-text text-caption font-semibold text-ink-3">
-              With icon
-            </span>
-            <Select
-              options={bankOptions}
-              defaultValue="hdfc"
-              icon={
-                <Avatar
-                  variant="square"
-                  tone="inverse"
-                  size="sm"
-                  src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Crect width='24' height='24' fill='%23004c8f'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-family='sans-serif' font-size='10' font-weight='bold'%3EHD%3C/text%3E%3C/svg%3E"
-                >
-                  HD
-                </Avatar>
-              }
-            />
-          </div>
-
-          <div className="space-y-space-4">
-            <span className="font-text text-caption font-semibold text-ink-3">
-              Multi · chips
-            </span>
-            <Select
-              multiple
-              options={statusOptions}
-              defaultValue={['unreconciled', 'duplicate']}
-            />
-          </div>
-
-          <div className="space-y-space-4">
-            <span className="font-text text-caption font-semibold text-ink-3">
-              Multi · overflow
-            </span>
-            <Select
-              multiple
-              options={[
-                { value: 'food', label: 'Food & dining' },
-                { value: 'groceries', label: 'Groceries' },
-                { value: 'fuel', label: 'Fuel' },
-                { value: 'travel', label: 'Travel' },
-              ]}
-              defaultValue={['food', 'groceries', 'fuel', 'travel']}
-              maxDisplayChips={2}
-            />
-          </div>
-
-          <div className="space-y-space-4">
-            <span className="font-text text-caption font-semibold text-ink-3">
-              Error
-            </span>
-            <Select
-              options={bankOptions}
-              placeholder="Choose an account"
-              error="Pick the account this statement belongs to."
-            />
-          </div>
-
-          <div className="space-y-space-4">
-            <span className="font-text text-caption font-semibold text-ink-3">
-              Disabled
-            </span>
-            <Select
-              disabled
-              options={[{ value: 'monthly', label: 'Monthly' }]}
-              defaultValue="monthly"
-            />
-          </div>
-
-          <div className="space-y-space-4">
-            <span className="font-text text-caption font-semibold text-ink-3">
-              Loading options
-            </span>
-            <Select
-              loading
-              loadingText="Loading accounts…"
-              options={[]}
-            />
-          </div>
-
-          <div className="space-y-space-4">
-            <span className="font-text text-caption font-semibold text-ink-3">
-              Custom trigger (FilterChip)
-            </span>
-            <Select
-              options={sectionedGroups[1].options}
-              defaultValue="regalia"
-              trigger={
-                <FilterChip active hasDropdown>
-                  Account · 2
-                </FilterChip>
-              }
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-space-16 p-space-16 bg-canvas rounded-ds-lg border border-line">
-          <div>
-            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
-              Single select
-            </span>
-            <SelectMenu options={singleOptions} value="starts_with" />
-          </div>
-          <div>
-            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
-              Single · with search and icons
-            </span>
-            <SelectMenu
-              searchable
-              searchPlaceholder="Search banks"
-              options={bankOptions}
-              value="hdfc"
-            />
-          </div>
-          <div>
-            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
-              Multi select
-            </span>
-            <SelectMenu
-              multiple
-              options={statusOptions}
-              value={['unreconciled', 'duplicate']}
-            />
-          </div>
-          <div>
-            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
-              Multi · with search
-            </span>
-            <SelectMenu
-              multiple
-              searchable
-              searchValue="food"
-              options={categoryOptions}
-              value={['food']}
-              onCreate={() => {}}
-              createLabel={(q) => `Create "${q}"`}
-            />
-          </div>
-          <div>
-            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
-              Sectioned list
-            </span>
-            <SelectMenu groups={sectionedGroups} value="regalia" />
-          </div>
-          <div>
-            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
-              With an action row
-            </span>
-            <SelectMenu
-              options={sharedLimitOptions}
-              value="hdfc_pool"
-              actionRow="+ New shared limit…"
-            />
-          </div>
-          <div>
-            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
-              Search · create from typing
-            </span>
-            <SelectMenu
-              searchable
-              searchValue="Rahul S"
-              options={counterpartyOptions}
-              onCreate={() => {}}
-              createLabel={(q) => `+ Add "${q}"`}
-            />
-          </div>
-          <div>
-            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
-              No results
-            </span>
-            <SelectMenu
-              searchable
-              searchValue="xyz bank"
-              options={bankOptions}
-              emptyText={(q) => `No banks match "${q}".`}
-            />
-          </div>
-          <div>
-            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
-              With descriptions
-            </span>
-            <SelectMenu
-              showRadio
-              options={repaymentOptions}
-              value="full"
-            />
-          </div>
-          <div>
-            <span className="font-text text-caption font-semibold text-ink-3 block mb-space-4">
-              Disabled option
-            </span>
-            <SelectMenu options={transferOptions} />
-          </div>
-        </div>
-      </div>
-    );
-  },
-};
-
-export const SingleSelect: Story = {
+export const Default: Story = {
   args: {
-    label: 'Filter operator',
-    options: singleOptions,
-    defaultValue: 'starts_with',
+    label: 'Standard Select',
+    options: standardOptions,
+    defaultValue: 'option-a',
   },
 };
 
 export const SingleWithSearchAndIcons: Story = {
   args: {
-    label: 'Bank account',
+    label: 'With search and icons',
     searchable: true,
-    searchPlaceholder: 'Search banks',
-    options: bankOptions,
-    defaultValue: 'hdfc',
-    icon: (
-      <Avatar
-        variant="square"
-        tone="inverse"
-        size="sm"
-        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Crect width='24' height='24' fill='%23004c8f'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-family='sans-serif' font-size='10' font-weight='bold'%3EHD%3C/text%3E%3C/svg%3E"
-      >
-        HD
-      </Avatar>
-    ),
+    options: iconOptions,
+    defaultValue: 'item-1',
   },
 };
 
 export const MultiSelect: Story = {
   args: {
-    label: 'Status flags',
+    label: 'Multiple selection',
     multiple: true,
-    options: statusOptions,
-    defaultValue: ['unreconciled', 'duplicate'],
+    options: standardOptions,
+    defaultValue: ['option-a', 'option-b'],
   },
 };
 
-export const MultiWithSearch: Story = {
+export const MultiWithSearchAndCreate: Story = {
   args: {
-    label: 'Categories',
+    label: 'Multi select with search and create',
     multiple: true,
     searchable: true,
-    options: categoryOptions,
-    defaultValue: ['food'],
+    options: standardOptions,
+    defaultValue: ['option-a'],
+    onCreate: fn(),
   },
 };
 
 export const SectionedList: Story = {
   args: {
-    label: 'Accounts',
+    label: 'Sectioned options',
     groups: sectionedGroups,
-    defaultValue: 'regalia',
+    defaultOpen: true,
   },
 };
 
-export const WithAnActionRow: Story = {
+export const WithAction: Story = {
   args: {
-    label: 'Shared limit',
-    options: sharedLimitOptions,
-    defaultValue: 'hdfc_pool',
-    actionRow: '+ New shared limit…',
+    label: 'Select with pinned action',
+    options: standardOptions,
+    defaultOpen: true,
+    action: {
+      label: '+ New custom option…',
+      onSelect: fn(),
+    },
   },
 };
 
 export const SearchCreateFromTyping: Story = {
   args: {
-    label: 'Counterparty',
+    label: 'Create from typed query',
     searchable: true,
-    options: counterpartyOptions,
-    onCreate: () => {},
+    defaultOpen: true,
+    searchValue: 'New Item',
+    options: standardOptions,
+    onCreate: fn(),
   },
 };
 
 export const NoResults: Story = {
   args: {
-    label: 'Banks',
+    label: 'No results state',
     searchable: true,
-    searchValue: 'xyz bank',
-    options: bankOptions,
+    defaultOpen: true,
+    searchValue: 'zzz',
+    options: standardOptions,
   },
 };
 
 export const WithDescriptions: Story = {
   args: {
-    label: 'Repayment options',
-    showRadio: true,
-    options: repaymentOptions,
-    defaultValue: 'full',
+    label: 'Options with descriptions',
+    options: descriptionOptions,
+    defaultOpen: true,
+    defaultValue: 'plan-pro',
   },
 };
 
 export const DisabledOption: Story = {
   args: {
-    label: 'Transaction type',
-    options: transferOptions,
-    defaultValue: 'debit',
+    label: 'Includes disabled options',
+    options: disabledOptions,
+    defaultOpen: true,
   },
 };
 
 export const CustomTrigger: Story = {
-  render: (args) => {
-    return (
-      <Select
-        {...args}
-        options={[
-          { value: 'account_1', label: 'HDFC Regalia Gold' },
-          { value: 'account_2', label: 'Amex Platinum' },
-          { value: 'account_3', label: 'SBI SimplyClick' },
-        ]}
-        defaultValue="account_1"
-        trigger={
-          <FilterChip active hasDropdown>
-            Account · 2
-          </FilterChip>
-        }
-      />
-    );
+  args: {
+    options: standardOptions,
+    defaultValue: 'option-a',
+    trigger: <FilterChip active hasDropdown>Filter Option</FilterChip>,
   },
 };
 
-export const ClosedFieldStates: Story = {
-  render: () => {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-space-16 p-space-16 bg-canvas rounded-ds-lg border border-line max-w-4xl">
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Single · value
-          </span>
-          <Select options={singleOptions} defaultValue="starts_with" />
-        </div>
+export const PlaceholderState: Story = {
+  args: {
+    label: 'Unset value',
+    placeholder: 'Choose an option…',
+    options: standardOptions,
+  },
+};
 
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Single · placeholder
-          </span>
-          <Select options={categoryOptions} placeholder="Choose a category" />
-        </div>
+export const ErrorState: Story = {
+  args: {
+    label: 'Required selection',
+    error: 'Please make a selection to proceed',
+    options: standardOptions,
+  },
+};
 
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            With icon
-          </span>
-          <Select
-            options={bankOptions}
-            defaultValue="hdfc"
-            icon={
-              <Avatar
-                variant="square"
-                tone="inverse"
-                size="sm"
-                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Crect width='24' height='24' fill='%23004c8f'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-family='sans-serif' font-size='10' font-weight='bold'%3EHD%3C/text%3E%3C/svg%3E"
-              >
-                HD
-              </Avatar>
-            }
-          />
-        </div>
+export const DisabledState: Story = {
+  args: {
+    label: 'Unavailable selection',
+    disabled: true,
+    options: standardOptions,
+    defaultValue: 'option-a',
+  },
+};
 
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Multi · chips
-          </span>
-          <Select
-            multiple
-            options={statusOptions}
-            defaultValue={['unreconciled', 'duplicate']}
-          />
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Multi · overflow
-          </span>
-          <Select
-            multiple
-            options={[
-              { value: 'food', label: 'Food & dining' },
-              { value: 'groceries', label: 'Groceries' },
-              { value: 'fuel', label: 'Fuel' },
-              { value: 'travel', label: 'Travel' },
-            ]}
-            defaultValue={['food', 'groceries', 'fuel', 'travel']}
-            maxDisplayChips={2}
-          />
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Error
-          </span>
-          <Select
-            options={bankOptions}
-            placeholder="Choose an account"
-            error="Pick the account this statement belongs to."
-          />
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Disabled
-          </span>
-          <Select
-            disabled
-            options={[{ value: 'monthly', label: 'Monthly' }]}
-            defaultValue="monthly"
-          />
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Loading options
-          </span>
-          <Select
-            loading
-            loadingText="Loading accounts…"
-            options={[]}
-          />
-        </div>
-      </div>
-    );
+export const LoadingState: Story = {
+  args: {
+    label: 'Fetching options',
+    loading: true,
+    loadingText: 'Loading items…',
+    options: standardOptions,
   },
 };

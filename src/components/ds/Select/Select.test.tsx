@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { Select, SelectMenu, type SelectOption } from './Select';
 
 const sampleOptions: SelectOption[] = [
-  { value: 'hdfc', label: 'HDFC Bank', hint: '••4521' },
+  { value: 'hdfc', label: 'HDFC Bank', hint: '••4521', searchText: 'savings 4521' },
   { value: 'icici', label: 'ICICI Bank', hint: '••8832' },
   { value: 'sbi', label: 'State Bank of India', disabled: true, disabledReason: 'down' },
 ];
@@ -115,6 +115,18 @@ describe('Select', () => {
     expect(handleValueChange).toHaveBeenCalledWith('icici');
   });
 
+  it('renders hidden input when name is provided', () => {
+    const { container } = render(
+      <Select
+        name="bankAccount"
+        options={sampleOptions}
+        defaultValue="hdfc"
+      />,
+    );
+    const hidden = container.querySelector('input[type="hidden"][name="bankAccount"]');
+    expect(hidden).toHaveValue('hdfc');
+  });
+
   it('works in controlled mode with value and onValueChange', () => {
     const handleValueChange = vi.fn();
     const ControlledSelect = () => {
@@ -162,7 +174,13 @@ describe('SelectMenu', () => {
     expect(screen.queryByText('ICICI Bank')).not.toBeInTheDocument();
   });
 
-  it('renders empty message when no matches found', () => {
+  it('filters by searchText if provided', () => {
+    render(<SelectMenu searchable options={sampleOptions} searchValue="savings" />);
+    expect(screen.getByText('HDFC Bank')).toBeInTheDocument();
+    expect(screen.queryByText('ICICI Bank')).not.toBeInTheDocument();
+  });
+
+  it('renders generic "No results" when no matches found and no emptyText', () => {
     render(
       <SelectMenu
         searchable
@@ -170,7 +188,19 @@ describe('SelectMenu', () => {
         searchValue="NonExistent"
       />,
     );
-    expect(screen.getByText(/No options match/)).toBeInTheDocument();
+    expect(screen.getByText('No results')).toBeInTheDocument();
+  });
+
+  it('renders custom emptyText callback', () => {
+    render(
+      <SelectMenu
+        searchable
+        options={sampleOptions}
+        searchValue="XYZ"
+        emptyText={(q) => `No bank matches "${q}"`}
+      />,
+    );
+    expect(screen.getByText('No bank matches "XYZ"')).toBeInTheDocument();
   });
 
   it('renders sectioned groups with header', () => {
@@ -185,17 +215,44 @@ describe('SelectMenu', () => {
   });
 
   it('renders action row and fires click', () => {
-    const onActionClick = vi.fn();
+    const onSelect = vi.fn();
     render(
       <SelectMenu
         options={sampleOptions}
-        actionRow="+ Add Bank"
-        onActionClick={onActionClick}
+        action={{ label: '+ Add Bank', onSelect }}
       />,
     );
 
     const action = screen.getByText('+ Add Bank');
     fireEvent.click(action);
-    expect(onActionClick).toHaveBeenCalledTimes(1);
+    expect(onSelect).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders custom clearLabel and doneLabel in multi mode', () => {
+    render(
+      <SelectMenu
+        multiple
+        options={sampleOptions}
+        value={['hdfc']}
+        clearLabel="Reset"
+        doneLabel={(n) => `Apply (${n})`}
+      />,
+    );
+    expect(screen.getByText('Reset')).toBeInTheDocument();
+    expect(screen.getByText('Apply (1)')).toBeInTheDocument();
+  });
+
+  it('respects filter="none"', () => {
+    render(
+      <SelectMenu
+        searchable
+        filter="none"
+        options={sampleOptions}
+        searchValue="NonExistent"
+      />,
+    );
+    // When filter="none", all options remain visible despite query
+    expect(screen.getByText('HDFC Bank')).toBeInTheDocument();
+    expect(screen.getByText('ICICI Bank')).toBeInTheDocument();
   });
 });

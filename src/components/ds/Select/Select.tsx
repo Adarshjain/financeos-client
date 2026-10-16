@@ -21,11 +21,12 @@ import { useControllableState } from '../useControllableState';
 export interface SelectOption {
   value: string;
   label: string;
+  searchText?: string;
   icon?: React.ReactNode;
   hint?: React.ReactNode;
   description?: React.ReactNode;
   disabled?: boolean;
-  disabledReason?: string;
+  disabledReason?: React.ReactNode;
   group?: string;
 }
 
@@ -34,28 +35,36 @@ export interface SelectGroup {
   options: SelectOption[];
 }
 
+export interface SelectAction {
+  label: React.ReactNode;
+  onSelect: () => void;
+}
+
 export interface SelectMenuProps {
   id?: string;
   options?: SelectOption[];
   groups?: SelectGroup[];
   value?: string | string[];
+  selected?: string | string[];
   multiple?: boolean;
   searchable?: boolean;
   searchPlaceholder?: string;
   searchValue?: string;
   onSearchChange?: (query: string) => void;
   onSelect?: (value: string) => void;
+  onSelectedChange?: (value: string) => void;
   onClear?: () => void;
   onDone?: () => void;
   onClose?: () => void;
   onCreate?: (query: string) => void;
   createLabel?: (query: string) => React.ReactNode;
-  actionRow?: React.ReactNode;
-  onActionClick?: () => void;
+  action?: SelectAction;
+  clearLabel?: React.ReactNode;
+  doneLabel?: (count: number) => React.ReactNode;
+  filter?: 'auto' | 'none' | ((option: SelectOption, query: string) => boolean);
   showRadio?: boolean;
   className?: string;
   emptyText?: (query: string) => React.ReactNode;
-  isSheet?: boolean;
 }
 
 export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
@@ -65,30 +74,34 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       options = [],
       groups,
       value,
+      selected,
       multiple = false,
       searchable = false,
       searchPlaceholder = 'Search…',
       searchValue: controlledSearch,
       onSearchChange,
       onSelect,
+      onSelectedChange,
       onClear,
       onDone,
       onClose,
       onCreate,
       createLabel,
-      actionRow,
-      onActionClick,
+      action,
+      clearLabel = 'Clear',
+      doneLabel,
+      filter = 'auto',
       showRadio = false,
       className,
       emptyText,
-      isSheet: explicitIsSheet,
     },
     ref,
   ) => {
-    const isSheet = explicitIsSheet ?? false;
     const generatedId = useId();
     const id = explicitId || generatedId;
     const listboxId = `${id}-listbox`;
+
+    const effectiveValue = selected !== undefined ? selected : value;
 
     const [internalSearch, setInternalSearch] = useState('');
     const searchQuery =
@@ -101,11 +114,16 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       onSearchChange?.(q);
     };
 
+    const handleOptionSelect = (val: string) => {
+      onSelect?.(val);
+      onSelectedChange?.(val);
+    };
+
     const selectedValues = useMemo(() => {
-      if (value === undefined || value === null) return new Set<string>();
-      if (Array.isArray(value)) return new Set(value);
-      return new Set([value]);
-    }, [value]);
+      if (effectiveValue === undefined || effectiveValue === null) return new Set<string>();
+      if (Array.isArray(effectiveValue)) return new Set(effectiveValue);
+      return new Set([effectiveValue]);
+    }, [effectiveValue]);
 
     // Flatten options if groups are used
     const processedGroups: SelectGroup[] = useMemo(() => {
@@ -132,21 +150,27 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
 
     // Filter by search query
     const filteredGroups = useMemo(() => {
+      if (filter === 'none') return processedGroups;
       if (!searchQuery.trim()) return processedGroups;
       const lower = searchQuery.toLowerCase();
+      const filterFn =
+        typeof filter === 'function'
+          ? (opt: SelectOption) => filter(opt, searchQuery)
+          : (opt: SelectOption) => {
+              const matchesLabel = opt.label.toLowerCase().includes(lower);
+              const matchesSearch = opt.searchText
+                ? opt.searchText.toLowerCase().includes(lower)
+                : false;
+              return matchesLabel || matchesSearch;
+            };
+
       return processedGroups
         .map((g) => ({
           name: g.name,
-          options: g.options.filter(
-            (opt) =>
-              opt.label.toLowerCase().includes(lower) ||
-              (opt.description &&
-                String(opt.description).toLowerCase().includes(lower)) ||
-              (opt.hint && String(opt.hint).toLowerCase().includes(lower)),
-          ),
+          options: g.options.filter(filterFn),
         }))
         .filter((g) => g.options.length > 0);
-    }, [processedGroups, searchQuery]);
+    }, [processedGroups, searchQuery, filter]);
 
     const totalMatches = useMemo(
       () => filteredGroups.reduce((acc, g) => acc + g.options.length, 0),
@@ -170,15 +194,18 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       ) {
         return highlightedValue;
       }
+      const firstSelected = Array.isArray(effectiveValue)
+        ? effectiveValue[0]
+        : effectiveValue;
       if (
-        value &&
-        typeof value === 'string' &&
-        flatEnabledOptions.some((opt) => opt.value === value)
+        firstSelected &&
+        typeof firstSelected === 'string' &&
+        flatEnabledOptions.some((opt) => opt.value === firstSelected)
       ) {
-        return value;
+        return firstSelected;
       }
       return flatEnabledOptions[0]?.value ?? null;
-    }, [highlightedValue, flatEnabledOptions, value]);
+    }, [highlightedValue, flatEnabledOptions, effectiveValue]);
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
@@ -214,7 +241,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       } else if (e.key === 'Enter') {
         e.preventDefault();
         if (effectiveHighlighted) {
-          onSelect?.(effectiveHighlighted);
+          handleOptionSelect(effectiveHighlighted);
         } else if (searchQuery.trim() && onCreate) {
           onCreate(searchQuery.trim());
         }
@@ -246,7 +273,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           }}
           onClick={() => {
             if (!isDisabled) {
-              onSelect?.(opt.value);
+              handleOptionSelect(opt.value);
             }
           }}
           className={cn(
@@ -314,8 +341,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
         tabIndex={!searchable ? 0 : undefined}
         onKeyDown={!searchable ? handleKeyDown : undefined}
         className={cn(
-          'flex flex-col w-full outline-none',
-          isSheet ? 'p-space-16 bg-surface' : 'p-space-2',
+          'flex flex-col w-full outline-none p-space-2',
           className,
         )}
       >
@@ -345,9 +371,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
         >
           {totalMatches === 0 && searchQuery.trim() ? (
             <div className="px-space-10 py-space-14 font-text text-label font-medium text-ink-3 text-center">
-              {emptyText
-                ? emptyText(searchQuery)
-                : `No options match "${searchQuery}".`}
+              {emptyText ? emptyText(searchQuery) : 'No results'}
             </div>
           ) : null}
 
@@ -366,42 +390,33 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
         {searchQuery.trim() && onCreate ? (
           <>
             <div className="h-px bg-line-soft my-space-4 mx-space-6" />
-            <div
-              role="button"
-              tabIndex={0}
+            <button
+              type="button"
               onClick={() => onCreate(searchQuery.trim())}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onCreate(searchQuery.trim());
-                }
-              }}
-              className="flex items-center gap-space-8 py-space-8 px-space-10 rounded-ds-md font-text font-bold text-body text-brand hover:bg-hover cursor-pointer transition-colors"
+              className="flex items-center gap-space-8 py-space-8 px-space-10 rounded-ds-md font-text font-bold text-body text-brand hover:bg-hover cursor-pointer transition-colors w-full text-left"
             >
-              {createLabel
-                ? createLabel(searchQuery.trim())
-                : `+ Add "${searchQuery.trim()}"`}
-            </div>
+              {createLabel ? (
+                createLabel(searchQuery.trim())
+              ) : (
+                <>
+                  <Icon name="add" size="sm" />
+                  <span>{searchQuery.trim()}</span>
+                </>
+              )}
+            </button>
           </>
         ) : null}
 
-        {actionRow ? (
+        {action ? (
           <>
             <div className="h-px bg-line-soft my-space-4 mx-space-6" />
-            <div
-              role="button"
-              tabIndex={0}
-              onClick={onActionClick}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onActionClick?.();
-                }
-              }}
-              className="flex items-center gap-space-8 py-space-8 px-space-10 rounded-ds-md font-text font-bold text-body text-brand hover:bg-hover cursor-pointer transition-colors"
+            <button
+              type="button"
+              onClick={action.onSelect}
+              className="flex items-center gap-space-8 py-space-8 px-space-10 rounded-ds-md font-text font-bold text-body text-brand hover:bg-hover cursor-pointer transition-colors w-full text-left"
             >
-              {actionRow}
-            </div>
+              {action.label}
+            </button>
           </>
         ) : null}
 
@@ -414,7 +429,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
               className="flex-1"
               onClick={onClear}
             >
-              Clear
+              {clearLabel}
             </Button>
             <Button
               type="button"
@@ -423,7 +438,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
               className="flex-1"
               onClick={onDone}
             >
-              Done · {selectedValues.size}
+              {doneLabel ? doneLabel(selectedValues.size) : 'Done'}
             </Button>
           </div>
         ) : null}
@@ -434,8 +449,13 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
 
 SelectMenu.displayName = 'SelectMenu';
 
-export interface SelectProps {
+export interface SelectProps
+  extends Omit<
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    'value' | 'defaultValue' | 'onChange' | 'placeholder' | 'action'
+  > {
   id?: string;
+  name?: string;
   label?: React.ReactNode;
   helper?: React.ReactNode;
   error?: React.ReactNode;
@@ -452,8 +472,10 @@ export interface SelectProps {
   onSearchChange?: (query: string) => void;
   onCreate?: (query: string) => void;
   createLabel?: (query: string) => React.ReactNode;
-  actionRow?: React.ReactNode;
-  onActionClick?: () => void;
+  action?: SelectAction;
+  clearLabel?: React.ReactNode;
+  doneLabel?: (count: number) => React.ReactNode;
+  filter?: 'auto' | 'none' | ((option: SelectOption, query: string) => boolean);
   maxDisplayChips?: number;
   disabled?: boolean;
   loading?: boolean;
@@ -468,17 +490,17 @@ export interface SelectProps {
   triggerClassName?: string;
   menuClassName?: string;
   emptyText?: (query: string) => React.ReactNode;
-  forceSheet?: boolean;
 }
 
 export const Select = forwardRef<HTMLButtonElement, SelectProps>(
   (
     {
       id: explicitId,
+      name,
       label,
       helper,
       error,
-      placeholder = 'Select an option…',
+      placeholder,
       value: controlledValue,
       defaultValue,
       onValueChange,
@@ -491,8 +513,10 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       onSearchChange,
       onCreate,
       createLabel,
-      actionRow,
-      onActionClick,
+      action,
+      clearLabel,
+      doneLabel,
+      filter,
       maxDisplayChips = 2,
       disabled = false,
       loading = false,
@@ -507,7 +531,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
       triggerClassName,
       menuClassName,
       emptyText,
-      forceSheet,
+      ...restProps
     },
     ref,
   ) => {
@@ -605,9 +629,11 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           <>
             <div className="flex items-center gap-space-6 flex-wrap flex-1 min-w-0">
               {selectedOptions.length === 0 ? (
-                <span className="font-text font-medium text-body text-ink-4 truncate">
-                  {placeholder}
-                </span>
+                placeholder ? (
+                  <span className="font-text font-medium text-body text-ink-4 truncate">
+                    {placeholder}
+                  </span>
+                ) : null
               ) : (
                 <>
                   {visibleChips.map((opt) => (
@@ -691,6 +717,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
           triggerClassName,
         )}
+        {...restProps}
       >
         {triggerContent}
       </button>
@@ -708,6 +735,15 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
         error={error}
         className={cn(trigger ? 'inline-block' : 'w-full', className)}
       >
+        {name ? (
+          Array.isArray(currentValue) ? (
+            currentValue.map((v) => (
+              <input key={v} type="hidden" name={name} value={v} />
+            ))
+          ) : (
+            <input type="hidden" name={name} value={currentValue ?? ''} />
+          )
+        ) : null}
         <Popover
           open={isOpen}
           onOpenChange={setOpen}
@@ -730,8 +766,10 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             onClose={() => setOpen(false)}
             onCreate={onCreate}
             createLabel={createLabel}
-            actionRow={actionRow}
-            onActionClick={onActionClick}
+            action={action}
+            clearLabel={clearLabel}
+            doneLabel={doneLabel}
+            filter={filter}
             showRadio={showRadio}
             emptyText={emptyText}
             className={menuClassName}
