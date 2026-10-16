@@ -9,6 +9,13 @@ A square tick box for multi-choice on desktop: the selection column of desktop t
 - Hover `bg-hover` (off) or `brand-hover` (on); pressed one step further.
 - Phone selection never shows checkboxes (RULES §7.4); rows tint and stripe instead.
 
+## Props
+- `checked?: boolean | 'indeterminate'`
+- `defaultChecked?: boolean | 'indeterminate'`
+- `onCheckedChange?: (checked: boolean | 'indeterminate') => void`
+- `disabled?: boolean`
+- Plus native button attributes and ref forwarded to Radix Checkbox Root.
+
 ## Built from
 Radix Checkbox, Icon.
 

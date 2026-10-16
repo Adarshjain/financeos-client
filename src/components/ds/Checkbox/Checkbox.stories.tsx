@@ -1,21 +1,39 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React, { useState } from 'react';
+import React from 'react';
 import { useArgs } from 'storybook/preview-api';
+import { fn } from 'storybook/test';
 
-import { Checkbox } from './Checkbox';
+import { Checkbox } from '@/components/ds';
 
 const meta: Meta<typeof Checkbox> = {
   title: 'DS/Inputs/Checkbox',
   component: Checkbox,
+  parameters: {
+    layout: 'centered',
+    docs: {
+      description: {
+        component:
+          'A square tick box for multi-choice on desktop: the selection column of desktop tables, multi-select options, and confirm lists ("Select all 12 matches").',
+      },
+    },
+  },
+  args: {
+    checked: false,
+    onCheckedChange: fn(),
+  },
   argTypes: {
     checked: {
-      control: 'boolean',
+      control: 'select',
+      options: [false, true, 'indeterminate'],
     },
     disabled: {
       control: 'boolean',
     },
-    indeterminate: {
-      control: 'boolean',
+    defaultChecked: {
+      control: false,
+    },
+    asChild: {
+      control: false,
     },
   },
   render: function Render(args) {
@@ -24,7 +42,10 @@ const meta: Meta<typeof Checkbox> = {
       <Checkbox
         {...args}
         checked={checked}
-        onCheckedChange={(val) => updateArgs({ checked: val })}
+        onCheckedChange={(val) => {
+          args.onCheckedChange?.(val);
+          updateArgs({ checked: val });
+        }}
       />
     );
   },
@@ -32,27 +53,6 @@ const meta: Meta<typeof Checkbox> = {
 
 export default meta;
 type Story = StoryObj<typeof Checkbox>;
-
-export const AllVariants: Story = {
-  render: () => {
-    const InteractiveRow = () => {
-      const [c1, setC1] = useState<boolean | 'indeterminate'>(false);
-      const [c2, setC2] = useState<boolean | 'indeterminate'>(true);
-      const [c3, setC3] = useState<boolean | 'indeterminate'>('indeterminate');
-      return (
-        <div className="p-space-16 bg-canvas min-h-full flex flex-col gap-space-12 font-text">
-          <div className="flex gap-space-16 items-center">
-            <Checkbox checked={c1} onCheckedChange={setC1} aria-label="Off" />
-            <Checkbox checked={c2} onCheckedChange={setC2} aria-label="On" />
-            <Checkbox checked={c3} onCheckedChange={setC3} aria-label="Mixed" />
-            <Checkbox disabled aria-label="Disabled" />
-          </div>
-        </div>
-      );
-    };
-    return <InteractiveRow />;
-  },
-};
 
 export const Off: Story = {
   args: {
@@ -78,6 +78,7 @@ export const Mixed: Story = {
 export const Disabled: Story = {
   args: {
     disabled: true,
+    checked: false,
     'aria-label': 'Disabled',
   },
 };
