@@ -260,7 +260,7 @@ export const CustomTrigger: Story = {
   args: {
     options: standardOptions,
     defaultValue: 'option-a',
-    trigger: <FilterChip active hasDropdown>Filter Option</FilterChip>,
+    trigger: <FilterChip selected hasDropdown>Filter Option</FilterChip>,
   },
 };
 
