@@ -94,6 +94,22 @@ const RULES = [
   },
 ];
 
+const REMOVED_API = [
+  [/\bCategoryChip\b/, 'CategoryChip was merged into Badge (audit G2)'],
+  [/\bFilterChipRow\b/, 'FilterChipRow was deleted; lay out chip rows with layout classes (audit G3)'],
+  [/\b(?:ResponsiveOverlay|forcePhone|forceSheet|forcePopover|asDropdownMenu)\b/, 'dropdowns never become sheets; ResponsiveOverlay and its flags are gone (audit G5)'],
+  [/\bvariant=["'{]?["']?(?:tile|google|amber|count)["']/, 'removed variant: tile/google (audit G11), amber (G3), count (G2)'],
+  [/\biconPosition\b/, 'iconPosition was replaced by Button layout="inline|stacked" (audit G11)'],
+  [/\b(?:onUndo|undoLabel|onRetry|retryLabel|removeLabel|actionRow|onActionClick)\b/, 'one action shape: action={{ label, onSelect }} (audit G6)'],
+];
+const STORY_RULES = [
+  ['story-callback', /=>\s*\{\s*\}|\balert\(|\bconsole\.(?:log|info|warn)\(/, 'stories log callbacks with fn() from storybook/test (RULES §5a.3)'],
+  ['story-import', /from ['"]\.\.?\//, 'stories import from @/components/ds or @/components/organisms (RULES §5a.5)'],
+  ['story-play', /\bplay\s*:/, 'no play functions in stories (RULES §5a.8)'],
+  ['story-allvariants', /\bAllVariants\b|All variants/, 'no All variants story; autodocs shows every story (RULES §5a.1)'],
+  ['story-styling', /\bstyle=\{\{/, 'inline style in a story (RULES §5a.4)'],
+];
+
 const SCAN_EXT = /\.(?:tsx?|jsx?|css)$/;
 const SKIP = [
   /^src\/app\/globals\.css$/,
@@ -237,9 +253,28 @@ function check(lines, all = false, classes = true) {
       }
     }
     const comp = dsComponent(file);
-    if (/^src\/components\/ds\//.test(file) && !/ResponsiveOverlay|useMediaQuery\.ts$/.test(file) && !/\.(?:stories|test)\.tsx$/.test(file) &&
-        /\b(?:useMediaQuery|useIsPhone|useIsDesktop|matchMedia|innerWidth)\b/.test(text)) {
-      errors.push({ file, line, rule: 'viewport-js', why: 'viewport detected in JavaScript — use lg: breakpoint classes (only ResponsiveOverlay may, RULES §5c.3)', text: text.trim().slice(0, 160) });
+    if (/\b(?:useMediaQuery|useIsPhone|useIsDesktop|matchMedia|innerWidth)\b/.test(text)) {
+      errors.push({ file, line, rule: 'viewport-js', why: 'viewport detected in JavaScript — use lg: breakpoint classes; there are no exceptions (RULES §5c.3)', text: text.trim().slice(0, 160) });
+    }
+    // APIs removed by the 2026-10 audit (design-system/specs/audit/00-global.md). Re-adding any of them is a regression.
+    for (const [re, why] of REMOVED_API) {
+      if (re.test(text)) errors.push({ file, line, rule: 'removed-api', why, text: text.trim().slice(0, 160) });
+    }
+    if (/^src\/components\/ds\//.test(file) && /from ['"]@\/components\/organisms/.test(text)) {
+      errors.push({ file, line, rule: 'ds-imports-organism', why: 'Dinero never imports organisms (RULES §5b.1)', text: text.trim().slice(0, 160) });
+    }
+    if (/\.stories\.tsx$/.test(file)) {
+      for (const [id, re, why] of STORY_RULES) {
+        if (re.test(text)) errors.push({ file, line, rule: id, why, text: text.trim().slice(0, 160) });
+      }
+      for (const m of text.matchAll(/className=(?:\{[^}]*?)?["'`]([^"'`]+)["'`]/g)) {
+        for (const c of m[1].split(/\s+/)) {
+          const base = c.replace(/^(?:[a-z0-9-]+:)+/, '');
+          if (/^(?:text-|font-|bg-|border|rounded|shadow|opacity-|ring|underline|no-underline|decoration|italic|uppercase|lowercase|capitalize|tracking-|leading-|fill-|stroke-|divide-|outline)/.test(base)) {
+            errors.push({ file, line, rule: 'story-styling', why: `\`${c}\` styles story markup by hand — stories render components with layout classes only; frames come from decorators, notes from docs (RULES §5a.4)`, text: text.trim().slice(0, 160) });
+          }
+        }
+      }
     }
     if (comp && /['"](?:phone|desktop|mobile)['"]/.test(text) && /\b(?:variant|layout|mode|form|device)\b/.test(text)) {
       errors.push({ file, line, rule: 'device-prop', why: 'a phone/desktop prop — one structure with lg: classes instead (RULES §5c.1)', text: text.trim().slice(0, 160) });
@@ -346,7 +381,20 @@ function selfTest() {
     ['src/components/ds/FilterChip/FilterChip.tsx', '<span>▾</span>', 'typed-glyph', true],
     ['src/components/ds/Pager/Pager.tsx', "  variant?: 'phone' | 'desktop';", 'device-prop', true],
     ['src/components/ds/Dialog/Dialog.tsx', 'const isPhone = useIsPhone();', 'viewport-js', true],
-    ['src/components/ds/ResponsiveOverlay/ResponsiveOverlay.tsx', 'const isPhone = useIsPhone();', 'viewport-js', false],
+    ['src/components/ds/Select/Select.tsx', 'const isPhone = useIsPhone();', 'viewport-js', true],
+    ['src/components/ds/Select/Select.tsx', "import { CategoryChip } from '../CategoryChip/CategoryChip';", 'removed-api', true],
+    ['src/components/ds/Toast/Toast.tsx', '  onUndo?: () => void;', 'removed-api', true],
+    ['src/features/shell/ShellNav.tsx', '<Button variant="tile" iconPosition="top">', 'removed-api', true],
+    ['src/features/shell/ShellNav.tsx', '<Button variant="secondary" layout="stacked">', 'removed-api', false],
+    ['src/components/ds/Badge/Badge.tsx', "import { RuleCard } from '@/components/organisms';", 'ds-imports-organism', true],
+    ['src/components/ds/Badge/Badge.stories.tsx', '  args: { onClick: () => {} },', 'story-callback', true],
+    ['src/components/ds/Badge/Badge.stories.tsx', '  args: { onClick: fn() },', 'story-callback', false],
+    ['src/components/ds/Badge/Badge.stories.tsx', "import { Badge } from './Badge';", 'story-import', true],
+    ['src/components/ds/Badge/Badge.stories.tsx', "import { Badge } from '@/components/ds';", 'story-import', false],
+    ['src/components/ds/Badge/Badge.stories.tsx', '  play: async ({ canvas }) => {', 'story-play', true],
+    ['src/components/ds/Badge/Badge.stories.tsx', 'export const AllVariants: Story = {', 'story-allvariants', true],
+    ['src/components/ds/Badge/Badge.stories.tsx', '<span className="font-text text-caption text-ink-3">Soft</span>', 'story-styling', true],
+    ['src/components/ds/Badge/Badge.stories.tsx', '<div className="flex gap-space-8">', 'story-styling', false],
     ['src/components/ds/Rail/Rail.tsx', "{ id: 'inbox', label: 'Inbox', href: '/inbox' },", 'hardcoded-route', true],
     ['src/components/ds/Rail/Rail.stories.tsx', "{ id: 'inbox', label: 'Inbox', href: '/inbox' },", 'hardcoded-route', false],
     ['src/components/ds/Card/Card.tsx', '<button type="button">', 'raw-button', true],
