@@ -38,6 +38,7 @@ export * from './SwipeActions/SwipeActions';
 export * from './Switch/Switch';
 export * from './TabBar/TabBar';
 export * from './Tabs/Tabs';
+export * from './Text/Text';
 export * from './TextArea/TextArea';
 export * from './TextField/TextField';
 export * from './Toast/Toast';
