@@ -1,127 +1,50 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { useArgs } from 'storybook/preview-api';
+import { fn } from 'storybook/test';
 
-import { Button } from '../Button/Button';
-import { FilterChip } from '../FilterChip/FilterChip';
-import { Icon } from '../Icon/Icon';
-import { Pager } from '../Pager/Pager';
-import { Card, CardEmpty, CardFooter, CardRow, CardSection } from './Card';
+import {
+  Button,
+  Card,
+  CardEmpty,
+  CardRow,
+  CardSection,
+  FilterChip,
+  Icon,
+  Pager,
+  Text,
+} from '@/components/ds';
 
 const meta = {
   title: 'DS/Data display/Card',
   component: Card,
   parameters: {
     layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'The one container for grouped information. Cards never cast a shadow; elevation comes from border-line on surface background.',
+      },
+    },
   },
-  tags: ['autodocs'],
+  decorators: [
+    (Story) => (
+      <div className="max-w-md">
+        <Story />
+      </div>
+    ),
+  ],
   argTypes: {
     title: { control: 'text' },
     subtitle: { control: 'text' },
+    asChild: { control: 'boolean' },
+    action: { control: false },
+    children: { control: false },
   },
 } satisfies Meta<typeof Card>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
-export const AllVariants: Story = {
-  name: 'All variants',
-  render: () => {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-space-16 p-space-16 max-w-4xl bg-canvas rounded-ds-lg border border-line">
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Title · subtitle · link
-          </span>
-          <Card
-            title="Needs you"
-            subtitle="Act now · 2"
-            action={
-              <a
-                href="#inbox"
-                className="font-text font-bold text-label text-brand hover:underline"
-              >
-                <span className="inline-flex items-center gap-space-2">
-                  Inbox <Icon name="chevron-right" size="sm" />
-                </span>
-              </a>
-            }
-          />
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            With an action
-          </span>
-          <Card
-            title="Statements"
-            subtitle="Each statement is a bill"
-            action={<FilterChip hasDropdown>FY 26-27</FilterChip>}
-          />
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            With rows
-          </span>
-          <Card title="Next 14 days">
-            <CardRow>
-              <span className="flex-1 truncate">Amex Platinum bill</span>
-              <span className="font-bold font-text text-ink">₹33,900</span>
-            </CardRow>
-            <CardRow>
-              <span className="flex-1 truncate">Priya Nair · you owe</span>
-              <span className="font-bold font-text text-ink">₹12,000</span>
-            </CardRow>
-          </Card>
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            With a pager
-          </span>
-          <Card title="Earning lines">
-            <CardRow>
-              <span className="flex-1 truncate">IKEA India</span>
-              <span className="font-bold font-text text-ink">196 pts</span>
-            </CardRow>
-            <Pager
-              page={0}
-              size={25}
-              totalElements={30}
-              totalPages={2}
-              onPageChange={() => {}}
-            />
-          </Card>
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            With section bands
-          </span>
-          <Card>
-            <CardSection>Act now · 2</CardSection>
-            <CardRow>
-              <span className="flex-1 truncate">SBI statement missing</span>
-            </CardRow>
-            <CardSection>Updates · 4</CardSection>
-            <CardRow>
-              <span className="flex-1 truncate">Prices refreshed</span>
-            </CardRow>
-          </Card>
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Empty
-          </span>
-          <Card title="Untagged · 0">
-            <CardEmpty>Every transaction has a category.</CardEmpty>
-          </Card>
-        </div>
-      </div>
-    );
-  },
-};
 
 export const TitleSubtitleLink: Story = {
   name: 'Title · subtitle · link',
@@ -129,14 +52,11 @@ export const TitleSubtitleLink: Story = {
     title: 'Needs you',
     subtitle: 'Act now · 2',
     action: (
-      <a
-        href="#inbox"
-        className="font-text font-bold text-label text-brand hover:underline"
-      >
-        <span className="inline-flex items-center gap-space-2">
+      <Button variant="link" size="sm" asChild>
+        <a href="#inbox" className="inline-flex items-center gap-space-2">
           Inbox <Icon name="chevron-right" size="sm" />
-        </span>
-      </a>
+        </a>
+      </Button>
     ),
   },
 };
@@ -157,37 +77,50 @@ export const WithRows: Story = {
     children: (
       <>
         <CardRow>
-          <span className="flex-1 truncate">Amex Platinum bill</span>
-          <span className="font-bold font-text text-ink">₹33,900</span>
+          <Text truncate className="flex-1">Amex Platinum bill</Text>
+          <Text variant="body-strong">₹33,900</Text>
         </CardRow>
         <CardRow>
-          <span className="flex-1 truncate">Priya Nair · you owe</span>
-          <span className="font-bold font-text text-ink">₹12,000</span>
+          <Text truncate className="flex-1">Priya Nair · you owe</Text>
+          <Text variant="body-strong">₹12,000</Text>
         </CardRow>
       </>
     ),
   },
 };
 
-export const WithAPager: Story = {
+export const WithAPager: StoryObj<{
+  title?: string;
+  subtitle?: string;
+  page?: number;
+  onPageChange?: (nextPage: number) => void;
+}> = {
   name: 'With a pager',
   args: {
     title: 'Earning lines',
-    children: (
-      <>
+    page: 0,
+    onPageChange: fn(),
+  },
+  render: function Render(args) {
+    const [{ page = 0 }, updateArgs] = useArgs<{ page?: number }>();
+    return (
+      <Card title={args.title} subtitle={args.subtitle}>
         <CardRow>
-          <span className="flex-1 truncate">IKEA India</span>
-          <span className="font-bold font-text text-ink">196 pts</span>
+          <Text truncate className="flex-1">IKEA India</Text>
+          <Text variant="body-strong">196 pts</Text>
         </CardRow>
         <Pager
-          page={0}
+          page={page}
           size={25}
           totalElements={30}
           totalPages={2}
-          onPageChange={() => {}}
+          onPageChange={(nextPage) => {
+            updateArgs({ page: nextPage });
+            args.onPageChange?.(nextPage);
+          }}
         />
-      </>
-    ),
+      </Card>
+    );
   },
 };
 
@@ -198,11 +131,11 @@ export const WithSectionBands: Story = {
       <>
         <CardSection>Act now · 2</CardSection>
         <CardRow>
-          <span className="flex-1 truncate">SBI statement missing</span>
+          <Text truncate className="flex-1">SBI statement missing</Text>
         </CardRow>
         <CardSection>Updates · 4</CardSection>
         <CardRow>
-          <span className="flex-1 truncate">Prices refreshed</span>
+          <Text truncate className="flex-1">Prices refreshed</Text>
         </CardRow>
       </>
     ),
@@ -216,4 +149,3 @@ export const Empty: Story = {
     children: <CardEmpty>Every transaction has a category.</CardEmpty>,
   },
 };
-

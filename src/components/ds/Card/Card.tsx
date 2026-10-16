@@ -1,7 +1,11 @@
+'use client';
+
+import { Slot } from '@radix-ui/react-slot';
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
 import { SectionHeader } from '../SectionHeader/SectionHeader';
+import { Text } from '../Text/Text';
 
 export interface CardHeaderProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
@@ -26,16 +30,8 @@ export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
         ) : (
           <>
             <div className="min-w-0">
-              {title ? (
-                <div className="font-text font-extrabold text-heading text-ink truncate">
-                  {title}
-                </div>
-              ) : null}
-              {subtitle ? (
-                <div className="font-text font-medium text-label text-ink-3 truncate mt-space-2">
-                  {subtitle}
-                </div>
-              ) : null}
+              {title ? <CardTitle>{title}</CardTitle> : null}
+              {subtitle ? <CardSubtitle>{subtitle}</CardSubtitle> : null}
             </div>
             {action ? (
               <div className="shrink-0 flex items-center">{action}</div>
@@ -49,21 +45,28 @@ export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(
 
 CardHeader.displayName = 'CardHeader';
 
-export interface CardTitleProps extends React.HTMLAttributes<HTMLDivElement> {}
+export interface CardTitleProps
+  extends React.HTMLAttributes<HTMLElement> {
+  as?: React.ElementType;
+  truncate?: boolean;
+}
 
-export const CardTitle = forwardRef<HTMLDivElement, CardTitleProps>(
-  ({ className, children, ...props }, ref) => {
+export const CardTitle = forwardRef<HTMLElement, CardTitleProps>(
+  ({ as = 'div', truncate = true, className, children, ...props }, ref) => {
     return (
-      <div
+      <Text
         ref={ref}
+        as={as}
+        variant="heading"
         className={cn(
-          'font-text font-extrabold text-heading text-ink truncate',
+          'font-extrabold text-ink',
+          truncate && 'truncate',
           className,
         )}
         {...props}
       >
         {children}
-      </div>
+      </Text>
     );
   },
 );
@@ -71,21 +74,28 @@ export const CardTitle = forwardRef<HTMLDivElement, CardTitleProps>(
 CardTitle.displayName = 'CardTitle';
 
 export interface CardSubtitleProps
-  extends React.HTMLAttributes<HTMLDivElement> {}
+  extends React.HTMLAttributes<HTMLElement> {
+  as?: React.ElementType;
+  truncate?: boolean;
+}
 
-export const CardSubtitle = forwardRef<HTMLDivElement, CardSubtitleProps>(
-  ({ className, children, ...props }, ref) => {
+export const CardSubtitle = forwardRef<HTMLElement, CardSubtitleProps>(
+  ({ as = 'div', truncate = true, className, children, ...props }, ref) => {
     return (
-      <div
+      <Text
         ref={ref}
+        as={as}
+        variant="label"
+        tone="ink-3"
         className={cn(
-          'font-text font-medium text-label text-ink-3 truncate',
+          'font-medium mt-space-2',
+          truncate && 'truncate',
           className,
         )}
         {...props}
       >
         {children}
-      </div>
+      </Text>
     );
   },
 );
@@ -163,7 +173,7 @@ export const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(
       <div
         ref={ref}
         className={cn(
-          'flex items-center justify-between gap-space-8 flex-wrap font-text font-medium text-body text-ink-3 py-space-10 px-space-14 border-t border-line-soft',
+          'flex items-center justify-between gap-space-8 flex-wrap font-text font-medium text-body text-ink-3 py-space-10 px-space-16 border-t border-line-soft',
           className,
         )}
         {...props}
@@ -181,26 +191,45 @@ export interface CardProps
   title?: React.ReactNode;
   subtitle?: React.ReactNode;
   action?: React.ReactNode;
+  asChild?: boolean;
 }
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ title, subtitle, action, className, children, ...props }, ref) => {
+  (
+    {
+      title,
+      subtitle,
+      action,
+      asChild = false,
+      className,
+      children,
+      ...props
+    },
+    ref,
+  ) => {
     const hasHeader = Boolean(title || subtitle || action);
+    const Comp = asChild ? Slot : 'div';
 
     return (
-      <div
+      <Comp
         ref={ref}
         className={cn(
-          'bg-surface border border-line rounded-ds-lg overflow-hidden min-w-0 w-full',
+          'bg-surface border border-line rounded-ds-lg overflow-hidden min-w-0',
           className,
         )}
         {...props}
       >
-        {hasHeader ? (
-          <CardHeader title={title} subtitle={subtitle} action={action} />
-        ) : null}
-        {children}
-      </div>
+        {asChild ? (
+          children
+        ) : (
+          <>
+            {hasHeader ? (
+              <CardHeader title={title} subtitle={subtitle} action={action} />
+            ) : null}
+            {children}
+          </>
+        )}
+      </Comp>
     );
   },
 );
