@@ -6,7 +6,7 @@ Read `00-global.md` first. Its rules override anything below.
 
 ## Change (1)
 
-- [ ] **fc37a1a8e** · useLongPress returns its handlers twice
+- [x] **fc37a1a8e** · useLongPress returns its handlers twice
   - Now: Lines 125-129 return the handlers spread and also as `handlers`. RuleCard uses the named ones (RuleCard.tsx:266-282).
   - Do: Return one shape: `{ handlers, consumeTriggered }`, and let callers spread `handlers`. Remove the loose copies.
   ```tsx
