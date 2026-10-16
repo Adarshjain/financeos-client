@@ -128,7 +128,7 @@ describe('TabBar', () => {
     expect(badge).toHaveClass(
       'absolute',
       '-top-space-4',
-      '-right-space-8',
+      'left-space-12',
       'ring-2',
       'ring-surface',
     );

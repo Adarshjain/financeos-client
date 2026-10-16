@@ -20,7 +20,7 @@ function Scene({
   title?: string;
 }) {
   return (
-    <div className="flex flex-col gap-space-8 max-w-sm w-full">
+    <div style={{ width: 390 }} /* ds-allow: 390-wide phone frame */ className="flex flex-col gap-space-8">
       {title && (
         <div className="font-text text-overline uppercase text-ink-4 mt-space-4">
           {title}
@@ -56,7 +56,7 @@ const meta: Meta<typeof TabBar> = {
   render: function Render(args) {
     const [{ current }, updateArgs] = useArgs();
     return (
-      <div className="flex flex-col gap-space-12 max-w-sm w-full">
+      <div style={{ width: 390 }} /* ds-allow: 390-wide phone frame */ className="flex flex-col gap-space-12">
         <p className="font-text text-caption text-ink-3">
           Pages keep <code className="font-text font-bold text-ink">pb-tab-bar-clearance</code> under the bar.
         </p>
@@ -79,7 +79,7 @@ type Story = StoryObj<typeof TabBar>;
 export const AllVariants: Story = {
   name: 'All variants',
   render: () => (
-    <div className="flex flex-col gap-space-16 max-w-sm w-full">
+    <div style={{ width: 390 }} /* ds-allow: 390-wide phone frame */ className="flex flex-col gap-space-16">
       <p className="font-text text-caption text-ink-3">
         Pages keep <code className="font-text font-bold text-ink">pb-tab-bar-clearance</code> under the bar.
       </p>
