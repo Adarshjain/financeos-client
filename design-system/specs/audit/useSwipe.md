@@ -6,7 +6,7 @@ Read `00-global.md` first. Its rules override anything below.
 
 ## Change (1)
 
-- [ ] **fdf8ea915** · useSwipe fires its action on a cancelled gesture
+- [x] **fdf8ea915** · useSwipe fires its action on a cancelled gesture
   - Now: `onPointerCancel: onPointerUp` (line 125). When the browser cancels a drag (for example it takes over for scrolling), `onPointerUp` still checks the offset and can call `onSwipeLeft`/`onSwipeRight`.
   - Do: Give `onPointerCancel` its own function that clears the drag and offset and never calls the swipe callbacks.
   ```tsx
