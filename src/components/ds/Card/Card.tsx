@@ -134,10 +134,11 @@ export const CardSection = forwardRef<HTMLDivElement, CardSectionProps>(
       <SectionHeader
         ref={ref}
         variant="band"
-        label={label ?? children}
         className={cn('first:border-t-0', className)}
         {...props}
-      />
+      >
+        {label ?? children}
+      </SectionHeader>
     );
   },
 );

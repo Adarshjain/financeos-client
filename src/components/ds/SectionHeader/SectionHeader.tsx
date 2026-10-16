@@ -2,37 +2,44 @@ import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
 
-export type SectionHeaderVariant = 'date' | 'band' | 'month' | 'danger';
+export type SectionHeaderVariant = 'strong' | 'band';
+export type SectionHeaderTone = 'neutral' | 'danger';
 
 export interface SectionHeaderProps
-  extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
-  /** Variant of the header: date (sticky on phone), band, month, or danger */
+  extends Omit<React.HTMLAttributes<HTMLElement>, 'title'> {
+  /** Root HTML element tag. Defaults to 'div'. */
+  as?: 'div' | 'h2' | 'h3';
+  /** Variant of the header: 'strong' (prominent group/day header) or 'band' (section band). Defaults to 'band'. */
   variant?: SectionHeaderVariant;
-  /** Primary label text (e.g. "12 Oct", "Basics", "September 2026", "Delete account") */
-  label?: React.ReactNode;
-  /** Optional meta text (e.g. weekday "Mon" for date, or summary "61 transactions · out ₹1,05,219" for month) */
+  /** Semantic tone for color. Defaults to 'neutral'. */
+  tone?: SectionHeaderTone;
+  /** Optional meta text or node. */
   meta?: React.ReactNode;
-  /** Whether the header is sticky (default true for variant='date', false for others) */
+  /** Whether the header is sticky (default true for variant='strong', false for others). */
   sticky?: boolean;
-  /** Optional border-top toggle (default: true) */
+  /** Optional border-top toggle (default: true for band). */
   borderTop?: boolean;
+  /** Primary label text or content. */
+  children?: React.ReactNode;
 }
 
 /**
  * SectionHeader: The header that starts a section inside a list, card or sheet.
  * Variants:
- * - date: sticky day header on phone lists ("12 Oct" in 800 with weekday in ink-3 on bg-subtle, z-sticky)
- * - band: form section in a sheet or card, overline caption in ink-4 on bg-sunken
- * - month: desktop list band ("September 2026 · 61 transactions · out ₹1,05,219")
- * - danger: band that closes an edit sheet (Delete account), danger overline caption
+ * - strong: prominent group header (e.g. sticky list header, label in text-label font-extrabold text-ink on bg-subtle)
+ * - band: section divider in a card or sheet (e.g. overline caption in ink-4 on bg-sunken)
+ * Tone:
+ * - neutral: default ink color
+ * - danger: destructive sections (text-danger)
  */
 export const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
   (
     {
+      as: Component = 'div',
       className,
       children,
       variant = 'band',
-      label,
+      tone = 'neutral',
       meta,
       sticky,
       borderTop = true,
@@ -40,45 +47,34 @@ export const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
     },
     ref,
   ) => {
-    const primaryLabel = label ?? children;
-
-    if (variant === 'date') {
-      const isSticky = sticky ?? true;
-      return (
-        <div
-          ref={ref}
-          className={cn(
-            'flex items-baseline gap-space-6 py-space-6 px-space-14 bg-subtle border-b border-line-soft font-text text-label font-extrabold text-ink select-none',
-            !borderTop && 'border-t-0',
-            isSticky && 'sticky top-0 z-sticky',
-            className,
-          )}
-          {...props}
-        >
-          <span>{primaryLabel}</span>
-          {meta ? (
-            <span className="font-semibold text-ink-3">{meta}</span>
-          ) : null}
-        </div>
-      );
-    }
-
-    const isDanger = variant === 'danger';
+    const isStrong = variant === 'strong';
+    const isSticky = sticky ?? (isStrong ? true : false);
+    const isDanger = tone === 'danger';
 
     return (
-      <div
-        ref={ref}
+      <Component
+        ref={ref as unknown as React.Ref<HTMLDivElement & HTMLHeadingElement>}
         className={cn(
-          'font-text text-overline font-extrabold uppercase py-space-6 px-space-14 bg-sunken border-b border-line-soft select-none',
-          borderTop && 'border-t',
-          isDanger ? 'text-danger' : 'text-ink-4',
+          'flex items-baseline gap-space-6 py-space-6 px-space-14 select-none border-b border-line-soft font-text',
+          isStrong
+            ? 'bg-subtle text-label font-extrabold'
+            : 'bg-sunken text-overline font-extrabold uppercase',
+          isStrong
+            ? isDanger
+              ? 'text-danger'
+              : 'text-ink'
+            : isDanger
+              ? 'text-danger'
+              : 'text-ink-4',
+          isStrong ? !borderTop && 'border-t-0' : borderTop && 'border-t',
+          isSticky && 'sticky top-0 z-sticky',
           className,
         )}
         {...props}
       >
-        <span>{primaryLabel}</span>
-        {meta ? <span> · {meta}</span> : null}
-      </div>
+        <span>{children}</span>
+        {meta ? <span className="font-semibold text-ink-3">{meta}</span> : null}
+      </Component>
     );
   },
 );

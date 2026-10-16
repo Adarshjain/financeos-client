@@ -79,7 +79,9 @@ export const AllVariants: Story = {
   render: () => (
     <div className="max-w-sm w-full font-text">
       <Card className="p-0 overflow-hidden">
-        <SectionHeader variant="date" label="12 Oct" meta="Mon" borderTop={false} />
+        <SectionHeader variant="strong" meta="Mon" borderTop={false}>
+          12 Oct
+        </SectionHeader>
         <TransactionRow
           description="BigBasket"
           amount="3,600.00"
@@ -98,7 +100,9 @@ export const AllVariants: Story = {
           isCredit
         />
 
-        <SectionHeader variant="date" label="11 Oct" meta="Sun" />
+        <SectionHeader variant="strong" meta="Sun">
+          11 Oct
+        </SectionHeader>
         <TransactionRow
           description="Swiggy Bangalore"
           amount="1,249.00"
