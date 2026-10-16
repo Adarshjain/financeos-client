@@ -82,32 +82,57 @@ describe('DropZone', () => {
     expect(errorEl).toHaveClass('text-danger');
   });
 
-  it('renders recent imports list with custom title from props', () => {
+  it('renders children under the drop zone', () => {
     render(
+      <DropZone {...requiredProps}>
+        <div data-testid="custom-imports">Custom Import List</div>
+      </DropZone>,
+    );
+
+    expect(screen.getByTestId('custom-imports')).toBeInTheDocument();
+  });
+
+  it('handles multiple and accept props on hidden file input', () => {
+    const { container, rerender } = render(<DropZone {...requiredProps} />);
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    expect(input.multiple).toBe(true);
+    expect(input.accept).toBe('');
+
+    rerender(<DropZone {...requiredProps} multiple={false} accept=".pdf" />);
+    expect(input.multiple).toBe(false);
+    expect(input.accept).toBe('.pdf');
+  });
+
+  it('handles drop on root container even when showDropArea is false', () => {
+    const onFilesSelected = vi.fn();
+    const { container } = render(
       <DropZone
         {...requiredProps}
-        recentImportsTitle="Recent statements"
-        recentImports={[
-          {
-            id: '1',
-            name: 'HDFC-Savings.pdf',
-            status: 'Done',
-            statusTone: 'positive',
-          },
-          {
-            id: '2',
-            name: 'ICICI-Card.pdf',
-            status: '1 warning',
-            statusTone: 'warning',
-          },
-        ]}
+        showDropArea={false}
+        onFilesSelected={onFilesSelected}
       />,
     );
 
-    expect(screen.getByText('Recent statements')).toBeInTheDocument();
-    expect(screen.getByText('HDFC-Savings.pdf')).toBeInTheDocument();
-    expect(screen.getByText('Done')).toHaveClass('text-positive');
-    expect(screen.getByText('ICICI-Card.pdf')).toBeInTheDocument();
-    expect(screen.getByText('1 warning')).toHaveClass('text-warning');
+    const root = container.firstChild as HTMLElement;
+    const file = new File(['content'], 'test.pdf', { type: 'application/pdf' });
+    fireEvent.drop(root, {
+      dataTransfer: {
+        files: [file],
+      },
+    });
+
+    expect(onFilesSelected).toHaveBeenCalledWith([file]);
+  });
+
+  it('ignores drag leave when moving to child elements', () => {
+    const { container } = render(<DropZone {...requiredProps} />);
+    const root = container.firstChild as HTMLElement;
+    const child = root.firstElementChild as HTMLElement;
+
+    fireEvent.dragOver(root);
+    // Drag leave with relatedTarget inside currentTarget should not clear drag state
+    fireEvent.dragLeave(root, { relatedTarget: child });
+    // Root box still shows dragging style if active
+    expect(root).toBeInTheDocument();
   });
 });

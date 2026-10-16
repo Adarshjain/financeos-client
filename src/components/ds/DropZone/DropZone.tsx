@@ -2,7 +2,6 @@
 
 import React, { forwardRef, useRef, useState } from 'react';
 
-import { Banner } from '../Banner/Banner';
 import { Button } from '../Button/Button';
 import { Card } from '../Card/Card';
 import { cn } from '../cn';
@@ -13,13 +12,6 @@ export interface QueuedFile {
   name: string;
   size: string;
   error?: string;
-}
-
-export interface RecentImport {
-  id: string;
-  name: string;
-  status: string;
-  statusTone?: 'positive' | 'warning' | 'danger';
 }
 
 export interface DropZoneProps
@@ -38,6 +30,8 @@ export interface DropZoneProps
   isDragging?: boolean;
   /** Accepted file formats for the hidden input (e.g. ".pdf,.xlsx,.xls") */
   accept?: string;
+  /** Whether multiple files can be selected (default: true) */
+  multiple?: boolean;
   /** Callback when files are selected via picker or drop */
   onFilesSelected?: (files: File[]) => void;
 
@@ -52,10 +46,8 @@ export interface DropZoneProps
   /** Callback when remove trash button is clicked for a queued file */
   onRemoveFile?: (file: QueuedFile) => void;
 
-  /** Heading for recent imports (comes from page, no built-in default) */
-  recentImportsTitle?: React.ReactNode;
-  /** Recent import history rows */
-  recentImports?: RecentImport[];
+  /** Optional content rendered under the drop zone (e.g. recent imports) */
+  children?: React.ReactNode;
 }
 
 export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
@@ -67,14 +59,14 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
       dragTitle = 'Drop to add',
       dragHint,
       isDragging,
-      accept = '.pdf,.xlsx,.xls',
+      accept,
+      multiple = true,
       onFilesSelected,
       error,
       showDropArea = true,
       queuedFiles,
       onRemoveFile,
-      recentImportsTitle,
-      recentImports,
+      children,
       className,
       ...props
     },
@@ -95,6 +87,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
     const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       e.stopPropagation();
+      if (e.currentTarget.contains(e.relatedTarget as Node)) return;
       setIsDragOver(false);
     };
 
@@ -118,12 +111,19 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
     };
 
     return (
-      <div ref={ref} className={cn('flex flex-col gap-space-12', className)} {...props}>
+      <div
+        ref={ref}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={cn('flex flex-col gap-space-12', className)}
+        {...props}
+      >
         {/* Hidden native file input */}
         <input
           ref={fileInputRef}
           type="file"
-          multiple
+          multiple={multiple}
           accept={accept}
           onChange={handleInputChange}
           className="sr-only"
@@ -135,9 +135,6 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
         {showDropArea ? (
           <div
             onClick={handleChooseFiles}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
             className={cn(
               'border border-dashed rounded-ds-xl px-space-16 py-space-20 flex flex-col items-center text-center gap-space-6 select-none transition-colors duration-fast cursor-pointer',
               activeDragging
@@ -228,40 +225,8 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
           </Card>
         )}
 
-        {/* Recent imports */}
-        {recentImports && recentImports.length > 0 && (
-          <Card className="px-space-14 py-0 overflow-hidden">
-            {recentImportsTitle && (
-              <div className="py-space-8 text-overline font-extrabold uppercase text-ink-4 border-b border-line-soft">
-                {recentImportsTitle}
-              </div>
-            )}
-            {recentImports.map((imp, idx) => (
-              <div
-                key={imp.id ?? idx}
-                className={cn(
-                  'flex items-center justify-between gap-space-10 py-space-10',
-                  idx > 0 && 'border-t border-line-soft',
-                )}
-              >
-                <span className="font-bold text-body text-ink truncate">
-                  {imp.name}
-                </span>
-                <span
-                  className={cn(
-                    'text-caption font-bold shrink-0',
-                    imp.statusTone === 'positive' && 'text-positive',
-                    imp.statusTone === 'warning' && 'text-warning',
-                    imp.statusTone === 'danger' && 'text-danger',
-                    !imp.statusTone && 'text-ink-3',
-                  )}
-                >
-                  {imp.status}
-                </span>
-              </div>
-            ))}
-          </Card>
-        )}
+        {/* Children (e.g. composed recent imports or custom content) */}
+        {children}
       </div>
     );
   },
