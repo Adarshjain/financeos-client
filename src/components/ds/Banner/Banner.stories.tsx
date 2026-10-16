@@ -1,15 +1,28 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { fn } from 'storybook/test';
 
-import { Button } from '../Button/Button';
-import { Banner } from './Banner';
+import { Banner } from '@/components/ds';
 
 const meta: Meta<typeof Banner> = {
   title: 'DS/Feedback/Banner',
   component: Banner,
   parameters: {
     layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'The one inline message. It replaces Callout and Note: a failed request at the top of a form, a success that needs no action, how the screen was reached, something to act on inside a card, or a neutral note.',
+      },
+    },
   },
+  decorators: [
+    (Story) => (
+      <div className="max-w-md">
+        <Story />
+      </div>
+    ),
+  ],
   argTypes: {
     tone: {
       control: 'select',
@@ -24,69 +37,31 @@ const meta: Meta<typeof Banner> = {
       control: 'text',
       description: 'Banner message text',
     },
+    action: {
+      control: false,
+      description: 'Action object with label and onSelect callback',
+    },
+    onDismiss: {
+      control: false,
+      description: 'Dismiss callback',
+    },
   },
   args: {
     tone: 'danger',
     children: 'Email or password is incorrect.',
+    onDismiss: fn(),
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof Banner>;
 
-export const AllVariants: Story = {
-  name: 'All variants',
-  render: () => (
-    <div className="flex flex-col gap-space-16 max-w-md">
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Danger
-        </div>
-        <Banner tone="danger">Email or password is incorrect.</Banner>
-      </div>
-
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Success
-        </div>
-        <Banner tone="success">Your account has been deleted.</Banner>
-      </div>
-
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Warning (with title & action)
-        </div>
-        <Banner
-          tone="warning"
-          title="2 bank credits look like dividends."
-          action={<Button variant="link">Reconcile</Button>}
-        />
-      </div>
-
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Info
-        </div>
-        <Banner tone="info">That item is already handled.</Banner>
-      </div>
-
-      <div>
-        <div className="font-extrabold text-label text-ink-3 mb-space-8">
-          Neutral (note)
-        </div>
-        <Banner tone="neutral">
-          Changing the pattern unlinks the 31 transactions it categorised.
-        </Banner>
-      </div>
-    </div>
-  ),
-};
-
 export const Danger: Story = {
   name: 'Danger',
   args: {
     tone: 'danger',
     children: 'Email or password is incorrect.',
+    onDismiss: undefined,
   },
 };
 
@@ -95,6 +70,7 @@ export const Success: Story = {
   args: {
     tone: 'success',
     children: 'Your account has been deleted.',
+    onDismiss: undefined,
   },
 };
 
@@ -103,8 +79,12 @@ export const Warning: Story = {
   args: {
     tone: 'warning',
     title: '2 bank credits look like dividends.',
-    children: '',
-    action: <Button variant="link">Reconcile</Button>,
+    children: 'Review and categorize these deposits.',
+    action: {
+      label: 'Reconcile',
+      onSelect: fn(),
+    },
+    onDismiss: undefined,
   },
 };
 
@@ -113,6 +93,7 @@ export const Info: Story = {
   args: {
     tone: 'info',
     children: 'That item is already handled.',
+    onDismiss: undefined,
   },
 };
 
@@ -122,6 +103,7 @@ export const Neutral: Story = {
     tone: 'neutral',
     children:
       'Changing the pattern unlinks the 31 transactions it categorised.',
+    onDismiss: undefined,
   },
 };
 
@@ -130,6 +112,19 @@ export const WithAction: Story = {
   args: {
     tone: 'danger',
     children: 'Failed to load upcoming items.',
-    action: <Button variant="link">Try again</Button>,
+    action: {
+      label: 'Try again',
+      onSelect: fn(),
+    },
+    onDismiss: undefined,
+  },
+};
+
+export const WithDismiss: Story = {
+  name: 'With dismiss',
+  args: {
+    tone: 'info',
+    children: 'A new feature has been added to your dashboard.',
+    onDismiss: fn(),
   },
 };

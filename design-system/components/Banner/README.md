@@ -10,19 +10,23 @@ The one inline message. It replaces the old Callout and Note: a failed request a
 - `neutral` on `bg-surface` with a `line` border and `ink-2` text: a note ("Changing the pattern unlinks the 31 transactions it categorised.").
 
 ## Props
-`tone`, children (the message), optional `title` (bold lead-in), optional `action` (a link-styled button at the end: "Reconcile", "See them", "Try again").
+- `tone`: `'danger' | 'success' | 'warning' | 'info' | 'neutral'` (default `'info'`)
+- `title?: ReactNode` (bold lead-in)
+- `children`: `ReactNode` (the message; supports block-level elements like `<p>`)
+- `action?: { label: ReactNode; onSelect: () => void }` (link-styled button on the right)
+- `onDismiss?: () => void` (optional close button at far right)
 
 ## Layout
 - One line of text keeps the banner one line tall: text and action are vertically centred, and the action is Button `link` (inline text, no padding), so adding an action never changes the height.
-- Longer text wraps; the action stays at the end of the last line.
+- Longer text wraps; the action sits on the right vertically centred.
 
 ## Rules
 - Say what happened and what to do next. Keep the form and its values.
-- No icon: the tone and the words carry it (RULES §6).
+- No status icon: the tone and the words carry it (RULES §6). Dismiss control uses Icon `close`.
 - Placement is layout, not a variant: top of a form, top of a list, or inside a card.
 
 ## Built from
-Button `link` (the action). Toast reuses its tones.
+Button `link` (the action), Button `ghost` and Icon `close` (the dismiss control). Toast reuses its tones.
 
 ## Variants
-- The five tones, with and without a title, with an action.
+- The five tones, with and without a title, with an action, with dismiss.

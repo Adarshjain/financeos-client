@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { Banner } from './Banner';
 
@@ -71,12 +71,13 @@ describe('Banner', () => {
     );
   });
 
-  it('renders lead-in title and inline action with items-center', () => {
+  it('renders lead-in title and action with items-center', () => {
+    const handleAction = vi.fn();
     const { container } = render(
       <Banner
         tone="warning"
         title="2 bank credits look like dividends."
-        action={<button type="button">Reconcile</button>}
+        action={{ label: 'Reconcile', onSelect: handleAction }}
       >
         Additional details
       </Banner>,
@@ -86,8 +87,37 @@ describe('Banner', () => {
       screen.getByText('2 bank credits look like dividends.'),
     ).toBeInTheDocument();
     expect(screen.getByText('Additional details')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Reconcile' }),
-    ).toBeInTheDocument();
+
+    const actionBtn = screen.getByRole('button', { name: 'Reconcile' });
+    expect(actionBtn).toBeInTheDocument();
+    fireEvent.click(actionBtn);
+    expect(handleAction).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders block-level paragraph children without invalid HTML nesting in span', () => {
+    render(
+      <Banner tone="info" title="Note:">
+        <p data-testid="para-content">This is a block paragraph inside the banner.</p>
+      </Banner>,
+    );
+    const para = screen.getByTestId('para-content');
+    expect(para).toBeInTheDocument();
+    expect(screen.getByText('Note:')).toBeInTheDocument();
+    // Parent of the paragraph should be a div, not a span
+    expect(para.parentElement?.tagName.toLowerCase()).toBe('div');
+  });
+
+  it('renders dismiss button with close Icon and calls onDismiss on click', () => {
+    const handleDismiss = vi.fn();
+    render(
+      <Banner tone="info" onDismiss={handleDismiss}>
+        Dismissible message
+      </Banner>,
+    );
+    const closeBtn = screen.getByRole('button', { name: 'Close' });
+    expect(closeBtn).toBeInTheDocument();
+
+    fireEvent.click(closeBtn);
+    expect(handleDismiss).toHaveBeenCalledTimes(1);
   });
 });
