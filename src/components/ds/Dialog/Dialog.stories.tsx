@@ -30,6 +30,11 @@ const meta: Meta<typeof DialogShell> = {
       options: ['modal', 'side-panel'],
       description: 'Centred modal vs desktop side panel (both render as sheet on phone)',
     },
+    background: {
+      control: 'select',
+      options: ['surface', 'canvas'],
+      description: 'Modal and sheet surface color',
+    },
     showClose: {
       control: 'boolean',
     },
@@ -43,6 +48,7 @@ const meta: Meta<typeof DialogShell> = {
   args: {
     size: 'md',
     variant: 'modal',
+    background: 'surface',
     title: 'Approve 9 transactions',
     description: 'Clears the reasons you tick. Rows that need no approval are skipped.',
     showClose: true,
@@ -182,6 +188,31 @@ export const AllVariants: Story = {
             </div>
           </DialogBody>
         </DialogShell>
+      </div>
+
+      <div>
+        <div className="font-extrabold text-label text-ink-3 mb-space-8">
+          Canvas background · with tiles
+        </div>
+        <div className="bg-scrim p-space-16 max-w-sm rounded-ds-lg">
+          <DialogShell
+            size="sm"
+            background="canvas"
+            title="More"
+            onClose={() => {}}
+          >
+            <DialogBody>
+              <div className="grid grid-cols-2 gap-space-8">
+                <Button variant="tile" icon="accounts">
+                  Accounts
+                </Button>
+                <Button variant="tile" icon="transactions">
+                  Transactions
+                </Button>
+              </div>
+            </DialogBody>
+          </DialogShell>
+        </div>
       </div>
     </div>
   ),
@@ -487,4 +518,27 @@ export const InteractiveModal: StoryObj<{ open?: boolean }> = {
       </Dialog>
     );
   },
+};
+
+export const CanvasBackground: Story = {
+  name: 'Canvas background',
+  args: {
+    background: 'canvas',
+    size: 'sm',
+    title: 'More',
+  },
+  render: (args) => (
+    <DialogShell {...args}>
+      <DialogBody>
+        <div className="grid grid-cols-2 gap-space-8">
+          <Button variant="tile" icon="accounts">
+            Accounts
+          </Button>
+          <Button variant="tile" icon="transactions">
+            Transactions
+          </Button>
+        </div>
+      </DialogBody>
+    </DialogShell>
+  ),
 };
