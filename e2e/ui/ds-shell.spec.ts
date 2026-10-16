@@ -105,4 +105,65 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
       await expect(tabBar.getByRole('tab', { name: tabName })).toBeVisible();
     }
   });
+
+  test('phone 390px: More tab opens More sheet, links live routes, and closes all 3 ways', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${E2E_CLIENT_URL}/ds`);
+
+    const tabBar = page.locator('nav.lg\\:hidden');
+    const moreTab = tabBar.getByRole('tab', { name: 'More' });
+    await expect(moreTab).toBeVisible();
+
+    // 1. Open More sheet by tapping More
+    await moreTab.click();
+    const sheet = page.getByRole('dialog', { name: 'More' });
+    await expect(sheet).toBeVisible();
+
+    // Verify Quick add items
+    await expect(sheet.getByRole('button', { name: 'Transaction' })).toBeDisabled();
+    await expect(sheet.getByRole('button', { name: 'Lending' })).toBeDisabled();
+    await expect(sheet.getByRole('button', { name: 'Trade' })).toBeDisabled();
+    const importLink = sheet.getByRole('link', { name: 'Import' });
+    await expect(importLink).toBeVisible();
+    await expect(importLink).toHaveAttribute('href', '/transactions/import');
+
+    // Verify Section tiles in groups
+    await expect(sheet.getByRole('link', { name: 'Accounts' })).toHaveAttribute('href', '/accounts');
+    await expect(sheet.getByRole('link', { name: 'Transactions' })).toHaveAttribute('href', '/transactions');
+    await expect(sheet.getByRole('link', { name: 'Investments' })).toHaveAttribute('href', '/investments');
+    await expect(sheet.getByRole('link', { name: 'Rewards' })).toHaveAttribute('href', '/rewards');
+    await expect(sheet.getByRole('link', { name: 'Loans & lendings' })).toHaveAttribute('href', '/loans');
+    await expect(sheet.getByRole('link', { name: 'Dashboards' })).toHaveAttribute('href', '/dashboards');
+    await expect(sheet.getByRole('link', { name: 'Reports' })).toHaveAttribute('href', '/reports');
+    await expect(sheet.getByRole('link', { name: 'Ask the data' })).toHaveAttribute('href', '/chat');
+
+    // Verify Profile row
+    const profileRow = sheet.getByRole('link', { name: /Settings · connections · notifications/i });
+    await expect(profileRow).toBeVisible();
+    await expect(profileRow).toHaveAttribute('href', '/settings');
+
+    // Closing Way 1: Tapping More again
+    await moreTab.click();
+    await expect(sheet).not.toBeVisible();
+
+    // Closing Way 2: Tapping the scrim
+    await moreTab.click();
+    await expect(sheet).toBeVisible();
+    // Tap above the sheet on the scrim overlay (e.g. at x: 200, y: 50)
+    await page.mouse.click(200, 50);
+    await expect(sheet).not.toBeVisible();
+
+    // Closing Way 3: Swipe down on the drag handle
+    await moreTab.click();
+    await expect(sheet).toBeVisible();
+    const dragArea = page.getByTestId('dialog-drag-area');
+    const dragBox = await dragArea.boundingBox();
+    if (dragBox) {
+      await page.mouse.move(dragBox.x + dragBox.width / 2, dragBox.y + dragBox.height / 2);
+      await page.mouse.down();
+      await page.mouse.move(dragBox.x + dragBox.width / 2, dragBox.y + dragBox.height / 2 + 180, { steps: 10 });
+      await page.mouse.up();
+    }
+    await expect(sheet).not.toBeVisible();
+  });
 });

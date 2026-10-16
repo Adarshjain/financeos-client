@@ -114,6 +114,14 @@ export const AllVariants: Story = {
           className="absolute inset-x-space-12 bottom-space-12"
         />
       </Scene>
+
+      <Scene title="More open">
+        <TabBar
+          items={financeOSItems}
+          current="more"
+          className="absolute inset-x-space-12 bottom-space-12"
+        />
+      </Scene>
     </div>
   ),
 };
@@ -145,5 +153,13 @@ export const CountOver99: Story = {
           : item,
     ),
     current: 'inbox',
+  },
+};
+
+export const MoreOpen: Story = {
+  name: 'More open',
+  args: {
+    items: financeOSItems,
+    current: 'more',
   },
 };
