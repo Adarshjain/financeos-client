@@ -1,18 +1,20 @@
 # Badge
 
-A small coloured label for a state that applies to a whole item (a bill, a job, a statement), never on transaction rows. The `count` variant is the CountBubble every count uses.
+A small coloured label for a state that applies to a whole item (a bill, a job, a statement), transaction categories, and count bubbles.
 
-## Tones
-`b-green` done or paid · `b-amber` due soon, warning · `b-rose` missing, failed, overdue · `b-blue` informational counts and sources · `b-grey` neutral.
-
-## Count
-A pill 16px tall (`space-16`), at least 16 wide, `tab-label` text: `ink` fill with `on-brand` text by default, `danger` for things that need you now (Inbox), `warning` for review counts. Over 99 shows "99+". Used by Button, FilterChip, TabBar and Rail; none of them draws its own.
-
-## Copy
-One or two words, sentence case, no punctuation: "Paid", "2 days", "Missing", "1 warning".
+## Props
+- `tone`: `'neutral'` | `'success'` | `'warning'` | `'danger'` | `'info'` (default `'neutral'`)
+- `variant`: `'soft'` | `'solid'` | `'outline'` | `'dashed'` (default `'soft'`)
+- `shape`: `'default'` | `'rounded'` (default `'default'`)
+- `size`: `'sm'` | `'md'` (default `'md'`)
+- `asChild`: `boolean` (default `false`)
+- `onClick`: `MouseEventHandler`
 
 ## Built from
-Nothing else.
+Nothing else. Renders a `<span>`, `<button>`, or Radix `Slot` when `asChild`.
 
 ## Variants
-- Five tones; count (ink, danger, warning).
+- Variants: `soft` (tinted fill), `solid` (filled), `outline` (bordered), `dashed` (dashed border)
+- Shapes: `default` (rounded-ds-sm), `rounded` (rounded-ds-pill)
+- Sizes: `sm` (16px height, text-micro), `md` (20px height, text-caption)
+- Tones: `neutral`, `success`, `warning`, `danger`, `info`

@@ -2,8 +2,8 @@
 
 import React, { forwardRef } from 'react';
 
+import { Badge } from '../Badge/Badge';
 import { Button } from '../Button/Button';
-import { CategoryChip } from '../CategoryChip/CategoryChip';
 import { Checkbox } from '../Checkbox/Checkbox';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
@@ -218,27 +218,36 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       if (categories.length === 0) {
         if (!unsetCategoryLabel) return null;
         return (
-          <CategoryChip variant="unset" onClick={onSetCategory}>
+          <Badge
+            variant="dashed"
+            shape="rounded"
+            tone="warning"
+            onClick={onSetCategory}
+          >
             {unsetCategoryLabel}
-          </CategoryChip>
+          </Badge>
         );
       }
 
       return (
         <>
-          <CategoryChip
+          <Badge
+            variant="outline"
+            shape="rounded"
             onClick={
               onCategoryClick ? () => onCategoryClick(categories[0]) : undefined
             }
           >
             {categories[0]}
-          </CategoryChip>
+          </Badge>
           {categories.length > 1 && (
-            <CategoryChip
-              variant="count"
-              count={categories.length - 1}
+            <Badge
+              variant="outline"
+              shape="rounded"
               onClick={onMoreCategoriesClick}
-            />
+            >
+              +{categories.length - 1}
+            </Badge>
           )}
         </>
       );

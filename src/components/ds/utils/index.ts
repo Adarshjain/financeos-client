@@ -31,11 +31,13 @@ const MONTH_NAMES = [
 /**
  * Formats a count with a cap (defaults to 99), e.g. "99+" when above max.
  */
-export function formatCount(n: number, max = 99): string {
-  if (n > max) {
+export function formatCount(n: number | string, max = 99): string {
+  const num = typeof n === 'number' ? n : parseInt(n, 10);
+  if (isNaN(num)) return String(n);
+  if (num > max) {
     return `${max}+`;
   }
-  return String(n);
+  return String(num);
 }
 
 /**

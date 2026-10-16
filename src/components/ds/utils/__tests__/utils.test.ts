@@ -28,6 +28,11 @@ describe('Dinero utils', () => {
       expect(formatCount(10, 10)).toBe('10');
       expect(formatCount(11, 10)).toBe('10+');
     });
+
+    it('handles numeric string counts', () => {
+      expect(formatCount('5')).toBe('5');
+      expect(formatCount('120')).toBe('99+');
+    });
   });
 
   describe('formatDate', () => {

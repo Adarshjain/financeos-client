@@ -4,7 +4,7 @@ export function ServerFixture() {
   return (
     <Card>
       <SectionHeader label="Server Test" />
-      <Badge tone="grey">Server Badge</Badge>
+      <Badge tone="neutral">Server Badge</Badge>
       <Banner tone="neutral">Server Banner</Banner>
     </Card>
   );

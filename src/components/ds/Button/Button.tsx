@@ -5,6 +5,7 @@ import React, { forwardRef } from 'react';
 
 import { Badge } from '../Badge/Badge';
 import { cn } from '../cn';
+import { formatCount } from '../utils';
 import { Icon } from '../Icon/Icon';
 
 export type ButtonVariant =
@@ -188,10 +189,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             {effectiveChildren}
             {!isTile && count !== undefined && count !== null ? (
               <Badge
-                variant="count"
-                count={count}
+                variant="solid"
+                shape="rounded"
+                size="sm"
                 className={isPrimary ? 'bg-surface text-ink' : undefined}
-              />
+              >
+                {formatCount(count)}
+              </Badge>
             ) : null}
           </>
         )}

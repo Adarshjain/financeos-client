@@ -7,8 +7,8 @@ import React, {
   useState,
 } from 'react';
 
+import { Badge } from '../Badge/Badge';
 import { Button } from '../Button/Button';
-import { CategoryChip } from '../CategoryChip/CategoryChip';
 import { Checkbox } from '../Checkbox/Checkbox';
 import { cn } from '../cn';
 import { FieldFrame } from '../FieldFrame';
@@ -611,12 +611,14 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
               ) : (
                 <>
                   {visibleChips.map((opt) => (
-                    <CategoryChip key={opt.value} variant="default">
+                    <Badge key={opt.value} variant="outline" shape="rounded">
                       {opt.label}
-                    </CategoryChip>
+                    </Badge>
                   ))}
                   {overflowCount > 0 ? (
-                    <CategoryChip variant="count" count={overflowCount} />
+                    <Badge variant="outline" shape="rounded">
+                      +{overflowCount}
+                    </Badge>
                   ) : null}
                 </>
               )}

@@ -5,6 +5,7 @@ import React, { forwardRef } from 'react';
 import { Badge } from '../Badge/Badge';
 import { cn } from '../cn';
 import { Icon, type IconName } from '../Icon/Icon';
+import { formatCount } from '../utils';
 
 export interface TabBarItem {
   id: string;
@@ -78,11 +79,14 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
                 <Icon name={item.icon} size="lg" />
                 {item.count !== undefined && item.count > 0 ? (
                   <Badge
-                    variant="count"
+                    variant="solid"
+                    shape="rounded"
+                    size="sm"
                     tone={item.countTone}
-                    count={item.count}
                     className="absolute -top-space-4 left-space-12 pointer-events-none ring-2 ring-surface"
-                  />
+                  >
+                    {formatCount(item.count)}
+                  </Badge>
                 ) : null}
               </div>
               <span className={cn('truncate max-w-full', isActive && 'font-extrabold')}>

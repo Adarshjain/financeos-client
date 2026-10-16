@@ -2,8 +2,8 @@
 
 import React, { forwardRef } from 'react';
 
+import { Badge } from '../Badge/Badge';
 import { Button } from '../Button/Button';
-import { CategoryChip } from '../CategoryChip/CategoryChip';
 import { Checkbox } from '../Checkbox/Checkbox';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
@@ -351,12 +351,14 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
           <div className="flex-1 flex gap-space-6 flex-wrap">
             {categoryContent ??
               categories?.map((cat, idx) => (
-                <CategoryChip
+                <Badge
                   key={idx}
+                  variant="outline"
+                  shape="rounded"
                   className={selected ? 'bg-surface' : undefined}
                 >
                   {cat}
-                </CategoryChip>
+                </Badge>
               ))}
           </div>
           {renderActions()}

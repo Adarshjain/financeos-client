@@ -6,6 +6,7 @@ import { Avatar } from '../Avatar/Avatar';
 import { Badge } from '../Badge/Badge';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
+import { formatCount } from '../utils';
 import { Icon, type IconName } from '../Icon/Icon';
 import { Kbd } from '../Kbd/Kbd';
 import { Logo } from '../Logo/Logo';
@@ -185,18 +186,15 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
                     <span className="flex-1 truncate">{item.label}</span>
 
                     {item.count !== undefined && item.count !== null ? (
-                      item.countTone === 'warning' ? (
-                        <span className="text-caption font-bold text-warning ml-auto">
-                          {item.count}
-                        </span>
-                      ) : (
-                        <Badge
-                          variant="count"
-                          count={item.count}
-                          tone={item.countTone === 'danger' ? 'danger' : 'ink'}
-                          className="ml-auto"
-                        />
-                      )
+                      <Badge
+                        variant="solid"
+                        shape="rounded"
+                        size="sm"
+                        tone={item.countTone === 'danger' ? 'danger' : item.countTone === 'warning' ? 'warning' : 'neutral'}
+                        className="ml-auto"
+                      >
+                        {formatCount(item.count)}
+                      </Badge>
                     ) : null}
                   </Tag>
                 );

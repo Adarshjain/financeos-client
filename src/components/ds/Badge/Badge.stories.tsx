@@ -1,109 +1,98 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
+import { fn } from 'storybook/test';
 
-import { Badge } from './Badge';
+import { Badge } from '@/components/ds';
 
 const meta: Meta<typeof Badge> = {
   title: 'DS/Data display/Badge',
   component: Badge,
-  argTypes: {
-    variant: {
-      control: 'select',
-      options: ['default', 'count'],
+  parameters: {
+    layout: 'centered',
+    docs: {
+      description: {
+        component:
+          'A small coloured label for a state that applies to a whole item (a bill, a job, a statement), transaction categories, and count bubbles.',
+      },
     },
+  },
+  argTypes: {
     tone: {
       control: 'select',
-      options: ['grey', 'green', 'amber', 'rose', 'blue', 'ink', 'danger', 'warning'],
+      options: ['neutral', 'success', 'warning', 'danger', 'info'],
     },
+    variant: {
+      control: 'select',
+      options: ['soft', 'solid', 'outline', 'dashed'],
+    },
+    shape: {
+      control: 'select',
+      options: ['default', 'rounded'],
+    },
+    size: {
+      control: 'select',
+      options: ['sm', 'md'],
+    },
+    children: {
+      control: 'text',
+    },
+    asChild: {
+      control: false,
+    },
+  },
+  args: {
+    onClick: fn(),
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof Badge>;
 
-export const AllVariants: Story = {
-  render: () => (
-    <div className="p-space-16 bg-canvas min-h-full flex flex-col gap-space-12 font-text">
-      <div className="flex gap-space-8 flex-wrap items-center">
-        <Badge tone="green">Paid</Badge>
-        <Badge tone="amber">2 days</Badge>
-        <Badge tone="rose">Missing</Badge>
-        <Badge tone="blue">Gmail</Badge>
-        <Badge tone="grey">Closed</Badge>
-      </div>
-      <div className="flex gap-space-8 items-center">
-        <Badge variant="count" count={3} tone="ink" />
-        <Badge variant="count" count={9} tone="danger" />
-        <Badge variant="count" count={25} tone="warning" />
-        <Badge variant="count" count={120} tone="ink" />
-      </div>
-    </div>
-  ),
-};
-
-export const Green: Story = {
+export const Soft: Story = {
   args: {
-    tone: 'green',
     children: 'Paid',
+    tone: 'success',
+    variant: 'soft',
+    shape: 'default',
+    size: 'md',
   },
 };
 
-export const Amber: Story = {
+export const Solid: Story = {
   args: {
-    tone: 'amber',
-    children: '2 days',
+    children: 'Important',
+    tone: 'neutral',
+    variant: 'solid',
+    shape: 'default',
+    size: 'md',
   },
 };
 
-export const Rose: Story = {
+export const Outline: Story = {
   args: {
-    tone: 'rose',
-    children: 'Missing',
+    children: 'Groceries',
+    tone: 'neutral',
+    variant: 'outline',
+    shape: 'rounded',
+    size: 'md',
   },
 };
 
-export const Blue: Story = {
+export const Dashed: Story = {
   args: {
-    tone: 'blue',
-    children: 'Gmail',
-  },
-};
-
-export const Grey: Story = {
-  args: {
-    tone: 'grey',
-    children: 'Closed',
+    children: 'Set category',
+    tone: 'warning',
+    variant: 'dashed',
+    shape: 'rounded',
+    size: 'md',
   },
 };
 
 export const Count: Story = {
   args: {
-    variant: 'count',
-    count: 3,
-    tone: 'ink',
-  },
-};
-
-export const CountDanger: Story = {
-  args: {
-    variant: 'count',
-    count: 9,
-    tone: 'danger',
-  },
-};
-
-export const CountWarning: Story = {
-  args: {
-    variant: 'count',
-    count: 25,
+    children: '25',
     tone: 'warning',
-  },
-};
-
-export const CountOver99: Story = {
-  args: {
-    variant: 'count',
-    count: 120,
-    tone: 'ink',
+    variant: 'solid',
+    shape: 'rounded',
+    size: 'sm',
   },
 };
