@@ -44,7 +44,7 @@ export const Toast = forwardRef<HTMLDivElement, ToastProps>(
         ref={ref}
         role={role || (isDanger ? 'alert' : 'status')}
         className={cn(
-          'shadow-pop rounded-ds-lg px-space-14 py-space-10 flex items-center gap-space-10 text-body font-semibold select-none',
+          'shadow-level-2 rounded-ds-lg px-space-14 py-space-10 flex items-center gap-space-10 text-body font-semibold select-none',
           isNeutral ? 'bg-ink text-on-brand' : bannerToneStyles[tone],
           className,
         )}
@@ -95,7 +95,7 @@ export function Toaster({
       visibleToasts={visibleToasts}
       mobileOffset={
         mobileOffset ?? {
-          bottom: 'calc(var(--ds-space-12) + var(--ds-tab-bar) + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(var(--ds-space-12) + var(--ds-space-64) + env(safe-area-inset-bottom, 0px))',
         }
       }
       {...props}

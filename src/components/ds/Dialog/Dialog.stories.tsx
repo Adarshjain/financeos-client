@@ -108,7 +108,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Phone sheet · same footer, tertiary left
         </div>
-        <div className="bg-scrim p-space-16 max-w-sm rounded-ds-lg">
+        <div className="bg-backdrop p-space-16 max-w-sm rounded-ds-lg">
           <DialogShell
             size="sm"
             title="Edit rule"
@@ -194,7 +194,7 @@ export const AllVariants: Story = {
         <div className="font-extrabold text-label text-ink-3 mb-space-8">
           Canvas background · with tiles
         </div>
-        <div className="bg-scrim p-space-16 max-w-sm rounded-ds-lg">
+        <div className="bg-backdrop p-space-16 max-w-sm rounded-ds-lg">
           <DialogShell
             size="sm"
             background="canvas"
@@ -364,7 +364,7 @@ export const PhoneSheet: Story = {
     description: 'Swiggy · Food & dining',
   },
   render: (args) => (
-    <div className="bg-scrim p-space-16 max-w-sm rounded-ds-lg">
+    <div className="bg-backdrop p-space-16 max-w-sm rounded-ds-lg">
       <DialogShell
         {...args}
         tertiary={

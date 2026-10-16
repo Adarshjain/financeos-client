@@ -314,7 +314,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
           'relative px-space-12 py-space-8 text-body transition-colors select-none font-text',
           borderTop ? 'border-t border-line-soft first:border-t-0' : 'border-t-0',
           isSel && 'bg-brand-tint',
-          isMon && 'bg-watch-tint',
+          isMon && 'bg-attention-tint',
           isExc && 'opacity-60',
           !isSel && !isMon && 'bg-surface hover:bg-hover active:bg-hover',
           isInteractive && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
@@ -330,7 +330,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         )}
         {isMon && (
           <span
-            className="absolute left-0 top-0 bottom-0 w-space-4 bg-watch pointer-events-none"
+            className="absolute left-0 top-0 bottom-0 w-space-4 bg-attention pointer-events-none"
             aria-hidden="true"
           />
         )}

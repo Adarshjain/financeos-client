@@ -14,7 +14,7 @@ export type TextVariant =
   | 'label'
   | 'caption'
   | 'overline'
-  | 'tab-label';
+  | 'micro';
 
 export type TextTone =
   | 'ink'
@@ -50,7 +50,7 @@ const variantStyles: Record<TextVariant, string> = {
   label: 'text-label',
   caption: 'text-caption',
   overline: 'text-overline uppercase',
-  'tab-label': 'text-tab-label',
+  'micro': 'text-micro',
 };
 
 const toneStyles: Record<TextTone, string> = {

@@ -65,7 +65,7 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
       return (
         <span
           className={cn(
-            'inline-flex items-center h-chip rounded-ds-pill border font-text font-semibold text-label whitespace-nowrap select-none transition-colors duration-fast',
+            'inline-flex items-center h-space-28 rounded-ds-pill border font-text font-semibold text-label whitespace-nowrap select-none transition-colors duration-fast',
             toneClasses,
             disabled && 'opacity-50 cursor-not-allowed',
             className,
@@ -103,7 +103,7 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
         disabled={disabled}
         onClick={onClick}
         className={cn(
-          'inline-flex items-center gap-space-6 h-chip px-space-10 rounded-ds-pill border font-text font-semibold text-label whitespace-nowrap transition-colors duration-fast select-none cursor-pointer',
+          'inline-flex items-center gap-space-6 h-space-28 px-space-10 rounded-ds-pill border font-text font-semibold text-label whitespace-nowrap transition-colors duration-fast select-none cursor-pointer',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
           toneClasses,
           disabled && 'opacity-50 cursor-not-allowed',

@@ -22,7 +22,7 @@ const variantStyles: Record<AvatarVariant, string> = {
 };
 
 const sizeStyles: Record<'sm' | 'md' | 'lg', string> = {
-  sm: 'h-space-24 w-space-24 text-tab-label font-bold',
+  sm: 'h-space-24 w-space-24 text-micro font-bold',
   md: 'h-control-md w-control-md text-label font-bold',
   lg: 'h-control-xl w-control-xl text-heading font-extrabold',
 };

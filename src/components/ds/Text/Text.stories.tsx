@@ -21,7 +21,7 @@ const meta: Meta<typeof Text> = {
         'label',
         'caption',
         'overline',
-        'tab-label',
+        'micro',
       ],
     },
     tone: {
@@ -186,7 +186,7 @@ export const Overline: Story = {
 
 export const TabLabel: Story = {
   args: {
-    variant: 'tab-label',
+    variant: 'micro',
     children: 'Transactions',
   },
 };

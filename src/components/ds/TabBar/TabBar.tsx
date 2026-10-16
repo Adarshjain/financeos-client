@@ -47,7 +47,7 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
         ref={ref}
         aria-label="Primary"
         className={cn(
-          'fixed inset-x-space-12 bottom-safe-12 z-dock flex items-center bg-surface border border-line rounded-ds-pill shadow-dock py-space-8 px-space-4 select-none lg:hidden',
+          'fixed inset-x-space-12 bottom-safe-12 z-floating flex items-center bg-surface border border-line rounded-ds-pill shadow-up-1 py-space-8 px-space-4 select-none lg:hidden',
           className,
         )}
         {...props}
@@ -68,7 +68,7 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
                 onSelect?.(item.id);
               }}
               className={cn(
-                'flex-1 min-w-0 flex flex-col items-center justify-center gap-space-2 font-text text-tab-label transition-colors duration-fast cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded-ds-sm active:text-ink-3',
+                'flex-1 min-w-0 flex flex-col items-center justify-center gap-space-2 font-text text-micro transition-colors duration-fast cursor-pointer no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded-ds-sm active:text-ink-3',
                 isActive
                   ? 'text-ink'
                   : 'text-ink-faint',

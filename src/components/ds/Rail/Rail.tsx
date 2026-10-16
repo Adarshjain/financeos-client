@@ -50,7 +50,7 @@ export interface RailProps extends Omit<React.HTMLAttributes<HTMLElement>, 'onSe
 }
 
 /**
- * Desktop left navigation, 240px (`w-rail`).
+ * Desktop left navigation, 240px (`w-container-xs`).
  * Brand row, search shortcut with ⌘K, navigation sections with overline headers,
  * and user profile pinned at the bottom.
  *
@@ -89,7 +89,7 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
         ref={ref}
         aria-label="Primary"
         className={cn(
-          'w-rail min-w-rail bg-surface border-r border-line p-space-12 flex flex-col h-full text-body select-none',
+          'w-container-xs min-w-container-xs bg-surface border-r border-line p-space-12 flex flex-col h-full text-body select-none',
           className,
         )}
         {...props}

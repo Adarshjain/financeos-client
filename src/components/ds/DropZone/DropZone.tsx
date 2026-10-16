@@ -144,7 +144,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
                 ? 'border-brand bg-brand-tint'
                 : hasError
                   ? 'border-danger bg-danger-tint'
-                  : 'border-line-handle bg-sunken',
+                  : 'border-line-heavy bg-sunken',
             )}
           >
             <div

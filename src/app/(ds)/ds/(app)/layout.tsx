@@ -26,7 +26,7 @@ export default async function DsAppLayout({
       {/* Main content column */}
       <div className="flex-1 min-w-0 flex flex-col min-h-dvh">
         <TopBar title="New design" />
-        <main className="flex-1 p-space-16 lg:p-space-24 pb-tab-bar-clearance lg:pb-space-24">
+        <main className="flex-1 p-space-16 lg:p-space-24 pb-bottom-clearance lg:pb-space-24">
           {children}
         </main>
       </div>

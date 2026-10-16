@@ -69,7 +69,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
           isChecked
             ? 'bg-brand hover:bg-brand-hover active:bg-brand-pressed'
-            : 'bg-line-handle hover:bg-line-strong active:bg-line-strong',
+            : 'bg-line-heavy hover:bg-line-strong active:bg-line-strong',
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
           !label && !description && className,
         )}
@@ -77,7 +77,7 @@ export const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
       >
         <span
           className={cn(
-            'pointer-events-none block w-space-16 h-space-16 rounded-ds-pill bg-surface shadow-pop transition-transform duration-fast',
+            'pointer-events-none block w-space-16 h-space-16 rounded-ds-pill bg-surface shadow-level-2 transition-transform duration-fast',
             isChecked ? 'translate-x-space-16' : 'translate-x-0',
           )}
         />

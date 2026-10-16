@@ -5,7 +5,7 @@ import { Card, EmptyState, ListRow, SectionHeader } from '@/components/ds';
 
 export default function DsIndexPage() {
   return (
-    <div className="max-w-dialog-md mx-auto space-y-space-24">
+    <div className="max-w-container-md mx-auto space-y-space-24">
       {/* Signed out pages */}
       <Card>
         <SectionHeader label="Signed out" borderTop={false} />

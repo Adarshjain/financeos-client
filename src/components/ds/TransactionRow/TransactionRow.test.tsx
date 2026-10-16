@@ -111,7 +111,7 @@ describe('TransactionRow', () => {
         status="monitored"
       />,
     );
-    expect(monContainer.firstChild).toHaveClass('bg-watch-tint');
+    expect(monContainer.firstChild).toHaveClass('bg-attention-tint');
 
     const { container: excContainer } = render(
       <TransactionRow
@@ -168,7 +168,7 @@ describe('TransactionRow', () => {
         monitored
       />,
     );
-    const monStripe = monContainer.querySelector('.bg-watch');
+    const monStripe = monContainer.querySelector('.bg-attention');
     expect(monStripe).toHaveClass('w-space-4');
   });
 

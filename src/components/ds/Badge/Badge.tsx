@@ -50,7 +50,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(
           ref={ref}
           className={cn(
             'inline-flex items-center justify-center h-space-16 min-w-space-16 px-space-6 rounded-ds-pill',
-            'font-text font-bold text-tab-label leading-none whitespace-nowrap select-none box-border shrink-0',
+            'font-text font-bold text-micro leading-none whitespace-nowrap select-none box-border shrink-0',
             countToneStyles[countTone] || countToneStyles.ink,
             className,
           )}

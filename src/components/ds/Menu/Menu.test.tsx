@@ -130,7 +130,7 @@ describe('Menu', () => {
     expect(screen.getByRole('group')).toBeInTheDocument();
   });
 
-  it('applies min-w-menu-trigger, shadow-pop, and rounded-ds-lg on menu content', () => {
+  it('applies min-w-menu-trigger, shadow-level-2, and rounded-ds-lg on menu content', () => {
     render(
       <Menu
         defaultOpen
@@ -141,7 +141,7 @@ describe('Menu', () => {
     );
 
     const content = screen.getByTestId('menu-body').parentElement;
-    expect(content).toHaveClass('min-w-menu-trigger', 'shadow-pop', 'rounded-ds-lg');
+    expect(content).toHaveClass('min-w-menu-trigger', 'shadow-level-2', 'rounded-ds-lg');
   });
 
   it('closes on Escape key press', () => {
