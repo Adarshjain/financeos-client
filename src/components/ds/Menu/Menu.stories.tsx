@@ -1,19 +1,36 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { useArgs } from 'storybook/preview-api';
+import { fn } from 'storybook/test';
 
-import { Button } from '../Button/Button';
-import { Icon } from '../Icon/Icon';
 import {
+  Button,
+  Icon,
   Menu,
   MenuGroup,
   MenuItem,
   MenuSeparator,
-} from './Menu';
+} from '@/components/ds';
 
 const meta: Meta<typeof Menu> = {
   title: 'DS/Actions/Menu',
   component: Menu,
+  parameters: {
+    layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'A list of actions that opens from a trigger: the ⋮ menu on a rule or account, the dashboard ⋯ menu, snooze presets.',
+      },
+    },
+  },
+  decorators: [
+    (Story) => (
+      <div className="min-h-72">
+        <Story />
+      </div>
+    ),
+  ],
   argTypes: {
     align: {
       control: { type: 'select' },
@@ -26,14 +43,16 @@ const meta: Meta<typeof Menu> = {
     open: {
       control: { type: 'boolean' },
     },
-    defaultOpen: {
-      control: { type: 'boolean' },
-    },
+    trigger: { control: false },
+    children: { control: false },
+    onOpenChange: { control: false },
+    contentProps: { control: false },
   },
   args: {
     align: 'start',
     side: 'bottom',
-    defaultOpen: true,
+    open: true,
+    onOpenChange: fn(),
   },
   render: function Render(args) {
     const [{ open }, updateArgs] = useArgs();
@@ -41,7 +60,10 @@ const meta: Meta<typeof Menu> = {
       <Menu
         {...args}
         open={open}
-        onOpenChange={(val) => updateArgs({ open: val })}
+        onOpenChange={(val) => {
+          args.onOpenChange?.(val);
+          updateArgs({ open: val });
+        }}
       />
     );
   },
@@ -50,270 +72,107 @@ const meta: Meta<typeof Menu> = {
 export default meta;
 type Story = StoryObj<typeof Menu>;
 
-const ActionsContent = () => (
-  <>
-    <MenuItem>Find matches</MenuItem>
-    <MenuItem>Edit rule</MenuItem>
-    <MenuSeparator />
-    <MenuItem destructive>Delete rule</MenuItem>
-  </>
+const DefaultTrigger = () => (
+  <Button
+    size="sm"
+    variant="ghost"
+    iconOnly
+    aria-label="More options"
+  >
+    <Icon name="more" size="sm" />
+  </Button>
 );
 
-const IconsAndHintsContent = () => (
-  <>
-    <MenuItem
-      icon={<Icon name="add" size="sm" />}
-      hint="built-in or report"
-    >
-      Add widget
-    </MenuItem>
-    <MenuItem
-      icon={<Icon name="view" size="sm" />}
-      hint="arrange, resize"
-    >
-      Edit dashboard
-    </MenuItem>
-    <MenuItem icon={<Icon name="calendar" size="sm" />}>
-      New dashboard
-    </MenuItem>
-  </>
-);
-
-const SnoozePresetsContent = () => (
-  <>
-    <MenuItem hint="Wed 14 Oct">Tomorrow</MenuItem>
-    <MenuItem hint="Fri 16 Oct">In 3 days</MenuItem>
-    <MenuItem hint="Tue 20 Oct">Next week</MenuItem>
-    <MenuSeparator />
-    <MenuItem>Pick a date…</MenuItem>
-  </>
-);
-
-const DisabledItemContent = () => (
-  <>
-    <MenuItem>Edit details</MenuItem>
-    <MenuItem>Reassign transactions</MenuItem>
-    <MenuSeparator />
-    <MenuItem disabled hint="has transactions">
-      Delete cardholder
-    </MenuItem>
-  </>
-);
-
-const SectionedContent = () => (
-  <>
-    <MenuGroup label="This widget">
-      <MenuItem>Widget settings</MenuItem>
-      <MenuItem>View full page</MenuItem>
-    </MenuGroup>
-    <MenuGroup label="Report">
-      <MenuItem>Edit report</MenuItem>
-      <MenuItem>Duplicate as my report</MenuItem>
-    </MenuGroup>
-  </>
-);
-
-const SwitcherContent = () => (
-  <>
-    <MenuItem
-      active
-      hint={
-        <span className="inline-flex items-center gap-space-2 text-brand-strong">
-          Default <Icon name="check" size="sm" />
-        </span>
-      }
-    >
-      Home
-    </MenuItem>
-    <MenuItem>Money overview</MenuItem>
-    <MenuItem>Cards & loans</MenuItem>
-    <MenuSeparator />
-    <MenuItem action>View all dashboards</MenuItem>
-  </>
-);
-
-export const AllVariants: Story = {
-  render: () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-space-24 p-space-16 max-w-4xl">
-      <div className="flex flex-col gap-space-8">
-        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
-          Actions
-        </span>
-        <div className="relative">
-          <Menu
-            defaultOpen
-            trigger={
-              <Button variant="secondary" iconOnly aria-label="Actions">
-                <Icon name="more" size="md" />
-              </Button>
-            }
-          >
-            <ActionsContent />
-          </Menu>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-space-8">
-        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
-          With icons and hints
-        </span>
-        <div className="relative">
-          <Menu
-            defaultOpen
-            trigger={
-              <Button variant="secondary" iconOnly aria-label="Options">
-                <Icon name="more" size="md" />
-              </Button>
-            }
-          >
-            <IconsAndHintsContent />
-          </Menu>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-space-8 pt-space-48">
-        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
-          Snooze presets
-        </span>
-        <div className="relative">
-          <Menu
-            defaultOpen
-            trigger={
-              <Button variant="secondary" iconOnly aria-label="Snooze">
-                <Icon name="more" size="md" />
-              </Button>
-            }
-          >
-            <SnoozePresetsContent />
-          </Menu>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-space-8 pt-space-48">
-        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
-          Disabled item
-        </span>
-        <div className="relative">
-          <Menu
-            defaultOpen
-            trigger={
-              <Button variant="secondary" iconOnly aria-label="Cardholder">
-                <Icon name="more" size="md" />
-              </Button>
-            }
-          >
-            <DisabledItemContent />
-          </Menu>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-space-8 pt-space-48">
-        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
-          Sectioned
-        </span>
-        <div className="relative">
-          <Menu
-            defaultOpen
-            trigger={
-              <Button variant="secondary" iconOnly aria-label="Widget">
-                <Icon name="more" size="md" />
-              </Button>
-            }
-          >
-            <SectionedContent />
-          </Menu>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-space-8 pt-space-48">
-        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
-          Switcher with a footer link
-        </span>
-        <div className="relative">
-          <Menu
-            defaultOpen
-            trigger={
-              <Button variant="secondary" iconOnly aria-label="Dashboards">
-                <Icon name="more" size="md" />
-              </Button>
-            }
-          >
-            <SwitcherContent />
-          </Menu>
-        </div>
-      </div>
-    </div>
-  ),
-};
-
-export const Actions: Story = {
+export const Default: Story = {
   args: {
-    defaultOpen: true,
-    trigger: (
-      <Button variant="secondary" iconOnly aria-label="Rule actions">
-        <Icon name="more" size="md" />
-      </Button>
+    trigger: <DefaultTrigger />,
+    children: (
+      <>
+        <MenuItem>Edit</MenuItem>
+        <MenuItem>Duplicate</MenuItem>
+        <MenuSeparator />
+        <MenuItem destructive>Delete</MenuItem>
+      </>
     ),
-    children: <ActionsContent />,
   },
 };
 
 export const WithIconsAndHints: Story = {
   args: {
-    defaultOpen: true,
-    trigger: (
-      <Button variant="secondary" iconOnly aria-label="Dashboard actions">
-        <Icon name="more" size="md" />
-      </Button>
+    trigger: <DefaultTrigger />,
+    children: (
+      <>
+        <MenuItem
+          icon={<Icon name="add" size="sm" />}
+          hint="⌘N"
+        >
+          New item
+        </MenuItem>
+        <MenuItem
+          icon={<Icon name="view" size="sm" />}
+          hint="⌘E"
+        >
+          Quick view
+        </MenuItem>
+        <MenuItem icon={<Icon name="calendar" size="sm" />}>
+          Schedule
+        </MenuItem>
+      </>
     ),
-    children: <IconsAndHintsContent />,
-  },
-};
-
-export const SnoozePresets: Story = {
-  args: {
-    defaultOpen: true,
-    trigger: (
-      <Button variant="secondary" iconOnly aria-label="Snooze options">
-        <Icon name="more" size="md" />
-      </Button>
-    ),
-    children: <SnoozePresetsContent />,
   },
 };
 
 export const DisabledItem: Story = {
   args: {
-    defaultOpen: true,
-    trigger: (
-      <Button variant="secondary" iconOnly aria-label="Cardholder options">
-        <Icon name="more" size="md" />
-      </Button>
+    trigger: <DefaultTrigger />,
+    children: (
+      <>
+        <MenuItem>Edit details</MenuItem>
+        <MenuItem>Reassign category</MenuItem>
+        <MenuSeparator />
+        <MenuItem disabled hint="In use">
+          Delete rule
+        </MenuItem>
+      </>
     ),
-    children: <DisabledItemContent />,
   },
 };
 
 export const Sectioned: Story = {
   args: {
-    defaultOpen: true,
-    trigger: (
-      <Button variant="secondary" iconOnly aria-label="Widget options">
-        <Icon name="more" size="md" />
-      </Button>
+    trigger: <DefaultTrigger />,
+    children: (
+      <>
+        <MenuGroup label="Preferences">
+          <MenuItem active hint="Default">
+            Primary view
+          </MenuItem>
+          <MenuItem>Compact layout</MenuItem>
+        </MenuGroup>
+        <MenuSeparator />
+        <MenuGroup label="Actions">
+          <MenuItem>Export data</MenuItem>
+          <MenuItem destructive>Archive all</MenuItem>
+        </MenuGroup>
+      </>
     ),
-    children: <SectionedContent />,
   },
 };
 
-export const SwitcherWithAFooterLink: Story = {
+export const LabelledTrigger: Story = {
   args: {
-    defaultOpen: true,
     trigger: (
-      <Button variant="secondary" iconOnly aria-label="Switch dashboard">
-        <Icon name="more" size="md" />
+      <Button variant="secondary" icon={<Icon name="chevron-down" />}>
+        Options
       </Button>
     ),
-    children: <SwitcherContent />,
+    children: (
+      <>
+        <MenuItem>Edit</MenuItem>
+        <MenuItem>Duplicate</MenuItem>
+        <MenuSeparator />
+        <MenuItem destructive>Delete</MenuItem>
+      </>
+    ),
   },
 };

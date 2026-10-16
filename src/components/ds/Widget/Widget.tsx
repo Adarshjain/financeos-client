@@ -6,10 +6,10 @@ import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuTrigger,
 } from '../Menu/Menu';
 import { Skeleton } from '../Skeleton/Skeleton';
 
@@ -78,8 +78,8 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
       if (menu) return menu;
       if (menuItems && menuItems.length > 0) {
         return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <Menu.Root>
+            <MenuTrigger asChild>
               <Button
                 type="button"
                 size="sm"
@@ -90,19 +90,19 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
               >
                 <Icon name="more" size="sm" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            </MenuTrigger>
+            <MenuContent align="end">
               {menuItems.map((item, idx) => (
-                <DropdownMenuItem
+                <MenuItem
                   key={idx}
                   destructive={item.destructive}
                   onSelect={item.onSelect}
                 >
                   {item.label}
-                </DropdownMenuItem>
+                </MenuItem>
               ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </MenuContent>
+          </Menu.Root>
         );
       }
       return null;

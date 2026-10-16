@@ -130,7 +130,7 @@ describe('Menu', () => {
     expect(screen.getByRole('group')).toBeInTheDocument();
   });
 
-  it('applies min-w-menu-trigger, shadow-level-2, and rounded-ds-lg on menu content', () => {
+  it('applies min-w-menu-trigger, shadow-level-2, and directional slide animation', () => {
     render(
       <Menu
         defaultOpen
@@ -142,6 +142,7 @@ describe('Menu', () => {
 
     const content = screen.getByTestId('menu-body').parentElement;
     expect(content).toHaveClass('min-w-menu-trigger', 'shadow-level-2', 'rounded-ds-lg');
+    expect(content).toHaveClass('data-side-bottom:slide-in-from-top-1', 'data-side-top:slide-in-from-bottom-1');
   });
 
   it('closes on Escape key press', () => {
@@ -187,5 +188,18 @@ describe('Menu', () => {
     expect(handleSelect).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
-});
 
+  it('forwards contentProps to MenuContent', () => {
+    render(
+      <Menu
+        defaultOpen
+        trigger={<button type="button">Trigger</button>}
+        contentProps={{ 'data-testid': 'custom-menu-content' } as Record<string, unknown>}
+      >
+        <MenuItem>Item</MenuItem>
+      </Menu>,
+    );
+
+    expect(screen.getByTestId('custom-menu-content')).toBeInTheDocument();
+  });
+});

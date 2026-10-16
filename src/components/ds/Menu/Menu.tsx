@@ -1,21 +1,13 @@
 'use client';
 
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
-import React, { forwardRef, useMemo } from 'react';
+import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
 import { getItemRowClass, ItemRowStyleOptions } from '../itemRow';
 import { useControllableState } from '../useControllableState';
 
-export const DropdownMenu = DropdownMenuPrimitive.Root;
-export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
-export const DropdownMenuPortal = DropdownMenuPrimitive.Portal;
-export const DropdownMenuGroup = DropdownMenuPrimitive.Group;
-export const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
-export const DropdownMenuSub = DropdownMenuPrimitive.Sub;
-export const DropdownMenuSubTrigger = DropdownMenuPrimitive.SubTrigger;
-export const DropdownMenuSubContent = DropdownMenuPrimitive.SubContent;
-
+export const MenuRoot = DropdownMenuPrimitive.Root;
 export const MenuTrigger = DropdownMenuPrimitive.Trigger;
 export const MenuPortal = DropdownMenuPrimitive.Portal;
 export const MenuRadioGroup = DropdownMenuPrimitive.RadioGroup;
@@ -39,7 +31,7 @@ export const MenuContent = forwardRef<
         sideOffset={sideOffset}
         className={cn(
           'z-overlay bg-surface border border-line rounded-ds-lg shadow-level-2 p-space-6 flex flex-col min-w-menu-trigger outline-none',
-          'animate-in fade-in-0 slide-in-from-top-1 duration-base',
+          'animate-in fade-in-0 data-side-bottom:slide-in-from-top-1 data-side-top:slide-in-from-bottom-1 duration-base',
           className,
         )}
         {...props}
@@ -51,7 +43,6 @@ export const MenuContent = forwardRef<
 });
 
 MenuContent.displayName = 'MenuContent';
-export const DropdownMenuContent = MenuContent;
 
 export interface MenuItemProps
   extends Omit<
@@ -85,11 +76,6 @@ export const MenuItem = forwardRef<
     },
     ref,
   ) => {
-    const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-      if (disabled) return;
-      onClick?.(e);
-    };
-
     const rowClass = getItemRowClass({
       active,
       destructive,
@@ -133,7 +119,6 @@ export const MenuItem = forwardRef<
 );
 
 MenuItem.displayName = 'MenuItem';
-export const DropdownMenuItem = MenuItem;
 
 export interface MenuSeparatorProps
   extends React.ComponentPropsWithoutRef<
@@ -154,7 +139,6 @@ export const MenuSeparator = forwardRef<
 });
 
 MenuSeparator.displayName = 'MenuSeparator';
-export const DropdownMenuSeparator = MenuSeparator;
 
 export interface MenuGroupProps
   extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Group> {
@@ -182,7 +166,6 @@ export const MenuGroup = forwardRef<
 });
 
 MenuGroup.displayName = 'MenuGroup';
-export const DropdownMenuGroupWrapper = MenuGroup;
 
 export interface MenuLabelProps
   extends React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Label> {}
@@ -202,7 +185,6 @@ export const MenuLabel = forwardRef<
 ));
 
 MenuLabel.displayName = 'MenuLabel';
-export const DropdownMenuLabel = MenuLabel;
 
 export interface MenuProps extends DropdownMenuPrimitive.DropdownMenuProps {
   trigger?: React.ReactNode;
@@ -211,8 +193,7 @@ export interface MenuProps extends DropdownMenuPrimitive.DropdownMenuProps {
   side?: 'top' | 'bottom' | 'left' | 'right';
   sideOffset?: number;
   contentClassName?: string;
-  forcePhone?: boolean;
-  title?: string;
+  contentProps?: Omit<MenuContentProps, 'align' | 'side' | 'sideOffset' | 'className'>;
 }
 
 export const Menu: React.FC<MenuProps> & {
@@ -223,6 +204,11 @@ export const Menu: React.FC<MenuProps> & {
   Separator: typeof MenuSeparator;
   Group: typeof MenuGroup;
   Label: typeof MenuLabel;
+  Portal: typeof DropdownMenuPrimitive.Portal;
+  RadioGroup: typeof DropdownMenuPrimitive.RadioGroup;
+  Sub: typeof DropdownMenuPrimitive.Sub;
+  SubTrigger: typeof DropdownMenuPrimitive.SubTrigger;
+  SubContent: typeof DropdownMenuPrimitive.SubContent;
 } = ({
   trigger,
   children,
@@ -230,6 +216,7 @@ export const Menu: React.FC<MenuProps> & {
   side = 'bottom',
   sideOffset = 4,
   contentClassName,
+  contentProps,
   open,
   defaultOpen,
   onOpenChange,
@@ -259,6 +246,7 @@ export const Menu: React.FC<MenuProps> & {
         side={side}
         sideOffset={sideOffset}
         className={contentClassName}
+        {...contentProps}
       >
         {children}
       </MenuContent>
@@ -274,3 +262,8 @@ Menu.Item = MenuItem;
 Menu.Separator = MenuSeparator;
 Menu.Group = MenuGroup;
 Menu.Label = MenuLabel;
+Menu.Portal = DropdownMenuPrimitive.Portal;
+Menu.RadioGroup = DropdownMenuPrimitive.RadioGroup;
+Menu.Sub = DropdownMenuPrimitive.Sub;
+Menu.SubTrigger = DropdownMenuPrimitive.SubTrigger;
+Menu.SubContent = DropdownMenuPrimitive.SubContent;

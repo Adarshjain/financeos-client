@@ -8,10 +8,10 @@ import { Checkbox } from '../Checkbox/Checkbox';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuTrigger,
 } from '../Menu/Menu';
 import { StatusWords } from '../StatusWords/StatusWords';
 import { useLongPress } from '../useLongPress';
@@ -189,8 +189,8 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
           )}
 
           {hasMenu && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <Menu.Root>
+              <MenuTrigger asChild>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -199,19 +199,19 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
                 >
                   <Icon name="more" size="sm" />
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              </MenuTrigger>
+              <MenuContent align="end">
                 {menuItems.map((item, idx) => (
-                  <DropdownMenuItem
+                  <MenuItem
                     key={idx}
                     destructive={item.destructive}
                     onSelect={item.onSelect}
                   >
                     {item.label}
-                  </DropdownMenuItem>
+                  </MenuItem>
                 ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </MenuContent>
+            </Menu.Root>
           )}
         </div>
       );
