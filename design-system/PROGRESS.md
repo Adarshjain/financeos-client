@@ -254,6 +254,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 3b · Antigravity · useControllableState: added dev warning when switching between controlled and uncontrolled, allowed functional updater set((prev) => next), skipped onChange when Object.is(next, prev); added unit tests (5 passed). Checks: npm run typecheck, vitest (useControllableState 5 passed, SearchField/Select/SegmentedControl/SelectionBar 41 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
+
 - 2026-10-17 · Phase 3b · Antigravity · FieldFrame: forwarded ref to root div and extended HTMLDivElement attributes for native prop pass-through. Checks: npm run typecheck, vitest (TextField, TextArea, SearchField 29 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
 
 - 2026-10-17 · Phase 3b · Antigravity · SegmentedControl: generic T type flows through onValueChange, uses itemRefs array instead of document.getElementById for arrow key navigation, defaultValue defaults to undefined (empty initial selection with first option tabbable); updated stories to args-driven TwoOptions, ThreeOptions, Disabled, FullWidth, WithIcons, and DisabledOption with fn() callback, removed AllVariants, ViewSwitch, and InAForm; updated unit tests (8 passed); updated README. Checks: npm run typecheck, vitest (SegmentedControl 8 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
