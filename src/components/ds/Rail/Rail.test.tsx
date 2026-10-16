@@ -2,93 +2,125 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { Rail, type RailGroup, type RailItem } from './Rail';
+import { Rail, type RailGroup } from './Rail';
 
 const sampleGroups: RailGroup[] = [
   {
     items: [
-      { id: 'home', label: 'Home', icon: 'home', href: '/' },
-      { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox', count: 9, countTone: 'danger' },
+      { id: 'home', label: 'Home', icon: 'home' },
+      { id: 'inbox', label: 'Inbox', icon: 'inbox', count: 9, countTone: 'danger' },
     ],
   },
   {
     label: 'Money',
     items: [
-      { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions', count: 25, countTone: 'warning' },
+      { id: 'transactions', label: 'Transactions', icon: 'list-bullets', count: 25, countTone: 'warning' },
     ],
   },
 ];
 
-const sampleFooter: RailItem[] = [
-  { id: 'settings', label: 'Settings', icon: 'settings', href: '/settings' },
-];
-
 describe('Rail component', () => {
-  it('renders brand row and nav items from groups prop', () => {
-    render(<Rail current="/" groups={sampleGroups} />);
-    expect(screen.getByText('FinanceOS')).toBeInTheDocument();
+  it('renders brand slot and nav items from groups prop', () => {
+    render(
+      <Rail
+        value="home"
+        brand={<span>Brand Logo</span>}
+        groups={sampleGroups}
+      />,
+    );
+    expect(screen.getByText('Brand Logo')).toBeInTheDocument();
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Inbox')).toBeInTheDocument();
     expect(screen.getByText('Money')).toBeInTheDocument();
     expect(screen.getByText('Transactions')).toBeInTheDocument();
   });
 
-  it('marks current nav item with brand-tint and brand-strong', () => {
-    render(<Rail current="/transactions" groups={sampleGroups} />);
-    const activeLink = screen.getByText('Transactions').closest('a');
-    expect(activeLink).toHaveClass('bg-brand-tint');
-    expect(activeLink).toHaveClass('text-brand-strong');
+  it('marks current nav item matching value with brand-tint, brand-strong, and aria-current="page"', () => {
+    render(<Rail value="transactions" groups={sampleGroups} />);
+    const activeItem = screen.getByText('Transactions').closest('button');
+    expect(activeItem).toHaveClass('bg-brand-tint');
+    expect(activeItem).toHaveClass('text-brand-strong');
+    expect(activeItem).toHaveAttribute('aria-current', 'page');
+
+    const inactiveItem = screen.getByText('Home').closest('button');
+    expect(inactiveItem).not.toHaveClass('bg-brand-tint');
+    expect(inactiveItem).not.toHaveAttribute('aria-current');
   });
 
-  it('fires onNavigate when an item is clicked', () => {
-    const handleNavigate = vi.fn();
-    render(<Rail current="/" groups={sampleGroups} onNavigate={handleNavigate} />);
-    const inboxLink = screen.getByText('Inbox').closest('a');
-    fireEvent.click(inboxLink!);
-    expect(handleNavigate).toHaveBeenCalledWith('/inbox');
-  });
-
-  it('fires onSelect when an item is clicked', () => {
+  it('fires onSelect and onValueChange when an item is clicked', () => {
     const handleSelect = vi.fn();
-    render(<Rail current="/" groups={sampleGroups} onSelect={handleSelect} />);
-    const inboxLink = screen.getByText('Inbox').closest('a');
-    fireEvent.click(inboxLink!);
+    const handleValueChange = vi.fn();
+    render(
+      <Rail
+        value="home"
+        groups={sampleGroups}
+        onSelect={handleSelect}
+        onValueChange={handleValueChange}
+      />,
+    );
+    const inboxItem = screen.getByText('Inbox').closest('button');
+    fireEvent.click(inboxItem!);
     expect(handleSelect).toHaveBeenCalledWith('inbox');
+    expect(handleValueChange).toHaveBeenCalledWith('inbox');
   });
 
-  it('fires search callback when search button is clicked', () => {
-    const handleSearch = vi.fn();
-    render(<Rail search={handleSearch} />);
-    const searchButton = screen.getByRole('button', { name: /search/i });
-    fireEvent.click(searchButton);
-    expect(handleSearch).toHaveBeenCalledTimes(1);
+  it('renders search slot', () => {
+    render(
+      <Rail
+        search={<button type="button">Custom Search</button>}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Custom Search' })).toBeInTheDocument();
   });
 
-  it('renders count badges and warning numbers correctly', () => {
-    render(<Rail current="/" groups={sampleGroups} />);
+  it('renders count badges for danger and warning tones', () => {
+    render(<Rail value="home" groups={sampleGroups} />);
     expect(screen.getByText('9')).toBeInTheDocument();
-    const warningCount = screen.getByText('25');
-    expect(warningCount).toBeInTheDocument();
-    expect(warningCount).toHaveClass('bg-warning', 'text-on-brand');
+    const warningBadge = screen.getByText('25');
+    expect(warningBadge).toBeInTheDocument();
+    expect(warningBadge).toHaveClass('bg-warning', 'text-on-brand');
   });
 
-  it('renders user initials in bottom profile section', () => {
+  it('renders footer slot', () => {
     render(
       <Rail
-        current="/"
-        user={{ name: 'Arjun Mehta', initials: 'AM' }}
+        value="home"
+        footer={<div data-testid="custom-footer">Footer Content</div>}
       />,
     );
-    expect(screen.getByText('AM')).toBeInTheDocument();
+    expect(screen.getByTestId('custom-footer')).toBeInTheDocument();
+    expect(screen.getByText('Footer Content')).toBeInTheDocument();
   });
 
-  it('renders footer items when provided', () => {
-    render(
-      <Rail
-        current="/"
-        footer={sampleFooter}
-      />,
-    );
-    expect(screen.getByText('Settings')).toBeInTheDocument();
+  it('supports asChild rendering around custom links', () => {
+    const asChildGroups: RailGroup[] = [
+      {
+        items: [
+          {
+            id: 'link-item',
+            label: 'Link Item',
+            asChild: true,
+            children: <a href="/custom-path">Link Item</a>,
+          },
+        ],
+      },
+    ];
+
+    render(<Rail value="link-item" groups={asChildGroups} />);
+    const link = screen.getByText('Link Item').closest('a');
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', '/custom-path');
+    expect(link).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('works uncontrolled with defaultValue', () => {
+    render(<Rail defaultValue="home" groups={sampleGroups} />);
+    const homeBtn = screen.getByText('Home').closest('button');
+    expect(homeBtn).toHaveAttribute('aria-current', 'page');
+
+    const inboxBtn = screen.getByText('Inbox').closest('button');
+    fireEvent.click(inboxBtn!);
+    expect(inboxBtn).toHaveAttribute('aria-current', 'page');
+    expect(homeBtn).not.toHaveAttribute('aria-current');
   });
 });
