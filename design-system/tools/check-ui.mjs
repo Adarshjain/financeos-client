@@ -221,6 +221,12 @@ function check(lines, all = false, classes = true) {
       (/ds-allow:/.test(text) ? allowed : errors).push(hit);
     }
     if (/^src\/(?:app\/\(ds\)|features\/shell)\//.test(file) && /\.tsx$/.test(file) && !/\.(?:test|stories)\.tsx$/.test(file)) {
+      if (/\bstyle=\{/.test(text)) {
+        errors.push({ file, line, rule: 'page-styling', why: 'inline `style` in a page or the shell — use a Dinero component prop or flag the gap (RULES §5d)', text: text.trim().slice(0, 160) });
+      }
+      if (/\bmodal=\{false\}/.test(text)) {
+        errors.push({ file, line, rule: 'page-styling', why: '`modal={false}` removes the scrim; Dialog is always modal (RULES §5.6)', text: text.trim().slice(0, 160) });
+      }
       for (const m of text.matchAll(/className=(?:\{[^}]*?)?["'`]([^"'`]+)["'`]/g)) {
         for (const c of m[1].split(/\s+/)) {
           const base = c.replace(/^(?:[a-z0-9-]+:)+/, '');
@@ -335,6 +341,8 @@ function selfTest() {
     ['src/app/(ds)/ds/(public)/login/LoginForm.tsx', '<h1 className="font-text font-extrabold text-heading">', 'page-styling', true],
     ['src/app/(ds)/ds/(public)/login/LoginForm.tsx', '<div className="flex flex-col gap-space-16 lg:p-space-40">', 'page-styling', false],
     ['src/features/shell/ShellNav.tsx', '<div className="text-overline font-extrabold uppercase text-ink-4">', 'page-styling', true],
+    ['src/features/shell/ShellNav.tsx', "style={moreOpen ? { zIndex: 30 } : undefined}", 'page-styling', true],
+    ['src/features/shell/ShellNav.tsx', '<Dialog open={moreOpen} onOpenChange={setMoreOpen} modal={false}>', 'page-styling', true],
     ['src/components/ds/FilterChip/FilterChip.tsx', '<span>▾</span>', 'typed-glyph', true],
     ['src/components/ds/Pager/Pager.tsx', "  variant?: 'phone' | 'desktop';", 'device-prop', true],
     ['src/components/ds/Dialog/Dialog.tsx', 'const isPhone = useIsPhone();', 'viewport-js', true],
