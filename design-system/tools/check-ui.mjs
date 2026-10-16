@@ -220,7 +220,7 @@ function check(lines, all = false, classes = true) {
       };
       (/ds-allow:/.test(text) ? allowed : errors).push(hit);
     }
-    if (/^src\/app\/\(ds\)\//.test(file) && /\.tsx$/.test(file) && !/\.(?:test|stories)\.tsx$/.test(file)) {
+    if (/^src\/(?:app\/\(ds\)|features\/shell)\//.test(file) && /\.tsx$/.test(file) && !/\.(?:test|stories)\.tsx$/.test(file)) {
       for (const m of text.matchAll(/className=(?:\{[^}]*?)?["'`]([^"'`]+)["'`]/g)) {
         for (const c of m[1].split(/\s+/)) {
           const base = c.replace(/^(?:[a-z0-9-]+:)+/, '');
@@ -334,6 +334,7 @@ function selfTest() {
     ['src/app/(ds)/ds/transactions/page.tsx', "import { keys } from '@/lib/query';", 'old-import', false],
     ['src/app/(ds)/ds/(public)/login/LoginForm.tsx', '<h1 className="font-text font-extrabold text-heading">', 'page-styling', true],
     ['src/app/(ds)/ds/(public)/login/LoginForm.tsx', '<div className="flex flex-col gap-space-16 lg:p-space-40">', 'page-styling', false],
+    ['src/features/shell/ShellNav.tsx', '<div className="text-overline font-extrabold uppercase text-ink-4">', 'page-styling', true],
     ['src/components/ds/FilterChip/FilterChip.tsx', '<span>▾</span>', 'typed-glyph', true],
     ['src/components/ds/Pager/Pager.tsx', "  variant?: 'phone' | 'desktop';", 'device-prop', true],
     ['src/components/ds/Dialog/Dialog.tsx', 'const isPhone = useIsPhone();', 'viewport-js', true],
