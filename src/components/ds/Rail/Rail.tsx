@@ -1,23 +1,22 @@
 'use client';
 
+import { Slot } from '@radix-ui/react-slot';
 import React, { forwardRef } from 'react';
 
-import { Avatar } from '../Avatar/Avatar';
 import { Badge } from '../Badge/Badge';
-import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon, type IconName } from '../Icon/Icon';
-import { Kbd } from '../Kbd/Kbd';
-import { Logo } from '../Logo/Logo';
+import { useControllableState } from '../useControllableState';
 import { formatCount } from '../utils';
 
 export interface RailItem {
-  id?: string;
-  label: string;
-  icon?: IconName;
-  href?: string;
+  id: string;
+  label: React.ReactNode;
+  icon?: React.ReactNode;
   count?: number | string;
-  countTone?: 'danger' | 'warning' | 'ink';
+  countTone?: 'danger' | 'warning' | 'neutral' | 'ink';
+  asChild?: boolean;
+  children?: React.ReactNode;
   onSelect?: () => void;
 }
 
@@ -26,64 +25,121 @@ export interface RailGroup {
   items: RailItem[];
 }
 
-export interface RailUser {
-  name?: string;
-  email?: string;
-  avatar?: string;
-  initials?: string;
-}
-
-export interface RailSearchConfig {
-  onSearch?: () => void;
-  shortcut?: string;
-  label?: string;
-}
-
 export interface RailProps extends Omit<React.HTMLAttributes<HTMLElement>, 'onSelect'> {
   groups?: RailGroup[];
-  current?: string;
-  search?: RailSearchConfig | (() => void);
-  footer?: RailItem[];
-  user?: RailUser;
-  brandHref?: string;
-  onNavigate?: (href: string) => void;
-  onSelect?: (idOrHref: string) => void;
+  value?: string;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
+  onSelect?: (id: string) => void;
+  brand?: React.ReactNode;
+  search?: React.ReactNode;
+  footer?: React.ReactNode;
+}
+
+function renderIcon(icon: React.ReactNode) {
+  if (!icon) return null;
+  if (typeof icon === 'string') {
+    return <Icon name={icon as IconName} size="lg" />;
+  }
+  return icon;
 }
 
 /**
  * Desktop left navigation, 240px (`w-container-xs`).
- * Brand row, search shortcut with ⌘K, navigation sections with overline headers,
- * and user profile pinned at the bottom.
- *
- * Takes all groups, items, routes, search config and user from props.
+ * Built from: Icon, Badge, Slot.
+ * Takes brand, search, navigation groups, and footer slots from props.
  */
 export const Rail = forwardRef<HTMLElement, RailProps>(
   (
     {
       groups = [],
-      current,
+      value,
+      defaultValue,
+      onValueChange,
+      onSelect,
+      brand,
       search,
       footer,
-      user,
-      brandHref,
-      onNavigate,
-      onSelect,
       className,
       ...props
     },
     ref,
   ) => {
-    const derivedInitials =
-      user?.initials ??
-      (user?.name
-        ? user.name
-            .split(' ')
-            .map((p) => p[0])
-            .filter(Boolean)
-            .slice(0, 2)
-            .join('')
-            .toUpperCase()
-        : 'AM');
+    const [currentValue, setCurrentValue] = useControllableState<string>({
+      value,
+      defaultValue,
+      onChange: onValueChange,
+    });
+
+    const handleItemClick = (item: RailItem) => {
+      item.onSelect?.();
+      onSelect?.(item.id);
+      setCurrentValue(item.id);
+    };
+
+    const renderItem = (item: RailItem) => {
+      const isCurrent = currentValue === item.id;
+      const isSlot = item.asChild && React.isValidElement(item.children);
+      const Comp = isSlot ? Slot : 'button';
+
+      const content = (
+        <>
+          {item.icon ? (
+            <span
+              className={cn(
+                'shrink-0',
+                isCurrent ? 'text-brand-strong' : 'text-ink-3',
+              )}
+            >
+              {renderIcon(item.icon)}
+            </span>
+          ) : null}
+
+          <span className="flex-1 truncate">{item.label}</span>
+
+          {item.count !== undefined && item.count !== null ? (
+            <Badge
+              variant="solid"
+              shape="rounded"
+              size="sm"
+              tone={
+                item.countTone === 'danger'
+                  ? 'danger'
+                  : item.countTone === 'warning'
+                    ? 'warning'
+                    : 'neutral'
+              }
+              className="ml-auto"
+            >
+              {formatCount(item.count)}
+            </Badge>
+          ) : null}
+        </>
+      );
+
+      return (
+        <Comp
+          key={item.id}
+          type={isSlot ? undefined : 'button'}
+          aria-current={isCurrent ? 'page' : undefined}
+          onClick={() => handleItemClick(item)}
+          className={cn(
+            'w-full flex items-center gap-space-8 px-space-8 py-space-6 rounded-ds-md text-body font-semibold transition-colors duration-fast text-left no-underline cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
+            isCurrent
+              ? 'bg-brand-tint text-brand-strong'
+              : 'text-ink-2 hover:bg-hover hover:text-ink active:bg-pressed',
+          )}
+        >
+          {isSlot
+            ? React.cloneElement(
+                item.children as React.ReactElement<{ children?: React.ReactNode }>,
+                undefined,
+                content,
+              )
+            : content}
+        </Comp>
+      );
+    };
 
     return (
       <nav
@@ -95,44 +151,15 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
         )}
         {...props}
       >
-        {/* Brand row */}
-        {brandHref ? (
-          <a
-            href={brandHref}
-            onClick={(e) => {
-              if (onNavigate) {
-                e.preventDefault();
-                onNavigate(brandHref);
-              }
-            }}
-            className="flex items-center px-space-6 py-space-10 text-ink rounded-ds-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring mb-space-8 no-underline"
-          >
-            <Logo variant="full" size="sm" />
-          </a>
-        ) : (
+        {/* Brand slot */}
+        {brand ? (
           <div className="flex items-center px-space-6 py-space-10 text-ink rounded-ds-md mb-space-8">
-            <Logo variant="full" size="sm" />
+            {brand}
           </div>
-        )}
-
-        {/* Search button */}
-        {search ? (
-          <Button
-            type="button"
-            variant="secondary"
-            size="md"
-            onClick={typeof search === 'function' ? search : search.onSearch}
-            className="w-full justify-start text-ink-3 bg-sunken border-line-soft hover:bg-hover active:bg-pressed font-medium px-space-10 mb-space-12 gap-space-8"
-          >
-            <Icon name="search" size="md" className="shrink-0 text-ink-3" />
-            <span className="text-label text-ink-3">
-              {typeof search === 'object' && search.label ? search.label : 'Search'}
-            </span>
-            <span className="ml-auto">
-              <Kbd>{typeof search === 'object' && search.shortcut ? search.shortcut : '⌘K'}</Kbd>
-            </span>
-          </Button>
         ) : null}
+
+        {/* Search slot */}
+        {search ? <div className="mb-space-12">{search}</div> : null}
 
         {/* Grouped navigation items */}
         <div className="flex-1 space-y-space-12 overflow-y-auto">
@@ -144,115 +171,17 @@ export const Rail = forwardRef<HTMLElement, RailProps>(
                 </div>
               ) : null}
 
-              {group.items.map((item) => {
-                const isCurrent = current === item.href || (item.id && current === item.id);
-                const Tag = item.href ? 'a' : 'button';
-
-                return (
-                  <Tag
-                    key={item.id || item.href || item.label}
-                    href={item.href}
-                    type={item.href ? undefined : 'button'}
-                    onClick={(e) => {
-                      if (item.onSelect) {
-                        if (!item.href) e.preventDefault();
-                        item.onSelect();
-                      } else if (onSelect) {
-                        e.preventDefault();
-                        onSelect(item.id || item.href || '');
-                      } else if (onNavigate && item.href) {
-                        e.preventDefault();
-                        onNavigate(item.href);
-                      }
-                    }}
-                    className={cn(
-                      'w-full flex items-center gap-space-8 px-space-8 py-space-6 rounded-ds-md text-body font-semibold transition-colors duration-fast text-left no-underline cursor-pointer',
-                      isCurrent
-                        ? 'bg-brand-tint text-brand-strong'
-                        : 'text-ink-2 hover:bg-hover hover:text-ink active:bg-pressed',
-                    )}
-                  >
-                    {item.icon ? (
-                      <span
-                        className={cn(
-                          'shrink-0',
-                          isCurrent ? 'text-brand-strong' : 'text-ink-3',
-                        )}
-                      >
-                        <Icon name={item.icon} size="lg" />
-                      </span>
-                    ) : null}
-
-                    <span className="flex-1 truncate">{item.label}</span>
-
-                    {item.count !== undefined && item.count !== null ? (
-                      <Badge
-                        variant="solid"
-                        shape="rounded"
-                        size="sm"
-                        tone={item.countTone === 'danger' ? 'danger' : item.countTone === 'warning' ? 'warning' : 'neutral'}
-                        className="ml-auto"
-                      >
-                        {formatCount(item.count)}
-                      </Badge>
-                    ) : null}
-                  </Tag>
-                );
-              })}
+              {group.items.map(renderItem)}
             </div>
           ))}
         </div>
 
-        {/* Pinned footer and user profile */}
-        {(footer || user) && (
-          <div className="mt-auto pt-space-12 border-t border-line-soft flex items-center justify-between">
-            <div className="flex items-center gap-space-4 min-w-0">
-              {footer?.map((item) => {
-                const isCurrent = current === item.href || (item.id && current === item.id);
-                const Tag = item.href ? 'a' : 'button';
-
-                return (
-                  <Tag
-                    key={item.id || item.href || item.label}
-                    href={item.href}
-                    type={item.href ? undefined : 'button'}
-                    onClick={(e) => {
-                      if (item.onSelect) {
-                        if (!item.href) e.preventDefault();
-                        item.onSelect();
-                      } else if (onSelect) {
-                        e.preventDefault();
-                        onSelect(item.id || item.href || '');
-                      } else if (onNavigate && item.href) {
-                        e.preventDefault();
-                        onNavigate(item.href);
-                      }
-                    }}
-                    className={cn(
-                      'flex items-center gap-space-8 px-space-8 py-space-6 rounded-ds-md text-body font-semibold transition-colors duration-fast text-ink-2 hover:bg-hover hover:text-ink active:bg-pressed no-underline cursor-pointer',
-                      isCurrent && 'bg-brand-tint text-brand-strong',
-                    )}
-                  >
-                    {item.icon ? <Icon name={item.icon} size="lg" /> : null}
-                    <span>{item.label}</span>
-                  </Tag>
-                );
-              })}
-            </div>
-
-            {user && (
-              <Avatar
-                variant="circle"
-                tone="brand"
-                size="sm"
-                src={user.avatar}
-                initials={derivedInitials}
-              >
-                {derivedInitials}
-              </Avatar>
-            )}
+        {/* Pinned footer slot */}
+        {footer ? (
+          <div className="mt-auto pt-space-12 border-t border-line-soft">
+            {footer}
           </div>
-        )}
+        ) : null}
       </nav>
     );
   },

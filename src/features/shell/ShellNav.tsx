@@ -12,6 +12,7 @@ import {
   DialogContent,
   Icon,
   ListRow,
+  Logo,
   Rail,
   TabBar,
   Text,
@@ -29,6 +30,7 @@ import {
 export interface ShellUser {
   name?: string;
   email: string;
+  avatar?: string;
 }
 
 function getInitials(text: string): string {
@@ -189,14 +191,40 @@ export function ShellRail({
   return (
     <Rail
       groups={shellRailGroups}
-      footer={shellFooterItems}
-      current={current}
-      brandHref="/ds"
-      user={{
-        name: profileText,
-        email: user.email,
-        initials,
-      }}
+      value={current}
+      brand={
+        <Link href="/ds">
+          <Logo variant="full" size="sm" />
+        </Link>
+      }
+      footer={
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-space-4 min-w-0">
+            {shellFooterItems.map((item) => (
+              <Button
+                key={item.id}
+                asChild
+                variant="ghost"
+                size="md"
+              >
+                <Link href={item.href || '#'}>
+                  <Icon name={item.icon} size="lg" />
+                  <span>{item.label}</span>
+                </Link>
+              </Button>
+            ))}
+          </div>
+          <Avatar
+            variant="circle"
+            tone="brand"
+            size="sm"
+            src={user.avatar}
+            initials={initials}
+          >
+            {initials}
+          </Avatar>
+        </div>
+      }
     />
   );
 }

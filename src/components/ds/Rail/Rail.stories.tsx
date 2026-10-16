@@ -1,64 +1,137 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { useArgs } from 'storybook/preview-api';
+import { fn } from 'storybook/test';
 
-import { Rail, type RailGroup, type RailItem, type RailUser } from './Rail';
+import {
+  Avatar,
+  Button,
+  Icon,
+  Kbd,
+  Logo,
+  Rail,
+  type RailGroup,
+} from '@/components/ds';
 
 const financeOSRailGroups: RailGroup[] = [
   {
     items: [
-      { id: 'home', label: 'Home', icon: 'home', href: '/' },
-      { id: 'inbox', label: 'Inbox', icon: 'inbox', href: '/inbox', count: 9, countTone: 'danger' },
-      { id: 'upcoming', label: 'Upcoming', icon: 'calendar', href: '/upcoming' },
+      { id: 'home', label: 'Home', icon: 'home' },
+      { id: 'inbox', label: 'Inbox', icon: 'inbox', count: 9, countTone: 'danger' },
+      { id: 'upcoming', label: 'Upcoming', icon: 'calendar' },
     ],
   },
   {
     label: 'Money',
     items: [
-      { id: 'accounts', label: 'Accounts', icon: 'wallet', href: '/accounts' },
-      { id: 'transactions', label: 'Transactions', icon: 'list-bullets', href: '/transactions', count: 25, countTone: 'warning' },
+      { id: 'accounts', label: 'Accounts', icon: 'wallet' },
+      { id: 'transactions', label: 'Transactions', icon: 'list-bullets', count: 25, countTone: 'warning' },
     ],
   },
   {
     label: 'Insights',
     items: [
-      { id: 'ask-data', label: 'Ask the data', icon: 'chat', href: '/chat' },
+      { id: 'ask-data', label: 'Ask the data', icon: 'chat' },
     ],
   },
 ];
 
-const financeOSFooterItems: RailItem[] = [
-  { id: 'settings', label: 'Settings', icon: 'settings', href: '/settings' },
+const plainRailGroups: RailGroup[] = [
+  {
+    items: [
+      { id: 'home', label: 'Home', icon: 'home' },
+      { id: 'inbox', label: 'Inbox', icon: 'inbox' },
+      { id: 'upcoming', label: 'Upcoming', icon: 'calendar' },
+    ],
+  },
+  {
+    label: 'Money',
+    items: [
+      { id: 'accounts', label: 'Accounts', icon: 'wallet' },
+      { id: 'transactions', label: 'Transactions', icon: 'list-bullets' },
+    ],
+  },
+  {
+    label: 'Insights',
+    items: [
+      { id: 'ask-data', label: 'Ask the data', icon: 'chat' },
+    ],
+  },
 ];
 
-const financeOSUser: RailUser = {
-  name: 'Arjun Mehta',
-  initials: 'AM',
-};
+const sampleBrand = <Logo variant="full" size="sm" />;
+
+const sampleSearch = (
+  <Button
+    type="button"
+    variant="secondary"
+    size="md"
+    fullWidth
+    icon={<Icon name="search" size="md" />}
+  >
+    <span>Search</span>
+    <span className="ml-auto">
+      <Kbd>⌘K</Kbd>
+    </span>
+  </Button>
+);
+
+const sampleFooter = (
+  <div className="flex items-center justify-between">
+    <Button variant="ghost" size="sm" icon={<Icon name="settings" size="lg" />}>
+      Settings
+    </Button>
+    <Avatar variant="circle" tone="brand" size="sm" initials="AM">
+      AM
+    </Avatar>
+  </div>
+);
 
 const meta: Meta<typeof Rail> = {
   title: 'DS/Navigation/Rail',
   component: Rail,
   parameters: {
-    layout: 'padded',
+    layout: 'fullscreen',
+  },
+  decorators: [
+    (Story) => (
+      <div className="h-screen flex">
+        <Story />
+      </div>
+    ),
+  ],
+  args: {
+    groups: plainRailGroups,
+    value: 'home',
+    brand: sampleBrand,
+    search: sampleSearch,
+    onValueChange: fn(),
+    onSelect: fn(),
   },
   argTypes: {
-    current: {
+    value: {
       control: 'select',
-      options: ['/', '/inbox', '/upcoming', '/accounts', '/transactions', '/chat', '/settings'],
+      options: ['home', 'inbox', 'upcoming', 'accounts', 'transactions', 'ask-data', 'overview', 'reports'],
     },
+    groups: { control: 'object' },
+    brand: { control: false },
+    search: { control: false },
+    footer: { control: false },
   },
   render: function Render(args) {
-    const [{ current }, updateArgs] = useArgs();
+    const [{ value }, updateArgs] = useArgs();
     return (
-      <div className="h-screen flex">
-        <Rail
-          {...args}
-          current={current ?? args.current}
-          onSelect={(id) => updateArgs({ current: id })}
-          onNavigate={(href) => updateArgs({ current: href })}
-        />
-      </div>
+      <Rail
+        {...args}
+        value={value ?? args.value}
+        onValueChange={(val) => {
+          args.onValueChange?.(val);
+          updateArgs({ value: val });
+        }}
+        onSelect={(id) => {
+          args.onSelect?.(id);
+        }}
+      />
     );
   },
 };
@@ -66,53 +139,38 @@ const meta: Meta<typeof Rail> = {
 export default meta;
 type Story = StoryObj<typeof Rail>;
 
-export const AllVariants: Story = {
-  render: () => (
-    <div className="flex gap-space-24 h-screen font-text">
-      <Rail
-        current="/"
-        groups={financeOSRailGroups}
-        footer={financeOSFooterItems}
-        user={financeOSUser}
-        search={() => {}}
-      />
-      <Rail
-        current="/transactions"
-        groups={financeOSRailGroups}
-        footer={financeOSFooterItems}
-        user={financeOSUser}
-        search={() => {}}
-      />
-    </div>
-  ),
-};
-
 export const Default: Story = {
   args: {
-    current: '/',
-    groups: financeOSRailGroups,
-    footer: financeOSFooterItems,
-    user: financeOSUser,
-    search: { shortcut: '⌘K' },
+    value: 'home',
+    groups: plainRailGroups,
   },
 };
 
-export const WithCounts: Story = {
+export const WithBadges: Story = {
   args: {
-    current: '/inbox',
+    value: 'inbox',
     groups: financeOSRailGroups,
-    footer: financeOSFooterItems,
-    user: financeOSUser,
-    search: { shortcut: '⌘K' },
   },
 };
 
-export const TransactionsActive: Story = {
+export const WithoutHeader: Story = {
   args: {
-    current: '/transactions',
+    value: 'overview',
+    groups: [
+      {
+        items: [
+          { id: 'overview', label: 'Overview', icon: 'squares-four' },
+          { id: 'reports', label: 'Reports', icon: 'chart-bar' },
+        ],
+      },
+    ],
+  },
+};
+
+export const WithFooter: Story = {
+  args: {
+    value: 'home',
     groups: financeOSRailGroups,
-    footer: financeOSFooterItems,
-    user: financeOSUser,
-    search: { shortcut: '⌘K' },
+    footer: sampleFooter,
   },
 };
