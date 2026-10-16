@@ -19,7 +19,8 @@ const bankOptions: SelectOption[] = [
     label: 'HDFC Bank',
     icon: (
       <Avatar
-        variant="logo"
+        variant="square"
+        tone="inverse"
         size="sm"
         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Crect width='24' height='24' fill='%23004c8f'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-family='sans-serif' font-size='10' font-weight='bold'%3EHD%3C/text%3E%3C/svg%3E"
       >
@@ -31,7 +32,7 @@ const bankOptions: SelectOption[] = [
     value: 'icici',
     label: 'ICICI Bank',
     icon: (
-      <Avatar variant="logo" size="sm" className="bg-danger text-on-brand">
+      <Avatar variant="square" tone="inverse" size="sm">
         IC
       </Avatar>
     ),
@@ -40,7 +41,7 @@ const bankOptions: SelectOption[] = [
     value: 'sbi',
     label: 'State Bank of India',
     icon: (
-      <Avatar variant="logo" size="sm" className="bg-info text-on-brand">
+      <Avatar variant="square" tone="inverse" size="sm">
         SB
       </Avatar>
     ),
@@ -99,7 +100,7 @@ const counterpartyOptions: SelectOption[] = [
     label: 'Rahul Sharma',
     hint: 'owes ₹15,000',
     icon: (
-      <Avatar variant="person" size="sm">
+      <Avatar variant="circle" tone="brand" size="sm">
         RS
       </Avatar>
     ),
@@ -186,7 +187,8 @@ export const AllVariants: Story = {
               defaultValue="hdfc"
               icon={
                 <Avatar
-                  variant="logo"
+                  variant="square"
+                  tone="inverse"
                   size="sm"
                   src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Crect width='24' height='24' fill='%23004c8f'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-family='sans-serif' font-size='10' font-weight='bold'%3EHD%3C/text%3E%3C/svg%3E"
                 >
@@ -393,7 +395,8 @@ export const SingleWithSearchAndIcons: Story = {
     defaultValue: 'hdfc',
     icon: (
       <Avatar
-        variant="logo"
+        variant="square"
+        tone="inverse"
         size="sm"
         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Crect width='24' height='24' fill='%23004c8f'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-family='sans-serif' font-size='10' font-weight='bold'%3EHD%3C/text%3E%3C/svg%3E"
       >
@@ -522,7 +525,8 @@ export const ClosedFieldStates: Story = {
             defaultValue="hdfc"
             icon={
               <Avatar
-                variant="logo"
+                variant="square"
+                tone="inverse"
                 size="sm"
                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' width='16' height='16'%3E%3Crect width='24' height='24' fill='%23004c8f'/%3E%3Ctext x='12' y='16' text-anchor='middle' fill='white' font-family='sans-serif' font-size='10' font-weight='bold'%3EHD%3C/text%3E%3C/svg%3E"
               >

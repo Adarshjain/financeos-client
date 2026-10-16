@@ -147,7 +147,8 @@ export function ShellTabBar({
                 asChild
                 leading={
                   <Avatar
-                    variant="person"
+                    variant="circle"
+                    tone="brand"
                     size="sm"
                     initials={initials}
                   >

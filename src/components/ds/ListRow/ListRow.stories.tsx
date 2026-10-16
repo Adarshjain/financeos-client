@@ -87,7 +87,7 @@ export const AllVariants: Story = {
         </div>
         <Card className="p-0 overflow-hidden">
           <ListRow
-            leading={<Avatar variant="person" initials="RS" />}
+            leading={<Avatar variant="circle" tone="brand" initials="RS" />}
             title="Rahul Sharma"
             subtitle="Owes you · expected 28 Oct"
             amount="₹15,000"
@@ -102,7 +102,7 @@ export const AllVariants: Story = {
         </div>
         <Card className="p-0 overflow-hidden">
           <ListRow
-            leading={<Avatar variant="account" initials="EMI" className="bg-info-tint text-info" />}
+            leading={<Avatar variant="rounded" tone="neutral" initials="EMI" />}
             title="Car loan · EMI #8"
             subtitle="₹17,748 · due 7 Oct"
             chevron
@@ -160,7 +160,7 @@ export const AllVariants: Story = {
         <Card className="p-0 overflow-hidden">
           <ListRow
             disabled
-            leading={<Avatar variant="person" initials="RM" />}
+            leading={<Avatar variant="circle" tone="brand" initials="RM" />}
             title="Rohan Mehta"
             subtitle="Closed 30 Jun 2026"
             trailing={<Button size="sm">Reopen</Button>}
@@ -217,7 +217,7 @@ export const AvatarCredit: Story = {
     <Card className="max-w-md p-0 overflow-hidden">
       <ListRow
         {...args}
-        leading={<Avatar variant="person" initials="RS" />}
+        leading={<Avatar variant="circle" tone="brand" initials="RS" />}
       />
     </Card>
   ),
@@ -235,7 +235,7 @@ export const IconTileChevron: Story = {
     <Card className="max-w-md p-0 overflow-hidden">
       <ListRow
         {...args}
-        leading={<Avatar variant="account" initials="EMI" className="bg-info-tint text-info" />}
+        leading={<Avatar variant="rounded" tone="neutral" initials="EMI" />}
       />
     </Card>
   ),
@@ -299,7 +299,7 @@ export const Disabled: Story = {
     <Card className="max-w-md p-0 overflow-hidden">
       <ListRow
         {...args}
-        leading={<Avatar variant="person" initials="RM" />}
+        leading={<Avatar variant="circle" tone="brand" initials="RM" />}
         trailing={<Button size="sm">Reopen</Button>}
       />
     </Card>

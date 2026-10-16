@@ -289,7 +289,7 @@ export const WithLeadingAvatar: Story = {
     <Card className="max-w-sm w-full p-0 overflow-hidden">
       <TransactionRow
         {...args}
-        leading={<Avatar variant="logo" initials="HD" size="md" />}
+        leading={<Avatar variant="square" tone="inverse" initials="HD" size="md" />}
       />
     </Card>
   ),
