@@ -8,11 +8,10 @@ import { signup, startGoogleSSO } from '@/actions/auth';
 import {
   Banner,
   Button,
-  cn,
   Divider,
   Illustration,
-  Logo,
   showToast,
+  Text,
   TextField,
 } from '@/components/ds';
 import type { ApiResult, UserResponse } from '@/lib/types';
@@ -39,7 +38,7 @@ export function SignupForm() {
   }, [isSuccess, router]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    if (!inviteCode.trim() || !email.trim() || !password) {
+    if (!email.trim() || !password || !inviteCode.trim()) {
       e.preventDefault();
       setClientError('All fields are required.');
       return;
@@ -68,87 +67,56 @@ export function SignupForm() {
     clientError ?? (state && !state.success ? state.error.message : null);
 
   return (
-    <div className="min-h-dvh flex flex-col lg:grid lg:grid-cols-2 bg-canvas">
+    <div className="min-h-dvh flex flex-col lg:grid lg:grid-cols-2">
       {/* Signup artwork illustration: phone band on top, full column on desktop */}
-      <Illustration
-        variant="signup"
-        className="w-full h-auto lg:h-full rounded-none"
-      />
+      <Illustration variant="signup" className="w-full h-auto lg:h-full" />
 
       {/* Form column */}
       <div className="flex-1 flex items-center justify-center p-space-20 lg:p-space-40">
         <div className="w-full max-w-sm flex flex-col gap-space-16">
-          {/* Logo, title, subtitle */}
+          {/* 1. Title and 2. Subtitle */}
           <div className="flex flex-col gap-space-4">
-            <div className="mb-space-6">
-              <Logo variant="mark" size="md" />
-            </div>
-            <h1 className="font-text font-extrabold text-heading text-ink m-0">
+            <Text as="h1" variant="page-title" family="display">
               Create account
-            </h1>
-            <p className="font-text text-label text-ink-3 m-0">
-              Welcome to FinanceOS.
-            </p>
+            </Text>
+            <Text variant="body" tone="ink-3">
+              FinanceOS is invite-only — you&apos;ll need a code to sign up.
+            </Text>
           </div>
 
+          {/* Account created success banner */}
+          {isSuccess && (
+            <Banner tone="success">Account created! Redirecting…</Banner>
+          )}
+
+          {/* Error banner */}
+          {errorMessage && !isSuccess && (
+            <Banner tone="danger">{errorMessage}</Banner>
+          )}
+
+          {/* 3. Continue with Google */}
+          <Button
+            type="button"
+            variant="google"
+            loading={ssoPending}
+            loadingLabel="Opening Google…"
+            disabled={ssoPending || isPending || isSuccess}
+            onClick={handleGoogleSSO}
+          >
+            Sign up with Google
+          </Button>
+
+          {/* 4. Divider "or" */}
+          <Divider label="or" />
+
+          {/* Form containing 5. Email, 6. Password, 7. Invite code, 8. Button, 9. Terms */}
           <form
             noValidate
             onSubmit={handleSubmit}
             action={formAction}
             className="flex flex-col gap-space-16"
           >
-            {/* Invite-only info banner */}
-            <Banner tone="info">
-              FinanceOS is invite-only — you&apos;ll need a code to sign up.
-            </Banner>
-
-            {/* Account created success banner */}
-            {isSuccess && (
-              <Banner tone="success">Account created! Redirecting…</Banner>
-            )}
-
-            {/* Error banner */}
-            {errorMessage && !isSuccess && (
-              <Banner tone="danger">{errorMessage}</Banner>
-            )}
-
-            {/* Sign up with Google button */}
-            <Button
-              type="button"
-              variant="google"
-              loading={ssoPending}
-              loadingLabel="Opening Google…"
-              disabled={ssoPending || isPending || isSuccess}
-              onClick={handleGoogleSSO}
-            >
-              Sign up with Google
-            </Button>
-
-            <Divider label="or" className="my-space-2" />
-
-            <div
-              className={cn(
-                'flex flex-col gap-space-12',
-                (ssoPending || isSuccess) && 'opacity-55 pointer-events-none',
-              )}
-            >
-              <TextField
-                id="inviteCode"
-                label="Invite code"
-                name="inviteCode"
-                kind="password"
-                placeholder="Provided by the FinanceOS admin"
-                autoCapitalize="characters"
-                autoComplete="off"
-                required
-                value={inviteCode}
-                onChange={(e) => {
-                  setInviteCode(e.target.value);
-                  if (clientError) setClientError(null);
-                }}
-                disabled={isPending || ssoPending || isSuccess}
-              />
-
+            <div className="flex flex-col gap-space-12">
               <TextField
                 id="email"
                 label="Email"
@@ -171,6 +139,7 @@ export function SignupForm() {
                 name="password"
                 kind="password"
                 placeholder="Minimum 8 characters"
+                helper="At least 8 characters."
                 autoComplete="new-password"
                 required
                 value={password}
@@ -181,46 +150,51 @@ export function SignupForm() {
                 disabled={isPending || ssoPending || isSuccess}
               />
 
-              <p className="text-caption text-ink-3 m-0 leading-normal">
-                By continuing you agree to the terms. Your data stays in your
-                account; delete it any time from Settings.
-              </p>
+              <TextField
+                id="inviteCode"
+                label="Invite code"
+                name="inviteCode"
+                kind="password"
+                placeholder="Provided by the FinanceOS admin"
+                autoCapitalize="characters"
+                autoComplete="off"
+                required
+                value={inviteCode}
+                onChange={(e) => {
+                  setInviteCode(e.target.value);
+                  if (clientError) setClientError(null);
+                }}
+                disabled={isPending || ssoPending || isSuccess}
+              />
+            </div>
 
+            <div className="flex flex-col gap-space-12">
               <Button
                 type="submit"
                 variant="primary"
                 size="xl"
-                className="w-full mt-space-4"
+                className="w-full"
                 loading={isPending}
                 loadingLabel="Creating account…"
                 disabled={isPending || ssoPending || isSuccess}
-                onClick={(e) => {
-                  if (!inviteCode.trim() || !email.trim() || !password) {
-                    e.preventDefault();
-                    setClientError('All fields are required.');
-                    return;
-                  }
-                  if (password.length < 8) {
-                    e.preventDefault();
-                    setClientError('Password must be at least 8 characters.');
-                  }
-                }}
               >
                 Create account
               </Button>
+
+              <Text variant="caption" tone="ink-3">
+                By continuing you agree to the terms. Your data stays in your
+                account; delete it any time from Settings.
+              </Text>
             </div>
           </form>
 
-          {/* Under form navigation link */}
-          <p className="text-caption text-ink-3 text-center m-0">
+          {/* 10. Footer line */}
+          <Text variant="label" tone="ink-3" align="center">
             Already have an account?{' '}
-            <Link
-              href="/ds/login"
-              className="text-brand font-bold underline hover:no-underline"
-            >
-              Sign in
-            </Link>
-          </p>
+            <Button variant="link" asChild>
+              <Link href="/ds/login">Sign in</Link>
+            </Button>
+          </Text>
         </div>
       </div>
     </div>
