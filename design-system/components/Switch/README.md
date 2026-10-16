@@ -1,16 +1,21 @@
 # Switch
 
-A switch for a setting that takes effect on save, shown as a toggle row: label and optional explanation on the left, switch on the right.
+A bare switch control for toggling a boolean setting.
+
+## Props
+- `checked`: `boolean`
+- `defaultChecked`: `boolean` (default `false`)
+- `onCheckedChange`: `(checked: boolean) => void`
+- `disabled`: `boolean` (default `false`)
+- `name`: `string`
+- `value`: `string`
 
 ## Use
-- On is `brand`, off is `line-handle`; always pair it with a text label.
-- In forms the row sits inside its section band group; the explanation is `caption` in `ink-3`.
-
-## Don't
-- Don't use a switch for a choice between two named options; use a Select.
+- On is `brand`, off is `line-heavy`.
+- For settings rows with title and description, use the `SettingsToggle` organism.
 
 ## Built from
 Nothing else (a button with `role="switch"`).
 
 ## Variants
-- Off, on, disabled (both), and the toggle row with a label and an explanation.
+- Off, on, disabled off, disabled on.
