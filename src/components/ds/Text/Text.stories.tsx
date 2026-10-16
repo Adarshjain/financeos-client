@@ -1,11 +1,20 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
-import { Text } from './Text';
+import { Text } from '@/components/ds';
 
 const meta: Meta<typeof Text> = {
   title: 'DS/Foundations/Text',
   component: Text,
+  parameters: {
+    layout: 'centered',
+    docs: {
+      description: {
+        component:
+          'Every piece of plain text on a page: titles, subtitles, body copy, helper lines, footers.',
+      },
+    },
+  },
   argTypes: {
     variant: {
       control: 'select',
@@ -47,63 +56,6 @@ const meta: Meta<typeof Text> = {
 
 export default meta;
 type Story = StoryObj<typeof Text>;
-
-export const AllVariants: Story = {
-  render: () => (
-    <div className="p-space-16 bg-canvas min-h-full flex flex-col gap-space-12 font-text max-w-xl">
-      <div className="py-space-6 border-b border-line-soft">
-        <div className="text-caption text-ink-4 font-mono mb-space-2">page-title · display</div>
-        <Text variant="page-title" family="display">Sign in</Text>
-      </div>
-      <div className="flex items-baseline gap-space-16 py-space-6 border-b border-line-soft">
-        <span className="w-28 text-caption text-ink-4 font-mono">page-title</span>
-        <Text variant="page-title">Create your account</Text>
-      </div>
-      <div className="flex items-baseline gap-space-16 py-space-6 border-b border-line-soft">
-        <span className="w-28 text-caption text-ink-4 font-mono">screen-title</span>
-        <Text variant="screen-title">HDFC Regalia Gold</Text>
-      </div>
-      <div className="flex items-baseline gap-space-16 py-space-6 border-b border-line-soft">
-        <span className="w-28 text-caption text-ink-4 font-mono">title</span>
-        <Text variant="title">Needs you</Text>
-      </div>
-      <div className="flex items-baseline gap-space-16 py-space-6 border-b border-line-soft">
-        <span className="w-28 text-caption text-ink-4 font-mono">heading</span>
-        <Text variant="heading">Statements</Text>
-      </div>
-      <div className="flex items-baseline gap-space-16 py-space-6 border-b border-line-soft">
-        <span className="w-28 text-caption text-ink-4 font-mono">body</span>
-        <Text variant="body">You will need an invite code.</Text>
-      </div>
-      <div className="flex items-baseline gap-space-16 py-space-6 border-b border-line-soft">
-        <span className="w-28 text-caption text-ink-4 font-mono">body-strong</span>
-        <Text variant="body-strong">₹44,319 due on 25 Oct</Text>
-      </div>
-      <div className="flex items-baseline gap-space-16 py-space-6 border-b border-line-soft">
-        <span className="w-28 text-caption text-ink-4 font-mono">label</span>
-        <Text variant="label">Email</Text>
-      </div>
-      <div className="flex items-baseline gap-space-16 py-space-6 border-b border-line-soft">
-        <span className="w-28 text-caption text-ink-4 font-mono">caption</span>
-        <Text variant="caption">By continuing you agree to the terms.</Text>
-      </div>
-      <div className="flex items-baseline gap-space-16 py-space-6 border-b border-line-soft">
-        <span className="w-28 text-caption text-ink-4 font-mono">overline</span>
-        <Text variant="overline">Money</Text>
-      </div>
-      <div className="flex gap-space-14 flex-wrap mt-space-12 font-semibold">
-        <Text tone="ink">ink</Text>
-        <Text tone="ink-2">ink-2</Text>
-        <Text tone="ink-3">ink-3</Text>
-        <Text tone="ink-4">ink-4</Text>
-        <Text tone="positive">positive</Text>
-        <Text tone="danger">danger</Text>
-        <Text tone="warning">warning</Text>
-        <Text tone="info">info</Text>
-      </div>
-    </div>
-  ),
-};
 
 export const HeroFigure: Story = {
   args: {
@@ -191,11 +143,11 @@ export const TabLabel: Story = {
   },
 };
 
-export const DisplayFamily: Story = {
+export const BodyDisplay: Story = {
   args: {
-    variant: 'page-title',
+    variant: 'body',
     family: 'display',
-    children: 'Welcome to FinanceOS',
+    children: 'Display family body text',
   },
 };
 
@@ -214,9 +166,11 @@ export const Truncated: Story = {
     truncate: true,
     children: 'This is a long line of text that should truncate with an ellipsis when there is not enough space.',
   },
-  render: (args) => (
-    <div className="w-64 border border-line-soft p-space-8">
-      <Text {...args} />
-    </div>
-  ),
+  decorators: [
+    (Story) => (
+      <div className="w-64">
+        <Story />
+      </div>
+    ),
+  ],
 };
