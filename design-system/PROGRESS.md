@@ -254,6 +254,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 3b · Antigravity · Kbd: updated stories to single args-driven Default story with centered layout and barrel import, removed AllVariants, InSentence, and CompoundKey stories; updated README. Checks: npm run typecheck, vitest (Kbd 3 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
+
 - 2026-10-17 · Phase 3b · Antigravity · Icon: re-exported iconRegistry from Icon.tsx, added dev console.warn on unknown icon name; replaced AllIcons and Sizes stories with args-driven Playground story importing from @/components/ds with layout: 'centered' and docs description; added test for unknown icon warning; updated README. Checks: npm run typecheck, vitest (Icon 7 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
 
 - 2026-10-17 · Phase 3b · Antigravity · Avatar: changed variants to shapes ('rounded' | 'circle' | 'square') and added tone ('neutral' | 'brand' | 'inverse'); removed xl from AvatarSize, keeping sm/md/lg; added imgProps with default loading="lazy"; reset imageError on src change; updated stories to args-driven with data URI image fixture, no AllVariants; updated tests (9 passed); migrated callers across Rail, ShellNav, ListRow stories, Select stories, TransactionRow stories. Checks: npm run typecheck, vitest (Avatar 9 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
