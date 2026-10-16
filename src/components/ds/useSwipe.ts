@@ -115,6 +115,26 @@ export function useSwipe({
     [canSwipeLeft, canSwipeRight, onSwipeLeft, onSwipeRight, threshold],
   );
 
+  const onPointerCancel = useCallback(
+    (e: React.PointerEvent) => {
+      if (typeof e.currentTarget?.releasePointerCapture === 'function') {
+        try {
+          if (e.currentTarget.hasPointerCapture?.(e.pointerId)) {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+          }
+        } catch {
+          // Ignore
+        }
+      }
+
+      draggingRef.current = false;
+      currentOffset.current = 0;
+      setIsDragging(false);
+      setOffset(0);
+    },
+    [],
+  );
+
   return {
     offset,
     isDragging,
@@ -122,7 +142,7 @@ export function useSwipe({
       onPointerDown,
       onPointerMove,
       onPointerUp,
-      onPointerCancel: onPointerUp,
+      onPointerCancel,
     },
   };
 }
