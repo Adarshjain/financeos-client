@@ -1,0 +1,118 @@
+import { render, screen } from '@testing-library/react';
+import React from 'react';
+import { describe, expect, it } from 'vitest';
+
+import { Text, TextTone, TextVariant } from './Text';
+
+describe('Text component', () => {
+  it('renders children correctly', () => {
+    render(<Text>Hello world</Text>);
+    expect(screen.getByText('Hello world')).toBeInTheDocument();
+  });
+
+  it('defaults to span tag with body variant, ink tone, text family, and start align', () => {
+    render(<Text>Default text</Text>);
+    const el = screen.getByText('Default text');
+    expect(el.tagName).toBe('SPAN');
+    expect(el).toHaveClass('text-body', 'text-ink', 'font-text', 'text-left');
+  });
+
+  it('supports all 12 type styles through variant prop', () => {
+    const variants: Record<TextVariant, string[]> = {
+      'hero-figure': ['text-hero-figure'],
+      'page-title': ['text-page-title'],
+      'screen-title': ['text-screen-title'],
+      figure: ['text-figure'],
+      title: ['text-title'],
+      heading: ['text-heading'],
+      body: ['text-body'],
+      'body-strong': ['text-body-strong'],
+      label: ['text-label'],
+      caption: ['text-caption'],
+      overline: ['text-overline', 'uppercase'],
+      'tab-label': ['text-tab-label'],
+    };
+
+    for (const [variant, classes] of Object.entries(variants) as [TextVariant, string[]][]) {
+      const { unmount } = render(<Text variant={variant}>{variant}</Text>);
+      const el = screen.getByText(variant);
+      for (const cls of classes) {
+        expect(el).toHaveClass(cls);
+      }
+      unmount();
+    }
+  });
+
+  it('supports all 8 semantic tones', () => {
+    const tones: Record<TextTone, string> = {
+      ink: 'text-ink',
+      'ink-2': 'text-ink-2',
+      'ink-3': 'text-ink-3',
+      'ink-4': 'text-ink-4',
+      positive: 'text-positive',
+      danger: 'text-danger',
+      warning: 'text-warning',
+      info: 'text-info',
+    };
+
+    for (const [tone, cls] of Object.entries(tones) as [TextTone, string][]) {
+      const { unmount } = render(<Text tone={tone}>{tone}</Text>);
+      const el = screen.getByText(tone);
+      expect(el).toHaveClass(cls);
+      unmount();
+    }
+  });
+
+  it('renders custom element using as prop', () => {
+    const { rerender } = render(<Text as="h1">Title</Text>);
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument();
+
+    rerender(<Text as="p">Paragraph</Text>);
+    expect(screen.getByText('Paragraph').tagName).toBe('P');
+
+    rerender(<Text as="label">Label tag</Text>);
+    expect(screen.getByText('Label tag').tagName).toBe('LABEL');
+
+    rerender(<Text as="div">Div tag</Text>);
+    expect(screen.getByText('Div tag').tagName).toBe('DIV');
+  });
+
+  it('supports text and display font families', () => {
+    const { rerender } = render(<Text family="text">Text font</Text>);
+    expect(screen.getByText('Text font')).toHaveClass('font-text');
+
+    rerender(<Text family="display">Display font</Text>);
+    expect(screen.getByText('Display font')).toHaveClass('font-display');
+  });
+
+  it('supports alignment options', () => {
+    const { rerender } = render(<Text align="start">Start</Text>);
+    expect(screen.getByText('Start')).toHaveClass('text-left');
+
+    rerender(<Text align="center">Center</Text>);
+    expect(screen.getByText('Center')).toHaveClass('text-center');
+
+    rerender(<Text align="end">End</Text>);
+    expect(screen.getByText('End')).toHaveClass('text-right');
+  });
+
+  it('handles truncate prop', () => {
+    const { rerender } = render(<Text truncate>Truncated text</Text>);
+    expect(screen.getByText('Truncated text')).toHaveClass('truncate');
+
+    rerender(<Text truncate={false}>Not truncated</Text>);
+    expect(screen.getByText('Not truncated')).not.toHaveClass('truncate');
+  });
+
+  it('forwards refs correctly', () => {
+    const ref = React.createRef<HTMLHeadingElement>();
+    render(<Text as="h2" ref={ref}>Heading with ref</Text>);
+    expect(ref.current).toBeInstanceOf(HTMLHeadingElement);
+  });
+
+  it('merges className for layout', () => {
+    render(<Text className="mt-space-8 max-w-md">Layout</Text>);
+    const el = screen.getByText('Layout');
+    expect(el).toHaveClass('mt-space-8', 'max-w-md', 'text-body', 'text-ink');
+  });
+});
