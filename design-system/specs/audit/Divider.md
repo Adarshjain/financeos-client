@@ -6,19 +6,19 @@ Read `00-global.md` first. Its rules override anything below.
 
 ## Change (2)
 
-- [ ] **fe47e7c3d** · Divider stories use hand-made wrappers
+- [x] **fe47e7c3d** · Divider stories use hand-made wrappers
   - Now: Divider.stories.tsx:21,33,46 wrap the Divider in `p-space-16 bg-canvas ...` and `max-w-sm w-full` divs.
   - Do: Add one meta decorator with the `max-w-sm` frame. Use `parameters.layout: 'padded'`.
   ```tsx
   decorators: [(Story) => <div className='max-w-sm w-full'><Story /></div>]
   ```
-- [ ] **f8af4792c** · Divider Plain and WithLabel repeat their own render wrappers
+- [x] **f8af4792c** · Divider Plain and WithLabel repeat their own render wrappers
   - Now: Divider.stories.tsx:30-52 each define a `render` that only wraps `<Divider {...args} />`.
   - Do: Remove both `render` functions. Move the wrapper into the meta decorator. Each story is then only `args`.
 
 ## Owner's own call (1)
 
-- [ ] **f59ba5d94** · Divider 'All variants' hard-codes two Dividers
+- [x] **f59ba5d94** · Divider 'All variants' hard-codes two Dividers
   - Do: Delete the AllVariants story; the autodocs page shows every story, with no controls on the docs page (G9).
 
 ## Keep: do NOT change (1)
