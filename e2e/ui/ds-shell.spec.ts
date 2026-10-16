@@ -165,6 +165,10 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     // Closing Way 3: Choosing a section tile (navigates to that route)
     await moreTab.click();
     await expect(sheet).toBeVisible();
+    // Reopened after a swipe-close, the sheet is fully up again, not left at the drag offset
+    await page.waitForTimeout(400);
+    const reopenedBox = await sheet.getByTestId('dialog-drag-area').boundingBox();
+    expect(reopenedBox?.y).toBeCloseTo(dragBox!.y, 0);
     await sheet.getByRole('link', { name: 'Accounts' }).click();
     await page.waitForURL('**/accounts');
     expect(page.url()).toContain('/accounts');

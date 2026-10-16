@@ -1,7 +1,7 @@
 'use client';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import React, { forwardRef, useRef } from 'react';
+import React, { forwardRef, useCallback, useRef } from 'react';
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
@@ -288,7 +288,7 @@ export const DialogContent = forwardRef<
     const desc = subtitle ?? description;
     const closeRef = useRef<HTMLButtonElement>(null);
 
-    const { dragOffset, isDragging, dragProps } = useSheetDrag({
+    const { dragOffset, isDragging, dragProps, reset: resetDrag } = useSheetDrag({
       onClose: () => {
         if (onClose) {
           onClose();
@@ -297,6 +297,14 @@ export const DialogContent = forwardRef<
         }
       },
     });
+
+    // The panel unmounts when the close animation ends: clear any drag offset then.
+    const panelRef = useCallback(
+      (node: HTMLDivElement | null) => {
+        if (!node) resetDrag();
+      },
+      [resetDrag],
+    );
 
     const hasFooterFromProps = Boolean(primary || secondary || tertiary);
 
@@ -320,6 +328,7 @@ export const DialogContent = forwardRef<
           {...props}
         >
           <div
+            ref={panelRef}
             style={{
               transform:
                 dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
