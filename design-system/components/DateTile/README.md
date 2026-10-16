@@ -1,11 +1,16 @@
 # DateTile
 
-Dates as shapes: the day tile on Upcoming rows and the month calendar.
+The compact day tile showing a bold day number over an uppercase month label.
 
 ## Use
-- Date tile: day number in 800 over a 10px month overline, 40px wide, at the start of a row.
-- Calendar: seven columns with weekday overlines. On phone each event is a 6px bar coloured by kind: bills `warning`, money in `positive`, EMIs `info`. Today is `brand-tint`.
-- Tapping a day lists its events below the grid.
+- Date tile: day number in 800 over an uppercase month label overline, 40px wide (`w-10`), at the start of a list row.
+
+## Props
+- `day`: day number, e.g. `15`, `23`.
+- `monthLabel`: uppercase short month string, e.g. `'OCT'`.
 
 ## Built from
-Nothing else. Its MonthCalendar is reused by DateField.
+Nothing else; pure Dinero typography and layout primitives.
+
+## Variants
+- Default tile.
