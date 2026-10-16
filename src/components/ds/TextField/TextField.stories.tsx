@@ -1,26 +1,53 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from 'storybook/preview-api';
+import { fn } from 'storybook/test';
 
-import { TextField } from './TextField';
+import { TextField } from '@/components/ds';
 
 const meta: Meta<typeof TextField> = {
   title: 'DS/Inputs/TextField',
   component: TextField,
   parameters: {
     layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'A labelled single-line input. Label above in ink-2 12px bold; helper or error below.',
+      },
+    },
   },
+  decorators: [
+    (Story) => (
+      <div className="max-w-md w-full">
+        <Story />
+      </div>
+    ),
+  ],
   argTypes: {
-    kind: {
+    type: {
       control: 'select',
-      options: ['text', 'amount', 'password', 'number', 'email'],
+      options: ['text', 'password', 'number', 'email'],
+    },
+    inputMode: {
+      control: 'select',
+      options: ['text', 'decimal', 'numeric', 'tel', 'search', 'email', 'url'],
     },
     label: { control: 'text' },
     placeholder: { control: 'text' },
     defaultValue: { control: 'text' },
+    value: { control: 'text' },
     helper: { control: 'text' },
     error: { control: 'text' },
     optional: { control: 'boolean' },
     disabled: { control: 'boolean' },
+    prefix: { control: 'text' },
+    suffix: { control: 'text' },
+    controlClassName: { control: 'text' },
+    onValueChange: { control: false },
+    onChange: { control: false },
+  },
+  args: {
+    onValueChange: fn(),
   },
   render: function Render(args) {
     const [{ value }, updateArgs] = useArgs();
@@ -28,7 +55,10 @@ const meta: Meta<typeof TextField> = {
       <TextField
         {...args}
         value={value ?? args.defaultValue}
-        onChange={(e) => updateArgs({ value: e.target.value })}
+        onValueChange={(v) => {
+          args.onValueChange?.(v);
+          updateArgs({ value: v });
+        }}
       />
     );
   },
@@ -37,53 +67,33 @@ const meta: Meta<typeof TextField> = {
 export default meta;
 type Story = StoryObj<typeof TextField>;
 
-export const AllVariants: Story = {
-  render: () => (
-    <div className="space-y-space-24 max-w-lg font-text">
-      <TextField
-        label="Account name"
-        defaultValue="HDFC Regalia Gold"
-      />
-      <TextField
-        label="Total due"
-        kind="amount"
-        defaultValue="44,319.00"
-      />
-      <TextField
-        label="Statement password"
-        kind="password"
-        defaultValue="Secret123"
-      />
-      <TextField
-        label="MCC code"
-        optional
-        placeholder="e.g. 5812"
-      />
-      <TextField
-        label="Last 4 digits"
-        defaultValue="77"
-        error="Enter the last 4 digits of the card."
-      />
-      <TextField
-        label="Account"
-        defaultValue="HDFC Regalia ••7741"
-        disabled
-      />
-    </div>
-  ),
-};
-
-export const Text: Story = {
+export const Filled: Story = {
   args: {
     label: 'Account name',
     defaultValue: 'HDFC Regalia Gold',
   },
 };
 
-export const Amount: Story = {
+export const Placeholder: Story = {
+  args: {
+    label: 'MCC code',
+    placeholder: 'e.g. 5812',
+  },
+};
+
+export const Optional: Story = {
+  args: {
+    label: 'Description',
+    optional: true,
+    placeholder: 'Personal notes',
+  },
+};
+
+export const WithPrefix: Story = {
   args: {
     label: 'Total due',
-    kind: 'amount',
+    prefix: '₹',
+    inputMode: 'decimal',
     defaultValue: '44,319.00',
   },
 };
@@ -91,16 +101,8 @@ export const Amount: Story = {
 export const Password: Story = {
   args: {
     label: 'Statement password',
-    kind: 'password',
+    type: 'password',
     defaultValue: 'Secret123',
-  },
-};
-
-export const Placeholder: Story = {
-  args: {
-    label: 'MCC code',
-    optional: true,
-    placeholder: 'e.g. 5812',
   },
 };
 
@@ -127,3 +129,4 @@ export const Disabled: Story = {
     disabled: true,
   },
 };
+

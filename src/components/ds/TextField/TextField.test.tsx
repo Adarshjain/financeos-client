@@ -15,12 +15,20 @@ describe('TextField component', () => {
     expect(screen.getByText('(Optional)')).toBeInTheDocument();
   });
 
-  it('handles user typing via onChange', () => {
+  it('handles user typing via onChange and onValueChange', () => {
     const handleChange = vi.fn();
-    render(<TextField label="Pattern" onChange={handleChange} />);
+    const handleValueChange = vi.fn();
+    render(
+      <TextField
+        label="Pattern"
+        onChange={handleChange}
+        onValueChange={handleValueChange}
+      />,
+    );
     const input = screen.getByLabelText('Pattern');
     fireEvent.change(input, { target: { value: 'SWIGGY' } });
     expect(handleChange).toHaveBeenCalled();
+    expect(handleValueChange).toHaveBeenCalledWith('SWIGGY');
     expect(input).toHaveValue('SWIGGY');
   });
 
@@ -45,8 +53,15 @@ describe('TextField component', () => {
     expect(input).toBeDisabled();
   });
 
-  it('renders kind="amount" with ₹ prefix and tabular-nums', () => {
-    render(<TextField label="Total due" kind="amount" defaultValue="44,319.00" />);
+  it('renders with prefix and tabular-nums when inputMode is decimal', () => {
+    render(
+      <TextField
+        label="Total due"
+        prefix="₹"
+        inputMode="decimal"
+        defaultValue="44,319.00"
+      />,
+    );
     expect(screen.getByText('₹')).toBeInTheDocument();
     const input = screen.getByLabelText('Total due');
     expect(input).toHaveClass('tabular-nums');
@@ -57,7 +72,7 @@ describe('TextField component', () => {
     render(
       <TextField
         label="Password"
-        kind="password"
+        type="password"
         defaultValue="secret"
       />,
     );
@@ -81,5 +96,10 @@ describe('TextField component', () => {
     );
     expect(screen.getByText('$')).toBeInTheDocument();
     expect(screen.getByTestId('test-suffix')).toBeInTheDocument();
+  });
+
+  it('applies controlClassName to the input element', () => {
+    render(<TextField label="Code" controlClassName="font-mono text-center" />);
+    expect(screen.getByLabelText('Code')).toHaveClass('font-mono', 'text-center');
   });
 });

@@ -136,7 +136,7 @@ export function LoginForm() {
                 id="password"
                 label="Password"
                 name="password"
-                kind="password"
+                type="password"
                 placeholder="Enter your password"
                 autoComplete="current-password"
                 required
