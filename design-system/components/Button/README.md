@@ -17,7 +17,7 @@ Every variant has all six, and each must be visible:
 - **Pressed** (while the pointer or key is down): one step further than hover: secondary and ghost `bg-pressed`; primary `brand-pressed`; danger outline `danger-tint` with a `danger` border; danger filled `danger-pressed`. Pressed must differ from hover.
 - **Focus** (keyboard only, `:focus-visible`): 2px `focus-ring` outline with a 2px offset. A mouse click shows pressed, not the focus ring.
 - **Disabled**: 45% opacity, no hover or pressed.
-- **Loading**: a spinner replaces the leading icon, the label stays, the button ignores clicks.
+- **Loading**: the `spinner` icon (Phosphor circle-notch, the one animated icon) takes the leading icon's place and rotates; no other icon is ever spun. The label stays (or becomes the `loadingLabel`, "Signing in…"), the button keeps its width, and it ignores clicks.
 
 ## Link
 - `link`: an inline text action inside a sentence, a Banner or a Toast ("Reconcile", "See them", "Undo"): `body-strong` weight, underlined, the surrounding text colour, no padding, no height, no border. It never makes its container taller.
@@ -28,7 +28,7 @@ Every variant has all six, and each must be visible:
 - **Pressed** (while the pointer or key is down): one step further than hover: secondary and ghost `bg-pressed`; primary `brand-pressed`; danger outline `danger-tint` with a `danger` border; danger filled `danger-pressed`. Pressed must differ from hover.
 - **Focus** (keyboard only, `:focus-visible`): 2px `focus-ring` outline with a 2px offset. A mouse click shows pressed, not the focus ring.
 - **Disabled**: 45% opacity, no hover or pressed.
-- **Loading**: a spinner replaces the leading icon, the label stays, the button ignores clicks.
+- **Loading**: the `spinner` icon (Phosphor circle-notch, the one animated icon) takes the leading icon's place and rotates; no other icon is ever spun. The label stays (or becomes the `loadingLabel`, "Signing in…"), the button keeps its width, and it ignores clicks.
 
 ## Link
 - `link`: an inline text action inside a sentence, a Banner or a Toast ("Reconcile", "See them", "Undo"): `body-strong` weight, underlined, the surrounding text colour, no padding, no height, no border. It never makes its container taller.

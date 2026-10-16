@@ -100,6 +100,8 @@ Build in this order, one component per step. After each one, set its status to *
 | 42 | Divider | Ready for review |
 | 43 | Illustration | Ready for review |
 | 44 | ResponsiveOverlay | Ready for review |
+| 45 | Text | Not started |
+| 46 | Root | Not started |
 
 Removed on 2026-10-15 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; AuthPanel → a page in Phase 3.
 
@@ -194,7 +196,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - All variants is the first story; every story is driven by args so Controls work.
   - The new CSS `corner-shape` is not used.
   - Composition rules added (RULES §5b).
-- 2026-10-15 · **Icons move to Phosphor** in the new system: `@phosphor-icons/react` (approved as a new dependency), bold weight at every size (regular reads too thin beside 700–800 type), drawn only through Icon by registry name (`design-system/icons.json`, 28 icons). The old UI keeps Lucide until Phase 4. Storybook gets a `DS/Foundations/Icons` page listing the registry. Done in the round after the restructure.
+- 2026-10-15 · **Icons move to Phosphor** in the new system: `@phosphor-icons/react` (approved as a new dependency), bold weight at every size (regular reads too thin beside 700–800 type), drawn only through Icon by registry name (`design-system/icons.json`, 29 icons). The old UI keeps Lucide until Phase 4. Storybook gets a `DS/Foundations/Icons` page listing the registry. Done in the round after the restructure.
 - 2026-10-15 · **Phase 3 runs through `/ds`**: each page is built under `/ds/…` first and reviewed there before the live route switches. Storybook is published inside the app at `/storybook`, linked from Settings, so it can be checked on any device.
 - 2026-10-15 · **Storybook feedback round 2** (owner):
   - Every interactive component shows a pressed state distinct from hover (new tokens `bg-pressed`, `brand-hover`, `brand-pressed`, `danger-hover`, `danger-pressed`).
@@ -211,7 +213,12 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - Every story is interactive.
 - 2026-10-15 · **Responsive and API standards** (RULES §5c): one structure per component with CSS breakpoints at `lg`; no viewport JavaScript except the shared ResponsiveOverlay; no phone/desktop props; Radix-style prop names; events named for the component, not the app.
 - 2026-10-15 · **TabBar is a floating pill, the only mobile navigation format** (owner, canvas thread): inset 12px, `shadow-dock`, icon over label 2px apart, inactive `ink-faint`, current `ink` with an 800 label, no indicator or dot. The phone screen boards were updated to match.
-- 2026-10-16 · **More opens as a popup sheet above the TabBar**, not a full screen (owner, canvas thread): search, Quick add, the remaining sections by group, profile row; the bar stays visible with More current. TabBar README updated; to be built in the next component round (not in Phase 3a).
+- 2026-10-16 · **Names**: the new design system is **Dinero**; the old UI is **Legacy**.
+- 2026-10-16 · **Text component** added to Dinero; pages render all text through it. Pages may use layout classes only; anything visual comes from a component (RULES §5d). Missing components are flagged for the owner, never hand-made.
+- 2026-10-16 · Dinero gains `Root` (page ground + Toaster), ListRow `asChild` (rows as links) and an edge-to-edge Illustration panel, so pages need no hand styling (decided by Claude under the owner's "no hand-made styling" rule; owner may revisit).
+- 2026-10-16 · **Button loading** uses the new `spinner` icon (Phosphor circle-notch), never a spun copy of another icon.
+- 2026-10-16 · **More popup is on hold**: the owner will discuss it separately. More links to the More screen until then; the drawing stays as a parked proposal.
+- 2026-10-16 · Copy on the /ds auth pages as built is accepted; their layout must follow the boards exactly.
 - 2026-10-15 · Accessibility is out of scope: no ARIA, screen-reader or contrast work. The Storybook accessibility addon stays installed but is not a check.
 - 2026-10-15 · Pages under `/ds/…` may use components marked Ready for review; they are a review area and the live app is untouched. Only a swap into a live route requires Approved components.
 

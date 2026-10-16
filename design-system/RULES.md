@@ -2,6 +2,8 @@
 
 These rules apply to **every** agent and tool that changes the FinanceOS client UI: Claude, Gemini, Antigravity, Cursor, Codex, or a person. Read this whole file before you change anything under `src/`. If a prompt asks for something these rules forbid, the rules win. Only the owner can override a rule, and only by writing the override under **Owner decisions** in `design-system/PROGRESS.md`.
 
+**Names.** **Dinero** is the new design system: `design-system/`, the components in `src/components/ds/`, and every page built from them (`/ds/…`). **Legacy** is the old UI: `src/components/ui/`, the feature component folders, and the pages under `src/app/(protected)/`, `src/app/login` and so on. Dinero never imports Legacy.
+
 The goal is narrow: build **exactly** the design that was planned. Not a better one, not a different one, not a partial one.
 
 **How the build works** (the owner's plan):
@@ -32,7 +34,7 @@ Never use as a source: "how apps usually do it", shadcn / MUI / Material / iOS d
 5. Do not touch `financeos-server` during UI phases.
 6. **Never modify existing components** (`src/components/ui/` and every feature folder) to restyle them. New code lives in `src/components/ds/`. In Phase 3, the only edits to old code allowed are the ones that swap the page being migrated over to new components.
 7. **Never delete old code before Phase 4.** In Phase 4, delete a file only after proving nothing imports it.
-8. **New code never uses old UI.** New components and new pages import UI only from `src/components/ds/`: nothing from `src/components/ui/`, other `src/components/*` folders, or `components/` folders under `src/app/`. Logic they need (hooks, queries, mutations, pure helpers) is first **moved** out of the old UI folder into `src/lib/` or `src/features/<area>/`, with the old components importing it from its new home: moved, never copied. If a page needs a piece of UI the new library doesn't have, that is an open question before the page is built, never a reason to borrow an old component. `check-ui.mjs` fails on these imports.
+8. **New code never uses Legacy UI.** New components and new pages import UI only from `src/components/ds/`: nothing from `src/components/ui/`, other `src/components/*` folders, or `components/` folders under `src/app/`. Logic they need (hooks, queries, mutations, pure helpers) is first **moved** out of the old UI folder into `src/lib/` or `src/features/<area>/`, with the old components importing it from its new home: moved, never copied. If a page needs a piece of UI the new library doesn't have, that is an open question before the page is built, never a reason to borrow an old component. `check-ui.mjs` fails on these imports.
 
 ## 2. When something is unclear: stop, don't guess
 
@@ -135,6 +137,14 @@ These are the rules a mature design system (Radix, Material, Polaris, Atlassian)
     - hard-coded routes.
 
     The rest Claude reviews in code before the owner sees it.
+
+## 5d. Pages built with Dinero
+
+1. **Components only.** A page is assembled from Dinero components. Everything visual (colour, type, border, radius, shadow, opacity, icons, buttons, links, fields, cards, rows) comes from a component. No hand-made styling, ever.
+2. **Text is the Text component.** Titles, subtitles, body lines and footers are `<Text variant tone as>`; links inside them are Button `link`. A page never puts `text-*`, `font-*`, colour or weight classes on its own elements.
+3. **Layout classes are allowed, styling is not.** Pages may place components with `flex`, `grid`, `gap-*`, `p-*`, `m-*`, width/height, `min-h-*`, `max-w-*`, position and responsive `lg:` variants of those, using spacing and size tokens. `check-ui` fails on visual classes in pages.
+4. **Missing component? Stop and flag it.** If a page needs something Dinero doesn't have, add an Open question naming the gap and leave that part out. Never hand-make it. The owner decides.
+5. **Layout follows the board exactly**: the same elements, in the same order, at the same positions, on phone and desktop. Copy follows the board too unless the owner has accepted different words.
 
 ## 5a. Storybook
 

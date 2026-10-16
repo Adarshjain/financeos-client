@@ -138,5 +138,10 @@
   "name": "reports",
   "phosphor": "chart-bar",
   "use": "Reports navigation"
+ },
+ {
+  "name": "spinner",
+  "phosphor": "circle-notch",
+  "use": "Loading: the one animated icon, rotates while a Button or field is busy"
  }
 ]
