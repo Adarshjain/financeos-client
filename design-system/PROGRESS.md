@@ -222,6 +222,23 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-16 · Phase 3a · Antigravity · Unit 5 · E2E specs for /ds pages:
+  - Created `e2e/ui/ds-auth.spec.ts` mirroring `e2e/ui/auth.spec.ts` targeting `/ds/login` and `/ds/signup`:
+    - Updated selectors for design system components (`form [role="alert"]`, button names).
+    - Added tests for `?deleted=1` notice on `/ds/login`.
+    - Added test for empty field submission prevention on `/ds/login`.
+    - Added test for password < 8 characters validation banner on `/ds/signup`.
+  - Created `e2e/ui/ds-offline.spec.ts` mirroring `e2e/ui/offline.spec.ts` targeting `/ds/offline`.
+  - Checks:
+    - `npm run typecheck`: clean
+    - `npm run lint`: `✖ 342 problems (0 errors, 342 warnings)`
+    - `npm test`: `Test Files  431 passed (431) | Tests  3564 passed (3564)`
+    - `npm run build-storybook`: `Storybook build completed successfully`
+    - `npm run build`: `✓ Generating static pages using 10 workers (49/49) in 2.3s`
+    - `node design-system/tools/check-ui.mjs --base c8b557b`: `design-system check: clean`
+    - `npm run e2e:build`: E2E written, not run: `container financeos-e2e-oracle exited (41)` when bringing up docker-compose oracle container in this environment.
+  - Open questions: none. Deviations: none.
+
 - 2026-10-16 · Phase 3a · Antigravity · Unit 4 · /ds/offline:
   - Created `src/app/(ds)/ds/(public)/offline/OfflineContent.tsx` client component:
     - Renders centred `EmptyState variant="offline"` with title "You're offline" and description "Your money is exactly where you left it. We just can't reach the internet right now, so there's nothing fresh to show." matching `D-offline` and `P-offline`.
