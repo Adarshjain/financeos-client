@@ -52,8 +52,25 @@ describe('SearchField', () => {
 
     fireEvent.click(clearButton);
     expect(handleClear).toHaveBeenCalledTimes(1);
+    expect(handleValueChange).toHaveBeenCalledTimes(1);
     expect(handleValueChange).toHaveBeenCalledWith('');
     expect(input.value).toBe('');
+  });
+
+  it('forwards callback ref and refocuses on clear', () => {
+    let inputRef: HTMLInputElement | null = null;
+    render(
+      <SearchField
+        defaultValue="query"
+        ref={(el) => {
+          inputRef = el;
+        }}
+      />,
+    );
+    expect(inputRef).not.toBeNull();
+    const clearButton = screen.getByRole('button', { name: /clear search/i });
+    fireEvent.click(clearButton);
+    expect(document.activeElement).toBe(inputRef);
   });
 
   it('works in controlled mode', () => {
@@ -80,7 +97,7 @@ describe('SearchField', () => {
     expect(input.value).toBe('');
   });
 
-  it('applies filter variant height class (h-control-md) by default', () => {
+  it('applies size="md" height class (h-control-md) by default', () => {
     const { container } = render(
       <SearchField placeholder="In filter" />,
     );
@@ -88,12 +105,23 @@ describe('SearchField', () => {
     expect(wrapper).toBeInTheDocument();
   });
 
-  it('applies sheet variant height class', () => {
+  it('applies size="lg" height class', () => {
     const { container } = render(
-      <SearchField variant="sheet" placeholder="In sheet" />,
+      <SearchField size="lg" placeholder="In sheet" />,
     );
     const wrapper = container.querySelector('.h-control-lg');
     expect(wrapper).toBeInTheDocument();
+  });
+
+  it('applies variant="embedded" classes without focus ring', () => {
+    const { container } = render(<SearchField variant="embedded" />);
+    const box = container.querySelector('.focus-within\\:ring-0');
+    expect(box).toBeInTheDocument();
+  });
+
+  it('applies controlClassName to the input element', () => {
+    render(<SearchField controlClassName="font-mono" />);
+    expect(screen.getByRole('searchbox')).toHaveClass('font-mono');
   });
 
   it('does not show clear button when disabled', () => {

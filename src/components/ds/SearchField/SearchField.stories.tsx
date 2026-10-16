@@ -1,108 +1,91 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
+import { fn } from 'storybook/test';
 
-import { SearchField } from './SearchField';
+import { SearchField } from '@/components/ds';
 
-const meta = {
+const meta: Meta<typeof SearchField> = {
   title: 'DS/Inputs/SearchField',
   component: SearchField,
   parameters: {
     layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'A search box with a leading magnifier. Every search input carries the icon.',
+      },
+    },
   },
-  tags: ['autodocs'],
+  decorators: [
+    (Story) => (
+      <div className="max-w-md w-full">
+        <Story />
+      </div>
+    ),
+  ],
   argTypes: {
+    size: {
+      control: 'select',
+      options: ['md', 'lg'],
+    },
     variant: {
       control: 'select',
-      options: ['filter', 'sheet'],
+      options: ['default', 'embedded'],
     },
-    disabled: { control: 'boolean' },
-    clearable: { control: 'boolean' },
     label: { control: 'text' },
     placeholder: { control: 'text' },
+    defaultValue: { control: 'text' },
+    value: { control: 'text' },
     helper: { control: 'text' },
+    error: { control: 'text' },
+    clearable: { control: 'boolean' },
+    disabled: { control: 'boolean' },
+    controlClassName: { control: 'text' },
+    onValueChange: { control: false },
+    onClear: { control: false },
   },
-} satisfies Meta<typeof SearchField>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-export const AllVariants: Story = {
-  name: 'All variants',
-  render: () => {
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-space-16 p-space-16 max-w-2xl bg-canvas rounded-ds-lg border border-line">
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Empty
-          </span>
-          <SearchField placeholder="Search merchant keys or names…" />
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            Typing · clear
-          </span>
-          <SearchField
-            defaultValue="swiggy"
-            placeholder="Search merchant keys or names…"
-          />
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            In a sheet · labelled
-          </span>
-          <SearchField
-            variant="sheet"
-            label="Find the other side"
-            placeholder="Amount, merchant or date"
-          />
-        </div>
-
-        <div className="space-y-space-4">
-          <span className="font-text text-caption font-semibold text-ink-3">
-            No results
-          </span>
-          <SearchField
-            defaultValue="xyz"
-            placeholder="Search merchant keys or names…"
-            helper='No transactions match "xyz".'
-          />
-        </div>
-      </div>
-    );
+  args: {
+    onValueChange: fn(),
+    onClear: fn(),
   },
 };
 
-export const Empty: Story = {
+export default meta;
+type Story = StoryObj<typeof SearchField>;
+
+export const Default: Story = {
   args: {
     placeholder: 'Search merchant keys or names…',
   },
 };
 
-export const TypingWithAClearX: Story = {
-  name: 'Typing with a clear ×',
+export const WithValue: Story = {
   args: {
     defaultValue: 'swiggy',
     placeholder: 'Search merchant keys or names…',
   },
 };
 
-export const LabelledInsideASheet: Story = {
-  name: 'In a sheet · labelled',
+export const Labelled: Story = {
   args: {
-    variant: 'sheet',
+    size: 'lg',
     label: 'Find the other side',
     placeholder: 'Amount, merchant or date',
   },
 };
 
-export const NoResults: Story = {
-  name: 'No results',
+export const WithHelper: Story = {
   args: {
     defaultValue: 'xyz',
     placeholder: 'Search merchant keys or names…',
     helper: 'No transactions match "xyz".',
   },
 };
+
+export const Disabled: Story = {
+  args: {
+    defaultValue: 'disabled search',
+    disabled: true,
+  },
+};
+
 
