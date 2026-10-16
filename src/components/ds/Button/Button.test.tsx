@@ -78,9 +78,9 @@ describe('Button component', () => {
     expect(screen.getByRole('button')).toHaveClass('h-control-xl');
   });
 
-  it('renders loading state with ongoing label and spinner', () => {
+  it('renders loading state with spinner icon and keeps label or loadingLabel', () => {
     const handleClick = vi.fn();
-    render(
+    const { rerender } = render(
       <Button loading loadingLabel="Saving…" onClick={handleClick}>
         Save
       </Button>
@@ -90,8 +90,14 @@ describe('Button component', () => {
     expect(button).toBeDisabled();
     expect(button).toHaveAttribute('aria-busy', 'true');
     expect(screen.getByText('Saving…')).toBeInTheDocument();
+    expect(screen.getByTestId('spinner-icon')).toHaveClass('animate-spin');
     fireEvent.click(button);
     expect(handleClick).not.toHaveBeenCalled();
+
+    // Keeps original label when loadingLabel is omitted
+    rerender(<Button loading>Save</Button>);
+    expect(screen.getByText('Save')).toBeInTheDocument();
+    expect(screen.getByTestId('spinner-icon')).toHaveClass('animate-spin');
   });
 
   it('renders icon-only button with aria-label', () => {

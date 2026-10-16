@@ -131,11 +131,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {loading ? (
           <>
-            <Icon
-              name="settings"
-              size={effectiveSize === 'sm' ? 'sm' : 'md'}
-              className="animate-spin shrink-0"
-            />
+            <Icon name="spinner" data-testid="spinner-icon" size={effectiveSize === 'sm' ? 'sm' : 'md'} className="animate-spin shrink-0" />
             {loadingLabel ? (
               <span>{loadingLabel}</span>
             ) : !iconOnly && effectiveChildren ? (
