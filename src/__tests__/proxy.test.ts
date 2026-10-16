@@ -24,6 +24,7 @@ describe('proxy', () => {
     '/manifest.webmanifest',
     '/offline',
     '/icons/icon-192.png',
+    '/brand/google-g.svg',
   ])('serves %s without a session', (pathname) => {
     const response = proxy(requestWithoutSession(pathname));
 

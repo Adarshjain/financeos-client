@@ -13,6 +13,8 @@ const publicPaths = [
   '/offline',
   '/manifest.webmanifest',
   '/icons',
+  // Brand assets like the Google 'G' fetched on public auth pages
+  '/brand',
   // `/handbook` is the static system reference (public/handbook/*), deliberately
   // readable without a session.
   '/handbook',
