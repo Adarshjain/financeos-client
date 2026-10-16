@@ -10,11 +10,12 @@ describe('Text component', () => {
     expect(screen.getByText('Hello world')).toBeInTheDocument();
   });
 
-  it('defaults to span tag with body variant, ink tone, text family, and start align', () => {
+  it('defaults to span tag with body variant and ink tone without forcing font-family or text-align', () => {
     render(<Text>Default text</Text>);
     const el = screen.getByText('Default text');
     expect(el.tagName).toBe('SPAN');
-    expect(el).toHaveClass('text-body', 'text-ink', 'font-text', 'text-left');
+    expect(el).toHaveClass('text-body', 'text-ink');
+    expect(el).not.toHaveClass('font-text', 'font-display', 'text-left', 'text-center', 'text-right');
   });
 
   it('supports all 12 type styles through variant prop', () => {

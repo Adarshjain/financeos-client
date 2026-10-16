@@ -85,8 +85,8 @@ export const Text = forwardRef<HTMLElement, TextProps>(
       as: Component = 'span',
       variant = 'body',
       tone = 'ink',
-      family = 'text',
-      align = 'start',
+      family,
+      align,
       truncate = false,
       className,
       children,
@@ -100,8 +100,8 @@ export const Text = forwardRef<HTMLElement, TextProps>(
         className={cn(
           variantStyles[variant],
           toneStyles[tone],
-          familyStyles[family],
-          alignStyles[align],
+          family && familyStyles[family],
+          align && alignStyles[align],
           truncate && 'truncate',
           className,
         )}
