@@ -11,6 +11,7 @@ import { useSheetDrag } from '../useSheetDrag';
 
 export type DialogSize = 'sm' | 'md' | 'lg' | 'xl';
 export type DialogVariant = 'modal' | 'side-panel';
+export type DialogBackground = 'surface' | 'canvas';
 
 const dialogSizeClasses: Record<DialogSize, string> = {
   ['sm']: 'lg:max-w-dialog-sm',
@@ -120,6 +121,7 @@ export interface DialogShellProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   size?: DialogSize;
   variant?: DialogVariant;
+  background?: DialogBackground;
   title?: React.ReactNode;
   subtitle?: React.ReactNode;
   description?: React.ReactNode;
@@ -145,6 +147,7 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
       style,
       size = 'md',
       variant = 'modal',
+      background = 'surface',
       title,
       subtitle,
       description,
@@ -174,7 +177,8 @@ export const DialogShell = forwardRef<HTMLDivElement, DialogShellProps>(
           ...style,
         }}
         className={cn(
-          'bg-surface flex flex-col overflow-hidden text-body text-ink border-line-soft max-h-dvh w-full',
+          background === 'canvas' ? 'bg-canvas' : 'bg-surface',
+          'flex flex-col overflow-hidden text-body text-ink border-line-soft max-h-dvh w-full',
           'rounded-t-ds-sheet shadow-sheet border-t',
           variant === 'side-panel'
             ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-dialog lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full'
@@ -255,6 +259,7 @@ export interface DialogContentProps
   > {
   size?: DialogSize;
   variant?: DialogVariant;
+  background?: DialogBackground;
   title?: React.ReactNode;
   subtitle?: React.ReactNode;
   description?: React.ReactNode;
@@ -277,6 +282,7 @@ export const DialogContent = forwardRef<
       style,
       size = 'md',
       variant = 'modal',
+      background = 'surface',
       title,
       subtitle,
       description,
@@ -324,7 +330,8 @@ export const DialogContent = forwardRef<
               ...style,
             }}
             className={cn(
-              'pointer-events-auto bg-surface flex flex-col overflow-hidden text-body text-ink border-line-soft focus:outline-none max-h-dvh w-full',
+              'pointer-events-auto flex flex-col overflow-hidden text-body text-ink border-line-soft focus:outline-none max-h-dvh w-full',
+              background === 'canvas' ? 'bg-canvas' : 'bg-surface',
               'rounded-t-ds-sheet shadow-sheet border-t',
               variant === 'side-panel'
                 ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-dialog lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full lg:slide-in-from-right'
@@ -435,6 +442,7 @@ export interface ConfirmDialogShellProps
   isCheckingImpact?: boolean;
   checkingMessage?: React.ReactNode;
   size?: DialogSize;
+  background?: DialogBackground;
   showClose?: boolean;
   onClose?: () => void;
 }
@@ -460,6 +468,7 @@ export const ConfirmDialogShell = forwardRef<
       isCheckingImpact = false,
       checkingMessage = 'Checking what will be affected…',
       size = 'sm',
+      background = 'surface',
       showClose = true,
       onClose,
       children,
@@ -482,6 +491,7 @@ export const ConfirmDialogShell = forwardRef<
       <DialogShell
         ref={ref}
         size={size}
+        background={background}
         title={title}
         description={description}
         showClose={showClose}
@@ -572,6 +582,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isCheckingImpact = false,
   checkingMessage = 'Checking what will be affected…',
   size = 'sm',
+  background = 'surface',
   showClose = true,
   children,
   className,
@@ -610,6 +621,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       ) : null}
       <DialogContent
         size={size}
+        background={background}
         title={title}
         description={description}
         showClose={showClose}

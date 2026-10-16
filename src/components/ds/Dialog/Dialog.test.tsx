@@ -52,6 +52,20 @@ describe('DialogShell', () => {
     expect(container.firstChild).toHaveClass('lg:h-full');
   });
 
+  it('applies bg-canvas when background="canvas" and bg-surface when background="surface" (default)', () => {
+    const { container: defaultContainer } = render(
+      <DialogShell title="Default surface" />,
+    );
+    expect(defaultContainer.firstChild).toHaveClass('bg-surface');
+    expect(defaultContainer.firstChild).not.toHaveClass('bg-canvas');
+
+    const { container: canvasContainer } = render(
+      <DialogShell title="Canvas" background="canvas" />,
+    );
+    expect(canvasContainer.firstChild).toHaveClass('bg-canvas');
+    expect(canvasContainer.firstChild).not.toHaveClass('bg-surface');
+  });
+
   it('triggers onClose when close button is clicked', () => {
     const handleClose = vi.fn();
     render(
@@ -233,5 +247,20 @@ describe('Dialog (Radix overlay)', () => {
     expect(content).toBeInTheDocument();
     expect(content).toHaveClass('max-h-dvh');
     expect(screen.getAllByText('Interactive Dialog')).toHaveLength(1);
+  });
+
+  it('sets DialogContent background to bg-canvas when background="canvas"', () => {
+    render(
+      <Dialog open>
+        <DialogContent background="canvas" title="Canvas Dialog">
+          <DialogBody>Canvas body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    const content = screen.getByText('Canvas body').closest('[role="dialog"]');
+    expect(content).toBeInTheDocument();
+    expect(content).toHaveClass('bg-canvas');
+    expect(content).not.toHaveClass('bg-surface');
   });
 });
