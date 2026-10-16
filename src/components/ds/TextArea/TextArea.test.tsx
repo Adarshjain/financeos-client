@@ -42,12 +42,20 @@ describe('TextArea component', () => {
     expect(screen.getByText('(Optional)')).toBeInTheDocument();
   });
 
-  it('handles user typing via onChange', () => {
+  it('handles user typing via onChange and onValueChange', () => {
     const handleChange = vi.fn();
-    render(<TextArea label="Note" onChange={handleChange} />);
+    const handleValueChange = vi.fn();
+    render(
+      <TextArea
+        label="Note"
+        onChange={handleChange}
+        onValueChange={handleValueChange}
+      />,
+    );
     const textarea = screen.getByLabelText('Note');
     fireEvent.change(textarea, { target: { value: 'New note content' } });
     expect(handleChange).toHaveBeenCalled();
+    expect(handleValueChange).toHaveBeenCalledWith('New note content');
     expect(textarea).toHaveValue('New note content');
   });
 
@@ -71,5 +79,10 @@ describe('TextArea component', () => {
     const textarea = screen.getByLabelText('Note');
     expect(textarea).toBeDisabled();
     expect(textarea).toHaveClass('cursor-not-allowed');
+  });
+
+  it('applies controlClassName to the textarea element', () => {
+    render(<TextArea label="Code" controlClassName="font-mono text-xs" />);
+    expect(screen.getByLabelText('Code')).toHaveClass('font-mono', 'text-xs');
   });
 });

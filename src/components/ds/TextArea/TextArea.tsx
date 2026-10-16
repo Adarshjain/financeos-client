@@ -19,6 +19,8 @@ export interface TextAreaProps
   optional?: boolean;
   minRows?: number;
   maxRows?: number;
+  controlClassName?: string;
+  onValueChange?: (value: string) => void;
 }
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
@@ -34,10 +36,12 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       minRows = 1,
       maxRows = 8,
       className,
+      controlClassName,
       placeholder,
       value,
       defaultValue,
       onChange,
+      onValueChange,
       ...props
     },
     ref,
@@ -70,10 +74,24 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       isAutoAdjustingRef.current = true;
       textarea.style.height = 'auto';
 
-      const lineHeight = 18;
-      const paddingBorder = 18; // py-space-8 (8px top, 8px bottom) + 2px border = 18px
-      const minHeight = minRows * lineHeight + paddingBorder; // 36px (h-control-lg) for minRows=1
-      const maxHeight = maxRows * lineHeight + paddingBorder; // 162px for maxRows=8
+      let lineHeight = 18;
+      let paddingBorder = 18;
+
+      if (typeof window !== 'undefined') {
+        const cs = window.getComputedStyle(textarea);
+        const parsedLine = parseFloat(cs.lineHeight);
+        if (!isNaN(parsedLine) && parsedLine > 0) {
+          lineHeight = parsedLine;
+        }
+        const paddingTop = parseFloat(cs.paddingTop) || 8;
+        const paddingBottom = parseFloat(cs.paddingBottom) || 8;
+        const borderTop = parseFloat(cs.borderTopWidth) || 1;
+        const borderBottom = parseFloat(cs.borderBottomWidth) || 1;
+        paddingBorder = paddingTop + paddingBottom + borderTop + borderBottom;
+      }
+
+      const minHeight = minRows * lineHeight + paddingBorder;
+      const maxHeight = maxRows * lineHeight + paddingBorder;
 
       const scrollHeight = textarea.scrollHeight;
       const nextHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight);
@@ -107,6 +125,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       adjustHeight();
       onChange?.(e);
+      onValueChange?.(e.target.value);
     };
 
     return (
@@ -138,6 +157,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
               : 'border-line-strong focus:border-brand',
             disabled &&
               'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
+            controlClassName,
           )}
           {...props}
         />
