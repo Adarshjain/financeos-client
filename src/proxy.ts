@@ -16,6 +16,10 @@ const publicPaths = [
   // `/handbook` is the static system reference (public/handbook/*), deliberately
   // readable without a session.
   '/handbook',
+  // Phase 3 design system public review pages
+  '/ds/login',
+  '/ds/signup',
+  '/ds/offline',
 ];
 
 export function proxy(request: NextRequest) {

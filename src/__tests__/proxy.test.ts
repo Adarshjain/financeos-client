@@ -38,4 +38,21 @@ describe('proxy', () => {
       expect(response.headers.get('location')).toBeNull();
     }
   );
+
+  it.each(['/ds/login', '/ds/signup', '/ds/offline'])(
+    'serves design system public route %s without a session',
+    (pathname) => {
+      const response = proxy(requestWithoutSession(pathname));
+
+      expect(response.headers.get('location')).toBeNull();
+    }
+  );
+
+  it('redirects an unauthenticated request for /ds to the login page', () => {
+    const response = proxy(requestWithoutSession('/ds'));
+
+    expect(response.headers.get('location')).toBe(
+      'https://financeos.local/login?from=%2Fds'
+    );
+  });
 });

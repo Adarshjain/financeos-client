@@ -4,3 +4,4 @@
 # so maintenance of not-yet-migrated screens is never blocked.
 src/components/ds/
 src/app/(ds)/
+src/features/shell/
