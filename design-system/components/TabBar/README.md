@@ -11,8 +11,8 @@ The phone bottom navigation: a floating pill. This is the only mobile navigation
 
 ## More
 Tapping More opens the **More sheet** (final, owner 2026-10-16; board `P-more`): a bottom sheet over the page, built from Dialog's sheet form.
-- **Quick add**: four stacked Tiles: Transaction, Lending, Trade, Import. This is the one exception to "the + is the only add button" (RULES §7.1).
-- **Sections**, in groups with `overline` labels: Money (Accounts, Transactions) · Grow (Investments, Rewards) · Owe & lend · Insights (Loans & lendings, Dashboards, Reports, Ask the data). Each is a row Tile, two per line, with the same navigation icon as the Rail.
+- **Quick add**: four Buttons `variant="tile" iconPosition="top"`: Transaction, Lending, Trade, Import. This is the one exception to "the + is the only add button" (RULES §7.1).
+- **Sections**, in groups with `overline` labels: Money (Accounts, Transactions) · Grow (Investments, Rewards) · Owe & lend · Insights (Loans & lendings, Dashboards, Reports, Ask the data). Each is a Button `variant="tile"` (icon start), two per line, with the same navigation icon as the Rail.
 - **Profile row** at the bottom: Avatar, name, "Settings · connections · notifications", chevron. It links to Settings, with no underline.
 - No search field: search lives in the page and the TopBar.
 - Every item comes from the app's navigation config; nothing is built into the component.
@@ -30,7 +30,7 @@ Tapping More opens the **More sheet** (final, owner 2026-10-16; board `P-more`):
 - No other mobile navigation format exists; don't add variants.
 
 ## Built from
-Icon, Badge (count), Dialog (sheet form), Tile, Avatar, SectionHeader. Items are links with the current one marked.
+Icon, Badge (count), Dialog (sheet form), Button (`tile`), Avatar, SectionHeader. Items are links with the current one marked.
 
 ## Variants
 - One format. Stories show Home current, Transactions current, counts over 99, and More open.
