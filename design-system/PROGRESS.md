@@ -236,6 +236,50 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-16 · Phase 3a · Antigravity · Review remediation (Fixes 1–4: Dialog background, TabBar links stay links, More sheet purely Dinero, E2E modal closing):
+  - Fix 1 (Dialog background):
+    - Added `background?: 'surface' | 'canvas'` (default `surface`) to `DialogContent`, `DialogShell`, and `ConfirmDialog` in `src/components/ds/Dialog/Dialog.tsx`.
+    - Added "Canvas background" story with tiles inside to `src/components/ds/Dialog/Dialog.stories.tsx`.
+    - Added unit tests for canvas background on `DialogShell` and `DialogContent` in `src/components/ds/Dialog/Dialog.test.tsx`.
+    - Commit `b2e930c`: `ui(ds): add background prop to DialogContent, DialogShell, and ConfirmDialog`.
+  - Fix 2 (TabBar links stay links):
+    - In `src/components/ds/TabBar/TabBar.tsx`, items with `href` remain normal links (never `preventDefault()`, always calling `onSelect?.(id)`). Items without `href` render as `<button>` and call `onSelect(id)`.
+    - In `src/features/shell/navigation.ts`, removed `href` from the More item. Defined `ShellTabBarItem`.
+    - Added unit tests for both link and button behaviors in `src/components/ds/TabBar/TabBar.test.tsx` and updated `src/features/shell/__tests__/navigation.test.tsx`.
+    - Commit `813ef14`: `ui(ds): keep TabBar items with href as normal links and remove href from More item`.
+  - Fix 3 (More sheet follows P-more, built purely from Dinero):
+    - In `src/features/shell/ShellNav.tsx`, made sheet modal: removed `modal={false}`, outside click hacks, and inline `zIndex`. Layer stack: page content, TabBar (`z-dock`), scrim (`z-scrim`), sheet (`z-overlay`), with sheet covering TabBar.
+    - Used `<DialogContent background="canvas" …>` with layout-only classes.
+    - Group labels use `<Text variant="overline" tone="ink-4">`.
+    - Profile row uses `<Card>` wrapping `<ListRow asChild …><Link href="/settings" /></ListRow>`.
+    - Bottom padding uses sheet safe-area padding (`pb-safe-12`), not `pb-tab-bar-clearance`.
+    - Required `user: { name?: string; email: string }`, showing name with fallback to email, and deriving initials for Avatar from the same text. Removed "Arjun Mehta" / "AM" fallback. Applied same rule to ShellRail footer.
+    - All 20 `check-ui` violations eliminated.
+    - Commit `9e8c4f0`: `ui(ds): rebuild More sheet purely from Dinero following P-more`.
+  - Fix 4 (E2E modal behavior & plain links):
+    - Updated `e2e/ui/ds-shell.spec.ts`:
+      - Closing way 1: scrim tap above sheet (`mouse.click(200, 50)`).
+      - Closing way 2: swipe down on drag handle (`useSheetDrag` ref & window event handling).
+      - Closing way 3: choosing a section tile (navigates to route).
+      - Plain TabBar link navigation test for Transactions.
+    - Refactored `useSheetDrag.ts` to use refs and window pointer listeners to reliably handle fast synthetic and real pointer events across thresholds.
+    - Added `onClose` callback prop to `DialogContent` in `ShellNav.tsx`.
+    - Commit `e2bc6be`: `ui(ds): update ds-shell E2E to modal closing behavior and plain link navigation`.
+  - Browser inspection:
+    - Inspected `/ds`, `/ds/login`, `/ds/signup`, `/ds/offline` signed in and signed out at 390px and 1440px in both light and dark modes (200 status, 0 console errors).
+    - At 390px signed in: page and TabBar dimmed by scrim, sheet rises over the bar, canvas background behind surface tiles, matches `P-more` side by side in both light and dark.
+    - At 1440px signed in: Rail rendered, TopBar rendered, sheet completely hidden.
+  - Checks:
+    - `npm run typecheck` passed (tsc --noEmit clean).
+    - `npm run lint` passed (0 errors, 342 legacy warnings).
+    - `npm test` passed (434 test files, 3600 tests passed).
+    - `npm run build-storybook` passed (Storybook build completed successfully).
+    - `npm run build` passed (Next.js production build clean).
+    - `node design-system/tools/check-ui.mjs --base c8b557b` passed (`design-system check: clean`).
+    - Playwright E2E suites (`ds-auth.spec.ts`, `ds-offline.spec.ts`, `ds-shell.spec.ts`): all 11 tests passed.
+  - Open questions: Quick add actions without live routes kept on hold per owner instruction.
+  - Component statuses: Dialog, TabBar, and `/ds` pages set to Ready for review.
+
 - 2026-10-16 · Phase 3a · Antigravity · Review remediation (Fixes 1–6: Client boundaries, E2E specs, TabBar stories, Illustration height, Button tile variant, More sheet):
   - Fix 1 (Client boundaries, RULES §5b.8): Added `'use client'` to `src/components/ds/ListRow/ListRow.tsx`, `src/components/ds/KpiTile/KpiTile.tsx`, and `src/components/ds/Widget/Widget.tsx`. Verified no `missing-use-client` warnings reported by `check-ui`.
   - Fix 2 (E2E shell & auth specs):
