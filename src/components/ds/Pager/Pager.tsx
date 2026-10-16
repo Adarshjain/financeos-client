@@ -14,29 +14,27 @@ export interface PagerProps
   totalElements: number;
   totalPages?: number;
   unit?: string;
+  summary?: (r: { start: number; end: number; total: number }) => React.ReactNode;
+  sizeLabel?: (size: number) => string;
   onPageChange: (page: number) => void;
   onSizeChange?: (size: number) => void;
   sizeOptions?: number[];
   borderPosition?: 'top' | 'bottom' | 'none';
 }
 
-export function getPageNumbers(
+function getPageNumbers(
   currentPage: number, // 0-based
   totalPages: number,
-  compact: boolean,
 ): (number | 'ellipsis')[] {
   if (totalPages <= 1) return [];
 
-  // Indices to include: full view keeps first, current ± 1, last; compact view drops current neighbours
   const targets = new Set<number>();
   targets.add(0);
   targets.add(totalPages - 1);
   targets.add(currentPage);
 
-  if (!compact) {
-    if (currentPage > 0) targets.add(currentPage - 1);
-    if (currentPage < totalPages - 1) targets.add(currentPage + 1);
-  }
+  if (currentPage > 0) targets.add(currentPage - 1);
+  if (currentPage < totalPages - 1) targets.add(currentPage + 1);
 
   const sorted = Array.from(targets)
     .filter((p) => p >= 0 && p < totalPages)
@@ -70,7 +68,9 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
       size,
       totalElements,
       totalPages: customTotalPages,
-      unit = 'transaction',
+      unit,
+      summary,
+      sizeLabel,
       onPageChange,
       onSizeChange,
       sizeOptions = [25, 50, 100],
@@ -86,15 +86,9 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
 
     const start = totalElements === 0 ? 0 : page * size + 1;
     const end = Math.min((page + 1) * size, totalElements);
+    const formatSize = sizeLabel ?? ((s: number) => String(s));
 
-    // Unit pluralization
-    const formattedUnit = unit.endsWith('s') || unit.includes(' ')
-      ? unit
-      : totalElements === 1
-        ? unit
-        : `${unit}s`;
-
-    const pageItems = getPageNumbers(page, totalPages, false);
+    const pageItems = getPageNumbers(page, totalPages);
 
     return (
       <nav
@@ -109,22 +103,30 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
         {...props}
       >
         <div className="flex items-center gap-space-4">
-          <span className="font-bold text-ink tabular-nums">
-            {totalElements === 0 ? '0' : `${start}–${end}`}
-          </span>
-          <span>of {totalElements}</span>
-          <span className="hidden lg:inline pg-unit">
-            {formattedUnit}
-          </span>
+          {summary ? (
+            summary({ start, end, total: totalElements })
+          ) : (
+            <>
+              <span className="font-bold text-ink tabular-nums">
+                {totalElements === 0 ? '0' : `${start}–${end}`}
+              </span>
+              <span>/ {totalElements}</span>
+              {unit && (
+                <span className="hidden lg:inline">
+                  {unit}
+                </span>
+              )}
+            </>
+          )}
         </div>
 
-        <div className="flex items-center gap-space-4 ml-auto pg-r">
+        <div className="flex items-center gap-space-4 ml-auto">
           <div className="hidden lg:inline-flex items-center">
             {onSizeChange ? (
               <Select
                 options={sizeOptions.map((opt) => ({
                   value: String(opt),
-                  label: `${opt} / page`,
+                  label: formatSize(opt),
                 }))}
                 value={String(size)}
                 onValueChange={(val) => {
@@ -139,7 +141,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                     aria-label="Rows per page"
                     className="gap-space-6 h-control-md px-space-10 text-label font-semibold text-ink-2 mr-space-6 bg-surface"
                   >
-                    <span>{size} / page</span>
+                    <span>{formatSize(size)}</span>
                     <Icon name="chevron-down" size="sm" className="text-ink-4 shrink-0" />
                   </Button>
                 }
@@ -147,7 +149,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
               />
             ) : (
               <span className="inline-flex items-center gap-space-6 h-control-md px-space-10 border border-line-strong rounded-ds-md text-label font-semibold text-ink-2 mr-space-6 bg-surface">
-                {size} / page
+                {formatSize(size)}
               </span>
             )}
           </div>

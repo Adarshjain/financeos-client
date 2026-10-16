@@ -2,46 +2,56 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { getPageNumbers, Pager } from './Pager';
-
-describe('getPageNumbers', () => {
-  it('implements desktop ellipsis formula: first, current ± 1, last with ellipsis in gaps', () => {
-    // < 1 2 … 4 > on page 1 of 4
-    expect(getPageNumbers(0, 4, false)).toEqual([0, 1, 'ellipsis', 3]);
-    // < 1 … 3 4 > on page 4 of 4
-    expect(getPageNumbers(3, 4, false)).toEqual([0, 'ellipsis', 2, 3]);
-    // < 1 … 4 5 6 … 10 > on page 5 of 10
-    expect(getPageNumbers(4, 10, false)).toEqual([0, 'ellipsis', 3, 4, 5, 'ellipsis', 9]);
-    // returns empty array for single page
-    expect(getPageNumbers(0, 1, false)).toEqual([]);
-  });
-
-  it('implements phone ellipsis formula: one neighbour fewer', () => {
-    // < 1 … 4 > on page 1 of 4
-    expect(getPageNumbers(0, 4, true)).toEqual([0, 'ellipsis', 3]);
-    // < 1 … 4 > on page 4 of 4
-    expect(getPageNumbers(3, 4, true)).toEqual([0, 'ellipsis', 3]);
-    // < 1 … 3 4 > on page 3 of 4
-    expect(getPageNumbers(2, 4, true)).toEqual([0, 'ellipsis', 2, 3]);
-  });
-});
+import { Pager } from './Pager';
 
 describe('Pager', () => {
-  it('renders range and total count with pluralized unit', () => {
+  it('renders range and total count with / by default', () => {
     render(
       <Pager
         page={0}
         size={50}
         totalElements={182}
         totalPages={4}
-        unit="transaction"
+        unit="transactions"
         onPageChange={() => {}}
       />,
     );
 
     expect(screen.getByText('1–50')).toBeInTheDocument();
-    expect(screen.getByText('of 182')).toBeInTheDocument();
+    expect(screen.getByText('/ 182')).toBeInTheDocument();
     expect(screen.getByText('transactions')).toBeInTheDocument();
+  });
+
+  it('does not render unit when not provided', () => {
+    const { container } = render(
+      <Pager
+        page={0}
+        size={50}
+        totalElements={182}
+        totalPages={4}
+        onPageChange={() => {}}
+      />,
+    );
+
+    expect(screen.getByText('1–50')).toBeInTheDocument();
+    expect(screen.getByText('/ 182')).toBeInTheDocument();
+    expect(container.querySelector('.lg\\:inline')).toBeNull();
+  });
+
+  it('renders custom summary when supplied', () => {
+    render(
+      <Pager
+        page={0}
+        size={50}
+        totalElements={182}
+        totalPages={4}
+        summary={({ start, end, total }) => `${start}–${end} of ${total} transactions`}
+        onPageChange={() => {}}
+      />,
+    );
+
+    expect(screen.getByText('1–50 of 182 transactions')).toBeInTheDocument();
+    expect(screen.queryByText('/ 182')).not.toBeInTheDocument();
   });
 
   it('handles 0 totalElements', () => {
@@ -51,13 +61,13 @@ describe('Pager', () => {
         size={50}
         totalElements={0}
         totalPages={1}
-        unit="transaction"
+        unit="transactions"
         onPageChange={() => {}}
       />,
     );
 
     expect(screen.getByText('0')).toBeInTheDocument();
-    expect(screen.getByText('of 0')).toBeInTheDocument();
+    expect(screen.getByText('/ 0')).toBeInTheDocument();
   });
 
   it('marks active page with aria-current="page"', () => {
@@ -151,7 +161,7 @@ describe('Pager', () => {
     expect(handlePageChange).toHaveBeenCalledWith(3);
   });
 
-  it('triggers onSizeChange when changing page size via Select', () => {
+  it('triggers onSizeChange when changing page size via Select and formats with sizeLabel', () => {
     const handleSizeChange = vi.fn();
     render(
       <Pager
@@ -162,10 +172,12 @@ describe('Pager', () => {
         onPageChange={() => {}}
         onSizeChange={handleSizeChange}
         sizeOptions={[25, 50, 100]}
+        sizeLabel={(n) => `${n} / page`}
       />,
     );
 
     const trigger = screen.getByRole('button', { name: 'Rows per page' });
+    expect(trigger).toHaveTextContent('50 / page');
     fireEvent.click(trigger);
 
     const option = screen.getByRole('option', { name: '100 / page' });
@@ -201,13 +213,13 @@ describe('Pager', () => {
         size={50}
         totalElements={182}
         totalPages={4}
-        unit="transaction"
+        unit="transactions"
         onPageChange={() => {}}
       />,
     );
 
     expect(screen.getByText('1–50')).toBeInTheDocument();
-    expect(screen.getByText('of 182')).toBeInTheDocument();
+    expect(screen.getByText('/ 182')).toBeInTheDocument();
     expect(screen.getByText('transactions')).toHaveClass('hidden', 'lg:inline');
   });
 });
