@@ -84,7 +84,7 @@ export const TabBar = forwardRef<HTMLElement, TabBarProps>(
                     variant="count"
                     tone={item.countTone}
                     count={item.count}
-                    className="absolute -top-space-4 -right-space-8 pointer-events-none ring-2 ring-surface"
+                    className="absolute -top-space-4 left-space-12 pointer-events-none ring-2 ring-surface"
                   />
                 ) : null}
               </div>
