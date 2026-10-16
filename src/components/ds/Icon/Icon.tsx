@@ -1,8 +1,9 @@
 import React, { forwardRef } from 'react';
 
 import { cn } from '../cn';
-import { type IconName,iconRegistry } from './registry';
+import { type IconName, iconRegistry } from './registry';
 
+export { iconRegistry };
 export type { IconName };
 export type IconSize = 'sm' | 'md' | 'lg';
 
@@ -21,7 +22,12 @@ const sizeClasses: Record<IconSize, string> = {
 export const Icon = forwardRef<SVGSVGElement, IconProps>(
   ({ name, size = 'md', className, ...props }, ref) => {
     const Component = iconRegistry[name];
-    if (!Component) return null;
+    if (!Component) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`[Icon] Unknown icon name: "${name}"`);
+      }
+      return null;
+    }
 
     return (
       <Component

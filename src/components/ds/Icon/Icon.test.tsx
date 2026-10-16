@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import { render } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { Icon } from './Icon';
 import * as registryModule from './registry';
@@ -60,5 +60,14 @@ describe('Icon component', () => {
     );
     const svg = container.querySelector('svg');
     expect(svg).toHaveClass('ml-auto');
+  });
+
+  it('returns null and logs a warning for an unknown icon name', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // @ts-expect-error testing invalid icon name
+    const { container } = render(<Icon name="unknown-icon" />);
+    expect(container.querySelector('svg')).toBeNull();
+    expect(warnSpy).toHaveBeenCalledWith('[Icon] Unknown icon name: "unknown-icon"');
+    warnSpy.mockRestore();
   });
 });
