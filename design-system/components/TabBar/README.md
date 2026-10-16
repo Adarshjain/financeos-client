@@ -16,6 +16,8 @@ Tapping More opens the **More sheet** (final, owner 2026-10-16; board `P-more`):
 - **Profile row** at the bottom: Avatar, name, "Settings · connections · notifications", chevron. It links to Settings, with no underline.
 - No search field: search lives in the page and the TopBar.
 - Every item comes from the app's navigation config; nothing is built into the component.
+- **The sheet is modal**, as drawn on `P-more`: the scrim dims the page and covers the TabBar, and the sheet runs to the bottom edge, over the bar. It closes on a scrim tap (tapping where More sits is a scrim tap), on swipe down, or by choosing an item. The TabBar is never raised above the scrim.
+- The sheet uses Dialog `background="canvas"`; group labels are Text `overline` in `ink-4`; the profile row is a ListRow `asChild` inside a Card.
 
 ## Use
 - Shown on every top-level phone screen, below `lg` only. It is hidden while a list is in selection mode (the selection bar takes the bottom edge) and under the keyboard.
