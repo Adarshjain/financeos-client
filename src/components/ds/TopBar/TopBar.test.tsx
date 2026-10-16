@@ -5,36 +5,42 @@ import { describe, expect, it, vi } from 'vitest';
 import { TopBar, type TopBarAction } from './TopBar';
 
 describe('TopBar component', () => {
-  it('renders title and phone logo mark when no back prop is passed', () => {
-    render(<TopBar title="Home" />);
-    expect(screen.getByText('Home')).toBeInTheDocument();
-    // Logo mark with ₹ symbol exists for phone viewport
-    expect(screen.getByText('₹')).toBeInTheDocument();
+  it('renders title and crumb correctly', () => {
+    render(<TopBar crumb="Settings" title="Profile" />);
+    expect(screen.getByText('Settings')).toBeInTheDocument();
+    expect(screen.getByText('Profile')).toBeInTheDocument();
   });
 
-  it('renders crumb and back button when back prop is provided', () => {
+  it('renders custom leading slot on phone', () => {
+    render(
+      <TopBar
+        title="Home"
+        leading={<span data-testid="custom-leading">LogoMark</span>}
+      />,
+    );
+    expect(screen.getByTestId('custom-leading')).toBeInTheDocument();
+  });
+
+  it('renders back button when onBack prop is provided', () => {
     const handleBack = vi.fn();
     render(
       <TopBar
         crumb="Accounts"
         title="HDFC Regalia Gold"
-        back={handleBack}
+        onBack={handleBack}
       />,
     );
-    expect(screen.getByText('Accounts')).toBeInTheDocument();
-    expect(screen.getByText('HDFC Regalia Gold')).toBeInTheDocument();
-
     const backBtn = screen.getByRole('button', { name: 'Back' });
     expect(backBtn).toBeInTheDocument();
     fireEvent.click(backBtn);
     expect(handleBack).toHaveBeenCalledTimes(1);
   });
 
-  it('renders back as anchor link when string href is provided', () => {
+  it('renders back as anchor link when backHref is provided', () => {
     render(
       <TopBar
         title="Details"
-        back="/dashboard"
+        backHref="/dashboard"
       />,
     );
     const backLink = screen.getByRole('link', { name: 'Back' });
@@ -66,5 +72,32 @@ describe('TopBar component', () => {
     expect(chatBtn).toBeInTheDocument();
     fireEvent.click(chatBtn);
     expect(handleChat).toHaveBeenCalledTimes(1);
+  });
+
+  it('supports asChild rendering on actions', () => {
+    const handleSelect = vi.fn();
+    const actions: TopBarAction[] = [
+      {
+        id: 'link-action',
+        icon: 'search',
+        label: 'Search Link',
+        onSelect: handleSelect,
+        asChild: true,
+        children: <a href="/search">Search Link</a>,
+      },
+    ];
+
+    render(
+      <TopBar
+        title="Dashboard"
+        actions={actions}
+      />,
+    );
+
+    const actionLink = screen.getByRole('link', { name: 'Search Link' });
+    expect(actionLink).toBeInTheDocument();
+    expect(actionLink).toHaveAttribute('href', '/search');
+    fireEvent.click(actionLink);
+    expect(handleSelect).toHaveBeenCalledTimes(1);
   });
 });

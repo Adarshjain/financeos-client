@@ -7,30 +7,32 @@ import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import type { IconName } from '../Icon/registry';
 import { Kbd } from '../Kbd/Kbd';
-import { Logo } from '../Logo/Logo';
 
 export interface TopBarAction {
   id: string;
   icon: IconName;
   label: string;
-  href?: string;
   onSelect?: () => void;
   variant?: 'default' | 'primary';
   shortcut?: string;
   showLabel?: boolean;
+  asChild?: boolean;
+  children?: React.ReactNode;
 }
 
 export interface TopBarProps
   extends Omit<React.HTMLAttributes<HTMLElement>, 'title'> {
   title: React.ReactNode;
   crumb?: React.ReactNode;
-  back?: string | (() => void) | boolean;
+  leading?: React.ReactNode;
+  backHref?: string;
+  onBack?: () => void;
   actions?: TopBarAction[];
 }
 
 /**
  * TopBar: the bar at the top of every screen.
- * Phone form: Logo mark or back arrow, crumb and title, bordered control-md icon actions.
+ * Phone form: Leading slot (or back arrow), crumb and title, bordered control-md icon actions.
  * Desktop form: crumb and title on the left, labelled actions with their shortcut on the right.
  * The viewport picks the form via CSS (lg breakpoint).
  */
@@ -39,13 +41,50 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
     {
       title,
       crumb,
-      back,
+      leading,
+      backHref,
+      onBack,
       actions,
       className,
       ...props
     },
     ref,
   ) => {
+    let leadingContent: React.ReactNode = leading;
+
+    if (!leadingContent && (backHref || onBack)) {
+      if (backHref) {
+        leadingContent = (
+          <Button
+            asChild
+            variant="ghost"
+            size="md"
+            iconOnly
+            aria-label="Back"
+            className="text-ink-2 hover:text-ink"
+          >
+            <a href={backHref}>
+              <Icon name="chevron-left" size="md" />
+            </a>
+          </Button>
+        );
+      } else if (onBack) {
+        leadingContent = (
+          <Button
+            type="button"
+            variant="ghost"
+            size="md"
+            iconOnly
+            aria-label="Back"
+            onClick={onBack}
+            className="text-ink-2 hover:text-ink"
+          >
+            <Icon name="chevron-left" size="md" />
+          </Button>
+        );
+      }
+    }
+
     return (
       <header
         ref={ref}
@@ -55,37 +94,12 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
         )}
         {...props}
       >
-        {/* Phone leading: back arrow if back is provided, else Logo mark */}
-        {back ? (
-          typeof back === 'string' ? (
-            <Button
-              asChild
-              variant="ghost"
-              size="md"
-              iconOnly
-              aria-label="Back"
-              className="lg:hidden shrink-0 text-ink-2 hover:text-ink"
-            >
-              <a href={back}>
-                <Icon name="chevron-left" size="md" />
-              </a>
-            </Button>
-          ) : (
-            <Button
-              type="button"
-              variant="ghost"
-              size="md"
-              iconOnly
-              aria-label="Back"
-              onClick={typeof back === 'function' ? back : undefined}
-              className="lg:hidden shrink-0 text-ink-2 hover:text-ink"
-            >
-              <Icon name="chevron-left" size="md" />
-            </Button>
-          )
-        ) : (
-          <Logo variant="mark" size="md" className="lg:hidden shrink-0" />
-        )}
+        {/* Phone leading: back arrow or custom leading slot */}
+        {leadingContent ? (
+          <div className="lg:hidden shrink-0 flex items-center">
+            {leadingContent}
+          </div>
+        ) : null}
 
         {/* Title + Crumb: phone stacks them with crumb above title, desktop puts crumb inline before title */}
         <div className="flex-1 min-w-0 pr-space-4 lg:flex-initial lg:flex lg:items-center lg:gap-space-8">
@@ -129,7 +143,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
                   : undefined,
               );
 
-              if (action.href) {
+              if (action.asChild && React.isValidElement(action.children)) {
                 return (
                   <Button
                     key={action.id}
@@ -138,9 +152,14 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
                     size="md"
                     iconOnly={!hasLabel}
                     aria-label={action.label}
+                    onClick={action.onSelect}
                     className={buttonClasses}
                   >
-                    <a href={action.href}>{content}</a>
+                    {React.cloneElement(
+                      action.children as React.ReactElement<{ children?: React.ReactNode }>,
+                      undefined,
+                      content,
+                    )}
                   </Button>
                 );
               }
