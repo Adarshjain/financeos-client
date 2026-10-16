@@ -7,13 +7,14 @@ The import area. The whole zone is the target: tapping or clicking anywhere in i
 - Dragging over: `brand` dashed border on `brand-tint`.
 - Queued files show name, size and remove only. The user picks the account; nothing is detected or asked for at upload time.
 - A file that can't be sent says why in words ("Larger than 10 MB"), not only in red.
-- Recent imports below are rows with the file name and a coloured status word ("Done" in `positive`, "1 warning" in `warning`).
+- Recent imports below are composed as children with Card, ListRow and StatusWords.
 
 ## Props
 - `title`, `hint` and `buttonLabel` are required props ("Add statements", "PDF, XLSX or XLS · up to 25 MB per upload", "Choose files"); the component has no default copy.
+- Optional: `dragTitle`, `dragHint`, `isDragging`, `accept`, `multiple` (default true), `onFilesSelected`, `error`, `showDropArea` (default true), `queuedFiles`, `onRemoveFile`, `children`.
 
 ## Built from
 Button, ListRow (queued files), Icon, StatusWords.
 
 ## Variants
-- Idle, dragging over, queued files, a file that cannot be sent.
+- Idle, dragging over, queued files, a file that cannot be sent, zone-level error, with composed recent imports.

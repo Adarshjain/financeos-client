@@ -1,7 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { fn } from 'storybook/test';
 
-import { DropZone } from './DropZone';
+import { Card, DropZone, ListRow, SectionHeader, StatusWords } from '@/components/ds';
 
 const defaultProps = {
   title: 'Add statements',
@@ -15,7 +16,18 @@ const meta: Meta<typeof DropZone> = {
   parameters: {
     layout: 'padded',
   },
-  args: defaultProps,
+  decorators: [
+    (Story) => (
+      <div className="max-w-md w-full">
+        <Story />
+      </div>
+    ),
+  ],
+  args: {
+    ...defaultProps,
+    onFilesSelected: fn(),
+    onRemoveFile: fn(),
+  },
   argTypes: {
     title: { control: 'text' },
     hint: { control: 'text' },
@@ -25,66 +37,14 @@ const meta: Meta<typeof DropZone> = {
     isDragging: { control: 'boolean' },
     showDropArea: { control: 'boolean' },
     error: { control: 'text' },
+    accept: { control: 'text' },
+    multiple: { control: 'boolean' },
+    queuedFiles: { control: 'object' },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof DropZone>;
-
-export const AllVariants: Story = {
-  name: 'All variants',
-  render: () => (
-    <div className="grid grid-cols-2 gap-space-12 max-w-xl items-start">
-      <div>
-        <div className="text-caption font-semibold text-ink-3 mb-space-4">
-          Idle
-        </div>
-        <DropZone {...defaultProps} />
-      </div>
-
-      <div>
-        <div className="text-caption font-semibold text-ink-3 mb-space-4">
-          Dragging over
-        </div>
-        <DropZone {...defaultProps} isDragging dragHint="3 files" />
-      </div>
-
-      <div>
-        <div className="text-caption font-semibold text-ink-3 mb-space-4">
-          Queued
-        </div>
-        <DropZone
-          {...defaultProps}
-          showDropArea={false}
-          queuedFiles={[
-            { id: '1', name: 'Regalia-Gold-Oct.pdf', size: '412 KB' },
-            { id: '2', name: 'Amex-Platinum-Sep.pdf', size: '1.2 MB' },
-          ]}
-          onRemoveFile={() => {}}
-        />
-      </div>
-
-      <div>
-        <div className="text-caption font-semibold text-ink-3 mb-space-4">
-          Too large
-        </div>
-        <DropZone
-          {...defaultProps}
-          showDropArea={false}
-          queuedFiles={[
-            {
-              id: '1',
-              name: 'HDFC-2025-full-year.pdf',
-              size: '31 MB',
-              error: 'over 25 MB',
-            },
-          ]}
-          onRemoveFile={() => {}}
-        />
-      </div>
-    </div>
-  ),
-};
 
 export const Idle: Story = {
   args: {
@@ -119,7 +79,7 @@ export const TooLarge: Story = {
     queuedFiles: [
       {
         id: '1',
-        name: 'HDFC-2025-full-year.pdf',
+        name: 'Annual-Report-2025.pdf',
         size: '31 MB',
         error: 'over 25 MB',
       },
@@ -130,27 +90,27 @@ export const TooLarge: Story = {
 export const WithDropError: Story = {
   args: {
     ...defaultProps,
-    error: 'File format not supported. Please upload a PDF or Excel sheet.',
+    error: 'This file type is not supported.',
   },
 };
 
 export const WithRecentImports: Story = {
+  name: 'With recent imports',
   args: {
     ...defaultProps,
-    recentImportsTitle: 'Recent imports',
-    recentImports: [
-      {
-        id: '1',
-        name: 'HDFC-Savings-Sep2026.pdf',
-        status: 'Done',
-        statusTone: 'positive',
-      },
-      {
-        id: '2',
-        name: 'ICICI-CreditCard-Aug2026.pdf',
-        status: '1 warning',
-        statusTone: 'warning',
-      },
-    ],
+    children: (
+      <Card className="px-space-14 py-0 overflow-hidden">
+        <SectionHeader>Recent imports</SectionHeader>
+        <ListRow
+          title="Document-Sep2026.pdf"
+          borderTop={false}
+          trailing={<StatusWords items={[{ tone: 'success', label: 'Done' }]} />}
+        />
+        <ListRow
+          title="Report-Aug2026.pdf"
+          trailing={<StatusWords items={[{ tone: 'warning', label: '1 warning' }]} />}
+        />
+      </Card>
+    ),
   },
 };
