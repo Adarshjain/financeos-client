@@ -1,30 +1,33 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { fn } from 'storybook/test';
 
-import { Button } from '../Button/Button';
-import { Icon } from '../Icon/Icon';
-import { Popover } from './Popover';
-
-const SampleMenuContent: React.FC = () => (
-  <div className="flex flex-col">
-    <div className="flex items-center gap-space-10 min-h-control-lg px-space-10 rounded-ds-md font-text font-semibold text-body bg-brand-tint text-brand-strong cursor-pointer">
-      <span>HDFC Regalia Gold</span>
-      <span className="ml-auto text-brand-strong">
-        <Icon name="check" size="md" />
-      </span>
-    </div>
-    <div className="flex items-center gap-space-10 min-h-control-lg px-space-10 rounded-ds-md font-text font-semibold text-body text-ink hover:bg-hover cursor-pointer">
-      <span>Amex Platinum</span>
-    </div>
-    <div className="flex items-center gap-space-10 min-h-control-lg px-space-10 rounded-ds-md font-text font-semibold text-body text-ink hover:bg-hover cursor-pointer">
-      <span>SBI SimplyClick</span>
-    </div>
-  </div>
-);
+import { Button, Icon, Popover, Text } from '@/components/ds';
 
 const meta: Meta<typeof Popover> = {
   title: 'DS/Overlays/Popover',
   component: Popover,
+  parameters: {
+    layout: 'padded',
+    docs: {
+      description: {
+        component:
+          'The one floating surface every dropdown uses: Select\'s list, Menu, DateField\'s calendar, the dashboard switcher. Built on Radix Popover / DropdownMenu, which position with Floating UI (flip, shift, collision with the viewport).',
+      },
+    },
+  },
+  decorators: [
+    (Story) => (
+      <div className="min-h-64">
+        <Story />
+      </div>
+    ),
+  ],
+  args: {
+    align: 'start',
+    side: 'bottom',
+    onOpenChange: fn(),
+  },
   argTypes: {
     align: {
       control: { type: 'select' },
@@ -34,66 +37,31 @@ const meta: Meta<typeof Popover> = {
       control: { type: 'select' },
       options: ['top', 'bottom', 'left', 'right'],
     },
-  },
-  args: {
-    align: 'start',
-    side: 'bottom',
+    trigger: { control: false },
+    children: { control: false },
+    onOpenChange: { control: false },
+    contentProps: { control: false },
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof Popover>;
 
-export const AllVariants: Story = {
-  render: () => (
-    <div className="flex flex-col gap-space-24 p-space-16 max-w-lg">
-      <div className="flex flex-col gap-space-8">
-        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
-          Default trigger
-        </span>
-        <Popover
-          defaultOpen
-          trigger={
-            <Button variant="secondary" className="w-72 justify-between">
-              <span>HDFC Regalia Gold</span>
-              <Icon name="chevron-down" size="md" />
-            </Button>
-          }
-        >
-          <SampleMenuContent />
-        </Popover>
-      </div>
-
-      <div className="flex flex-col gap-space-8 pt-space-48">
-        <span className="font-text text-overline font-extrabold uppercase text-ink-4">
-          Compact trigger · content grows freely
-        </span>
-        <Popover
-          defaultOpen
-          trigger={
-            <Button variant="secondary" className="gap-space-8">
-              <span>Account</span>
-              <Icon name="chevron-down" size="md" />
-            </Button>
-          }
-        >
-          <SampleMenuContent />
-        </Popover>
-      </div>
-    </div>
-  ),
-};
-
 export const Default: Story = {
   args: {
     defaultOpen: true,
     trigger: (
-      <Button variant="secondary" className="w-72 justify-between">
-        <span>HDFC Regalia Gold</span>
-        <Icon name="chevron-down" size="md" />
+      <Button variant="secondary" icon={<Icon name="chevron-down" />}>
+        HDFC Regalia Gold
       </Button>
     ),
-    children: <SampleMenuContent />,
+    children: (
+      <div className="flex flex-col gap-space-4">
+        <Text>HDFC Regalia Gold</Text>
+        <Text tone="ink-3">Amex Platinum</Text>
+        <Text tone="ink-3">SBI SimplyClick</Text>
+      </div>
+    ),
   },
 };
 
@@ -101,11 +69,14 @@ export const WithCompactTrigger: Story = {
   args: {
     defaultOpen: true,
     trigger: (
-      <Button variant="secondary" className="gap-space-8">
-        <span>Options</span>
-        <Icon name="chevron-down" size="md" />
+      <Button variant="secondary" size="sm" icon={<Icon name="chevron-down" />}>
+        Options
       </Button>
     ),
-    children: <SampleMenuContent />,
+    children: (
+      <div className="flex flex-col gap-space-4">
+        <Text>Compact trigger content</Text>
+      </div>
+    ),
   },
 };

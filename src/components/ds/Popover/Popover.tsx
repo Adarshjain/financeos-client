@@ -39,7 +39,7 @@ export const PopoverContent = forwardRef<
           sideOffset={sideOffset}
           className={cn(
             'z-overlay bg-surface border border-line rounded-ds-lg shadow-level-2 p-space-4 flex flex-col outline-none',
-            'animate-in fade-in-0 slide-in-from-top-1 duration-base',
+            'animate-in fade-in-0 data-side-bottom:slide-in-from-top-1 data-side-top:slide-in-from-bottom-1 duration-base',
             'min-w-popover-trigger max-w-container-sm w-auto',
             className,
           )}
@@ -61,6 +61,7 @@ export interface PopoverProps extends PopoverPrimitive.PopoverProps {
   align?: 'start' | 'center' | 'end';
   side?: 'top' | 'bottom' | 'left' | 'right';
   sideOffset?: number;
+  contentProps?: Omit<PopoverContentProps, 'align' | 'side' | 'sideOffset' | 'className'>;
 }
 
 export const Popover: React.FC<PopoverProps> & {
@@ -77,6 +78,7 @@ export const Popover: React.FC<PopoverProps> & {
   align = 'start',
   side = 'bottom',
   sideOffset = 4,
+  contentProps,
   open,
   defaultOpen,
   onOpenChange,
@@ -87,6 +89,14 @@ export const Popover: React.FC<PopoverProps> & {
     defaultValue: defaultOpen ?? false,
     onChange: onOpenChange,
   });
+
+  if (process.env.NODE_ENV !== 'production') {
+    if (!trigger && contentClassName) {
+      console.warn(
+        'Popover: `contentClassName` was passed without a `trigger`. When using Popover as a composition root, pass className directly to `Popover.Content`.',
+      );
+    }
+  }
 
   if (trigger) {
     return (
@@ -101,6 +111,7 @@ export const Popover: React.FC<PopoverProps> & {
           side={side}
           sideOffset={sideOffset}
           className={contentClassName}
+          {...contentProps}
         >
           {children}
         </PopoverContent>
