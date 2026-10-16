@@ -26,6 +26,7 @@ export function useSheetDrag({
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     startYRef.current = e.clientY;
     draggingRef.current = true;
+    setDragOffset(0);
     setIsDragging(true);
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -49,7 +50,9 @@ export function useSheetDrag({
       // ignore
     }
     if (e.clientY - startYRef.current > threshold) {
+      // Keep the offset: the closing animation slides on from where the finger let go.
       onClose?.();
+      return;
     }
     setDragOffset(0);
   };
