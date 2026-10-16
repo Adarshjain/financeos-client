@@ -75,7 +75,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
           ref={ref}
           aria-hidden="true"
           className={cn(
-            'bg-illus-mint text-ink p-space-20 lg:p-space-48 flex flex-col justify-between relative overflow-hidden select-none',
+            'bg-illus-mint text-ink p-space-20 pb-0 lg:p-space-48 flex flex-col justify-start lg:justify-between gap-space-8 lg:gap-0 relative overflow-hidden select-none',
             className,
           )}
           {...props}
@@ -91,7 +91,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
           </div>
 
           {/* Setup artwork scene (shrinks on mobile) */}
-          <div className="relative h-48 lg:h-72 my-space-12 lg:my-space-24 shrink-0 origin-center scale-90 lg:scale-100">
+          <div className="relative h-36 lg:h-72 mt-space-8 mb-0 lg:my-space-24 shrink-0 origin-center scale-90 lg:scale-100">
             {/* Statement imported tile */}
             <div className="absolute left-4 top-4 w-56 bg-surface border border-line rounded-ds-xl shadow-raise p-space-12 -rotate-3">
               <div className="flex items-center gap-space-8">
@@ -181,7 +181,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
         ref={ref}
         aria-hidden="true"
         className={cn(
-          'bg-illus-mint text-ink p-space-20 lg:p-space-48 flex flex-col justify-between relative overflow-hidden select-none',
+          'bg-illus-mint text-ink p-space-20 pb-0 lg:p-space-48 flex flex-col justify-start lg:justify-between gap-space-8 lg:gap-0 relative overflow-hidden select-none',
           className,
         )}
         {...props}
@@ -197,7 +197,7 @@ export const Illustration = forwardRef<HTMLDivElement, IllustrationProps>(
         </div>
 
         {/* Signin artwork scene (shrinks on mobile) */}
-        <div className="relative h-48 lg:h-72 my-space-12 lg:my-space-24 shrink-0 origin-center scale-90 lg:scale-100">
+        <div className="relative h-44 lg:h-72 mt-space-8 mb-0 lg:my-space-24 shrink-0 origin-center scale-90 lg:scale-100">
           {/* Credit card */}
           <div className="absolute left-4 top-10 w-52 h-32 rounded-ds-xl bg-brand text-on-brand p-space-16 shadow-raise flex flex-col justify-between -rotate-6">
             <div className="flex justify-between text-overline tracking-wider opacity-90 font-bold">
