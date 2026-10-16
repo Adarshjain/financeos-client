@@ -91,6 +91,32 @@ describe('ListRow', () => {
     expect(svg).toBeInTheDocument();
     expect(svg).toHaveClass('w-icon-sm', 'h-icon-sm');
   });
+
+  it('renders asChild using Radix Slot without underline and with inherited text color', () => {
+    render(
+      <ListRow asChild title="Sign in" subtitle="/ds/login" chevron>
+        <a href="/ds/login" data-testid="nav-link" />
+      </ListRow>,
+    );
+
+    const link = screen.getByTestId('nav-link');
+    expect(link.tagName).toBe('A');
+    expect(link).toHaveAttribute('href', '/ds/login');
+    expect(link).toHaveClass('no-underline', 'text-inherit', 'cursor-pointer');
+    expect(screen.getByText('Sign in')).toBeInTheDocument();
+    expect(screen.getByText('/ds/login')).toBeInTheDocument();
+    expect(link.querySelector('svg')).toBeInTheDocument();
+  });
+
+  it('forwards ref to child element when asChild is used', () => {
+    const ref = React.createRef<HTMLDivElement>();
+    render(
+      <ListRow asChild ref={ref}>
+        <a href="/ds/offline">Offline</a>
+      </ListRow>,
+    );
+    expect(ref.current).toBeInstanceOf(HTMLAnchorElement);
+  });
 });
 
 describe('ListField', () => {
