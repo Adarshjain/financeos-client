@@ -10,7 +10,10 @@ Overline label (`lbl`), value (`kv`, tabular; `kv-hero` for the one headline num
 - A rise in spending is `danger`, a rise in net worth `positive`: colour follows good or bad, not up or down.
 
 ## Built from
-Card, ProgressBar, Skeleton, Button (Retry).
+Card, ProgressBar, Skeleton, Button (Retry action).
+
+## Props
+`label`, `value`, `variant` ('default' | 'hero'), `delta` (either a `{ value, period?, direction? }` object or a custom node), `progressBar`, `badges`, `context`, `loading`, `error` (message node), `action` (`{ label, onSelect }`).
 
 ## Variants
 - Hero, delta in the bad direction, with a bar, with badges, loading, failed.
