@@ -17,6 +17,7 @@ export * from './Icon/Icon';
 export * from './Illustration/Illustration';
 export * from './Kbd/Kbd';
 export * from './KpiTile/KpiTile';
+export * from './ListField/ListField';
 export * from './ListRow/ListRow';
 export * from './Logo/Logo';
 export * from './Menu/Menu';

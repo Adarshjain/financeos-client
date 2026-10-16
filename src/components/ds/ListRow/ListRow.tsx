@@ -6,6 +6,16 @@ import React, { forwardRef } from 'react';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
+import { MenuContent, MenuItem, MenuRoot, MenuTrigger } from '../Menu/Menu';
+
+export { ListField, type ListFieldProps } from '../ListField/ListField';
+
+export interface ListRowAction {
+  id: string;
+  label: React.ReactNode;
+  onSelect: () => void;
+  destructive?: boolean;
+}
 
 export interface ListRowProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
@@ -19,14 +29,10 @@ export interface ListRowProps
   subtitle?: React.ReactNode;
   /** Trailing element: action button, icon, etc. */
   trailing?: React.ReactNode;
-  /** Convenience for trailing numeric amount */
-  amount?: React.ReactNode;
-  /** If true, styles trailing amount as positive (+ sign, positive tone) */
-  isCredit?: boolean;
   /** If true, appends a chevron arrow indicator at the end */
   chevron?: boolean;
-  /** If true or function, renders a trailing kebab (More options) icon/button */
-  kebab?: boolean | (() => void);
+  /** Actions rendered in a trailing kebab (More options) menu */
+  actions?: ListRowAction[];
   /** Highlighted row (opened from notification): 4px brand-strong stripe on brand-tint */
   highlighted?: boolean;
   /** Disabled row state: dim opacity and disable pointer interactions */
@@ -46,10 +52,8 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
       title,
       subtitle,
       trailing,
-      amount,
-      isCredit = false,
       chevron = false,
-      kebab,
+      actions,
       highlighted = false,
       disabled = false,
       borderTop = true,
@@ -66,13 +70,15 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
     const isHighlighted = highlighted;
     const isInteractive = (asChild || clickable || !!onClick) && !disabled;
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-      onKeyDown?.(e);
-      if (isInteractive && onClick && (e.key === 'Enter' || e.key === ' ')) {
-        e.preventDefault();
-        onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
-      }
-    };
+    const handleKeyDown = asChild
+      ? onKeyDown
+      : (e: React.KeyboardEvent<HTMLDivElement>) => {
+          onKeyDown?.(e);
+          if (isInteractive && onClick && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            onClick(e as unknown as React.MouseEvent<HTMLDivElement>);
+          }
+        };
 
     const classes = cn(
       'flex items-center gap-space-12 px-space-16 py-space-10 text-body relative transition-colors font-text no-underline text-inherit',
@@ -87,39 +93,39 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
     );
 
     const renderTrailing = () => {
-      if (!trailing && amount === undefined && !chevron && !kebab) return null;
+      const hasActions = actions && actions.length > 0;
+      if (!trailing && !chevron && !hasActions) return null;
       return (
         <div className="shrink-0 flex items-center gap-space-8 ml-auto">
-          {amount !== undefined && (
-            <span
-              className={cn(
-                'tabular-nums text-body-strong font-bold text-right',
-                isCredit ? 'text-positive' : 'text-ink',
-              )}
-            >
-              {isCredit && typeof amount === 'string' && !amount.startsWith('+')
-                ? `+${amount}`
-                : amount}
-            </span>
-          )}
           {trailing}
-          {kebab && (
-            <Button
-              variant="ghost"
-              size="sm"
-              aria-label="More options"
-              onClick={
-                typeof kebab === 'function'
-                  ? (e) => {
-                      e.stopPropagation();
-                      kebab();
-                    }
-                  : undefined
-              }
-              className="text-ink-4 hover:text-ink p-space-2 h-auto min-h-0"
-            >
-              <Icon name="more" size="sm" />
-            </Button>
+          {hasActions && (
+            <MenuRoot>
+              <MenuTrigger
+                asChild
+                onClick={(e: React.MouseEvent) => e.stopPropagation()}
+              >
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  iconOnly
+                  aria-label="More options"
+                  icon={<Icon name="more" size="sm" />}
+                  className="text-ink-4 hover:text-ink p-space-2 h-auto min-h-0"
+                />
+              </MenuTrigger>
+              <MenuContent align="end">
+                {actions.map((act) => (
+                  <MenuItem
+                    key={act.id}
+                    onSelect={() => act.onSelect()}
+                    destructive={act.destructive}
+                  >
+                    {act.label}
+                  </MenuItem>
+                ))}
+              </MenuContent>
+            </MenuRoot>
           )}
           {chevron && (
             <Icon
@@ -202,37 +208,3 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
 );
 
 ListRow.displayName = 'ListRow';
-
-/**
- * ListField (fld): A label/value pair for detail sheets.
- */
-export interface ListFieldProps extends React.HTMLAttributes<HTMLDivElement> {
-  label: React.ReactNode;
-  value?: React.ReactNode;
-  borderTop?: boolean;
-}
-
-export const ListField = forwardRef<HTMLDivElement, ListFieldProps>(
-  ({ children, className, label, value, borderTop = true, ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        className={cn(
-          'flex items-center justify-between gap-space-12 px-space-16 py-space-8 text-body font-text',
-          borderTop ? 'border-t border-line-soft first:border-t-0' : 'border-t-0',
-          className,
-        )}
-        {...props}
-      >
-        <span className="text-ink-3 shrink-0 font-medium">{label}</span>
-        {value !== undefined ? (
-          <span className="text-ink font-semibold text-right min-w-0 break-words">{value}</span>
-        ) : (
-          children
-        )}
-      </div>
-    );
-  },
-);
-
-ListField.displayName = 'ListField';

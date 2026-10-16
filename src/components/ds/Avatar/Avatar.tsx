@@ -5,7 +5,14 @@ import React, { forwardRef, useState } from 'react';
 import { cn } from '../cn';
 
 export type AvatarVariant = 'rounded' | 'circle' | 'square';
-export type AvatarTone = 'neutral' | 'brand' | 'inverse';
+export type AvatarTone =
+  | 'neutral'
+  | 'brand'
+  | 'inverse'
+  | 'info'
+  | 'positive'
+  | 'warning'
+  | 'danger';
 export type AvatarSize = 'sm' | 'md' | 'lg';
 
 export interface AvatarProps extends React.HTMLAttributes<HTMLSpanElement> {
@@ -28,6 +35,10 @@ const toneStyles: Record<AvatarTone, string> = {
   neutral: 'bg-canvas text-ink-2',
   brand: 'bg-brand-tint text-brand-strong',
   inverse: 'bg-brand text-on-brand',
+  info: 'bg-info-tint text-info-ink',
+  positive: 'bg-positive-tint text-positive-strong',
+  warning: 'bg-warning-tint text-warning-ink',
+  danger: 'bg-danger-tint text-danger-ink',
 };
 
 const sizeStyles: Record<AvatarSize, string> = {
