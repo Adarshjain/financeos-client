@@ -305,3 +305,17 @@ export const Disabled: Story = {
     </Card>
   ),
 };
+
+export const AsChild: Story = {
+  name: 'AsChild (link)',
+  render: () => (
+    <Card className="max-w-md p-0 overflow-hidden">
+      <ListRow asChild title="Sign in" subtitle="/ds/login" chevron>
+        <a href="/ds/login" />
+      </ListRow>
+      <ListRow asChild title="Sign up" subtitle="/ds/signup" chevron>
+        <a href="/ds/signup" />
+      </ListRow>
+    </Card>
+  ),
+};
