@@ -101,9 +101,24 @@ export const Selected: Story = {
     status: 'unverified',
     source: 'LLM-generated',
     categories: ['Shopping'],
+    selectable: true,
     selected: true,
     selectionMode: true,
     onSelectedChange: fn(),
+  },
+  render: function SelectedStory(args) {
+    const [{ selected = true }, updateArgs] = useArgs();
+    return (
+      <RuleCard
+        {...args}
+        selected={selected}
+        selectionMode={selected}
+        onSelectedChange={(s) => {
+          args.onSelectedChange?.(s);
+          updateArgs({ selected: s, selectionMode: s });
+        }}
+      />
+    );
   },
 };
 
@@ -129,9 +144,24 @@ export const SelectionModeNotSelected: Story = {
     status: 'unverified',
     source: 'LLM-generated',
     categories: ['Food & dining'],
+    selectable: true,
     selectionMode: true,
     selected: false,
     onSelectedChange: fn(),
+  },
+  render: function SelectionModeNotSelectedStory(args) {
+    const [{ selected = false, selectionMode = true }, updateArgs] = useArgs();
+    return (
+      <RuleCard
+        {...args}
+        selected={selected}
+        selectionMode={selectionMode}
+        onSelectedChange={(s) => {
+          args.onSelectedChange?.(s);
+          updateArgs({ selected: s, selectionMode: s });
+        }}
+      />
+    );
   },
 };
 
@@ -166,14 +196,15 @@ export const SelectableInteractive: Story = {
     onSelectedChange: fn(),
   },
   render: function SelectableRuleCardStory(args) {
-    const [{ selected }, updateArgs] = useArgs();
+    const [{ selected = false }, updateArgs] = useArgs();
     return (
       <RuleCard
         {...args}
         selected={selected}
+        selectionMode={selected}
         onSelectedChange={(s) => {
           args.onSelectedChange?.(s);
-          updateArgs({ selected: s });
+          updateArgs({ selected: s, selectionMode: s });
         }}
       />
     );
