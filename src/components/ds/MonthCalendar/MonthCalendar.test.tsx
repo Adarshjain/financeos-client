@@ -67,8 +67,8 @@ describe('MonthCalendar', () => {
       />,
     );
 
-    expect(screen.getByRole('button', { name: 'Month' })).toHaveTextContent('October');
-    expect(screen.getByRole('button', { name: 'Year' })).toHaveTextContent('2026');
+    expect(screen.getByRole('button', { name: 'Choose month' })).toHaveTextContent('October');
+    expect(screen.getByRole('button', { name: 'Choose year' })).toHaveTextContent('2026');
     const day15Button = screen.getByRole('button', { name: '15' });
     expect(day15Button).toHaveClass('bg-brand');
 
@@ -77,7 +77,7 @@ describe('MonthCalendar', () => {
     expect(handleValueChange).toHaveBeenCalledWith('2026-10-16');
   });
 
-  it('allows selecting a month from dropdown, updating view and calling onMonthChange', () => {
+  it('tapping "Choose month" shows 12 month cells (Jan...Dec), and tapping Mar calls onMonthChange and returns to days view', () => {
     const handleMonthChange = vi.fn();
     render(
       <MonthCalendar
@@ -88,17 +88,49 @@ describe('MonthCalendar', () => {
       />,
     );
 
-    const monthBtn = screen.getByRole('button', { name: 'Month' });
-    fireEvent.click(monthBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Choose month' }));
 
-    const marchOption = screen.getByRole('button', { name: 'March' });
-    fireEvent.click(marchOption);
+    const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    shortMonths.forEach((m) => {
+      expect(screen.getByRole('button', { name: m })).toBeInTheDocument();
+    });
 
+    fireEvent.click(screen.getByRole('button', { name: 'Mar' }));
     expect(handleMonthChange).toHaveBeenCalledWith('2026-03-01');
-    expect(screen.getByRole('button', { name: 'Month' })).toHaveTextContent('March');
+    expect(screen.getByRole('button', { name: 'Choose month' })).toHaveTextContent('March');
+    expect(screen.getByRole('button', { name: '15' })).toBeInTheDocument();
   });
 
-  it('allows selecting a year from dropdown, updating view and calling onMonthChange', () => {
+  it('tapping "Choose year" shows 2016–2027 for today="2026-10-13", and arrows page to 2004–2015 and 2028–2039', () => {
+    render(
+      <MonthCalendar
+        mode="picker"
+        month="2026-10-01"
+        today="2026-10-13"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Choose year' }));
+    expect(screen.getByText('2016 – 2027')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2016' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2027' })).toBeInTheDocument();
+
+    // Page back
+    fireEvent.click(screen.getByRole('button', { name: 'Previous years' }));
+    expect(screen.getByText('2004 – 2015')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2004' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2015' })).toBeInTheDocument();
+
+    // Page forward twice to 2028–2039
+    fireEvent.click(screen.getByRole('button', { name: 'Next years' }));
+    expect(screen.getByText('2016 – 2027')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Next years' }));
+    expect(screen.getByText('2028 – 2039')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2028' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2039' })).toBeInTheDocument();
+  });
+
+  it('tapping a year shows months view headed by that year without calling onMonthChange, and months arrows change browseYear', () => {
     const handleMonthChange = vi.fn();
     render(
       <MonthCalendar
@@ -109,14 +141,110 @@ describe('MonthCalendar', () => {
       />,
     );
 
-    const yearBtn = screen.getByRole('button', { name: 'Year' });
-    fireEvent.click(yearBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Choose year' }));
+    fireEvent.click(screen.getByRole('button', { name: '2024' }));
 
-    const year2028 = screen.getByRole('button', { name: '2028' });
-    fireEvent.click(year2028);
+    expect(handleMonthChange).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Choose year' })).toHaveTextContent('2024');
+    expect(screen.getByRole('button', { name: 'Jan' })).toBeInTheDocument();
 
-    expect(handleMonthChange).toHaveBeenCalledWith('2028-10-01');
-    expect(screen.getByRole('button', { name: 'Year' })).toHaveTextContent('2028');
+    fireEvent.click(screen.getByRole('button', { name: 'Previous year' }));
+    expect(screen.getByRole('button', { name: 'Choose year' })).toHaveTextContent('2023');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next year' }));
+    expect(screen.getByRole('button', { name: 'Choose year' })).toHaveTextContent('2024');
+  });
+
+  it('respects minDate="2024-03-10" and maxDate="2026-11-20" across views and arrows', () => {
+    render(
+      <MonthCalendar
+        mode="picker"
+        month="2026-10-01"
+        today="2026-10-13"
+        minDate="2024-03-10"
+        maxDate="2026-11-20"
+      />,
+    );
+
+    // Switch to months view for 2024
+    fireEvent.click(screen.getByRole('button', { name: 'Choose year' }));
+    fireEvent.click(screen.getByRole('button', { name: '2024' }));
+
+    // Jan and Feb 2024 are disabled, Mar 2024 is enabled
+    expect(screen.getByRole('button', { name: 'Jan' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Feb' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Mar' })).not.toBeDisabled();
+
+    // Months-view ‹ is disabled at 2024
+    expect(screen.getByRole('button', { name: 'Previous year' })).toBeDisabled();
+
+    // Advance to 2026
+    fireEvent.click(screen.getByRole('button', { name: 'Next year' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next year' }));
+    expect(screen.getByRole('button', { name: 'Choose year' })).toHaveTextContent('2026');
+
+    // Dec 2026 is disabled, Nov 2026 is enabled
+    expect(screen.getByRole('button', { name: 'Dec' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Nov' })).not.toBeDisabled();
+
+    // Months-view › is disabled at 2026
+    expect(screen.getByRole('button', { name: 'Next year' })).toBeDisabled();
+
+    // Switch to years view (page 2016–2027)
+    fireEvent.click(screen.getByRole('button', { name: 'Choose year' }));
+    expect(screen.getByText('2016 – 2027')).toBeInTheDocument();
+
+    // Years 2023 and 2027 are disabled
+    expect(screen.getByRole('button', { name: '2023' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '2027' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: '2024' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: '2026' })).not.toBeDisabled();
+
+    // Years-view arrows are both disabled on 2016–2027 page
+    expect(screen.getByRole('button', { name: 'Previous years' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next years' })).toBeDisabled();
+  });
+
+  it('applies selected look to shown month and today ring to today month and year', () => {
+    render(
+      <MonthCalendar
+        mode="picker"
+        defaultMonth="2026-03-01"
+        today="2026-10-13"
+      />,
+    );
+
+    // Enter months view
+    fireEvent.click(screen.getByRole('button', { name: 'Choose month' }));
+
+    // Shown month is Mar 2026: selected look
+    const marBtn = screen.getByRole('button', { name: 'Mar' });
+    expect(marBtn).toHaveClass('bg-brand');
+    expect(marBtn).toHaveClass('text-on-brand');
+
+    // Today is Oct 2026: today ring
+    const octBtn = screen.getByRole('button', { name: 'Oct' });
+    expect(octBtn).toHaveClass('ring-1');
+    expect(octBtn).toHaveClass('ring-brand');
+    expect(octBtn).toHaveClass('text-brand');
+
+    // Switch to years view
+    fireEvent.click(screen.getByRole('button', { name: 'Choose year' }));
+
+    // Shown year is 2026, today year is 2026 -> selected
+    const y2026 = screen.getByRole('button', { name: '2026' });
+    expect(y2026).toHaveClass('bg-brand');
+    expect(y2026).toHaveClass('text-on-brand');
+
+    // Switch to another year e.g. 2024 to verify today ring on year
+    fireEvent.click(screen.getByRole('button', { name: '2024' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Jan' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Choose year' }));
+    const y2024 = screen.getByRole('button', { name: '2024' });
+    expect(y2024).toHaveClass('bg-brand');
+    const y2026After = screen.getByRole('button', { name: '2026' });
+    expect(y2026After).toHaveClass('ring-1');
+    expect(y2026After).toHaveClass('ring-brand');
   });
 
   it('disables previous and next month buttons at minDate and maxDate boundaries', () => {
@@ -145,52 +273,6 @@ describe('MonthCalendar', () => {
 
     expect(screen.getByRole('button', { name: 'Previous month' })).not.toBeDisabled();
     expect(screen.getByRole('button', { name: 'Next month' })).toBeDisabled();
-  });
-
-  it('disables out-of-range months in dropdown and clamps year list based on minDate and maxDate', () => {
-    render(
-      <MonthCalendar
-        mode="picker"
-        month="2026-06-01"
-        today="2026-06-15"
-        minDate="2026-05-10"
-        maxDate="2026-08-20"
-      />,
-    );
-
-    fireEvent.click(screen.getByRole('button', { name: 'Month' }));
-    expect(screen.getByRole('button', { name: 'April' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'May' })).not.toBeDisabled();
-    expect(screen.getByRole('button', { name: 'June' })).not.toBeDisabled();
-    expect(screen.getByRole('button', { name: 'July' })).not.toBeDisabled();
-    expect(screen.getByRole('button', { name: 'August' })).not.toBeDisabled();
-    expect(screen.getByRole('button', { name: 'September' })).toBeDisabled();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Year' }));
-    expect(screen.queryByRole('button', { name: '2025' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '2026' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: '2027' })).not.toBeInTheDocument();
-  });
-
-  it('clamps month to nearest allowed month when switching year out of bounds', () => {
-    const handleMonthChange = vi.fn();
-    render(
-      <MonthCalendar
-        mode="picker"
-        defaultMonth="2026-08-01"
-        today="2026-08-15"
-        minDate="2026-05-01"
-        maxDate="2027-03-31"
-        onMonthChange={handleMonthChange}
-      />,
-    );
-
-    fireEvent.click(screen.getByRole('button', { name: 'Year' }));
-    fireEvent.click(screen.getByRole('button', { name: '2027' }));
-
-    expect(handleMonthChange).toHaveBeenCalledWith('2027-03-01');
-    expect(screen.getByRole('button', { name: 'Month' })).toHaveTextContent('March');
-    expect(screen.getByRole('button', { name: 'Year' })).toHaveTextContent('2027');
   });
 
   it('handles range selection: first click sets start, second click sets end', () => {

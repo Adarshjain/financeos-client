@@ -5,6 +5,7 @@ import {
   formatDate,
   formatMonth,
   monthNames,
+  monthNamesShort,
   parseDateInput,
   todayISO,
   weekdayLetters,
@@ -111,6 +112,15 @@ describe('Dinero utils', () => {
       expect(names).toHaveLength(12);
       expect(names[0]).toBe('January');
       expect(names[11]).toBe('December');
+    });
+  });
+
+  describe('monthNamesShort', () => {
+    it('returns 12 names starting with Jan', () => {
+      const names = monthNamesShort();
+      expect(names).toHaveLength(12);
+      expect(names[0]).toBe('Jan');
+      expect(names[11]).toBe('Dec');
     });
   });
 });
