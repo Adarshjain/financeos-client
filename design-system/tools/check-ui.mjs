@@ -101,6 +101,7 @@ const REMOVED_API = [
   [/\bvariant=["'{]?["']?(?:tile|google|amber|count)["']/, 'removed variant: tile/google (audit G11), amber (G3), count (G2)'],
   [/\biconPosition\b/, 'iconPosition was replaced by Button layout="inline|stacked" (audit G11)'],
   [/\b(?:onUndo|undoLabel|onRetry|retryLabel|removeLabel|actionRow|onActionClick)\b/, 'one action shape: action={{ label, onSelect }} (audit G6)'],
+  [/@deprecated|\b[Ll]egacy (?:alias|year|prop)|for (?:backward )?compatibility/, 'no aliases or compatibility shims: one name per prop (RULES §5c.8); update the callers instead'],
 ];
 const STORY_RULES = [
   ['story-callback', /=>\s*\{\s*\}|\balert\(|\bconsole\.(?:log|info|warn)\(/, 'stories log callbacks with fn() from storybook/test (RULES §5a.3)'],
@@ -260,6 +261,9 @@ function check(lines, all = false, classes = true) {
     for (const [re, why] of REMOVED_API) {
       if (re.test(text)) errors.push({ file, line, rule: 'removed-api', why, text: text.trim().slice(0, 160) });
     }
+    if (/^src\/components\/(?:ds|organisms)\//.test(file) && !/\.stories\.tsx$/.test(file) && /['"`]20\d\d-\d\d-\d\d['"`]|\?\?\s*20\d\d\b/.test(text)) {
+      errors.push({ file, line, rule: 'removed-api', why: 'a hard-coded date in a component: dates come from props (today from the app, G10)', text: text.trim().slice(0, 160) });
+    }
     if (/^src\/components\/ds\//.test(file) && /from ['"]@\/components\/organisms/.test(text)) {
       errors.push({ file, line, rule: 'ds-imports-organism', why: 'Dinero never imports organisms (RULES §5b.1)', text: text.trim().slice(0, 160) });
     }
@@ -387,6 +391,8 @@ function selfTest() {
     ['src/features/shell/ShellNav.tsx', '<Button variant="tile" iconPosition="top">', 'removed-api', true],
     ['src/features/shell/ShellNav.tsx', '<Button variant="secondary" layout="stacked">', 'removed-api', false],
     ['src/components/ds/Badge/Badge.tsx', "import { RuleCard } from '@/components/organisms';", 'ds-imports-organism', true],
+    ['src/components/ds/FilterChip/FilterChip.tsx', '  /** Legacy alias for selected */', 'removed-api', true],
+    ['src/components/ds/DateField/DateField.tsx', "      return '2026-10-01';", 'removed-api', true],
     ['src/components/ds/Badge/Badge.stories.tsx', '  args: { onClick: () => {} },', 'story-callback', true],
     ['src/components/ds/Badge/Badge.stories.tsx', '  args: { onClick: fn() },', 'story-callback', false],
     ['src/components/ds/Badge/Badge.stories.tsx', "import { Badge } from './Badge';", 'story-import', true],
