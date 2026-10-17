@@ -53,9 +53,11 @@ export const ProgressBar = forwardRef<HTMLDivElement, ProgressBarProps>(
         >
           <div
             className={cn(
-              'h-full rounded-ds-pill transition-all duration-base',
+              'h-full rounded-ds-pill',
               fillToneClass,
-              isIndeterminate && 'w-full animate-pulse motion-reduce:animate-none',
+              isIndeterminate
+                ? 'w-2/5 animate-sweep motion-reduce:animate-none'
+                : 'transition-all duration-base',
             )}
             style={isIndeterminate ? undefined : { width: `${fillPercent}%` }}
           />
