@@ -31,7 +31,7 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 - `name`, `disabled`, `loading`, `loadingText`, `placeholder`, `label`, `helper`, `error`, `icon`, `trigger`, `showRadio`, `maxDisplayChips`, `open`, `defaultOpen`, `onOpenChange`.
 
 ## Built from
-Popover, SearchField, Checkbox (multi), Badge (chips in the field), Icon, Button (Clear, Done), FieldFrame.
+Popover, TextField, Checkbox (multi), Badge (chips in the field), Icon, Button (Clear, Done), FieldFrame.
 
 ## Variants
 - **Single select**; **single with search and icons**; **multi select** (checkboxes, Clear and Done); **multi with search and create**; **sectioned list**; **with an action row**; **search · create from typing**; **no results**; **with descriptions**; **disabled option**; **custom trigger** (FilterChip).

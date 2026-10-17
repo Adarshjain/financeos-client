@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
-import { TextField } from '@/components/ds';
+import { Icon, TextField } from '@/components/ds';
 
 const meta: Meta<typeof TextField> = {
   title: 'DS/Form fields/TextField',
@@ -24,9 +24,17 @@ const meta: Meta<typeof TextField> = {
     ),
   ],
   argTypes: {
+    size: {
+      control: 'select',
+      options: ['md', 'lg'],
+    },
+    variant: {
+      control: 'select',
+      options: ['default', 'embedded'],
+    },
     type: {
       control: 'select',
-      options: ['text', 'password', 'number', 'email'],
+      options: ['text', 'password', 'number', 'email', 'search'],
     },
     inputMode: {
       control: 'select',
@@ -40,11 +48,14 @@ const meta: Meta<typeof TextField> = {
     error: { control: 'text' },
     optional: { control: 'boolean' },
     disabled: { control: 'boolean' },
+    clearable: { control: 'boolean' },
+    clearLabel: { control: 'text' },
     prefix: { control: 'text' },
     suffix: { control: 'text' },
     controlClassName: { control: 'text' },
     onValueChange: { control: false },
     onChange: { control: false },
+    onClear: { control: false },
   },
   args: {
     onValueChange: fn(),
@@ -127,6 +138,49 @@ export const Disabled: Story = {
     label: 'Account',
     defaultValue: 'HDFC Regalia ••7741',
     disabled: true,
+  },
+};
+
+export const Search: Story = {
+  args: {
+    type: 'search',
+    size: 'lg',
+    prefix: <Icon name="search" size="sm" />,
+    clearable: true,
+    clearLabel: 'Clear search',
+    placeholder: 'Search…',
+  },
+};
+
+export const SearchSmall: Story = {
+  args: {
+    type: 'search',
+    size: 'md',
+    prefix: <Icon name="search" size="sm" />,
+    clearable: true,
+    clearLabel: 'Clear search',
+    placeholder: 'Search…',
+  },
+};
+
+export const Embedded: Story = {
+  args: {
+    type: 'search',
+    size: 'md',
+    variant: 'embedded',
+    prefix: <Icon name="search" size="sm" />,
+    clearable: true,
+    clearLabel: 'Clear search',
+    placeholder: 'Search options…',
+  },
+};
+
+export const Clearable: Story = {
+  args: {
+    label: 'Filter merchant',
+    defaultValue: 'Swiggy',
+    clearable: true,
+    clearLabel: 'Clear',
   },
 };
 
