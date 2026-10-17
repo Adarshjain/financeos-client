@@ -346,6 +346,15 @@ const config: Config = {
         '.touch-callout-none': {
           '-webkit-touch-callout': 'none',
         },
+        '.grid-cols-template': {
+          'grid-template-columns': 'var(--grid-template)',
+        },
+        '.grid-cols-fill-auto': {
+          'grid-template-columns': 'minmax(0, 1fr) auto',
+        },
+        '.grid-cols-fill-auto-auto': {
+          'grid-template-columns': 'minmax(0, 1fr) auto auto',
+        },
       });
       addVariant(
         'active-self',
