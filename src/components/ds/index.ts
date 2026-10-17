@@ -40,7 +40,6 @@ export * from './TextField/TextField';
 export * from './Toast/Toast';
 export * from './TopBar/TopBar';
 export * from './useControllableState';
-export * from './useLongPress';
 export * from './useSelectableItem';
 export * from './useSheetDrag';
 export * from './useSwipe';
