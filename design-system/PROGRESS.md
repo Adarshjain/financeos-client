@@ -257,6 +257,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-17 · **DataTable uses TanStack Table** (`@tanstack/react-table` v9, owner). It is headless: TanStack holds sort, selection and column state; every visual comes from Dinero. Pin an exact release at least two weeks old when installing.
 - 2026-10-17 · **DataTable requirements review** (owner): v1 includes expandable rows; `sortMode="client"` is allowed only for lists the server returns whole (never with a Pager, never slicing). Pinned `@tanstack/react-table` **9.2.4**. Out of v1: pivot tables, drag-to-reorder rows, several tables sharing one Pager.
 - 2026-10-17 · **Long-press and selection** (owner): long-press (500ms, touch or mouse) enters selection while still held, and the release does nothing; outside selection mode a tap opens the item and never selects it; swipe stays phone-only and desktop keeps checkboxes. Use an industry-standard hook: **`@react-aria/interactions` 3.28.1 and its core `react-aria` 3.52.1 approved** (exact pins), behind Dinero's `useSelectableItem`.
+- 2026-10-17 · **One working TransactionRow story** (owner, recorded by Claude at the owner's request): `Organisms/TransactionRow/Transactions list` is a full, working list, so it may keep in-story state (through `useArgs` only), simulate the server (sort, paging, approve, delete, set category) and fill the canvas width (`globals.viewport` locked to `100pct-100pct`) so it switches phone ↔ desktop as the window is resized. This overrides §5a.2 (no data processing in stories) and §5a.7 (viewport toolbar) for this one story only.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
@@ -268,6 +269,21 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-17 · Phase 2 · Claude · TransactionRow **Transactions list** story (owner asked for one complete, working story):
+  - What changed (`src/components/organisms/TransactionRow/TransactionRow.stories.tsx`):
+    - New first story `TransactionsList`: 30 realistic transactions over October and September 2026 (review words, linked, watched, excluded, notes, multi-category, unset category, credits).
+    - Built only from Dinero and organisms: Card, DataTable (`renderRow` = TransactionRow, `wrapRow` = SwipeActions, month band, day headers, Pager above and below), SelectionBar, Dialog (detail and Set category with a multi Select), ConfirmDialog, Toast with Undo.
+    - Simulated server in the story: sort by date, description or amount (resets to page 1), page sizes 10/25/50, approve (bulk, swipe right or detail) with Undo, delete (bulk, swipe left or detail) through ConfirmDialog, set category. Swipe right is disabled on rows with nothing to approve; excluded rows can't be swiped.
+    - Canvas width follows the window (`globals.viewport` `100pct-100pct`), so resizing switches the phone and desktop forms. Desktop needs the canvas at 1024px or wider: a window of about 1405px with the sidebar open, or a collapsed sidebar.
+    - Meta decorator takes `parameters.frame: 'page'` to skip the `max-w-sm` card frame; `Desktop`, `InDataTable` and `InDataTableSwipe` use it (they were drawn inside the phone-width card before).
+  - Checks: `npm run typecheck` clean; eslint clean on the file; `npm run build-storybook` OK. Playwright against the built Storybook: the canvas follows window resizes (920 → 420 → 1020px); phone (390px, CDP touch events) tap opens the detail without selecting, long-press selects while held and stays after release, tap toggles in selection mode, the eye opens the detail and keeps the selection, Select all → 30, bulk Approve → toast → Undo restores, swipe right approves with Undo, swipe right on a row with nothing to approve does nothing, swipe left → ConfirmDialog → delete updates the band (17 → 16 transactions), Set category chip → dialog → save, pager next. Desktop (1440px, mouse): header and grid rows, click opens the detail, checkbox selects, mouse long-press selects while held, Clear, Amount sort desc/asc. No page errors. Screenshots checked in light and dark at 390 and 1440.
+  - Findings for the owner (not fixed, outside this story):
+    - **Card `overflow-hidden` breaks sticky day headers** inside it. The story passes `className="overflow-clip"` on Card to keep them sticky; Card itself should probably use `overflow-clip`.
+    - **`useSwipe` reacts to the mouse**, so rows swipe on desktop too, against the 2026-10-17 decision that swipe is phone-only.
+    - On phone the Pager shows `1` and `3` with no `2` or ellipsis at 30 rows / 10 per page; worth a look in the Pager round.
+  - Deviations: §5a.2 and §5a.7 for this one story, by the owner decision above. Card `overflow-clip` is a layout override in a story (§5a.4) to keep the day headers sticky.
+  - Not verified: a real iPhone.
 
 - 2026-10-17 · Phase 2 / Phase 3 · Antigravity · DataTable component and TransactionRow desktop layout (Phase 1 & Phase 2: A1–A6, B1–B3):
   - Commits:
