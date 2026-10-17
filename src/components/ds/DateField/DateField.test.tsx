@@ -141,6 +141,36 @@ describe('DateField component', () => {
     });
   });
 
+  it('picks an earlier end date from the calendar and swaps start and end', () => {
+    const handleValueChange = vi.fn();
+    render(<DateField today={TODAY} range label="Period" onValueChange={handleValueChange} defaultOpen />);
+
+    fireEvent.click(screen.getAllByRole('button', { name: '20' })[0]);
+    fireEvent.click(screen.getAllByRole('button', { name: '5' })[0]);
+
+    expect(handleValueChange).toHaveBeenCalledWith({ start: '2026-10-05', end: '2026-10-20' });
+    expect(screen.getByLabelText('Period')).toHaveValue('05/10/2026 – 20/10/2026');
+  });
+
+  it('starts a new range on the first tap when a start date is already set', () => {
+    const handleValueChange = vi.fn();
+    render(
+      <DateField
+        today={TODAY}
+        range
+        label="Period"
+        defaultValue={{ start: '2026-10-20' }}
+        onValueChange={handleValueChange}
+        defaultOpen
+      />,
+    );
+
+    fireEvent.click(screen.getAllByRole('button', { name: '5' })[0]);
+
+    expect(handleValueChange).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('Period')).toHaveValue('05/10/2026 – ');
+  });
+
   it('opens calendar and allows selecting date in single mode emitting ISO', () => {
     const handleChange = vi.fn();
     render(<DateField today={TODAY} label="Due date" defaultValue="2026-10-25" onValueChange={handleChange} />);
