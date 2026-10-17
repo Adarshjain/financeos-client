@@ -151,4 +151,52 @@ describe('SegmentedControl', () => {
     fireEvent.click(darkBtn);
     expect(handleChange).toHaveBeenCalledWith('dark');
   });
+
+  it('does not apply hover classes on a disabled option', () => {
+    render(
+      <SegmentedControl
+        options={[
+          { value: 'active', label: 'Active' },
+          { value: 'archived', label: 'Archived', disabled: true },
+        ]}
+        defaultValue="active"
+      />,
+    );
+    const archivedBtn = screen.getByRole('radio', { name: 'Archived' });
+    expect(archivedBtn).toHaveClass('text-ink-faint');
+    expect(archivedBtn).not.toHaveClass('hover:text-ink');
+    expect(archivedBtn).not.toHaveClass('hover:bg-hover');
+  });
+
+  it('skips disabled options on arrow key navigation', () => {
+    const handleChange = vi.fn();
+    render(
+      <SegmentedControl
+        options={[
+          { value: 'first', label: 'First' },
+          { value: 'second', label: 'Second', disabled: true },
+          { value: 'third', label: 'Third' },
+        ]}
+        defaultValue="first"
+        onValueChange={handleChange}
+      />,
+    );
+    const firstBtn = screen.getByRole('radio', { name: 'First' });
+    fireEvent.keyDown(firstBtn, { key: 'ArrowRight' });
+
+    expect(handleChange).toHaveBeenCalledWith('third');
+    expect(screen.getByRole('radio', { name: 'Third' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+
+    const thirdBtn = screen.getByRole('radio', { name: 'Third' });
+    fireEvent.keyDown(thirdBtn, { key: 'ArrowLeft' });
+
+    expect(handleChange).toHaveBeenCalledWith('first');
+    expect(screen.getByRole('radio', { name: 'First' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+  });
 });

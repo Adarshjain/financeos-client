@@ -57,21 +57,35 @@ const Impl = (
     e: React.KeyboardEvent<HTMLButtonElement>,
     index: number,
   ) => {
-    let nextIndex = -1;
+    if (disabled || normalizedOptions.length === 0) return;
+
+    let step = 0;
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      nextIndex = (index + 1) % normalizedOptions.length;
+      step = 1;
     } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      nextIndex =
-        (index - 1 + normalizedOptions.length) % normalizedOptions.length;
+      step = -1;
     }
 
-    if (nextIndex >= 0) {
-      const nextOption = normalizedOptions[nextIndex];
-      if (nextOption && !nextOption.disabled && !disabled) {
+    if (step === 0) return;
+    e.preventDefault();
+
+    const count = normalizedOptions.length;
+    let candidate = (index + step + count) % count;
+    let foundIndex = -1;
+
+    for (let i = 0; i < count; i++) {
+      if (!normalizedOptions[candidate]?.disabled) {
+        foundIndex = candidate;
+        break;
+      }
+      candidate = (candidate + step + count) % count;
+    }
+
+    if (foundIndex >= 0 && foundIndex !== index) {
+      const nextOption = normalizedOptions[foundIndex];
+      if (nextOption) {
         handleSelect(nextOption.value);
-        itemRefs.current[nextIndex]?.focus();
+        itemRefs.current[foundIndex]?.focus();
       }
     }
   };
@@ -117,8 +131,10 @@ const Impl = (
               fullWidth && 'flex-1',
               isSelected
                 ? 'bg-brand text-on-brand'
-                : 'text-ink-3 hover:text-ink hover:bg-hover active:bg-pressed',
-              isOptDisabled && 'cursor-not-allowed text-ink-faint',
+                : isOptDisabled
+                  ? 'text-ink-faint'
+                  : 'text-ink-3 hover:text-ink hover:bg-hover active:bg-pressed',
+              isOptDisabled && 'cursor-not-allowed',
             )}
           >
             {opt.icon ? (
