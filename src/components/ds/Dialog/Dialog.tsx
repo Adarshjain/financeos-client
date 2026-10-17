@@ -29,7 +29,7 @@ export const DialogHandle = forwardRef<HTMLDivElement, DialogHandleProps>(
         ref={ref}
         aria-hidden="true"
         className={cn(
-          'w-space-40 h-space-4 rounded-ds-pill bg-line-heavy mx-auto mt-space-8 shrink-0',
+          'w-space-40 h-space-4 rounded-ds-pill bg-line-heavy mx-auto shrink-0',
           className
         )}
         {...props}
@@ -180,10 +180,10 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
         <div
           data-testid="dialog-drag-area"
           {...(dismissible ? dragProps : {})}
-          className="select-none shrink-0"
+          className="select-none shrink-0 touch-none"
         >
           {dismissible ? (
-            <div className="lg:hidden cursor-grab active:cursor-grabbing touch-none">
+            <div className="lg:hidden cursor-grab active:cursor-grabbing touch-none py-space-8">
               <DialogHandle />
             </div>
           ) : null}
@@ -359,14 +359,13 @@ export const DialogContent = forwardRef<
   ) => {
     const closeRef = useRef<HTMLButtonElement>(null);
 
+    const handleClose = () => {
+      closeRef.current?.click();
+      onClose?.();
+    };
+
     const { dragOffset, isDragging, dragProps, reset: resetDrag } = useSheetDrag({
-      onClose: () => {
-        if (onClose) {
-          onClose();
-        } else {
-          closeRef.current?.click();
-        }
-      },
+      onClose: handleClose,
     });
 
     // The panel unmounts when the close animation ends: clear any drag offset then.
@@ -449,7 +448,7 @@ export const DialogContent = forwardRef<
               description={description}
               showClose={showClose}
               srTitle={srTitle}
-              onClose={onClose ? onClose : () => closeRef.current?.click()}
+              onClose={handleClose}
               primary={primary}
               secondary={secondary}
               tertiary={tertiary}

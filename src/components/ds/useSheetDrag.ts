@@ -72,6 +72,18 @@ export function useSheetDrag({
     setDragOffset(0);
   }, [onClose, threshold, velocityThreshold]);
 
+  const handlePointerCancel = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    draggingRef.current = false;
+    setIsDragging(false);
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
+    setDragOffset(0);
+  }, []);
+
   // A drag that closes the sheet leaves its offset in place so the exit slides on
   // from the finger. Callers reset once the sheet has unmounted, or it would reopen
   // at that offset.
@@ -89,7 +101,7 @@ export function useSheetDrag({
       onPointerDown: handlePointerDown,
       onPointerMove: handlePointerMove,
       onPointerUp: handlePointerUp,
-      onPointerCancel: handlePointerUp,
+      onPointerCancel: handlePointerCancel,
     },
   };
 }

@@ -327,4 +327,35 @@ describe('Dialog (Radix overlay)', () => {
     const { container } = render(<DialogShell title="Shell font test" />);
     expect(container.firstChild).toHaveClass('font-text');
   });
+
+  it('close button triggers Radix close path and calls onClose', () => {
+    const handleClose = vi.fn();
+    const handleOpenChange = vi.fn();
+    render(
+      <Dialog open onOpenChange={handleOpenChange}>
+        <DialogContent title="Close Test" onClose={handleClose}>
+          <DialogBody>Body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+    const closeButtons = screen.getAllByRole('button', { name: 'Close' });
+    const headerCloseBtn = closeButtons.find(
+      (btn) => !btn.classList.contains('sr-only'),
+    )!;
+    fireEvent.click(headerCloseBtn);
+    expect(handleClose).toHaveBeenCalledTimes(1);
+    expect(handleOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('renders dialog drag area with touch-none for swipe handling', () => {
+    render(
+      <Dialog open>
+        <DialogContent title="Drag Test">
+          <DialogBody>Body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+    const dragArea = screen.getByTestId('dialog-drag-area');
+    expect(dragArea).toHaveClass('touch-none');
+  });
 });
