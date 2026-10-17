@@ -3,3 +3,4 @@ export * from './Logo/Logo';
 export * from './RuleCard/RuleCard';
 export * from './SettingsToggle/SettingsToggle';
 export * from './TransactionRow/TransactionRow';
+export * from './TransactionRow/transactionColumns';
