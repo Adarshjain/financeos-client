@@ -69,7 +69,7 @@ Menus, dropdowns, selects and DateField's calendar look and work like a normal d
 - **Toast:** drop `onUndo`, `undoLabel` and the node `action`. Undo is `action={{ label: 'Undo', onSelect }}`.
 - **Action arrays** (SelectionBar, Menu items, TopBar actions, Widget menu) use `onSelect` only; delete the `onClick` aliases.
 - **Not covered:**
-  - Card's header `action` and Dialog's `primary`, `secondary` and `tertiary` stay node slots.
+  - Card's header `action` stays a node slot. Dialog's `primary`, `secondary` and `tertiary` became action objects on 2026-10-17 (owner; RULES §5.5).
   - SwipeActions keeps `onTrigger`.
 
 ## G7 · Banner
