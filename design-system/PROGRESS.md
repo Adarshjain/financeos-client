@@ -8,7 +8,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | --- | --- | --- |
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
-| 2 | New component library in Storybook, one component at a time, owner-reviewed | Ready for review (44 components; Storybook feedback round 2 complete) |
+| 2 | New component library in Storybook, one component at a time, owner-reviewed | Ready for review (45 components; Storybook feedback round 2 complete; DataTable Ready for review) |
 | 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: /ds review area, login, signup, offline Ready for review) |
 | 3b | Audit implementation: apply the 673 owner-approved conventions decisions (`design-system/specs/audit/`) to Dinero, organisms, stories and the /ds pages | Done (all 673 decisions executed across Rounds A–F; all audit specs completed, all unit and E2E tests passing, builds and check-ui clean) |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
@@ -103,6 +103,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 44 | ResponsiveOverlay | Ready for review |
 | 45 | Text | Ready for review |
 | 46 | Root | Ready for review |
+| 47 | DataTable | Ready for review |
 
 Removed on 2026-10-15/2026-10-17 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; SearchField → TextField (merged in B2, search variant with clearable icon and embedded style); AuthPanel → a page in Phase 3.
 
@@ -124,7 +125,7 @@ For each swap:
 New pages may use nothing from the old UI (RULES §1.8). These are needed and don't exist yet.
 
 **Components the reviewed boards need that the library lacks** (design first, then build):
-1. **DataTable**: the desktop tables on 55 boards. Header row with sort, numeric and right-aligned columns, a checkbox selection column, columns hidden on phone (phone shows rows instead), sticky header, and the Pager above and below.
+1. **DataTable**: (built 2026-10-17, Ready for review) the desktop tables on 55 boards. Header row with sort, numeric and right-aligned columns, a checkbox selection column, columns hidden on phone (phone shows rows instead), sticky header, and the Pager above and below.
 2. **PageHeader**: the desktop page title row on 71 boards. Display-face title, meta line ("9 accounts · synced 4 min ago"), and actions (including the dashboard switcher).
 3. **Stepper**: the import wizard steps (Files ✓ · Match ✓ · 3 Reconcile).
 4. **Search palette**: ⌘K / Search results grouped by section with keyboard movement. Built from Dialog, SearchField, ListRow and SectionHeader; needs its own README.
@@ -267,6 +268,51 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-17 · Phase 2 / Phase 3 · Antigravity · DataTable component and TransactionRow desktop layout (Phase 1 & Phase 2: A1–A6, B1–B3):
+  - Commits:
+    - `b638696` `ui(ds): A1 install tanstack/react-table 9.2.4`
+    - `3f110c6` `ui(ds): A2 add three grid utilities`
+    - `bcf26b9` `ui(ds): A3-A6 DataTable component, stories and tests`
+    - `f94deaa` `ui(ds): B1 TransactionRow desktop layout and transactionColumns`
+    - `b807406` `ui(ds): B2 TransactionRow desktop stories and tests`
+    - `b3cf011` `ui(ds): B3 export DataTable types from barrel to avoid RSC client-proxy error`
+  - What changed:
+    - 4 new components and exports: `DataTable`, `createDataTableColumnHelper`, `TransactionRowData`, `transactionColumns`.
+    - A1 · Package install (`package.json`, `package-lock.json`): installed `@tanstack/react-table@9.2.4` pinned exact (no caret range).
+    - A2 · Grid utilities (`tailwind.config.ts`): added `.grid-cols-template`, `.grid-cols-fill-auto`, and `.grid-cols-fill-auto-auto` to the inline plugin.
+    - A3–A6 · DataTable component (`src/components/ds/DataTable/`):
+      - `types.ts`: `DataTableColumnMeta`, `dataTableFeatures`, `DataTableFeatures`, `createDataTableColumnHelper`, `DataTableRowProps`, `DataTableProps`.
+      - `useDataTableState.ts`: TanStack `useTable` state machine, sort/selection/expansion mappings, display columns prepending (`__select`, `__expand` at `xs`), `--grid-template` generation.
+      - `DataTableHeader.tsx`: sticky header, overline labels, sort button with chevrons, select-all checkbox with Radix indeterminate support (`getIsSomePageRowsSelected() && !getIsAllPageRowsSelected()`).
+      - `DataTableRow.tsx`: phone stacked card (`main`, `amount`, `status`, `phoneSub`, `phoneActions`, eye button, expander button), desktop grid cells using `flexRender`, selection gestures via `useSelectableItem`, `scrollIntoView` for `highlightedRowId`.
+      - `DataTable.tsx`: forwardRef generic container with `role="table"`, double Pager support, SectionHeader bands, day headers, expanded row drawer, footer, Skeleton loading rows, empty state, and `renderRow` slot.
+      - `DataTable.stories.tsx`: 15 interactive stories driven by `useArgs` covering all required variants.
+      - `DataTable.test.tsx`: 30 comprehensive unit tests covering all required behaviors.
+      - Exported `DataTable`, `createDataTableColumnHelper`, and types in `src/components/ds/index.ts`.
+    - B1 · TransactionRow desktop layout & `transactionColumns` (`src/components/organisms/TransactionRow/`):
+      - Added `date?: React.ReactNode` to `TransactionRowProps`.
+      - Preserved 100% of phone layout while adding desktop grid classes (`lg:grid lg:grid-cols-template lg:items-center lg:p-0 lg:border-l-4 lg:border-l-transparent`, with `lg:contents` on inner wrappers).
+      - Desktop cells arranged in order: (1) checkbox (when selectable), (2) date, (3) description with `desktopContextElements` underneath, (4) categories, (5) account, (6) amount, (7) balance.
+      - Created `transactionColumns.tsx` exporting `transactionColumns` and `TransactionRowData`.
+      - Re-exported `transactionColumns` and `TransactionRowData` from `src/components/organisms/index.ts`.
+    - B2 · TransactionRow stories & tests (`src/components/organisms/TransactionRow/`):
+      - Added `Desktop`, `InDataTable`, `InDataTableSwipe` stories.
+      - Added unit tests for desktop cell order, date visibility, column tracks matching, and DataTable selection updates.
+    - B3 · RSC compatibility fix:
+      - Moved types and helper export from client-boundary `DataTable.tsx` to `types.ts` and barrel `src/components/ds/index.ts` so `createDataTableColumnHelper` executes cleanly in Server Component module evaluation.
+  - Tests changed (reasons):
+    - In `src/components/organisms/TransactionRow/TransactionRow.test.tsx`, changed `getByText` to `getAllByText(...)[0]` for `bal ₹61,757`, `HDFC Regalia ••7741`, `Statement`, `Duplicate` because desktop and phone cells both render in JSDOM.
+  - Checks run and outputs:
+    - `npm run typecheck`: clean (0 errors)
+    - `npm run lint`: clean (0 errors, 341 pre-existing warnings in legacy files)
+    - `npm test`: 440/440 test files passed (3,792/3,792 tests passed, 100%)
+    - `npm run build-storybook`: clean (built in 5.77s)
+    - `npm run build`: Next.js 16.2.11 production build clean (49/49 static pages generated)
+    - `node design-system/tools/check-ui.mjs --base 4b825dc642cb6eb9a060e54bf8d69288fbee4904`: `design-system check: clean`
+  - Open questions: None.
+  - Deviations: None.
+  - Status: Ready for review.
 
 - 2026-10-17 · Phase 2 / Phase 3b · Antigravity · Long-press and selection migration to React Aria (A1–A7):
   - Commits:
