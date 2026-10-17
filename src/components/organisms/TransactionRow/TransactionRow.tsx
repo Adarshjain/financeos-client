@@ -139,9 +139,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     const isWarning = tone === 'warning';
     const isSelectable = selectable ?? Boolean(onSelectedChange);
 
-    const showEye =
-      selectionMode ||
-      ((selected || isSelectable) && Boolean(onDetail));
+    const showEye = selectionMode && Boolean(onDetail);
 
     // Long press detection for mobile selection
     const longPress = useLongPress({

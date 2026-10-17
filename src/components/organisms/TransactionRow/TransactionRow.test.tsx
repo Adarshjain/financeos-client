@@ -95,6 +95,23 @@ describe('TransactionRow', () => {
     expect(handleView).toHaveBeenCalledTimes(1);
   });
 
+  it('does not render eye button when outside selection mode even if selectable and onDetail is passed', () => {
+    const handleView = vi.fn();
+    render(
+      <TransactionRow
+        description="Swiggy"
+        amount="250.00"
+        selectable
+        selected={false}
+        selectionMode={false}
+        onDetail={handleView}
+      />,
+    );
+    expect(
+      screen.queryByRole('button', { name: 'View details for Swiggy' }),
+    ).not.toBeInTheDocument();
+  });
+
   it('applies selected, tone="warning", and disabled styles', () => {
     const { container: selContainer } = render(
       <TransactionRow
