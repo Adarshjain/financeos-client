@@ -11,7 +11,7 @@ const defaultProps = {
 };
 
 const meta: Meta<typeof DropZone> = {
-  title: 'DS/Inputs/DropZone',
+  title: 'DS/Form fields/DropZone',
   component: DropZone,
   parameters: {
     layout: 'padded',

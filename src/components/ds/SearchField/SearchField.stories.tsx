@@ -4,7 +4,7 @@ import { fn } from 'storybook/test';
 import { SearchField } from '@/components/ds';
 
 const meta: Meta<typeof SearchField> = {
-  title: 'DS/Inputs/SearchField',
+  title: 'DS/Form fields/SearchField',
   component: SearchField,
   parameters: {
     layout: 'padded',

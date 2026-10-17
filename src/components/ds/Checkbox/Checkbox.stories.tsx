@@ -6,7 +6,7 @@ import { fn } from 'storybook/test';
 import { Checkbox } from '@/components/ds';
 
 const meta: Meta<typeof Checkbox> = {
-  title: 'DS/Inputs/Checkbox',
+  title: 'DS/Form fields/Checkbox',
   component: Checkbox,
   parameters: {
     layout: 'centered',

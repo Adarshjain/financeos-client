@@ -93,7 +93,7 @@ const sectionedGroups = [
 ];
 
 const meta: Meta<typeof Select> = {
-  title: 'DS/Inputs/Select',
+  title: 'DS/Form fields/Select',
   component: Select,
   parameters: {
     layout: 'padded',

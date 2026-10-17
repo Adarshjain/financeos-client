@@ -6,7 +6,7 @@ import { fn } from 'storybook/test';
 import { DateField } from '@/components/ds';
 
 const meta: Meta<typeof DateField> = {
-  title: 'DS/Inputs/DateField',
+  title: 'DS/Form fields/DateField',
   component: DateField,
   parameters: {
     layout: 'padded',

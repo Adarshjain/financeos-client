@@ -5,7 +5,7 @@ import { fn } from 'storybook/test';
 import { TextField } from '@/components/ds';
 
 const meta: Meta<typeof TextField> = {
-  title: 'DS/Inputs/TextField',
+  title: 'DS/Form fields/TextField',
   component: TextField,
   parameters: {
     layout: 'padded',

@@ -6,7 +6,7 @@ import { fn } from 'storybook/test';
 import { Icon, SegmentedControl } from '@/components/ds';
 
 const meta: Meta<typeof SegmentedControl> = {
-  title: 'DS/Inputs/SegmentedControl',
+  title: 'DS/Form fields/SegmentedControl',
   component: SegmentedControl,
   parameters: {
     layout: 'padded',

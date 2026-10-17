@@ -5,7 +5,7 @@ import { fn } from 'storybook/test';
 import { FilterChip, Select } from '@/components/ds';
 
 const meta: Meta<typeof FilterChip> = {
-  title: 'DS/Inputs/FilterChip',
+  title: 'DS/Form fields/FilterChip',
   component: FilterChip,
   decorators: [
     (Story) => (
