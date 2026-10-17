@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { TopBar } from '@/components/ds';
+import { Logo } from '@/components/organisms';
 import { ShellRail, ShellTabBar } from '@/features/shell/ShellNav';
 import { requireAuth } from '@/lib/auth';
 
@@ -25,7 +26,7 @@ export default async function DsAppLayout({
 
       {/* Main content column */}
       <div className="flex-1 min-w-0 flex flex-col min-h-dvh">
-        <TopBar title="New design" />
+        <TopBar title="New design" leading={<Logo variant="mark" />} />
         <main className="flex-1 p-space-16 lg:p-space-24 pb-bottom-clearance lg:pb-space-24">
           {children}
         </main>

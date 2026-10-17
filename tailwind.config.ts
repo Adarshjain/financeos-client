@@ -234,6 +234,11 @@ const config: Config = {
         'up-1': 'var(--ds-shadow-up-1)',
         'up-2': 'var(--ds-shadow-up-2)',
       },
+      size: {
+        'icon-sm': 'var(--ds-icon-sm)',
+        'icon-md': 'var(--ds-icon-md)',
+        'icon-lg': 'var(--ds-icon-lg)',
+      },
       height: {
         'icon-sm': 'var(--ds-icon-sm)',
         'icon-md': 'var(--ds-icon-md)',

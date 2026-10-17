@@ -170,7 +170,15 @@ export function ShellTabBar({
       </Dialog>
 
       <TabBar
-        items={shellTabBarItems}
+        items={shellTabBarItems.map((item) =>
+          item.href
+            ? {
+                ...item,
+                asChild: true,
+                children: <Link href={item.href} />,
+              }
+            : item,
+        )}
         current={moreOpen ? 'more' : current}
         onSelect={handleSelect}
       />
@@ -190,7 +198,14 @@ export function ShellRail({
 
   return (
     <Rail
-      groups={shellRailGroups}
+      groups={shellRailGroups.map((group) => ({
+        ...group,
+        items: group.items.map((item) => ({
+          ...item,
+          asChild: true,
+          children: <Link href={item.href} />,
+        })),
+      }))}
       value={current}
       brand={
         <Link href="/ds">

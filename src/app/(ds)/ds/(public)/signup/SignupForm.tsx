@@ -109,11 +109,9 @@ export function SignupForm() {
               icon={
                 <img
                   src="/brand/google-g.svg"
-                  width={18}
-                  height={18}
                   alt=""
                   aria-hidden="true"
-                  className="shrink-0"
+                  className="size-icon-md shrink-0"
                 />
               }
               loading={ssoPending}
