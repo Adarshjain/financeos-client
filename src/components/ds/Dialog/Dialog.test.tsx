@@ -110,36 +110,129 @@ describe('DialogShell', () => {
     expect(handleClose).not.toHaveBeenCalled();
   });
 
-  it('renders footer with tertiary, secondary and primary on desktop', () => {
-    render(
+  it('renders footer in order: tertiary, secondary, primary', () => {
+    const { container } = render(
       <DialogShell
         title="Footer test"
-        tertiary={<Button variant="danger">Delete 9</Button>}
-        secondary={<Button variant="secondary">Cancel</Button>}
-        primary={<Button variant="primary">Approve 9</Button>}
+        tertiary={{ label: 'Delete 9' }}
+        secondary={{ label: 'Cancel' }}
+        primary={{ label: 'Approve 9' }}
       >
         <DialogBody>Body</DialogBody>
       </DialogShell>,
     );
-    expect(screen.getByRole('button', { name: 'Delete 9' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Approve 9' })).toBeInTheDocument();
+    const grid = container.querySelector('.grid.grid-flow-col')!;
+    const buttons = Array.from(grid.querySelectorAll('button'));
+    expect(buttons.map((b) => b.textContent)).toEqual([
+      'Delete 9',
+      'Cancel',
+      'Approve 9',
+    ]);
   });
 
-  it('renders unified footer with tertiary far left, secondary and primary on right', () => {
-    render(
+  it('draws primary as primary or danger-filled, and secondary/tertiary as link', () => {
+    const { rerender } = render(
       <DialogShell
-        title="Phone tertiary test"
-        tertiary={<Button variant="danger">Delete rule</Button>}
-        secondary={<Button variant="secondary">Cancel</Button>}
-        primary={<Button variant="primary">Save</Button>}
+        title="Variants test"
+        tertiary={{ label: 'Tertiary' }}
+        secondary={{ label: 'Secondary' }}
+        primary={{ label: 'Primary' }}
       >
-        <DialogBody>Form content</DialogBody>
+        <DialogBody>Body</DialogBody>
       </DialogShell>,
     );
-    expect(screen.getByRole('button', { name: 'Delete rule' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Primary' })).toHaveClass('bg-brand');
+    expect(screen.getByRole('button', { name: 'Secondary' })).toHaveClass('underline');
+    expect(screen.getByRole('button', { name: 'Tertiary' })).toHaveClass('underline');
+
+    rerender(
+      <DialogShell
+        title="Variants test"
+        primary={{ label: 'Delete', destructive: true }}
+      >
+        <DialogBody>Body</DialogBody>
+      </DialogShell>,
+    );
+    expect(screen.getByRole('button', { name: 'Delete' })).toHaveClass('bg-danger');
+  });
+
+  it('fires onSelect for each action', () => {
+    const onTertiary = vi.fn();
+    const onSecondary = vi.fn();
+    const onPrimary = vi.fn();
+
+    render(
+      <DialogShell
+        title="Callbacks test"
+        tertiary={{ label: 'Delete', onSelect: onTertiary }}
+        secondary={{ label: 'Cancel', onSelect: onSecondary }}
+        primary={{ label: 'Save', onSelect: onPrimary }}
+      >
+        <DialogBody>Body</DialogBody>
+      </DialogShell>,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    expect(onTertiary).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onSecondary).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+    expect(onPrimary).toHaveBeenCalledTimes(1);
+  });
+
+  it('supports type="submit" and form attribute to submit external form', () => {
+    const handleSubmit = vi.fn((e) => e.preventDefault());
+    render(
+      <div>
+        <form id="edit-form" onSubmit={handleSubmit}>
+          <input name="test" defaultValue="123" />
+        </form>
+        <DialogShell
+          title="Submit test"
+          primary={{ label: 'Submit form', type: 'submit', form: 'edit-form' }}
+        >
+          <DialogBody>Body</DialogBody>
+        </DialogShell>
+      </div>,
+    );
+    const submitBtn = screen.getByRole('button', { name: 'Submit form' });
+    expect(submitBtn).toHaveAttribute('type', 'submit');
+    expect(submitBtn).toHaveAttribute('form', 'edit-form');
+    fireEvent.click(submitBtn);
+    expect(handleSubmit).toHaveBeenCalled();
+  });
+
+  it('passes loading and disabled props through to footer buttons', () => {
+    render(
+      <DialogShell
+        title="State test"
+        primary={{ label: 'Saving', loading: true, disabled: true }}
+        secondary={{ label: 'Cancel', disabled: true }}
+      >
+        <DialogBody>Body</DialogBody>
+      </DialogShell>,
+    );
+    const primaryBtn = screen.getByRole('button', { name: 'Saving' });
+    const secondaryBtn = screen.getByRole('button', { name: 'Cancel' });
+    expect(primaryBtn).toBeDisabled();
+    expect(primaryBtn.querySelector('svg')).toBeInTheDocument();
+    expect(secondaryBtn).toBeDisabled();
+  });
+
+  it('renders exactly two columns when only primary and secondary are present', () => {
+    const { container } = render(
+      <DialogShell
+        title="Two actions test"
+        secondary={{ label: 'Cancel' }}
+        primary={{ label: 'Confirm' }}
+      >
+        <DialogBody>Body</DialogBody>
+      </DialogShell>,
+    );
+    const grid = container.querySelector('.grid.grid-flow-col')!;
+    expect(grid.children).toHaveLength(2);
   });
 
   it('hides drag handle when dismissible={false}', () => {
@@ -229,6 +322,18 @@ describe('ConfirmDialog', () => {
     );
     const confirmBtn = screen.getByRole('button', { name: 'Save' });
     expect(confirmBtn).toHaveClass('bg-brand');
+  });
+
+  it('maps tone="danger" to destructive danger-filled button', () => {
+    render(
+      <ConfirmDialogShell
+        title="Delete rule"
+        confirmLabel="Delete"
+        tone="danger"
+      />,
+    );
+    const confirmBtn = screen.getByRole('button', { name: 'Delete' });
+    expect(confirmBtn).toHaveClass('bg-danger');
   });
 
   it('forwards ref on ConfirmDialog', () => {

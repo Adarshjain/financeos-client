@@ -59,6 +59,9 @@ const meta: Meta<typeof DialogContent> = {
     showClose: { control: 'boolean' },
     title: { control: 'text' },
     description: { control: 'text' },
+    primary: { control: false },
+    secondary: { control: false },
+    tertiary: { control: false },
   },
 };
 
@@ -73,8 +76,8 @@ export const Default: Story = {
       </DialogTrigger>
       <DialogContent
         {...args}
-        primary={<Button variant="primary">Confirm</Button>}
-        secondary={<Button variant="secondary">Cancel</Button>}
+        primary={{ label: 'Confirm', onSelect: fn() }}
+        secondary={{ label: 'Cancel', onSelect: fn() }}
       >
         <DialogBody>
           <Text>
@@ -99,9 +102,9 @@ export const SmallWithTertiary: Story = {
       </DialogTrigger>
       <DialogContent
         {...args}
-        tertiary={<Button variant="danger">Delete</Button>}
-        secondary={<Button variant="secondary">Cancel</Button>}
-        primary={<Button variant="primary">Save</Button>}
+        tertiary={{ label: 'Delete', onSelect: fn() }}
+        secondary={{ label: 'Cancel', onSelect: fn() }}
+        primary={{ label: 'Save', onSelect: fn() }}
       >
         <DialogBody className="space-y-space-8">
           <div className="flex items-center justify-between py-space-6">
@@ -132,8 +135,8 @@ export const LargeForm: Story = {
       </DialogTrigger>
       <DialogContent
         {...args}
-        secondary={<Button variant="secondary">Cancel</Button>}
-        primary={<Button variant="primary">Save preferences</Button>}
+        secondary={{ label: 'Cancel', onSelect: fn() }}
+        primary={{ label: 'Save preferences', onSelect: fn() }}
       >
         <DialogBody className="space-y-space-16">
           <TextField label="Display name" defaultValue="Alex Morgan" />
@@ -162,8 +165,8 @@ export const SidePanel: Story = {
       </DialogTrigger>
       <DialogContent
         {...args}
-        secondary={<Button variant="secondary">Close</Button>}
-        primary={<Button variant="primary">Update</Button>}
+        secondary={{ label: 'Close', onSelect: fn() }}
+        primary={{ label: 'Update', onSelect: fn() }}
       >
         <DialogBody>
           <Text>
@@ -188,7 +191,7 @@ export const CanvasBackground: Story = {
       </DialogTrigger>
       <DialogContent
         {...args}
-        primary={<Button variant="primary">Done</Button>}
+        primary={{ label: 'Done', onSelect: fn() }}
       >
         <DialogBody>
           <Card>

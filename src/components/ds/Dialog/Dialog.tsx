@@ -61,42 +61,91 @@ export const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(
 
 DialogBody.displayName = 'DialogBody';
 
+export interface DialogAction {
+  label: React.ReactNode;
+  onSelect?: () => void;
+  type?: 'button' | 'submit';
+  form?: string;
+  disabled?: boolean;
+  loading?: boolean;
+}
+
+export interface DialogPrimaryAction extends DialogAction {
+  destructive?: boolean;
+}
+
 export interface DialogFooterProps extends React.HTMLAttributes<HTMLDivElement> {
-  /** Primary / confirming action on the right (rendered last) */
-  primary?: React.ReactNode;
-  /** Secondary action on the right (rendered before primary) */
-  secondary?: React.ReactNode;
-  /** Optional far-left destructive action (e.g. "Delete rule") */
-  tertiary?: React.ReactNode;
+  /** Primary / confirming action (rendered last, far right on desktop) */
+  primary?: DialogPrimaryAction;
+  /** Secondary action (rendered before primary) */
+  secondary?: DialogAction;
+  /** Optional tertiary action (rendered first, far left) */
+  tertiary?: DialogAction;
 }
 
 export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
   ({ children, className, primary, secondary, tertiary, ...props }, ref) => {
+    const hasActions = Boolean(primary || secondary || tertiary);
+
     return (
       <div
         ref={ref}
         className={cn(
-          'px-space-16 lg:px-space-20 py-space-12 border-t border-line-soft bg-sunken flex items-center gap-space-8 shrink-0 justify-end',
+          'px-space-16 lg:px-space-20 py-space-12 border-t border-line-soft bg-sunken shrink-0',
           className
         )}
         {...props}
       >
-        {tertiary && (
-          <div className="mr-auto shrink-0 flex items-center">
-            {tertiary}
-          </div>
-        )}
-        {secondary && (
-          <div className="flex-1 lg:flex-initial lg:shrink-0 flex items-center">
-            {secondary}
-          </div>
-        )}
-        {primary && (
-          <div className="flex-1 lg:flex-initial lg:shrink-0 flex items-center">
-            {primary}
-          </div>
-        )}
         {children}
+        {hasActions && (
+          <div className="grid grid-flow-col auto-cols-fr gap-space-8 lg:flex lg:justify-end">
+            {tertiary && (
+              <Button
+                key="tertiary"
+                variant="link"
+                size="md"
+                type={tertiary.type ?? 'button'}
+                form={tertiary.form}
+                disabled={tertiary.disabled}
+                loading={tertiary.loading}
+                onClick={tertiary.onSelect}
+                className="w-full h-control-xl lg:w-auto lg:h-control-md flex items-center justify-center lg:px-space-8"
+              >
+                {tertiary.label}
+              </Button>
+            )}
+            {secondary && (
+              <Button
+                key="secondary"
+                variant="link"
+                size="md"
+                type={secondary.type ?? 'button'}
+                form={secondary.form}
+                disabled={secondary.disabled}
+                loading={secondary.loading}
+                onClick={secondary.onSelect}
+                className="w-full h-control-xl lg:w-auto lg:h-control-md flex items-center justify-center lg:px-space-8"
+              >
+                {secondary.label}
+              </Button>
+            )}
+            {primary && (
+              <Button
+                key="primary"
+                variant={primary.destructive ? 'danger-filled' : 'primary'}
+                size="md"
+                type={primary.type ?? 'button'}
+                form={primary.form}
+                disabled={primary.disabled}
+                loading={primary.loading}
+                onClick={primary.onSelect}
+                className="w-full h-control-xl lg:w-auto lg:h-control-md"
+              >
+                {primary.label}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -113,9 +162,9 @@ export interface DialogPanelProps extends Omit<React.HTMLAttributes<HTMLDivEleme
   onClose?: () => void;
   showClose?: boolean;
   srTitle?: string;
-  primary?: React.ReactNode;
-  secondary?: React.ReactNode;
-  tertiary?: React.ReactNode;
+  primary?: DialogPrimaryAction;
+  secondary?: DialogAction;
+  tertiary?: DialogAction;
   dismissible?: boolean;
   dragProps?: Record<string, unknown>;
   isRadix?: boolean;
@@ -260,9 +309,9 @@ export interface DialogShellProps extends Omit<
   onClose?: () => void;
   showClose?: boolean;
   srTitle?: string;
-  primary?: React.ReactNode;
-  secondary?: React.ReactNode;
-  tertiary?: React.ReactNode;
+  primary?: DialogPrimaryAction;
+  secondary?: DialogAction;
+  tertiary?: DialogAction;
   dismissible?: boolean;
 }
 
@@ -324,9 +373,9 @@ export interface DialogContentProps extends Omit<
   showClose?: boolean;
   srTitle?: string;
   onClose?: () => void;
-  primary?: React.ReactNode;
-  secondary?: React.ReactNode;
-  tertiary?: React.ReactNode;
+  primary?: DialogPrimaryAction;
+  secondary?: DialogAction;
+  tertiary?: DialogAction;
   dismissible?: boolean;
 }
 
@@ -552,38 +601,26 @@ export const ConfirmDialogShell = forwardRef<
         showClose={showClose}
         onClose={onCancel || onClose}
         tertiary={
-          alternativeLabel ? (
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={isBusy}
-              onClick={onAlternative}
-            >
-              {alternativeLabel}
-            </Button>
-          ) : undefined
+          alternativeLabel
+            ? {
+                label: alternativeLabel,
+                onSelect: onAlternative,
+                disabled: isBusy,
+              }
+            : undefined
         }
-        secondary={
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={isBusy}
-            onClick={onCancel || onClose}
-          >
-            {cancelLabel}
-          </Button>
-        }
-        primary={
-          <Button
-            type="button"
-            variant={tone === 'danger' ? 'danger' : 'primary'}
-            loading={isBusy}
-            disabled={isConfirmDisabled}
-            onClick={handleConfirm}
-          >
-            {confirmLabel}
-          </Button>
-        }
+        secondary={{
+          label: cancelLabel,
+          onSelect: onCancel || onClose,
+          disabled: isBusy,
+        }}
+        primary={{
+          label: confirmLabel,
+          onSelect: handleConfirm,
+          destructive: tone === 'danger',
+          loading: isBusy,
+          disabled: isConfirmDisabled,
+        }}
         className={cn('w-full', className)}
         {...props}
       >
@@ -695,38 +732,26 @@ export const ConfirmDialog = forwardRef<HTMLDivElement, ConfirmDialogProps>(
           onClose={handleCancel}
           className={className}
           tertiary={
-            alternativeLabel ? (
-              <Button
-                type="button"
-                variant="secondary"
-                disabled={isBusy}
-                onClick={handleAlternative}
-              >
-                {alternativeLabel}
-              </Button>
-            ) : undefined
+            alternativeLabel
+              ? {
+                  label: alternativeLabel,
+                  onSelect: handleAlternative,
+                  disabled: isBusy,
+                }
+              : undefined
           }
-          secondary={
-            <Button
-              type="button"
-              variant="secondary"
-              disabled={isBusy}
-              onClick={handleCancel}
-            >
-              {cancelLabel}
-            </Button>
-          }
-          primary={
-            <Button
-              type="button"
-              variant={tone === 'danger' ? 'danger' : 'primary'}
-              loading={isBusy}
-              disabled={isConfirmDisabled}
-              onClick={handleConfirm}
-            >
-              {confirmLabel}
-            </Button>
-          }
+          secondary={{
+            label: cancelLabel,
+            onSelect: handleCancel,
+            disabled: isBusy,
+          }}
+          primary={{
+            label: confirmLabel,
+            onSelect: handleConfirm,
+            destructive: tone === 'danger',
+            loading: isBusy,
+            disabled: isConfirmDisabled,
+          }}
           {...props}
         >
           <DialogBody className="space-y-space-12">
