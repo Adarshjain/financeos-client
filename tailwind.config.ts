@@ -317,6 +317,15 @@ const config: Config = {
         slow: 'var(--ds-dur-slow)',
         loop: 'var(--ds-dur-loop)',
       },
+      keyframes: {
+        sweep: {
+          from: { transform: 'translateX(-100%)' },
+          to: { transform: 'translateX(250%)' },
+        },
+      },
+      animation: {
+        sweep: 'sweep var(--ds-dur-loop) cubic-bezier(.2,.8,.2,1) infinite',
+      },
     },
   },
   plugins: [

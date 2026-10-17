@@ -55,7 +55,9 @@ describe('ProgressBar component', () => {
     render(<ProgressBar aria-label="Loading" />);
     const bar = screen.getByRole('progressbar', { name: 'Loading' });
     expect(bar).not.toHaveAttribute('aria-valuenow');
-    expect(bar.querySelector('.animate-pulse')).toBeInTheDocument();
+    const fill = bar.firstElementChild;
+    expect(fill).toHaveClass('animate-sweep');
+    expect(fill).not.toHaveClass('animate-pulse');
   });
 
   it('renders caption label when provided', () => {
