@@ -22,8 +22,6 @@ export interface FilterChipProps
   extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onChange'> {
   /** Controlled selected state */
   selected?: boolean;
-  /** Legacy alias for selected */
-  active?: boolean;
   /** Initial selected state when uncontrolled */
   defaultSelected?: boolean;
   /** Callback fired when selected state changes */
@@ -47,7 +45,6 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
     {
       children,
       selected,
-      active,
       defaultSelected = false,
       onSelectedChange,
       variant,
@@ -64,9 +61,8 @@ export const FilterChip = forwardRef<HTMLButtonElement, FilterChipProps>(
     },
     ref,
   ) => {
-    const controlledSelected = selected !== undefined ? selected : active;
     const [isSelected, setIsSelected] = useControllableState<boolean>({
-      value: controlledSelected,
+      value: selected,
       defaultValue: defaultSelected,
       onChange: onSelectedChange,
     });
