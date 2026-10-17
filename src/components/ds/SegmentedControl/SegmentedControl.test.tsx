@@ -199,4 +199,80 @@ describe('SegmentedControl', () => {
       'true',
     );
   });
+
+  it('skips disabled options on ArrowDown navigation (same as Right)', () => {
+    const handleChange = vi.fn();
+    render(
+      <SegmentedControl
+        options={[
+          { value: 'first', label: 'First' },
+          { value: 'second', label: 'Second', disabled: true },
+          { value: 'third', label: 'Third' },
+        ]}
+        defaultValue="first"
+        onValueChange={handleChange}
+      />,
+    );
+    const firstBtn = screen.getByRole('radio', { name: 'First' });
+    fireEvent.keyDown(firstBtn, { key: 'ArrowDown' });
+
+    expect(handleChange).toHaveBeenCalledWith('third');
+    expect(screen.getByRole('radio', { name: 'Third' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+  });
+
+  it('skips disabled options on ArrowUp navigation (same as Left)', () => {
+    const handleChange = vi.fn();
+    render(
+      <SegmentedControl
+        options={[
+          { value: 'first', label: 'First' },
+          { value: 'second', label: 'Second', disabled: true },
+          { value: 'third', label: 'Third' },
+        ]}
+        defaultValue="third"
+        onValueChange={handleChange}
+      />,
+    );
+    const thirdBtn = screen.getByRole('radio', { name: 'Third' });
+    fireEvent.keyDown(thirdBtn, { key: 'ArrowUp' });
+
+    expect(handleChange).toHaveBeenCalledWith('first');
+    expect(screen.getByRole('radio', { name: 'First' })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+  });
+
+  it('does nothing and does not throw on arrow keys when every option is disabled', () => {
+    const handleChange = vi.fn();
+    render(
+      <SegmentedControl
+        options={[
+          { value: 'first', label: 'First', disabled: true },
+          { value: 'second', label: 'Second', disabled: true },
+          { value: 'third', label: 'Third', disabled: true },
+        ]}
+        defaultValue="first"
+        onValueChange={handleChange}
+      />,
+    );
+    const firstBtn = screen.getByRole('radio', { name: 'First' });
+    const secondBtn = screen.getByRole('radio', { name: 'Second' });
+    const thirdBtn = screen.getByRole('radio', { name: 'Third' });
+
+    expect(firstBtn).toHaveAttribute('aria-checked', 'true');
+
+    fireEvent.keyDown(firstBtn, { key: 'ArrowRight' });
+    fireEvent.keyDown(firstBtn, { key: 'ArrowDown' });
+    fireEvent.keyDown(firstBtn, { key: 'ArrowLeft' });
+    fireEvent.keyDown(firstBtn, { key: 'ArrowUp' });
+
+    expect(handleChange).not.toHaveBeenCalled();
+    expect(firstBtn).toHaveAttribute('aria-checked', 'true');
+    expect(secondBtn).toHaveAttribute('aria-checked', 'false');
+    expect(thirdBtn).toHaveAttribute('aria-checked', 'false');
+  });
 });
