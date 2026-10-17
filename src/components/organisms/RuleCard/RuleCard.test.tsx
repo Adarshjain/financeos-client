@@ -1,10 +1,40 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { RuleCard } from './RuleCard';
 
+const giveSize = (el: HTMLElement) => {
+  el.getBoundingClientRect = () => ({
+    x: 0,
+    y: 0,
+    left: 0,
+    top: 0,
+    right: 400,
+    bottom: 100,
+    width: 400,
+    height: 100,
+    toJSON() {},
+  });
+};
+const adv = (ms: number) =>
+  act(() => {
+    vi.advanceTimersByTime(ms);
+  });
+
 describe('RuleCard', () => {
+  beforeEach(() => {
+    vi.stubGlobal('jest', {
+      advanceTimersByTime: vi.advanceTimersByTime.bind(vi),
+    });
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
   it('renders name, pattern, and usedCount', () => {
     render(
       <RuleCard
@@ -81,6 +111,22 @@ describe('RuleCard', () => {
     expect(handleView).toHaveBeenCalledTimes(1);
   });
 
+  it('does not render eye button when outside selection mode even if selectable and onDetail is passed', () => {
+    const handleView = vi.fn();
+    render(
+      <RuleCard
+        name="Lenskart"
+        matchType="Contains"
+        selectable
+        selectionMode={false}
+        onDetail={handleView}
+      />,
+    );
+    expect(
+      screen.queryByRole('button', { name: /view rule details/i }),
+    ).not.toBeInTheDocument();
+  });
+
   it('renders menu items passed via props', () => {
     const handleFind = vi.fn();
     render(
@@ -124,45 +170,72 @@ describe('RuleCard', () => {
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
-  it('toggles selection on card tap when selectable', () => {
+  it('calls onDetail on card tap outside selection mode, and toggles selection in selection mode', async () => {
     const handleSelectedChange = vi.fn();
-    render(
+    const handleDetail = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const { rerender, container } = render(
       <RuleCard
         name="Selectable rule"
         matchType="Contains"
         selectable
         selected={false}
+        selectionMode={false}
+        onDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />,
     );
 
-    fireEvent.click(screen.getByText('Selectable rule'));
+    const card = container.firstChild as HTMLElement;
+    giveSize(card);
+    await user.pointer({ keys: '[MouseLeft>]', target: card });
+    await user.pointer({ keys: '[/MouseLeft]', target: card });
+    expect(handleDetail).toHaveBeenCalledTimes(1);
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+
+    rerender(
+      <RuleCard
+        name="Selectable rule"
+        matchType="Contains"
+        selectable
+        selected={false}
+        selectionMode={true}
+        onDetail={handleDetail}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+
+    await user.pointer({ keys: '[MouseLeft>]', target: card });
+    await user.pointer({ keys: '[/MouseLeft]', target: card });
     expect(handleSelectedChange).toHaveBeenCalledWith(true);
   });
 
-  it('toggles selection on Enter and Space keys when selectable', () => {
+  it('toggles selection on Enter and Space keys in selection mode', async () => {
     const handleSelectedChange = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const { container } = render(
       <RuleCard
         name="Keyboard rule"
         matchType="Contains"
         selectable
         selected={true}
+        selectionMode={true}
         onSelectedChange={handleSelectedChange}
       />,
     );
 
     const card = container.firstChild as HTMLElement;
-    fireEvent.keyDown(card, { key: 'Enter' });
+    card.focus();
+    await user.keyboard('{Enter}');
     expect(handleSelectedChange).toHaveBeenCalledWith(false);
 
-    fireEvent.keyDown(card, { key: ' ' });
-    expect(handleSelectedChange).toHaveBeenCalledWith(false);
+    await user.keyboard(' ');
+    expect(handleSelectedChange).toHaveBeenCalledTimes(2);
   });
 
-  it('starts selection on long-press (~450ms)', () => {
-    vi.useFakeTimers();
+  it('starts selection on long-press (500ms)', async () => {
     const handleSelectedChange = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const { container } = render(
       <RuleCard
         name="Long press rule"
@@ -174,21 +247,22 @@ describe('RuleCard', () => {
     );
 
     const card = container.firstChild as HTMLElement;
-    fireEvent.touchStart(card, {
-      touches: [{ clientX: 100, clientY: 100 }],
-    });
+    giveSize(card);
+    await user.pointer({ keys: '[TouchA>]', target: card });
 
-    vi.advanceTimersByTime(200);
+    adv(300);
     expect(handleSelectedChange).not.toHaveBeenCalled();
 
-    vi.advanceTimersByTime(300);
+    adv(200);
     expect(handleSelectedChange).toHaveBeenCalledWith(true);
-    vi.useRealTimers();
+
+    await user.pointer({ keys: '[/TouchA]', target: card });
+    expect(handleSelectedChange).toHaveBeenCalledTimes(1);
   });
 
-  it('cancels long-press when movement exceeds 10px', () => {
-    vi.useFakeTimers();
+  it('cancels long-press when movement exceeds 10px', async () => {
     const handleSelectedChange = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const { container } = render(
       <RuleCard
         name="Moving rule"
@@ -200,19 +274,62 @@ describe('RuleCard', () => {
     );
 
     const card = container.firstChild as HTMLElement;
-    fireEvent.touchStart(card, {
-      touches: [{ clientX: 100, clientY: 100 }],
-    });
+    giveSize(card);
+    await user.pointer({ keys: '[TouchA>]', target: card, coords: { clientX: 100, clientY: 100 } });
+    await user.pointer({ target: card, coords: { clientX: 100, clientY: 120 } });
+    adv(600);
+    await user.pointer({ keys: '[/TouchA]', target: card, coords: { clientX: 100, clientY: 120 } });
 
-    vi.advanceTimersByTime(200);
-    // Move 15px vertically
-    fireEvent.touchMove(card, {
-      touches: [{ clientX: 100, clientY: 115 }],
-    });
-
-    vi.advanceTimersByTime(300);
     expect(handleSelectedChange).not.toHaveBeenCalled();
-    vi.useRealTimers();
+  });
+
+  it('pressing Approve calls its handler only', async () => {
+    const handleApprove = vi.fn();
+    const handleSelectedChange = vi.fn();
+    const handleDetail = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(
+      <RuleCard
+        name="Approve test rule"
+        matchType="Contains"
+        selectable
+        selected={false}
+        onApprove={handleApprove}
+        onDetail={handleDetail}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+    const approveBtn = screen.getByRole('button', { name: /approve/i });
+    giveSize(approveBtn);
+    await user.click(approveBtn);
+
+    expect(handleApprove).toHaveBeenCalledTimes(1);
+    expect(handleDetail).not.toHaveBeenCalled();
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+  });
+
+  it('opening the ⋮ menu does not select the card', async () => {
+    const handleSelectMenuItem = vi.fn();
+    const handleSelectedChange = vi.fn();
+    const handleDetail = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(
+      <RuleCard
+        name="Menu test rule"
+        matchType="Contains"
+        selectable
+        selected={false}
+        menuItems={[{ label: 'Edit rule', onSelect: handleSelectMenuItem }]}
+        onDetail={handleDetail}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+    const menuBtn = screen.getByRole('button', { name: /rule actions/i });
+    giveSize(menuBtn);
+    await user.click(menuBtn);
+
+    expect(handleDetail).not.toHaveBeenCalled();
+    expect(handleSelectedChange).not.toHaveBeenCalled();
   });
 
   it('eye control opens detail without toggling selection', () => {

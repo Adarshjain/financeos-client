@@ -1,6 +1,7 @@
 'use client';
 
 import React, { forwardRef } from 'react';
+import { mergeProps } from 'react-aria';
 
 import {
   Badge,
@@ -15,7 +16,6 @@ import {
   MenuTrigger,
   StatusWords,
   useControllableState,
-  useLongPress,
   useSelectableItem,
 } from '@/components/ds';
 
@@ -101,16 +101,6 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       selectionMode = false,
       onDetail,
       className,
-      onClick,
-      onKeyDown,
-      onTouchStart,
-      onTouchMove,
-      onTouchEnd,
-      onTouchCancel,
-      onPointerDown,
-      onPointerMove,
-      onPointerUp,
-      onPointerCancel,
       children,
       ...props
     },
@@ -124,25 +114,15 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       onChange: onSelectedChange,
     });
 
-    const isSelectable = selectable ?? Boolean(onSelectedChange);
-    const showEye =
-      selectionMode ||
-      ((selected || isSelectable) && Boolean(onDetail));
+    const isSelectable = Boolean(selectable);
+    const showEye = selectionMode && Boolean(onDetail);
 
-    // Long press detection for mobile (~450ms, cancelled on move > 10px)
-    const longPress = useLongPress({
-      onLongPress: () => setSelected(true),
-      disabled: !isSelectable && !selectionMode,
-    });
-
-    const item = useSelectableItem({
+    const { itemProps, nestedControlProps } = useSelectableItem({
+      selectable,
       selected,
       onSelectedChange: setSelected,
       selectionMode,
-      selectable,
-      consumeLongPress: longPress.consumeTriggered,
-      onClick,
-      onKeyDown,
+      onPress: onDetail,
     });
 
     const effectiveApprove =
@@ -175,20 +155,19 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
     const renderActions = () => {
       if (showEye) {
         return (
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            iconOnly
-            onClick={(e) => {
-              e.stopPropagation();
-              onDetail?.();
-            }}
-            aria-label="View rule details"
-            className="text-brand-strong shrink-0"
-          >
-            <Icon name="view" size="md" />
-          </Button>
+          <span {...nestedControlProps}>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              iconOnly
+              onClick={onDetail}
+              aria-label="View rule details"
+              className="text-brand-strong shrink-0"
+            >
+              <Icon name="view" size="md" />
+            </Button>
+          </span>
         );
       }
 
@@ -198,7 +177,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       if (!hasApprove && !hasMenu) return null;
 
       return (
-        <div className="flex items-center gap-space-6 shrink-0">
+        <div {...nestedControlProps} className="flex items-center gap-space-6 shrink-0">
           {hasApprove && (
             <Button
               size="sm"
@@ -240,7 +219,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
     };
 
     const isInteractive = Boolean(
-      onClick || isSelectable || selectionMode || onSelectedChange,
+      props.onClick || isSelectable || selectionMode || onSelectedChange,
     );
 
     return (
@@ -251,7 +230,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
         aria-checked={isSelectable ? selected : undefined}
         tabIndex={isInteractive ? 0 : undefined}
         className={cn(
-          'px-space-14 py-space-12 flex flex-col gap-space-6 select-none transition-colors duration-fast min-w-0',
+          'px-space-14 py-space-12 flex flex-col gap-space-6 select-none touch-callout-none transition-colors duration-fast min-w-0',
           selected
             ? 'bg-brand-tint border-brand ring-1 ring-inset ring-brand'
             : 'bg-surface border-line',
@@ -260,48 +239,14 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
           className,
         )}
-        onClick={item.handleClick}
-        onKeyDown={item.handleKeyDown}
-        onTouchStart={(e) => {
-          longPress.handlers.onTouchStart(e);
-          onTouchStart?.(e);
-        }}
-        onTouchMove={(e) => {
-          longPress.handlers.onTouchMove(e);
-          onTouchMove?.(e);
-        }}
-        onTouchEnd={(e) => {
-          longPress.handlers.onTouchEnd(e);
-          onTouchEnd?.(e);
-        }}
-        onTouchCancel={(e) => {
-          longPress.handlers.onTouchCancel(e);
-          onTouchCancel?.(e);
-        }}
-        onPointerDown={(e) => {
-          longPress.handlers.onPointerDown(e);
-          onPointerDown?.(e);
-        }}
-        onPointerMove={(e) => {
-          longPress.handlers.onPointerMove(e);
-          onPointerMove?.(e);
-        }}
-        onPointerUp={(e) => {
-          longPress.handlers.onPointerUp(e);
-          onPointerUp?.(e);
-        }}
-        onPointerCancel={(e) => {
-          longPress.handlers.onPointerCancel(e);
-          onPointerCancel?.(e);
-        }}
-        {...props}
+        {...mergeProps(props, itemProps)}
       >
         {/* Header: Desktop Checkbox + Name + Pattern, and used count */}
         <div className="flex gap-space-10 items-start justify-between">
           <div className="flex items-start gap-space-10 flex-1 min-w-0">
             {(isSelectable || selectionMode || selected) && (
               <div
-                onClick={(e) => e.stopPropagation()}
+                {...nestedControlProps}
                 className="shrink-0 mt-space-2 hidden lg:inline-flex"
               >
                 <Checkbox
