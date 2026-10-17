@@ -10,7 +10,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
 | 2 | New component library in Storybook, one component at a time, owner-reviewed | Ready for review (44 components; Storybook feedback round 2 complete) |
 | 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: /ds review area, login, signup, offline Ready for review) |
-| 3b | Audit implementation: apply the 673 owner-approved conventions decisions (`design-system/specs/audit/`) to Dinero, organisms, stories and the /ds pages | In progress (step 1 done by Claude 2026-10-17: tokens, RULES, specs, check-ui; steps 2–4 by Antigravity) |
+| 3b | Audit implementation: apply the 673 owner-approved conventions decisions (`design-system/specs/audit/`) to Dinero, organisms, stories and the /ds pages | Done (all 673 decisions executed across Rounds A–F; all audit specs completed, all unit and E2E tests passing, builds and check-ui clean) |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
 Statuses: Not started · In progress · Done · Blocked (with the reason).
@@ -253,6 +253,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-17 · Phase 3b · Antigravity · Complete 673-decision design system audit: verified all audit specs in design-system/specs/audit/ are fully ticked with 0 remaining unticked items; ran full test suite with 440 test files and 3681 tests passing (100%); ran Playwright E2E suite (11 passed); built Storybook and Next.js production builds successfully; check-ui clean. Phase 3b complete.
 
 - 2026-10-17 · Phase 3b · Antigravity · Pages and shell (G1, G6, G11, G15): updated LoginForm and SignupForm Google SSO button icon to size-icon-md; verified Illustration and Logo organisms imports; updated TopBar in ds app layout to pass Logo variant="mark" in leading slot; wired TabBar and Rail items in ShellNav to use asChild with Next Link; verified EmptyState compact on index page and action object on offline page; all 11 Playwright E2E tests in e2e/ui/ds-auth.spec.ts, e2e/ui/ds-offline.spec.ts, and e2e/ui/ds-shell.spec.ts passed against local dev server. Checks: Playwright E2E (11 passed), vitest shell navigation (8 passed), npm run typecheck, node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
 
