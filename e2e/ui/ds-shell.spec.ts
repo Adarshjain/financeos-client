@@ -1,12 +1,14 @@
-import { createUser } from '../fixtures/auth';
+import { type CreatedUser, createUser } from '../fixtures/auth';
 import { loginContext } from '../fixtures/browser';
 import { E2E_CLIENT_URL } from '../fixtures/config';
 import { expect, test } from '../fixtures/test';
 
 test.describe('/ds Shell and Index UI (@ui)', () => {
+  let currentUser: CreatedUser;
+
   test.beforeEach(async ({ context, request }) => {
-    const user = await createUser(request, 'ui-ds-shell');
-    await loginContext(context, user.cookie);
+    currentUser = await createUser(request, 'ui-ds-shell');
+    await loginContext(context, currentUser.cookie);
   });
 
   test('desktop 1440px: renders Rail with every group in order and index rows', async ({ page }) => {
@@ -50,7 +52,9 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(rail.getByRole('link', { name: 'Ask the data' })).toBeVisible();
 
     // Footer: Settings
-    await expect(rail.getByRole('link', { name: 'Settings' })).toBeVisible();
+    const settingsLink = rail.locator('a[href="/settings"]');
+    await expect(settingsLink).toBeVisible();
+    await expect(settingsLink).toContainText(currentUser.email);
 
     // Confirm order of all links in the Rail
     const linkTexts = await rail.locator('a').allTextContents();
@@ -66,7 +70,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
       'Dashboards',
       'Reports',
       'Ask the data',
-      'Settings',
+      currentUser.email,
     ];
 
     for (const label of orderedLabels) {

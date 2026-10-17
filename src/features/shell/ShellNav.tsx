@@ -20,7 +20,6 @@ import { Logo } from '@/components/organisms';
 
 import {
   getActiveNavItem,
-  shellFooterItems,
   shellMoreGroups,
   shellQuickAddItems,
   shellRailGroups,
@@ -213,32 +212,26 @@ export function ShellRail({
         </Link>
       }
       footer={
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-space-4 min-w-0">
-            {shellFooterItems.map((item) => (
-              <Button
-                key={item.id}
-                asChild
-                variant="ghost"
-                size="md"
-              >
-                <Link href={item.href || '#'}>
-                  <Icon name={item.icon} size="lg" />
-                  <span>{item.label}</span>
-                </Link>
-              </Button>
-            ))}
-          </div>
-          <Avatar
-            variant="circle"
-            tone="brand"
-            size="sm"
-            src={user.avatar}
-            initials={initials}
-          >
-            {initials}
-          </Avatar>
-        </div>
+        <ListRow
+          asChild
+          leading={
+            <Avatar
+              variant="circle"
+              tone="brand"
+              size="sm"
+              src={user.avatar}
+              initials={initials}
+            >
+              {initials}
+            </Avatar>
+          }
+          title={profileText}
+          subtitle={user.name?.trim() ? user.email : undefined}
+          borderTop={false}
+          className="px-space-8"
+        >
+          <Link href="/settings" />
+        </ListRow>
       }
     />
   );
