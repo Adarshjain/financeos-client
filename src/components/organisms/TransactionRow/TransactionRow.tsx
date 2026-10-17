@@ -24,6 +24,8 @@ export interface TransactionRowProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'title'> {
   /** Leading icon or logo tile (Avatar) */
   leading?: React.ReactNode;
+  /** Date shown on desktop table row */
+  date?: React.ReactNode;
   /** Merchant or main transaction description */
   description?: React.ReactNode;
   /** Formatted transaction amount, e.g. "3,600.00" or "+2,15,000.00" */
@@ -88,6 +90,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
   (
     {
       leading,
+      date,
       description,
       amount,
       isCredit = false,
@@ -143,9 +146,11 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     // Assemble context line items in canonical order:
     // account name first, plastic, amber review words, note, blue link/record words, grey provenance
     const contextElements: React.ReactNode[] = [];
+    const desktopContextElements: React.ReactNode[] = [];
 
     if (contextLine) {
       contextElements.push(contextLine);
+      desktopContextElements.push(contextLine);
     } else {
       if (account) {
         contextElements.push(
@@ -159,19 +164,23 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       }
 
       if (reviewStatus) {
-        contextElements.push(
+        const el = (
           <StatusWord key="review" tone="warning">
             {reviewStatus}
-          </StatusWord>,
+          </StatusWord>
         );
+        contextElements.push(el);
+        desktopContextElements.push(el);
       }
 
       if (note) {
-        contextElements.push(
+        const el = (
           <span key="note" className="text-ink-2">
             {note}
-          </span>,
+          </span>
         );
+        contextElements.push(el);
+        desktopContextElements.push(el);
       }
 
       if (link) {
@@ -181,23 +190,27 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             : false;
         const label =
           typeof link === 'object' && 'label' in link ? link.label : link;
-        contextElements.push(
+        const el = (
           <StatusWord
             key="link"
             tone="info"
             icon={!isRecord ? 'link' : undefined}
           >
             {label}
-          </StatusWord>,
+          </StatusWord>
         );
+        contextElements.push(el);
+        desktopContextElements.push(el);
       }
 
       if (provenance) {
-        contextElements.push(
+        const el = (
           <StatusWord key="provenance" tone="neutral">
             {provenance}
-          </StatusWord>,
+          </StatusWord>
         );
+        contextElements.push(el);
+        desktopContextElements.push(el);
       }
     }
 
@@ -279,9 +292,10 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         tabIndex={isInteractive && !disabled ? 0 : undefined}
         className={cn(
           'relative px-space-12 py-space-8 text-body transition-colors select-none touch-callout-none font-text',
+          'lg:grid lg:grid-cols-template lg:items-center lg:p-0 lg:border-l-4 lg:border-l-transparent',
           borderTop ? 'border-t border-line-soft first:border-t-0' : 'border-t-0',
-          selected && 'bg-brand-tint',
-          isWarning && 'bg-attention-tint',
+          selected && 'bg-brand-tint lg:border-l-brand',
+          isWarning && 'bg-attention-tint lg:border-l-attention',
           disabled && 'opacity-60 pointer-events-none',
           !selected && !isWarning && 'bg-surface hover:bg-hover active-self:bg-hover',
           isInteractive && !disabled && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
@@ -291,23 +305,24 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       >
         {selected && (
           <span
-            className="absolute left-0 top-0 bottom-0 w-space-4 bg-brand pointer-events-none"
+            className="absolute left-0 top-0 bottom-0 w-space-4 bg-brand pointer-events-none lg:hidden"
             aria-hidden="true"
           />
         )}
         {isWarning && (
           <span
-            className="absolute left-0 top-0 bottom-0 w-space-4 bg-attention pointer-events-none"
+            className="absolute left-0 top-0 bottom-0 w-space-4 bg-attention pointer-events-none lg:hidden"
             aria-hidden="true"
           />
         )}
 
-        <div className="flex items-center gap-space-10 min-w-0 w-full">
-          {/* Desktop Checkbox */}
+        <div className="flex items-center gap-space-10 min-w-0 w-full lg:contents">
+          {/* Desktop Checkbox (Cell 1 when selectable) */}
           {isSelectable && (
             <div
+              role="cell"
               {...nestedControlProps}
-              className="hidden lg:flex items-center justify-center shrink-0 pr-space-4"
+              className="hidden lg:flex items-center justify-center min-w-0"
             >
               <Checkbox
                 checked={selected}
@@ -321,41 +336,96 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             </div>
           )}
 
-          {/* Leading Avatar / Mark */}
-          {leading && <div className="shrink-0 flex items-center">{leading}</div>}
+          {/* Leading Avatar / Mark (phone only) */}
+          {leading && (
+            <div className="shrink-0 flex items-center lg:hidden">
+              {leading}
+            </div>
+          )}
 
-          {/* Grid for description, amount, context, categories */}
+          {/* Desktop Date (Cell 2) */}
+          <div
+            role="cell"
+            className="hidden lg:block lg:px-space-12 lg:py-space-6 min-w-0 truncate text-ink-2"
+          >
+            {date}
+          </div>
+
+          {/* Inner wrapper 2 */}
           <div
             className={cn(
-              'grid gap-x-space-10 min-w-0 w-full flex-1',
+              'grid gap-x-space-10 min-w-0 w-full flex-1 lg:contents',
               showEye || chevron
-                ? 'grid-cols-[minmax(0,1fr)_auto_auto]'
-                : 'grid-cols-[minmax(0,1fr)_auto]',
+                ? 'grid-cols-fill-auto-auto'
+                : 'grid-cols-fill-auto',
             )}
           >
-            {/* Line 1: Description */}
-            <div className="col-start-1 row-start-1 text-heading text-ink break-words min-w-0">
-              {description ?? children}
+            {/* Description (Cell 3 on desktop, col 1 row 1 on phone) */}
+            <div
+              role="cell"
+              className="col-start-1 row-start-1 text-heading text-ink break-words min-w-0 lg:col-start-auto lg:row-start-auto lg:text-body lg:px-space-12 lg:py-space-6"
+            >
+              <div className="text-heading font-medium lg:text-body-strong text-ink truncate">
+                {description ?? children}
+              </div>
+              {/* Desktop context line under description */}
+              {desktopContextElements.length > 0 && (
+                <div className="hidden lg:flex items-center gap-x-space-4 text-caption text-ink-3 truncate mt-space-2">
+                  {desktopContextElements.map((el, i) => (
+                    <React.Fragment key={i}>
+                      {i > 0 && <span className="text-ink-4 select-none"> · </span>}
+                      {el}
+                    </React.Fragment>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* Line 1: Amount + Running balance */}
+            {/* Categories (Cell 4 on desktop, col 2 row 2 on phone) */}
             <div
+              role="cell"
+              className="col-start-2 row-start-2 mt-space-4 flex items-center justify-end gap-space-4 self-center lg:col-start-auto lg:row-start-auto lg:mt-0 lg:justify-start lg:px-space-12 lg:py-space-6 min-w-0 truncate"
+            >
+              {renderCategories()}
+            </div>
+
+            {/* Desktop Account (Cell 5) */}
+            <div
+              role="cell"
+              className="hidden lg:block lg:px-space-12 lg:py-space-6 min-w-0 truncate text-ink-2"
+            >
+              {account}
+              {plastic && ` ${plastic}`}
+            </div>
+
+            {/* Amount (Cell 6 on desktop, col 2 row 1 on phone) */}
+            <div
+              role="cell"
               className={cn(
                 'col-start-2 row-start-1 text-right font-bold text-heading tabular-nums whitespace-nowrap',
+                'lg:col-start-auto lg:row-start-auto lg:text-body-strong lg:font-bold lg:px-space-12 lg:py-space-6 lg:text-end lg:justify-self-end',
                 isCredit ? 'text-positive' : 'text-ink',
               )}
             >
               {amount}
               {balance && (
-                <div className="text-caption font-medium text-ink-3">
+                <div className="text-caption font-medium text-ink-3 lg:hidden">
                   {balance}
                 </div>
               )}
             </div>
 
-            {/* Trailing eye icon in selection mode or chevron */}
+            {/* Desktop Balance (Cell 7) */}
+            <div
+              role="cell"
+              className="hidden lg:block lg:px-space-12 lg:py-space-6 min-w-0 truncate text-end tabular-nums text-ink-2 justify-self-end"
+            >
+              {balance}
+            </div>
+
+            {/* Phone Trailing eye icon in selection mode or chevron */}
             {(showEye || chevron) && (
-              <div className="col-start-3 row-start-1 row-span-2 flex items-center justify-end text-ink-3">
+              <div className="col-start-3 row-start-1 row-span-2 flex items-center justify-end text-ink-3 lg:hidden">
                 {showEye && (
                   <span {...nestedControlProps}>
                     <Button
@@ -370,25 +440,26 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                   </span>
                 )}
                 {chevron && (
-                  <Icon name="chevron-right" size="sm" className="text-ink-4 shrink-0" />
+                  <Icon
+                    name="chevron-right"
+                    size="sm"
+                    className="text-ink-4 shrink-0"
+                  />
                 )}
               </div>
             )}
 
-            {/* Line 2: Context line */}
-            <div className="col-start-1 row-start-2 mt-space-4 text-caption font-medium text-ink-3 self-center break-words min-w-0">
-              {contextElements.map((el, i) => (
-                <React.Fragment key={i}>
-                  {i > 0 && <span className="text-ink-4 select-none"> · </span>}
-                  {el}
-                </React.Fragment>
-              ))}
-            </div>
-
-            {/* Line 2: Category chips */}
-            <div className="col-start-2 row-start-2 mt-space-4 flex items-center justify-end gap-space-4 self-center">
-              {renderCategories()}
-            </div>
+            {/* Phone Context line */}
+            {contextElements.length > 0 && (
+              <div className="col-start-1 row-start-2 mt-space-4 text-caption font-medium text-ink-3 self-center break-words min-w-0 lg:hidden">
+                {contextElements.map((el, i) => (
+                  <React.Fragment key={i}>
+                    {i > 0 && <span className="text-ink-4 select-none"> · </span>}
+                    {el}
+                  </React.Fragment>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
