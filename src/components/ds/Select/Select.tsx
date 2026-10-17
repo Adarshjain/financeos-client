@@ -619,7 +619,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
             <span className="font-text font-medium text-body text-ink-4 truncate flex-1 min-w-0">
               {loadingText}
             </span>
-            <Icon name={isOpen ? 'chevron-up' : 'chevron-down'} size="md" className="text-ink-4 shrink-0" />
+            <Icon name="spinner" size="md" className="animate-spin motion-reduce:animate-none" />
           </>
         );
       }
