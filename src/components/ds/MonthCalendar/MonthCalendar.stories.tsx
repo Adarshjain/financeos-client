@@ -48,21 +48,20 @@ const meta: Meta<typeof MonthCalendar> = {
     ),
   ],
   args: {
+    today: '2026-10-13',
     onSelectDay: fn(),
-    onSelectDate: fn(),
+    onValueChange: fn(),
     onMonthChange: fn(),
     onToday: fn(),
     onClear: fn(),
   },
   argTypes: {
     mode: { control: 'select', options: ['events', 'picker'] },
+    range: { control: 'boolean' },
     borderTop: { control: 'boolean' },
     selectedDay: { control: 'number' },
     today: { control: 'text' },
     month: { control: 'text' },
-    selectedDate: { control: 'text' },
-    startDate: { control: 'text' },
-    endDate: { control: 'text' },
     minDate: { control: 'text' },
     maxDate: { control: 'text' },
     showFooter: { control: 'boolean' },
@@ -87,18 +86,16 @@ export const Picker: Story = {
   args: {
     mode: 'picker',
     month: '2026-10-01',
-    today: '2026-10-13',
-    selectedDate: '2026-10-15',
+    value: '2026-10-15',
   },
 };
 
 export const PickerRange: Story = {
   args: {
     mode: 'picker',
+    range: true,
     month: '2026-10-01',
-    today: '2026-10-13',
-    startDate: '2026-10-10',
-    endDate: '2026-10-20',
+    value: { start: '2026-10-10', end: '2026-10-20' },
   },
 };
 
@@ -106,8 +103,7 @@ export const PickerMinMax: Story = {
   args: {
     mode: 'picker',
     month: '2026-10-01',
-    today: '2026-10-13',
-    selectedDate: '2026-10-15',
+    value: '2026-10-15',
     minDate: '2026-10-05',
     maxDate: '2026-10-25',
   },
@@ -117,8 +113,7 @@ export const PickerWithFooter: Story = {
   args: {
     mode: 'picker',
     month: '2026-10-01',
-    today: '2026-10-13',
-    selectedDate: '2026-10-15',
+    value: '2026-10-15',
     showFooter: true,
   },
 };

@@ -19,7 +19,7 @@ describe('MonthCalendar', () => {
   ];
 
   it('renders weekdays and day cells in events mode', () => {
-    render(<MonthCalendar mode="events" days={sampleDays} />);
+    render(<MonthCalendar mode="events" today="2026-10-13" days={sampleDays} />);
     expect(screen.getByText('M')).toBeInTheDocument();
     expect(screen.getByText('1')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
@@ -27,14 +27,14 @@ describe('MonthCalendar', () => {
   });
 
   it('highlights today cell in events mode', () => {
-    render(<MonthCalendar mode="events" days={sampleDays} />);
+    render(<MonthCalendar mode="events" today="2026-10-13" days={sampleDays} />);
     const todayCell = screen.getByText('2').closest('div');
     expect(todayCell).toHaveClass('bg-brand-tint');
     expect(todayCell).toHaveClass('text-brand-strong');
   });
 
   it('renders event indicator bars by tone', () => {
-    render(<MonthCalendar mode="events" days={sampleDays} />);
+    render(<MonthCalendar mode="events" today="2026-10-13" days={sampleDays} />);
     const day3Cell = screen.getByText('3').closest('div');
     expect(day3Cell?.querySelector('.bg-warning')).toBeInTheDocument();
     expect(day3Cell?.querySelector('.bg-info')).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe('MonthCalendar', () => {
 
   it('triggers onSelectDay on click and keyboard press in events mode', () => {
     const handleSelect = vi.fn();
-    render(<MonthCalendar mode="events" days={sampleDays} onSelectDay={handleSelect} />);
+    render(<MonthCalendar mode="events" today="2026-10-13" days={sampleDays} onSelectDay={handleSelect} />);
 
     const day1Cell = screen.getByText('1').closest('div');
     expect(day1Cell).toHaveAttribute('role', 'button');
@@ -55,15 +55,15 @@ describe('MonthCalendar', () => {
     expect(handleSelect).toHaveBeenCalledWith(1);
   });
 
-  it('renders picker mode with formatMonth header and Button day cells', () => {
-    const handleSelectDate = vi.fn();
+  it('renders picker mode with formatMonth header and Button day cells, firing onValueChange', () => {
+    const handleValueChange = vi.fn();
     render(
       <MonthCalendar
         mode="picker"
         month="2026-10-01"
         today="2026-10-13"
-        selectedDate="2026-10-15"
-        onSelectDate={handleSelectDate}
+        value="2026-10-15"
+        onValueChange={handleValueChange}
       />,
     );
 
@@ -73,7 +73,49 @@ describe('MonthCalendar', () => {
 
     const day16Button = screen.getByRole('button', { name: '16' });
     fireEvent.click(day16Button);
-    expect(handleSelectDate).toHaveBeenCalledWith('2026-10-16');
+    expect(handleValueChange).toHaveBeenCalledWith('2026-10-16');
+  });
+
+  it('handles range selection: first click sets start, second click sets end', () => {
+    const handleValueChange = vi.fn();
+    render(
+      <MonthCalendar
+        mode="picker"
+        range
+        month="2026-10-01"
+        today="2026-10-13"
+        onValueChange={handleValueChange}
+      />,
+    );
+
+    // First click on 12: sets start
+    const day12 = screen.getByRole('button', { name: '12' });
+    fireEvent.click(day12);
+    expect(handleValueChange).toHaveBeenCalledWith({ start: '2026-10-12', end: undefined });
+
+    // Second click on 18: sets end
+    const day18 = screen.getByRole('button', { name: '18' });
+    fireEvent.click(day18);
+    expect(handleValueChange).toHaveBeenCalledWith({ start: '2026-10-12', end: '2026-10-18' });
+  });
+
+  it('swaps start and end if second click comes before start in range mode', () => {
+    const handleValueChange = vi.fn();
+    render(
+      <MonthCalendar
+        mode="picker"
+        range
+        month="2026-10-01"
+        today="2026-10-13"
+        value={{ start: '2026-10-18', end: undefined }}
+        onValueChange={handleValueChange}
+      />,
+    );
+
+    // Second click on 12 which is before start 18 -> swaps start and end
+    const day12 = screen.getByRole('button', { name: '12' });
+    fireEvent.click(day12);
+    expect(handleValueChange).toHaveBeenCalledWith({ start: '2026-10-12', end: '2026-10-18' });
   });
 
   it('disables dates outside minDate and maxDate', () => {
@@ -81,6 +123,7 @@ describe('MonthCalendar', () => {
       <MonthCalendar
         mode="picker"
         month="2026-10-01"
+        today="2026-10-13"
         minDate="2026-10-10"
         maxDate="2026-10-20"
       />,
@@ -103,6 +146,7 @@ describe('MonthCalendar', () => {
       <MonthCalendar
         mode="picker"
         month="2026-10-01"
+        today="2026-10-13"
         showFooter
         onToday={handleToday}
         onClear={handleClear}
@@ -114,5 +158,23 @@ describe('MonthCalendar', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
     expect(handleClear).toHaveBeenCalledTimes(1);
+  });
+
+  it('navigates months with previous and next buttons, firing onMonthChange with ISO yyyy-mm-01', () => {
+    const handleMonthChange = vi.fn();
+    render(
+      <MonthCalendar
+        mode="picker"
+        month="2026-10-01"
+        today="2026-10-13"
+        onMonthChange={handleMonthChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Previous month' }));
+    expect(handleMonthChange).toHaveBeenCalledWith('2026-09-01');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Next month' }));
+    expect(handleMonthChange).toHaveBeenCalledWith('2026-11-01');
   });
 });

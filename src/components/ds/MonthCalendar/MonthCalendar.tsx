@@ -1,10 +1,11 @@
 'use client';
 
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef } from 'react';
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
+import { useControllableState } from '../useControllableState';
 import { formatMonth, weekdayLetters } from '../utils';
 
 export type CalendarEventTone =
@@ -17,8 +18,6 @@ export type CalendarEventTone =
 export interface CalendarEvent {
   tone?: CalendarEventTone;
   label?: string;
-  /** @deprecated use tone */
-  kind?: 'bill' | 'in' | 'emi';
 }
 
 export interface CalendarDay {
@@ -29,10 +28,38 @@ export interface CalendarDay {
   disabled?: boolean;
 }
 
+export type MonthCalendarRangeValue = { start?: string; end?: string };
+export type MonthCalendarValue = string | MonthCalendarRangeValue;
+
 export interface MonthCalendarProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onSelect' | 'defaultValue'> {
   /** Mode: 'events' for overview grid, 'picker' for date selection */
   mode?: 'events' | 'picker';
+  /** Range selection mode (picker mode only) */
+  range?: boolean;
+
+  /** Value in picker mode: ISO string 'yyyy-mm-dd' or { start?: string; end?: string } when range is true */
+  value?: MonthCalendarValue;
+  /** Default value in picker mode */
+  defaultValue?: MonthCalendarValue;
+  /** Callback when selected date or range changes */
+  onValueChange?: (value: MonthCalendarValue) => void;
+
+  /** Today ISO string (yyyy-mm-dd) passed from caller, required */
+  today: string;
+
+  /** Visible month in picker mode as ISO string (yyyy-mm-01) */
+  month?: string;
+  /** Default visible month as ISO string (yyyy-mm-01) */
+  defaultMonth?: string;
+  /** Callback when visible month changes (emits ISO yyyy-mm-01 string) */
+  onMonthChange?: (monthISO: string) => void;
+
+  /** Min selectable date (ISO yyyy-mm-dd) */
+  minDate?: string;
+  /** Max selectable date (ISO yyyy-mm-dd) */
+  maxDate?: string;
+
   /** List of weekday labels (default: weekdayLetters() -> ['M', 'T', 'W', 'T', 'F', 'S', 'S']) */
   weekdays?: string[];
   /** Days to render in the 7-column calendar grid (for events mode) */
@@ -44,35 +71,6 @@ export interface MonthCalendarProps
   /** Whether to show a top border in events mode (default: true) */
   borderTop?: boolean;
 
-  /** Today ISO string (yyyy-mm-dd) passed from caller */
-  today?: string;
-
-  /** Visible month in picker mode as ISO string (yyyy-mm or yyyy-mm-01) */
-  month?: string | number;
-  /** Default visible month as ISO string */
-  defaultMonth?: string;
-  /** Callback when visible month changes (emits ISO yyyy-mm-01 string) */
-  onMonthChange?: ((monthISO: string) => void) | ((year: number, month: number) => void);
-
-  /** Legacy year for picker mode */
-  year?: number;
-
-  /** Selected date in picker mode as ISO string (yyyy-mm-dd) */
-  selectedDate?: string;
-  value?: string | { start?: string; end?: string };
-  defaultValue?: string | { start?: string; end?: string };
-  onValueChange?: (val: string | { start?: string; end?: string }) => void;
-
-  /** Range start date in picker mode as ISO string (yyyy-mm-dd) */
-  startDate?: string;
-  /** Range end date in picker mode as ISO string (yyyy-mm-dd) */
-  endDate?: string;
-  /** Min selectable date (ISO yyyy-mm-dd) */
-  minDate?: string;
-  /** Max selectable date (ISO yyyy-mm-dd) */
-  maxDate?: string;
-  /** Callback when date is selected in picker mode (emits ISO yyyy-mm-dd) */
-  onSelectDate?: (iso: string) => void;
   /** Show footer with Today and Clear buttons */
   showFooter?: boolean;
   /** Callback for Today button */
@@ -93,16 +91,13 @@ function resolveEventTone(ev: CalendarEvent): string {
   if (ev.tone && eventToneStyles[ev.tone]) {
     return eventToneStyles[ev.tone];
   }
-  if (ev.kind === 'bill') return 'bg-warning';
-  if (ev.kind === 'in') return 'bg-positive';
-  if (ev.kind === 'emi') return 'bg-info';
   return 'bg-brand';
 }
 
-function parseIsoToParts(iso?: string): { year: number; month: number } | null {
-  if (!iso) return null;
+function parseIsoToParts(iso?: string): { year: number; month: number } {
+  if (!iso) return { year: 0, month: 0 };
   const match = iso.match(/^(\d{4})-(\d{2})/);
-  if (!match) return null;
+  if (!match) return { year: 0, month: 0 };
   return {
     year: parseInt(match[1], 10),
     month: parseInt(match[2], 10) - 1,
@@ -119,25 +114,21 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
   (
     {
       mode = 'events',
+      range = false,
+      value,
+      defaultValue,
+      onValueChange,
+      today,
+      month,
+      defaultMonth,
+      onMonthChange,
+      minDate,
+      maxDate,
       weekdays = weekdayLetters(),
       days = [],
       onSelectDay,
       selectedDay,
       borderTop = true,
-      today: explicitToday,
-      month: controlledMonthProp,
-      defaultMonth,
-      onMonthChange,
-      year: legacyYear,
-      selectedDate,
-      value,
-      defaultValue,
-      onValueChange,
-      startDate: propStartDate,
-      endDate: propEndDate,
-      minDate,
-      maxDate,
-      onSelectDate,
       showFooter = false,
       onToday,
       onClear,
@@ -146,57 +137,24 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
     },
     ref,
   ) => {
-    // Mode decides alone: events always renders events grid; picker always renders picker
     const isEventsMode = mode === 'events';
 
-    // Derive effective value & range from value or selectedDate / startDate / endDate
-    const effectiveSelectedDate = (() => {
-      if (typeof value === 'string') return value;
-      if (selectedDate) return selectedDate;
-      if (typeof defaultValue === 'string') return defaultValue;
-      return undefined;
-    })();
+    const [currentValue, setCurrentValue] = useControllableState<MonthCalendarValue | undefined>({
+      value,
+      defaultValue,
+      onChange: onValueChange,
+    });
 
-    const effectiveStartDate = (() => {
-      if (value && typeof value === 'object' && 'start' in value) return value.start;
-      if (propStartDate) return propStartDate;
-      if (defaultValue && typeof defaultValue === 'object' && 'start' in defaultValue) return defaultValue.start;
-      return undefined;
-    })();
+    const defaultMonthIso = defaultMonth ?? `${today.slice(0, 7)}-01`;
+    const [currentMonthIso, setCurrentMonthIso] = useControllableState<string>({
+      value: month,
+      defaultValue: defaultMonthIso,
+      onChange: onMonthChange,
+    });
 
-    const effectiveEndDate = (() => {
-      if (value && typeof value === 'object' && 'end' in value) return value.end;
-      if (propEndDate) return propEndDate;
-      if (defaultValue && typeof defaultValue === 'object' && 'end' in defaultValue) return defaultValue.end;
-      return undefined;
-    })();
-
-    // Compute initial year/month from props, today or ISO
-    const initialParts =
-      parseIsoToParts(
-        typeof controlledMonthProp === 'string'
-          ? controlledMonthProp
-          : defaultMonth ?? effectiveSelectedDate ?? effectiveStartDate ?? explicitToday,
-      ) ?? { year: legacyYear ?? 2026, month: typeof controlledMonthProp === 'number' ? controlledMonthProp : 9 };
-
-    const [internalYear, setInternalYear] = useState<number>(initialParts.year);
-    const [internalMonth, setInternalMonth] = useState<number>(initialParts.month);
-
-    let currentYear = internalYear;
-    let currentMonth = internalMonth;
-
-    if (typeof controlledMonthProp === 'string') {
-      const parts = parseIsoToParts(controlledMonthProp);
-      if (parts) {
-        currentYear = parts.year;
-        currentMonth = parts.month;
-      }
-    } else if (typeof controlledMonthProp === 'number') {
-      currentMonth = controlledMonthProp;
-      if (legacyYear !== undefined) {
-        currentYear = legacyYear;
-      }
-    }
+    const { year: currentYear, month: currentMonth } = parseIsoToParts(
+      currentMonthIso ?? defaultMonthIso,
+    );
 
     if (isEventsMode) {
       return (
@@ -270,16 +228,6 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
     }
 
     // Picker mode navigation
-    const fireMonthChange = (nextY: number, nextM: number) => {
-      setInternalYear(nextY);
-      setInternalMonth(nextM);
-      if (onMonthChange) {
-        const isoMonth = `${nextY}-${String(nextM + 1).padStart(2, '0')}-01`;
-        // Handle both (iso: string) and legacy (year: number, month: number)
-        (onMonthChange as (a: string | number, b?: number) => void)(isoMonth, nextM);
-      }
-    };
-
     const handlePrevMonth = () => {
       let nextY = currentYear;
       let nextM = currentMonth - 1;
@@ -287,7 +235,8 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
         nextM = 11;
         nextY -= 1;
       }
-      fireMonthChange(nextY, nextM);
+      const nextIso = `${nextY}-${String(nextM + 1).padStart(2, '0')}-01`;
+      setCurrentMonthIso(nextIso);
     };
 
     const handleNextMonth = () => {
@@ -297,15 +246,34 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
         nextM = 0;
         nextY += 1;
       }
-      fireMonthChange(nextY, nextM);
+      const nextIso = `${nextY}-${String(nextM + 1).padStart(2, '0')}-01`;
+      setCurrentMonthIso(nextIso);
     };
 
     const handleDayClick = (iso: string) => {
-      onSelectDate?.(iso);
-      onValueChange?.(iso);
+      if (range) {
+        const currentRange =
+          currentValue && typeof currentValue === 'object'
+            ? (currentValue as MonthCalendarRangeValue)
+            : {};
+        if (currentRange.start && !currentRange.end) {
+          let start = currentRange.start;
+          let end = iso;
+          if (end < start) {
+            const tmp = start;
+            start = end;
+            end = tmp;
+          }
+          setCurrentValue({ start, end });
+        } else {
+          setCurrentValue({ start: iso, end: undefined });
+        }
+      } else {
+        setCurrentValue(iso);
+      }
     };
 
-    const currentMonthIso = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
+    const displayMonthIso = currentMonthIso ?? defaultMonthIso;
 
     // Compute month grid
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
@@ -365,6 +333,15 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
       nextMonthDay++;
     }
 
+    const rangeVal =
+      range && currentValue && typeof currentValue === 'object'
+        ? (currentValue as MonthCalendarRangeValue)
+        : undefined;
+    const effectiveStartDate = rangeVal?.start;
+    const effectiveEndDate = rangeVal?.end;
+    const effectiveSelectedDate =
+      !range && typeof currentValue === 'string' ? currentValue : undefined;
+
     return (
       <div
         ref={ref}
@@ -389,7 +366,7 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
           </Button>
 
           <span className="font-bold text-label text-ink">
-            {formatMonth(currentMonthIso)}
+            {formatMonth(displayMonthIso)}
           </span>
 
           <Button
@@ -415,14 +392,14 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
         {/* Days grid */}
         <div className="grid grid-cols-7 text-center p-space-6 gap-y-space-2">
           {cells.map((cell) => {
-            const isToday = explicitToday ? cell.isoDate === explicitToday : false;
-            const isSelected =
-              cell.isoDate === effectiveSelectedDate ||
-              cell.isoDate === effectiveStartDate ||
-              cell.isoDate === effectiveEndDate;
+            const isToday = cell.isoDate === today;
+            const isSelected = range
+              ? cell.isoDate === effectiveStartDate || cell.isoDate === effectiveEndDate
+              : cell.isoDate === effectiveSelectedDate;
 
             const isInRange = Boolean(
-              effectiveStartDate &&
+              range &&
+                effectiveStartDate &&
                 effectiveEndDate &&
                 cell.isoDate > effectiveStartDate &&
                 cell.isoDate < effectiveEndDate,

@@ -342,18 +342,27 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         <div className="flex flex-row divide-x divide-line-soft">
           <MonthCalendar
             mode="picker"
+            range
             month={viewMonthIso}
             onMonthChange={setViewMonthIso}
-            startDate={startIso}
-            endDate={endIso}
+            value={{ start: startIso, end: endIso }}
             minDate={minDate}
             maxDate={maxDate}
             today={today}
-            onSelectDate={handleSelectDateFromCalendar}
+            onValueChange={(val) => {
+              if (val && typeof val === 'object') {
+                if (val.start && !val.end) {
+                  handleSelectDateFromCalendar(val.start);
+                } else if (val.start && val.end) {
+                  handleSelectDateFromCalendar(val.end);
+                }
+              }
+            }}
           />
           <div className="hidden lg:block">
             <MonthCalendar
               mode="picker"
+              range
               month={nextMonthIso}
               onMonthChange={(iso: string) => {
                 const match = iso.match(/^(\d{4})-(\d{2})/);
@@ -367,12 +376,19 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
                   setViewMonthIso(`${y}-${String(m).padStart(2, '0')}-01`);
                 }
               }}
-              startDate={startIso}
-              endDate={endIso}
+              value={{ start: startIso, end: endIso }}
               minDate={minDate}
               maxDate={maxDate}
               today={today}
-              onSelectDate={handleSelectDateFromCalendar}
+              onValueChange={(val) => {
+                if (val && typeof val === 'object') {
+                  if (val.start && !val.end) {
+                    handleSelectDateFromCalendar(val.start);
+                  } else if (val.start && val.end) {
+                    handleSelectDateFromCalendar(val.end);
+                  }
+                }
+              }}
             />
           </div>
         </div>
@@ -401,11 +417,15 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         mode="picker"
         month={viewMonthIso}
         onMonthChange={setViewMonthIso}
-        selectedDate={isSingleString ? controlledValue : parseDateInput(singleText) ?? undefined}
+        value={isSingleString ? controlledValue : parseDateInput(singleText) ?? undefined}
         minDate={minDate}
         maxDate={maxDate}
         today={today}
-        onSelectDate={handleSelectDateFromCalendar}
+        onValueChange={(val) => {
+          if (typeof val === 'string') {
+            handleSelectDateFromCalendar(val);
+          }
+        }}
         showFooter
         onToday={handleToday}
         onClear={handleClear}
