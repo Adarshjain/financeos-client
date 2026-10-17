@@ -40,7 +40,6 @@ export * from './TextArea/TextArea';
 export * from './TextField/TextField';
 export * from './Toast/Toast';
 export * from './TopBar/TopBar';
-export * from './TransactionRow/TransactionRow';
 export * from './useControllableState';
 export * from './useLongPress';
 export * from './useSelectableItem';

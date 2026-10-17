@@ -2,19 +2,17 @@
 
 import React, { forwardRef } from 'react';
 
-import { Badge } from '../Badge/Badge';
-import { Button } from '../Button/Button';
-import { Checkbox } from '../Checkbox/Checkbox';
-import { cn } from '../cn';
-import { Icon } from '../Icon/Icon';
-import { StatusWord } from '../StatusWords/StatusWords';
-import { useLongPress } from '../useLongPress';
-
-export type TransactionRowStatus =
-  | 'default'
-  | 'selected'
-  | 'monitored'
-  | 'excluded';
+import {
+  Badge,
+  Button,
+  Checkbox,
+  cn,
+  Icon,
+  StatusWord,
+  useControllableState,
+  useLongPress,
+  useSelectableItem,
+} from '@/components/ds';
 
 export interface TransactionLink {
   label: React.ReactNode;
@@ -30,7 +28,7 @@ export interface TransactionRowProps
   description?: React.ReactNode;
   /** Formatted transaction amount, e.g. "3,600.00" or "+2,15,000.00" */
   amount?: React.ReactNode;
-  /** Whether the amount is a credit (+ positive green). Auto-detected if amount starts with "+" */
+  /** Whether the amount is a credit (+ positive green). Set by caller. */
   isCredit?: boolean;
   /** Optional running balance shown below amount, e.g. "bal ₹61,757" */
   balance?: React.ReactNode;
@@ -54,8 +52,6 @@ export interface TransactionRowProps
   categories?: string[];
   /** Label for unset category (e.g. "Set category") passed from page */
   unsetCategoryLabel?: React.ReactNode;
-  /** Custom category element override */
-  category?: React.ReactNode;
   /** Callback when unset category chip is clicked */
   onSetCategory?: () => void;
   /** Callback when first category is clicked */
@@ -63,18 +59,18 @@ export interface TransactionRowProps
   /** Callback when +n categories chip is clicked */
   onMoreCategoriesClick?: () => void;
 
-  /** Row status: 'default' | 'selected' | 'monitored' | 'excluded' */
-  status?: TransactionRowStatus;
+  /** Visual tone: 'default' | 'warning' (e.g. monitored) */
+  tone?: 'default' | 'warning';
+  /** Whether row is disabled (e.g. excluded) */
+  disabled?: boolean;
   /** Whether row is selectable */
   selectable?: boolean;
-  /** Shortcut for status="selected" or whether row is currently selected */
+  /** Default selected state (uncontrolled) */
+  defaultSelected?: boolean;
+  /** Whether row is selected (controlled) */
   selected?: boolean;
   /** Callback when selection state changes */
   onSelectedChange?: (selected: boolean) => void;
-  /** Shortcut for status="monitored" */
-  monitored?: boolean;
-  /** Shortcut for status="excluded" */
-  excluded?: boolean;
 
   /** Selection mode: displays trailing eye icon to view details */
   selectionMode?: boolean;
@@ -94,7 +90,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       leading,
       description,
       amount,
-      isCredit,
+      isCredit = false,
       balance,
       account,
       plastic,
@@ -105,17 +101,16 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       contextLine,
       categories,
       unsetCategoryLabel,
-      category,
       onSetCategory,
       onCategoryClick,
       onMoreCategoriesClick,
-      status,
+      tone = 'default',
+      disabled = false,
       selectable,
-      selected,
+      defaultSelected,
+      selected: selectedProp,
       onSelectedChange,
-      monitored,
-      excluded,
-      selectionMode,
+      selectionMode = false,
       onDetail,
       chevron = false,
       borderTop = true,
@@ -135,24 +130,34 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     },
     ref,
   ) => {
-    const isSel = selected ?? status === 'selected';
-    const isMon = monitored ?? status === 'monitored';
-    const isExc = excluded ?? status === 'excluded';
+    const [selected, setSelected] = useControllableState({
+      value: selectedProp,
+      defaultValue: defaultSelected ?? false,
+      onChange: onSelectedChange,
+    });
+
+    const isWarning = tone === 'warning';
     const isSelectable = selectable ?? Boolean(onSelectedChange);
 
     const showEye =
       selectionMode ||
-      ((isSel || isSelectable) && Boolean(onDetail));
+      ((selected || isSelectable) && Boolean(onDetail));
 
     // Long press detection for mobile selection
     const longPress = useLongPress({
-      onLongPress: () => onSelectedChange?.(true),
-      disabled: !isSelectable,
+      onLongPress: () => setSelected(true),
+      disabled: !isSelectable && !selectionMode,
     });
 
-    const computedIsCredit =
-      isCredit ??
-      (typeof amount === 'string' && amount.trim().startsWith('+'));
+    const item = useSelectableItem({
+      selected,
+      onSelectedChange: setSelected,
+      selectionMode,
+      selectable,
+      consumeLongPress: longPress.consumeTriggered,
+      onClick,
+      onKeyDown,
+    });
 
     // Assemble context line items in canonical order:
     // account name first, plastic, amber review words, note, blue link/record words, grey provenance
@@ -216,7 +221,6 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     }
 
     const renderCategories = () => {
-      if (category) return category;
       if (!categories) return null;
 
       if (categories.length === 0) {
@@ -257,28 +261,6 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       );
     };
 
-    const handleRowClick = (e: React.MouseEvent<HTMLDivElement>) => {
-      if (longPress.consumeTriggered()) {
-        return;
-      }
-      if (isSelectable || selectionMode || isSel) {
-        onSelectedChange?.(!isSel);
-      }
-      onClick?.(e);
-    };
-
-    const handleRowKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-        e.preventDefault();
-        if (isSelectable || selectionMode || isSel) {
-          onSelectedChange?.(!isSel);
-        } else {
-          onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>);
-        }
-      }
-      onKeyDown?.(e);
-    };
-
     const isInteractive = Boolean(
       onClick || isSelectable || selectionMode || onSelectedChange,
     );
@@ -287,10 +269,10 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       <div
         ref={ref}
         role={isInteractive ? 'row' : undefined}
-        aria-selected={isSelectable ? isSel : undefined}
-        tabIndex={isInteractive ? 0 : undefined}
-        onClick={handleRowClick}
-        onKeyDown={handleRowKeyDown}
+        aria-selected={isSelectable ? selected : undefined}
+        tabIndex={isInteractive && !disabled ? 0 : undefined}
+        onClick={disabled ? undefined : item.handleClick}
+        onKeyDown={disabled ? undefined : item.handleKeyDown}
         onTouchStart={(e) => {
           longPress.handlers.onTouchStart(e);
           onTouchStart?.(e);
@@ -326,22 +308,22 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         className={cn(
           'relative px-space-12 py-space-8 text-body transition-colors select-none font-text',
           borderTop ? 'border-t border-line-soft first:border-t-0' : 'border-t-0',
-          isSel && 'bg-brand-tint',
-          isMon && 'bg-attention-tint',
-          isExc && 'opacity-60',
-          !isSel && !isMon && 'bg-surface hover:bg-hover active:bg-hover',
-          isInteractive && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
+          selected && 'bg-brand-tint',
+          isWarning && 'bg-attention-tint',
+          disabled && 'opacity-60 pointer-events-none',
+          !selected && !isWarning && 'bg-surface hover:bg-hover active:bg-hover',
+          isInteractive && !disabled && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
           className,
         )}
         {...props}
       >
-        {isSel && (
+        {selected && (
           <span
             className="absolute left-0 top-0 bottom-0 w-space-4 bg-brand pointer-events-none"
             aria-hidden="true"
           />
         )}
-        {isMon && (
+        {isWarning && (
           <span
             className="absolute left-0 top-0 bottom-0 w-space-4 bg-attention pointer-events-none"
             aria-hidden="true"
@@ -353,8 +335,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
           {isSelectable && (
             <div className="hidden lg:flex items-center justify-center shrink-0 pr-space-4">
               <Checkbox
-                checked={isSel}
-                onCheckedChange={(checked) => onSelectedChange?.(Boolean(checked))}
+                checked={selected}
+                onCheckedChange={(checked) => setSelected(checked === true)}
                 aria-label={
                   typeof description === 'string'
                     ? `Select ${description}`
@@ -385,7 +367,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             <div
               className={cn(
                 'col-start-2 row-start-1 text-right font-bold text-heading tabular-nums whitespace-nowrap',
-                computedIsCredit ? 'text-positive' : 'text-ink',
+                isCredit ? 'text-positive' : 'text-ink',
               )}
             >
               {amount}
