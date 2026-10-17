@@ -5,6 +5,7 @@ export * from './Button/Button';
 export * from './Card/Card';
 export * from './Checkbox/Checkbox';
 export * from './cn';
+export * from './DataTable/DataTable';
 export * from './DateField/DateField';
 export * from './DateTile/DateTile';
 export * from './Dialog/Dialog';
