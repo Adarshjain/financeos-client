@@ -2,8 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Badge } from '../Badge/Badge';
-import { KpiTile } from './KpiTile';
+import { Badge, KpiTile } from '@/components/ds';
 
 const meta: Meta<typeof KpiTile> = {
   title: 'DS/Data display/KpiTile',
