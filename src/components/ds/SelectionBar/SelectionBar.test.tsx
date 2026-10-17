@@ -139,4 +139,19 @@ describe('SelectionBar', () => {
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(handleClear).not.toHaveBeenCalled();
   });
+
+  it('action buttons have h-auto overriding default control height for phone layout', () => {
+    render(
+      <SelectionBar
+        count={1}
+        actions={[{ label: 'Link', onSelect: vi.fn() }]}
+        onClear={() => {}}
+      />,
+    );
+    const linkBtn = screen.getByRole('button', { name: 'Link' });
+    expect(linkBtn).toHaveClass('h-auto');
+    expect(linkBtn).toHaveClass('lg:h-control-md');
+    const classList = Array.from(linkBtn.classList);
+    expect(classList).not.toContain('h-control-md');
+  });
 });
