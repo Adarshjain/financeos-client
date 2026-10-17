@@ -2,12 +2,14 @@
 
 The list frame for every table of records: column headers with sort, a selection column, sticky header, group bands, and the Pager above and below. One component and one markup: a table on desktop, stacked rows on phone, chosen by CSS at `lg`.
 
-**Status:** draft for owner approval (2026-10-17). Not built.
+**Status:** approved by the owner (2026-10-17). Not built.
 
 ## Use
 - Every list of records that the desktop boards draw as a table (54 boards): transactions, accounts, holdings, dividends, F&O, rules list, statements, report "View underlying data", and the rest.
 - **Desktop (`lg` and up):** a table inside a Card.
-  - **Header row:** `overline` type in `ink-3` on `bg-sunken`, 32px tall. The checkbox column comes first when the table is selectable. Number columns are right-aligned. Sortable headers show a chevron for the active direction.
+  - **Header row:** `overline` type in `ink-3` on `bg-sunken`, 32px tall. The checkbox column comes first when the table is selectable. Number columns are right-aligned.
+  - **Sorting (desktop):** a sortable header is clicked to sort by that column. Clicking again reverses the direction. The active header shows a chevron for the direction. The page refetches.
+  - **Sorting (phone):** there are no headers, so the page offers sort through its filters (the "Sort: … ▾" chip or the Sort section of the filters dialog), using the same `sorting` state.
   - **Rows:** at least 40px tall, cells padded `px-space-12 py-space-6`, one line each, with ellipsis. Numbers use tabular figures.
   - **Sticky header** when the table scrolls inside its container (report widgets). On a page, the header sticks under the TopBar.
 - **Phone (below `lg`):** the same rows stack into two lines:
@@ -15,7 +17,7 @@ The list frame for every table of records: column headers with sort, a selection
   - bottom line: the `sub` cell on the left, the `status` cell on the right;
   - `hidden` cells, the header row and the checkbox column aren't shown;
   - rows group under sticky **day headers** ("12 Oct · Mon") when the table is grouped by date (RULES §7.6).
-- **Bands:** an optional band row between groups ("October 2026 · 24 transactions · out ₹97,044") in SectionHeader `band` style. The page supplies its text.
+- **Bands:** an optional band row between month groups, with the **month name only** ("October 2026"), in SectionHeader `band` style. No counts or totals (RULES §9; owner 2026-10-17). The page supplies the text.
 - **Pager:** the first row of the card (above the header) and its last row (RULES §5.5). DataTable renders the Pager it's given in both places. Paging and sorting are **server-side** only: DataTable never sorts or slices rows itself.
 - **Selection** (RULES §7.4):
   - Desktop: the checkbox column. The header checkbox selects every row on the page and shows the mixed state when only some are selected.
@@ -70,7 +72,3 @@ TanStack Table v9 (state only: sorting, selection, columns; owner-approved 2026-
 - No horizontal scroll on phone: phone always stacks.
 - No viewport detection in JavaScript: phone versus desktop is CSS only (RULES §5c.3).
 - No row actions drawn by DataTable: an actions cell holds the page's Menu.
-
-## Open for the owner
-1. **Sort UI:** sortable headers (click to toggle). The boards also show a "Sort: amount ▾" chip and a Sort section in the filters dialog. Keep header sort only on desktop, and the chip or filters on phone (where there are no headers)?
-2. **Bands:** the month band carries a count and a total ("24 transactions · out ₹97,044"), but RULES §9 removed "summary count lines above lists". Keep the band with the month name only, or with the totals as drawn?
