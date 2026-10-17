@@ -628,7 +628,7 @@ export const TransactionsList: StoryObj = {
     docs: {
       description: {
         story:
-          'The row inside a full transactions list, wired like the page. Touch: long-press a row to start selecting, tap to toggle, the eye opens the detail; outside selection a tap opens the row; swipe right approves a flagged row (Undo in the toast), swipe left deletes after a confirmation. Mouse: a click always opens the row, the checkbox selects; no long-press or swipe. Tap a category chip to change it. Sort from the desktop headers, page with the pager. Resize the window across 1024px to switch between phone and desktop.',
+          'The row inside a full transactions list, wired like the page. Phone layout (below 1024px, touch or mouse): long-press a row to start selecting, tap to toggle, the eye opens the detail; outside selection a tap opens the row; swipe right approves a flagged row (Undo in the toast), swipe left deletes after a confirmation. Desktop layout: a click always opens the row, the checkbox selects; no long-press or swipe. Tap a category chip to change it. Sort from the desktop headers, page with the pager. Resize the window across 1024px to switch between phone and desktop.',
       },
     },
   },

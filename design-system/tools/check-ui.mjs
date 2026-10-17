@@ -254,7 +254,8 @@ function check(lines, all = false, classes = true) {
       }
     }
     const comp = dsComponent(file);
-    if (/\b(?:useMediaQuery|useIsPhone|useIsDesktop|matchMedia|innerWidth)\b/.test(text)) {
+    // phoneLayout.ts is the one place that may read the layout, and only inside event handlers (RULES §5c.3).
+    if (file !== 'src/components/ds/phoneLayout.ts' && /\b(?:useMediaQuery|useIsPhone|useIsDesktop|matchMedia|innerWidth)\b/.test(text)) {
       errors.push({ file, line, rule: 'viewport-js', why: 'viewport detected in JavaScript — use lg: breakpoint classes; there are no exceptions (RULES §5c.3)', text: text.trim().slice(0, 160) });
     }
     // APIs removed by the 2026-10 audit (design-system/specs/audit/00-global.md). Re-adding any of them is a regression.
@@ -386,6 +387,8 @@ function selfTest() {
     ['src/components/ds/Pager/Pager.tsx', "  variant?: 'phone' | 'desktop';", 'device-prop', true],
     ['src/components/ds/Dialog/Dialog.tsx', 'const isPhone = useIsPhone();', 'viewport-js', true],
     ['src/components/ds/Select/Select.tsx', 'const isPhone = useIsPhone();', 'viewport-js', true],
+    ['src/components/ds/phoneLayout.ts', '  return !window.matchMedia(DESKTOP_QUERY).matches;', 'viewport-js', false],
+    ['src/components/ds/useSwipe.ts', '  if (window.matchMedia(DESKTOP_QUERY).matches) return;', 'viewport-js', true],
     ['src/components/ds/Select/Select.tsx', "import { CategoryChip } from '../CategoryChip/CategoryChip';", 'removed-api', true],
     ['src/components/ds/Toast/Toast.tsx', '  onUndo?: () => void;', 'removed-api', true],
     ['src/features/shell/ShellNav.tsx', '<Button variant="tile" iconPosition="top">', 'removed-api', true],

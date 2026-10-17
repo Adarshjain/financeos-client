@@ -14,11 +14,13 @@ Long-press starts it. Selected cards turn `brand-tint` with a `brand` outline; o
 
 | Gesture | Outside selection mode | In selection mode |
 |---|---|---|
-| **Long-press** (500ms, touch or mouse, pointer held still on the item) | Selects the item **while the pointer is still down**, which turns on selection mode. Releasing afterwards does **nothing**: no tap, no toggle, no detail. | Selects the item if it isn't selected. Releasing does nothing. |
+| **Long-press** (phone layout, 500ms, touch or mouse, pointer held still on the item) | Selects the item **while the pointer is still down**, which turns on selection mode. Releasing afterwards does **nothing**: no tap, no toggle, no detail. | Selects the item if it isn't selected. Releasing does nothing. |
 | **Tap** (press and release quickly) | Calls `onDetail` (opens the item). **Never selects.** | Toggles the item's selection. |
 | **Enter / Space** on the focused item | Same as tap. | Same as tap. |
 | **Scroll or swipe** (the pointer moves more than 10px, or the browser takes the gesture) | Cancels: no long-press, no tap. | Same. |
 | **Press on a control inside the item** (checkbox, eye, Approve, ⋮ menu, category chip) | Only that control acts; the item doesn't. | Same. |
+
+These gestures belong to the **phone layout** (below `lg`), with touch or mouse. In the desktop layout there is no long-press: a press always calls `onDetail`, even in selection mode, and the checkbox selects (owner, 2026-10-18).
 
 ## Props
 - `name?: ReactNode`: Rule title or merchant name

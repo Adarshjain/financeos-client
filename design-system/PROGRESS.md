@@ -126,15 +126,18 @@ New pages may use nothing from the old UI (RULES §1.8). These are needed and do
 
 **Components the reviewed boards need that the library lacks** (design first, then build):
 1. **DataTable**: (built 2026-10-17, Ready for review) the desktop tables on 55 boards. Header row with sort, numeric and right-aligned columns, a checkbox selection column, columns hidden on phone (phone shows rows instead), sticky header, and the Pager above and below.
-2. **PageHeader**: the desktop page title row on 71 boards. Display-face title, meta line ("9 accounts · synced 4 min ago"), and actions (including the dashboard switcher).
-3. **Stepper**: the import wizard steps (Files ✓ · Match ✓ · 3 Reconcile).
+2. ~~PageHeader~~: dropped (owner, 2026-10-18). The TopBar carries the title; the in-page title row is removed from every page. Page actions move to TopBar `actions`; boards whose row carried unique information are listed for the owner in the 2026-10-18 log.
+3. **Stepper**: the import wizard steps (Files ✓ · Match ✓ · 3 Reconcile) on `D-import-wizard` (and `P-import-wizard`) only. The numbered list on `D-signup` is copy, not a stepper.
 4. **Search palette**: ⌘K / Search results grouped by section with keyboard movement. Built from Dialog, SearchField, ListRow and SectionHeader; needs its own README.
 5. **Chat**: message bubbles, answer blocks (KPI, table, chart) and the composer (`D-chat`).
-6. **ChoiceCard**: selectable cards. Used by the four account-type buttons on Add account (the one tile exception) and the widget picker.
+6. **ChoiceCard**: a single-choice grid of cards, radio underneath (owner, 2026-10-18), for the widget picker (`D-widget-picker`). The four account types on Add account are a SegmentedControl with icons (already a radiogroup), not ChoiceCards.
 7. **SectionHeader `group` variant**: the Inbox group header with a count ("Act now · 5").
 8. **MonthCalendar events**: the desktop Upcoming calendar shows labelled event chips in day cells, not only markers.
-10. **Chart** (line, bar, donut with legend): not drawn on the reviewed boards, but dashboards, reports and investments use charts today. Design it with those boards.
+10. ~~Chart~~: charts already exist (owner, 2026-10-18); nothing to build.
 11. **Dashboard grid** (arrange and resize widgets) and the KpiTile vs Widget review: parked by the owner, needed before dashboards migrate.
+12. **ProgressBar markers**: the loan timeline on `D-loan-detail`.
+13. **CategoryChip** is a Badge variant (owner, 2026-10-18).
+14. **Candidate rows** in the link and rule-match dialogs (`D-transaction-link*`, `D-rule-matches`): checkbox or radio, description, date · account line, amount. Likely ListRow with a Checkbox or radio in `leading`; owner to confirm.
 
 **Setup:**
 - `/ds` pages live in their own route group, `src/app/(ds)/ds/…`, with their own layout: sign-in check, the new shell (Rail, TopBar, AppBar, TabBar) and the new Toaster. The `(protected)` layout renders the old Sidebar, MobileNav and PageActionBar, so nothing new may sit under it.
@@ -258,10 +261,20 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-17 · **DataTable requirements review** (owner): v1 includes expandable rows; `sortMode="client"` is allowed only for lists the server returns whole (never with a Pager, never slicing). Pinned `@tanstack/react-table` **9.2.4**. Out of v1: pivot tables, drag-to-reorder rows, several tables sharing one Pager.
 - 2026-10-17 · **Long-press and selection** (owner): long-press (500ms, touch or mouse) enters selection while still held, and the release does nothing; outside selection mode a tap opens the item and never selects it; swipe stays phone-only and desktop keeps checkboxes. Use an industry-standard hook: **`@react-aria/interactions` 3.28.1 and its core `react-aria` 3.52.1 approved** (exact pins), behind Dinero's `useSelectableItem`.
 - 2026-10-17 · **One working TransactionRow story** (owner, recorded by Claude at the owner's request): `Organisms/TransactionRow/Transactions list` is a full, working list, so it may keep in-story state (through `useArgs` only), simulate the server (sort, paging, approve, delete, set category) and fill the canvas width (`globals.viewport` locked to `100pct-100pct`) so it switches phone ↔ desktop as the window is resized. This overrides §5a.2 (no data processing in stories) and §5a.7 (viewport toolbar) for this one story only.
-- 2026-10-18 · **Gestures are touch only** (owner, replacing the mouse part of the 2026-10-17 long-press decision): long-press and swipe respond to touch only. A mouse or pen click always opens the item, even in selection mode; the desktop checkbox is the only way to select with a mouse. Keyboard keeps Enter/Space toggling in selection mode. RULES §5c.4 and §7.5 updated.
+- 2026-10-18 · **Gestures belong to the phone layout** (owner, correcting an earlier "touch only" reading): long-press, swipe and tap-to-toggle work only in the phone layout (below `lg`), with any pointer, touch or mouse. In the desktop layout a press always opens the item, even in selection mode, and the checkbox selects; Enter/Space also open there. Ds code reads the layout when the gesture starts, through `isPhoneLayout()`, never the pointer type. RULES §5c.3 (one event-time exception, owner to confirm), §5c.4 and §7.5 updated.
 - 2026-10-18 · **Pager `compact` variant** (owner): small controls and tight padding for dense lists. A one-page gap shows the page, never an ellipsis.
 - 2026-10-18 · **No "bal" prefix** on running balances (owner): the balance is the bare amount, "₹2,95,030".
 - 2026-10-18 · **TransactionRow phone: categories on their own line under the context line** (owner), not under the amount. Amount and balance stay top-right.
+- 2026-10-18 · **Component gap review** (owner):
+  - No PageHeader: the TopBar already carries the page title, so the in-page title row is removed from every page. Claude flags the boards where it carried something that can't be had otherwise.
+  - Charts already exist; nothing to build.
+  - No CodeBlock or LogView component: the Debug page draws its log block directly.
+  - CategoryChip is a Badge (variant), not its own organism.
+  - ChoiceCard: reuse an existing component where one fits; otherwise build it with a radio underneath.
+  - SearchPalette and Chat: build.
+  - Variants (SectionHeader group count, MonthCalendar event chips, ProgressBar markers, DataTable interleaved rows): fine.
+  - DashboardGrid: later.
+  - No typed glyphs (⠿ ▾ ✓ × ⋯ ‹ ›) anywhere: always Icon.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
@@ -274,11 +287,22 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-18 · Phase 2 · Claude · Gestures follow the phone layout, not the pointer (owner correction: "only on mobile devices", not touch only):
+  - New `src/components/ds/phoneLayout.ts`: `isPhoneLayout()` reads `(min-width: 64rem)` when called; no matchMedia means phone. `useSelectableItem` starts its long-press only when the press starts in the phone layout (any pointer), and a press in selection mode toggles only there; in the desktop layout every press opens, Enter/Space too. `useSwipe` starts only in the phone layout, any pointer. The layout is read inside event handlers, never while rendering, so markup never depends on it.
+  - RULES §5c.3: one exception for that file, event handlers only (owner to confirm); `check-ui` allows `matchMedia` in it alone, with two new self-test lines. §5c.4 and §7.5 rewritten. READMEs: TransactionRow, RuleCard (gesture table is phone layout), SwipeActions (phone layout only). Transactions list story docs updated.
+  - Test helper `src/test/stubLayout.ts` (phone | desktop). New `phoneLayout.test.ts`. Tests changed because the behaviour changed: useSelectableItem ("touch long-press and selection" and "mouse" describes became "phone layout" and "desktop layout", each for touch and mouse; Enter/Space split by layout), useSwipe and SwipeActions ("ignores a mouse" became "a mouse swipes in the phone layout" + "ignores a touch/mouse drag in the desktop layout"), TransactionRow and RuleCard (selection-mode test now runs desktop then phone; TransactionRow mouse long-press test split into phone selects / desktop opens).
+  - Checks: full vitest 3812/3812, tsc clean, eslint clean, check-ui clean + self-test 24/20, `storybook build` OK, Playwright on the built story: mouse at 390px long-press selects, click toggles, drag right approves, drag left asks to delete; resized to 1300px a hold opens and a drag does nothing; back at 390px a hold selects again; the earlier full phone (touch) and desktop flow unchanged; no page errors.
+- 2026-10-18 · Phase 2 · Claude · Component gap review with the owner (decisions under Owner decisions). Board facts for the owner:
+  - Stepper: only `D-import-wizard` / `P-import-wizard`.
+  - Candidate rows: `D-transaction-link`, `-lending`, `-lending-existing`, `-loan`, `-multi` (pick the matching transaction) and `D-rule-matches` (checkbox list of matches).
+  - Account header stat: the `hdr card` at the top of account pages ("You owe ₹44,319 · due 25 Oct" + Mark paid / Transactions / Edit) on `D-account-card`, `-bank`, `-broker`, `-wallet`, `-card-nobill`.
+  - Kbd: ⌘K and ⌘N appear only inside the TopBar search and Add buttons, which TopBar already draws; nothing to check.
+  - Title rows whose content isn't elsewhere: listed in chat to the owner 2026-10-18 for a decision.
 - 2026-10-18 · Phase 2 · Claude · Two fixes from the Transactions list review:
   - DataTable stories (`src/components/ds/DataTable/DataTable.stories.tsx`): the 14 interactive stories crashed because `useArgs` ran inside a child component (`InteractiveTable`); Storybook hooks only work in the story's render. Replaced with a render factory `interactiveRender(extra)` whose returned `Render` calls `useArgs`. All 15 DataTable and 13 TransactionRow stories load with no errors in the built Storybook; selection is interactive.
   - Card (`src/components/ds/Card/Card.tsx`): `overflow-hidden` → `overflow-clip`, which still clips to the radius but is not a scroll container, so sticky day headers inside a Card stick. The Transactions list story's `overflow-clip` workaround is removed. Test changed because the class changed: Card "does not force w-full class on root" now expects `overflow-clip`. Other stories that pass `overflow-hidden` to Card are left as they are (no sticky content in them).
   - Checks: ds tests 498/498, typecheck clean, eslint clean on the file, `build-storybook` OK, sticky headers verified at 390px. Deviations: none.
-  - Open (owner): with a mouse in a phone-width window there is no way to select (checkbox only from `lg`, long-press is touch only).
+  - Open (owner): with a mouse in a phone-width window there is no way to select (checkbox only from `lg`, long-press is touch only). Resolved 2026-10-18: gestures follow the layout, not the pointer.
 - 2026-10-18 · Phase 2 · Claude · TransactionRow phone categories moved under the context line (`TransactionRow.tsx`, its README): categories cell is col 1 row 2 (left-aligned, hidden when empty on phone), the amount cell spans both rows top-aligned so it never pushes the left column apart. Desktop grid unchanged. New test for the phone placement. Checks: organisms + DataTable tests green, typecheck clean, check-ui clean, `build-storybook` OK, screenshots at 390 (light, dark) and 1440, full Playwright flow rerun. Deviations: none.
 - 2026-10-18 · Phase 2 · Claude · Owner review of the Transactions list story (7 items):
   - Pager (`src/components/ds/Pager/`): new `variant="compact"` (`control-sm`, `py-space-4`, `label` text) with a `Compact` story; page list rebuilt so a one-page gap shows the page instead of hiding it (phone at 30 rows / 10 per page read "1 3", now "1 2 3"), and the phone form gets its own ellipsis where it drops desktop neighbours. README updated.

@@ -2,6 +2,8 @@
 
 import { useCallback, useRef, useState } from 'react';
 
+import { isPhoneLayout } from './phoneLayout';
+
 export interface UseSwipeOptions {
   threshold?: number;
   disabled?: boolean;
@@ -30,8 +32,8 @@ export function useSwipe({
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
-      // Swipe is a touch gesture only (owner, 2026-10-17).
-      if (disabled || e.pointerType !== 'touch' || e.button !== 0) return;
+      // Swipe belongs to the phone layout only, with any pointer (owner, 2026-10-18).
+      if (disabled || !isPhoneLayout() || e.button !== 0) return;
 
       const target = e.target as HTMLElement;
       if (target.closest('button, a, input, select, textarea')) return;

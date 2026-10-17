@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { stubLayout } from '@/test/stubLayout';
+
 import { RuleCard } from './RuleCard';
 
 const giveSize = (el: HTMLElement) => {
@@ -170,7 +172,7 @@ describe('RuleCard', () => {
     expect(handleClick).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onDetail on card tap outside selection mode, and toggles selection in selection mode', async () => {
+  it('calls onDetail on card tap outside selection mode, and toggles selection in selection mode on phone only', async () => {
     const handleSelectedChange = vi.fn();
     const handleDetail = vi.fn();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
@@ -193,7 +195,7 @@ describe('RuleCard', () => {
     expect(handleDetail).toHaveBeenCalledTimes(1);
     expect(handleSelectedChange).not.toHaveBeenCalled();
 
-    rerender(
+    const inSelection = (
       <RuleCard
         name="Selectable rule"
         matchType="Contains"
@@ -202,20 +204,26 @@ describe('RuleCard', () => {
         selectionMode={true}
         onDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
-      />,
+      />
     );
 
-    // A mouse click still opens the detail in selection mode (owner, 2026-10-17)
+    // Desktop layout: a press opens the detail even in selection mode, with any pointer (owner, 2026-10-18)
+    stubLayout('desktop');
+    rerender(inSelection);
     await user.pointer({ keys: '[MouseLeft>]', target: card });
     await user.pointer({ keys: '[/MouseLeft]', target: card });
-    expect(handleDetail).toHaveBeenCalledTimes(2);
-    expect(handleSelectedChange).not.toHaveBeenCalled();
-
-    // A touch tap toggles the selection
     await user.pointer({ keys: '[TouchA>]', target: card });
     await user.pointer({ keys: '[/TouchA]', target: card });
+    expect(handleDetail).toHaveBeenCalledTimes(3);
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+
+    // Phone layout: a tap toggles the selection, with any pointer
+    stubLayout('phone');
+    rerender(inSelection);
+    await user.pointer({ keys: '[MouseLeft>]', target: card });
+    await user.pointer({ keys: '[/MouseLeft]', target: card });
     expect(handleSelectedChange).toHaveBeenCalledWith(true);
-    expect(handleDetail).toHaveBeenCalledTimes(2);
+    expect(handleDetail).toHaveBeenCalledTimes(3);
   });
 
   it('toggles selection on Enter and Space keys in selection mode', async () => {

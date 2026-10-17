@@ -4,6 +4,8 @@ import { useLongPress, usePress } from '@react-aria/interactions';
 import React, { useEffect, useRef } from 'react';
 import { mergeProps } from 'react-aria';
 
+import { isPhoneLayout } from './phoneLayout';
+
 export interface UseSelectableItemOptions {
   selectable?: boolean;
   selected?: boolean;
@@ -27,9 +29,9 @@ export function useSelectableItem({
 }: UseSelectableItemOptions) {
   const moved = useRef(false);
 
-  // Long-press is a touch gesture only (owner, 2026-10-17): a mouse never selects by holding.
-  const { longPressProps } = useLongPress({
-    pointerType: 'touch',
+  // Long-press and tap-to-toggle belong to the phone layout only, with any pointer
+  // (owner, 2026-10-18); on desktop a press always opens and the checkbox selects.
+  const { longPressProps: anyLayoutLongPressProps } = useLongPress({
     threshold: longPressThreshold,
     isDisabled: disabled || !selectable,
     onLongPress: () => {
@@ -37,6 +39,16 @@ export function useSelectableItem({
       if (!selected) onSelectedChange?.(true);
     },
   });
+
+  // The layout is read when the press starts, never while rendering (RULES §5c.3): in the
+  // desktop layout the long-press never starts, so it never cancels the press either.
+  const longPressProps = { ...anyLayoutLongPressProps } as Record<string, unknown>;
+  for (const start of ['onPointerDown', 'onMouseDown', 'onTouchStart'] as const) {
+    const handler = anyLayoutLongPressProps[start] as ((e: React.SyntheticEvent) => void) | undefined;
+    if (handler) longPressProps[start] = (e: React.SyntheticEvent) => {
+      if (isPhoneLayout()) handler(e);
+    };
+  }
 
   const { pressProps } = usePress({
     isDisabled: disabled,
@@ -48,9 +60,7 @@ export function useSelectableItem({
     onPress: (e) => {
       e.continuePropagation();
       if (moved.current) return;
-      // A mouse or pen click always opens the item (owner, 2026-10-17); it selects only through the checkbox.
-      const pointerOpens = e.pointerType === 'mouse' || e.pointerType === 'pen';
-      if (!pointerOpens && selectable && (selectionMode || selected)) onSelectedChange?.(!selected);
+      if (isPhoneLayout() && selectable && (selectionMode || selected)) onSelectedChange?.(!selected);
       else onPress?.();
     },
   });
