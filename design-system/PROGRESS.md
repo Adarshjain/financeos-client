@@ -254,6 +254,27 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 3b · Antigravity · Reviewer feedback: removed legacy prop aliases and hard-coded date fallbacks, expanded Foundations docs:
+  - Fix 1 · MonthCalendar (`src/components/ds/MonthCalendar/`): unified API to `mode?: 'events' | 'picker'`, `range?: boolean`, `value`/`defaultValue`/`onValueChange` via `useControllableState` with `{ start?: string; end?: string }` support (auto-swapping if end < start); `month`/`defaultMonth`/`onMonthChange(monthISO: string)`; `today: string` (required ISO, no clock reads); removed `year`, `selectedDate`, `startDate`, `endDate`, `onSelectDate`, `(year, month)` form of `onMonthChange`, `@deprecated` tone alias, and hardcoded `?? 2026` / `: 9` fallbacks. Added range emission tests (start, end, swap).
+  - Fix 2 · DateTile (`src/components/ds/DateTile/`): deleted deprecated `month` prop (`monthLabel` retained) and deleted compatibility re-export of `MonthCalendar`.
+  - Fix 3 · DateField (`src/components/ds/DateField/`): `today: string` (required ISO); deleted hardcoded `'2026-10-01'` and `'2026-11-01'` fallbacks; unified range value contract (`value`/`defaultValue`/`onValueChange` carrying `{ start?: string; end?: string }`); deleted `onRangeChange`, `startDate`, `endDate`, `defaultStartDate`, `defaultEndDate`; fixed controllable types and prop forwarding; updated stories and unit tests.
+  - Fix 4 · FilterChip (`src/components/ds/FilterChip/`): deleted `active` alias (G3), keeping only `selected`, `defaultSelected`, and `onSelectedChange`.
+  - Fix 5 · Foundations docs (`src/components/ds/Foundations.mdx`): added Sizes (`control-*`, `container-*`, `icon-*`), Layers (`z-*`), Motion (`dur-*`), and static Icons grid listing all 30 icons from `design-system/icons.json` using `<Icon name>`.
+  - Fix 6 · Codebase sweep: confirmed zero remaining legacy aliases or hardcoded date fallbacks in `src/components/ds` and `src/components/organisms`.
+  - Checks run and outputs:
+    - `npm run typecheck`: clean (0 errors)
+    - `npm run lint`: clean (0 errors, 340 warnings in legacy files)
+    - `npm test`: 440 test files passed (3684 tests passed)
+    - `npm run build-storybook`: clean (built in 4.26s)
+    - `npm run build`: Next.js 16.2.11 optimized production build clean (49/49 static pages generated)
+    - `node design-system/tools/check-ui.mjs --base 4b825dc642cb6eb9a060e54bf8d69288fbee4904`: `design-system check: clean`
+    - Playwright E2E (`e2e/ui/ds-auth.spec.ts`, `e2e/ui/ds-offline.spec.ts`, `e2e/ui/ds-shell.spec.ts`): 11 passed (9.9s)
+  - Tests changed and rationale:
+    - `src/components/ds/MonthCalendar/MonthCalendar.test.tsx`: passed required `today` prop, removed tests for deprecated `year`, `selectedDate`, `startDate`, `endDate`, `onSelectDate`, `(year, month)` signature, and added tests for range emission: start, end, and start/end swap when end < start.
+    - `src/components/ds/DateTile/DateTile.test.tsx`: removed tests asserting deprecated `month` prop and removed test for compatibility `MonthCalendar` re-export.
+    - `src/components/ds/DateField/DateField.test.tsx`: passed required `today` prop, updated range tests to use `{ start, end }` value object and `onValueChange` instead of deprecated `onRangeChange`/`startDate`/`endDate`.
+  - Open questions: none. Deviations: none.
+
 - 2026-10-17 · Phase 3b · Antigravity · Complete 673-decision design system audit: verified all audit specs in design-system/specs/audit/ are fully ticked with 0 remaining unticked items; ran full test suite with 440 test files and 3681 tests passing (100%); ran Playwright E2E suite (11 passed); built Storybook and Next.js production builds successfully; check-ui clean. Phase 3b complete.
 
 - 2026-10-17 · Phase 3b · Antigravity · Pages and shell (G1, G6, G11, G15): updated LoginForm and SignupForm Google SSO button icon to size-icon-md; verified Illustration and Logo organisms imports; updated TopBar in ds app layout to pass Logo variant="mark" in leading slot; wired TabBar and Rail items in ShellNav to use asChild with Next Link; verified EmptyState compact on index page and action object on offline page; all 11 Playwright E2E tests in e2e/ui/ds-auth.spec.ts, e2e/ui/ds-offline.spec.ts, and e2e/ui/ds-shell.spec.ts passed against local dev server. Checks: Playwright E2E (11 passed), vitest shell navigation (8 passed), npm run typecheck, node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
