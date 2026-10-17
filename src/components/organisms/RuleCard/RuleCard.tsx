@@ -2,19 +2,22 @@
 
 import React, { forwardRef } from 'react';
 
-import { Badge } from '../Badge/Badge';
-import { Button } from '../Button/Button';
-import { Checkbox } from '../Checkbox/Checkbox';
-import { cn } from '../cn';
-import { Icon } from '../Icon/Icon';
 import {
+  Badge,
+  Button,
+  Card,
+  Checkbox,
+  cn,
+  Icon,
   Menu,
   MenuContent,
   MenuItem,
   MenuTrigger,
-} from '../Menu/Menu';
-import { StatusWords } from '../StatusWords/StatusWords';
-import { useLongPress } from '../useLongPress';
+  StatusWords,
+  useControllableState,
+  useLongPress,
+  useSelectableItem,
+} from '@/components/ds';
 
 export interface RuleCardMenuItem {
   label: React.ReactNode;
@@ -61,7 +64,9 @@ export interface RuleCardProps
 
   /** Whether the card is selectable */
   selectable?: boolean;
-  /** Whether the card is selected */
+  /** Default selected state (uncontrolled) */
+  defaultSelected?: boolean;
+  /** Whether the card is selected (controlled) */
   selected?: boolean;
   /** Callback when selection state changes */
   onSelectedChange?: (selected: boolean) => void;
@@ -90,7 +95,8 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       approveLabel,
       menuItems,
       selectable,
-      selected = false,
+      defaultSelected,
+      selected: selectedProp,
       onSelectedChange,
       selectionMode = false,
       onDetail,
@@ -112,6 +118,12 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
   ) => {
     const isVerified = status === 'verified';
 
+    const [selected, setSelected] = useControllableState({
+      value: selectedProp,
+      defaultValue: defaultSelected ?? false,
+      onChange: onSelectedChange,
+    });
+
     const isSelectable = selectable ?? Boolean(onSelectedChange);
     const showEye =
       selectionMode ||
@@ -119,8 +131,18 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
 
     // Long press detection for mobile (~450ms, cancelled on move > 10px)
     const longPress = useLongPress({
-      onLongPress: () => onSelectedChange?.(true),
+      onLongPress: () => setSelected(true),
       disabled: !isSelectable && !selectionMode,
+    });
+
+    const item = useSelectableItem({
+      selected,
+      onSelectedChange: setSelected,
+      selectionMode,
+      selectable,
+      consumeLongPress: longPress.consumeTriggered,
+      onClick,
+      onKeyDown,
     });
 
     const effectiveApprove =
@@ -201,13 +223,13 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
                 </Button>
               </MenuTrigger>
               <MenuContent align="end">
-                {menuItems.map((item, idx) => (
+                {menuItems.map((menuItem, idx) => (
                   <MenuItem
                     key={idx}
-                    destructive={item.destructive}
-                    onSelect={item.onSelect}
+                    destructive={menuItem.destructive}
+                    onSelect={menuItem.onSelect}
                   >
-                    {item.label}
+                    {menuItem.label}
                   </MenuItem>
                 ))}
               </MenuContent>
@@ -217,41 +239,19 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
       );
     };
 
-    const handleCardClick = (e: React.MouseEvent<HTMLDivElement>) => {
-      if (longPress.consumeTriggered()) {
-        return;
-      }
-      if (isSelectable || selectionMode || selected) {
-        onSelectedChange?.(!selected);
-      }
-      onClick?.(e);
-    };
-
-    const handleCardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-        e.preventDefault();
-        if (isSelectable || selectionMode || selected) {
-          onSelectedChange?.(!selected);
-        } else {
-          onClick?.(e as unknown as React.MouseEvent<HTMLDivElement>);
-        }
-      }
-      onKeyDown?.(e);
-    };
-
     const isInteractive = Boolean(
       onClick || isSelectable || selectionMode || onSelectedChange,
     );
 
     return (
-      <div
+      <Card
         ref={ref}
         role={isSelectable ? 'checkbox' : isInteractive ? 'button' : undefined}
         aria-selected={isSelectable || selectionMode ? selected : undefined}
         aria-checked={isSelectable ? selected : undefined}
         tabIndex={isInteractive ? 0 : undefined}
         className={cn(
-          'border rounded-ds-xl px-space-14 py-space-12 flex flex-col gap-space-6 select-none transition-colors duration-fast w-full min-w-0',
+          'px-space-14 py-space-12 flex flex-col gap-space-6 select-none transition-colors duration-fast min-w-0',
           selected
             ? 'bg-brand-tint border-brand ring-1 ring-inset ring-brand'
             : 'bg-surface border-line',
@@ -260,8 +260,8 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
           className,
         )}
-        onClick={handleCardClick}
-        onKeyDown={handleCardKeyDown}
+        onClick={item.handleClick}
+        onKeyDown={item.handleKeyDown}
         onTouchStart={(e) => {
           longPress.handlers.onTouchStart(e);
           onTouchStart?.(e);
@@ -307,7 +307,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
                 <Checkbox
                   checked={selected}
                   onCheckedChange={(checked) => {
-                    onSelectedChange?.(checked === true);
+                    setSelected(checked === true);
                   }}
                   aria-label={
                     typeof name === 'string' ? `Select ${name}` : 'Select rule'
@@ -355,7 +355,6 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
                   key={idx}
                   variant="outline"
                   shape="rounded"
-                  className={selected ? 'bg-surface' : undefined}
                 >
                   {cat}
                 </Badge>
@@ -363,7 +362,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
           </div>
           {renderActions()}
         </div>
-      </div>
+      </Card>
     );
   },
 );
