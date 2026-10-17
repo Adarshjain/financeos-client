@@ -255,4 +255,19 @@ describe('SelectMenu', () => {
     expect(screen.getByText('HDFC Bank')).toBeInTheDocument();
     expect(screen.getByText('ICICI Bank')).toBeInTheDocument();
   });
+
+  it('renders spinner and not chevron when loading', () => {
+    const { container } = render(
+      <Select
+        loading
+        loadingText="Loading options…"
+        options={sampleOptions}
+      />,
+    );
+    expect(screen.getByText('Loading options…')).toBeInTheDocument();
+    const spinner = container.querySelector('svg.animate-spin');
+    expect(spinner).toBeInTheDocument();
+    const nonSpinningSvgs = container.querySelectorAll('svg:not(.animate-spin)');
+    expect(nonSpinningSvgs.length).toBe(0);
+  });
 });
