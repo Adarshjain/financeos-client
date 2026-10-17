@@ -17,6 +17,8 @@ export interface DateRangeValue {
   end?: string;
 }
 
+export type DateFieldValue = string | DateRangeValue;
+
 export interface DateFieldProps
   extends Omit<
     React.InputHTMLAttributes<HTMLInputElement>,
@@ -31,26 +33,21 @@ export interface DateFieldProps
   className?: string;
   placeholder?: string;
 
-  /** Today ISO string (yyyy-mm-dd) */
-  today?: string;
+  /** Today ISO string (yyyy-mm-dd), required */
+  today: string;
 
   /** Controlled / uncontrolled open state for calendar popover */
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
 
-  /** Single date mode: ISO string (yyyy-mm-dd) or Range object */
-  value?: string | DateRangeValue;
-  defaultValue?: string | DateRangeValue;
-  onValueChange?: (val: string | DateRangeValue) => void;
+  /** Single date mode: ISO string (yyyy-mm-dd) or Range object when range is true */
+  value?: DateFieldValue;
+  defaultValue?: DateFieldValue;
+  onValueChange?: (val: DateFieldValue) => void;
 
   /** Range mode: one combined field "dd/mm/yyyy – dd/mm/yyyy" */
   range?: boolean;
-  startDate?: string;
-  endDate?: string;
-  defaultStartDate?: string;
-  defaultEndDate?: string;
-  onRangeChange?: (range: { startDate: string; endDate: string }) => void;
 
   /** Min/Max selectable dates (ISO yyyy-mm-dd) */
   minDate?: string;
@@ -78,11 +75,6 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       defaultValue,
       onValueChange,
       range = false,
-      startDate: controlledStartDate,
-      endDate: controlledEndDate,
-      defaultStartDate,
-      defaultEndDate,
-      onRangeChange,
       minDate,
       maxDate,
       ...props
@@ -119,29 +111,35 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
 
     const [singleText, setSingleText] = useState(initialSingleText);
 
-    // Sync single text when controlled prop changes
+    // Sync single text and range text when controlled prop changes
     const [prevControlledValue, setPrevControlledValue] = useState(controlledValue);
     if (controlledValue !== prevControlledValue) {
       setPrevControlledValue(controlledValue);
-      if (typeof controlledValue === 'string') {
+      if (!range && typeof controlledValue === 'string') {
         setSingleText(formatDateInput(controlledValue));
+      } else if (range && typeof controlledValue === 'object' && controlledValue !== null) {
+        const s = controlledValue.start ?? '';
+        const e = controlledValue.end ?? '';
+        setStartIso(s);
+        setEndIso(e);
+        const sDisp = formatDateInput(s);
+        const eDisp = formatDateInput(e);
+        const disp =
+          sDisp && eDisp ? `${sDisp} – ${eDisp}` : sDisp ? `${sDisp} – ` : '';
+        setRangeText(disp);
       }
     }
 
     // Range mode state
     const initialStartIso = (() => {
-      if (isRangeObject && 'start' in controlledValue && controlledValue.start) return controlledValue.start;
-      if (controlledStartDate) return controlledStartDate;
-      if (defaultValue && typeof defaultValue === 'object' && 'start' in defaultValue && defaultValue.start) return defaultValue.start;
-      if (defaultStartDate) return defaultStartDate;
+      if (range && isRangeObject && controlledValue.start) return controlledValue.start;
+      if (range && defaultValue && typeof defaultValue === 'object' && defaultValue.start) return defaultValue.start;
       return '';
     })();
 
     const initialEndIso = (() => {
-      if (isRangeObject && 'end' in controlledValue && controlledValue.end) return controlledValue.end;
-      if (controlledEndDate) return controlledEndDate;
-      if (defaultValue && typeof defaultValue === 'object' && 'end' in defaultValue && defaultValue.end) return defaultValue.end;
-      if (defaultEndDate) return defaultEndDate;
+      if (range && isRangeObject && controlledValue.end) return controlledValue.end;
+      if (range && defaultValue && typeof defaultValue === 'object' && defaultValue.end) return defaultValue.end;
       return '';
     })();
 
@@ -161,50 +159,11 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     const [rangeText, setRangeText] = useState<string>(initialRangeDisplay);
     const prevRangeInputRef = useRef<string>(initialRangeDisplay);
 
-    const [prevRangeProp, setPrevRangeProp] = useState({
-      val: controlledValue,
-      start: controlledStartDate,
-      end: controlledEndDate,
-    });
-    if (
-      controlledValue !== prevRangeProp.val ||
-      controlledStartDate !== prevRangeProp.start ||
-      controlledEndDate !== prevRangeProp.end
-    ) {
-      setPrevRangeProp({
-        val: controlledValue,
-        start: controlledStartDate,
-        end: controlledEndDate,
-      });
-      if (
-        controlledValue !== undefined ||
-        controlledStartDate !== undefined ||
-        controlledEndDate !== undefined
-      ) {
-        const s =
-          isRangeObject && controlledValue.start
-            ? controlledValue.start
-            : controlledStartDate ?? '';
-        const e =
-          isRangeObject && controlledValue.end
-            ? controlledValue.end
-            : controlledEndDate ?? '';
-        setStartIso(s);
-        setEndIso(e);
-        const sDisp = formatDateInput(s);
-        const eDisp = formatDateInput(e);
-        const disp =
-          sDisp && eDisp ? `${sDisp} – ${eDisp}` : sDisp ? `${sDisp} – ` : '';
-        setRangeText(disp);
-      }
-    }
-
     // Calendar view state (visible month ISO yyyy-mm-01)
     const initialMonthIso = useMemo(() => {
-      const candidate = startIso || singleText ? parseDateInput(singleText) : null;
+      const candidate = startIso || (singleText ? parseDateInput(singleText) : null);
       if (candidate) return `${candidate.slice(0, 7)}-01`;
-      if (today) return `${today.slice(0, 7)}-01`;
-      return '2026-10-01';
+      return `${today.slice(0, 7)}-01`;
     }, [startIso, singleText, today]);
 
     const [viewMonthIso, setViewMonthIso] = useState<string>(initialMonthIso);
@@ -243,10 +202,6 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
 
       if (sIso && eIso) {
         onValueChange?.({ start: sIso, end: eIso });
-        onRangeChange?.({
-          startDate: formatted.startDate,
-          endDate: formatted.endDate,
-        });
       }
     };
 
@@ -264,7 +219,6 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
           setRangeText(disp);
           prevRangeInputRef.current = disp;
           setRangeStep(1);
-          onRangeChange?.({ startDate: formatDate(isoDate, 'input'), endDate: '' });
         } else {
           // Second click: sets end date
           let finalStart = startIso;
@@ -280,17 +234,12 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
           prevRangeInputRef.current = disp;
           setRangeStep(0);
           onValueChange?.({ start: finalStart, end: finalEnd });
-          onRangeChange?.({
-            startDate: formatDate(finalStart, 'input'),
-            endDate: formatDate(finalEnd, 'input'),
-          });
           setOpen(false);
         }
       }
     };
 
     const handleToday = () => {
-      if (!today) return;
       if (!range) {
         setSingleText(formatDate(today, 'input'));
         onValueChange?.(today);
@@ -302,7 +251,6 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         setRangeText(disp);
         prevRangeInputRef.current = disp;
         setRangeStep(1);
-        onRangeChange?.({ startDate: formatDate(today, 'input'), endDate: '' });
       }
     };
 
@@ -318,7 +266,6 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         prevRangeInputRef.current = '';
         setRangeStep(0);
         onValueChange?.({ start: '', end: '' });
-        onRangeChange?.({ startDate: '', endDate: '' });
         setOpen(false);
       }
     };
@@ -326,15 +273,14 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     // Calculate next month ISO for range view
     const nextMonthIso = useMemo(() => {
       const match = viewMonthIso.match(/^(\d{4})-(\d{2})/);
-      if (!match) return '2026-11-01';
-      let y = parseInt(match[1], 10);
-      let m = parseInt(match[2], 10); // 1-based next month
+      let y = match ? parseInt(match[1], 10) : parseInt(today.slice(0, 4), 10);
+      let m = match ? parseInt(match[2], 10) : parseInt(today.slice(5, 7), 10); // 1-based next month
       if (m > 11) {
         m = 0;
         y += 1;
       }
       return `${y}-${String(m + 1).padStart(2, '0')}-01`;
-    }, [viewMonthIso]);
+    }, [viewMonthIso, today]);
 
     // Calendar content: two months side by side on desktop in range mode, one month on phone or in single mode
     const calendarContent = range ? (
@@ -433,43 +379,37 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     );
 
     const triggerButton = (
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="sm"
-        iconOnly
         disabled={disabled}
         aria-label="Open calendar"
-        onClick={() => {
-          if (!disabled) {
-            setOpen(!isOpen);
-          }
-        }}
-        className="text-ink-3 hover:text-ink shrink-0"
+        className={cn(
+          'w-control-md h-control-md flex items-center justify-center text-ink-3 hover:text-ink transition-colors cursor-pointer select-none',
+          disabled && 'cursor-not-allowed opacity-50',
+        )}
       >
-        <Icon name="calendar" size="md" />
-      </Button>
+        <Icon name="calendar" size="lg" />
+      </button>
     );
 
     return (
       <FieldFrame
         id={id}
-        helperId={helperId}
         label={label}
-        optional={optional}
         helper={helper}
         error={error}
+        optional={optional}
+        disabled={disabled}
         className={className}
       >
         <div
           className={cn(
-            'flex items-center gap-space-8 h-control-lg w-full px-space-12 border rounded-ds-md bg-surface font-text font-medium text-body text-ink',
-            'transition-colors duration-fast focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
+            'flex items-center bg-surface border rounded-ds-md transition-colors',
+            'h-control-xl px-space-12',
             hasError
-              ? 'border-danger focus-within:ring-danger'
-              : 'border-line-strong focus-within:border-brand',
-            disabled &&
-              'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
+              ? 'border-danger-border ring-1 ring-danger'
+              : 'border-line hover:border-line-strong focus-within:border-brand-border focus-within:ring-2 focus-within:ring-focus-ring',
+            disabled && 'bg-sunken border-line-soft opacity-50 cursor-not-allowed',
           )}
         >
           <input
@@ -481,11 +421,11 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
             placeholder={effectivePlaceholder}
             value={range ? rangeText : singleText}
             onChange={range ? handleRangeInputChange : handleSingleInputChange}
-            aria-invalid={hasError ? 'true' : undefined}
-            aria-describedby={hasError || helper ? helperId : undefined}
+            aria-describedby={helper || error ? helperId : undefined}
+            aria-invalid={hasError || undefined}
             className={cn(
-              'w-full h-full bg-transparent border-0 p-0 text-body text-ink placeholder:text-ink-4 focus:outline-none focus:ring-0',
-              disabled && 'cursor-not-allowed text-ink-faint',
+              'flex-1 min-w-0 bg-transparent text-body font-text text-ink outline-none placeholder:text-ink-4',
+              disabled && 'cursor-not-allowed text-ink-4',
             )}
             {...props}
           />
@@ -494,11 +434,11 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
             open={isOpen}
             onOpenChange={setOpen}
             trigger={triggerButton}
-            align="end"
-            contentClassName={cn(
-              'p-0 overflow-hidden shadow-level-2',
-              range ? 'max-w-container-md w-auto' : '',
-            )}
+            contentProps={{
+              align: 'end',
+              sideOffset: 4,
+              className: 'p-0 overflow-hidden',
+            }}
           >
             {calendarContent}
           </Popover>

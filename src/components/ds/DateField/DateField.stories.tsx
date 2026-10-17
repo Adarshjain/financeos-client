@@ -25,6 +25,7 @@ const meta: Meta<typeof DateField> = {
     ),
   ],
   args: {
+    today: '2026-10-13',
     onValueChange: fn(),
     onOpenChange: fn(),
   },
@@ -63,6 +64,7 @@ type Story = StoryObj<typeof DateField>;
 
 export const Default: Story = {
   args: {
+    today: '2026-10-13',
     label: 'Due date',
     defaultValue: '2026-10-25',
   },
@@ -70,6 +72,7 @@ export const Default: Story = {
 
 export const Range: Story = {
   args: {
+    today: '2026-10-13',
     range: true,
     label: 'Period',
     defaultValue: { start: '2026-10-01', end: '2026-10-13' },
@@ -78,6 +81,7 @@ export const Range: Story = {
 
 export const WithMinMax: Story = {
   args: {
+    today: '2026-10-13',
     label: 'Travel date',
     defaultValue: '2026-10-15',
     minDate: '2026-10-10',
@@ -88,6 +92,7 @@ export const WithMinMax: Story = {
 
 export const OpenCalendar: Story = {
   args: {
+    today: '2026-10-13',
     label: 'Open calendar picker',
     defaultValue: '2026-10-15',
     defaultOpen: true,
@@ -96,6 +101,7 @@ export const OpenCalendar: Story = {
 
 export const ErrorState: Story = {
   args: {
+    today: '2026-10-13',
     label: 'Statement date',
     defaultValue: '2026-10-15',
     error: 'Enter a valid date in dd/mm/yyyy format.',
@@ -104,6 +110,7 @@ export const ErrorState: Story = {
 
 export const Disabled: Story = {
   args: {
+    today: '2026-10-13',
     label: 'Locked cycle date',
     defaultValue: '2026-10-01',
     disabled: true,
