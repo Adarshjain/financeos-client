@@ -102,6 +102,7 @@
   --ds-dur-fast: 120ms;
   --ds-dur-base: 200ms;
   --ds-dur-slow: 280ms;
+  --ds-dur-loop: 1600ms;
 }
 .dark {
   --ds-bg-canvas: #0e1114;

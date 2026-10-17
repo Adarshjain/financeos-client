@@ -83,7 +83,7 @@ Menus, dropdowns, selects and DateField's calendar look and work like a normal d
   - corners: `radius-2xl`;
   - shadows: `shadow-level-1/2/3` and `shadow-up-1/2`;
   - layers: `z-sticky/floating/backdrop/overlay`;
-  - motion: `dur-fast/base/slow`;
+  - motion: `dur-fast/base/slow`, plus `dur-loop` for looping indicators (added 2026-10-17);
   - type: `micro`;
   - colours: `line-heavy`, `attention`, `attention-tint`, `accent-*`, `backdrop`;
   - spacing utility: `bottom-clearance`.

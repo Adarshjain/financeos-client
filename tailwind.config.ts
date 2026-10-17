@@ -311,6 +311,7 @@ const config: Config = {
         fast: 'var(--ds-dur-fast)',
         base: 'var(--ds-dur-base)',
         slow: 'var(--ds-dur-slow)',
+        loop: 'var(--ds-dur-loop)',
       },
     },
   },
