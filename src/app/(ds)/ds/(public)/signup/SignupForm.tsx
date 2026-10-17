@@ -9,11 +9,11 @@ import {
   Banner,
   Button,
   Divider,
-  Illustration,
   showToast,
   Text,
   TextField,
 } from '@/components/ds';
+import { Illustration } from '@/components/organisms';
 import type { ApiResult, UserResponse } from '@/lib/types';
 
 export function SignupForm() {

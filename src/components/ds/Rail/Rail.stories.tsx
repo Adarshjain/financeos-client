@@ -8,9 +8,9 @@ import {
   Button,
   Icon,
   Kbd,
-  Logo,
   Rail,
   type RailGroup,
+  Text,
 } from '@/components/ds';
 
 const financeOSRailGroups: RailGroup[] = [
@@ -59,7 +59,12 @@ const plainRailGroups: RailGroup[] = [
   },
 ];
 
-const sampleBrand = <Logo variant="full" size="sm" />;
+const sampleBrand = (
+  <div className="flex items-center gap-space-8 px-space-8 py-space-4">
+    <Icon name="wallet" size="md" />
+    <Text variant="title">Acme</Text>
+  </div>
+);
 
 const sampleSearch = (
   <Button

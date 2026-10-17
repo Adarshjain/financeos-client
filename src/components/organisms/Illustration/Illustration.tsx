@@ -1,7 +1,6 @@
 import React, { forwardRef } from 'react';
 
-import { cn } from '../cn';
-import { Icon } from '../Icon/Icon';
+import { cn, Icon } from '@/components/ds';
 import { Logo } from '../Logo/Logo';
 
 export interface IllustrationProps extends React.HTMLAttributes<HTMLDivElement> {

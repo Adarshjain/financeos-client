@@ -8,16 +8,16 @@ Read `00-global.md` first. Its rules override anything below.
 
 ## Change (2)
 
-- [ ] **f257d491f** · Logo 'All variants' uses hand-made wrappers
+- [x] **f257d491f** · Logo 'All variants' uses hand-made wrappers
   - Now: Logo.stories.tsx:29-34 wrap the Logos in `p-space-16 bg-canvas ... font-text` and a flex row div.
   - Do: Delete the story. A decorator or `parameters.backgrounds` gives the canvas look.
-- [ ] **f8b3f77ec** · Logo MarkSm, MarkMd and Full differ only by args
+- [x] **f8b3f77ec** · Logo MarkSm, MarkMd and Full differ only by args
   - Now: Logo.stories.tsx:39-58 are three stories that set `variant` and `size`, which are already controls.
   - Do: Keep one `Default` story. Add `WithWordmark` only if a state is not reachable with controls.
 
 ## Owner's own call (1)
 
-- [ ] **f42d5fb1b** · Logo 'All variants' hard-codes three Logos
+- [x] **f42d5fb1b** · Logo 'All variants' hard-codes three Logos
   - Do: Delete the AllVariants story; the autodocs page shows every story, with no controls on the docs page (G9).
 
 ## Keep: do NOT change (2)
