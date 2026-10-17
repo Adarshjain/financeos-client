@@ -184,4 +184,15 @@ describe('DateField component', () => {
 
     expect(handleChange).toHaveBeenCalledWith('2026-10-15');
   });
+
+  it('widens calendar popover for range mode with w-max and max-w-none', () => {
+    render(
+      <DateField today={TODAY} range label="Period" defaultOpen />,
+    );
+    const popoverContent = document.body.querySelector('[data-radix-popper-content-wrapper] > div');
+    expect(popoverContent).toHaveClass('w-max');
+    expect(popoverContent).toHaveClass('max-w-none');
+    const classList = Array.from(popoverContent?.classList ?? []);
+    expect(classList).not.toContain('max-w-container-sm');
+  });
 });
