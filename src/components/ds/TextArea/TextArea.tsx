@@ -34,7 +34,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       disabled = false,
       rows = 1,
       minRows = 1,
-      maxRows = 8,
+      maxRows,
       className,
       controlClassName,
       placeholder,
@@ -91,7 +91,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       }
 
       const minHeight = minRows * lineHeight + paddingBorder;
-      const maxHeight = maxRows * lineHeight + paddingBorder;
+      const maxHeight =
+        maxRows !== undefined ? maxRows * lineHeight + paddingBorder : Infinity;
 
       const scrollHeight = textarea.scrollHeight;
       const nextHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight);
