@@ -3,10 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React, { act } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  createDataTableColumnHelper,
-  DataTable,
-} from './DataTable';
+import { DataTable } from './DataTable';
+import { createDataTableColumnHelper } from './types';
 
 interface TestRow {
   id: string;
