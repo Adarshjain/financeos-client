@@ -8,7 +8,6 @@ The one floating surface every dropdown uses: Select's list, Menu, DateField's c
 - One surface: content inside a Popover is never wrapped in another card, border or shadow.
 - Opens below and flips above near the bottom edge; 4px gap from the trigger.
 - Opens with `dur-base` (fade and 4px slide); closes on Escape, outside tap, or a pick.
-- On phone, long lists don't float: the consumer opens a Dialog (bottom sheet) instead.
 
 ## Props
 - `<Popover>` (shorthand):

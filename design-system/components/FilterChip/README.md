@@ -1,6 +1,6 @@
 # FilterChip
 
-A chip in the filter row under the search. Chips filter the list in place and combine with AND. FilterChip only draws the chip; a chip that opens choices is the `trigger` of a Select, so the list, search, multi-select and phone sheet are the Select's.
+A chip in the filter row under the search. Chips filter the list in place and combine with AND. FilterChip only draws the chip; a chip that opens choices is the `trigger` of a Select, so the list, search, and multi-select are the Select's.
 
 ## Looks
 - Off: outlined (`variant="outline"`), `ink-2` text. On: soft (`variant="soft"`), `brand-tint`, `brand-border`, `brand-strong` text. Review: warning tone when on ("Needs review · 25").
