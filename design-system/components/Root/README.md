@@ -7,8 +7,11 @@ The top of every Dinero page tree. A layout renders `<Root>` once around its chi
 - Mounts the Dinero `Toaster` (id `ds`) once.
 - Nothing else: no navigation, no padding. The signed-in shell (Rail, TopBar, TabBar) sits inside it.
 
+## Props
+- `children`: `ReactNode` (page content)
+
 ## Built from
 Toast (`Toaster`).
 
 ## Variants
-- One.
+- One (Default).
