@@ -97,7 +97,7 @@ describe('shell navigation', () => {
     mockPathname = '/accounts';
     render(<ShellRail user={{ email: 'arjun@example.test' }} />);
     expect(screen.getByText('Accounts')).toBeDefined();
-    expect(screen.getByText('Settings')).toBeDefined();
+    expect(screen.getByRole('link', { name: /arjun@example.test/i })).toHaveAttribute('href', '/settings');
     expect(screen.getByText('AR')).toBeDefined();
   });
 

@@ -8,6 +8,7 @@ import {
   Button,
   Icon,
   Kbd,
+  ListRow,
   Rail,
   type RailGroup,
   Text,
@@ -82,14 +83,20 @@ const sampleSearch = (
 );
 
 const sampleFooter = (
-  <div className="flex items-center justify-between">
-    <Button variant="ghost" size="sm" icon={<Icon name="settings" size="lg" />}>
-      Settings
-    </Button>
-    <Avatar variant="circle" tone="brand" size="sm" initials="AM">
-      AM
-    </Avatar>
-  </div>
+  <ListRow
+    asChild
+    leading={
+      <Avatar variant="circle" tone="brand" size="sm" initials="AM">
+        AM
+      </Avatar>
+    }
+    title="Arjun Mehta"
+    subtitle="arjun.mehta@gmail.com"
+    borderTop={false}
+    className="px-space-8"
+  >
+    <a href="#" />
+  </ListRow>
 );
 
 const meta: Meta<typeof Rail> = {

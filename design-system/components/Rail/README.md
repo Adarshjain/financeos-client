@@ -9,6 +9,7 @@ Brand slot, search slot, navigation groups with `overline` headers, and pinned f
 - The current page is `brand-tint` with `brand-strong` text and icon.
 - Counts: Rendered as a Badge (`solid`, `rounded`, `sm`) using `formatCount(count)`.
 - Items are buttons or links (`asChild`), icons `lg`, labels `body-strong`.
+- The footer slot holds the profile row (`ListRow`) linking to Settings.
 
 ## Props
 - `groups`: `{ label?: string, items: { id: string, label: ReactNode, icon?: ReactNode, count?: number | string, countTone?: 'danger' | 'warning' | 'neutral' | 'ink', asChild?: boolean, children?: ReactNode, onSelect?: () => void }[] }[]`
