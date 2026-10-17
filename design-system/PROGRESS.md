@@ -255,7 +255,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - **DataTable** (the desktop form of TransactionRow and every desktop table) waits for its own round: design first, then build.
 - 2026-10-17 · **DataTable uses TanStack Table** (`@tanstack/react-table` v9, owner). It is headless: TanStack holds sort, selection and column state; every visual comes from Dinero. Pin an exact release at least two weeks old when installing.
 - 2026-10-17 · **DataTable requirements review** (owner): v1 includes expandable rows; `sortMode="client"` is allowed only for lists the server returns whole (never with a Pager, never slicing). Pinned `@tanstack/react-table` **9.2.4**. Out of v1: pivot tables, drag-to-reorder rows, several tables sharing one Pager.
-- 2026-10-17 · **Long-press and selection** (owner): long-press (≈500ms, touch, pen or mouse) enters selection while still held, and the release does nothing; outside selection mode a tap opens the item and never selects it; swipe stays phone-only and desktop keeps checkboxes. Use an industry-standard hook: **`@react-aria/interactions` 3.28.1 approved** (exact pin), behind Dinero's `useSelectableItem`.
+- 2026-10-17 · **Long-press and selection** (owner): long-press (500ms, touch or mouse) enters selection while still held, and the release does nothing; outside selection mode a tap opens the item and never selects it; swipe stays phone-only and desktop keeps checkboxes. Use an industry-standard hook: **`@react-aria/interactions` 3.28.1 and its core `react-aria` 3.52.1 approved** (exact pins), behind Dinero's `useSelectableItem`.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
