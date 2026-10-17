@@ -343,6 +343,9 @@ const config: Config = {
         '.scrollbar-none::-webkit-scrollbar': {
           display: 'none',
         },
+        '.touch-callout-none': {
+          '-webkit-touch-callout': 'none',
+        },
       });
       addVariant(
         'active-self',
