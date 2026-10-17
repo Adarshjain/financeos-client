@@ -152,7 +152,7 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
         ref={ref}
         className={cn(
           background === 'canvas' ? 'bg-canvas' : 'bg-surface',
-          'flex flex-col overflow-hidden text-body text-ink border-line-soft max-h-dvh w-full',
+          'flex flex-col overflow-hidden font-text text-body text-ink border-line-soft max-h-dvh w-full',
           'rounded-t-ds-2xl shadow-up-2 border-t',
           variant === 'side-panel'
             ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-level-3 lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full'
@@ -420,7 +420,7 @@ export const DialogContent = forwardRef<
               ...style,
             }}
             className={cn(
-              'pointer-events-auto flex flex-col overflow-hidden text-body text-ink border-line-soft max-h-dvh w-full',
+              'pointer-events-auto flex flex-col overflow-hidden font-text text-body text-ink border-line-soft max-h-dvh w-full',
               background === 'canvas' ? 'bg-canvas' : 'bg-surface',
               'rounded-t-ds-2xl shadow-up-2 border-t',
               variant === 'side-panel'

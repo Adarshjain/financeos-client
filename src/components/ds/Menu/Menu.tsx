@@ -30,7 +30,7 @@ export const MenuContent = forwardRef<
         ref={ref}
         sideOffset={sideOffset}
         className={cn(
-          'z-overlay bg-surface border border-line rounded-ds-lg shadow-level-2 p-space-6 flex flex-col min-w-menu-trigger outline-none',
+          'z-overlay bg-surface border border-line rounded-ds-lg shadow-level-2 p-space-6 flex flex-col min-w-menu-trigger outline-none font-text',
           'animate-in fade-in-0 data-side-bottom:slide-in-from-top-1 data-side-top:slide-in-from-bottom-1 duration-base',
           className,
         )}

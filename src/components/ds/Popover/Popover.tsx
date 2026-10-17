@@ -38,7 +38,7 @@ export const PopoverContent = forwardRef<
           side={side}
           sideOffset={sideOffset}
           className={cn(
-            'z-overlay bg-surface border border-line rounded-ds-lg shadow-level-2 p-space-4 flex flex-col outline-none',
+            'z-overlay bg-surface border border-line rounded-ds-lg shadow-level-2 p-space-4 flex flex-col outline-none font-text',
             'animate-in fade-in-0 data-side-bottom:slide-in-from-top-1 data-side-top:slide-in-from-bottom-1 duration-base',
             'min-w-popover-trigger max-w-container-sm w-auto',
             className,
