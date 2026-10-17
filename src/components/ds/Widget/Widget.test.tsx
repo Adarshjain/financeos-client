@@ -87,7 +87,7 @@ describe('Widget', () => {
   });
 
   it('aligns body wrapper with Card header using px-space-16', () => {
-    const { container } = render(
+    render(
       <Widget title="Aligned widget">
         <div data-testid="widget-content">Content</div>
       </Widget>,
