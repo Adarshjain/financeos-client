@@ -254,6 +254,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 3b · Antigravity · ServerFixture (G15): relocated ServerFixture from src/components/ds/__fixtures__/ to src/test/fixtures/ServerFixture.tsx, parameterized copy via props with defaults, and removed __fixtures__ directory from the DS component tree. Checks: npm run typecheck, node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
+
 - 2026-10-17 · Phase 3b · Antigravity · Root (G9): updated stories to pass children via args with Text component, removed manual padding and inline button/toast calls, deleted AllVariants in favor of Default story and autodocs, documented Props in README. Checks: npm run typecheck, vitest (Root 5 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
 
 - 2026-10-17 · Phase 3b · Antigravity · TopBar (G6, G9, G15): added leading?: ReactNode slot and removed hardcoded Logo import, split back union into backHref?: string and onBack?: () => void (dropped boolean back), added asChild support for actions to use router links; updated stories to args-driven TopLevel, Detail, and WithPrimaryAction with barrel imports, fn() callbacks, and Card decorator (deleted AllVariants and duplicate phone/desktop stories); updated unit tests (6 passed); updated README. Checks: npm run typecheck, vitest (TopBar 6 passed), node design-system/tools/check-ui.mjs --base 681c9d0 clean. Open questions: none. Deviations: none.
