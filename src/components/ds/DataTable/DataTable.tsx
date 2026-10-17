@@ -14,14 +14,6 @@ import {
 } from './types';
 import { useDataTableState } from './useDataTableState';
 
-export {
-  createDataTableColumnHelper,
-  type DataTableColumnMeta,
-  type DataTableFeatures,
-  dataTableFeatures,
-  type DataTableProps,
-  type DataTableRowProps,
-} from './types';
 
 function DataTableInner<Row extends RowData>(
   props: DataTableProps<Row>,
