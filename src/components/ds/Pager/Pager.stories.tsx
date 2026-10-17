@@ -13,7 +13,7 @@ const meta: Meta<typeof Pager> = {
   },
   decorators: [
     (Story) => (
-      <Card className="max-w-3xl overflow-hidden font-text">
+      <Card className="max-w-3xl">
         <Story />
       </Card>
     ),
