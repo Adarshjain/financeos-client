@@ -8,7 +8,11 @@ The one overlay for forms, details, pickers and confirmations. It replaces Sheet
 - **Side panel** (desktop detail): slides in from the right, full height, used where the boards open a row's detail beside the list. On phone it is the sheet.
 
 ## Anatomy
-Title and optional description, a body that is the only scroller, and a footer from props: `primary` and optional `secondary` (at most two). An optional `tertiary` destructive action ("Delete rule") sits at the far left of the footer. **The footer is the same on every screen size**: tertiary left, then secondary and primary on the right. On phone the buttons are `control-xl` tall and secondary and primary share the remaining width equally; nothing moves into the body. Props are exactly `primary`, `secondary` and `tertiary` (no aliases).
+Title and optional description, a body that is the only scroller, and a footer from props: up to three actions as data (`primary`, `secondary`, `tertiary`). Dialog draws the buttons itself in one row, left to right: tertiary, secondary, primary. Only primary is filled (`primary` or `danger-filled` when `destructive`); secondary and tertiary are `link`. On phone the actions present share the row in equal columns at `control-xl` height; on desktop they keep their natural width at `control-md` height, aligned right. Props are `primary?: DialogPrimaryAction`, `secondary?: DialogAction`, `tertiary?: DialogAction` (no aliases).
+
+## Footer Actions API
+- `DialogAction`: `{ label: React.ReactNode; onSelect?: () => void; type?: 'button' | 'submit'; form?: string; disabled?: boolean; loading?: boolean }`
+- `DialogPrimaryAction`: extends `DialogAction` with `destructive?: boolean`
 
 ## Background
 `background`: `surface` (default) or `canvas`. Use `canvas` when the body is made of tiles or cards that carry their own `surface` and border, so they stand out from the sheet. The More sheet (`P-more`) is the one use today. Pages never recolour a Dialog with `className`.
@@ -17,7 +21,7 @@ Title and optional description, a body that is the only scroller, and a footer f
 The preset for destructive or hard-to-undo actions (delete a transaction, statement, account, dashboard, rule; discard edits). Title names the object ("Delete Swiggy Bangalore · ₹1,249?"), description and children explain impact with preview loading state, then Cancel and the confirm action repeating the verb; the action's label is a required prop. `tone` defaults to `'danger'` or accepts `'default'` for non-destructive actions. Offer the gentler option via `alternativeLabel` ("Close instead").
 
 ## Props
-- `DialogContent` / `DialogShell`: `size` (`sm` | `md` | `lg` | `xl`), `variant` (`modal` | `side-panel`), `background` (`surface` | `canvas`), `title`, `description`, `showClose`, `srTitle`, `onClose`, `primary`, `secondary`, `tertiary`, `dismissible`.
+- `DialogContent` / `DialogShell`: `size` (`sm` | `md` | `lg` | `xl`), `variant` (`modal` | `side-panel`), `background` (`surface` | `canvas`), `title`, `description`, `showClose`, `srTitle`, `onClose`, `primary` (`DialogPrimaryAction`), `secondary` (`DialogAction`), `tertiary` (`DialogAction`), `dismissible`.
 - `ConfirmDialog`: `title`, `description`, `children`, `confirmLabel`, `cancelLabel`, `alternativeLabel`, `onConfirm`, `onCancel`, `onAlternative`, `tone` (`danger` | `default`), `loading`, `previewLoading`, `loadingText`, `trigger`, `open`, `defaultOpen`, `onOpenChange`.
 
 ## Built from
