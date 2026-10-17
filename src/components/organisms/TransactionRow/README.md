@@ -46,9 +46,19 @@ Selected (`brand-tint` with a 4px `brand` stripe), warning tone (`attention-tint
 - `chevron?: boolean`: Trailing chevron indicator
 - `borderTop?: boolean`: Whether to show top border line (default: true)
 
+## Gestures
+
+| Gesture | Outside selection mode | In selection mode |
+|---|---|---|
+| **Long-press** (500ms, touch or mouse, pointer held still on the item) | Selects the item **while the pointer is still down**, which turns on selection mode. Releasing afterwards does **nothing**: no tap, no toggle, no detail. | Selects the item if it isn't selected. Releasing does nothing. |
+| **Tap** (press and release quickly) | Calls `onDetail` (opens the item). **Never selects.** | Toggles the item's selection. |
+| **Enter / Space** on the focused item | Same as tap. | Same as tap. |
+| **Scroll or swipe** (the pointer moves more than 10px, or the browser takes the gesture) | Cancels: no long-press, no tap. | Same. |
+| **Press on a control inside the item** (checkbox, eye, Approve, ⋮ menu, category chip) | Only that control acts; the item doesn't. | Same. |
+
 ## Not here
 - Swipe: the page wraps the row in SwipeActions. The row has no swipe props.
-- Long-press detection is the shared `useLongPress` hook; selection interaction is handled by `useSelectableItem`.
+- Selection interaction is handled by `useSelectableItem`.
 
 ## Built from
-Badge, StatusWords, Checkbox (desktop selection), Button, Icon (eye in selection). Hooks: `useLongPress`, `useSelectableItem`, `useControllableState`. Pages wrap it in SwipeActions for swipe.
+Badge, StatusWords, Checkbox (desktop selection), Button, Icon (eye in selection). Hooks: `useSelectableItem`, `useControllableState`. Pages wrap it in SwipeActions for swipe.
