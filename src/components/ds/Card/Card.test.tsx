@@ -127,6 +127,6 @@ describe('Card', () => {
   it('does not force w-full class on root', () => {
     const { container } = render(<Card>Card content</Card>);
     expect(container.firstChild).not.toHaveClass('w-full');
-    expect(container.firstChild).toHaveClass('overflow-hidden', 'min-w-0');
+    expect(container.firstChild).toHaveClass('overflow-clip', 'min-w-0');
   });
 });

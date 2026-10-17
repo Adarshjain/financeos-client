@@ -164,66 +164,76 @@ const meta = {
 export default meta;
 type Story = StoryObj<DataTableProps<Holding>>;
 
-function InteractiveTable<Row extends RowData = Holding>(
-  props: DataTableProps<Row> & { page?: number; size?: number },
+/**
+ * Storybook hooks (`useArgs`) only work in the story's own render function, never in a
+ * child component, so each story's render is built here rather than rendering a wrapper.
+ */
+function interactiveRender<Row extends RowData = Holding>(
+  extra: Partial<DataTableProps<Row>> = {},
 ) {
-  const [
-    {
-      page = 0,
-      size = 25,
-      sort,
-      selection = [],
-      allSelected = false,
-      expanded = [],
-    },
-    updateArgs,
-  ] = useArgs();
+  return function Render(args: DataTableProps<Row>) {
+    const props = { ...args, ...extra } as DataTableProps<Row> & {
+      page?: number;
+      size?: number;
+    };
+    const [
+      {
+        page = 0,
+        size = 25,
+        sort,
+        selection = [],
+        allSelected = false,
+        expanded = [],
+      },
+      updateArgs,
+    ] = useArgs();
 
-  const pager =
-    props.pager !== null ? (
-      <Pager
-        page={page}
-        size={size}
-        totalElements={100}
-        onPageChange={(p) => updateArgs({ page: p })}
-        onSizeChange={(s) => updateArgs({ size: s, page: 0 })}
+    const pager =
+      props.pager !== null ? (
+        <Pager
+          page={page}
+          size={size}
+          totalElements={100}
+          onPageChange={(p) => updateArgs({ page: p })}
+          onSizeChange={(s) => updateArgs({ size: s, page: 0 })}
+        />
+      ) : undefined;
+
+    return (
+      <DataTable<Row>
+        {...props}
+        sort={sort}
+        onSortChange={(s) => {
+          props.onSortChange?.(s);
+          updateArgs({ sort: s });
+        }}
+        selection={selection}
+        onSelectionChange={(sel) => {
+          props.onSelectionChange?.(sel);
+          updateArgs({ selection: sel });
+        }}
+        allSelected={allSelected}
+        onAllSelectedChange={(all) => {
+          props.onAllSelectedChange?.(all);
+          updateArgs({ allSelected: all });
+        }}
+        expanded={expanded}
+        onExpandedChange={(exp) => {
+          props.onExpandedChange?.(exp);
+          updateArgs({ expanded: exp });
+        }}
+        pager={pager}
       />
-    ) : undefined;
-
-  return (
-    <DataTable<Row>
-      {...props}
-      sort={sort}
-      onSortChange={(s) => {
-        props.onSortChange?.(s);
-        updateArgs({ sort: s });
-      }}
-      selection={selection}
-      onSelectionChange={(sel) => {
-        props.onSelectionChange?.(sel);
-        updateArgs({ selection: sel });
-      }}
-      allSelected={allSelected}
-      onAllSelectedChange={(all) => {
-        props.onAllSelectedChange?.(all);
-        updateArgs({ allSelected: all });
-      }}
-      expanded={expanded}
-      onExpandedChange={(exp) => {
-        props.onExpandedChange?.(exp);
-        updateArgs({ expanded: exp });
-      }}
-      pager={pager}
-    />
-  );
+    );
+  };
 }
 
 export const Plain: Story = {
-  render: (args) => <InteractiveTable {...args} />,
+  render: interactiveRender(),
 };
 
 export const Selectable: Story = {
-  render: (args) => <InteractiveTable {...args} selectable />,
+  render: interactiveRender({ selectable: true }),
 };
 
 export const SelectAllAcrossPages: Story = {
@@ -232,7 +242,7 @@ export const SelectAllAcrossPages: Story = {
     allSelected: true,
     selection: ['1', '2', '3', '4', '5'],
   },
-  render: (args) => <InteractiveTable {...args} />,
+  render: interactiveRender(),
 };
 
 export const ServerSorted: Story = {
@@ -240,7 +250,7 @@ export const ServerSorted: Story = {
     sortMode: 'server',
     sort: { id: 'currentPrice', desc: false },
   },
-  render: (args) => <InteractiveTable {...args} />,
+  render: interactiveRender(),
 };
 
 interface StatementLine {
@@ -285,7 +295,7 @@ export const ClientSorted: StoryObj<DataTableProps<StatementLine>> = {
     getRowId: (r) => r.id,
     sortMode: 'client',
   },
-  render: (args) => <InteractiveTable {...args} pager={null} />,
+  render: interactiveRender<StatementLine>({ pager: null }),
 };
 
 interface TransactionWithBands {
@@ -328,7 +338,7 @@ export const BandsAndDayHeaders: StoryObj<
     band: (r) => ({ key: r.month, label: r.month }),
     dayHeader: (r) => ({ key: r.date, label: r.date, sublabel: r.dayName }),
   },
-  render: (args) => <InteractiveTable {...args} />,
+  render: interactiveRender(),
 };
 
 interface MultiLineRecord {
@@ -401,7 +411,7 @@ export const MultiLineAndChips: StoryObj<DataTableProps<MultiLineRecord>> = {
     data: multiLineData,
     getRowId: (r) => r.id,
   },
-  render: (args) => <InteractiveTable {...args} />,
+  render: interactiveRender(),
 };
 
 interface FnoPosition {
@@ -444,7 +454,7 @@ export const PhoneSubAndActions: StoryObj<DataTableProps<FnoPosition>> = {
       </Button>
     ),
   },
-  render: (args) => <InteractiveTable {...args} />,
+  render: interactiveRender(),
 };
 
 interface CategoryBreakdown {
@@ -509,7 +519,7 @@ export const Expandable: StoryObj<DataTableProps<CategoryBreakdown>> = {
       </div>
     ),
   },
-  render: (args) => <InteractiveTable {...args} />,
+  render: interactiveRender(),
 };
 
 export const RowStates: Story = {
@@ -521,7 +531,7 @@ export const RowStates: Story = {
       return undefined;
     },
   },
-  render: (args) => <InteractiveTable {...args} />,
+  render: interactiveRender(),
 };
 
 export const WithFooter: Story = {
@@ -535,7 +545,7 @@ export const WithFooter: Story = {
       </div>
     ),
   },
-  render: (args) => <InteractiveTable {...args} />,
+  render: interactiveRender(),
 };
 
 export const Loading: Story = {
@@ -543,14 +553,14 @@ export const Loading: Story = {
     loading: true,
     skeletonRows: 5,
   },
-  render: (args) => <InteractiveTable {...args} />,
+  render: interactiveRender(),
 };
 
 export const Busy: Story = {
   args: {
     busy: true,
   },
-  render: (args) => <InteractiveTable {...args} />,
+  render: interactiveRender(),
 };
 
 export const Empty: Story = {
@@ -563,7 +573,7 @@ export const Empty: Story = {
       />
     ),
   },
-  render: (args) => <InteractiveTable {...args} />,
+  render: interactiveRender(),
 };
 
 export const InDialog: Story = {
