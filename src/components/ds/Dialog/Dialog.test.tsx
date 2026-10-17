@@ -463,4 +463,65 @@ describe('Dialog (Radix overlay)', () => {
     const dragArea = screen.getByTestId('dialog-drag-area');
     expect(dragArea).toHaveClass('touch-none');
   });
+
+  it('swipe-down past threshold closes DialogContent and calls onOpenChange(false) without onClose', () => {
+    const handleOpenChange = vi.fn();
+    render(
+      <Dialog open onOpenChange={handleOpenChange}>
+        <DialogContent title="Swipe Close Test">
+          <DialogBody>Body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+    const dragArea = screen.getByTestId('dialog-drag-area');
+
+    fireEvent.pointerDown(dragArea, { clientY: 50, pointerId: 1 });
+    fireEvent.pointerMove(dragArea, { clientY: 150, pointerId: 1 });
+    fireEvent.pointerUp(dragArea, { clientY: 150, pointerId: 1 });
+
+    expect(handleOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('swipe-down past threshold closes DialogContent and calls both onClose and onOpenChange(false)', () => {
+    const handleClose = vi.fn();
+    const handleOpenChange = vi.fn();
+    render(
+      <Dialog open onOpenChange={handleOpenChange}>
+        <DialogContent title="Swipe Close With Handler" onClose={handleClose}>
+          <DialogBody>Body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+    const dragArea = screen.getByTestId('dialog-drag-area');
+
+    fireEvent.pointerDown(dragArea, { clientY: 50, pointerId: 1 });
+    fireEvent.pointerMove(dragArea, { clientY: 150, pointerId: 1 });
+    fireEvent.pointerUp(dragArea, { clientY: 150, pointerId: 1 });
+
+    expect(handleClose).toHaveBeenCalledTimes(1);
+    expect(handleOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('pointercancel mid-drag does not close DialogContent and resets transform', () => {
+    const handleOpenChange = vi.fn();
+    render(
+      <Dialog open onOpenChange={handleOpenChange}>
+        <DialogContent title="Cancel Drag Test">
+          <DialogBody>Body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+    const dragArea = screen.getByTestId('dialog-drag-area');
+    const panel = dragArea.closest('[role="dialog"] > div') as HTMLElement;
+
+    fireEvent.pointerDown(dragArea, { clientY: 50, pointerId: 1 });
+    fireEvent.pointerMove(dragArea, { clientY: 150, pointerId: 1 });
+
+    expect(panel.style.transform).toBe('translateY(100px)');
+
+    fireEvent.pointerCancel(dragArea, { pointerId: 1 });
+
+    expect(handleOpenChange).not.toHaveBeenCalled();
+    expect(panel.style.transform).toBe('');
+  });
 });
