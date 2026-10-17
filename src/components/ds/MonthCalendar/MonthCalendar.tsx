@@ -7,7 +7,7 @@ import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import { Popover } from '../Popover/Popover';
 import { useControllableState } from '../useControllableState';
-import { formatMonth, monthNames, weekdayLetters } from '../utils';
+import { monthNames, weekdayLetters } from '../utils';
 
 export type CalendarEventTone =
   | 'positive'
@@ -238,6 +238,15 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
       currentMonthIso ?? defaultMonthIso,
     );
 
+    const [monthOpen, setMonthOpen] = useState(false);
+    const [yearOpen, setYearOpen] = useState(false);
+
+    const allMonthNames = useMemo(() => monthNames(), []);
+    const yearOptions = useMemo(
+      () => computeYearRange(today, minDate, maxDate),
+      [today, minDate, maxDate],
+    );
+
     if (isEventsMode) {
       return (
         <div
@@ -309,16 +318,6 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
       );
     }
 
-    // Picker mode navigation
-    const [monthOpen, setMonthOpen] = useState(false);
-    const [yearOpen, setYearOpen] = useState(false);
-
-    const allMonthNames = useMemo(() => monthNames(), []);
-    const yearOptions = useMemo(
-      () => computeYearRange(today, minDate, maxDate),
-      [today, minDate, maxDate],
-    );
-
     let prevY = currentYear;
     let prevM = currentMonth - 1;
     if (prevM < 0) {
@@ -385,8 +384,6 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
         setCurrentValue(iso);
       }
     };
-
-    const displayMonthIso = currentMonthIso ?? defaultMonthIso;
 
     // Compute month grid
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
