@@ -294,6 +294,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       <div className="flex flex-col bg-surface">
         <div className="flex flex-row divide-x divide-line-soft">
           <MonthCalendar
+            className="shrink-0"
             mode="picker"
             range
             month={viewMonthIso}
@@ -304,7 +305,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
             today={today}
             onValueChange={handleRangeCalendarChange}
           />
-          <div className="hidden lg:block">
+          <div className="hidden lg:block shrink-0">
             <MonthCalendar
               mode="picker"
               range
@@ -426,7 +427,10 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
             trigger={triggerButton}
             align="end"
             sideOffset={4}
-            contentClassName="p-0 overflow-hidden"
+            contentClassName={cn(
+              'p-0 overflow-hidden',
+              range && 'w-max max-w-none',
+            )}
           >
             {calendarContent}
           </Popover>
