@@ -242,6 +242,17 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-17 · Icon registry: add `minus` (Phosphor Minus) for Checkbox's mixed state, which closes the 2026-10-15 open question (decided by Claude at the owner's request).
 - 2026-10-17 · `@storybook/addon-docs` (same version as `storybook`, ^10.6.2) is approved as a dev dependency. Autodocs needs it.
 - 2026-10-17 · This round only, Antigravity may edit component READMEs, `.storybook/`, `design-system/icons.json` and `tailwind.config.ts`, exactly as the audit specs say. Tokens stay read-only.
+- 2026-10-17 · **Storybook review round** (owner, after testing Storybook by hand):
+  - Storybook group "Inputs" is renamed **Form fields**; Switch moves into it. Popover keeps its story (Overlays). Foundations stays.
+  - **Dialog footer:** actions are data and Dialog draws them. One row, left to right tertiary, secondary, primary. Only primary is filled (`primary` or `danger-filled`); secondary and tertiary are `link`. Equal widths on phone only; natural widths aligned right on desktop. Replaces the "tertiary far left / end of body on phone" rule.
+  - **SearchField merges into TextField**, no alias: the search form is a TextField with a search icon and a clear button.
+  - **TextArea** grows with its text; no max height by default (`maxRows` stays as an option).
+  - **MonthCalendar:** month and year are picked from dropdowns in the header; min/max apply to the arrows, the months and the years.
+  - **Rail footer:** one row linking to Settings: avatar, name, and the email under it.
+  - **No "Recent imports"** anywhere: the app doesn't store import history.
+  - **TransactionRow** shows the eye only in selection mode.
+  - **ProgressBar indeterminate** is a calm sweep; one cycle is the new generic token `dur-loop` (1600ms).
+  - **DataTable** (the desktop form of TransactionRow and every desktop table) waits for its own round: design first, then build.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
