@@ -175,5 +175,17 @@ describe('Tabs', () => {
     expect(tab).toHaveClass('rounded-none');
     expect(tab).not.toHaveClass('rounded-ds-sm');
   });
+
+  it('prevents vertical scroll on tablist with overflow-y-hidden', () => {
+    render(
+      <Tabs
+        defaultValue="first"
+        items={[{ value: 'first', label: 'First' }]}
+      />,
+    );
+    const tablist = screen.getByRole('tablist');
+    expect(tablist).toHaveClass('overflow-x-auto');
+    expect(tablist).toHaveClass('overflow-y-hidden');
+  });
 });
 
