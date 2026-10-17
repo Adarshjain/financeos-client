@@ -46,7 +46,7 @@ export interface DropZoneProps
   /** Callback when remove trash button is clicked for a queued file */
   onRemoveFile?: (file: QueuedFile) => void;
 
-  /** Optional content rendered under the drop zone (e.g. recent imports) */
+  /** Optional content under the drop zone */
   children?: React.ReactNode;
 }
 
@@ -225,7 +225,7 @@ export const DropZone = forwardRef<HTMLDivElement, DropZoneProps>(
           </Card>
         )}
 
-        {/* Children (e.g. composed recent imports or custom content) */}
+        {/* Optional content under the drop zone */}
         {children}
       </div>
     );

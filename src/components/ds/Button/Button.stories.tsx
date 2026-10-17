@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Button, Icon } from '@/components/ds';
+import { Button, Icon, Text } from '@/components/ds';
 
 const meta: Meta<typeof Button> = {
   title: 'DS/Actions/Button',
@@ -102,10 +102,11 @@ export const Ghost: Story = {
 };
 
 export const Link: Story = {
-  args: {
-    variant: 'link',
-    children: 'Reconcile',
-  },
+  render: () => (
+    <Text variant="body">
+      Your HDFC statement is ready. <Button variant="link">View statement</Button>
+    </Text>
+  ),
 };
 
 export const IconButton: Story = {

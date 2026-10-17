@@ -69,7 +69,6 @@ const meta: Meta<typeof RuleCard> = {
   args: {
     onApprove: fn(),
     onDetail: fn(),
-    onSelectedChange: fn(),
   },
 };
 
@@ -85,6 +84,11 @@ export const Unverified: Story = {
     status: 'unverified',
     source: 'LLM-generated',
     categories: ['Groceries'],
+    menuItems: [
+      { label: 'Find matches', onSelect: fn() },
+      { label: 'Edit rule', onSelect: fn() },
+      { label: 'Delete rule', onSelect: fn(), destructive: true },
+    ],
   },
 };
 
@@ -99,6 +103,7 @@ export const Selected: Story = {
     categories: ['Shopping'],
     selected: true,
     selectionMode: true,
+    onSelectedChange: fn(),
   },
 };
 
@@ -126,6 +131,7 @@ export const SelectionModeNotSelected: Story = {
     categories: ['Food & dining'],
     selectionMode: true,
     selected: false,
+    onSelectedChange: fn(),
   },
 };
 
@@ -157,6 +163,7 @@ export const SelectableInteractive: Story = {
     categories: ['Groceries'],
     selectable: true,
     selected: false,
+    onSelectedChange: fn(),
   },
   render: function SelectableRuleCardStory(args) {
     const [{ selected }, updateArgs] = useArgs();

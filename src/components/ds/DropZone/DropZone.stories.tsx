@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Card, DropZone, ListRow, SectionHeader, StatusWords } from '@/components/ds';
+import { DropZone } from '@/components/ds';
 
 const defaultProps = {
   title: 'Add statements',
@@ -91,26 +91,5 @@ export const WithDropError: Story = {
   args: {
     ...defaultProps,
     error: 'This file type is not supported.',
-  },
-};
-
-export const WithRecentImports: Story = {
-  name: 'With recent imports',
-  args: {
-    ...defaultProps,
-    children: (
-      <Card className="px-space-14 py-0 overflow-hidden">
-        <SectionHeader>Recent imports</SectionHeader>
-        <ListRow
-          title="Document-Sep2026.pdf"
-          borderTop={false}
-          trailing={<StatusWords items={[{ tone: 'success', label: 'Done' }]} />}
-        />
-        <ListRow
-          title="Report-Aug2026.pdf"
-          trailing={<StatusWords items={[{ tone: 'warning', label: '1 warning' }]} />}
-        />
-      </Card>
-    ),
   },
 };
