@@ -1,10 +1,40 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { TransactionRow } from './TransactionRow';
 
+const giveSize = (el: HTMLElement) => {
+  el.getBoundingClientRect = () => ({
+    x: 0,
+    y: 0,
+    left: 0,
+    top: 0,
+    right: 400,
+    bottom: 100,
+    width: 400,
+    height: 100,
+    toJSON() {},
+  });
+};
+const adv = (ms: number) =>
+  act(() => {
+    vi.advanceTimersByTime(ms);
+  });
+
 describe('TransactionRow', () => {
+  beforeEach(() => {
+    vi.stubGlobal('jest', {
+      advanceTimersByTime: vi.advanceTimersByTime.bind(vi),
+    });
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
   it('renders description, amount, balance, account, and provenance', () => {
     render(
       <TransactionRow
@@ -190,45 +220,72 @@ describe('TransactionRow', () => {
     expect(monStripe).toHaveClass('w-space-4');
   });
 
-  it('toggles selection on row tap when selectable', () => {
+  it('calls onDetail on row tap outside selection mode, and toggles selection in selection mode', async () => {
     const handleSelectedChange = vi.fn();
-    render(
+    const handleDetail = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    const { rerender } = render(
       <TransactionRow
         description="Selectable row"
         amount="500.00"
         selectable
         selected={false}
+        selectionMode={false}
+        onDetail={handleDetail}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+    const row = screen.getByRole('row');
+    giveSize(row);
+
+    await user.pointer({ keys: '[MouseLeft>]', target: row });
+    await user.pointer({ keys: '[/MouseLeft]', target: row });
+    expect(handleDetail).toHaveBeenCalledTimes(1);
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+
+    rerender(
+      <TransactionRow
+        description="Selectable row"
+        amount="500.00"
+        selectable
+        selected={false}
+        selectionMode={true}
+        onDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
       />,
     );
 
-    fireEvent.click(screen.getByText('Selectable row'));
+    await user.pointer({ keys: '[MouseLeft>]', target: row });
+    await user.pointer({ keys: '[/MouseLeft]', target: row });
     expect(handleSelectedChange).toHaveBeenCalledWith(true);
   });
 
-  it('toggles selection on Enter and Space keys', () => {
+  it('toggles selection on Enter and Space keys in selection mode', async () => {
     const handleSelectedChange = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     render(
       <TransactionRow
         description="Keyboard row"
         amount="500.00"
         selectable
         selected={true}
+        selectionMode={true}
         onSelectedChange={handleSelectedChange}
       />,
     );
 
     const row = screen.getByRole('row');
-    fireEvent.keyDown(row, { key: 'Enter' });
+    row.focus();
+    await user.keyboard('{Enter}');
     expect(handleSelectedChange).toHaveBeenCalledWith(false);
 
-    fireEvent.keyDown(row, { key: ' ' });
-    expect(handleSelectedChange).toHaveBeenCalledWith(false);
+    await user.keyboard(' ');
+    expect(handleSelectedChange).toHaveBeenCalledTimes(2);
   });
 
-  it('starts selection on long-press (~450ms)', () => {
-    vi.useFakeTimers();
+  it('starts selection on long-press (500ms)', async () => {
     const handleSelectedChange = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const { container } = render(
       <TransactionRow
         description="Long press row"
@@ -240,21 +297,22 @@ describe('TransactionRow', () => {
     );
 
     const row = container.firstChild as HTMLElement;
-    fireEvent.touchStart(row, {
-      touches: [{ clientX: 100, clientY: 100 }],
-    });
+    giveSize(row);
+    await user.pointer({ keys: '[TouchA>]', target: row });
 
-    vi.advanceTimersByTime(200);
+    adv(300);
     expect(handleSelectedChange).not.toHaveBeenCalled();
 
-    vi.advanceTimersByTime(300);
+    adv(200);
     expect(handleSelectedChange).toHaveBeenCalledWith(true);
-    vi.useRealTimers();
+
+    await user.pointer({ keys: '[/TouchA]', target: row });
+    expect(handleSelectedChange).toHaveBeenCalledTimes(1);
   });
 
-  it('cancels long-press when movement exceeds 10px', () => {
-    vi.useFakeTimers();
+  it('cancels long-press when movement exceeds 10px', async () => {
     const handleSelectedChange = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
     const { container } = render(
       <TransactionRow
         description="Moving row"
@@ -266,19 +324,62 @@ describe('TransactionRow', () => {
     );
 
     const row = container.firstChild as HTMLElement;
-    fireEvent.touchStart(row, {
-      touches: [{ clientX: 100, clientY: 100 }],
-    });
+    giveSize(row);
+    await user.pointer({ keys: '[TouchA>]', target: row, coords: { clientX: 100, clientY: 100 } });
+    await user.pointer({ target: row, coords: { clientX: 100, clientY: 120 } });
+    adv(600);
+    await user.pointer({ keys: '[/TouchA]', target: row, coords: { clientX: 100, clientY: 120 } });
 
-    vi.advanceTimersByTime(200);
-    // Move 15px vertically
-    fireEvent.touchMove(row, {
-      touches: [{ clientX: 100, clientY: 115 }],
-    });
-
-    vi.advanceTimersByTime(300);
     expect(handleSelectedChange).not.toHaveBeenCalled();
-    vi.useRealTimers();
+  });
+
+  it('a tap on a selectable row outside selection mode calls onDetail and does not select', async () => {
+    const handleDetail = vi.fn();
+    const handleSelectedChange = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(
+      <TransactionRow
+        description="Tap detail row"
+        amount="500.00"
+        selectable
+        selected={false}
+        onDetail={handleDetail}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+    const row = screen.getByRole('row');
+    giveSize(row);
+    await user.pointer({ keys: '[MouseLeft>]', target: row });
+    await user.pointer({ keys: '[/MouseLeft]', target: row });
+
+    expect(handleDetail).toHaveBeenCalledTimes(1);
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+  });
+
+  it('a tap on a category chip calls its handler and does not open or select the row', async () => {
+    const handleCategoryClick = vi.fn();
+    const handleDetail = vi.fn();
+    const handleSelectedChange = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(
+      <TransactionRow
+        description="Category row"
+        amount="500.00"
+        selectable
+        selected={false}
+        categories={['Dining']}
+        onCategoryClick={handleCategoryClick}
+        onDetail={handleDetail}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+    const chip = screen.getByText('Dining');
+    giveSize(chip);
+    await user.click(chip);
+
+    expect(handleCategoryClick).toHaveBeenCalledWith('Dining');
+    expect(handleDetail).not.toHaveBeenCalled();
+    expect(handleSelectedChange).not.toHaveBeenCalled();
   });
 
   it('eye control opens detail without toggling selection', () => {

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { forwardRef } from 'react';
+import { mergeProps } from 'react-aria';
 
 import {
   Badge,
@@ -10,7 +11,6 @@ import {
   Icon,
   StatusWord,
   useControllableState,
-  useLongPress,
   useSelectableItem,
 } from '@/components/ds';
 
@@ -116,16 +116,6 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       borderTop = true,
       className,
       children,
-      onClick,
-      onKeyDown,
-      onTouchStart,
-      onTouchMove,
-      onTouchEnd,
-      onTouchCancel,
-      onPointerDown,
-      onPointerMove,
-      onPointerUp,
-      onPointerCancel,
       ...props
     },
     ref,
@@ -137,24 +127,17 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
     });
 
     const isWarning = tone === 'warning';
-    const isSelectable = selectable ?? Boolean(onSelectedChange);
+    const isSelectable = Boolean(selectable);
 
     const showEye = selectionMode && Boolean(onDetail);
 
-    // Long press detection for mobile selection
-    const longPress = useLongPress({
-      onLongPress: () => setSelected(true),
-      disabled: !isSelectable && !selectionMode,
-    });
-
-    const item = useSelectableItem({
+    const { itemProps, nestedControlProps } = useSelectableItem({
+      selectable,
       selected,
       onSelectedChange: setSelected,
       selectionMode,
-      selectable,
-      consumeLongPress: longPress.consumeTriggered,
-      onClick,
-      onKeyDown,
+      onPress: onDetail,
+      disabled,
     });
 
     // Assemble context line items in canonical order:
@@ -223,7 +206,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
 
       if (categories.length === 0) {
         if (!unsetCategoryLabel) return null;
-        return (
+        const badge = (
           <Badge
             variant="dashed"
             shape="rounded"
@@ -233,34 +216,59 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             {unsetCategoryLabel}
           </Badge>
         );
+        return onSetCategory ? (
+          <span {...nestedControlProps}>{badge}</span>
+        ) : (
+          badge
+        );
       }
 
       return (
         <>
-          <Badge
-            variant="outline"
-            shape="rounded"
-            onClick={
-              onCategoryClick ? () => onCategoryClick(categories[0]) : undefined
-            }
-          >
-            {categories[0]}
-          </Badge>
-          {categories.length > 1 && (
+          {onCategoryClick ? (
+            <span {...nestedControlProps}>
+              <Badge
+                variant="outline"
+                shape="rounded"
+                onClick={() => onCategoryClick(categories[0])}
+              >
+                {categories[0]}
+              </Badge>
+            </span>
+          ) : (
             <Badge
               variant="outline"
               shape="rounded"
-              onClick={onMoreCategoriesClick}
             >
-              +{categories.length - 1}
+              {categories[0]}
             </Badge>
+          )}
+          {categories.length > 1 && (
+            onMoreCategoriesClick ? (
+              <span {...nestedControlProps}>
+                <Badge
+                  variant="outline"
+                  shape="rounded"
+                  onClick={onMoreCategoriesClick}
+                >
+                  +{categories.length - 1}
+                </Badge>
+              </span>
+            ) : (
+              <Badge
+                variant="outline"
+                shape="rounded"
+              >
+                +{categories.length - 1}
+              </Badge>
+            )
           )}
         </>
       );
     };
 
     const isInteractive = Boolean(
-      onClick || isSelectable || selectionMode || onSelectedChange,
+      props.onClick || isSelectable || selectionMode || onSelectedChange,
     );
 
     return (
@@ -269,42 +277,8 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         role={isInteractive ? 'row' : undefined}
         aria-selected={isSelectable ? selected : undefined}
         tabIndex={isInteractive && !disabled ? 0 : undefined}
-        onClick={disabled ? undefined : item.handleClick}
-        onKeyDown={disabled ? undefined : item.handleKeyDown}
-        onTouchStart={(e) => {
-          longPress.handlers.onTouchStart(e);
-          onTouchStart?.(e);
-        }}
-        onTouchMove={(e) => {
-          longPress.handlers.onTouchMove(e);
-          onTouchMove?.(e);
-        }}
-        onTouchEnd={(e) => {
-          longPress.handlers.onTouchEnd(e);
-          onTouchEnd?.(e);
-        }}
-        onTouchCancel={(e) => {
-          longPress.handlers.onTouchCancel(e);
-          onTouchCancel?.(e);
-        }}
-        onPointerDown={(e) => {
-          longPress.handlers.onPointerDown(e);
-          onPointerDown?.(e);
-        }}
-        onPointerMove={(e) => {
-          longPress.handlers.onPointerMove(e);
-          onPointerMove?.(e);
-        }}
-        onPointerUp={(e) => {
-          longPress.handlers.onPointerUp(e);
-          onPointerUp?.(e);
-        }}
-        onPointerCancel={(e) => {
-          longPress.handlers.onPointerCancel(e);
-          onPointerCancel?.(e);
-        }}
         className={cn(
-          'relative px-space-12 py-space-8 text-body transition-colors select-none font-text',
+          'relative px-space-12 py-space-8 text-body transition-colors select-none touch-callout-none font-text',
           borderTop ? 'border-t border-line-soft first:border-t-0' : 'border-t-0',
           selected && 'bg-brand-tint',
           isWarning && 'bg-attention-tint',
@@ -313,7 +287,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
           isInteractive && !disabled && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
           className,
         )}
-        {...props}
+        {...mergeProps(props, itemProps)}
       >
         {selected && (
           <span
@@ -331,7 +305,10 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         <div className="flex items-center gap-space-10 min-w-0 w-full">
           {/* Desktop Checkbox */}
           {isSelectable && (
-            <div className="hidden lg:flex items-center justify-center shrink-0 pr-space-4">
+            <div
+              {...nestedControlProps}
+              className="hidden lg:flex items-center justify-center shrink-0 pr-space-4"
+            >
               <Checkbox
                 checked={selected}
                 onCheckedChange={(checked) => setSelected(checked === true)}
@@ -380,18 +357,17 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             {(showEye || chevron) && (
               <div className="col-start-3 row-start-1 row-span-2 flex items-center justify-end text-ink-3">
                 {showEye && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDetail?.();
-                    }}
-                    aria-label="View transaction details"
-                    className="p-space-4 text-ink-3 hover:text-ink h-auto min-h-0"
-                  >
-                    <Icon name="view" size="md" />
-                  </Button>
+                  <span {...nestedControlProps}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onDetail}
+                      aria-label="View transaction details"
+                      className="p-space-4 text-ink-3 hover:text-ink h-auto min-h-0"
+                    >
+                      <Icon name="view" size="md" />
+                    </Button>
+                  </span>
                 )}
                 {chevron && (
                   <Icon name="chevron-right" size="sm" className="text-ink-4 shrink-0" />
