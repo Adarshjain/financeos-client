@@ -309,4 +309,22 @@ describe('Dialog (Radix overlay)', () => {
     expect(screen.getByRole('heading', { name: 'Screen reader title' })).toHaveClass('sr-only');
     expect(container.querySelector('.pt-space-12')).toBeNull();
   });
+
+  it('renders portalled panel with font-text class', () => {
+    render(
+      <Dialog open>
+        <DialogContent title="Font test">
+          <DialogBody>Font body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+
+    const content = screen.getByText('Font body').closest('[role="dialog"] > div');
+    expect(content).toHaveClass('font-text');
+  });
+
+  it('renders DialogShell with font-text class', () => {
+    const { container } = render(<DialogShell title="Shell font test" />);
+    expect(container.firstChild).toHaveClass('font-text');
+  });
 });

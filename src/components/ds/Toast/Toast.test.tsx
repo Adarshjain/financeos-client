@@ -28,6 +28,7 @@ describe('Toast', () => {
     expect(container.firstChild).toHaveClass(
       'bg-ink',
       'text-on-brand',
+      'font-text',
       'shadow-level-2',
       'rounded-ds-lg',
     );

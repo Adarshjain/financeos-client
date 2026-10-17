@@ -26,6 +26,7 @@ describe('Menu', () => {
     fireEvent.pointerDown(trigger, { button: 0 });
 
     expect(screen.getByText('Edit rule')).toBeInTheDocument();
+    expect(screen.getByRole('menu')).toHaveClass('font-text');
     const editItem = screen.getByRole('menuitem', { name: 'Edit rule' });
 
     fireEvent.click(editItem);

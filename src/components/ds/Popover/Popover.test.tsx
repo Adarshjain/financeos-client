@@ -34,6 +34,7 @@ describe('Popover', () => {
     expect(content).toHaveClass('min-w-popover-trigger');
     expect(content).toHaveClass('max-w-container-sm');
     expect(content).toHaveClass('w-auto');
+    expect(content).toHaveClass('font-text');
     expect(content).toHaveClass('shadow-level-2');
     expect(content).toHaveClass('rounded-ds-lg');
     expect(content).toHaveClass('data-side-bottom:slide-in-from-top-1');
