@@ -257,4 +257,23 @@ describe('RuleCard', () => {
     fireEvent.click(checkbox);
     expect(handleSelectedChange).toHaveBeenCalledWith(true);
   });
+
+  it('supports uncontrolled selection via defaultSelected', () => {
+    const handleSelectedChange = vi.fn();
+    render(
+      <RuleCard
+        name="Uncontrolled rule"
+        matchType="Contains"
+        selectable
+        defaultSelected={true}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+
+    const checkbox = screen.getByLabelText('Select Uncontrolled rule');
+    expect(checkbox).toBeChecked();
+
+    fireEvent.click(checkbox);
+    expect(handleSelectedChange).toHaveBeenCalledWith(false);
+  });
 });
