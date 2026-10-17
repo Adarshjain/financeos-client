@@ -105,7 +105,6 @@ const meta: Meta<typeof TransactionRow> = {
     },
   },
   args: {
-    onSelectedChange: fn(),
     onDetail: fn(),
     onSetCategory: fn(),
     onCategoryClick: fn(),
@@ -186,6 +185,7 @@ export const SelectedSelectionMode: Story = {
     categories: ['Transport'],
     selected: true,
     selectionMode: true,
+    onSelectedChange: fn(),
   },
 };
 
@@ -221,6 +221,7 @@ export const SelectableInteractive: Story = {
     selectable: true,
     selected: false,
     categories: ['Food & dining'],
+    onSelectedChange: fn(),
   },
   render: function SelectableRowStory(args) {
     const [{ selected }, updateArgs] = useArgs();

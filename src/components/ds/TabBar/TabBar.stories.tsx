@@ -10,7 +10,7 @@ const financeOSItems: TabBarItem[] = [
   { id: 'inbox', label: 'Inbox', icon: 'inbox', count: 4, countTone: 'danger' },
   { id: 'upcoming', label: 'Upcoming', icon: 'calendar' },
   { id: 'transactions', label: 'Transactions', icon: 'list-bullets', count: 25, countTone: 'warning' },
-  { id: 'more', label: 'More', icon: 'more' },
+  { id: 'more', label: 'More', icon: 'menu' },
 ];
 
 const meta: Meta<typeof TabBar> = {
@@ -110,7 +110,7 @@ export const AsChildLink: Story = {
       {
         id: 'more',
         label: 'More',
-        icon: 'more',
+        icon: 'menu',
       },
     ],
     current: 'home',

@@ -10,6 +10,7 @@ import {
   Dialog,
   DialogBody,
   DialogContent,
+  DialogTrigger,
   Divider,
   Switch,
   Text,
@@ -40,7 +41,6 @@ const meta: Meta<typeof DialogContent> = {
     description: 'Dialog description and context.',
     showClose: true,
     dismissible: true,
-    onClose: fn(),
   },
   argTypes: {
     size: {
@@ -68,6 +68,9 @@ type Story = StoryObj<typeof DialogContent>;
 export const Default: Story = {
   render: (args) => (
     <Dialog defaultOpen>
+      <DialogTrigger asChild>
+        <Button>Open dialog</Button>
+      </DialogTrigger>
       <DialogContent
         {...args}
         primary={<Button variant="primary">Confirm</Button>}
@@ -91,6 +94,9 @@ export const SmallWithTertiary: Story = {
   },
   render: (args) => (
     <Dialog defaultOpen>
+      <DialogTrigger asChild>
+        <Button>Open dialog</Button>
+      </DialogTrigger>
       <DialogContent
         {...args}
         tertiary={<Button variant="danger">Delete</Button>}
@@ -121,6 +127,9 @@ export const LargeForm: Story = {
   },
   render: (args) => (
     <Dialog defaultOpen>
+      <DialogTrigger asChild>
+        <Button>Open dialog</Button>
+      </DialogTrigger>
       <DialogContent
         {...args}
         secondary={<Button variant="secondary">Cancel</Button>}
@@ -148,6 +157,9 @@ export const SidePanel: Story = {
   },
   render: (args) => (
     <Dialog defaultOpen>
+      <DialogTrigger asChild>
+        <Button>Open dialog</Button>
+      </DialogTrigger>
       <DialogContent
         {...args}
         secondary={<Button variant="secondary">Close</Button>}
@@ -171,6 +183,9 @@ export const CanvasBackground: Story = {
   },
   render: (args) => (
     <Dialog defaultOpen>
+      <DialogTrigger asChild>
+        <Button>Open dialog</Button>
+      </DialogTrigger>
       <DialogContent
         {...args}
         primary={<Button variant="primary">Done</Button>}

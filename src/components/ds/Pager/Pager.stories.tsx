@@ -115,3 +115,18 @@ export const Interactive: Story = {
     sizeLabel: (n) => `${n} / page`,
   },
 };
+
+export const Phone: Story = {
+  name: 'Phone',
+  globals: {
+    viewport: { value: 'phone', isRotated: false },
+  },
+  args: {
+    page: 0,
+    size: 50,
+    totalElements: 182,
+    totalPages: 4,
+    unit: 'transactions',
+    sizeLabel: (n) => `${n} / page`,
+  },
+};

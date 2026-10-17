@@ -52,7 +52,6 @@ const meta = {
     borderTop: true,
     clickable: false,
     asChild: false,
-    onClick: fn(),
   },
 } satisfies Meta<typeof ListRow>;
 
@@ -100,6 +99,8 @@ export const WithActions: Story = {
   args: {
     title: 'Netflix Subscription',
     subtitle: 'Billed monthly on the 12th',
+    clickable: true,
+    onClick: fn(),
     actions: [
       { id: 'edit', label: 'Edit', onSelect: fn() },
       { id: 'pause', label: 'Pause rule', onSelect: fn() },
@@ -114,6 +115,7 @@ export const WithChevron: Story = {
     subtitle: 'Manage passwords and sessions',
     chevron: true,
     clickable: true,
+    onClick: fn(),
   },
 };
 
