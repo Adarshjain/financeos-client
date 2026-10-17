@@ -30,7 +30,7 @@ The list frame for every table of records: column headers with sort, a selection
   - `sortMode: 'client'` (owner, 2026-10-17): only for lists the server returns **whole** (one account's statements, a loan's schedule, a person's ledger, holdings). DataTable sorts the rows it has. Never combine it with a Pager, and never slice rows on the client.
 - **Selection** (RULES §7.4):
   - **Desktop:** the checkbox column. The header checkbox selects every row on the page; it shows the mixed state when only some are selected. A row's checkbox never triggers the row click.
-  - **Phone:** long-press starts selection, then tap toggles. The eye opens the row's detail without leaving selection. Selection mode is on whenever at least one row is selected.
+  - **Phone:** long-press starts selection (touch or mouse, while still held), then tap toggles. The eye opens the row's detail without leaving selection. Selection mode is on whenever at least one row is selected.
   - Selection is a set of row ids. It survives paging; the page clears it when filters change.
   - **Select all across pages:** when the page passes `allSelected`, every row shows as selected. Unticking one row turns it off and reports the page's other ids as the selection. SelectionBar's "Select all 182" sets it.
   - A selected row uses TransactionRow's selected look (`brand-tint` with the 4px `brand` stripe on the left). A highlighted row uses ListRow's highlighted look (`brand-strong` stripe). The page shows SelectionBar from the selection.
@@ -68,7 +68,7 @@ The list frame for every table of records: column headers with sort, a selection
 - Native props, `ref` and `className` (layout only) on the root.
 
 ## Built from
-TanStack Table v9 (`@tanstack/react-table`, pinned 9.2.4; state only: sorting, selection, expansion and columns; owner-approved 2026-10-17), Checkbox, Button (sort headers, expander, eye), Icon, Pager (passed in), SectionHeader (bands, day headers), Skeleton, `useSelectableItem` and `useLongPress` (phone selection), `useControllableState`.
+TanStack Table v9 (`@tanstack/react-table`, pinned 9.2.4; state only: sorting, selection, expansion and columns; owner-approved 2026-10-17), Checkbox, Button (sort headers, expander, eye), Icon, Pager (passed in), SectionHeader (bands, day headers), Skeleton, `useSelectableItem` (press and long-press, on React Aria), `useControllableState`.
 
 ## Variants
 - Plain.
