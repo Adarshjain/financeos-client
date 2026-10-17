@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { Button } from '../Button/Button';
 import { ListField, ListRow } from './ListRow';
 
 describe('ListRow', () => {
@@ -138,6 +139,19 @@ describe('ListRow', () => {
       </ListRow>,
     );
     expect(ref.current).toBeInstanceOf(HTMLAnchorElement);
+  });
+
+  it('uses active-self:bg-pressed and no bare active:bg- on interactive rows', () => {
+    const { container } = render(
+      <ListRow
+        clickable
+        title="Settings"
+        trailing={<Button variant="ghost">Action</Button>}
+      />,
+    );
+    const row = container.firstChild as HTMLElement;
+    expect(row.className).toContain('active-self:bg-pressed');
+    expect(row.className).not.toMatch(/\bactive:bg-/);
   });
 });
 

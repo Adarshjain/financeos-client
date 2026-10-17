@@ -311,7 +311,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
           selected && 'bg-brand-tint',
           isWarning && 'bg-attention-tint',
           disabled && 'opacity-60 pointer-events-none',
-          !selected && !isWarning && 'bg-surface hover:bg-hover active:bg-hover',
+          !selected && !isWarning && 'bg-surface hover:bg-hover active-self:bg-hover',
           isInteractive && !disabled && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
           className,
         )}

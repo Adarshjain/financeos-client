@@ -88,7 +88,7 @@ export const ListRow = forwardRef<HTMLDivElement, ListRowProps>(
         : 'border-l-4 border-l-transparent',
       disabled && 'opacity-50 pointer-events-none',
       isInteractive &&
-        'cursor-pointer hover:bg-hover active:bg-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
+        'cursor-pointer hover:bg-hover active-self:bg-pressed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
       className,
     );
 
