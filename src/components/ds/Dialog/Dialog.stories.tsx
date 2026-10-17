@@ -22,6 +22,10 @@ const meta: Meta<typeof DialogContent> = {
   parameters: {
     layout: 'fullscreen',
     docs: {
+      story: {
+        inline: false,
+        iframeHeight: 500,
+      },
       description: {
         component:
           'The one overlay for forms, details, pickers and confirmations. It replaces Sheet and ConfirmSheet: the same component is a centred modal on desktop and a bottom sheet on phone, chosen by CSS at the lg breakpoint.',

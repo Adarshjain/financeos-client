@@ -254,6 +254,14 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 1/Storybook · Antigravity · Compact autodocs previews, removed Controls table, and isolated modal stories:
+  - `.storybook/preview.tsx`:
+    - Differentiated docs mode (`context.viewMode === 'docs'`) in `withTheme` and `ThemeWrapper`. When rendering stories in autodocs, `min-h-screen` is omitted, allowing previews to size naturally to component dimensions instead of forcing 100vh height.
+    - Replaced non-functional `docs.controls.disable: true` parameter with `docs.components: { Controls: () => null }`, removing the unwanted Controls / ArgsTable from autodocs pages.
+  - `src/components/ds/Dialog/Dialog.stories.tsx` & `src/components/ds/Menu/Menu.stories.tsx`:
+    - Added `docs.story: { inline: false, iframeHeight: ... }` parameters. Renders modal overlay stories in isolated iframes on the Docs page, preventing Radix modal scroll locks (`body { overflow: hidden }`) and pointer blockers (`body { pointer-events: none }`) from leaking into and freezing the documentation page.
+  - Checks: `node design-system/tools/check-ui.mjs` (clean), `npm run typecheck` (clean), `npm run lint` (clean), `npm test` (30/30 Dialog and Menu tests pass), Playwright scroll verification across docs entries (clean). Deviations: none.
+
 - 2026-10-17 · Phase 3b · Claude · Reviewed the fix round. check-ui full scan clean, typecheck, 452 Dinero tests and all 251 stories render. Fixed 3 things myself:
   - DateField range: an earlier second tap from the calendar gave a one-day range (20 then 5 → 20–20). DateField now recovers the tapped day from MonthCalendar's range output. Added 2 tests (swap; first tap starts a new range).
   - DateField's calendar trigger was switched to a raw `<button>` with a bigger icon (not asked). Restored the Button (ghost, sm, iconOnly, `md` icon). `check-ui` no longer lets DateField or DateTile draw a raw `<button>`.
