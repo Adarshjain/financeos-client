@@ -101,7 +101,7 @@ These are the rules a mature design system (Radix, Material, Polaris, Atlassian)
 1. **One component, one structure, one code path.** Phone and desktop are the same markup; what differs (size, position, what shows) is written with Tailwind breakpoint classes, mobile first. Never two render functions, never `renderPhone` / `renderDesktop`, never a `variant="phone" | "desktop"` prop. The page never chooses a form.
 2. **One switch: `lg` (1024px).** Below it is the phone form, from it the desktop form. Components use only `lg:` for that switch (no `sm:`, `md:`, `xl:` inside components).
 3. **No viewport detection in JavaScript** (`useMediaQuery`, `useIsPhone`, `matchMedia`, `innerWidth`), with no exceptions. The server can't know the width, so it renders the wrong form and the page jumps. (ResponsiveOverlay was deleted when dropdowns stopped becoming sheets, §5.6a.)
-4. **Touch vs mouse is not phone vs desktop.** Long-press responds to touch input (`pointerType === 'touch'`) on any screen. The desktop checkbox column is shown with `hidden lg:flex`, not by a hook.
+4. **Touch vs mouse is not phone vs desktop.** Long-press responds to touch, pen and mouse on any screen (owner, 2026-10-17), so a narrow desktop window can still select. It fires while the pointer is still down, after the threshold, and the release that follows does nothing. A tap selects only in selection mode. The desktop checkbox column is shown with `hidden lg:flex`, not by a hook. Press and long-press come from React Aria (`@react-aria/interactions`) through Dinero's `useSelectableItem`; never hand-roll pointer timers.
 
 **API**
 5. **Prop names mean one thing everywhere:**
