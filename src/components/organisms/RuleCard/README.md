@@ -10,6 +10,16 @@ A record card for lists where each item has several facts and actions (categoris
 ## Selection mode (phone)
 Long-press starts it. Selected cards turn `brand-tint` with a `brand` outline; on every card the eye icon replaces Approve and ⋮ and opens the edit sheet.
 
+## Gestures
+
+| Gesture | Outside selection mode | In selection mode |
+|---|---|---|
+| **Long-press** (500ms, touch or mouse, pointer held still on the item) | Selects the item **while the pointer is still down**, which turns on selection mode. Releasing afterwards does **nothing**: no tap, no toggle, no detail. | Selects the item if it isn't selected. Releasing does nothing. |
+| **Tap** (press and release quickly) | Calls `onDetail` (opens the item). **Never selects.** | Toggles the item's selection. |
+| **Enter / Space** on the focused item | Same as tap. | Same as tap. |
+| **Scroll or swipe** (the pointer moves more than 10px, or the browser takes the gesture) | Cancels: no long-press, no tap. | Same. |
+| **Press on a control inside the item** (checkbox, eye, Approve, ⋮ menu, category chip) | Only that control acts; the item doesn't. | Same. |
+
 ## Props
 - `name?: ReactNode`: Rule title or merchant name
 - `matchType: ReactNode`: Match type ("Contains", "Starts with", "Exact")
