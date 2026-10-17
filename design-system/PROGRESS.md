@@ -265,6 +265,38 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 1 · Antigravity · Storybook review round — Phase 1 fixes:
+  - Commits:
+    - `0980bb5` `ui(ds): A1 register scales in cn, hoverOnlyWhenSupported, active-self variant and tap highlight`
+    - `ce640ca` `ui(ds): A2 storybook viewports, canvas font and form fields group rename`
+    - `b1a1f59` `ui(ds): A3 switch and filterchip stories wired with useArgs`
+    - `f3875e7` `ui(ds): A4 update stories content, interactive states and viewports`
+    - `6c9fede` `ui(ds): A5 apply font-text to portalled overlay roots`
+    - `9d05651` `ui(ds): A6.1 replace active with active-self on clickable rows`
+    - `0bd2c46` `ui(ds): A6.2 show eye detail icon only in selection mode on transaction row`
+    - `df3049c` `ui(ds): A6.3 align widget body with px-space-16`
+    - `3872a05` `ui(ds): A6.4 prevent vertical scroll in tabs`
+    - `e47a22a` `ui(ds): A6.5 calm sweep animation for indeterminate progress bar`
+    - `58f1caa` `ui(ds): A6.6 skip disabled options on arrow navigation and remove hover in segmented control`
+    - `04a1e10` `ui(ds): A6.7 show spinner on loading select`
+    - `322b19d` `ui(ds): A6.8 ensure selection bar phone action labels render without height clipping`
+    - `da127b6` `ui(ds): A6.9 make maxRows optional with no default in textarea`
+    - `d2ad280` `ui(ds): A6.10 widen date field calendar popover for range mode`
+    - `72c8e84` `ui(ds): A6.11 fix dialog close path and sheet drag cancel`
+    - `b3b3efb` `ui(ds): A7 remove phone sheet references from filter chip and popover readmes`
+    - `0c24a1d` `ui(ds): A8 remove junk files from repository root`
+  - Changed tests (reasons):
+    - `src/components/ds/ProgressBar/ProgressBar.test.tsx`: updated indeterminate test assertion to check for `animate-sweep` instead of `animate-pulse`, because A6.5 replaced the pulse animation with calm sweep.
+    - `src/components/ds/TextArea/TextArea.test.tsx`: updated capped auto-grow test to pass `maxRows={8}` explicitly, because A6.9 removed the default `maxRows=8` so that TextArea grows indefinitely when `maxRows` is omitted.
+    - `src/components/organisms/TransactionRow/TransactionRow.test.tsx`: removed `onSelectedChange` from non-selectable row tests in A4 since only selectable rows accept selection callbacks.
+    - `src/components/organisms/RuleCard/RuleCard.test.tsx`: updated selectable test expectations in A4.
+  - Open questions: None (all items completed cleanly without blockers).
+  - Checks:
+    - `npm run typecheck`: clean (0 errors)
+    - `npx vitest run src/components/ds src/components/organisms`: 54 test files passed (475/475 tests passed)
+    - `node design-system/tools/check-ui.mjs --base 4b825dc642cb6eb9a060e54bf8d69288fbee4904`: clean
+    - Storybook sweep: 251/251 stories verified with 0 errors
+
 - 2026-10-17 · Phase 2/Storybook · Antigravity · Fixed non-interactive trigger in Menu stories:
   - `src/components/ds/Menu/Menu.stories.tsx`:
     - Replaced `const DefaultTrigger = () => <Button ...>` component with direct JSX element `const defaultTrigger = <Button ...>` passed into `args.trigger`.
