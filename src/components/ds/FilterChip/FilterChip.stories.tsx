@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
 import { FilterChip, Select } from '@/components/ds';
@@ -36,6 +37,19 @@ const meta: Meta<typeof FilterChip> = {
   },
   parameters: {
     layout: 'padded',
+  },
+  render: function Render(args) {
+    const [{ selected }, updateArgs] = useArgs();
+    return (
+      <FilterChip
+        {...args}
+        selected={selected}
+        onSelectedChange={(val) => {
+          updateArgs({ selected: val });
+          args.onSelectedChange?.(val);
+        }}
+      />
+    );
   },
 };
 

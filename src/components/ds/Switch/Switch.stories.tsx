@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
+import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
 import { Switch } from '@/components/ds';
@@ -33,6 +35,19 @@ const meta: Meta<typeof Switch> = {
   },
   args: {
     onCheckedChange: fn(),
+  },
+  render: function Render(args) {
+    const [{ checked }, updateArgs] = useArgs();
+    return (
+      <Switch
+        {...args}
+        checked={checked}
+        onCheckedChange={(val) => {
+          updateArgs({ checked: val });
+          args.onCheckedChange?.(val);
+        }}
+      />
+    );
   },
 };
 
