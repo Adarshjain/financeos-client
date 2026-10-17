@@ -5,53 +5,40 @@ import { describe, expect, it, vi } from 'vitest';
 import { TextArea } from './TextArea';
 
 describe('TextArea component', () => {
-  it('renders label and textarea with default rows=1, min-h-control-lg, and resize-y', () => {
+  it('renders label and textarea with default rows=1, min-h-control-lg, resize-y, and field-sizing: content', () => {
     render(<TextArea label="Note" defaultValue="Split with Priya" />);
     const textarea = screen.getByLabelText('Note');
     expect(textarea).toHaveValue('Split with Priya');
     expect(textarea).toHaveAttribute('rows', '1');
     expect(textarea).toHaveClass('min-h-control-lg');
     expect(textarea).toHaveClass('resize-y');
+    expect(textarea).toHaveClass('[field-sizing:content]');
+    expect(
+      (textarea.style as CSSStyleDeclaration & { fieldSizing?: string })
+        .fieldSizing,
+    ).toBe('content');
   });
 
-  it('adjusts height to auto-grow with content up to maxRows lines when specified', () => {
+  it('applies maxHeight constraint when maxRows is specified', () => {
     const { container } = render(
       <TextArea label="Note" defaultValue="" maxRows={8} />,
     );
     const textarea = container.querySelector('textarea')!;
-    expect(textarea.style.height).toBe('36px'); // starts at 36px (h-control-lg)
-
-    // Simulate content growth
-    Object.defineProperty(textarea, 'scrollHeight', {
-      configurable: true,
-      value: 72,
-    });
-    fireEvent.change(textarea, { target: { value: 'Line 1\nLine 2\nLine 3' } });
-    expect(textarea.style.height).toBe('72px');
-
-    // Simulate growth beyond 8 lines (e.g. 200px > 162px max)
-    Object.defineProperty(textarea, 'scrollHeight', {
-      configurable: true,
-      value: 200,
-    });
-    fireEvent.change(textarea, { target: { value: 'Many lines\n'.repeat(10) } });
-    expect(textarea.style.height).toBe('162px');
-    expect(textarea.style.overflowY).toBe('auto');
+    expect(textarea.style.maxHeight).toBe('calc(8lh + 18px)');
   });
 
-  it('grows indefinitely with 20 lines of text when maxRows is omitted, with no internal scroll', () => {
+  it('leaves maxHeight unconstrained when maxRows is omitted so it can grow indefinitely', () => {
     const { container } = render(<TextArea label="Note" defaultValue="" />);
     const textarea = container.querySelector('textarea')!;
-    expect(textarea.style.height).toBe('36px');
+    expect(textarea.style.maxHeight).toBe('');
+  });
 
-    // Simulate 20 lines of text height (378px)
-    Object.defineProperty(textarea, 'scrollHeight', {
-      configurable: true,
-      value: 378,
-    });
-    fireEvent.change(textarea, { target: { value: 'Line\n'.repeat(20) } });
-    expect(textarea.style.height).toBe('378px');
-    expect(textarea.style.overflowY).toBe('hidden');
+  it('applies minHeight constraint when minRows > 1 is specified', () => {
+    const { container } = render(
+      <TextArea label="Note" defaultValue="" minRows={4} />,
+    );
+    const textarea = container.querySelector('textarea')!;
+    expect(textarea.style.minHeight).toBe('calc(4lh + 18px)');
   });
 
   it('renders (Optional) text when optional prop is true', () => {
