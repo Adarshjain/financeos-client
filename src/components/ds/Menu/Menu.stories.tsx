@@ -18,6 +18,10 @@ const meta: Meta<typeof Menu> = {
   parameters: {
     layout: 'padded',
     docs: {
+      story: {
+        inline: false,
+        iframeHeight: 350,
+      },
       description: {
         component:
           'A list of actions that opens from a trigger: the ⋮ menu on a rule or account, the dashboard ⋯ menu, snooze presets.',

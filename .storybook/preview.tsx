@@ -26,9 +26,11 @@ const customViewports = {
 
 function ThemeWrapper({
   theme,
+  isDocs = false,
   children,
 }: {
   theme: string;
+  isDocs?: boolean;
   children: React.ReactNode;
 }) {
   useEffect(() => {
@@ -42,7 +44,11 @@ function ThemeWrapper({
 
   return (
     <div className={theme === 'dark' ? 'dark' : ''}>
-      <div className="min-h-screen bg-canvas text-ink font-text antialiased p-space-16">
+      <div
+        className={`${
+          isDocs ? 'p-space-16' : 'min-h-screen p-space-16'
+        } bg-canvas text-ink font-text antialiased`}
+      >
         {children}
       </div>
     </div>
@@ -51,8 +57,9 @@ function ThemeWrapper({
 
 const withTheme: Decorator = (Story, context) => {
   const theme = (context.globals.theme as string) || 'light';
+  const isDocs = context.viewMode === 'docs';
   return (
-    <ThemeWrapper theme={theme}>
+    <ThemeWrapper theme={theme} isDocs={isDocs}>
       <Story />
     </ThemeWrapper>
   );
@@ -62,8 +69,8 @@ const preview: Preview = {
   tags: ['autodocs'],
   parameters: {
     docs: {
-      controls: {
-        disable: true,
+      components: {
+        Controls: () => null,
       },
     },
     viewport: {
