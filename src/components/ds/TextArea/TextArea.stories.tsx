@@ -5,7 +5,7 @@ import { fn } from 'storybook/test';
 import { TextArea } from '@/components/ds';
 
 const meta: Meta<typeof TextArea> = {
-  title: 'DS/Inputs/TextArea',
+  title: 'DS/Form fields/TextArea',
   component: TextArea,
   parameters: {
     layout: 'padded',

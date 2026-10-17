@@ -4,7 +4,7 @@ import { fn } from 'storybook/test';
 import { Switch } from '@/components/ds';
 
 const meta: Meta<typeof Switch> = {
-  title: 'DS/Controls/Switch',
+  title: 'DS/Form fields/Switch',
   component: Switch,
   parameters: {
     layout: 'centered',

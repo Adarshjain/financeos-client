@@ -7,7 +7,7 @@ import React, { useEffect } from 'react';
 
 const customViewports = {
   phone: {
-    name: 'Phone (390px)',
+    name: 'Phone (390)',
     styles: {
       width: '390px',
       height: '844px',
@@ -15,7 +15,7 @@ const customViewports = {
     type: 'mobile',
   },
   desktop: {
-    name: 'Desktop (1440px)',
+    name: 'Desktop (1440)',
     styles: {
       width: '1440px',
       height: '900px',
@@ -47,7 +47,7 @@ function ThemeWrapper({
       <div
         className={`${
           isDocs ? 'p-space-16' : 'min-h-screen p-space-16'
-        } bg-canvas text-ink font-text antialiased`}
+        } bg-canvas text-ink font-text text-body antialiased`}
       >
         {children}
       </div>
@@ -66,6 +66,9 @@ const withTheme: Decorator = (Story, context) => {
 };
 
 const preview: Preview = {
+  initialGlobals: {
+    viewport: { value: 'desktop', isRotated: false },
+  },
   tags: ['autodocs'],
   parameters: {
     docs: {
@@ -74,7 +77,7 @@ const preview: Preview = {
       },
     },
     viewport: {
-      viewports: customViewports,
+      options: customViewports,
     },
     layout: 'fullscreen',
     options: {
