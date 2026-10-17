@@ -1,12 +1,13 @@
 'use client';
 
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useMemo, useState } from 'react';
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
+import { Popover } from '../Popover/Popover';
 import { useControllableState } from '../useControllableState';
-import { formatMonth, weekdayLetters } from '../utils';
+import { formatMonth, monthNames, weekdayLetters } from '../utils';
 
 export type CalendarEventTone =
   | 'positive'
@@ -108,6 +109,83 @@ function toIsoDate(y: number, m: number, d: number): string {
   const mm = String(m + 1).padStart(2, '0');
   const dd = String(d).padStart(2, '0');
   return `${y}-${mm}-${dd}`;
+}
+
+function computeYearRange(
+  today: string,
+  minDate?: string,
+  maxDate?: string,
+): number[] {
+  const todayYear = parseInt(today.slice(0, 4), 10);
+  const maxYear = maxDate ? parseInt(maxDate.slice(0, 4), 10) : todayYear + 10;
+  const minYear = minDate ? parseInt(minDate.slice(0, 4), 10) : todayYear - 10;
+
+  const years: number[] = [];
+  for (let y = maxYear; y >= minYear; y--) {
+    years.push(y);
+  }
+  return years;
+}
+
+function isMonthDisabled(
+  year: number,
+  monthIndex: number,
+  minDate?: string,
+  maxDate?: string,
+): boolean {
+  const daysInM = new Date(year, monthIndex + 1, 0).getDate();
+  const monthStart = toIsoDate(year, monthIndex, 1);
+  const monthEnd = toIsoDate(year, monthIndex, daysInM);
+
+  if (minDate && monthEnd < minDate) return true;
+  if (maxDate && monthStart > maxDate) return true;
+  return false;
+}
+
+function isYearDisabled(
+  year: number,
+  minDate?: string,
+  maxDate?: string,
+): boolean {
+  if (minDate && `${year}-12-31` < minDate) return true;
+  if (maxDate && `${year}-01-01` > maxDate) return true;
+  return false;
+}
+
+function clampMonthForYear(
+  year: number,
+  targetMonth: number,
+  minDate?: string,
+  maxDate?: string,
+): number {
+  if (!isMonthDisabled(year, targetMonth, minDate, maxDate)) {
+    return targetMonth;
+  }
+  const allowedMonths: number[] = [];
+  for (let m = 0; m < 12; m++) {
+    if (!isMonthDisabled(year, m, minDate, maxDate)) {
+      allowedMonths.push(m);
+    }
+  }
+  if (allowedMonths.length === 0) {
+    return targetMonth;
+  }
+  if (targetMonth < allowedMonths[0]) {
+    return allowedMonths[0];
+  }
+  if (targetMonth > allowedMonths[allowedMonths.length - 1]) {
+    return allowedMonths[allowedMonths.length - 1];
+  }
+  let nearest = allowedMonths[0];
+  let minDiff = Math.abs(targetMonth - nearest);
+  for (const m of allowedMonths) {
+    const diff = Math.abs(targetMonth - m);
+    if (diff < minDiff) {
+      minDiff = diff;
+      nearest = m;
+    }
+  }
+  return nearest;
 }
 
 export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
@@ -232,26 +310,57 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
     }
 
     // Picker mode navigation
+    const [monthOpen, setMonthOpen] = useState(false);
+    const [yearOpen, setYearOpen] = useState(false);
+
+    const allMonthNames = useMemo(() => monthNames(), []);
+    const yearOptions = useMemo(
+      () => computeYearRange(today, minDate, maxDate),
+      [today, minDate, maxDate],
+    );
+
+    let prevY = currentYear;
+    let prevM = currentMonth - 1;
+    if (prevM < 0) {
+      prevM = 11;
+      prevY -= 1;
+    }
+    const daysInPrev = new Date(prevY, prevM + 1, 0).getDate();
+    const prevMonthEnd = toIsoDate(prevY, prevM, daysInPrev);
+    const isPrevDisabled = Boolean(minDate && prevMonthEnd < minDate);
+
+    let nextY = currentYear;
+    let nextM = currentMonth + 1;
+    if (nextM > 11) {
+      nextM = 0;
+      nextY += 1;
+    }
+    const nextMonthStart = toIsoDate(nextY, nextM, 1);
+    const isNextDisabled = Boolean(maxDate && nextMonthStart > maxDate);
+
     const handlePrevMonth = () => {
-      let nextY = currentYear;
-      let nextM = currentMonth - 1;
-      if (nextM < 0) {
-        nextM = 11;
-        nextY -= 1;
-      }
-      const nextIso = `${nextY}-${String(nextM + 1).padStart(2, '0')}-01`;
+      if (isPrevDisabled) return;
+      const nextIso = `${prevY}-${String(prevM + 1).padStart(2, '0')}-01`;
       setCurrentMonthIso(nextIso);
     };
 
     const handleNextMonth = () => {
-      let nextY = currentYear;
-      let nextM = currentMonth + 1;
-      if (nextM > 11) {
-        nextM = 0;
-        nextY += 1;
-      }
+      if (isNextDisabled) return;
       const nextIso = `${nextY}-${String(nextM + 1).padStart(2, '0')}-01`;
       setCurrentMonthIso(nextIso);
+    };
+
+    const handleSelectMonth = (monthIdx: number) => {
+      const nextIso = `${currentYear}-${String(monthIdx + 1).padStart(2, '0')}-01`;
+      setCurrentMonthIso(nextIso);
+      setMonthOpen(false);
+    };
+
+    const handleSelectYear = (y: number) => {
+      const newMonth = clampMonthForYear(y, currentMonth, minDate, maxDate);
+      const nextIso = `${y}-${String(newMonth + 1).padStart(2, '0')}-01`;
+      setCurrentMonthIso(nextIso);
+      setYearOpen(false);
     };
 
     const handleDayClick = (iso: string) => {
@@ -363,15 +472,113 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
             size="sm"
             iconOnly
             aria-label="Previous month"
+            disabled={isPrevDisabled}
             onClick={handlePrevMonth}
-            className="text-ink-3 hover:text-ink"
+            className="text-ink-3 hover:text-ink shrink-0"
           >
             <Icon name="chevron-left" size="md" />
           </Button>
 
-          <span className="font-bold text-label text-ink">
-            {formatMonth(displayMonthIso)}
-          </span>
+          <div className="flex items-center gap-space-4">
+            <Popover
+              open={monthOpen}
+              onOpenChange={setMonthOpen}
+              contentClassName="min-w-0 w-36 max-h-64 overflow-y-auto p-space-4"
+              trigger={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Month"
+                  icon={<Icon name="chevron-down" size="sm" />}
+                  className="px-space-4 h-control-sm text-ink font-bold hover:bg-hover"
+                >
+                  {allMonthNames[currentMonth]}
+                </Button>
+              }
+            >
+              <div
+                className="flex flex-col gap-space-2"
+                role="listbox"
+                aria-label="Month"
+              >
+                {allMonthNames.map((name, idx) => {
+                  const isSelected = idx === currentMonth;
+                  const disabled = isMonthDisabled(
+                    currentYear,
+                    idx,
+                    minDate,
+                    maxDate,
+                  );
+                  return (
+                    <Button
+                      key={name}
+                      type="button"
+                      variant={isSelected ? 'primary' : 'ghost'}
+                      size="sm"
+                      disabled={disabled}
+                      onClick={() => handleSelectMonth(idx)}
+                      className={cn(
+                        'w-full justify-start text-left h-control-sm px-space-8 font-medium text-label',
+                        isSelected ? 'font-bold' : 'text-ink hover:bg-hover',
+                        disabled &&
+                          'text-ink-faint opacity-40 cursor-not-allowed',
+                      )}
+                    >
+                      {name}
+                    </Button>
+                  );
+                })}
+              </div>
+            </Popover>
+
+            <Popover
+              open={yearOpen}
+              onOpenChange={setYearOpen}
+              contentClassName="min-w-0 w-28 max-h-64 overflow-y-auto p-space-4"
+              trigger={
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  aria-label="Year"
+                  icon={<Icon name="chevron-down" size="sm" />}
+                  className="px-space-4 h-control-sm text-ink font-bold hover:bg-hover"
+                >
+                  {currentYear}
+                </Button>
+              }
+            >
+              <div
+                className="flex flex-col gap-space-2"
+                role="listbox"
+                aria-label="Year"
+              >
+                {yearOptions.map((y) => {
+                  const isSelected = y === currentYear;
+                  const disabled = isYearDisabled(y, minDate, maxDate);
+                  return (
+                    <Button
+                      key={y}
+                      type="button"
+                      variant={isSelected ? 'primary' : 'ghost'}
+                      size="sm"
+                      disabled={disabled}
+                      onClick={() => handleSelectYear(y)}
+                      className={cn(
+                        'w-full justify-start text-left h-control-sm px-space-8 font-medium text-label',
+                        isSelected ? 'font-bold' : 'text-ink hover:bg-hover',
+                        disabled &&
+                          'text-ink-faint opacity-40 cursor-not-allowed',
+                      )}
+                    >
+                      {y}
+                    </Button>
+                  );
+                })}
+              </div>
+            </Popover>
+          </div>
 
           <Button
             type="button"
@@ -379,8 +586,9 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
             size="sm"
             iconOnly
             aria-label="Next month"
+            disabled={isNextDisabled}
             onClick={handleNextMonth}
-            className="text-ink-3 hover:text-ink"
+            className="text-ink-3 hover:text-ink shrink-0"
           >
             <Icon name="chevron-right" size="md" />
           </Button>

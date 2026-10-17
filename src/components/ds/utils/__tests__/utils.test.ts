@@ -4,6 +4,7 @@ import {
   formatCount,
   formatDate,
   formatMonth,
+  monthNames,
   parseDateInput,
   todayISO,
   weekdayLetters,
@@ -101,6 +102,15 @@ describe('Dinero utils', () => {
   describe('weekdayLetters', () => {
     it('returns 7 weekday letters starting with Monday', () => {
       expect(weekdayLetters()).toEqual(['M', 'T', 'W', 'T', 'F', 'S', 'S']);
+    });
+  });
+
+  describe('monthNames', () => {
+    it('returns 12 names starting with January', () => {
+      const names = monthNames();
+      expect(names).toHaveLength(12);
+      expect(names[0]).toBe('January');
+      expect(names[11]).toBe('December');
     });
   });
 });
