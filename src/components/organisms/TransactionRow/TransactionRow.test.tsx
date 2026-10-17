@@ -30,6 +30,7 @@ describe('TransactionRow', () => {
       <TransactionRow
         description="Salary"
         amount="+2,15,000.00"
+        isCredit
         categories={['Salary']}
       />,
     );
@@ -94,12 +95,12 @@ describe('TransactionRow', () => {
     expect(handleView).toHaveBeenCalledTimes(1);
   });
 
-  it('applies selected, monitored, and excluded styles', () => {
+  it('applies selected, tone="warning", and disabled styles', () => {
     const { container: selContainer } = render(
       <TransactionRow
         description="Selected tx"
         amount="100.00"
-        status="selected"
+        selected
       />,
     );
     expect(selContainer.firstChild).toHaveClass('bg-brand-tint');
@@ -108,7 +109,7 @@ describe('TransactionRow', () => {
       <TransactionRow
         description="Monitored tx"
         amount="100.00"
-        status="monitored"
+        tone="warning"
       />,
     );
     expect(monContainer.firstChild).toHaveClass('bg-attention-tint');
@@ -117,7 +118,7 @@ describe('TransactionRow', () => {
       <TransactionRow
         description="Excluded tx"
         amount="100.00"
-        status="excluded"
+        disabled
       />,
     );
     expect(excContainer.firstChild).toHaveClass('opacity-60');
@@ -150,7 +151,7 @@ describe('TransactionRow', () => {
     expect(descEl).not.toHaveClass('font-bold');
   });
 
-  it('renders 4px stripes for selected and monitored rows', () => {
+  it('renders 4px stripes for selected and warning tone rows', () => {
     const { container: selContainer } = render(
       <TransactionRow
         description="Selected tx"
@@ -165,7 +166,7 @@ describe('TransactionRow', () => {
       <TransactionRow
         description="Monitored tx"
         amount="100.00"
-        monitored
+        tone="warning"
       />,
     );
     const monStripe = monContainer.querySelector('.bg-attention');
@@ -319,5 +320,24 @@ describe('TransactionRow', () => {
     expect(screen.getByTestId('leading-avatar')).toBeInTheDocument();
     const chevronSvg = container.querySelector('svg.w-icon-sm');
     expect(chevronSvg).toBeInTheDocument();
+  });
+
+  it('supports uncontrolled selection via defaultSelected', () => {
+    const handleSelectedChange = vi.fn();
+    render(
+      <TransactionRow
+        description="Uncontrolled row"
+        amount="500.00"
+        selectable
+        defaultSelected={true}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+
+    const checkbox = screen.getByLabelText('Select Uncontrolled row');
+    expect(checkbox).toBeChecked();
+
+    fireEvent.click(checkbox);
+    expect(handleSelectedChange).toHaveBeenCalledWith(false);
   });
 });
