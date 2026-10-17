@@ -17,15 +17,17 @@ describe('formatDateInput helper', () => {
 });
 
 describe('DateField component', () => {
+  const TODAY = '2026-10-13';
+
   it('renders single date field with formatted initial value', () => {
-    render(<DateField label="Due date" defaultValue="2026-10-25" />);
+    render(<DateField today={TODAY} label="Due date" defaultValue="2026-10-25" />);
     const input = screen.getByLabelText('Due date');
     expect(input).toHaveValue('25/10/2026');
   });
 
   it('auto-formats input as user types digits in uncontrolled mode with onValueChange emitting ISO', () => {
     const handleChange = vi.fn();
-    render(<DateField label="Date" defaultValue="2026-01-01" onValueChange={handleChange} />);
+    render(<DateField today={TODAY} label="Date" defaultValue="2026-01-01" onValueChange={handleChange} />);
     const input = screen.getByLabelText('Date');
     expect(input).toHaveValue('01/01/2026');
 
@@ -42,7 +44,7 @@ describe('DateField component', () => {
   it('works in controlled mode with ISO value and onValueChange', () => {
     const handleValueChange = vi.fn();
     const { rerender } = render(
-      <DateField label="Due date" value="2026-10-10" onValueChange={handleValueChange} />,
+      <DateField today={TODAY} label="Due date" value="2026-10-10" onValueChange={handleValueChange} />,
     );
     const input = screen.getByLabelText('Due date');
     expect(input).toHaveValue('10/10/2026');
@@ -50,29 +52,29 @@ describe('DateField component', () => {
     fireEvent.change(input, { target: { value: '15102026' } });
     expect(handleValueChange).toHaveBeenCalledWith('2026-10-15');
 
-    rerender(<DateField label="Due date" value="2026-10-15" onValueChange={handleValueChange} />);
+    rerender(<DateField today={TODAY} label="Due date" value="2026-10-15" onValueChange={handleValueChange} />);
     expect(input).toHaveValue('15/10/2026');
   });
 
   it('spreads native HTML input attributes like name and data-testid', () => {
-    render(<DateField name="due_date" data-testid="due-input" />);
+    render(<DateField today={TODAY} name="due_date" data-testid="due-input" />);
     const input = screen.getByTestId('due-input');
     expect(input).toHaveAttribute('name', 'due_date');
   });
 
   it('renders helper and error text', () => {
     const { rerender } = render(
-      <DateField label="Date" helper="Select past date" />,
+      <DateField today={TODAY} label="Date" helper="Select past date" />,
     );
     expect(screen.getByText('Select past date')).toBeInTheDocument();
 
-    rerender(<DateField label="Date" error="Invalid format" />);
+    rerender(<DateField today={TODAY} label="Date" error="Invalid format" />);
     expect(screen.getByText('Invalid format')).toBeInTheDocument();
     expect(screen.getByText('Invalid format')).toHaveClass('text-danger');
   });
 
   it('renders disabled state', () => {
-    render(<DateField label="Date" defaultValue="2026-10-01" disabled />);
+    render(<DateField today={TODAY} label="Date" defaultValue="2026-10-01" disabled />);
     const input = screen.getByLabelText('Date');
     expect(input).toBeDisabled();
     const button = screen.getByRole('button', { name: 'Open calendar' });
@@ -80,21 +82,20 @@ describe('DateField component', () => {
   });
 
   it('respects custom placeholder in range mode', () => {
-    render(<DateField range placeholder="Custom Range" />);
+    render(<DateField today={TODAY} range placeholder="Custom Range" />);
     const input = screen.getByPlaceholderText('Custom Range');
     expect(input).toBeInTheDocument();
   });
 
   it('renders range mode as one combined field and auto-inserts separator on typing', () => {
     const handleValueChange = vi.fn();
-    const handleRangeChange = vi.fn();
     render(
       <DateField
+        today={TODAY}
         range
         label="Period"
         defaultValue={{ start: '2026-10-01', end: '2026-10-15' }}
         onValueChange={handleValueChange}
-        onRangeChange={handleRangeChange}
       />,
     );
 
@@ -111,16 +112,13 @@ describe('DateField component', () => {
       start: '2026-10-05',
       end: '2026-10-20',
     });
-    expect(handleRangeChange).toHaveBeenCalledWith({
-      startDate: '05/10/2026',
-      endDate: '20/10/2026',
-    });
   });
 
   it('picks range from calendar: first tap sets start, second tap sets end', () => {
     const handleValueChange = vi.fn();
     render(
       <DateField
+        today={TODAY}
         range
         label="Period"
         defaultValue={{ start: '2026-10-01' }}
@@ -145,7 +143,7 @@ describe('DateField component', () => {
 
   it('opens calendar and allows selecting date in single mode emitting ISO', () => {
     const handleChange = vi.fn();
-    render(<DateField label="Due date" defaultValue="2026-10-25" onValueChange={handleChange} />);
+    render(<DateField today={TODAY} label="Due date" defaultValue="2026-10-25" onValueChange={handleChange} />);
 
     const openButton = screen.getByRole('button', { name: 'Open calendar' });
     fireEvent.click(openButton);
