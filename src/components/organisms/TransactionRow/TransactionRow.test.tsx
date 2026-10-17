@@ -3,6 +3,12 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { DataTable, type DataTableColumnMeta } from '@/components/ds';
+
+import {
+  transactionColumns,
+  type TransactionRowData,
+} from './transactionColumns';
 import { TransactionRow } from './TransactionRow';
 
 const giveSize = (el: HTMLElement) => {
@@ -49,9 +55,9 @@ describe('TransactionRow', () => {
 
     expect(screen.getByText('BigBasket')).toBeInTheDocument();
     expect(screen.getByText('3,600.00')).toBeInTheDocument();
-    expect(screen.getByText('bal ₹61,757')).toBeInTheDocument();
-    expect(screen.getByText(/HDFC Bank Savings/)).toBeInTheDocument();
-    expect(screen.getByText('Statement')).toBeInTheDocument();
+    expect(screen.getAllByText('bal ₹61,757')[0]).toBeInTheDocument();
+    expect(screen.getAllByText(/HDFC Bank Savings/)[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Statement')[0]).toBeInTheDocument();
     expect(screen.getByText('Groceries')).toBeInTheDocument();
   });
 
@@ -81,8 +87,8 @@ describe('TransactionRow', () => {
       />,
     );
 
-    expect(screen.getByText('HDFC Regalia ••7741')).toBeInTheDocument();
-    expect(screen.getByText('Duplicate')).toHaveClass('text-warning');
+    expect(screen.getAllByText('HDFC Regalia ••7741')[0]).toBeInTheDocument();
+    expect(screen.getAllByText('Duplicate')[0]).toHaveClass('text-warning');
     expect(screen.getByText('Food & dining')).toBeInTheDocument();
     expect(screen.getByText('+1')).toBeInTheDocument();
   });
@@ -457,5 +463,134 @@ describe('TransactionRow', () => {
 
     fireEvent.click(checkbox);
     expect(handleSelectedChange).toHaveBeenCalledWith(false);
+  });
+
+  describe('DataTable integration and Desktop cells', () => {
+    it('Desktop cells render in grid order', () => {
+      render(
+        <TransactionRow
+          date="15 Oct"
+          description="Apple Store"
+          amount="1,19,900.00"
+          balance="bal ₹42,100"
+          account="HDFC Regalia"
+          plastic="••7741"
+          categories={['Electronics']}
+          selectable
+          selected
+        />,
+      );
+
+      const cells = screen.getAllByRole('cell');
+      // Verify cells appear in grid order:
+      // 1. checkbox, 2. date, 3. description, 4. categories, 5. account, 6. amount, 7. balance
+      expect(cells).toHaveLength(7);
+      expect(cells[0]).toHaveClass('hidden lg:flex');
+      expect(cells[1]).toHaveTextContent('15 Oct');
+      expect(cells[2]).toHaveTextContent('Apple Store');
+      expect(cells[3]).toHaveTextContent('Electronics');
+      expect(cells[4]).toHaveTextContent('HDFC Regalia ••7741');
+      expect(cells[5]).toHaveTextContent('1,19,900.00');
+      expect(cells[6]).toHaveTextContent('bal ₹42,100');
+    });
+
+    it('date prop shows on desktop, hidden on phone', () => {
+      render(
+        <TransactionRow
+          date="15 Oct"
+          description="Swiggy"
+          amount="1,249.00"
+        />,
+      );
+
+      const dateEl = screen.getByText('15 Oct');
+      expect(dateEl).toHaveClass('hidden lg:block');
+    });
+
+    it('transactionColumns matches the column tracks', () => {
+      expect(transactionColumns).toHaveLength(6);
+
+      const [dateCol, descCol, catCol, accCol, amtCol, balCol] =
+        transactionColumns;
+
+      const dateMeta = dateCol.meta as DataTableColumnMeta | undefined;
+      expect(dateCol.id).toBe('date');
+      expect(dateMeta?.size).toBe('sm');
+      expect(dateMeta?.sortable).toBe(true);
+
+      const descMeta = descCol.meta as DataTableColumnMeta | undefined;
+      expect(descCol.id).toBe('description');
+      expect(descMeta?.size).toBe('fill');
+      expect(descMeta?.sortable).toBe(true);
+      expect(descMeta?.phone).toBe('main');
+
+      const catMeta = catCol.meta as DataTableColumnMeta | undefined;
+      expect(catCol.id).toBe('category');
+      expect(catMeta?.size).toBe('md');
+
+      const accMeta = accCol.meta as DataTableColumnMeta | undefined;
+      expect(accCol.id).toBe('account');
+      expect(accMeta?.size).toBe('sm');
+
+      const amtMeta = amtCol.meta as DataTableColumnMeta | undefined;
+      expect(amtCol.id).toBe('amount');
+      expect(amtMeta?.size).toBe('sm');
+      expect(amtMeta?.align).toBe('end');
+      expect(amtMeta?.sortable).toBe(true);
+      expect(amtMeta?.phone).toBe('amount');
+
+      const balMeta = balCol.meta as DataTableColumnMeta | undefined;
+      expect(balCol.id).toBe('balance');
+      expect(balMeta?.size).toBe('sm');
+      expect(balMeta?.align).toBe('end');
+    });
+
+    it('Selection in DataTable with TransactionRow updates TanStack state and fires onSelectionChange', () => {
+      const handleSelectionChange = vi.fn();
+      const testData: TransactionRowData[] = [
+        {
+          id: 'tx-1',
+          date: '15 Oct',
+          description: 'Apple Store',
+          amount: 119900,
+          formattedAmount: '₹1,19,900.00',
+        },
+        {
+          id: 'tx-2',
+          date: '14 Oct',
+          description: 'Starbucks',
+          amount: 750,
+          formattedAmount: '₹750.00',
+        },
+      ];
+
+      render(
+        <DataTable
+          columns={transactionColumns}
+          data={testData}
+          getRowId={(r) => r.id}
+          selectable
+          onSelectionChange={handleSelectionChange}
+          renderRow={(row, rowProps) => (
+            <TransactionRow
+              key={row.id}
+              date={row.date}
+              description={row.description}
+              amount={row.formattedAmount}
+              selectable={rowProps.selectable}
+              selected={rowProps.selected}
+              onSelectedChange={rowProps.onSelectedChange}
+            />
+          )}
+        />,
+      );
+
+      const checkboxes = screen.getAllByRole('checkbox');
+      fireEvent.click(checkboxes[1]);
+      expect(handleSelectionChange).toHaveBeenCalledWith(['tx-1']);
+
+      fireEvent.click(checkboxes[0]);
+      expect(handleSelectionChange).toHaveBeenCalledWith(['tx-1', 'tx-2']);
+    });
   });
 });

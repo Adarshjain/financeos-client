@@ -3,8 +3,12 @@ import React from 'react';
 import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
-import { Avatar, Card } from '@/components/ds';
-import { TransactionRow } from '@/components/organisms';
+import { Avatar, Card, DataTable, SwipeActions } from '@/components/ds';
+import {
+  transactionColumns,
+  TransactionRow,
+  type TransactionRowData,
+} from '@/components/organisms';
 
 const meta: Meta<typeof TransactionRow> = {
   title: 'Organisms/TransactionRow',
@@ -249,6 +253,189 @@ export const SelectableInteractive: Story = {
           args.onSelectedChange?.(s);
           updateArgs({ selected: s, selectionMode: s });
         }}
+      />
+    );
+  },
+};
+
+const sampleTransaction: TransactionRowData = {
+  id: 'tx-1',
+  date: '15 Oct',
+  description: 'Apple Store Regent Street',
+  category: 'Electronics',
+  account: 'HDFC Regalia',
+  plastic: '••7741',
+  amount: 119900,
+  formattedAmount: '₹1,19,900.00',
+  balance: 'bal ₹42,100',
+  reviewStatus: 'Watching',
+};
+
+const sampleTransactions: TransactionRowData[] = [
+  sampleTransaction,
+  {
+    id: 'tx-2',
+    date: '14 Oct',
+    description: 'Starbucks Coffee',
+    category: 'Food & dining',
+    account: 'HDFC Bank Savings',
+    amount: 750,
+    formattedAmount: '₹750.00',
+    balance: 'bal ₹1,62,000',
+  },
+  {
+    id: 'tx-3',
+    date: '14 Oct',
+    description: 'Salary Credit - Acuity Systems',
+    category: 'Income',
+    account: 'HDFC Bank Savings',
+    amount: 215000,
+    formattedAmount: '+₹2,15,000.00',
+    isCredit: true,
+    balance: 'bal ₹1,62,750',
+    provenance: 'Statement',
+  },
+  {
+    id: 'tx-4',
+    date: '12 Oct',
+    description: 'Zara Clothing Mall of India',
+    category: 'Shopping',
+    account: 'HDFC Regalia',
+    plastic: '••7741',
+    amount: 4990,
+    formattedAmount: '₹4,990.00',
+    balance: 'bal ₹1,61,990',
+    note: 'Winter jacket',
+  },
+];
+
+export const Desktop: StoryObj = {
+  decorators: [
+    (Story) => (
+      <Card className="w-full max-w-5xl p-0 overflow-hidden">
+        <Story />
+      </Card>
+    ),
+  ],
+  render: () => (
+    <DataTable
+      columns={transactionColumns}
+      data={[sampleTransaction]}
+      getRowId={(r) => r.id}
+      renderRow={(row, rowProps) => (
+        <TransactionRow
+          key={row.id}
+          date={row.date}
+          description={row.description}
+          amount={row.formattedAmount ?? String(row.amount)}
+          balance={row.balance}
+          account={row.account}
+          plastic={row.plastic}
+          reviewStatus={row.reviewStatus}
+          categories={row.category ? [row.category] : undefined}
+          isCredit={row.isCredit}
+          selectable={rowProps.selectable}
+          selected={rowProps.selected}
+          onSelectedChange={rowProps.onSelectedChange}
+        />
+      )}
+    />
+  ),
+};
+
+export const InDataTable: StoryObj = {
+  decorators: [
+    (Story) => (
+      <Card className="w-full max-w-5xl p-0 overflow-hidden">
+        <Story />
+      </Card>
+    ),
+  ],
+  render: function InDataTableStory() {
+    const [{ selection = [], sort }, updateArgs] = useArgs();
+    return (
+      <DataTable
+        columns={transactionColumns}
+        data={sampleTransactions}
+        getRowId={(r) => r.id}
+        selectable
+        selection={selection}
+        onSelectionChange={(s) => updateArgs({ selection: s })}
+        sort={sort}
+        onSortChange={(s) => updateArgs({ sort: s })}
+        renderRow={(row, rowProps) => (
+          <TransactionRow
+            key={row.id}
+            date={row.date}
+            description={row.description}
+            amount={row.formattedAmount ?? String(row.amount)}
+            balance={row.balance}
+            account={row.account}
+            plastic={row.plastic}
+            reviewStatus={row.reviewStatus}
+            note={row.note}
+            provenance={row.provenance}
+            categories={row.category ? [row.category] : undefined}
+            isCredit={row.isCredit}
+            selectable={rowProps.selectable}
+            selected={rowProps.selected}
+            onSelectedChange={rowProps.onSelectedChange}
+            selectionMode={rowProps.selectionMode}
+            onDetail={rowProps.onSelect}
+          />
+        )}
+      />
+    );
+  },
+};
+
+export const InDataTableSwipe: StoryObj = {
+  decorators: [
+    (Story) => (
+      <Card className="w-full max-w-5xl p-0 overflow-hidden">
+        <Story />
+      </Card>
+    ),
+  ],
+  render: function InDataTableSwipeStory() {
+    return (
+      <DataTable
+        columns={transactionColumns}
+        data={sampleTransactions}
+        getRowId={(r) => r.id}
+        wrapRow={(row, node) => (
+          <SwipeActions
+            key={row.id}
+            left={{
+              label: 'Approve',
+              tone: 'brand',
+              onTrigger: fn(),
+            }}
+            right={{
+              label: 'Exclude',
+              tone: 'danger',
+              onTrigger: fn(),
+            }}
+          >
+            {node}
+          </SwipeActions>
+        )}
+        renderRow={(row, rowProps) => (
+          <TransactionRow
+            key={row.id}
+            date={row.date}
+            description={row.description}
+            amount={row.formattedAmount ?? String(row.amount)}
+            balance={row.balance}
+            account={row.account}
+            plastic={row.plastic}
+            categories={row.category ? [row.category] : undefined}
+            isCredit={row.isCredit}
+            selectable={rowProps.selectable}
+            selected={rowProps.selected}
+            onSelectedChange={rowProps.onSelectedChange}
+          />
+        )}
       />
     );
   },
