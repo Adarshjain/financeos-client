@@ -67,13 +67,130 @@ describe('MonthCalendar', () => {
       />,
     );
 
-    expect(screen.getByText('October 2026')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Month' })).toHaveTextContent('October');
+    expect(screen.getByRole('button', { name: 'Year' })).toHaveTextContent('2026');
     const day15Button = screen.getByRole('button', { name: '15' });
     expect(day15Button).toHaveClass('bg-brand');
 
     const day16Button = screen.getByRole('button', { name: '16' });
     fireEvent.click(day16Button);
     expect(handleValueChange).toHaveBeenCalledWith('2026-10-16');
+  });
+
+  it('allows selecting a month from dropdown, updating view and calling onMonthChange', () => {
+    const handleMonthChange = vi.fn();
+    render(
+      <MonthCalendar
+        mode="picker"
+        defaultMonth="2026-10-01"
+        today="2026-10-13"
+        onMonthChange={handleMonthChange}
+      />,
+    );
+
+    const monthBtn = screen.getByRole('button', { name: 'Month' });
+    fireEvent.click(monthBtn);
+
+    const marchOption = screen.getByRole('button', { name: 'March' });
+    fireEvent.click(marchOption);
+
+    expect(handleMonthChange).toHaveBeenCalledWith('2026-03-01');
+    expect(screen.getByRole('button', { name: 'Month' })).toHaveTextContent('March');
+  });
+
+  it('allows selecting a year from dropdown, updating view and calling onMonthChange', () => {
+    const handleMonthChange = vi.fn();
+    render(
+      <MonthCalendar
+        mode="picker"
+        defaultMonth="2026-10-01"
+        today="2026-10-13"
+        onMonthChange={handleMonthChange}
+      />,
+    );
+
+    const yearBtn = screen.getByRole('button', { name: 'Year' });
+    fireEvent.click(yearBtn);
+
+    const year2028 = screen.getByRole('button', { name: '2028' });
+    fireEvent.click(year2028);
+
+    expect(handleMonthChange).toHaveBeenCalledWith('2028-10-01');
+    expect(screen.getByRole('button', { name: 'Year' })).toHaveTextContent('2028');
+  });
+
+  it('disables previous and next month buttons at minDate and maxDate boundaries', () => {
+    const { rerender } = render(
+      <MonthCalendar
+        mode="picker"
+        month="2026-05-01"
+        today="2026-05-15"
+        minDate="2026-05-10"
+        maxDate="2026-07-20"
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Previous month' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next month' })).not.toBeDisabled();
+
+    rerender(
+      <MonthCalendar
+        mode="picker"
+        month="2026-07-01"
+        today="2026-05-15"
+        minDate="2026-05-10"
+        maxDate="2026-07-20"
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Previous month' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Next month' })).toBeDisabled();
+  });
+
+  it('disables out-of-range months in dropdown and clamps year list based on minDate and maxDate', () => {
+    render(
+      <MonthCalendar
+        mode="picker"
+        month="2026-06-01"
+        today="2026-06-15"
+        minDate="2026-05-10"
+        maxDate="2026-08-20"
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Month' }));
+    expect(screen.getByRole('button', { name: 'April' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'May' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'June' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'July' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'August' })).not.toBeDisabled();
+    expect(screen.getByRole('button', { name: 'September' })).toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Year' }));
+    expect(screen.queryByRole('button', { name: '2025' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '2026' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: '2027' })).not.toBeInTheDocument();
+  });
+
+  it('clamps month to nearest allowed month when switching year out of bounds', () => {
+    const handleMonthChange = vi.fn();
+    render(
+      <MonthCalendar
+        mode="picker"
+        defaultMonth="2026-08-01"
+        today="2026-08-15"
+        minDate="2026-05-01"
+        maxDate="2027-03-31"
+        onMonthChange={handleMonthChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Year' }));
+    fireEvent.click(screen.getByRole('button', { name: '2027' }));
+
+    expect(handleMonthChange).toHaveBeenCalledWith('2027-03-01');
+    expect(screen.getByRole('button', { name: 'Month' })).toHaveTextContent('March');
+    expect(screen.getByRole('button', { name: 'Year' })).toHaveTextContent('2027');
   });
 
   it('handles range selection: first click sets start, second click sets end', () => {

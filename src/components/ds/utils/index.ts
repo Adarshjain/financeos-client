@@ -29,6 +29,13 @@ const MONTH_NAMES = [
 ];
 
 /**
+ * Returns a copy of the 12 English month names (January through December).
+ */
+export function monthNames(): string[] {
+  return [...MONTH_NAMES];
+}
+
+/**
  * Formats a count with a cap (defaults to 99), e.g. "99+" when above max.
  */
 export function formatCount(n: number | string, max = 99): string {

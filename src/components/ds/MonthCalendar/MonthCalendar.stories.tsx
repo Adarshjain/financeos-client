@@ -144,3 +144,13 @@ export const PickerWithFooter: Story = {
     showFooter: true,
   },
 };
+
+export const PickerYearRange: Story = {
+  args: {
+    mode: 'picker',
+    month: '2026-10-01',
+    value: '2026-10-15',
+    minDate: '2024-03-10',
+    maxDate: '2026-11-20',
+  },
+};

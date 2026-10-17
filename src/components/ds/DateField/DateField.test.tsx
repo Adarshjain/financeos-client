@@ -195,4 +195,24 @@ describe('DateField component', () => {
     const classList = Array.from(popoverContent?.classList ?? []);
     expect(classList).not.toContain('max-w-container-sm');
   });
+
+  it('keeps calendar popover open when clicking Month or Year dropdowns', () => {
+    render(<DateField today={TODAY} label="Due date" defaultValue="2026-10-25" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open calendar' }));
+
+    expect(screen.getByRole('button', { name: 'Month' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Year' })).toBeInTheDocument();
+
+    // Click Month dropdown
+    fireEvent.click(screen.getByRole('button', { name: 'Month' }));
+    expect(screen.getByRole('button', { name: 'March' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Open calendar' })).toBeInTheDocument();
+
+    // Click March to select it
+    fireEvent.click(screen.getByRole('button', { name: 'March' }));
+    expect(screen.queryByRole('button', { name: 'March' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Month' })).toHaveTextContent('March');
+    // DateField calendar popover is still open
+    expect(screen.getByRole('button', { name: 'Year' })).toBeInTheDocument();
+  });
 });
