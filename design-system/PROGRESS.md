@@ -73,7 +73,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 14 | TextArea | Ready for review |
 | 15 | DateField | Ready for review |
 | 16 | Select | Ready for review |
-| 17 | SearchField | Ready for review |
+| 17 | SearchField | Merged into TextField (see B2) |
 | 18 | FilterChip | Ready for review |
 | 19 | Checkbox | Ready for review |
 | 20 | Switch | Ready for review |
@@ -104,7 +104,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 45 | Text | Ready for review |
 | 46 | Root | Ready for review |
 
-Removed on 2026-10-15 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; AuthPanel → a page in Phase 3.
+Removed on 2026-10-15/2026-10-17 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; SearchField → TextField (merged in B2, search variant with clearable icon and embedded style); AuthPanel → a page in Phase 3.
 
 The desktop shell is Rail and TopBar; the phone shell is AppBar and TabBar.
 
@@ -265,6 +265,35 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-17 · Phase 2 · Antigravity · Storybook review round — Phase 2 fixes (B1–B5):
+  - Commits:
+    - `65fa136` `ui(ds): B1 Dialog actions as data, primary secondary tertiary and danger-filled`
+    - `ab5bc3e` `ui(ds): B2 merge SearchField into TextField`
+    - `acc0113` & `e1bd0c3` `ui(ds): B3 MonthCalendar month and year dropdowns with min max clamping`
+    - `2d1a741` `ui(ds): B4 rail footer single row to settings`
+  - Changes:
+    - B1 · Dialog: replaced raw children footer with data-driven `actions?: DialogAction[]` rendered in single-row equal-width grid on mobile and flex-end on desktop (`grid grid-flow-col auto-cols-fr gap-space-8 lg:flex lg:justify-end`). `primary` (default or `danger-filled`), `secondary` (`link`), and `tertiary` (`link`) variants supported. Updated DialogContent, DialogShell, DialogPanel, ConfirmDialog, ConfirmDialogShell, stories, tests, and README.
+    - B2 · TextField: merged SearchField into TextField (`variant="default" | "embedded"`, `size="md" | "lg"`, `clearable`, `onClear`, `clearLabel`, `useControllableState`). Deleted SearchField component and README; updated Select to use TextField; moved SearchField stories and all 10 unit tests to TextField; verified zero SearchField references remain.
+    - B3 · MonthCalendar: replaced plain-text picker header with accessible Month and Year dropdowns (`PopoverTrigger` with `aria-label="Month"` / `"Year"`). Added `computeYearRange`, `isMonthDisabled`, `clampMonthForYear`. Disabled previous/next buttons at min/max boundaries; clamped year list and disabled out-of-range months; clamped month when switching year out of bounds. Updated DateField to verify calendar popover remains open on dropdown clicks. Updated stories, unit tests, and README.
+    - B4 · Rail: replaced rail footer with single `ListRow` linking to `/settings` with avatar, user display name / email title, email subtitle, `borderTop={false}`, `px-space-8`. Removed unused `shellFooterItems` from ShellNav. Updated sampleFooter in Rail.stories.tsx to profile row pattern. Updated Rail README. Updated ds-shell.spec.ts assertions.
+  - Changed tests (reasons):
+    - `src/components/ds/Dialog/Dialog.test.tsx`: updated to assert data-driven `actions` array rendering primary, secondary, tertiary, and danger-filled buttons and layout classes.
+    - `src/components/ds/TextField/TextField.test.tsx`: absorbed all 10 unit tests from SearchField (search variant, sizes, clear button, clear callback, clearLabel, Esc key clearing, embedded variant).
+    - `src/components/ds/MonthCalendar/MonthCalendar.test.tsx`: updated picker header test to assert Month and Year buttons rather than plain text; added dropdown selection tests, clamping tests, and boundary tests.
+    - `src/components/ds/DateField/DateField.test.tsx`: added test verifying calendar popover remains open when opening/interacting with Month and Year dropdowns.
+    - `src/features/shell/__tests__/navigation.test.tsx`: updated ShellRail test to assert profile row linking to `/settings` with email fallback instead of old `getByText('Settings')`.
+    - `e2e/ui/ds-shell.spec.ts`: updated selector from `getByRole('link', { name: 'Settings' })` to `rail.locator('a[href="/settings"]')` asserting presence of `currentUser.email`.
+  - Open questions: None.
+  - Deviations: None.
+  - Checks run and outputs:
+    - `npm run typecheck`: clean (0 errors)
+    - `npm run lint`: clean (0 errors)
+    - `npm test`: 439/440 test files passed (1 pre-existing legacy test failure in `InstrumentsSection.paging.test.tsx`), 100% of Dinero unit tests passed (54/54 test files, 480+ tests)
+    - `npm run build-storybook`: clean (built in 13.44s)
+    - Storybook sweep: 251/251 stories verified with 0 errors
+    - `npm run build`: Next.js 16.2.11 production build clean (49/49 static pages generated)
+    - `node design-system/tools/check-ui.mjs --base 4b825dc642cb6eb9a060e54bf8d69288fbee4904`: `design-system check: clean`
 
 - 2026-10-17 · Phase 1 · Antigravity · Storybook review round — Phase 1 fixes:
   - Commits:
