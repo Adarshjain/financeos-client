@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Card, Icon, ListRow, SwipeActions, type SwipeActionItem } from '@/components/ds';
+import { Card, Icon, ListRow, type SwipeActionItem, SwipeActions } from '@/components/ds';
 
 const approveAction: SwipeActionItem = {
   label: 'Approve',
