@@ -76,7 +76,7 @@ const meta: Meta<typeof Menu> = {
 export default meta;
 type Story = StoryObj<typeof Menu>;
 
-const DefaultTrigger = () => (
+const defaultTrigger = (
   <Button
     size="sm"
     variant="ghost"
@@ -89,7 +89,7 @@ const DefaultTrigger = () => (
 
 export const Default: Story = {
   args: {
-    trigger: <DefaultTrigger />,
+    trigger: defaultTrigger,
     children: (
       <>
         <MenuItem>Edit</MenuItem>
@@ -103,7 +103,7 @@ export const Default: Story = {
 
 export const WithIconsAndHints: Story = {
   args: {
-    trigger: <DefaultTrigger />,
+    trigger: defaultTrigger,
     children: (
       <>
         <MenuItem
@@ -128,7 +128,7 @@ export const WithIconsAndHints: Story = {
 
 export const DisabledItem: Story = {
   args: {
-    trigger: <DefaultTrigger />,
+    trigger: defaultTrigger,
     children: (
       <>
         <MenuItem>Edit details</MenuItem>
@@ -144,7 +144,7 @@ export const DisabledItem: Story = {
 
 export const Sectioned: Story = {
   args: {
-    trigger: <DefaultTrigger />,
+    trigger: defaultTrigger,
     children: (
       <>
         <MenuGroup label="Preferences">

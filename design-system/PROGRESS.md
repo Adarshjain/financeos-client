@@ -254,6 +254,12 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 2/Storybook · Antigravity · Fixed non-interactive trigger in Menu stories:
+  - `src/components/ds/Menu/Menu.stories.tsx`:
+    - Replaced `const DefaultTrigger = () => <Button ...>` component with direct JSX element `const defaultTrigger = <Button ...>` passed into `args.trigger`.
+    - Because `DropdownMenuPrimitive.Trigger` uses `asChild`, an intermediate custom component that did not forward refs or pass props dropped Radix UI's injected pointer and keyboard listeners, causing clicks on the trigger to do nothing.
+  - Checks: `node design-system/tools/check-ui.mjs` (clean), `npm test -- src/components/ds/Menu/` (11/11 tests pass), `npm run typecheck` (clean). Deviations: none.
+
 - 2026-10-17 · Phase 1/Storybook · Antigravity · Compact autodocs previews, removed Controls table, and isolated modal stories:
   - `.storybook/preview.tsx`:
     - Differentiated docs mode (`context.viewMode === 'docs'`) in `withTheme` and `ThemeWrapper`. When rendering stories in autodocs, `min-h-screen` is omitted, allowing previews to size naturally to component dimensions instead of forcing 100vh height.
