@@ -14,8 +14,10 @@ describe('TextArea component', () => {
     expect(textarea).toHaveClass('resize-y');
   });
 
-  it('adjusts height to auto-grow with content up to 8 lines', () => {
-    const { container } = render(<TextArea label="Note" defaultValue="" />);
+  it('adjusts height to auto-grow with content up to maxRows lines when specified', () => {
+    const { container } = render(
+      <TextArea label="Note" defaultValue="" maxRows={8} />,
+    );
     const textarea = container.querySelector('textarea')!;
     expect(textarea.style.height).toBe('36px'); // starts at 36px (h-control-lg)
 
@@ -35,6 +37,21 @@ describe('TextArea component', () => {
     fireEvent.change(textarea, { target: { value: 'Many lines\n'.repeat(10) } });
     expect(textarea.style.height).toBe('162px');
     expect(textarea.style.overflowY).toBe('auto');
+  });
+
+  it('grows indefinitely with 20 lines of text when maxRows is omitted, with no internal scroll', () => {
+    const { container } = render(<TextArea label="Note" defaultValue="" />);
+    const textarea = container.querySelector('textarea')!;
+    expect(textarea.style.height).toBe('36px');
+
+    // Simulate 20 lines of text height (378px)
+    Object.defineProperty(textarea, 'scrollHeight', {
+      configurable: true,
+      value: 378,
+    });
+    fireEvent.change(textarea, { target: { value: 'Line\n'.repeat(20) } });
+    expect(textarea.style.height).toBe('378px');
+    expect(textarea.style.overflowY).toBe('hidden');
   });
 
   it('renders (Optional) text when optional prop is true', () => {

@@ -3,7 +3,7 @@
 A labelled multi-line field for notes and descriptions.
 
 ## Use
-- Same label, helper and error as TextField. Starts exactly as tall as a TextField (`control-lg`, one line) and grows a line at a time as the text wraps or new lines are added, up to 8 lines (or `maxRows`), then scrolls.
+- Same label, helper and error as TextField. Starts exactly as tall as a TextField (`control-lg`, one line) and grows a line at a time as the text wraps or new lines are added (or up to `maxRows` if specified, then scrolls).
 - The user can also drag the bottom-right corner to make it taller (vertical resize only).
 - No character counter unless the server enforces a limit.
 
@@ -13,7 +13,7 @@ A labelled multi-line field for notes and descriptions.
 - `error?: React.ReactNode`: error message below the input.
 - `optional?: boolean`: shows "(Optional)" next to the label.
 - `minRows?: number`: minimum visible rows (default `1`).
-- `maxRows?: number`: maximum visible rows before scrolling (default `8`).
+- `maxRows?: number`: optional maximum visible rows before scrolling (omitted: grows indefinitely).
 - `className?: string`: class applied to the FieldFrame wrapper.
 - `controlClassName?: string`: custom class applied to the `<textarea>` element.
 - `onValueChange?: (value: string) => void`: callback with textarea value on change.
