@@ -398,11 +398,16 @@ export const InDataTableSwipe: StoryObj = {
     ),
   ],
   render: function InDataTableSwipeStory() {
+    const [{ selection = [] }, updateArgs] = useArgs();
     return (
       <DataTable
         columns={transactionColumns}
         data={sampleTransactions}
         getRowId={(r) => r.id}
+        selectable
+        selection={selection}
+        onSelectionChange={(s) => updateArgs({ selection: s })}
+        onRowSelect={fn()}
         wrapRow={(row, node) => (
           <SwipeActions
             key={row.id}
@@ -434,6 +439,8 @@ export const InDataTableSwipe: StoryObj = {
             selectable={rowProps.selectable}
             selected={rowProps.selected}
             onSelectedChange={rowProps.onSelectedChange}
+            selectionMode={rowProps.selectionMode}
+            onDetail={rowProps.onSelect}
           />
         )}
       />
