@@ -19,6 +19,7 @@ Adds swipe to any component. It wraps exactly one child (a TransactionRow, a Lis
 - No domain props: no `variant` ('transactions' | 'inbox'), no `onApprove` / `onDelete` / `onSnooze` / `onDismiss` / `canApprove`, no aliases. Spring-back uses `duration-base`.
 
 ## Rules
+- Phone layout only (below `lg`), with touch or mouse; in the desktop layout it never swipes (owner, 2026-10-18).
 - No tap action of its own: a tap goes to the row.
 - Vertical scrolling wins until the finger moves sideways (`touch-action: pan-y`).
 - Every swipe action is also reachable from the row's detail; gestures are shortcuts.

@@ -1,8 +1,14 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { stubLayout } from '@/test/stubLayout';
 
 import { SwipeActions } from './SwipeActions';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('SwipeActions', () => {
   it('renders children content', () => {
@@ -36,7 +42,9 @@ describe('SwipeActions', () => {
     expect(handleTrigger).toHaveBeenCalledTimes(1);
   });
 
-  it('ignores a mouse drag: swipe is touch only', () => {
+  // Swipe belongs to the phone layout, with any pointer (owner, 2026-10-18).
+  it('a mouse drag swipes in the phone layout', () => {
+    stubLayout('phone');
     const handleTrigger = vi.fn();
 
     const { container } = render(
@@ -52,6 +60,27 @@ describe('SwipeActions', () => {
     fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0, pointerType: 'mouse' });
     fireEvent.pointerMove(root, { clientX: 210, clientY: 50, pointerType: 'mouse' });
     fireEvent.pointerUp(root, { pointerType: 'mouse' });
+
+    expect(handleTrigger).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([['touch'], ['mouse']])('ignores a %s drag in the desktop layout', (pointerType) => {
+    stubLayout('desktop');
+    const handleTrigger = vi.fn();
+
+    const { container } = render(
+      <SwipeActions
+        left={{ label: 'Approve', tone: 'brand', onTrigger: handleTrigger }}
+      >
+        <div>Transaction row</div>
+      </SwipeActions>,
+    );
+
+    const root = container.firstChild as HTMLElement;
+
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0, pointerType });
+    fireEvent.pointerMove(root, { clientX: 210, clientY: 50, pointerType });
+    fireEvent.pointerUp(root, { pointerType });
 
     expect(handleTrigger).not.toHaveBeenCalled();
   });

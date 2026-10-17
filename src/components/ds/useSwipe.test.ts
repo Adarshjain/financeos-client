@@ -1,7 +1,13 @@
 import { act, renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { stubLayout } from '@/test/stubLayout';
 
 import { useSwipe } from './useSwipe';
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
 
 describe('useSwipe', () => {
   it('triggers onSwipeRight when dragging past positive threshold', () => {
@@ -42,7 +48,9 @@ describe('useSwipe', () => {
     expect(result.current.offset).toBe(0);
   });
 
-  it('ignores a mouse: swipe is touch only', () => {
+  // Swipe belongs to the phone layout, with any pointer (owner, 2026-10-18).
+  it('a mouse swipes in the phone layout', () => {
+    stubLayout('phone');
     const onSwipeRight = vi.fn();
     const { result } = renderHook(() => useSwipe({ threshold: 50, onSwipeRight }));
 
@@ -50,6 +58,30 @@ describe('useSwipe', () => {
       result.current.handlers.onPointerDown({
         button: 0,
         pointerType: 'mouse',
+        clientX: 0,
+        clientY: 0,
+        target: document.createElement('div'),
+      } as unknown as React.PointerEvent);
+    });
+    expect(result.current.isDragging).toBe(true);
+    act(() => {
+      result.current.handlers.onPointerMove({ clientX: 60, clientY: 0 } as unknown as React.PointerEvent);
+    });
+    act(() => {
+      result.current.handlers.onPointerUp({} as unknown as React.PointerEvent);
+    });
+    expect(onSwipeRight).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([['touch'], ['mouse']])('ignores a %s drag in the desktop layout', (pointerType) => {
+    stubLayout('desktop');
+    const onSwipeRight = vi.fn();
+    const { result } = renderHook(() => useSwipe({ threshold: 50, onSwipeRight }));
+
+    act(() => {
+      result.current.handlers.onPointerDown({
+        button: 0,
+        pointerType,
         clientX: 0,
         clientY: 0,
         target: document.createElement('div'),

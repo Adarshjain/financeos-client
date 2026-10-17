@@ -4,6 +4,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DataTable, type DataTableColumnMeta } from '@/components/ds';
+import { stubLayout } from '@/test/stubLayout';
 
 import {
   transactionColumns,
@@ -247,7 +248,7 @@ describe('TransactionRow', () => {
     expect(monStripe).toHaveClass('w-space-4');
   });
 
-  it('calls onDetail on row tap outside selection mode, and toggles selection in selection mode', async () => {
+  it('calls onDetail on row tap outside selection mode, and toggles selection in selection mode on phone only', async () => {
     const handleSelectedChange = vi.fn();
     const handleDetail = vi.fn();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
@@ -270,7 +271,7 @@ describe('TransactionRow', () => {
     expect(handleDetail).toHaveBeenCalledTimes(1);
     expect(handleSelectedChange).not.toHaveBeenCalled();
 
-    rerender(
+    const inSelection = (
       <TransactionRow
         description="Selectable row"
         amount="500.00"
@@ -279,23 +280,57 @@ describe('TransactionRow', () => {
         selectionMode={true}
         onDetail={handleDetail}
         onSelectedChange={handleSelectedChange}
-      />,
+      />
     );
 
-    // A mouse click still opens the detail in selection mode (owner, 2026-10-17)
+    // Desktop layout: a press opens the detail even in selection mode, with any pointer (owner, 2026-10-18)
+    stubLayout('desktop');
+    rerender(inSelection);
     await user.pointer({ keys: '[MouseLeft>]', target: row });
     await user.pointer({ keys: '[/MouseLeft]', target: row });
-    expect(handleDetail).toHaveBeenCalledTimes(2);
-    expect(handleSelectedChange).not.toHaveBeenCalled();
-
-    // A touch tap toggles the selection
     await user.pointer({ keys: '[TouchA>]', target: row });
     await user.pointer({ keys: '[/TouchA]', target: row });
+    expect(handleDetail).toHaveBeenCalledTimes(3);
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+
+    // Phone layout: a tap toggles the selection, with any pointer
+    stubLayout('phone');
+    rerender(inSelection);
+    await user.pointer({ keys: '[MouseLeft>]', target: row });
+    await user.pointer({ keys: '[/MouseLeft]', target: row });
     expect(handleSelectedChange).toHaveBeenCalledWith(true);
-    expect(handleDetail).toHaveBeenCalledTimes(2);
+    expect(handleDetail).toHaveBeenCalledTimes(3);
   });
 
-  it('does not select on a mouse long-press, and the release still opens the detail', async () => {
+  it('a mouse long-press selects in the phone layout', async () => {
+    stubLayout('phone');
+    const handleSelectedChange = vi.fn();
+    const handleDetail = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(
+      <TransactionRow
+        description="Mouse row"
+        amount="500.00"
+        selectable
+        selected={false}
+        onDetail={handleDetail}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+    const row = screen.getByRole('row');
+    giveSize(row);
+
+    await user.pointer({ keys: '[MouseLeft>]', target: row });
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    expect(handleSelectedChange).toHaveBeenCalledWith(true);
+    await user.pointer({ keys: '[/MouseLeft]', target: row });
+    expect(handleDetail).not.toHaveBeenCalled();
+  });
+
+  it('does not select on a long-press in the desktop layout, and the release still opens the detail', async () => {
+    stubLayout('desktop');
     const handleSelectedChange = vi.fn();
     const handleDetail = vi.fn();
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });

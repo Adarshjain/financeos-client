@@ -2,6 +2,8 @@ import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { stubLayout } from '@/test/stubLayout';
+
 import { useSelectableItem, type UseSelectableItemOptions } from './useSelectableItem';
 
 function Item(o: UseSelectableItemOptions) {
@@ -123,10 +125,12 @@ describe.each([
   });
 });
 
-// Long-press and tap-to-toggle are touch gestures (owner, 2026-10-17).
-describe('touch long-press and selection', () => {
-  const down = '[TouchA>]';
-  const up = '[/TouchA]';
+// Long-press and tap-to-toggle belong to the phone layout, with any pointer (owner, 2026-10-18).
+describe.each([
+  ['touch', '[TouchA>]', '[/TouchA]'],
+  ['mouse', '[MouseLeft>]', '[/MouseLeft]'],
+])('phone layout, %s: long-press and selection', (_n, down, up) => {
+  beforeEach(() => stubLayout('phone'));
   it('selects before release; release triggers nothing more', async () => {
     const { user, item, onPress, onSelectedChange } = setup();
     await user.pointer({ keys: down, target: item });
@@ -164,10 +168,12 @@ describe('touch long-press and selection', () => {
   });
 });
 
-// A mouse never selects by holding or clicking; a click always opens the item (owner, 2026-10-17).
-describe('mouse', () => {
-  const down = '[MouseLeft>]';
-  const up = '[/MouseLeft]';
+// Desktop layout: no long-press, and a press always opens the item; the checkbox selects (owner, 2026-10-18).
+describe.each([
+  ['touch', '[TouchA>]', '[/TouchA]'],
+  ['mouse', '[MouseLeft>]', '[/MouseLeft]'],
+])('desktop layout, %s', (_n, down, up) => {
+  beforeEach(() => stubLayout('desktop'));
   it('holding past the threshold does not select; the release opens the item', async () => {
     const { user, item, onPress, onSelectedChange } = setup();
     giveSize(item);
@@ -178,7 +184,7 @@ describe('mouse', () => {
     expect(onSelectedChange).not.toHaveBeenCalled();
     expect(onPress).toHaveBeenCalledTimes(1);
   });
-  it('a click in selection mode opens the item and never toggles', async () => {
+  it('a press in selection mode opens the item and never toggles', async () => {
     const a = setup({ selectionMode: true, selected: false });
     await a.user.pointer({ keys: down, target: a.item });
     await a.user.pointer({ keys: up, target: a.item });
@@ -208,13 +214,22 @@ describe('keyboard', () => {
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(onSelectedChange).not.toHaveBeenCalled();
   });
-  it.each([['{Enter}'], [' ']])('%s in selection mode -> toggles', async (k) => {
+  it.each([['{Enter}'], [' ']])('%s in selection mode, phone layout -> toggles', async (k) => {
+    stubLayout('phone');
     const { user, item, onPress, onSelectedChange } = setup({ selectionMode: true, selected: true });
     item.focus();
     await user.keyboard(k);
     expect(onSelectedChange).toHaveBeenCalledTimes(1);
     expect(onSelectedChange).toHaveBeenCalledWith(false);
     expect(onPress).not.toHaveBeenCalled();
+  });
+  it.each([['{Enter}'], [' ']])('%s in selection mode, desktop layout -> onPress', async (k) => {
+    stubLayout('desktop');
+    const { user, item, onPress, onSelectedChange } = setup({ selectionMode: true, selected: true });
+    item.focus();
+    await user.keyboard(k);
+    expect(onPress).toHaveBeenCalledTimes(1);
+    expect(onSelectedChange).not.toHaveBeenCalled();
   });
 });
 
