@@ -11,9 +11,8 @@ describe('DateTile', () => {
     expect(screen.getByText('OCT')).toBeInTheDocument();
   });
 
-  it('supports legacy month prop', () => {
-    render(<DateTile day={28} month="NOV" />);
+  it('renders day without monthLabel when omitted', () => {
+    render(<DateTile day={28} />);
     expect(screen.getByText('28')).toBeInTheDocument();
-    expect(screen.getByText('NOV')).toBeInTheDocument();
   });
 });
