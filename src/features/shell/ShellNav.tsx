@@ -12,11 +12,11 @@ import {
   DialogContent,
   Icon,
   ListRow,
-  Logo,
   Rail,
   TabBar,
   Text,
 } from '@/components/ds';
+import { Logo } from '@/components/organisms';
 
 import {
   getActiveNavItem,

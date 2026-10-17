@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import { EmptyState, Illustration } from '@/components/ds';
+import { EmptyState } from '@/components/ds';
+import { Illustration } from '@/components/organisms';
 
 export function OfflineContent() {
   return (

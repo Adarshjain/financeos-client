@@ -8,16 +8,16 @@ Read `00-global.md` first. Its rules override anything below.
 
 ## Change (2)
 
-- [ ] **f79e40b93** · Illustration stories use raw captions and wrappers
+- [x] **f79e40b93** · Illustration stories use raw captions and wrappers
   - Now: Illustration.stories.tsx:22,24,53,66,83,127 use hand-styled spans and divs.
   - Do: Use meta `decorators` for the canvas and a bordered frame, and `parameters.viewport` for phone.
-- [ ] **fdcf23ad1** · Illustration SignIn/SignInPhone and SignUp/SignUpPhone are duplicates
+- [x] **fdcf23ad1** · Illustration SignIn/SignInPhone and SignUp/SignUpPhone are duplicates
   - Now: Illustration.stories.tsx:61-119: each pair has the same variant and differs by the viewport parameter and wrapper width.
   - Do: Keep one story per variant. Use the Storybook viewport toolbar for phone.
 
 ## Owner's own call (1)
 
-- [ ] **f8aa0e547** · Illustration 'All variants' hard-codes five instances
+- [x] **f8aa0e547** · Illustration 'All variants' hard-codes five instances
   - Do: Delete the AllVariants story; the autodocs page shows every story, with no controls on the docs page (G9).
 
 ## Keep: do NOT change (6)
