@@ -239,6 +239,13 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       }
     };
 
+    // MonthCalendar emits the whole range; DateField keeps its own tap order, so recover the tapped day.
+    const handleRangeCalendarChange = (val: DateFieldValue) => {
+      if (typeof val !== 'object' || !val.start) return;
+      const tapped = val.end && val.start === startIso ? val.end : val.start;
+      handleSelectDateFromCalendar(tapped);
+    };
+
     const handleToday = () => {
       if (!range) {
         setSingleText(formatDate(today, 'input'));
@@ -295,15 +302,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
             minDate={minDate}
             maxDate={maxDate}
             today={today}
-            onValueChange={(val) => {
-              if (val && typeof val === 'object') {
-                if (val.start && !val.end) {
-                  handleSelectDateFromCalendar(val.start);
-                } else if (val.start && val.end) {
-                  handleSelectDateFromCalendar(val.end);
-                }
-              }
-            }}
+            onValueChange={handleRangeCalendarChange}
           />
           <div className="hidden lg:block">
             <MonthCalendar
@@ -326,15 +325,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
               minDate={minDate}
               maxDate={maxDate}
               today={today}
-              onValueChange={(val) => {
-                if (val && typeof val === 'object') {
-                  if (val.start && !val.end) {
-                    handleSelectDateFromCalendar(val.start);
-                  } else if (val.start && val.end) {
-                    handleSelectDateFromCalendar(val.end);
-                  }
-                }
-              }}
+              onValueChange={handleRangeCalendarChange}
             />
           </div>
         </div>
@@ -379,17 +370,17 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     );
 
     const triggerButton = (
-      <button
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
+        iconOnly
         disabled={disabled}
         aria-label="Open calendar"
-        className={cn(
-          'w-control-md h-control-md flex items-center justify-center text-ink-3 hover:text-ink transition-colors cursor-pointer select-none',
-          disabled && 'cursor-not-allowed opacity-50',
-        )}
+        className="text-ink-3 hover:text-ink shrink-0"
       >
-        <Icon name="calendar" size="lg" />
-      </button>
+        <Icon name="calendar" size="md" />
+      </Button>
     );
 
     return (

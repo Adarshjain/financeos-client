@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import { useArgs } from 'storybook/preview-api';
 import { fn } from 'storybook/test';
 
 import { type CalendarDay, Card, MonthCalendar } from '@/components/ds';
@@ -62,11 +63,37 @@ const meta: Meta<typeof MonthCalendar> = {
     selectedDay: { control: 'number' },
     today: { control: 'text' },
     month: { control: 'text' },
+    defaultMonth: { control: 'text' },
+    value: { control: 'object' },
+    defaultValue: { control: false },
     minDate: { control: 'text' },
     maxDate: { control: 'text' },
     showFooter: { control: 'boolean' },
     days: { table: { disable: true } },
     weekdays: { table: { disable: true } },
+  },
+  render: function Render(args) {
+    const [{ value, month, selectedDay }, updateArgs] = useArgs();
+    return (
+      <MonthCalendar
+        {...args}
+        value={value}
+        month={month}
+        selectedDay={selectedDay}
+        onValueChange={(v) => {
+          updateArgs({ value: v });
+          args.onValueChange?.(v);
+        }}
+        onMonthChange={(m) => {
+          updateArgs({ month: m });
+          args.onMonthChange?.(m);
+        }}
+        onSelectDay={(d) => {
+          updateArgs({ selectedDay: d });
+          args.onSelectDay?.(d);
+        }}
+      />
+    );
   },
 };
 

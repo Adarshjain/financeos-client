@@ -203,7 +203,7 @@ function unknownClasses(text) {
 
 // Components that may render a raw <button>: the primitives that ARE buttons or
 // button-like controls. Every other design-system component uses Button (RULES §5b.2).
-const RAW_BUTTON_OK = new Set(['Button', 'Switch', 'Checkbox', 'FilterChip', 'Badge', 'SegmentedControl', 'Tabs', 'Menu', 'Select', 'DateField', 'DateTile', 'Popover', 'Dialog']);
+const RAW_BUTTON_OK = new Set(['Button', 'Switch', 'Checkbox', 'FilterChip', 'Badge', 'SegmentedControl', 'Tabs', 'Menu', 'Select', 'Popover', 'Dialog']);
 // Icons in the new system are Phosphor through the Icon component (RULES §6.1). The rule
 // switches on once @phosphor-icons/react is a dependency, so the Lucide-based Icon keeps
 // working until the migration round installs it.

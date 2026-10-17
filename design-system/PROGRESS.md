@@ -254,6 +254,11 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 3b · Claude · Reviewed the fix round. check-ui full scan clean, typecheck, 452 Dinero tests and all 251 stories render. Fixed 3 things myself:
+  - DateField range: an earlier second tap from the calendar gave a one-day range (20 then 5 → 20–20). DateField now recovers the tapped day from MonthCalendar's range output. Added 2 tests (swap; first tap starts a new range).
+  - DateField's calendar trigger was switched to a raw `<button>` with a bigger icon (not asked). Restored the Button (ghost, sm, iconOnly, `md` icon). `check-ui` no longer lets DateField or DateTile draw a raw `<button>`.
+  - MonthCalendar stories: `value`, `month` and `selectedDay` are wired with `useArgs` so the canvas is interactive (RULES §5a.2).
+  Checks: typecheck, the date tests, check-ui full scan, story sweep, a browser click test of range and month navigation. Deviations: none.
 - 2026-10-17 · Phase 3b · Antigravity · Reviewer feedback: removed legacy prop aliases and hard-coded date fallbacks, expanded Foundations docs:
   - Fix 1 · MonthCalendar (`src/components/ds/MonthCalendar/`): unified API to `mode?: 'events' | 'picker'`, `range?: boolean`, `value`/`defaultValue`/`onValueChange` via `useControllableState` with `{ start?: string; end?: string }` support (auto-swapping if end < start); `month`/`defaultMonth`/`onMonthChange(monthISO: string)`; `today: string` (required ISO, no clock reads); removed `year`, `selectedDate`, `startDate`, `endDate`, `onSelectDate`, `(year, month)` form of `onMonthChange`, `@deprecated` tone alias, and hardcoded `?? 2026` / `: 9` fallbacks. Added range emission tests (start, end, swap).
   - Fix 2 · DateTile (`src/components/ds/DateTile/`): deleted deprecated `month` prop (`monthLabel` retained) and deleted compatibility re-export of `MonthCalendar`.
