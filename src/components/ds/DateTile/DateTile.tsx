@@ -9,13 +9,10 @@ export interface DateTileProps extends React.HTMLAttributes<HTMLDivElement> {
   day: number | string;
   /** Month short name, e.g. "OCT", "NOV" */
   monthLabel?: string;
-  /** @deprecated use monthLabel */
-  month?: string;
 }
 
 export const DateTile = forwardRef<HTMLDivElement, DateTileProps>(
-  ({ day, monthLabel, month, className, ...props }, ref) => {
-    const displayMonth = monthLabel ?? month ?? '';
+  ({ day, monthLabel, className, ...props }, ref) => {
     return (
       <div
         ref={ref}
@@ -25,15 +22,14 @@ export const DateTile = forwardRef<HTMLDivElement, DateTileProps>(
         <b className="block text-heading font-extrabold text-ink leading-none">
           {day}
         </b>
-        <span className="block text-overline font-extrabold tracking-wider text-ink-4 uppercase mt-space-2 leading-none">
-          {displayMonth}
-        </span>
+        {monthLabel ? (
+          <span className="block text-overline font-extrabold tracking-wider text-ink-4 uppercase mt-space-2 leading-none">
+            {monthLabel}
+          </span>
+        ) : null}
       </div>
     );
   },
 );
 
 DateTile.displayName = 'DateTile';
-
-// Re-export MonthCalendar types and component for compatibility
-export * from '../MonthCalendar/MonthCalendar';
