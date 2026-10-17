@@ -254,6 +254,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - **ProgressBar indeterminate** is a calm sweep; one cycle is the new generic token `dur-loop` (1600ms).
   - **DataTable** (the desktop form of TransactionRow and every desktop table) waits for its own round: design first, then build.
 - 2026-10-17 · **DataTable uses TanStack Table** (`@tanstack/react-table` v9, owner). It is headless: TanStack holds sort, selection and column state; every visual comes from Dinero. Pin an exact release at least two weeks old when installing.
+- 2026-10-17 · **DataTable requirements review** (owner): v1 includes expandable rows; `sortMode="client"` is allowed only for lists the server returns whole (never with a Pager, never slicing). Pinned `@tanstack/react-table` **9.2.4**. Out of v1: pivot tables, drag-to-reorder rows, several tables sharing one Pager.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
