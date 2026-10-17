@@ -187,7 +187,7 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
         className={className}
         {...props}
       >
-        <div className="px-space-14 pb-space-12 pt-0 flex-1">{renderBody()}</div>
+        <div className="px-space-16 pb-space-12 pt-0 flex-1">{renderBody()}</div>
       </Card>
     );
   },
