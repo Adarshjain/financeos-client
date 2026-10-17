@@ -15,7 +15,7 @@ import { FieldFrame } from '../FieldFrame';
 import { Icon } from '../Icon/Icon';
 import { getItemRowClass } from '../itemRow';
 import { Popover } from '../Popover/Popover';
-import { SearchField } from '../SearchField/SearchField';
+import { TextField } from '../TextField/TextField';
 import { useControllableState } from '../useControllableState';
 
 export interface SelectOption {
@@ -347,11 +347,16 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       >
         {searchable ? (
           <div className="mb-space-8">
-            <SearchField
+            <TextField
+              type="search"
+              size="md"
+              variant="embedded"
+              prefix={<Icon name="search" size="sm" />}
+              clearable
+              clearLabel="Clear search"
               value={searchQuery}
               placeholder={searchPlaceholder}
               onValueChange={handleSearchChange}
-              variant="embedded"
               autoFocus
               onKeyDown={handleKeyDown}
             />

@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
+import { Icon } from '../Icon/Icon';
 import { TextField } from './TextField';
 
 describe('TextField component', () => {
@@ -101,5 +102,156 @@ describe('TextField component', () => {
   it('applies controlClassName to the input element', () => {
     render(<TextField label="Code" controlClassName="font-mono text-center" />);
     expect(screen.getByLabelText('Code')).toHaveClass('font-mono', 'text-center');
+  });
+
+  describe('Search form (type="search", clearable, embedded)', () => {
+    it('renders with placeholder and search icon', () => {
+      render(
+        <TextField
+          type="search"
+          placeholder="Search transactions…"
+          prefix={<Icon name="search" size="sm" />}
+        />,
+      );
+      const input = screen.getByPlaceholderText('Search transactions…');
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveAttribute('type', 'search');
+    });
+
+    it('renders label and connects it to input', () => {
+      render(<TextField type="search" label="Find the other side" />);
+      const label = screen.getByText('Find the other side');
+      const input = screen.getByRole('searchbox');
+      expect(label).toHaveAttribute('for', input.getAttribute('id'));
+    });
+
+    it('renders helper message with aria-describedby', () => {
+      render(
+        <TextField
+          type="search"
+          defaultValue="xyz"
+          helper='No transactions match "xyz".'
+        />,
+      );
+      const helper = screen.getByText('No transactions match "xyz".');
+      const input = screen.getByRole('searchbox');
+      expect(helper).toBeInTheDocument();
+      expect(input).toHaveAttribute('aria-describedby', helper.getAttribute('id'));
+    });
+
+    it('shows clear button when there is text and clears on click', () => {
+      const handleClear = vi.fn();
+      const handleValueChange = vi.fn();
+
+      render(
+        <TextField
+          type="search"
+          size="md"
+          clearable
+          clearLabel="Clear search"
+          defaultValue="swiggy"
+          onClear={handleClear}
+          onValueChange={handleValueChange}
+        />,
+      );
+
+      const input = screen.getByRole('searchbox') as HTMLInputElement;
+      expect(input.value).toBe('swiggy');
+
+      const clearButton = screen.getByRole('button', { name: /clear search/i });
+      expect(clearButton).toBeInTheDocument();
+
+      fireEvent.click(clearButton);
+      expect(handleClear).toHaveBeenCalledTimes(1);
+      expect(handleValueChange).toHaveBeenCalledTimes(1);
+      expect(handleValueChange).toHaveBeenCalledWith('');
+      expect(input.value).toBe('');
+    });
+
+    it('forwards callback ref and refocuses on clear', () => {
+      let inputRef: HTMLInputElement | null = null;
+      render(
+        <TextField
+          type="search"
+          size="md"
+          clearable
+          clearLabel="Clear search"
+          defaultValue="query"
+          ref={(el) => {
+            inputRef = el;
+          }}
+        />,
+      );
+      expect(inputRef).not.toBeNull();
+      const clearButton = screen.getByRole('button', { name: /clear search/i });
+      fireEvent.click(clearButton);
+      expect(document.activeElement).toBe(inputRef);
+    });
+
+    it('works in controlled mode', () => {
+      const ControlledComponent = () => {
+        const [val, setVal] = React.useState('initial');
+        return (
+          <TextField
+            type="search"
+            size="md"
+            clearable
+            clearLabel="Clear search"
+            value={val}
+            onChange={(e) => setVal(e.target.value)}
+            onValueChange={setVal}
+          />
+        );
+      };
+
+      render(<ControlledComponent />);
+      const input = screen.getByRole('searchbox') as HTMLInputElement;
+      expect(input.value).toBe('initial');
+
+      fireEvent.change(input, { target: { value: 'updated' } });
+      expect(input.value).toBe('updated');
+
+      const clearBtn = screen.getByRole('button', { name: /clear search/i });
+      fireEvent.click(clearBtn);
+      expect(input.value).toBe('');
+    });
+
+    it('applies size="md" height class (h-control-md)', () => {
+      const { container } = render(
+        <TextField size="md" placeholder="In filter" />,
+      );
+      const wrapper = container.querySelector('.h-control-md');
+      expect(wrapper).toBeInTheDocument();
+    });
+
+    it('applies size="lg" height class by default', () => {
+      const { container } = render(
+        <TextField placeholder="In sheet" />,
+      );
+      const wrapper = container.querySelector('.h-control-lg');
+      expect(wrapper).toBeInTheDocument();
+    });
+
+    it('applies variant="embedded" classes without focus ring', () => {
+      const { container } = render(<TextField variant="embedded" />);
+      const box = container.querySelector('.focus-within\\:ring-0');
+      expect(box).toBeInTheDocument();
+    });
+
+    it('does not show clear button when disabled', () => {
+      render(
+        <TextField
+          type="search"
+          clearable
+          clearLabel="Clear search"
+          defaultValue="disabled search"
+          disabled
+        />,
+      );
+      expect(
+        screen.queryByRole('button', { name: /clear search/i }),
+      ).not.toBeInTheDocument();
+      expect(screen.getByRole('searchbox')).toBeDisabled();
+    });
   });
 });
