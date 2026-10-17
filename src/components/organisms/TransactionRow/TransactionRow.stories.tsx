@@ -183,9 +183,24 @@ export const SelectedSelectionMode: Story = {
     plastic: '••1008',
     link: { label: 'EMI #8 · HDFC car loan', isRecord: true },
     categories: ['Transport'],
+    selectable: true,
     selected: true,
     selectionMode: true,
     onSelectedChange: fn(),
+  },
+  render: function SelectedSelectionModeStory(args) {
+    const [{ selected = true }, updateArgs] = useArgs();
+    return (
+      <TransactionRow
+        {...args}
+        selected={selected}
+        selectionMode={selected}
+        onSelectedChange={(s) => {
+          args.onSelectedChange?.(s);
+          updateArgs({ selected: s, selectionMode: s });
+        }}
+      />
+    );
   },
 };
 
@@ -224,14 +239,15 @@ export const SelectableInteractive: Story = {
     onSelectedChange: fn(),
   },
   render: function SelectableRowStory(args) {
-    const [{ selected }, updateArgs] = useArgs();
+    const [{ selected = false }, updateArgs] = useArgs();
     return (
       <TransactionRow
         {...args}
         selected={selected}
+        selectionMode={selected}
         onSelectedChange={(s) => {
           args.onSelectedChange?.(s);
-          updateArgs({ selected: s });
+          updateArgs({ selected: s, selectionMode: s });
         }}
       />
     );
