@@ -85,4 +85,14 @@ describe('Widget', () => {
     fireEvent.click(removeBtn);
     expect(handleRemove).toHaveBeenCalledTimes(1);
   });
+
+  it('aligns body wrapper with Card header using px-space-16', () => {
+    const { container } = render(
+      <Widget title="Aligned widget">
+        <div data-testid="widget-content">Content</div>
+      </Widget>,
+    );
+    const content = screen.getByTestId('widget-content');
+    expect(content.parentElement).toHaveClass('px-space-16');
+  });
 });
