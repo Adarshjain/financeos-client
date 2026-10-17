@@ -360,11 +360,10 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                 : 'grid-cols-fill-auto',
             )}
           >
-            {/* Description (Cell 3 on desktop; col 1 across both rows on phone, so the
-                context line sits right under it whatever the amount column's height) */}
+            {/* Description and context line (Cell 3 on desktop, col 1 row 1 on phone) */}
             <div
               role="cell"
-              className="col-start-1 row-start-1 row-span-2 self-start text-heading text-ink break-words min-w-0 lg:col-start-auto lg:row-start-auto lg:row-span-1 lg:self-auto lg:text-body lg:px-space-12 lg:py-space-6"
+              className="col-start-1 row-start-1 text-heading text-ink break-words min-w-0 lg:col-start-auto lg:row-start-auto lg:text-body lg:px-space-12 lg:py-space-6"
             >
               <div className="text-heading font-medium lg:text-body-strong text-ink truncate">
                 {description ?? children}
@@ -393,10 +392,10 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               )}
             </div>
 
-            {/* Categories (Cell 4 on desktop, col 2 row 2 on phone) */}
+            {/* Categories (Cell 4 on desktop; on phone col 1 row 2, under the context line) */}
             <div
               role="cell"
-              className="col-start-2 row-start-2 mt-space-4 flex items-center justify-end gap-space-4 self-center lg:col-start-auto lg:row-start-auto lg:mt-0 lg:justify-start lg:px-space-12 lg:py-space-6 min-w-0 truncate"
+              className="col-start-1 row-start-2 mt-space-6 flex items-center justify-start gap-space-4 empty:hidden lg:empty:flex lg:col-start-auto lg:row-start-auto lg:mt-0 lg:px-space-12 lg:py-space-6 min-w-0 truncate"
             >
               {renderCategories()}
             </div>
@@ -410,12 +409,12 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               {plastic && ` ${plastic}`}
             </div>
 
-            {/* Amount (Cell 6 on desktop, col 2 row 1 on phone) */}
+            {/* Amount (Cell 6 on desktop; on phone col 2 across both rows, top-aligned, so it never pushes the left column apart) */}
             <div
               role="cell"
               className={cn(
-                'col-start-2 row-start-1 text-right font-bold text-heading tabular-nums whitespace-nowrap',
-                'lg:col-start-auto lg:row-start-auto lg:text-body-strong lg:font-bold lg:px-space-12 lg:py-space-6 lg:text-end lg:justify-self-end',
+                'col-start-2 row-start-1 row-span-2 self-start text-right font-bold text-heading tabular-nums whitespace-nowrap',
+                'lg:col-start-auto lg:row-start-auto lg:row-span-1 lg:self-auto lg:text-body-strong lg:font-bold lg:px-space-12 lg:py-space-6 lg:text-end lg:justify-self-end',
                 isCredit ? 'text-positive' : 'text-ink',
               )}
             >

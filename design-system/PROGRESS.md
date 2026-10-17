@@ -261,6 +261,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-18 · **Gestures are touch only** (owner, replacing the mouse part of the 2026-10-17 long-press decision): long-press and swipe respond to touch only. A mouse or pen click always opens the item, even in selection mode; the desktop checkbox is the only way to select with a mouse. Keyboard keeps Enter/Space toggling in selection mode. RULES §5c.4 and §7.5 updated.
 - 2026-10-18 · **Pager `compact` variant** (owner): small controls and tight padding for dense lists. A one-page gap shows the page, never an ellipsis.
 - 2026-10-18 · **No "bal" prefix** on running balances (owner): the balance is the bare amount, "₹2,95,030".
+- 2026-10-18 · **TransactionRow phone: categories on their own line under the context line** (owner), not under the amount. Amount and balance stay top-right.
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
@@ -273,6 +274,7 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-18 · Phase 2 · Claude · TransactionRow phone categories moved under the context line (`TransactionRow.tsx`, its README): categories cell is col 1 row 2 (left-aligned, hidden when empty on phone), the amount cell spans both rows top-aligned so it never pushes the left column apart. Desktop grid unchanged. New test for the phone placement. Checks: organisms + DataTable tests green, typecheck clean, check-ui clean, `build-storybook` OK, screenshots at 390 (light, dark) and 1440, full Playwright flow rerun. Deviations: none.
 - 2026-10-18 · Phase 2 · Claude · Owner review of the Transactions list story (7 items):
   - Pager (`src/components/ds/Pager/`): new `variant="compact"` (`control-sm`, `py-space-4`, `label` text) with a `Compact` story; page list rebuilt so a one-page gap shows the page instead of hiding it (phone at 30 rows / 10 per page read "1 3", now "1 2 3"), and the phone form gets its own ellipsis where it drops desktop neighbours. README updated.
   - TransactionRow (`src/components/organisms/TransactionRow/TransactionRow.tsx`): on phone the context line now lives in the description cell (spanning both grid rows), so it sits right under the description whatever the amount column's height; the context line is a wrapping flex row with centred items, so a link icon no longer shifts it off the baseline.

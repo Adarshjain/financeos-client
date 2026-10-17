@@ -93,6 +93,27 @@ describe('TransactionRow', () => {
     expect(screen.getByText('+1')).toBeInTheDocument();
   });
 
+  it('on phone puts the categories under the context line and keeps the amount top-right across both rows', () => {
+    render(
+      <TransactionRow
+        description="BigBasket"
+        amount="3,600.00"
+        balance="₹2,95,030"
+        account="HDFC Bank Savings"
+        categories={['Groceries']}
+      />,
+    );
+    const cells = screen.getAllByRole('cell');
+    const description = cells.find((c) => c.textContent?.startsWith('BigBasket'));
+    const categories = screen.getByText('Groceries').closest('[role="cell"]');
+    const amount = screen.getByText('3,600.00').closest('[role="cell"]');
+
+    expect(description).toHaveClass('col-start-1', 'row-start-1');
+    expect(description).toHaveTextContent('HDFC Bank Savings');
+    expect(categories).toHaveClass('col-start-1', 'row-start-2', 'justify-start');
+    expect(amount).toHaveClass('col-start-2', 'row-start-1', 'row-span-2', 'self-start', 'lg:row-span-1');
+  });
+
   it('renders unset category chip when categories array is empty and unsetCategoryLabel provided', () => {
     const handleSet = vi.fn();
     render(

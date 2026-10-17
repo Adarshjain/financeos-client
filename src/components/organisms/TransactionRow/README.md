@@ -5,7 +5,7 @@ The phone transaction row: merchant and amount on top, a context line and catego
 ## Anatomy
 - Line 1: description (`heading`) · amount (700, tabular, credits `positive`). Running balance sits under the amount in `caption`, as the bare amount ("₹2,95,030", no "bal" prefix; owner 2026-10-17).
 - Line 2, the context line, in this order: **account name first**, plastic (••7741), then amber review words, a note, blue link/record words, then grey provenance.
-- Right of line 2: the first category badge (`Badge variant="outline" shape="rounded"`), plus a "+n" badge if there are more. A dashed amber "Set category" badge when none is set.
+- Line 3, under the context line (owner, 2026-10-18): the first category badge (`Badge variant="outline" shape="rounded"`), plus a "+n" badge if there are more. A dashed amber "Set category" badge when none is set. The amount and balance stay top-right.
 - Checkbox on desktop when selectable. Trailing chevron or eye icon in selection mode.
 
 ## Word colours
