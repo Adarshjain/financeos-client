@@ -30,7 +30,8 @@ export function useSwipe({
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
-      if (disabled || e.button !== 0) return;
+      // Swipe is a touch gesture only (owner, 2026-10-17).
+      if (disabled || e.pointerType !== 'touch' || e.button !== 0) return;
 
       const target = e.target as HTMLElement;
       if (target.closest('button, a, input, select, textarea')) return;

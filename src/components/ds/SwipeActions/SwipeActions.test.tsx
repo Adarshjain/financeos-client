@@ -29,11 +29,31 @@ describe('SwipeActions', () => {
     const root = container.firstChild as HTMLElement;
 
     // Drag right past threshold (startX: 100, endX: 210 = delta +110 > 96px threshold)
-    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0 });
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0, pointerType: 'touch' });
     fireEvent.pointerMove(root, { clientX: 210, clientY: 50 });
     fireEvent.pointerUp(root);
 
     expect(handleTrigger).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores a mouse drag: swipe is touch only', () => {
+    const handleTrigger = vi.fn();
+
+    const { container } = render(
+      <SwipeActions
+        left={{ label: 'Approve', tone: 'brand', onTrigger: handleTrigger }}
+      >
+        <div>Transaction row</div>
+      </SwipeActions>,
+    );
+
+    const root = container.firstChild as HTMLElement;
+
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0, pointerType: 'mouse' });
+    fireEvent.pointerMove(root, { clientX: 210, clientY: 50, pointerType: 'mouse' });
+    fireEvent.pointerUp(root, { pointerType: 'mouse' });
+
+    expect(handleTrigger).not.toHaveBeenCalled();
   });
 
   it('triggers right action when swiped left past threshold', () => {
@@ -50,7 +70,7 @@ describe('SwipeActions', () => {
     const root = container.firstChild as HTMLElement;
 
     // Drag left past threshold (startX: 200, endX: 90 = delta -110 < -96px threshold)
-    fireEvent.pointerDown(root, { clientX: 200, clientY: 50, button: 0 });
+    fireEvent.pointerDown(root, { clientX: 200, clientY: 50, button: 0, pointerType: 'touch' });
     fireEvent.pointerMove(root, { clientX: 90, clientY: 50 });
     fireEvent.pointerUp(root);
 
@@ -73,7 +93,7 @@ describe('SwipeActions', () => {
     const root = container.firstChild as HTMLElement;
 
     // Drag right below threshold (startX: 100, endX: 140 = delta +40 < 96px)
-    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0 });
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0, pointerType: 'touch' });
     fireEvent.pointerMove(root, { clientX: 140, clientY: 50 });
     fireEvent.pointerUp(root);
 
@@ -95,7 +115,7 @@ describe('SwipeActions', () => {
     const root = container.firstChild as HTMLElement;
 
     // Start drag, then move vertically more than horizontally (deltaY: 30, deltaX: 10)
-    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0 });
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0, pointerType: 'touch' });
     fireEvent.pointerMove(root, { clientX: 110, clientY: 80 });
     fireEvent.pointerUp(root);
 
@@ -111,7 +131,7 @@ describe('SwipeActions', () => {
 
     const root = container.firstChild as HTMLElement;
 
-    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0 });
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0, pointerType: 'touch' });
     fireEvent.pointerMove(root, { clientX: 250, clientY: 50 });
     fireEvent.pointerUp(root);
 
@@ -133,7 +153,7 @@ describe('SwipeActions', () => {
 
     const root = container.firstChild as HTMLElement;
 
-    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0 });
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0, pointerType: 'touch' });
     fireEvent.pointerMove(root, { clientX: 250, clientY: 50 });
     fireEvent.pointerUp(root);
 
@@ -165,7 +185,7 @@ describe('SwipeActions', () => {
     );
 
     const root = container.firstChild as HTMLElement;
-    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0 });
+    fireEvent.pointerDown(root, { clientX: 100, clientY: 50, button: 0, pointerType: 'touch' });
     expect(onPointerDown).toHaveBeenCalledTimes(1);
   });
 });

@@ -628,7 +628,7 @@ export const TransactionsList: StoryObj = {
     docs: {
       description: {
         story:
-          'The row inside a full transactions list, wired like the page. Long-press a row to start selecting, tap to toggle, the eye opens the detail. Tap a row outside selection to open it. Swipe right approves a flagged row (Undo in the toast), swipe left deletes after a confirmation. Tap a category chip to change it. Sort from the desktop headers, page with the pager. Resize the window across 1024px to switch between phone and desktop.',
+          'The row inside a full transactions list, wired like the page. Touch: long-press a row to start selecting, tap to toggle, the eye opens the detail; outside selection a tap opens the row; swipe right approves a flagged row (Undo in the toast), swipe left deletes after a confirmation. Mouse: a click always opens the row, the checkbox selects; no long-press or swipe. Tap a category chip to change it. Sort from the desktop headers, page with the pager. Resize the window across 1024px to switch between phone and desktop.',
       },
     },
   },
@@ -722,6 +722,7 @@ export const TransactionsList: StoryObj = {
 
     const pager = (
       <Pager
+        variant="compact"
         page={page}
         size={args.size}
         totalElements={all.length}
@@ -811,7 +812,7 @@ export const TransactionsList: StoryObj = {
                   balance={
                     r.balanceInr === undefined
                       ? undefined
-                      : `bal ₹${inrWhole.format(r.balanceInr)}`
+                      : `₹${inrWhole.format(r.balanceInr)}`
                   }
                   account={r.account}
                   plastic={r.plastic}
@@ -1005,7 +1006,7 @@ export const Default: Story = {
   args: {
     description: 'BigBasket',
     amount: '3,600.00',
-    balance: 'bal ₹61,757',
+    balance: '₹61,757',
     account: 'HDFC Bank Savings',
     provenance: 'Statement',
     categories: ['Groceries'],
@@ -1016,7 +1017,7 @@ export const Credit: Story = {
   args: {
     description: 'Salary · Bolt Technologies',
     amount: '+2,15,000.00',
-    balance: 'bal ₹5,61,400',
+    balance: '₹5,61,400',
     account: 'HDFC Bank Savings',
     provenance: 'Statement',
     categories: ['Salary'],
@@ -1028,7 +1029,7 @@ export const ReviewDuplicate: Story = {
   args: {
     description: 'Swiggy Bangalore',
     amount: '1,249.00',
-    balance: 'bal ₹44,319',
+    balance: '₹44,319',
     account: 'HDFC Regalia',
     plastic: '••7741',
     reviewStatus: 'Duplicate',
@@ -1116,7 +1117,7 @@ export const SelectableInteractive: Story = {
   args: {
     description: 'Swiggy Bangalore',
     amount: '1,249.00',
-    balance: 'bal ₹44,319',
+    balance: '₹44,319',
     account: 'HDFC Regalia',
     plastic: '••7741',
     selectable: true,
@@ -1149,7 +1150,7 @@ const sampleTransaction: TransactionRowData = {
   plastic: '••7741',
   amount: 119900,
   formattedAmount: '₹1,19,900.00',
-  balance: 'bal ₹42,100',
+  balance: '₹42,100',
   reviewStatus: 'Watching',
 };
 
@@ -1163,7 +1164,7 @@ const sampleTransactions: TransactionRowData[] = [
     account: 'HDFC Bank Savings',
     amount: 750,
     formattedAmount: '₹750.00',
-    balance: 'bal ₹1,62,000',
+    balance: '₹1,62,000',
   },
   {
     id: 'tx-3',
@@ -1174,7 +1175,7 @@ const sampleTransactions: TransactionRowData[] = [
     amount: 215000,
     formattedAmount: '+₹2,15,000.00',
     isCredit: true,
-    balance: 'bal ₹1,62,750',
+    balance: '₹1,62,750',
     provenance: 'Statement',
   },
   {
@@ -1186,7 +1187,7 @@ const sampleTransactions: TransactionRowData[] = [
     plastic: '••7741',
     amount: 4990,
     formattedAmount: '₹4,990.00',
-    balance: 'bal ₹1,61,990',
+    balance: '₹1,61,990',
     note: 'Winter jacket',
   },
 ];

@@ -66,10 +66,10 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
     if (count <= 0) return null;
 
     return (
-      <div ref={ref} className={cn('relative w-full', className)} {...props}>
+      <div ref={ref} className={cn('relative z-floating w-full', className)} {...props}>
         <div
           className={cn(
-            'bg-surface border-t lg:border border-line-strong rounded-t-ds-2xl lg:rounded-ds-lg shadow-up-1 lg:shadow-level-2 z-floating select-none text-body text-ink w-full lg:w-fit lg:mx-auto',
+            'bg-surface border-t lg:border border-line-strong rounded-t-ds-2xl lg:rounded-ds-lg shadow-up-1 lg:shadow-level-2 select-none text-body text-ink w-full lg:w-fit lg:mx-auto',
             'grid grid-cols-[auto_1fr_auto] items-center px-space-14 pt-space-10 pb-space-12 lg:p-0',
             'lg:flex lg:flex-row lg:items-center lg:px-space-12 lg:py-space-8 lg:gap-space-8',
           )}

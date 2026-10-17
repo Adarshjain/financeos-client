@@ -20,39 +20,64 @@ export interface PagerProps
   onSizeChange?: (size: number) => void;
   sizeOptions?: number[];
   borderPosition?: 'top' | 'bottom' | 'none';
+  /** `compact` trims the padding and uses small controls, for tight lists (owner, 2026-10-17). */
+  variant?: 'default' | 'compact';
 }
 
-function getPageNumbers(
-  currentPage: number, // 0-based
-  totalPages: number,
-): (number | 'ellipsis')[] {
+/** First, last, current and `neighbours` either side; a gap of exactly one page shows that page, never an ellipsis. */
+function pageSet(currentPage: number, totalPages: number, neighbours: number): number[] {
   if (totalPages <= 1) return [];
-
-  const targets = new Set<number>();
-  targets.add(0);
-  targets.add(totalPages - 1);
-  targets.add(currentPage);
-
-  if (currentPage > 0) targets.add(currentPage - 1);
-  if (currentPage < totalPages - 1) targets.add(currentPage + 1);
-
+  const targets = new Set<number>([0, totalPages - 1, currentPage]);
+  for (let d = 1; d <= neighbours; d++) {
+    targets.add(currentPage - d);
+    targets.add(currentPage + d);
+  }
   const sorted = Array.from(targets)
     .filter((p) => p >= 0 && p < totalPages)
     .sort((a, b) => a - b);
-
-  const result: (number | 'ellipsis')[] = [];
-  for (let i = 0; i < sorted.length; i++) {
-    if (i > 0) {
-      const prev = sorted[i - 1];
-      const curr = sorted[i];
-      if (curr - prev > 1) {
-        result.push('ellipsis');
-      }
-    }
-    result.push(sorted[i]);
+  const filled: number[] = [];
+  for (const p of sorted) {
+    const prev = filled[filled.length - 1];
+    if (prev !== undefined && p - prev === 2) filled.push(prev + 1);
+    filled.push(p);
   }
+  return filled;
+}
 
-  return result;
+type PageItem =
+  | { kind: 'page'; page: number; phone: boolean }
+  | { kind: 'ellipsis'; key: string; phone: boolean; desktop: boolean };
+
+/**
+ * One list for both forms: every page number appears once in the DOM. Phone keeps
+ * one neighbour fewer than desktop, and each form gets its own ellipses.
+ */
+function getPageItems(currentPage: number, totalPages: number): PageItem[] {
+  const desktop = pageSet(currentPage, totalPages, 1);
+  const phone = new Set(pageSet(currentPage, totalPages, 0));
+  const items: PageItem[] = [];
+  let prevPhone: number | undefined;
+  // First ellipsis since the last phone page: the phone form reuses it for its own gap.
+  let spanEllipsis: Extract<PageItem, { kind: 'ellipsis' }> | undefined;
+  desktop.forEach((p, i) => {
+    const onPhone = phone.has(p);
+    const prevDesktop = desktop[i - 1];
+    if (prevDesktop !== undefined && p - prevDesktop > 1) {
+      const gap: PageItem = { kind: 'ellipsis', key: `gap-${p}`, phone: false, desktop: true };
+      items.push(gap);
+      spanEllipsis ??= gap;
+    }
+    if (onPhone) {
+      if (prevPhone !== undefined && p - prevPhone > 1) {
+        if (spanEllipsis) spanEllipsis.phone = true;
+        else items.push({ kind: 'ellipsis', key: `phone-gap-${p}`, phone: true, desktop: false });
+      }
+      prevPhone = p;
+      spanEllipsis = undefined;
+    }
+    items.push({ kind: 'page', page: p, phone: onPhone });
+  });
+  return items;
 }
 
 /**
@@ -75,6 +100,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
       onSizeChange,
       sizeOptions = [25, 50, 100],
       borderPosition = 'top',
+      variant = 'default',
       className,
       ...props
     },
@@ -88,14 +114,21 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
     const end = Math.min((page + 1) * size, totalElements);
     const formatSize = sizeLabel ?? ((s: number) => String(s));
 
-    const pageItems = getPageNumbers(page, totalPages);
+    const pageItems = getPageItems(page, totalPages);
+    const compact = variant === 'compact';
+    const control = compact
+      ? 'min-w-control-sm h-control-sm'
+      : 'min-w-control-md h-control-md';
 
     return (
       <nav
         ref={ref}
         aria-label="Pagination"
         className={cn(
-          'flex items-center justify-between gap-space-8 flex-wrap font-medium text-body text-ink-3 px-space-14 py-space-10 select-none bg-surface',
+          'flex items-center justify-between gap-space-8 flex-wrap font-medium text-ink-3 select-none bg-surface',
+          compact
+            ? 'text-label px-space-12 py-space-4'
+            : 'text-body px-space-14 py-space-10',
           borderPosition === 'top' && 'border-t border-line-soft',
           borderPosition === 'bottom' && 'border-b border-line-soft',
           className,
@@ -137,9 +170,12 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                 trigger={
                   <Button
                     variant="secondary"
-                    size="md"
+                    size={compact ? 'sm' : 'md'}
                     aria-label="Rows per page"
-                    className="gap-space-6 h-control-md px-space-10 text-label font-semibold text-ink-2 mr-space-6 bg-surface"
+                    className={cn(
+                      'gap-space-6 px-space-10 text-label font-semibold text-ink-2 mr-space-6 bg-surface',
+                      compact ? 'h-control-sm' : 'h-control-md',
+                    )}
                   >
                     <span>{formatSize(size)}</span>
                     <Icon name="chevron-down" size="sm" className="text-ink-4 shrink-0" />
@@ -148,7 +184,12 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                 menuClassName="min-w-fit"
               />
             ) : (
-              <span className="inline-flex items-center gap-space-6 h-control-md px-space-10 border border-line-strong rounded-ds-md text-label font-semibold text-ink-2 mr-space-6 bg-surface">
+              <span
+                className={cn(
+                  'inline-flex items-center gap-space-6 px-space-10 border border-line-strong rounded-ds-md text-label font-semibold text-ink-2 mr-space-6 bg-surface',
+                  compact ? 'h-control-sm' : 'h-control-md',
+                )}
+              >
                 {formatSize(size)}
               </span>
             )}
@@ -158,49 +199,50 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
             <>
               <Button
                 variant="secondary"
-                size="md"
+                size={compact ? 'sm' : 'md'}
                 iconOnly
                 aria-label="Previous page"
                 disabled={page <= 0}
                 onClick={() => onPageChange(page - 1)}
-                className="min-w-control-md h-control-md px-space-6 border-line-strong text-ink-3"
+                className={cn(control, 'px-space-6 border-line-strong text-ink-3')}
               >
                 <Icon name="chevron-left" size="md" />
               </Button>
 
               <div className="flex items-center gap-space-4">
-                {pageItems.map((item, idx) => {
-                  if (item === 'ellipsis') {
+                {pageItems.map((item) => {
+                  if (item.kind === 'ellipsis') {
                     return (
                       <span
-                        key={`gap-${idx}`}
+                        key={item.key}
                         aria-hidden="true"
-                        className="w-space-16 text-center text-ink-faint text-label select-none"
+                        className={cn(
+                          'w-space-16 text-center text-ink-faint text-label select-none',
+                          !item.phone && 'hidden lg:inline',
+                          !item.desktop && 'lg:hidden',
+                        )}
                       >
                         …
                       </span>
                     );
                   }
 
-                  const isActive = page === item;
-                  const isNeighbour =
-                    (item === page - 1 || item === page + 1) &&
-                    item !== 0 &&
-                    item !== totalPages - 1;
-                  const pageNumber = item + 1; // 1-based display
+                  const isActive = page === item.page;
+                  const pageNumber = item.page + 1; // 1-based display
 
                   return (
                     <Button
-                      key={item}
+                      key={item.page}
                       variant={isActive ? 'primary' : 'ghost'}
-                      size="md"
+                      size={compact ? 'sm' : 'md'}
                       aria-label={`Page ${pageNumber}`}
                       aria-current={isActive ? 'page' : undefined}
-                      onClick={() => onPageChange(item)}
+                      onClick={() => onPageChange(item.page)}
                       className={cn(
-                        'min-w-control-md h-control-md px-space-6 rounded-ds-md tabular-nums font-semibold',
+                        control,
+                        'px-space-6 rounded-ds-md tabular-nums font-semibold',
                         isActive ? 'font-bold' : 'text-ink-2',
-                        isNeighbour && 'hidden lg:inline-flex',
+                        !item.phone && 'hidden lg:inline-flex',
                       )}
                     >
                       {pageNumber}
@@ -211,12 +253,12 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
 
               <Button
                 variant="secondary"
-                size="md"
+                size={compact ? 'sm' : 'md'}
                 iconOnly
                 aria-label="Next page"
                 disabled={page >= totalPages - 1}
                 onClick={() => onPageChange(page + 1)}
-                className="min-w-control-md h-control-md px-space-6 border-line-strong text-ink-3"
+                className={cn(control, 'px-space-6 border-line-strong text-ink-3')}
               >
                 <Icon name="chevron-right" size="md" />
               </Button>

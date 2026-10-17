@@ -27,7 +27,9 @@ export function useSelectableItem({
 }: UseSelectableItemOptions) {
   const moved = useRef(false);
 
+  // Long-press is a touch gesture only (owner, 2026-10-17): a mouse never selects by holding.
   const { longPressProps } = useLongPress({
+    pointerType: 'touch',
     threshold: longPressThreshold,
     isDisabled: disabled || !selectable,
     onLongPress: () => {
@@ -46,7 +48,9 @@ export function useSelectableItem({
     onPress: (e) => {
       e.continuePropagation();
       if (moved.current) return;
-      if (selectable && (selectionMode || selected)) onSelectedChange?.(!selected);
+      // A mouse or pen click always opens the item (owner, 2026-10-17); it selects only through the checkbox.
+      const pointerOpens = e.pointerType === 'mouse' || e.pointerType === 'pen';
+      if (!pointerOpens && selectable && (selectionMode || selected)) onSelectedChange?.(!selected);
       else onPress?.();
     },
   });

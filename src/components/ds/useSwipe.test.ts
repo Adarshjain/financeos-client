@@ -14,6 +14,7 @@ describe('useSwipe', () => {
     act(() => {
       result.current.handlers.onPointerDown({
         button: 0,
+        pointerType: 'touch',
         clientX: 0,
         clientY: 0,
         target: document.createElement('div'),
@@ -41,6 +42,31 @@ describe('useSwipe', () => {
     expect(result.current.offset).toBe(0);
   });
 
+  it('ignores a mouse: swipe is touch only', () => {
+    const onSwipeRight = vi.fn();
+    const { result } = renderHook(() => useSwipe({ threshold: 50, onSwipeRight }));
+
+    act(() => {
+      result.current.handlers.onPointerDown({
+        button: 0,
+        pointerType: 'mouse',
+        clientX: 0,
+        clientY: 0,
+        target: document.createElement('div'),
+      } as unknown as React.PointerEvent);
+    });
+    expect(result.current.isDragging).toBe(false);
+
+    act(() => {
+      result.current.handlers.onPointerMove({ clientX: 60, clientY: 0 } as unknown as React.PointerEvent);
+    });
+    expect(result.current.offset).toBe(0);
+    act(() => {
+      result.current.handlers.onPointerUp({} as unknown as React.PointerEvent);
+    });
+    expect(onSwipeRight).not.toHaveBeenCalled();
+  });
+
   it('triggers onSwipeLeft when dragging past negative threshold', () => {
     const onSwipeRight = vi.fn();
     const onSwipeLeft = vi.fn();
@@ -51,6 +77,7 @@ describe('useSwipe', () => {
     act(() => {
       result.current.handlers.onPointerDown({
         button: 0,
+        pointerType: 'touch',
         clientX: 100,
         clientY: 0,
         target: document.createElement('div'),
@@ -84,6 +111,7 @@ describe('useSwipe', () => {
     act(() => {
       result.current.handlers.onPointerDown({
         button: 0,
+        pointerType: 'touch',
         clientX: 0,
         clientY: 0,
         target: document.createElement('div'),
@@ -116,6 +144,7 @@ describe('useSwipe', () => {
     act(() => {
       result.current.handlers.onPointerDown({
         button: 0,
+        pointerType: 'touch',
         clientX: 0,
         clientY: 0,
         target: document.createElement('div'),

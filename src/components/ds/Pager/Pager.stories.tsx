@@ -23,6 +23,10 @@ const meta: Meta<typeof Pager> = {
     onSizeChange: fn(),
   },
   argTypes: {
+    variant: {
+      control: 'inline-radio',
+      options: ['default', 'compact'],
+    },
     borderPosition: {
       control: 'select',
       options: ['top', 'bottom', 'none'],
@@ -102,6 +106,18 @@ export const CustomSummary: Story = {
     totalPages: 4,
     summary: ({ start, end, total }) => `${start}–${end} of ${total} transactions`,
     sizeLabel: (n) => `${n} / page`,
+  },
+};
+
+export const Compact: Story = {
+  name: 'Compact',
+  args: {
+    variant: 'compact',
+    page: 0,
+    size: 10,
+    totalElements: 30,
+    unit: 'transactions',
+    sizeOptions: [10, 25, 50],
   },
 };
 

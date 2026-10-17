@@ -261,9 +261,44 @@ describe('TransactionRow', () => {
       />,
     );
 
+    // A mouse click still opens the detail in selection mode (owner, 2026-10-17)
     await user.pointer({ keys: '[MouseLeft>]', target: row });
     await user.pointer({ keys: '[/MouseLeft]', target: row });
+    expect(handleDetail).toHaveBeenCalledTimes(2);
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+
+    // A touch tap toggles the selection
+    await user.pointer({ keys: '[TouchA>]', target: row });
+    await user.pointer({ keys: '[/TouchA]', target: row });
     expect(handleSelectedChange).toHaveBeenCalledWith(true);
+    expect(handleDetail).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not select on a mouse long-press, and the release still opens the detail', async () => {
+    const handleSelectedChange = vi.fn();
+    const handleDetail = vi.fn();
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime });
+    render(
+      <TransactionRow
+        description="Mouse row"
+        amount="500.00"
+        selectable
+        selected={false}
+        onDetail={handleDetail}
+        onSelectedChange={handleSelectedChange}
+      />,
+    );
+    const row = screen.getByRole('row');
+    giveSize(row);
+
+    await user.pointer({ keys: '[MouseLeft>]', target: row });
+    act(() => {
+      vi.advanceTimersByTime(800);
+    });
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+    await user.pointer({ keys: '[/MouseLeft]', target: row });
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+    expect(handleDetail).toHaveBeenCalledTimes(1);
   });
 
   it('toggles selection on Enter and Space keys in selection mode', async () => {

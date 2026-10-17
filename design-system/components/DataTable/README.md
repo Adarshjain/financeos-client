@@ -18,7 +18,7 @@ The list frame for every table of records: column headers with sort, a selection
   - an optional line 3: `phoneActions` buttons, right-aligned;
   - in selection mode, the eye button in a third column on the right, spanning the lines.
 
-  `phoneSub` is one line the page composes from several desktop columns ("60 × ₹1,512.70 · P&L +₹48,162", "12 Oct · bal ₹2,95,030"). Columns marked `phone: 'hidden'` aren't shown on phone.
+  `phoneSub` is one line the page composes from several desktop columns ("60 × ₹1,512.70 · P&L +₹48,162", "12 Oct · ₹2,95,030"). Columns marked `phone: 'hidden'` aren't shown on phone.
 - **Column widths** come from tokens, never pixels. Column `size`: `xs` (the checkbox or an icon column, `control-md`), `sm` (`space-96`), `md` (1.5 × `space-96`), `lg` (2 × `space-96`), or `fill` (takes the remaining space; `grow` sets its share, default 1). DataTable turns them into one grid template on its root, and every row, the header and any row component use that same template, so cells always line up.
 - **Bands and day headers:**
   - `band(row)` returns `{ key, label }`. A band row is inserted whenever the key changes, at every width, in SectionHeader `band` style. The page supplies the label. For transactions it's the month name only (owner).

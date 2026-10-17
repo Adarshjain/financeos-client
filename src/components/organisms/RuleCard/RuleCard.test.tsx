@@ -205,9 +205,17 @@ describe('RuleCard', () => {
       />,
     );
 
+    // A mouse click still opens the detail in selection mode (owner, 2026-10-17)
     await user.pointer({ keys: '[MouseLeft>]', target: card });
     await user.pointer({ keys: '[/MouseLeft]', target: card });
+    expect(handleDetail).toHaveBeenCalledTimes(2);
+    expect(handleSelectedChange).not.toHaveBeenCalled();
+
+    // A touch tap toggles the selection
+    await user.pointer({ keys: '[TouchA>]', target: card });
+    await user.pointer({ keys: '[/TouchA]', target: card });
     expect(handleSelectedChange).toHaveBeenCalledWith(true);
+    expect(handleDetail).toHaveBeenCalledTimes(2);
   });
 
   it('toggles selection on Enter and Space keys in selection mode', async () => {

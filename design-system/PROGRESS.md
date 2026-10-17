@@ -258,6 +258,9 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-17 · **DataTable requirements review** (owner): v1 includes expandable rows; `sortMode="client"` is allowed only for lists the server returns whole (never with a Pager, never slicing). Pinned `@tanstack/react-table` **9.2.4**. Out of v1: pivot tables, drag-to-reorder rows, several tables sharing one Pager.
 - 2026-10-17 · **Long-press and selection** (owner): long-press (500ms, touch or mouse) enters selection while still held, and the release does nothing; outside selection mode a tap opens the item and never selects it; swipe stays phone-only and desktop keeps checkboxes. Use an industry-standard hook: **`@react-aria/interactions` 3.28.1 and its core `react-aria` 3.52.1 approved** (exact pins), behind Dinero's `useSelectableItem`.
 - 2026-10-17 · **One working TransactionRow story** (owner, recorded by Claude at the owner's request): `Organisms/TransactionRow/Transactions list` is a full, working list, so it may keep in-story state (through `useArgs` only), simulate the server (sort, paging, approve, delete, set category) and fill the canvas width (`globals.viewport` locked to `100pct-100pct`) so it switches phone ↔ desktop as the window is resized. This overrides §5a.2 (no data processing in stories) and §5a.7 (viewport toolbar) for this one story only.
+- 2026-10-18 · **Gestures are touch only** (owner, replacing the mouse part of the 2026-10-17 long-press decision): long-press and swipe respond to touch only. A mouse or pen click always opens the item, even in selection mode; the desktop checkbox is the only way to select with a mouse. Keyboard keeps Enter/Space toggling in selection mode. RULES §5c.4 and §7.5 updated.
+- 2026-10-18 · **Pager `compact` variant** (owner): small controls and tight padding for dense lists. A one-page gap shows the page, never an ellipsis.
+- 2026-10-18 · **No "bal" prefix** on running balances (owner): the balance is the bare amount, "₹2,95,030".
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
@@ -269,6 +272,17 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
+
+- 2026-10-18 · Phase 2 · Claude · Owner review of the Transactions list story (7 items):
+  - Pager (`src/components/ds/Pager/`): new `variant="compact"` (`control-sm`, `py-space-4`, `label` text) with a `Compact` story; page list rebuilt so a one-page gap shows the page instead of hiding it (phone at 30 rows / 10 per page read "1 3", now "1 2 3"), and the phone form gets its own ellipsis where it drops desktop neighbours. README updated.
+  - TransactionRow (`src/components/organisms/TransactionRow/TransactionRow.tsx`): on phone the context line now lives in the description cell (spanning both grid rows), so it sits right under the description whatever the amount column's height; the context line is a wrapping flex row with centred items, so a link icon no longer shifts it off the baseline.
+  - SelectionBar: `z-floating` moved from the inner bar (not positioned, so it had no effect) to the root, so the bar covers sticky SectionHeaders.
+  - `useSelectableItem`: React Aria long-press restricted to `pointerType: 'touch'`; a mouse or pen press always calls `onPress`. Applies to TransactionRow, RuleCard and DataTable rows.
+  - `useSwipe`: ignores non-touch pointers, so SwipeActions never moves under a mouse.
+  - Story: compact Pager, no "bal" prefix (story args and the Transactions list), docs text describes touch vs mouse. DataTable README example updated.
+  - Tests changed because the behaviour changed: Pager "each page number exactly once…" (scenario moved to page 5 of 10, where neighbours are still hidden on phone); SelectionBar "renders select all…" (layer class now on the root); SwipeActions and useSwipe pointerdowns now pass `pointerType: 'touch'`; useSelectableItem long-press / selection-mode tap / iOS tests now touch-only; TransactionRow and RuleCard "calls onDetail… toggles selection in selection mode" now expect a mouse click to open and a touch tap to toggle. New tests: one-page gap, phone-only ellipsis, compact variant, mouse hold never selects, mouse click in selection mode opens, mouse drag never swipes.
+  - Checks: typecheck clean; all component tests green; `build-storybook` OK; check-ui clean. Playwright on the built story: phone touch flow unchanged and green; desktop mouse click in selection mode opens the detail and keeps the selection, an 800ms mouse hold does not select and its release opens the detail, a mouse drag does nothing; screenshots checked (meta under description, link icon aligned, bar above sticky headers, compact pager, light and dark).
+  - Deviations: none beyond the owner decisions above.
 
 - 2026-10-17 · Phase 2 · Claude · TransactionRow **Transactions list** story (owner asked for one complete, working story):
   - What changed (`src/components/organisms/TransactionRow/TransactionRow.stories.tsx`):
