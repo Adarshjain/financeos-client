@@ -142,7 +142,11 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
     const [currentValue, setCurrentValue] = useControllableState<MonthCalendarValue | undefined>({
       value,
       defaultValue,
-      onChange: onValueChange,
+      onChange: onValueChange
+        ? (v: MonthCalendarValue | undefined) => {
+            if (v !== undefined) onValueChange(v);
+          }
+        : undefined,
     });
 
     const defaultMonthIso = defaultMonth ?? `${today.slice(0, 7)}-01`;

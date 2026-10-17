@@ -111,25 +111,6 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
 
     const [singleText, setSingleText] = useState(initialSingleText);
 
-    // Sync single text and range text when controlled prop changes
-    const [prevControlledValue, setPrevControlledValue] = useState(controlledValue);
-    if (controlledValue !== prevControlledValue) {
-      setPrevControlledValue(controlledValue);
-      if (!range && typeof controlledValue === 'string') {
-        setSingleText(formatDateInput(controlledValue));
-      } else if (range && typeof controlledValue === 'object' && controlledValue !== null) {
-        const s = controlledValue.start ?? '';
-        const e = controlledValue.end ?? '';
-        setStartIso(s);
-        setEndIso(e);
-        const sDisp = formatDateInput(s);
-        const eDisp = formatDateInput(e);
-        const disp =
-          sDisp && eDisp ? `${sDisp} – ${eDisp}` : sDisp ? `${sDisp} – ` : '';
-        setRangeText(disp);
-      }
-    }
-
     // Range mode state
     const initialStartIso = (() => {
       if (range && isRangeObject && controlledValue.start) return controlledValue.start;
@@ -158,6 +139,25 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
 
     const [rangeText, setRangeText] = useState<string>(initialRangeDisplay);
     const prevRangeInputRef = useRef<string>(initialRangeDisplay);
+
+    // Sync single text and range text when controlled prop changes
+    const [prevControlledValue, setPrevControlledValue] = useState(controlledValue);
+    if (controlledValue !== prevControlledValue) {
+      setPrevControlledValue(controlledValue);
+      if (!range && typeof controlledValue === 'string') {
+        setSingleText(formatDateInput(controlledValue));
+      } else if (range && typeof controlledValue === 'object' && controlledValue !== null) {
+        const s = controlledValue.start ?? '';
+        const e = controlledValue.end ?? '';
+        setStartIso(s);
+        setEndIso(e);
+        const sDisp = formatDateInput(s);
+        const eDisp = formatDateInput(e);
+        const disp =
+          sDisp && eDisp ? `${sDisp} – ${eDisp}` : sDisp ? `${sDisp} – ` : '';
+        setRangeText(disp);
+      }
+    }
 
     // Calendar view state (visible month ISO yyyy-mm-01)
     const initialMonthIso = useMemo(() => {
@@ -399,7 +399,6 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
         helper={helper}
         error={error}
         optional={optional}
-        disabled={disabled}
         className={className}
       >
         <div
@@ -434,11 +433,9 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
             open={isOpen}
             onOpenChange={setOpen}
             trigger={triggerButton}
-            contentProps={{
-              align: 'end',
-              sideOffset: 4,
-              className: 'p-0 overflow-hidden',
-            }}
+            align="end"
+            sideOffset={4}
+            contentClassName="p-0 overflow-hidden"
           >
             {calendarContent}
           </Popover>
