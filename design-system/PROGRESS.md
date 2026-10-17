@@ -268,6 +268,45 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-17 · Phase 2 / Phase 3b · Antigravity · Long-press and selection migration to React Aria (A1–A7):
+  - Commits:
+    - `01154b7` `ui(ds): A1 install react-aria and react-aria/interactions`
+    - `748070f` `ui(ds): A2 add touch-callout-none utility`
+    - `69fd52b` `ui(ds): A3 useSelectableItem on React Aria`
+    - `f103269` `ui(ds): A4 TransactionRow on React Aria useSelectableItem`
+    - `06e5f18` `ui(ds): A5 RuleCard on React Aria useSelectableItem`
+    - `c77a670` `ui(ds): A6 interactive stories wired with useArgs`
+  - What changed:
+    - A1 · Package installs (`package.json`, `package-lock.json`): installed exact pins `@react-aria/interactions@3.28.1` and `react-aria@3.52.1` with zero extra dependencies or caret ranges.
+    - A2 · Tailwind utility (`tailwind.config.ts`): added `.touch-callout-none: { '-webkit-touch-callout': 'none' }` utility to suppress iOS callout menus on long-press.
+    - A3 · Hook rewrite (`src/components/ds/useSelectableItem.ts`, `useSelectableItem.test.tsx`, `index.ts`): replaced hand-written timer and event code with React Aria `useLongPress` (500ms threshold, touch and mouse), `usePress` (`e.continuePropagation()` to maintain ancestor pointer propagation for SwipeActions), and window-level pointermove movement guard (`MOVE_TOLERANCE = 10`px). Exposes `itemProps` and `nestedControlProps`. Added 28 comprehensive test cases in `useSelectableItem.test.tsx`. Deleted legacy `src/components/ds/useLongPress.ts`, `useLongPress.test.tsx`, and `useSelectableItem.test.ts`. Removed `useLongPress` export from barrel `src/components/ds/index.ts`.
+    - A4 · TransactionRow organism (`src/components/organisms/TransactionRow/TransactionRow.tsx`, `TransactionRow.test.tsx`, `README.md`, `TransactionRow.stories.tsx`): wired `useSelectableItem` with explicit `selectable` prop, `onPress: onDetail`, and `mergeProps(props, itemProps)`. Added `touch-callout-none` to root. Wrapped inner controls in `nestedControlProps` (desktop checkbox, eye button wrapped in `<span>`, and actionable category badge chips). Updated gestures table in README. Updated tests (20/20 passed).
+    - A5 · RuleCard organism (`src/components/organisms/RuleCard/RuleCard.tsx`, `RuleCard.test.tsx`, `README.md`, `RuleCard.stories.tsx`): wired `useSelectableItem` with `mergeProps(props, itemProps)`, added `touch-callout-none` to root, fixed eye icon visibility to `showEye = selectionMode && Boolean(onDetail)`. Wrapped desktop checkbox, eye button, and Approve/menu container in `nestedControlProps`. Updated gestures table in README. Updated tests (17/17 passed).
+    - A6 · Interactive stories (`src/components/organisms/TransactionRow/TransactionRow.stories.tsx`, `src/components/organisms/RuleCard/RuleCard.stories.tsx`): wired interactive stories (`SelectableInteractive`, `SelectedSelectionMode`, `Selected`, `SelectionModeNotSelected`) with Storybook `useArgs` maintaining dynamic toggle and detail actions.
+  - Tests changed (reasons):
+    - `src/components/ds/useLongPress.test.tsx`: deleted alongside `useLongPress.ts` because hand-written long-press was removed in favor of React Aria.
+    - `src/components/ds/useSelectableItem.test.ts`: replaced by `src/components/ds/useSelectableItem.test.tsx` with 28 tests for 500ms long press (touch & mouse), quick tap calling onPress outside selection mode, tap toggling in selection mode, movement > 10px cancelling gestures, keyboard Enter/Space firing on keyup, inner control isolation, and pointerdown ancestor propagation.
+    - `src/components/organisms/TransactionRow/TransactionRow.test.tsx`: updated tests for 500ms long press and pointer recipes with stubbed element rects; updated keyboard tests to key up; added tests verifying tap outside selection mode opens detail without selecting; added category chip inner control isolation test.
+    - `src/components/organisms/RuleCard/RuleCard.test.tsx`: updated tests for 500ms long press and pointer recipes; updated keyboard tests to key up; added test verifying eye icon is never rendered outside selection mode; added Approve button isolation test; added ⋮ menu trigger isolation test.
+  - Checks run and outputs:
+    - `npm run typecheck`: clean (0 errors)
+    - `npm run lint`: clean (0 errors, 340 pre-existing warnings in legacy files)
+    - `npm test`: 439/439 test files passed (3758/3758 tests passed, 100%)
+    - `npm run build-storybook`: clean (built in 4.08s)
+    - `npm run build`: Next.js 16.2.11 production build clean (49/49 static pages generated)
+    - `node design-system/tools/check-ui.mjs --base 4b825dc642cb6eb9a060e54bf8d69288fbee4904`: `design-system check: clean`
+    - Storybook sweep: 298/298 entries (251 stories, 47 docs) verified with 0 errors via Playwright loop over `storybook-static/index.json`
+    - Playwright E2E (`e2e/ui/ds-auth.spec.ts`, `e2e/ui/ds-offline.spec.ts`, `e2e/ui/ds-shell.spec.ts`): 11 passed (13.6s)
+    - Gesture verifications (automated Playwright at Phone 390 touch emulation and Desktop 1440 mouse on TransactionRow and RuleCard `SelectableInteractive`):
+      - Hold 0.5s: selects item while still held; release does nothing.
+      - Quick tap outside selection mode: opens item (`onDetail`), never selects.
+      - Tap in selection mode: toggles selection.
+      - Swipe/scroll > 10px: cancels long-press and tap.
+      - Inner controls (checkbox, eye, Approve, ⋮ menu, category badge): act on control only without triggering row/card.
+      - Text selection and iOS callout: `touch-callout-none` (`-webkit-touch-callout: none`) and `select-none` (`user-select: none`) verified on root.
+  - Open questions: None.
+  - Deviations: None.
+
 - 2026-10-17 · Phase 2 · Antigravity · Storybook review round — Phase 2 fixes (C1–C6):
   - Commits:
     - `38c3ca2` `ui(ds): C1 MonthCalendar pick month and year inside same popup`
