@@ -740,7 +740,7 @@ export const TransactionsList: StoryObj = {
           selectedIds.length > 0 && 'pb-bottom-clearance'
         )}
       >
-        <Card className="overflow-clip p-0">
+        <Card className="p-0">
           <DataTable
             columns={transactionColumns}
             data={rows}

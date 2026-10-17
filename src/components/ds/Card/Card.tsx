@@ -215,7 +215,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <Comp
         ref={ref}
         className={cn(
-          'bg-surface border border-line rounded-ds-lg overflow-hidden min-w-0',
+          'bg-surface border border-line rounded-ds-lg overflow-clip min-w-0',
           className,
         )}
         {...props}
