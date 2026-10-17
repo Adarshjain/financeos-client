@@ -253,5 +253,22 @@ describe('TextField component', () => {
       ).not.toBeInTheDocument();
       expect(screen.getByRole('searchbox')).toBeDisabled();
     });
+
+    it('applies controlClassName to search form input', () => {
+      render(<TextField type="search" controlClassName="font-mono" />);
+      expect(screen.getByRole('searchbox')).toHaveClass('font-mono');
+    });
+
+    it('hides webkit search cancel and decoration buttons when type is search', () => {
+      const { rerender } = render(<TextField type="search" />);
+      const searchbox = screen.getByRole('searchbox');
+      expect(searchbox).toHaveClass('[&::-webkit-search-cancel-button]:hidden');
+      expect(searchbox).toHaveClass('[&::-webkit-search-decoration]:hidden');
+
+      rerender(<TextField />);
+      const plainInput = screen.getByRole('textbox');
+      expect(plainInput).not.toHaveClass('[&::-webkit-search-cancel-button]:hidden');
+      expect(plainInput).not.toHaveClass('[&::-webkit-search-decoration]:hidden');
+    });
   });
 });
