@@ -36,6 +36,13 @@ export function monthNames(): string[] {
 }
 
 /**
+ * Returns a copy of the 12 English short month names (Jan through Dec).
+ */
+export function monthNamesShort(): string[] {
+  return [...MONTH_SHORT];
+}
+
+/**
  * Formats a count with a cap (defaults to 99), e.g. "99+" when above max.
  */
 export function formatCount(n: number | string, max = 99): string {

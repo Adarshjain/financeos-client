@@ -5,9 +5,8 @@ import React, { forwardRef, useMemo, useState } from 'react';
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
-import { Popover } from '../Popover/Popover';
 import { useControllableState } from '../useControllableState';
-import { monthNames, weekdayLetters } from '../utils';
+import { monthNames, monthNamesShort, weekdayLetters } from '../utils';
 
 export type CalendarEventTone =
   | 'positive'
@@ -111,22 +110,6 @@ function toIsoDate(y: number, m: number, d: number): string {
   return `${y}-${mm}-${dd}`;
 }
 
-function computeYearRange(
-  today: string,
-  minDate?: string,
-  maxDate?: string,
-): number[] {
-  const todayYear = parseInt(today.slice(0, 4), 10);
-  const maxYear = maxDate ? parseInt(maxDate.slice(0, 4), 10) : todayYear + 10;
-  const minYear = minDate ? parseInt(minDate.slice(0, 4), 10) : todayYear - 10;
-
-  const years: number[] = [];
-  for (let y = maxYear; y >= minYear; y--) {
-    years.push(y);
-  }
-  return years;
-}
-
 function isMonthDisabled(
   year: number,
   monthIndex: number,
@@ -150,42 +133,6 @@ function isYearDisabled(
   if (minDate && `${year}-12-31` < minDate) return true;
   if (maxDate && `${year}-01-01` > maxDate) return true;
   return false;
-}
-
-function clampMonthForYear(
-  year: number,
-  targetMonth: number,
-  minDate?: string,
-  maxDate?: string,
-): number {
-  if (!isMonthDisabled(year, targetMonth, minDate, maxDate)) {
-    return targetMonth;
-  }
-  const allowedMonths: number[] = [];
-  for (let m = 0; m < 12; m++) {
-    if (!isMonthDisabled(year, m, minDate, maxDate)) {
-      allowedMonths.push(m);
-    }
-  }
-  if (allowedMonths.length === 0) {
-    return targetMonth;
-  }
-  if (targetMonth < allowedMonths[0]) {
-    return allowedMonths[0];
-  }
-  if (targetMonth > allowedMonths[allowedMonths.length - 1]) {
-    return allowedMonths[allowedMonths.length - 1];
-  }
-  let nearest = allowedMonths[0];
-  let minDiff = Math.abs(targetMonth - nearest);
-  for (const m of allowedMonths) {
-    const diff = Math.abs(targetMonth - m);
-    if (diff < minDiff) {
-      minDiff = diff;
-      nearest = m;
-    }
-  }
-  return nearest;
 }
 
 export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
@@ -238,14 +185,17 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
       currentMonthIso ?? defaultMonthIso,
     );
 
-    const [monthOpen, setMonthOpen] = useState(false);
-    const [yearOpen, setYearOpen] = useState(false);
+    const [view, setView] = useState<'days' | 'months' | 'years'>('days');
+    const [browseYear, setBrowseYear] = useState<number>(
+      () => currentYear || parseInt(today.slice(0, 4), 10),
+    );
+    const [pageStart, setPageStart] = useState<number>(() => {
+      const y = currentYear || parseInt(today.slice(0, 4), 10);
+      return y - (y % 12);
+    });
 
     const allMonthNames = useMemo(() => monthNames(), []);
-    const yearOptions = useMemo(
-      () => computeYearRange(today, minDate, maxDate),
-      [today, minDate, maxDate],
-    );
+    const shortMonthNames = useMemo(() => monthNamesShort(), []);
 
     if (isEventsMode) {
       return (
@@ -349,17 +299,44 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
       setCurrentMonthIso(nextIso);
     };
 
-    const handleSelectMonth = (monthIdx: number) => {
-      const nextIso = `${currentYear}-${String(monthIdx + 1).padStart(2, '0')}-01`;
-      setCurrentMonthIso(nextIso);
-      setMonthOpen(false);
+    const todayYear = parseInt(today.slice(0, 4), 10);
+    const todayMonth = parseInt(today.slice(5, 7), 10) - 1;
+
+    const minYear = minDate ? parseInt(minDate.slice(0, 4), 10) : undefined;
+    const maxYear = maxDate ? parseInt(maxDate.slice(0, 4), 10) : undefined;
+
+    const isPrevBrowseYearDisabled = Boolean(
+      minYear !== undefined && browseYear - 1 < minYear,
+    );
+    const isNextBrowseYearDisabled = Boolean(
+      maxYear !== undefined && browseYear + 1 > maxYear,
+    );
+
+    const handlePrevBrowseYear = () => {
+      if (isPrevBrowseYearDisabled) return;
+      setBrowseYear((y) => y - 1);
     };
 
-    const handleSelectYear = (y: number) => {
-      const newMonth = clampMonthForYear(y, currentMonth, minDate, maxDate);
-      const nextIso = `${y}-${String(newMonth + 1).padStart(2, '0')}-01`;
-      setCurrentMonthIso(nextIso);
-      setYearOpen(false);
+    const handleNextBrowseYear = () => {
+      if (isNextBrowseYearDisabled) return;
+      setBrowseYear((y) => y + 1);
+    };
+
+    const isPrevPageDisabled = Boolean(
+      minYear !== undefined && pageStart - 1 < minYear,
+    );
+    const isNextPageDisabled = Boolean(
+      maxYear !== undefined && pageStart + 12 > maxYear,
+    );
+
+    const handlePrevPage = () => {
+      if (isPrevPageDisabled) return;
+      setPageStart((p) => p - 12);
+    };
+
+    const handleNextPage = () => {
+      if (isNextPageDisabled) return;
+      setPageStart((p) => p + 12);
     };
 
     const handleDayClick = (iso: string) => {
@@ -461,186 +438,270 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
         )}
         {...props}
       >
-        {/* Calendar header */}
-        <div className="flex items-center justify-between px-space-8 py-space-8 font-bold text-label text-ink">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            iconOnly
-            aria-label="Previous month"
-            disabled={isPrevDisabled}
-            onClick={handlePrevMonth}
-            className="text-ink-3 hover:text-ink shrink-0"
-          >
-            <Icon name="chevron-left" size="md" />
-          </Button>
-
-          <div className="flex items-center gap-space-4">
-            <Popover
-              open={monthOpen}
-              onOpenChange={setMonthOpen}
-              contentClassName="min-w-0 w-36 max-h-64 overflow-y-auto p-space-4"
-              trigger={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Month"
-                  icon={<Icon name="chevron-down" size="sm" />}
-                  className="px-space-4 h-control-sm text-ink font-bold hover:bg-hover"
-                >
-                  {allMonthNames[currentMonth]}
-                </Button>
-              }
+        {/* Days view header */}
+        {view === 'days' && (
+          <div className="flex items-center justify-between px-space-8 py-space-8 font-bold text-label text-ink">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              iconOnly
+              aria-label="Previous month"
+              disabled={isPrevDisabled}
+              onClick={handlePrevMonth}
+              className="text-ink-3 hover:text-ink shrink-0"
             >
-              <div
-                className="flex flex-col gap-space-2"
-                role="listbox"
-                aria-label="Month"
-              >
-                {allMonthNames.map((name, idx) => {
-                  const isSelected = idx === currentMonth;
-                  const disabled = isMonthDisabled(
-                    currentYear,
-                    idx,
-                    minDate,
-                    maxDate,
-                  );
-                  return (
-                    <Button
-                      key={name}
-                      type="button"
-                      variant={isSelected ? 'primary' : 'ghost'}
-                      size="sm"
-                      disabled={disabled}
-                      onClick={() => handleSelectMonth(idx)}
-                      className={cn(
-                        'w-full justify-start text-left h-control-sm px-space-8 font-medium text-label',
-                        isSelected ? 'font-bold' : 'text-ink hover:bg-hover',
-                        disabled &&
-                          'text-ink-faint opacity-40 cursor-not-allowed',
-                      )}
-                    >
-                      {name}
-                    </Button>
-                  );
-                })}
-              </div>
-            </Popover>
+              <Icon name="chevron-left" size="md" />
+            </Button>
 
-            <Popover
-              open={yearOpen}
-              onOpenChange={setYearOpen}
-              contentClassName="min-w-0 w-28 max-h-64 overflow-y-auto p-space-4"
-              trigger={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Year"
-                  icon={<Icon name="chevron-down" size="sm" />}
-                  className="px-space-4 h-control-sm text-ink font-bold hover:bg-hover"
-                >
-                  {currentYear}
-                </Button>
-              }
-            >
-              <div
-                className="flex flex-col gap-space-2"
-                role="listbox"
-                aria-label="Year"
-              >
-                {yearOptions.map((y) => {
-                  const isSelected = y === currentYear;
-                  const disabled = isYearDisabled(y, minDate, maxDate);
-                  return (
-                    <Button
-                      key={y}
-                      type="button"
-                      variant={isSelected ? 'primary' : 'ghost'}
-                      size="sm"
-                      disabled={disabled}
-                      onClick={() => handleSelectYear(y)}
-                      className={cn(
-                        'w-full justify-start text-left h-control-sm px-space-8 font-medium text-label',
-                        isSelected ? 'font-bold' : 'text-ink hover:bg-hover',
-                        disabled &&
-                          'text-ink-faint opacity-40 cursor-not-allowed',
-                      )}
-                    >
-                      {y}
-                    </Button>
-                  );
-                })}
-              </div>
-            </Popover>
-          </div>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            iconOnly
-            aria-label="Next month"
-            disabled={isNextDisabled}
-            onClick={handleNextMonth}
-            className="text-ink-3 hover:text-ink shrink-0"
-          >
-            <Icon name="chevron-right" size="md" />
-          </Button>
-        </div>
-
-        {/* Weekday headers */}
-        <div className="grid grid-cols-7 text-center font-bold text-caption text-ink-4 py-space-4">
-          {weekdays.map((wd, idx) => (
-            <div key={idx}>{wd}</div>
-          ))}
-        </div>
-
-        {/* Days grid */}
-        <div className="grid grid-cols-7 text-center p-space-6 gap-y-space-2">
-          {cells.map((cell) => {
-            const isToday = cell.isoDate === today;
-            const isSelected = range
-              ? cell.isoDate === effectiveStartDate || cell.isoDate === effectiveEndDate
-              : cell.isoDate === effectiveSelectedDate;
-
-            const isInRange = Boolean(
-              range &&
-                effectiveStartDate &&
-                effectiveEndDate &&
-                cell.isoDate > effectiveStartDate &&
-                cell.isoDate < effectiveEndDate,
-            );
-
-            const isPastMin = minDate ? cell.isoDate < minDate : false;
-            const isPastMax = maxDate ? cell.isoDate > maxDate : false;
-            const isDisabled = isPastMin || isPastMax;
-
-            return (
+            <div className="flex items-center gap-space-4">
               <Button
-                key={cell.isoDate}
                 type="button"
-                variant={isSelected ? 'primary' : 'ghost'}
-                size="md"
-                disabled={isDisabled}
-                onClick={() => !isDisabled && handleDayClick(cell.isoDate)}
-                className={cn(
-                  'h-control-md w-full p-0 flex items-center justify-center font-text text-body font-semibold transition-colors rounded-ds-sm cursor-pointer',
-                  cell.isOutside && 'text-ink-4 opacity-50',
-                  !cell.isOutside && !isSelected && !isInRange && 'text-ink hover:bg-hover',
-                  isToday && !isSelected && 'ring-1 ring-inset ring-brand text-brand',
-                  isInRange && !isSelected && 'bg-brand-tint text-brand-strong rounded-none',
-                  isSelected && 'bg-brand text-on-brand font-bold',
-                  isDisabled && 'opacity-30 cursor-not-allowed pointer-events-none text-ink-4',
-                )}
+                variant="ghost"
+                size="sm"
+                aria-label="Choose month"
+                onClick={() => {
+                  setBrowseYear(currentYear);
+                  setView('months');
+                }}
+                className="px-space-4 h-control-sm text-ink font-bold hover:bg-hover"
               >
-                {cell.day}
+                {allMonthNames[currentMonth]}
               </Button>
-            );
-          })}
-        </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label="Choose year"
+                onClick={() => {
+                  setPageStart(currentYear - (currentYear % 12));
+                  setView('years');
+                }}
+                className="px-space-4 h-control-sm text-ink font-bold hover:bg-hover"
+              >
+                {currentYear}
+              </Button>
+            </div>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              iconOnly
+              aria-label="Next month"
+              disabled={isNextDisabled}
+              onClick={handleNextMonth}
+              className="text-ink-3 hover:text-ink shrink-0"
+            >
+              <Icon name="chevron-right" size="md" />
+            </Button>
+          </div>
+        )}
+
+        {/* Months view header */}
+        {view === 'months' && (
+          <div className="flex items-center justify-between px-space-8 py-space-8 font-bold text-label text-ink">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              iconOnly
+              aria-label="Previous year"
+              disabled={isPrevBrowseYearDisabled}
+              onClick={handlePrevBrowseYear}
+              className="text-ink-3 hover:text-ink shrink-0"
+            >
+              <Icon name="chevron-left" size="md" />
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              aria-label="Choose year"
+              onClick={() => {
+                setPageStart(browseYear - (browseYear % 12));
+                setView('years');
+              }}
+              className="px-space-4 h-control-sm text-ink font-bold hover:bg-hover"
+            >
+              {browseYear}
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              iconOnly
+              aria-label="Next year"
+              disabled={isNextBrowseYearDisabled}
+              onClick={handleNextBrowseYear}
+              className="text-ink-3 hover:text-ink shrink-0"
+            >
+              <Icon name="chevron-right" size="md" />
+            </Button>
+          </div>
+        )}
+
+        {/* Years view header */}
+        {view === 'years' && (
+          <div className="flex items-center justify-between px-space-8 py-space-8 font-bold text-label text-ink">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              iconOnly
+              aria-label="Previous years"
+              disabled={isPrevPageDisabled}
+              onClick={handlePrevPage}
+              className="text-ink-3 hover:text-ink shrink-0"
+            >
+              <Icon name="chevron-left" size="md" />
+            </Button>
+
+            <span className="px-space-4 h-control-sm flex items-center font-bold text-ink text-label">
+              {`${pageStart} – ${pageStart + 11}`}
+            </span>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              iconOnly
+              aria-label="Next years"
+              disabled={isNextPageDisabled}
+              onClick={handleNextPage}
+              className="text-ink-3 hover:text-ink shrink-0"
+            >
+              <Icon name="chevron-right" size="md" />
+            </Button>
+          </div>
+        )}
+
+        {/* Days view body */}
+        {view === 'days' && (
+          <>
+            {/* Weekday headers */}
+            <div className="grid grid-cols-7 text-center font-bold text-caption text-ink-4 py-space-4">
+              {weekdays.map((wd, idx) => (
+                <div key={idx}>{wd}</div>
+              ))}
+            </div>
+
+            {/* Days grid */}
+            <div className="grid grid-cols-7 text-center p-space-6 gap-y-space-2">
+              {cells.map((cell) => {
+                const isToday = cell.isoDate === today;
+                const isSelected = range
+                  ? cell.isoDate === effectiveStartDate || cell.isoDate === effectiveEndDate
+                  : cell.isoDate === effectiveSelectedDate;
+
+                const isInRange = Boolean(
+                  range &&
+                    effectiveStartDate &&
+                    effectiveEndDate &&
+                    cell.isoDate > effectiveStartDate &&
+                    cell.isoDate < effectiveEndDate,
+                );
+
+                const isPastMin = minDate ? cell.isoDate < minDate : false;
+                const isPastMax = maxDate ? cell.isoDate > maxDate : false;
+                const isDisabled = isPastMin || isPastMax;
+
+                return (
+                  <Button
+                    key={cell.isoDate}
+                    type="button"
+                    variant={isSelected ? 'primary' : 'ghost'}
+                    size="md"
+                    disabled={isDisabled}
+                    onClick={() => !isDisabled && handleDayClick(cell.isoDate)}
+                    className={cn(
+                      'h-control-md w-full p-0 flex items-center justify-center font-text text-body font-semibold transition-colors rounded-ds-sm cursor-pointer',
+                      cell.isOutside && 'text-ink-4 opacity-50',
+                      !cell.isOutside && !isSelected && !isInRange && 'text-ink hover:bg-hover',
+                      isToday && !isSelected && 'ring-1 ring-inset ring-brand text-brand',
+                      isInRange && !isSelected && 'bg-brand-tint text-brand-strong rounded-none',
+                      isSelected && 'bg-brand text-on-brand font-bold',
+                      isDisabled && 'opacity-30 cursor-not-allowed pointer-events-none text-ink-4',
+                    )}
+                  >
+                    {cell.day}
+                  </Button>
+                );
+              })}
+            </div>
+          </>
+        )}
+
+        {/* Months view body */}
+        {view === 'months' && (
+          <div className="grid grid-cols-3 p-space-6 gap-y-space-16">
+            {shortMonthNames.map((name, idx) => {
+              const isSelected = browseYear === currentYear && idx === currentMonth;
+              const isToday = browseYear === todayYear && idx === todayMonth;
+              const isDisabled = isMonthDisabled(browseYear, idx, minDate, maxDate);
+
+              return (
+                <Button
+                  key={name}
+                  type="button"
+                  variant={isSelected ? 'primary' : 'ghost'}
+                  disabled={isDisabled}
+                  onClick={() => {
+                    if (isDisabled) return;
+                    const nextIso = `${browseYear}-${String(idx + 1).padStart(2, '0')}-01`;
+                    setCurrentMonthIso(nextIso);
+                    setView('days');
+                  }}
+                  className={cn(
+                    'h-control-xl w-full p-0 flex items-center justify-center font-text text-body font-semibold transition-colors rounded-ds-sm cursor-pointer',
+                    !isSelected && 'text-ink hover:bg-hover',
+                    isToday && !isSelected && 'ring-1 ring-inset ring-brand text-brand',
+                    isSelected && 'bg-brand text-on-brand font-bold',
+                    isDisabled && 'opacity-30 cursor-not-allowed pointer-events-none text-ink-4',
+                  )}
+                >
+                  {name}
+                </Button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Years view body */}
+        {view === 'years' && (
+          <div className="grid grid-cols-3 p-space-6 gap-y-space-16">
+            {Array.from({ length: 12 }, (_, i) => pageStart + i).map((y) => {
+              const isSelected = y === currentYear;
+              const isToday = y === todayYear;
+              const isDisabled = isYearDisabled(y, minDate, maxDate);
+
+              return (
+                <Button
+                  key={y}
+                  type="button"
+                  variant={isSelected ? 'primary' : 'ghost'}
+                  disabled={isDisabled}
+                  onClick={() => {
+                    if (isDisabled) return;
+                    setBrowseYear(y);
+                    setView('months');
+                  }}
+                  className={cn(
+                    'h-control-xl w-full p-0 flex items-center justify-center font-text text-body font-semibold transition-colors rounded-ds-sm cursor-pointer',
+                    !isSelected && 'text-ink hover:bg-hover',
+                    isToday && !isSelected && 'ring-1 ring-inset ring-brand text-brand',
+                    isSelected && 'bg-brand text-on-brand font-bold',
+                    isDisabled && 'opacity-30 cursor-not-allowed pointer-events-none text-ink-4',
+                  )}
+                >
+                  {y}
+                </Button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Optional footer */}
         {showFooter ? (
