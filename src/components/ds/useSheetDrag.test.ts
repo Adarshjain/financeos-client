@@ -164,4 +164,37 @@ describe('useSheetDrag', () => {
     expect(result.current.dragOffset).toBe(0);
     expect(result.current.isDragging).toBe(false);
   });
+
+  it('springs back to 0 without calling onClose when drag is interrupted by onPointerCancel', () => {
+    const onClose = vi.fn();
+    const { result } = renderHook(() => useSheetDrag({ onClose, threshold: 80 }));
+
+    act(() => {
+      result.current.dragProps.onPointerDown({
+        clientY: 100,
+        pointerId: 1,
+        currentTarget: { setPointerCapture: vi.fn() },
+      } as unknown as React.PointerEvent<HTMLDivElement>);
+    });
+
+    act(() => {
+      result.current.dragProps.onPointerMove({
+        clientY: 190,
+      } as unknown as React.PointerEvent<HTMLDivElement>);
+    });
+
+    expect(result.current.dragOffset).toBe(90);
+
+    act(() => {
+      result.current.dragProps.onPointerCancel({
+        clientY: 190,
+        pointerId: 1,
+        currentTarget: { releasePointerCapture: vi.fn() },
+      } as unknown as React.PointerEvent<HTMLDivElement>);
+    });
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(result.current.isDragging).toBe(false);
+    expect(result.current.dragOffset).toBe(0);
+  });
 });
