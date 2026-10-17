@@ -101,7 +101,7 @@ These are the rules a mature design system (Radix, Material, Polaris, Atlassian)
 1. **One component, one structure, one code path.** Phone and desktop are the same markup; what differs (size, position, what shows) is written with Tailwind breakpoint classes, mobile first. Never two render functions, never `renderPhone` / `renderDesktop`, never a `variant="phone" | "desktop"` prop. The page never chooses a form.
 2. **One switch: `lg` (1024px).** Below it is the phone form, from it the desktop form. Components use only `lg:` for that switch (no `sm:`, `md:`, `xl:` inside components).
 3. **No viewport detection in JavaScript** (`useMediaQuery`, `useIsPhone`, `matchMedia`, `innerWidth`), with no exceptions. The server can't know the width, so it renders the wrong form and the page jumps. (ResponsiveOverlay was deleted when dropdowns stopped becoming sheets, §5.6a.)
-4. **Touch vs mouse is not phone vs desktop.** Long-press responds to touch and mouse on any screen (owner, 2026-10-17), so a narrow desktop window can still select. It fires while the pointer is still down, after the threshold, and the release that follows does nothing. A tap selects only in selection mode. The desktop checkbox column is shown with `hidden lg:flex`, not by a hook. Press and long-press come from React Aria (`@react-aria/interactions`) through Dinero's `useSelectableItem`; never hand-roll pointer timers.
+4. **Touch vs mouse is not phone vs desktop.** Gestures follow the pointer, never the viewport. Long-press and swipe respond to **touch only** (owner, 2026-10-17, revised 2026-10-18): a mouse or pen click always opens the item, even in selection mode, and selects only through the checkbox. Long-press fires while the finger is still down, after the threshold, and the release that follows does nothing. A touch tap selects only in selection mode. The desktop checkbox column is shown with `hidden lg:flex`, not by a hook. Press and long-press come from React Aria (`@react-aria/interactions`) through Dinero's `useSelectableItem`; never hand-roll pointer timers.
 
 **API**
 5. **Prop names mean one thing everywhere:**
@@ -175,7 +175,7 @@ Storybook consumes components exactly as an app would, so a developer can see an
 2. No body title on phone; the app bar carries it. Tab strips and filter-chip rows scroll sideways and never wrap.
 3. A single choice is a dropdown; several choices are a multi-select dropdown. Never tiles or chip groups in forms (the four account-type buttons on Add account are the only exception).
 4. Selection: long-press starts it, tap toggles, the eye icon opens the detail without leaving selection. No checkboxes on phone; desktop uses checkboxes. The selection bar docks at the bottom.
-5. Swipe on Transactions: right approves, left deletes. Swipe on Inbox: right snoozes until tomorrow, left dismisses. SwipeActions only reports the swipe to the page; the page confirms (destructive) or applies with Undo (reversible) by §5.7.
+5. Swipe (touch only) on Transactions: right approves, left deletes. Swipe on Inbox: right snoozes until tomorrow, left dismisses. SwipeActions only reports the swipe to the page; the page confirms (destructive) or applies with Undo (reversible) by §5.7.
 6. Phone lists group by day under sticky date headers, and rows don't repeat the date. The transaction context line starts with the account name.
 7. A field that can't change is disabled (for example the account of an imported transaction). There is no locked state.
 

@@ -86,24 +86,73 @@ describe('Pager', () => {
   });
 
   it('renders each page number exactly once in the DOM with desktop neighbours carrying hidden lg:inline-flex', () => {
-    render(
+    const { container } = render(
       <Pager
-        page={2} // page 3 of 4
+        page={4} // page 5 of 10
         size={50}
-        totalElements={182}
-        totalPages={4}
+        totalElements={500}
+        totalPages={10}
         onPageChange={() => {}}
       />,
     );
 
-    [1, 2, 3, 4].forEach((num) => {
+    [1, 4, 5, 6, 10].forEach((num) => {
       expect(screen.getAllByRole('button', { name: `Page ${num}` })).toHaveLength(1);
     });
+    [2, 3, 7, 8, 9].forEach((num) => {
+      expect(screen.queryByRole('button', { name: `Page ${num}` })).not.toBeInTheDocument();
+    });
 
-    // Page 2 is a neighbour on page 3 of 4, so it carries hidden lg:inline-flex
-    expect(screen.getByRole('button', { name: 'Page 2' })).toHaveClass('hidden', 'lg:inline-flex');
-    // Active page does not carry hidden
-    expect(screen.getByRole('button', { name: 'Page 3' })).not.toHaveClass('hidden');
+    // Pages 4 and 6 are neighbours of page 5, so they carry hidden lg:inline-flex
+    expect(screen.getByRole('button', { name: 'Page 4' })).toHaveClass('hidden', 'lg:inline-flex');
+    expect(screen.getByRole('button', { name: 'Page 6' })).toHaveClass('hidden', 'lg:inline-flex');
+    // Active, first and last pages show on both forms
+    ['Page 1', 'Page 5', 'Page 10'].forEach((name) => {
+      expect(screen.getByRole('button', { name })).not.toHaveClass('hidden');
+    });
+    // One ellipsis on each side, shown on both forms
+    const gaps = Array.from(container.querySelectorAll('[aria-hidden="true"]')).filter((el) => el.textContent === '…');
+    expect(gaps).toHaveLength(2);
+    gaps.forEach((gap) => {
+      expect(gap).not.toHaveClass('hidden');
+      expect(gap).not.toHaveClass('lg:hidden');
+    });
+  });
+
+  it('shows the page in a one-page gap instead of hiding it or using an ellipsis', () => {
+    const { container } = render(
+      <Pager page={0} size={10} totalElements={30} onPageChange={() => {}} />,
+    );
+
+    // Page 1 of 3 on phone: 1 2 3, never "1 3"
+    ['Page 1', 'Page 2', 'Page 3'].forEach((name) => {
+      expect(screen.getByRole('button', { name })).not.toHaveClass('hidden');
+    });
+    expect(container.textContent).not.toContain('…');
+  });
+
+  it('gives the phone form its own ellipsis where it drops a desktop neighbour', () => {
+    const { container } = render(
+      <Pager page={3} size={10} totalElements={60} onPageChange={() => {}} />,
+    );
+
+    // Page 4 of 6: desktop 1 2 3 4 5 6, phone 1 … 4 5 6
+    expect(screen.getByRole('button', { name: 'Page 3' })).toHaveClass('hidden', 'lg:inline-flex');
+    expect(screen.getByRole('button', { name: 'Page 5' })).not.toHaveClass('hidden');
+    const gaps = Array.from(container.querySelectorAll('[aria-hidden="true"]')).filter((el) => el.textContent === '…');
+    expect(gaps).toHaveLength(1);
+    expect(gaps[0]).toHaveClass('lg:hidden');
+    expect(gaps[0]).not.toHaveClass('hidden');
+  });
+
+  it('compact variant trims the padding and uses small controls', () => {
+    render(
+      <Pager variant="compact" page={0} size={10} totalElements={30} onPageChange={() => {}} />,
+    );
+
+    expect(screen.getByRole('navigation', { name: 'Pagination' })).toHaveClass('py-space-4', 'text-label');
+    expect(screen.getByRole('button', { name: 'Page 1' })).toHaveClass('h-control-sm', 'min-w-control-sm');
+    expect(screen.getByRole('button', { name: 'Next page' })).toHaveClass('h-control-sm');
   });
 
   it('disables previous button on first page', () => {

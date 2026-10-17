@@ -117,7 +117,10 @@ describe('SelectionBar', () => {
     expect(selectAllBtn).toHaveClass('h-control-md');
 
     // Bar switches between docked bottom sheet (< lg) and floating pill (>= lg)
-    const bar = container.querySelector('.z-floating');
+    // The root carries the layer, so the bar stays above sticky section headers.
+    const root = container.firstElementChild;
+    expect(root).toHaveClass('relative', 'z-floating');
+    const bar = root?.firstElementChild;
     expect(bar).toBeInTheDocument();
     expect(bar).toHaveClass('rounded-t-ds-2xl', 'lg:rounded-ds-lg', 'shadow-up-1', 'lg:shadow-level-2', 'w-full', 'lg:w-fit');
 

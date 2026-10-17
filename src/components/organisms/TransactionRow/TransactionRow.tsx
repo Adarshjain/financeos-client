@@ -32,7 +32,7 @@ export interface TransactionRowProps
   amount?: React.ReactNode;
   /** Whether the amount is a credit (+ positive green). Set by caller. */
   isCredit?: boolean;
-  /** Optional running balance shown below amount, e.g. "bal ₹61,757" */
+  /** Optional running balance shown below amount, e.g. "₹61,757" */
   balance?: React.ReactNode;
 
   /** Account name, e.g. "HDFC Bank Savings" or "HDFC Regalia" */
@@ -360,20 +360,32 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
                 : 'grid-cols-fill-auto',
             )}
           >
-            {/* Description (Cell 3 on desktop, col 1 row 1 on phone) */}
+            {/* Description (Cell 3 on desktop; col 1 across both rows on phone, so the
+                context line sits right under it whatever the amount column's height) */}
             <div
               role="cell"
-              className="col-start-1 row-start-1 text-heading text-ink break-words min-w-0 lg:col-start-auto lg:row-start-auto lg:text-body lg:px-space-12 lg:py-space-6"
+              className="col-start-1 row-start-1 row-span-2 self-start text-heading text-ink break-words min-w-0 lg:col-start-auto lg:row-start-auto lg:row-span-1 lg:self-auto lg:text-body lg:px-space-12 lg:py-space-6"
             >
               <div className="text-heading font-medium lg:text-body-strong text-ink truncate">
                 {description ?? children}
               </div>
+              {/* Phone context line (starts with the account) */}
+              {contextElements.length > 0 && (
+                <div className="flex flex-wrap items-center gap-x-space-4 mt-space-2 text-caption font-medium text-ink-3 min-w-0 lg:hidden">
+                  {contextElements.map((el, i) => (
+                    <React.Fragment key={i}>
+                      {i > 0 && <span className="text-ink-4 select-none">·</span>}
+                      {el}
+                    </React.Fragment>
+                  ))}
+                </div>
+              )}
               {/* Desktop context line under description */}
               {desktopContextElements.length > 0 && (
                 <div className="hidden lg:flex items-center gap-x-space-4 text-caption text-ink-3 truncate mt-space-2">
                   {desktopContextElements.map((el, i) => (
                     <React.Fragment key={i}>
-                      {i > 0 && <span className="text-ink-4 select-none"> · </span>}
+                      {i > 0 && <span className="text-ink-4 select-none">·</span>}
                       {el}
                     </React.Fragment>
                   ))}
@@ -449,17 +461,6 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               </div>
             )}
 
-            {/* Phone Context line */}
-            {contextElements.length > 0 && (
-              <div className="col-start-1 row-start-2 mt-space-4 text-caption font-medium text-ink-3 self-center break-words min-w-0 lg:hidden">
-                {contextElements.map((el, i) => (
-                  <React.Fragment key={i}>
-                    {i > 0 && <span className="text-ink-4 select-none"> · </span>}
-                    {el}
-                  </React.Fragment>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>

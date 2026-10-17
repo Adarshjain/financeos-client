@@ -43,18 +43,7 @@ afterEach(() => {
 describe.each([
   ['touch', '[TouchA>]', '[/TouchA]'],
   ['mouse', '[MouseLeft>]', '[/MouseLeft]'],
-])('%s long-press', (_n, down, up) => {
-  it('selects before release; release triggers nothing more', async () => {
-    const { user, item, onPress, onSelectedChange } = setup();
-    await user.pointer({ keys: down, target: item });
-    expect(onSelectedChange).not.toHaveBeenCalled();
-    adv(500);
-    expect(onSelectedChange).toHaveBeenCalledTimes(1);
-    expect(onSelectedChange).toHaveBeenCalledWith(true);
-    await user.pointer({ keys: up, target: item });
-    expect(onSelectedChange).toHaveBeenCalledTimes(1);
-    expect(onPress).not.toHaveBeenCalled();
-  });
+])('%s press', (_n, down, up) => {
   it('release at 300ms is a tap (onPress), not a long-press', async () => {
     const { user, item, onPress, onSelectedChange } = setup();
     await user.pointer({ keys: down, target: item });
@@ -70,19 +59,6 @@ describe.each([
     await user.pointer({ keys: up, target: item });
     expect(onPress).toHaveBeenCalledTimes(1);
     expect(onSelectedChange).not.toHaveBeenCalled();
-  });
-  it('tap in selection mode toggles on and off, no onPress', async () => {
-    const a = setup({ selectionMode: true, selected: false });
-    await a.user.pointer({ keys: down, target: a.item });
-    await a.user.pointer({ keys: up, target: a.item });
-    expect(a.onSelectedChange).toHaveBeenCalledWith(true);
-    expect(a.onPress).not.toHaveBeenCalled();
-    document.body.innerHTML = '';
-    const b = setup({ selectionMode: true, selected: true });
-    await b.user.pointer({ keys: down, target: b.item });
-    await b.user.pointer({ keys: up, target: b.item });
-    expect(b.onSelectedChange).toHaveBeenCalledWith(false);
-    expect(b.onPress).not.toHaveBeenCalled();
   });
   it('20px move between down and up: no tap, no long-press', async () => {
     const { user, item, onPress, onSelectedChange } = setup();
@@ -145,6 +121,36 @@ describe.each([
     expect(onPress).not.toHaveBeenCalled();
     expect(onSelectedChange).not.toHaveBeenCalled();
   });
+});
+
+// Long-press and tap-to-toggle are touch gestures (owner, 2026-10-17).
+describe('touch long-press and selection', () => {
+  const down = '[TouchA>]';
+  const up = '[/TouchA]';
+  it('selects before release; release triggers nothing more', async () => {
+    const { user, item, onPress, onSelectedChange } = setup();
+    await user.pointer({ keys: down, target: item });
+    expect(onSelectedChange).not.toHaveBeenCalled();
+    adv(500);
+    expect(onSelectedChange).toHaveBeenCalledTimes(1);
+    expect(onSelectedChange).toHaveBeenCalledWith(true);
+    await user.pointer({ keys: up, target: item });
+    expect(onSelectedChange).toHaveBeenCalledTimes(1);
+    expect(onPress).not.toHaveBeenCalled();
+  });
+  it('tap in selection mode toggles on and off, no onPress', async () => {
+    const a = setup({ selectionMode: true, selected: false });
+    await a.user.pointer({ keys: down, target: a.item });
+    await a.user.pointer({ keys: up, target: a.item });
+    expect(a.onSelectedChange).toHaveBeenCalledWith(true);
+    expect(a.onPress).not.toHaveBeenCalled();
+    document.body.innerHTML = '';
+    const b = setup({ selectionMode: true, selected: true });
+    await b.user.pointer({ keys: down, target: b.item });
+    await b.user.pointer({ keys: up, target: b.item });
+    expect(b.onSelectedChange).toHaveBeenCalledWith(false);
+    expect(b.onPress).not.toHaveBeenCalled();
+  });
   it('iOS: long-press w/o click, then a separate quick tap works', async () => {
     const { user, item, onPress, onSelectedChange } = setup();
     await user.pointer({ keys: down, target: item });
@@ -155,6 +161,35 @@ describe.each([
     await user.pointer({ keys: down, target: item });
     await user.pointer({ keys: up, target: item });
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+});
+
+// A mouse never selects by holding or clicking; a click always opens the item (owner, 2026-10-17).
+describe('mouse', () => {
+  const down = '[MouseLeft>]';
+  const up = '[/MouseLeft]';
+  it('holding past the threshold does not select; the release opens the item', async () => {
+    const { user, item, onPress, onSelectedChange } = setup();
+    giveSize(item);
+    await user.pointer({ keys: down, target: item });
+    adv(800);
+    expect(onSelectedChange).not.toHaveBeenCalled();
+    await user.pointer({ keys: up, target: item });
+    expect(onSelectedChange).not.toHaveBeenCalled();
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+  it('a click in selection mode opens the item and never toggles', async () => {
+    const a = setup({ selectionMode: true, selected: false });
+    await a.user.pointer({ keys: down, target: a.item });
+    await a.user.pointer({ keys: up, target: a.item });
+    expect(a.onPress).toHaveBeenCalledTimes(1);
+    expect(a.onSelectedChange).not.toHaveBeenCalled();
+    document.body.innerHTML = '';
+    const b = setup({ selectionMode: true, selected: true });
+    await b.user.pointer({ keys: down, target: b.item });
+    await b.user.pointer({ keys: up, target: b.item });
+    expect(b.onPress).toHaveBeenCalledTimes(1);
+    expect(b.onSelectedChange).not.toHaveBeenCalled();
   });
 });
 
