@@ -1,7 +1,11 @@
 import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 
 const config: Config = {
   darkMode: ['class'],
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -315,7 +319,28 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    plugin(({ addBase, addUtilities, addVariant }) => {
+      addBase({
+        html: {
+          '-webkit-tap-highlight-color': 'transparent',
+        },
+      });
+      addUtilities({
+        '.scrollbar-none': {
+          'scrollbar-width': 'none',
+        },
+        '.scrollbar-none::-webkit-scrollbar': {
+          display: 'none',
+        },
+      });
+      addVariant(
+        'active-self',
+        '&:active:not(:has(button:active, a:active, [role="button"]:active))'
+      );
+    }),
+  ],
 };
 
 export default config;
