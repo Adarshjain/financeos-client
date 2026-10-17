@@ -1,0 +1,99 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+import tokens from '../../../design-system/tokens.json';
+
+<Meta title="DS/Foundations" />
+
+# Foundations
+
+Dinero design system foundations and design tokens loaded directly from `tokens.json`.
+
+## Colours
+
+### Ground & Surfaces
+{tokens.color.tokens.filter(t => t.name.startsWith('bg-') || t.name === 'scrim').map(t => (
+  <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+    <div style={{ width: '3rem', height: '3rem', borderRadius: '0.375rem', border: '1px solid #ccc', backgroundColor: `var(--ds-${t.name})` }} />
+    <div>
+      <strong>{t.name}</strong>: {t.usage}
+    </div>
+  </div>
+))}
+
+### Lines
+{tokens.color.tokens.filter(t => t.name.startsWith('line')).map(t => (
+  <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+    <div style={{ width: '3rem', height: '1.5rem', borderRadius: '0.25rem', backgroundColor: `var(--ds-${t.name})` }} />
+    <div>
+      <strong>{t.name}</strong>: {t.usage}
+    </div>
+  </div>
+))}
+
+### Text & Ink
+{tokens.color.tokens.filter(t => t.name.startsWith('ink')).map(t => (
+  <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+    <div style={{ fontSize: '1.25rem', fontWeight: 'bold', color: `var(--ds-${t.name})` }}>Aa</div>
+    <div>
+      <strong>{t.name}</strong>: {t.usage}
+    </div>
+  </div>
+))}
+
+### Brand
+{tokens.color.tokens.filter(t => t.name.startsWith('brand')).map(t => (
+  <div key={t.name} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+    <div style={{ width: '3rem', height: '3rem', borderRadius: '0.375rem', backgroundColor: `var(--ds-${t.name})` }} />
+    <div>
+      <strong>{t.name}</strong>: {t.usage}
+    </div>
+  </div>
+))}
+
+## Typography
+
+{tokens.type.groups.map(g => (
+  <div key={g.name} style={{ marginBottom: '1.5rem' }}>
+    <h3>{g.name}</h3>
+    {g.styles.map(s => (
+      <div key={s.name} style={{ marginBottom: '1rem' }}>
+        <div style={{ fontSize: s.fontSize, lineHeight: s.lineHeight, fontWeight: s.fontWeight, letterSpacing: s.letterSpacing || 'normal' }}>
+          {s.sample}
+        </div>
+        <small><strong>{s.name}</strong> ({s.fontSize}/{s.lineHeight}, weight {s.fontWeight}): {s.usage}</small>
+      </div>
+    ))}
+  </div>
+))}
+
+## Spacing
+
+{tokens.spacing.tokens.map(s => (
+  <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+    <div style={{ width: s.value, height: '1rem', backgroundColor: 'var(--ds-brand)' }} />
+    <div>
+      <strong>{s.name}</strong> ({s.value}): {s.usage}
+    </div>
+  </div>
+))}
+
+## Radii
+
+{tokens.radius.tokens.map(r => (
+  <div key={r.name} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+    <div style={{ width: '3rem', height: '3rem', borderRadius: r.value, border: '2px solid var(--ds-brand)', backgroundColor: 'var(--ds-bg-sunken)' }} />
+    <div>
+      <strong>{r.name}</strong> ({r.value}): {r.usage}
+    </div>
+  </div>
+))}
+
+## Shadows
+
+{tokens.shadow.tokens.map(s => (
+  <div key={s.name} style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+    <div style={{ width: '3rem', height: '3rem', borderRadius: '0.5rem', backgroundColor: 'var(--ds-bg-surface)', boxShadow: `var(--ds-${s.name})` }} />
+    <div>
+      <strong>{s.name}</strong>: {s.usage}
+    </div>
+  </div>
+))}
