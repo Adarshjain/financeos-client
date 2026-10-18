@@ -8,7 +8,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | --- | --- | --- |
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
-| 2 | New component library in Storybook, one component at a time, owner-reviewed | Ready for review (45 components; Storybook feedback round 2 complete; DataTable Ready for review) |
+| 2 | New component library in Storybook, one component at a time, owner-reviewed | Done (all components approved by the owner 2026-10-18) |
 | 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: /ds review area, login, signup, offline Ready for review) |
 | 3b | Audit implementation: apply the 673 owner-approved conventions decisions (`design-system/specs/audit/`) to Dinero, organisms, stories and the /ds pages | Done (all 673 decisions executed across Rounds A–F; all audit specs completed, all unit and E2E tests passing, builds and check-ui clean) |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
@@ -57,56 +57,54 @@ Build in this order, one component per step. After each one, set its status to *
 
 | # | Component | Status |
 | --- | --- | --- |
-| 1 | Icon | Ready for review |
-| 2 | Popover | Ready for review |
-| 3 | Dialog | Ready for review |
-| 4 | TabBar | Ready for review |
-| 5 | Rail | Ready for review |
-| 6 | TopBar | Ready for review |
-| 7 | Tabs | Ready for review |
-| 8 | Pager | Ready for review |
-| 9 | Button | Ready for review |
-| 10 | Menu | Ready for review |
-| 11 | SelectionBar | Ready for review |
-| 12 | SwipeActions | Ready for review |
-| 13 | TextField | Ready for review |
-| 14 | TextArea | Ready for review |
-| 15 | DateField | Ready for review |
-| 16 | Select | Ready for review |
+| 1 | Icon | Approved |
+| 2 | Popover | Approved |
+| 3 | Dialog | Approved |
+| 4 | TabBar | Approved |
+| 5 | Rail | Approved |
+| 6 | TopBar | Approved |
+| 7 | Tabs | Approved |
+| 8 | Pager | Approved |
+| 9 | Button | Approved |
+| 10 | Menu | Approved |
+| 11 | SelectionBar | Approved |
+| 12 | SwipeActions | Approved |
+| 13 | TextField | Approved |
+| 14 | TextArea | Approved |
+| 15 | DateField | Approved |
+| 16 | Select | Approved |
 | 17 | SearchField | Merged into TextField (see B2) |
-| 18 | FilterChip | Ready for review |
-| 19 | Checkbox | Ready for review |
-| 20 | Switch | Ready for review |
-| 21 | SegmentedControl | Ready for review |
-| 22 | DropZone | Ready for review |
-| 23 | Card | Ready for review |
-| 24 | ListRow | Ready for review |
-| 25 | SectionHeader | Ready for review |
-| 26 | TransactionRow | Ready for review |
-| 27 | RuleCard | Ready for review |
-| 28 | KpiTile | Ready for review |
-| 29 | Widget | Ready for review |
-| 30 | Badge | Ready for review |
-| 31 | CategoryChip | Ready for review |
-| 32 | StatusWords | Ready for review |
-| 33 | ProgressBar | Ready for review |
-| 34 | DateTile | Ready for review |
-| 35 | Avatar | Ready for review |
-| 36 | Kbd | Ready for review |
-| 37 | Banner | Ready for review |
-| 38 | Toast | Ready for review |
-| 39 | EmptyState | Ready for review |
-| 40 | Skeleton | Ready for review |
-| 41 | Logo | Ready for review |
-| 42 | Divider | Ready for review |
-| 43 | Illustration | Ready for review |
-| 44 | ResponsiveOverlay | Ready for review |
-| 45 | Text | Ready for review |
-| 46 | Root | Ready for review |
-| 47 | DataTable | Ready for review |
-| 48 | Stepper | Ready for review |
-| 49 | MonthCalendar (events mode) | Ready for review |
-| 50 | SearchPalette | Ready for review |
+| 18 | FilterChip | Approved |
+| 19 | Checkbox | Approved |
+| 20 | Switch | Approved |
+| 21 | SegmentedControl | Approved |
+| 22 | DropZone | Approved |
+| 23 | Card | Approved |
+| 24 | ListRow | Approved |
+| 25 | SectionHeader | Approved |
+| 26 | TransactionRow | Approved |
+| 27 | RuleCard | Approved |
+| 28 | KpiTile | Approved |
+| 29 | Widget | Approved |
+| 30 | Badge | Approved |
+| 32 | StatusWords | Approved |
+| 33 | ProgressBar | Approved |
+| 34 | DateTile | Approved |
+| 35 | Avatar | Approved |
+| 36 | Kbd | Approved |
+| 37 | Banner | Approved |
+| 38 | Toast | Approved |
+| 39 | EmptyState | Approved |
+| 40 | Skeleton | Approved |
+| 41 | Logo | Approved |
+| 42 | Divider | Approved |
+| 43 | Illustration | Approved |
+| 45 | Text | Approved |
+| 46 | Root | Approved |
+| 47 | DataTable | Approved |
+| 48 | Stepper | Approved |
+| 49 | MonthCalendar (events mode) | Approved |
+| 50 | SearchPalette | Approved |
 
 Removed on 2026-10-15/2026-10-17 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; SearchField → TextField (merged in B2, search variant with clearable icon and embedded style); AuthPanel → a page in Phase 3.
 
@@ -128,10 +126,10 @@ For each swap:
 New pages may use nothing from the old UI (RULES §1.8). These are needed and don't exist yet.
 
 **Components the reviewed boards need that the library lacks** (design first, then build; owner, 2026-10-18):
-1. **DataTable**: built 2026-10-17, Ready for review.
-2. **SearchPalette**: built 2026-10-18, Ready for review.
-3. **Stepper**: built 2026-10-18, redesigned the same day (owner: "can look better", "not mobile responsive"), Ready for review.
-4. **MonthCalendar events**: built 2026-10-18, Ready for review.
+1. **DataTable**: built 2026-10-17, Approved.
+2. **SearchPalette**: built 2026-10-18, Approved.
+3. **Stepper**: built 2026-10-18, redesigned the same day (owner: "can look better", "not mobile responsive"), Approved.
+4. **MonthCalendar events**: built 2026-10-18, Approved.
 5. ~~**ProgressBar markers**~~: dropped by the owner 2026-10-18; ProgressBar stays as it is. The loan page lays out its own start / today / end captions under the bar.
 
 Later: Chat (`D-chat`), DashboardGrid and the KpiTile vs Widget review. Built in the app, not Dinero: ChoiceCard (widget picker). Candidate rows in the link and rule-match dialogs use ListRow with a Checkbox or radio in `leading`.
@@ -281,6 +279,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-18 · **No "bal" prefix** on running balances (owner): the balance is the bare amount, "₹2,95,030".
 - 2026-10-18 · **TransactionRow phone: categories on their own line under the context line** (owner), not under the amount. Amount and balance stay top-right.
 - 2026-10-18 · **One working story per component** (owner): gather every requirement first, then build. Each component gets one story that works as it would in the app when interacted with (in-story state through `useArgs` only), instead of one story per variant (§5a.1).
+- 2026-10-18 · **All Phase 2 components approved** (owner). Issues found while building pages are flagged as we go.
 - 2026-10-18 · **Component gap review** (owner). Build in Dinero: **SearchPalette**, **Stepper** (import wizard), **MonthCalendar event chips**, **ProgressBar markers**. Not in Dinero:
   - Chat: later.
   - ChoiceCard: built inside the app (widget picker), not a Dinero component.
@@ -302,6 +301,7 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-18 · Phase 2 · Claude · Owner approved every component; status rows set to Approved, Phase 2 Done. Removed the stale CategoryChip and ResponsiveOverlay rows (both components were deleted earlier).
 - 2026-10-18 · Phase 2 · Claude · ProgressBar markers dropped (owner: "let it be as it is"). No code change.
 - 2026-10-18 · Phase 2 · Claude · SearchPalette fix: the owner's dev Storybook froze on any search with results. Cause: Storybook's dev-mode JSX source snippet re-printed the whole `groups` tree (React nodes) on every keystroke; the production build was never affected. Fix: the story uses `docs.source.type: 'code'`. Also replaced cmdk with the palette's own highlight and ↑/↓/Enter handling (simpler, same behaviour). Files: `SearchPalette.tsx`, `SearchPalette.stories.tsx`, its README. Tests 13/13 unchanged; Playwright against the dev server (390 light, 1440 dark and light): no freeze, all flows pass.
 - 2026-10-18 · Phase 2 · Claude · SearchPalette built (`D-search`, `P-search`): `src/components/ds/SearchPalette/{SearchPalette.tsx,SearchPalette.test.tsx,SearchPalette.stories.tsx}`, `design-system/components/SearchPalette/README.md`, export in `src/components/ds/index.ts`. A headerless Dialog (`md`, `space-40` from the top on desktop, the sheet on phone) with the search TextField (esc Kbd on desktop, Cancel on phone), results grouped by the page under SectionHeaders, ListRow rows with a fixed leading column, cmdk for the highlight and ↑/↓/Enter (no filtering in the palette), click or Enter runs the row's `onSelect` and closes, `loading` skeletons, `No results for "…"`, desktop footer hints, optional ⌘/Ctrl + `shortcutKey`. Props `open`/`onOpenChange`, `value`/`onValueChange` (search text), `groups`, `loading`, `shortcutKey` and overridable words.
