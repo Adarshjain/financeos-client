@@ -104,6 +104,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 45 | Text | Ready for review |
 | 46 | Root | Ready for review |
 | 47 | DataTable | Ready for review |
+| 48 | Stepper | Ready for review |
 
 Removed on 2026-10-15/2026-10-17 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; SearchField → TextField (merged in B2, search variant with clearable icon and embedded style); AuthPanel → a page in Phase 3.
 
@@ -127,7 +128,7 @@ New pages may use nothing from the old UI (RULES §1.8). These are needed and do
 **Components the reviewed boards need that the library lacks** (design first, then build; owner, 2026-10-18):
 1. **DataTable**: built 2026-10-17, Ready for review.
 2. **SearchPalette**: ⌘K / Search results grouped by section with keyboard movement. Built from Dialog, SearchField, ListRow and SectionHeader; needs its own README.
-3. **Stepper**: the import wizard steps (Files ✓ · Match ✓ · 3 Reconcile · 4 Done) on `D-import-wizard` / `P-import-wizard`.
+3. **Stepper**: built 2026-10-18, Ready for review.
 4. **MonthCalendar events**: the desktop Upcoming calendar shows labelled event chips in day cells, not only bars.
 5. **ProgressBar markers**: the loan timeline on `D-loan-detail`.
 
@@ -277,6 +278,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
 - 2026-10-18 · **Pager `compact` variant** (owner): small controls and tight padding for dense lists. A one-page gap shows the page, never an ellipsis.
 - 2026-10-18 · **No "bal" prefix** on running balances (owner): the balance is the bare amount, "₹2,95,030".
 - 2026-10-18 · **TransactionRow phone: categories on their own line under the context line** (owner), not under the amount. Amount and balance stay top-right.
+- 2026-10-18 · **One working story per component** (owner): gather every requirement first, then build. Each component gets one story that works as it would in the app when interacted with (in-story state through `useArgs` only), instead of one story per variant (§5a.1).
 - 2026-10-18 · **Component gap review** (owner). Build in Dinero: **SearchPalette**, **Stepper** (import wizard), **MonthCalendar event chips**, **ProgressBar markers**. Not in Dinero:
   - Chat: later.
   - ChoiceCard: built inside the app (widget picker), not a Dinero component.
@@ -298,6 +300,9 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-18 · Phase 2 · Claude · Stepper built (`src/components/ds/Stepper/{Stepper.tsx,Stepper.test.tsx,Stepper.stories.tsx}`, `design-system/components/Stepper/README.md`, export in `src/components/ds/index.ts`). Requirements from `D-import-wizard` / `P-import-wizard` (identical) and the live wizard (`ImportWizardDialog`, Back button only, no step indicator today). Ordered list, `current` index drives done / current / upcoming; done shows the `check` Icon (the board's typed ✓). Not clickable, no card of its own. One story, `DS/Navigation/Stepper/Import wizard`, inside a Card with Back and Next/Finish wired through `useArgs`.
+  - Checks: Stepper tests 7/7, tsc clean, eslint clean, check-ui clean, `storybook build` OK, Playwright on the story at 390px light and 1440px dark: Next, Finish (all done, Next disabled), Back ×2 all correct; wraps onto two lines at 390px; no page errors.
+  - Deviations (no matching token): circle 22px → `space-24`; gap between steps 18px → `space-16`; wrapped-line gap `space-8` (board has none drawn).
 - 2026-10-18 · Phase 2 · Claude · Gestures follow the phone layout, not the pointer (owner correction: "only on mobile devices", not touch only):
   - New `src/components/ds/phoneLayout.ts`: `isPhoneLayout()` reads `(min-width: 64rem)` when called; no matchMedia means phone. `useSelectableItem` starts its long-press only when the press starts in the phone layout (any pointer), and a press in selection mode toggles only there; in the desktop layout every press opens, Enter/Space too. `useSwipe` starts only in the phone layout, any pointer. The layout is read inside event handlers, never while rendering, so markup never depends on it.
   - RULES §5c.3: one exception for that file, event handlers only (approved by the owner 2026-10-18); `check-ui` allows `matchMedia` in it alone, with two new self-test lines. §5c.4 and §7.5 rewritten. READMEs: TransactionRow, RuleCard (gesture table is phone layout), SwipeActions (phone layout only). Transactions list story docs updated.

@@ -32,6 +32,7 @@ export * from './Select/Select';
 export * from './SelectionBar/SelectionBar';
 export * from './Skeleton/Skeleton';
 export * from './StatusWords/StatusWords';
+export * from './Stepper/Stepper';
 export * from './SwipeActions/SwipeActions';
 export * from './Switch/Switch';
 export * from './TabBar/TabBar';
