@@ -26,6 +26,7 @@ export * from './Popover/Popover';
 export * from './ProgressBar/ProgressBar';
 export * from './Rail/Rail';
 export * from './Root/Root';
+export * from './SearchPalette/SearchPalette';
 export * from './SectionHeader/SectionHeader';
 export * from './SegmentedControl/SegmentedControl';
 export * from './Select/Select';
