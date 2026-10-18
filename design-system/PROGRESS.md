@@ -9,7 +9,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
 | 2 | New component library in Storybook, one component at a time, owner-reviewed | Done (all components approved by the owner 2026-10-18) |
-| 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: login, signup, offline approved 2026-10-18, swap pending; Accounts next) |
+| 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: login, signup, offline approved 2026-10-18, swap pending; Accounts: boards approved, Dinero changes ready for review 2026-10-19) |
 | 3b | Audit implementation: apply the 673 owner-approved conventions decisions (`design-system/specs/audit/`) to Dinero, organisms, stories and the /ds pages | Done (all 673 decisions executed across Rounds A–F; all audit specs completed, all unit and E2E tests passing, builds and check-ui clean) |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
@@ -63,7 +63,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 4 | TabBar | Approved |
 | 5 | Rail | Approved |
 | 6 | TopBar | Approved |
-| 7 | Tabs | Approved |
+| 7 | Tabs | Ready for review (2026-10-19: route tabs as links, counts that load on their own) |
 | 8 | Pager | Approved |
 | 9 | Button | Approved |
 | 10 | Menu | Approved |
@@ -72,7 +72,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 13 | TextField | Approved |
 | 14 | TextArea | Approved |
 | 15 | DateField | Approved |
-| 16 | Select | Approved |
+| 16 | Select | Ready for review (2026-10-19: create clears the search and is not offered for an existing option) |
 | 17 | SearchField | Merged into TextField (see B2) |
 | 18 | FilterChip | Approved |
 | 19 | Checkbox | Approved |
@@ -94,7 +94,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 36 | Kbd | Approved |
 | 37 | Banner | Approved |
 | 38 | Toast | Approved |
-| 39 | EmptyState | Approved |
+| 39 | EmptyState | Ready for review (2026-10-19: optional second action) |
 | 40 | Skeleton | Approved |
 | 41 | Logo | Approved |
 | 42 | Divider | Approved |
@@ -105,6 +105,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 48 | Stepper | Approved |
 | 49 | MonthCalendar (events mode) | Approved |
 | 50 | SearchPalette | Approved |
+| 51 | ErrorState (organism) | Ready for review (2026-10-19) |
 
 Removed on 2026-10-15/2026-10-17 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; SearchField → TextField (merged in B2, search variant with clearable icon and embedded style); AuthPanel → a page in Phase 3.
 
@@ -290,6 +291,12 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - No typed glyphs (⠿ ▾ ✓ × ⋯ ‹ ›) anywhere: always Icon.
   - Account types on Add account are a SegmentedControl with icons.
 
+- 2026-10-19 · **Accounts decisions** (owner, Accounts gap review; recorded by Claude at the owner's request):
+  - **One layout switch at 640px** (final): 640px and below is the phone layout, above it the desktop layout. Dinero gets its own Tailwind screen `desk` (641px) and every Dinero, organism and `/ds` class moved from `lg:` to `desk:`; Legacy keeps `lg:` untouched (RULES §1.6). `isPhoneLayout()` reads `(min-width: 641px)`. RULES §5c.2 updated; `check-ui` fails on any other breakpoint in checked paths.
+  - **Tabs on an object page are real routes** (`/accounts/[id]`, `/statements`, `/cards`, `/rewards`): a shared layout holds the header and the tab strip, each tab fetches only its own data, choices inside a tab live in URL params (`?fy=&statement=`), and tab counts load on their own after the tab renders (a small server addition returns them). This applies to every tabbed page.
+  - **Identifiers are saved with the form** (Add/Edit account), not on each add or remove.
+  - **Add links per section on Accounts** (owner answer 39), an exception to §7.1 and the §9 header-button removal for that page.
+
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
 
@@ -301,6 +308,17 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-19 · Phase 3 (Accounts, step 3) · Claude · Dinero changes the approved Accounts boards need, each with README, one working story driven by controls (owner, 2026-10-18 and 2026-10-19) and tests:
+  - **Breakpoint `desk` (641px)**: `tailwind.config.ts` adds the screen; `lg:`→`desk:` in `src/components/ds/`, `src/components/organisms/`, `src/app/(ds)/`, `src/features/shell/` (classes, comments, test selectors), `phoneLayout.ts`, `src/test/stubLayout.ts`, eight component READMEs, RULES §5c.2/§5c.4/§5d.3; `check-ui` gains a `breakpoint` rule with self-tests.
+  - **EmptyState**: `secondaryAction={{ label, onSelect }}`, drawn `secondary` after the first (a `link` when compact).
+  - **ErrorState** (new organism, `src/components/organisms/ErrorState/`): EmptyState with `action` (Try again) and `reference` (Copy reference <id>, copies silently like the app does today, then `onCopyReference`).
+  - **Tabs**: items take `asChild` + `children` (the app's Link) so each tab is a route; `activationMode` defaults to `manual` when any item is a link; `count` may stay undefined while it loads; TabsTrigger takes `asChild`.
+  - **Select**: the create row hides when the typed text already is an option (any case); creating clears the search. The "multi with search and create" story now adds identifiers for real.
+  - **Banner**: verified, already works with no action. Nothing changed.
+  - Stories: EmptyState's six stories became one ("Empty state"); Tabs' three became one ("Tabs").
+  - Existing tests changed only because the breakpoint rename forced it: `.lg\:` selectors and `lg:` class assertions in Stepper, SearchPalette, Pager, DataTable, Dialog, SelectionBar, MonthCalendar, TabBar, TransactionRow and Illustration tests now read `desk`, plus three test names in Stepper/MonthCalendar/phoneLayout.
+  Checks (Node 20): typecheck clean; lint 0 errors (warnings pre-existing); `npm test` 444 files / 3866 tests passed (a first run reported one unhandled error that did not repeat); `build-storybook` OK; check-ui clean and self-test passed. Looked at the four stories at 390 light and 1440 dark; clicked through Tabs (route link, counts loading), Select (create, duplicate), ErrorState (clipboard); Stepper shows its phone form at 640px and desktop at 641px.
+  Open questions: none. Deviations: none.
 - 2026-10-18 · Phase 3 · Claude · Owner approved `/ds/login`, `/ds/signup`, `/ds/offline` (swap not done yet). Accounts chosen as the first signed-in page; requirements and gap review in progress.
 - 2026-10-18 · Phase 2 · Claude · Owner approved every component; status rows set to Approved, Phase 2 Done. Removed the stale CategoryChip and ResponsiveOverlay rows (both components were deleted earlier).
 - 2026-10-18 · Phase 2 · Claude · ProgressBar markers dropped (owner: "let it be as it is"). No code change.

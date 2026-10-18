@@ -2,17 +2,28 @@ import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { fn } from 'storybook/test';
 
-import { Card, EmptyState, Icon } from '@/components/ds';
+import { Card, EmptyState, type EmptyStateProps, Icon } from '@/components/ds';
 
-const meta: Meta<typeof EmptyState> = {
+/** The action objects are flattened into plain controls; an empty label removes that action. */
+type StoryArgs = Omit<EmptyStateProps, 'action' | 'secondaryAction' | 'illustration'> & {
+  actionLabel: string;
+  actionVariant: 'primary' | 'secondary' | 'link';
+  secondaryActionLabel: string;
+  illustration: boolean;
+  onAction: () => void;
+  onSecondaryAction: () => void;
+};
+
+const meta: Meta<StoryArgs> = {
   title: 'DS/Feedback/EmptyState',
   component: EmptyState,
+  tags: ['autodocs'],
   parameters: {
     layout: 'padded',
     docs: {
       description: {
         component:
-          'What a screen shows when it has nothing yet, or cannot load: an optional illustration, a screen-title headline, one sentence, and the one action that fixes it.',
+          'What a screen shows when it has nothing yet, or cannot load: an optional illustration, a screen-title headline, one sentence, and the action that fixes it, with an optional second one. Clear an action label in Controls to remove that action. Cases from the boards: first run (No accounts yet · Add account), nothing matches (both actions secondary: Clear amount · Clear all filters), all clear (no actions), and compact for small panels.',
       },
     },
   },
@@ -24,110 +35,45 @@ const meta: Meta<typeof EmptyState> = {
     ),
   ],
   argTypes: {
-    title: {
-      control: 'text',
-      description: 'Primary headline',
-    },
-    description: {
-      control: 'text',
-      description: 'Explanatory description',
-    },
-    size: {
-      control: 'select',
-      options: ['sm', 'md'],
-      description: 'Padding scale',
-    },
-    compact: {
-      control: 'boolean',
-      description: 'Compact single-line mode',
-    },
-    illustration: {
-      control: false,
-      description: 'Optional illustration slot',
-    },
-    action: {
-      control: false,
-      description: 'Action object with label and onSelect callback',
-    },
+    title: { control: 'text' },
+    description: { control: 'text' },
+    size: { control: 'inline-radio', options: ['sm', 'md'] },
+    compact: { control: 'boolean' },
+    illustration: { control: 'boolean', description: 'Show an illustration (the app passes Illustration; here an Icon stands in)' },
+    actionLabel: { control: 'text', description: '`action.label`; empty removes the action' },
+    actionVariant: { control: 'inline-radio', options: ['primary', 'secondary', 'link'], description: '`action.variant`' },
+    secondaryActionLabel: { control: 'text', description: '`secondaryAction.label`; empty removes it' },
+    onAction: { table: { disable: true } },
+    onSecondaryAction: { table: { disable: true } },
+    children: { control: false },
   },
   args: {
-    title: 'No accounts yet',
-    description: 'Add a bank or card, or upload a statement.',
+    title: 'No transactions match',
+    description: 'Last 90 days · Category: Travel · Amount over ₹50,000',
     size: 'md',
     compact: false,
-    action: {
-      label: 'Add account',
-      onSelect: fn(),
-    },
+    illustration: false,
+    actionLabel: 'Clear amount',
+    actionVariant: 'secondary',
+    secondaryActionLabel: 'Clear all filters',
+    onAction: fn(),
+    onSecondaryAction: fn(),
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof EmptyState>;
+type Story = StoryObj<StoryArgs>;
 
-export const FirstRun: Story = {
-  name: 'First run',
-  args: {
-    title: 'No accounts yet',
-    description: 'Add a bank or card, or upload a statement.',
-    action: {
-      label: 'Add account',
-      onSelect: fn(),
-    },
-  },
-};
-
-export const NothingMatches: Story = {
-  name: 'Nothing matches',
-  args: {
-    title: 'No transactions match',
-    description: 'This year · manual · excluded only',
-    action: {
-      label: 'Clear all filters',
-      variant: 'secondary',
-      onSelect: fn(),
-    },
-  },
-};
-
-export const AllClear: Story = {
-  name: 'All clear',
-  args: {
-    title: 'All clear',
-    description: 'Nothing needs you right now.',
-    action: undefined,
-  },
-};
-
-export const CouldntLoad: Story = {
-  name: "Couldn't load",
-  args: {
-    title: "Couldn't load the inbox",
-    description: 'The server did not answer. Your items are safe.',
-    action: {
-      label: 'Try again',
-      onSelect: fn(),
-    },
-  },
-};
-
-export const WithIllustration: Story = {
-  name: 'With illustration',
-  args: {
-    title: 'No messages',
-    description: 'Your inbox is completely caught up.',
-    illustration: <Icon name="check" size="lg" />,
-    action: undefined,
-  },
-};
-
-export const Compact: Story = {
-  name: 'Compact',
-  args: {
-    compact: true,
-    title: undefined,
-    description: undefined,
-    children: 'Nothing due on this day.',
-    action: undefined,
-  },
+export const Playground: Story = {
+  name: 'Empty state',
+  render: ({ actionLabel, actionVariant, secondaryActionLabel, illustration, onAction, onSecondaryAction, ...args }) => (
+    <EmptyState
+      {...args}
+      illustration={illustration ? <Icon name="check" size="lg" /> : undefined}
+      action={actionLabel ? { label: actionLabel, variant: actionVariant, onSelect: onAction } : undefined}
+      secondaryAction={
+        secondaryActionLabel ? { label: secondaryActionLabel, onSelect: onSecondaryAction } : undefined
+      }
+    />
+  ),
 };

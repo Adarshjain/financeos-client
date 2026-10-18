@@ -9,8 +9,12 @@ import { useControllableState } from '../useControllableState';
 export interface TabItem {
   value: string;
   label: React.ReactNode;
+  /** Shown after the label as "· 3". Leave it undefined while it loads; it appears when it arrives. */
   count?: number | string;
   disabled?: boolean;
+  /** Render the tab as `children` (one link element, e.g. the app's `<Link href />`), so each tab is a route. */
+  asChild?: boolean;
+  children?: React.ReactNode;
 }
 
 export interface TabsProps
@@ -30,6 +34,7 @@ export const Tabs = forwardRef<
       defaultValue,
       value: controlledValue,
       onValueChange,
+      activationMode,
       ...props
     },
     ref,
@@ -42,26 +47,40 @@ export const Tabs = forwardRef<
       onChange: onValueChange,
     });
 
+    // Link tabs navigate on click or Enter; arrow keys only move focus, so they never select a tab whose page isn't open.
+    const hasLinks = items?.some((item) => item.asChild) ?? false;
+
     return (
       <TabsPrimitive.Root
         ref={ref}
         value={activeValue}
         onValueChange={setActiveValue}
+        activationMode={activationMode ?? (hasLinks ? 'manual' : 'automatic')}
         className={cn('w-full', className)}
         {...props}
       >
         {items && items.length > 0 ? (
           <TabsList>
-            {items.map((item) => (
-              <TabsTrigger
-                key={item.value}
-                value={item.value}
-                count={item.count}
-                disabled={item.disabled}
-              >
-                {item.label}
-              </TabsTrigger>
-            ))}
+            {items.map((item) => {
+              const isSlot = item.asChild && React.isValidElement(item.children);
+              return (
+                <TabsTrigger
+                  key={item.value}
+                  value={item.value}
+                  count={item.count}
+                  disabled={item.disabled}
+                  asChild={isSlot}
+                >
+                  {isSlot
+                    ? React.cloneElement(
+                        item.children as React.ReactElement<{ children?: React.ReactNode }>,
+                        undefined,
+                        item.label,
+                      )
+                    : item.label}
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
         ) : null}
         {children}
@@ -95,16 +114,35 @@ export interface TabsTriggerProps
   count?: number | string;
 }
 
+/** With `asChild`, `children` is one link element whose own children are the label. */
 export const TabsTrigger = forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   TabsTriggerProps
->(({ className, children, count, disabled, ...props }, ref) => {
+>(({ className, children, count, disabled, asChild, onClick, ...props }, ref) => {
+  const content = (label: React.ReactNode) => (
+    <>
+      <span>{label}</span>
+      {count !== undefined && count !== null ? (
+        <span className="text-ink-3 font-medium"> · {count}</span>
+      ) : null}
+    </>
+  );
+  const link = asChild && React.isValidElement(children)
+    ? (children as React.ReactElement<{ children?: React.ReactNode }>)
+    : null;
+
   return (
     <TabsPrimitive.Trigger
       ref={ref}
       disabled={disabled}
+      asChild={!!link}
+      onClick={(e) => {
+        // A disabled link tab must not navigate.
+        if (disabled && link) e.preventDefault();
+        onClick?.(e);
+      }}
       className={cn(
-        'font-text text-body py-space-10 px-space-12 whitespace-nowrap border-b-2 rounded-none -mb-px transition-colors duration-fast select-none cursor-pointer',
+        'inline-block no-underline font-text text-body py-space-10 px-space-12 whitespace-nowrap border-b-2 rounded-none -mb-px transition-colors duration-fast select-none cursor-pointer',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-inset',
         'font-semibold text-ink-3 border-transparent hover:text-ink hover:bg-hover active:bg-pressed',
         'data-active:text-brand-strong data-active:border-brand data-active:font-bold data-active:hover:bg-transparent data-active:hover:text-brand-strong',
@@ -113,10 +151,9 @@ export const TabsTrigger = forwardRef<
       )}
       {...props}
     >
-      <span>{children}</span>
-      {count !== undefined && count !== null ? (
-        <span className="text-ink-3 font-medium"> · {count}</span>
-      ) : null}
+      {link
+        ? React.cloneElement(link, undefined, content(link.props.children))
+        : content(children)}
     </TabsPrimitive.Trigger>
   );
 });

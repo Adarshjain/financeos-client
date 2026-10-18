@@ -187,14 +187,39 @@ export const MultiSelect: Story = {
   },
 };
 
+/** Account identifiers: type one and press Enter (or pick the create row) to add and select it. */
 export const MultiWithSearchAndCreate: Story = {
   args: {
-    label: 'Multi select with search and create',
+    label: 'Identifiers',
+    helper: 'Card or account numbers the statements and alerts use',
+    placeholder: 'Add an identifier',
+    searchPlaceholder: 'Type an identifier',
     multiple: true,
     searchable: true,
-    options: standardOptions,
-    defaultValue: ['option-a'],
-    onCreate: fn(),
+    options: [
+      { value: 'XXXX4521', label: 'XXXX4521' },
+      { value: 'HDFC0001234', label: 'HDFC0001234' },
+    ],
+    value: ['XXXX4521', 'HDFC0001234'],
+  },
+  render: function Render(args) {
+    const [{ value, options }, updateArgs] = useArgs<typeof args>();
+    const picked = (value as string[] | undefined) ?? [];
+    return (
+      <Select
+        {...args}
+        options={options}
+        value={picked}
+        onValueChange={(val) => {
+          updateArgs({ value: val });
+          args.onValueChange?.(val);
+        }}
+        onCreate={(query) => {
+          updateArgs({ options: [...(options ?? []), { value: query, label: query }], value: [...picked, query] });
+          args.onCreate?.(query);
+        }}
+      />
+    );
   },
 };
 

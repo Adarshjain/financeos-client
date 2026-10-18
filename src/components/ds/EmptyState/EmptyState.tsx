@@ -22,6 +22,11 @@ export interface EmptyStateProps
     onSelect: () => void;
     variant?: 'primary' | 'secondary' | 'link';
   };
+  /** Second action, after the first: secondaryAction={{ label, onSelect }}. Always `secondary` (`link` when compact). */
+  secondaryAction?: {
+    label: React.ReactNode;
+    onSelect: () => void;
+  };
   /** Compact single-line style for small panels or widget rows */
   compact?: boolean;
 }
@@ -36,6 +41,7 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
       title,
       description,
       action,
+      secondaryAction,
       compact = false,
       ...props
     },
@@ -72,6 +78,16 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
               {action.label}
             </Button>
           ) : null}
+          {secondaryAction ? (
+            <Button
+              type="button"
+              variant="link"
+              onClick={secondaryAction.onSelect}
+              className="text-inherit"
+            >
+              {secondaryAction.label}
+            </Button>
+          ) : null}
         </div>
       );
     }
@@ -106,15 +122,26 @@ export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
           </Text>
         )}
         {children}
-        {action && (
+        {(action || secondaryAction) && (
           <div className="mt-space-8 flex items-center justify-center gap-space-8 flex-wrap">
-            <Button
-              type="button"
-              variant={action.variant ?? 'primary'}
-              onClick={action.onSelect}
-            >
-              {action.label}
-            </Button>
+            {action && (
+              <Button
+                type="button"
+                variant={action.variant ?? 'primary'}
+                onClick={action.onSelect}
+              >
+                {action.label}
+              </Button>
+            )}
+            {secondaryAction && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={secondaryAction.onSelect}
+              >
+                {secondaryAction.label}
+              </Button>
+            )}
           </div>
         )}
       </div>

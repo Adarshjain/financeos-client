@@ -271,3 +271,65 @@ describe('SelectMenu', () => {
     expect(nonSpinningSvgs.length).toBe(0);
   });
 });
+
+describe('Select multiple with create (account identifiers)', () => {
+  function Identifiers({ onCreate = vi.fn() }: { onCreate?: (q: string) => void }) {
+    const [options, setOptions] = React.useState<SelectOption[]>([{ value: 'XXXX4521', label: 'XXXX4521' }]);
+    const [value, setValue] = React.useState<string[]>(['XXXX4521']);
+    return (
+      <Select
+        multiple
+        searchable
+        defaultOpen
+        searchPlaceholder="Add identifier"
+        options={options}
+        value={value}
+        onValueChange={(v) => setValue(v as string[])}
+        onCreate={(q) => {
+          onCreate(q);
+          setOptions((o) => [...o, { value: q, label: q }]);
+          setValue((v) => [...v, q]);
+        }}
+      />
+    );
+  }
+  const field = () => screen.getByPlaceholderText('Add identifier') as HTMLInputElement;
+
+  it('creates from the typed text with Enter, selects it and clears the search', () => {
+    const onCreate = vi.fn();
+    render(<Identifiers onCreate={onCreate} />);
+    fireEvent.change(field(), { target: { value: ' HDFCBANK ' } });
+    fireEvent.keyDown(field(), { key: 'Enter' });
+    expect(onCreate).toHaveBeenCalledWith('HDFCBANK');
+    expect(field().value).toBe('');
+    expect(screen.getByRole('option', { name: /HDFCBANK/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('option', { name: /XXXX4521/ })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('creates from the create row on click and clears the search', () => {
+    const onCreate = vi.fn();
+    render(<Identifiers onCreate={onCreate} />);
+    fireEvent.change(field(), { target: { value: 'XXXX9911' } });
+    fireEvent.click(screen.getByRole('button', { name: 'XXXX9911' }));
+    expect(onCreate).toHaveBeenCalledTimes(1);
+    expect(onCreate).toHaveBeenCalledWith('XXXX9911');
+    expect(field().value).toBe('');
+  });
+
+  it('offers no create row for text that is already an option, whatever its case', () => {
+    const onCreate = vi.fn();
+    render(<Identifiers onCreate={onCreate} />);
+    fireEvent.change(field(), { target: { value: 'xxxx4521' } });
+    expect(screen.queryByRole('button', { name: 'xxxx4521' })).toBeNull();
+    fireEvent.keyDown(field(), { key: 'Enter' });
+    expect(onCreate).not.toHaveBeenCalled();
+  });
+
+  it('creates nothing from a blank search', () => {
+    const onCreate = vi.fn();
+    render(<Identifiers onCreate={onCreate} />);
+    fireEvent.change(field(), { target: { value: '   ' } });
+    fireEvent.keyDown(field(), { key: 'Enter' });
+    expect(onCreate).not.toHaveBeenCalled();
+  });
+});

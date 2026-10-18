@@ -22,7 +22,7 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 - `multiple`: boolean, enables multi-selection with checkboxes and badges.
 - `searchable`: boolean, embeds search input.
 - `searchPlaceholder`, `searchValue`, `onSearchChange`: search controls.
-- `onCreate`, `createLabel`: create option from search query.
+- `onCreate`, `createLabel`: create option from search query. The create row shows only when the typed text is not already an option (any case); Enter or a click calls `onCreate` with the trimmed text and clears the search for the next entry. The page adds the new option and selects it (identifiers on Add/Edit account, saved with the form).
 - `action`: `{ label, onSelect }`, pinned action row under options.
 - `clearLabel`: custom label for multi-select clear button (default: `'Clear'`).
 - `doneLabel`: `(count: number) => ReactNode`, custom label for multi-select done button (default: `'Done'`).
