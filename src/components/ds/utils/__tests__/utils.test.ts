@@ -9,6 +9,7 @@ import {
   parseDateInput,
   todayISO,
   weekdayLetters,
+  weekdayNamesShort,
 } from '../index';
 
 describe('Dinero utils', () => {
@@ -103,6 +104,12 @@ describe('Dinero utils', () => {
   describe('weekdayLetters', () => {
     it('returns 7 weekday letters starting with Monday', () => {
       expect(weekdayLetters()).toEqual(['M', 'T', 'W', 'T', 'F', 'S', 'S']);
+    });
+  });
+
+  describe('weekdayNamesShort', () => {
+    it('returns 7 short weekday names starting with Monday', () => {
+      expect(weekdayNamesShort()).toEqual(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']);
     });
   });
 

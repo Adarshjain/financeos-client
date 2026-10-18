@@ -105,6 +105,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 46 | Root | Ready for review |
 | 47 | DataTable | Ready for review |
 | 48 | Stepper | Ready for review |
+| 49 | MonthCalendar (events mode) | Ready for review |
 
 Removed on 2026-10-15/2026-10-17 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; SearchField → TextField (merged in B2, search variant with clearable icon and embedded style); AuthPanel → a page in Phase 3.
 
@@ -129,7 +130,7 @@ New pages may use nothing from the old UI (RULES §1.8). These are needed and do
 1. **DataTable**: built 2026-10-17, Ready for review.
 2. **SearchPalette**: ⌘K / Search results grouped by section with keyboard movement. Built from Dialog, SearchField, ListRow and SectionHeader; needs its own README.
 3. **Stepper**: built 2026-10-18, redesigned the same day (owner: "can look better", "not mobile responsive"), Ready for review.
-4. **MonthCalendar events**: the desktop Upcoming calendar shows labelled event chips in day cells, not only bars.
+4. **MonthCalendar events**: built 2026-10-18, Ready for review.
 5. **ProgressBar markers**: the loan timeline on `D-loan-detail`.
 
 Later: Chat (`D-chat`), DashboardGrid and the KpiTile vs Widget review. Built in the app, not Dinero: ChoiceCard (widget picker). Candidate rows in the link and rule-match dialogs use ListRow with a Checkbox or radio in `leading`.
@@ -300,6 +301,11 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-18 · Phase 2 · Claude · MonthCalendar events mode rebuilt for the Upcoming calendar (`D-upcoming-calendar`, `P-upcoming-calendar`). The calendar now builds its own Monday-first weeks from `month` (neighbouring months' days on `bg-sunken`, number `line-heavy`, inert); takes `events: { id, date, label, tone }[]`; desktop shows labelled chips (tint + strong text per tone, new `neutral` tone for scheduled), phone shows 6px tint bars; up to `maxEventsPerDay` (3) then "+N more"; today "13 · today"; a day is selected with click, chip click, Enter or Space through `value` / `onValueChange` (ISO). Removed `days`, `onSelectDay`, `selectedDay` and the `CalendarDay` type (no users outside the story and tests; DateField uses picker mode only). New props `events`, `maxEventsPerDay`, `moreLabel`, `todayLabel`; new util `weekdayNamesShort()`. Picker mode untouched. Files: `src/components/ds/MonthCalendar/{MonthCalendar.tsx,MonthCalendar.test.tsx,MonthCalendar.stories.tsx}`, `design-system/components/MonthCalendar/README.md`, `src/components/ds/utils/index.ts`, `src/components/ds/utils/__tests__/utils.test.ts`.
+  - Story: the `Events` story is replaced by one working `Upcoming calendar` story: month summary, ‹ Today › (month moves through `useArgs`), the calendar in a Card, and the selected day's items in ListRows with Mark paid (removes the item). The picker stories keep their small Card frame, now a per-story decorator.
+  - Tests changed (forced by the removed props): the 4 events-mode tests ("renders weekdays and day cells", "highlights today cell", "renders event indicator bars by tone", "triggers onSelectDay") are replaced by 8 covering the grid and padding, outside days, today, tone chips, phone bars, the per-day limit and "+N more", selection by click/chip/keyboard, and controlled value and month. 1 test added for `weekdayNamesShort`. Picker and DateField tests untouched and green (53/53 across MonthCalendar, utils, DateField).
+  - Checks: tsc clean, eslint clean, check-ui clean, `storybook build` OK, Playwright on the story at 390px light and 1440px dark and light: 35 cells, bars on phone and labels on desktop, "+1 more" on 15 Oct, select a day, Mark paid updates the chips and the summary, Next month, Today; no page errors.
+  - Deviations: board padding 3px (phone cell sides), gap 3px and chip radius 5px have no tokens; used `space-4`, `space-4` and `radius-xs` (4px). Board's "due soon" text #B45309 uses the `warning` token (#A84D06). The legend under the grid is page content and is not in the story (no Dinero legend component).
 - 2026-10-18 · Phase 2 · Claude · Stepper redesigned after owner review ("can look better", "not mobile responsive"; the wrapping row was the problem). Desktop (`lg`): numbered circles joined by lines that stretch to fill the row and turn `brand` up to the current step; done = `check` on a filled `brand` circle, current = filled circle with a 4px `brand-tint` ring, upcoming = outlined `surface` circle. Phone: one line "Step 3 of 4 **Reconcile**" over a bar with one segment per step (the common mobile stepper pattern). It never wraps. Root is now a `<div>` (ordered list inside for desktop); new `stepLabel` prop for the overridable "Step N of M" words. Files: `src/components/ds/Stepper/{Stepper.tsx,Stepper.test.tsx,Stepper.stories.tsx}`, `design-system/components/Stepper/README.md`.
   - Tests changed (forced by the new markup): all 7 Stepper tests rewritten (state token classes, root element and wrap classes changed); 5 added for the connectors and the phone form. 12/12 pass.
   - Checks: tsc clean, eslint clean, check-ui clean, `storybook build` OK, Playwright on the story at 390px light (phone form: caption, name, bar fill through Next/Finish/Back) and 1440px dark (desktop states through Next/Finish/Back); no page errors.
