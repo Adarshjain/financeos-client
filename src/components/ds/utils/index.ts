@@ -138,3 +138,10 @@ export function formatMonth(iso: string): string {
 export function weekdayLetters(): string[] {
   return ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 }
+
+/**
+ * Returns short weekday names (Monday first): ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].
+ */
+export function weekdayNamesShort(): string[] {
+  return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+}

@@ -6,26 +6,22 @@ import { Button } from '../Button/Button';
 import { cn } from '../cn';
 import { Icon } from '../Icon/Icon';
 import { useControllableState } from '../useControllableState';
-import { monthNames, monthNamesShort, weekdayLetters } from '../utils';
+import { monthNames, monthNamesShort, weekdayLetters, weekdayNamesShort } from '../utils';
 
 export type CalendarEventTone =
   | 'positive'
   | 'warning'
   | 'info'
   | 'danger'
+  | 'neutral'
   | 'brand';
 
 export interface CalendarEvent {
+  id: string;
+  /** ISO yyyy-mm-dd */
+  date: string;
+  label: string;
   tone?: CalendarEventTone;
-  label?: string;
-}
-
-export interface CalendarDay {
-  day: number;
-  today?: boolean;
-  selected?: boolean;
-  events?: CalendarEvent[];
-  disabled?: boolean;
 }
 
 export type MonthCalendarRangeValue = { start?: string; end?: string };
@@ -33,7 +29,7 @@ export type MonthCalendarValue = string | MonthCalendarRangeValue;
 
 export interface MonthCalendarProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onSelect' | 'defaultValue'> {
-  /** Mode: 'events' for overview grid, 'picker' for date selection */
+  /** Mode: 'events' for the month overview with event chips, 'picker' for date selection */
   mode?: 'events' | 'picker';
   /** Range selection mode (picker mode only) */
   range?: boolean;
@@ -60,14 +56,16 @@ export interface MonthCalendarProps
   /** Max selectable date (ISO yyyy-mm-dd) */
   maxDate?: string;
 
-  /** List of weekday labels (default: weekdayLetters() -> ['M', 'T', 'W', 'T', 'F', 'S', 'S']) */
+  /** Weekday labels, Monday first (default: "Mon"…"Sun" in events mode, "M"…"S" in picker mode) */
   weekdays?: string[];
-  /** Days to render in the 7-column calendar grid (for events mode) */
-  days?: CalendarDay[];
-  /** Callback when a day cell is clicked (events mode) */
-  onSelectDay?: (day: number) => void;
-  /** Currently selected day (events mode) */
-  selectedDay?: number;
+  /** Events mode: items to show on their days; any outside the shown month are ignored */
+  events?: CalendarEvent[];
+  /** Events mode: chips shown per day before "+N more" (default 3) */
+  maxEventsPerDay?: number;
+  /** Events mode: words for the hidden-items count (default "+2 more") */
+  moreLabel?: (count: number) => React.ReactNode;
+  /** Events mode: word after today's date (default "today") */
+  todayLabel?: React.ReactNode;
   /** Whether to show a top border in events mode (default: true) */
   borderTop?: boolean;
 
@@ -80,18 +78,33 @@ export interface MonthCalendarProps
 }
 
 const eventToneStyles: Record<CalendarEventTone, string> = {
-  positive: 'bg-positive',
-  warning: 'bg-warning',
-  info: 'bg-info',
-  danger: 'bg-danger',
-  brand: 'bg-brand',
+  positive: 'bg-positive-tint text-positive-strong',
+  warning: 'bg-warning-tint text-warning',
+  info: 'bg-info-tint text-info',
+  danger: 'bg-danger-tint text-danger',
+  neutral: 'bg-line-soft text-neutral-ink',
+  brand: 'bg-brand-tint text-brand',
 };
 
-function resolveEventTone(ev: CalendarEvent): string {
-  if (ev.tone && eventToneStyles[ev.tone]) {
-    return eventToneStyles[ev.tone];
-  }
-  return 'bg-brand';
+interface GridCell {
+  iso: string;
+  day: number;
+  outside: boolean;
+}
+
+/** Monday-first weeks covering the month, padded with the neighbouring months' days. */
+function monthGrid(year: number, monthIndex: number): GridCell[] {
+  const lead = (new Date(year, monthIndex, 1).getDay() + 6) % 7;
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const total = Math.ceil((lead + daysInMonth) / 7) * 7;
+  return Array.from({ length: total }, (_, i) => {
+    const date = new Date(year, monthIndex, i - lead + 1);
+    return {
+      iso: toIsoDate(date.getFullYear(), date.getMonth(), date.getDate()),
+      day: date.getDate(),
+      outside: date.getMonth() !== monthIndex,
+    };
+  });
 }
 
 function parseIsoToParts(iso?: string): { year: number; month: number } {
@@ -149,10 +162,11 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
       onMonthChange,
       minDate,
       maxDate,
-      weekdays = weekdayLetters(),
-      days = [],
-      onSelectDay,
-      selectedDay,
+      weekdays,
+      events,
+      maxEventsPerDay = 3,
+      moreLabel = (count) => `+${count} more`,
+      todayLabel = 'today',
       borderTop = true,
       showFooter = false,
       onToday,
@@ -194,22 +208,29 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
       return y - (y % 12);
     });
 
+    const eventsByDate = useMemo(() => {
+      const byDate = new Map<string, CalendarEvent[]>();
+      for (const ev of events ?? []) byDate.set(ev.date, [...(byDate.get(ev.date) ?? []), ev]);
+      return byDate;
+    }, [events]);
+
     const allMonthNames = useMemo(() => monthNames(), []);
     const shortMonthNames = useMemo(() => monthNamesShort(), []);
 
     if (isEventsMode) {
+      const selectedIso = typeof currentValue === 'string' ? currentValue : undefined;
+      const selectDay = (iso: string) => setCurrentValue(iso);
       return (
         <div
           ref={ref}
           className={cn(
-            'grid grid-cols-7 border-l border-line-soft select-none',
+            'grid grid-cols-7 border-l border-line-soft select-none font-text',
             borderTop ? 'border-t border-line-soft' : 'border-t-0',
             className,
           )}
           {...props}
         >
-          {/* Weekday headers */}
-          {weekdays.map((wd, idx) => (
+          {(weekdays ?? weekdayNamesShort()).map((wd, idx) => (
             <div
               key={idx}
               className="text-overline font-extrabold uppercase text-ink-4 py-space-8 px-space-6 text-center"
@@ -218,49 +239,67 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
             </div>
           ))}
 
-          {/* Days grid */}
-          {days.map((d, idx) => {
-            const isSelected =
-              selectedDay !== undefined
-                ? selectedDay === d.day
-                : Boolean(d.selected);
-            const isToday = Boolean(d.today);
-
+          {monthGrid(currentYear, currentMonth).map(({ iso, day, outside }) => {
+            if (outside) {
+              return (
+                <div
+                  key={iso}
+                  data-date={iso}
+                  data-outside=""
+                  className="min-h-space-56 border-r border-b border-line-soft bg-sunken p-space-4 text-caption font-bold text-line-heavy lg:min-h-space-96 lg:p-space-6"
+                >
+                  {day}
+                </div>
+              );
+            }
+            const isToday = iso === today;
+            const isSelected = iso === selectedIso;
+            const dayEvents = eventsByDate.get(iso) ?? [];
+            const hidden = dayEvents.length - maxEventsPerDay;
             return (
               <div
-                key={idx}
-                role={onSelectDay ? 'button' : undefined}
-                tabIndex={onSelectDay ? 0 : undefined}
-                onClick={onSelectDay ? () => onSelectDay(d.day) : undefined}
-                onKeyDown={
-                  onSelectDay
-                    ? (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          onSelectDay(d.day);
-                        }
-                      }
-                    : undefined
-                }
+                key={iso}
+                data-date={iso}
+                data-today={isToday ? '' : undefined}
+                data-selected={isSelected ? '' : undefined}
+                role="button"
+                tabIndex={0}
+                aria-pressed={isSelected}
+                onClick={() => selectDay(iso)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectDay(iso);
+                  }
+                }}
                 className={cn(
-                  'min-h-space-56 border-r border-b border-line-soft p-space-4 text-caption font-bold text-ink-3 flex flex-col gap-space-4 transition-colors',
-                  isToday && 'bg-brand-tint text-brand-strong',
-                  isSelected &&
-                    'ring-1 ring-inset ring-brand bg-brand-tint text-brand-strong',
-                  onSelectDay && 'hover:bg-hover cursor-pointer',
+                  'flex min-h-space-56 min-w-0 cursor-pointer flex-col gap-space-4 border-r border-b border-line-soft p-space-4 text-caption transition-colors lg:min-h-space-96 lg:p-space-6',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand',
+                  isToday ? 'bg-brand-tint' : 'hover:bg-hover active:bg-pressed',
+                  isSelected && 'ring-1 ring-inset ring-brand',
                 )}
               >
-                <span>{d.day}</span>
-                {d.events?.map((ev, evIdx) => (
-                  <div
-                    key={evIdx}
+                <span className={cn('font-bold', isToday ? 'text-brand-strong' : 'text-ink-3')}>
+                  {day}
+                  {isToday && <> · {todayLabel}</>}
+                </span>
+                {dayEvents.slice(0, maxEventsPerDay).map((ev) => (
+                  <span
+                    key={ev.id}
                     title={ev.label}
                     className={cn(
-                      'h-space-6 rounded-ds-xs w-full',
-                      resolveEventTone(ev),
+                      'block h-space-6 rounded-ds-xs font-bold lg:h-auto lg:truncate lg:px-space-6 lg:py-space-2',
+                      eventToneStyles[ev.tone ?? 'brand'],
                     )}
-                  />
+                  >
+                    <span className="hidden lg:inline">{ev.label}</span>
+                  </span>
                 ))}
+                {hidden > 0 && (
+                  <span className="hidden truncate px-space-6 font-bold text-ink-3 lg:block">
+                    {moreLabel(hidden)}
+                  </span>
+                )}
               </div>
             );
           })}
@@ -583,7 +622,7 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
           <>
             {/* Weekday headers */}
             <div className="grid grid-cols-7 text-center font-bold text-caption text-ink-4 py-space-4">
-              {weekdays.map((wd, idx) => (
+              {(weekdays ?? weekdayLetters()).map((wd, idx) => (
                 <div key={idx}>{wd}</div>
               ))}
             </div>

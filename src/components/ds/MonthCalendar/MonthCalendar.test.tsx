@@ -5,54 +5,104 @@ import { describe, expect, it, vi } from 'vitest';
 import { MonthCalendar } from './MonthCalendar';
 
 describe('MonthCalendar', () => {
-  const sampleDays = [
-    { day: 1 },
-    { day: 2, today: true },
-    {
-      day: 3,
-      events: [
-        { tone: 'warning' as const, label: 'Warning event' },
-        { tone: 'info' as const, label: 'Info event' },
-        { tone: 'positive' as const, label: 'Positive event' },
-      ],
-    },
+  const events = [
+    { id: 'a', date: '2026-10-03', label: 'SBI statement', tone: 'danger' as const },
+    { id: 'b', date: '2026-10-15', label: 'Amex bill ₹33.9K', tone: 'warning' as const },
+    { id: 'c', date: '2026-10-15', label: 'SIP ₹10K', tone: 'neutral' as const },
+    { id: 'd', date: '2026-10-15', label: 'Airtel ₹1.2K' },
+    { id: 'e', date: '2026-10-15', label: 'Netflix ₹649', tone: 'neutral' as const },
+    { id: 'f', date: '2026-10-23', label: 'Priya ₹12K', tone: 'info' as const },
+    { id: 'g', date: '2026-10-28', label: 'Rahul +₹15K', tone: 'positive' as const },
+    { id: 'h', date: '2026-11-01', label: 'Next month', tone: 'danger' as const },
   ];
+  const cell = (iso: string) => document.querySelector<HTMLElement>(`[data-date="${iso}"]`)!;
+  const chips = (iso: string) => Array.from(cell(iso).querySelectorAll<HTMLElement>('[title]'));
+  const renderEvents = (props: Partial<React.ComponentProps<typeof MonthCalendar>> = {}) =>
+    render(<MonthCalendar mode="events" today="2026-10-13" month="2026-10-01" events={events} {...props} />);
 
-  it('renders weekdays and day cells in events mode', () => {
-    render(<MonthCalendar mode="events" today="2026-10-13" days={sampleDays} />);
-    expect(screen.getByText('M')).toBeInTheDocument();
-    expect(screen.getByText('1')).toBeInTheDocument();
-    expect(screen.getByText('2')).toBeInTheDocument();
-    expect(screen.getByText('3')).toBeInTheDocument();
-  });
+  describe('events mode', () => {
+    it('shows Mon…Sun headers and Monday-first weeks padded with the neighbouring months', () => {
+      const { container } = renderEvents();
+      expect(['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].every((d) => screen.getByText(d))).toBe(true);
+      const dates = Array.from(container.querySelectorAll<HTMLElement>('[data-date]')).map((c) => c.dataset.date);
+      expect(dates).toHaveLength(35);
+      expect(dates[0]).toBe('2026-09-28');
+      expect(dates[3]).toBe('2026-10-01');
+      expect(dates[34]).toBe('2026-11-01');
+    });
 
-  it('highlights today cell in events mode', () => {
-    render(<MonthCalendar mode="events" today="2026-10-13" days={sampleDays} />);
-    const todayCell = screen.getByText('2').closest('div');
-    expect(todayCell).toHaveClass('bg-brand-tint');
-    expect(todayCell).toHaveClass('text-brand-strong');
-  });
+    it('draws outside-month days sunken and faint, with no events and no selection', () => {
+      const onValueChange = vi.fn();
+      renderEvents({ onValueChange });
+      const sep = cell('2026-09-28');
+      expect(sep).toHaveClass('bg-sunken', 'text-line-heavy');
+      expect(sep).not.toHaveAttribute('role');
+      expect(chips('2026-11-01')).toHaveLength(0);
+      fireEvent.click(sep);
+      expect(onValueChange).not.toHaveBeenCalled();
+    });
 
-  it('renders event indicator bars by tone', () => {
-    render(<MonthCalendar mode="events" today="2026-10-13" days={sampleDays} />);
-    const day3Cell = screen.getByText('3').closest('div');
-    expect(day3Cell?.querySelector('.bg-warning')).toBeInTheDocument();
-    expect(day3Cell?.querySelector('.bg-info')).toBeInTheDocument();
-    expect(day3Cell?.querySelector('.bg-positive')).toBeInTheDocument();
-  });
+    it('marks today with the tint and the overridable today word', () => {
+      renderEvents({ todayLabel: 'aaj' });
+      const today = cell('2026-10-13');
+      expect(today).toHaveClass('bg-brand-tint');
+      expect(today).toHaveTextContent('13 · aaj');
+      expect(cell('2026-10-14')).toHaveTextContent(/^14$/);
+    });
 
-  it('triggers onSelectDay on click and keyboard press in events mode', () => {
-    const handleSelect = vi.fn();
-    render(<MonthCalendar mode="events" today="2026-10-13" days={sampleDays} onSelectDay={handleSelect} />);
+    it('puts each event on its day as a chip coloured by tone (brand when none)', () => {
+      renderEvents();
+      const [sbi] = chips('2026-10-03');
+      expect(sbi).toHaveTextContent('SBI statement');
+      expect(sbi).toHaveClass('bg-danger-tint', 'text-danger');
+      expect(chips('2026-10-23')[0]).toHaveClass('bg-info-tint', 'text-info');
+      expect(chips('2026-10-28')[0]).toHaveClass('bg-positive-tint', 'text-positive-strong');
+      expect(chips('2026-10-15')[1]).toHaveClass('bg-line-soft', 'text-neutral-ink');
+      expect(chips('2026-10-15')[2]).toHaveClass('bg-brand-tint', 'text-brand');
+    });
 
-    const day1Cell = screen.getByText('1').closest('div');
-    expect(day1Cell).toHaveAttribute('role', 'button');
+    it('chips are bars below lg: label hidden until lg', () => {
+      renderEvents();
+      const [sbi] = chips('2026-10-03');
+      expect(sbi).toHaveClass('h-space-6', 'lg:h-auto', 'lg:truncate');
+      expect(sbi.firstElementChild).toHaveClass('hidden', 'lg:inline');
+    });
 
-    fireEvent.click(day1Cell!);
-    expect(handleSelect).toHaveBeenCalledWith(1);
+    it('shows at most maxEventsPerDay chips, then an overridable "+N more"', () => {
+      const { rerender } = renderEvents();
+      expect(chips('2026-10-15').map((c) => c.title)).toEqual(['Amex bill ₹33.9K', 'SIP ₹10K', 'Airtel ₹1.2K']);
+      expect(cell('2026-10-15')).toHaveTextContent('+1 more');
+      expect(cell('2026-10-03')).not.toHaveTextContent('more');
+      rerender(
+        <MonthCalendar mode="events" today="2026-10-13" month="2026-10-01" events={events} maxEventsPerDay={2} moreLabel={(n) => `${n} others`} />,
+      );
+      expect(chips('2026-10-15')).toHaveLength(2);
+      expect(cell('2026-10-15')).toHaveTextContent('2 others');
+    });
 
-    fireEvent.keyDown(day1Cell!, { key: 'Enter' });
-    expect(handleSelect).toHaveBeenCalledWith(1);
+    it('selects a day on click, chip click and keyboard, emitting its ISO date', () => {
+      const onValueChange = vi.fn();
+      renderEvents({ onValueChange });
+      fireEvent.click(cell('2026-10-20'));
+      expect(onValueChange).toHaveBeenLastCalledWith('2026-10-20');
+      expect(cell('2026-10-20')).toHaveClass('ring-1', 'ring-brand');
+      expect(cell('2026-10-20')).toHaveAttribute('aria-pressed', 'true');
+      fireEvent.click(chips('2026-10-23')[0]);
+      expect(onValueChange).toHaveBeenLastCalledWith('2026-10-23');
+      expect(cell('2026-10-20')).not.toHaveClass('ring-1');
+      fireEvent.keyDown(cell('2026-10-05'), { key: 'Enter' });
+      expect(onValueChange).toHaveBeenLastCalledWith('2026-10-05');
+      fireEvent.keyDown(cell('2026-10-06'), { key: ' ' });
+      expect(onValueChange).toHaveBeenLastCalledWith('2026-10-06');
+    });
+
+    it('controlled value marks the selected day; the shown month follows month', () => {
+      renderEvents({ value: '2026-10-15', month: '2026-11-01' });
+      expect(cell('2026-11-01')).toHaveAttribute('role', 'button');
+      expect(chips('2026-11-01')[0]).toHaveTextContent('Next month');
+      expect(cell('2026-10-15')).toBeNull();
+      expect(cell('2026-10-26')).toHaveClass('bg-sunken');
+    });
   });
 
   it('renders picker mode with formatMonth header and Button day cells, firing onValueChange', () => {
