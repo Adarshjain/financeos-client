@@ -132,7 +132,7 @@ New pages may use nothing from the old UI (RULES §1.8). These are needed and do
 2. **SearchPalette**: built 2026-10-18, Ready for review.
 3. **Stepper**: built 2026-10-18, redesigned the same day (owner: "can look better", "not mobile responsive"), Ready for review.
 4. **MonthCalendar events**: built 2026-10-18, Ready for review.
-5. **ProgressBar markers**: the loan timeline on `D-loan-detail`.
+5. ~~**ProgressBar markers**~~: dropped by the owner 2026-10-18; ProgressBar stays as it is. The loan page lays out its own start / today / end captions under the bar.
 
 Later: Chat (`D-chat`), DashboardGrid and the KpiTile vs Widget review. Built in the app, not Dinero: ChoiceCard (widget picker). Candidate rows in the link and rule-match dialogs use ListRow with a Checkbox or radio in `leading`.
 
@@ -302,6 +302,7 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-18 · Phase 2 · Claude · ProgressBar markers dropped (owner: "let it be as it is"). No code change.
 - 2026-10-18 · Phase 2 · Claude · SearchPalette fix: the owner's dev Storybook froze on any search with results. Cause: Storybook's dev-mode JSX source snippet re-printed the whole `groups` tree (React nodes) on every keystroke; the production build was never affected. Fix: the story uses `docs.source.type: 'code'`. Also replaced cmdk with the palette's own highlight and ↑/↓/Enter handling (simpler, same behaviour). Files: `SearchPalette.tsx`, `SearchPalette.stories.tsx`, its README. Tests 13/13 unchanged; Playwright against the dev server (390 light, 1440 dark and light): no freeze, all flows pass.
 - 2026-10-18 · Phase 2 · Claude · SearchPalette built (`D-search`, `P-search`): `src/components/ds/SearchPalette/{SearchPalette.tsx,SearchPalette.test.tsx,SearchPalette.stories.tsx}`, `design-system/components/SearchPalette/README.md`, export in `src/components/ds/index.ts`. A headerless Dialog (`md`, `space-40` from the top on desktop, the sheet on phone) with the search TextField (esc Kbd on desktop, Cancel on phone), results grouped by the page under SectionHeaders, ListRow rows with a fixed leading column, cmdk for the highlight and ↑/↓/Enter (no filtering in the palette), click or Enter runs the row's `onSelect` and closes, `loading` skeletons, `No results for "…"`, desktop footer hints, optional ⌘/Ctrl + `shortcutKey`. Props `open`/`onOpenChange`, `value`/`onValueChange` (search text), `groups`, `loading`, `shortcutKey` and overridable words.
   - Story: one working `Global search` story: Search button or ⌘K opens it, typing searches realistic accounts, actions, transactions and pages (Ask row follows the text), picking a row closes and shows what opened. The story lets the palette own the field and only mirrors the text, because Storybook's async args drop fast keystrokes in a controlled field.
