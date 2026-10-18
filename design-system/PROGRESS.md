@@ -9,7 +9,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
 | 2 | New component library in Storybook, one component at a time, owner-reviewed | Done (all components approved by the owner 2026-10-18) |
-| 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: /ds review area, login, signup, offline Ready for review) |
+| 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: login, signup, offline approved 2026-10-18, swap pending; Accounts next) |
 | 3b | Audit implementation: apply the 673 owner-approved conventions decisions (`design-system/specs/audit/`) to Dinero, organisms, stories and the /ds pages | Done (all 673 decisions executed across Rounds A–F; all audit specs completed, all unit and E2E tests passing, builds and check-ui clean) |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
@@ -171,9 +171,9 @@ Later: Chat (`D-chat`), DashboardGrid and the KpiTile vs Widget review. Built in
 ### Migration map
 | Page or component | New files | Old files it no longer uses | Swapped on |
 | --- | --- | --- | --- |
-| `/ds/login` (Sign in) | `src/app/(ds)/ds/(public)/login/page.tsx`, `LoginForm.tsx` | _(live `/login` and `LoginForm.tsx` untouched until swap)_ | Built under /ds, Ready for review |
-| `/ds/signup` (Sign up) | `src/app/(ds)/ds/(public)/signup/page.tsx`, `SignupForm.tsx` | _(live `/signup` and `SignupForm.tsx` untouched until swap)_ | Built under /ds, Ready for review |
-| `/ds/offline` (Offline) | `src/app/(ds)/ds/(public)/offline/page.tsx`, `OfflineContent.tsx` | _(live `/offline/page.tsx` untouched until swap)_ | Built under /ds, Ready for review |
+| `/ds/login` (Sign in) | `src/app/(ds)/ds/(public)/login/page.tsx`, `LoginForm.tsx` | _(live `/login` and `LoginForm.tsx` untouched until swap)_ | Approved 2026-10-18; swap pending |
+| `/ds/signup` (Sign up) | `src/app/(ds)/ds/(public)/signup/page.tsx`, `SignupForm.tsx` | _(live `/signup` and `SignupForm.tsx` untouched until swap)_ | Approved 2026-10-18; swap pending |
+| `/ds/offline` (Offline) | `src/app/(ds)/ds/(public)/offline/page.tsx`, `OfflineContent.tsx` | _(live `/offline/page.tsx` untouched until swap)_ | Approved 2026-10-18; swap pending |
 | `/ds` review index & shell | `src/app/(ds)/layout.tsx`, `src/app/(ds)/ds/(app)/layout.tsx`, `src/app/(ds)/ds/(app)/page.tsx`, `src/features/shell/navigation.ts` | _(live layouts untouched)_ | Built under /ds, Ready for review |
 
 ## Phase 4 · Cleanup
@@ -301,6 +301,7 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-18 · Phase 3 · Claude · Owner approved `/ds/login`, `/ds/signup`, `/ds/offline` (swap not done yet). Accounts chosen as the first signed-in page; requirements and gap review in progress.
 - 2026-10-18 · Phase 2 · Claude · Owner approved every component; status rows set to Approved, Phase 2 Done. Removed the stale CategoryChip and ResponsiveOverlay rows (both components were deleted earlier).
 - 2026-10-18 · Phase 2 · Claude · ProgressBar markers dropped (owner: "let it be as it is"). No code change.
 - 2026-10-18 · Phase 2 · Claude · SearchPalette fix: the owner's dev Storybook froze on any search with results. Cause: Storybook's dev-mode JSX source snippet re-printed the whole `groups` tree (React nodes) on every keystroke; the production build was never affected. Fix: the story uses `docs.source.type: 'code'`. Also replaced cmdk with the palette's own highlight and ↑/↓/Enter handling (simpler, same behaviour). Files: `SearchPalette.tsx`, `SearchPalette.stories.tsx`, its README. Tests 13/13 unchanged; Playwright against the dev server (390 light, 1440 dark and light): no freeze, all flows pass.
@@ -854,7 +855,7 @@ Newest first: date, phase, tool or agent, what changed (files), checks run, open
   - Confirmed untouched live paths: `git diff --stat c8b557b -- src/app/login src/app/signup src/app/offline src/components/ui` printed clean (0 diffs).
   - Confirmed proxy diff: only `/ds/login`, `/ds/signup`, `/ds/offline` added to `publicPaths` in `src/proxy.ts`.
   - Updated Migration map: marked `/ds/login`, `/ds/signup`, `/ds/offline`, and `/ds` review area as "Built under /ds, Ready for review".
-  - Updated Phase 3 status to "In progress (Phase 3a complete: /ds review area, login, signup, offline Ready for review)".
+  - Updated Phase 3 status to "In progress (Phase 3a complete: login, signup, offline approved 2026-10-18, swap pending; Accounts next)".
   - Full suite passed:
     - `npm run typecheck`: clean
     - `npm run lint`: `✖ 342 problems (0 errors, 342 warnings)`
