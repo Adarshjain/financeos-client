@@ -1,3 +1,4 @@
+export * from './ErrorState/ErrorState';
 export * from './Illustration/Illustration';
 export * from './Logo/Logo';
 export * from './RuleCard/RuleCard';

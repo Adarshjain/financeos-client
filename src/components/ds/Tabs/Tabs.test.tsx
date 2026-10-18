@@ -187,5 +187,116 @@ describe('Tabs', () => {
     expect(tablist).toHaveClass('overflow-x-auto');
     expect(tablist).toHaveClass('overflow-y-hidden');
   });
-});
+  describe('route tabs (link items)', () => {
+    /** Stands in for the app's next/link Link. */
+    const Link = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a {...props} />;
+    const routeItems = (counts: { statements?: number; cards?: number } = {}) => [
+      { value: 'overview', label: 'Overview', asChild: true, children: <Link href="/accounts/7" /> },
+      { value: 'statements', label: 'Statements', count: counts.statements, asChild: true, children: <Link href="/accounts/7/statements" /> },
+      { value: 'cards', label: 'Cards', count: counts.cards, asChild: true, children: <Link href="/accounts/7/cards" /> },
+    ];
 
+    it('renders each tab as its link, with the label and count inside', () => {
+      render(<Tabs value="statements" items={routeItems({ statements: 3 })} />);
+      const tab = screen.getByRole('tab', { name: /Statements\s*·\s*3/ });
+      expect(tab.tagName).toBe('A');
+      expect(tab).toHaveAttribute('href', '/accounts/7/statements');
+      expect(tab).toHaveAttribute('aria-selected', 'true');
+      expect(tab).toHaveClass('no-underline', 'data-active:border-brand');
+      expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'false');
+    });
+
+    it('shows a tab without its count while the count loads, and adds it when it arrives', () => {
+      const { rerender } = render(<Tabs value="overview" items={routeItems()} />);
+      expect(screen.getByRole('tab', { name: 'Statements' })).toBeInTheDocument();
+      expect(screen.queryByText(/·/)).toBeNull();
+
+      rerender(<Tabs value="overview" items={routeItems({ statements: 3, cards: 2 })} />);
+      expect(screen.getByRole('tab', { name: /Statements\s*·\s*3/ })).toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /Cards\s*·\s*2/ })).toBeInTheDocument();
+    });
+
+    it('reports the clicked tab through onValueChange', () => {
+      const onValueChange = vi.fn();
+      render(<Tabs value="overview" onValueChange={onValueChange} items={routeItems()} />);
+      fireEvent.mouseDown(screen.getByRole('tab', { name: 'Cards' }), { button: 0 });
+      expect(onValueChange).toHaveBeenCalledWith('cards');
+    });
+
+    it('moves focus with arrow keys without selecting a tab whose page is not open', async () => {
+      const onValueChange = vi.fn();
+      render(<Tabs value="overview" onValueChange={onValueChange} items={routeItems()} />);
+      const overview = screen.getByRole('tab', { name: 'Overview' });
+      overview.focus();
+      fireEvent.keyDown(overview, { key: 'ArrowRight' });
+      await vi.waitFor(() => expect(screen.getByRole('tab', { name: 'Statements' })).toHaveFocus());
+      expect(onValueChange).not.toHaveBeenCalled();
+      expect(overview).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('lets the page choose the activation mode', async () => {
+      const onValueChange = vi.fn();
+      render(
+        <Tabs value="overview" activationMode="automatic" onValueChange={onValueChange} items={routeItems()} />,
+      );
+      const overview = screen.getByRole('tab', { name: 'Overview' });
+      overview.focus();
+      fireEvent.keyDown(overview, { key: 'ArrowRight' });
+      await vi.waitFor(() => expect(onValueChange).toHaveBeenCalledWith('statements'));
+    });
+
+    it('does not follow a disabled link tab', () => {
+      const onValueChange = vi.fn();
+      render(
+        <Tabs
+          value="overview"
+          onValueChange={onValueChange}
+          items={[
+            { value: 'overview', label: 'Overview', asChild: true, children: <Link href="/a" /> },
+            { value: 'rewards', label: 'Rewards', disabled: true, asChild: true, children: <Link href="/b" /> },
+          ]}
+        />,
+      );
+      const rewards = screen.getByRole('tab', { name: 'Rewards' });
+      fireEvent.mouseDown(rewards, { button: 0 });
+      const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+      rewards.dispatchEvent(click);
+      expect(click.defaultPrevented).toBe(true);
+      expect(onValueChange).not.toHaveBeenCalled();
+    });
+
+    it('keeps button tabs selecting on arrow keys when no item is a link', async () => {
+      const onValueChange = vi.fn();
+      render(
+        <Tabs
+          value="a"
+          onValueChange={onValueChange}
+          items={[
+            { value: 'a', label: 'A' },
+            { value: 'b', label: 'B' },
+          ]}
+        />,
+      );
+      const a = screen.getByRole('tab', { name: 'A' });
+      expect(a.tagName).toBe('BUTTON');
+      a.focus();
+      fireEvent.keyDown(a, { key: 'ArrowRight' });
+      await vi.waitFor(() => expect(onValueChange).toHaveBeenCalledWith('b'));
+    });
+
+    it('accepts a link child on TabsTrigger directly', () => {
+      render(
+        <Tabs value="statements">
+          <TabsList>
+            <TabsTrigger value="statements" count={3} asChild>
+              <Link href="/s">Statements</Link>
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>,
+      );
+      const tab = screen.getByRole('tab', { name: /Statements\s*·\s*3/ });
+      expect(tab.tagName).toBe('A');
+      expect(tab).toHaveAttribute('href', '/s');
+    });
+  });
+});

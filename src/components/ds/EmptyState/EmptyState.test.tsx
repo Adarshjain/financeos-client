@@ -66,6 +66,68 @@ describe('EmptyState', () => {
     expect(handleAction).toHaveBeenCalledTimes(1);
   });
 
+  it('renders a second action after the first as a secondary button', () => {
+    const first = vi.fn();
+    const second = vi.fn();
+    render(
+      <EmptyState
+        title="Could not load transactions"
+        action={{ label: 'Try again', onSelect: first }}
+        secondaryAction={{ label: 'Copy reference f80e0834', onSelect: second }}
+      />,
+    );
+    const buttons = screen.getAllByRole('button');
+    expect(buttons.map((b) => b.textContent)).toEqual(['Try again', 'Copy reference f80e0834']);
+    expect(buttons[0]).toHaveClass('bg-brand');
+    expect(buttons[1]).toHaveClass('bg-surface', 'border-line-strong');
+
+    fireEvent.click(buttons[1]);
+    expect(second).toHaveBeenCalledTimes(1);
+    expect(first).not.toHaveBeenCalled();
+  });
+
+  it('keeps both actions secondary when the first asks for it', () => {
+    render(
+      <EmptyState
+        title="No transactions match"
+        action={{ label: 'Clear amount', onSelect: vi.fn(), variant: 'secondary' }}
+        secondaryAction={{ label: 'Clear all filters', onSelect: vi.fn() }}
+      />,
+    );
+    for (const name of ['Clear amount', 'Clear all filters']) {
+      expect(screen.getByRole('button', { name })).toHaveClass('bg-surface');
+    }
+  });
+
+  it('renders a second action alone when there is no first', () => {
+    const second = vi.fn();
+    render(<EmptyState title="Empty" secondaryAction={{ label: 'Learn more', onSelect: second }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Learn more' }));
+    expect(second).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+  });
+
+  it('renders the second action as a link when compact', () => {
+    const second = vi.fn();
+    render(
+      <EmptyState
+        compact
+        description="Nothing due on this day."
+        action={{ label: 'Add', onSelect: vi.fn() }}
+        secondaryAction={{ label: 'Open calendar', onSelect: second }}
+      />,
+    );
+    const link = screen.getByRole('button', { name: 'Open calendar' });
+    expect(link).toHaveClass('underline');
+    fireEvent.click(link);
+    expect(second).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders no action row when there are no actions', () => {
+    const { container } = render(<EmptyState title="All clear" description="Nothing needs you right now." />);
+    expect(container.querySelector('button')).toBeNull();
+  });
+
   it('applies padding based on size prop', () => {
     const { container: smContainer } = render(
       <EmptyState size="sm" title="Small Empty" />,

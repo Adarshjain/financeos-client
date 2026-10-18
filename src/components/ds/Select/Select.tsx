@@ -119,6 +119,19 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
       onSelectedChange?.(val);
     };
 
+    // Create is offered only for text that isn't already an option; afterwards the search clears for the next entry.
+    const typed = searchQuery.trim();
+    const canCreate =
+      !!onCreate &&
+      !!typed &&
+      !(groups && groups.length > 0 ? groups.flatMap((g) => g.options) : options).some(
+        (opt) => opt.label.toLowerCase() === typed.toLowerCase(),
+      );
+    const handleCreate = () => {
+      onCreate?.(typed);
+      handleSearchChange('');
+    };
+
     const selectedValues = useMemo(() => {
       if (effectiveValue === undefined || effectiveValue === null) return new Set<string>();
       if (Array.isArray(effectiveValue)) return new Set(effectiveValue);
@@ -242,8 +255,8 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
         e.preventDefault();
         if (effectiveHighlighted) {
           handleOptionSelect(effectiveHighlighted);
-        } else if (searchQuery.trim() && onCreate) {
-          onCreate(searchQuery.trim());
+        } else if (canCreate) {
+          handleCreate();
         }
       } else if (e.key === 'Escape') {
         e.preventDefault();
@@ -392,20 +405,20 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           ))}
         </div>
 
-        {searchQuery.trim() && onCreate ? (
+        {canCreate ? (
           <>
             <div className="h-px bg-line-soft my-space-4 mx-space-6" />
             <button
               type="button"
-              onClick={() => onCreate(searchQuery.trim())}
+              onClick={handleCreate}
               className="flex items-center gap-space-8 py-space-8 px-space-10 rounded-ds-md font-text font-bold text-body text-brand hover:bg-hover cursor-pointer transition-colors w-full text-left"
             >
               {createLabel ? (
-                createLabel(searchQuery.trim())
+                createLabel(typed)
               ) : (
                 <>
                   <Icon name="add" size="sm" />
-                  <span>{searchQuery.trim()}</span>
+                  <span>{typed}</span>
                 </>
               )}
             </button>
