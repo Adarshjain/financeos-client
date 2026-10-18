@@ -67,12 +67,12 @@ export function SignupForm() {
     clientError ?? (state && !state.success ? state.error.message : null);
 
   return (
-    <div className="min-h-dvh flex flex-col lg:grid lg:grid-cols-2">
+    <div className="min-h-dvh flex flex-col desk:grid desk:grid-cols-2">
       {/* Signup artwork illustration: phone band on top, full column on desktop */}
-      <Illustration variant="signup" className="w-full h-auto lg:h-full" />
+      <Illustration variant="signup" className="w-full h-auto desk:h-full" />
 
       {/* Form column */}
-      <div className="flex-1 flex items-center justify-center p-space-20 lg:p-space-40">
+      <div className="flex-1 flex items-center justify-center p-space-20 desk:p-space-40">
         <div className="w-full max-w-sm flex flex-col gap-space-16">
           {/* 1. Title and 2. Subtitle */}
           <div className="flex flex-col gap-space-4">

@@ -145,10 +145,10 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
           size="md"
           srTitle={srTitle}
           showClose={false}
-          className="lg:mb-auto lg:mt-space-40"
+          className="desk:mb-auto desk:mt-space-40"
         >
           <div onKeyDown={onKeyDown} className="flex min-h-0 flex-1 flex-col">
-            <div className="flex shrink-0 items-center gap-space-8 border-b border-line-soft px-space-16 pb-space-12 lg:pt-space-12">
+            <div className="flex shrink-0 items-center gap-space-8 border-b border-line-soft px-space-16 pb-space-12 desk:pt-space-12">
               <TextField
                 type="search"
                 variant="embedded"
@@ -158,9 +158,9 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
                 value={query}
                 onValueChange={setQuery}
                 prefix={<Icon name="search" />}
-                suffix={<Kbd className="hidden lg:inline-flex">esc</Kbd>}
+                suffix={<Kbd className="hidden desk:inline-flex">esc</Kbd>}
               />
-              <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setOpen(false)}>
+              <Button variant="ghost" size="sm" className="desk:hidden" onClick={() => setOpen(false)}>
                 {cancelLabel}
               </Button>
             </div>
@@ -209,7 +209,7 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
               </div>
             </DialogBody>
 
-            <DialogFooter className="hidden lg:block">
+            <DialogFooter className="hidden desk:block">
               <div className="flex items-center gap-space-16 text-caption text-ink-3">
                 <span className="flex items-center gap-space-6">
                   <Kbd>

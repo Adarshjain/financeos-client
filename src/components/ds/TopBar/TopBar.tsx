@@ -34,7 +34,7 @@ export interface TopBarProps
  * TopBar: the bar at the top of every screen.
  * Phone form: Leading slot (or back arrow), crumb and title, bordered control-md icon actions.
  * Desktop form: crumb and title on the left, labelled actions with their shortcut on the right.
- * The viewport picks the form via CSS (lg breakpoint).
+ * The viewport picks the form via CSS (desk breakpoint).
  */
 export const TopBar = forwardRef<HTMLElement, TopBarProps>(
   (
@@ -89,26 +89,26 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
       <header
         ref={ref}
         className={cn(
-          'w-full h-space-56 min-h-space-56 bg-surface border-b border-line px-space-12 lg:px-space-24 flex items-center gap-space-8 lg:gap-space-10 text-body select-none',
+          'w-full h-space-56 min-h-space-56 bg-surface border-b border-line px-space-12 desk:px-space-24 flex items-center gap-space-8 desk:gap-space-10 text-body select-none',
           className,
         )}
         {...props}
       >
         {/* Phone leading: back arrow or custom leading slot */}
         {leadingContent ? (
-          <div className="lg:hidden shrink-0 flex items-center">
+          <div className="desk:hidden shrink-0 flex items-center">
             {leadingContent}
           </div>
         ) : null}
 
         {/* Title + Crumb: phone stacks them with crumb above title, desktop puts crumb inline before title */}
-        <div className="flex-1 min-w-0 pr-space-4 lg:flex-initial lg:flex lg:items-center lg:gap-space-8">
+        <div className="flex-1 min-w-0 pr-space-4 desk:flex-initial desk:flex desk:items-center desk:gap-space-8">
           {crumb ? (
-            <div className="flex items-center gap-space-8 min-w-0 mb-space-2 lg:mb-0">
-              <span className="text-caption font-semibold text-ink-4 leading-none truncate lg:text-label lg:text-ink-3">
+            <div className="flex items-center gap-space-8 min-w-0 mb-space-2 desk:mb-0">
+              <span className="text-caption font-semibold text-ink-4 leading-none truncate desk:text-label desk:text-ink-3">
                 {crumb}
               </span>
-              <span className="hidden lg:inline text-label text-ink-4">/</span>
+              <span className="hidden desk:inline text-label text-ink-4">/</span>
             </div>
           ) : null}
           <div className="text-title font-extrabold text-ink leading-tight tracking-tight truncate">
@@ -118,7 +118,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
 
         {/* Actions */}
         {actions && actions.length > 0 && (
-          <div className="ml-auto flex items-center gap-space-4 lg:gap-space-8 shrink-0">
+          <div className="ml-auto flex items-center gap-space-4 desk:gap-space-8 shrink-0">
             {actions.map((action) => {
               const isPrimary = action.variant === 'primary';
               const hasLabel = Boolean(action.shortcut || action.showLabel);
@@ -128,10 +128,10 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
                 <>
                   <Icon name={action.icon} size="md" />
                   {hasLabel && (
-                    <span className="hidden lg:inline">{action.label}</span>
+                    <span className="hidden desk:inline">{action.label}</span>
                   )}
                   {action.shortcut && (
-                    <Kbd className="hidden lg:inline-flex">{action.shortcut}</Kbd>
+                    <Kbd className="hidden desk:inline-flex">{action.shortcut}</Kbd>
                   )}
                 </>
               );
@@ -139,7 +139,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
               const buttonClasses = cn(
                 'shrink-0',
                 hasLabel
-                  ? 'w-control-md h-control-md p-0 lg:w-auto lg:h-control-md lg:px-space-12 lg:gap-space-6'
+                  ? 'w-control-md h-control-md p-0 desk:w-auto desk:h-control-md desk:px-space-12 desk:gap-space-6'
                   : undefined,
               );
 

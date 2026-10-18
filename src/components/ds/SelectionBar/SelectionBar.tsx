@@ -31,7 +31,7 @@ export interface SelectionBarProps
 /**
  * SelectionBar: bar that appears while items are selected in lists.
  * Shows count, summary line, and actions that apply to the selection.
- * Floating pill centred above list from lg up; docked to bottom edge below lg.
+ * Floating pill centred above list from desk up; docked to bottom edge below desk.
  */
 export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
   (
@@ -69,9 +69,9 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
       <div ref={ref} className={cn('relative z-floating w-full', className)} {...props}>
         <div
           className={cn(
-            'bg-surface border-t lg:border border-line-strong rounded-t-ds-2xl lg:rounded-ds-lg shadow-up-1 lg:shadow-level-2 select-none text-body text-ink w-full lg:w-fit lg:mx-auto',
-            'grid grid-cols-[auto_1fr_auto] items-center px-space-14 pt-space-10 pb-space-12 lg:p-0',
-            'lg:flex lg:flex-row lg:items-center lg:px-space-12 lg:py-space-8 lg:gap-space-8',
+            'bg-surface border-t desk:border border-line-strong rounded-t-ds-2xl desk:rounded-ds-lg shadow-up-1 desk:shadow-level-2 select-none text-body text-ink w-full desk:w-fit desk:mx-auto',
+            'grid grid-cols-[auto_1fr_auto] items-center px-space-14 pt-space-10 pb-space-12 desk:p-0',
+            'desk:flex desk:flex-row desk:items-center desk:px-space-12 desk:py-space-8 desk:gap-space-8',
           )}
         >
           {/* Close button (×): column 1 on mobile, at the end on desktop */}
@@ -82,13 +82,13 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
             iconOnly
             aria-label={clearAriaLabel}
             onClick={onClear}
-            className="text-ink-3 hover:bg-hover hover:text-ink shrink-0 col-start-1 order-1 lg:order-5"
+            className="text-ink-3 hover:bg-hover hover:text-ink shrink-0 col-start-1 order-1 desk:order-5"
           >
             <Icon name="close" size="sm" />
           </Button>
 
           {/* Count and summary: column 2 on mobile, at the beginning on desktop */}
-          <div className="flex flex-col leading-tight min-w-0 pr-space-4 lg:pr-0 col-start-2 order-2 lg:order-1">
+          <div className="flex flex-col leading-tight min-w-0 pr-space-4 desk:pr-0 col-start-2 order-2 desk:order-1">
             <b className="font-bold text-body text-ink tabular-nums truncate">
               {count} selected
             </b>
@@ -106,7 +106,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
               variant="ghost"
               size="sm"
               onClick={onSelectAll}
-              className="inline-flex items-center h-control-md px-space-8 text-label font-bold text-brand hover:underline hover:bg-transparent cursor-pointer shrink-0 col-start-3 justify-self-end order-3 lg:order-3"
+              className="inline-flex items-center h-control-md px-space-8 text-label font-bold text-brand hover:underline hover:bg-transparent cursor-pointer shrink-0 col-start-3 justify-self-end order-3 desk:order-3"
             >
               {selectAllLabel ?? 'Select all'}
             </Button>
@@ -114,13 +114,13 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
 
           {/* Divider between count and actions on desktop */}
           <div
-            className="hidden lg:block w-px h-space-24 bg-line mx-space-2 lg:order-2"
+            className="hidden desk:block w-px h-space-24 bg-line mx-space-2 desk:order-2"
             aria-hidden="true"
           />
 
           {/* Actions: row 2 grid on mobile, row flex on desktop */}
           <div
-            className="col-start-1 col-span-3 grid grid-flow-col auto-cols-fr gap-space-4 pt-space-8 border-t border-line-soft lg:border-t-0 lg:pt-0 lg:flex lg:items-center lg:gap-space-6 order-4 lg:order-4"
+            className="col-start-1 col-span-3 grid grid-flow-col auto-cols-fr gap-space-4 pt-space-8 border-t border-line-soft desk:border-t-0 desk:pt-0 desk:flex desk:items-center desk:gap-space-6 order-4 desk:order-4"
           >
             {actions.map((act, idx) => {
               const isDanger = act.tone === 'danger';
@@ -135,7 +135,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
                     act.count !== undefined ? `${act.label} ${act.count}` : act.label
                   }
                   className={cn(
-                    'border-0 bg-transparent lg:border lg:bg-surface h-auto lg:h-control-md flex flex-col lg:flex-row items-center justify-center p-space-8 lg:px-space-12 lg:py-0 rounded-ds-md text-caption lg:text-body font-semibold cursor-pointer gap-space-2 lg:gap-space-6',
+                    'border-0 bg-transparent desk:border desk:bg-surface h-auto desk:h-control-md flex flex-col desk:flex-row items-center justify-center p-space-8 desk:px-space-12 desk:py-0 rounded-ds-md text-caption desk:text-body font-semibold cursor-pointer gap-space-2 desk:gap-space-6',
                     act.disabled && 'opacity-45 cursor-not-allowed pointer-events-none',
                     isDanger
                       ? 'text-danger hover:bg-danger-tint active:bg-danger-tint'
@@ -152,7 +152,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
                     {act.count !== undefined ? ` ${act.count}` : ''}
                   </span>
                   {act.hint ? (
-                    <span className="text-micro font-semibold text-ink-4 not-italic truncate max-w-full leading-none lg:hidden">
+                    <span className="text-micro font-semibold text-ink-4 not-italic truncate max-w-full leading-none desk:hidden">
                       {act.hint}
                     </span>
                   ) : null}

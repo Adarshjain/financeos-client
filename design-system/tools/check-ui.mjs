@@ -256,7 +256,11 @@ function check(lines, all = false, classes = true) {
     const comp = dsComponent(file);
     // phoneLayout.ts is the one place that may read the layout, and only inside event handlers (RULES §5c.3).
     if (file !== 'src/components/ds/phoneLayout.ts' && /\b(?:useMediaQuery|useIsPhone|useIsDesktop|matchMedia|innerWidth)\b/.test(text)) {
-      errors.push({ file, line, rule: 'viewport-js', why: 'viewport detected in JavaScript — use lg: breakpoint classes; there are no exceptions (RULES §5c.3)', text: text.trim().slice(0, 160) });
+      errors.push({ file, line, rule: 'viewport-js', why: 'viewport detected in JavaScript — use desk: breakpoint classes; there are no exceptions (RULES §5c.3)', text: text.trim().slice(0, 160) });
+    }
+    // Dinero has one layout switch, `desk` (641px); Legacy's sm/md/lg/xl breakpoints never appear in checked code (RULES §5c.2).
+    if (/(?:^|[\s"'`:])(?:max-)?(?:sm|md|lg|xl|2xl):[-a-z![]/.test(text)) {
+      errors.push({ file, line, rule: 'breakpoint', why: 'a breakpoint other than desk: — Dinero has one switch at 641px (RULES §5c.2)', text: text.trim().slice(0, 160) });
     }
     // APIs removed by the 2026-10 audit (design-system/specs/audit/00-global.md). Re-adding any of them is a regression.
     for (const [re, why] of REMOVED_API) {
@@ -282,7 +286,7 @@ function check(lines, all = false, classes = true) {
       }
     }
     if (comp && /['"](?:phone|desktop|mobile)['"]/.test(text) && /\b(?:variant|layout|mode|form|device)\b/.test(text)) {
-      errors.push({ file, line, rule: 'device-prop', why: 'a phone/desktop prop — one structure with lg: classes instead (RULES §5c.1)', text: text.trim().slice(0, 160) });
+      errors.push({ file, line, rule: 'device-prop', why: 'a phone/desktop prop — one structure with desk: classes instead (RULES §5c.1)', text: text.trim().slice(0, 160) });
     }
     if (comp && /\b(?:href|path|to)\s*[:=]\s*\{?\s*['"`]\/[a-z]/.test(text)) {
       errors.push({ file, line, rule: 'hardcoded-route', why: `${comp} hard-codes an app route — routes come from the page or app shell (RULES §5b.6)`, text: text.trim().slice(0, 160) });
@@ -379,7 +383,11 @@ function selfTest() {
     ['src/app/(ds)/ds/transactions/page.tsx', "import { Card } from '@/components/ds';", 'old-import', false],
     ['src/app/(ds)/ds/transactions/page.tsx', "import { keys } from '@/lib/query';", 'old-import', false],
     ['src/app/(ds)/ds/(public)/login/LoginForm.tsx', '<h1 className="font-text font-extrabold text-heading">', 'page-styling', true],
-    ['src/app/(ds)/ds/(public)/login/LoginForm.tsx', '<div className="flex flex-col gap-space-16 lg:p-space-40">', 'page-styling', false],
+    ['src/app/(ds)/ds/(public)/login/LoginForm.tsx', '<div className="flex flex-col gap-space-16 desk:p-space-40">', 'page-styling', false],
+    ['src/components/ds/Dialog/Dialog.tsx', '<div className="hidden lg:flex">', 'breakpoint', true],
+    ['src/components/ds/Dialog/Dialog.tsx', '<div className="max-md:hidden">', 'breakpoint', true],
+    ['src/components/ds/Dialog/Dialog.tsx', '<div className="hidden desk:flex max-desk:pb-space-8">', 'breakpoint', false],
+    ['src/components/ds/Icon/Icon.tsx', "  lg: 'w-icon-lg h-icon-lg',", 'breakpoint', false],
     ['src/features/shell/ShellNav.tsx', '<div className="text-overline font-extrabold uppercase text-ink-4">', 'page-styling', true],
     ['src/features/shell/ShellNav.tsx', "style={moreOpen ? { zIndex: 30 } : undefined}", 'page-styling', true],
     ['src/features/shell/ShellNav.tsx', '<Dialog open={moreOpen} onOpenChange={setMoreOpen} modal={false}>', 'page-styling', true],
@@ -420,6 +428,7 @@ function selfTest() {
     ['px-space-18', false],
     ['text-small', false],
     ['md:hover:bg-ink', true],
+    ['desk:hover:bg-ink', true],
     ['px-space-16', true],
     ['w-control-md', true],
   ]) {

@@ -20,7 +20,7 @@ Tapping More opens the **More sheet** (final, owner 2026-10-16; board `P-more`):
 - The sheet uses Dialog `background="canvas"`; group labels are Text `overline` in `ink-4`; the profile row is a ListRow `asChild` inside a Card.
 
 ## Use
-- Shown on every top-level phone screen, below `lg` only. It is hidden while a list is in selection mode (the selection bar takes the bottom edge) and under the keyboard.
+- Shown on every top-level phone screen, below `desk` only. It is hidden while a list is in selection mode (the selection bar takes the bottom edge) and under the keyboard.
 - Page content scrolls under the pill; the page keeps bottom padding equal to the pill's height plus 24px, so the last row can scroll clear of it.
 
 ## Props

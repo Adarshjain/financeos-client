@@ -138,15 +138,15 @@ describe('SearchPalette', () => {
     onOpenChange.mockClear();
     rerender(<SearchPalette open groups={makeGroups()} onOpenChange={onOpenChange} cancelLabel="Back" />);
     const cancel = screen.getByRole('button', { name: 'Back' });
-    expect(cancel).toHaveClass('lg:hidden');
+    expect(cancel).toHaveClass('desk:hidden');
     fireEvent.click(cancel);
     expect(onOpenChange).toHaveBeenLastCalledWith(false);
   });
 
   it('desktop shows an esc key and move / open hints with overridable words', () => {
     render(<SearchPalette defaultOpen groups={makeGroups()} moveLabel="go" openLabel="pick" />);
-    expect(screen.getByText('esc')).toHaveClass('hidden', 'lg:inline-flex');
-    const footer = screen.getByText('go').closest('.lg\\:block')!;
+    expect(screen.getByText('esc')).toHaveClass('hidden', 'desk:inline-flex');
+    const footer = screen.getByText('go').closest('.desk\\:block')!;
     expect(footer).toHaveClass('hidden');
     expect(footer).toHaveTextContent(/go.*Enter.*pick/);
   });

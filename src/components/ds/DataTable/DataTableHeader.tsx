@@ -29,8 +29,8 @@ export function DataTableHeader<Row extends RowData>({
           key={headerGroup.id}
           role="row"
           className={cn(
-            'hidden lg:grid lg:grid-cols-template h-control-md items-center bg-sunken border-l-4 border-l-transparent',
-            stickyHeader && 'lg:sticky lg:top-0 lg:z-sticky',
+            'hidden desk:grid desk:grid-cols-template h-control-md items-center bg-sunken border-l-4 border-l-transparent',
+            stickyHeader && 'desk:sticky desk:top-0 desk:z-sticky',
           )}
         >
           {headerGroup.headers.map((header) => {

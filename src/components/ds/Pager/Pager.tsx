@@ -84,7 +84,7 @@ function getPageItems(currentPage: number, totalPages: number): PageItem[] {
  * Pager: pagination for lists that outgrow one page.
  * Sits above and below the list in table cards or card grids.
  * Server-side paging only. Single page shows count and page size only, no arrows.
- * Uses lg: CSS breakpoint classes to switch between compact mobile and desktop layouts.
+ * Uses desk: CSS breakpoint classes to switch between compact mobile and desktop layouts.
  */
 export const Pager = forwardRef<HTMLElement, PagerProps>(
   (
@@ -145,7 +145,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
               </span>
               <span>/ {totalElements}</span>
               {unit && (
-                <span className="hidden lg:inline">
+                <span className="hidden desk:inline">
                   {unit}
                 </span>
               )}
@@ -154,7 +154,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
         </div>
 
         <div className="flex items-center gap-space-4 ml-auto">
-          <div className="hidden lg:inline-flex items-center">
+          <div className="hidden desk:inline-flex items-center">
             {onSizeChange ? (
               <Select
                 options={sizeOptions.map((opt) => ({
@@ -218,8 +218,8 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                         aria-hidden="true"
                         className={cn(
                           'w-space-16 text-center text-ink-faint text-label select-none',
-                          !item.phone && 'hidden lg:inline',
-                          !item.desktop && 'lg:hidden',
+                          !item.phone && 'hidden desk:inline',
+                          !item.desktop && 'desk:hidden',
                         )}
                       >
                         …
@@ -242,7 +242,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
                         control,
                         'px-space-6 rounded-ds-md tabular-nums font-semibold',
                         isActive ? 'font-bold' : 'text-ink-2',
-                        !item.phone && 'hidden lg:inline-flex',
+                        !item.phone && 'hidden desk:inline-flex',
                       )}
                     >
                       {pageNumber}

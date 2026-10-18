@@ -96,16 +96,16 @@ function DataTableInner<Row extends RowData>(
         Array.from({ length: skeletonRows ?? 5 }).map((_, i) => (
           <div
             key={`skeleton-${i}`}
-            className="border-t border-line-soft border-l-4 border-l-transparent bg-surface px-space-14 py-space-10 flex flex-col gap-space-8 lg:grid lg:grid-cols-template lg:gap-x-0 lg:px-0 lg:py-0 lg:min-h-space-40 lg:items-center"
+            className="border-t border-line-soft border-l-4 border-l-transparent bg-surface px-space-14 py-space-10 flex flex-col gap-space-8 desk:grid desk:grid-cols-template desk:gap-x-0 desk:px-0 desk:py-0 desk:min-h-space-40 desk:items-center"
           >
-            <div className="flex flex-col gap-space-8 lg:hidden">
+            <div className="flex flex-col gap-space-8 desk:hidden">
               <Skeleton className="w-1/2 h-space-12" />
               <Skeleton className="w-3/4 h-space-10" />
             </div>
             {processedColumns.map((col, idx) => (
               <div
                 key={`skel-col-${col.id || idx}`}
-                className="hidden lg:block lg:px-space-12 lg:py-space-6 min-w-0"
+                className="hidden desk:block desk:px-space-12 desk:py-space-6 min-w-0"
               >
                 <Skeleton className="w-full h-space-12" />
               </div>
@@ -199,7 +199,7 @@ function DataTableInner<Row extends RowData>(
                 <SectionHeader
                   variant="strong"
                   meta={currentDay.sublabel}
-                  className="lg:hidden"
+                  className="desk:hidden"
                 >
                   {currentDay.label}
                 </SectionHeader>

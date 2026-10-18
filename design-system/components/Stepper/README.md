@@ -8,14 +8,14 @@ The steps of a multi-step flow and where the user is in it: "Files · Match inst
 - It never wraps. Desktop shows every step in one row; the phone shows only the current step and a bar (owner, 2026-10-18: the wrapping row looked poor and didn't fit a phone).
 
 ## Anatomy
-**Desktop (from `lg`)**: one row of steps joined by lines. Each step is a circle and its label, `space-8` apart; the line between two steps stretches to fill the row, `space-12` from each step.
+**Desktop (from `desk`)**: one row of steps joined by lines. Each step is a circle and its label, `space-8` apart; the line between two steps stretches to fill the row, `space-12` from each step.
 - **Done** (before the current step): `check` Icon in `on-brand` on a `brand` circle; label `ink-2` semibold. The line after it is `brand`.
 - **Current**: the step number in `on-brand` on a `brand` circle with a 4px `brand-tint` ring; label `ink` bold.
 - **Upcoming**: the step number in `ink-3` on a `surface` circle with a `line-strong` border; label `ink-3` semibold. The line after it is `line`.
 
 Circle `space-24`, number `caption` bold; label `label`; line 1px.
 
-**Phone (below `lg`)**: one line, "Step 3 of 4" in `caption` `ink-3` then the current step's name in `body` bold `ink` (truncated if long), over a bar of one `space-4` segment per step, `space-4` apart. Segments up to and including the current step are `brand`, the rest `line-soft`.
+**Phone (below `desk`)**: one line, "Step 3 of 4" in `caption` `ink-3` then the current step's name in `body` bold `ink` (truncated if long), over a bar of one `space-4` segment per step, `space-4` apart. Segments up to and including the current step are `brand`, the rest `line-soft`.
 
 ## Props
 - `steps: { id: string; label: ReactNode }[]`: the steps in order.
@@ -24,7 +24,7 @@ Circle `space-24`, number `caption` bold; label `label`; line 1px.
 - Native `<div>` attributes; `className` for layout only.
 
 ## Variants
-None. The three step states come from `current`; the phone and desktop forms come from the `lg` breakpoint.
+None. The three step states come from `current`; the phone and desktop forms come from the `desk` breakpoint.
 
 ## Built from
 Icon.

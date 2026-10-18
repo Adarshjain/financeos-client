@@ -247,7 +247,7 @@ export const RuleCard = forwardRef<HTMLDivElement, RuleCardProps>(
             {(isSelectable || selectionMode || selected) && (
               <div
                 {...nestedControlProps}
-                className="shrink-0 mt-space-2 hidden lg:inline-flex"
+                className="shrink-0 mt-space-2 hidden desk:inline-flex"
               >
                 <Checkbox
                   checked={selected}

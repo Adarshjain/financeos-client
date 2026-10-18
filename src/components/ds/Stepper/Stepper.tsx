@@ -44,7 +44,7 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
     return (
       <div ref={ref} className={cn('w-full', className)} {...props}>
         {/* Phone */}
-        <div className="flex flex-col gap-space-8 lg:hidden">
+        <div className="flex flex-col gap-space-8 desk:hidden">
           <p className="flex min-w-0 items-baseline gap-space-6 font-text">
             <span className="shrink-0 text-caption text-ink-3">{stepLabel(shown + 1, total)}</span>
             <span className="truncate text-body font-bold text-ink">{steps[shown]?.label}</span>
@@ -64,7 +64,7 @@ export const Stepper = forwardRef<HTMLDivElement, StepperProps>(
         </div>
 
         {/* Desktop */}
-        <ol className="hidden items-center lg:flex">
+        <ol className="hidden items-center desk:flex">
           {steps.map((step, index) => {
             const state = stateOf(index, current);
             const isLast = index === total - 1;

@@ -32,24 +32,24 @@ describe('DialogShell', () => {
 
   it('applies correct size classes for dialog tokens', () => {
     const { container: c1 } = render(<DialogShell size="sm" title="Small" />);
-    expect(c1.firstChild).toHaveClass('lg:max-w-container-sm');
+    expect(c1.firstChild).toHaveClass('desk:max-w-container-sm');
 
     const { container: c2 } = render(<DialogShell size="md" title="Default" />);
-    expect(c2.firstChild).toHaveClass('lg:max-w-container-md');
+    expect(c2.firstChild).toHaveClass('desk:max-w-container-md');
 
     const { container: c3 } = render(<DialogShell size="lg" title="Large" />);
-    expect(c3.firstChild).toHaveClass('lg:max-w-container-lg');
+    expect(c3.firstChild).toHaveClass('desk:max-w-container-lg');
 
     const { container: c4 } = render(<DialogShell size="xl" title="XL" />);
-    expect(c4.firstChild).toHaveClass('lg:max-w-container-xl');
+    expect(c4.firstChild).toHaveClass('desk:max-w-container-xl');
   });
 
   it('applies side-panel variant classes on desktop', () => {
     const { container } = render(
       <DialogShell variant="side-panel" title="Detail view" />,
     );
-    expect(container.firstChild).toHaveClass('lg:rounded-l-ds-xl');
-    expect(container.firstChild).toHaveClass('lg:h-full');
+    expect(container.firstChild).toHaveClass('desk:rounded-l-ds-xl');
+    expect(container.firstChild).toHaveClass('desk:h-full');
   });
 
   it('applies bg-canvas when background="canvas" and bg-surface when background="surface" (default)', () => {

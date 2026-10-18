@@ -35,7 +35,7 @@ describe('Pager', () => {
 
     expect(screen.getByText('1–50')).toBeInTheDocument();
     expect(screen.getByText('/ 182')).toBeInTheDocument();
-    expect(container.querySelector('.lg\\:inline')).toBeNull();
+    expect(container.querySelector('.desk\\:inline')).toBeNull();
   });
 
   it('renders custom summary when supplied', () => {
@@ -85,7 +85,7 @@ describe('Pager', () => {
     expect(activePageBtn).toHaveAttribute('aria-current', 'page');
   });
 
-  it('renders each page number exactly once in the DOM with desktop neighbours carrying hidden lg:inline-flex', () => {
+  it('renders each page number exactly once in the DOM with desktop neighbours carrying hidden desk:inline-flex', () => {
     const { container } = render(
       <Pager
         page={4} // page 5 of 10
@@ -103,9 +103,9 @@ describe('Pager', () => {
       expect(screen.queryByRole('button', { name: `Page ${num}` })).not.toBeInTheDocument();
     });
 
-    // Pages 4 and 6 are neighbours of page 5, so they carry hidden lg:inline-flex
-    expect(screen.getByRole('button', { name: 'Page 4' })).toHaveClass('hidden', 'lg:inline-flex');
-    expect(screen.getByRole('button', { name: 'Page 6' })).toHaveClass('hidden', 'lg:inline-flex');
+    // Pages 4 and 6 are neighbours of page 5, so they carry hidden desk:inline-flex
+    expect(screen.getByRole('button', { name: 'Page 4' })).toHaveClass('hidden', 'desk:inline-flex');
+    expect(screen.getByRole('button', { name: 'Page 6' })).toHaveClass('hidden', 'desk:inline-flex');
     // Active, first and last pages show on both forms
     ['Page 1', 'Page 5', 'Page 10'].forEach((name) => {
       expect(screen.getByRole('button', { name })).not.toHaveClass('hidden');
@@ -115,7 +115,7 @@ describe('Pager', () => {
     expect(gaps).toHaveLength(2);
     gaps.forEach((gap) => {
       expect(gap).not.toHaveClass('hidden');
-      expect(gap).not.toHaveClass('lg:hidden');
+      expect(gap).not.toHaveClass('desk:hidden');
     });
   });
 
@@ -137,11 +137,11 @@ describe('Pager', () => {
     );
 
     // Page 4 of 6: desktop 1 2 3 4 5 6, phone 1 … 4 5 6
-    expect(screen.getByRole('button', { name: 'Page 3' })).toHaveClass('hidden', 'lg:inline-flex');
+    expect(screen.getByRole('button', { name: 'Page 3' })).toHaveClass('hidden', 'desk:inline-flex');
     expect(screen.getByRole('button', { name: 'Page 5' })).not.toHaveClass('hidden');
     const gaps = Array.from(container.querySelectorAll('[aria-hidden="true"]')).filter((el) => el.textContent === '…');
     expect(gaps).toHaveLength(1);
-    expect(gaps[0]).toHaveClass('lg:hidden');
+    expect(gaps[0]).toHaveClass('desk:hidden');
     expect(gaps[0]).not.toHaveClass('hidden');
   });
 
@@ -269,6 +269,6 @@ describe('Pager', () => {
 
     expect(screen.getByText('1–50')).toBeInTheDocument();
     expect(screen.getByText('/ 182')).toBeInTheDocument();
-    expect(screen.getByText('transactions')).toHaveClass('hidden', 'lg:inline');
+    expect(screen.getByText('transactions')).toHaveClass('hidden', 'desk:inline');
   });
 });

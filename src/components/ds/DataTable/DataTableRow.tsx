@@ -100,7 +100,7 @@ export function DataTableRow<Row extends RowData>({
         selectable && 'select-none touch-callout-none',
         hasThirdCol ? 'grid-cols-fill-auto-auto' : 'grid-cols-fill-auto',
         'grid gap-x-space-10 px-space-14 py-space-10',
-        'lg:grid lg:grid-cols-template lg:gap-x-0 lg:px-0 lg:py-0 lg:min-h-space-40 lg:items-center',
+        'desk:grid desk:grid-cols-template desk:gap-x-0 desk:px-0 desk:py-0 desk:min-h-space-40 desk:items-center',
         isHighlighted
           ? 'border-l-brand-strong bg-brand-tint'
           : isSelected
@@ -128,7 +128,7 @@ export function DataTableRow<Row extends RowData>({
               key={cell.id}
               role="cell"
               {...nestedControlProps}
-              className="hidden lg:flex items-center justify-center min-w-0"
+              className="hidden desk:flex items-center justify-center min-w-0"
             >
               <Checkbox
                 checked={isSelected}
@@ -150,8 +150,8 @@ export function DataTableRow<Row extends RowData>({
               className={cn(
                 'items-center justify-center min-w-0',
                 canExpand && !showEye
-                  ? 'col-start-3 row-start-1 row-span-2 self-center flex lg:col-start-auto lg:row-start-auto lg:col-span-1 lg:row-span-1'
-                  : 'hidden lg:flex lg:col-start-auto lg:row-start-auto lg:col-span-1 lg:row-span-1',
+                  ? 'col-start-3 row-start-1 row-span-2 self-center flex desk:col-start-auto desk:row-start-auto desk:col-span-1 desk:row-span-1'
+                  : 'hidden desk:flex desk:col-start-auto desk:row-start-auto desk:col-span-1 desk:row-span-1',
               )}
             >
               {canExpand && (
@@ -185,15 +185,15 @@ export function DataTableRow<Row extends RowData>({
             key={cell.id}
             role="cell"
             className={cn(
-              'min-w-0 lg:px-space-12 lg:py-space-6 lg:col-start-auto lg:row-start-auto lg:col-span-1 lg:row-span-1',
+              'min-w-0 desk:px-space-12 desk:py-space-6 desk:col-start-auto desk:row-start-auto desk:col-span-1 desk:row-span-1',
               meta?.wrap ? 'whitespace-normal break-words' : 'truncate',
               meta?.align === 'end' &&
-                'text-end tabular-nums lg:text-end justify-self-end',
-              isMain && 'col-start-1 row-start-1 text-body-strong lg:text-body',
+                'text-end tabular-nums desk:text-end justify-self-end',
+              isMain && 'col-start-1 row-start-1 text-body-strong desk:text-body',
               isAmount && 'col-start-2 row-start-1 text-end',
               isStatus &&
                 'col-start-2 row-start-2 justify-self-end flex flex-wrap justify-end gap-space-4',
-              !isMain && !isAmount && !isStatus && 'hidden lg:block',
+              !isMain && !isAmount && !isStatus && 'hidden desk:block',
             )}
           >
             {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -204,7 +204,7 @@ export function DataTableRow<Row extends RowData>({
       {showEye && (
         <div
           {...nestedControlProps}
-          className="lg:hidden col-start-3 row-start-1 row-span-2 self-center flex items-center justify-center"
+          className="desk:hidden col-start-3 row-start-1 row-span-2 self-center flex items-center justify-center"
         >
           <Button
             variant="ghost"
@@ -218,13 +218,13 @@ export function DataTableRow<Row extends RowData>({
       )}
 
       {sub && (
-        <div className="lg:hidden col-start-1 row-start-2 text-caption text-ink-3">
+        <div className="desk:hidden col-start-1 row-start-2 text-caption text-ink-3">
           {sub}
         </div>
       )}
 
       {actions && (
-        <div className="lg:hidden col-span-full row-start-3 flex justify-end gap-space-8 pt-space-8">
+        <div className="desk:hidden col-span-full row-start-3 flex justify-end gap-space-8 pt-space-8">
           {actions}
         </div>
       )}

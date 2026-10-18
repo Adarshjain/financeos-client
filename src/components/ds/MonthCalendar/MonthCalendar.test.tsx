@@ -61,11 +61,11 @@ describe('MonthCalendar', () => {
       expect(chips('2026-10-15')[2]).toHaveClass('bg-brand-tint', 'text-brand');
     });
 
-    it('chips are bars below lg: label hidden until lg', () => {
+    it('chips are bars below desk: label hidden until desk', () => {
       renderEvents();
       const [sbi] = chips('2026-10-03');
-      expect(sbi).toHaveClass('h-space-6', 'lg:h-auto', 'lg:truncate');
-      expect(sbi.firstElementChild).toHaveClass('hidden', 'lg:inline');
+      expect(sbi).toHaveClass('h-space-6', 'desk:h-auto', 'desk:truncate');
+      expect(sbi.firstElementChild).toHaveClass('hidden', 'desk:inline');
     });
 
     it('shows at most maxEventsPerDay chips, then an overridable "+N more"', () => {
