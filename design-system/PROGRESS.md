@@ -128,7 +128,7 @@ New pages may use nothing from the old UI (RULES §1.8). These are needed and do
 **Components the reviewed boards need that the library lacks** (design first, then build; owner, 2026-10-18):
 1. **DataTable**: built 2026-10-17, Ready for review.
 2. **SearchPalette**: ⌘K / Search results grouped by section with keyboard movement. Built from Dialog, SearchField, ListRow and SectionHeader; needs its own README.
-3. **Stepper**: built 2026-10-18, Ready for review.
+3. **Stepper**: built 2026-10-18, redesigned the same day (owner: "can look better", "not mobile responsive"), Ready for review.
 4. **MonthCalendar events**: the desktop Upcoming calendar shows labelled event chips in day cells, not only bars.
 5. **ProgressBar markers**: the loan timeline on `D-loan-detail`.
 
@@ -300,6 +300,10 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 ## Log
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
+- 2026-10-18 · Phase 2 · Claude · Stepper redesigned after owner review ("can look better", "not mobile responsive"; the wrapping row was the problem). Desktop (`lg`): numbered circles joined by lines that stretch to fill the row and turn `brand` up to the current step; done = `check` on a filled `brand` circle, current = filled circle with a 4px `brand-tint` ring, upcoming = outlined `surface` circle. Phone: one line "Step 3 of 4 **Reconcile**" over a bar with one segment per step (the common mobile stepper pattern). It never wraps. Root is now a `<div>` (ordered list inside for desktop); new `stepLabel` prop for the overridable "Step N of M" words. Files: `src/components/ds/Stepper/{Stepper.tsx,Stepper.test.tsx,Stepper.stories.tsx}`, `design-system/components/Stepper/README.md`.
+  - Tests changed (forced by the new markup): all 7 Stepper tests rewritten (state token classes, root element and wrap classes changed); 5 added for the connectors and the phone form. 12/12 pass.
+  - Checks: tsc clean, eslint clean, check-ui clean, `storybook build` OK, Playwright on the story at 390px light (phone form: caption, name, bar fill through Next/Finish/Back) and 1440px dark (desktop states through Next/Finish/Back); no page errors.
+  - Deviations: the board's look (green current label, tint done circles, wrapping row) is replaced at the owner's request; awaiting the owner's approval in Storybook.
 - 2026-10-18 · Phase 2 · Claude · Stepper built (`src/components/ds/Stepper/{Stepper.tsx,Stepper.test.tsx,Stepper.stories.tsx}`, `design-system/components/Stepper/README.md`, export in `src/components/ds/index.ts`). Requirements from `D-import-wizard` / `P-import-wizard` (identical) and the live wizard (`ImportWizardDialog`, Back button only, no step indicator today). Ordered list, `current` index drives done / current / upcoming; done shows the `check` Icon (the board's typed ✓). Not clickable, no card of its own. One story, `DS/Navigation/Stepper/Import wizard`, inside a Card with Back and Next/Finish wired through `useArgs`.
   - Checks: Stepper tests 7/7, tsc clean, eslint clean, check-ui clean, `storybook build` OK, Playwright on the story at 390px light and 1440px dark: Next, Finish (all done, Next disabled), Back ×2 all correct; wraps onto two lines at 390px; no page errors.
   - Deviations (no matching token): circle 22px → `space-24`; gap between steps 18px → `space-16`; wrapped-line gap `space-8` (board has none drawn).

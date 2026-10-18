@@ -20,7 +20,7 @@ const meta: Meta<typeof Stepper> = {
     docs: {
       description: {
         component:
-          'The steps of a multi-step flow and where the user is, as on the import wizard. Progress only: steps are not clickable. Use Back and Next (the page\'s own buttons) to move; done steps turn into a check, the current step is the filled circle. Narrow the window to see the steps wrap.',
+          'The steps of a multi-step flow and where the user is, as on the import wizard. Progress only: steps are not clickable. Use Back and Next (the page\'s own buttons) to move; done steps turn into a check and the line fills up to the current step. Switch to the phone width to see the compact form: "Step 3 of 4" with the step name over a segmented bar.',
       },
     },
   },
@@ -31,6 +31,7 @@ const meta: Meta<typeof Stepper> = {
   argTypes: {
     steps: { control: 'object' },
     current: { control: { type: 'number', min: 0, max: 4, step: 1 } },
+    stepLabel: { control: false },
   },
 };
 
