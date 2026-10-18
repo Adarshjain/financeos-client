@@ -103,6 +103,8 @@ const meta: Meta<StoryArgs> = {
     layout: 'padded',
     docs: {
       story: { inline: false, iframeHeight: 640 },
+      // The results are React nodes; generating the JSX snippet from them on every keystroke hangs the dev preview.
+      source: { type: 'code' },
       description: {
         component:
           'The ⌘K search over everything. Click Search or press ⌘K / Ctrl+K, then type (try "regalia", "swiggy" or "zomato"). Arrow keys move the highlight, Enter or a click opens the row and closes the palette; Esc closes it. On phone it is a sheet with Cancel. The page runs the search and passes the grouped results; the palette never filters.',

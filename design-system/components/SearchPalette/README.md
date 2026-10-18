@@ -24,4 +24,4 @@ The ⌘K search over everything: accounts, actions, transactions, pages and Ask 
 None.
 
 ## Built from
-Dialog (DialogContent, DialogBody, DialogFooter), TextField, Button, Kbd, Icon, SectionHeader, ListRow, Skeleton, Text; cmdk for the highlight and keyboard movement.
+Dialog (DialogContent, DialogBody, DialogFooter), TextField, Button, Kbd, Icon, SectionHeader, ListRow, Skeleton, Text. The highlight and ↑/↓/Enter are the palette's own (about 20 lines; no cmdk needed).

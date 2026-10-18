@@ -1,7 +1,6 @@
 'use client';
 
-import { Command } from 'cmdk';
-import React, { forwardRef, useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
 
 import { Button } from '../Button/Button';
 import { Dialog, DialogBody, DialogContent, DialogFooter } from '../Dialog/Dialog';
@@ -96,9 +95,17 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
     });
 
     const visible = groups.filter((g) => g.items.length > 0);
-    const firstId = visible[0]?.items.find((it) => !it.disabled)?.id ?? '';
+    const enabled = visible.flatMap((g) => g.items).filter((it) => !it.disabled);
+    const firstId = enabled[0]?.id ?? '';
     const [active, setActive] = useState(firstId);
     useEffect(() => setActive(firstId), [firstId, query]);
+
+    const listRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+      listRef.current
+        ?.querySelector(`[data-item-id="${CSS.escape(active)}"]`)
+        ?.scrollIntoView({ block: 'nearest' });
+    }, [active]);
 
     useEffect(() => {
       if (!shortcutKey) return;
@@ -117,6 +124,20 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
       setOpen(false);
     };
 
+    // ↑ / ↓ move the highlight over enabled rows (wrapping); Enter opens it. Focus stays in the field.
+    const onKeyDown = (e: React.KeyboardEvent) => {
+      if (loading || enabled.length === 0) return;
+      const at = enabled.findIndex((it) => it.id === active);
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        const step = e.key === 'ArrowDown' ? 1 : -1;
+        setActive(enabled[(at + step + enabled.length) % enabled.length].id);
+      } else if (e.key === 'Enter' && at >= 0) {
+        e.preventDefault();
+        pick(enabled[at]);
+      }
+    };
+
     return (
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
@@ -126,7 +147,7 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
           showClose={false}
           className="lg:mb-auto lg:mt-space-40"
         >
-          <Command shouldFilter={false} loop value={active} onValueChange={setActive} className="flex min-h-0 flex-1 flex-col">
+          <div onKeyDown={onKeyDown} className="flex min-h-0 flex-1 flex-col">
             <div className="flex shrink-0 items-center gap-space-8 border-b border-line-soft px-space-16 pb-space-12 lg:pt-space-12">
               <TextField
                 type="search"
@@ -145,7 +166,7 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
             </div>
 
             <DialogBody className="gap-0 p-space-6">
-              <Command.List>
+              <div ref={listRef} role="listbox">
                 {loading ? (
                   <div data-loading="" className="flex flex-col gap-space-12 px-space-16 py-space-12">
                     {[60, 80, 45, 70].map((w) => (
@@ -160,38 +181,32 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
                   )
                 ) : (
                   visible.map((group) => (
-                    <Command.Group
-                      key={group.id}
-                      heading={
-                        <SectionHeader borderTop={false} meta={group.meta}>
-                          {group.label}
-                        </SectionHeader>
-                      }
-                    >
+                    <div key={group.id} role="group">
+                      <SectionHeader borderTop={false} meta={group.meta}>
+                        {group.label}
+                      </SectionHeader>
                       {group.items.map((item) => (
-                        <Command.Item
+                        <ListRow
                           key={item.id}
-                          asChild
-                          value={item.id}
+                          role="option"
+                          aria-selected={item.id === active}
+                          data-item-id={item.id}
+                          tabIndex={-1}
+                          borderTop={false}
+                          highlighted={item.id === active}
                           disabled={item.disabled}
-                          onSelect={() => pick(item)}
+                          onClick={() => pick(item)}
+                          onMouseMove={() => setActive(item.id)}
+                          leading={<span className="flex w-space-20 justify-center text-ink-3">{item.leading}</span>}
+                          trailing={item.trailing}
                         >
-                          <ListRow
-                            clickable
-                            borderTop={false}
-                            highlighted={item.id === active}
-                            disabled={item.disabled}
-                            leading={<span className="flex w-space-20 justify-center text-ink-3">{item.leading}</span>}
-                            trailing={item.trailing}
-                          >
-                            <span className="min-w-0 flex-1 truncate text-body text-ink">{item.title}</span>
-                          </ListRow>
-                        </Command.Item>
+                          <span className="min-w-0 flex-1 truncate text-body text-ink">{item.title}</span>
+                        </ListRow>
                       ))}
-                    </Command.Group>
+                    </div>
                   ))
                 )}
-              </Command.List>
+              </div>
             </DialogBody>
 
             <DialogFooter className="hidden lg:block">
@@ -209,7 +224,7 @@ export const SearchPalette = forwardRef<HTMLDivElement, SearchPaletteProps>(
                 </span>
               </div>
             </DialogFooter>
-          </Command>
+          </div>
         </DialogContent>
       </Dialog>
     );
