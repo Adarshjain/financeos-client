@@ -292,10 +292,10 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
         tabIndex={isInteractive && !disabled ? 0 : undefined}
         className={cn(
           'relative px-space-12 py-space-8 text-body transition-colors select-none touch-callout-none font-text',
-          'lg:grid lg:grid-cols-template lg:items-center lg:p-0 lg:border-l-4 lg:border-l-transparent',
+          'desk:grid desk:grid-cols-template desk:items-center desk:p-0 desk:border-l-4 desk:border-l-transparent',
           borderTop ? 'border-t border-line-soft first:border-t-0' : 'border-t-0',
-          selected && 'bg-brand-tint lg:border-l-brand',
-          isWarning && 'bg-attention-tint lg:border-l-attention',
+          selected && 'bg-brand-tint desk:border-l-brand',
+          isWarning && 'bg-attention-tint desk:border-l-attention',
           disabled && 'opacity-60 pointer-events-none',
           !selected && !isWarning && 'bg-surface hover:bg-hover active-self:bg-hover',
           isInteractive && !disabled && 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
@@ -305,24 +305,24 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
       >
         {selected && (
           <span
-            className="absolute left-0 top-0 bottom-0 w-space-4 bg-brand pointer-events-none lg:hidden"
+            className="absolute left-0 top-0 bottom-0 w-space-4 bg-brand pointer-events-none desk:hidden"
             aria-hidden="true"
           />
         )}
         {isWarning && (
           <span
-            className="absolute left-0 top-0 bottom-0 w-space-4 bg-attention pointer-events-none lg:hidden"
+            className="absolute left-0 top-0 bottom-0 w-space-4 bg-attention pointer-events-none desk:hidden"
             aria-hidden="true"
           />
         )}
 
-        <div className="flex items-center gap-space-10 min-w-0 w-full lg:contents">
+        <div className="flex items-center gap-space-10 min-w-0 w-full desk:contents">
           {/* Desktop Checkbox (Cell 1 when selectable) */}
           {isSelectable && (
             <div
               role="cell"
               {...nestedControlProps}
-              className="hidden lg:flex items-center justify-center min-w-0"
+              className="hidden desk:flex items-center justify-center min-w-0"
             >
               <Checkbox
                 checked={selected}
@@ -338,7 +338,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
 
           {/* Leading Avatar / Mark (phone only) */}
           {leading && (
-            <div className="shrink-0 flex items-center lg:hidden">
+            <div className="shrink-0 flex items-center desk:hidden">
               {leading}
             </div>
           )}
@@ -346,7 +346,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
           {/* Desktop Date (Cell 2) */}
           <div
             role="cell"
-            className="hidden lg:block lg:px-space-12 lg:py-space-6 min-w-0 truncate text-ink-2"
+            className="hidden desk:block desk:px-space-12 desk:py-space-6 min-w-0 truncate text-ink-2"
           >
             {date}
           </div>
@@ -354,7 +354,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
           {/* Inner wrapper 2 */}
           <div
             className={cn(
-              'grid gap-x-space-10 min-w-0 w-full flex-1 lg:contents',
+              'grid gap-x-space-10 min-w-0 w-full flex-1 desk:contents',
               showEye || chevron
                 ? 'grid-cols-fill-auto-auto'
                 : 'grid-cols-fill-auto',
@@ -363,14 +363,14 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             {/* Description and context line (Cell 3 on desktop, col 1 row 1 on phone) */}
             <div
               role="cell"
-              className="col-start-1 row-start-1 text-heading text-ink break-words min-w-0 lg:col-start-auto lg:row-start-auto lg:text-body lg:px-space-12 lg:py-space-6"
+              className="col-start-1 row-start-1 text-heading text-ink break-words min-w-0 desk:col-start-auto desk:row-start-auto desk:text-body desk:px-space-12 desk:py-space-6"
             >
-              <div className="text-heading font-medium lg:text-body-strong text-ink truncate">
+              <div className="text-heading font-medium desk:text-body-strong text-ink truncate">
                 {description ?? children}
               </div>
               {/* Phone context line (starts with the account) */}
               {contextElements.length > 0 && (
-                <div className="flex flex-wrap items-center gap-x-space-4 mt-space-2 text-caption font-medium text-ink-3 min-w-0 lg:hidden">
+                <div className="flex flex-wrap items-center gap-x-space-4 mt-space-2 text-caption font-medium text-ink-3 min-w-0 desk:hidden">
                   {contextElements.map((el, i) => (
                     <React.Fragment key={i}>
                       {i > 0 && <span className="text-ink-4 select-none">·</span>}
@@ -381,7 +381,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               )}
               {/* Desktop context line under description */}
               {desktopContextElements.length > 0 && (
-                <div className="hidden lg:flex items-center gap-x-space-4 text-caption text-ink-3 truncate mt-space-2">
+                <div className="hidden desk:flex items-center gap-x-space-4 text-caption text-ink-3 truncate mt-space-2">
                   {desktopContextElements.map((el, i) => (
                     <React.Fragment key={i}>
                       {i > 0 && <span className="text-ink-4 select-none">·</span>}
@@ -395,7 +395,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             {/* Categories (Cell 4 on desktop; on phone col 1 row 2, under the context line) */}
             <div
               role="cell"
-              className="col-start-1 row-start-2 mt-space-6 flex items-center justify-start gap-space-4 empty:hidden lg:empty:flex lg:col-start-auto lg:row-start-auto lg:mt-0 lg:px-space-12 lg:py-space-6 min-w-0 truncate"
+              className="col-start-1 row-start-2 mt-space-6 flex items-center justify-start gap-space-4 empty:hidden desk:empty:flex desk:col-start-auto desk:row-start-auto desk:mt-0 desk:px-space-12 desk:py-space-6 min-w-0 truncate"
             >
               {renderCategories()}
             </div>
@@ -403,7 +403,7 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             {/* Desktop Account (Cell 5) */}
             <div
               role="cell"
-              className="hidden lg:block lg:px-space-12 lg:py-space-6 min-w-0 truncate text-ink-2"
+              className="hidden desk:block desk:px-space-12 desk:py-space-6 min-w-0 truncate text-ink-2"
             >
               {account}
               {plastic && ` ${plastic}`}
@@ -414,13 +414,13 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
               role="cell"
               className={cn(
                 'col-start-2 row-start-1 row-span-2 self-start text-right font-bold text-heading tabular-nums whitespace-nowrap',
-                'lg:col-start-auto lg:row-start-auto lg:row-span-1 lg:self-auto lg:text-body-strong lg:font-bold lg:px-space-12 lg:py-space-6 lg:text-end lg:justify-self-end',
+                'desk:col-start-auto desk:row-start-auto desk:row-span-1 desk:self-auto desk:text-body-strong desk:font-bold desk:px-space-12 desk:py-space-6 desk:text-end desk:justify-self-end',
                 isCredit ? 'text-positive' : 'text-ink',
               )}
             >
               {amount}
               {balance && (
-                <div className="text-caption font-medium text-ink-3 lg:hidden">
+                <div className="text-caption font-medium text-ink-3 desk:hidden">
                   {balance}
                 </div>
               )}
@@ -429,14 +429,14 @@ export const TransactionRow = forwardRef<HTMLDivElement, TransactionRowProps>(
             {/* Desktop Balance (Cell 7) */}
             <div
               role="cell"
-              className="hidden lg:block lg:px-space-12 lg:py-space-6 min-w-0 truncate text-end tabular-nums text-ink-2 justify-self-end"
+              className="hidden desk:block desk:px-space-12 desk:py-space-6 min-w-0 truncate text-end tabular-nums text-ink-2 justify-self-end"
             >
               {balance}
             </div>
 
             {/* Phone Trailing eye icon in selection mode or chevron */}
             {(showEye || chevron) && (
-              <div className="col-start-3 row-start-1 row-span-2 flex items-center justify-end text-ink-3 lg:hidden">
+              <div className="col-start-3 row-start-1 row-span-2 flex items-center justify-end text-ink-3 desk:hidden">
                 {showEye && (
                   <span {...nestedControlProps}>
                     <Button

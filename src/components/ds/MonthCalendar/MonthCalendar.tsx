@@ -246,7 +246,7 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
                   key={iso}
                   data-date={iso}
                   data-outside=""
-                  className="min-h-space-56 border-r border-b border-line-soft bg-sunken p-space-4 text-caption font-bold text-line-heavy lg:min-h-space-96 lg:p-space-6"
+                  className="min-h-space-56 border-r border-b border-line-soft bg-sunken p-space-4 text-caption font-bold text-line-heavy desk:min-h-space-96 desk:p-space-6"
                 >
                   {day}
                 </div>
@@ -273,7 +273,7 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
                   }
                 }}
                 className={cn(
-                  'flex min-h-space-56 min-w-0 cursor-pointer flex-col gap-space-4 border-r border-b border-line-soft p-space-4 text-caption transition-colors lg:min-h-space-96 lg:p-space-6',
+                  'flex min-h-space-56 min-w-0 cursor-pointer flex-col gap-space-4 border-r border-b border-line-soft p-space-4 text-caption transition-colors desk:min-h-space-96 desk:p-space-6',
                   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand',
                   isToday ? 'bg-brand-tint' : 'hover:bg-hover active:bg-pressed',
                   isSelected && 'ring-1 ring-inset ring-brand',
@@ -288,15 +288,15 @@ export const MonthCalendar = forwardRef<HTMLDivElement, MonthCalendarProps>(
                     key={ev.id}
                     title={ev.label}
                     className={cn(
-                      'block h-space-6 rounded-ds-xs font-bold lg:h-auto lg:truncate lg:px-space-6 lg:py-space-2',
+                      'block h-space-6 rounded-ds-xs font-bold desk:h-auto desk:truncate desk:px-space-6 desk:py-space-2',
                       eventToneStyles[ev.tone ?? 'brand'],
                     )}
                   >
-                    <span className="hidden lg:inline">{ev.label}</span>
+                    <span className="hidden desk:inline">{ev.label}</span>
                   </span>
                 ))}
                 {hidden > 0 && (
-                  <span className="hidden truncate px-space-6 font-bold text-ink-3 lg:block">
+                  <span className="hidden truncate px-space-6 font-bold text-ink-3 desk:block">
                     {moreLabel(hidden)}
                   </span>
                 )}

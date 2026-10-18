@@ -108,7 +108,7 @@ describe('TabBar', () => {
     expect(screen.getByText('99+')).toBeInTheDocument();
   });
 
-  it('renders floating pill container with Phase 1 classes and lg:hidden', () => {
+  it('renders floating pill container with Phase 1 classes and desk:hidden', () => {
     render(<TabBar items={sampleItems} current="home" />);
     const nav = screen.getByRole('navigation', { name: 'Primary' });
 
@@ -124,7 +124,7 @@ describe('TabBar', () => {
       'shadow-up-1',
       'py-space-8',
       'px-space-4',
-      'lg:hidden',
+      'desk:hidden',
     );
   });
 

@@ -14,6 +14,8 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      // Dinero's one layout switch (owner, 2026-10-19): 640px and below is the phone layout. Legacy keeps `lg`.
+      screens: { desk: '641px' },
       colors: {
         // Removed a 13-shade `finance` scale (a near-duplicate of Tailwind's
         // default green) that had zero usages anywhere in src.

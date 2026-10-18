@@ -839,7 +839,7 @@ export const TransactionsList: StoryObj = {
         </Card>
 
         <SelectionBar
-          className="fixed inset-x-0 bottom-0 lg:bottom-safe-12"
+          className="fixed inset-x-0 bottom-0 desk:bottom-safe-12"
           count={selectedIds.length}
           summary={`₹${inrWhole.format(outOf(selectedRows))} out${flaggedSelected.length ? ` · ${flaggedSelected.length} need review` : ''}`}
           onClear={clearSelection}

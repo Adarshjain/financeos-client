@@ -1,18 +1,18 @@
 # DataTable
 
-The list frame for every table of records: column headers with sort, a selection column, group bands, expandable rows, a footer line, and the Pager above and below. One component and one markup: a table on desktop, stacked rows on phone, chosen by CSS at `lg`.
+The list frame for every table of records: column headers with sort, a selection column, group bands, expandable rows, a footer line, and the Pager above and below. One component and one markup: a table on desktop, stacked rows on phone, chosen by CSS at `desk`.
 
 **Status:** approved by the owner (2026-10-17), with the requirements review the same day. Not built.
 
 ## Use
 - Every list of records the desktop boards draw as a table: transactions, account recent transactions, accounts, holdings, tradebook, F&O, dividends, instruments, corporate actions, lendings and ledgers, loans and schedules, statement lines, import lines, reports and report tables, "View underlying data", categories, reward lines, settings lists (AI keys, connections, jobs). Card grids (rules) and action lists (inbox, upcoming) are not tables: they use RuleCard and ListRow.
 - **DataTable is the table only.** The page puts it in a Card, with `Card.Header` for the title strip (title, subtitle, links, selectors), or directly in a Dialog body for "View underlying data".
-- **Desktop (`lg` and up):**
+- **Desktop (`desk` and up):**
   - **Header row:** `overline` type in `ink-3` on `bg-sunken`, 32px tall. The checkbox column comes first when the table is selectable. Number columns (`align: 'end'`) are right-aligned with tabular figures.
   - **Rows:** at least 40px tall, cells padded `px-space-12 py-space-6`. A cell is one line with ellipsis unless its column has `wrap: true`; then it may hold several lines (a name with a muted subtitle, a description with its context line, two stacked values).
   - **Sorting:** a sortable header is clicked to sort by that column. Each click moves through ascending, descending and off. The active header shows a chevron for the direction. One column at a time.
   - **Sticky header** (`stickyHeader`, default on): the header sticks to the top of the table's scroll container (report widgets, dialogs). On a page, the table doesn't scroll on its own, so nothing sticks there.
-- **Phone (below `lg`):** the header and the checkbox column aren't shown. Each row stacks into:
+- **Phone (below `desk`):** the header and the checkbox column aren't shown. Each row stacks into:
   - line 1: the `main` cell on the left, the `amount` cell on the right;
   - line 2: the row's `phoneSub` text on the left, the `status` cell on the right (it may hold several chips; they wrap, right-aligned);
   - an optional line 3: `phoneActions` buttons, right-aligned;

@@ -503,7 +503,7 @@ describe('DataTable', () => {
   });
 
   describe('Phone layout', () => {
-    it('phoneSub and phoneActions render, with lg:hidden', () => {
+    it('phoneSub and phoneActions render, with desk:hidden', () => {
       render(
         <DataTable
           columns={testColumns}
@@ -516,14 +516,14 @@ describe('DataTable', () => {
 
       const subEl = screen.getByText('Sub info 1');
       expect(subEl).toBeInTheDocument();
-      expect(subEl).toHaveClass('lg:hidden');
+      expect(subEl).toHaveClass('desk:hidden');
 
       const actionBtn = screen.getAllByText('Close')[0];
       const actionContainer = actionBtn.closest('div');
-      expect(actionContainer).toHaveClass('lg:hidden');
+      expect(actionContainer).toHaveClass('desk:hidden');
     });
 
-    it('hidden columns carry hidden lg:block', () => {
+    it('hidden columns carry hidden desk:block', () => {
       const colsWithHidden = helper.columns([
         helper.accessor('name', {
           id: 'name',
@@ -546,7 +546,7 @@ describe('DataTable', () => {
       );
 
       const categoryCell = screen.getAllByRole('cell')[1];
-      expect(categoryCell).toHaveClass('hidden', 'lg:block');
+      expect(categoryCell).toHaveClass('hidden', 'desk:block');
     });
   });
 
@@ -571,7 +571,7 @@ describe('DataTable', () => {
       expect(screen.getAllByText('Month: Nov')).toHaveLength(1);
     });
 
-    it('a day header appears, wrapped in lg:hidden', () => {
+    it('a day header appears, wrapped in desk:hidden', () => {
       const dataWithDays: TestRow[] = [
         { id: '1', name: 'A', amount: 10, date: '10 Oct' },
         { id: '2', name: 'B', amount: 20, date: '11 Oct' },
@@ -591,7 +591,7 @@ describe('DataTable', () => {
       );
 
       const dayHeader = screen.getByText('10 Oct').closest('div');
-      expect(dayHeader).toHaveClass('lg:hidden');
+      expect(dayHeader).toHaveClass('desk:hidden');
     });
   });
 

@@ -56,7 +56,7 @@ Selected (`brand-tint` with a 4px `brand` stripe), warning tone (`attention-tint
 | **Scroll or swipe** (the pointer moves more than 10px, or the browser takes the gesture) | Cancels: no long-press, no tap. | Same. |
 | **Press on a control inside the item** (checkbox, eye, Approve, ⋮ menu, category chip) | Only that control acts; the item doesn't. | Same. |
 
-These gestures belong to the **phone layout** (below `lg`), with touch or mouse. In the desktop layout there is no long-press: a press always calls `onDetail`, even in selection mode, and the checkbox selects (owner, 2026-10-18).
+These gestures belong to the **phone layout** (below `desk`), with touch or mouse. In the desktop layout there is no long-press: a press always calls `onDetail`, even in selection mode, and the checkbox selects (owner, 2026-10-18).
 
 ## Not here
 - Swipe: the page wraps the row in SwipeActions. The row has no swipe props.

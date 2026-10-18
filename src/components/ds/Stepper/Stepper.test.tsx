@@ -13,15 +13,15 @@ const items = () => screen.getAllByRole('listitem');
 const circle = (li: HTMLElement) => li.firstElementChild!.firstElementChild as HTMLElement;
 const connector = (li: HTMLElement) => li.children[1] as HTMLElement | undefined;
 const segments = (container: HTMLElement) =>
-  Array.from(container.querySelectorAll<HTMLElement>('.lg\\:hidden [data-state]'));
+  Array.from(container.querySelectorAll<HTMLElement>('.desk\\:hidden [data-state]'));
 
 describe('Stepper', () => {
   describe('desktop form', () => {
-    it('renders every step in order as an ordered list hidden below lg', () => {
+    it('renders every step in order as an ordered list hidden below desk', () => {
       render(<Stepper steps={steps} current={0} />);
       const list = screen.getByRole('list');
       expect(list.tagName).toBe('OL');
-      expect(list).toHaveClass('hidden', 'lg:flex');
+      expect(list).toHaveClass('hidden', 'desk:flex');
       expect(items().map((li) => li.textContent)).toEqual(['1Files', '2Match instruments', '3Reconcile', '4Done']);
     });
 
@@ -71,9 +71,9 @@ describe('Stepper', () => {
   });
 
   describe('phone form', () => {
-    it('shows "Step N of M" and the current step name, hidden from lg', () => {
+    it('shows "Step N of M" and the current step name, hidden from desk', () => {
       const { container } = render(<Stepper steps={steps} current={2} />);
-      const phone = container.querySelector('.lg\\:hidden')!;
+      const phone = container.querySelector('.desk\\:hidden')!;
       expect(phone).toHaveTextContent('Step 3 of 4');
       expect(phone).toHaveTextContent('Reconcile');
       expect(phone).not.toHaveTextContent('Match instruments');
@@ -89,7 +89,7 @@ describe('Stepper', () => {
 
     it('past the last step it stays on the last step with the bar full', () => {
       const { container } = render(<Stepper steps={steps} current={4} />);
-      expect(container.querySelector('.lg\\:hidden')).toHaveTextContent('Step 4 of 4Done');
+      expect(container.querySelector('.desk\\:hidden')).toHaveTextContent('Step 4 of 4Done');
       expect(segments(container).every((s) => s.classList.contains('bg-brand'))).toBe(true);
     });
 
@@ -97,7 +97,7 @@ describe('Stepper', () => {
       const { container } = render(
         <Stepper steps={steps} current={0} stepLabel={(step, total) => `${step}/${total}`} />,
       );
-      expect(container.querySelector('.lg\\:hidden')).toHaveTextContent('1/4Files');
+      expect(container.querySelector('.desk\\:hidden')).toHaveTextContent('1/4Files');
     });
   });
 

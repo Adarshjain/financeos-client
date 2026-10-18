@@ -112,7 +112,7 @@ describe('TransactionRow', () => {
     expect(description).toHaveClass('col-start-1', 'row-start-1');
     expect(description).toHaveTextContent('HDFC Bank Savings');
     expect(categories).toHaveClass('col-start-1', 'row-start-2', 'justify-start');
-    expect(amount).toHaveClass('col-start-2', 'row-start-1', 'row-span-2', 'self-start', 'lg:row-span-1');
+    expect(amount).toHaveClass('col-start-2', 'row-start-1', 'row-span-2', 'self-start', 'desk:row-span-1');
   });
 
   it('renders unset category chip when categories array is empty and unsetCategoryLabel provided', () => {
@@ -576,7 +576,7 @@ describe('TransactionRow', () => {
       // Verify cells appear in grid order:
       // 1. checkbox, 2. date, 3. description, 4. categories, 5. account, 6. amount, 7. balance
       expect(cells).toHaveLength(7);
-      expect(cells[0]).toHaveClass('hidden lg:flex');
+      expect(cells[0]).toHaveClass('hidden desk:flex');
       expect(cells[1]).toHaveTextContent('15 Oct');
       expect(cells[2]).toHaveTextContent('Apple Store');
       expect(cells[3]).toHaveTextContent('Electronics');
@@ -595,7 +595,7 @@ describe('TransactionRow', () => {
       );
 
       const dateEl = screen.getByText('15 Oct');
-      expect(dateEl).toHaveClass('hidden lg:block');
+      expect(dateEl).toHaveClass('hidden desk:block');
     });
 
     it('transactionColumns matches the column tracks', () => {

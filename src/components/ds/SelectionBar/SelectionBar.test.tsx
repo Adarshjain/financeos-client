@@ -105,10 +105,10 @@ describe('SelectionBar', () => {
       expect(screen.getAllByText(labelRegex)).toHaveLength(1);
     });
 
-    // Hint is present with lg:hidden
+    // Hint is present with desk:hidden
     const hint = screen.getByText('the pair');
     expect(hint).toBeInTheDocument();
-    expect(hint).toHaveClass('lg:hidden');
+    expect(hint).toHaveClass('desk:hidden');
 
     const selectAllBtn = screen.getByRole('button', {
       name: 'Select all 182',
@@ -116,13 +116,13 @@ describe('SelectionBar', () => {
     expect(selectAllBtn).toBeInTheDocument();
     expect(selectAllBtn).toHaveClass('h-control-md');
 
-    // Bar switches between docked bottom sheet (< lg) and floating pill (>= lg)
+    // Bar switches between docked bottom sheet (< desk) and floating pill (>= desk)
     // The root carries the layer, so the bar stays above sticky section headers.
     const root = container.firstElementChild;
     expect(root).toHaveClass('relative', 'z-floating');
     const bar = root?.firstElementChild;
     expect(bar).toBeInTheDocument();
-    expect(bar).toHaveClass('rounded-t-ds-2xl', 'lg:rounded-ds-lg', 'shadow-up-1', 'lg:shadow-level-2', 'w-full', 'lg:w-fit');
+    expect(bar).toHaveClass('rounded-t-ds-2xl', 'desk:rounded-ds-lg', 'shadow-up-1', 'desk:shadow-level-2', 'w-full', 'desk:w-fit');
 
     fireEvent.click(selectAllBtn);
     expect(handleSelectAll).toHaveBeenCalledTimes(1);
@@ -153,7 +153,7 @@ describe('SelectionBar', () => {
     );
     const linkBtn = screen.getByRole('button', { name: 'Link' });
     expect(linkBtn).toHaveClass('h-auto');
-    expect(linkBtn).toHaveClass('lg:h-control-md');
+    expect(linkBtn).toHaveClass('desk:h-control-md');
     const classList = Array.from(linkBtn.classList);
     expect(classList).not.toContain('h-control-md');
   });

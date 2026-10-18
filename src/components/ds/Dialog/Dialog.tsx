@@ -14,10 +14,10 @@ export type DialogVariant = 'modal' | 'side-panel';
 export type DialogBackground = 'surface' | 'canvas';
 
 const dialogSizeClasses: Record<DialogSize, string> = {
-  ['sm']: 'lg:max-w-container-sm',
-  ['md']: 'lg:max-w-container-md',
-  ['lg']: 'lg:max-w-container-lg',
-  ['xl']: 'lg:max-w-container-xl',
+  ['sm']: 'desk:max-w-container-sm',
+  ['md']: 'desk:max-w-container-md',
+  ['lg']: 'desk:max-w-container-lg',
+  ['xl']: 'desk:max-w-container-xl',
 };
 
 export interface DialogHandleProps extends React.HTMLAttributes<HTMLDivElement> {}
@@ -48,7 +48,7 @@ export const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(
       <div
         ref={ref}
         className={cn(
-          'px-space-16 lg:px-space-20 py-space-10 overflow-y-auto flex flex-col gap-space-12 flex-1 touch-pan-y',
+          'px-space-16 desk:px-space-20 py-space-10 overflow-y-auto flex flex-col gap-space-12 flex-1 touch-pan-y',
           className
         )}
         {...props}
@@ -91,14 +91,14 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
       <div
         ref={ref}
         className={cn(
-          'px-space-16 lg:px-space-20 py-space-12 border-t border-line-soft bg-sunken shrink-0',
+          'px-space-16 desk:px-space-20 py-space-12 border-t border-line-soft bg-sunken shrink-0',
           className
         )}
         {...props}
       >
         {children}
         {hasActions && (
-          <div className="grid grid-flow-col auto-cols-fr gap-space-8 lg:flex lg:justify-end">
+          <div className="grid grid-flow-col auto-cols-fr gap-space-8 desk:flex desk:justify-end">
             {tertiary && (
               <Button
                 key="tertiary"
@@ -109,7 +109,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
                 disabled={tertiary.disabled}
                 loading={tertiary.loading}
                 onClick={tertiary.onSelect}
-                className="w-full h-control-xl lg:w-auto lg:h-control-md flex items-center justify-center lg:px-space-8"
+                className="w-full h-control-xl desk:w-auto desk:h-control-md flex items-center justify-center desk:px-space-8"
               >
                 {tertiary.label}
               </Button>
@@ -124,7 +124,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
                 disabled={secondary.disabled}
                 loading={secondary.loading}
                 onClick={secondary.onSelect}
-                className="w-full h-control-xl lg:w-auto lg:h-control-md flex items-center justify-center lg:px-space-8"
+                className="w-full h-control-xl desk:w-auto desk:h-control-md flex items-center justify-center desk:px-space-8"
               >
                 {secondary.label}
               </Button>
@@ -139,7 +139,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
                 disabled={primary.disabled}
                 loading={primary.loading}
                 onClick={primary.onSelect}
-                className="w-full h-control-xl lg:w-auto lg:h-control-md"
+                className="w-full h-control-xl desk:w-auto desk:h-control-md"
               >
                 {primary.label}
               </Button>
@@ -204,8 +204,8 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
           'flex flex-col overflow-hidden font-text text-body text-ink border-line-soft max-h-dvh w-full',
           'rounded-t-ds-2xl shadow-up-2 border-t',
           variant === 'side-panel'
-            ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-level-3 lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full'
-            : 'lg:rounded-ds-xl lg:shadow-level-3 lg:border',
+            ? 'desk:rounded-none desk:rounded-l-ds-xl desk:shadow-level-3 desk:border-y-0 desk:border-r-0 desk:border-l desk:h-full desk:max-h-full desk:w-full'
+            : 'desk:rounded-ds-xl desk:shadow-level-3 desk:border',
           dialogSizeClasses[size],
           className
         )}
@@ -232,13 +232,13 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
           className="select-none shrink-0 touch-none"
         >
           {dismissible ? (
-            <div className="lg:hidden cursor-grab active:cursor-grabbing touch-none py-space-8">
+            <div className="desk:hidden cursor-grab active:cursor-grabbing touch-none py-space-8">
               <DialogHandle />
             </div>
           ) : null}
 
           {hasVisibleHeader && (
-            <div className="px-space-16 lg:px-space-20 pt-space-12 lg:pt-space-16 pb-space-8 lg:pb-space-10 flex items-start gap-space-12 shrink-0">
+            <div className="px-space-16 desk:px-space-20 pt-space-12 desk:pt-space-16 pb-space-8 desk:pb-space-10 flex items-start gap-space-12 shrink-0">
               <div className="flex-1 min-w-0">
                 {title && (
                   isRadix ? (
@@ -272,7 +272,7 @@ export const DialogPanel = forwardRef<HTMLDivElement, DialogPanelProps>(
                   type="button"
                   aria-label="Close"
                   onClick={onClose}
-                  className="hidden lg:inline-flex text-ink-4 hover:text-ink hover:bg-hover p-space-6 rounded-ds-md ml-auto shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
+                  className="hidden desk:inline-flex text-ink-4 hover:text-ink hover:bg-hover p-space-6 rounded-ds-md ml-auto shrink-0 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus-ring"
                 >
                   <Icon name="close" size="md" />
                 </button>
@@ -445,7 +445,7 @@ export const DialogContent = forwardRef<
 
     return (
       <DialogPortal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-backdrop bg-backdrop animate-in fade-in-0 duration-slow lg:duration-base data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow lg:data-closed:duration-base" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-backdrop bg-backdrop animate-in fade-in-0 duration-slow desk:duration-base data-closed:animate-out data-closed:fade-out-0 data-closed:fill-mode-forwards data-closed:duration-slow desk:data-closed:duration-base" />
         <DialogPrimitive.Content
           ref={ref}
           style={{ pointerEvents: 'none' }}
@@ -453,10 +453,10 @@ export const DialogContent = forwardRef<
           onEscapeKeyDown={handleEscapeKeyDown}
           className={cn(
             'group fixed inset-x-0 bottom-0 z-overlay flex flex-col focus:outline-none',
-            'data-closed:animate-out data-closed:fill-mode-forwards data-closed:duration-slow lg:data-closed:duration-base',
+            'data-closed:animate-out data-closed:fill-mode-forwards data-closed:duration-slow desk:data-closed:duration-base',
             variant === 'side-panel'
-              ? 'lg:inset-y-0 lg:right-0 lg:left-auto lg:h-full lg:max-h-full'
-              : 'lg:inset-0 lg:items-center lg:justify-center lg:p-space-16'
+              ? 'desk:inset-y-0 desk:right-0 desk:left-auto desk:h-full desk:max-h-full'
+              : 'desk:inset-0 desk:items-center desk:justify-center desk:p-space-16'
           )}
           {...props}
         >
@@ -472,14 +472,14 @@ export const DialogContent = forwardRef<
               background === 'canvas' ? 'bg-canvas' : 'bg-surface',
               'rounded-t-ds-2xl shadow-up-2 border-t',
               variant === 'side-panel'
-                ? 'lg:rounded-none lg:rounded-l-ds-xl lg:shadow-level-3 lg:border-y-0 lg:border-r-0 lg:border-l lg:h-full lg:max-h-full lg:w-full lg:slide-in-from-right lg:group-data-closed:slide-out-to-right'
-                : 'lg:rounded-ds-xl lg:shadow-level-3 lg:border lg:zoom-in-95 lg:group-data-closed:zoom-out-95',
+                ? 'desk:rounded-none desk:rounded-l-ds-xl desk:shadow-level-3 desk:border-y-0 desk:border-r-0 desk:border-l desk:h-full desk:max-h-full desk:w-full desk:slide-in-from-right desk:group-data-closed:slide-out-to-right'
+                : 'desk:rounded-ds-xl desk:shadow-level-3 desk:border desk:zoom-in-95 desk:group-data-closed:zoom-out-95',
               dialogSizeClasses[size],
-              'animate-in fade-in-0 slide-in-from-bottom lg:slide-in-from-bottom-0',
-              'group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:slide-out-to-bottom lg:group-data-closed:slide-out-to-bottom-0 group-data-closed:fill-mode-forwards group-data-closed:duration-slow lg:group-data-closed:duration-base',
+              'animate-in fade-in-0 slide-in-from-bottom desk:slide-in-from-bottom-0',
+              'group-data-closed:animate-out group-data-closed:fade-out-0 group-data-closed:slide-out-to-bottom desk:group-data-closed:slide-out-to-bottom-0 group-data-closed:fill-mode-forwards group-data-closed:duration-slow desk:group-data-closed:duration-base',
               isDragging
                 ? 'transition-none'
-                : 'transition-transform duration-slow ease-out lg:duration-base',
+                : 'transition-transform duration-slow ease-out desk:duration-base',
               className
             )}
           >

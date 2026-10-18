@@ -38,11 +38,11 @@ describe('Illustration component', () => {
   it('hides copy on mobile via CSS classes for phone form', () => {
     const { container: c1 } = render(<Illustration variant="signin" />);
     const copy1 = c1.querySelector('h1')?.parentElement;
-    expect(copy1).toHaveClass('hidden', 'lg:flex');
+    expect(copy1).toHaveClass('hidden', 'desk:flex');
 
     const { container: c2 } = render(<Illustration variant="signup" />);
     const copy2 = c2.querySelector('h1')?.parentElement;
-    expect(copy2).toHaveClass('hidden', 'lg:flex');
+    expect(copy2).toHaveClass('hidden', 'desk:flex');
   });
 
   it('renders signin and signup panels edge-to-edge with no corner radius', () => {

@@ -76,7 +76,7 @@ export function ShellTabBar({
           showClose={false}
           background="canvas"
           onClose={() => setMoreOpen(false)}
-          className="lg:hidden"
+          className="desk:hidden"
         >
           <div className="px-space-16 pt-space-8 pb-safe-12 overflow-y-auto space-y-space-12">
             {/* Quick add */}

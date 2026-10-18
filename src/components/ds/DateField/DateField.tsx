@@ -305,7 +305,7 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
             today={today}
             onValueChange={handleRangeCalendarChange}
           />
-          <div className="hidden lg:block shrink-0">
+          <div className="hidden desk:block shrink-0">
             <MonthCalendar
               mode="picker"
               range

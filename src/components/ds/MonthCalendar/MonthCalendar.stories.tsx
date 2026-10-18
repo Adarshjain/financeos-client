@@ -151,7 +151,7 @@ export const UpcomingCalendar: Story = {
 
     return (
       <div className="flex max-w-6xl flex-col gap-space-12">
-        <div className="flex flex-col gap-space-12 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-space-12 desk:flex-row desk:items-center desk:justify-between">
           <Text variant="body" tone="ink-3">
             {formatMonth(month)} · {inr(due)} due · {overdue} overdue
           </Text>
@@ -160,7 +160,7 @@ export const UpcomingCalendar: Story = {
               <Icon name="chevron-left" />
             </Button>
             <Button
-              className="flex-1 lg:flex-none"
+              className="flex-1 desk:flex-none"
               onClick={() => {
                 updateArgs({ value: TODAY });
                 goToMonth(`${TODAY.slice(0, 7)}-01`);
