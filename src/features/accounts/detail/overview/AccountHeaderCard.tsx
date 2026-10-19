@@ -57,7 +57,7 @@ export function AccountHeaderCard({
             </div>
           ) : null}
         </div>
-        <div className="flex items-center gap-space-8 w-full desk:w-auto desk:ml-auto">
+        <div className="flex items-center gap-space-8 w-full desk:w-auto">
           {model.markPaid ? (
             <Button
               variant="primary"

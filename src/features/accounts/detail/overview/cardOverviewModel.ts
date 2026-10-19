@@ -18,6 +18,7 @@ import type { Transaction } from '@/lib/transaction.types';
 import { utilisationTone } from '@/lib/utilisation';
 
 import { paidTiming } from '../billsHistoryModel';
+import { currentMilestones } from '../milestones';
 import { daysBetween, plural } from './dates';
 
 export type MeterTone = 'brand' | 'warning' | 'danger';
@@ -195,7 +196,7 @@ export function buildRewards(
             : fmt(rule.earned),
       };
     }),
-    milestones: report.milestones.map((m) => {
+    milestones: currentMilestones(report.milestones, today).map((m) => {
       const spend = m.basis === 'SPEND';
       const pct = m.threshold > 0 ? Math.min(100, Math.round((m.progress / m.threshold) * 100)) : 0;
       const payout =
@@ -204,19 +205,19 @@ export function buildRewards(
             ? pts(m.payoutValue)
             : formatRupees(m.payoutValue)
           : null;
-      const threshold = spend ? formatCompactRupees(m.threshold) : plural(m.threshold, 'txn', 'txns');
       const daysLeft = daysBetween(today, m.windowEnd);
       const count = spend
         ? `${formatRupees(m.progress)} of ${formatRupees(m.threshold)}`
         : `${m.progress} of ${m.threshold} txns`;
+      const target = payout ? `${count} → ${payout}` : count;
       return {
         id: m.milestoneId,
-        label: `Milestone · ${threshold}${payout ? ` → ${payout}` : ''}`,
+        label: m.name,
         pct,
         caption:
           daysLeft != null && daysLeft >= 0
-            ? `${count} · ${plural(daysLeft, 'day', 'days')} left`
-            : count,
+            ? `${target} · ${plural(daysLeft, 'day', 'days')} left`
+            : target,
       };
     }),
   };
