@@ -309,17 +309,18 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - The Statements list keeps ListRow's chevron on phone.
   - Card running balances in Recent transactions stay signed, as in the live app.
   - The Cards tab keeps its in-tab button to add an add-on card.
-  - A Tooltip component is to be built (owner request; overrides the "no tooltips" line in RULES §1.2 for that component). Its design is still being settled.
+  - A Tooltip component is to be built (owner request; overrides the "no tooltips" line in RULES §1.2 for that component). Desktop only, no tooltip on phone. Look: dark ink surface, light caption text, small radius.
+  - **Bank field.** Bank accounts and credit cards get a `bank` (internal id); server and client share the same ids. The server stores it (nullable; old accounts may have none) and checks ids; the client owns display names and logos. The new Add/Edit dialogs require it, so editing an old account needs a bank; the server will require it too once the live form is replaced. The list covers the Indian banks and the card issuers in India (one bank per card, e.g. a Scapia card picks Axis, BOBCARD or Federal Bank); fintech brands that aren't banks (Jupiter) aren't on it; slice is a bank. Searchable Select, no create option. Every bank has a logo. When two accounts share an alert's last 4 digits, the server matches a bank name found in the email's text against the list (never the sender address).
+  - Bank accounts keep joint holders (as live).
+  - Financial position defaults: Liability for a credit card, Asset for every other type.
+  - The account boards' items with no data (N need a category, Reminders, "+N transactions since", etc.) are dropped.
+  - Top-bar actions (Ask the data, Search, Chat, Notifications) are wired once in the /ds shell.
+
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
 
-- 2026-10-19 · Phase 3 · Accounts · Bank picker (owner 11) · Accounts have no bank field (not in the live form, not in the API), so the picker would save nothing. Left out. Options: (A) add a `bank` field on the server and the form; (B) drop the picker.
-- 2026-10-19 · Phase 3 · Accounts Cards tab · In-tab "Add add-on cardholder" / "Add joint holder" button · Not on the boards (RULES §7.1), but it is the only way to add a bank joint holder (the bank Overview has no Cardholders card). Options: (A) keep it; (B) the app-bar + on the Cards tab opens it; (C) drop it.
-- 2026-10-19 · Phase 3 · Accounts form · Financial position default · The board draws a new card as Liability; the live form defaulted every type to Asset. Built as the board. Confirm.
 - 2026-10-19 · Phase 3 · DataTable · Empty phone actions · The accounts list now streams the card rows' Upload button (a4e04c3), so `phoneActions` always returns a node and every card row on phone gets the actions row's 8px top padding even when no Upload shows. Options: (A) DataTable hides the phone actions container when it renders nothing (`empty:hidden`; streamed Suspense leaves only comments, which `:empty` ignores); (B) accept the gap. Recommend A.
-- 2026-10-19 · Phase 3 · Accounts · Board items with no data · Left out: "+11 transactions since", "N need a category", the Reminders connection row, broker today's change (portfolio-wide only) and linked bank, SIPs in "What pays", statement PDF password and skipped-line reasons, the rewards cardholder filter, "Rule 1 never fires", rule rates on Overview rows. Options: (A) leave out; (B) server additions later.
-- 2026-10-19 · Phase 3 · /ds shell · Top-bar actions · `ShellPage` wires only the + (and desktop "Add"). The board's Ask the data, Search, Chat and Notifications actions aren't wired in the /ds shell yet. Options: (A) wire them in the shell before the first swap; (B) per page.
 
 - 2026-10-16 · Phase 3a · Shell · Quick add actions without live routes · Quick add items Transaction, Lending and Trade are modal dialogs in the Legacy app without dedicated routes; only Import (/transactions/import) has a route. Options: (A) Build dedicated Dinero add forms later when those modules migrate, or (B) Open the Legacy live pages/dialogs. Meanwhile, those three tiles are shown disabled until the owner decides.
 - 2026-10-15 · Phase 2 · Checkbox · Indeterminate/mixed state icon · Checkbox mixed state (some rows selected) needs a minus/dash icon, which is not in icons.json. Options: (A) Add `minus` (Phosphor `minus`) to the icon registry, (B) Render an inline SVG dash stroke inside Checkbox, or (C) Use a CSS dash line. Meanwhile using `close` as the closest registry icon.
