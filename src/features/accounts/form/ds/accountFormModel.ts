@@ -7,8 +7,6 @@ import {
 } from '@/lib/account.types';
 import { AccountType, type FinancialPosition } from '@/lib/types';
 
-export { hrefWithoutParam } from '@/lib/dialogParam';
-
 export const LIMIT_POOL_NONE = 'none';
 export const LIMIT_POOL_NEW = 'new';
 
@@ -41,7 +39,7 @@ export function accountTypeLabel(type: AccountType): string {
   return ACCOUNT_TYPE_OPTIONS.find((o) => o.value === type)?.label ?? 'Account';
 }
 
-/** The type slug in `?add=` ("bank_account"…), or null for `?add=1` and anything else. */
+/** The type slug ("bank_account"…), or null for anything else. */
 export function parseAddType(param: string | null | undefined): AccountType | null {
   return ACCOUNT_TYPE_OPTIONS.find((o) => o.value === param)?.value ?? null;
 }

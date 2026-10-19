@@ -11,7 +11,6 @@ import {
   emptyValues,
   fieldsFor,
   formatDmy,
-  hrefWithoutParam,
   LIMIT_POOL_NEW,
   LIMIT_POOL_NONE,
   movesIngestLater,
@@ -372,12 +371,7 @@ describe('identifiers', () => {
   });
 });
 
-describe('urls and dates', () => {
-  it('drops one param and keeps the rest', () => {
-    expect(hrefWithoutParam('/ds/accounts', 'add=1&closed=cards', 'add')).toBe('/ds/accounts?closed=cards');
-    expect(hrefWithoutParam('/ds/accounts/c1', new URLSearchParams('edit=1'), 'edit')).toBe('/ds/accounts/c1');
-  });
-
+describe('dates', () => {
   it('writes an ISO date as dd/mm/yyyy', () => {
     expect(formatDmy('2026-08-01')).toBe('01/08/2026');
     expect(formatDmy('2026-08-01T00:00:00Z')).toBe('01/08/2026');

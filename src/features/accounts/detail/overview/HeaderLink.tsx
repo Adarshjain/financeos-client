@@ -26,19 +26,11 @@ export function HeaderLink({
   );
 }
 
-/** A header link that opens an account dialog in place (`?param=value`), looking like HeaderLink. */
-export function HeaderDialogLink({
-  param,
-  value,
-  children,
-}: {
-  param: string;
-  value: string;
-  children: React.ReactNode;
-}) {
+/** A header link that opens Edit account in place, looking like HeaderLink. */
+export function HeaderDialogLink({ children }: { children: React.ReactNode }) {
   return (
     <Text variant="label" as="span">
-      <OpenDialogButton variant="link" size="sm" param={param} value={value}>
+      <OpenDialogButton variant="link" size="sm">
         {children}
       </OpenDialogButton>
     </Text>

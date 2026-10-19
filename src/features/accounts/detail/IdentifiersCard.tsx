@@ -16,7 +16,7 @@ export function IdentifiersCard({
     <Card
       title="Identifiers"
       subtitle={`How Gmail alerts and statements find this ${noun}`}
-      action={<HeaderDialogLink param="edit" value="1">Edit</HeaderDialogLink>}
+      action={<HeaderDialogLink>Edit</HeaderDialogLink>}
     >
       <div className="px-space-16 pt-space-4 pb-space-14 flex flex-wrap gap-space-6">
         {identifiers.length > 0 ? (

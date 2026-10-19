@@ -12,10 +12,10 @@ Pagination for any list that can outgrow one page, matching the app's TablePagin
 
 ## Variants
 - `default`: `control-md` controls, `space-10` vertical padding.
-- `compact` (owner, 2026-10-17): `control-sm` controls, `space-4` vertical padding, `label` text, for lists where the pager sits above and below a dense table.
+- `compact` is the default (owner 2026-10-19): `control-sm` controls, `space-4` vertical padding, `label` text, for lists where the pager sits above and below a dense table.
 
 ## Consumer provides
-`page` (0-based), `size`, `totalElements`, `totalPages?`, `unit?`, `summary?`, `sizeLabel?`, `onPageChange`, `onSizeChange?`, `sizeOptions?`, `borderPosition?`, `variant?` (`default` | `compact`).
+`page` (0-based), `size`, `totalElements`, `totalPages?`, `unit?`, `summary?`, `sizeLabel?`, `onPageChange`, `onSizeChange?`, `sizeOptions?`, `borderPosition?`, `variant?` (`compact` | `default`; defaults to `compact`).
 
 ## Don't
 - Don't use "Load more" or infinite scroll for money lists; people need to say "page 3" and come back to it.

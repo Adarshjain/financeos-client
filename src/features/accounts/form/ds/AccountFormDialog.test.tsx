@@ -180,8 +180,6 @@ describe('Add account', () => {
     });
     expect(arg.identifiers).toEqual(['XX7741']);
     await waitFor(() => expect(router.push).toHaveBeenCalledWith('/ds/accounts/new1'));
-    // The ?add= entry is dropped (onClose) before navigating, so Back does not reopen Add.
-    expect(onClose.mock.invocationCallOrder[0]).toBeLessThan(router.push.mock.invocationCallOrder[0]);
     expect(toast).toHaveBeenCalledWith('Account created successfully!');
   });
 
@@ -506,7 +504,6 @@ describe('Edit account', () => {
     await waitFor(() => expect(mutations.deleteAccountMutation.mutateAsync).toHaveBeenCalledWith('c1'));
     expect(toast).toHaveBeenCalledWith('Account deleted!');
     expect(router.push).toHaveBeenCalledWith('/ds/accounts');
-    expect(onClose.mock.invocationCallOrder[0]).toBeLessThan(router.push.mock.invocationCallOrder[0]);
   });
 
   it('leaves the close-instead note out of the delete confirm for a closed account', async () => {

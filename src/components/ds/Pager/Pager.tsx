@@ -100,7 +100,7 @@ export const Pager = forwardRef<HTMLElement, PagerProps>(
       onSizeChange,
       sizeOptions = [25, 50, 100],
       borderPosition = 'top',
-      variant = 'default',
+      variant = 'compact',
       className,
       ...props
     },

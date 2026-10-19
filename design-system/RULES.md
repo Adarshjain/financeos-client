@@ -77,7 +77,8 @@ If a design is ambiguous, missing a state, contradicts the code, or cannot be bu
    - **Buttons**: only the Button component's variants and sizes.
    - **Dialog**: one component for every overlay. An unpadded shell; the body is the only scroll container; the footer takes up to three actions as data (`{ label, onSelect }`) and draws the buttons itself, in one row, left to right: tertiary, secondary, primary. Only the primary is filled (`primary`, or `danger-filled` when destructive); secondary and tertiary are `link` (owner, 2026-10-17). On phone the actions present share the row in equal widths at `control-md` height (owner, 2026-10-19); on desktop they keep their natural width, aligned right. Headerless dialogs take an `srTitle`.
    - **Dates**: DateField shows and accepts dd/mm/yyyy, with a calendar to pick from. Never `<input type="date">`.
-   - **Lists**: real server-side pagination, with the Pager above and below the list.
+   - **Lists**: real server-side pagination, with the Pager above and below the list. Pager is `compact` unless the owner says otherwise (2026-10-19).
+   - **Card header actions**: text actions are `link` buttons (owner, 2026-10-19).
 6. On phone, every Dialog renders as a bottom sheet: drag handle, no ×, swipe down or tap the backdrop to close, footer pinned. Desktop dialogs keep ×. The viewport picks the form; pages never choose.
 6a. **Menus, selects, DateField's calendar and every other dropdown never become a sheet** (owner, 2026-10-16). They look and work like a normal dropdown at every width; Popover and Radix DropdownMenu flip above the trigger when there is no room below.
 7. Destructive actions confirm first with a **ConfirmDialog** that says what goes and what stays. Reversible actions confirm afterwards with a **Toast** that has Undo.

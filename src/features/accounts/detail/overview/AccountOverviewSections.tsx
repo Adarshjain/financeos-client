@@ -47,9 +47,7 @@ export function StatementsCard({
       subtitle="Upload monthly PDF or XLSX"
       action={
         canUpload ? (
-          <Button asChild variant="secondary" size="sm">
-            <Link href={`/transactions/import?account=${accountId}`}>Upload</Link>
-          </Button>
+          <HeaderLink href={`/transactions/import?account=${accountId}`}>Upload</HeaderLink>
         ) : undefined
       }
     >

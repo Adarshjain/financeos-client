@@ -17,8 +17,8 @@ import {
   StatusWord,
   Text,
 } from '@/components/ds';
+import { useAccountDialogs } from '@/features/accounts/form/ds/AccountDialogs';
 import { AccountFormDialog } from '@/features/accounts/form/ds/AccountFormDialog';
-import { openDialogParam } from '@/lib/dialogParam';
 
 import type {
   BankRow,
@@ -123,13 +123,13 @@ function ClosedToggleButton({
 }) {
   return (
     <Button
-      variant="link"
+      variant="ghost"
       size="sm"
       className="shrink-0 whitespace-nowrap"
       onClick={onToggle}
     >
       {/* A fixed-width box, text right-aligned: the button keeps its size when the label flips. */}
-      <span className="inline-block min-w-space-32 text-right">{showing ? 'Hide' : 'Show'}</span>
+      <span className="inline-block min-w-space-40 text-right">{showing ? 'Hide' : 'Show'}</span>
       <Icon name={showing ? 'chevron-up' : 'chevron-right'} size="sm" />
     </Button>
   );
@@ -180,9 +180,10 @@ function AddLink({
   addType: string;
   children: React.ReactNode;
 }) {
+  const { open } = useAccountDialogs();
   return (
     <Text variant="label" as="span">
-      <Button variant="link" size="sm" onClick={() => openDialogParam('add', addType)}>
+      <Button variant="link" size="sm" onClick={() => open(addType)}>
         <Icon name="add" size="xs" />
         {children}
       </Button>

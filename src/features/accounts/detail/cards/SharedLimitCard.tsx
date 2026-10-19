@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { Card, ListField } from '@/components/ds';
-import { OpenDialogButton } from '@/features/accounts/form/ds/OpenDialogButton';
 
+import { HeaderDialogLink } from '../overview/HeaderLink';
 import type { SharedLimitModel } from './cardsModel';
 
 /** A credit card's own limit and the shared limit it draws on. Change opens Edit account. */
@@ -16,9 +16,9 @@ export function SharedLimitCard({
       title="Shared limit"
       subtitle="Some banks give several cards one limit"
       action={
-        <OpenDialogButton variant="secondary" size="sm" param="edit" value="1">
+        <HeaderDialogLink>
           Change
-        </OpenDialogButton>
+        </HeaderDialogLink>
       }
     >
       {model.thisCard ? <ListField label="This card" value={model.thisCard} /> : null}

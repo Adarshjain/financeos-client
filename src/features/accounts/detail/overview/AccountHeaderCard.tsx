@@ -56,7 +56,7 @@ export function AccountHeaderCard({
               Mark paid
             </Button>
           ) : null}
-          <OpenDialogButton variant="secondary" className="flex-1 desk:flex-none" param="edit" value="1">
+          <OpenDialogButton variant="secondary" className="flex-1 desk:flex-none">
             Edit
           </OpenDialogButton>
         </div>
