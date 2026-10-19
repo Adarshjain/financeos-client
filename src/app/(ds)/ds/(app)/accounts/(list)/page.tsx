@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 
 import { KpiTile } from '@/components/ds';
 import { AddAccountHost } from '@/features/accounts/form/ds/AccountFormHosts';
 import {
   bankRow,
   brokerRow,
-  cardRow,
+  cardBaseRow,
   cardsKpi,
   cardsSubtitle,
   cashKpi,
@@ -14,8 +14,6 @@ import {
   type ClosedSection,
   formatRupees,
   groupAccounts,
-  investmentsKpi,
-  netWorthKpi,
   walletRow,
 } from '@/features/accounts/list/accountsList';
 import { loadAccountsListData } from '@/features/accounts/list/accountsListData';
@@ -29,6 +27,12 @@ import {
   AccountsEmpty,
   AccountsLoadError,
 } from '@/features/accounts/list/AccountsStates';
+import {
+  InvestmentsTile,
+  InvestmentsTileFallback,
+  NetWorthTile,
+  streamedCardRow,
+} from '@/features/accounts/list/AccountsStreamed';
 import { ShellPage } from '@/features/shell/ShellPage';
 import { sumBalances } from '@/lib/accountTotals';
 import { todayInAppZone } from '@/lib/date-range';
@@ -43,7 +47,9 @@ export default async function DsAccountsPage({
     | ClosedSection
     | undefined;
   const today = todayInAppZone();
-  const data = await loadAccountsListData();
+  // All five requests start now; only the accounts are awaited, the rest stream in below.
+  const streams = loadAccountsListData();
+  const data = await streams.accounts;
 
   let body: React.ReactNode;
   if (data.accounts === null) {
@@ -52,16 +58,10 @@ export default async function DsAccountsPage({
     body = <AccountsEmpty />;
   } else {
     const sections = groupAccounts(data.accounts, today);
-    const billByAccount = new Map(
-      (data.bills ?? []).map((b) => [b.accountId, b])
-    );
-    const rewardByAccount = new Map(
-      (data.rewards ?? []).map((r) => [r.accountId, r])
-    );
     const cash = cashKpi(sections);
     const cards = cardsKpi(sections);
-    const investments = investmentsKpi(sections, data.dayChangePct);
-    const netWorth = data.netWorth === null ? null : netWorthKpi(data.netWorth);
+    const cardRows = (cards: typeof sections.cards.open) =>
+      cards.map((a) => streamedCardRow(cardBaseRow(a, today), streams, today));
 
     body = (
       <div className="flex flex-col gap-space-12 desk:gap-space-16">
@@ -76,16 +76,15 @@ export default async function DsAccountsPage({
             value={cards.value}
             context={cards.context}
           />
-          <KpiTile
-            label={investments.label}
-            value={investments.value}
-            delta={investments.delta}
-          />
-          {netWorth ? (
-            <KpiTile label={netWorth.label} value={netWorth.value} />
-          ) : (
-            <KpiTile label="Net worth" error="Could not load net worth" />
-          )}
+          <Suspense fallback={<InvestmentsTileFallback sections={sections} />}>
+            <InvestmentsTile
+              sections={sections}
+              dayChangePct={streams.dayChangePct}
+            />
+          </Suspense>
+          <Suspense fallback={<KpiTile loading />}>
+            <NetWorthTile netWorth={streams.netWorth} />
+          </Suspense>
         </div>
 
         <BankSection
@@ -97,22 +96,8 @@ export default async function DsAccountsPage({
 
         <CardsSection
           subtitle={cardsSubtitle(sections.cards.open)}
-          rows={sections.cards.open.map((a) =>
-            cardRow(
-              a,
-              billByAccount.get(a.id),
-              rewardByAccount.get(a.id),
-              today
-            )
-          )}
-          closedRows={sections.cards.closed.map((a) =>
-            cardRow(
-              a,
-              billByAccount.get(a.id),
-              rewardByAccount.get(a.id),
-              today
-            )
-          )}
+          rows={cardRows(sections.cards.open)}
+          closedRows={cardRows(sections.cards.closed)}
           closedLine={closedLineFor(sections.cards.closed)}
           showClosed={closedParam === 'cards'}
         />

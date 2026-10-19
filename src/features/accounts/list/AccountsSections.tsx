@@ -21,7 +21,7 @@ import {
 import type {
   BankRow,
   BrokerRow,
-  CardRow,
+  CardBaseRow,
   ClosedSection,
   WalletRow,
 } from './accountsList';
@@ -281,10 +281,40 @@ export function BankSection(props: SectionProps<BankRow>) {
 
 // ---- Credit cards ----------------------------------------------------------
 
-function CardBadges({ row }: { row: CardRow }) {
+/** A card row whose bill- and rewards-derived pieces arrive later as Suspense-wrapped nodes. */
+export interface CardListRow extends CardBaseRow {
+  /** The next-bill badge, if the bills have a state to show. */
+  billSlot: React.ReactNode;
+  /** The Upload button on desktop, shown when the statement is missing. */
+  uploadSlot: React.ReactNode;
+  /** The Upload statement button on phone. */
+  uploadPhoneSlot: React.ReactNode;
+  /** The Rewards cell. */
+  rewardsSlot: React.ReactNode;
+  /** The rewards text at the end of the phone sub line, with its own separator. */
+  phoneRewardsSlot: React.ReactNode;
+}
+
+/** The Upload button for a card whose statement is missing; rendered by the streamed bill check. */
+export function UploadStatementButton({
+  id,
+  label,
+}: {
+  id: string;
+  label: string;
+}) {
+  return (
+    <Button asChild variant="secondary" size="sm">
+      <Link href={uploadHref({ id })}>{label}</Link>
+    </Button>
+  );
+}
+
+function CardBadges({ row }: { row: CardListRow }) {
   return (
     <div className="flex flex-wrap items-center justify-end desk:justify-start gap-space-4">
-      {row.badges.map((badge) => (
+      {row.billSlot}
+      {row.extraBadges.map((badge) => (
         <Badge key={badge.label} tone={badge.tone}>
           {badge.label}
         </Badge>
@@ -296,7 +326,7 @@ function CardBadges({ row }: { row: CardRow }) {
   );
 }
 
-const cardCh = createDataTableColumnHelper<CardRow>();
+const cardCh = createDataTableColumnHelper<CardListRow>();
 const cardColumns = [
   cardCh.display({
     id: 'card',
@@ -355,7 +385,7 @@ const cardColumns = [
     id: 'rewards',
     header: 'Rewards',
     meta: { size: 'md', phone: 'hidden' },
-    cell: ({ row }) => <Text variant="body">{row.original.rewards}</Text>,
+    cell: ({ row }) => row.original.rewardsSlot,
   }),
   cardCh.display({
     id: 'actions',
@@ -363,11 +393,7 @@ const cardColumns = [
     meta: { size: 'lg', align: 'end', phone: 'hidden' },
     cell: ({ row }) => (
       <div className="flex items-center justify-end gap-space-4">
-        {row.original.statementMissing ? (
-          <Button asChild variant="secondary" size="sm">
-            <Link href={uploadHref(row.original)}>Upload</Link>
-          </Button>
-        ) : null}
+        {row.original.uploadSlot}
         <IconLink
           href={`${rowHref(row.original)}/statements`}
           label="Statements"
@@ -379,7 +405,7 @@ const cardColumns = [
   }),
 ];
 
-function cardPhoneSub(row: CardRow): React.ReactNode {
+function cardPhoneSub(row: CardListRow): React.ReactNode {
   const used = row.limitUsed;
   const parts: React.ReactNode[] = [];
   if (row.cardholders > 1) parts.push(`${row.cardholders} cardholders`);
@@ -393,17 +419,21 @@ function cardPhoneSub(row: CardRow): React.ReactNode {
       </>,
     );
   }
-  if (row.rewards !== '—') parts.push(row.rewards);
-  return parts.map((part, i) => (
-    <React.Fragment key={i}>
-      {i > 0 ? ' · ' : null}
-      {part}
-    </React.Fragment>
-  ));
+  return (
+    <>
+      {parts.map((part, i) => (
+        <React.Fragment key={i}>
+          {i > 0 ? ' · ' : null}
+          {part}
+        </React.Fragment>
+      ))}
+      {row.phoneRewardsSlot}
+    </>
+  );
 }
 
 export function CardsSection(
-  props: SectionProps<CardRow> & { subtitle: string }
+  props: SectionProps<CardListRow> & { subtitle: string }
 ) {
   const router = useRouter();
   return (
@@ -425,13 +455,7 @@ export function CardsSection(
         getRowId={(row) => row.id}
         onRowSelect={(row) => router.push(rowHref(row))}
         phoneSub={cardPhoneSub}
-        phoneActions={(row) =>
-          row.statementMissing ? (
-            <Button asChild variant="secondary" size="sm">
-              <Link href={uploadHref(row)}>Upload statement</Link>
-            </Button>
-          ) : null
-        }
+        phoneActions={(row) => row.uploadPhoneSlot}
         rowState={closedState}
         empty={<EmptyState compact description="No credit cards added." />}
       />

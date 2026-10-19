@@ -350,16 +350,18 @@ export interface CardRow {
   closed: boolean;
 }
 
-export function cardRow(
-  card: CreditCard,
-  bill: CardBillResponse | undefined,
-  reward: RewardTotal | undefined,
-  today: string
-): CardRow {
-  const next = nextBillBadge(bill, today);
-  const badges: BadgeModel[] = [];
-  if (next) badges.push(next);
-  if (!card.last4) badges.push({ tone: 'warning', label: 'No active card' });
+/** The card row fields that do not depend on bills or rewards, so they can render before those load. */
+export type CardBaseRow = Omit<
+  CardRow,
+  'badges' | 'statementMissing' | 'rewards'
+> & {
+  /** Badges that come from the account itself, shown after the next-bill badge. */
+  extraBadges: BadgeModel[];
+};
+
+export function cardBaseRow(card: CreditCard, today: string): CardBaseRow {
+  const extraBadges: BadgeModel[] = [];
+  if (!card.last4) extraBadges.push({ tone: 'warning', label: 'No active card' });
   return {
     id: card.id,
     name: card.name,
@@ -367,17 +369,31 @@ export function cardRow(
     sharedLimit: card.limitPool
       ? `Shared limit · ${card.limitPool.name} ${formatCompactRupees(card.limitPool.creditLimit)}`
       : null,
-    badges,
+    extraBadges,
     closing:
       isAccountClosing(card, today) && card.closedOn
         ? `Closing ${formatDayMonth(card.closedOn)}`
         : null,
-    statementMissing: next?.label === 'Statement missing',
     outstanding: formatAmount(-(card.balance ?? 0)),
     limitUsed: limitUsed(card),
-    rewards: rewardsText(reward),
     cardholders: card.cardholders?.length ?? 0,
     closed: isAccountClosed(card, today),
+  };
+}
+
+export function cardRow(
+  card: CreditCard,
+  bill: CardBillResponse | undefined,
+  reward: RewardTotal | undefined,
+  today: string
+): CardRow {
+  const next = nextBillBadge(bill, today);
+  const { extraBadges, ...base } = cardBaseRow(card, today);
+  return {
+    ...base,
+    badges: next ? [next, ...extraBadges] : extraBadges,
+    statementMissing: next?.label === 'Statement missing',
+    rewards: rewardsText(reward),
   };
 }
 
