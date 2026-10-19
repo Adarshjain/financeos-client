@@ -79,11 +79,12 @@ test.describe('Shared credit limits API (@api)', () => {
     expect(pool.openMemberCount).toBe(1);
   });
 
-  test('a second card joins by id with a cap, and both see one pool with two accounts', async ({ request }) => {
+  test('a second card joins by id without a limit of its own, and both see one pool with two accounts', async ({ request }) => {
     const { api } = await freshUser(request, 'pool-join');
     const { a, b, pool } = await pooledPair(api);
 
-    expect(Number(b.creditLimit)).toBe(100000);
+    // pooledPair sends an own limit for the second card; a pooled card keeps none.
+    expect(b.creditLimit ?? null).toBeNull();
     expect(Number(b.effectiveCreditLimit)).toBe(500000);
     for (const id of [a.id, b.id]) {
       const listed = await listCard(api, id);
@@ -92,7 +93,7 @@ test.describe('Shared credit limits API (@api)', () => {
     }
   });
 
-  test('validation: unpooled cards need a limit; new pools need a name and a positive limit; a cap cannot exceed the pool', async ({ request }) => {
+  test('validation: unpooled cards need a limit; new pools need a name and a positive limit', async ({ request }) => {
     const { api } = await freshUser(request, 'pool-validation');
 
     const noLimit = await postCard(api, cardBody('No limit', '1111', {}));
@@ -107,18 +108,36 @@ test.describe('Shared credit limits API (@api)', () => {
     expect(zero.response.status).toBe(400);
     expect(errorMessage(zero)).toBe('Shared credit limit must be greater than zero');
 
-    const overCap = await postCard(
-      api,
-      cardBody('Over cap', '1114', { creditLimit: 600000, limitPool: { name: 'Small', creditLimit: 500000 } })
-    );
-    expect(overCap.response.status).toBe(400);
-    expect(errorMessage(overCap)).toBe("An account's own limit cannot be more than the shared limit");
-
     const missingPool = await postCard(api, cardBody('Ghost', '1115', { limitPool: { id: crypto.randomUUID() } }));
     expect(missingPool.response.status).toBe(404);
 
     const accounts = await api.GET('/api/v1/accounts');
     expect(accounts.data ?? []).toHaveLength(0);
+  });
+
+  test('an own limit sent with a shared limit is dropped, even one above the pool, on create and on update', async ({ request }) => {
+    const { api } = await freshUser(request, 'pool-own-limit');
+
+    const created = await postCard(
+      api,
+      cardBody('Over cap', '1114', { creditLimit: 600000, limitPool: { name: 'Small', creditLimit: 500000 } })
+    );
+    expect(created.response.status).toBe(201);
+    const card = created.data as CreditCardAccountResponse;
+    expect(card.creditLimit ?? null).toBeNull();
+    expect(Number(card.effectiveCreditLimit)).toBe(500000);
+
+    const updated = await putCard(
+      api,
+      card.id,
+      cardBody('Over cap', '1114', { creditLimit: 200000, limitPool: { id: (card.limitPool as Pool).id } })
+    );
+    expect(updated.response.status).toBe(200);
+    for (const read of [listCard, getCard]) {
+      const after = await read(api, card.id);
+      expect(after.creditLimit ?? null).toBeNull();
+      expect(Number(after.effectiveCreditLimit)).toBe(500000);
+    }
   });
 
   test('utilisation is what every card in the pool owes over the shared limit, on the list and the single read', async ({ request }) => {
