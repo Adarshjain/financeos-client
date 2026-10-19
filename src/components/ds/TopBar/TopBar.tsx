@@ -134,7 +134,15 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
 
               const content = (
                 <>
-                  <Icon name={action.icon} size="md" />
+                  {hasLabel ? (
+                    <Icon
+                      name={action.icon}
+                      size="xs"
+                      className="max-desk:w-icon-md max-desk:h-icon-md"
+                    />
+                  ) : (
+                    <Icon name={action.icon} size="md" />
+                  )}
                   {hasLabel && (
                     <span className="hidden desk:inline">{action.label}</span>
                   )}

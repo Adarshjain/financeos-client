@@ -48,6 +48,16 @@ const variantStyles: Record<ButtonVariant, string> = {
     'border-0 bg-transparent text-inherit underline underline-offset-2 hover:no-underline active:opacity-80 p-0 h-auto font-bold inline',
 };
 
+// A button that shows text draws its Icon at `xs` (10px, set here so callers
+// cannot get it wrong). Icon-only buttons keep the Icon's own size.
+const isIconEl = (n: React.ReactNode): n is React.ReactElement<{ size?: string }> =>
+  React.isValidElement(n) && n.type === Icon;
+
+const withXsIcons = (node: React.ReactNode): React.ReactNode =>
+  React.Children.map(node, (c) =>
+    isIconEl(c) ? React.cloneElement(c, { size: 'xs' }) : c,
+  );
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -79,6 +89,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // A link with an icon draws one continuous underline (pseudo element)
     // under icon + gap + text; text-decoration would stop at the SVG.
     const isIconLink = isLink && !iconOnly && hasIconContent;
+    const hasText =
+      !iconOnly &&
+      React.Children.toArray(asChildContent).some((c) => !isIconEl(c));
+    const iconNode = hasText ? withXsIcons(icon) : icon;
+    const bodyOf = (node: React.ReactNode) => (hasText ? withXsIcons(node) : node);
     const isStacked = layout === 'stacked';
     const isEffectivelyDisabled = disabled || loading;
     const isPrimary = variant === 'primary';
@@ -106,7 +121,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       sizeClasses,
       variantStyles[variant],
       isIconLink &&
-        'no-underline relative inline-flex items-center gap-space-4 whitespace-nowrap after:absolute after:inset-x-0 after:bottom-space-2 after:h-px after:bg-current hover:after:hidden',
+        'no-underline relative inline-flex items-center gap-space-2 whitespace-nowrap after:absolute after:inset-x-0 after:bottom-space-2 after:h-px after:bg-current hover:after:hidden',
       fullWidth && 'w-full',
       isEffectivelyDisabled && 'opacity-45 pointer-events-none',
       className,
@@ -133,10 +148,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           <>
             {icon ? (
               <span className="inline-flex items-center justify-center shrink-0">
-                {icon}
+                {iconNode}
               </span>
             ) : null}
-            {child.props.children}
+            {bodyOf(child.props.children)}
             {count !== undefined && count !== null ? (
               <Badge
                 variant="solid"
@@ -205,10 +220,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           <>
             {icon ? (
               <span className="inline-flex items-center justify-center shrink-0">
-                {icon}
+                {iconNode}
               </span>
             ) : null}
-            {children}
+            {bodyOf(children)}
             {count !== undefined && count !== null ? (
               <Badge
                 variant="solid"

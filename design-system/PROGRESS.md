@@ -318,7 +318,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - Top-bar actions (Ask the data, Search, Chat, Notifications) are wired once in the /ds shell.
   - New dependency `@radix-ui/react-tooltip` approved for the Tooltip component.
 
-- 2026-10-19 · **UAT round 2** (owner): Tooltip approved (dark theme inverts, as built). All controls 32px (`control-md`), replacing 36. New token `icon-xs` 10px for the + of Add links. RULES §5.5 phone footer = `control-md`. `/bills?accountId` computes only that card. Write decisions tersely.
+- 2026-10-19 · **UAT round 2** (owner): Tooltip approved (dark theme inverts, as built). All controls 32px (`control-md`), replacing 36. New token `icon-xs` 10px: every icon beside button text; link icon gap `space-2`. RULES §5.5 phone footer = `control-md`. `/bills?accountId` computes only that card. Write decisions tersely.
 
 - 2026-10-19 · **Accounts UAT round 1** (owner; approves the Dinero changes it names):
   - Banks: only Amex, AU, Axis, Bank of Baroda, Canara, CSB, Equitas, Federal, HDFC, HSBC, ICICI, IDFC First, Indian Bank, IndusInd, SBI, Slice, Unity, Yes (plus one more, to confirm); logos from one sprite.
@@ -347,6 +347,7 @@ Newest first: date, phase, tool or agent, what changed (files), checks run, open
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
 
+- 2026-10-19 · Ph3 · Claude · Button forces Icon `xs` beside text (TopBar: xs desk, md phone); link icon gap `space-2`.
 - 2026-10-19 · Ph3 · Claude · UAT3: account dialogs open/close via History API (0 server requests); as of Today/Yesterday; closed band same in both states, toggle fixed. Forced test edits: link→button/pushState asserts, as-of dates.
 - 2026-10-19 · Ph3 · Claude · Controls 32px; `icon-xs` + Icon `xs` on Add-link +; TextField `size` now padding only. Forced: class asserts in Button/TextField/DateField/Dialog/TextArea tests. Checks green.
 - 2026-10-19 · Phase 3 (Accounts) · Claude · Optimisations and a dev warning: the Rewards tab loads its rules beside the reward year and the earning lines beside the report (c565259, one round trip fewer); the streamed card slots carry keys, which clears React's missing-key warning on /ds/accounts. Checks: account vitest, typecheck, check-ui, console clean. Deviations: none.
