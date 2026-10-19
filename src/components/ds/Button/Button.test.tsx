@@ -288,4 +288,38 @@ describe('Button type size (UAT)', () => {
       expect(screen.getByRole('button').className).not.toContain('after:absolute');
     });
   });
+  describe('icon size beside text', () => {
+    it('draws the icon at xs when the button shows text', () => {
+      const { container } = render(
+        <Button icon={<Icon name="add" size="md" />}>Add account</Button>
+      );
+      expect(container.querySelector('svg')?.getAttribute('class')).toContain('w-icon-xs');
+    });
+
+    it('draws an Icon child at xs beside text', () => {
+      const { container } = render(
+        <Button>
+          <Icon name="add" size="lg" />
+          Add
+        </Button>
+      );
+      expect(container.querySelector('svg')?.getAttribute('class')).toContain('w-icon-xs');
+    });
+
+    it('keeps the icon size on an icon-only button', () => {
+      const { container } = render(
+        <Button iconOnly aria-label="Close" icon={<Icon name="close" size="md" />} />
+      );
+      expect(container.querySelector('svg')?.getAttribute('class')).toContain('w-icon-md');
+    });
+
+    it('puts a 2px gap between a link icon and its text', () => {
+      render(
+        <Button variant="link" icon={<Icon name="add" />}>
+          Add bank account
+        </Button>
+      );
+      expect(screen.getByRole('button').className).toContain('gap-space-2');
+    });
+  });
 });

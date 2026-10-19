@@ -11,7 +11,7 @@ The one way to draw an icon in the new system: a Phosphor icon in the bold weigh
 - `className?: string`: layout classes.
 
 ## Sizes
-- `xs` 10px (`icon-xs`): the + of Add links only.
+- `xs` 10px (`icon-xs`): icons beside button text (Button applies it itself).
 - `sm` 14px (`icon-sm`): chips, field carets, small buttons, inline with 12–13px text.
 - `md` 16px (`icon-md`): buttons, bars, rows, menu items.
 - `lg` 20px (`icon-lg`): phone tab bar, desktop rail, selection bar.
