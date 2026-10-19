@@ -63,7 +63,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 4 | TabBar | Approved |
 | 5 | Rail | Approved |
 | 6 | TopBar | Approved |
-| 7 | Tabs | Ready for review (2026-10-19: route tabs as links, counts that load on their own) |
+| 7 | Tabs | Approved (2026-10-19: route tabs as links, counts that load on their own) |
 | 8 | Pager | Approved |
 | 9 | Button | Approved |
 | 10 | Menu | Approved |
@@ -72,7 +72,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 13 | TextField | Approved |
 | 14 | TextArea | Approved |
 | 15 | DateField | Approved |
-| 16 | Select | Ready for review (2026-10-19: create clears the search and is not offered for an existing option) |
+| 16 | Select | Approved (2026-10-19: create clears the search and is not offered for an existing option) |
 | 17 | SearchField | Merged into TextField (see B2) |
 | 18 | FilterChip | Approved |
 | 19 | Checkbox | Approved |
@@ -94,7 +94,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 36 | Kbd | Approved |
 | 37 | Banner | Approved |
 | 38 | Toast | Approved |
-| 39 | EmptyState | Ready for review (2026-10-19: optional second action) |
+| 39 | EmptyState | Approved (2026-10-19: optional second action) |
 | 40 | Skeleton | Approved |
 | 41 | Logo | Approved |
 | 42 | Divider | Approved |
@@ -105,7 +105,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 48 | Stepper | Approved |
 | 49 | MonthCalendar (events mode) | Approved |
 | 50 | SearchPalette | Approved |
-| 51 | ErrorState (organism) | Ready for review (2026-10-19) |
+| 51 | ErrorState (organism) | Approved (2026-10-19) |
 
 Removed on 2026-10-15/2026-10-17 (merged, see Owner decisions): AppBar → TopBar (one bar, phone and desktop forms); Callout and its Note → Banner; Sheet and ConfirmSheet → Dialog and its ConfirmDialog preset; DateGroupHeader and SectionBand → SectionHeader; SearchField → TextField (merged in B2, search variant with clearable icon and embedded style); AuthPanel → a page in Phase 3.
 
