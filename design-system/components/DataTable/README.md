@@ -36,7 +36,7 @@ The list frame for every table of records: column headers with sort, a selection
   - A selected row uses TransactionRow's selected look (`brand-tint` with the 4px `brand` stripe on the left). A highlighted row uses ListRow's highlighted look (`brand-strong` stripe). The page shows SelectionBar from the selection.
 - **Row click** opens the record's detail when the page passes `onRowSelect`. Without it, rows aren't clickable. In selection mode a tap toggles selection instead.
 - **Expandable rows:** with `renderExpanded(row)`, a leading chevron column opens a detail block under the row, at full width. For example, a breakdown's sub-rows, a loan year's EMIs or a job's result.
-- **Row states:** `rowState(row)` returns `{ tone?: 'warning', disabled?: boolean }`. `warning` gives the same look as TransactionRow's warning tone: the `attention-tint` ground (a transaction being watched); `disabled` dims the row (an excluded transaction). `highlightedRowId` shows ListRow's highlighted look on that row and scrolls it into view once (a row opened from a notification).
+- **Row states:** `rowState(row)` returns `{ tone?: 'warning', disabled?: boolean, muted?: boolean }`. `warning` gives the same look as TransactionRow's warning tone: the `attention-tint` ground (a transaction being watched); `disabled` dims the row and stops clicks (an excluded transaction); `muted` dims the row like `disabled` but keeps it clickable (a closed account). `highlightedRowId` shows ListRow's highlighted look on that row and scrolls it into view once (a row opened from a notification).
 - **Swipe** (phone): `wrapRow(row, node)` lets the page wrap each row, for example in SwipeActions (RULES §7.5). DataTable never swipes itself.
 - **Row component:** `renderRow(row, rowProps)` lets an organism draw the whole row at every width. It must use the shared grid template on desktop and its own phone layout. **Transactions use TransactionRow.** It keeps all its logic and gains a desktop layout. Its column headers are exported next to it as `transactionColumns`.
 - **States:**
@@ -59,7 +59,7 @@ The list frame for every table of records: column headers with sort, a selection
 - `renderExpanded?: (row) => ReactNode`, `getRowCanExpand?: (row) => boolean`, `expanded?: string[]`, `defaultExpanded`, `onExpandedChange`.
 - `phoneSub?: (row) => ReactNode`, `phoneActions?: (row) => ReactNode`.
 - `band?: (row) => { key: string; label: ReactNode } | null`, `dayHeader?: (row) => { key: string; label: ReactNode; sublabel?: ReactNode } | null`.
-- `rowState?: (row) => { tone?: 'warning'; disabled?: boolean }`, `highlightedRowId?: string`.
+- `rowState?: (row) => { tone?: 'warning'; disabled?: boolean; muted?: boolean }`, `highlightedRowId?: string`.
 - `wrapRow?: (row, node: ReactNode) => ReactNode`.
 - `renderRow?: (row, rowProps) => ReactNode`. `rowProps` carries `selectable`, `selected`, `onSelectedChange`, `selectionMode`, `onSelect`, `highlighted`, `expanded` and `onExpandedChange`.
 - `pager?: ReactNode`, `footer?: ReactNode`.
@@ -78,7 +78,7 @@ TanStack Table v9 (`@tanstack/react-table`, pinned 9.2.4; state only: sorting, s
 - Multi-line cells, number columns and status chips.
 - Phone second line and phone actions.
 - Expandable rows.
-- Row states: warning, disabled, highlighted.
+- Row states: warning, disabled, muted, highlighted.
 - With footer.
 - Row component (TransactionRow).
 - Loading, Busy, Empty.

@@ -30,7 +30,7 @@ The search form:
 When `type="search"`, browser search cancel buttons are hidden, and `clearable` renders a Dinero clear button that resets value and restores focus.
 
 ## Variants
-- States: default, filled, placeholder (`ink-4`), focus (2px `focus-ring`), error (`danger` border and message), disabled.
+- States: default, filled, placeholder (`ink-4`), focus (2px `focus-ring` only: the border keeps its 1px width and colour; the same on TextArea, DateField and the Select trigger), error (`danger` border and message), disabled.
 - Password input (`type="password"`) includes an integrated Show/Hide toggle button.
 - Numeric inputs (`inputMode="decimal" | "numeric"` or `type="number"`) format with `tabular-nums`.
 - Search input (`type="search"`) with search prefix and clear button.

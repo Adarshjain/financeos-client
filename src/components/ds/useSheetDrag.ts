@@ -27,6 +27,8 @@ export function useSheetDrag({
   const startTimeRef = useRef(0);
 
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    // A press on a control inside the drag area (the × button) is a click, not a drag: capturing the pointer would send its click to the area instead.
+    if ((e.target as HTMLElement | undefined)?.closest?.('button, a, input, select, textarea')) return;
     startYRef.current = e.clientY;
     startTimeRef.current = Date.now();
     draggingRef.current = true;

@@ -525,3 +525,75 @@ describe('Dialog (Radix overlay)', () => {
     expect(panel.style.transform).toBe('');
   });
 });
+
+describe('Dialog close button (UAT)', () => {
+  it('does not capture the pointer when the press starts on the × button', () => {
+    const capture = vi.fn();
+    const original = HTMLElement.prototype.setPointerCapture;
+    HTMLElement.prototype.setPointerCapture = capture;
+    render(
+      <Dialog open>
+        <DialogContent title="Close press">
+          <DialogBody>Body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+    const x = screen
+      .getAllByRole('button', { name: 'Close' })
+      .find((b) => !b.classList.contains('sr-only'))!;
+    fireEvent.pointerDown(x, { pointerId: 1, clientY: 10 });
+    expect(capture).not.toHaveBeenCalled();
+    // A press on the drag handle area still starts a drag.
+    fireEvent.pointerDown(screen.getByTestId('dialog-drag-area'), { pointerId: 2, clientY: 10 });
+    expect(capture).toHaveBeenCalledTimes(1);
+    HTMLElement.prototype.setPointerCapture = original;
+  });
+
+  it('clicking × calls onOpenChange(false) when controlled', () => {
+    const onOpenChange = vi.fn();
+    render(
+      <Dialog open onOpenChange={onOpenChange}>
+        <DialogContent title="Controlled">
+          <DialogBody>Body</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+    const x = screen
+      .getAllByRole('button', { name: 'Close' })
+      .find((b) => !b.classList.contains('sr-only'))!;
+    fireEvent.pointerDown(x, { pointerId: 1 });
+    fireEvent.pointerUp(x, { pointerId: 1 });
+    fireEvent.click(x);
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+  });
+
+  it('clicking × closes an uncontrolled dialog', () => {
+    render(
+      <Dialog defaultOpen>
+        <DialogContent title="Uncontrolled">
+          <DialogBody>Body text</DialogBody>
+        </DialogContent>
+      </Dialog>,
+    );
+    const x = screen
+      .getAllByRole('button', { name: 'Close' })
+      .find((b) => !b.classList.contains('sr-only'))!;
+    fireEvent.pointerDown(x, { pointerId: 1 });
+    fireEvent.click(x);
+    expect(screen.queryByText('Body text')).not.toBeInTheDocument();
+  });
+
+  it('draws the phone footer at the standard control height', () => {
+    render(
+      <DialogShell
+        title="Footer"
+        primary={{ label: 'Save' }}
+        secondary={{ label: 'Cancel' }}
+      />,
+    );
+    const save = screen.getByRole('button', { name: 'Save' });
+    expect(save).toHaveClass('h-control-lg');
+    expect(save).not.toHaveClass('h-control-xl');
+    expect(save.parentElement?.parentElement).toHaveClass('pb-safe-12');
+  });
+});

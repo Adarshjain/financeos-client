@@ -4,10 +4,10 @@ import React, { forwardRef, useId, useMemo, useRef, useState } from 'react';
 
 import { Button } from '../Button/Button';
 import { cn } from '../cn';
-import { FieldFrame } from '../FieldFrame';
 import { Icon } from '../Icon/Icon';
 import { MonthCalendar } from '../MonthCalendar/MonthCalendar';
 import { Popover } from '../Popover/Popover';
+import { TextField } from '../TextField/TextField';
 import { useControllableState } from '../useControllableState';
 import { formatDate, parseDateInput } from '../utils';
 import { formatDateInput, formatRangeInput } from './dateFormat';
@@ -22,7 +22,7 @@ export type DateFieldValue = string | DateRangeValue;
 export interface DateFieldProps
   extends Omit<
     React.InputHTMLAttributes<HTMLInputElement>,
-    'value' | 'defaultValue' | 'onChange' | 'placeholder' | 'type'
+    'value' | 'defaultValue' | 'onChange' | 'placeholder' | 'type' | 'size'
   > {
   id?: string;
   label?: React.ReactNode;
@@ -83,7 +83,6 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
   ) => {
     const generatedId = useId();
     const id = explicitId ?? generatedId;
-    const helperId = `${id}-helper`;
 
     const [isOpen, setOpen] = useControllableState<boolean>({
       value: controlledOpen,
@@ -170,8 +169,6 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
 
     // 0 = next click sets start, 1 = next click sets end
     const [rangeStep, setRangeStep] = useState<0 | 1>(0);
-
-    const hasError = Boolean(error);
 
     const handleSingleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const formatted = formatDateInput(e.target.value);
@@ -397,42 +394,21 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     );
 
     return (
-      <FieldFrame
+      <TextField
+        ref={ref}
         id={id}
         label={label}
         helper={helper}
         error={error}
         optional={optional}
+        disabled={disabled}
         className={className}
-      >
-        <div
-          className={cn(
-            'flex items-center bg-surface border rounded-ds-md transition-colors',
-            'h-control-xl px-space-12',
-            hasError
-              ? 'border-danger-border ring-1 ring-danger'
-              : 'border-line hover:border-line-strong focus-within:border-brand-border focus-within:ring-2 focus-within:ring-focus-ring',
-            disabled && 'bg-sunken border-line-soft opacity-50 cursor-not-allowed',
-          )}
-        >
-          <input
-            ref={ref}
-            id={id}
-            type="text"
-            inputMode="numeric"
-            disabled={disabled}
-            placeholder={effectivePlaceholder}
-            value={range ? rangeText : singleText}
-            onChange={range ? handleRangeInputChange : handleSingleInputChange}
-            aria-describedby={helper || error ? helperId : undefined}
-            aria-invalid={hasError || undefined}
-            className={cn(
-              'flex-1 min-w-0 bg-transparent text-body font-text text-ink outline-none placeholder:text-ink-4',
-              disabled && 'cursor-not-allowed text-ink-4',
-            )}
-            {...props}
-          />
-
+        type="text"
+        inputMode="numeric"
+        placeholder={effectivePlaceholder}
+        value={range ? rangeText : singleText}
+        onChange={range ? handleRangeInputChange : handleSingleInputChange}
+        suffix={
           <Popover
             open={isOpen}
             onOpenChange={setOpen}
@@ -446,8 +422,9 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
           >
             {calendarContent}
           </Popover>
-        </div>
-      </FieldFrame>
+        }
+        {...props}
+      />
     );
   },
 );

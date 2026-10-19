@@ -333,3 +333,42 @@ describe('Select multiple with create (account identifiers)', () => {
     expect(onCreate).not.toHaveBeenCalled();
   });
 });
+
+describe('Select menu layout (UAT)', () => {
+  it('pads the option list inside the popover edge', () => {
+    const { container } = render(<SelectMenu options={sampleOptions} />);
+    expect(container.firstChild).toHaveClass('p-space-6');
+  });
+
+  it('scrolls the list inside the menu and keeps wheel scrolling away from a scroll lock', () => {
+    const lock = vi.fn();
+    document.addEventListener('wheel', lock);
+    const many = Array.from({ length: 58 }, (_, i) => ({
+      value: `b${i}`,
+      label: `Bank ${i}`,
+    }));
+    render(<SelectMenu options={many} searchable action={{ label: 'Add bank', onSelect: vi.fn() }} />);
+    const list = screen.getByRole('listbox');
+    expect(list).toHaveClass('overflow-y-auto', 'min-h-0');
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
+    fireEvent.wheel(list);
+    expect(lock).not.toHaveBeenCalled();
+    document.removeEventListener('wheel', lock);
+  });
+
+  it('draws Clear and Done at natural width, aligned right', () => {
+    render(<SelectMenu options={sampleOptions} multiple />);
+    const clear = screen.getByRole('button', { name: 'Clear' });
+    const done = screen.getByRole('button', { name: 'Done' });
+    expect(clear).not.toHaveClass('flex-1');
+    expect(done).not.toHaveClass('flex-1');
+    expect(done.parentElement).toHaveClass('justify-end');
+  });
+
+  it('draws the action row at natural width, aligned right', () => {
+    render(<SelectMenu options={sampleOptions} action={{ label: '+ Add bank', onSelect: vi.fn() }} />);
+    const action = screen.getByText('+ Add bank');
+    expect(action).not.toHaveClass('w-full');
+    expect(action.parentElement).toHaveClass('justify-end');
+  });
+});

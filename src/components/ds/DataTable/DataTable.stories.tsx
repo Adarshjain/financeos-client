@@ -528,6 +528,7 @@ export const RowStates: Story = {
     rowState: (r: Holding) => {
       if (r.id === '2') return { tone: 'warning' };
       if (r.id === '3') return { disabled: true };
+      if (r.id === '4') return { muted: true };
       return undefined;
     },
   },

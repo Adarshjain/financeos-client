@@ -134,7 +134,7 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
                       variant="link"
                       size="sm"
                       onClick={action.onSelect}
-                      className="text-ink font-bold"
+                      className="text-label text-ink font-bold"
                     >
                       {action.label}
                     </Button>
@@ -163,7 +163,7 @@ export const Widget = forwardRef<HTMLDivElement, WidgetProps>(
                       variant="link"
                       size="sm"
                       onClick={action.onSelect}
-                      className="text-ink font-bold"
+                      className="text-label text-ink font-bold"
                     >
                       {action.label}
                     </Button>

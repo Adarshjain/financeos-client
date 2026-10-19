@@ -92,3 +92,12 @@ describe('SettingsToggle organism', () => {
     expect(container.firstChild).toHaveClass('border-t');
   });
 });
+
+describe('SettingsToggle alignment (UAT)', () => {
+  it('has no side padding so it lines up with the fields above it', () => {
+    const { container } = render(<SettingsToggle label="Exclude from net worth" />);
+    const row = container.firstChild as HTMLElement;
+    expect(row.className).toContain('px-0');
+    expect(row.className).not.toContain('px-space-16');
+  });
+});
