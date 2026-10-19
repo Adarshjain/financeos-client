@@ -9,7 +9,7 @@ Read `design-system/RULES.md` first. This file is the shared state between sessi
 | 0 | Set-up: design system, screens, rules and check script in the repo | Done |
 | 1 | Foundations: tokens, Tailwind names, fonts, Storybook | Done |
 | 2 | New component library in Storybook, one component at a time, owner-reviewed | Done (all components approved by the owner 2026-10-18) |
-| 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: login, signup, offline approved 2026-10-18, swap pending; Accounts: boards approved, Dinero changes ready for review 2026-10-19) |
+| 3 | Pages: rebuild and swap in one page or big component at a time | In progress (Phase 3a complete: login, signup, offline approved 2026-10-18, swap pending; Accounts: boards and Dinero changes approved, server changes done; `/ds/accounts` list ready for review 2026-10-19) |
 | 3b | Audit implementation: apply the 673 owner-approved conventions decisions (`design-system/specs/audit/`) to Dinero, organisms, stories and the /ds pages | Done (all 673 decisions executed across Rounds A–F; all audit specs completed, all unit and E2E tests passing, builds and check-ui clean) |
 | 4 | Cleanup: delete old components once nothing uses them | Not started |
 
@@ -176,6 +176,7 @@ Later: Chat (`D-chat`), DashboardGrid and the KpiTile vs Widget review. Built in
 | `/ds/signup` (Sign up) | `src/app/(ds)/ds/(public)/signup/page.tsx`, `SignupForm.tsx` | _(live `/signup` and `SignupForm.tsx` untouched until swap)_ | Approved 2026-10-18; swap pending |
 | `/ds/offline` (Offline) | `src/app/(ds)/ds/(public)/offline/page.tsx`, `OfflineContent.tsx` | _(live `/offline/page.tsx` untouched until swap)_ | Approved 2026-10-18; swap pending |
 | `/ds` review index & shell | `src/app/(ds)/layout.tsx`, `src/app/(ds)/ds/(app)/layout.tsx`, `src/app/(ds)/ds/(app)/page.tsx`, `src/features/shell/navigation.ts` | _(live layouts untouched)_ | Built under /ds, Ready for review |
+| `/ds/accounts` (Accounts list) | `src/app/(ds)/ds/(app)/accounts/page.tsx`, `loading.tsx`; `src/features/accounts/list/*`; `src/features/shell/ShellPage.tsx` (per-page top bar; layout no longer renders it) | _(live `/accounts` untouched until swap; will drop `AccountsView`, the tiles, `ClosedAccountsSection`, `AccountMetadataBadges`)_ | Ready for review 2026-10-19 |
 
 ## Phase 4 · Cleanup
 When every page is migrated:
@@ -300,6 +301,11 @@ Only the owner adds to this list. Each entry has a date and the decision.
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
 
+- 2026-10-19 · Phase 3 · DataTable · Status cells are pinned right on desktop · `phone: 'status'` cells get `justify-self-end justify-end` at every width, so `meta.align: 'start'` is ignored and the Accounts bank Status badges sit beside Balance instead of left as on the board. Options: (A) fix DataTable so the right pin applies only below `desk` (`desk:justify-self-auto desk:justify-start` unless `align: 'end'`); (B) accept it. Recommend A.
+- 2026-10-19 · Phase 3 · Accounts list · Statements and Edit row icons · The board's bank and card rows have Statements and Edit icon buttons; `icons.json` has no document or pencil glyph, so only Open (chevron) is drawn. Options: (A) add `file-text` and `pencil-simple` (Phosphor) to the registry; (B) drop them (the row and the account page already reach both).
+- 2026-10-19 · Phase 3 · Accounts list · No data for two board items · Brokers "Today" column (no per-broker day change) and the Net worth "excl. home loan" line. Both left out. Options: (A) leave out; (B) a server addition later.
+- 2026-10-19 · Phase 3 · /ds shell · Top-bar actions · `ShellPage` wires only the + (and desktop "Add"). The board's Ask the data, Search, Chat and Notifications actions aren't wired in the /ds shell yet. Options: (A) wire them in the shell before the first swap; (B) per page.
+
 - 2026-10-16 · Phase 3a · Shell · Quick add actions without live routes · Quick add items Transaction, Lending and Trade are modal dialogs in the Legacy app without dedicated routes; only Import (/transactions/import) has a route. Options: (A) Build dedicated Dinero add forms later when those modules migrate, or (B) Open the Legacy live pages/dialogs. Meanwhile, those three tiles are shown disabled until the owner decides.
 - 2026-10-15 · Phase 2 · Checkbox · Indeterminate/mixed state icon · Checkbox mixed state (some rows selected) needs a minus/dash icon, which is not in icons.json. Options: (A) Add `minus` (Phosphor `minus`) to the icon registry, (B) Render an inline SVG dash stroke inside Checkbox, or (C) Use a CSS dash line. Meanwhile using `close` as the closest registry icon.
 - 2026-10-15 · Phase 2 · Button · Loading spinner icon · Button loading state needs a spinner icon (RULES §6.2 progress spinner), which is not in icons.json. Options: (A) Add `spinner` (Phosphor `spinner` or `circle-notch`) to the icon registry, or (B) Use a CSS rotating border spinner. Meanwhile using `settings` with `animate-spin` as the closest rotating registry icon.
@@ -309,6 +315,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
+
+- 2026-10-19 · Phase 3 (Accounts, step 5.1) · Claude · `/ds/accounts` list built from the approved boards: KPI tiles (cash and wallets, cards you owe, investments with today's change, net worth from the Home net-worth widget), Bank / Credit cards / Brokers / Wallets tables on DataTable with phone stacking, next bill from `/bills`, rewards from `/rewards/totals`, limit used coloured at 30% and 70% (owner item 38), one "Closed · n · Show" line per section (`?closed=`), per-section Add links (owner item 39), empty state, loading skeleton, ErrorState. New `ShellPage` gives each /ds page its own top bar. Before it: API types synced (57354af) and the account and bill logic moved to `src/features/` (4085961). Checks: see the commit. Looked at 390 and 1440, light and dark, against a local server with board-like data. Open questions: 4 (above). Deviations: Excluded, Liability and Closing are status words (owner item 31) where the board draws badges.
 
 - 2026-10-19 · Phase 3 (Accounts, step 3) · Claude · Dinero changes the approved Accounts boards need, each with README, one working story driven by controls (owner, 2026-10-18 and 2026-10-19) and tests:
   - **Breakpoint `desk` (641px)**: `tailwind.config.ts` adds the screen; `lg:`→`desk:` in `src/components/ds/`, `src/components/organisms/`, `src/app/(ds)/`, `src/features/shell/` (classes, comments, test selectors), `phoneLayout.ts`, `src/test/stubLayout.ts`, eight component READMEs, RULES §5c.2/§5c.4/§5d.3; `check-ui` gains a `breakpoint` rule with self-tests.

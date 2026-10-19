@@ -1,0 +1,51 @@
+import Link from 'next/link';
+import React from 'react';
+
+import { TopBar } from '@/components/ds';
+import { Logo } from '@/components/organisms';
+
+export interface ShellPageProps {
+  title: React.ReactNode;
+  crumb?: React.ReactNode;
+  /** Where the + goes. Without it the bar has no add action. */
+  addHref?: string;
+  addLabel?: string;
+  children: React.ReactNode;
+}
+
+/** One signed-in page: the top bar with this page's title and +, then the content area. */
+export function ShellPage({
+  title,
+  crumb,
+  addHref,
+  addLabel,
+  children,
+}: ShellPageProps) {
+  return (
+    <>
+      <TopBar
+        title={title}
+        crumb={crumb}
+        leading={<Logo variant="mark" />}
+        actions={
+          addHref
+            ? [
+                {
+                  id: 'add',
+                  icon: 'add',
+                  label: addLabel ?? 'Add',
+                  variant: 'primary',
+                  showLabel: true,
+                  asChild: true,
+                  children: <Link href={addHref} />,
+                },
+              ]
+            : undefined
+        }
+      />
+      <main className="flex-1 p-space-16 desk:p-space-24 pb-bottom-clearance desk:pb-space-24">
+        {children}
+      </main>
+    </>
+  );
+}

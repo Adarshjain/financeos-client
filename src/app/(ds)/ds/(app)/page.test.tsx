@@ -23,10 +23,11 @@ describe('DsIndexPage', () => {
     expect(hrefs).toContain('/ds/offline');
   });
 
-  it('renders Signed in section with empty state message', () => {
+  it('renders Signed in section with a link to /ds/accounts', () => {
     render(<DsIndexPage />);
 
     expect(screen.getByText('Signed in')).toBeDefined();
-    expect(screen.getByText('No signed-in pages yet.')).toBeDefined();
+    expect(screen.getByText('Accounts')).toBeDefined();
+    expect(screen.getByText('/ds/accounts')).toBeDefined();
   });
 });
