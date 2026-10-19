@@ -193,6 +193,10 @@ export function DataTableRow<Row extends RowData>({
               isAmount && 'col-start-2 row-start-1 text-end',
               isStatus &&
                 'col-start-2 row-start-2 justify-self-end flex flex-wrap justify-end gap-space-4',
+              isStatus &&
+                (meta?.align === 'end'
+                  ? 'desk:justify-self-end desk:justify-end'
+                  : 'desk:justify-self-start desk:justify-start'),
               !isMain && !isAmount && !isStatus && 'hidden desk:block',
             )}
           >

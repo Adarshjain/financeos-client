@@ -148,5 +148,15 @@
   "name": "minus",
   "phosphor": "minus",
   "use": "Checkbox mixed state"
+ },
+ {
+  "name": "file-text",
+  "phosphor": "file-text",
+  "use": "Statements"
+ },
+ {
+  "name": "pencil-simple",
+  "phosphor": "pencil-simple",
+  "use": "Edit"
  }
 ]

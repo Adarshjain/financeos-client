@@ -110,4 +110,17 @@ describe('/ds/accounts', () => {
     expect(screen.getByRole('button', { name: 'Add account' })).toBeDefined();
     expect(screen.queryByText('Bank accounts')).toBeNull();
   });
+
+  it('gives bank rows Statements and Edit links and card rows only Statements', async () => {
+    loadMock.mockResolvedValue(data());
+    await renderPage();
+
+    const hrefs = (name: string) =>
+      screen.getAllByRole('link', { name }).map((a) => a.getAttribute('href'));
+    expect(hrefs('Statements')).toEqual([
+      '/ds/accounts/b1/statements',
+      '/ds/accounts/c1/statements',
+    ]);
+    expect(hrefs('Edit')).toEqual(['/ds/accounts/b1?edit=1']);
+  });
 });

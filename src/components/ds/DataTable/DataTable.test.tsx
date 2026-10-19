@@ -523,6 +523,48 @@ describe('DataTable', () => {
       expect(actionContainer).toHaveClass('desk:hidden');
     });
 
+    it('status cells pin right on phone and follow meta.align on desktop', () => {
+      const make = (align?: 'start' | 'end') =>
+        helper.columns([
+          helper.accessor('name', {
+            id: 'name',
+            header: 'Name',
+            meta: { size: 'fill', phone: 'main' },
+          }),
+          helper.accessor('category', {
+            id: 'category',
+            header: 'Category',
+            meta: { size: 'sm', phone: 'status', align },
+          }),
+        ]);
+
+      const { unmount } = render(
+        <DataTable
+          columns={make()}
+          data={testData}
+          getRowId={(r) => r.id}
+        />,
+      );
+      const startCell = screen.getAllByRole('cell')[1];
+      expect(startCell).toHaveClass('justify-self-end', 'justify-end');
+      expect(startCell).toHaveClass(
+        'desk:justify-self-start',
+        'desk:justify-start',
+      );
+      unmount();
+
+      render(
+        <DataTable
+          columns={make('end')}
+          data={testData}
+          getRowId={(r) => r.id}
+        />,
+      );
+      const endCell = screen.getAllByRole('cell')[1];
+      expect(endCell).toHaveClass('desk:justify-self-end', 'desk:justify-end');
+      expect(endCell).not.toHaveClass('desk:justify-self-start');
+    });
+
     it('hidden columns carry hidden desk:block', () => {
       const colsWithHidden = helper.columns([
         helper.accessor('name', {
