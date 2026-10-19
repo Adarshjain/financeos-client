@@ -29,6 +29,7 @@ const COMMON_ACCOUNT_KEYS = [
   'balance',
   'balanceAnchored',
   'anchorDate',
+  'lastTransactionDate',
   'reconciliationGap',
   'warnings',
   'createdAt',
@@ -507,6 +508,28 @@ test.describe('Accounts API (@api)', () => {
     });
     expect(getRes.response.status).toBe(200);
     expect(getRes.data?.balance).toBe(12345.67);
+  });
+
+  test('lastTransactionDate: the latest transaction date on single and list; null when the account has none', async ({
+    api,
+  }) => {
+    const withTxn = await createBankAccount(api, { name: 'Last Txn Bank' });
+    const empty = await createBankAccount(api, { name: 'No Txn Bank' });
+    await createTransaction(api, withTxn.id, { amount: -10, date: istToday(-5) });
+    await createTransaction(api, withTxn.id, { amount: -20, date: istToday(-1) });
+
+    const lastDate = (data: unknown) => (data as Record<string, unknown>).lastTransactionDate;
+    const single = await api.GET('/api/v1/accounts/{id}', { params: { path: { id: withTxn.id } } });
+    expectStatus(single, 200);
+    expect(lastDate(single.data)).toBe(istToday(-1));
+    const emptySingle = await api.GET('/api/v1/accounts/{id}', { params: { path: { id: empty.id } } });
+    expectStatus(emptySingle, 200);
+    expect(lastDate(emptySingle.data)).toBeNull();
+
+    const list = await api.GET('/api/v1/accounts');
+    expectStatus(list, 200);
+    expect(lastDate(list.data!.find((a) => a.id === withTxn.id))).toBe(istToday(-1));
+    expect(lastDate(list.data!.find((a) => a.id === empty.id))).toBeNull();
   });
 
   test('balance: a card purchase dated on the statement close is unbilled when the statement lists nothing that day', async ({
