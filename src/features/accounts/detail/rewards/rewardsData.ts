@@ -1,0 +1,60 @@
+import type { Account } from '@/lib/account.types';
+import { serverApi } from '@/lib/api/server';
+import { rewardsApi } from '@/lib/apiClient';
+import { accountAnniversaryDate, type PagedRewardLines, type RewardReport, type RewardRule } from '@/lib/rewards.types';
+
+import { type RewardsWindow,rewardsWindowFor } from '../overview/rewardsWindow';
+import { clampedPage, parseRewardsQuery, type RewardsQuery } from './rewardsModel';
+
+export interface RewardsTabData {
+  window: RewardsWindow;
+  /** Each piece is null when its own request failed. */
+  report: RewardReport | null;
+  rules: RewardRule[] | null;
+  lines: PagedRewardLines | null;
+  query: RewardsQuery;
+}
+
+type SearchParams = { rule?: string | string[]; page?: string | string[]; size?: string | string[] };
+
+const ok = <T,>(r: PromiseSettledResult<T>): T | null => (r.status === 'fulfilled' ? r.value : null);
+
+/**
+ * Everything the Rewards tab needs. The reward year comes first, then the report and the rule list load in
+ * parallel, then one page of earning lines (the rule list validates the `?rule=` filter).
+ */
+export async function loadRewardsTabData(
+  account: Account,
+  today: string,
+  params: SearchParams | undefined
+): Promise<RewardsTabData> {
+  const totals = await serverApi.GET('/api/v1/rewards/totals').then((r) => r.data ?? null, () => null);
+  const accountId = account.id;
+  const mine = totals?.find((t) => t.accountId === accountId);
+  const window: RewardsWindow = mine
+    ? { from: mine.from, to: mine.to, calendarYear: mine.calendarYearFallback }
+    : rewardsWindowFor(accountAnniversaryDate(account), today);
+  const [rulesResult, reportResult] = await Promise.allSettled([
+    rewardsApi.listRules(accountId),
+    rewardsApi.getReport(accountId, window.from, window.to),
+  ]);
+  const rules = ok(rulesResult);
+  let query = parseRewardsQuery(params, (rules ?? []).map((r) => r.id));
+  const fetchLines = (page: number) =>
+    rewardsApi.getRewardLines({
+      accountId,
+      from: window.from,
+      to: window.to,
+      ruleId: query.ruleId,
+      page,
+      size: query.size,
+    });
+  let lines = ok((await Promise.allSettled([fetchLines(query.page)]))[0]);
+  // A page past the end (a stale link, or a filter that shrank the list) shows the last page instead.
+  const last = lines ? clampedPage(query.page, query.size, lines.totalElements) : null;
+  if (last != null) {
+    query = { ...query, page: last };
+    lines = ok((await Promise.allSettled([fetchLines(last)]))[0]);
+  }
+  return { window, report: ok(reportResult), rules, lines, query };
+}
