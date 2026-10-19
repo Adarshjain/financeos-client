@@ -5,7 +5,7 @@ import type { Broker } from '@/lib/account.types';
 import { RecentTransactionsCard } from '../RecentTransactionsCard';
 import { AccountHeaderCard } from './AccountHeaderCard';
 import { loadBrokerOverviewData } from './accountOverviewData';
-import { buildBrokerCash } from './accountOverviewModel';
+import { buildBrokerCash, lastEntryDate } from './accountOverviewModel';
 import { BrokerCashCard } from './AccountOverviewSections';
 import { buildRecentTransactions } from './cardOverviewModel';
 import { buildHeaderModel } from './headerModel';
@@ -18,7 +18,7 @@ export async function BrokerOverview({ account, today }: { account: Broker; toda
       <AccountHeaderCard
         accountId={account.id}
         accountName={account.name}
-        model={buildHeaderModel(account, null, today)}
+        model={buildHeaderModel(account, null, today, lastEntryDate(data.recent?.items))}
       />
       <BrokerCashCard model={buildBrokerCash(account, data.recent?.items ?? null)} />
       {data.recent ? (

@@ -127,7 +127,7 @@ describe('buildLimitCycle', () => {
       openMemberCount: 2,
     };
     const pooled = buildLimitCycle({ ...card, limitPool }, summary, bill(), TODAY);
-    expect(pooled.ownLimit).toBe('₹3,00,000');
+    expect(pooled.ownLimit).toBeNull();
     expect(pooled.pool).toEqual({
       label: 'Shared limit · HDFC cards',
       value: '₹3,41,200 free of ₹5,00,000',
@@ -235,8 +235,27 @@ describe('buildRewards', () => {
     expect(buildRewards(report, { ...window, calendarYear: true }, TODAY)?.subtitle).toBe('Calendar year');
   });
 
-  it('is null without rules, a report or a window', () => {
-    expect(buildRewards({ ...report, rules: [] }, window, TODAY)).toBeNull();
+  it('shows a milestone even when the card has no rules', () => {
+    const only = { ...report, rules: [] } as unknown as RewardReport;
+    expect(buildRewards(only, window, TODAY)?.milestones).toHaveLength(1);
+  });
+
+  it.each([
+    ['an info tracker', { payoutType: 'INFO_TRACKER', payoutValue: null }, '₹83,764 of ₹4,00,000 · 152 days left'],
+    ['a cash payout', { rewardType: 'CASH', payoutValue: 2500 }, '₹83,764 of ₹4,00,000 → ₹2,500 · 152 days left'],
+    [
+      'a transaction count',
+      { basis: 'TXN_COUNT', threshold: 50, progress: 10, minTxnAmount: 500, payoutValue: null },
+      '10 of 50 txns (₹500+ each) · 152 days left',
+    ],
+    ['an achieved one', { achieved: true, payoutValue: null }, '₹83,764 of ₹4,00,000 · achieved · 152 days left'],
+  ] as const)('captions %s', (_name, over, caption) => {
+    const r = { ...report, milestones: [{ ...(report.milestones[0] as object), ...over }] } as unknown as RewardReport;
+    expect(buildRewards(r, window, TODAY)?.milestones[0].caption).toBe(caption);
+  });
+
+  it('is null without rules and milestones, a report or a window', () => {
+    expect(buildRewards({ ...report, rules: [], milestones: [] }, window, TODAY)).toBeNull();
     expect(buildRewards(null, window, TODAY)).toBeNull();
     expect(buildRewards(report, null, TODAY)).toBeNull();
   });

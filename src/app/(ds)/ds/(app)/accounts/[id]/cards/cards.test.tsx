@@ -194,7 +194,7 @@ describe('/ds/accounts/[id]/cards', () => {
       expect(screen.getByRole('button', { name: 'Delete card ••2210' })).toBeInTheDocument();
 
       expect(screen.getAllByText('Shared limit')).toHaveLength(2);
-      expect(screen.getByText('Own limit · ₹3,00,000')).toBeInTheDocument();
+      expect(screen.queryByText('Own limit · ₹3,00,000')).toBeNull();
       expect(screen.getByText('HDFC cards · ₹5,00,000 · 2 cards')).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Change' })).toHaveAttribute(
         'href',

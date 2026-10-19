@@ -14,15 +14,6 @@ import { sumCreditUsage } from '@/lib/creditLimitPools';
 import { AccountType } from '@/lib/types';
 import { utilisationTone } from '@/lib/utilisation';
 
-export type ClosedSection = 'banks' | 'cards' | 'brokers' | 'wallets';
-
-export const CLOSED_SECTIONS: readonly ClosedSection[] = [
-  'banks',
-  'cards',
-  'brokers',
-  'wallets',
-];
-
 export interface RewardTotal {
   accountId: string;
   points: number;
@@ -244,6 +235,8 @@ export interface BankRow {
   asOf: string | null;
   phoneSub: string | null;
   closed: boolean;
+  /** The account itself, for the Edit dialog opened from the row. */
+  account: BankAccount;
 }
 
 /** Badge text for the gap between transactions and statement; null when none. */
@@ -266,6 +259,7 @@ export function bankRow(account: BankAccount, today: string): BankRow {
     asOf: stmt ? `Stmt ${stmt}` : null,
     phoneSub: stmt ? `Statement ${stmt}` : null,
     closed: isAccountClosed(account, today),
+    account,
   };
 }
 

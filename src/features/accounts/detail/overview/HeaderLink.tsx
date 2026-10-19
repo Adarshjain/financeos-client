@@ -14,7 +14,7 @@ export function HeaderLink({
   children: React.ReactNode;
 }) {
   return (
-    <Text variant="caption" as="span">
+    <Text variant="label" as="span">
       <Button asChild variant="link" size="sm">
         <Link href={href}>
           {children}

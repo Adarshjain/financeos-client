@@ -203,10 +203,7 @@ describe('/ds/accounts/[id] credit-card Overview', () => {
     const edits = screen.getAllByRole('link', { name: 'Edit' });
     expect(edits).toHaveLength(2);
     edits.forEach((link) => expect(link).toHaveAttribute('href', '/ds/accounts/c1?edit=1'));
-    expect(await screen.findByRole('link', { name: 'Transactions · 142' })).toHaveAttribute(
-      'href',
-      '/transactions?account=c1',
-    );
+    expect(screen.queryByRole('link', { name: /^Transactions/ })).toBeNull();
 
     expect(screen.getByText('Limit & cycle')).toBeInTheDocument();
     expect(screen.getByText('Anchored to statement')).toBeInTheDocument();
@@ -361,8 +358,9 @@ describe('/ds/accounts/[id] bank Overview', () => {
 
     expect(screen.getAllByText('Balance').length).toBeGreaterThan(0);
     expect(screen.getByText('₹2,95,031')).toBeInTheDocument();
-    expect(screen.getByText('as of statement 30 Sep')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'More actions' })).toBeInTheDocument();
+    // The newest transaction (12 Oct) is later than the statement (30 Sep): the balance is current to it.
+    expect(screen.getByText('as of 12 Oct')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
     expect(screen.getByText('+₹7,20,000')).toBeInTheDocument();
     expect(screen.getByText('₹5,41,870')).toBeInTheDocument();
     expect(screen.getByText('interest ₹1,842 last quarter')).toBeInTheDocument();
@@ -458,7 +456,7 @@ describe('/ds/accounts/[id] wallet Overview', () => {
     loadAccount.mockResolvedValue(wallet);
   });
 
-  it('shows the balance with its last entry, recent entries and details', async () => {
+  it('shows the balance with its last entry and recent entries, and no Details card', async () => {
     loadWallet.mockResolvedValue({ recent: { items: recentItems, total: 18 } });
     await renderOverview('w1');
 
@@ -466,21 +464,20 @@ describe('/ds/accounts/[id] wallet Overview', () => {
     expect(screen.getByText('Manual balance · last entry 12 Oct')).toBeInTheDocument();
     expect(screen.getByText('Recent entries')).toBeInTheDocument();
     expect(screen.getByText('Latest 2 of 18')).toBeInTheDocument();
-    expect(screen.getByText('Wallet / cash')).toBeInTheDocument();
-    expect(screen.getByText('Net worth · asset')).toBeInTheDocument();
-    expect(screen.getByText('Paytm UPI wallet')).toBeInTheDocument();
+    expect(screen.queryByText('Details')).toBeNull();
+    expect(screen.queryByText('Wallet / cash')).toBeNull();
+    expect(screen.queryByText('Net worth · asset')).toBeNull();
     expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
   });
 
-  it('keeps the details and drops recent entries when that request failed', async () => {
+  it('drops recent entries when that request failed', async () => {
     loadAccount.mockResolvedValue({ ...wallet, description: '', excludeFromNetAsset: true });
     loadWallet.mockResolvedValue({ recent: null });
     await renderOverview('w1');
 
     expect(screen.queryByText('Recent entries')).toBeNull();
     expect(screen.getByText('Manual balance')).toBeInTheDocument();
-    expect(screen.getByText('Excluded from net worth')).toBeInTheDocument();
-    expect(screen.queryByText('Description')).toBeNull();
+    expect(screen.queryByText('Details')).toBeNull();
   });
 });
 

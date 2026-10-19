@@ -105,7 +105,7 @@ describe('Add account', () => {
   it('shows only the type picker until a type is picked, with the create button disabled', () => {
     renderDialog({ initialType: null });
     expect(screen.getByText('Add account')).toBeInTheDocument();
-    expect(screen.getByText("Pick a type · only that type's fields appear")).toBeInTheDocument();
+    expect(screen.queryByText("Pick a type · only that type's fields appear")).toBeNull();
     expect(screen.getAllByRole('radio')).toHaveLength(4);
     expect(screen.getAllByRole('radio').every((r) => r.getAttribute('aria-checked') !== 'true')).toBe(true);
     expect(screen.queryByText('Basics')).toBeNull();
@@ -226,8 +226,31 @@ describe('Add account', () => {
     expect(
       screen.getByText('Changing the name or amount also changes it for the 2 other accounts sharing this limit.')
     ).toBeInTheDocument();
+    expect(screen.queryByText('Own limit')).toBeNull();
+    expect(screen.queryByText('Leave empty to let this card use the whole shared limit.')).toBeNull();
+  });
+
+  it('shows the credit limit while the card has no shared limit, and hides it for a new shared limit', async () => {
+    renderDialog({ initialType: AccountType.CREDIT_CARD });
+    expect(screen.getByText('Credit limit')).toBeInTheDocument();
+    await user.click(screen.getByRole('combobox', { name: /Shared limit/ }));
+    await user.click(screen.getByRole('option', { name: 'New shared limit…' }));
+    expect(screen.queryByText('Credit limit')).toBeNull();
+    expect(screen.queryByText('Own limit')).toBeNull();
+  });
+
+  it('keeps the own limit visible when editing a pooled card that already has one', () => {
+    renderDialog({ account: card });
     expect(screen.getByText('Own limit')).toBeInTheDocument();
-    expect(screen.getByText('Leave empty to let this card use the whole shared limit.')).toBeInTheDocument();
+  });
+
+  it('titles the identifiers field Account identifiers with the last-4 helper', () => {
+    renderDialog({ initialType: AccountType.BANK_ACCOUNT });
+    expect(screen.getByText('Account identifiers')).toBeInTheDocument();
+    expect(
+      screen.getByText('Used to match emails to this account, along with the last 4 digits above.')
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/Email identifiers/)).toBeNull();
   });
 
   it('requires the name and amount of a new shared limit', async () => {

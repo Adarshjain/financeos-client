@@ -8,7 +8,7 @@ import type { MilestoneModel, RuleLine } from './rewardsModel';
 export function MilestoneCard({ model }: { model: MilestoneModel }) {
   return (
     <Card
-      title="Milestone"
+      title={model.title}
       subtitle={model.subtitle}
       action={model.status ? <Badge tone={model.status.tone}>{model.status.label}</Badge> : undefined}
     >

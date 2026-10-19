@@ -43,10 +43,10 @@ describe('AddAccountHost', () => {
     expect(screen.queryByText(/dialog/)).toBeNull();
   });
 
-  it('opens with nothing picked for ?add=1', () => {
+  it('opens with Bank picked for ?add=1', () => {
     query = 'add=1';
     render(<AddAccountHost />);
-    expect(screen.getByText('dialog add none')).toBeInTheDocument();
+    expect(screen.getByText('dialog add bank_account')).toBeInTheDocument();
   });
 
   it.each(['bank_account', 'credit_card', 'broker', 'generic'])('opens with %s picked for ?add=%s', (type) => {

@@ -172,6 +172,8 @@ export function linesSubtitle(total: number, window: RewardsWindow): string {
 
 export interface MilestoneModel {
   id: string;
+  /** The milestone's own name. */
+  title: string;
   subtitle: string;
   status: { label: 'On track' | 'Behind' | 'Achieved'; tone: 'success' | 'warning' } | null;
   figure: { done: string; of: string };
@@ -205,7 +207,10 @@ export function milestonePace(
 export function buildMilestone(m: MilestoneStatus, today: string): MilestoneModel {
   const spend = m.basis === 'SPEND';
   const noun = WINDOW_NOUN[m.windowType];
-  const target = spend ? `Spend ${formatCompactRupees(m.threshold)} in the ${noun}` : `${plural(m.threshold, 'transaction', 'transactions')} in the ${noun}`;
+  const each = !spend && m.minTxnAmount ? ` of ${formatRupees(m.minTxnAmount)}+ each` : '';
+  const target = spend
+    ? `Spend ${formatCompactRupees(m.threshold)} in the ${noun}`
+    : `${plural(m.threshold, 'transaction', 'transactions')}${each} in the ${noun}`;
   const payout =
     m.payoutValue != null ? (m.rewardType === 'POINTS' ? ` → ${formatAmount(m.payoutValue, 0)} bonus pts` : ` → ${formatRupees(m.payoutValue)} bonus`) : '';
   const pct = m.threshold > 0 ? Math.min(100, Math.round((m.progress / m.threshold) * 100)) : 0;
@@ -218,6 +223,7 @@ export function buildMilestone(m: MilestoneStatus, today: string): MilestoneMode
   }
 
   const caption: string[] = [`${pct}%`];
+  if (m.achieved && m.payoutDate) caption.push(`credited ${formatDayMonth(m.payoutDate)}`);
   if (pace && !m.achieved) {
     caption.push(`${plural(pace.daysLeft, 'day', 'days')} left`);
     if (spend && pace.daysLeft > 0) {
@@ -227,6 +233,7 @@ export function buildMilestone(m: MilestoneStatus, today: string): MilestoneMode
 
   return {
     id: m.milestoneId,
+    title: m.name || 'Milestone',
     subtitle: `${target}${payout}`,
     status,
     figure: spend

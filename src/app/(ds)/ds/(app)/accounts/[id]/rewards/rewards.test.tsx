@@ -177,6 +177,38 @@ describe('/ds/accounts/[id]/rewards', () => {
     expect(screen.getByText('Manage').closest('a')?.getAttribute('href')).toBe('/rewards/rules?account=c1');
   });
 
+  it('shows each milestone under its own name, whatever type it is', async () => {
+    const m = report.milestones[0];
+    loadData.mockResolvedValue(
+      data({
+        report: {
+          ...report,
+          milestones: [
+            m,
+            { ...m, milestoneId: 'm2', name: 'Festive tracker', payoutType: 'INFO_TRACKER', payoutValue: null, threshold: 50000, progress: 12000 },
+            { ...m, milestoneId: 'm3', name: 'Ten swipes', basis: 'TXN_COUNT', threshold: 10, progress: 4, minTxnAmount: 500, rewardType: 'CASH', payoutValue: 750 },
+          ],
+        },
+      }),
+    );
+    await renderPage();
+
+    expect(screen.getByText('Annual spend')).toBeDefined();
+    expect(screen.getByText('Festive tracker')).toBeDefined();
+    expect(screen.getByText('Spend ₹50,000 in the year')).toBeDefined();
+    expect(screen.getByText('Ten swipes')).toBeDefined();
+    expect(screen.getByText('10 transactions of ₹500+ each in the year → ₹750 bonus')).toBeDefined();
+  });
+
+  it('shows a card that has only a milestone: no empty state, no rules card', async () => {
+    loadData.mockResolvedValue(data({ report: { ...report, rules: [] }, rules: [] }));
+    await renderPage();
+
+    expect(screen.queryByText('No reward rules on HDFC Regalia Gold')).toBeNull();
+    expect(screen.getByText('Annual spend')).toBeDefined();
+    expect(screen.queryByText('Rules on this account')).toBeNull();
+  });
+
   it('sets ?rule= when a rule chip is chosen and clears it on All rules', async () => {
     await renderPage();
     fireEvent.click(screen.getByRole('button', { name: '5X' }));

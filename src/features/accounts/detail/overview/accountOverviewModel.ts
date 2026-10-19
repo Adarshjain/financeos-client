@@ -3,7 +3,7 @@ import {
   formatDayMonth,
   formatRupees,
 } from '@/features/accounts/list/accountsList';
-import type { Broker, GenericAccount } from '@/lib/account.types';
+import type { Broker } from '@/lib/account.types';
 import type { StatementSummary } from '@/lib/statement.types';
 import type { Transaction } from '@/lib/transaction.types';
 
@@ -171,28 +171,6 @@ export function buildLinked(payments: {
       value: payments.cardBills.map((b) => b.name).join(', '),
     });
   }
-  return lines;
-}
-
-// ---- Wallet / cash ----------------------------------------------------------
-
-export interface DetailLine {
-  label: string;
-  value: string;
-}
-
-/** "Net worth · asset", "Net worth · liability" or "Excluded from net worth". */
-export function countsToward(account: Pick<GenericAccount, 'excludeFromNetAsset' | 'financialPosition'>): string {
-  if (account.excludeFromNetAsset) return 'Excluded from net worth';
-  return `Net worth · ${account.financialPosition === 'liability' ? 'liability' : 'asset'}`;
-}
-
-export function buildWalletDetails(account: GenericAccount): DetailLine[] {
-  const lines: DetailLine[] = [
-    { label: 'Type', value: 'Wallet / cash' },
-    { label: 'Counts toward', value: countsToward(account) },
-  ];
-  if (account.description) lines.push({ label: 'Description', value: account.description });
   return lines;
 }
 

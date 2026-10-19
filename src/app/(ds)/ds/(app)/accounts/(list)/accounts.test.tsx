@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import type React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -8,10 +8,20 @@ import { AccountType } from '@/lib/types';
 import DsAccountsPage from './page';
 import { type PlainListData, resolveDeep, toStreams } from './streamedTestUtils';
 
+const push = vi.fn();
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  useRouter: () => ({ push, refresh: vi.fn() }),
   usePathname: () => '/ds/accounts',
   useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock('@/features/accounts/form/ds/AccountFormDialog', () => ({
+  AccountFormDialog: ({ account, onClose }: { account?: Account; onClose: () => void }) => (
+    <div>
+      <p>edit dialog {account?.name}</p>
+      <button onClick={onClose}>close dialog</button>
+    </div>
+  ),
 }));
 
 const loadMock = vi.fn<() => PlainListData>();
@@ -38,14 +48,15 @@ function data(over: Partial<PlainListData> = {}): PlainListData {
   };
 }
 
-async function renderPage(closed?: string) {
-  const ui = await DsAccountsPage({ searchParams: Promise.resolve({ closed }) });
+async function renderPage() {
+  const ui = await DsAccountsPage();
   return render((await resolveDeep(ui)) as React.ReactElement);
 }
 
 describe('/ds/accounts', () => {
   beforeEach(() => {
     loadMock.mockReset();
+    push.mockReset();
   });
 
   it('renders the KPI row and every section from the data', async () => {
@@ -65,23 +76,38 @@ describe('/ds/accounts', () => {
     expect(screen.getByText('Wallets & cash')).toBeDefined();
   });
 
-  it('keeps closed accounts out of the rows and shows the closed line with a Show link', async () => {
+  it('keeps closed accounts out of the rows and shows the closed line with a Show button', async () => {
     loadMock.mockReturnValue(data());
     await renderPage();
 
     expect(screen.queryByText('Old Card')).toBeNull();
     expect(screen.getByText('Closed · 1 · Old Card ••1111, closed 5 Jan 2025')).toBeDefined();
-    const show = screen.getByRole('link', { name: /Show/ });
-    expect(show.getAttribute('href')).toBe('/ds/accounts?closed=cards');
+    expect(screen.getByRole('button', { name: /Show/ })).toBeDefined();
   });
 
-  it('shows the closed rows after the open ones for ?closed=cards, with a Hide link', async () => {
+  it('Show reveals the closed rows below the closed line without navigating, and Hide puts them away', async () => {
     loadMock.mockReturnValue(data());
-    await renderPage('cards');
+    await renderPage();
 
-    expect(screen.getAllByText('Old Card').length).toBeGreaterThan(0);
-    const hide = screen.getByRole('link', { name: /Hide/ });
-    expect(hide.getAttribute('href')).toBe('/ds/accounts');
+    fireEvent.click(screen.getByRole('button', { name: /Show/ }));
+
+    const line = screen.getByText('Closed · 1 · Old Card ••1111, closed 5 Jan 2025');
+    const closedRow = screen.getAllByText('Old Card')[0];
+    const openRow = screen.getAllByText('Axis Magnus')[0];
+    expect(line.compareDocumentPosition(closedRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(openRow.compareDocumentPosition(line) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(push).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: /Hide/ }));
+    expect(screen.queryByText('Old Card')).toBeNull();
+  });
+
+  it('opens a closed account from its row', async () => {
+    loadMock.mockReturnValue(data());
+    await renderPage();
+    fireEvent.click(screen.getByRole('button', { name: /Show/ }));
+    fireEvent.click(screen.getAllByText('Old Card')[0]);
+    expect(push).toHaveBeenCalledWith('/ds/accounts/c2');
   });
 
   it('degrades only the net worth tile when the dashboard summary fails', async () => {
@@ -113,16 +139,30 @@ describe('/ds/accounts', () => {
     expect(screen.queryByText('Bank accounts')).toBeNull();
   });
 
-  it('gives bank rows Statements and Edit links and card rows only Statements', async () => {
+  it('has no Statements or Upload actions on rows, and no Rewards link in the cards header', async () => {
     loadMock.mockReturnValue(data());
     await renderPage();
 
-    const hrefs = (name: string) =>
-      screen.getAllByRole('link', { name }).map((a) => a.getAttribute('href'));
-    expect(hrefs('Statements')).toEqual([
-      '/ds/accounts/b1/statements',
-      '/ds/accounts/c1/statements',
-    ]);
-    expect(hrefs('Edit')).toEqual(['/ds/accounts/b1?edit=1']);
+    expect(screen.queryByRole('link', { name: 'Statements' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Rewards' })).toBeNull();
+  });
+
+  it('Edit on a bank row opens the Edit dialog and does not open the account', async () => {
+    loadMock.mockReturnValue(data());
+    await renderPage();
+
+    expect(screen.queryByRole('link', { name: 'Edit' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    expect(screen.getByText('edit dialog HDFC Savings')).toBeDefined();
+    expect(push).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'close dialog' }));
+    expect(screen.queryByText(/edit dialog/)).toBeNull();
+  });
+
+  it.each(['Add bank account', 'Add credit card', 'Add broker', 'Add wallet'])('%s link carries a plus icon', async (name) => {
+    loadMock.mockReturnValue(data());
+    await renderPage();
+    const link = screen.getByRole('link', { name });
+    expect(link.querySelector('svg, [data-icon], i, span[aria-hidden]')).not.toBeNull();
   });
 });

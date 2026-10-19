@@ -4,6 +4,7 @@ import type { CardBillResponse } from '@/lib/api/types';
 
 import {
   buildDetailModel,
+  buildDetails,
   buildLineRow,
   deletionImpact,
   deletionNote,
@@ -43,6 +44,89 @@ function detail(over: Partial<StatementDetailData> = {}): StatementDetailData {
     ...over,
   };
 }
+
+describe('statement lines', () => {
+  it('carries the position, review status, balance after and chain state', () => {
+    const row = buildLineRow(
+      line({ lineIndex: 0, reviewType: 'NEEDS_REVIEW', balanceAfter: 12500, chainValid: false })
+    );
+    expect(row).toMatchObject({
+      index: '1',
+      review: { label: 'Needs review', tone: 'warning' },
+      balanceAfter: '₹12,500',
+      chain: 'broken',
+    });
+    expect(row.phoneSub).toBe('9 Sep · linked to transaction · balance ₹12,500');
+  });
+
+  it.each([
+    ['AUTO_REVIEWED', 'Auto reviewed', 'success'],
+    ['MANUALLY_REVIEWED', 'Manually reviewed', 'info'],
+  ] as const)('labels %s', (reviewType, label, tone) => {
+    expect(buildLineRow(line({ reviewType })).review).toEqual({ label, tone });
+  });
+
+  it('leaves review, balance and chain empty when the server sends none', () => {
+    const row = buildLineRow(line({ reviewType: 'NA', balanceAfter: null, chainValid: null }));
+    expect(row).toMatchObject({ index: '', review: null, balanceAfter: '—', chain: null });
+    expect(row.phoneSub).toBe('9 Sep · linked to transaction');
+    expect(buildLineRow(line({ chainValid: true })).chain).toBe('valid');
+  });
+});
+
+describe('buildDetails', () => {
+  it('lists every credit card figure, then parse mode, chain validation and source', () => {
+    const d = detail({
+      parseMode: 'llm',
+      chainValidationPct: 99.54,
+      cardDetails: {
+        totalAmountDue: 44319,
+        paymentDueDate: '2026-10-25',
+        creditLimit: 300000,
+        availableCreditLimit: 255681,
+        financeCharges: 0,
+        feesAndCharges: 590,
+        previousBalance: 46800,
+        paymentsReceived: 46800,
+        totalPurchases: 44319,
+        rewardPointsBalance: 12480,
+        rewardPointsEarned: 1560,
+      },
+    });
+    expect(buildDetails(d, true)).toEqual([
+      { label: 'Due date', value: '25 Oct 2026' },
+      { label: 'Credit limit', value: '₹3,00,000' },
+      { label: 'Available credit', value: '₹2,55,681' },
+      { label: 'Finance charges', value: '₹0' },
+      { label: 'Fees and charges', value: '₹590' },
+      { label: 'Previous balance', value: '₹46,800' },
+      { label: 'Payments received', value: '₹46,800' },
+      { label: 'Total purchases', value: '₹44,319' },
+      { label: 'Reward points balance', value: '12,480' },
+      { label: 'Points earned', value: '+1,560' },
+      { label: 'Parse mode', value: 'llm' },
+      { label: 'Chain validation', value: '99.5% valid' },
+      { label: 'Ingestion source', value: 'File upload' },
+    ]);
+  });
+
+  it('leaves out figures the statement does not carry, keeping real zeros', () => {
+    const d = detail({ cardDetails: { creditLimit: 300000, financeCharges: 0, rewardPointsBalance: null } });
+    expect(buildDetails(d, true).map((x) => x.label)).toEqual([
+      'Credit limit',
+      'Finance charges',
+      'Parse mode',
+      'Ingestion source',
+    ]);
+  });
+
+  it('has only parse mode and source for a bank statement without chain validation', () => {
+    expect(buildDetails(detail({ source: 'gmail' }), false)).toEqual([
+      { label: 'Parse mode', value: 'Standard' },
+      { label: 'Ingestion source', value: 'Gmail' },
+    ]);
+  });
+});
 
 describe('ledgerLine', () => {
   it('says it matches, or names the ledger figure when it does not', () => {

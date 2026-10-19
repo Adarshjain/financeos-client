@@ -13,7 +13,7 @@ import {
   type RewardTotal,
 } from './accountsList';
 import type { AccountsListData } from './accountsListData';
-import { type CardListRow, UploadStatementButton } from './AccountsSections';
+import type { CardListRow } from './AccountsSections';
 
 // Small async Server Components: each awaits one promise that the page already started, so the
 // accounts render at once and these fill in as their data arrives. A failed request resolves to
@@ -71,22 +71,6 @@ async function NextBill({
   return badge ? <Badge tone={badge.tone}>{badge.label}</Badge> : null;
 }
 
-async function UploadWhenMissing({
-  bills,
-  id,
-  today,
-  label,
-}: Pick<AccountsListData, 'bills'> & {
-  id: string;
-  today: string;
-  label: string;
-}) {
-  const badge = nextBillBadge(await billFor(bills, id), today);
-  return badge?.label === 'Statement missing' ? (
-    <UploadStatementButton id={id} label={label} />
-  ) : null;
-}
-
 async function Rewards({
   rewards,
   id,
@@ -122,21 +106,6 @@ export function streamedCardRow(
     billSlot: (
       <Suspense fallback={<Skeleton width={72} height={20} />}>
         <NextBill bills={bills} id={id} today={today} />
-      </Suspense>
-    ),
-    uploadSlot: (
-      <Suspense fallback={null}>
-        <UploadWhenMissing bills={bills} id={id} today={today} label="Upload" />
-      </Suspense>
-    ),
-    uploadPhoneSlot: (
-      <Suspense fallback={null}>
-        <UploadWhenMissing
-          bills={bills}
-          id={id}
-          today={today}
-          label="Upload statement"
-        />
       </Suspense>
     ),
     rewardsSlot: (

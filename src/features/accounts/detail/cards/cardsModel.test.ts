@@ -253,7 +253,7 @@ describe('buildCardsModel', () => {
   });
 
   it('has the shared-limit model only for a credit card', () => {
-    expect(build().sharedLimit).toEqual({ thisCard: 'Own limit · ₹3,00,000', shared: 'None' });
+    expect(build().sharedLimit).toEqual({ thisCard: 'Own limit · ₹3,00,000', shared: null });
     expect(build(true).sharedLimit).toBeNull();
   });
 });
@@ -261,24 +261,29 @@ describe('buildCardsModel', () => {
 describe('sharedLimitModel', () => {
   const base = { id: 'c1', type: AccountType.CREDIT_CARD } as CreditCard;
 
-  it('names the pool, its limit and its cards', () => {
+  it('shows the own limit alone without a pool, Not set when it has none', () => {
+    expect(sharedLimitModel({ ...base, creditLimit: 300000 } as CreditCard)).toEqual({
+      thisCard: 'Own limit · ₹3,00,000',
+      shared: null,
+    });
+    expect(sharedLimitModel({ ...base, creditLimit: null } as CreditCard)).toEqual({ thisCard: 'Not set', shared: null });
+  });
+
+  it('names the pool, its limit and its cards, and leaves the own limit out', () => {
     const m = sharedLimitModel({
       ...base,
       creditLimit: 300000,
       limitPool: { id: 'p', name: 'HDFC cards', creditLimit: 500000, memberCount: 2 },
     } as CreditCard);
-    expect(m).toEqual({
-      thisCard: 'Own limit · ₹3,00,000',
-      shared: 'HDFC cards · ₹5,00,000 · 2 cards',
-    });
+    expect(m).toEqual({ thisCard: null, shared: 'HDFC cards · ₹5,00,000 · 2 cards' });
   });
 
-  it('says Not set for a pooled card with no limit of its own', () => {
+  it('shows the pool alone for a pooled card with no limit of its own', () => {
     const m = sharedLimitModel({
       ...base,
       creditLimit: null,
       limitPool: { id: 'p', name: 'Pool', creditLimit: 100000, memberCount: 1 },
     } as CreditCard);
-    expect(m).toEqual({ thisCard: 'Not set', shared: 'Pool · ₹1,00,000 · 1 card' });
+    expect(m).toEqual({ thisCard: null, shared: 'Pool · ₹1,00,000 · 1 card' });
   });
 });

@@ -43,7 +43,7 @@ const plain: PlainListData = {
 const never = <T,>() => new Promise<T>(() => {});
 
 async function resolved() {
-  const ui = await DsAccountsPage({ searchParams: Promise.resolve({}) });
+  const ui = await DsAccountsPage();
   return render((await resolveDeep(ui)) as React.ReactElement);
 }
 
@@ -61,7 +61,7 @@ describe('/ds/accounts streaming', () => {
       netWorth: never(),
       dayChangePct: never(),
     });
-    const ui = await DsAccountsPage({ searchParams: Promise.resolve({}) });
+    const ui = await DsAccountsPage();
     const html = await renderShellHtml(ui as React.ReactElement);
     document.body.innerHTML = html;
 
@@ -88,7 +88,7 @@ describe('/ds/accounts streaming', () => {
     expect(screen.getAllByText('1,200 pts').length).toBeGreaterThan(0);
   });
 
-  it('shows the exact next-bill badge from the bills, and no Upload links when the statement is not missing', async () => {
+  it('shows the exact next-bill badge from the bills', async () => {
     const bill = {
       accountId: 'c1',
       accountName: 'Axis Magnus',
@@ -100,11 +100,9 @@ describe('/ds/accounts streaming', () => {
 
     expect(screen.getAllByText('1 Jan').length).toBeGreaterThan(0);
     expect(screen.queryByText('Statement missing')).toBeNull();
-    expect(screen.queryByRole('link', { name: 'Upload' })).toBeNull();
-    expect(screen.queryByRole('link', { name: 'Upload statement' })).toBeNull();
   });
 
-  it('shows Statement missing with desktop and phone Upload links to the import page', async () => {
+  it('shows Statement missing with no Upload link on the row', async () => {
     const bill = {
       accountId: 'c1',
       accountName: 'Axis Magnus',
@@ -115,9 +113,8 @@ describe('/ds/accounts streaming', () => {
     await resolved();
 
     expect(screen.getAllByText('Statement missing').length).toBeGreaterThan(0);
-    const href = '/transactions/import?account=c1';
-    expect(screen.getByRole('link', { name: 'Upload' }).getAttribute('href')).toBe(href);
-    expect(screen.getByRole('link', { name: 'Upload statement' }).getAttribute('href')).toBe(href);
+    expect(screen.queryByRole('link', { name: 'Upload' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Upload statement' })).toBeNull();
   });
 
   it('degrades only net worth and the investments delta when their requests fail', async () => {

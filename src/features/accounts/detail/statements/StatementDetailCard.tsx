@@ -14,6 +14,7 @@ import {
   Menu,
   MenuItem,
   StatusWord,
+  StatusWords,
   Text,
 } from '@/components/ds';
 
@@ -23,7 +24,12 @@ import { SetDueDateDialog } from './SetDueDateDialog';
 
 const helper = createDataTableColumnHelper<LineRowModel>();
 
-const columns = helper.columns([
+const allColumns = helper.columns([
+  helper.accessor('index', {
+    id: 'index',
+    header: '#',
+    meta: { size: 'xs', align: 'end', phone: 'hidden' },
+  }),
   helper.accessor('date', {
     id: 'date',
     header: 'Date',
@@ -36,14 +42,29 @@ const columns = helper.columns([
   }),
   helper.display({
     id: 'matched',
-    header: 'Matched',
-    meta: { size: 'sm', phone: 'status' },
-    cell: ({ row }) =>
-      row.original.linked ? (
-        <StatusWord tone="info">Linked</StatusWord>
-      ) : (
-        <StatusWord tone="neutral">New</StatusWord>
-      ),
+    header: 'Status',
+    meta: { size: 'lg', phone: 'status' },
+    cell: ({ row }) => {
+      const { linked, review, chain } = row.original;
+      return (
+        <StatusWords
+          items={[
+            linked ? { tone: 'info', label: 'Linked' } : { tone: 'neutral', label: 'New' },
+            // One word on the line: a broken chain is the exception, else the review word.
+            ...(chain === 'broken'
+              ? [{ tone: 'warning' as const, label: 'Chain broken' }]
+              : review
+                ? [{ tone: review.tone, label: review.label }]
+                : []),
+          ]}
+        />
+      );
+    },
+  }),
+  helper.accessor('balanceAfter', {
+    id: 'balanceAfter',
+    header: 'Balance after',
+    meta: { size: 'sm', align: 'end', phone: 'hidden' },
   }),
   helper.display({
     id: 'amount',
@@ -59,6 +80,9 @@ const columns = helper.columns([
       ),
   }),
 ]);
+
+const columnsFor = (hasBalance: boolean) =>
+  hasBalance ? allColumns : allColumns.filter((c) => (c as { id?: string }).id !== 'balanceAfter');
 
 export interface StatementDetailCardProps {
   accountId: string;
@@ -115,36 +139,38 @@ export function StatementDetailCard({ accountId, fy, model }: StatementDetailCar
           </div>
         ))}
       </div>
+      <div className="px-space-16 pb-space-12 grid grid-cols-2 desk:grid-cols-3 gap-space-8">
+        {model.details.map((stat) => (
+          <div key={stat.label} className="min-w-0 flex flex-col gap-space-2">
+            <Text variant="label" tone="ink-3" as="div">
+              {stat.label}
+            </Text>
+            <Text variant="body-strong" as="div">
+              {stat.value}
+            </Text>
+          </div>
+        ))}
+      </div>
       {model.skippedBanner ? (
         <div className="px-space-16 pb-space-10">
           <Banner tone="info">{model.skippedBanner}</Banner>
         </div>
       ) : null}
       <DataTable
-        columns={columns}
+        columns={columnsFor(model.lines.some((l) => l.balanceAfter !== '—'))}
         data={model.lines}
         getRowId={(line) => line.id}
         sortMode="client"
         phoneSub={(line) => line.phoneSub}
         empty={<EmptyState compact title="No transaction rows linked to this statement." />}
       />
-      <CardFooter>
-        {model.ledgerLine ? (
+      {model.ledgerLine ? (
+        <CardFooter>
           <Text variant="body" tone="ink-3" as="span">
             {model.ledgerLine}
           </Text>
-        ) : null}
-        <div className="flex items-center gap-space-8 ml-auto">
-          {model.isCard ? (
-            <Button variant="secondary" size="sm" onClick={() => setDueOpen(true)}>
-              Set due date
-            </Button>
-          ) : null}
-          <Button variant="danger" size="sm" onClick={() => setDeleteOpen(true)}>
-            Delete statement
-          </Button>
-        </div>
-      </CardFooter>
+        </CardFooter>
+      ) : null}
       {model.isCard ? (
         <SetDueDateDialog
           open={dueOpen}

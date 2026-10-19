@@ -275,11 +275,7 @@ export function AccountFormDialog({ account, initialType = null, onClose }: Acco
         <DialogContent
           size="md"
           title={isEdit ? 'Edit account' : 'Add account'}
-          description={
-            account
-              ? `${account.name} · ${accountTypeLabel(account.type)}`
-              : "Pick a type · only that type's fields appear"
-          }
+          description={account ? `${account.name} · ${accountTypeLabel(account.type)}` : undefined}
           secondary={{ label: 'Cancel', onSelect: onClose, disabled: busy }}
           primary={{
             label: isEdit ? 'Save changes' : 'Create account',

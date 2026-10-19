@@ -90,8 +90,10 @@ export interface ClosedHolderModel {
 }
 
 export interface SharedLimitModel {
-  thisCard: string;
-  shared: string;
+  /** The card's own limit; null when it draws on a shared pool. */
+  thisCard: string | null;
+  /** The shared pool; null when the card has its own limit. */
+  shared: string | null;
 }
 
 export interface CardsModel {
@@ -240,15 +242,19 @@ function closedCaption(holder: Cardholder, stats: HolderStats | undefined, isBan
   return parts.join(' · ');
 }
 
-/** The "Shared limit" card of a credit card: its own limit and the pool it draws on. */
+/** The "Shared limit" card of a credit card: the pool it draws on, or else its own limit; never both. */
 export function sharedLimitModel(account: CreditCard): SharedLimitModel {
   const pool = account.limitPool ?? null;
+  if (pool) {
+    return {
+      thisCard: null,
+      shared: `${pool.name} · ${formatRupees(pool.creditLimit)} · ${plural(pool.memberCount, 'card', 'cards')}`,
+    };
+  }
   return {
     thisCard:
       account.creditLimit != null ? `Own limit · ${formatRupees(account.creditLimit)}` : 'Not set',
-    shared: pool
-      ? `${pool.name} · ${formatRupees(pool.creditLimit)} · ${plural(pool.memberCount, 'card', 'cards')}`
-      : 'None',
+    shared: null,
   };
 }
 

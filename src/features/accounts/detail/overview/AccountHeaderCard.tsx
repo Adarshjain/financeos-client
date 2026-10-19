@@ -1,23 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import {
   Badge,
   Button,
   Card,
-  Icon,
-  Menu,
-  MenuItem,
   StatusWord,
   Text,
 } from '@/components/ds';
 import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
 
 import { accountHref } from '../accountTabsModel';
-import { useAccountTabCounts } from '../useAccountTabCounts';
 import type { HeaderModel } from './headerModel';
 
 /** The block at the top of every account page: the headline figure, and the account's actions. */
@@ -30,8 +25,6 @@ export function AccountHeaderCard({
   accountName: string;
   model: HeaderModel;
 }) {
-  const router = useRouter();
-  const counts = useAccountTabCounts(accountId);
   const [markPaidOpen, setMarkPaidOpen] = React.useState(false);
   const base = accountHref(accountId);
 
@@ -68,31 +61,8 @@ export function AccountHeaderCard({
             </Button>
           ) : null}
           <Button asChild variant="secondary" className="flex-1 desk:flex-none">
-            <Link href={`/transactions?account=${accountId}`}>
-              {counts ? `Transactions · ${counts.transactions}` : 'Transactions'}
-            </Link>
-          </Button>
-          <Button asChild variant="secondary" className="flex-1 desk:flex-none">
             <Link href={`${base}?edit=1`}>Edit</Link>
           </Button>
-          {model.showImport ? (
-            <div className="hidden desk:block">
-              <Menu
-                align="end"
-                trigger={
-                  <Button variant="secondary" iconOnly aria-label="More actions">
-                    <Icon name="more" size="sm" />
-                  </Button>
-                }
-              >
-                <MenuItem
-                  onSelect={() => router.push(`/transactions/import?account=${accountId}`)}
-                >
-                  Import statement
-                </MenuItem>
-              </Menu>
-            </div>
-          ) : null}
         </div>
       </div>
       {model.markPaid ? (
