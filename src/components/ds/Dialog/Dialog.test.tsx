@@ -592,7 +592,7 @@ describe('Dialog close button (UAT)', () => {
       />,
     );
     const save = screen.getByRole('button', { name: 'Save' });
-    expect(save).toHaveClass('h-control-lg');
+    expect(save).toHaveClass('h-control-md');
     expect(save).not.toHaveClass('h-control-xl');
     expect(save.parentElement?.parentElement).toHaveClass('pb-safe-12');
   });

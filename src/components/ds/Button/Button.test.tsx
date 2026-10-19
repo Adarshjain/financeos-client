@@ -72,7 +72,7 @@ describe('Button component', () => {
     expect(screen.getByRole('button')).toHaveClass('h-control-sm');
 
     rerender(<Button size="md">Medium</Button>);
-    expect(screen.getByRole('button')).toHaveClass('h-control-lg');
+    expect(screen.getByRole('button')).toHaveClass('h-control-md');
 
     rerender(<Button size="xl">Large</Button>);
     expect(screen.getByRole('button')).toHaveClass('h-control-xl');
@@ -234,9 +234,9 @@ describe('Button component', () => {
 describe('Button md height (UAT)', () => {
   it('md text and icon-only buttons are 36px, the same as a form field', () => {
     const { rerender } = render(<Button>Save</Button>);
-    expect(screen.getByRole('button')).toHaveClass('h-control-lg');
+    expect(screen.getByRole('button')).toHaveClass('h-control-md');
     rerender(<Button iconOnly aria-label="More"><Icon name="more" /></Button>);
-    expect(screen.getByRole('button')).toHaveClass('h-control-lg', 'aspect-square');
+    expect(screen.getByRole('button')).toHaveClass('h-control-md', 'aspect-square');
   });
 });
 

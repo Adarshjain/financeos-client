@@ -85,7 +85,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           aria-describedby={hasError || helper ? helperId : undefined}
           style={inlineStyles}
           className={cn(
-            'w-full min-h-control-lg px-space-12 py-space-8 rounded-ds-md border bg-surface font-text font-medium text-body text-ink placeholder:text-ink-4 resize-y [field-sizing:content]',
+            'w-full min-h-control-md px-space-12 py-space-8 rounded-ds-md border bg-surface font-text font-medium text-body text-ink placeholder:text-ink-4 resize-y [field-sizing:content]',
             'transition-colors duration-fast focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2',
             hasError
               ? 'border-danger focus:ring-danger'

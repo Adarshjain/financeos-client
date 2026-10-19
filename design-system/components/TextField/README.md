@@ -6,7 +6,7 @@ A labelled single-line input. Label above in `ink-2` 12px bold; helper or error 
 Standard text input for forms, logins, and values.
 
 ## Props
-- `size?: 'md' | 'lg'`: height and padding scale (default `'lg'` is `control-lg`; `'md'` is `control-md`).
+- `size?: 'md' | 'lg'`: padding only; both sizes are `control-md` (32px). Default `'lg'` has 12px side padding, `'md'` 10px.
 - `variant?: 'default' | 'embedded'`: visual variant (`embedded` removes focus ring for use inside list overlays like Select).
 - `label?: React.ReactNode`: field label above the input.
 - `helper?: React.ReactNode`: helpful hint text below the input.

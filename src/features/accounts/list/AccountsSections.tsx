@@ -121,7 +121,12 @@ function ClosedToggleButton({
   onToggle: () => void;
 }) {
   return (
-    <Button variant="link" size="sm" onClick={onToggle}>
+    <Button
+      variant="link"
+      size="sm"
+      className="shrink-0 whitespace-nowrap"
+      onClick={onToggle}
+    >
       {showing ? 'Hide' : 'Show'}
       <Icon name={showing ? 'chevron-up' : 'chevron-right'} size="sm" />
     </Button>
@@ -181,7 +186,7 @@ function AddLink({
     <Text variant="label" as="span">
       <Button asChild variant="link" size="sm">
         <Link href={href}>
-          <Icon name="add" size="sm" />
+          <Icon name="add" size="xs" />
           {children}
         </Link>
       </Button>

@@ -5,7 +5,7 @@ import { type IconName, iconRegistry } from './registry';
 
 export { iconRegistry };
 export type { IconName };
-export type IconSize = 'sm' | 'md' | 'lg';
+export type IconSize = 'xs' | 'sm' | 'md' | 'lg';
 
 export interface IconProps extends Omit<React.SVGAttributes<SVGSVGElement>, 'size'> {
   name: IconName;
@@ -14,6 +14,7 @@ export interface IconProps extends Omit<React.SVGAttributes<SVGSVGElement>, 'siz
 }
 
 const sizeClasses: Record<IconSize, string> = {
+  xs: 'w-icon-xs h-icon-xs',
   sm: 'w-icon-sm h-icon-sm',
   md: 'w-icon-md h-icon-md',
   lg: 'w-icon-lg h-icon-lg',

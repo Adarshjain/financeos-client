@@ -32,7 +32,7 @@ export interface TopBarProps
 
 /**
  * TopBar: the bar at the top of every screen.
- * Phone form: Leading slot (or back arrow), crumb and title, bordered control-lg icon actions.
+ * Phone form: Leading slot (or back arrow), crumb and title, bordered control-md icon actions.
  * Desktop form: crumb and title on the left, labelled actions with their shortcut on the right.
  * The viewport picks the form via CSS (desk breakpoint).
  */
@@ -147,7 +147,7 @@ export const TopBar = forwardRef<HTMLElement, TopBarProps>(
               const buttonClasses = cn(
                 'shrink-0',
                 hasLabel
-                  ? 'w-control-lg h-control-lg p-0 desk:w-auto desk:h-control-lg desk:px-space-12 desk:gap-space-6'
+                  ? 'w-control-md h-control-md p-0 desk:w-auto desk:h-control-md desk:px-space-12 desk:gap-space-6'
                   : undefined,
               );
 

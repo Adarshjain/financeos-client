@@ -119,7 +119,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
         <div
           className={cn(
             'flex items-center gap-space-8 w-full border rounded-ds-md bg-surface font-text font-medium text-body text-ink transition-colors duration-fast',
-            isLg ? 'h-control-lg px-space-12' : 'h-control-md px-space-10',
+            isLg ? 'h-control-md px-space-12' : 'h-control-md px-space-10',
             isEmbedded
               ? 'focus-within:ring-0 focus-within:ring-offset-0'
               : 'focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',

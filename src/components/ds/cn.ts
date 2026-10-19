@@ -59,6 +59,7 @@ export const CN_FONT_SIZE = [
 ] as const;
 
 export const CN_HEIGHT = [
+  'icon-xs',
   'icon-sm',
   'icon-md',
   'icon-lg',
@@ -76,6 +77,7 @@ export const CN_MIN_HEIGHT = [
 ] as const;
 
 export const CN_WIDTH = [
+  'icon-xs',
   'icon-sm',
   'icon-md',
   'icon-lg',
@@ -106,6 +108,7 @@ export const CN_MAX_WIDTH = [
 ] as const;
 
 export const CN_SIZE = [
+  'icon-xs',
   'icon-sm',
   'icon-md',
   'icon-lg',
