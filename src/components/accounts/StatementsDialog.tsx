@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useStatementsDialog } from '@/features/accounts/statements/useStatementsDialog';
 import { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
@@ -19,7 +20,6 @@ import { formatDate } from '@/lib/utils';
 import { CardCycleSummaryCard } from './statements-dialog/CardCycleSummaryCard';
 import { StatementsDesktopTable } from './statements-dialog/StatementsDesktopTable';
 import { StatementsMobileList } from './statements-dialog/StatementsMobileList';
-import { useStatementsDialog } from './statements-dialog/useStatementsDialog';
 
 interface StatementsDialogProps {
   account: Account;

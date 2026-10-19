@@ -12,11 +12,10 @@ import {
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { RELATIONSHIP_LABELS } from '@/features/accounts/cards/constants';
 import { Card, Cardholder, isCardholderClosed } from '@/lib/account.types';
 import { formatDateRange, formatDateRangeFull } from '@/lib/date-range';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
-
-import { RELATIONSHIP_LABELS } from './constants';
 
 interface CardholderItemProps {
   cardholder: Cardholder;

@@ -6,3 +6,5 @@ src/components/ds/
 src/app/(ds)/
 src/features/shell/
 src/components/organisms/
+src/features/accounts/
+src/features/bills/

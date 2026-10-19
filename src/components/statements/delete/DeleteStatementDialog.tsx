@@ -12,11 +12,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { type StatementDeletionPreview, useDeleteStatement } from '@/features/accounts/statements/useDeleteStatement';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { StatementSource } from '@/lib/statement.types';
 import { toastError } from '@/lib/toastError';
-
-import { type StatementDeletionPreview, useDeleteStatement } from './useDeleteStatement';
 
 interface DeleteStatementDialogProps {
   accountId: string;

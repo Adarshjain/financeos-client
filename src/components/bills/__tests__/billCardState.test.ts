@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { billCardPhase, buildBillsWidgetModel, deriveBillCardState, isHighlighted } from '@/features/bills/billCardState';
 import type { BillStatus, CardBillResponse } from '@/lib/api/types';
-
-import { billCardPhase, buildBillsWidgetModel, deriveBillCardState, isHighlighted } from '../billCardState';
 
 const TODAY = '2026-10-08';
 

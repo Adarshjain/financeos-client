@@ -8,17 +8,17 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { buildBillsWidgetModel, isHighlighted } from '@/features/bills/billCardState';
+import { useBillsWidgetActions } from '@/features/bills/useBillsWidgetActions';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import { todayInAppZone } from '@/lib/date-range';
 import { useBills } from '@/lib/query/hooks/useBills';
 import { cn, formatMoney } from '@/lib/utils';
 
 import { BillCardRow } from './BillCardRow';
-import { buildBillsWidgetModel, isHighlighted } from './billCardState';
 import { BillDetailsDialog } from './BillDetailsDialog';
 import { MarkPaidDialog } from './MarkPaidDialog';
 import { NothingPendingGroup } from './NothingPendingGroup';
-import { useBillsWidgetActions } from './useBillsWidgetActions';
 
 export interface BillsDueWidgetProps {
   /** Only this card's bill; all open credit cards when absent. */

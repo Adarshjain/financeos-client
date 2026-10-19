@@ -17,6 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useCardsDialog, ViewState } from '@/features/accounts/cards/useCardsDialog';
 import { Account } from '@/lib/account.types';
 
 import { AddAddonCardholderForm } from './cards-dialog/AddAddonCardholderForm';
@@ -27,7 +28,6 @@ import { EditCardholderForm } from './cards-dialog/EditCardholderForm';
 import { IssueCardForm } from './cards-dialog/IssueCardForm';
 import { ReassignTransactionsForm } from './cards-dialog/ReassignTransactionsForm';
 import { ReplaceCardForm } from './cards-dialog/ReplaceCardForm';
-import { useCardsDialog, ViewState } from './cards-dialog/useCardsDialog';
 
 interface CardsDialogProps {
   account: Account;
