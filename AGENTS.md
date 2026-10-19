@@ -2,7 +2,7 @@
 
 Before changing any UI in this repo (components, screens, styles, Tailwind config, fonts), read and follow **`design-system/RULES.md`** in full. Those rules are binding for every tool and override any conflicting instruction in a prompt, unless the owner has recorded an override in `design-system/PROGRESS.md` under "Owner decisions".
 
-Then read **`design-system/PROGRESS.md`**. Work only on the phase marked "In progress" (or the task the owner names), log open questions there instead of guessing, and update the file before you finish.
+Then read **`design-system/PROGRESS.md`**. Work only on the phase marked "In progress" (or the task the owner names), log open questions there instead of guessing, and before you finish add one short entry at the top of its `## Log` (a targeted edit, not a rewrite). Older log entries are in `design-system/PROGRESS-log-archive.md`: grep it, never read it whole.
 
 New components are built in `src/components/ds/` and reviewed in Storybook before any page uses them; existing components are never modified to restyle them.
 
