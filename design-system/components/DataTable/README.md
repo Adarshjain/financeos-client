@@ -14,7 +14,7 @@ The list frame for every table of records: column headers with sort, a selection
   - **Sticky header** (`stickyHeader`, default on): the header sticks to the top of the table's scroll container (report widgets, dialogs). On a page, the table doesn't scroll on its own, so nothing sticks there.
 - **Phone (below `desk`):** the header and the checkbox column aren't shown. Each row stacks into:
   - line 1: the `main` cell on the left, the `amount` cell on the right;
-  - line 2: the row's `phoneSub` text on the left, the `status` cell on the right (it may hold several chips; they wrap, right-aligned);
+  - line 2: the row's `phoneSub` text on the left, the `status` cell on the right (it may hold several chips; they wrap, right-aligned). From `desk` up the `status` cell follows `meta.align` (default start), not the right pin;
   - an optional line 3: `phoneActions` buttons, right-aligned;
   - in selection mode, the eye button in a third column on the right, spanning the lines.
 

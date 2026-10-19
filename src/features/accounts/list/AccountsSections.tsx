@@ -78,6 +78,28 @@ function OpenButton({ row }: { row: { id: string; name: string } }) {
   );
 }
 
+function IconLink({
+  href,
+  label,
+  icon,
+}: {
+  href: string;
+  label: string;
+  icon: 'file-text' | 'pencil-simple';
+}) {
+  return (
+    <Button asChild variant="ghost" size="sm" iconOnly aria-label={label}>
+      <Link href={href}>
+        <Icon name={icon} size="sm" />
+      </Link>
+    </Button>
+  );
+}
+
+function uploadHref(row: { id: string }): string {
+  return `/transactions/import?account=${row.id}`;
+}
+
 function ClosedFooter({
   line,
   section,
@@ -208,8 +230,22 @@ const bankColumns = [
   bankCh.display({
     id: 'actions',
     header: '',
-    meta: { size: 'xs', align: 'end', phone: 'hidden' },
-    cell: ({ row }) => <OpenButton row={row.original} />,
+    meta: { size: 'md', align: 'end', phone: 'hidden' },
+    cell: ({ row }) => (
+      <div className="flex items-center justify-end gap-space-4">
+        <IconLink
+          href={`${rowHref(row.original)}/statements`}
+          label="Statements"
+          icon="file-text"
+        />
+        <IconLink
+          href={`${rowHref(row.original)}?edit=1`}
+          label="Edit"
+          icon="pencil-simple"
+        />
+        <OpenButton row={row.original} />
+      </div>
+    ),
   }),
 ];
 
@@ -324,14 +360,19 @@ const cardColumns = [
   cardCh.display({
     id: 'actions',
     header: '',
-    meta: { size: 'md', align: 'end', phone: 'hidden' },
+    meta: { size: 'lg', align: 'end', phone: 'hidden' },
     cell: ({ row }) => (
       <div className="flex items-center justify-end gap-space-4">
         {row.original.statementMissing ? (
           <Button asChild variant="secondary" size="sm">
-            <Link href={`${rowHref(row.original)}/statements`}>Upload</Link>
+            <Link href={uploadHref(row.original)}>Upload</Link>
           </Button>
         ) : null}
+        <IconLink
+          href={`${rowHref(row.original)}/statements`}
+          label="Statements"
+          icon="file-text"
+        />
         <OpenButton row={row.original} />
       </div>
     ),
@@ -387,7 +428,7 @@ export function CardsSection(
         phoneActions={(row) =>
           row.statementMissing ? (
             <Button asChild variant="secondary" size="sm">
-              <Link href={`${rowHref(row)}/statements`}>Upload statement</Link>
+              <Link href={uploadHref(row)}>Upload statement</Link>
             </Button>
           ) : null
         }

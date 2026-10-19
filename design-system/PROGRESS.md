@@ -297,13 +297,15 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - **Tabs on an object page are real routes** (`/accounts/[id]`, `/statements`, `/cards`, `/rewards`): a shared layout holds the header and the tab strip, each tab fetches only its own data, choices inside a tab live in URL params (`?fy=&statement=`), and tab counts load on their own after the tab renders (a small server addition returns them). This applies to every tabbed page.
   - **Identifiers are saved with the form** (Add/Edit account), not on each add or remove.
   - **Add links per section on Accounts** (owner answer 39), an exception to §7.1 and the §9 header-button removal for that page.
+- 2026-10-19 · **Accounts list review answers** (owner):
+  - DataTable status cells sit where `meta.align` puts them on desktop; the right pin is phone only (fix A).
+  - Add `file-text` and `pencil-simple` to the icon registry; the list rows get Statements and Edit icon buttons.
+  - Brokers "Today" and net worth "excl. home loan": not needed on this page.
+  - Add and Edit account are dialogs over the page, as the boards draw them, not routes. The + and the "Add …" links open Add on the list (`?add=<type>`); Edit opens over the account page (`?edit=1`).
 
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
 
-- 2026-10-19 · Phase 3 · DataTable · Status cells are pinned right on desktop · `phone: 'status'` cells get `justify-self-end justify-end` at every width, so `meta.align: 'start'` is ignored and the Accounts bank Status badges sit beside Balance instead of left as on the board. Options: (A) fix DataTable so the right pin applies only below `desk` (`desk:justify-self-auto desk:justify-start` unless `align: 'end'`); (B) accept it. Recommend A.
-- 2026-10-19 · Phase 3 · Accounts list · Statements and Edit row icons · The board's bank and card rows have Statements and Edit icon buttons; `icons.json` has no document or pencil glyph, so only Open (chevron) is drawn. Options: (A) add `file-text` and `pencil-simple` (Phosphor) to the registry; (B) drop them (the row and the account page already reach both).
-- 2026-10-19 · Phase 3 · Accounts list · No data for two board items · Brokers "Today" column (no per-broker day change) and the Net worth "excl. home loan" line. Both left out. Options: (A) leave out; (B) a server addition later.
 - 2026-10-19 · Phase 3 · /ds shell · Top-bar actions · `ShellPage` wires only the + (and desktop "Add"). The board's Ask the data, Search, Chat and Notifications actions aren't wired in the /ds shell yet. Options: (A) wire them in the shell before the first swap; (B) per page.
 
 - 2026-10-16 · Phase 3a · Shell · Quick add actions without live routes · Quick add items Transaction, Lending and Trade are modal dialogs in the Legacy app without dedicated routes; only Import (/transactions/import) has a route. Options: (A) Build dedicated Dinero add forms later when those modules migrate, or (B) Open the Legacy live pages/dialogs. Meanwhile, those three tiles are shown disabled until the owner decides.

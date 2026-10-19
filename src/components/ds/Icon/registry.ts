@@ -13,6 +13,7 @@ import {
   CircleNotch,
   DotsThreeVertical,
   Eye,
+  FileText,
   GearSix,
   Gift,
   GitMerge,
@@ -23,6 +24,7 @@ import {
   ListBullets,
   MagnifyingGlass,
   Minus,
+  PencilSimple,
   Plus,
   SquaresFour,
   Trash,
@@ -63,6 +65,8 @@ export const iconRegistry = {
   gift: Gift,
   spinner: CircleNotch,
   minus: Minus,
+  'file-text': FileText,
+  'pencil-simple': PencilSimple,
 } as const satisfies Record<string, PhosphorIcon>;
 
 export type IconName = keyof typeof iconRegistry;
