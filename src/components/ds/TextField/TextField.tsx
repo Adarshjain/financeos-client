@@ -121,12 +121,12 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(
             'flex items-center gap-space-8 w-full border rounded-ds-md bg-surface font-text font-medium text-body text-ink transition-colors duration-fast',
             isLg ? 'h-control-lg px-space-12' : 'h-control-md px-space-10',
             isEmbedded
-              ? 'focus-within:border-brand focus-within:ring-0 focus-within:ring-offset-0'
+              ? 'focus-within:ring-0 focus-within:ring-offset-0'
               : 'focus-within:ring-2 focus-within:ring-focus-ring focus-within:ring-offset-2',
             hasError
               ? 'border-danger focus-within:ring-danger'
-              : !isEmbedded && 'border-line-strong focus-within:border-brand',
-            isEmbedded && !hasError && 'border-line-strong',
+              : 'border-line-strong',
+            isEmbedded && !hasError && 'focus-within:border-brand',
             disabled &&
               'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
           )}

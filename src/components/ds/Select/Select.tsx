@@ -67,6 +67,9 @@ export interface SelectMenuProps {
   emptyText?: (query: string) => React.ReactNode;
 }
 
+// A modal Dialog locks page scroll for everything outside it, and a popover is portalled outside it: keep wheel and touch scrolling inside the list.
+const stopScrollLock = (e: React.SyntheticEvent) => e.stopPropagation();
+
 export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
   (
     {
@@ -354,7 +357,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
         tabIndex={!searchable ? 0 : undefined}
         onKeyDown={!searchable ? handleKeyDown : undefined}
         className={cn(
-          'flex flex-col w-full outline-none p-space-2',
+          'flex flex-col w-full min-h-0 outline-none p-space-6',
           className,
         )}
       >
@@ -385,7 +388,9 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
               ? `${id}-opt-${effectiveHighlighted}`
               : undefined
           }
-          className="flex flex-col overflow-y-auto max-h-72 outline-none touch-pan-y"
+          onWheel={stopScrollLock}
+          onTouchMove={stopScrollLock}
+          className="flex flex-col flex-1 min-h-0 overflow-y-auto max-h-72 outline-none touch-pan-y"
         >
           {totalMatches === 0 && searchQuery.trim() ? (
             <div className="px-space-10 py-space-14 font-text text-label font-medium text-ink-3 text-center">
@@ -428,23 +433,24 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
         {action ? (
           <>
             <div className="h-px bg-line-soft my-space-4 mx-space-6" />
-            <button
-              type="button"
-              onClick={action.onSelect}
-              className="flex items-center gap-space-8 py-space-8 px-space-10 rounded-ds-md font-text font-bold text-body text-brand hover:bg-hover cursor-pointer transition-colors w-full text-left"
-            >
-              {action.label}
-            </button>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={action.onSelect}
+                className="flex items-center gap-space-8 py-space-8 px-space-10 rounded-ds-md font-text font-bold text-body text-brand hover:bg-hover cursor-pointer transition-colors text-left"
+              >
+                {action.label}
+              </button>
+            </div>
           </>
         ) : null}
 
         {multiple ? (
-          <div className="flex gap-space-8 px-space-6 pt-space-8 pb-space-4 border-t border-line-soft mt-space-4">
+          <div className="flex justify-end gap-space-8 px-space-6 pt-space-8 pb-space-4 border-t border-line-soft mt-space-4">
             <Button
               type="button"
               variant="secondary"
               size="sm"
-              className="flex-1"
               onClick={onClear}
             >
               {clearLabel}
@@ -453,7 +459,6 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
               type="button"
               variant="primary"
               size="sm"
-              className="flex-1"
               onClick={onDone}
             >
               {doneLabel ? doneLabel(selectedValues.size) : 'Done'}
@@ -729,8 +734,8 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
           hasError
             ? 'border-danger focus-visible:ring-danger'
             : isOpen
-              ? 'border-brand ring-2 ring-focus-ring ring-offset-2'
-              : 'border-line-strong hover:border-line-strong focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 focus-visible:border-brand',
+              ? 'border-line-strong ring-2 ring-focus-ring ring-offset-2'
+              : 'border-line-strong hover:border-line-strong focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2',
           disabled &&
             'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
           triggerClassName,

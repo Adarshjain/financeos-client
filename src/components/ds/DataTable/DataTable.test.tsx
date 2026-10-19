@@ -687,6 +687,28 @@ describe('DataTable', () => {
     });
   });
 
+  describe('Muted row state', () => {
+    it('dims the row but keeps it clickable', () => {
+      const onRowSelect = vi.fn();
+      render(
+        <DataTable
+          columns={testColumns}
+          data={testData}
+          getRowId={(r) => r.id}
+          onRowSelect={onRowSelect}
+          rowState={(r) => (r.id === '2' ? { muted: true } : undefined)}
+        />,
+      );
+      const rows = screen.getAllByRole('button').filter((r) => r.className.includes('border-l-4'));
+      const muted = rows.find((r) => r.className.includes('opacity-60'))!;
+      expect(muted).toBeDefined();
+      expect(muted).not.toHaveClass('pointer-events-none');
+      fireEvent.click(muted);
+      expect(onRowSelect).toHaveBeenCalledTimes(1);
+      expect(rows.filter((r) => r.className.includes('opacity-60'))).toHaveLength(1);
+    });
+  });
+
   describe('States', () => {
     it('loading renders Skeletons and no rows', () => {
       render(

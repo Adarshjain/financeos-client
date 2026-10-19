@@ -91,7 +91,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
       <div
         ref={ref}
         className={cn(
-          'px-space-16 desk:px-space-20 py-space-12 border-t border-line-soft bg-sunken shrink-0',
+          'px-space-16 desk:px-space-20 py-space-8 desk:py-space-12 pb-safe-12 desk:pb-space-12 border-t border-line-soft bg-sunken shrink-0',
           className
         )}
         {...props}
@@ -109,7 +109,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
                 disabled={tertiary.disabled}
                 loading={tertiary.loading}
                 onClick={tertiary.onSelect}
-                className="w-full h-control-xl desk:w-auto desk:h-control-md flex items-center justify-center desk:px-space-8"
+                className="w-full desk:w-auto flex items-center justify-center desk:px-space-8"
               >
                 {tertiary.label}
               </Button>
@@ -124,7 +124,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
                 disabled={secondary.disabled}
                 loading={secondary.loading}
                 onClick={secondary.onSelect}
-                className="w-full h-control-xl desk:w-auto desk:h-control-md flex items-center justify-center desk:px-space-8"
+                className="w-full desk:w-auto flex items-center justify-center desk:px-space-8"
               >
                 {secondary.label}
               </Button>
@@ -139,7 +139,7 @@ export const DialogFooter = forwardRef<HTMLDivElement, DialogFooterProps>(
                 disabled={primary.disabled}
                 loading={primary.loading}
                 onClick={primary.onSelect}
-                className="w-full h-control-xl desk:w-auto desk:h-control-md"
+                className="w-full desk:w-auto"
               >
                 {primary.label}
               </Button>

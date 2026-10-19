@@ -101,3 +101,22 @@ describe('TopBar component', () => {
     expect(handleSelect).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('TopBar back control (UAT)', () => {
+  it('shows the back link at every width when backHref is set', () => {
+    render(<TopBar title="HDFC Regalia Gold" backHref="/accounts" />);
+    const back = screen.getByRole('link', { name: 'Back' });
+    expect(back).toHaveAttribute('href', '/accounts');
+    expect(back.parentElement).not.toHaveClass('desk:hidden');
+  });
+
+  it('shows the onBack button at every width', () => {
+    render(<TopBar title="Detail" onBack={vi.fn()} />);
+    expect(screen.getByRole('button', { name: 'Back' }).parentElement).not.toHaveClass('desk:hidden');
+  });
+
+  it('keeps a custom leading slot phone only', () => {
+    render(<TopBar title="Home" leading={<span data-testid="lead">x</span>} />);
+    expect(screen.getByTestId('lead').parentElement).toHaveClass('desk:hidden');
+  });
+});

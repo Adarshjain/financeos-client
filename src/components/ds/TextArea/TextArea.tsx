@@ -89,7 +89,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
             'transition-colors duration-fast focus:outline-none focus:ring-2 focus:ring-focus-ring focus:ring-offset-2',
             hasError
               ? 'border-danger focus:ring-danger'
-              : 'border-line-strong focus:border-brand',
+              : 'border-line-strong',
             disabled &&
               'bg-sunken text-ink-faint border-line cursor-not-allowed opacity-60',
             controlClassName,

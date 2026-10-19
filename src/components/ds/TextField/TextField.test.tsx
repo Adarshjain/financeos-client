@@ -272,3 +272,17 @@ describe('TextField component', () => {
     });
   });
 });
+
+describe('TextField focus (UAT)', () => {
+  it('shows only the focus ring: the border colour does not change on focus', () => {
+    const { container } = render(<TextField label="Name" />);
+    const box = container.querySelector('.h-control-lg')!;
+    expect(box).toHaveClass('border-line-strong', 'focus-within:ring-2');
+    expect(box.className).not.toMatch(/focus-within:border-/);
+  });
+
+  it('keeps the danger border on error', () => {
+    const { container } = render(<TextField label="Name" error="Required" />);
+    expect(container.querySelector('.border-danger')).toBeInTheDocument();
+  });
+});

@@ -28,7 +28,7 @@ export interface DataTableRowComponentProps<Row extends RowData> {
   getRowCanExpand?: (row: Row) => boolean;
   phoneSub?: (row: Row) => React.ReactNode;
   phoneActions?: (row: Row) => React.ReactNode;
-  rowState?: { tone?: 'warning'; disabled?: boolean };
+  rowState?: { tone?: 'warning'; disabled?: boolean; muted?: boolean };
   highlighted?: boolean;
   busy?: boolean;
 }
@@ -109,6 +109,7 @@ export function DataTableRow<Row extends RowData>({
               ? 'border-l-attention bg-attention-tint'
               : 'border-l-transparent bg-surface',
         rowState?.disabled && 'opacity-60 pointer-events-none',
+        rowState?.muted && 'opacity-60',
         busy && 'opacity-60',
         isClickable &&
           !isSelected &&

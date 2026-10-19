@@ -23,7 +23,8 @@ The dropdown for choosing values. Single-choice fields are always a Select, neve
 - `searchable`: boolean, embeds search input.
 - `searchPlaceholder`, `searchValue`, `onSearchChange`: search controls.
 - `onCreate`, `createLabel`: create option from search query. The create row shows only when the typed text is not already an option (any case); Enter or a click calls `onCreate` with the trimmed text and clears the search for the next entry. The page adds the new option and selects it (identifiers on Add/Edit account, saved with the form).
-- `action`: `{ label, onSelect }`, pinned action row under options.
+- `action`: `{ label, onSelect }`, pinned action row under options, natural width, aligned right.
+- Layout: the menu has `space-6` padding inside the popover edge. The option list is the only scroller (it scrolls with the wheel and by touch even inside a modal Dialog); the search row, create row, `action` row and the multi-select Clear and Done row stay pinned. Clear and Done keep their natural width, aligned right.
 - `clearLabel`: custom label for multi-select clear button (default: `'Clear'`).
 - `doneLabel`: `(count: number) => ReactNode`, custom label for multi-select done button (default: `'Done'`).
 - `filter`: `'auto' | 'none' | ((option, query) => boolean)`.

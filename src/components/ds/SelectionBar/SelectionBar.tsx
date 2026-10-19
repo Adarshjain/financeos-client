@@ -135,7 +135,7 @@ export const SelectionBar = forwardRef<HTMLDivElement, SelectionBarProps>(
                     act.count !== undefined ? `${act.label} ${act.count}` : act.label
                   }
                   className={cn(
-                    'border-0 bg-transparent desk:border desk:bg-surface h-auto desk:h-control-md flex flex-col desk:flex-row items-center justify-center p-space-8 desk:px-space-12 desk:py-0 rounded-ds-md text-caption desk:text-body font-semibold cursor-pointer gap-space-2 desk:gap-space-6',
+                    'border-0 bg-transparent desk:border desk:bg-surface h-auto desk:h-control-md flex flex-col desk:flex-row items-center justify-center p-space-8 desk:px-space-12 desk:py-0 rounded-ds-md text-label font-semibold cursor-pointer gap-space-2 desk:gap-space-6',
                     act.disabled && 'opacity-45 cursor-not-allowed pointer-events-none',
                     isDanger
                       ? 'text-danger hover:bg-danger-tint active:bg-danger-tint'

@@ -257,3 +257,22 @@ describe('DateField component', () => {
     expect(screen.getByRole('button', { name: 'Choose year' })).toBeInTheDocument();
   });
 });
+
+describe('DateField control (UAT)', () => {
+  it('is built from TextField: same control height and no brand border on focus', () => {
+    const { container } = render(<DateField label="Date" today="2026-10-13" />);
+    const box = container.querySelector('.h-control-lg');
+    expect(box).toBeInTheDocument();
+    expect(container.querySelector('.h-control-xl')).toBeNull();
+    expect(box?.className).not.toMatch(/focus-within:border-/);
+    expect(box).toHaveClass('focus-within:ring-2');
+  });
+
+  it('keeps typing, the calendar button and the error state', () => {
+    render(<DateField label="Date" today="2026-10-13" error="Pick a date" />);
+    fireEvent.change(screen.getByLabelText('Date'), { target: { value: '13102026' } });
+    expect(screen.getByLabelText('Date')).toHaveValue('13/10/2026');
+    expect(screen.getByRole('button', { name: 'Open calendar' })).toBeInTheDocument();
+    expect(screen.getByText('Pick a date')).toBeInTheDocument();
+  });
+});

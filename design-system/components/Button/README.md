@@ -22,7 +22,8 @@ Buttons: one primary per view, secondary for everything else, ghost for low-emph
 - `btn-g` ghost: no border; icon actions in bars and cards.
 - `btn-i` square icon button; give it an `aria-label`.
 - `link`: inline text action with underline and no border.
-- Sizes: `btn-s` 26px inside rows and card headers (desktop), default 32px, `btn-xl` 44px for phone sheet footers and auth.
+- Sizes: `btn-s` 26px inside rows and card headers (desktop), default 36px (`control-lg`, the same as a form field), `btn-xl` 44px for auth.
+- Type: every size uses the `label` style (12px); `link` inherits the surrounding size.
 - Layout: `inline` (default) or `stacked` (icon above label at 64px height, for quick-action cards).
 
 ## States
@@ -39,7 +40,7 @@ Name the action with a verb and its object: "Mark paid", "Upload statement", "Ap
 ## Don't
 - Don't put a create button ("New category") in a page header; the + in the TopBar does that.
 - Don't put two primary buttons side by side.
-- Phone tap targets are at least 44px tall in sheets; 32px is fine inside dense rows.
+- Phone tap targets are at least 44px tall in sheets; `sm` (26px) is for dense rows.
 
 ## Built from
 Icon, Badge (count), Radix Slot (`asChild` for links).

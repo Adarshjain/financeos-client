@@ -17,6 +17,8 @@ The only date input. Takes and emits ISO `yyyy-mm-dd` strings, displaying `dd/mm
 - `open`, `defaultOpen`, `onOpenChange`: controlled/uncontrolled Popover state.
 - `name`, `disabled`, `optional`, `label`, `helper`, `error`: form and field metadata.
 
+The input box is a TextField (same `control-lg` height, focus ring and error state) with the calendar button as its suffix.
+
 ## Built from
 FieldFrame, Popover, MonthCalendar, Icon, Button.
 
