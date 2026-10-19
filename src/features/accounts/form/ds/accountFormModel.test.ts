@@ -148,6 +148,16 @@ describe('validateAccountForm', () => {
 });
 
 describe('buildAccountRequest', () => {
+  it('sends ingestFromDate null for a cleared date on create and on edit (null clears it on the server)', () => {
+    const bank: Account = { id: 'b', type: AccountType.BANK_ACCOUNT, name: 'B', ingestFromDate: '2026-04-01T00:00:00Z' };
+    const prefilled = valuesFromAccount(bank);
+    expect(prefilled.ingestFromDate).toBe('2026-04-01');
+    const edit = buildAccountRequest({ ...prefilled, ingestFromDate: '' });
+    expect(edit).toHaveProperty('ingestFromDate', null);
+    const create = buildAccountRequest({ ...emptyValues(AccountType.BANK_ACCOUNT), name: 'A', ingestFromDate: '' });
+    expect(create).toHaveProperty('ingestFromDate', null);
+  });
+
   it('builds a bank body with the optional pieces dropped', () => {
     const body = buildAccountRequest({
       ...emptyValues(AccountType.BANK_ACCOUNT),
