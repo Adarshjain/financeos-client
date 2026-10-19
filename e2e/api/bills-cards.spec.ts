@@ -225,3 +225,52 @@ test.describe('Bills API: every credit after the close pays the open bill (@api)
     expect(Number(row.remainingAmount) + Number(row.unbilledAmount)).toBeCloseTo(-Number(account.data!.balance), 2);
   });
 });
+
+test.describe('Bills API: history of a card (@api)', () => {
+  test('one request returns each statement bill equal to GET /bills/{statementId}; limit and the period-end range narrow it', async ({ request }) => {
+    const { api } = await newUser(request, 'bills-history');
+    const card = await createCreditCard(api, { name: 'History Card', last4: '8420' });
+    const bill = await ingestCardStatement(api, card.id, '8420');
+    await createTransaction(api, card.id, { amount: -400, date: istToday(-1), description: 'After close' });
+    await createTransaction(api, card.id, { amount: 250, date: istToday(-1), description: 'Credit after close' });
+    const periodEnd = istToday(-3);
+
+    const history = await api.GET('/api/v1/bills/history', { params: { query: { accountId: card.id } } });
+    expectStatus(history, 200);
+    expect(history.data).toHaveLength(1);
+    const single = await api.GET('/api/v1/bills/{statementId}', { params: { path: { statementId: bill.statementId! } } });
+    expect(history.data![0]).toEqual(single.data);
+
+    const limited = await api.GET('/api/v1/bills/history', { params: { query: { accountId: card.id, limit: 1 } } });
+    expect(limited.data).toEqual(history.data);
+
+    const inclusive = await api.GET('/api/v1/bills/history', { params: { query: { accountId: card.id, from: periodEnd, to: periodEnd } } });
+    expect(inclusive.data).toEqual(history.data);
+    const both = await api.GET('/api/v1/bills/history', { params: { query: { accountId: card.id, limit: 5, from: istToday(-10), to: istToday(0) } } });
+    expect(both.data).toEqual(history.data);
+
+    const before = await api.GET('/api/v1/bills/history', { params: { query: { accountId: card.id, to: istToday(-4) } } });
+    expectStatus(before, 200);
+    expect(before.data).toEqual([]);
+    const after = await api.GET('/api/v1/bills/history', { params: { query: { accountId: card.id, from: istToday(-2) } } });
+    expect(after.data).toEqual([]);
+  });
+
+  test('a card without statements has an empty history; bad params, unknown, foreign and non-card accounts are refused', async ({ request }) => {
+    const a = await newUser(request, 'bills-history-a');
+    const b = await newUser(request, 'bills-history-b');
+    const empty = await createCreditCard(a.api, { name: 'History Empty', last4: '8421' });
+    const foreign = await createCreditCard(b.api, { name: 'History Foreign', last4: '8422' });
+    const bank = await createBankAccount(a.api, { name: 'History Bank' });
+
+    const none = await a.api.GET('/api/v1/bills/history', { params: { query: { accountId: empty.id } } });
+    expectStatus(none, 200);
+    expect(none.data).toEqual([]);
+
+    expectStatus(await a.api.GET('/api/v1/bills/history', { params: { query: { accountId: empty.id, limit: 0 } } }), 400);
+    expectStatus(await a.api.GET('/api/v1/bills/history', { params: { query: { accountId: empty.id, from: istToday(0), to: istToday(-1) } } }), 400);
+    expectStatus(await a.api.GET('/api/v1/bills/history', { params: { query: { accountId: bank.id } } }), 400);
+    expectStatus(await a.api.GET('/api/v1/bills/history', { params: { query: { accountId: foreign.id } } }), 400);
+    expectStatus(await a.api.GET('/api/v1/bills/history', { params: { query: { accountId: '00000000-0000-0000-0000-000000000000' } } }), 404);
+  });
+});

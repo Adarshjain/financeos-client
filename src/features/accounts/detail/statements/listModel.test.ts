@@ -7,6 +7,7 @@ import {
   billBadge,
   buildStatementRow,
   buildStatementsView,
+  fyBounds,
   fyLabel,
   fyOf,
   isFy,
@@ -59,6 +60,8 @@ describe('financial years', () => {
     expect(fyOf('2027-03-31')).toBe('26-27');
     expect(fyOf('2026-03-31')).toBe('25-26');
     expect(fyOf('2099-12-31')).toBe('99-00');
+    expect(fyBounds('26-27')).toEqual({ from: '2026-04-01', to: '2027-03-31' });
+    expect(fyBounds('99-00')).toEqual({ from: '2099-04-01', to: '2100-03-31' });
     expect(fyOf('nope')).toBeNull();
   });
 
