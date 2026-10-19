@@ -216,14 +216,18 @@ describe('buildAccountRequest', () => {
     });
   });
 
-  it('builds a card joining an existing pool, with an own cap', () => {
+  it('builds a card joining an existing pool, dropping any own limit', () => {
     const body = buildAccountRequest(
       card({ limitPoolChoice: 'p1', limitPoolName: 'HDFC cards', limitPoolLimit: '500000' })
     );
     expect(body).toMatchObject({
-      creditLimit: 300000,
+      creditLimit: null,
       limitPool: { id: 'p1', name: 'HDFC cards', creditLimit: 500000 },
     });
+  });
+
+  it('ignores an invalid own limit once a pool is picked', () => {
+    expect(validateAccountForm(card({ creditLimit: 'abc', limitPoolChoice: 'p1', limitPoolName: 'X', limitPoolLimit: '5' })).creditLimit).toBeUndefined();
   });
 
   it('builds a card creating a pool with no own limit', () => {
