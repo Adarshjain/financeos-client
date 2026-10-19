@@ -315,6 +315,18 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - Financial position defaults: Liability for a credit card, Asset for every other type.
   - The account boards' items with no data (N need a category, Reminders, "+N transactions since", etc.) are dropped.
   - Top-bar actions (Ask the data, Search, Chat, Notifications) are wired once in the /ds shell.
+  - New dependency `@radix-ui/react-tooltip` approved for the Tooltip component.
+
+- 2026-10-19 · **Accounts UAT round 1** (owner; approves the Dinero changes it names):
+  - Banks: only Amex, AU, Axis, Bank of Baroda, Canara, CSB, Equitas, Federal, HDFC, HSBC, ICICI, IDFC First, Indian Bank, IndusInd, SBI, Slice, Unity, Yes (plus one more, to confirm); logos from one sprite.
+  - Select: padding around the option list (not between items); the list scrolls; pinned action buttons at natural width, right-aligned.
+  - TopBar shows the back button on desktop too.
+  - Fields, DateField and buttons share one height; DateField is built on TextField. Focus never changes border width; one focus indicator.
+  - Switch rows lose their extra side padding. Dialog × must close. Dialog phone footer is shorter (overrides `control-xl` in RULES §5.5 once the owner edits it).
+  - Buttons never use `caption`; every button uses `label`.
+  - Accounts page: `+` icon before each "Add <account>"; Add defaults to Bank; no statement action on rows; Edit is a ghost icon button that opens the Edit dialog; no "Rewards" link on Credit cards; closed accounts expand below "Closed" without a URL change; Add dialog has no subtitle; "Own limit" only when the card has its own limit; "Email identifiers" is "Account identifiers" with a helper about matching with the last 4 digits; no Notifications action in the top bar.
+  - "As of" shows the date the balance is current to, not only the last statement date.
+  - Account pages: statement details carry everything live shows; no Import or Transactions in the menu (all types); no Delete statement / Set due date buttons under the statement (menu only); every reward rule type shows (milestones included); card details show own or shared limit, never both; closed accounts open; no Details card on wallets.
 
 
 ## Open questions
