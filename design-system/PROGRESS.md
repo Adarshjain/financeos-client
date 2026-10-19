@@ -304,16 +304,20 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - Brokers "Today" and net worth "excl. home loan": not needed on this page.
   - Add and Edit account are dialogs over the page, as the boards draw them, not routes. The + and the "Add …" links open Add on the list (`?add=<type>`); Edit opens over the account page (`?edit=1`).
 
+- 2026-10-19 · **Account pages review answers** (owner):
+  - DateField reports an empty value when its text is cleared by keyboard (approved change to DateField).
+  - The Statements list keeps ListRow's chevron on phone.
+  - Card running balances in Recent transactions stay signed, as in the live app.
+  - The Cards tab keeps its in-tab button to add an add-on card.
+  - A Tooltip component is to be built (owner request; overrides the "no tooltips" line in RULES §1.2 for that component). Its design is still being settled.
+
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
 
 - 2026-10-19 · Phase 3 · Accounts · Bank picker (owner 11) · Accounts have no bank field (not in the live form, not in the API), so the picker would save nothing. Left out. Options: (A) add a `bank` field on the server and the form; (B) drop the picker.
-- 2026-10-19 · Phase 3 · DateField · Clearing a date by keyboard · DateField calls `onValueChange` only for a complete date or the calendar's Clear, so backspacing "Import emails from" to empty keeps the old date (the help text says empty pauses Gmail import) and the anniversary's "required" error never fires. Options: (A) DateField reports an empty value when the input is emptied (recommend); (B) accept: clear through the calendar.
 - 2026-10-19 · Phase 3 · Accounts Cards tab · In-tab "Add add-on cardholder" / "Add joint holder" button · Not on the boards (RULES §7.1), but it is the only way to add a bank joint holder (the bank Overview has no Cardholders card). Options: (A) keep it; (B) the app-bar + on the Cards tab opens it; (C) drop it.
-- 2026-10-19 · Phase 3 · ListRow · Chevron on phone · The Statements list board hides the row chevron on phone; ListRow's `chevron` has no per-breakpoint option. Options: (A) ListRow hides its chevron below `desk`; (B) accept.
 - 2026-10-19 · Phase 3 · Accounts form · Financial position default · The board draws a new card as Liability; the live form defaulted every type to Asset. Built as the board. Confirm.
 - 2026-10-19 · Phase 3 · DataTable · Empty phone actions · The accounts list now streams the card rows' Upload button (a4e04c3), so `phoneActions` always returns a node and every card row on phone gets the actions row's 8px top padding even when no Upload shows. Options: (A) DataTable hides the phone actions container when it renders nothing (`empty:hidden`; streamed Suspense leaves only comments, which `:empty` ignores); (B) accept the gap. Recommend A.
-- 2026-10-19 · Phase 3 · Accounts · Card running balance sign · The card board shows Recent transactions balances positive (what you owe); live shows the signed ledger balance (-₹1,09,049). Built as live. Options: (A) show the amount owed (flip the sign for cards); (B) keep live.
 - 2026-10-19 · Phase 3 · Accounts · Board items with no data · Left out: "+11 transactions since", "N need a category", the Reminders connection row, broker today's change (portfolio-wide only) and linked bank, SIPs in "What pays", statement PDF password and skipped-line reasons, the rewards cardholder filter, "Rule 1 never fires", rule rates on Overview rows. Options: (A) leave out; (B) server additions later.
 - 2026-10-19 · Phase 3 · /ds shell · Top-bar actions · `ShellPage` wires only the + (and desktop "Add"). The board's Ask the data, Search, Chat and Notifications actions aren't wired in the /ds shell yet. Options: (A) wire them in the shell before the first swap; (B) per page.
 

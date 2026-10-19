@@ -3,7 +3,7 @@
 The only date input. Takes and emits ISO `yyyy-mm-dd` strings, displaying `dd/mm/yyyy` with a calendar in a Popover for picking.
 
 ## Use
-- Typing: digits only, slashes added as you type (`13102026` → `13/10/2026`). Dispatches `onValueChange` only once a complete valid date is entered.
+- Typing: digits only, slashes added as you type (`13102026` → `13/10/2026`). Dispatches `onValueChange` once a complete valid date is entered, and with the empty value (`''`, or `{ start: '', end: '' }` in range mode, the same as the calendar's Clear) when the text is deleted to empty. Partial text dispatches nothing.
 - Calendar: the calendar icon at the right opens a Popover with MonthCalendar; Today and Clear in its footer. Operates as a Popover at every size.
 - Range mode: **one field** holding both dates, "01/10/2026 – 13/10/2026". Typing fills start then end; the calendar picks start on the first tap and end on the second, with the range as a `brand-tint` band. Shows two months side by side on desktop (`hidden desk:block`) and one on phone.
 - Never `<input type="date">`.

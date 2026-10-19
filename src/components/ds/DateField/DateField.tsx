@@ -176,6 +176,10 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
     const handleSingleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const formatted = formatDateInput(e.target.value);
       setSingleText(formatted);
+      if (!formatted) {
+        onValueChange?.('');
+        return;
+      }
       const iso = parseDateInput(formatted);
       if (iso) {
         onValueChange?.(iso);
@@ -194,6 +198,14 @@ export const DateField = forwardRef<HTMLInputElement, DateFieldProps>(
       const formatted = formatRangeInput(val);
       prevRangeInputRef.current = formatted.display;
       setRangeText(formatted.display);
+
+      if (!formatted.display) {
+        setStartIso('');
+        setEndIso('');
+        setRangeStep(0);
+        onValueChange?.({ start: '', end: '' });
+        return;
+      }
 
       const sIso = parseDateInput(formatted.startDate);
       const eIso = parseDateInput(formatted.endDate);

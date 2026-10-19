@@ -56,6 +56,49 @@ describe('DateField component', () => {
     expect(input).toHaveValue('15/10/2026');
   });
 
+  it('reports the empty value when the text is deleted (uncontrolled)', () => {
+    const handleChange = vi.fn();
+    render(<DateField today={TODAY} label="Date" defaultValue="2026-01-01" onValueChange={handleChange} />);
+    const input = screen.getByLabelText('Date');
+    fireEvent.change(input, { target: { value: '' } });
+    expect(handleChange).toHaveBeenCalledWith('');
+    expect(input).toHaveValue('');
+  });
+
+  it('reports the empty value when the text is deleted (controlled)', () => {
+    const handleChange = vi.fn();
+    const { rerender } = render(
+      <DateField today={TODAY} label="Date" value="2026-01-01" onValueChange={handleChange} />,
+    );
+    const input = screen.getByLabelText('Date');
+    fireEvent.change(input, { target: { value: '' } });
+    expect(handleChange).toHaveBeenCalledWith('');
+    rerender(<DateField today={TODAY} label="Date" value="" onValueChange={handleChange} />);
+    expect(input).toHaveValue('');
+  });
+
+  it('reports nothing for partial text while editing down', () => {
+    const handleChange = vi.fn();
+    render(<DateField today={TODAY} label="Date" defaultValue="2026-01-01" onValueChange={handleChange} />);
+    fireEvent.change(screen.getByLabelText('Date'), { target: { value: '01/0' } });
+    expect(handleChange).not.toHaveBeenCalled();
+  });
+
+  it('reports an empty range when range text is deleted', () => {
+    const handleChange = vi.fn();
+    render(
+      <DateField
+        today={TODAY}
+        label="Period"
+        range
+        defaultValue={{ start: '2026-10-01', end: '2026-10-13' }}
+        onValueChange={handleChange}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText('Period'), { target: { value: '' } });
+    expect(handleChange).toHaveBeenCalledWith({ start: '', end: '' });
+  });
+
   it('spreads native HTML input attributes like name and data-testid', () => {
     render(<DateField today={TODAY} name="due_date" data-testid="due-input" />);
     const input = screen.getByTestId('due-input');
