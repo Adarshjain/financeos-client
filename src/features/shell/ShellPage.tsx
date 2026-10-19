@@ -10,6 +10,8 @@ export interface ShellPageProps {
   /** Where the + goes. Without it the bar has no add action. */
   addHref?: string;
   addLabel?: string;
+  /** Where the phone back button goes (detail pages). Replaces the leading logo on phone; without it the bar shows the logo. */
+  backHref?: string;
   children: React.ReactNode;
 }
 
@@ -19,6 +21,7 @@ export function ShellPage({
   crumb,
   addHref,
   addLabel,
+  backHref,
   children,
 }: ShellPageProps) {
   return (
@@ -26,7 +29,8 @@ export function ShellPage({
       <TopBar
         title={title}
         crumb={crumb}
-        leading={<Logo variant="mark" />}
+        leading={backHref ? undefined : <Logo variant="mark" />}
+        backHref={backHref}
         actions={
           addHref
             ? [
