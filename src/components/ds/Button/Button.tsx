@@ -70,6 +70,15 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const isLink = variant === 'link';
+    const asChildContent = asChild && React.isValidElement(children)
+      ? (children as React.ReactElement<{ children?: React.ReactNode }>).props.children
+      : children;
+    const hasIconContent =
+      Boolean(icon) ||
+      React.Children.toArray(asChildContent).some((c) => React.isValidElement(c));
+    // A link with an icon draws one continuous underline (pseudo element)
+    // under icon + gap + text; text-decoration would stop at the SVG.
+    const isIconLink = isLink && !iconOnly && hasIconContent;
     const isStacked = layout === 'stacked';
     const isEffectivelyDisabled = disabled || loading;
     const isPrimary = variant === 'primary';
@@ -96,6 +105,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         : 'inline-flex items-center justify-center font-text whitespace-nowrap transition-colors duration-fast select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring focus-visible:ring-offset-2 disabled:opacity-45 disabled:pointer-events-none cursor-pointer font-semibold',
       sizeClasses,
       variantStyles[variant],
+      isIconLink &&
+        'no-underline relative inline-flex items-center gap-space-4 whitespace-nowrap after:absolute after:inset-x-0 after:bottom-space-2 after:h-px after:bg-current hover:after:hidden',
       fullWidth && 'w-full',
       isEffectivelyDisabled && 'opacity-45 pointer-events-none',
       className,
