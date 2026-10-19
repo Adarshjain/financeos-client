@@ -5,6 +5,7 @@ import React from 'react';
 
 import { EmptyState } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
+import { openDialogParam } from '@/lib/dialogParam';
 
 export function AccountsLoadError({ reference }: { reference?: string }) {
   const router = useRouter();
@@ -19,14 +20,13 @@ export function AccountsLoadError({ reference }: { reference?: string }) {
 }
 
 export function AccountsEmpty() {
-  const router = useRouter();
   return (
     <EmptyState
       title="No accounts connected yet"
       description="Add your first bank account, credit card, or cash wallet to monitor transactions and track net assets."
       action={{
         label: 'Add account',
-        onSelect: () => router.push('/ds/accounts?add=1'),
+        onSelect: () => openDialogParam('add', '1'),
       }}
     />
   );

@@ -30,7 +30,6 @@ export async function BankOverview({ account, today }: { account: BankAccount; t
   return (
     <>
       <AccountHeaderCard
-        accountId={account.id}
         accountName={account.name}
         model={buildHeaderModel(account, null, today)}
       />
@@ -62,7 +61,7 @@ export async function BankOverview({ account, today }: { account: BankAccount; t
             })}
           />
           {data.identifiers ? (
-            <IdentifiersCard accountId={account.id} identifiers={data.identifiers} />
+            <IdentifiersCard identifiers={data.identifiers} />
           ) : null}
           {linked.length > 0 ? <LinkedCard lines={linked} /> : null}
         </div>

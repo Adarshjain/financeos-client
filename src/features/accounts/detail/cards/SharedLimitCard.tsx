@@ -1,17 +1,14 @@
-import Link from 'next/link';
 import React from 'react';
 
-import { Button, Card, ListField } from '@/components/ds';
+import { Card, ListField } from '@/components/ds';
+import { OpenDialogButton } from '@/features/accounts/form/ds/OpenDialogButton';
 
-import { accountHref } from '../accountTabsModel';
 import type { SharedLimitModel } from './cardsModel';
 
 /** A credit card's own limit and the shared limit it draws on. Change opens Edit account. */
 export function SharedLimitCard({
-  accountId,
   model,
 }: {
-  accountId: string;
   model: SharedLimitModel;
 }) {
   return (
@@ -19,9 +16,9 @@ export function SharedLimitCard({
       title="Shared limit"
       subtitle="Some banks give several cards one limit"
       action={
-        <Button asChild variant="secondary" size="sm">
-          <Link href={`${accountHref(accountId)}?edit=1`}>Change</Link>
-        </Button>
+        <OpenDialogButton variant="secondary" size="sm" param="edit" value="1">
+          Change
+        </OpenDialogButton>
       }
     >
       {model.thisCard ? <ListField label="This card" value={model.thisCard} /> : null}

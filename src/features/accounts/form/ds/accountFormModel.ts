@@ -7,6 +7,8 @@ import {
 } from '@/lib/account.types';
 import { AccountType, type FinancialPosition } from '@/lib/types';
 
+export { hrefWithoutParam } from '@/lib/dialogParam';
+
 export const LIMIT_POOL_NONE = 'none';
 export const LIMIT_POOL_NEW = 'new';
 
@@ -377,12 +379,4 @@ export function identifiersFailedMessage(failed: readonly string[], created: boo
   return created
     ? `Account created, but these identifiers could not be added: ${failed.join(', ')}. Add them again from Edit account.`
     : `Saved, but these identifiers could not be updated: ${failed.join(', ')}.`;
-}
-
-/** The current URL with one search param removed (closing a dialog that opened from it). */
-export function hrefWithoutParam(pathname: string, search: URLSearchParams | string, key: string): string {
-  const next = new URLSearchParams(typeof search === 'string' ? search : search.toString());
-  next.delete(key);
-  const qs = next.toString();
-  return qs ? `${pathname}?${qs}` : pathname;
 }

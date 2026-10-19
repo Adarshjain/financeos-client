@@ -16,7 +16,6 @@ export async function BrokerOverview({ account, today }: { account: Broker; toda
   return (
     <>
       <AccountHeaderCard
-        accountId={account.id}
         accountName={account.name}
         model={buildHeaderModel(account, null, today)}
       />

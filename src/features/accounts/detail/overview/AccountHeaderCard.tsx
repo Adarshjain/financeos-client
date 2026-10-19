@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import React from 'react';
 
 import {
@@ -10,23 +9,20 @@ import {
   StatusWord,
   Text,
 } from '@/components/ds';
+import { OpenDialogButton } from '@/features/accounts/form/ds/OpenDialogButton';
 import { MarkPaidDialog } from '@/features/bills/MarkPaidDialog';
 
-import { accountHref } from '../accountTabsModel';
 import type { HeaderModel } from './headerModel';
 
 /** The block at the top of every account page: the headline figure, and the account's actions. */
 export function AccountHeaderCard({
-  accountId,
   accountName,
   model,
 }: {
-  accountId: string;
   accountName: string;
   model: HeaderModel;
 }) {
   const [markPaidOpen, setMarkPaidOpen] = React.useState(false);
-  const base = accountHref(accountId);
 
   return (
     <Card>
@@ -60,9 +56,9 @@ export function AccountHeaderCard({
               Mark paid
             </Button>
           ) : null}
-          <Button asChild variant="secondary" className="flex-1 desk:flex-none">
-            <Link href={`${base}?edit=1`}>Edit</Link>
-          </Button>
+          <OpenDialogButton variant="secondary" className="flex-1 desk:flex-none" param="edit" value="1">
+            Edit
+          </OpenDialogButton>
         </div>
       </div>
       {model.markPaid ? (

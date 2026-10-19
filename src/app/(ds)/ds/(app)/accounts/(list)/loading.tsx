@@ -6,7 +6,7 @@ import { ShellPage } from '@/features/shell/ShellPage';
 
 export default function DsAccountsLoading() {
   return (
-    <ShellPage crumb="Money" title="Accounts" addHref="/ds/accounts?add=1">
+    <ShellPage crumb="Money" title="Accounts" addParam={{ key: 'add', value: '1' }}>
       <div className="flex flex-col gap-space-12 desk:gap-space-16">
         <div className="grid grid-cols-2 desk:grid-cols-4 gap-space-12 desk:gap-space-16">
           <KpiTile loading />

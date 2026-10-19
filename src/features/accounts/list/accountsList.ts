@@ -53,6 +53,22 @@ export function formatDayMonth(iso: string): string {
   return p ? `${p.d} ${MONTHS[p.m - 1]}` : '';
 }
 
+/** "today" or "yesterday" when the calendar date is that day relative to `today` (both YYYY-MM-DD), else null. */
+export function relativeDay(iso: string, today: string): 'today' | 'yesterday' | null {
+  const day = iso.slice(0, 10);
+  if (day === today.slice(0, 10)) return 'today';
+  const t = dateParts(today);
+  if (!t) return null;
+  const before = new Date(Date.UTC(Number(t.y), t.m - 1, t.d - 1));
+  const yesterday = `${before.getUTCFullYear()}-${String(before.getUTCMonth() + 1).padStart(2, '0')}-${String(before.getUTCDate()).padStart(2, '0')}`;
+  return day === yesterday ? 'yesterday' : null;
+}
+
+/** "today", "yesterday", else "13 Oct", from a calendar date (YYYY-MM-DD). */
+export function formatDayMonthRelative(iso: string, today: string): string {
+  return relativeDay(iso, today) ?? formatDayMonth(iso);
+}
+
 /** "13 Oct 2026" from a calendar date (YYYY-MM-DD). */
 export function formatDayMonthYear(iso: string): string {
   const p = dateParts(iso);
@@ -258,7 +274,8 @@ export function balanceCurrency(
 
 export function bankRow(account: BankAccount, today: string): BankRow {
   const current = balanceCurrency(account.lastTransactionDate, account.lastStatementDate, today);
-  const day = current ? formatDayMonth(current.date) : '';
+  const day = current ? formatDayMonthRelative(current.date, today) : '';
+  const cap = day.charAt(0).toUpperCase() + day.slice(1);
   const isTx = current?.kind === 'transaction';
   return {
     id: account.id,
@@ -267,7 +284,7 @@ export function bankRow(account: BankAccount, today: string): BankRow {
     synced: Boolean(account.ingestFromDate),
     gapLabel: gapLabel(account.reconciliationGap),
     balance: formatAmount(sumBalances([account])),
-    asOf: current ? (isTx ? day : `Stmt ${day}`) : null,
+    asOf: current ? (isTx ? cap : `Stmt ${day}`) : null,
     phoneSub: current ? (isTx ? `As of ${day}` : `Statement ${day}`) : null,
     closed: isAccountClosed(account, today),
     account,

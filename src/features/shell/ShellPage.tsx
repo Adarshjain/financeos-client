@@ -1,8 +1,11 @@
+'use client';
+
 import Link from 'next/link';
 import React from 'react';
 
 import { TopBar, type TopBarAction } from '@/components/ds';
 import { Logo } from '@/components/organisms';
+import { openDialogParam } from '@/lib/dialogParam';
 
 /**
  * Top-bar actions every /ds page gets (boards D-accounts, P-accounts), matching the live routes.
@@ -23,6 +26,8 @@ export interface ShellPageProps {
   crumb?: React.ReactNode;
   /** Where the + goes. Without it the bar has no add action. */
   addHref?: string;
+  /** A same-page add: the + opens a dialog by setting this URL param (no server round trip). Wins over addHref. */
+  addParam?: { key: string; value: string };
   addLabel?: string;
   /** Where the phone back button goes (detail pages). Replaces the leading logo on phone; without it the bar shows the logo. */
   backHref?: string;
@@ -34,6 +39,7 @@ export function ShellPage({
   title,
   crumb,
   addHref,
+  addParam,
   addLabel,
   backHref,
   children,
@@ -47,7 +53,18 @@ export function ShellPage({
         backHref={backHref}
         actions={[
           ...shellTopBarActions,
-          ...(addHref
+          ...(addParam
+            ? [
+                {
+                  id: 'add',
+                  icon: 'add' as const,
+                  label: addLabel ?? 'Add',
+                  variant: 'primary' as const,
+                  showLabel: true,
+                  onSelect: () => openDialogParam(addParam.key, addParam.value),
+                },
+              ]
+            : addHref
             ? [
                 {
                   id: 'add',

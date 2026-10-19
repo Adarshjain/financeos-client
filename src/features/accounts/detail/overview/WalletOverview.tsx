@@ -15,7 +15,6 @@ export async function WalletOverview({ account, today }: { account: GenericAccou
   return (
     <>
       <AccountHeaderCard
-        accountId={account.id}
         accountName={account.name}
         model={buildHeaderModel(account, null, today, lastEntryDate(data.recent?.items))}
       />

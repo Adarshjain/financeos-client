@@ -47,7 +47,6 @@ export async function CardOverview({
   return (
     <>
       <AccountHeaderCard
-        accountId={account.id}
         accountName={account.name}
         model={buildHeaderModel(account, data.bill, today)}
       />
@@ -67,7 +66,7 @@ export async function CardOverview({
             />
           ) : null}
           {data.identifiers ? (
-            <IdentifiersCard accountId={account.id} identifiers={data.identifiers} noun="card" />
+            <IdentifiersCard identifiers={data.identifiers} noun="card" />
           ) : null}
         </div>
       </div>

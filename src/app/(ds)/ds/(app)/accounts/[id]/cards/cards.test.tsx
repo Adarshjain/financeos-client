@@ -196,10 +196,11 @@ describe('/ds/accounts/[id]/cards', () => {
       expect(screen.getAllByText('Shared limit')).toHaveLength(2);
       expect(screen.queryByText('Own limit · ₹3,00,000')).toBeNull();
       expect(screen.getByText('HDFC cards · ₹5,00,000 · 2 cards')).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Change' })).toHaveAttribute(
-        'href',
-        '/ds/accounts/c1?edit=1'
-      );
+      window.history.replaceState(null, '', '/ds/accounts/c1/cards');
+      const push = vi.spyOn(window.history, 'pushState');
+      screen.getByRole('button', { name: 'Change' }).click();
+      expect(push).toHaveBeenCalledWith(null, '', '/ds/accounts/c1/cards?edit=1');
+      push.mockRestore();
       expect(screen.queryByText(/^Debit cards on this account/)).toBeNull();
     });
 
@@ -558,11 +559,15 @@ describe('/ds/accounts/[id]/cards', () => {
   describe('?add=cardholder', () => {
     it('opens the add-on dialog on load, and removes the param when it closes', async () => {
       search = 'add=cardholder';
+      window.history.replaceState(null, '', '/ds/accounts/c1/cards?add=cardholder');
       await renderPage();
       expect(await screen.findByRole('dialog')).toHaveTextContent('Add add-on cardholder');
 
+      const replaceState = vi.spyOn(window.history, 'replaceState');
       press('Cancel');
-      expect(replace).toHaveBeenCalledWith('/ds/accounts/c1/cards', { scroll: false });
+      expect(replaceState).toHaveBeenCalledWith(null, '', '/ds/accounts/c1/cards');
+      replaceState.mockRestore();
+      expect(replace).not.toHaveBeenCalled();
       await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     });
 
