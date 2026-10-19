@@ -23,6 +23,7 @@ export * from './Menu/Menu';
 export * from './MonthCalendar/MonthCalendar';
 export * from './Pager/Pager';
 export * from './Popover/Popover';
+export * from './Tooltip/Tooltip';
 export * from './ProgressBar/ProgressBar';
 export * from './Rail/Rail';
 export * from './Root/Root';
