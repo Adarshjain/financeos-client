@@ -78,4 +78,20 @@ describe('SectionHeader', () => {
     expect(heading).toBeInTheDocument();
     expect(heading).toHaveTextContent('Section heading');
   });
+
+  it('draws the action at the right end, after meta', () => {
+    render(
+      <SectionHeader variant="band" meta="3" action={<button>Show</button>}>
+        Closed
+      </SectionHeader>,
+    );
+    const action = screen.getByRole('button', { name: 'Show' }).parentElement!;
+    expect(action).toHaveClass('ml-auto', 'shrink-0');
+    expect(action.previousElementSibling).toHaveTextContent('3');
+  });
+
+  it('renders no action wrapper without an action', () => {
+    const { container } = render(<SectionHeader variant="band">Closed</SectionHeader>);
+    expect(container.firstChild!.childNodes).toHaveLength(1);
+  });
 });

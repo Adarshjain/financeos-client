@@ -87,7 +87,9 @@ export interface DataTableProps<Row extends RowData>
   phoneSub?: (row: Row) => React.ReactNode;
   phoneActions?: (row: Row) => React.ReactNode;
 
-  band?: (row: Row) => { key: string; label: React.ReactNode } | null;
+  band?: (
+    row: Row,
+  ) => { key: string; label: React.ReactNode; action?: React.ReactNode } | null;
   dayHeader?: (
     row: Row,
   ) => { key: string; label: React.ReactNode; sublabel?: React.ReactNode } | null;

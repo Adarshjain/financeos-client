@@ -191,7 +191,7 @@ function DataTableInner<Row extends RowData>(
           return (
             <React.Fragment key={row.id}>
               {showBand && (
-                <SectionHeader variant="band">
+                <SectionHeader variant="band" action={currentBand.action}>
                   {currentBand.label}
                 </SectionHeader>
               )}

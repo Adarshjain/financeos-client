@@ -15,6 +15,8 @@ export interface SectionHeaderProps
   tone?: SectionHeaderTone;
   /** Optional meta text or node. */
   meta?: React.ReactNode;
+  /** Optional control drawn at the row's right end, after meta. */
+  action?: React.ReactNode;
   /** Whether the header is sticky (default true for variant='strong', false for others). */
   sticky?: boolean;
   /** Optional border-top toggle (default: true for band). */
@@ -41,6 +43,7 @@ export const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
       variant = 'band',
       tone = 'neutral',
       meta,
+      action,
       sticky,
       borderTop = true,
       ...props
@@ -74,6 +77,7 @@ export const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
       >
         <span>{children}</span>
         {meta ? <span className="font-semibold text-ink-3">{meta}</span> : null}
+        {action ? <span className="ml-auto shrink-0 self-center">{action}</span> : null}
       </Component>
     );
   },

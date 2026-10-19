@@ -319,6 +319,7 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - New dependency `@radix-ui/react-tooltip` approved for the Tooltip component.
 
 - 2026-10-19 · **UAT round 2** (owner): Tooltip approved (dark theme inverts, as built). All controls 32px (`control-md`), replacing 36. New token `icon-xs` 10px: every icon beside button text; link icon gap `space-2`. RULES §5.5 phone footer = `control-md`. `/bills?accountId` computes only that card. Write decisions tersely.
+- 2026-10-19 · **UAT round 4** (owner): SectionHeader + DataTable band take `action` (right end); closed toggle uses it. Brokers card: no total, no Investments link. Card table Next bill/Outstanding/Rewards `sm`. Button sizes svgs xs by CSS (RSC-safe).
 
 - 2026-10-19 · **Accounts UAT round 1** (owner; approves the Dinero changes it names):
   - Banks: only Amex, AU, Axis, Bank of Baroda, Canara, CSB, Equitas, Federal, HDFC, HSBC, ICICI, IDFC First, Indian Bank, IndusInd, SBI, Slice, Unity, Yes (plus one more, to confirm); logos from one sprite.
@@ -346,6 +347,8 @@ Add entries here instead of guessing (RULES §2): date, phase, screen or compone
 Newest first: date, phase, tool or agent, what changed (files), checks run, open questions, deviations.
 
 Keep entries short (a few lines). Entries before 2026-10-18 are in `PROGRESS-log-archive.md`: grep it, never read it whole.
+
+- 2026-10-19 · Phase 3 (Accounts) · Claude · UAT r4 (decision above). Forced tests: 2 Button xs tests assert the class; accounts.test Brokers title. Checks: typecheck, tests, lint, check-ui, storybook. Deviations: none.
 
 - 2026-10-19 · Ph3 · Claude · Button forces Icon `xs` beside text (TopBar: xs desk, md phone); link icon gap `space-2`.
 - 2026-10-19 · Ph3 · Claude · UAT3: account dialogs open/close via History API (0 server requests); as of Today/Yesterday; closed band same in both states, toggle fixed. Forced test edits: link→button/pushState asserts, as-of dates.

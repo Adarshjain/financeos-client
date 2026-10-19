@@ -21,7 +21,7 @@ The list frame for every table of records: column headers with sort, a selection
   `phoneSub` is one line the page composes from several desktop columns ("60 × ₹1,512.70 · P&L +₹48,162", "12 Oct · ₹2,95,030"). Columns marked `phone: 'hidden'` aren't shown on phone.
 - **Column widths** come from tokens, never pixels. Column `size`: `xs` (the checkbox or an icon column, `control-md`), `sm` (`space-96`), `md` (1.5 × `space-96`), `lg` (2 × `space-96`), or `fill` (takes the remaining space; `grow` sets its share, default 1). DataTable turns them into one grid template on its root, and every row, the header and any row component use that same template, so cells always line up.
 - **Bands and day headers:**
-  - `band(row)` returns `{ key, label }`. A band row is inserted whenever the key changes, at every width, in SectionHeader `band` style. The page supplies the label. For transactions it's the month name only (owner).
+  - `band(row)` returns `{ key, label }`. A band row is inserted whenever the key changes, at every width, in SectionHeader `band` style. The page supplies the label, and an optional `action` drawn at the band's right end. For transactions it's the month name only (owner).
   - `dayHeader(row)` does the same for the phone's sticky day headers ("12 Oct · Mon", SectionHeader `strong`). They aren't shown on desktop.
 - **Footer:** `footer` is a line under the last row and above the bottom Pager, for summaries and table actions ("Total net ₹3,605 · TDS ₹370 · Export CSV").
 - **Pager:** DataTable renders the Pager it's given in two places: above the header, and as the last row. Paging is always **server-side** (RULES §5.5).
@@ -58,7 +58,7 @@ The list frame for every table of records: column headers with sort, a selection
 - `onRowSelect?: (row) => void`.
 - `renderExpanded?: (row) => ReactNode`, `getRowCanExpand?: (row) => boolean`, `expanded?: string[]`, `defaultExpanded`, `onExpandedChange`.
 - `phoneSub?: (row) => ReactNode`, `phoneActions?: (row) => ReactNode`.
-- `band?: (row) => { key: string; label: ReactNode } | null`, `dayHeader?: (row) => { key: string; label: ReactNode; sublabel?: ReactNode } | null`.
+- `band?: (row) => { key: string; label: ReactNode; action?: ReactNode } | null`, `dayHeader?: (row) => { key: string; label: ReactNode; sublabel?: ReactNode } | null`.
 - `rowState?: (row) => { tone?: 'warning'; disabled?: boolean; muted?: boolean }`, `highlightedRowId?: string`.
 - `wrapRow?: (row, node: ReactNode) => ReactNode`.
 - `renderRow?: (row, rowProps) => ReactNode`. `rowProps` carries `selectable`, `selected`, `onSelectedChange`, `selectionMode`, `onSelect`, `highlighted`, `expanded` and `onExpandedChange`.
@@ -75,6 +75,7 @@ TanStack Table v9 (`@tanstack/react-table`, pinned 9.2.4; state only: sorting, s
 - Selectable (checkbox column on desktop, long-press on phone), including select-all across pages.
 - Sorted (server and client mode).
 - With bands and phone day headers.
+- Band with an action.
 - Multi-line cells, number columns and status chips.
 - Phone second line and phone actions.
 - Expandable rows.

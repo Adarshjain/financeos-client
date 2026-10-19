@@ -72,7 +72,7 @@ describe('/ds/accounts', () => {
     expect(screen.getByText('Credit cards')).toBeDefined();
     expect(screen.getAllByText('Axis Magnus').length).toBeGreaterThan(0);
     expect(screen.getAllByText('1,200 pts').length).toBeGreaterThan(0);
-    expect(screen.getByText('Brokers · ₹5,000')).toBeDefined();
+    expect(screen.getByText('Brokers')).toBeDefined();
     expect(screen.getByText('Wallets & cash')).toBeDefined();
   });
 
