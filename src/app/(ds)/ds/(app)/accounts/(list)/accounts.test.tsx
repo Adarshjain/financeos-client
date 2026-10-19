@@ -10,6 +10,7 @@ import DsAccountsPage from './page';
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
   usePathname: () => '/ds/accounts',
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 const loadMock = vi.fn<() => Promise<AccountsListData>>();

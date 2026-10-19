@@ -256,7 +256,7 @@ export function BankSection(props: SectionProps<BankRow>) {
       title="Bank accounts"
       subtitle="Balances anchor to the latest statement; later transactions are added on top"
       action={
-        <AddLink href={`${ACCOUNTS_HREF}/new?type=bank_account`}>
+        <AddLink href={`${ACCOUNTS_HREF}?add=bank_account`}>
           Add bank account
         </AddLink>
       }
@@ -412,7 +412,7 @@ export function CardsSection(
       subtitle={props.subtitle}
       action={
         <div className="flex items-center gap-space-12">
-          <AddLink href={`${ACCOUNTS_HREF}/new?type=credit_card`}>
+          <AddLink href={`${ACCOUNTS_HREF}?add=credit_card`}>
             Add credit card
           </AddLink>
           <NavLink href="/rewards">Rewards</NavLink>
@@ -482,7 +482,7 @@ export function BrokersSection(
       subtitle="Holdings value + cash"
       action={
         <div className="flex items-center gap-space-12">
-          <AddLink href={`${ACCOUNTS_HREF}/new?type=broker`}>
+          <AddLink href={`${ACCOUNTS_HREF}?add=broker`}>
             Add broker
           </AddLink>
           <NavLink href="/investments">Investments</NavLink>
@@ -546,7 +546,7 @@ export function WalletsSection(props: SectionProps<WalletRow>) {
       title="Wallets & cash"
       subtitle="Manual balances"
       action={
-        <AddLink href={`${ACCOUNTS_HREF}/new?type=generic`}>Add wallet</AddLink>
+        <AddLink href={`${ACCOUNTS_HREF}?add=generic`}>Add wallet</AddLink>
       }
     >
       <DataTable
