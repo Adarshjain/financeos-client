@@ -7,7 +7,7 @@ import { AccountType } from '@/lib/types';
 
 import { buildHeaderModel, type MarkPaidTarget } from '../overview/headerModel';
 import type { StatementDetailData } from './detailModel';
-import { buildStatementsView, type StatementsView } from './listModel';
+import { buildStatementsView, fyBounds, type StatementsView } from './listModel';
 
 export interface StatementsData {
   /** Null when the statements request failed: nothing else can show. */
@@ -41,16 +41,17 @@ async function loadDetail(statementId: string): Promise<StatementDetailData | nu
   return data ?? null;
 }
 
-async function loadBill(statementId: string): Promise<CardBillResponse | null> {
-  const { data } = await serverApi.GET('/api/v1/bills/{statementId}', {
-    params: { path: { statementId } },
+/** The card's bills dated in the year, one request; a failed request leaves every bill missing. */
+async function loadBills(accountId: string, fy: string): Promise<CardBillResponse[]> {
+  const { data } = await serverApi.GET('/api/v1/bills/history', {
+    params: { query: { accountId, ...fyBounds(fy) } },
   });
-  return data ?? null;
+  return data ?? [];
 }
 
 /**
  * The Statements tab's data: the account's statements first (they decide the year and the selected
- * statement), then the selected detail, the year's bills and the current bill in parallel. Every
+ * statement), then the selected detail, the year's bills (one request) and the current bill in parallel. Every
  * piece after the list degrades on its own.
  */
 export async function loadStatementsData(
@@ -65,16 +66,17 @@ export async function loadStatementsData(
   }
   const view = buildStatementsView(statements, params.fy, params.statement, today);
 
-  const [detail, billResults, current] = await Promise.all([
+  const [detail, billList, current] = await Promise.all([
     view.selectedId ? loadDetail(view.selectedId).catch(() => 'failed' as const) : Promise.resolve(null),
-    Promise.allSettled(isCard ? view.inFy.map((s) => loadBill(s.id)) : []),
+    isCard && view.inFy.length > 0 ? loadBills(account.id, view.fy).catch(() => []) : Promise.resolve([]),
     isCard ? billsApi.list(account.id).catch(() => null) : Promise.resolve(null),
   ]);
 
   const bills: Record<string, CardBillResponse> = {};
-  billResults.forEach((r, i) => {
-    if (r.status === 'fulfilled' && r.value) bills[view.inFy[i].id] = r.value;
-  });
+  const inFyIds = new Set(view.inFy.map((s) => s.id));
+  for (const bill of billList) {
+    if (bill.statementId && inFyIds.has(bill.statementId)) bills[bill.statementId] = bill;
+  }
   const currentBill = current?.find((b) => b.accountId === account.id) ?? current?.[0] ?? null;
 
   return {

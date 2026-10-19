@@ -22,6 +22,12 @@ export function fyOf(iso: string): string | null {
   return `${two(start)}-${two(start + 1)}`;
 }
 
+/** First and last day of a financial year given as "26-27": 2026-04-01 and 2027-03-31. */
+export function fyBounds(fy: string): { from: string; to: string } {
+  const start = 2000 + Number(fy.slice(0, 2));
+  return { from: `${start}-04-01`, to: `${start + 1}-03-31` };
+}
+
 export function fyLabel(fy: string): string {
   return `FY ${fy}`;
 }
