@@ -40,6 +40,7 @@ const COMMON_ACCOUNT_KEYS = [
 const BANK_ACCOUNT_KEYS = new Set([
   ...COMMON_ACCOUNT_KEYS,
   'ingestFromDate',
+  'bank',
   'last4',
   'openingBalance',
   'lastStatementDate',
@@ -49,6 +50,7 @@ const BANK_ACCOUNT_KEYS = new Set([
 const CREDIT_CARD_KEYS = new Set([
   ...COMMON_ACCOUNT_KEYS,
   'ingestFromDate',
+  'bank',
   'last4',
   'creditLimit',
   'anniversaryDate',
@@ -111,6 +113,81 @@ test.describe('Accounts API (@api)', () => {
     // Contrast: a bank account keeps the watermark.
     const bank = await createBankAccount(api, { ingestFromDate: '2026-01-01' });
     expect(bank.ingestFromDate).toBe('2026-01-01');
+  });
+
+  test('bank: echoed on bank account and credit card; update omitting it keeps it, another replaces it, unknown id is 400', async ({
+    api,
+  }) => {
+    const bank = await createBankAccount(api, { bank: 'hdfc' } as any);
+    expect((bank as any).bank).toBe('hdfc');
+    const card = await createCreditCard(api, { bank: 'icici' } as any);
+    expect((card as any).bank).toBe('icici');
+    const none = await createBankAccount(api);
+    expect((none as any).bank).toBeNull();
+
+    const get = await api.GET('/api/v1/accounts/{id}', { params: { path: { id: bank.id } } });
+    expect((get.data as any).bank).toBe('hdfc');
+
+    // Omitting bank keeps the stored one.
+    const keep = await api.PUT('/api/v1/accounts/{id}', {
+      params: { path: { id: bank.id } },
+      body: { type: 'bank_account', name: 'Renamed Bank', last4: '1234', openingBalance: 1000 } as any,
+    });
+    expect(keep.response.status).toBe(200);
+    expect((keep.data as any).name).toBe('Renamed Bank');
+    expect((keep.data as any).bank).toBe('hdfc');
+
+    // Another bank replaces it.
+    const replace = await api.PUT('/api/v1/accounts/{id}', {
+      params: { path: { id: bank.id } },
+      body: { type: 'bank_account', name: 'Renamed Bank', last4: '1234', openingBalance: 1000, bank: 'axis' } as any,
+    });
+    expect(replace.response.status).toBe(200);
+    expect((replace.data as any).bank).toBe('axis');
+    assertNoExtraKeys(replace.data as any, BANK_ACCOUNT_KEYS, 'BankAccountResponse');
+
+    // Unknown id is rejected on create and update; the stored bank is untouched.
+    const badCreate = await api.POST('/api/v1/accounts', {
+      body: { type: 'bank_account', name: 'Bad Bank', last4: '9999', openingBalance: 0, bank: 'not_a_bank' } as any,
+    });
+    expect(badCreate.response.status).toBe(400);
+    expect((badCreate.error as { message?: string })?.message).toContain('Unknown bank: not_a_bank');
+    const badUpdate = await api.PUT('/api/v1/accounts/{id}', {
+      params: { path: { id: bank.id } },
+      body: { type: 'bank_account', name: 'Renamed Bank', last4: '1234', openingBalance: 1000, bank: 'zzz' } as any,
+    });
+    expect(badUpdate.response.status).toBe(400);
+    expect((badUpdate.error as { message?: string })?.message).toContain('Unknown bank: zzz');
+    const after = await api.GET('/api/v1/accounts/{id}', { params: { path: { id: bank.id } } });
+    expect((after.data as any).bank).toBe('axis');
+  });
+
+  test('broker and generic: a bank in the body is ignored and never returned', async ({ api }) => {
+    const broker = await createBrokerAccount(api, { bank: 'hdfc' } as any);
+    expect((broker as any).bank).toBeUndefined();
+    assertNoExtraKeys(broker as any, BROKER_KEYS, 'BrokerAccountResponse');
+
+    const wallet = await createGenericAccount(api, { bank: 'hdfc' } as any);
+    expect((wallet as any).bank).toBeUndefined();
+    assertNoExtraKeys(wallet as any, GENERIC_KEYS, 'GenericAccountResponse');
+
+    const brokerUpdate = await api.PUT('/api/v1/accounts/{id}', {
+      params: { path: { id: broker.id } },
+      body: { type: 'broker', name: 'Broker Renamed', provider: 'Groww', bank: 'hdfc' } as any,
+    });
+    expect(brokerUpdate.response.status).toBe(200);
+    expect((brokerUpdate.data as any).bank).toBeUndefined();
+
+    const walletUpdate = await api.PUT('/api/v1/accounts/{id}', {
+      params: { path: { id: wallet.id } },
+      body: { type: 'generic', name: 'Wallet Renamed', bank: 'hdfc' } as any,
+    });
+    expect(walletUpdate.response.status).toBe(200);
+    expect((walletUpdate.data as any).bank).toBeUndefined();
+
+    // Even an unknown id is ignored on these types (not validated).
+    const odd = await createGenericAccount(api, { bank: 'not_a_bank' } as any);
+    expect((odd as any).bank).toBeUndefined();
   });
 
   test('create: each type with minimal and full bodies + shape check', async ({ api }) => {

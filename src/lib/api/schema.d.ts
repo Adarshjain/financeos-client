@@ -3267,6 +3267,7 @@ export interface components {
             date: string;
         };
         BankAccountRequest: {
+            bank?: string | null;
             description?: string;
             excludeFromNetAsset?: boolean;
             /** @enum {string} */
@@ -3288,6 +3289,7 @@ export interface components {
             anchorDate?: string | null;
             balance: number;
             balanceAnchored: boolean;
+            bank?: string | null;
             cardholders: components["schemas"]["CardholderResponse"][];
             /** Format: date */
             closedOn?: string | null;
@@ -4115,6 +4117,7 @@ export interface components {
             anniversaryDate?: string | null;
             balance: number;
             balanceAnchored: boolean;
+            bank?: string | null;
             cardholders: components["schemas"]["CardholderResponse"][];
             /** Format: date */
             closedOn?: string | null;
@@ -4155,6 +4158,7 @@ export interface components {
         CreditCardRequest: {
             /** Format: date */
             anniversaryDate: string;
+            bank?: string | null;
             creditLimit?: number | null;
             description?: string;
             excludeFromNetAsset?: boolean;

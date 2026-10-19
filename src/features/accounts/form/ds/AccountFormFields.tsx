@@ -2,9 +2,10 @@
 
 import React from 'react';
 
-import { DateField, Select, type SelectOption, Text, TextField } from '@/components/ds';
+import { Avatar, DateField, Select, type SelectOption, Text, TextField } from '@/components/ds';
 import { SettingsToggle } from '@/components/organisms';
 import { formatRupees } from '@/features/accounts/list/accountsList';
+import { BANKS } from '@/features/banks/banks';
 import type { CreditLimitPool } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 
@@ -35,6 +36,13 @@ export interface AccountFormFieldsProps {
   onCreateIdentifier: (raw: string) => void;
   onIdentifiersChange: (values: string[]) => void;
 }
+
+const BANK_OPTIONS: SelectOption[] = BANKS.map((b) => ({
+  value: b.id,
+  label: b.name,
+  searchText: b.aliases.join(' '),
+  icon: <Avatar variant="square" size="sm" src={b.logo} alt="" initials={b.name.slice(0, 1)} />,
+}));
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -152,6 +160,18 @@ export function AccountFormFields({
           value={values.description}
           onValueChange={(v) => onChange({ description: v })}
         />
+        {syncs ? (
+          <Select
+            label="Bank"
+            placeholder="Select a bank"
+            searchable
+            searchPlaceholder="Search banks…"
+            options={BANK_OPTIONS}
+            value={values.bank}
+            error={errors.bank}
+            onValueChange={(v) => onChange({ bank: v as string })}
+          />
+        ) : null}
         {isBank ? (
           <Pair>
             <AmountField
