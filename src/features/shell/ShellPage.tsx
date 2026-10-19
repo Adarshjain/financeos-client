@@ -1,8 +1,29 @@
 import Link from 'next/link';
 import React from 'react';
 
-import { TopBar } from '@/components/ds';
+import { TopBar, type TopBarAction } from '@/components/ds';
 import { Logo } from '@/components/organisms';
+
+/**
+ * Top-bar actions every /ds page gets (boards D-accounts, P-accounts), matching the live routes.
+ * Search is left out: the live app has no global search to match.
+ */
+export const shellTopBarActions: TopBarAction[] = [
+  {
+    id: 'chat',
+    icon: 'chat',
+    label: 'Ask the data',
+    asChild: true,
+    children: <Link href="/chat" />,
+  },
+  {
+    id: 'notifications',
+    icon: 'notifications',
+    label: 'Notifications',
+    asChild: true,
+    children: <Link href="/settings/activity" />,
+  },
+];
 
 export interface ShellPageProps {
   title: React.ReactNode;
@@ -31,21 +52,22 @@ export function ShellPage({
         crumb={crumb}
         leading={backHref ? undefined : <Logo variant="mark" />}
         backHref={backHref}
-        actions={
-          addHref
+        actions={[
+          ...shellTopBarActions,
+          ...(addHref
             ? [
                 {
                   id: 'add',
-                  icon: 'add',
+                  icon: 'add' as const,
                   label: addLabel ?? 'Add',
-                  variant: 'primary',
+                  variant: 'primary' as const,
                   showLabel: true,
                   asChild: true,
                   children: <Link href={addHref} />,
                 },
               ]
-            : undefined
-        }
+            : []),
+        ]}
       />
       <main className="flex-1 p-space-16 desk:p-space-24 pb-bottom-clearance desk:pb-space-24">
         {children}
