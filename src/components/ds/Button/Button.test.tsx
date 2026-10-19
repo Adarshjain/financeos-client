@@ -248,4 +248,44 @@ describe('Button type size (UAT)', () => {
     expect(btn).not.toHaveClass('text-caption');
     expect(btn).not.toHaveClass('text-heading');
   });
+
+  describe('link underline with icon', () => {
+    it('draws a continuous underline element spanning the control for text + icon', () => {
+      render(
+        <Button variant="link">
+          <Icon name="add" size="sm" />
+          Add
+        </Button>,
+      );
+      const cls = screen.getByRole('button').className;
+      expect(cls).toContain('after:absolute');
+      expect(cls).toContain('after:inset-x-0');
+      expect(cls).toContain('after:bg-current');
+      expect(cls).toContain('no-underline');
+      expect(cls).toContain('relative');
+    });
+
+    it('works through the icon prop and asChild', () => {
+      render(
+        <Button variant="link" asChild>
+          <a href="#x">
+            Go
+            <Icon name="chevron-right" size="sm" />
+          </a>
+        </Button>,
+      );
+      expect(screen.getByRole('link').className).toContain('after:inset-x-0');
+    });
+
+    it('keeps text-decoration for text-only links and none for icon-only', () => {
+      const { rerender } = render(<Button variant="link">Text</Button>);
+      expect(screen.getByRole('button').className).not.toContain('after:absolute');
+      rerender(
+        <Button variant="link" iconOnly aria-label="x">
+          <Icon name="add" size="sm" />
+        </Button>,
+      );
+      expect(screen.getByRole('button').className).not.toContain('after:absolute');
+    });
+  });
 });
