@@ -52,6 +52,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/{accountId}/cardholders/stats": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["stats"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/{accountId}/cardholders/{cardholderId}": {
         parameters: {
             query?: never;
@@ -79,6 +95,22 @@ export interface paths {
         put?: never;
         post: operations["addCard"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{accountId}/cardholders/{cardholderId}/cards/{cardId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["deleteCard"];
         options?: never;
         head?: never;
         patch?: never;
@@ -276,6 +308,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/{id}/flow-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getFlowSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/{id}/gmail-cleanup": {
         parameters: {
             query?: never;
@@ -300,6 +348,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["cleanupPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{id}/gmail-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getGmailSummary"];
         put?: never;
         post?: never;
         delete?: never;
@@ -340,6 +404,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/{id}/payments-from": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPaymentsFrom"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/{id}/reopen": {
         parameters: {
             query?: never;
@@ -350,6 +430,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["reopenAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/accounts/{id}/tab-counts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTabCounts"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2821,6 +2917,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/rewards/totals": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTotals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/rules": {
         parameters: {
             query?: never;
@@ -3089,6 +3201,27 @@ export interface components {
             /** Format: int32 */
             skippedCount: number;
         };
+        AccountFlowSummaryResponse: {
+            averageDailyBalance?: number | null;
+            /** Format: date */
+            from: string;
+            /** Format: date */
+            interestFrom: string;
+            interestLastQuarter: number;
+            /** Format: date */
+            interestTo: string;
+            moneyIn: number;
+            moneyOut: number;
+            /** Format: date */
+            to: string;
+            topInCategories: string[];
+            topOutCategories: string[];
+        };
+        AccountGmailSummaryResponse: {
+            lastAlert?: components["schemas"]["LastAlert"];
+            /** Format: int64 */
+            unmatchedCount: number;
+        };
         AccountIdentifierResponse: {
             /** Format: date-time */
             createdAt: string;
@@ -3098,7 +3231,19 @@ export interface components {
             kind: "CUSTOMER_ID" | "ACCOUNT_NUMBER" | "CRN" | "OTHER";
             value: string;
         };
+        AccountPaymentsFromResponse: {
+            cardBills: components["schemas"]["CardBill"][];
+            emis: components["schemas"]["Emi"][];
+        };
         AccountResponse: components["schemas"]["BankAccountResponse"] | components["schemas"]["CreditCardAccountResponse"] | components["schemas"]["BrokerAccountResponse"] | components["schemas"]["GenericAccountResponse"];
+        AccountTabCountsResponse: {
+            /** Format: int64 */
+            cards: number;
+            /** Format: int64 */
+            statements: number;
+            /** Format: int64 */
+            transactions: number;
+        };
         ApplyRuleRequest: {
             all?: boolean;
             transactionIds?: string[];
@@ -3387,6 +3532,14 @@ export interface components {
             /** Format: date */
             windowStart: string;
         };
+        CardBill: {
+            /** Format: uuid */
+            accountId: string;
+            lastAmount: number;
+            /** Format: date */
+            lastPaidOn: string;
+            name: string;
+        };
         CardBillResponse: {
             /** Format: uuid */
             accountId: string;
@@ -3474,6 +3627,16 @@ export interface components {
             issuedOn?: string | null;
             last4: string;
         };
+        CardStats: {
+            /** Format: uuid */
+            cardId: string;
+            /** Format: date */
+            firstUsedOn?: string | null;
+            /** Format: date */
+            lastUsedOn?: string | null;
+            /** Format: int64 */
+            transactionCount: number;
+        };
         CardholderResponse: {
             /** Format: uuid */
             accountId: string;
@@ -3496,6 +3659,25 @@ export interface components {
             spendLimit?: number | null;
             /** Format: int64 */
             transactionCount: number;
+        };
+        CardholderStatsResponse: {
+            /** Format: uuid */
+            cardholderId: string;
+            cards: components["schemas"]["CardStats"][];
+            currentCycleSpend: number;
+            /** Format: date */
+            cycleFrom?: string | null;
+            /** Format: date */
+            cycleTo?: string | null;
+            /** Format: date */
+            lastUsedOn?: string | null;
+            spendThisYear: number;
+            /** Format: int64 */
+            transactionCount: number;
+            /** Format: date */
+            yearFrom: string;
+            /** Format: date */
+            yearTo: string;
         };
         CategorizeRequest: {
             description: string;
@@ -4197,6 +4379,14 @@ export interface components {
             months: components["schemas"]["MonthOutflow"][];
             monthsCovered?: number | null;
         };
+        Emi: {
+            amount: number;
+            /** Format: uuid */
+            loanId: string;
+            name: string;
+            /** Format: date */
+            nextDueDate?: string | null;
+        };
         EnqueueResponse: {
             /** Format: uuid */
             jobId: string;
@@ -4806,6 +4996,16 @@ export interface components {
             table: components["schemas"]["ReportData"];
             value?: number | null;
             winnerOnly: boolean;
+        };
+        LastAlert: {
+            amount: number;
+            /** Format: date */
+            date: string;
+            description: string;
+            /** Format: uuid */
+            transactionId: string;
+            /** @enum {string} */
+            type: "DEBIT" | "CREDIT";
         };
         LendingMatchSuggestion: {
             amount: number;
@@ -6009,6 +6209,17 @@ export interface components {
             rate: number;
             upTo: number;
         };
+        RewardTotalResponse: {
+            /** Format: uuid */
+            accountId: string;
+            calendarYearFallback: boolean;
+            /** Format: date */
+            from: string;
+            grossValueInr?: number | null;
+            points: number;
+            /** Format: date */
+            to: string;
+        };
         RootCause: {
             detail: string;
             exceptionClass?: string | null;
@@ -6278,9 +6489,11 @@ export interface components {
             createdAt: string;
             /** Format: uuid */
             id: string;
+            ledgerBalanceAtClose?: number | null;
             lines: components["schemas"]["StatementLineResponse"][];
             /** Format: int32 */
             linesSkipped?: number | null;
+            matchesLedger?: boolean | null;
             openingBalance?: number | null;
             parseMode?: string | null;
             /** Format: date */
@@ -6307,6 +6520,7 @@ export interface components {
             description?: string | null;
             /** Format: int32 */
             lineIndex?: number | null;
+            origin: string;
             /** @enum {string|null} */
             reviewType?: "NEEDS_REVIEW" | "AUTO_REVIEWED" | "MANUALLY_REVIEWED" | "NA" | null;
             /** Format: uuid */
@@ -6597,6 +6811,8 @@ export interface components {
             totalAmountDue?: number | null;
         };
         UpdateCardholderRequest: {
+            /** Format: date */
+            openedOn?: string;
             personName?: string;
             /** @enum {string} */
             relationship?: "SELF" | "SPOUSE" | "PARENT" | "CHILD" | "SIBLING" | "OTHER";
@@ -6960,6 +7176,37 @@ export interface operations {
             };
         };
     };
+    stats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CardholderStatsResponse"][];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     updateCardholder: {
         parameters: {
             query?: never;
@@ -7050,6 +7297,37 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["CardholderResponse"];
                 };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteCard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                accountId: string;
+                cardholderId: string;
+                cardId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Error response */
             default: {
@@ -7530,6 +7808,39 @@ export interface operations {
             };
         };
     };
+    getFlowSummary: {
+        parameters: {
+            query?: {
+                days?: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AccountFlowSummaryResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     performCleanup: {
         parameters: {
             query: {
@@ -7583,6 +7894,37 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CleanupPreviewResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getGmailSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AccountGmailSummaryResponse"];
                 };
             };
             /** @description Error response */
@@ -7692,6 +8034,37 @@ export interface operations {
             };
         };
     };
+    getPaymentsFrom: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AccountPaymentsFromResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     reopenAccount: {
         parameters: {
             query?: never;
@@ -7710,6 +8083,37 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["BankAccountResponse"] | components["schemas"]["BrokerAccountResponse"] | components["schemas"]["CreditCardAccountResponse"] | components["schemas"]["GenericAccountResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getTabCounts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AccountTabCountsResponse"];
                 };
             };
             /** @description Error response */
@@ -14190,6 +14594,35 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["RewardReportResponse"];
+                };
+            };
+            /** @description Error response */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getTotals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RewardTotalResponse"][];
                 };
             };
             /** @description Error response */
