@@ -343,7 +343,7 @@ test.describe('KPI underlying data dialog (@ui)', () => {
     await expect(rows.filter({ hasText: 'NW Savings' }).getByRole('cell').first()).toHaveText('NW Savings Bank account');
     await expect(rows.filter({ hasText: 'NW Broker' }).getByRole('cell').first()).toHaveText('NW Broker Broker');
     await expect(rows.filter({ hasText: 'NW Savings' }).getByText('Bank account')).toHaveClass(/text-slate-500/);
-    await expect(vud.locator('tbody')).not.toContainText('bank_account');
+    await expect(vud.getByText('bank_account')).toHaveCount(0);
     // No sum, totals or row count under the rows.
     await expect(vud.getByText(/^Sum /)).toHaveCount(0);
     await expect(vud.getByText(/^Assets /)).toHaveCount(0);

@@ -19,7 +19,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(page.getByRole('link', { name: /Sign in/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Sign up/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /Offline/i })).toBeVisible();
-    await expect(page.getByText('No signed-in pages yet.')).toBeVisible();
+    await expect(page.getByRole('link', { name: /Accounts.*\/ds\/accounts/ })).toHaveAttribute('href', '/ds/accounts');
 
     // Verify Rail navigation is visible
     const rail = page.locator('nav.w-container-xs');
@@ -97,11 +97,11 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await expect(page.locator('header').getByText('New design')).toBeVisible();
 
     // Rail should be hidden on phone
-    const railContainer = page.locator('.hidden.lg\\:flex');
+    const railContainer = page.locator('.hidden.desk\\:flex');
     await expect(railContainer).not.toBeVisible();
 
     // Verify floating TabBar items: Home, Inbox, Upcoming, Transactions, More
-    const tabBar = page.locator('nav.lg\\:hidden');
+    const tabBar = page.locator('nav.desk\\:hidden');
     await expect(tabBar).toBeVisible();
 
     const expectedTabs = ['Home', 'Inbox', 'Upcoming', 'Transactions', 'More'];
@@ -114,7 +114,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${E2E_CLIENT_URL}/ds`);
 
-    const tabBar = page.locator('nav.lg\\:hidden');
+    const tabBar = page.locator('nav.desk\\:hidden');
     const moreTab = tabBar.getByRole('tab', { name: 'More' });
     await expect(moreTab).toBeVisible();
 
@@ -182,7 +182,7 @@ test.describe('/ds Shell and Index UI (@ui)', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`${E2E_CLIENT_URL}/ds`);
 
-    const tabBar = page.locator('nav.lg\\:hidden');
+    const tabBar = page.locator('nav.desk\\:hidden');
     const txTab = tabBar.getByRole('tab', { name: 'Transactions' });
     await expect(txTab).toBeVisible();
     await expect(txTab).toHaveAttribute('href', '/transactions');
