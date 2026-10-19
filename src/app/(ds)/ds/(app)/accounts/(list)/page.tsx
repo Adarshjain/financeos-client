@@ -108,7 +108,7 @@ export default async function DsAccountsPage() {
   }
 
   return (
-    <ShellPage crumb="Money" title="Accounts" addHref="/ds/accounts?add=1">
+    <ShellPage crumb="Money" title="Accounts" addParam={{ key: 'add', value: '1' }}>
       {body}
       <AddAccountHost />
     </ShellPage>

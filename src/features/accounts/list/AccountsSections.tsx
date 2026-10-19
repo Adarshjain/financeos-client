@@ -8,16 +8,17 @@ import {
   Badge,
   Button,
   Card,
-  CardFooter,
   createDataTableColumnHelper,
   DataTable,
   EmptyState,
   Icon,
   ProgressBar,
+  SectionHeader,
   StatusWord,
   Text,
 } from '@/components/ds';
 import { AccountFormDialog } from '@/features/accounts/form/ds/AccountFormDialog';
+import { openDialogParam } from '@/lib/dialogParam';
 
 import type {
   BankRow,
@@ -127,9 +128,28 @@ function ClosedToggleButton({
       className="shrink-0 whitespace-nowrap"
       onClick={onToggle}
     >
-      {showing ? 'Hide' : 'Show'}
+      {/* A fixed-width box, text right-aligned: the button keeps its size when the label flips. */}
+      <span className="inline-block min-w-space-32 text-right">{showing ? 'Hide' : 'Show'}</span>
       <Icon name={showing ? 'chevron-up' : 'chevron-right'} size="sm" />
     </Button>
+  );
+}
+
+/** The closed line and its toggle, the same in both states so the toggle never moves. */
+function ClosedBandContent({
+  line,
+  showing,
+  onToggle,
+}: {
+  line: string | null;
+  showing: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-space-12 w-full">
+      <span>{line}</span>
+      <ClosedToggleButton showing={showing} onToggle={onToggle} />
+    </div>
   );
 }
 
@@ -146,10 +166,7 @@ function closedBand<Row extends { closed: boolean }>(
       ? {
           key: 'closed',
           label: (
-            <div className="flex items-center justify-between gap-space-12 w-full">
-              <span>{line}</span>
-              <ClosedToggleButton showing onToggle={onToggle} />
-            </div>
+            <ClosedBandContent line={line} showing onToggle={onToggle} />
           ),
         }
       : null;
@@ -166,29 +183,24 @@ function ClosedFooter({
 }) {
   if (!line || showing) return null;
   return (
-    <CardFooter>
-      <Text variant="label" tone="ink-3">
-        {line}
-      </Text>
-      <ClosedToggleButton showing={false} onToggle={onToggle} />
-    </CardFooter>
+    <SectionHeader variant="band">
+      <ClosedBandContent line={line} showing={false} onToggle={onToggle} />
+    </SectionHeader>
   );
 }
 
 function AddLink({
-  href,
+  addType,
   children,
 }: {
-  href: string;
+  addType: string;
   children: React.ReactNode;
 }) {
   return (
     <Text variant="label" as="span">
-      <Button asChild variant="link" size="sm">
-        <Link href={href}>
-          <Icon name="add" size="xs" />
-          {children}
-        </Link>
+      <Button variant="link" size="sm" onClick={() => openDialogParam('add', addType)}>
+        <Icon name="add" size="xs" />
+        {children}
       </Button>
     </Text>
   );
@@ -302,7 +314,7 @@ export function BankSection(props: SectionProps<BankRow>) {
       title="Bank accounts"
       subtitle="Balances anchor to the latest statement; later transactions are added on top"
       action={
-        <AddLink href={`${ACCOUNTS_HREF}?add=bank_account`}>
+        <AddLink addType="bank_account">
           Add bank account
         </AddLink>
       }
@@ -470,7 +482,7 @@ export function CardsSection(
       title="Credit cards"
       subtitle={props.subtitle}
       action={
-        <AddLink href={`${ACCOUNTS_HREF}?add=credit_card`}>
+        <AddLink addType="credit_card">
           Add credit card
         </AddLink>
       }
@@ -533,7 +545,7 @@ export function BrokersSection(
       subtitle="Holdings value + cash"
       action={
         <div className="flex items-center gap-space-12">
-          <AddLink href={`${ACCOUNTS_HREF}?add=broker`}>
+          <AddLink addType="broker">
             Add broker
           </AddLink>
           <NavLink href="/investments">Investments</NavLink>
@@ -599,7 +611,7 @@ export function WalletsSection(props: SectionProps<WalletRow>) {
       title="Wallets & cash"
       subtitle="Manual balances"
       action={
-        <AddLink href={`${ACCOUNTS_HREF}?add=generic`}>Add wallet</AddLink>
+        <AddLink addType="generic">Add wallet</AddLink>
       }
     >
       <DataTable

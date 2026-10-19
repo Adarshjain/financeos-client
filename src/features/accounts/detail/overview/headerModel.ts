@@ -1,6 +1,7 @@
 import {
   formatAmount,
   formatDayMonth,
+  formatDayMonthRelative,
   formatDayMonthYear,
   formatRupees,
 } from '@/features/accounts/list/accountsList';
@@ -110,7 +111,7 @@ export function buildHeaderModel(
     // Later transactions are added on top of the statement balance, so the balance is current to the newest one.
     const latest = account.lastTransactionDate;
     const current = latest && latest > account.anchorDate && latest <= today ? latest : null;
-    caption.push(current ? `as of ${formatDayMonth(current)}` : `as of statement ${formatDayMonth(account.anchorDate)}`);
+    caption.push(current ? `as of ${formatDayMonthRelative(current, today)}` : `as of statement ${formatDayMonthRelative(account.anchorDate, today)}`);
   }
   if (account.type === AccountType.BROKER) {
     if (account.cashBalance !== undefined) caption.push(`cash ${formatRupees(account.cashBalance)}`);

@@ -1,11 +1,12 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, showToast, Text } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
 import type { Card, Cardholder } from '@/lib/account.types';
+import { closeDialogParam } from '@/lib/dialogParam';
 
 import { AddCardDialog, CloseDialog, ReplaceCardDialog } from './CardFormDialogs';
 import { type CardsModel, type HolderMenuId, holderName, type HolderStats } from './cardsModel';
@@ -49,7 +50,6 @@ export function CardsTab({
   model,
 }: CardsTabProps) {
   const router = useRouter();
-  const pathname = usePathname();
   const params = useSearchParams();
   const actions = useCardholderActions(accountId, isBank);
   const [dialog, setDialog] = React.useState<DialogState | null>(null);
@@ -61,7 +61,7 @@ export function CardsTab({
 
   const closeDialog = () => {
     setDialog(null);
-    if (params.get('add')) router.replace(pathname, { scroll: false });
+    if (params.get('add')) closeDialogParam('add');
   };
 
   if (!cardholders || !model) {
@@ -155,7 +155,7 @@ export function CardsTab({
         </div>
       ) : null}
 
-      {model.sharedLimit ? <SharedLimitCard accountId={accountId} model={model.sharedLimit} /> : null}
+      {model.sharedLimit ? <SharedLimitCard model={model.sharedLimit} /> : null}
 
       <ClosedHolders
         rows={model.closed}

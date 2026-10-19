@@ -40,23 +40,39 @@ describe('/ds/accounts add links', () => {
   it('points the app bar + at the Add dialog with nothing picked', async () => {
     loadMock.mockReturnValue(base);
     await renderPage();
-    expect(screen.getByRole('link', { name: 'Add' })).toHaveAttribute('href', '/ds/accounts?add=1');
+    window.history.replaceState(null, '', '/ds/accounts');
+    const pushState = vi.spyOn(window.history, 'pushState');
+    screen.getByRole('button', { name: 'Add' }).click();
+    expect(pushState).toHaveBeenCalledWith(null, '', '/ds/accounts?add=1');
+    expect(push).not.toHaveBeenCalled();
+    pushState.mockRestore();
   });
 
-  it('points each section link at its own type', async () => {
+  it('opens each section button at its own type without navigating', async () => {
     loadMock.mockReturnValue(base);
     await renderPage();
-    const href = (name: string) => screen.getByRole('link', { name }).getAttribute('href');
-    expect(href('Add bank account')).toBe('/ds/accounts?add=bank_account');
-    expect(href('Add credit card')).toBe('/ds/accounts?add=credit_card');
-    expect(href('Add broker')).toBe('/ds/accounts?add=broker');
-    expect(href('Add wallet')).toBe('/ds/accounts?add=generic');
+    window.history.replaceState(null, '', '/ds/accounts');
+    const push = vi.spyOn(window.history, 'pushState');
+    const opened = (name: string) => {
+      push.mockClear();
+      screen.getByRole('button', { name }).click();
+      return push.mock.calls[0]?.[2];
+    };
+    expect(opened('Add bank account')).toBe('/ds/accounts?add=bank_account');
+    expect(opened('Add credit card')).toBe('/ds/accounts?add=credit_card');
+    expect(opened('Add broker')).toBe('/ds/accounts?add=broker');
+    expect(opened('Add wallet')).toBe('/ds/accounts?add=generic');
+    push.mockRestore();
   });
 
   it('sends the empty state action to the Add dialog', async () => {
     loadMock.mockReturnValue({ ...base, accounts: [] });
     await renderPage();
+    window.history.replaceState(null, '', '/ds/accounts');
+    const pushState = vi.spyOn(window.history, 'pushState');
     screen.getByRole('button', { name: 'Add account' }).click();
-    expect(push).toHaveBeenCalledWith('/ds/accounts?add=1');
+    expect(pushState).toHaveBeenCalledWith(null, '', '/ds/accounts?add=1');
+    expect(push).not.toHaveBeenCalled();
+    pushState.mockRestore();
   });
 });

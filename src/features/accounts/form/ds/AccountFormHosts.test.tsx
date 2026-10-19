@@ -58,8 +58,11 @@ describe('AddAccountHost', () => {
   it('closing removes only the add param and does not scroll', () => {
     query = 'add=credit_card&closed=cards';
     render(<AddAccountHost />);
+    window.history.replaceState(null, '', `${path}?${query}`);
+    const replace = vi.spyOn(window.history, 'replaceState');
     screen.getByText('close').click();
-    expect(router.replace).toHaveBeenCalledWith('/ds/accounts?closed=cards', { scroll: false });
+    expect(replace).toHaveBeenCalledWith(null, '', '/ds/accounts?closed=cards');
+    expect(router.replace).not.toHaveBeenCalled();
   });
 });
 
@@ -75,7 +78,10 @@ describe('EditAccountHost', () => {
     query = 'edit=1&tab=cards';
     render(<EditAccountHost account={account} />);
     expect(screen.getByText('dialog edit HDFC Regalia')).toBeInTheDocument();
+    window.history.replaceState(null, '', `${path}?${query}`);
+    const replace = vi.spyOn(window.history, 'replaceState');
     screen.getByText('close').click();
-    expect(router.replace).toHaveBeenCalledWith('/ds/accounts/c1?tab=cards', { scroll: false });
+    expect(replace).toHaveBeenCalledWith(null, '', '/ds/accounts/c1?tab=cards');
+    expect(router.replace).not.toHaveBeenCalled();
   });
 });

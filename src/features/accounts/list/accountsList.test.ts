@@ -18,6 +18,7 @@ import {
   investmentsKpi,
   limitUsed,
   nextBillBadge,
+  relativeDay,
   rewardsText,
   walletRow,
 } from './accountsList';
@@ -166,6 +167,41 @@ describe('bank rows', () => {
 
   it('falls back to the opening balance', () => {
     expect(bankRow(bank({ balance: null, openingBalance: '1500' }), TODAY).balance).toBe('1,500.00');
+  });
+});
+
+describe('relative day', () => {
+  it('names today and yesterday, else null', () => {
+    expect(relativeDay('2026-10-18', '2026-10-18')).toBe('today');
+    expect(relativeDay('2026-10-17', '2026-10-18')).toBe('yesterday');
+    expect(relativeDay('2026-10-16', '2026-10-18')).toBeNull();
+    expect(relativeDay('2026-10-19', '2026-10-18')).toBeNull();
+  });
+
+  it('reads a timestamp-shaped date by its day', () => {
+    expect(relativeDay('2026-10-18T09:30:00Z', '2026-10-18')).toBe('today');
+    expect(relativeDay('2026-10-17T23:59:00Z', '2026-10-18')).toBe('yesterday');
+  });
+
+  it('finds yesterday across a month and year boundary', () => {
+    expect(relativeDay('2026-09-30', '2026-10-01')).toBe('yesterday');
+    expect(relativeDay('2025-12-31', '2026-01-01')).toBe('yesterday');
+  });
+
+  it('words the bank row as of copy', () => {
+    const tx = (d: string) => bankRow(bank({ lastStatementDate: '2026-09-01', lastTransactionDate: d }), TODAY);
+    expect(tx(TODAY).asOf).toBe('Today');
+    expect(tx(TODAY).phoneSub).toBe('As of today');
+    const y = new Date(`${TODAY}T00:00:00Z`);
+    y.setUTCDate(y.getUTCDate() - 1);
+    const yesterday = y.toISOString().slice(0, 10);
+    expect(tx(yesterday).asOf).toBe('Yesterday');
+    expect(tx(yesterday).phoneSub).toBe('As of yesterday');
+    const stmt = (d: string) => bankRow(bank({ lastStatementDate: d, lastTransactionDate: null }), TODAY);
+    expect(stmt(TODAY).asOf).toBe('Stmt today');
+    expect(stmt(TODAY).phoneSub).toBe('Statement today');
+    expect(stmt(yesterday).asOf).toBe('Stmt yesterday');
+    expect(stmt(yesterday).phoneSub).toBe('Statement yesterday');
   });
 });
 

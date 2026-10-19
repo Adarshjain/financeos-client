@@ -159,10 +159,10 @@ describe('/ds/accounts', () => {
     expect(screen.queryByText(/edit dialog/)).toBeNull();
   });
 
-  it.each(['Add bank account', 'Add credit card', 'Add broker', 'Add wallet'])('%s link carries a plus icon', async (name) => {
+  it.each(['Add bank account', 'Add credit card', 'Add broker', 'Add wallet'])('%s button carries a plus icon', async (name) => {
     loadMock.mockReturnValue(data());
     await renderPage();
-    const link = screen.getByRole('link', { name });
+    const link = screen.getByRole('button', { name });
     expect(link.querySelector('svg, [data-icon], i, span[aria-hidden]')).not.toBeNull();
   });
 });

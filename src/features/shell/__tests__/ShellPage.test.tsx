@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import React from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { ShellPage } from '../ShellPage';
 
@@ -35,6 +35,20 @@ describe('ShellPage top-bar actions', () => {
     expect(add.querySelector('span.hidden.desk\\:inline')?.textContent).toBe(
       'Add account',
     );
+  });
+
+  it('opens a same-page add by pushing the URL param, not navigating', () => {
+    window.history.replaceState(null, '', '/ds/accounts');
+    const push = vi.spyOn(window.history, 'pushState');
+    render(
+      <ShellPage title="Accounts" addParam={{ key: 'add', value: '1' }} addLabel="Add account">
+        content
+      </ShellPage>,
+    );
+    expect(screen.getAllByRole('link').map((l) => l.getAttribute('aria-label'))).toEqual(['Ask the data']);
+    screen.getByRole('button', { name: 'Add account' }).click();
+    expect(push).toHaveBeenCalledWith(null, '', '/ds/accounts?add=1');
+    push.mockRestore();
   });
 
   it('renders only the shared actions when the page has no add', () => {

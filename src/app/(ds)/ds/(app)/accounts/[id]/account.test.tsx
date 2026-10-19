@@ -200,9 +200,14 @@ describe('/ds/accounts/[id] credit-card Overview', () => {
     expect(screen.getByText('due 25 Oct · unbilled ₹0')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Mark paid' })).toBeInTheDocument();
     // The header's Edit and the Identifiers card's Edit both open the edit dialog on this page.
-    const edits = screen.getAllByRole('link', { name: 'Edit' });
+    const edits = screen.getAllByRole('button', { name: 'Edit' });
     expect(edits).toHaveLength(2);
-    edits.forEach((link) => expect(link).toHaveAttribute('href', '/ds/accounts/c1?edit=1'));
+    window.history.replaceState(null, '', '/ds/accounts/c1');
+    const push = vi.spyOn(window.history, 'pushState');
+    edits.forEach((button) => button.click());
+    expect(push).toHaveBeenCalledTimes(2);
+    expect(push).toHaveBeenLastCalledWith(null, '', '/ds/accounts/c1?edit=1');
+    push.mockRestore();
     expect(screen.queryByRole('link', { name: /^Transactions/ })).toBeNull();
 
     expect(screen.getByText('Limit & cycle')).toBeInTheDocument();
@@ -359,8 +364,8 @@ describe('/ds/accounts/[id] bank Overview', () => {
 
     expect(screen.getAllByText('Balance').length).toBeGreaterThan(0);
     expect(screen.getByText('₹2,95,031')).toBeInTheDocument();
-    // The newest transaction (12 Oct) is later than the statement (30 Sep): the balance is current to it.
-    expect(screen.getByText('as of 12 Oct')).toBeInTheDocument();
+    // The newest transaction (yesterday) is later than the statement (30 Sep): the balance is current to it.
+    expect(screen.getByText('as of yesterday')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
     expect(screen.getByText('+₹7,20,000')).toBeInTheDocument();
     expect(screen.getByText('₹5,41,870')).toBeInTheDocument();

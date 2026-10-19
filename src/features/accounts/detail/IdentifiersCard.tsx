@@ -2,15 +2,12 @@ import React from 'react';
 
 import { Badge, Card, Text } from '@/components/ds';
 
-import { accountHref } from './accountTabsModel';
-import { HeaderLink } from './overview/HeaderLink';
+import { HeaderDialogLink } from './overview/HeaderLink';
 
 export function IdentifiersCard({
-  accountId,
   identifiers,
   noun = 'account',
 }: {
-  accountId: string;
   identifiers: string[];
   /** "card" on a credit card's page. */
   noun?: string;
@@ -19,7 +16,7 @@ export function IdentifiersCard({
     <Card
       title="Identifiers"
       subtitle={`How Gmail alerts and statements find this ${noun}`}
-      action={<HeaderLink href={`${accountHref(accountId)}?edit=1`}>Edit</HeaderLink>}
+      action={<HeaderDialogLink param="edit" value="1">Edit</HeaderDialogLink>}
     >
       <div className="px-space-16 pt-space-4 pb-space-14 flex flex-wrap gap-space-6">
         {identifiers.length > 0 ? (

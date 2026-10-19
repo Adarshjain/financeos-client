@@ -198,6 +198,8 @@ export function AccountFormDialog({ account, initialType = null, onClose }: Acco
         if (failedIdentifiers.length > 0) {
           showToast(identifiersFailedMessage(failedIdentifiers, true), { tone: 'danger' });
         }
+        // Drop ?add= from this history entry first, so Back from the new account does not reopen Add.
+        onClose();
         router.push(`${ACCOUNTS_HREF}/${created.id}`);
       }
     } catch (e) {
@@ -260,6 +262,8 @@ export function AccountFormDialog({ account, initialType = null, onClose }: Acco
       await mutations.deleteAccountMutation.mutateAsync(account.id);
       showToast('Account deleted!');
       setShowDelete(false);
+      // Drop ?edit= from this history entry first, so Back does not reopen Edit on a deleted account.
+      onClose();
       router.push(ACCOUNTS_HREF);
       router.refresh();
     } catch (e) {
