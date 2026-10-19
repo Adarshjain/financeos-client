@@ -98,7 +98,7 @@ Build in this order, one component per step. After each one, set its status to *
 | 40 | Skeleton | Approved |
 | 41 | Logo | Approved |
 | 42 | Divider | Approved |
-| 43 | Tooltip | Ready for review (2026-10-19) |
+| 43 | Tooltip | Approved |
 | 43 | Illustration | Approved |
 | 45 | Text | Approved |
 | 46 | Root | Approved |
@@ -318,6 +318,8 @@ Only the owner adds to this list. Each entry has a date and the decision.
   - Top-bar actions (Ask the data, Search, Chat, Notifications) are wired once in the /ds shell.
   - New dependency `@radix-ui/react-tooltip` approved for the Tooltip component.
 
+- 2026-10-19 · **UAT round 2** (owner): Tooltip approved (dark theme inverts, as built). All controls 32px (`control-md`), replacing 36. New token `icon-xs` 10px for the + of Add links. RULES §5.5 phone footer = `control-md`. `/bills?accountId` computes only that card. Write decisions tersely.
+
 - 2026-10-19 · **Accounts UAT round 1** (owner; approves the Dinero changes it names):
   - Banks: only Amex, AU, Axis, Bank of Baroda, Canara, CSB, Equitas, Federal, HDFC, HSBC, ICICI, IDFC First, Indian Bank, IndusInd, SBI, Slice, Unity, Yes (plus one more, to confirm); logos from one sprite.
   - Select: padding around the option list (not between items); the list scrolls; pinned action buttons at natural width, right-aligned.
@@ -333,7 +335,6 @@ Only the owner adds to this list. Each entry has a date and the decision.
 ## Open questions
 Add entries here instead of guessing (RULES §2): date, phase, screen or component, the question, the options.
 
-- 2026-10-19 · Phase 2 · Tooltip · Dark theme surface · The tooltip uses `brand` (ink) with `on-brand` text, so in dark theme it inverts to a near-white pill with dark text. Options: (A) keep the inversion (follows the ink token, like the primary button); (B) stay dark in both themes, which needs a generic dark-surface token step (owner adds).
 
 
 - 2026-10-16 · Phase 3a · Shell · Quick add actions without live routes · Quick add items Transaction, Lending and Trade are modal dialogs in the Legacy app without dedicated routes; only Import (/transactions/import) has a route. Options: (A) Build dedicated Dinero add forms later when those modules migrate, or (B) Open the Legacy live pages/dialogs. Meanwhile, those three tiles are shown disabled until the owner decides.
