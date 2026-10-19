@@ -449,7 +449,7 @@ export const SelectMenu = forwardRef<HTMLDivElement, SelectMenuProps>(
           <div className="flex justify-end gap-space-8 px-space-6 pt-space-8 pb-space-4 border-t border-line-soft mt-space-4">
             <Button
               type="button"
-              variant="secondary"
+              variant="link"
               size="sm"
               onClick={onClear}
             >
