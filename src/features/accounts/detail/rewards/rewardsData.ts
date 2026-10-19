@@ -20,25 +20,23 @@ type SearchParams = { rule?: string | string[]; page?: string | string[]; size?:
 const ok = <T,>(r: PromiseSettledResult<T>): T | null => (r.status === 'fulfilled' ? r.value : null);
 
 /**
- * Everything the Rewards tab needs. The reward year comes first, then the report and the rule list load in
- * parallel, then one page of earning lines (the rule list validates the `?rule=` filter).
+ * Everything the Rewards tab needs. The rule list loads alongside the reward year; once both are in, the
+ * report and one page of earning lines load in parallel (the rule list validates the `?rule=` filter).
  */
 export async function loadRewardsTabData(
   account: Account,
   today: string,
   params: SearchParams | undefined
 ): Promise<RewardsTabData> {
-  const totals = await serverApi.GET('/api/v1/rewards/totals').then((r) => r.data ?? null, () => null);
   const accountId = account.id;
+  const rulesPending = Promise.allSettled([rewardsApi.listRules(accountId)]);
+  const totals = await serverApi.GET('/api/v1/rewards/totals').then((r) => r.data ?? null, () => null);
   const mine = totals?.find((t) => t.accountId === accountId);
   const window: RewardsWindow = mine
     ? { from: mine.from, to: mine.to, calendarYear: mine.calendarYearFallback }
     : rewardsWindowFor(accountAnniversaryDate(account), today);
-  const [rulesResult, reportResult] = await Promise.allSettled([
-    rewardsApi.listRules(accountId),
-    rewardsApi.getReport(accountId, window.from, window.to),
-  ]);
-  const rules = ok(rulesResult);
+  const reportPending = Promise.allSettled([rewardsApi.getReport(accountId, window.from, window.to)]);
+  const rules = ok((await rulesPending)[0]);
   let query = parseRewardsQuery(params, (rules ?? []).map((r) => r.id));
   const fetchLines = (page: number) =>
     rewardsApi.getRewardLines({
@@ -56,5 +54,5 @@ export async function loadRewardsTabData(
     query = { ...query, page: last };
     lines = ok((await Promise.allSettled([fetchLines(last)]))[0]);
   }
-  return { window, report: ok(reportResult), rules, lines, query };
+  return { window, report: ok((await reportPending)[0]), rules, lines, query };
 }
