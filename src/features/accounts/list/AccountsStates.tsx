@@ -26,7 +26,7 @@ export function AccountsEmpty() {
       description="Add your first bank account, credit card, or cash wallet to monitor transactions and track net assets."
       action={{
         label: 'Add account',
-        onSelect: () => router.push('/ds/accounts/new'),
+        onSelect: () => router.push('/ds/accounts?add=1'),
       }}
     />
   );

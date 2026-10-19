@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { KpiTile } from '@/components/ds';
+import { AddAccountHost } from '@/features/accounts/form/ds/AccountFormHosts';
 import {
   bankRow,
   brokerRow,
@@ -136,8 +137,9 @@ export default async function DsAccountsPage({
   }
 
   return (
-    <ShellPage crumb="Money" title="Accounts" addHref="/ds/accounts/new">
+    <ShellPage crumb="Money" title="Accounts" addHref="/ds/accounts?add=1">
       {body}
+      <AddAccountHost />
     </ShellPage>
   );
 }

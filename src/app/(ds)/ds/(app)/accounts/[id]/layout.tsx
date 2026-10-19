@@ -3,6 +3,7 @@ import React from 'react';
 
 import { loadAccount } from '@/features/accounts/detail/accountData';
 import { AccountTabs } from '@/features/accounts/detail/AccountTabs';
+import { EditAccountHost } from '@/features/accounts/form/ds/AccountFormHosts';
 import { ShellPage } from '@/features/shell/ShellPage';
 
 export default async function DsAccountLayout({
@@ -22,6 +23,7 @@ export default async function DsAccountLayout({
         <AccountTabs accountId={account.id} type={account.type} />
         {children}
       </div>
+      <EditAccountHost account={account} />
     </ShellPage>
   );
 }
