@@ -181,7 +181,8 @@ describe('buildRewards', () => {
     milestones: [
       {
         milestoneId: 'm1',
-        name: 'Spend',
+        name: 'Annual spend',
+        windowStart: '2026-03-15',
         basis: 'SPEND',
         threshold: 400000,
         progress: 83764,
@@ -207,11 +208,27 @@ describe('buildRewards', () => {
     expect(m?.milestones).toEqual([
       {
         id: 'm1',
-        label: 'Milestone · ₹4L → 10,000 pts',
+        label: 'Annual spend',
         pct: 21,
-        caption: '₹83,764 of ₹4,00,000 · 152 days left',
+        caption: '₹83,764 of ₹4,00,000 → 10,000 pts · 152 days left',
       },
     ]);
+  });
+
+  it('lists one row per milestone, the window containing today', () => {
+    const w = (windowStart: string, windowEnd: string, progress: number) => ({
+      ...(report.milestones[0] as object),
+      windowStart,
+      windowEnd,
+      progress,
+    });
+    const many = {
+      ...report,
+      milestones: [w('2026-09-01', '2026-09-30', 10), w('2026-10-01', '2026-10-31', 20), w('2026-11-01', '2026-11-30', 0)],
+    } as unknown as RewardReport;
+    const rows = buildRewards(many, window, TODAY)?.milestones;
+    expect(rows).toHaveLength(1);
+    expect(rows?.[0].caption).toContain('₹20 of ₹4,00,000');
   });
 
   it('says Calendar year on the fallback window', () => {

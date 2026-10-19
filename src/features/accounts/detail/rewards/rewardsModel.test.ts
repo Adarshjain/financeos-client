@@ -6,7 +6,6 @@ import {
   buildKpis,
   buildMilestone,
   clampedPage,
-  currentMilestones,
   lineRow,
   linesSubtitle,
   milestonePace,
@@ -52,8 +51,8 @@ const baseRule = {
   createdAt: '',
   updatedAt: '',
 } as const;
-const rule1: RewardRule = { ...baseRule, id: 'r1', name: '5X on dining', priority: 1, mccs: ['5812', '5814'], slabSize: 150, pointsPerSlab: 20, periodCap: 5000, capWindow: 'CALENDAR_MONTH' };
-const rule2: RewardRule = { ...baseRule, id: 'r2', name: 'Base', priority: 2, slabSize: 150, pointsPerSlab: 4 };
+const rule1: RewardRule = { ...baseRule, id: 'r1', name: '5X on dining', priority: 20, mccs: ['5812', '5814'], slabSize: 150, pointsPerSlab: 20, periodCap: 5000, capWindow: 'CALENDAR_MONTH' };
+const rule2: RewardRule = { ...baseRule, id: 'r2', name: 'Base', priority: 10, slabSize: 150, pointsPerSlab: 4 };
 
 describe('buildKpis', () => {
   it('builds the four tiles from the report', () => {
@@ -94,18 +93,6 @@ describe('gross rewards with cash milestones', () => {
       value: '₹500',
       context: '₹500 milestones',
     });
-  });
-});
-
-describe('currentMilestones', () => {
-  const w = (id: string, start: string, end: string) => ({ milestoneId: id, windowStart: start, windowEnd: end }) as MilestoneStatus;
-  it('keeps the window containing today per milestone', () => {
-    const out = currentMilestones([w('a', '2025-03-15', '2026-03-14'), w('a', '2026-03-15', '2027-03-14'), w('b', '2026-10-01', '2026-10-31')], '2026-10-13');
-    expect(out.map((m) => `${m.milestoneId}:${m.windowStart}`)).toEqual(['a:2026-03-15', 'b:2026-10-01']);
-  });
-  it('takes the latest window when none contains today', () => {
-    const out = currentMilestones([w('a', '2024-01-01', '2024-12-31'), w('a', '2025-01-01', '2025-12-31')], '2026-10-13');
-    expect(out.map((m) => m.windowStart)).toEqual(['2025-01-01']);
   });
 });
 
@@ -221,7 +208,7 @@ describe('rules', () => {
   });
   it('lists rules by priority with earned points', () => {
     const lines = ruleLines([rule2, rule1], report);
-    expect(lines.map((l) => l.title)).toEqual(['1 · 5X on dining', '2 · Base']);
+    expect(lines.map((l) => l.title)).toEqual(['20 · 5X on dining', '10 · Base']);
     expect(lines.map((l) => l.earned)).toEqual(['0 pts', '2,180 pts']);
   });
   it('falls back to the report when the rule list failed', () => {

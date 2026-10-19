@@ -3,12 +3,12 @@ import React from 'react';
 import { KpiTile } from '@/components/ds';
 
 import { accountHref } from '../accountTabsModel';
+import { currentMilestones } from '../milestones';
 import { EarningLines } from './EarningLines';
 import type { RewardsTabData } from './rewardsData';
 import {
   buildKpis,
   buildMilestone,
-  currentMilestones,
   lineRow,
   linesSubtitle,
   ruleChips,

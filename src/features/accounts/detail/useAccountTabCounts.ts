@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import React from 'react';
 
 import { api } from '@/lib/api/client';
 import { keys } from '@/lib/query/keys';
@@ -11,8 +12,13 @@ export interface AccountTabCounts {
   transactions: number;
 }
 
-/** The tab and transaction counts, loaded after the page renders; undefined until they arrive (or if the request fails). */
+/**
+ * The tab and transaction counts, loaded after the page renders; undefined until they arrive (or if the request fails).
+ * Always undefined on the server render and the first client render, even when the query cache already has data, so hydration matches.
+ */
 export function useAccountTabCounts(accountId: string): AccountTabCounts | undefined {
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
   const { data } = useQuery({
     queryKey: [...keys.accounts.all, 'tabCounts', accountId],
     queryFn: async () => {
@@ -22,5 +28,5 @@ export function useAccountTabCounts(accountId: string): AccountTabCounts | undef
       return data ?? null;
     },
   });
-  return data ?? undefined;
+  return mounted ? (data ?? undefined) : undefined;
 }

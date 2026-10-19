@@ -35,7 +35,7 @@ const columns = [
   ch.display({
     id: 'category',
     header: 'Category',
-    meta: { size: 'lg', phone: 'status' },
+    meta: { size: 'md', phone: 'status' },
     cell: ({ row }) =>
       row.original.category ? (
         <Badge tone="neutral">{row.original.category}</Badge>
@@ -48,7 +48,7 @@ const columns = [
   ch.display({
     id: 'amount',
     header: 'Amount',
-    meta: { size: 'md', align: 'end', phone: 'amount' },
+    meta: { size: 'sm', align: 'end', phone: 'amount' },
     cell: ({ row }) => (
       <Text variant="body-strong" tone={row.original.credit ? 'positive' : 'ink'}>
         {row.original.amount}
@@ -58,7 +58,7 @@ const columns = [
   ch.display({
     id: 'balance',
     header: 'Balance',
-    meta: { size: 'md', align: 'end', phone: 'hidden' },
+    meta: { size: 'sm', align: 'end', phone: 'hidden' },
     cell: ({ row }) => (
       <Text variant="body" tone="ink-3">
         {row.original.balance ?? '—'}

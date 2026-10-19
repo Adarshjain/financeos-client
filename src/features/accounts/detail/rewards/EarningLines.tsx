@@ -68,7 +68,7 @@ const columns = ch.columns([
   ch.display({
     id: 'why',
     header: 'Why',
-    meta: { size: 'md', phone: 'status' },
+    meta: { size: 'sm', phone: 'status' },
     cell: ({ row }) => <StatusWords items={[row.original.why]} />,
   }),
 ]);

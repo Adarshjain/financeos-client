@@ -120,7 +120,7 @@ export interface RuleChip {
 
 export function ruleChips(rules: readonly RewardRule[] | null, report: RewardReport): RuleChip[] {
   if (rules && rules.length > 0) {
-    return [...rules].sort((a, b) => a.priority - b.priority).map((r) => ({ id: r.id, label: r.name }));
+    return [...rules].sort((a, b) => b.priority - a.priority).map((r) => ({ id: r.id, label: r.name }));
   }
   return report.rules.map((r) => ({ id: r.ruleId, label: r.name }));
 }
@@ -278,7 +278,7 @@ export function ruleDescription(rule: RewardRule): string {
   return parts.join(' · ');
 }
 
-/** One row per rule in priority order (first match wins), with what each earned this year. Falls back to the report's rules when the rule list failed. */
+/** One row per rule, highest priority first as the server evaluates them (first match wins), with what each earned this year. Falls back to the report's rules when the rule list failed. */
 export function ruleLines(rules: readonly RewardRule[] | null, report: RewardReport): RuleLine[] {
   const earnedFor = (id: string) => {
     const b = report.rules.find((r) => r.ruleId === id);
@@ -287,24 +287,10 @@ export function ruleLines(rules: readonly RewardRule[] | null, report: RewardRep
   };
   if (rules && rules.length > 0) {
     return [...rules]
-      .sort((a, b) => a.priority - b.priority)
+      .sort((a, b) => b.priority - a.priority)
       .map((r) => ({ id: r.id, title: `${r.priority} · ${r.name}`, description: ruleDescription(r), earned: earnedFor(r.id) }));
   }
   return report.rules.map((r) => ({ id: r.ruleId, title: r.name, description: '', earned: earnedFor(r.ruleId) }));
-}
-
-/** One milestone per id: the window containing `today`, else the latest window. Order of first appearance is kept. */
-export function currentMilestones(milestones: readonly MilestoneStatus[], today: string): MilestoneStatus[] {
-  const byId = new Map<string, MilestoneStatus>();
-  for (const m of milestones) {
-    const best = byId.get(m.milestoneId);
-    const inWindow = (x: MilestoneStatus) => x.windowStart <= today && today <= x.windowEnd;
-    if (!best) byId.set(m.milestoneId, m);
-    else if (inWindow(m) ? !inWindow(best) || m.windowStart > best.windowStart : !inWindow(best) && m.windowStart > best.windowStart) {
-      byId.set(m.milestoneId, m);
-    }
-  }
-  return [...byId.values()];
 }
 
 /** The last page index when `page` is past the end of `total` rows; null when `page` is fine. */
