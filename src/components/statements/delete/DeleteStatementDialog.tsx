@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { deletionImpactItems, deletionNote } from '@/features/accounts/statements/deletionImpact';
 import { type StatementDeletionPreview, useDeleteStatement } from '@/features/accounts/statements/useDeleteStatement';
 import { getErrorMessage } from '@/lib/api/errorMessage';
 import type { StatementSource } from '@/lib/statement.types';
@@ -102,39 +103,14 @@ function DeletionSummary({ preview, source }: { preview: StatementDeletionPrevie
   return (
     <div className="space-y-2.5">
       <ul className="list-disc pl-4 space-y-1.5">
-        <li>
-          {preview.transactionsToDelete > 0 ? (
-            <>
-              <strong>{count(preview.transactionsToDelete, 'transaction', 'transactions')}</strong> it created will be
-              deleted.
-            </>
-          ) : (
-            'It created no transactions that only this statement covers, so none will be deleted.'
-          )}
-        </li>
-        {preview.linkedToRecords > 0 && (
-          <li>
-            {count(preview.linkedToRecords, 'of them is', 'of them are')} linked to a loan, lending, dividend or
-            transfer. Those records stay but lose the link.
+        {deletionImpactItems(preview).map((item) => (
+          <li key={item.lead ?? item.text}>
+            {item.lead ? <strong>{item.lead}</strong> : null}
+            {item.text}
           </li>
-        )}
-        {preview.transactionsKept > 0 && (
-          <li>
-            {count(preview.transactionsKept, 'transaction', 'transactions')} it only matched (email alerts, manual
-            entries, or rows another statement also covers) will stay.
-          </li>
-        )}
-        {preview.alertsToReopen > 0 && (
-          <li>
-            {count(preview.alertsToReopen, 'email alert goes', 'email alerts go')} back to review as unreconciled.
-          </li>
-        )}
+        ))}
       </ul>
-      <p className="text-2xs text-slate-500 dark:text-slate-400">
-        {source === 'gmail'
-          ? "Gmail won't fetch this statement again on its own. Upload its PDF to import it again."
-          : 'You can upload the same file again afterwards.'}
-      </p>
+      <p className="text-2xs text-slate-500 dark:text-slate-400">{deletionNote(source)}</p>
     </div>
   );
 }
