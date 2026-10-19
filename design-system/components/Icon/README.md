@@ -7,10 +7,11 @@ The one way to draw an icon in the new system: a Phosphor icon in the bold weigh
 
 ## Props
 - `name: IconName`: the name from the icon registry.
-- `size?: 'sm' | 'md' | 'lg'`: token size (default `md`).
+- `size?: 'xs' | 'sm' | 'md' | 'lg'`: token size (default `md`).
 - `className?: string`: layout classes.
 
 ## Sizes
+- `xs` 10px (`icon-xs`): the + of Add links only.
 - `sm` 14px (`icon-sm`): chips, field carets, small buttons, inline with 12–13px text.
 - `md` 16px (`icon-md`): buttons, bars, rows, menu items.
 - `lg` 20px (`icon-lg`): phone tab bar, desktop rail, selection bar.
@@ -26,4 +27,4 @@ The one way to draw an icon in the new system: a Phosphor icon in the bold weigh
 `@phosphor-icons/react` (SSR entry); the registry in `design-system/icons.json`; sizes from the `icon-*` tokens.
 
 ## Variants
-- Sizes sm, md, lg; every registry icon.
+- Sizes xs, sm, md, lg; every registry icon.

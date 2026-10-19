@@ -3,7 +3,7 @@
 A labelled multi-line field for notes and descriptions.
 
 ## Use
-- Same label, helper and error as TextField. Uses CSS `field-sizing: content` so the height is automatically based on the content. Starts exactly as tall as a TextField (`control-lg`, one line) and grows a line at a time as the text wraps or new lines are added (or up to `maxRows` if specified, then scrolls).
+- Same label, helper and error as TextField. Uses CSS `field-sizing: content` so the height is automatically based on the content. Starts exactly as tall as a TextField (`control-md`, one line) and grows a line at a time as the text wraps or new lines are added (or up to `maxRows` if specified, then scrolls).
 - The user can also drag the bottom-right corner to make it taller (vertical resize only).
 - No character counter unless the server enforces a limit.
 

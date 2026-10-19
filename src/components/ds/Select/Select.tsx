@@ -729,8 +729,8 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(
         className={cn(
           'w-full flex items-center text-left transition-colors duration-fast rounded-ds-md border bg-surface font-text font-medium text-body text-ink',
           multiple && selectedOptions.length > 0
-            ? 'min-h-control-lg py-space-6 px-space-12 gap-space-6'
-            : 'h-control-lg px-space-12 gap-space-8',
+            ? 'min-h-control-md py-space-6 px-space-12 gap-space-6'
+            : 'h-control-md px-space-12 gap-space-8',
           hasError
             ? 'border-danger focus-visible:ring-danger'
             : isOpen

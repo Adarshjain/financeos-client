@@ -261,7 +261,7 @@ describe('DateField component', () => {
 describe('DateField control (UAT)', () => {
   it('is built from TextField: same control height and no brand border on focus', () => {
     const { container } = render(<DateField label="Date" today="2026-10-13" />);
-    const box = container.querySelector('.h-control-lg');
+    const box = container.querySelector('.h-control-md');
     expect(box).toBeInTheDocument();
     expect(container.querySelector('.h-control-xl')).toBeNull();
     expect(box?.className).not.toMatch(/focus-within:border-/);

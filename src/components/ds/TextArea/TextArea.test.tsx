@@ -5,12 +5,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { TextArea } from './TextArea';
 
 describe('TextArea component', () => {
-  it('renders label and textarea with default rows=1, min-h-control-lg, resize-y, and field-sizing: content', () => {
+  it('renders label and textarea with default rows=1, min-h-control-md, resize-y, and field-sizing: content', () => {
     render(<TextArea label="Note" defaultValue="Split with Priya" />);
     const textarea = screen.getByLabelText('Note');
     expect(textarea).toHaveValue('Split with Priya');
     expect(textarea).toHaveAttribute('rows', '1');
-    expect(textarea).toHaveClass('min-h-control-lg');
+    expect(textarea).toHaveClass('min-h-control-md');
     expect(textarea).toHaveClass('resize-y');
     expect(textarea).toHaveClass('[field-sizing:content]');
     expect(

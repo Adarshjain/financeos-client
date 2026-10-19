@@ -242,11 +242,13 @@ const config: Config = {
         'up-2': 'var(--ds-shadow-up-2)',
       },
       size: {
+        'icon-xs': 'var(--ds-icon-xs)',
         'icon-sm': 'var(--ds-icon-sm)',
         'icon-md': 'var(--ds-icon-md)',
         'icon-lg': 'var(--ds-icon-lg)',
       },
       height: {
+        'icon-xs': 'var(--ds-icon-xs)',
         'icon-sm': 'var(--ds-icon-sm)',
         'icon-md': 'var(--ds-icon-md)',
         'icon-lg': 'var(--ds-icon-lg)',
@@ -263,6 +265,7 @@ const config: Config = {
       },
       // Square controls (icon buttons, pager pills, steppers) need the size tokens as widths too.
       width: {
+        'icon-xs': 'var(--ds-icon-xs)',
         'icon-sm': 'var(--ds-icon-sm)',
         'icon-md': 'var(--ds-icon-md)',
         'icon-lg': 'var(--ds-icon-lg)',

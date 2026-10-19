@@ -40,6 +40,13 @@ describe('Icon component', () => {
     expect(svg).toHaveAttribute('fill', 'currentColor');
   });
 
+  it('renders with size="xs"', () => {
+    const { container } = render(<Icon name="add" size="xs" />);
+    const svg = container.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+    expect(svg).toHaveClass('w-icon-xs', 'h-icon-xs');
+  });
+
   it('renders with size="sm"', () => {
     const { container } = render(<Icon name="chevron-down" size="sm" />);
     const svg = container.querySelector('svg');

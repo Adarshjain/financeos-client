@@ -228,7 +228,7 @@ describe('TextField component', () => {
       const { container } = render(
         <TextField placeholder="In sheet" />,
       );
-      const wrapper = container.querySelector('.h-control-lg');
+      const wrapper = container.querySelector('.h-control-md');
       expect(wrapper).toBeInTheDocument();
     });
 
@@ -276,7 +276,7 @@ describe('TextField component', () => {
 describe('TextField focus (UAT)', () => {
   it('shows only the focus ring: the border colour does not change on focus', () => {
     const { container } = render(<TextField label="Name" />);
-    const box = container.querySelector('.h-control-lg')!;
+    const box = container.querySelector('.h-control-md')!;
     expect(box).toHaveClass('border-line-strong', 'focus-within:ring-2');
     expect(box.className).not.toMatch(/focus-within:border-/);
   });

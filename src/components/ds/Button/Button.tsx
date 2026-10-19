@@ -92,8 +92,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
               ? 'h-control-sm aspect-square p-0 rounded-ds-sm'
               : 'h-control-sm px-space-8 text-label rounded-ds-sm gap-space-4',
             md: iconOnly
-              ? 'h-control-lg aspect-square p-0 rounded-ds-md'
-              : 'h-control-lg px-space-12 text-label rounded-ds-md gap-space-6',
+              ? 'h-control-md aspect-square p-0 rounded-ds-md'
+              : 'h-control-md px-space-12 text-label rounded-ds-md gap-space-6',
             xl: iconOnly
               ? 'h-control-xl aspect-square p-0 rounded-ds-lg'
               : 'h-control-xl px-space-16 text-label rounded-ds-lg gap-space-8',
