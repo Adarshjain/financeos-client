@@ -1,11 +1,18 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type {
+  BankOverviewData,
+  BrokerOverviewData,
+  WalletOverviewData,
+} from '@/features/accounts/detail/overview/accountOverviewData';
 import type { CardOverviewData } from '@/features/accounts/detail/overview/cardOverviewData';
-import type { Account, CreditCard } from '@/lib/account.types';
+import type { Account, BankAccount, Broker, CreditCard, GenericAccount } from '@/lib/account.types';
 import type { CardBillResponse } from '@/lib/api/types';
+import type { StatementSummary } from '@/lib/statement.types';
+import type { Transaction } from '@/lib/transaction.types';
 import { AccountType } from '@/lib/types';
 import { resolveAsyncElements } from '@/test/resolveAsyncElements';
 
@@ -19,6 +26,7 @@ const notFound = vi.fn(() => {
 vi.mock('next/navigation', () => ({
   notFound: () => notFound(),
   usePathname: () => '/ds/accounts/c1',
+  useSearchParams: () => new URLSearchParams(),
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
 
@@ -31,6 +39,15 @@ const loadCard = vi.fn<() => Promise<CardOverviewData>>();
 vi.mock('@/features/accounts/detail/overview/cardOverviewData', () => ({
   RECENT_TRANSACTIONS: 8,
   loadCardOverviewData: () => loadCard(),
+}));
+
+const loadBank = vi.fn<() => Promise<BankOverviewData>>();
+const loadWallet = vi.fn<() => Promise<WalletOverviewData>>();
+const loadBroker = vi.fn<() => Promise<BrokerOverviewData>>();
+vi.mock('@/features/accounts/detail/overview/accountOverviewData', () => ({
+  loadBankOverviewData: () => loadBank(),
+  loadWalletOverviewData: () => loadWallet(),
+  loadBrokerOverviewData: () => loadBroker(),
 }));
 
 vi.mock('@/lib/api/client', () => ({
@@ -235,8 +252,9 @@ describe('/ds/accounts/[id] credit-card Overview', () => {
     loadCard.mockResolvedValue(overview());
     await renderOverview();
 
+    expect(screen.getByText('Statement and ledger disagree by ₹1,200.')).toBeInTheDocument();
     expect(
-      screen.getByText('Transactions and the latest statement disagree by ₹1,200.'),
+      screen.getByText('Usually a missing opening balance or a duplicated transfer.'),
     ).toBeInTheDocument();
   });
 
@@ -291,23 +309,216 @@ describe('/ds/accounts/[id] credit-card Overview', () => {
   });
 });
 
-describe('/ds/accounts/[id] Overview for other types', () => {
-  it('shows only the header block for a bank account, with Import in the menu', async () => {
-    loadAccount.mockResolvedValue({
-      id: 'b1',
-      type: AccountType.BANK_ACCOUNT,
-      name: 'HDFC Savings',
-      balance: 120000,
-      balanceAnchored: true,
-      anchorDate: '2026-10-05',
-    });
+const bank: BankAccount = {
+  id: 'b1',
+  type: AccountType.BANK_ACCOUNT,
+  name: 'HDFC Savings',
+  balance: 295030.5,
+  balanceAnchored: true,
+  anchorDate: '2026-09-30',
+  ingestFromDate: '2026-06-15',
+};
+
+const recentItems = [
+  { id: 't1', accountId: 'b1', date: '2026-10-12', amount: -3600, description: 'BigBasket', source: 'manual', createdAt: '', balance: 295030, categories: [{ id: 'g', name: 'Groceries' }] },
+  { id: 't2', accountId: 'b1', date: '2026-10-09', amount: 18500, description: 'NEFT CR Freelance', source: 'manual', createdAt: '', balance: 300379, links: [{ linkId: 'l1', type: 'TRANSFER' }] },
+] as unknown as Transaction[];
+
+function bankData(over: Partial<BankOverviewData> = {}): BankOverviewData {
+  return {
+    flow: {
+      moneyIn: 720000,
+      moneyOut: 541870,
+      averageDailyBalance: 262400,
+      interestLastQuarter: 1842,
+      topInCategories: ['Salary'],
+      topOutCategories: ['Rent'],
+    },
+    statements: [
+      { id: 's1', periodEnd: '2026-09-30', transactionCount: 12, closingBalance: 148320, createdAt: '2026-10-13T08:00:00Z' } as StatementSummary,
+    ],
+    gmail: { lastAlert: { description: 'BigBasket', amount: -3600, date: '2026-10-13' }, unmatchedCount: 1 },
+    identifiers: ['4521', 'XX4521'],
+    payments: {
+      emis: [{ loanId: 'l1', name: 'Home loan EMI', amount: 36603, nextDueDate: '2026-11-05' }],
+      cardBills: [{ accountId: 'c1', name: 'Regalia' }],
+    },
+    recent: { items: recentItems, total: 96 },
+    ...over,
+  };
+}
+
+describe('/ds/accounts/[id] bank Overview', () => {
+  beforeEach(() => {
+    loadAccount.mockReset();
+    loadBank.mockReset();
+    loadAccount.mockResolvedValue(bank);
+  });
+
+  it('shows the header, flow tiles, recent transactions and every side card', async () => {
+    loadBank.mockResolvedValue(bankData());
     await renderOverview('b1');
 
-    expect(screen.getByText('Balance')).toBeInTheDocument();
-    expect(screen.getByText('₹1,20,000')).toBeInTheDocument();
-    expect(screen.getByText('as of statement 5 Oct')).toBeInTheDocument();
+    expect(screen.getAllByText('Balance').length).toBeGreaterThan(0);
+    expect(screen.getByText('₹2,95,031')).toBeInTheDocument();
+    expect(screen.getByText('as of statement 30 Sep')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'More actions' })).toBeInTheDocument();
+    expect(screen.getByText('+₹7,20,000')).toBeInTheDocument();
+    expect(screen.getByText('₹5,41,870')).toBeInTheDocument();
+    expect(screen.getByText('interest ₹1,842 last quarter')).toBeInTheDocument();
+    expect(screen.getByText('Latest 2 of 96')).toBeInTheDocument();
+    expect(screen.getAllByText('BigBasket').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('12 Oct · bal ₹2,95,030').length).toBeGreaterThan(0);
+
+    expect(screen.getByText('Sep 2026')).toBeInTheDocument();
+    expect(screen.getByText('12 rows · closing ₹1,48,320 · uploaded 13 Oct')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Upload' })).toHaveAttribute('href', '/transactions/import?account=b1');
+    expect(screen.getByRole('link', { name: /Sep 2026/ })).toHaveAttribute(
+      'href',
+      '/ds/accounts/b1/statements?statement=s1',
+    );
+    expect(screen.getByText('Active')).toBeInTheDocument();
+    expect(screen.getByText('Since 15 Jun')).toBeInTheDocument();
+    expect(screen.getByText('BigBasket ₹3,600 · today')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'assign' })).toHaveAttribute('href', '/inbox');
+    expect(screen.getByText('XX4521')).toBeInTheDocument();
+    expect(screen.getByText('How Gmail alerts and statements find this account')).toBeInTheDocument();
+    expect(screen.getByText('₹36,603 on the 5th')).toBeInTheDocument();
+    expect(screen.getByText('Regalia')).toBeInTheDocument();
     expect(screen.queryByText('Limit & cycle')).toBeNull();
-    expect(within(document.body).queryByRole('button', { name: 'Mark paid' })).toBeNull();
+  });
+
+  it('shows the ledger banner, and Gap on the anchor statement', async () => {
+    loadAccount.mockResolvedValue({ ...bank, reconciliationGap: 298962 });
+    loadBank.mockResolvedValue(bankData());
+    await renderOverview('b1');
+
+    expect(screen.getByText('Statement and ledger disagree by ₹2,98,962.')).toBeInTheDocument();
+    expect(screen.getByText('Gap')).toBeInTheDocument();
+  });
+
+  it('hides each block whose request failed, and the page still renders', async () => {
+    loadBank.mockResolvedValue(
+      bankData({ flow: null, statements: null, gmail: null, identifiers: null, payments: null, recent: null }),
+    );
+    await renderOverview('b1');
+
+    expect(screen.getByText('₹2,95,031')).toBeInTheDocument();
+    expect(screen.queryByText('In · 90 days')).toBeNull();
+    expect(screen.queryByText('Statements')).toBeNull();
+    expect(screen.queryByText('Identifiers')).toBeNull();
+    expect(screen.queryByText('Linked')).toBeNull();
+    expect(screen.queryByText('Recent transactions')).toBeNull();
+    expect(screen.getByText('Last alert')).toBeInTheDocument();
+    expect(screen.getByText('Gmail alerts')).toBeInTheDocument();
+  });
+
+  it('hides Linked with nothing paying from it, says No statements yet, and Off without an ingest date', async () => {
+    loadAccount.mockResolvedValue({ ...bank, ingestFromDate: null });
+    loadBank.mockResolvedValue(
+      bankData({
+        statements: [],
+        payments: { emis: [], cardBills: [] },
+        gmail: { lastAlert: null, unmatchedCount: 0 },
+        flow: { moneyIn: 0, moneyOut: 0, averageDailyBalance: null, interestLastQuarter: 0, topInCategories: [], topOutCategories: [] },
+      }),
+    );
+    await renderOverview('b1');
+
+    expect(screen.queryByText('Linked')).toBeNull();
+    expect(screen.getByText('No statements yet')).toBeInTheDocument();
+    expect(screen.getByText('Off')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'assign' })).toBeNull();
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0);
+  });
+
+  it('hides Import and Upload for a closed bank account', async () => {
+    loadAccount.mockResolvedValue({ ...bank, closedOn: '2026-06-30' });
+    loadBank.mockResolvedValue(bankData());
+    await renderOverview('b1');
+
+    expect(screen.getByText('Closed 30 Jun 2026')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Upload' })).toBeNull();
+  });
+});
+
+describe('/ds/accounts/[id] wallet Overview', () => {
+  const wallet: GenericAccount = {
+    id: 'w1',
+    type: AccountType.GENERIC,
+    name: 'Paytm Wallet',
+    balance: 2844,
+    description: 'Paytm UPI wallet',
+  };
+
+  beforeEach(() => {
+    loadAccount.mockReset();
+    loadWallet.mockReset();
+    loadAccount.mockResolvedValue(wallet);
+  });
+
+  it('shows the balance with its last entry, recent entries and details', async () => {
+    loadWallet.mockResolvedValue({ recent: { items: recentItems, total: 18 } });
+    await renderOverview('w1');
+
+    expect(screen.getByText('₹2,844')).toBeInTheDocument();
+    expect(screen.getByText('Manual balance · last entry 12 Oct')).toBeInTheDocument();
+    expect(screen.getByText('Recent entries')).toBeInTheDocument();
+    expect(screen.getByText('Latest 2 of 18')).toBeInTheDocument();
+    expect(screen.getByText('Wallet / cash')).toBeInTheDocument();
+    expect(screen.getByText('Net worth · asset')).toBeInTheDocument();
+    expect(screen.getByText('Paytm UPI wallet')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
+  });
+
+  it('keeps the details and drops recent entries when that request failed', async () => {
+    loadAccount.mockResolvedValue({ ...wallet, description: '', excludeFromNetAsset: true });
+    loadWallet.mockResolvedValue({ recent: null });
+    await renderOverview('w1');
+
+    expect(screen.queryByText('Recent entries')).toBeNull();
+    expect(screen.getByText('Manual balance')).toBeInTheDocument();
+    expect(screen.getByText('Excluded from net worth')).toBeInTheDocument();
+    expect(screen.queryByText('Description')).toBeNull();
+  });
+});
+
+describe('/ds/accounts/[id] broker Overview', () => {
+  const broker: Broker = {
+    id: 'k1',
+    type: AccountType.BROKER,
+    name: 'Zerodha',
+    balance: 428439,
+    cashBalance: 12500,
+  };
+
+  beforeEach(() => {
+    loadAccount.mockReset();
+    loadBroker.mockReset();
+    loadAccount.mockResolvedValue(broker);
+  });
+
+  it('shows portfolio value with cash, the Cash card with Investments, and recent transactions', async () => {
+    loadBroker.mockResolvedValue({ recent: { items: recentItems, total: 30 } });
+    await renderOverview('k1');
+
+    expect(screen.getByText('Portfolio value')).toBeInTheDocument();
+    expect(screen.getByText('₹4,28,439')).toBeInTheDocument();
+    expect(screen.getByText('cash ₹12,500')).toBeInTheDocument();
+    expect(screen.getByText('Available')).toBeInTheDocument();
+    expect(screen.getByText('₹18,500 · 9 Oct · NEFT CR Freelance')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Investments/ })).toHaveAttribute('href', '/investments');
+    expect(screen.getByText('Latest 2 of 30')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
+  });
+
+  it('keeps the Cash card when recent transactions failed', async () => {
+    loadBroker.mockResolvedValue({ recent: null });
+    await renderOverview('k1');
+
+    expect(screen.getByText('Cash')).toBeInTheDocument();
+    expect(screen.queryByText('Last transfer in')).toBeNull();
+    expect(screen.queryByText('Recent transactions')).toBeNull();
   });
 });

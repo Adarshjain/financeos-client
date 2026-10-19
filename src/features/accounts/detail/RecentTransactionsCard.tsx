@@ -11,8 +11,8 @@ import {
   Text,
 } from '@/components/ds';
 
-import type { TransactionRowModel } from './cardOverviewModel';
-import { HeaderLink } from './HeaderLink';
+import type { TransactionRowModel } from './overview/cardOverviewModel';
+import { HeaderLink } from './overview/HeaderLink';
 
 const ch = createDataTableColumnHelper<TransactionRowModel>();
 const columns = [
@@ -71,15 +71,18 @@ export function RecentTransactionsCard({
   accountId,
   rows,
   total,
+  title = 'Recent transactions',
 }: {
   accountId: string;
   rows: TransactionRowModel[];
   /** All transactions of the account (from the search response). */
   total: number;
+  /** "Recent entries" for a wallet. */
+  title?: string;
 }) {
   return (
     <Card
-      title="Recent transactions"
+      title={title}
       subtitle={rows.length > 0 ? `Latest ${rows.length} of ${total}` : undefined}
       action={
         <HeaderLink href={`/transactions?account=${accountId}`} chevron>
@@ -91,7 +94,7 @@ export function RecentTransactionsCard({
         columns={columns}
         data={rows}
         getRowId={(row) => row.id}
-        phoneSub={(row) => row.date}
+        phoneSub={(row) => (row.balance ? `${row.date} · bal ₹${row.balance}` : row.date)}
         empty={<EmptyState compact description="No transactions yet" />}
       />
     </Card>

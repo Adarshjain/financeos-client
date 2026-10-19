@@ -3,6 +3,8 @@ import React from 'react';
 import { type CreditCard, isAccountClosed } from '@/lib/account.types';
 
 import { buildBillRows } from '../billsHistoryModel';
+import { IdentifiersCard } from '../IdentifiersCard';
+import { RecentTransactionsCard } from '../RecentTransactionsCard';
 import { AccountHeaderCard } from './AccountHeaderCard';
 import { loadCardOverviewData } from './cardOverviewData';
 import {
@@ -16,12 +18,10 @@ import {
   BillsCard,
   CardholdersCard,
   ConnectionsCard,
-  IdentifiersCard,
   LimitCycleCard,
   RewardsCard,
 } from './CardOverviewSections';
 import { buildHeaderModel } from './headerModel';
-import { RecentTransactionsCard } from './RecentTransactionsCard';
 
 /** The credit-card Overview (board D-account-card): header, limit and cycle, bills, rewards, cardholders, identifiers, recent transactions, connections. */
 export async function CardOverview({
@@ -67,7 +67,7 @@ export async function CardOverview({
             />
           ) : null}
           {data.identifiers ? (
-            <IdentifiersCard accountId={account.id} identifiers={data.identifiers} />
+            <IdentifiersCard accountId={account.id} identifiers={data.identifiers} noun="card" />
           ) : null}
         </div>
       </div>

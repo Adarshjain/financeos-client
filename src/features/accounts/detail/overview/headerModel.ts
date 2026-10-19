@@ -89,7 +89,9 @@ function cardHeader(
 export function buildHeaderModel(
   account: Account,
   bill: CardBillResponse | null | undefined,
-  today: string
+  today: string,
+  /** Newest entry date; wallets only. */
+  lastEntry?: string | null
 ): HeaderModel {
   const closed = isAccountClosed(account, today);
   const closedLabel =
@@ -106,10 +108,11 @@ export function buildHeaderModel(
   }
 
   const caption: string[] = [];
-  if (account.balanceAnchored && account.anchorDate) {
+  if (account.type !== AccountType.GENERIC && account.balanceAnchored && account.anchorDate) {
     caption.push(`as of statement ${formatDayMonth(account.anchorDate)}`);
   }
   if (account.type === AccountType.BROKER) {
+    if (account.cashBalance !== undefined) caption.push(`cash ${formatRupees(account.cashBalance)}`);
     return {
       label: 'Portfolio value',
       figure: formatRupees(account.balance ?? 0),
@@ -130,6 +133,8 @@ export function buildHeaderModel(
       showImport: !closed,
     };
   }
+  caption.push('Manual balance');
+  if (lastEntry) caption.push(`last entry ${formatDayMonth(lastEntry)}`);
   return {
     label: 'Balance',
     figure: formatRupees(account.balance ?? 0),
@@ -140,10 +145,19 @@ export function buildHeaderModel(
   };
 }
 
-/** "₹1,234" or "₹1,234.50": the reconciliation gap as the banner states it; null when there is none. */
-export function reconciliationBanner(gap: number | null | undefined): string | null {
+export interface DisagreementBanner {
+  /** Bold lead-in: "Statement and ledger disagree by ₹1,200." */
+  title: string;
+  body: string;
+}
+
+/** The ledger-disagree banner (info only); null when there is no gap. */
+export function reconciliationBanner(gap: number | null | undefined): DisagreementBanner | null {
   if (gap == null || !Number.isFinite(gap) || gap === 0) return null;
   const abs = Math.abs(gap);
   const text = Number.isInteger(abs) ? formatRupees(abs) : `₹${formatAmount(abs, 2)}`;
-  return `Transactions and the latest statement disagree by ${text}.`;
+  return {
+    title: `Statement and ledger disagree by ${text}.`,
+    body: 'Usually a missing opening balance or a duplicated transfer.',
+  };
 }
