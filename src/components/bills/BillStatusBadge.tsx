@@ -1,7 +1,6 @@
 import { Badge } from '@/components/ui/badge';
+import { billStatusLabel, billStatusTone } from '@/features/bills/bills.helpers';
 import type { BillStatus } from '@/lib/api/types';
-
-import { billStatusLabel, billStatusTone } from './bills.helpers';
 
 interface BillStatusBadgeProps {
   status: BillStatus;

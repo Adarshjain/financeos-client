@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { billDueText, billStatusLabel, billStatusTone, countActionable } from '@/features/bills/bills.helpers';
 import type { CardBillResponse } from '@/lib/api/types';
-
-import { billDueText, billStatusLabel, billStatusTone, countActionable } from '../bills.helpers';
 
 describe('bills.helpers AWAITING_STATEMENT', () => {
   it('labels, tones and phrases it', () => {

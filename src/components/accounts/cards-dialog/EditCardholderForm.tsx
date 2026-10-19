@@ -12,9 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { RELATIONSHIP_LABELS } from '@/features/accounts/cards/constants';
 import { Cardholder, CardholderRelationship } from '@/lib/account.types';
-
-import { RELATIONSHIP_LABELS } from './constants';
 
 interface EditCardholderFormProps {
   targetCardholder: Cardholder;

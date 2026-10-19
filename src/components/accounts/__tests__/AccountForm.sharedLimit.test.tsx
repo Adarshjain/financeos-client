@@ -19,7 +19,7 @@ const mutations = vi.hoisted(() => {
   };
 });
 
-vi.mock('@/components/accounts/account-form/useAccountFormMutations', () => ({
+vi.mock('@/features/accounts/form/useAccountFormMutations', () => ({
   useAccountFormMutations: () => mutations,
 }));
 vi.mock('@/components/ui/select', async () => (await import('@/test/mockSelect')).selectMock);

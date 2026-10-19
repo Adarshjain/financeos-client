@@ -3,14 +3,14 @@
 import { CreditCard } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
+import type { BillCardState } from '@/features/bills/billCardState';
+import { billCardLabel, billDueText } from '@/features/bills/bills.helpers';
+import type { BillRowActions } from '@/features/bills/useBillsWidgetActions';
 import type { CardBillResponse } from '@/lib/api/types';
 import { cn, formatDate, formatMoney } from '@/lib/utils';
 
 import { BillCardActions } from './BillCardActions';
-import type { BillCardState } from './billCardState';
-import { billCardLabel, billDueText } from './bills.helpers';
 import { BillStatusBadge } from './BillStatusBadge';
-import type { BillRowActions } from './useBillsWidgetActions';
 
 interface BillCardRowProps {
   state: BillCardState;
