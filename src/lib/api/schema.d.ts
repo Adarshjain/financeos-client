@@ -3306,6 +3306,8 @@ export interface components {
             last4?: string | null;
             /** Format: date */
             lastStatementDate?: string | null;
+            /** Format: date */
+            lastTransactionDate?: string | null;
             name: string;
             openingBalance?: number | null;
             reconciliationGap?: number | null;
@@ -3397,6 +3399,8 @@ export interface components {
             financialPosition?: "asset" | "liability" | null;
             /** Format: uuid */
             id: string;
+            /** Format: date */
+            lastTransactionDate?: string | null;
             name: string;
             provider?: string | null;
             reconciliationGap?: number | null;
@@ -4137,6 +4141,8 @@ export interface components {
             last4?: string | null;
             /** Format: date */
             lastStatementDate?: string | null;
+            /** Format: date */
+            lastTransactionDate?: string | null;
             limitPool?: components["schemas"]["CreditLimitPoolResponse"];
             name: string;
             productName?: string | null;
@@ -4525,6 +4531,8 @@ export interface components {
             financialPosition?: "asset" | "liability" | null;
             /** Format: uuid */
             id: string;
+            /** Format: date */
+            lastTransactionDate?: string | null;
             name: string;
             reconciliationGap?: number | null;
             /** Format: uuid */

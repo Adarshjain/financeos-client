@@ -120,11 +120,11 @@ describe('buildHeaderModel for other types', () => {
 
   it('says the balance is current to the newest later transaction, else to the statement', () => {
     const anchored = { ...bank, balanceAnchored: true, anchorDate: '2026-10-05' };
-    expect(buildHeaderModel(anchored, null, TODAY, '2026-10-12').caption).toEqual(['as of 12 Oct']);
-    expect(buildHeaderModel(anchored, null, TODAY, '2026-10-03').caption).toEqual(['as of statement 5 Oct']);
-    expect(buildHeaderModel(anchored, null, TODAY, null).caption).toEqual(['as of statement 5 Oct']);
+    expect(buildHeaderModel({ ...anchored, lastTransactionDate: '2026-10-12' }, null, TODAY).caption).toEqual(['as of 12 Oct']);
+    expect(buildHeaderModel({ ...anchored, lastTransactionDate: '2026-10-03' }, null, TODAY).caption).toEqual(['as of statement 5 Oct']);
+    expect(buildHeaderModel({ ...anchored, lastTransactionDate: null }, null, TODAY).caption).toEqual(['as of statement 5 Oct']);
     // A transaction dated after today is not in the balance yet.
-    expect(buildHeaderModel(anchored, null, TODAY, '2026-10-20').caption).toEqual(['as of statement 5 Oct']);
+    expect(buildHeaderModel({ ...anchored, lastTransactionDate: '2026-10-20' }, null, TODAY).caption).toEqual(['as of statement 5 Oct']);
   });
 
   it('falls back to the opening balance and leaves the caption out when not anchored', () => {

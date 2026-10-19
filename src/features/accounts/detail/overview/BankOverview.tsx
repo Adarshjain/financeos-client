@@ -11,7 +11,6 @@ import {
   buildGmailCard,
   buildLatestStatement,
   buildLinked,
-  lastEntryDate,
 } from './accountOverviewModel';
 import {
   FlowKpis,
@@ -33,7 +32,7 @@ export async function BankOverview({ account, today }: { account: BankAccount; t
       <AccountHeaderCard
         accountId={account.id}
         accountName={account.name}
-        model={buildHeaderModel(account, null, today, lastEntryDate(data.recent?.items))}
+        model={buildHeaderModel(account, null, today)}
       />
       <div className="grid grid-cols-1 desk:grid-cols-12 items-start gap-space-12 desk:gap-space-16">
         <div className="desk:col-span-7 flex flex-col gap-space-12 desk:gap-space-16 min-w-0">
