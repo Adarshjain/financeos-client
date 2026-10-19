@@ -53,6 +53,7 @@ export interface AccountFormValues {
   type: AccountType | null;
   name: string;
   description: string;
+  bank: string;
   provider: string;
   clientId: string;
   cashBalance: string;
@@ -76,6 +77,7 @@ const FIELDS_BY_TYPE: Record<AccountType, readonly FieldKey[]> = {
   [AccountType.BANK_ACCOUNT]: [
     'name',
     'description',
+    'bank',
     'openingBalance',
     'last4',
     'statementPassword',
@@ -87,6 +89,7 @@ const FIELDS_BY_TYPE: Record<AccountType, readonly FieldKey[]> = {
   [AccountType.CREDIT_CARD]: [
     'name',
     'description',
+    'bank',
     'last4',
     'anniversaryDate',
     'statementPassword',
@@ -125,6 +128,7 @@ export function emptyValues(type: AccountType | null): AccountFormValues {
     type,
     name: '',
     description: '',
+    bank: '',
     provider: '',
     clientId: '',
     cashBalance: '',
@@ -158,6 +162,7 @@ export function valuesFromAccount(account: Account): AccountFormValues {
     case AccountType.BANK_ACCOUNT:
       return {
         ...base,
+        bank: account.bank ?? '',
         openingBalance: str(account.openingBalance),
         last4: account.last4 ?? '',
         ingestFromDate: account.ingestFromDate?.split('T')[0] ?? '',
@@ -165,6 +170,7 @@ export function valuesFromAccount(account: Account): AccountFormValues {
     case AccountType.CREDIT_CARD:
       return {
         ...base,
+        bank: account.bank ?? '',
         last4: account.last4 ?? '',
         anniversaryDate: account.anniversaryDate ?? '',
         creditLimit: str(account.creditLimit),
@@ -242,6 +248,8 @@ export function validateAccountForm(values: AccountFormValues): FormErrors {
   checkOptionalAmount('openingBalance');
   checkOptionalAmount('cashBalance');
 
+  if (fields.has('bank') && !values.bank) errors.bank = 'Select a bank.';
+
   if (type === AccountType.BANK_ACCOUNT) {
     const last4 = values.last4.trim();
     if (last4 && !FOUR_DIGITS.test(last4)) errors.last4 = 'Enter the last 4 digits.';
@@ -288,6 +296,7 @@ export function buildAccountRequest(values: AccountFormValues): AccountRequest {
       return {
         ...common,
         type,
+        bank: values.bank,
         ingestFromDate,
         last4: values.last4.trim(),
         openingBalance: parseAmount(values.openingBalance),
@@ -298,6 +307,7 @@ export function buildAccountRequest(values: AccountFormValues): AccountRequest {
       return {
         ...common,
         type,
+        bank: values.bank,
         ingestFromDate,
         last4: values.last4.trim(),
         creditLimit: parseAmount(values.creditLimit) ?? null,

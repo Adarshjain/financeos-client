@@ -9,6 +9,8 @@ export interface AccountRequestBase {
 
 export type BankAccountRequest = AccountRequestBase & {
   type: AccountType.BANK_ACCOUNT;
+  /** Bank id from the server's list; required by the Dinero form. */
+  bank?: string | null;
   openingBalance?: number;
   last4?: string;
   ingestFromDate?: string | null;
@@ -53,6 +55,7 @@ export interface CreditLimitPool {
 
 export type CreditCardRequest = AccountRequestBase & {
   type: AccountType.CREDIT_CARD;
+  bank?: string | null;
   last4: string;
   /** Required unless `limitPool` is set; for a pooled account an optional cap inside the pool. */
   creditLimit?: number | null;
@@ -118,6 +121,7 @@ export function isAccountClosing(account: AccountBase, asOf?: string): boolean {
 
 export type BankAccount = AccountBase & {
   type: AccountType.BANK_ACCOUNT;
+  bank?: string | null;
   openingBalance?: string;
   last4?: string;
   ingestFromDate?: string | null;
@@ -222,6 +226,7 @@ export type ReplaceCardInstanceRequest = ReplaceCardRequest;
 
 export type CreditCard = AccountBase & {
   type: AccountType.CREDIT_CARD;
+  bank?: string | null;
   ingestFromDate?: string | null;
   last4: string;
   /** The account's own limit; null for a pooled account that can use the whole pool. */

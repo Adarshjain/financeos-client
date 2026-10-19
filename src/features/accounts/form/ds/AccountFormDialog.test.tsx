@@ -82,6 +82,7 @@ const card: CreditCard = {
   id: 'c1',
   type: AccountType.CREDIT_CARD,
   name: 'HDFC Regalia',
+  bank: 'hdfc',
   last4: '7741',
   creditLimit: 300000,
   anniversaryDate: '2024-03-15',
@@ -153,6 +154,8 @@ describe('Add account', () => {
     });
     renderDialog({ initialType: AccountType.CREDIT_CARD });
     fill('Account name', 'HDFC Regalia Gold');
+    await user.click(screen.getByRole('combobox', { name: /^Bank/ }));
+    await user.click(screen.getByRole('option', { name: /HDFC Bank/ }));
     fill('Last 4 digits', '7741');
     fill('Card anniversary', '15032024');
     fill('Credit limit', '3,00,000');
@@ -168,6 +171,7 @@ describe('Add account', () => {
     expect(arg.body).toMatchObject({
       type: AccountType.CREDIT_CARD,
       name: 'HDFC Regalia Gold',
+      bank: 'hdfc',
       last4: '7741',
       anniversaryDate: '2024-03-15',
       creditLimit: 300000,
@@ -270,6 +274,48 @@ describe('Add account type switch', () => {
     await waitFor(() => expect(mutations.createAccountMutation.mutateAsync).toHaveBeenCalled());
     expect(mutations.createAccountMutation.mutateAsync.mock.calls[0][0].identifiers).toEqual([]);
   }, 20000);
+});
+
+describe('Bank field', () => {
+  const bankBox = () => screen.getByRole('combobox', { name: /^Bank/ });
+
+  it('shows for a bank account and a card only, and keeps the pick when switching back', async () => {
+    renderDialog({ initialType: AccountType.BANK_ACCOUNT });
+    await user.click(bankBox());
+    await user.type(screen.getByPlaceholderText('Search banks…'), 'sbi');
+    await user.click(screen.getByRole('option', { name: /State Bank of India/ }));
+    expect(bankBox()).toHaveTextContent('State Bank of India');
+    await user.click(screen.getByRole('radio', { name: 'Wallet / cash' }));
+    expect(screen.queryByRole('combobox', { name: /^Bank/ })).toBeNull();
+    await user.click(screen.getByRole('radio', { name: 'Broker' }));
+    expect(screen.queryByRole('combobox', { name: /^Bank/ })).toBeNull();
+    await user.click(screen.getByRole('radio', { name: 'Credit card' }));
+    expect(bankBox()).toHaveTextContent('State Bank of India');
+  });
+
+  it('is required on Add', async () => {
+    renderDialog({ initialType: AccountType.BANK_ACCOUNT });
+    fill('Account name', 'HDFC Savings');
+    submit('Create account');
+    expect(await screen.findByText('Select a bank.')).toBeInTheDocument();
+    expect(mutations.createAccountMutation.mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it('is prefilled on Edit, and an old account without one must pick before saving', async () => {
+    const { unmount } = renderDialog({ account: card });
+    expect(bankBox()).toHaveTextContent('HDFC Bank');
+    unmount();
+    renderDialog({ account: { ...card, bank: null } });
+    submit('Save changes');
+    expect(await screen.findByText('Select a bank.')).toBeInTheDocument();
+    expect(mutations.updateAccountMutation.mutateAsync).not.toHaveBeenCalled();
+    await user.click(bankBox());
+    await user.click(screen.getByRole('option', { name: /Axis Bank/ }));
+    mutations.updateAccountMutation.mutateAsync.mockResolvedValue(card);
+    submit('Save changes');
+    await waitFor(() => expect(mutations.updateAccountMutation.mutateAsync).toHaveBeenCalled());
+    expect(mutations.updateAccountMutation.mutateAsync.mock.calls[0][0].body).toMatchObject({ bank: 'axis' });
+  });
 });
 
 describe('Edit account', () => {

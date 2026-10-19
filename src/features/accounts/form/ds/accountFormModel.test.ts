@@ -38,6 +38,7 @@ function card(over: Partial<ReturnType<typeof emptyValues>> = {}) {
   return {
     ...emptyValues(AccountType.CREDIT_CARD),
     name: 'HDFC Regalia',
+    bank: 'hdfc',
     last4: '7741',
     anniversaryDate: '2024-03-15',
     creditLimit: '300000',
@@ -105,7 +106,7 @@ describe('validateAccountForm', () => {
   });
 
   it('checks bank last 4 only when typed', () => {
-    const base = { ...emptyValues(AccountType.BANK_ACCOUNT), name: 'HDFC' };
+    const base = { ...emptyValues(AccountType.BANK_ACCOUNT), name: 'HDFC', bank: 'hdfc' };
     expect(validateAccountForm(base)).toEqual({});
     expect(validateAccountForm({ ...base, last4: '77' }).last4).toBe('Enter the last 4 digits.');
     expect(validateAccountForm({ ...base, last4: '4521' })).toEqual({});
@@ -117,7 +118,7 @@ describe('validateAccountForm', () => {
   });
 
   it('requires card last 4, anniversary and a credit limit', () => {
-    const errors = validateAccountForm({ ...emptyValues(AccountType.CREDIT_CARD), name: 'X' });
+    const errors = validateAccountForm({ ...emptyValues(AccountType.CREDIT_CARD), name: 'X', bank: 'hdfc' });
     expect(errors.last4).toBe('Enter the last 4 digits of the card.');
     expect(errors.anniversaryDate).toBe('Enter the card anniversary.');
     expect(errors.creditLimit).toBe('Enter a credit limit.');
@@ -138,6 +139,15 @@ describe('validateAccountForm', () => {
     expect(
       validateAccountForm(card({ limitPoolChoice: LIMIT_POOL_NEW, limitPoolName: 'A', limitPoolLimit: '100' }))
     ).toEqual({});
+  });
+
+  it('requires a bank for a bank account and a card, and for nothing else', () => {
+    const bank = { ...emptyValues(AccountType.BANK_ACCOUNT), name: 'HDFC' };
+    expect(validateAccountForm(bank).bank).toBe('Select a bank.');
+    expect(validateAccountForm({ ...bank, bank: 'hdfc' }).bank).toBeUndefined();
+    expect(validateAccountForm(card({ bank: '' })).bank).toBe('Select a bank.');
+    expect(validateAccountForm({ ...emptyValues(AccountType.GENERIC), name: 'P' })).toEqual({});
+    expect(validateAccountForm({ ...emptyValues(AccountType.BROKER), name: 'Z', provider: 'Zerodha' })).toEqual({});
   });
 
   it('requires a broker provider', () => {
@@ -162,6 +172,7 @@ describe('buildAccountRequest', () => {
     const body = buildAccountRequest({
       ...emptyValues(AccountType.BANK_ACCOUNT),
       name: ' HDFC Savings ',
+      bank: 'hdfc',
       openingBalance: '1,20,000',
       last4: '4521',
       ingestFromDate: '2026-04-01',
@@ -173,6 +184,7 @@ describe('buildAccountRequest', () => {
       financialPosition: 'asset',
       description: '',
       type: AccountType.BANK_ACCOUNT,
+      bank: 'hdfc',
       ingestFromDate: '2026-04-01',
       last4: '4521',
       openingBalance: 120000,
@@ -181,6 +193,16 @@ describe('buildAccountRequest', () => {
     const bare = buildAccountRequest({ ...emptyValues(AccountType.BANK_ACCOUNT), name: 'A' });
     expect(bare).toMatchObject({ ingestFromDate: null, openingBalance: undefined });
     expect(bare).not.toHaveProperty('statementPassword');
+  });
+
+  it('sends the bank for bank accounts and cards, and drops it for other types', () => {
+    expect(buildAccountRequest(card({ bank: 'icici' }))).toMatchObject({ bank: 'icici' });
+    expect(buildAccountRequest({ ...emptyValues(AccountType.BANK_ACCOUNT), name: 'A', bank: 'sbi' })).toMatchObject({ bank: 'sbi' });
+    // Picked, then switched to a wallet or broker: the choice stays in the form but not in the request.
+    const wallet = buildAccountRequest({ ...emptyValues(AccountType.GENERIC), name: 'P', bank: 'sbi' });
+    expect(wallet).not.toHaveProperty('bank');
+    const broker = buildAccountRequest({ ...emptyValues(AccountType.BROKER), name: 'Z', provider: 'Z', bank: 'sbi' });
+    expect(broker).not.toHaveProperty('bank');
   });
 
   it('builds a card with its own limit and no pool', () => {
@@ -267,6 +289,21 @@ describe('valuesFromAccount', () => {
       limitPoolName: 'HDFC cards',
       limitPoolLimit: '500000',
     });
+  });
+
+  it('prefills the stored bank, and leaves it empty for an old account without one', () => {
+    expect(valuesFromAccount({ id: 'b', type: AccountType.BANK_ACCOUNT, name: 'B', bank: 'hdfc' }).bank).toBe('hdfc');
+    expect(valuesFromAccount({ id: 'c', type: AccountType.CREDIT_CARD, name: 'C', last4: '1', creditLimit: 1, bank: 'axis' }).bank).toBe('axis');
+    expect(valuesFromAccount({ id: 'b', type: AccountType.BANK_ACCOUNT, name: 'B', bank: null }).bank).toBe('');
+    expect(valuesFromAccount({ id: 'b', type: AccountType.BANK_ACCOUNT, name: 'B' }).bank).toBe('');
+  });
+
+  it('keeps the stored financial position on edit and defaults by type on add', () => {
+    expect(valuesFromAccount({ id: 'b', type: AccountType.BANK_ACCOUNT, name: 'B', financialPosition: 'liability' }).financialPosition).toBe('liability');
+    expect(defaultFinancialPosition(AccountType.CREDIT_CARD)).toBe('liability');
+    for (const t of [AccountType.BANK_ACCOUNT, AccountType.BROKER, AccountType.GENERIC]) {
+      expect(defaultFinancialPosition(t)).toBe('asset');
+    }
   });
 
   it('prefills a broker and a bank', () => {
