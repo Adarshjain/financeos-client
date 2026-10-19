@@ -104,17 +104,17 @@ export function streamedCardRow(
   return {
     ...base,
     billSlot: (
-      <Suspense fallback={<Skeleton width={72} height={20} />}>
+      <Suspense key="bill" fallback={<Skeleton width={72} height={20} />}>
         <NextBill bills={bills} id={id} today={today} />
       </Suspense>
     ),
     rewardsSlot: (
-      <Suspense fallback={<Skeleton width={56} height={14} />}>
+      <Suspense key="rewards" fallback={<Skeleton width={56} height={14} />}>
         <Rewards rewards={rewards} id={id} />
       </Suspense>
     ),
     phoneRewardsSlot: (
-      <Suspense fallback={null}>
+      <Suspense key="phoneRewards" fallback={null}>
         <PhoneRewards
           rewards={rewards}
           id={id}
