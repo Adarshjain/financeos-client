@@ -10,7 +10,6 @@ import {
   cardsSubtitle,
   cashKpi,
   closedLineFor,
-  formatRupees,
   groupAccounts,
   walletRow,
 } from '@/features/accounts/list/accountsList';
@@ -32,7 +31,6 @@ import {
   streamedCardRow,
 } from '@/features/accounts/list/AccountsStreamed';
 import { ShellPage } from '@/features/shell/ShellPage';
-import { sumBalances } from '@/lib/accountTotals';
 import { todayInAppZone } from '@/lib/date-range';
 
 export default async function DsAccountsPage() {
@@ -92,7 +90,6 @@ export default async function DsAccountsPage() {
 
         <div className="grid grid-cols-1 desk:grid-cols-2 items-start gap-space-12 desk:gap-space-16">
           <BrokersSection
-            title={`Brokers · ${formatRupees(sumBalances(sections.brokers.open))}`}
             rows={sections.brokers.open.map((a) => brokerRow(a, today))}
             closedRows={sections.brokers.closed.map((a) => brokerRow(a, today))}
             closedLine={closedLineFor(sections.brokers.closed)}

@@ -135,24 +135,6 @@ function ClosedToggleButton({
   );
 }
 
-/** The closed line and its toggle, the same in both states so the toggle never moves. */
-function ClosedBandContent({
-  line,
-  showing,
-  onToggle,
-}: {
-  line: string | null;
-  showing: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-space-12 w-full">
-      <span>{line}</span>
-      <ClosedToggleButton showing={showing} onToggle={onToggle} />
-    </div>
-  );
-}
-
 /** Closed rows read muted but stay clickable, so their details still open. */
 const mutedWhenClosed = (row: { closed: boolean }) => (row.closed ? { muted: true } : undefined);
 
@@ -165,9 +147,8 @@ function closedBand<Row extends { closed: boolean }>(
     row.closed
       ? {
           key: 'closed',
-          label: (
-            <ClosedBandContent line={line} showing onToggle={onToggle} />
-          ),
+          label: line,
+          action: <ClosedToggleButton showing onToggle={onToggle} />,
         }
       : null;
 }
@@ -183,8 +164,11 @@ function ClosedFooter({
 }) {
   if (!line || showing) return null;
   return (
-    <SectionHeader variant="band">
-      <ClosedBandContent line={line} showing={false} onToggle={onToggle} />
+    <SectionHeader
+      variant="band"
+      action={<ClosedToggleButton showing={false} onToggle={onToggle} />}
+    >
+      {line}
     </SectionHeader>
   );
 }
@@ -201,25 +185,6 @@ function AddLink({
       <Button variant="link" size="sm" onClick={() => openDialogParam('add', addType)}>
         <Icon name="add" size="xs" />
         {children}
-      </Button>
-    </Text>
-  );
-}
-
-function NavLink({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Text variant="label" as="span" className="hidden desk:inline">
-      <Button asChild variant="link" size="sm">
-        <Link href={href}>
-          {children}
-          <Icon name="chevron-right" size="sm" />
-        </Link>
       </Button>
     </Text>
   );
@@ -389,13 +354,13 @@ const cardColumns = [
   cardCh.display({
     id: 'nextBill',
     header: 'Next bill',
-    meta: { size: 'md', align: 'start', phone: 'status', wrap: true },
+    meta: { size: 'sm', align: 'start', phone: 'status', wrap: true },
     cell: ({ row }) => <CardBadges row={row.original} />,
   }),
   cardCh.display({
     id: 'outstanding',
     header: 'Outstanding',
-    meta: { size: 'md', align: 'end', phone: 'amount' },
+    meta: { size: 'sm', align: 'end', phone: 'amount' },
     cell: ({ row }) => (
       <Text variant="body-strong">{row.original.outstanding}</Text>
     ),
@@ -430,7 +395,7 @@ const cardColumns = [
   cardCh.display({
     id: 'rewards',
     header: 'Rewards',
-    meta: { size: 'md', phone: 'hidden' },
+    meta: { size: 'sm', phone: 'hidden' },
     cell: ({ row }) => row.original.rewardsSlot,
   }),
   cardCh.display({
@@ -534,22 +499,17 @@ const brokerColumns = [
   }),
 ];
 
-export function BrokersSection(
-  props: SectionProps<BrokerRow> & { title: string }
-) {
+export function BrokersSection(props: SectionProps<BrokerRow>) {
   const router = useRouter();
   const closed = useClosedToggle();
   return (
     <Card
-      title={props.title}
+      title="Brokers"
       subtitle="Holdings value + cash"
       action={
-        <div className="flex items-center gap-space-12">
-          <AddLink addType="broker">
-            Add broker
-          </AddLink>
-          <NavLink href="/investments">Investments</NavLink>
-        </div>
+        <AddLink addType="broker">
+          Add broker
+        </AddLink>
       }
     >
       <DataTable

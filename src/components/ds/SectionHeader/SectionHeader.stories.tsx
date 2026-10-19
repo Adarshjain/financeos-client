@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
-import { SectionHeader } from '@/components/ds';
+import { Button, SectionHeader } from '@/components/ds';
 
 const meta: Meta<typeof SectionHeader> = {
   title: 'DS/Data display/SectionHeader',
@@ -92,5 +92,18 @@ export const WithMeta: Story = {
     variant: 'band',
     children: 'September 2026',
     meta: '61 transactions · out ₹1,05,219',
+  },
+};
+
+export const WithAction: Story = {
+  name: 'With action',
+  args: {
+    variant: 'band',
+    children: '2 closed accounts',
+    action: (
+      <Button variant="link" size="sm">
+        Show
+      </Button>
+    ),
   },
 };

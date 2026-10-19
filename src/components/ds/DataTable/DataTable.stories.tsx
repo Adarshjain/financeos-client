@@ -341,6 +341,25 @@ export const BandsAndDayHeaders: StoryObj<
   render: interactiveRender(),
 };
 
+export const BandWithAction: StoryObj<DataTableProps<TransactionWithBands>> = {
+  name: 'Band with action',
+  args: {
+    columns: bandsColumns,
+    data: bandsData,
+    getRowId: (r) => r.id,
+    band: (r) => ({
+      key: r.month,
+      label: r.month,
+      action: (
+        <Button variant="link" size="sm">
+          Show
+        </Button>
+      ),
+    }),
+  },
+  render: interactiveRender(),
+};
+
 interface MultiLineRecord {
   id: string;
   customer: string;

@@ -613,6 +613,18 @@ describe('DataTable', () => {
       expect(screen.getAllByText('Month: Nov')).toHaveLength(1);
     });
 
+    it('a band renders its action', () => {
+      render(
+        <DataTable
+          columns={testColumns}
+          data={[{ id: '1', name: 'A', amount: 10, month: 'Oct' }]}
+          getRowId={(r) => r.id}
+          band={() => ({ key: 'k', label: 'Closed', action: <button>Show</button> })}
+        />,
+      );
+      expect(screen.getByRole('button', { name: 'Show' })).toBeInTheDocument();
+    });
+
     it('a day header appears, wrapped in desk:hidden', () => {
       const dataWithDays: TestRow[] = [
         { id: '1', name: 'A', amount: 10, date: '10 Oct' },
