@@ -2,8 +2,8 @@
 
 import React from 'react';
 
-import { Avatar, DateField, Select, type SelectOption, Text, TextField } from '@/components/ds';
-import { SettingsToggle } from '@/components/organisms';
+import { DateField, Select, type SelectOption, Text, TextField } from '@/components/ds';
+import { BankLogo, SettingsToggle } from '@/components/organisms';
 import { formatRupees } from '@/features/accounts/list/accountsList';
 import { BANKS } from '@/features/banks/banks';
 import type { CreditLimitPool } from '@/lib/account.types';
@@ -41,7 +41,7 @@ const BANK_OPTIONS: SelectOption[] = BANKS.map((b) => ({
   value: b.id,
   label: b.name,
   searchText: b.aliases.join(' '),
-  icon: <Avatar variant="square" size="sm" src={b.logo} alt="" initials={b.name.slice(0, 1)} />,
+  icon: <BankLogo bankId={b.id} />,
 }));
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -113,8 +113,6 @@ export function AccountFormFields({
   const isBroker = type === AccountType.BROKER;
   const syncs = isBank || isCard;
   const pooled = values.limitPoolChoice !== LIMIT_POOL_NONE;
-  // A pooled card shows its own limit only when it already has one.
-  const showOwnLimit = !pooled || values.creditLimit.trim() !== '';
   const noun = isCard ? 'card' : 'account';
 
   const poolOptions: SelectOption[] = [
@@ -288,12 +286,10 @@ export function AccountFormFields({
               ) : null}
             </div>
           ) : null}
-          {showOwnLimit ? (
+          {!pooled ? (
             <AmountField
-              label={pooled ? 'Own limit' : 'Credit limit'}
-              optional={pooled}
+              label="Credit limit"
               placeholder="50,000"
-              helper={pooled ? 'Leave empty to let this card use the whole shared limit.' : undefined}
               value={values.creditLimit}
               error={errors.creditLimit}
               onValueChange={(v) => onChange({ creditLimit: v })}
@@ -314,19 +310,17 @@ export function AccountFormFields({
           {syncs ? (
             <DateField
               label="Import emails from"
+              helper={
+                isEdit
+                  ? `Leave the date empty to pause Gmail import for this ${noun}.`
+                  : `Leave empty to pause Gmail import for this ${noun}.`
+              }
               today={today}
               value={values.ingestFromDate}
               onValueChange={(v) => onChange({ ingestFromDate: v as string })}
             />
           ) : null}
         </Pair>
-        {syncs ? (
-          <Text variant="caption" tone="ink-3" as="p">
-            {isEdit
-              ? `Leave the date empty to pause Gmail import for this ${noun}.`
-              : `Leave empty to pause Gmail import for this ${noun}.`}
-          </Text>
-        ) : null}
         {syncs ? (
           <Select
             label="Account identifiers"

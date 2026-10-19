@@ -259,9 +259,11 @@ export function validateAccountForm(values: AccountFormValues): FormErrors {
     if (!FOUR_DIGITS.test(values.last4.trim())) errors.last4 = 'Enter the last 4 digits of the card.';
     if (!values.anniversaryDate) errors.anniversaryDate = 'Enter the card anniversary.';
     const pooled = values.limitPoolChoice !== LIMIT_POOL_NONE;
-    const own = parseAmount(values.creditLimit);
-    if (Number.isNaN(own)) errors.creditLimit = INVALID_AMOUNT;
-    else if (!pooled && own === undefined) errors.creditLimit = 'Enter a credit limit.';
+    if (!pooled) {
+      const own = parseAmount(values.creditLimit);
+      if (Number.isNaN(own)) errors.creditLimit = INVALID_AMOUNT;
+      else if (own === undefined) errors.creditLimit = 'Enter a credit limit.';
+    }
     if (pooled) {
       const name = values.limitPoolName.trim();
       if (!name) errors.limitPoolName = 'Name is required';
@@ -310,7 +312,7 @@ export function buildAccountRequest(values: AccountFormValues): AccountRequest {
         bank: values.bank,
         ingestFromDate,
         last4: values.last4.trim(),
-        creditLimit: parseAmount(values.creditLimit) ?? null,
+        creditLimit: pooled ? null : (parseAmount(values.creditLimit) ?? null),
         limitPool: pooled
           ? {
               id: values.limitPoolChoice === LIMIT_POOL_NEW ? null : values.limitPoolChoice,

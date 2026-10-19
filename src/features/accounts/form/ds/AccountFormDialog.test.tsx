@@ -239,9 +239,20 @@ describe('Add account', () => {
     expect(screen.queryByText('Own limit')).toBeNull();
   });
 
-  it('keeps the own limit visible when editing a pooled card that already has one', () => {
-    renderDialog({ account: card });
-    expect(screen.getByText('Own limit')).toBeInTheDocument();
+  it('never shows an own limit when editing a pooled card, even one that has a value', () => {
+    renderDialog({ account: { ...card, creditLimit: 300000 } });
+    expect(screen.queryByText('Own limit')).toBeNull();
+    expect(screen.queryByText('Credit limit')).toBeNull();
+  });
+
+  it('puts the import-date helper under its own field on a new bank account', () => {
+    renderDialog({ initialType: AccountType.BANK_ACCOUNT });
+    const input = screen.getByLabelText('Import emails from');
+    const helperId = input.getAttribute('aria-describedby');
+    expect(helperId).toBeTruthy();
+    expect(document.getElementById(helperId!)?.textContent).toBe(
+      'Leave empty to pause Gmail import for this account.'
+    );
   });
 
   it('titles the identifiers field Account identifiers with the last-4 helper', () => {
