@@ -1,7 +1,6 @@
 import React, { Suspense } from 'react';
 
 import { KpiTile } from '@/components/ds';
-import { AddAccountHost } from '@/features/accounts/form/ds/AccountFormHosts';
 import {
   bankRow,
   brokerRow,
@@ -20,6 +19,7 @@ import {
   CardsSection,
   WalletsSection,
 } from '@/features/accounts/list/AccountsSections';
+import { AccountsShellPage } from '@/features/accounts/list/AccountsShellPage';
 import {
   AccountsEmpty,
   AccountsLoadError,
@@ -30,7 +30,6 @@ import {
   NetWorthTile,
   streamedCardRow,
 } from '@/features/accounts/list/AccountsStreamed';
-import { ShellPage } from '@/features/shell/ShellPage';
 import { todayInAppZone } from '@/lib/date-range';
 
 export default async function DsAccountsPage() {
@@ -105,9 +104,6 @@ export default async function DsAccountsPage() {
   }
 
   return (
-    <ShellPage crumb="Money" title="Accounts" addParam={{ key: 'add', value: '1' }}>
-      {body}
-      <AddAccountHost />
-    </ShellPage>
+    <AccountsShellPage>{body}</AccountsShellPage>
   );
 }

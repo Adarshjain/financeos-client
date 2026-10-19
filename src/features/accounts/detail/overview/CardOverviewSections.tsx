@@ -1,10 +1,8 @@
-import Link from 'next/link';
 import React from 'react';
 
 import {
   Avatar,
   Badge,
-  Button,
   Card,
   EmptyState,
   ListField,
@@ -172,9 +170,7 @@ export function CardholdersCard({
       title="Cardholders"
       subtitle={model.subtitle}
       action={
-        <Button asChild variant="secondary" size="sm">
-          <Link href={`${accountHref(accountId)}/cards?add=cardholder`}>Add</Link>
-        </Button>
+        <HeaderLink href={`${accountHref(accountId)}/cards?add=cardholder`}>Add</HeaderLink>
       }
     >
       {model.rows.map((row) => (

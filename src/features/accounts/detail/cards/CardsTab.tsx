@@ -1,12 +1,11 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import React from 'react';
 
 import { Button, EmptyState, showToast, Text } from '@/components/ds';
 import { ErrorState } from '@/components/organisms';
 import type { Card, Cardholder } from '@/lib/account.types';
-import { closeDialogParam } from '@/lib/dialogParam';
 
 import { AddCardDialog, CloseDialog, ReplaceCardDialog } from './CardFormDialogs';
 import { type CardsModel, type HolderMenuId, holderName, type HolderStats } from './cardsModel';
@@ -50,19 +49,22 @@ export function CardsTab({
   model,
 }: CardsTabProps) {
   const router = useRouter();
-  const params = useSearchParams();
   const actions = useCardholderActions(accountId, isBank);
   const [dialog, setDialog] = React.useState<DialogState | null>(null);
 
-  const addParam = params.get('add');
+  // The overview's Cardholders "Add" links here with ?add=cardholder: open once on load, then clear it
+  // from the URL with replaceState (no server request), so a reload does not reopen the dialog.
   React.useEffect(() => {
-    if (addParam === 'cardholder') setDialog({ kind: 'addHolder' });
-  }, [addParam]);
+    const { pathname, search } = window.location;
+    const query = new URLSearchParams(search);
+    if (query.get('add') !== 'cardholder') return;
+    setDialog({ kind: 'addHolder' });
+    query.delete('add');
+    const rest = query.toString();
+    window.history.replaceState(null, '', rest ? `${pathname}?${rest}` : pathname);
+  }, []);
 
-  const closeDialog = () => {
-    setDialog(null);
-    if (params.get('add')) closeDialogParam('add');
-  };
+  const closeDialog = () => setDialog(null);
 
   if (!cardholders || !model) {
     return (

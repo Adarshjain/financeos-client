@@ -58,7 +58,9 @@ export const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
       <Component
         ref={ref as unknown as React.Ref<HTMLDivElement & HTMLHeadingElement>}
         className={cn(
-          'flex items-baseline gap-space-6 py-space-6 px-space-14 select-none border-b border-line-soft font-text',
+          'flex gap-space-6 py-space-6 px-space-14 select-none border-b border-line-soft font-text',
+          // With an action (a control), centre everything so the label lines up with it.
+          action ? 'items-center' : 'items-baseline',
           isStrong
             ? 'bg-subtle text-label font-extrabold'
             : 'bg-sunken text-overline font-extrabold uppercase',
@@ -77,7 +79,7 @@ export const SectionHeader = forwardRef<HTMLDivElement, SectionHeaderProps>(
       >
         <span>{children}</span>
         {meta ? <span className="font-semibold text-ink-3">{meta}</span> : null}
-        {action ? <span className="ml-auto shrink-0 self-center">{action}</span> : null}
+        {action ? <span className="ml-auto shrink-0">{action}</span> : null}
       </Component>
     );
   },

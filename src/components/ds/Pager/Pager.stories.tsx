@@ -63,6 +63,7 @@ type Story = StoryObj<typeof Pager>;
 
 export const Desktop: Story = {
   name: 'Desktop',
+  parameters: { docs: { description: { story: 'Compact is the default (owner 2026-10-19). Pass variant="default" for the roomier form.' } } },
   args: {
     page: 0,
     size: 50,

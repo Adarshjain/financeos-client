@@ -37,17 +37,19 @@ describe('ShellPage top-bar actions', () => {
     );
   });
 
-  it('opens a same-page add by pushing the URL param, not navigating', () => {
+  it('calls onAdd for a same-page add instead of navigating or changing the URL', () => {
     window.history.replaceState(null, '', '/ds/accounts');
     const push = vi.spyOn(window.history, 'pushState');
+    const onAdd = vi.fn();
     render(
-      <ShellPage title="Accounts" addParam={{ key: 'add', value: '1' }} addLabel="Add account">
+      <ShellPage title="Accounts" onAdd={onAdd} addLabel="Add account">
         content
       </ShellPage>,
     );
     expect(screen.getAllByRole('link').map((l) => l.getAttribute('aria-label'))).toEqual(['Ask the data']);
     screen.getByRole('button', { name: 'Add account' }).click();
-    expect(push).toHaveBeenCalledWith(null, '', '/ds/accounts?add=1');
+    expect(onAdd).toHaveBeenCalledTimes(1);
+    expect(push).not.toHaveBeenCalled();
     push.mockRestore();
   });
 

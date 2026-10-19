@@ -164,6 +164,7 @@ describe('/ds/accounts/[id]/cards', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     search = '';
+    window.history.replaceState(null, '', '/ds/accounts/c1/cards');
     loadAccount.mockResolvedValue(card);
     loadCards.mockResolvedValue(data());
     Object.values(mutate).forEach((fn) => fn.mockResolvedValue({}));
@@ -199,7 +200,8 @@ describe('/ds/accounts/[id]/cards', () => {
       window.history.replaceState(null, '', '/ds/accounts/c1/cards');
       const push = vi.spyOn(window.history, 'pushState');
       screen.getByRole('button', { name: 'Change' }).click();
-      expect(push).toHaveBeenCalledWith(null, '', '/ds/accounts/c1/cards?edit=1');
+      expect(push).not.toHaveBeenCalled();
+      expect(window.location.search).toBe('');
       push.mockRestore();
       expect(screen.queryByText(/^Debit cards on this account/)).toBeNull();
     });
@@ -557,15 +559,15 @@ describe('/ds/accounts/[id]/cards', () => {
   });
 
   describe('?add=cardholder', () => {
-    it('opens the add-on dialog on load, and removes the param when it closes', async () => {
-      search = 'add=cardholder';
-      window.history.replaceState(null, '', '/ds/accounts/c1/cards?add=cardholder');
+    it('opens the add-on dialog on load and clears the param right away, keeping the rest', async () => {
+      window.history.replaceState(null, '', '/ds/accounts/c1/cards?add=cardholder&x=1');
       await renderPage();
       expect(await screen.findByRole('dialog')).toHaveTextContent('Add add-on cardholder');
+      expect(window.location.search).toBe('?x=1');
 
       const replaceState = vi.spyOn(window.history, 'replaceState');
       press('Cancel');
-      expect(replaceState).toHaveBeenCalledWith(null, '', '/ds/accounts/c1/cards');
+      expect(replaceState).not.toHaveBeenCalled();
       replaceState.mockRestore();
       expect(replace).not.toHaveBeenCalled();
       await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
@@ -640,7 +642,7 @@ describe('/ds/accounts/[id]/cards', () => {
     });
 
     it('opens the joint-holder dialog for ?add=cardholder', async () => {
-      search = 'add=cardholder';
+      window.history.replaceState(null, '', '/ds/accounts/b1/cards?add=cardholder');
       await renderPage('b1');
       expect(await screen.findByRole('dialog')).toHaveTextContent('Add joint holder');
     });

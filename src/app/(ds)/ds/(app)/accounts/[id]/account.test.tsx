@@ -205,8 +205,8 @@ describe('/ds/accounts/[id] credit-card Overview', () => {
     window.history.replaceState(null, '', '/ds/accounts/c1');
     const push = vi.spyOn(window.history, 'pushState');
     edits.forEach((button) => button.click());
-    expect(push).toHaveBeenCalledTimes(2);
-    expect(push).toHaveBeenLastCalledWith(null, '', '/ds/accounts/c1?edit=1');
+    expect(push).not.toHaveBeenCalled();
+    expect(window.location.search).toBe('');
     push.mockRestore();
     expect(screen.queryByRole('link', { name: /^Transactions/ })).toBeNull();
 
