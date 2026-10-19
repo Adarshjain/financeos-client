@@ -34,9 +34,10 @@ async function loadStats(accountId: string): Promise<CardholderStats[]> {
   return (data as CardholderStats[] | undefined) ?? [];
 }
 
-async function loadIdentifiers(id: string): Promise<string[]> {
+export async function loadIdentifiers(id: string): Promise<string[]> {
   const { data } = await serverApi.GET('/api/v1/accounts/{id}/identifiers', { params: { path: { id } } });
-  return (data ?? []).map((i) => i.value);
+  if (!data) throw new Error('identifiers failed');
+  return data.map((i) => i.value);
 }
 
 async function loadGmail(id: string) {
@@ -60,10 +61,10 @@ async function loadRewards(account: CreditCard, today: string) {
   return { report, window };
 }
 
-async function loadRecent(accountId: string) {
+export async function loadRecent(accountId: string, size = RECENT_TRANSACTIONS) {
   const page = await transactionsApi.search(
     { filters: [{ field: 'accountId', operator: 'is', value: accountId }] },
-    { page: 0, size: RECENT_TRANSACTIONS, sort: ['date,desc'] }
+    { page: 0, size, sort: ['date,desc'] }
   );
   return { items: page.content, total: page.totalElements };
 }

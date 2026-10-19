@@ -153,8 +153,11 @@ describe('buildHeaderModel for other types', () => {
 
 describe('reconciliationBanner', () => {
   it('states the gap, with paise only when there are some', () => {
-    expect(reconciliationBanner(1200)).toBe('Transactions and the latest statement disagree by ₹1,200.');
-    expect(reconciliationBanner(-12.5)).toBe('Transactions and the latest statement disagree by ₹12.50.');
+    expect(reconciliationBanner(1200)?.title).toBe('Statement and ledger disagree by ₹1,200.');
+    expect(reconciliationBanner(-12.5)?.title).toBe('Statement and ledger disagree by ₹12.50.');
+    expect(reconciliationBanner(1200)?.body).toBe(
+      'Usually a missing opening balance or a duplicated transfer.',
+    );
   });
 
   it('is null with no gap', () => {

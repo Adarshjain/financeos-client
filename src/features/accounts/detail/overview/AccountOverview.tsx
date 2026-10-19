@@ -4,14 +4,13 @@ import { Banner } from '@/components/ds';
 import type { Account } from '@/lib/account.types';
 import { AccountType } from '@/lib/types';
 
-import { AccountHeaderCard } from './AccountHeaderCard';
+import { BankOverview } from './BankOverview';
+import { BrokerOverview } from './BrokerOverview';
 import { CardOverview } from './CardOverview';
-import { buildHeaderModel, reconciliationBanner } from './headerModel';
+import { reconciliationBanner } from './headerModel';
+import { WalletOverview } from './WalletOverview';
 
-/**
- * The Overview of one account. The per-type switch lives here: cards get the full Overview;
- * the other types show only the header block until their bodies are built.
- */
+/** The Overview of one account. The per-type switch lives here; each type builds its own body. */
 export async function AccountOverview({
   account,
   today,
@@ -22,15 +21,19 @@ export async function AccountOverview({
   const disagreement = reconciliationBanner(account.reconciliationGap);
   return (
     <div className="flex flex-col gap-space-12 desk:gap-space-16">
-      {disagreement ? <Banner tone="warning">{disagreement}</Banner> : null}
+      {disagreement ? (
+        <Banner tone="warning" title={disagreement.title}>
+          {disagreement.body}
+        </Banner>
+      ) : null}
       {account.type === AccountType.CREDIT_CARD ? (
         <CardOverview account={account} today={today} />
+      ) : account.type === AccountType.BANK_ACCOUNT ? (
+        <BankOverview account={account} today={today} />
+      ) : account.type === AccountType.BROKER ? (
+        <BrokerOverview account={account} today={today} />
       ) : (
-        <AccountHeaderCard
-          accountId={account.id}
-          accountName={account.name}
-          model={buildHeaderModel(account, null, today)}
-        />
+        <WalletOverview account={account} today={today} />
       )}
     </div>
   );

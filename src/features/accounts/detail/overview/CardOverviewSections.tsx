@@ -203,36 +203,6 @@ export function CardholdersCard({
   );
 }
 
-export function IdentifiersCard({
-  accountId,
-  identifiers,
-}: {
-  accountId: string;
-  identifiers: string[];
-}) {
-  return (
-    <Card
-      title="Identifiers"
-      subtitle="How Gmail alerts and statements find this card"
-      action={<HeaderLink href={`${accountHref(accountId)}?edit=1`}>Edit</HeaderLink>}
-    >
-      <div className="px-space-16 pt-space-4 pb-space-14 flex flex-wrap gap-space-6">
-        {identifiers.length > 0 ? (
-          identifiers.map((value) => (
-            <Badge key={value} tone="neutral">
-              {value}
-            </Badge>
-          ))
-        ) : (
-          <Text variant="caption" tone="ink-3">
-            No identifiers yet
-          </Text>
-        )}
-      </div>
-    </Card>
-  );
-}
-
 export function ConnectionsCard({ model }: { model: ConnectionsModel }) {
   return (
     <Card title="Connections" subtitle="How transactions arrive">
